@@ -1,0 +1,17 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {FixedFrontLifecycle} from './tube-fallback-moving-helper.mjs';
+const candidate={front:24,sourceX:46.5,verifiedAir:true};
+const row=(extra={})=>({front:24,sourceX:46.5,seaTime:170,phase:1,verifiedAir:true,indexedLift:true,sourcePresent:true,...extra});
+test('requires a verified finite first source and never switches to a later eligible wave',()=>{
+ const t=new FixedFrontLifecycle();assert.equal(t.lock({...candidate,verifiedAir:false},1),false);assert.equal(t.lock({...candidate,sourceX:NaN},1),false);assert.equal(t.lock(candidate,2),true);assert.equal(t.lock({...candidate,front:27},3),false);assert.equal(t.front,24);assert.equal(t.sourceX,46.5);assert.throws(()=>t.observe(row({front:27})),/identity changed/);assert.throws(()=>t.observe(row({sourceX:47.5})),/identity changed/);
+});
+test('does not infer opening from phase alone or retirement from an open overlap cut',()=>{
+ const t=new FixedFrontLifecycle();t.lock(candidate,1);assert.deepEqual(t.observe(row({verifiedAir:false})),[]);assert.equal(t.opened,false);assert.equal(t.observe(row())[0].kind,'first-open');for(let k=0;k<5;k++)t.observe(row({indexedLift:false}));assert.equal(t.retired,false);assert.equal(t.summary().complete,false);
+});
+test('requires same-source opening, actual post phase and persistent subsequent removal',()=>{
+ const t=new FixedFrontLifecycle();t.lock(candidate,1);assert.equal(t.observe(row())[0].kind,'first-open');assert.equal(t.observe(row({phase:2}))[0].kind,'first-touchdown');assert.equal(t.observe(row({phase:2,indexedLift:false})).length,0);t.observe(row({phase:2,indexedLift:true}));assert.equal(t.quietRows,0);for(let k=0;k<2;k++)assert.equal(t.observe(row({phase:2,indexedLift:false})).length,0);assert.equal(t.observe(row({phase:2,indexedLift:false}))[0].kind,'first-retired');assert.equal(t.summary().complete,true);assert.equal(t.observe(row({phase:2,indexedLift:false})).length,0);
+});
+test('missing source can certify removal only after observed touchdown, never by silently choosing another column',()=>{
+ const t=new FixedFrontLifecycle();t.lock(candidate,1);for(let k=0;k<4;k++)t.observe(row({sourcePresent:false,phase:null,indexedLift:false}));assert.equal(t.retired,false);t.observe(row());t.observe(row({phase:2}));for(let k=0;k<3;k++)t.observe(row({sourcePresent:false,phase:null,indexedLift:false}));assert.equal(t.retired,true);assert.equal(t.front,24);assert.equal(t.sourceX,46.5);
+});

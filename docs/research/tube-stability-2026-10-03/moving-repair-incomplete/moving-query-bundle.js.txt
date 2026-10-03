@@ -1,0 +1,519 @@
+(function() {
+	//#region ../../../../../private/tmp/surf-tube-repair-combined-20261003/src/wave/Bathymetry.ts
+	/**
+	* The Teahupo'o Reef (the Teahupo'o Reef spec): a left slab. The tank's deep water rises up a
+	* 1:2.29 forereef (Rodríguez-Burguette et al. 2025, a model of Teahupo'o's reef) to a shelf
+	* about 10 m deep (Shand 2024), where the wave stands up before the reef rises again to its
+	* crest, about 1.5 m under the surface (WSL). The ledge rises from the shelf, its foot meeting
+	* the shelf's edge at the peak (x = crestX), and runs at `angle` degrees to the shoreline,
+	* furthest out toward −x, so each wave breaks there first and peels toward +x (a left) at the
+	* shelf's celerity over the sine of the crest's angle to it (`ledgePeel`). A pass runs along the
+	* window's +x open edge, level across it like the Canyon's axis, where the left ends. A planar
+	* beach face caps it all. Sources and provisional values: docs/research/teahupoo-reef-sources.md.
+	* Mutable for the design sweep (`scripts/reefShape.ts`).
+	*/
+	const REEF = {
+		deep: 30,
+		foreSlope: 1 / 2.29,
+		shelfEdge: -150,
+		shelfDepth: 10,
+		ledgeSlope: 1 / 2.29,
+		crestDepth: 1.5,
+		crestX: -80,
+		crestZ: -120,
+		angle: 45,
+		passX: 80,
+		passHalfWidth: 25,
+		passDepth: 12,
+		takeOffX: -50,
+		flatWidth: 20,
+		lagoonDepth: 2.5,
+		inlandSlope: 1 / 9.64
+	};
+	/**
+	* Padang Padang (the Padang Padang spec): a left over a coral reef on the west coast of Bali's Bukit, built from Mead's
+	* components for it (ramp, focus, wedge, pinnacle; no platform: Mead 2000, table 4.1), as Mead & Black's idealised
+	* Bingin beds (1999; Mead 2000, ch. 5). The swell arrives square to the tank in water `deep` deep (the tank's edge,
+	* where its linear sea is near-linear; the Bukit's terrace has already wrapped it), climbs a shore-parallel forereef
+	* at `foreSlope` to a knee `kneeDepth` deep, then Mead's ramp at `rampSlope`, level along shore. From the ramp rises
+	* the wedge to a reef flat `crestDepth` deep that nearly dries at the lowest spring tides. The wave climbs it at Mead &
+	* Black's orthogonal gradient along its own path, inferred from the measured vortex ratios of its tubes (about 1:19;
+	* Mead & Black 2001), so `wedgeSlope`, measured across the crest line, is steeper by the path's angle to it (the
+	* owner's decision, 2026-09-29: docs/research/water-physics/basilisk-profiles.md). The wedge's top
+	* edge (the crest line) runs at `angle` degrees to the ramp's contours from the peak (x = peakX, where the wedge's base
+	* is `baseDepth` deep), so each wave breaks there first and peels toward +x (a left) at the celerity over the wedge's
+	* base over the sine of that angle (phase matching). A spur on the swell's line through the peak (Mead's focus) draws
+	* the waves' energy onto it, so it breaks first. Upcoast of the peak the wedge fades out over `endWidth` m, so the
+	* bed is the bare ramp, level along shore, at the window's −x open edge (an open edge copies its neighbours: a bed
+	* sloping across it ran the Reef's Big swell to NaN); a channel runs along the +x open edge, level across its axis,
+	* where the left ends, `kneeDepth` deep shoreward of `channelFrom`. A planar beach face caps it all. The window is
+	* `alongShore` m wide, so the peak stands clear of the −x side feed. Sources and provisional values: docs/research/padang-padang-sources.md.
+	* Mutable for the design sweep (`scripts/padangShape.ts`).
+	*/
+	const PADANG = {
+		deep: 25,
+		foreSlope: 1 / 20,
+		foreRounding: 10,
+		kneeDepth: 12,
+		rampSlope: 1 / 80,
+		/**
+		* The wedge's slope across its crest line: 1:19 along the swell's path, which crosses the 40° line obliquely (1:14.6
+		* as the swell arrives square, about 1:15.8 once refraction turns it toward the wedge's normal). At 1:19 across the line
+		* the swell climbed 1:24.8: in Basilisk (level 11) the peak's face went vertical 16 m before the flat and threw a tube
+		* of 0.125 H²; at 1:19 along the path, 3.6 m before it, the lip landing on the flat and the tube 0.208 H², 1.7 × larger.
+		*/
+		wedgeSlope: 1 / 15,
+		baseDepth: 7,
+		crestDepth: 1.25,
+		peakX: -60,
+		peakZ: -170,
+		angle: 40,
+		endWidth: 20,
+		alongShore: 320,
+		channelX: 160,
+		channelHalfWidth: 45,
+		shoreSlope: .2,
+		takeOffX: -50,
+		/** How far the channel is deepened from the ramp toward the knee's depth: its crests ran ahead over it and tilted the reef's down-reef crests (the design sweep's). */
+		channelDeepening: 1,
+		/**
+		* How far seaward the channel is deepened, z (−Infinity: from the knee). Held at the knee's depth all the way out, its
+		* crests ran ahead and tilted the down-reef crests about 11° before the wedge (the advisor, 2026-09-29), a peel of
+		* 15.9 m/s against 10.7 without it. Deepened only shoreward of where the ramp is about 5 m deep (the wedge base's depth
+		* at the ride's end), the crests offshore of it cross the bare ramp as they do along the reef: 22 clean waves at 11.3
+		* m/s, the two halves of each alike (docs/research/padang-padang-report.md). The line is the sweep's, provisional.
+		*/
+		channelFrom: -138,
+		/**
+		* Mead's focus: a spur along the incoming swell through the peak, `focusRelief` m above the bed where it meets the
+		* wedge's base, tapering (cos²) to nothing `focusLength` m seaward and `focusInset` m up the wedge, `focusHalfWidth` m
+		* to either side of the peak. The advisor's ruling (2026-09-29, from Mead 2000, figs 5.1–5.2): about a wavelength
+		* across (a narrower shoal diffracts rather than focuses), its crest deepening seaward at 1:20–1:40 inside Mead's
+		* focus gradients (1:10–1:80). All provisional.
+		*/
+		focusRelief: 2,
+		focusLength: 150,
+		focusInset: 80,
+		focusHalfWidth: 70
+	};
+	//#endregion
+	//#region ../../../../../private/tmp/surf-tube-repair-combined-20261003/src/wave/barrel/sliceClock.ts
+	/**
+	* The slice clock's constants (the advisor, 2026-09-30):
+	* - `smoothing`, m: the onsets are smoothed along the front over a 2 m standard deviation, about a quarter of
+	*   Padang Padang's open curl (V_p ≈ 9–10 m/s over the 0.82–0.85 s open phase of round 6's run: 7–8 m);
+	* - `bunched`, m²: below this weighted variance of σ (two points under about 0.6 m apart; two a column apart are
+	*   0.25), a fit's slope is meaningless and the mean is used;
+	* - `earliest`, √(h0/g): the library's first frame before the face goes vertical (its runs output from 3 before),
+	*   the earliest a slice's clock reads. All provisional.
+	*/
+	const CLOCK = {
+		smoothing: 2,
+		bunched: .1,
+		earliest: -3
+	};
+	/** Padang Padang's tables (round 6's transect: the 7 m foot, 1:19 along the path to the 1.25 m flat). */
+	const PADANG_ONSET = {
+		h0: 7,
+		band: [6, 5],
+		join: [
+			{
+				period: 14,
+				rows: [
+					[1.2, 2.29],
+					[1.75, 2.82],
+					[2.29, 3.24],
+					[2.74, 3.61],
+					[3.15, 3.92]
+				]
+			},
+			{
+				period: 16,
+				rows: [
+					[1.19, 2.61],
+					[1.6, 3.18],
+					[1.84, 3.66],
+					[2.21, 4.13],
+					[2.68, 4.55]
+				]
+			},
+			{
+				period: 17,
+				rows: [
+					[1.29, 2.61],
+					[1.74, 3.13],
+					[2.16, 3.5],
+					[2.51, 3.82],
+					[2.82, 3.92]
+				]
+			},
+			{
+				period: 18,
+				rows: [
+					[1.29, 2.55],
+					[1.82, 2.92],
+					[2.37, 3.34],
+					[2.86, 3.71],
+					[3.3, 3.82]
+				]
+			}
+		],
+		throwDepth: {
+			intercept: 1.56,
+			slope: .56,
+			heights: [.99, 2.5]
+		}
+	};
+	CLOCK.smoothing * Math.sqrt(7);
+	//#endregion
+	//#region ../../../../../private/tmp/surf-tube-repair-combined-20261003/src/wave/barrel/barrelSpots.ts
+	/**
+	* How far over a reef's top its throw's floor sits, m: the pass's Gaussian tail lifts the flat's still depth by up to
+	* 0.4 mm across the window, so a floor at exactly the top's depth was never crossed there (a numerical margin, not a
+	* physical one; the advisor kept it, 2026-10-01).
+	*/
+	const FLOOR_MARGIN = .01;
+	/**
+	* Padang Padang's front rules (the advisor, 2026-10-01; the peak PR): as a crest's face steepens, its highest cell jumps
+	* forward, and the crest ahead started a track of its own, unsized, which never joined (163 jumps in 180 s of its Small
+	* sea, against 23 joins and 199 lost, with the rule off: as often as the Reef's). So a sized crest continues as the
+	* furthest crest within 10 m ahead of it in its column, as the Reef's does. Its join past the throw depth is the Reef's alone.
+	*/
+	const PADANG_FRONT = { jumpReach: 10 };
+	/**
+	* The Reef's transect (Part B, PR 7; the advisor's rulings, 2026-10-01): its 10 m shelf, the ledge at 1:4.2 along the
+	* swell's path (the slope the Teahupo'o Reef report measured along the path, and the advisor's periodic_reef42 run) to
+	* the 1.5 m reef crest. All provisional.
+	* - **The join:** the game's solver's fresh onset on that transect (the spotOnset probe, 2026-10-01: regular waves
+	*   driven in 10 m, each wave's highest over the band, the median still depth under its crest where Kennedy's fresh test
+	*   first fired, 12 waves a row). Drives that broke before the ledge, whose onsets outnumbered their waves by more than
+	*   two (the 5.5 m drive at every period, the 4.5 m at 15 s), are left out: big Reef sets breaking before the ledge sit
+	*   outside the ledge's library, a Reef behaviour question for the Reef session. At 16–17 s the 3.5 m drive first breaks
+	*   at 2.0 m, against 4.9–5.6 m at 14–15 s: longer periods shoal longer before breaking.
+	* - **The band:** Padang Padang's 6–5 m at 7 m, scaled to the 10 m foot (the probe read the same band).
+	* - **The throw:** the line through the two runs, foot crest against the still depth where the face goes vertical
+	*   (`plunge_measure.py`): reef42's 2.127 m crest at 1.928 m, at the top's edge, and reef42_a35's 3.503 m at 5.159 m,
+	*   15 m seaward of the top on the ledge's face, H/d ≈ 0.95 at the vertical in both. So d = 2.35 η − 3.07 (the advisor,
+	*   2026-10-01; provisional: a third case near A0 0.28 would test whether it is linear). Through the origin it would
+	*   throw reef42's own wave 0.9 m too deep. Bigger waves break deeper: a 4 m crest throws about 6.3 m down the face.
+	* - **The floor:** no shallower than the reef's top at the tide, which the line meets at η ≈ 1.95 m. It stands for crests
+	*   the solver breaks near the edge (the advisor, refined after the front's check): the smallest waves cross the edge
+	*   unbroken (H/h ≈ 0.4 there) and break depth-limited where the inner flat shoals to about 0.73 m, which the ledge's
+	*   cases would draw wrongly, so the front's join reach (1.5 H past the throw depth) lets them go as the solver's bores.
+	* - **Its cases:** reef42 (A0 0.21) alone. reef60 (1:6) waits for per-slice slopes. reef42_a35 (A0 0.35) sets the throw
+	*   line but is out of the index: its lip landmark flickers between the curl's top and the jet's tip, so even the
+	*   advisor's robust trace leaves 13 of its 77 open frames flagged and its tip fit up to 6 √(g h0) (the bar: about 90 %
+	*   clean, at most about 1.5). The small case (A0 ≈ 0.09, over the inner flat) is owed at level 13.
+	*/
+	const REEF_THROW_SLOPE = 3.231 / (3.503 - 2.127);
+	/**
+	* Every spot's barrel transect, where its cases are in the library. Padang Padang's is round 6's (the owner's 1:19 along
+	* the path from the wedge's 7 m foot, read live for the design sweep); the Reef's, its shelf's 10 m and the ledge along
+	* the swell's path. The Reef's fine zone starts at the shelf's edge, so its front follows crests from there.
+	*
+	* The Reef's front (the advisor's rulings, 2026-10-01; provisional): its crests' highest cells jump forward to the
+	* ledge's edge as their faces steepen, so a sized crest follows the furthest crest within 10 m ahead (the advisor's
+	* 1.5 H would catch none of the jumps measured); and its small waves break only as they cross onto the top, so a crest
+	* may join up to 1.5 of its wave heights past its throw depth.
+	*/
+	const BARREL_SPOTS = {
+		padang: {
+			slope: 1 / 19,
+			get footDepth() {
+				return PADANG.baseDepth;
+			},
+			onset: PADANG_ONSET,
+			frontFrom: "zone",
+			front: PADANG_FRONT
+		},
+		point: {
+			slope: .0465116,
+			footDepth: 7,
+			onset: {
+				h0: 7,
+				band: [6, 5],
+				join: [
+					{
+						period: 9,
+						rows: [
+							[.62, 1.58],
+							[1.01, 2.14],
+							[1.37, 2.65],
+							[1.73, 3.16],
+							[1.99, 3.67]
+						]
+					},
+					{
+						period: 11,
+						rows: [
+							[.6, 1.72],
+							[.91, 2.33],
+							[1.19, 2.88],
+							[1.33, 3.44],
+							[1.68, 4.05]
+						]
+					},
+					{
+						period: 12,
+						rows: [
+							[.69, 1.67],
+							[1.08, 2.19],
+							[1.4, 2.7],
+							[1.75, 3.12],
+							[2.12, 3.49]
+						]
+					},
+					{
+						period: 14,
+						rows: [
+							[.77, 1.67],
+							[1.22, 2.14],
+							[1.78, 2.6],
+							[2.4, 3.12],
+							[2.88, 3.49]
+						]
+					}
+				],
+				throwDepth: {
+					intercept: 1.551,
+					slope: .946,
+					heights: [.558, 2.099]
+				}
+			},
+			frontFrom: "zone"
+		},
+		reef: {
+			slope: .238095,
+			get footDepth() {
+				return REEF.shelfDepth;
+			},
+			onset: {
+				h0: 10,
+				band: [60 / 7, 50 / 7],
+				join: [
+					{
+						period: 14,
+						rows: [
+							[.9, 3.69],
+							[1.67, 4.17],
+							[2.41, 4.88],
+							[3.14, 5.83]
+						]
+					},
+					{
+						period: 15,
+						rows: [
+							[.89, 4.17],
+							[1.63, 5.12],
+							[2.26, 5.6]
+						]
+					},
+					{
+						period: 16,
+						rows: [
+							[.9, 4.17],
+							[1.68, 5.12],
+							[2.27, 2.02],
+							[2.83, 2.98]
+						]
+					},
+					{
+						period: 17,
+						rows: [
+							[.89, 4.17],
+							[1.72, 5.36],
+							[2.46, 2.02],
+							[2.92, 3.21]
+						]
+					}
+				],
+				throwDepth: {
+					intercept: 1.928 - 2.127 * REEF_THROW_SLOPE,
+					slope: REEF_THROW_SLOPE,
+					heights: [0, Infinity]
+				},
+				get floor() {
+					return REEF.crestDepth + FLOOR_MARGIN;
+				}
+			},
+			frontFrom: "fine",
+			front: {
+				jumpReach: 10,
+				joinPast: 1.5
+			}
+		}
+	};
+	//#endregion
+	//#region ../../../../../private/tmp/surf-tube-repair-combined-20261003/src/wave/barrel/sweptLoft.ts
+	/**
+	* The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
+	* "Lofting" and "The seam"; the advisor's rulings, 2026-09-30):
+	* - `spacing`, `fine`, m: slices every half metre along the front, a quarter where neighbouring clocks differ by more
+	*   than `frames` library frames (the advisor: 2–4, so neighbours stay within a stage);
+	* - `budget`, vertices: past it the spacing widens and neighbouring clocks are clamped to T_open/4 (the advisor);
+	* - `pinned`: samples at each end of a profile blended onto the water, never reaching the lip or throat [inferred];
+	* - `extension`, `extensionSamples`: the surface runs on over the water this far past each end, m, in this many
+	*   samples, so the seam's band always has both surfaces [inferred];
+	* - `band`, m: the dithered overlap at the mask's edge [inferred];
+	* - `endBlend`, m: a front's ends blend into the water over this length [inferred].
+	* (After touchdown a slice fades into the water over its tube's own collapse, `ProfileLookup.collapseSeconds`, and a
+	* faded slice is dropped.)
+	*/
+	const LOFT = {
+		spacing: .5,
+		fine: .25,
+		frames: 3,
+		budget: 4e4,
+		pinned: 6,
+		extension: 1.5,
+		extensionSamples: 3,
+		band: 1,
+		endBlend: 2.5
+	};
+	/** Vertices per slice: the profile and its extensions over the water at each end. */
+	const LOFT_SAMPLES = 128 + 2 * LOFT.extensionSamples;
+	Object.fromEntries(Object.entries(BARREL_SPOTS).flatMap(([spot, barrel]) => barrel ? [[spot, barrel.slope]] : []));
+	Math.floor(LOFT.budget / LOFT_SAMPLES);
+	const E$1 = LOFT.extensionSamples;
+	LOFT.extension / E$1;
+	//#endregion
+	//#region ../../../../../private/tmp/surf-tube-repair-combined-20261003/src/wave/barrel/sweptContact.ts
+	/**
+	* The contact's constants (the Padang Padang spec, Part B, PR 4):
+	* - `cell`, m: the strips' index grid [inferred];
+	* - `closing`: a tube is closing from this share of its open time (the advisor's ruling 5: its own constant, provisional);
+	* - `crossings`: the most a vertical line meets in one strip (a tube has three; folds add two each) [inferred];
+	* - `bucket`, m: each strip's quads are bucketed by their range along its ray this finely, so a vertical line tests only
+	*   its bucket's, two or three a layer, not the strip's 133 (the advisor, 2026-09-30: about 0.5 m) [inferred].
+	*/
+	const CONTACT = {
+		cell: 2,
+		closing: .8,
+		crossings: 16,
+		bucket: .5
+	};
+	LOFT_SAMPLES - 1;
+	LOFT.extensionSamples;
+	//#endregion
+	//#region ../../../../../private/tmp/surf-tube-repair-combined-20261003/src/scene/barrel/renderedCavity.ts
+	const S = LOFT_SAMPLES;
+	const Q = S - 1;
+	const NUDGE = 1e-9;
+	/**
+	* Only an opaque current footprint can certify shaded cavity geometry. The shader samples node-centred texels
+	* with linear filtering; every node with positive interpolation weight must be 255. Partial dither bands retain
+	* the raw fog classification. This avoids relying on rounded interpolation values near one.
+	*/
+	function opaqueBarrelColumn(mask, grid, x, z) {
+		const gx = (x - grid.xMin) / grid.spacing, gz = (z - grid.zMin) / grid.spacing;
+		if (!(mask instanceof Uint8Array) || !Number.isFinite(gx) || !Number.isFinite(gz) || !(grid.spacing > 0) || !Number.isInteger(grid.nx) || !Number.isInteger(grid.nz) || grid.nx < 2 || grid.nz < 2 || mask.length < grid.nx * grid.nz || gx < 0 || gz < 0 || gx >= grid.nx - 1 || gz >= grid.nz - 1) return false;
+		const ix = Math.floor(gx), iz = Math.floor(gz), tx = gx - ix, tz = gz - iz;
+		const i = iz * grid.nx + ix;
+		return mask[i] === 255 && (tx === 0 || mask[i + 1] === 255) && (tz === 0 || mask[i + grid.nx] === 255 && (tx === 0 || mask[i + grid.nx + 1] === 255));
+	}
+	/**
+	* A rendering-only bounded-air test on an already drawn loft. It neither builds a second loft nor caches mutable
+	* geometry. The caller must establish a fresh visible mesh and opaque local mask. Three finite crossings describe
+	* the closed face/underside/top cavity; other columns retain the ordinary height-field classification. Drawing and
+	* held physical contact can differ during collapse. Cost is the slice scan plus 133 quads per ray-owning candidate.
+	*/
+	var RenderedCavityQuery = class {
+		ys = new Float64Array(CONTACT.crossings);
+		count = 0;
+		ambiguous = false;
+		contains(loft, x, y, z) {
+			const { positions: p, sliceCount, vertexCount, indexCount, indices } = loft;
+			if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z) || !Number.isInteger(sliceCount) || sliceCount < 2 || vertexCount !== sliceCount * S || p.length < 3 * vertexCount || indices.length < indexCount || indexCount === 0) return false;
+			let expected = 0;
+			for (let s = 0; s + 1 < sliceCount; s += 1) if (loft.sliceJoined[s] === 1) expected += 6 * Q;
+			else if (loft.sliceJoined[s] !== 0) return false;
+			if (indexCount !== expected) return false;
+			let found = false;
+			let air = false;
+			let first = 0;
+			for (let s = 0; s + 1 < sliceCount; s += 1) {
+				if (loft.sliceJoined[s] !== 1) continue;
+				const base = first;
+				first += 6 * Q;
+				const a = s * S;
+				const b = a + S;
+				const ax = loft.sliceRayX[s], az = loft.sliceRayZ[s];
+				const bx = loft.sliceRayX[s + 1], bz = loft.sliceRayZ[s + 1];
+				if (!Number.isFinite(ax) || !Number.isFinite(az) || !Number.isFinite(bx) || !Number.isFinite(bz) || !Number.isFinite(p[3 * a]) || !Number.isFinite(p[3 * a + 2]) || !Number.isFinite(p[3 * b]) || !Number.isFinite(p[3 * b + 2]) || loft.sliceFront[s] !== loft.sliceFront[s + 1]) return false;
+				const sideA = (x - p[3 * a]) * az - (z - p[3 * a + 2]) * ax;
+				const sideB = (x - p[3 * b]) * bz - (z - p[3 * b + 2]) * bx;
+				if (!Number.isFinite(sideA) || !Number.isFinite(sideB)) return false;
+				if (sideA < 0 || sideB >= 0) continue;
+				const nudge = sideA === 0 ? NUDGE : 0;
+				const px = x + nudge * az;
+				const pz = z - nudge * ax;
+				this.count = 0;
+				this.ambiguous = false;
+				for (let j = 0; j < Q; j += 1) {
+					const k = base + 6 * j;
+					const v = a + j, w = b + j;
+					if (indices[k] !== v || indices[k + 1] !== w || indices[k + 2] !== v + 1 || indices[k + 3] !== v + 1 || indices[k + 4] !== w || indices[k + 5] !== w + 1) return false;
+					this.triangle(p, v, w, v + 1, px, pz);
+					this.triangle(p, v + 1, w, w + 1, px, pz);
+					if (this.ambiguous) return false;
+				}
+				if (this.count === 0) continue;
+				if (found) return false;
+				found = true;
+				if (this.count !== 3) continue;
+				const { ys } = this;
+				for (let i = 1; i < this.count; i += 1) for (let k = i; k > 0 && ys[k - 1] > ys[k]; k -= 1) {
+					const value = ys[k];
+					ys[k] = ys[k - 1];
+					ys[k - 1] = value;
+				}
+				air = ys[0] < y && y < ys[1] && ys[1] < ys[2];
+			}
+			return found && air;
+		}
+		triangle(p, a, b, c, x, z) {
+			for (let k = 0; k < 3; k += 1) {
+				const v = k === 0 ? a : k === 1 ? b : c;
+				if (!Number.isFinite(p[3 * v]) || !Number.isFinite(p[3 * v + 1]) || !Number.isFinite(p[3 * v + 2])) {
+					this.ambiguous = true;
+					return;
+				}
+			}
+			const area = this.edge(p, a, b, p[3 * c], p[3 * c + 2]);
+			if (area === 0) {
+				if (x >= Math.min(p[3 * a], p[3 * b], p[3 * c]) && x <= Math.max(p[3 * a], p[3 * b], p[3 * c]) && z >= Math.min(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2]) && z <= Math.max(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2]) && this.edge(p, a, b, x, z) === 0 && this.edge(p, b, c, x, z) === 0) this.ambiguous = true;
+				return;
+			}
+			const sign = area > 0 ? 1 : -1;
+			const wa = this.edge(p, b, c, x, z);
+			if (!this.inside(wa, b, c, sign)) return;
+			const wb = this.edge(p, c, a, x, z);
+			if (!this.inside(wb, c, a, sign)) return;
+			const wc = this.edge(p, a, b, x, z);
+			if (!this.inside(wc, a, b, sign)) return;
+			const value = (wa * p[3 * a + 1] + wb * p[3 * b + 1] + wc * p[3 * c + 1]) / area;
+			if (!Number.isFinite(value) || this.count === this.ys.length) {
+				this.ambiguous = true;
+				return;
+			}
+			this.ys[this.count++] = value;
+		}
+		/** Identical edge ordering and half-open triangle ties to SweptContact; winding changes preserve ownership. */
+		edge(p, u, v, x, z) {
+			const lo = u < v ? u : v;
+			const hi = u < v ? v : u;
+			const value = (p[3 * hi] - p[3 * lo]) * (z - p[3 * lo + 2]) - (p[3 * hi + 2] - p[3 * lo + 2]) * (x - p[3 * lo]);
+			return u < v ? value : -value;
+		}
+		inside(value, u, v, sign) {
+			return value * sign > 0 || value === 0 && sign > 0 === u < v;
+		}
+	};
+	//#endregion
+	//#region ../../../../../private/tmp/tube-fallback-moving-query-entry.mjs
+	window.__tubeRenderedCavityQA = {
+		RenderedCavityQuery,
+		opaqueBarrelColumn
+	};
+	//#endregion
+})();

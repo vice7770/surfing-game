@@ -20,6 +20,8 @@ A subsequent [uniform dx2 → dx4 quality trial](performance-2026-10-03/dx24-qua
 
 The [combined tube-rendering prototype](tube-stability-2026-10-03/combined-repair/ordinary-fps.md) reaches 59.7 drawn FPS and 56.54 fresh physics steps/s against an adjacent 60.0/55.48 canonical sample. Its unexplained 375.7 ms stall and 36.5% additional median triangles remain explicit. Neither average establishes steady 60 Hz physics or accepts the isolated repair for production.
 
+Its later [moving lifecycle probe](tube-stability-2026-10-03/moving-repair-incomplete/README.md) remains incomplete: the selected young end-tapered source disappears without an observed touchdown, despite consecutive fixed-step publications. Fog/cache witnesses are narrower successes, with camera QA failures retained. A [row-range feasibility audit](tube-stability-2026-10-03/coarse-fallback-range-feasibility.md) identifies inexpensive index subsets but unresolved conservative displacement/interpolation bounds; no culling code or measured improvement follows it.
+
 ### Earlier accepted performance pass
 
 The ordinary menu → Padang Padang → Big → Paddle out test now averages **60.0 rendered FPS over 90 seconds** at High settings, Rich water, 64 wave components and High particles. The actual visible Chrome viewport is 1708 × 926, with a 2989 × 1620 drawing buffer on the 120 Hz display. No resolution override or vertex-normal shader was used. [Final passive live report](performance-2026-10-03/padang-live-frame-pacing.json). The script verified the served index, main entry and worker against the frozen build; combined bundle SHA-256 is `a493f04df31c598c1bb86575d9ee69617bac187d5407d27ac5c34c10db5b0a7d`.

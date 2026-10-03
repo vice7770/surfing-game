@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "sourceBytes": 22452,
+  "sha256": "49071f584062398fdfde9321992285f906845651fc0f7a91f932d4ec9eb0ae2e",
+  "tool": "installed rolldown API, write=false one IIFE chunk",
+  "rows": [
+    {
+      "at": 10,
+      "opaque": true,
+      "air": true,
+      "levels": [
+        0.720342424508315,
+        1.4365744900703492,
+        1.6417848043640417
+      ]
+    },
+    {
+      "at": 20,
+      "opaque": true,
+      "air": true,
+      "levels": [
+        0.8785272461049408,
+        2.538703744411462,
+        2.9154485034384026
+      ]
+    }
+  ],
+  "browserLaunched": false
+}

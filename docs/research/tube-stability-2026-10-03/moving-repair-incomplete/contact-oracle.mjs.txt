@@ -1,0 +1,15 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import * as R from '/private/tmp/tube-rays-before/geometry-continuous-plan.mjs';
+const root='/Users/regina/Desktop/Projects/surfing-game',sha=v=>createHash('sha256').update(v).digest('hex');
+const weights=t=>{const t2=t*t,t3=t2*t;return[(-t3+2*t2-t)/2,(3*t3-5*t2+2)/2,(-3*t3+4*t2+t)/2,(t3-t2)/2];};
+function heightAt(data,grid,x,z){const gx=(x-grid.xMin)/grid.spacing,gz=(z-grid.zMin)/grid.spacing,i0=Math.floor(gx),j0=Math.floor(gz),wx=weights(gx-i0),wz=weights(gz-j0);let h=0;for(let j=0;j<4;j++)for(let i=0;i<4;i++){const row=Math.min(grid.nz-1,Math.max(0,j0+j-1)),col=Math.min(grid.nx-1,Math.max(0,i0+i-1));h+=wz[j]*wx[i]*data[(row*grid.nx+col)*2];}return h;}
+const assets=R.barrelCasesFor('padang'),library=R.libraryFromBytes(assets.map(c=>new Uint8Array(readFileSync(root+'/public/'+c.asset))));
+const report={schema:1,method:'Offline held checkpoint contact rebuild, exact stored Float32 source/front and Catmull-Rom height mirror. No water stepping, browser, FFT/ripple displacement or rendering. Drawing and contact use their own canonical tessellation; agreement is measured, not assumed.',source:{helperSha256:sha(readFileSync(new URL(import.meta.url))),runtimeSha256:sha(readFileSync('/private/tmp/tube-rays-before/geometry-continuous-plan.mjs')),cubicSourceSha256:sha(readFileSync(root+'/src/scene/water/cubicSurface.ts')),assets:assets.map(c=>({asset:c.asset,sha256:sha(readFileSync(root+'/public/'+c.asset))}))},variants:[]};
+for(const variant of ['baseline','combined']){
+ const path='/private/tmp/tube-moving-actual-20261003-'+variant+'/checkpoint-0-first-open.json',bytes=readFileSync(path),D=JSON.parse(bytes),surface=Float32Array.from(D.surfaceData),height=(x,z)=>heightAt(surface,D.waterGrid,x,z),contact=new R.SweptContact(library,R.BARREL_SLOPE.padang);
+ contact.update(Float32Array.from(D.front,v=>v===null?NaN:v),D.frontCount,D.config.tide,height);
+ const probes=[];for(const name of ['eye','target']){const witness=D.row.cavity.preceding[name],position=witness.position,hit=R.createContactHit(),answered=contact.query(...position,hit);probes.push({name,position,drawingLevelsAtCameraPlanning:witness.levels,drawingCameraPlanningSeaTime:D.row.cavity.preceding.drawnSeaTime,freshDrawingAir:D.row.cavity['fresh'+(name==='eye'?'Eye':'Target')+'Air'],contact:{answered,...hit},contactAir:answered&&!hit.inWater&&Number.isFinite(hit.ceilingY)&&position[1]>hit.floorY&&position[1]<hit.ceilingY,cubicBaseHeight:height(position[0],position[2]),rawCameraHeight:D.row.cavity.rawHeight});}
+ report.variants.push({variant,inputPath:path,inputSha256:sha(bytes),seaTime:D.status.seaTime,frontCount:D.frontCount,probes});
+}
+writeFileSync('/private/tmp/tube-moving-contact-oracle.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report.variants,null,2));

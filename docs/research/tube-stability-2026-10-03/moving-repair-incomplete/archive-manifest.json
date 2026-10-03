@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "method": "Original bytes copied or deterministic gzip(mtime=0); original unsuccessful moving outputs remain untouched. No production changes, retries or new rendering.",
+  "records": [
+    {
+      "path": "baseline-report.json.gz",
+      "originalPath": "/private/tmp/tube-moving-actual-20261003-baseline/report.json",
+      "bytes": 173201,
+      "sha256": "8227db13884597e344611fdf4266f212cb67029eb0dc4577aa77245f4c10601b",
+      "originalBytes": 5488858,
+      "originalSha256": "25e1a1f0f0b5c4282ef62e22eb288c331661b70424810ec96391797b6b0fcab6",
+      "encoding": "gzip"
+    },
+    {
+      "path": "baseline-checkpoint-first-open.json.gz",
+      "originalPath": "/private/tmp/tube-moving-actual-20261003-baseline/checkpoint-0-first-open.json",
+      "bytes": 5320725,
+      "sha256": "757cfa9228b054baebbbc3c83dd686dd6ec786ab91019ce4268a8c479794727f",
+      "originalBytes": 19797057,
+      "originalSha256": "5242b596792ccae37994415a0420ab5e99ae288ece906ce2746ddf6f94123b10",
+      "encoding": "gzip"
+    },
+    {
+      "path": "baseline-first-open-delayed.png",
+      "originalPath": "/private/tmp/tube-moving-actual-20261003-baseline/first-open.png",
+      "bytes": 2164911,
+      "sha256": "f3576aeb372284f3fb2b9e095457f0212b6c901ba1eb2af745abdcf5635eba98",
+      "originalBytes": 2164911,
+      "originalSha256": "f3576aeb372284f3fb2b9e095457f0212b6c901ba1eb2af745abdcf5635eba98",
+      "encoding": "original"
+    },
+    {
+      "path": "combined-report.json.gz",
+      "originalPath": "/private/tmp/tube-moving-actual-20261003-combined/report.json",
+      "bytes": 205142,
+      "sha256": "aafa85feb4575a3c3324b7801bed7efbc414926a5b6f182d3718ab7528827be5",
+      "originalBytes": 5616018,
+      "originalSha256": "44a43d10e50db6e4fabd669da2f2b28ff955b229e974c6fa2f63d401db1d9d84",
+      "encoding": "gzip"
+    },
+    {
+      "path": "combined-checkpoint-first-open.json.gz",
+      "originalPath": "/private/tmp/tube-moving-actual-20261003-combined/checkpoint-0-first-open.json",
+      "bytes": 5327610,
+      "sha256": "953d4ac3b1277d02fad1487ff8010b8b309faf3696628f30671a033e03feb9d0",
+      "originalBytes": 19813934,
+      "originalSha256": "cbdc6c569011361c2bd54e9c282f64d909ac4a0adf34ffb6cd24322bccd294cb",
+      "encoding": "gzip"
+    },
+    {
+      "path": "combined-first-open-delayed.png",
+      "originalPath": "/private/tmp/tube-moving-actual-20261003-combined/first-open.png",
+      "bytes": 1629004,
+      "sha256": "e1c51fc2f587bee913313ef37aea277aa1a66856c88b99eb981357d0634fcdb7",
+      "originalBytes": 1629004,
+      "originalSha256": "e1c51fc2f587bee913313ef37aea277aa1a66856c88b99eb981357d0634fcdb7",
+      "encoding": "original"
+    },
+    {
+      "path": "offline-analysis.json",
+      "originalPath": "/private/tmp/tube-moving-offline-analysis.json",
+      "bytes": 39748,
+      "sha256": "64a17e2552f0a068fad6b8e46928b61cdd413144c4f78e0cd32a05a804dbff56",
+      "originalBytes": 39748,
+      "originalSha256": "64a17e2552f0a068fad6b8e46928b61cdd413144c4f78e0cd32a05a804dbff56",
+      "encoding": "original"
+    },
+    {
+      "path": "contact-oracle.json",
+      "originalPath": "/private/tmp/tube-moving-contact-oracle.json",
+      "bytes": 6834,
+      "sha256": "565052659775a6daf235d4e1af4ca8fe62c7b955dc30d870015ed3f97c29572e",
+      "originalBytes": 6834,
+      "originalSha256": "565052659775a6daf235d4e1af4ca8fe62c7b955dc30d870015ed3f97c29572e",
+      "encoding": "original"
+    },
+    {
+      "path": "offline-analysis.py.txt",
+      "originalPath": "/private/tmp/tube-moving-offline-analysis.py",
+      "bytes": 8804,
+      "sha256": "da9c253b4d08c5110612c6751d7787b7518d44de2435afb70a03f7c52cfd1f38",
+      "originalBytes": 8804,
+      "originalSha256": "da9c253b4d08c5110612c6751d7787b7518d44de2435afb70a03f7c52cfd1f38",
+      "encoding": "original"
+    },
+    {
+      "path": "contact-oracle.mjs.txt",
+      "originalPath": "/private/tmp/tube-moving-contact-oracle.mjs",
+      "bytes": 2876,
+      "sha256": "d7b96cf6f19fafe547f61271b1409b9769fa44c257f9d45693dd603ca8526a4a",
+      "originalBytes": 2876,
+      "originalSha256": "d7b96cf6f19fafe547f61271b1409b9769fa44c257f9d45693dd603ca8526a4a",
+      "encoding": "original"
+    },
+    {
+      "path": "moving-driver.mjs.txt",
+      "originalPath": "/private/tmp/tube-fallback-moving-driver.mjs",
+      "bytes": 19228,
+      "sha256": "1eeeab8c239a758a07d48d88b8afc4c328f8a12c00643068279327ef464eb66a",
+      "originalBytes": 19228,
+      "originalSha256": "1eeeab8c239a758a07d48d88b8afc4c328f8a12c00643068279327ef464eb66a",
+      "encoding": "original"
+    },
+    {
+      "path": "moving-helper.mjs.txt",
+      "originalPath": "/private/tmp/tube-fallback-moving-helper.mjs",
+      "bytes": 20319,
+      "sha256": "855496a7ccdedc762d95fc75187ddbf871fa218b0d19c0408a31aab126812ca5",
+      "originalBytes": 20319,
+      "originalSha256": "855496a7ccdedc762d95fc75187ddbf871fa218b0d19c0408a31aab126812ca5",
+      "encoding": "original"
+    },
+    {
+      "path": "moving-helper-test.mjs.txt",
+      "originalPath": "/private/tmp/tube-fallback-moving-helper.test.mjs",
+      "bytes": 2484,
+      "sha256": "d20d7f7528d66334f1ccfa379db19c608805db77b57bdcc1e312c0bfd35a2d87",
+      "originalBytes": 2484,
+      "originalSha256": "d20d7f7528d66334f1ccfa379db19c608805db77b57bdcc1e312c0bfd35a2d87",
+      "encoding": "original"
+    },
+    {
+      "path": "moving-query-entry.mjs.txt",
+      "originalPath": "/private/tmp/tube-fallback-moving-query-entry.mjs",
+      "bytes": 211,
+      "sha256": "db7f27b53c1ea14b0899f26dfca415b2efd31d48a51cd894d348c43f6f3eb5cf",
+      "originalBytes": 211,
+      "originalSha256": "db7f27b53c1ea14b0899f26dfca415b2efd31d48a51cd894d348c43f6f3eb5cf",
+      "encoding": "original"
+    },
+    {
+      "path": "moving-query-bundle.js.txt",
+      "originalPath": "/private/tmp/tube-fallback-moving-query.js.txt",
+      "bytes": 22509,
+      "sha256": "49071f584062398fdfde9321992285f906845651fc0f7a91f932d4ec9eb0ae2e",
+      "originalBytes": 22509,
+      "originalSha256": "49071f584062398fdfde9321992285f906845651fc0f7a91f932d4ec9eb0ae2e",
+      "encoding": "original"
+    },
+    {
+      "path": "cpu-checks.json",
+      "originalPath": "/private/tmp/tube-fallback-moving-cpu-checks.json",
+      "bytes": 589,
+      "sha256": "a477a361745958b6e6ff3f4de73a43782c69103ca93936bb03e89f1828a6e9c8",
+      "originalBytes": 589,
+      "originalSha256": "a477a361745958b6e6ff3f4de73a43782c69103ca93936bb03e89f1828a6e9c8",
+      "encoding": "original"
+    },
+    {
+      "path": "predeclared-combined-plan.json",
+      "originalPath": "/private/tmp/tube-fallback-moving-combined-plan.json",
+      "bytes": 149095,
+      "sha256": "a44cf40f6867b2ccbdabf912fd038ca413e69035be0f7c20c4cf545e5a378827",
+      "originalBytes": 149095,
+      "originalSha256": "a44cf40f6867b2ccbdabf912fd038ca413e69035be0f7c20c4cf545e5a378827",
+      "encoding": "original"
+    },
+    {
+      "path": "query-source.ts.txt",
+      "originalPath": "/private/tmp/surf-tube-repair-combined-20261003/src/scene/barrel/renderedCavity.ts",
+      "bytes": 6944,
+      "sha256": "1b89c48a59b940bb57892b04601ea883839522fcede49799ec41c4b293c35927",
+      "originalBytes": 6944,
+      "originalSha256": "1b89c48a59b940bb57892b04601ea883839522fcede49799ec41c4b293c35927",
+      "encoding": "original"
+    },
+    {
+      "path": "geometry-checker-base.mjs.txt",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/tube-live-regression.mjs",
+      "bytes": 29468,
+      "sha256": "036f233cd57b5765ebf6fa3d1ffce24c52a64846691b0f54206a7826e023616d",
+      "originalBytes": 29468,
+      "originalSha256": "036f233cd57b5765ebf6fa3d1ffce24c52a64846691b0f54206a7826e023616d",
+      "encoding": "original"
+    },
+    {
+      "path": "cdp.mjs.txt",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+      "originalBytes": 7064,
+      "originalSha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+      "encoding": "original"
+    },
+    {
+      "path": "contact-runtime.mjs.txt.gz",
+      "originalPath": "/private/tmp/tube-rays-before/geometry-continuous-plan.mjs",
+      "bytes": 33949,
+      "sha256": "a84e4b44bbe6707de60b0391e8bea0c3bd2f0705faf401a408418d9e756d3b05",
+      "originalBytes": 115588,
+      "originalSha256": "b4015f9c1e9cf68a8ca22ff067012a7a73918c178deca6711b5d2f0793c7e4f9",
+      "encoding": "gzip"
+    }
+  ],
+  "totalStoredBytes": 15170715
+}

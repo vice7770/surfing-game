@@ -1,0 +1,187 @@
+/** QA state only: the first eligible front and source column never change after selection. */
+export class FixedFrontLifecycle {
+  front = null;
+  sourceX = null;
+  events = [];
+  quietRows = 0;
+  opened = false;
+  touchdown = false;
+  retired = false;
+  lock(candidate, seaTime) {
+    if (this.front !== null || !candidate?.verifiedAir || !Number.isFinite(candidate.front) || !Number.isFinite(candidate.sourceX)) return false;
+    this.front = candidate.front; this.sourceX = candidate.sourceX;
+    this.events.push({ kind: 'selected', seaTime, front: this.front, sourceX: this.sourceX });
+    return true;
+  }
+  observe(row) {
+    if (this.front === null) return [];
+    if (row.front !== this.front || row.sourceX !== this.sourceX) throw Error('Tracked source identity changed');
+    const events = [], add = kind => { const e = {kind,seaTime:row.seaTime,front:this.front,sourceX:this.sourceX};events.push(e);this.events.push(e); };
+    if (!this.opened && row.phase === 1 && row.verifiedAir && row.indexedLift) { this.opened=true;add('first-open'); }
+    if (this.opened && !this.touchdown && row.phase === 2) { this.touchdown=true;add('first-touchdown'); }
+    // An overlap cut during an open phase is not retirement. After actual same-column touchdown, removal
+    // must persist for three fresh snapshots; distinguish rendered-column removal from source/front loss.
+    const gone = this.touchdown && (!row.sourcePresent || (!row.indexedLift && row.phase !== 1));
+    this.quietRows = gone ? this.quietRows+1 : 0;
+    if (!this.retired && this.quietRows>=3) { this.retired=true;add('first-retired'); }
+    return events;
+  }
+  summary() { return {front:this.front,sourceX:this.sourceX,opened:this.opened,touchdown:this.touchdown,retired:this.retired,complete:this.opened&&this.touchdown&&this.retired,events:this.events}; }
+}
+
+/** Installed only by an isolated moving QA driver. All physical/render calls are delegated unchanged. */
+export function installMovingFallbackAudit(checkGeometry, Tracker, options) {
+  const d=window.breaklineDiagnostics,mode=d.mode,water=d.water,lab=window.breaklineLab;
+  const {RenderedCavityQuery,opaqueBarrelColumn}=window.__tubeRenderedCavityQA;
+  const context=d.canvas.getContext('webgl2');
+  if(options.candidate&&(!context.getContextAttributes().stencil||typeof water.setBarrelScreenFallback!=='function'||typeof mode.barrelMesh?.syncScreenFallback!=='function'))throw Error('Moving candidate API/stencil authority missing');
+  if(options.fogCandidate&&typeof mode.renderedCavity?.contains!=='function')throw Error('Moving combined fog authority missing');
+  if(!options.candidate&&typeof water.setBarrelScreenFallback==='function')throw Error('Moving baseline unexpectedly has fallback');
+  const query=new RenderedCavityQuery(),tracker=new Tracker(),S=134,C=35;
+  const state={active:false,rows:[],frames:[],events:[],checkpoints:[],lastStatus:null,lastDraw:null,cached:0,
+    preceding:null,desired:null,cameraSource:null,lastPredicate:null,classifierCalls:0,started:0,stopped:0,controls:[]};
+  const draw=mode.drawBarrel.bind(mode),below=mode.cameraBelowSurface.bind(mode);
+  const p=mode.camera.camera.position.clone();
+  function source(front,x) {
+    const snap=mode.host.snapshot;
+    for(let k=0;k<snap.frontCount;k++) {const o=9*k;if(snap.front[o+2]===front&&snap.front[o]===x)return {x,z:snap.front[o+1],sigma:snap.front[o+3],tau:snap.front[o+4]};}
+  }
+  function frontPresent(front) {const snap=mode.host.snapshot;for(let k=0;k<snap.frontCount;k++)if(snap.front[9*k+2]===front)return true;return false;}
+  function stripAt(loft,control,front=tracker.front) {
+    if(!control||!loft)return -1;
+    for(let s=0;s+1<loft.sliceCount;s++)if(loft.sliceFront[s]===front&&loft.sliceFront[s+1]===front&&loft.sliceJoined[s]===1&&loft.sliceSigma[s]<=control.sigma&&control.sigma<loft.sliceSigma[s+1])return s;
+    return -1;
+  }
+  function localLift(loft,s) {if(s<0)return false;for(let j=0;j<S;j++)if(loft.lift[s*S+j]>.001||loft.lift[(s+1)*S+j]>.001)return true;return false;}
+  function fullMask(x,z) {return opaqueBarrelColumn(water.materialUniforms.waterBarrelMask.value.image.data,water.barrelMaskGrid,x,z);}
+  function air(loft,xyz) {return !!loft&&mode.barrelMesh?.mesh.visible===true&&mode.barrelMesh.mesh.geometry.drawRange.start===0&&mode.barrelMesh.mesh.geometry.drawRange.count===loft.indexCount&&water.materialUniforms.waterBarrelMaskActive.value===1&&fullMask(xyz[0],xyz[2])&&query.contains(loft,...xyz);}
+  function column(loft,s,j,fraction) {
+    // Midpoint inside the real indexed roof-under strip. The query certifies full indices, unique three
+    // crossings, finite geometry and half-open ties. Reading its scratch crossings is QA-only, not provenance.
+    const a=s*S+j,b=a+S,c=a+1,x=(loft.positions[3*a]+loft.positions[3*b]+loft.positions[3*c])/3,z=(loft.positions[3*a+2]+loft.positions[3*b+2]+loft.positions[3*c+2])/3;
+    if(!fullMask(x,z))return null;
+    query.contains(loft,x,0,z);
+    if(query.count!==3)return null;
+    const ys=Array.from(query.ys.subarray(0,3));if(!ys.every(Number.isFinite)||!(ys[0]<ys[1]&&ys[1]<ys[2])||ys[1]-ys[0]<.08)return null;
+    const eye=[x,ys[0]+fraction*(ys[1]-ys[0]),z];
+    if(!air(loft,eye))return null;
+    return{position:eye,levels:ys,strip:s,row:j,front:loft.sliceFront[s],sigma:loft.sliceSigma[s]};
+  }
+  function witness(loft,s) {
+    if(s<0||loft.sliceJoined[s]!==1||loft.slicePhase[s]!==1||loft.sliceWeight[s]<=0||loft.sliceOverturned[s]!==1)return null;
+    for(const j of [79,83,75,87]) {
+      const eye=column(loft,s,j,options.eyeFraction);
+      if(!eye)continue;
+      const candidates=[s+1,s-1,s+2,s-2].filter(k=>k>=0&&k+1<loft.sliceCount&&loft.sliceJoined[k]===1&&loft.sliceFront[k]===loft.sliceFront[s]&&loft.slicePhase[k]===1);
+      for(const t of candidates){const target=column(loft,t,j,options.eyeFraction);if(target&&Math.hypot(eye.position[0]-target.position[0],eye.position[2]-target.position[2])>.1)return {eye,target};}
+    }
+    return null;
+  }
+  function chooseCamera() {
+    const loft=mode.barrelLoft,barrel=mode.sweptBarrel,revision=barrel?.drawn?.revision;
+    const mesh=mode.barrelMesh?.mesh;
+    if(!loft||!mesh?.visible||!barrel?.drawn||barrel.drawn.surfaceRevision!==water.surfaceRevision)return;
+    if(state.cameraSource===revision&&state.desired) return;
+    state.cameraSource=revision;
+    if(tracker.front===null) {
+      const eligible=[];
+      for(let s=0;s+1<loft.sliceCount;s++)if(loft.sliceJoined[s]===1&&loft.slicePhase[s]===1&&loft.sliceOverturned[s]===1&&loft.sliceWeight[s]>0)eligible.push(s);
+      eligible.sort((a,b)=>(loft.sliceTipGap[b]*loft.sliceWeight[b])-(loft.sliceTipGap[a]*loft.sliceWeight[a]));
+      for(const s of eligible.slice(0,12)){
+        const front=loft.sliceFront[s],x=(loft.positions[3*(s*S+C)]+loft.positions[3*((s+1)*S+C)])/2,snap=mode.host.snapshot,controls=[];
+        for(let k=0;k<snap.frontCount;k++){const o=9*k;if(snap.front[o+2]!==front)continue;const ss=stripAt(loft,{sigma:snap.front[o+3]},front);if(ss>=0&&loft.slicePhase[ss]===1&&loft.sliceOverturned[ss]===1&&loft.sliceWeight[ss]>0)controls.push({sourceX:snap.front[o],strip:ss,distance:Math.abs(snap.front[o]-x)});}
+        controls.sort((a,b)=>a.distance-b.distance);
+        for(const control of controls.slice(0,3)){const candidate=witness(loft,control.strip);if(candidate&&tracker.lock({front,sourceX:control.sourceX,verifiedAir:true},mode.host.snapshot.status.seaTime)){state.desired=candidate;break;}}
+        if(tracker.front!==null)break;
+      }
+    } else {
+      const candidate=witness(loft,stripAt(loft,source(tracker.front,tracker.sourceX)));
+      if(candidate)state.desired=candidate;
+    }
+    if(state.desired)state.preceding={drawnSeaTime:revision?.seaTime??null,fieldMatchesCurrentSnapshot:revision===mode.host.snapshot.status,surfaceRevision:water.surfaceRevision,front:tracker.front,sourceX:tracker.sourceX,eye:state.desired.eye,target:state.desired.target};
+  }
+  mode.cameraBelowSurface=(...args)=>{
+    if(state.active){chooseCamera();if(state.desired){mode.camera.camera.position.fromArray(state.desired.eye.position);p.fromArray(state.desired.target.position);mode.camera.camera.near=options.near;mode.camera.camera.updateProjectionMatrix();mode.camera.camera.lookAt(p);mode.camera.camera.updateMatrixWorld(true);}}
+    const result=below(...args);state.classifierCalls++;
+    const supplied=args[1]??mode.camera.camera.position;
+    state.lastPredicate={result,call:state.classifierCalls,seaTime:mode.host.snapshot.status.seaTime,camera:mode.camera.camera.position.toArray(),supplied: supplied.toArray(),suppliedPositionMatchesCamera:args[1]===undefined||args[1]===mode.camera.camera.position,margin:args[0]??.1};
+    return result;
+  };
+  function versions() {
+    const mesh=mode.barrelMesh?.mesh,g=mesh?.geometry,u=water.materialUniforms;
+    return{surfaceRevision:water.surfaceRevision,position:g?.attributes.position.version??null,normal:g?.attributes.normal.version??null,index:g?.index?.version??null,maskTexture:u.waterBarrelMask.value.version,drawRange:g?{...g.drawRange}:null};
+  }
+  function coverage() {
+    const mesh=mode.barrelMesh?.mesh,u=water.materialUniforms;
+    return{supported:u.waterBarrelScreenFallback?.value??null,active:u.waterBarrelMaskActive.value,barrelVisible:mesh?.visible??false,waterMark:water.mesh.material.stencilWrite,sweptMark:mesh?.material.stencilWrite??false,repairVisible:water.barrelFallback?.visible??false,patchRepairVisible:water.barrelPatchFallback?.visible??false,orders:{water:water.mesh.renderOrder,swept:mesh?.renderOrder??null,repair:water.barrelFallback?.renderOrder??null}};
+  }
+  function checkpoint(row,kind) {
+    if(state.checkpoints.length>=3)return;
+    const snap=mode.host.snapshot,loft=mode.barrelLoft,active={};
+    for(const value of water.surfaceData)if(!Number.isFinite(value))throw Error('Checkpoint has nonfinite water surface');
+    for(let k=0;k<snap.frontCount;k++)for(let j=0;j<7;j++)if(!Number.isFinite(snap.front[9*k+j]))throw Error('Checkpoint has nonfinite front authority');
+    for(const[k,v]of Object.entries(loft??{})){if(ArrayBuffer.isView(v)){const n=k==='indices'?loft.indexCount:k==='positions'||k==='normals'?3*loft.vertexCount:k.startsWith('slice')?loft.sliceCount:loft.vertexCount;active[k]=Array.from(v.subarray(0,n));}else if(typeof v==='number'||typeof v==='boolean')active[k]=v;}
+    state.checkpoints.push({kind,config:{...mode.config},init:{...mode.host.init},status:{...snap.status},frontCount:snap.frontCount,front:Array.from(snap.front.subarray(0,9*snap.frontCount)),waterGrid:{...water.grid},surfaceData:Array.from(water.surfaceData),loft:active,maskGrid:{...water.barrelMaskGrid},maskNodes:Array.from(water.materialUniforms.waterBarrelMask.value.image.data),row});
+  }
+  mode.drawBarrel=(...args)=>{
+    const before=mode.sweptBarrel?.drawn,result=draw(...args);
+    if(!state.active)return result;
+    const status=mode.host.snapshot.status,drawn=mode.sweptBarrel?.drawn,v=versions(),previous=state.lastDraw;
+    const cached=!!before&&before===drawn&&drawn.revision===status;
+    if(cached){state.cached++;if(previous?.status===status&&JSON.stringify(v)!==JSON.stringify(previous.versions))throw Error('Actual cached draw changed upload versions/draw range');}
+    state.lastDraw={status,drawn,versions:v,cached};
+    return result;
+  };
+  function recordRenderedFrame() {
+    const now=performance.now();state.frames.push(now);
+    const snap=mode.host.snapshot,status=snap.status,drawn=mode.sweptBarrel?.drawn,v=versions(),cached=state.lastDraw?.cached??false;
+    if(state.lastStatus===status)return;
+    state.lastStatus=status;
+    const began=performance.now(),loft=mode.barrelLoft,mesh=mode.barrelMesh?.mesh,control=source(tracker.front,tracker.sourceX),s=stripAt(loft,control),g=checkGeometry(loft);
+    const camera=mode.camera.camera,eye=camera.position.toArray(),target=state.desired?.target.position;
+    const verifiedAir=air(loft,eye),targetAir=target?air(loft,target):false;
+    const phase=s>=0?loft.slicePhase[s]:null;
+    const observed={front:tracker.front,sourceX:tracker.sourceX,seaTime:status.seaTime,phase,verifiedAir,indexedLift:localLift(loft,s),sourcePresent:!!control};
+    const events=tracker.observe(observed);state.events.push(...events);
+    const sourceFresh=water.written?.revision===status,meshFresh=drawn?.revision===status&&drawn?.surfaceRevision===water.surfaceRevision;
+    let mismatch=0;if(loft&&mesh){for(let k=0;k<3*loft.vertexCount;k++)if(mesh.geometry.attributes.position.array[k]!==loft.positions[k])mismatch++;if(mesh.geometry.drawRange.start!==0||mesh.geometry.drawRange.count!==loft.indexCount)mismatch++;}
+    const fog=mode.scene.fog,fogDraw=mode.renderedCavityDraw;
+    const fogDrawFresh=!!fogDraw&&fogDraw.host===mode.host&&fogDraw.status===status&&fogDraw.front===snap.front&&fogDraw.count===snap.frontCount&&fogDraw.surfaceRevision===water.surfaceRevision&&fogDraw.loft===loft&&fogDraw.positionVersion===v.position&&fogDraw.indexVersion===v.index;
+    const row={wall:now,seaTime:status.seaTime,geometry:g,target:{front:tracker.front,sourceX:tracker.sourceX,phase,tau:control?.tau??null,open:phase===1,sourceColumnPresent:!!control,frontRecordsPresent:frontPresent(tracker.front),retired:tracker.retired},freshness:{sourceStatusMatches:sourceFresh,meshStatusMatches:meshFresh,sourceTime:water.materialUniforms.waterTime.value,surfaceRevision:water.surfaceRevision},versions:v,cached,coverage:coverage(),
+      view:{meshVisible:mesh?.visible??false,projectedLiftedVertices:0,projectedOpenLiftedVertices:0,cameraCuts:0,camera:{position:eye,quaternion:camera.quaternion.toArray(),near:camera.near,far:camera.far,fov:camera.fov}},
+      cavity:{freshEyeAir:verifiedAir,freshTargetAir:targetAir,predicateMatchesCamera:state.lastPredicate?.camera?.every((value,k)=>value===eye[k])??false,preceding:state.preceding,originalClassifier:state.lastPredicate,rawHeight:mode.host.heightAt(eye[0],eye[2]),fog:fog?{type:fog.isFogExp2?'FogExp2':'Fog',color:fog.color.toArray(),density:fog.density??null,near:fog.near??null,far:fog.far??null}:null,rawUnderwater:eye[1]<mode.host.heightAt(eye[0],eye[2])-.1,classifiedUnderwaterWhileVerifiedAir:verifiedAir&&state.lastPredicate?.result===true},
+      fogProvenance:{enabledCandidate:options.fogCandidate,fresh:fogDrawFresh,drawStatusMatches:mode.renderedCavityDraw?.status===status,drawSurfaceMatches:mode.renderedCavityDraw?.surfaceRevision===water.surfaceRevision,drawPositionVersion:mode.renderedCavityDraw?.positionVersion??null,drawIndexVersion:mode.renderedCavityDraw?.indexVersion??null},
+      status:{compute:status.compute,cells:status.cells,stepMs:status.stepMs,pipelineMs:status.pipelineMs},particles:{lip:snap.lipCount,spray:snap.sprayCount,bubbles:snap.bubbleCount},temporal:{throwCrossings:0,touchdownCrossings:events.some(e=>e.kind==='first-touchdown')?1:0,maxTipRelativeStepMeters:0},crestMismatchMaxMeters:0,events};
+    if(loft)for(let vv=0;vv<loft.vertexCount;vv++)if(loft.lift[vv]>.001){p.fromArray(loft.positions,3*vv).project(camera);if(p.z>=-1&&p.z<=1&&Math.abs(p.x)<=1&&Math.abs(p.y)<=1){row.view.projectedLiftedVertices++;if(loft.sliceFront[Math.floor(vv/S)]===tracker.front&&loft.slicePhase[Math.floor(vv/S)]===1)row.view.projectedOpenLiftedVertices++;}}
+    row.candidateFailures=[...g.failures];row.qaInvalid=[];
+    if(!sourceFresh||!meshFresh||row.freshness.sourceTime!==status.seaTime)row.candidateFailures.push('Actual source/mesh stale');if(mismatch)row.candidateFailures.push('Actual uploaded geometry mismatch');if(status.compute!=='gpu')row.candidateFailures.push('GPU fell back');
+    const c=row.coverage;if(options.candidate&&c.supported===1&&c.active===1&&(!c.waterMark||c.sweptMark!==(c.barrelVisible&&v.drawRange.count>0)||!c.repairVisible))row.candidateFailures.push('Active fallback state mismatch');
+    const predicate=state.lastPredicate;
+    if(!predicate||predicate.seaTime!==status.seaTime||!predicate.suppliedPositionMatchesCamera||!row.cavity.predicateMatchesCamera||!predicate.supplied.every((value,k)=>value===eye[k]))row.qaInvalid.push('Classifier camera/source provenance differs from actual rendered camera');
+    if(phase===1&&observed.indexedLift&&(!verifiedAir||!targetAir||row.view.projectedOpenLiftedVertices===0))row.qaInvalid.push('Tracked open-column camera has no fresh verified eye/target air or projected opening');
+    if(options.fogCandidate&&verifiedAir&&row.cavity.rawUnderwater&&!fogDrawFresh)row.qaInvalid.push('Fresh fog draw provenance unavailable for verified air');
+    const fogEligible=row.qaInvalid.length===0;
+    if(fogEligible&&options.fogCandidate&&verifiedAir&&row.cavity.rawUnderwater&&predicate.result!==false)row.candidateFailures.push('Combined opaque indexed air retained underwater classifier');
+    if(fogEligible&&Boolean(fog)!==predicate.result)row.candidateFailures.push('Actual scene fog differs from original classifier');
+    row.failures=[...row.candidateFailures,...row.qaInvalid];row.pass=row.failures.length===0;row.inspectMs=performance.now()-began;state.rows.push(row);
+    for(const e of events)checkpoint(row,e.kind);
+  }
+  // This hook reads only at the real default-scene clear, AFTER original draw and fog classification.
+  // It covers both legacy pre-draw classification and the separate combined post-draw fog candidate.
+  const gl=d.canvas.getContext('webgl2'),clear=gl.clear.bind(gl);
+  gl.clear=bits=>{if(state.active&&(bits&gl.COLOR_BUFFER_BIT)&&gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING)===null)recordRenderedFrame();return clear(bits);};
+  const metadata=()=>({cached:state.lastDraw?.cached??false,seaTime:mode.host.snapshot.status.seaTime,versions:versions(),coverage:coverage(),drawn:mode.sweptBarrel?.drawn?.revision===mode.host.snapshot.status});
+  function actualControls() {
+    if(!lab.clock.paused||mode.host.outstandingSteps)throw Error('Controls require settled paused host');
+    const camera=mode.camera.camera,clock=mode.host.snapshot.status.seaTime;
+    const render=name=>{d.renderView(camera);const result={name,...metadata()};if(result.seaTime!==clock)throw Error('Control advanced clock');state.controls.push(result);return result;};
+    render('active-settled');const a=render('active-cached-1'),b=render('active-cached-2');if(!a.cached||!b.cached||JSON.stringify(a.versions)!==JSON.stringify(b.versions))throw Error('Held real cached draws rebuilt/uploaded geometry');
+    if(options.candidate){water.setBarrelScreenFallback(false);const u=render('unsupported-real-cache');if(u.coverage.waterMark||u.coverage.sweptMark||u.coverage.repairVisible)throw Error('Unsupported real cache did not clear');if(JSON.stringify(u.versions)!==JSON.stringify(b.versions))throw Error('Unsupported toggle uploaded geometry');water.setBarrelScreenFallback(true);const r=render('reactivated-real-cache');if(JSON.stringify(r.versions)!==JSON.stringify(b.versions))throw Error('Reactivation uploaded geometry');if(r.coverage.active===1&&(!r.coverage.waterMark||!r.coverage.repairVisible))throw Error('Reactivation missing fallback');}
+    mode.setVisible(false);const hidden=render('mode-hidden');if(hidden.coverage.active!==0||hidden.coverage.barrelVisible||hidden.coverage.repairVisible||hidden.coverage.waterMark||hidden.coverage.sweptMark)throw Error('Hidden mode did not clear fallback');mode.setVisible(true);render('mode-visible-restored');
+    mode.sweptBarrel.setSpot(undefined);const off=render('spot-off');if(off.coverage.active!==0||off.coverage.barrelVisible||off.coverage.repairVisible||off.coverage.waterMark||off.coverage.sweptMark)throw Error('Spot transition did not clear fallback');mode.sweptBarrel.setSpot('padang',true);render('spot-restored');
+    return state.controls;
+  }
+  const drain=()=>({rows:state.rows.splice(0),published:window.__tubePublished.splice(0),events:state.events.splice(0),checkpoints:state.checkpoints.splice(0)});
+  window.__tubeMovingFallback={start:()=>{state.active=true;state.started=performance.now();window.__tubeCaptureActive=true;},drain,controls:actualControls,
+    stop:()=>{state.active=false;window.__tubeCaptureActive=false;state.stopped=performance.now();return{...drain(),started:state.started,stopped:state.stopped,frames:state.frames,cachedDraws:state.cached,lifecycle:tracker.summary(),classifierCalls:state.classifierCalls,controls:state.controls};}};
+}

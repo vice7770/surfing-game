@@ -1,0 +1,1214 @@
+{
+  "schema": 1,
+  "method": "Offline retained moving reports and exact first-open checkpoints only. No new solver step, browser, render, camera update or retries. Durations are published message/render observation gaps; checkpoint serialization itself was not separately timed.",
+  "source": {
+    "helperSha256": "da9c253b4d08c5110612c6751d7787b7518d44de2435afb70a03f7c52cfd1f38"
+  },
+  "variants": [
+    {
+      "variant": "baseline",
+      "pass": false,
+      "incomplete": true,
+      "ownedChromeClosed": true,
+      "inputs": {
+        "reportSha256": "25e1a1f0f0b5c4282ef62e22eb288c331661b70424810ec96391797b6b0fcab6",
+        "checkpointSha256": "5242b596792ccae37994415a0420ab5e99ae288ece906ce2746ddf6f94123b10",
+        "checkpointBytes": 19797057
+      },
+      "clocks": {
+        "first": 164,
+        "last": 179.8999999999991,
+        "simulatedAdvance": 15.899999999999096,
+        "observationWallSeconds": 30.34020000001788,
+        "totalElapsedSeconds": 54.669
+      },
+      "counts": {
+        "inspectedRows": 955,
+        "publishedSnapshots": 954,
+        "candidateFailureRows": 0,
+        "qaInvalidRows": 9,
+        "combinedFogWitnesses": 0,
+        "cachedDraws": 844,
+        "phaseRows": {
+          "None": 947,
+          "0": 0,
+          "1": 8,
+          "2": 0
+        }
+      },
+      "sourceLifecycle": {
+        "front": 0,
+        "sourceX": 158.5,
+        "selected": 167.24999999999983,
+        "firstOpen": 167.26666666666648,
+        "lastSourcePresent": 167.38333333333316,
+        "firstSourceAbsent": 167.3999999999998,
+        "lastFrontPresent": 177.68333333333254,
+        "observedOpenDuration": 0.11666666666667425,
+        "tauRange": {
+          "n": 8,
+          "min": 0.06401178985834122,
+          "median": 0.12232465296983719,
+          "p95": 0.1639861911535263,
+          "max": 0.18065163493156433
+        },
+        "touchdownObserved": false,
+        "retirementObserved": false,
+        "interpretation": "Local source disappears before any observed phase2; front persists. This is not touchdown or a completed retirement cycle."
+      },
+      "checkpointMaturity": {
+        "clock": 167.26666666666648,
+        "sourceSigma": 15.009161949157715,
+        "frontRecords": 17,
+        "frontSigmaSpan": 16.012046813964844,
+        "sourceDistanceToFrontEndpoint": 1.002884864807129,
+        "sourceDistanceToPhysicalXEdge": 1.5,
+        "owningStrip": 33,
+        "joinedRunFirst": 0,
+        "joinedRunLast": 39,
+        "joinedRunSpan": 19.012046813964844,
+        "sourceDistanceToJoinedEnd": 2.502884864807129,
+        "adjacentSlices": [
+          {
+            "Sigma": 14.587116241455078,
+            "Tau": 0.05559350550174713,
+            "Phase": 1,
+            "Life": 0.08719216287136078,
+            "Weight": 0.6042729616165161,
+            "Fade": 1,
+            "Collapse": 0.33842894434928894,
+            "TipGap": 0,
+            "Overturned": 1,
+            "Formed": 0.8840519189834595
+          },
+          {
+            "Sigma": 15.074604988098145,
+            "Tau": 0.0655236765742302,
+            "Phase": 1,
+            "Life": 0.10138468444347382,
+            "Weight": 0.3163735568523407,
+            "Fade": 1,
+            "Collapse": 0.34281125664711,
+            "TipGap": 0,
+            "Overturned": 1,
+            "Formed": 0.8628538846969604
+          }
+        ],
+        "interpretation": "Young end-tapered column near the physical alongshore boundary; positive indexed air was sufficient under this probe rule but does not establish mature interior eligibility."
+      },
+      "captureOverhead": {
+        "publicationStepSeconds": {
+          "n": 953,
+          "min": 0.01666666666665151,
+          "median": 0.01666666666667993,
+          "p95": 0.01666666666667993,
+          "max": 0.01666666666667993
+        },
+        "missingOrNonconsecutivePublications": 0,
+        "inspectedStepSeconds": {
+          "n": 954,
+          "min": 0.01666666666665151,
+          "median": 0.01666666666666572,
+          "p95": 0.01666666666667993,
+          "max": 0.01666666666667993
+        },
+        "missingOrNonconsecutiveInspectedStates": 0,
+        "publicationGapMs": {
+          "n": 953,
+          "min": 26.599999994039536,
+          "median": 31.099999994039536,
+          "p95": 33.900000005960464,
+          "max": 295.59999999403954
+        },
+        "inspectedRowGapMs": {
+          "n": 954,
+          "min": 3.0,
+          "median": 33.19999998807907,
+          "p95": 35.5,
+          "max": 315.0
+        },
+        "inspectMsExcludingCheckpointCopy": {
+          "n": 955,
+          "min": 0,
+          "median": 0,
+          "p95": 0.5,
+          "max": 1.800000011920929
+        },
+        "rowGapAfterFirstOpenMs": 315.0,
+        "largestPublicationGaps": [
+          {
+            "milliseconds": 295.59999999403954,
+            "fromSeaTime": 167.28333333333313,
+            "toSeaTime": 167.2999999999998
+          },
+          {
+            "milliseconds": 130.40000000596046,
+            "fromSeaTime": 178.1999999999992,
+            "toSeaTime": 178.21666666666584
+          },
+          {
+            "milliseconds": 79.5,
+            "fromSeaTime": 165.71666666666658,
+            "toSeaTime": 165.73333333333323
+          },
+          {
+            "milliseconds": 47.30000001192093,
+            "fromSeaTime": 175.59999999999934,
+            "toSeaTime": 175.616666666666
+          },
+          {
+            "milliseconds": 45.69999998807907,
+            "fromSeaTime": 164.01666666666665,
+            "toSeaTime": 164.03333333333333
+          }
+        ],
+        "interpretation": "Full checkpoint array copy, CDP response serialization, Node JSON/file handling and native capture add work. The event-adjacent stall is observable, but no individual cost attribution is available. All published/inspected steps remain consecutive; no published phase2 is hidden by the gap."
+      },
+      "nativeShots": [
+        {
+          "kind": "first-open",
+          "sha256": "f3576aeb372284f3fb2b9e095457f0212b6c901ba1eb2af745abdcf5635eba98",
+          "eventSeaTime": 167.26666666666648,
+          "seaTimeBefore": 167.61666666666645,
+          "seaTimeAfter": 167.81666666666644,
+          "eventToShotStartSimSeconds": 0.3499999999999659,
+          "eventToShotEndSimSeconds": 0.5499999999999545,
+          "exactEventState": false
+        }
+      ],
+      "qaInvalid": [
+        {
+          "seaTime": 167.26666666666648,
+          "phase": 1,
+          "freshEyeAir": true,
+          "freshTargetAir": false,
+          "projectedOpen": 126,
+          "precedingSourceSeaTime": 167.24999999999983,
+          "classifierSeaTime": 167.26666666666648,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 167.28333333333313,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 106,
+          "precedingSourceSeaTime": 167.26666666666648,
+          "classifierSeaTime": 167.28333333333313,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 167.2999999999998,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 105,
+          "precedingSourceSeaTime": 167.28333333333313,
+          "classifierSeaTime": 167.2999999999998,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 167.3166666666665,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 105,
+          "precedingSourceSeaTime": 167.2999999999998,
+          "classifierSeaTime": 167.3166666666665,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 167.33333333333314,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 92,
+          "precedingSourceSeaTime": 167.3166666666665,
+          "classifierSeaTime": 167.33333333333314,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 167.3499999999998,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 106,
+          "precedingSourceSeaTime": 167.33333333333314,
+          "classifierSeaTime": 167.3499999999998,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 167.36666666666648,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 95,
+          "precedingSourceSeaTime": 167.3499999999998,
+          "classifierSeaTime": 167.36666666666648,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 167.38333333333316,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 85,
+          "precedingSourceSeaTime": 167.36666666666648,
+          "classifierSeaTime": 167.38333333333316,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 179.8999999999991,
+          "phase": null,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 0,
+          "precedingSourceSeaTime": 179.88333333333242,
+          "classifierSeaTime": 179.88333333333242,
+          "reasons": [
+            "Classifier camera/source provenance differs from actual rendered camera"
+          ]
+        }
+      ],
+      "controls": [
+        {
+          "name": "active-settled",
+          "cached": false,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1896,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": null,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": null
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "active-cached-1",
+          "cached": true,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1896,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": null,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": null
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "active-cached-2",
+          "cached": true,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1896,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": null,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": null
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "mode-hidden",
+          "cached": false,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1896,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 0
+            }
+          },
+          "coverage": {
+            "supported": null,
+            "active": 0,
+            "barrelVisible": false,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": null
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "mode-visible-restored",
+          "cached": false,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1896,
+            "position": 356,
+            "normal": 356,
+            "index": 356,
+            "maskTexture": 356,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": null,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": null
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "spot-off",
+          "cached": false,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1896,
+            "position": 356,
+            "normal": 356,
+            "index": 356,
+            "maskTexture": 356,
+            "drawRange": {
+              "start": 0,
+              "count": 0
+            }
+          },
+          "coverage": {
+            "supported": null,
+            "active": 0,
+            "barrelVisible": false,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": null
+            }
+          },
+          "drawn": false
+        },
+        {
+          "name": "spot-restored",
+          "cached": false,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1896,
+            "position": 357,
+            "normal": 357,
+            "index": 357,
+            "maskTexture": 357,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": null,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": null
+            }
+          },
+          "drawn": true
+        }
+      ],
+      "finalControlProvenanceLimitation": "The final paused renderView settle reads source179.9 while the last ordinary cameraBelowSurface predicate is179.8833. The harness correctly flags this control-only stale classifier row; it is distinct from the8moving open-camera failures."
+    },
+    {
+      "variant": "combined",
+      "pass": false,
+      "incomplete": true,
+      "ownedChromeClosed": true,
+      "inputs": {
+        "reportSha256": "44a43d10e50db6e4fabd669da2f2b28ff955b229e974c6fa2f63d401db1d9d84",
+        "checkpointSha256": "cbdc6c569011361c2bd54e9c282f64d909ac4a0adf34ffb6cd24322bccd294cb",
+        "checkpointBytes": 19813934
+      },
+      "clocks": {
+        "first": 164,
+        "last": 179.8999999999991,
+        "simulatedAdvance": 15.899999999999096,
+        "observationWallSeconds": 30.24390000000596,
+        "totalElapsedSeconds": 55.189
+      },
+      "counts": {
+        "inspectedRows": 955,
+        "publishedSnapshots": 954,
+        "candidateFailureRows": 0,
+        "qaInvalidRows": 3,
+        "combinedFogWitnesses": 6,
+        "cachedDraws": 818,
+        "phaseRows": {
+          "None": 946,
+          "0": 0,
+          "1": 9,
+          "2": 0
+        }
+      },
+      "sourceLifecycle": {
+        "front": 0,
+        "sourceX": 158.5,
+        "selected": 167.24999999999983,
+        "firstOpen": 167.24999999999983,
+        "lastSourcePresent": 167.38333333333316,
+        "firstSourceAbsent": 167.3999999999998,
+        "lastFrontPresent": 177.68333333333254,
+        "observedOpenDuration": 0.13333333333332575,
+        "tauRange": {
+          "n": 9,
+          "min": 0.049731265753507614,
+          "median": 0.11401788890361786,
+          "p95": 0.1639861911535263,
+          "max": 0.18065163493156433
+        },
+        "touchdownObserved": false,
+        "retirementObserved": false,
+        "interpretation": "Local source disappears before any observed phase2; front persists. This is not touchdown or a completed retirement cycle."
+      },
+      "checkpointMaturity": {
+        "clock": 167.24999999999983,
+        "sourceSigma": 16.271846771240234,
+        "frontRecords": 17,
+        "frontSigmaSpan": 17.275672912597656,
+        "sourceDistanceToFrontEndpoint": 1.0038261413574219,
+        "sourceDistanceToPhysicalXEdge": 1.5,
+        "owningStrip": 35,
+        "joinedRunFirst": 0,
+        "joinedRunLast": 41,
+        "joinedRunSpan": 20.275672912597656,
+        "sourceDistanceToJoinedEnd": 2.503826141357422,
+        "adjacentSlices": [
+          {
+            "Sigma": 15.808501243591309,
+            "Tau": 0.0160246342420578,
+            "Phase": 1,
+            "Life": 0.025154029950499535,
+            "Weight": 0.628991961479187,
+            "Fade": 1,
+            "Collapse": 0.33815619349479675,
+            "TipGap": 0,
+            "Overturned": 1,
+            "Formed": 0.723902702331543
+          },
+          {
+            "Sigma": 16.303030014038086,
+            "Tau": 0.050533171743154526,
+            "Phase": 1,
+            "Life": 0.07823058217763901,
+            "Weight": 0.336316853761673,
+            "Fade": 1,
+            "Collapse": 0.34264278411865234,
+            "TipGap": 0,
+            "Overturned": 1,
+            "Formed": 0.8636738061904907
+          }
+        ],
+        "interpretation": "Young end-tapered column near the physical alongshore boundary; positive indexed air was sufficient under this probe rule but does not establish mature interior eligibility."
+      },
+      "captureOverhead": {
+        "publicationStepSeconds": {
+          "n": 953,
+          "min": 0.01666666666665151,
+          "median": 0.01666666666667993,
+          "p95": 0.01666666666667993,
+          "max": 0.01666666666667993
+        },
+        "missingOrNonconsecutivePublications": 0,
+        "inspectedStepSeconds": {
+          "n": 954,
+          "min": 0.01666666666665151,
+          "median": 0.01666666666666572,
+          "p95": 0.01666666666667993,
+          "max": 0.01666666666667993
+        },
+        "missingOrNonconsecutiveInspectedStates": 0,
+        "publicationGapMs": {
+          "n": 953,
+          "min": 25.599999994039536,
+          "median": 30.599999994039536,
+          "p95": 34.19999998807907,
+          "max": 342.2000000178814
+        },
+        "inspectedRowGapMs": {
+          "n": 954,
+          "min": 13.900000005960464,
+          "median": 33.099999994039536,
+          "p95": 35.5,
+          "max": 331.7000000178814
+        },
+        "inspectMsExcludingCheckpointCopy": {
+          "n": 955,
+          "min": 0,
+          "median": 0,
+          "p95": 0.5,
+          "max": 1.9000000059604645
+        },
+        "rowGapAfterFirstOpenMs": 331.7000000178814,
+        "largestPublicationGaps": [
+          {
+            "milliseconds": 342.2000000178814,
+            "fromSeaTime": 167.24999999999983,
+            "toSeaTime": 167.26666666666648
+          },
+          {
+            "milliseconds": 321.80000001192093,
+            "fromSeaTime": 166.64999999999986,
+            "toSeaTime": 166.66666666666652
+          },
+          {
+            "milliseconds": 193.40000000596046,
+            "fromSeaTime": 166.66666666666652,
+            "toSeaTime": 166.68333333333317
+          },
+          {
+            "milliseconds": 83.5,
+            "fromSeaTime": 165.71666666666658,
+            "toSeaTime": 165.73333333333323
+          },
+          {
+            "milliseconds": 47.20000001788139,
+            "fromSeaTime": 179.39999999999912,
+            "toSeaTime": 179.41666666666578
+          }
+        ],
+        "interpretation": "Full checkpoint array copy, CDP response serialization, Node JSON/file handling and native capture add work. The event-adjacent stall is observable, but no individual cost attribution is available. All published/inspected steps remain consecutive; no published phase2 is hidden by the gap."
+      },
+      "nativeShots": [
+        {
+          "kind": "first-open",
+          "sha256": "e1c51fc2f587bee913313ef37aea277aa1a66856c88b99eb981357d0634fcdb7",
+          "eventSeaTime": 167.24999999999983,
+          "seaTimeBefore": 167.58333333333314,
+          "seaTimeAfter": 167.73333333333312,
+          "eventToShotStartSimSeconds": 0.3333333333333144,
+          "eventToShotEndSimSeconds": 0.48333333333329165,
+          "exactEventState": false
+        }
+      ],
+      "qaInvalid": [
+        {
+          "seaTime": 167.33333333333314,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 92,
+          "precedingSourceSeaTime": 167.33333333333314,
+          "classifierSeaTime": 167.33333333333314,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 167.36666666666648,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 95,
+          "precedingSourceSeaTime": 167.36666666666648,
+          "classifierSeaTime": 167.36666666666648,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        },
+        {
+          "seaTime": 167.38333333333316,
+          "phase": 1,
+          "freshEyeAir": false,
+          "freshTargetAir": false,
+          "projectedOpen": 85,
+          "precedingSourceSeaTime": 167.38333333333316,
+          "classifierSeaTime": 167.38333333333316,
+          "reasons": [
+            "Tracked open-column camera has no fresh verified eye/target air or projected opening"
+          ]
+        }
+      ],
+      "controls": [
+        {
+          "name": "active-settled",
+          "cached": true,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1932,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": 1,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": true,
+            "sweptMark": true,
+            "repairVisible": true,
+            "patchRepairVisible": true,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "active-cached-1",
+          "cached": true,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1932,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": 1,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": true,
+            "sweptMark": true,
+            "repairVisible": true,
+            "patchRepairVisible": true,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "active-cached-2",
+          "cached": true,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1932,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": 1,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": true,
+            "sweptMark": true,
+            "repairVisible": true,
+            "patchRepairVisible": true,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "unsupported-real-cache",
+          "cached": true,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1932,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": 0,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "reactivated-real-cache",
+          "cached": true,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1932,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": 1,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": true,
+            "sweptMark": true,
+            "repairVisible": true,
+            "patchRepairVisible": true,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "mode-hidden",
+          "cached": false,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1932,
+            "position": 355,
+            "normal": 355,
+            "index": 355,
+            "maskTexture": 355,
+            "drawRange": {
+              "start": 0,
+              "count": 0
+            }
+          },
+          "coverage": {
+            "supported": 1,
+            "active": 0,
+            "barrelVisible": false,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "mode-visible-restored",
+          "cached": false,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1932,
+            "position": 356,
+            "normal": 356,
+            "index": 356,
+            "maskTexture": 356,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": 1,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": true,
+            "sweptMark": true,
+            "repairVisible": true,
+            "patchRepairVisible": true,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "drawn": true
+        },
+        {
+          "name": "spot-off",
+          "cached": false,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1932,
+            "position": 356,
+            "normal": 356,
+            "index": 356,
+            "maskTexture": 356,
+            "drawRange": {
+              "start": 0,
+              "count": 0
+            }
+          },
+          "coverage": {
+            "supported": 0,
+            "active": 0,
+            "barrelVisible": false,
+            "waterMark": false,
+            "sweptMark": false,
+            "repairVisible": false,
+            "patchRepairVisible": false,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "drawn": false
+        },
+        {
+          "name": "spot-restored",
+          "cached": false,
+          "seaTime": 179.8999999999991,
+          "versions": {
+            "surfaceRevision": 1932,
+            "position": 357,
+            "normal": 357,
+            "index": 357,
+            "maskTexture": 357,
+            "drawRange": {
+              "start": 0,
+              "count": 26334
+            }
+          },
+          "coverage": {
+            "supported": 1,
+            "active": 1,
+            "barrelVisible": true,
+            "waterMark": true,
+            "sweptMark": true,
+            "repairVisible": true,
+            "patchRepairVisible": true,
+            "orders": {
+              "water": 0,
+              "swept": 0,
+              "repair": 1
+            }
+          },
+          "drawn": true
+        }
+      ]
+    }
+  ],
+  "proposedNextEligibility": {
+    "status": "Proposal only; requires review and a separately predeclared bounded run. Not applied, no retry.",
+    "requirements": [
+      "First eligible fixed front ID + exact sourceX; never retarget after lock.",
+      "Joined same-front run span>=12m; source>=LOFT.endBlend+2m(4.5m) from both joined ends/cuts and>=3m from real control endpoints/physicalxedges.",
+      "Both bracketing slices phase1/overturned, weight>=.9, formed>=.9, life fraction>=.2 and<=.75. Life is tau/touchdown time, not seconds.",
+      "Actual indexed unique3-layer eye and target air, local floor/ceiling gap>=.15m, full opaque mask support and complete draw-range provenance.",
+      "Choose camera from the freshly drawn field when the candidate naturally classifies post-draw; report preceding-field limitation for canonical pre-draw baseline. Failed planning is QA invalid, not a physics failure.",
+      "Record lightweight selection maturity on every inspected row. Keep ordinary60fixedsteps/second and the same wall/total bounds; no catch-up or timeout widening.",
+      "Queue compact checkpoint typed arrays without browser full20MB number-array duplication; preserve native screenshot event brackets. Exact-event screenshot requires explicit held follow-up, separate from moving advancement."
+    ],
+    "limits": "This rule rejects the observed young boundary column but cannot guarantee its future control identity survives through touchdown. If no full eligible lifecycle occurs within the same hard bounds, report incomplete again."
+  },
+  "contactOracle": {
+    "schema": 1,
+    "method": "Offline held checkpoint contact rebuild, exact stored Float32 source/front and Catmull-Rom height mirror. No water stepping, browser, FFT/ripple displacement or rendering. Drawing and contact use their own canonical tessellation; agreement is measured, not assumed.",
+    "source": {
+      "helperSha256": "d7b96cf6f19fafe547f61271b1409b9769fa44c257f9d45693dd603ca8526a4a",
+      "runtimeSha256": "b4015f9c1e9cf68a8ca22ff067012a7a73918c178deca6711b5d2f0793c7e4f9",
+      "cubicSourceSha256": "c396930d9ff5def978e9a1657931a5c3c49e7cee1c41c577d6cdfbb2c2caee18",
+      "assets": [
+        {
+          "asset": "barrels/pad19-a20-l12.bin",
+          "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+        },
+        {
+          "asset": "barrels/pad19-a30-l12.bin",
+          "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+        },
+        {
+          "asset": "barrels/pad19-a45-l12.bin",
+          "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+        },
+        {
+          "asset": "barrels/periodic-padang19s-l12.bin",
+          "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+        }
+      ]
+    },
+    "variants": [
+      {
+        "variant": "baseline",
+        "inputPath": "/private/tmp/tube-moving-actual-20261003-baseline/checkpoint-0-first-open.json",
+        "inputSha256": "5242b596792ccae37994415a0420ab5e99ae288ece906ce2746ddf6f94123b10",
+        "seaTime": 167.26666666666648,
+        "frontCount": 17,
+        "probes": [
+          {
+            "name": "eye",
+            "position": [
+              158.17914835611978,
+              1.6863815010165302,
+              -11.063069025675455
+            ],
+            "drawingLevelsAtCameraPlanning": [
+              1.6443081326716664,
+              1.8126016060511216,
+              1.955946435364618
+            ],
+            "drawingCameraPlanningSeaTime": 167.24999999999983,
+            "freshDrawingAir": true,
+            "contact": {
+              "answered": true,
+              "inWater": false,
+              "surfaceY": 1.5741591399691859,
+              "normalX": -0.2913373951977708,
+              "normalY": 0.6416594920589388,
+              "normalZ": 0.7095037832246158,
+              "floorY": 1.5741591399691859,
+              "waterFloorY": null,
+              "ceilingY": 1.8104618369317502,
+              "ceilingTopY": 1.9446730088900146,
+              "lipShare": 0,
+              "lipVX": 0,
+              "lipVY": 0,
+              "lipVZ": 0,
+              "lipWeight": 0,
+              "tangentX": 0.9998024904792265,
+              "tangentZ": 0.01987410454677449,
+              "life": 0.0904936020425228
+            },
+            "contactAir": true,
+            "cubicBaseHeight": 1.952198771929704,
+            "rawCameraHeight": 1.9366122526820404
+          },
+          {
+            "name": "target",
+            "position": [
+              158.66620381673178,
+              1.8395750784909546,
+              -11.127561251322428
+            ],
+            "drawingLevelsAtCameraPlanning": [
+              1.8153284872950206,
+              1.9123148520787565,
+              1.9874140843706458
+            ],
+            "drawingCameraPlanningSeaTime": 167.24999999999983,
+            "freshDrawingAir": false,
+            "contact": {
+              "answered": true,
+              "inWater": true,
+              "surfaceY": 2.0017287721002237,
+              "normalX": -0.01555170584563088,
+              "normalY": 0.981439827798209,
+              "normalZ": 0.19113871626834955,
+              "floorY": 2.0017287721002237,
+              "waterFloorY": null,
+              "ceilingY": null,
+              "ceilingTopY": null,
+              "lipShare": 0,
+              "lipVX": 0,
+              "lipVY": 0,
+              "lipVZ": 0,
+              "lipWeight": 0,
+              "tangentX": 0.9995498501434863,
+              "tangentZ": 0.03000161792527309,
+              "life": 0.10536562129207222
+            },
+            "contactAir": false,
+            "cubicBaseHeight": 1.9795748235567063,
+            "rawCameraHeight": 1.9366122526820404
+          }
+        ]
+      },
+      {
+        "variant": "combined",
+        "inputPath": "/private/tmp/tube-moving-actual-20261003-combined/checkpoint-0-first-open.json",
+        "inputSha256": "cbdc6c569011361c2bd54e9c282f64d909ac4a0adf34ffb6cd24322bccd294cb",
+        "seaTime": 167.24999999999983,
+        "frontCount": 17,
+        "probes": [
+          {
+            "name": "eye",
+            "position": [
+              158.17914835611978,
+              1.6863815010165302,
+              -11.063069025675455
+            ],
+            "drawingLevelsAtCameraPlanning": [
+              1.6443081326716664,
+              1.8126016060511216,
+              1.955946435364618
+            ],
+            "drawingCameraPlanningSeaTime": 167.24999999999983,
+            "freshDrawingAir": true,
+            "contact": {
+              "answered": true,
+              "inWater": false,
+              "surfaceY": 1.6443081326716664,
+              "normalX": 0.06365235464922699,
+              "normalY": 0.5141053861551894,
+              "normalZ": 0.8553619290533293,
+              "floorY": 1.6443081326716664,
+              "waterFloorY": null,
+              "ceilingY": 1.8126016060511216,
+              "ceilingTopY": 1.955946435364618,
+              "lipShare": 0,
+              "lipVX": 0,
+              "lipVY": 0,
+              "lipVZ": 0,
+              "lipWeight": 0,
+              "tangentX": 0.9986904958819669,
+              "tangentZ": 0.05115949017563746,
+              "life": 0.042831504254873656
+            },
+            "contactAir": true,
+            "cubicBaseHeight": 1.9847085087142933,
+            "rawCameraHeight": 1.9682476430056415
+          },
+          {
+            "name": "target",
+            "position": [
+              158.66620381673178,
+              1.8395750784909546,
+              -11.127561251322428
+            ],
+            "drawingLevelsAtCameraPlanning": [
+              1.8153284872950206,
+              1.9123148520787565,
+              1.9874140843706458
+            ],
+            "drawingCameraPlanningSeaTime": 167.24999999999983,
+            "freshDrawingAir": true,
+            "contact": {
+              "answered": true,
+              "inWater": false,
+              "surfaceY": 1.8153284872950206,
+              "normalX": -0.24516947943747514,
+              "normalY": 0.8364858499218154,
+              "normalZ": 0.4900850428578039,
+              "floorY": 1.8153284872950206,
+              "waterFloorY": null,
+              "ceilingY": 1.9123148520787565,
+              "ceilingTopY": 1.9874140843706458,
+              "lipShare": 0,
+              "lipVX": 0,
+              "lipVY": 0,
+              "lipVZ": 0,
+              "lipWeight": 0,
+              "tangentX": 0.9988232508225423,
+              "tangentZ": 0.04849859396197737,
+              "life": 0.08455021541096956
+            },
+            "contactAir": true,
+            "cubicBaseHeight": 1.992157924445163,
+            "rawCameraHeight": 1.9682476430056415
+          }
+        ]
+      }
+    ]
+  }
+}

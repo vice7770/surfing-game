@@ -1,0 +1,199 @@
+{
+  "schema": 1,
+  "method": "Offline held checkpoint contact rebuild, exact stored Float32 source/front and Catmull-Rom height mirror. No water stepping, browser, FFT/ripple displacement or rendering. Drawing and contact use their own canonical tessellation; agreement is measured, not assumed.",
+  "source": {
+    "helperSha256": "d7b96cf6f19fafe547f61271b1409b9769fa44c257f9d45693dd603ca8526a4a",
+    "runtimeSha256": "b4015f9c1e9cf68a8ca22ff067012a7a73918c178deca6711b5d2f0793c7e4f9",
+    "cubicSourceSha256": "c396930d9ff5def978e9a1657931a5c3c49e7cee1c41c577d6cdfbb2c2caee18",
+    "assets": [
+      {
+        "asset": "barrels/pad19-a20-l12.bin",
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      },
+      {
+        "asset": "barrels/pad19-a30-l12.bin",
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      {
+        "asset": "barrels/pad19-a45-l12.bin",
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      {
+        "asset": "barrels/periodic-padang19s-l12.bin",
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "variant": "baseline",
+      "inputPath": "/private/tmp/tube-moving-actual-20261003-baseline/checkpoint-0-first-open.json",
+      "inputSha256": "5242b596792ccae37994415a0420ab5e99ae288ece906ce2746ddf6f94123b10",
+      "seaTime": 167.26666666666648,
+      "frontCount": 17,
+      "probes": [
+        {
+          "name": "eye",
+          "position": [
+            158.17914835611978,
+            1.6863815010165302,
+            -11.063069025675455
+          ],
+          "drawingLevelsAtCameraPlanning": [
+            1.6443081326716664,
+            1.8126016060511216,
+            1.955946435364618
+          ],
+          "drawingCameraPlanningSeaTime": 167.24999999999983,
+          "freshDrawingAir": true,
+          "contact": {
+            "answered": true,
+            "inWater": false,
+            "surfaceY": 1.5741591399691859,
+            "normalX": -0.2913373951977708,
+            "normalY": 0.6416594920589388,
+            "normalZ": 0.7095037832246158,
+            "floorY": 1.5741591399691859,
+            "waterFloorY": null,
+            "ceilingY": 1.8104618369317502,
+            "ceilingTopY": 1.9446730088900146,
+            "lipShare": 0,
+            "lipVX": 0,
+            "lipVY": 0,
+            "lipVZ": 0,
+            "lipWeight": 0,
+            "tangentX": 0.9998024904792265,
+            "tangentZ": 0.01987410454677449,
+            "life": 0.0904936020425228
+          },
+          "contactAir": true,
+          "cubicBaseHeight": 1.952198771929704,
+          "rawCameraHeight": 1.9366122526820404
+        },
+        {
+          "name": "target",
+          "position": [
+            158.66620381673178,
+            1.8395750784909546,
+            -11.127561251322428
+          ],
+          "drawingLevelsAtCameraPlanning": [
+            1.8153284872950206,
+            1.9123148520787565,
+            1.9874140843706458
+          ],
+          "drawingCameraPlanningSeaTime": 167.24999999999983,
+          "freshDrawingAir": false,
+          "contact": {
+            "answered": true,
+            "inWater": true,
+            "surfaceY": 2.0017287721002237,
+            "normalX": -0.01555170584563088,
+            "normalY": 0.981439827798209,
+            "normalZ": 0.19113871626834955,
+            "floorY": 2.0017287721002237,
+            "waterFloorY": null,
+            "ceilingY": null,
+            "ceilingTopY": null,
+            "lipShare": 0,
+            "lipVX": 0,
+            "lipVY": 0,
+            "lipVZ": 0,
+            "lipWeight": 0,
+            "tangentX": 0.9995498501434863,
+            "tangentZ": 0.03000161792527309,
+            "life": 0.10536562129207222
+          },
+          "contactAir": false,
+          "cubicBaseHeight": 1.9795748235567063,
+          "rawCameraHeight": 1.9366122526820404
+        }
+      ]
+    },
+    {
+      "variant": "combined",
+      "inputPath": "/private/tmp/tube-moving-actual-20261003-combined/checkpoint-0-first-open.json",
+      "inputSha256": "cbdc6c569011361c2bd54e9c282f64d909ac4a0adf34ffb6cd24322bccd294cb",
+      "seaTime": 167.24999999999983,
+      "frontCount": 17,
+      "probes": [
+        {
+          "name": "eye",
+          "position": [
+            158.17914835611978,
+            1.6863815010165302,
+            -11.063069025675455
+          ],
+          "drawingLevelsAtCameraPlanning": [
+            1.6443081326716664,
+            1.8126016060511216,
+            1.955946435364618
+          ],
+          "drawingCameraPlanningSeaTime": 167.24999999999983,
+          "freshDrawingAir": true,
+          "contact": {
+            "answered": true,
+            "inWater": false,
+            "surfaceY": 1.6443081326716664,
+            "normalX": 0.06365235464922699,
+            "normalY": 0.5141053861551894,
+            "normalZ": 0.8553619290533293,
+            "floorY": 1.6443081326716664,
+            "waterFloorY": null,
+            "ceilingY": 1.8126016060511216,
+            "ceilingTopY": 1.955946435364618,
+            "lipShare": 0,
+            "lipVX": 0,
+            "lipVY": 0,
+            "lipVZ": 0,
+            "lipWeight": 0,
+            "tangentX": 0.9986904958819669,
+            "tangentZ": 0.05115949017563746,
+            "life": 0.042831504254873656
+          },
+          "contactAir": true,
+          "cubicBaseHeight": 1.9847085087142933,
+          "rawCameraHeight": 1.9682476430056415
+        },
+        {
+          "name": "target",
+          "position": [
+            158.66620381673178,
+            1.8395750784909546,
+            -11.127561251322428
+          ],
+          "drawingLevelsAtCameraPlanning": [
+            1.8153284872950206,
+            1.9123148520787565,
+            1.9874140843706458
+          ],
+          "drawingCameraPlanningSeaTime": 167.24999999999983,
+          "freshDrawingAir": true,
+          "contact": {
+            "answered": true,
+            "inWater": false,
+            "surfaceY": 1.8153284872950206,
+            "normalX": -0.24516947943747514,
+            "normalY": 0.8364858499218154,
+            "normalZ": 0.4900850428578039,
+            "floorY": 1.8153284872950206,
+            "waterFloorY": null,
+            "ceilingY": 1.9123148520787565,
+            "ceilingTopY": 1.9874140843706458,
+            "lipShare": 0,
+            "lipVX": 0,
+            "lipVY": 0,
+            "lipVZ": 0,
+            "lipWeight": 0,
+            "tangentX": 0.9988232508225423,
+            "tangentZ": 0.04849859396197737,
+            "life": 0.08455021541096956
+          },
+          "contactAir": true,
+          "cubicBaseHeight": 1.992157924445163,
+          "rawCameraHeight": 1.9682476430056415
+        }
+      ]
+    }
+  ]
+}

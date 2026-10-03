@@ -1,0 +1,2 @@
+import {RenderedCavityQuery,opaqueBarrelColumn} from '/private/tmp/surf-tube-repair-combined-20261003/src/scene/barrel/renderedCavity.ts';
+window.__tubeRenderedCavityQA={RenderedCavityQuery,opaqueBarrelColumn};
