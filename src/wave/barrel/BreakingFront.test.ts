@@ -332,15 +332,21 @@ describe('the clock link', () => {
   const PADANG = { jumpReach: 10 };
   const LINKED = { jumpReach: 10, clockLink: true };
 
-  /** A crest segment: its columns, its z, and when it reaches its join depth, breaking, s (a multiple of 0.25). */
+  /** A crest segment: its columns, its z, and when it reaches its join depth, breaking, s. */
   interface Segment { columns: readonly number[]; z: number; join: number }
-  /** Steps `segments` by 0.25 s from just before the first joins to when the last does; those that joined earlier keep breaking. */
+  /**
+   * Steps `segments` every 0.25 s from just before the first joins to when the last does, and at each join; those that
+   * joined earlier keep breaking. Each crosses its join depth in its join's step, so it joins at that time exactly.
+   */
   function joinTogether(options: FrontOptions, segments: readonly Segment[]): BreakingFront {
     const front = new BreakingFront(1, TIMING, options);
-    const first = Math.min(...segments.map((segment) => segment.join)) - 0.25;
-    const last = Math.max(...segments.map((segment) => segment.join));
-    for (let step = 0; first + step * 0.25 <= last; step += 1) {
-      const time = first + step * 0.25;
+    const joins = segments.map((segment) => segment.join);
+    const first = Math.min(...joins) - 0.25;
+    const last = Math.max(...joins);
+    const times: number[] = [];
+    for (let step = 0; first + step * 0.25 <= last; step += 1) times.push(first + step * 0.25);
+    for (const join of joins) if (!times.includes(join)) times.push(join);
+    for (const time of times.sort((a, b) => a - b)) {
       const samples = segments
         .flatMap((segment) => (time >= segment.join ? line(segment.columns, segment.z, 0, JOIN, 0.5) : line(segment.columns, segment.z, 0, TIMING.h0, 0)))
         .sort((a, b) => a.column - b.column || a.z - b.z);
@@ -370,19 +376,41 @@ describe('the clock link', () => {
     expect(linked.splits).toBe(0);
   });
 
-  it('does not link them when their joins differ by more than 0.166 s per metre between them', () => {
-    // Ends 4.12 m apart: 0.5 s apart is 0.12 s/m, 0.75 s apart is 0.18 s/m, which the 1 s/m split would never refuse.
+  it('links them while their joins differ by at most 0.166 s per metre between them, and no more', () => {
+    // Ends 4.12 m apart: 0.5 s apart is 0.12 s/m and links; 0.75 s apart is 0.18 s/m and does not, which the 1 s/m split
+    // would never refuse.
     expect(fronts(joinTogether(LINKED, halves(10, 14, 0.5)))).toBe(1);
     const apart = joinTogether(LINKED, halves(10, 14, 0.75));
     expect(fronts(apart)).toBe(2);
     expect(apart.splits).toBe(0);
     expect(apart.clockLinks).toBe(0);
+    // Close to the line, across an empty column (2 m in x) with the joins 0.5 s apart: 2.27 m off in z the ends are
+    // 3.025 m apart, 0.1653 s/m, and link; 2.23 m off they are 2.995 m apart, 0.1669 s/m, and do not. The metres are
+    // straight between the ends: along z alone 0.5 s over 2.27 m would be 0.22 s/m.
+    expect(fronts(joinTogether(LINKED, halves(11, 12.27, 0.5)))).toBe(1);
+    expect(fronts(joinTogether(LINKED, halves(11, 12.23, 0.5)))).toBe(2);
+    // On the line, which is within it: 2 m apart at one z, the joins 0.332 s apart, as 0.166 s/m × 2 m is in floating point
+    // too. A tenth of a millisecond more (0.16605 s/m) is past it.
+    const onLine = joinTogether(LINKED, [{ columns: range(0, 10), z: 10, join: 0 }, { columns: range(11, 21), z: 10, join: 0.332 }]);
+    expect(onLine.points.map((point) => point.joined)).toEqual([...Array<number>(10).fill(0), ...Array<number>(10).fill(0.166 * 2)]);
+    expect(fronts(onLine)).toBe(1);
+    expect(onLine.bridges).toBe(1);
+    expect(fronts(joinTogether(LINKED, [{ columns: range(0, 10), z: 10, join: 0 }, { columns: range(11, 21), z: 10, join: 0.3321 }]))).toBe(2);
   });
 
-  it('does not link them past 10 m', () => {
-    // Ends 9.06 m apart link; 11.05 m apart, with the same joins, do not.
-    expect(fronts(joinTogether(LINKED, halves(10, 19, 0.25)))).toBe(1);
-    expect(fronts(joinTogether(LINKED, halves(10, 21, 0.25)))).toBe(2);
+  it('links ends up to 10 m apart, measured straight between them, and none farther', () => {
+    // Side by side (1 m in x): 9.9 m off in z the ends are 9.95 m apart and link; 10 m off they are 10.05 m apart and do
+    // not, though only 10 m apart in z.
+    expect(fronts(joinTogether(LINKED, halves(10, 19.9, 0.25)))).toBe(1);
+    expect(fronts(joinTogether(LINKED, halves(10, 20, 0.25)))).toBe(2);
+    // Exactly 10 m apart is within it: √99 m off in z, from z 0 so that their difference is √99 to the last bit. A millimetre
+    // more in z (10.001 m apart) is past it.
+    const z = Math.sqrt(99);
+    expect(Math.sqrt(1 + z * z)).toBe(10);
+    const atReach = (dz: number) => joinTogether(LINKED, [{ columns: range(0, 10), z: 0, join: 1 }, { columns: range(10, 20), z: dz, join: 1.25 }]);
+    expect(fronts(atReach(z))).toBe(1);
+    expect(atReach(z).clockLinks).toBe(1);
+    expect(fronts(atReach(z + 0.001))).toBe(2);
   });
 
   it('bridges a one-column gap only when the clock link passes, and no wider gap', () => {
@@ -409,16 +437,16 @@ describe('the clock link', () => {
       { columns: range(0, 9), z: 10, join: 1 }, { columns: range(0, 10), z: 15, join: 1 }, { columns: range(10, 20), z: 10, join: 1.25 },
     ]);
     expect(fronts(nearest)).toBe(2);
-    const frontAt = (column: number, z: number) => nearest.points.find((point) => point.column === column && point.z === z)!.front;
-    expect(frontAt(10, 10)).toBe(frontAt(0, 10));
-    expect(frontAt(0, 15)).not.toBe(frontAt(0, 10));
-    expect(nearest.points.filter((point) => point.front === frontAt(0, 15))).toHaveLength(10);
+    const frontAt = (front: BreakingFront, column: number, z: number) => front.points.find((point) => point.column === column && point.z === z)!.front;
+    expect(frontAt(nearest, 10, 10)).toBe(frontAt(nearest, 0, 10));
+    expect(frontAt(nearest, 0, 15)).not.toBe(frontAt(nearest, 0, 10));
+    expect(nearest.points.filter((point) => point.front === frontAt(nearest, 0, 15))).toHaveLength(10);
     // Two pieces after one end: the first in z takes it, the other starts a front of its own.
     const once = joinTogether(LINKED, [
       { columns: range(0, 10), z: 10, join: 1 }, { columns: range(10, 20), z: 14, join: 1.25 }, { columns: range(10, 20), z: 18, join: 1.25 },
     ]);
     expect(fronts(once)).toBe(2);
-    expect(once.points.find((point) => point.column === 10 && point.z === 14)!.front).toBe(once.points[0].front);
+    expect(frontAt(once, 10, 14)).toBe(frontAt(once, 0, 10));
     expect(once.clockLinks).toBe(1);
   });
 
@@ -434,13 +462,17 @@ describe('the clock link', () => {
     expect(fronts(joinTogether(LINKED, halves(11, 16, 9)))).toBe(2);
   });
 
-  it('is exactly the front without it when the switch is off, and only ever adds links when on', () => {
-    // Three crest lines joining column by column, in blocks of seven columns 6 m apart in z (past the 3-row reach), a tenth
-    // of the columns held back a second and a half (true splits), some samples missing (flicker, one-column gaps);
-    // z has noise, so that no two crests tie.
-    let seed = 20261003;
-    const random = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
-    const lines = [{ z: 12, first: 10 }, { z: 50, first: 20 }, { z: 90, first: 15 }];
+  interface CrestLine { z: number; first: number }
+  /**
+   * Seeded crest lines over 36 columns joining column by column (`lines`: each one's z, and the step its column 0 joins,
+   * each next column a step later), in blocks of seven columns 6 m apart in z (past the 3-row reach), a tenth of the
+   * columns held back 15 steps (true splits) and some samples missing (flicker, one-column gaps). Each crest's z wanders
+   * up to `jitter` m; with `rows` it is rounded to a whole metre, as the solver's rows give it, so that crests can tie
+   * (two on one row of a column are one).
+   */
+  function crestSteps(seed: number, lines: readonly CrestLine[], jitter: number, rows: boolean): CrestSample[][] {
+    let state = seed;
+    const random = () => (state = (state * 1664525 + 1013904223) % 4294967296) / 4294967296;
     const delayed = new Set(lines.flatMap((_, l) => range(0, 36).filter(() => random() < 0.1).map((column) => `${l}:${column}`)));
     const steps: CrestSample[][] = [];
     for (let step = 0; step < 80; step += 1) {
@@ -450,39 +482,66 @@ describe('the clock link', () => {
           const join = crest.first + column + (delayed.has(`${l}:${column}`) ? 15 : 0);
           const joined = step >= join;
           if (random() < (joined ? 0.05 : 0.02)) continue;
-          const z = crest.z + (Math.floor(column / 7) % 2) * 6 + 0.6 * random() - 0.3;
+          const wandered = crest.z + (Math.floor(column / 7) % 2) * 6 + 2 * jitter * random() - jitter;
+          const z = rows ? Math.round(wandered) : wandered;
+          if (rows && samples.some((s) => s.column === column && s.z === z)) continue;
           samples.push(sample(column, z, joined ? JOIN : TIMING.h0, joined ? 0.5 : 0));
         }
       });
       steps.push(samples.sort((a, b) => a.column - b.column || a.z - b.z));
     }
+    return steps;
+  }
+  /** Three crest lines 38–40 m apart, their z with noise so that no two crests tie. */
+  const THREE_LINES = crestSteps(20261003, [{ z: 12, first: 10 }, { z: 50, first: 20 }, { z: 90, first: 15 }], 0.3, false);
+  /** Three crest lines 2 and 17 m apart, wandering a metre either way on whole rows: crests meet and tie in a column. */
+  const CROWDED = crestSteps(7, [{ z: 12, first: 10 }, { z: 14, first: 13 }, { z: 31, first: 12 }], 1, true);
+
+  it.each([['three lines', THREE_LINES]] as const)('only ever adds links when on, each from one front\'s last point to the next one\'s first: %s', (_, steps) => {
     const off = new BreakingFront(1, TIMING, PADANG);
-    const none = new BreakingFront(1, TIMING, { ...PADANG, clockLink: false });
     const on = new BreakingFront(1, TIMING, LINKED);
     /** A front's links: each point to the one before it on its front, as "before>point". */
     const links = (points: readonly FrontPoint[]) => new Set(points.slice(1).flatMap((point, k) => (point.front === points[k].front ? [`${points[k].id}>${point.id}`] : [])));
     const problems: string[] = [];
     let fewer = 0;
+    let neighbours = 0;
+    let bridges = 0;
     let copy: BreakingFront | undefined;
     steps.forEach((samples, step) => {
       const time = step * 0.1;
-      for (const front of [off, none, on]) front.update(samples, samples.length, time);
-      if (JSON.stringify(none.exportState()) !== JSON.stringify(off.exportState())) problems.push(`${step}: the switch off differs from none`);
-      // The same points, the front's links the only difference.
-      const ids = (front: BreakingFront) => front.points.map((point) => point.id).sort((a, b) => a - b).join();
+      for (const front of [off, on]) front.update(samples, samples.length, time);
+      // The same points, with the same joins and places, the links the only difference.
+      const ids = (front: BreakingFront) => front.points.map((point) => `${point.id}:${point.joined}:${point.z}`).sort().join();
       if (ids(on) !== ids(off)) problems.push(`${step}: different points`);
       const offLinks = links(off.points);
       const onLinks = links(on.points);
       for (const link of offLinks) if (!onLinks.has(link)) problems.push(`${step}: lost the link ${link}`);
+      // Each front without the switch, its first point and its last (a front's points are listed together, −x end first).
       const byId = new Map(off.points.map((point) => [point.id, point]));
+      const firstOf = new Map<number, number>();
+      const lastOf = new Map<number, number>();
+      for (const point of off.points) {
+        if (!firstOf.has(point.front)) firstOf.set(point.front, point.id);
+        lastOf.set(point.front, point.id);
+      }
       for (const link of onLinks) {
         if (offLinks.has(link)) continue;
         const [a, b] = link.split('>').map((id) => byId.get(Number(id))!);
+        const columns = b.column - a.column;
         const gap = Math.sqrt((b.x - a.x) ** 2 + (b.z - a.z) ** 2);
-        if (!(b.column - a.column <= 2 && gap <= 10 && Math.abs(b.joined - a.joined) <= 0.166 * gap)) problems.push(`${step}: a link ${link} the clock does not allow`);
+        const facing = a.front !== b.front && lastOf.get(a.front) === a.id && firstOf.get(b.front) === b.id;
+        if (!(facing && columns >= 1 && columns <= 2 && gap <= 10 && Math.abs(b.joined - a.joined) <= 0.166 * gap)) problems.push(`${step}: a link ${link} the clock does not allow`);
+        if (columns === 1) neighbours += 1;
+        else bridges += 1;
       }
-      on.points.slice(1).forEach((point, k) => {
-        if (point.front === on.points[k].front && !(point.sigma > on.points[k].sigma)) problems.push(`${step}: σ does not grow at ${point.id}`);
+      // Each front's points together, σ growing along it.
+      const done = new Set<number>();
+      on.points.forEach((point, k) => {
+        const previous = on.points[k - 1];
+        if (previous?.front === point.front) {
+          if (!(point.sigma > previous.sigma)) problems.push(`${step}: σ does not grow at ${point.id}`);
+        } else if (done.has(point.front)) problems.push(`${step}: front ${point.front} is listed in two places`);
+        done.add(point.front);
       });
       if (fronts(on) > fronts(off)) problems.push(`${step}: more fronts`);
       if (fronts(on) < fronts(off)) fewer += 1;
@@ -496,11 +555,63 @@ describe('the clock link', () => {
       }
     });
     expect(problems).toEqual([]);
-    // The run uses both links, and a good share of its steps have fewer fronts for it.
-    expect(on.clockLinks).toBeGreaterThan(0);
-    expect(on.bridges).toBeGreaterThan(0);
+    // The run uses both links, the counters count each step's, and a good share of its steps have fewer fronts for it.
+    expect(neighbours).toBeGreaterThan(0);
+    expect(bridges).toBeGreaterThan(0);
+    expect(on.clockLinks).toBe(neighbours);
+    expect(on.bridges).toBe(bridges);
     expect(fewer).toBeGreaterThan(20);
     expect(off.clockLinks + off.bridges).toBe(0);
     expect(off.splits).toBe(on.splits);
+  });
+
+  /** A value with its objects' keys in order, so that its JSON does not depend on the order fields were written in. */
+  const canonical = (value: unknown): unknown => (Array.isArray(value)
+    ? value.map(canonical)
+    : value !== null && typeof value === 'object'
+      ? Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonical((value as Record<string, unknown>)[key])]))
+      : value);
+  /**
+   * The front's exported state and counters each step, fingerprinted (FNV-1a, 32 bits, over their JSON), with the run's
+   * points and fronts a step summed and its splits.
+   */
+  function fingerprint(options: FrontOptions, steps: readonly CrestSample[][]) {
+    const front = new BreakingFront(1, TIMING, options);
+    let hash = 0x811c9dc5;
+    let points = 0;
+    let lines = 0;
+    steps.forEach((samples, step) => {
+      front.update(samples, samples.length, step * 0.1);
+      const { splits, joins, unbroken, lost, unsized, jumps, waveJumps, latePasses, unrisen } = front;
+      const text = JSON.stringify(canonical([front.exportState(), splits, joins, unbroken, lost, unsized, jumps, waveJumps, latePasses, unrisen]));
+      for (let k = 0; k < text.length; k += 1) hash = Math.imul(hash ^ text.charCodeAt(k), 0x01000193);
+      points += front.points.length;
+      lines += fronts(front);
+    });
+    expect(front.clockLinks + front.bridges).toBe(0);
+    return { hash: (hash >>> 0).toString(16).padStart(8, '0'), points, fronts: lines, splits: front.splits };
+  }
+  /**
+   * The front from before the clock link (at the merge of #105 into this branch, before the switch was added), run on
+   * these crest lines and fingerprinted. A ruled change to the switch-off front recomputes them, and says so in its commit.
+   */
+  const BEFORE = {
+    // The jump rule changes nothing on the three lines: no crest there has another in its column within its reach.
+    'three lines, no rules': { hash: '8c2ceb2e', points: 4739, fronts: 1330, splits: 258 },
+    'three lines, Padang Padang': { hash: '8c2ceb2e', points: 4739, fronts: 1330, splits: 258 },
+    'crowded rows, no rules': { hash: '6897fabe', points: 4772, fronts: 1344, splits: 152 },
+    'crowded rows, Padang Padang': { hash: 'd250e721', points: 4772, fronts: 1344, splits: 152 },
+  };
+
+  it('is the front from before the clock link, step for step, with the switch off', () => {
+    const runs = { 'three lines': THREE_LINES, 'crowded rows': CROWDED };
+    const rules = { 'no rules': {}, 'Padang Padang': PADANG };
+    for (const [run, steps] of Object.entries(runs)) {
+      for (const [name, options] of Object.entries(rules)) {
+        const before = BEFORE[`${run}, ${name}` as keyof typeof BEFORE];
+        expect(fingerprint(options, steps), `${run}, ${name}`).toEqual(before);
+        expect(fingerprint({ ...options, clockLink: false }, steps), `${run}, ${name}, clockLink false`).toEqual(before);
+      }
+    }
   });
 });
