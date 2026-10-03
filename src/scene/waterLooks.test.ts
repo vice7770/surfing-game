@@ -279,9 +279,10 @@ describe('Classic water parity', () => {
     ocean.setLook('rich');
     const curl = new SweptBarrelMesh(tank.materialUniforms);
     curl.setLook('rich');
-    // Each draws its foam by calling the field, whichever chunk it composes it with, and never the Classic network.
+    // Each draws its foam by calling the field, at the pixel's own footprint, whichever chunk it composes it with, and never
+    // the Classic network.
     for (const { fragment } of [compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
-      expect(fragment).toMatch(/vec2 waterField = waterFoamField\( vWaterWorld\.xz, vWaterFlow, vWaterFoam, waterAge, /);
+      expect(fragment).toContain('vec2 waterField = waterFoamField( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterAge, max( waterFootprint.x, waterFootprint.y ) );');
       expect(fragment).not.toContain('waterFoamCover( vWaterWorld.xz');
     }
     // Every Rich program carries the field, guarded so the tank, which lists it twice, defines it once.
