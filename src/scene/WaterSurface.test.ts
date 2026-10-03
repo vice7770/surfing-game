@@ -102,4 +102,15 @@ describe('WaterSurface GPU displacement data', () => {
     surface.setFoamDetail(true);
     expect(surface.foamPattern).toBe(1);
   });
+
+  it('carries the third ripple layer in the Rich program on the ripple map it already binds, with no texture of its own', () => {
+    const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
+    const surface = new WaterSurface({ grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {}, cubic: true });
+    surface.setLook('rich');
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    surface.mesh.material.onBeforeCompile(shader as never, undefined as never);
+    expect(shader.fragmentShader).toContain('vec4 a2 = waterRippleTap( pa, RIPPLE_TILE_2 );');
+    expect(shader.fragmentShader).toContain('vec4 b2 = waterRippleTap( pb, RIPPLE_TILE_2 );');
+    expect(shader.fragmentShader.match(/uniform sampler2D waterRipple/g)).toHaveLength(1);
+  });
 });
