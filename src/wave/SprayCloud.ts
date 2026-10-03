@@ -245,8 +245,9 @@ const FOAM_BALL: Kind = 2;
 const TUBE_SPRAY: Kind = 3;
 const TUBE_MIST: Kind = 4;
 /**
- * The law of spray drop sizes (Erinin et al. 2023, fitted to a plunging breaker's splash; spray-and-mist.md §2a): the
- * count of drops falls as d^-2 below the knee and d^-6 above it, which sits at 0.8–1.5 mm.
+ * The law of spray drop sizes (Erinin et al. 2023, fitted to a plunging breaker's splash;
+ * docs/research/water-physics/notes/round4-spray-mist/spray-mist.md §2a): the count of drops falls
+ * as d^-2 below the knee and d^-6 above it, which sits at 0.8–1.5 mm.
  */
 export const DROP_LAW = { knee: 1e-3, below: -2, above: -6 } as const;
 

@@ -38,7 +38,7 @@ describe('mist', () => {
     expect(total).toBeCloseTo(1, 2);
   });
 
-  it('scatters as water drops do: Mie g is 0.86–0.88, 180–510 times brighter at 10° than at 90° (spray-and-mist.md §3)', () => {
+  it('scatters as water drops do: Mie g is 0.86–0.88, 180–510 times brighter at 10° than at 90° (notes/round4-spray-mist/spray-mist.md §3)', () => {
     expect(DROP_G).toBeGreaterThanOrEqual(0.86);
     expect(DROP_G).toBeLessThanOrEqual(0.88);
     const contrast = henyeyGreenstein(Math.cos((10 * Math.PI) / 180), DROP_G) / henyeyGreenstein(0, DROP_G);

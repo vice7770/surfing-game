@@ -2,8 +2,8 @@
 export const MIST_SIZE = 0.25;
 /**
  * Water drops' forward-scattering asymmetry. Mie theory gives g = 0.86–0.87 for drops of 10–25 µm and 0.88 for
- * 50–500 µm (sea water 0.87–0.88; docs/research/water-physics/spray-and-mist.md §3, after Bohren 1987), against the
- * 0.6 mist was lit with. Half of what a drop scatters goes within 5° of straight on.
+ * 50–500 µm (sea water 0.87–0.88; docs/research/water-physics/notes/round4-spray-mist/spray-mist.md §3,
+ * after Bohren 1987), against the 0.6 mist was lit with. Half of what a drop scatters goes within 5° of straight on.
  */
 export const DROP_G = 0.87;
 /** Mist's forward-scattering asymmetry: fine droplets throw most light on toward the eye when backlit. That is the drops' own. */
@@ -84,8 +84,8 @@ export function foamBallGlow(phase: number, chord: number, density: number, sun:
 }
 
 /**
- * The light of Rich spray and mist by its optical depth (decided 2026-09-29, item 1; spray-and-mist.md §3, after Bohren
- * 1987). A cluster of optical depth τ scatters, and so adds, light: thin, the sun scattered once in the drops' forward
+ * The light of Rich spray and mist by its optical depth (decided 2026-09-29, item 1;
+ * docs/research/water-physics/notes/round4-spray-mist/spray-mist.md §3, after Bohren 1987). A cluster of optical depth τ scatters, and so adds, light: thin, the sun scattered once in the drops' forward
  * lobe (g = `MIST_G`) and the sky scattered evenly, E_sun p + E_sky / 4π per unit τ, which is dark toward a sun behind
  * the eye and burning toward one in front; thick, a white of foam's reflectance, reached by the two-stream reflectance
  * R = τ* / (2 + τ*), τ* = (1 − g) τ, which is 0.5 near τ = 15. It is drawn as the light it adds (weighted by 1 − e^−τ,
@@ -186,9 +186,10 @@ float foamBallGlowCoverage( float phase, float chord, float density ) {
  * The Rich spray's drawing in GLSL: each cluster is a capsule, as long as it travels in `streak` seconds (a drop's
  * frame or two; mist's, 0.3 s) and as wide as `width` times its cluster, mist drawn wider (1.2 against a drop's 0.5),
  * thickest on its axis and falling away to its edge as (1 − edge)^`shape`; the light of `sprayColour`; and the cluster
- * faded as it grows to fill the view or comes near the eye (True Surf's overdraw lesson, spray-and-mist.md §4). Mist's
- * trail and width are provisional, set by eye on the water sheet: the veil is shed all along a crest and drawn out
- * downwind, so it reads as the filament it is and not as a row of round puffs (a 0.1 s trail, 1.6 wide, did).
+ * faded as it grows to fill the view or comes near the eye (True Surf's overdraw lesson,
+ * docs/research/water-physics/notes/round4-spray-mist/spray-mist.md §5, item 1). Mist's trail and width are
+ * provisional, set by eye on the water sheet: the veil is shed all along a crest and drawn out downwind, so it reads as
+ * the filament it is and not as a row of round puffs (a 0.1 s trail, 1.6 wide, did).
  */
 export const SPRAY_DRAW = {
   streakDrop: 1 / 30, streakMist: 0.3, widthDrop: 0.5, widthMist: 1.2, shapeDrop: 2.5, shapeMist: 1.5, grain: 1.2, wisp: 0.7,
