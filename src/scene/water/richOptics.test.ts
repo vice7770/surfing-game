@@ -1,14 +1,17 @@
-import { ShaderLib, Vector3, type WebGLProgramParametersWithUniforms } from 'three';
+import { PerspectiveCamera, ShaderLib, Vector3, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
 import { FarFieldOcean } from '../FarFieldOcean';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import {
   BED_RAY_FLOOR, CLASSIC_FOAM, PARTICLE_ALBEDO, PARTICLE_BACKSCATTER_FRACTION, SPOT_OPTICS, WATER_ABSORPTION, WATER_IOR, applyOptics, beamAttenuation,
-  createOpticsUniforms, deepReflectance, diffuseAttenuation, shallowReflectance, waterBodyFragment, type WaterOptics,
+  createOpticsUniforms, deepReflectance, diffuseAttenuation, refractedCosine, schlickFresnel, shallowReflectance, WATER_F0, waterBodyFragment, type WaterOptics,
 } from '../waterOptics';
 import {
-  PHYTOPLANKTON, RICH_NORMAL_FLOOR, RICH_NORMAL_GUARD, applyLookOptics, applyRichWater, bedPathFactor, bricaudCdm, dissolvedAbsorption, guardedNormal,
-  phytoplanktonAbsorption, refractRay, richAbsorption, richBeamAttenuation, richDeepReflectance, richDiffuseAttenuation, richShallowReflectance,
+  CRITICAL_ANGLE, DIFFUSE_FRESNEL, DIFFUSE_STRETCH, FOAM_TRANSMITTANCE, LEVEL_OVER_NADIR, MIRROR_FLOOR, PHYTOPLANKTON, PLUME_OPTICAL_DEPTH, RICH_NORMAL_FLOOR,
+  RICH_NORMAL_GUARD, RICH_UNDERSIDE_REFLECTION, UNDERWATER_MARGIN, WINDOW_ANGLE, applyLookOptics, applyRichWater, bedPathFactor, bricaudCdm,
+  dissolvedAbsorption, downwelling, eyeUnderwaterIn, guardedNormal, mirroredWaterShape, phytoplanktonAbsorption, plumeTransmission, refractOut, refractRay,
+  richAbsorption, richBeamAttenuation, richDeepReflectance, richDiffuseAttenuation, richShallowReflectance, richUndersideFragment, shareEyeTest,
+  undersideRadiance, windowGain,
 } from './richOptics';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
@@ -361,5 +364,141 @@ describe('the Rich look’s sourced water colour', () => {
     expectRich(oceanUniforms, SPOT_OPTICS.padang);
     ocean.setLook('classic');
     expectClassic(oceanUniforms, SPOT_OPTICS.padang);
+  });
+});
+
+describe('the Rich surface seen from below', () => {
+  const down = new Vector3(0, -1, 0);
+  /** Looking up from under flat water, `zenith` degrees off the vertical. */
+  const looking = (zenith: number) => new Vector3(Math.sin((zenith * Math.PI) / 180), Math.cos((zenith * Math.PI) / 180), 0);
+
+  it('opens Snell’s window 97.2° across on flat water: the sky inside the critical angle, the water mirrored past it', () => {
+    expect((CRITICAL_ANGLE * 180) / Math.PI).toBeCloseTo(48.6, 1);
+    expect((WINDOW_ANGLE * 180) / Math.PI).toBeCloseTo(97.2, 1);
+    // A ray up at the critical angle leaves along the horizon; just past it, it is reflected whole.
+    expect(refractOut(looking(48.55), down).y).toBeGreaterThan(0);
+    expect(refractOut(looking(48.55), down).y).toBeLessThan(0.05);
+    expect(refractOut(looking(48.7), down).length()).toBe(0);
+    // Straight up the sky comes through, gaining n² (1 − F) (the radiance law entering the denser medium).
+    const sky = () => 1;
+    expect(undersideRadiance(looking(0), down, sky, 0)).toBeCloseTo(windowGain(1), 9);
+    expect(windowGain(1)).toBeCloseTo(WATER_IOR ** 2 * (1 - WATER_F0), 12);
+    // Past the critical angle the eye sees only the water mirrored.
+    expect(undersideRadiance(looking(60), down, sky, 0.3)).toBe(0.3);
+  });
+
+  it('is much brighter looking up than looking level (Tyler 1960’s 7 between level and nadir; up at least 4×)', () => {
+    // The light just under the surface at midday, sun 60° up (irradiance 1 square to it) and a sky of 0.3 on a level plane.
+    const below = downwelling(1, Math.sin((60 * Math.PI) / 180), 0.3, 0, 0);
+    const deep = richDeepReflectance(SPOT_OPTICS.padang)[1];
+    const level = (LEVEL_OVER_NADIR * deep * below) / Math.PI;
+    // The zenith: a sky radiance of a uniform sky giving the same 0.3, through the window.
+    const zenith = undersideRadiance(looking(0), down, () => 0.3 / Math.PI, level);
+    expect(zenith / level).toBeGreaterThan(4);
+    // The mirrored water falls from the level radiance to the nadir's, a seventh of it.
+    expect(mirroredWaterShape(-MIRROR_FLOOR)).toBeCloseTo((1 / 7) ** MIRROR_FLOOR, 12);
+    expect(mirroredWaterShape(-1)).toBeCloseTo(1 / 7, 12);
+    expect(mirroredWaterShape(0.3)).toBe(mirroredWaterShape(-MIRROR_FLOOR));
+  });
+
+  it('lights the bed it mirrors with the light under the surface: the sun after Fresnel down its refracted path, the sky down its diffuse one', () => {
+    const k = 0.12;
+    const mu = Math.sin((30 * Math.PI) / 180);
+    const sunIn = mu * (1 - schlickFresnel(mu));
+    const skyIn = 0.4 * (1 - DIFFUSE_FRESNEL);
+    expect(downwelling(1, mu, 0.4, k, 0)).toBeCloseTo(sunIn + skyIn, 12);
+    // At 5 m the sun has crossed 5/μ_w m of water, μ_w the refracted cosine (not the air side's), the sky 1.2 × 5 m.
+    expect(downwelling(1, mu, 0.4, k, 5)).toBeCloseTo(sunIn * Math.exp((-k * 5) / refractedCosine(mu)) + skyIn * Math.exp(-DIFFUSE_STRETCH * k * 5), 12);
+    expect(refractedCosine(mu)).toBeCloseTo(Math.cos(Math.asin(Math.sin(Math.acos(mu)) / WATER_IOR)), 12);
+    expect(refractedCosine(mu)).toBeGreaterThan(mu);
+    // A low sun's light still reaches the bed: refracted, it runs no shallower than the critical angle.
+    expect(refractedCosine(0.05)).toBeGreaterThan(Math.cos(CRITICAL_ANGLE) - 1e-9);
+  });
+
+  it('glows white under foam and plume, as diffusers lit from above', () => {
+    expect(FOAM_TRANSMITTANCE).toBe(0.45);
+    expect(plumeTransmission(0, 2)).toBe(1);
+    // A young plume, 10 % air over a metre: τ = 1500 · 0.1 · 1 = 150.
+    expect(plumeTransmission(0.1, 1)).toBeCloseTo(1 / (1 + 0.1125 * 150), 12);
+    expect(PLUME_OPTICAL_DEPTH).toBe(1500);
+  });
+
+  it('mirrors the CPU twins in its GLSL, from below only and only for an eye under the water', () => {
+    const glsl = richUndersideFragment(true);
+    expect(glsl).toContain('if ( richUnderwater > 0.5 && faceDirection < 0.0 ) {');
+    expect(glsl).toContain(`vec3 richOut = refract( -waterV, waterN, ${WATER_IOR.toFixed(3)} );`);
+    expect(glsl).toContain('vec3 richSunIn = waterSunRadiance * richSunUp * ( 1.0 - waterFresnel( richSunUp ) );');
+    expect(glsl).toContain(`vec3 richSkyIn = richSkyDown * ${(1 - DIFFUSE_FRESNEL).toFixed(3)};`);
+    expect(glsl).toContain('exp( -waterDiffuseAttenuation * vWaterDepth / waterRefractedCosine( richSunUp ) )');
+    expect(glsl).toContain(`exp( -waterDiffuseAttenuation * ${DIFFUSE_STRETCH.toFixed(1)} * vWaterDepth )`);
+    expect(glsl).toContain(`richCeiling = richF * richMirror + ( 1.0 - richF ) * ${(WATER_IOR ** 2).toFixed(3)} * richSky;`);
+    expect(glsl).toContain(`richMirrorDir.y = min( richMirrorDir.y, -${MIRROR_FLOOR.toFixed(2)} );`);
+    expect(glsl).toContain('vWaterAir');
+    expect(richUndersideFragment(false)).not.toContain('vWaterAir');
+    expect(RICH_UNDERSIDE_REFLECTION).toContain('if ( richUnderwater > 0.5 && faceDirection < 0.0 ) radiance = vec3( 0.0 );');
+  });
+
+  it('is compiled into the Rich tank and far ocean only; Classic’s programs are untouched', () => {
+    const tank = new WaterSurface(source);
+    tank.setLook('rich');
+    const fragment = fragmentOf(tank.mesh.material);
+    expect(fragment).toContain(richUndersideFragment(true));
+    expect(fragment).toContain(RICH_UNDERSIDE_REFLECTION);
+    expect(fragment.indexOf(richUndersideFragment(true))).toBeGreaterThan(fragment.indexOf('diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );'));
+    const ocean = new FarFieldOcean();
+    ocean.setLook('rich');
+    expect(fragmentOf(ocean.mesh.material)).toContain(richUndersideFragment(false));
+    expect(fragmentOf(new WaterSurface({ ...source, cubic: false }).mesh.material)).not.toContain('richUnderwater');
+    expect(fragmentOf(new FarFieldOcean().mesh.material)).not.toContain('richUnderwater');
+  });
+
+  it('knows the eye is under the water by its own test or the page’s answer, per scene, never by draw order', () => {
+    const data = { grid, time: 0, bedRevision: 0, writeBed: () => {}, cubic: true };
+    // A tank whose surface stands 1 m above the datum everywhere.
+    const tank = new WaterSurface({ ...data, write: (into: Float32Array) => { for (let i = 0; i < into.length; i += 2) into[i] = 1; } });
+    tank.update();
+    tank.setLook('rich');
+    expect(tank.eyeIsBelow(3, 1 - UNDERWATER_MARGIN - 0.01, 3)).toBe(true);
+    expect(tank.eyeIsBelow(3, 1 - UNDERWATER_MARGIN + 0.01, 3)).toBe(false);
+    // The page's answer wins: in the swept barrel's tube the eye is in air, whatever the solver's height says.
+    tank.setEyeUnderwater(false);
+    expect(tank.eyeIsBelow(3, -5, 3)).toBe(false);
+    tank.setEyeUnderwater(true);
+    expect(tank.eyeIsBelow(3, 5, 3)).toBe(true);
+    tank.setEyeUnderwater(undefined);
+    // Each mesh sets its own flag for the camera about to draw it.
+    const scene = {};
+    const draw = (mesh: { onBeforeRender: (...args: never[]) => void }, inScene: object, x: number, y: number) => {
+      const camera = new PerspectiveCamera();
+      camera.position.set(x, y, 3);
+      camera.updateMatrixWorld();
+      mesh.onBeforeRender(undefined as never, inScene as never, camera as never, undefined as never, undefined as never, undefined as never);
+    };
+    const uniforms = tank.materialUniforms;
+    draw(tank.mesh, scene, 3, 0);
+    expect(uniforms.richUnderwater.value).toBe(1);
+    draw(tank.patch, scene, 3, 4);
+    expect(uniforms.richUnderwater.value).toBe(0);
+    // The far ocean asks the tank drawn in its own scene, for its own camera, whichever was drawn last.
+    const ocean = new FarFieldOcean();
+    ocean.setLook('rich');
+    const oceanUniforms = (ocean as unknown as { uniforms: Record<string, { value: unknown }> }).uniforms;
+    draw(ocean.mesh, scene, 3, 0);
+    expect(oceanUniforms.richUnderwater.value).toBe(1);
+    draw(ocean.mesh, scene, 3, 4);
+    expect(oceanUniforms.richUnderwater.value).toBe(0);
+    // Another scene's water says nothing about this one.
+    draw(ocean.mesh, {}, 3, 0);
+    expect(oceanUniforms.richUnderwater.value).toBe(0);
+    shareEyeTest(scene, () => true);
+    expect(eyeUnderwaterIn(scene, 0, 100, 0)).toBe(true);
+    expect(eyeUnderwaterIn({}, 0, -100, 0)).toBe(false);
+    // Classic draws no underside.
+    tank.setLook('classic');
+    draw(tank.mesh, scene, 3, 0);
+    expect(uniforms.richUnderwater.value).toBe(0);
+    ocean.setLook('classic');
+    draw(ocean.mesh, scene, 3, 0);
+    expect(oceanUniforms.richUnderwater.value).toBe(0);
   });
 });

@@ -25,7 +25,10 @@ import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
 import { churnTexture, waterChurnPars } from './water/churnTexture';
-import { RICH_NORMAL_GUARD, applyLookOptics } from './water/richOptics';
+import {
+  RICH_NORMAL_GUARD, RICH_UNDERSIDE_REFLECTION, UNDERWATER_MARGIN, applyLookOptics, createUnderwaterUniforms, richUndersideFragment, richUndersidePars,
+  shareEyeTest,
+} from './water/richOptics';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterStreakPars } from './water/streaks';
@@ -243,6 +246,10 @@ export class WaterSurface {
   private currentLook: WaterLook = 'classic';
   /** The spot's water, applied for the look drawn (`createOpticsUniforms` starts at the Beach's). */
   private optics: WaterOptics = SPOT_OPTICS.beach;
+  /** The page's own answer to whether the eye is under the water as drawn (`setEyeUnderwater`); undefined leaves it to this water's test. */
+  private eyeBelow: boolean | undefined;
+  /** `eyeIsBelow`, bound: what this water leaves with the scene it is drawn in, for the far ocean. */
+  private readonly eyeTest = (x: number, y: number, z: number) => this.eyeIsBelow(x, y, z);
   /** The swept barrel's seam (Part B, PR 3): its mask on the render grid's nodes, compiled in only at a swept spot. */
   private barrelEnabled = false;
   private barrelMaskData: Uint8Array;
@@ -275,6 +282,7 @@ export class WaterSurface {
       waterChop: { value: DEFAULT_WATER_CHOP },
       ...chopFieldUniforms,
       ...createOpticsUniforms(),
+      ...createUnderwaterUniforms(),
       ...this.causticUniforms,
       waterPatchRect: { value: new Vector4() },
       waterPatchActive: { value: 0 },
@@ -309,14 +317,14 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richUndersidePars}\n${richPatchFragmentPars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
           .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }) + RICH_NORMAL_GUARD)
           .replace('#include <color_fragment>', '')
-          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM, '', true))
-          .replace('#include <lights_fragment_maps>', RICH_REFLECTION);
+          .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM + richUndersideFragment(true), '', true))
+          .replace('#include <lights_fragment_maps>', RICH_REFLECTION + RICH_UNDERSIDE_REFLECTION);
         return;
       }
       shader.vertexShader = shader.vertexShader
@@ -344,9 +352,12 @@ export class WaterSurface {
     this.patch.visible = false;
     this.mesh.add(this.patch);
     // Both meshes place the patch from the camera about to draw them, so the answer never depends on draw order.
-    const place = (camera: Camera) => this.placePatch(camera);
-    this.mesh.onBeforeRender = (_renderer, _scene, camera) => place(camera);
-    this.patch.onBeforeRender = (_renderer, _scene, camera) => place(camera);
+    const place = (scene: object, camera: Camera) => {
+      shareEyeTest(scene, this.eyeTest);
+      this.placePatch(camera);
+    };
+    this.mesh.onBeforeRender = (_renderer, scene, camera) => place(scene, camera);
+    this.patch.onBeforeRender = (_renderer, scene, camera) => place(scene, camera);
     this.update();
   }
 
@@ -442,6 +453,26 @@ export class WaterSurface {
     this.barrelMaskTexture.needsUpdate = true;
   }
 
+  /**
+   * Whether the eye is under the water as the page draws it, which the Rich underside follows: the page knows what this
+   * water cannot, since the swept barrel's loft is drawn over the solver's surface and an eye in its tube is in air.
+   * Undefined (the default) leaves it to this water's own test (`eyeIsBelow`).
+   */
+  setEyeUnderwater(below: boolean | undefined): void {
+    this.eyeBelow = below;
+  }
+
+  /**
+   * Whether an eye at (x, y, z) is under this water: the page's answer when it gives one; else the camera against the
+   * solver's height here (sea level off the grid), by `UNDERWATER_MARGIN`, and never inside the swept barrel's footprint,
+   * where the loft, not the solver, says whether it is in the tube's air. A back face alone is not enough: at grazing
+   * angles a camera just above a swell sees the far side of a crest edge-on.
+   */
+  eyeIsBelow(x: number, y: number, z: number): boolean {
+    if (this.eyeBelow !== undefined) return this.eyeBelow;
+    return y < sampleSurfaceHeight(this.surfaceData, this.source.grid, x, z) - UNDERWATER_MARGIN && !this.barrelCovers(x, z);
+  }
+
   get barrelMaskActive(): boolean {
     return this.uniforms.waterBarrelMaskActive.value === 1;
   }
@@ -477,9 +508,21 @@ export class WaterSurface {
   private readonly patchCamera = new Vector3();
   private readonly patchDirection = new Vector3();
 
+  /** Whether the swept barrel's seam covers the node at (x, z): the curl is drawn there in the water's place. */
+  private barrelCovers(x: number, z: number): boolean {
+    if (!this.barrelEnabled || this.uniforms.waterBarrelMaskActive.value !== 1) return false;
+    const { xMin, zMin, spacing, nx, nz } = this.source.grid;
+    const i = Math.round((x - xMin) / spacing);
+    const k = Math.round((z - zMin) / spacing);
+    return i >= 0 && k >= 0 && i < nx && k < nz && this.barrelMaskData[k * nx + i] > 127;
+  }
+
+  /** Both meshes' `onBeforeRender`: the Rich underside's flag and the patch's place, for the camera about to draw them. */
   private placePatch(camera: Camera): void {
-    if (!this.patch.visible) return;
     camera.getWorldPosition(this.patchCamera);
+    const { x, y, z } = this.patchCamera;
+    this.uniforms.richUnderwater.value = this.effectiveLook === 'rich' && this.eyeIsBelow(x, y, z) ? 1 : 0;
+    if (!this.patch.visible) return;
     camera.getWorldDirection(this.patchDirection);
     const rect = patchRect({ x: this.patchCamera.x, z: this.patchCamera.z, dirX: this.patchDirection.x, dirZ: this.patchDirection.z }, this.source.grid);
     (this.uniforms.waterPatchRect.value as Vector4).set(rect.x0, rect.z0, rect.x1, rect.z1);
