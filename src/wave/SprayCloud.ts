@@ -119,9 +119,13 @@ const WATER_DENSITY = 1025;
 /**
  * Floats per particle in `particles`: x, y, z, size (m), opacity, and kind:
  * 0 spray, 1 mist, and a closing tube's whitewater (G9, drawn in Rich only):
- * 2 foam ball, 3 the spit's and eruption's spray, 4 their mist.
+ * 2 foam ball, 3 the spit's and eruption's spray, 4 their mist. Then, for the
+ * Rich look, appended after the kind so every older reader keeps its offsets
+ * (written only while the cloud's `look` is Rich): the particle's velocity
+ * (m/s), which streaks it, and `tau`, the optical depth across its cluster's
+ * centre, which sets its opacity and whiteness.
  */
-export const SPRAY_STRIDE = 6;
+export const SPRAY_STRIDE = 10;
 /** The worker's pools: spray and mist, and a closing tube's whitewater beside them, so neither crowds the other out. */
 export const SPRAY_CAPACITY = 4096;
 export const WHITEWATER_CAPACITY = 1024;
@@ -132,6 +136,60 @@ const MIST: Kind = 1;
 const FOAM_BALL: Kind = 2;
 const TUBE_SPRAY: Kind = 3;
 const TUBE_MIST: Kind = 4;
+/**
+ * The law of spray drop sizes (Erinin et al. 2023, fitted to a plunging breaker's splash; spray-and-mist.md §2a): the
+ * count of drops falls as d^-2 below the knee and d^-6 above it, which sits at 0.8–1.5 mm.
+ */
+export const DROP_LAW = { knee: 1e-3, below: -2, above: -6 } as const;
+
+/**
+ * A representative drop diameter, m, for a cluster of spray: a drop picked by the water it holds, not by count. A
+ * cluster's optical depth is set by its water and its drops' Sauter radius (τ = 1.5 w / r₃₂, Bohren 1987), and a
+ * cluster of equal water drawn from the law by volume weight, d³ × d^-2 = d below the knee and d³ × d^-6 = d^-3 above
+ * it, has exactly that mean extinction. `u` in [0, 1) walks the volume-weighted distribution between `smallest` and
+ * `largest`.
+ */
+export function dropDiameter(u: number, smallest: number, largest: number): number {
+  const knee = DROP_LAW.knee;
+  // The volume weight is d below the knee and, to join it there, knee⁴ · d^-3 above: their integrals are d²/2 and knee⁴ · (−d^-2/2).
+  const below = smallest < knee ? (Math.min(largest, knee) ** 2 - smallest ** 2) / 2 : 0;
+  const start = Math.max(smallest, knee);
+  const above = largest > knee ? (knee ** 4 * (start ** -2 - largest ** -2)) / 2 : 0;
+  const target = u * (below + above);
+  if (target < below) return Math.sqrt(smallest ** 2 + 2 * target);
+  return (start ** -2 - (2 * (target - below)) / knee ** 4) ** -0.5;
+}
+
+/** The optical depth, across a cluster's centre, of drops of radius `radius` holding a water path `water` (a depth, m): Bohren 1987, τ = 1.5 w / r. */
+export function opticalDepth(water: number, radius: number): number {
+  return (1.5 * water) / radius;
+}
+
+/**
+ * What each kind of drawn particle holds, for its optical depth: its drops' diameters, m, by the law of drop sizes
+ * between `smallest` and `largest` (splash drops 0.3–3 mm, Erinin et al.; spume 0.1–0.5 mm, its peak a radius of
+ * 0.1 mm, Veron 2015; a spit's spray in between), and `liquid`, the water share of its cluster's volume at birth, so
+ * that the water path across its centre is `liquid` times its width. Render values, provisional: a splash cluster
+ * starts at 1 % (Chanson et al. 2002 measured under 2 % in a splash), dense enough that an impact's clusters read white
+ * together (τ of a few each), and thins to see-through (τ near 1) as it spreads and its drops fall out. Mist starts a
+ * fortieth as dense, in clusters five times as wide: a veil, τ about a half at its densest.
+ */
+const OPTICS = [
+  { smallest: 0.3e-3, largest: 3e-3, liquid: 1e-2 },
+  { smallest: 0.1e-3, largest: 0.5e-3, liquid: 2.5e-4 },
+  { smallest: 1e-3, largest: 1e-3, liquid: 0 },
+  { smallest: 0.1e-3, largest: 0.6e-3, liquid: 4e-3 },
+  { smallest: 0.1e-3, largest: 0.4e-3, liquid: 3e-4 },
+] as const;
+/** A cluster of spray spreads as it flies, the Rich look drawing it this much wider by the end of its life (mist already does, 1 + t) [provisional]. */
+const SPRAY_SPREAD = 1;
+/**
+ * A cluster's water tears into drops over this time, s: clear when young, as a sheet or ligament is until it
+ * fragments, then white (Surf's Up went from "clear refractive water to a white aerated appearance", SIGGRAPH 2007
+ * course notes) [provisional].
+ */
+const BREAKUP = 0.15;
+
 /** A closing tube's whitewater, drawn in Rich only. */
 const isWhitewater = (kind: number) => kind >= FOAM_BALL;
 const isMist = (kind: number) => kind === MIST || kind === TUBE_MIST;
@@ -168,18 +226,24 @@ export class SprayCloud {
   private readonly drag: Float64Array;
   private readonly size: Float64Array;
   private readonly kind: Uint8Array;
+  /** Per particle, its drops' radius, m, and its cluster's water path across the centre at birth, m (`OPTICS`). */
+  private readonly radius: Float64Array;
+  private readonly water: Float64Array;
   /** A foam-ball sprite's roller, and where it sits in it: its distance from the axis, angle round it, and offset along it. */
   private readonly owner: Float64Array;
   private readonly radial: Float64Array;
   private readonly spin: Float64Array;
   private readonly lateral: Float64Array;
   private readonly random: () => number;
+  /** A stream of its own for the optics (drop sizes, water), so the particles' flight is the same whatever is drawn of them. */
+  private readonly optical: () => number;
   /** Scratch for `roll`: each roller's sprites, and the rollers by id. */
   private readonly held = new Map<number, number>();
   private readonly rollerById = new Map<number, TubeRoller>();
 
   constructor(seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4)) {
     this.random = seededRandom(seed, 0x5b1a54);
+    this.optical = seededRandom(seed, 0x0d70b5);
     const total = capacity + whitewaterCapacity;
     const make = () => new Float64Array(total);
     this.x = make(); this.y = make(); this.z = make();
@@ -187,6 +251,7 @@ export class SprayCloud {
     this.age = make(); this.life = make(); this.drag = make(); this.size = make();
     this.owner = make(); this.radial = make(); this.spin = make(); this.lateral = make();
     this.kind = new Uint8Array(total);
+    this.radius = make(); this.water = make();
     this.particles = new Float32Array(total * SPRAY_STRIDE);
   }
 
@@ -465,6 +530,8 @@ export class SprayCloud {
       this.drag[k] = 0;
       this.life[k] = FOAM_BALL_LINGER;
       this.size[k] = this.between(FOAM_BALL_SIZE);
+      this.radius[k] = 1;
+      this.water[k] = 0;
       return;
     }
     const mist = isMist(kind);
@@ -472,6 +539,9 @@ export class SprayCloud {
     this.drag[k] = GRAVITY / (fall * fall);
     this.life[k] = (mist ? MIST_LIFE : SPRAY_LIFE) * (0.6 + 0.4 * this.random());
     this.size[k] = mist ? 0.35 + 0.45 * this.random() : 0.06 + 0.08 * this.random();
+    const optics = OPTICS[kind];
+    this.radius[k] = dropDiameter(this.optical(), optics.smallest, optics.largest) / 2;
+    this.water[k] = optics.liquid * this.size[k] * (0.7 + 0.6 * this.optical());
   }
 
   private remove(k: number): void {
@@ -489,6 +559,8 @@ export class SprayCloud {
     this.drag[k] = this.drag[last];
     this.size[k] = this.size[last];
     this.kind[k] = this.kind[last];
+    this.radius[k] = this.radius[last];
+    this.water[k] = this.water[last];
     this.owner[k] = this.owner[last];
     this.radial[k] = this.radial[last];
     this.spin[k] = this.spin[last];
@@ -496,19 +568,33 @@ export class SprayCloud {
   }
 
   private pack(): void {
+    const rich = this.look === 'rich';
     for (let k = 0; k < this.count; k += 1) {
       const o = k * SPRAY_STRIDE;
       const t = this.age[k] / this.life[k];
       const mist = isMist(this.kind[k]);
+      // Classic draws mist growing to twice its width; the Rich look draws a spray cluster spreading too (not a foam ball).
+      const grown = mist ? 1 + t : rich && this.kind[k] !== FOAM_BALL ? 1 + SPRAY_SPREAD * t : 1;
       this.particles[o] = this.x[k];
       this.particles[o + 1] = this.y[k];
       this.particles[o + 2] = this.z[k];
-      this.particles[o + 3] = this.size[k] * (mist ? 1 + t : 1);
+      this.particles[o + 3] = this.size[k] * grown;
       // A foam ball holds until its roller is gone, then fades over the time it lingers.
       this.particles[o + 4] = this.kind[k] === FOAM_BALL
         ? 0.9 * Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
         : (mist ? 0.25 : 0.8) * (1 - t * t);
       this.particles[o + 5] = this.kind[k];
+      // Only the Rich look reads the rest.
+      if (!rich) continue;
+      this.particles[o + 6] = this.vx[k];
+      this.particles[o + 7] = this.vy[k];
+      this.particles[o + 8] = this.vz[k];
+      // The cluster's optical depth: clear while its water is still a sheet, then thinning as the cluster spreads
+      // and its drops fall out. (After eight time constants the sheet is drops, to a part in 3,000: no exponential.)
+      const drops = this.age[k] < 8 * BREAKUP ? 1 - Math.exp(-this.age[k] / BREAKUP) : 1;
+      this.particles[o + 9] = this.kind[k] === FOAM_BALL
+        ? 0
+        : (opticalDepth(this.water[k], this.radius[k]) * drops * Math.max(0, 1 - t * t)) / (grown * grown);
     }
   }
 

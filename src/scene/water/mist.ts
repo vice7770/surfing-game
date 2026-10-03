@@ -1,13 +1,13 @@
 /** Spray sprites at least this wide, m, are mist (G6 draws mist at 0.35–0.8 m, drops at 0.06–0.14 m). */
 export const MIST_SIZE = 0.25;
-/** Mist's forward-scattering asymmetry: fine droplets throw most light on toward the eye when backlit. */
-export const MIST_G = 0.6;
 /**
  * Water drops' forward-scattering asymmetry. Mie theory gives g = 0.86–0.87 for drops of 10–25 µm and 0.88 for
  * 50–500 µm (sea water 0.87–0.88; docs/research/water-physics/spray-and-mist.md §3, after Bohren 1987), against the
  * 0.6 mist was lit with. Half of what a drop scatters goes within 5° of straight on.
  */
 export const DROP_G = 0.87;
+/** Mist's forward-scattering asymmetry: fine droplets throw most light on toward the eye when backlit. That is the drops' own. */
+export const MIST_G = DROP_G;
 
 export function isMist(size: number): boolean {
   return size > MIST_SIZE;
@@ -83,6 +83,69 @@ export function foamBallGlow(phase: number, chord: number, density: number, sun:
   };
 }
 
+/**
+ * The light of Rich spray and mist by its optical depth (decided 2026-09-29, item 1; spray-and-mist.md §3, after Bohren
+ * 1987). A cluster of optical depth τ scatters, and so adds, light: thin, the sun scattered once in the drops' forward
+ * lobe (g = `MIST_G`) and the sky scattered evenly, E_sun p + E_sky / 4π per unit τ, which is dark toward a sun behind
+ * the eye and burning toward one in front; thick, a white of foam's reflectance, reached by the two-stream reflectance
+ * R = τ* / (2 + τ*), τ* = (1 − g) τ, which is 0.5 near τ = 15. It is drawn as the light it adds (weighted by 1 − e^−τ,
+ * what it intercepts) and the share of the background it hides.
+ * - `leak`: drops scatter forward, so most of the light a thin cluster stops still reaches the eye, slightly turned: it
+ *   hides only this share of the background that is stopped, rising to all of it once the cluster is white. Hiding all of
+ *   it at once would darken a bright foam behind every speck of thin spray [provisional].
+ * - `chroma`: how much of the sun's colour the single scattering keeps. The sun a low sky gives is far more orange than
+ *   the light that reaches spray through the sky's own haze and the many scatterings of a veil [provisional].
+ * - `phaseMax`: the most the phase function (1 for an isotropic scatterer) may brighten a cluster, so a sun in the line
+ *   of sight glows and does not blind [provisional].
+ * - `readable`: the decided readability minimum. Thin spray lit from the front is physically almost invisible; it
+ *   shows at least this share of the light it would be thick, as Surf's Up bent physics for readability [provisional].
+ * - `whiteAt`: the reflectance at which the cluster is wholly the thick white. A splash's clusters overlap several deep
+ *   where it is densest, and blend one by one, so one cluster is white at about τ = 3 where a whole column is white at 15
+ *   [provisional].
+ */
+export const SPRAY_LIGHT = { leak: 0.3, chroma: 0.4, phaseMax: 24, readable: 0.35, whiteAt: 0.15 } as const;
+
+const smoothstep = (from: number, to: number, x: number) => {
+  const t = Math.min(1, Math.max(0, (x - from) / (to - from)));
+  return t * t * (3 - 2 * t);
+};
+
+/** The two-stream reflectance of a non-absorbing cluster of optical depth `tau` whose drops scatter with `DROP_G` (Bohren 1987). */
+export function sprayReflectance(tau: number): number {
+  const reduced = (1 - DROP_G) * tau;
+  return reduced / (2 + reduced);
+}
+
+/** How white a cluster of optical depth `tau` is, 0–1: its reflectance up to `SPRAY_LIGHT.whiteAt`. */
+export function sprayWhite(tau: number): number {
+  return smoothstep(0, SPRAY_LIGHT.whiteAt, sprayReflectance(tau));
+}
+
+/**
+ * A spray cluster's light at optical depth `tau` along the view ray: its colour (linear, before tone mapping), the
+ * `emission` that colour is added with (1 − e^−τ) and the share of the background it `hidden`. `phase` is the drops'
+ * phase function toward the eye (4π · HG, 1 for an isotropic scatterer), `facing` and `up` the cluster's surface normal
+ * against the sun and the world's up where it is thick, and `sky`, `ground` and `sun` the light, as for
+ * `foamBallColour`. The GLSL in `sprayPars` mirrors it.
+ */
+export function sprayColour(
+  tau: number, phase: number, facing: number, up: number, sky: number, ground: number, sun: readonly [number, number, number],
+): { colour: [number, number, number]; emission: number; hidden: number } {
+  const white = sprayWhite(tau);
+  const grey = luminance(sun);
+  const thick = foamBallColour(facing, up, sky, ground, sun);
+  const base = sun.map((channel, k) => {
+    const tinted = grey + (channel - grey) * SPRAY_LIGHT.chroma;
+    const thin = (tinted * Math.min(phase, SPRAY_LIGHT.phaseMax) + sky) / (4 * Math.PI);
+    return thin + (thick[k] - thin) * white;
+  });
+  // The readability minimum lifts the light, keeping its hue: a floor per channel would whiten the faint edge of a streak.
+  const lift = Math.max(1, (SPRAY_LIGHT.readable * luminance(thick)) / Math.max(luminance(base), 1e-4));
+  const colour = base.map((channel) => channel * lift) as [number, number, number];
+  const emission = 1 - Math.exp(-tau);
+  return { colour, emission, hidden: emission * (SPRAY_LIGHT.leak + (1 - SPRAY_LIGHT.leak) * white) };
+}
+
 export const mistPars = /* glsl */ `
 const float MIST_SIZE = ${MIST_SIZE.toFixed(3)};
 const float MIST_G = ${MIST_G.toFixed(3)};
@@ -116,5 +179,51 @@ vec3 foamBallColour( float facing, float up, float sky, float ground, vec3 sun )
 float foamBallGlowCoverage( float phase, float chord, float density ) {
   float tau = BALL_DEPTH * chord * ( 0.5 + 0.5 * density );
   return min( 1.0, BALL_GLOW * ( min( phase, BALL_GLOW_MAX ) / BALL_GLOW_MAX ) * tau * exp( 1.0 - tau ) );
+}
+`;
+
+/**
+ * The Rich spray's drawing in GLSL: each cluster is a capsule, as long as it travels in `streak` seconds (a drop's
+ * frame or two; a veil's longer trail) and as wide as `width` times its cluster, mist drawn wider, thickest on its axis
+ * and falling away to its edge as (1 − edge)^`shape`; the light of `sprayColour`; and the cluster faded as it grows to fill
+ * the view or comes near the eye (True Surf's overdraw lesson, spray-and-mist.md §4).
+ */
+export const SPRAY_DRAW = {
+  streakDrop: 1 / 30, streakMist: 0.1, widthDrop: 0.5, widthMist: 1.6, shapeDrop: 2.5, shapeMist: 1.5, grain: 1.2, wisp: 0.7,
+  fadeFrom: 0.12, fadeTo: 0.3, nearFrom: 0.4, nearTo: 2,
+} as const;
+
+export const sprayDrawPars = /* glsl */ `
+const float STREAK_DROP = ${SPRAY_DRAW.streakDrop.toFixed(5)};
+const float STREAK_MIST = ${SPRAY_DRAW.streakMist.toFixed(5)};
+const float WIDTH_DROP = ${SPRAY_DRAW.widthDrop.toFixed(3)};
+const float WIDTH_MIST = ${SPRAY_DRAW.widthMist.toFixed(3)};
+const float SHAPE_DROP = ${SPRAY_DRAW.shapeDrop.toFixed(3)};
+const float SHAPE_MIST = ${SPRAY_DRAW.shapeMist.toFixed(3)};
+const float SPRAY_GRAIN = ${SPRAY_DRAW.grain.toFixed(3)};
+const float SPRAY_WISP = ${SPRAY_DRAW.wisp.toFixed(3)};
+const float FADE_FROM = ${SPRAY_DRAW.fadeFrom.toFixed(3)};
+const float FADE_TO = ${SPRAY_DRAW.fadeTo.toFixed(3)};
+const float NEAR_FROM = ${SPRAY_DRAW.nearFrom.toFixed(3)};
+const float NEAR_TO = ${SPRAY_DRAW.nearTo.toFixed(3)};
+`;
+
+export const sprayPars = /* glsl */ `
+const float SPRAY_LEAK = ${SPRAY_LIGHT.leak.toFixed(3)};
+const float SPRAY_CHROMA = ${SPRAY_LIGHT.chroma.toFixed(3)};
+const float SPRAY_PHASE_MAX = ${SPRAY_LIGHT.phaseMax.toFixed(1)};
+const float SPRAY_READABLE = ${SPRAY_LIGHT.readable.toFixed(3)};
+const float SPRAY_WHITE_AT = ${SPRAY_LIGHT.whiteAt.toFixed(3)};
+float sprayWhite( float tau ) {
+  float reduced = ( 1.0 - DROP_G ) * tau;
+  return smoothstep( 0.0, SPRAY_WHITE_AT, reduced / ( 2.0 + reduced ) );
+}
+vec3 sprayColour( float tau, float phase, float facing, float up, float sky, float ground, vec3 sun ) {
+  vec3 tinted = vec3( dot( sun, vec3( 0.2126, 0.7152, 0.0722 ) ) );
+  tinted += ( sun - tinted ) * SPRAY_CHROMA;
+  vec3 thin = ( tinted * min( phase, SPRAY_PHASE_MAX ) + vec3( sky ) ) / 12.566370614;
+  vec3 thick = foamBallColour( facing, up, sky, ground, sun );
+  vec3 base = mix( thin, thick, sprayWhite( tau ) );
+  return base * max( 1.0, SPRAY_READABLE * dot( thick, vec3( 0.2126, 0.7152, 0.0722 ) ) / max( dot( base, vec3( 0.2126, 0.7152, 0.0722 ) ), 1e-4 ) );
 }
 `;

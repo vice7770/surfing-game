@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
+import { DROP_LAW, FOAM_BALL_VOLUME, SPRAY_PER_AIR, SPRAY_STRIDE, SprayCloud, dropDiameter, opticalDepth, splashLaunch, type LipImpact, type SprayScene, type StrokeSplash } from './SprayCloud';
 import { SPLASH_UP, type TubeEruption, type TubeRoller, type TubeSpit } from './PlungingLip';
 
 /** Flat water 2 m deep over 10 m × 40 m (1 m cells), still, with no bores; `crest` raises a steep shoreward-facing step. */
@@ -238,8 +238,9 @@ describe('the foam ball (G9)', () => {
     expect([...kinds].sort()).toEqual([3, 4]);
   });
 
-  it('packs each particle’s kind after its opacity: spray 0, mist 1, foam ball 2', () => {
-    expect(SPRAY_STRIDE).toBe(6);
+  it('packs each particle’s kind after its opacity, and its velocity and optical depth after the kind: spray 0, mist 1, foam ball 2', () => {
+    // Appended after the kind, so every reader of the older offsets (x, y, z, size, opacity, kind) is unmoved.
+    expect(SPRAY_STRIDE).toBe(10);
     const cloud = new SprayCloud(3);
     cloud.update({ ...flatScene(0, [impact(0.2)]), rollers: [roller()] }, 1 / 60);
     const kinds = new Set(Array.from({ length: cloud.count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + 5]));
@@ -301,5 +302,209 @@ describe('a swept barrel’s landing spray (Padang Padang, Part B, PR 5)', () =>
       plain.update(flatScene(0, [impact(0.05)]), 1 / 60);
       for (let k = 0; k < plain.count; k += 1) expect(plain.particles[k * SPRAY_STRIDE + 1]).toBeCloseTo(0.05, 6);
     }
+  });
+});
+
+describe('the Classic spray’s particles (the Rich optics added beside them)', () => {
+  /** A steep crest facing the shore over 2 m of water, with bore foam behind it and the flow a little onshore. */
+  function goldenScene(windSpeed: number, lipImpacts: LipImpact[], extras: Partial<SprayScene> = {}): SprayScene {
+    const nx = 10;
+    const nz = 40;
+    const h = new Float64Array(nx * nz).fill(2);
+    for (let row = 18; row <= 20; row += 1) for (let column = 0; column < nx; column += 1) h[row * nx + column] = row === 20 ? 2.9 : 2 + 0.9 * (row - 17) / 3;
+    const source = new Float64Array(nx * nz);
+    for (let column = 2; column < 6; column += 1) source[22 * nx + column] = 1.5;
+    return {
+      solver: {
+        nx, nz, dx: 1, restLevel: 0,
+        xCenters: Array.from({ length: nx }, (_, i) => i + 0.5),
+        zCenters: Array.from({ length: nz }, (_, i) => i + 0.5),
+        dz: new Float64Array(nz).fill(1),
+        h, bed: new Float64Array(nx * nz).fill(-2), qx: new Float64Array(nx * nz).fill(0.3), qz: new Float64Array(nx * nz).fill(0.5),
+        cellIndex: (x, z) => Math.min(nz - 1, Math.max(0, Math.floor(z))) * nx + Math.min(nx - 1, Math.max(0, Math.floor(x))),
+      },
+      foam: { source }, lipImpacts, windSpeed, ...extras,
+    };
+  }
+
+  /**
+   * FNV-1a over the bits of every live particle's fields `fields` (of x, y, z, size, opacity, kind): what a Classic reader
+   * sees, all six; or, for the Rich look, which draws a spray cluster spreading, where the particles are and what they are.
+   */
+  function readerHash(cloud: SprayCloud, fields: readonly number[]): string {
+    const float = new Float32Array(1);
+    const bits = new Uint32Array(float.buffer);
+    let hash = 0x811c9dc5;
+    for (let k = 0; k < cloud.count; k += 1) {
+      for (const j of fields) {
+        float[0] = cloud.particles[k * SPRAY_STRIDE + j];
+        hash = Math.imul(hash ^ bits[0], 0x01000193) >>> 0;
+      }
+    }
+    return `${cloud.count}:${hash.toString(16)}`;
+  }
+
+  /**
+   * Four seconds of impacts, paddle strokes, a roller, spits, eruptions, bore foam and a changing wind; the hashes taken
+   * every 40 steps. Classic runs the offshore winds (its feathering is as it was before the Rich veil); Rich runs
+   * winds that never blow offshore.
+   */
+  function hashes(look: 'classic' | 'rich'): string[] {
+    const cloud = new SprayCloud(7);
+    cloud.look = look;
+    const roller: TubeRoller = { id: 1, x: 5, y: 0.5, z: 20, dirX: 0, dirZ: 1, speed: 4, area: 1.5, width: 1 };
+    const spit: TubeSpit = { x: 5, y: 1, z: 20, dirX: 1, dirZ: 0, speed: 6, airRate: 3 };
+    const eruption: TubeEruption = { x: 5, y: 1, z: 20, airRate: 2, speed: 3 };
+    const stroke: StrokeSplash = { x: 5, y: 0, z: 20, jx: 0, jy: 0, jz: 40, speed: 4 };
+    const out: string[] = [];
+    for (let frame = 0; frame < 240; frame += 1) {
+      const wind = look === 'classic' ? (frame < 90 ? -9 : frame < 150 ? 4 : -3) : (frame < 90 ? 6 : frame < 150 ? 4 : 0);
+      const impacts: LipImpact[] = frame % 25 === 0 ? [{ x: 5, z: 20, volume: 0.15, whole: 0.2, kind: frame % 50 === 0 ? 0 : 1, vx: 0.5, vy: -4, vz: 5 }] : [];
+      cloud.update(goldenScene(wind, impacts, {
+        strokes: frame % 30 === 0 ? [stroke] : undefined, rollers: frame < 100 ? [roller] : undefined,
+        spits: frame % 40 === 0 ? [spit] : undefined, eruptions: frame % 60 === 0 ? [eruption] : undefined,
+      }), 1 / 60);
+      if (frame % 40 === 39) out.push(readerHash(cloud, look === 'classic' ? [0, 1, 2, 3, 4, 5] : [0, 1, 2, 5]));
+    }
+    return out;
+  }
+
+  it('flies and draws exactly as before the optics: every particle’s position, size, opacity and kind (hashes taken on the code before)', () => {
+    expect(hashes('classic')).toEqual(['234:c32f839d', '295:ab926a38', '281:a9244b0c', '300:a322e1da', '83:7535a966', '160:28044001']);
+  });
+
+  it('flies the Rich spray as before too, where it is not blown off a crest by an offshore wind: where every particle is and what it is', () => {
+    expect(hashes('rich')).toEqual(['315:13079cf', '376:18735f52', '305:231ec79a', '372:75a66cde', '177:5c0a46e0', '249:4d914ff']);
+  });
+});
+
+describe('spray drawn by its optical depth (decided 2026-09-29, item 1)', () => {
+  const OFFSET = { velocity: 6, tau: 9 } as const;
+
+  it('draws drop sizes from the law, by volume: the count falls as d^-2 below 1 mm and d^-6 above', () => {
+    expect(DROP_LAW.knee).toBe(1e-3);
+    const n = 200_000;
+    const samples = Array.from({ length: n }, (_, i) => dropDiameter((i + 0.5) / n, 0.2e-3, 3e-3));
+    // Each volume-weighted sample stands for 1/d³ drops: the count of drops in [lo, hi), per metre of diameter.
+    const density = (lo: number, hi: number) => samples.reduce((sum, d) => (d >= lo && d < hi ? sum + 1 / d ** 3 : sum), 0) / (hi - lo);
+    const slope = (a: [number, number], b: [number, number]) => Math.log(density(...b) / density(...a)) / Math.log((b[0] + b[1]) / (a[0] + a[1]));
+    expect(slope([0.3e-3, 0.4e-3], [0.7e-3, 0.8e-3])).toBeCloseTo(DROP_LAW.below, 1);
+    expect(slope([1.2e-3, 1.4e-3], [2.0e-3, 2.2e-3])).toBeCloseTo(DROP_LAW.above, 0);
+    expect(samples.reduce((least, d) => Math.min(least, d), Infinity)).toBeGreaterThanOrEqual(0.2e-3);
+    expect(samples.reduce((most, d) => Math.max(most, d), 0)).toBeLessThanOrEqual(3e-3);
+    // The splash's Sauter diameter, 1 / the mean of 1 / d over equal water, is 0.5–1.1 mm (Erinin et al. 2023).
+    const splash = Array.from({ length: n }, (_, i) => dropDiameter((i + 0.5) / n, 0.3e-3, 3e-3));
+    const sauter = 1 / (splash.reduce((sum, d) => sum + 1 / d, 0) / n);
+    expect(sauter).toBeGreaterThan(0.5e-3);
+    expect(sauter).toBeLessThan(1.2e-3);
+  });
+
+  it('walks the sizes in order, and stays on one side of the knee when its range does', () => {
+    let last = 0;
+    for (let i = 0; i < 100; i += 1) {
+      const d = dropDiameter(i / 100, 0.1e-3, 0.5e-3);
+      expect(d).toBeGreaterThanOrEqual(last);
+      expect(d).toBeLessThanOrEqual(0.5e-3);
+      last = d;
+    }
+    for (let i = 0; i < 20; i += 1) expect(dropDiameter(i / 20, 1.5e-3, 3e-3)).toBeGreaterThanOrEqual(1.5e-3);
+  });
+
+  it('takes its optical depth as 1.5 w / r (Bohren 1987): a 1 cm sheet torn into 0.5 mm drops is white, spread over 30 times the area translucent', () => {
+    expect(opticalDepth(0.01, 0.5e-3)).toBeCloseTo(30, 9);
+    expect(opticalDepth(0.01 / 30, 0.5e-3)).toBeCloseTo(1, 9);
+  });
+
+  /**
+   * Follows the first particle of a kind in an impact's burst high over the water (so none lands), step by step until the
+   * first particle of the pool is gone: its age, optical depth and size.
+   */
+  function follow(kindWanted: number, seed: number): { age: number; tau: number; size: number }[] {
+    const cloud = new SprayCloud(seed);
+    cloud.update(flatScene(0, [{ ...impact(0.4), y: 60 }]), 1 / 60);
+    const index = Array.from({ length: cloud.count }, (_, k) => k).find((k) => cloud.particles[k * SPRAY_STRIDE + 5] === kindWanted)!;
+    const count = cloud.count;
+    const track: { age: number; tau: number; size: number }[] = [];
+    for (let step = 1; step <= 300 && cloud.count === count; step += 1) {
+      cloud.update(flatScene(), 1 / 60);
+      if (cloud.count !== count) break;
+      const o = index * SPRAY_STRIDE;
+      track.push({ age: step / 60, tau: cloud.particles[o + OFFSET.tau], size: cloud.particles[o + 3] });
+    }
+    return track;
+  }
+
+  it('is clear when young and densest within a second, then thins as its water falls out, its mist spreading as it goes', () => {
+    for (const kind of [0, 1]) {
+      const track = follow(kind, 31 + kind);
+      expect(track.length).toBeGreaterThan(30);
+      const peak = track.reduce((best, step) => (step.tau > best.tau ? step : best));
+      // Clear at birth: the first step has a fraction of the peak, and the peak comes within a second or so.
+      expect(track[0].tau).toBeLessThan(0.25 * peak.tau);
+      expect(peak.age).toBeLessThan(1.5);
+      const last = track[track.length - 1];
+      expect(last.tau).toBeLessThanOrEqual(peak.tau);
+      // Mist spreads as it goes (twice its width over its life), the same water over more of the view.
+      if (kind === 1) expect(last.size).toBeGreaterThan(track[0].size);
+      for (const step of track) expect(step.tau).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('keeps a single cluster translucent (τ near 1) so that an impact’s overlapping clusters, not each one, read white', () => {
+    const cloud = new SprayCloud(40);
+    cloud.update(flatScene(0, [impact(0.3)]), 1 / 60);
+    for (let step = 0; step < 15; step += 1) cloud.update(flatScene(), 1 / 60);
+    const taus = Array.from({ length: cloud.count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + OFFSET.tau]);
+    expect(taus.length).toBeGreaterThan(50);
+    const sorted = [...taus].sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
+    expect(median).toBeGreaterThan(0.2);
+    expect(median).toBeLessThan(4);
+    // Together they are white: the sum over the burst is far past the 15 that makes spray opaque.
+    expect(taus.reduce((sum, tau) => sum + tau, 0)).toBeGreaterThan(15);
+  });
+
+  it('packs each particle’s velocity, the one it flies with', () => {
+    const cloud = new SprayCloud(41);
+    cloud.update(flatScene(0, [impact(0.3)]), 1 / 60);
+    const count = cloud.count;
+    const before = Array.from(cloud.particles.subarray(0, count * SPRAY_STRIDE));
+    const dt = 1e-3;
+    cloud.update(flatScene(), dt);
+    for (let k = 0; k < count; k += 1) {
+      const o = k * SPRAY_STRIDE;
+      for (let axis = 0; axis < 3; axis += 1) {
+        const moved = (cloud.particles[o + axis] - before[o + axis]) / dt;
+        const velocity = cloud.particles[o + OFFSET.velocity + axis];
+        // The velocity after the step, over a step in which the drag changed it by a few per cent.
+        expect(Math.abs(moved - velocity)).toBeLessThan(0.2 + 0.1 * Math.abs(velocity));
+      }
+    }
+    // A mist or a drop goes up and on with its impact, and comes down.
+    const up = Array.from({ length: count }, (_, k) => cloud.particles[k * SPRAY_STRIDE + OFFSET.velocity + 1]);
+    expect(Math.max(...up)).toBeGreaterThan(1);
+  });
+
+  it('gives a foam ball no optical depth of its own: it is lit and drawn as a ball', () => {
+    const cloud = new SprayCloud(42);
+    const roller: TubeRoller = { id: 1, x: 5, y: 0.5, z: 20, dirX: 0, dirZ: 1, speed: 4, area: 1.5, width: 1 };
+    for (let frame = 0; frame < 20; frame += 1) cloud.update({ ...flatScene(), rollers: [roller] }, 1 / 60);
+    let balls = 0;
+    for (let k = 0; k < cloud.count; k += 1) {
+      if (cloud.particles[k * SPRAY_STRIDE + 5] !== 2) continue;
+      balls += 1;
+      expect(cloud.particles[k * SPRAY_STRIDE + OFFSET.tau]).toBe(0);
+    }
+    expect(balls).toBeGreaterThan(3);
+  });
+
+  it('replays a seed exactly, optics and all', () => {
+    const a = new SprayCloud(43, 200);
+    const b = new SprayCloud(43, 200);
+    for (let frame = 0; frame < 40; frame += 1) {
+      a.update(flatScene(2, [impact(0.2)]), 1 / 60);
+      b.update(flatScene(2, [impact(0.2)]), 1 / 60);
+    }
+    expect(Array.from(a.particles.subarray(0, a.count * SPRAY_STRIDE))).toEqual(Array.from(b.particles.subarray(0, b.count * SPRAY_STRIDE)));
   });
 });

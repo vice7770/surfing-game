@@ -6,7 +6,10 @@ import { FOAM_BALL } from './water/mist';
 import { richSprayFragment, richSprayVertex } from './water/richSpray';
 import type { WaterLook } from './water/waterLook';
 
-/** What the renderer needs from a spray cloud: packed x, y, z, size, opacity and kind per particle (`SPRAY_STRIDE`), and how many are live. */
+/**
+ * What the renderer needs from a spray cloud: packed x, y, z, size, opacity and kind per particle (`SPRAY_STRIDE`), and for
+ * the Rich look its velocity and optical depth after them; and how many are live.
+ */
 export interface RenderableSpray {
   readonly particles: Float32Array;
   readonly count: number;
@@ -71,6 +74,8 @@ export class SprayPoints {
   private readonly positions: BufferAttribute;
   private readonly looks: BufferAttribute;
   private readonly kinds: BufferAttribute;
+  private readonly velocities: BufferAttribute;
+  private readonly depths: BufferAttribute;
   private readonly buffer = new Vector2();
   private currentLook: WaterLook = 'classic';
 
@@ -79,9 +84,14 @@ export class SprayPoints {
     this.positions = new BufferAttribute(new Float32Array(capacity * 3), 3);
     this.looks = new BufferAttribute(new Float32Array(capacity * 2), 2);
     this.kinds = new BufferAttribute(new Float32Array(capacity), 1);
+    // Rich only: the particle's velocity (its streak) and its cluster's optical depth.
+    this.velocities = new BufferAttribute(new Float32Array(capacity * 3), 3);
+    this.depths = new BufferAttribute(new Float32Array(capacity), 1);
     geometry.setAttribute('position', this.positions);
     geometry.setAttribute('look', this.looks);
     geometry.setAttribute('kind', this.kinds);
+    geometry.setAttribute('velocity', this.velocities);
+    geometry.setAttribute('tau', this.depths);
     geometry.setDrawRange(0, 0);
     const material = new ShaderMaterial({
       uniforms: {
@@ -127,6 +137,8 @@ export class SprayPoints {
     const { material } = this.mesh;
     material.vertexShader = look === 'rich' ? richSprayVertex : vertexShader;
     material.fragmentShader = look === 'rich' ? richSprayFragment : fragmentShader;
+    // The Rich spray adds the light it scatters and hides only part of what is behind it: it blends as premultiplied light.
+    material.premultipliedAlpha = look === 'rich';
     material.needsUpdate = true;
   }
 
@@ -158,6 +170,8 @@ export class SprayPoints {
     const positions = this.positions.array as Float32Array;
     const looks = this.looks.array as Float32Array;
     const kinds = this.kinds.array as Float32Array;
+    const velocities = this.velocities.array as Float32Array;
+    const depths = this.depths.array as Float32Array;
     const rich = this.currentLook === 'rich';
     let drawn = 0;
     for (let k = 0; k < spray.count && drawn < this.capacity; k += 1) {
@@ -170,11 +184,18 @@ export class SprayPoints {
       looks[drawn * 2] = spray.particles[o + 3];
       looks[drawn * 2 + 1] = spray.particles[o + 4];
       kinds[drawn] = kind;
+      // Kept current in both looks, so a switch to Rich draws at once, before the next snapshot.
+      velocities[drawn * 3] = spray.particles[o + 6];
+      velocities[drawn * 3 + 1] = spray.particles[o + 7];
+      velocities[drawn * 3 + 2] = spray.particles[o + 8];
+      depths[drawn] = spray.particles[o + 9];
       drawn += 1;
     }
     this.positions.needsUpdate = true;
     this.looks.needsUpdate = true;
     this.kinds.needsUpdate = true;
+    this.velocities.needsUpdate = true;
+    this.depths.needsUpdate = true;
     this.mesh.geometry.setDrawRange(0, drawn);
   }
 }

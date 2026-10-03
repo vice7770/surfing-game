@@ -1,6 +1,7 @@
 import { Color, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { REFERENCE_LIGHT, skyExposure, type SkyEntry } from './PhotoSky';
+import { SPRAY_STRIDE } from '../wave/SprayCloud';
 import { SprayPoints, groundIrradiance, skyIrradiance } from './SprayPoints';
 import { DROP_G, FOAM_BALL, ballPars, foamBallColour, foamBallGlow } from './water/mist';
 import { richSprayFragment } from './water/richSpray';
@@ -194,5 +195,49 @@ describe('the foam ball (G9) lit as fresh foam', () => {
     expect(ballPars).toContain('vec3 foamBallColour( float facing, float up, float sky, float ground, vec3 sun )');
     expect(ballPars).toContain('float foamBallGlowCoverage( float phase, float chord, float density )');
     expect(richSprayFragment).toContain('foamBallGlowCoverage( ballPhase, sqrt( max( 0.0, 1.0 - r * r ) ), churn.x )');
+  });
+});
+
+describe('the spray drawn by its optical depth', () => {
+  /** Two particles as the cloud packs them: x, y, z, size, opacity, kind, then velocity and optical depth. */
+  const particles = (() => {
+    const packed = new Float32Array(2 * SPRAY_STRIDE);
+    packed.set([1, 2, 3, 0.1, 0.8, 0, 4, 5, -6, 0.75], 0);
+    packed.set([7, 8, 9, 0.5, 0.25, 1, -1, 0.5, -2, 0.125], SPRAY_STRIDE);
+    return packed;
+  })();
+
+  it('carries each particle’s velocity and optical depth to attributes of their own, in both looks', () => {
+    for (const look of ['classic', 'rich'] as const) {
+      const spray = new SprayPoints();
+      spray.setLook(look);
+      spray.update({ particles, count: 2 });
+      const { geometry } = spray.mesh;
+      expect(Array.from(geometry.getAttribute('velocity').array.slice(0, 6))).toEqual([4, 5, -6, -1, 0.5, -2]);
+      expect(Array.from(geometry.getAttribute('tau').array.slice(0, 2))).toEqual([0.75, 0.125]);
+      // The older attributes keep their offsets.
+      expect(Array.from(geometry.getAttribute('look').array.slice(0, 4))).toEqual([Math.fround(0.1), Math.fround(0.8), 0.5, 0.25]);
+      expect(Array.from(geometry.getAttribute('kind').array.slice(0, 2))).toEqual([0, 1]);
+    }
+  });
+
+  it('blends the Rich spray as premultiplied light and the Classic spray as it always was', () => {
+    const spray = new SprayPoints();
+    expect(spray.mesh.material.premultipliedAlpha).toBe(false);
+    spray.setLook('rich');
+    expect(spray.mesh.material.premultipliedAlpha).toBe(true);
+    // The fragment adds the light it scatters and hides a share of the background, and says so in its output.
+    expect(spray.mesh.material.fragmentShader).toContain('gl_FragColor = vec4( gl_FragColor.rgb * emission, hidden );');
+    spray.setLook('classic');
+    expect(spray.mesh.material.premultipliedAlpha).toBe(false);
+  });
+
+  it('reads them in the Rich shaders, and the Classic shaders do not', () => {
+    const spray = new SprayPoints();
+    const classic = spray.mesh.material.vertexShader;
+    expect(classic).not.toContain('velocity');
+    spray.setLook('rich');
+    expect(spray.mesh.material.vertexShader).toContain('attribute vec3 velocity;');
+    expect(spray.mesh.material.vertexShader).toContain('attribute float tau;');
   });
 });
