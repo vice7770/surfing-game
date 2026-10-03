@@ -52,10 +52,11 @@ export function overturn(psi: number): OverturnShape {
  * about 1:10) their void area, jet and tilt are sourced, and only the roundness is Mead & Black's. Beyond them,
  * where Teahupo'o's ledge lies, the lip is `lipThickness` of the wave's height thick (Shand 2024) over the
  * void's length, and the void's area and tilt are Pick & Feddersen's at their steepest fit (provisional). The
- * Teahupo'o Reef's own jet there is the periodic Basilisk runs', not this slab (`LIP_JET` in SurfZoneSimulation), so
- * its lip is that jet over the void's length (about 0.58 H in calm air), not `lipThickness`; the slab stays for any
- * other spot's break over a submerged crest. The gradient is averaged `band` m above and below the breaking depth:
- * Mead & Black's stated 2–3 m band absorbs height and tide errors, and 2.5 m is the game's pick within it.
+ * Teahupo'o Reef's own jet there is the periodic Basilisk runs', not this slab (`LIP_JET` in SurfZoneSimulation), and
+ * it lands over the runs' tube just before touchdown (1.35 H, not the void's length), so its lip is about 0.43 H, not
+ * `lipThickness`; the slab stays for any other spot's break over a submerged crest. The gradient is averaged `band` m
+ * above and below the breaking depth: Mead & Black's stated 2–3 m band absorbs height and tide errors, and 2.5 m is
+ * the game's pick within it.
  */
 export const REEF_OVERTURN = {
   area: 0.43, lipThickness: 0.5, tiltDegrees: 23, roundestRatio: 1.42, gentlestRatio: 3.43, band: 2.5,

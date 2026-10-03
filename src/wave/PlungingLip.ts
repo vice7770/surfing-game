@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import type { LipContactParcel, LipParcelSource } from '../physics/DetachedSurfer';
 import { GRAVITY } from './dispersion';
 import { AERATION } from './AerationField';
-import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, type OverturnShape, type TubeGeometry } from './Overturn';
+import { LH82_AREA, PSI_RANGE, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, type OverturnShape, type TubeGeometry } from './Overturn';
 import type { ShallowWaterSolver } from './ShallowWaterSolver';
 import { TUBE_STRIDE, carveAt } from './tubeTable';
 
@@ -180,9 +180,10 @@ export interface LipConditions {
   width: number;
   /**
    * A break over a submerged crest (a reef break): the gradient it climbs along its travel, rise over run, and
-   * the spot's own jet area there, A_J / H², where it has measured one (beyond Pick & Feddersen's fits).
+   * the spot's own jet area there, A_J / H², and the length that jet lands over, in wave heights, where it has
+   * measured them (beyond Pick & Feddersen's fits).
    */
-  reef?: { orthogonalGradient: number; jetArea?: number };
+  reef?: { orthogonalGradient: number; jetArea?: number; landingLength?: number };
 }
 
 export interface LipThrow {
@@ -194,6 +195,11 @@ export interface LipThrow {
   shape: OverturnShape;
   /** A reef break's vortex ratio (Mead & Black 2001), within the range they measured. */
   reef?: { vortexRatio: number };
+  /**
+   * The length the jet lands over, m, where its spot has its own beyond Pick & Feddersen's fits (the Teahupo'o
+   * Reef's, `LIP_JET` in SurfZoneSimulation); the void's length otherwise.
+   */
+  landingLength?: number;
 }
 
 /**
@@ -209,15 +215,20 @@ export function lipThrow(conditions: LipConditions): LipThrow | undefined {
   // photographed in offshore wind, so the wind reshapes the void as it does a plane slope's (Feddersen et al.
   // 2023) only from theirs, and a stronger offshore wind rounds it no further.
   if (conditions.reef && breakerHeight > 0) {
-    const reef = reefOverturn(conditions.reef.orthogonalGradient, nonlinearity, conditions.reef.jetArea);
+    const { orthogonalGradient, jetArea, landingLength } = conditions.reef;
+    const reef = reefOverturn(orthogonalGradient, nonlinearity, jetArea);
     if (reef) {
       const wind = Math.max(windOverCelerity, REEF_OVERTURN.windOverCelerity) - REEF_OVERTURN.windOverCelerity;
       const shape: OverturnShape = { ...reef, aspect: clamp(reef.aspect - 0.18 * wind, 0.2, 1) };
+      // A spot's own landing length goes with its own jet, beyond the fits as `reefOverturn` sorts them; inside them
+      // the void is Pick & Feddersen's at jet impact, so the jet lands over it.
+      const own = landingLength !== undefined && !(overturnParameter(orthogonalGradient, nonlinearity) <= PSI_RANGE.max);
       return {
         volume: shape.jetArea * breakerHeight * breakerHeight * width,
         relativeSpeed: jetRelativeSpeed(shape, breakerHeight),
         shape,
         reef: { vortexRatio: 1 / reef.aspect },
+        ...(own ? { landingLength: landingLength * breakerHeight } : {}),
       };
     }
   }
@@ -308,6 +319,11 @@ interface FlyingTube {
   released: number;
   /** How far its jet's tip fell, m: its air is driven down in proportion. */
   drop: number;
+  /**
+   * The length its jet lands over, m, where the throw gave one (`LipThrow.landingLength`); the void's length
+   * otherwise. Only the landing's thickness reads it: the void, its carve and its air keep `geometry`.
+   */
+  landingLength?: number;
 }
 
 /** The share of a tube's collapse done by `time`: 0 while it flies, 1 once its void is gone. */
@@ -589,12 +605,14 @@ export class PlungingLip implements LipParcelSource {
   /**
    * Throw up to `volume` m³ from `cell` at `height` (m above datum) with
    * horizontal `velocity` (m/s), from a breaking wave `waveHeight` m high (its
-   * landings say so). Returns the volume actually thrown (`drawFromCrest`): 0
-   * when the parcel pool is full or the crest holds no water above its trough.
+   * landings say so). A jet with a `tube` lands over `landingLength` m where
+   * given, over the tube's length otherwise. Returns the volume actually thrown
+   * (`drawFromCrest`): 0 when the parcel pool is full or the crest holds no
+   * water above its trough.
    */
   launch(
     cell: number, velocity: { x: number; z: number }, height: number, volume: number, crestSpeed = 0, tube?: TubeGeometry,
-    releaseTime = JET_RELEASE_TIME, waveHeight = 0,
+    releaseTime = JET_RELEASE_TIME, waveHeight = 0, landingLength?: number,
   ): number {
     if (this.free.length < STRIP_PARCELS || !(volume > 0)) return 0;
     const thrown = this.drawFromCrest(cell, velocity, volume, waveHeight);
@@ -616,7 +634,7 @@ export class PlungingLip implements LipParcelSource {
     if (tube && jetSpeed > 0) {
       strip.tube = {
         id: stripId, geometry: tube, x, z, y: height, dirX: velocity.x / jetSpeed, dirZ: velocity.z / jetSpeed, crestSpeed, relativeSpeed: jetSpeed - crestSpeed,
-        closedAt: Number.NaN, air: 0, released: 0, drop: 0,
+        closedAt: Number.NaN, air: 0, released: 0, drop: 0, ...(landingLength === undefined ? {} : { landingLength }),
       };
     }
     for (let k = 0; k < STRIP_PARCELS; k += 1) {
@@ -930,9 +948,12 @@ export class PlungingLip implements LipParcelSource {
     const splash = this.kind[parcel] === 0 && -vy > SPLASH_UP.minImpact && !solver.beyondOpenEdge(x) ? SPLASH_UP.share * volume : 0;
     const stripId = this.strip[parcel];
     const strip = this.strips.get(stripId);
-    // A jet comes down as thick as its sheet, its water over the void's length (a thick lip over more than one
-    // cell), spread along its travel (Part B). A splash-up, and a sheet no thicker than a cell, land in one.
-    const thickness = this.kind[parcel] === 0 && strip?.tube ? (STRIP_PARCELS * volume) / solver.dx / strip.tube.geometry.length : 0;
+    // A jet comes down as thick as its sheet, its water over the void's length, or over its spot's own landing
+    // length (a thick lip over more than one cell), spread along its travel (Part B). A splash-up, and a sheet no
+    // thicker than a cell, land in one.
+    const thickness = this.kind[parcel] === 0 && strip?.tube
+      ? (STRIP_PARCELS * volume) / solver.dx / (strip.tube.landingLength ?? strip.tube.geometry.length)
+      : 0;
     const speed = Math.hypot(vx, vz);
     const pieces = speed > 0 ? Math.max(1, Math.ceil(thickness / solver.dx - 1e-9)) : 1;
     let escaped = 0;

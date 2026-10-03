@@ -33,6 +33,8 @@ export interface LipThrowEvent {
   /** Where along shore the crest threw, m. */
   x: number;
   tube: TubeGeometry;
+  /** The length the jet lands over, m, where its spot has its own (`LIP_JET`); it lands over `tube` otherwise. */
+  landingLength?: number;
   /** A reef break's vortex ratio (Mead & Black 2001), within the range they measured, and the gradient it climbs. */
   vortexRatio?: number;
   orthogonalGradient?: number;
@@ -256,6 +258,11 @@ export interface LipJetSetting {
   jetArea?: number;
   /** The most of a source cell's water above the wave's trough one throw may take; `SOURCE_SHARE` where omitted. */
   sourceShare?: number;
+  /**
+   * The length that jet lands over, in wave heights, beyond Pick & Feddersen's fits: only the landing's thickness reads
+   * it (`PlungingLip.land`). The void's own length where omitted.
+   */
+  landingLength?: number;
 }
 
 /**
@@ -267,18 +274,20 @@ export interface LipJetSetting {
  *   data/periodic_reef42_L12_plunge.json and data/periodic_reef60_L12_plunge.json). It replaces the slab's 0.47 H²
  *   (a 0.5 H lip over the void's length, unsourced). The tube (0.43 H², 1.42 and 23°) stays: the runs support it
  *   (0.34-0.45 H², 1.5-1.8 at 85 % of the flight).
- * - **So the Reef's lip thickens.** A jet lands as a sheet, its water over the void's length (`PlungingLip`), and the
- *   void stays about 1 H long in calm air, so the sheet goes from 0.47 H to about 0.58 H and each jet lands spread that
- *   much wider along its travel. The runs' lip is thinner, 0.41-0.46 H, because they measure it over the tube just
- *   before it lands, flattened to 1.2-1.5 H long. A consequence of the owner's call, measured in
- *   docs/research/teahupoo-reef-report.md.
+ * - **It lands over the runs' touchdown length, 1.35 H** (provisional; the water-physics advisor, 2026-10-03). A jet
+ *   lands as a sheet, its water spread over the length it lands over (`PlungingLip.land`). The runs' lip, 0.41-0.46 H,
+ *   is their jet over the tube's longest chord just before touchdown: 1.198 H on the 1:4.2 ledge and 1.500 H on the
+ *   1:6, over the breaking height (`tube_L_m` over `at_vertical`'s `H_m` in the same files). Over their median the
+ *   Reef's jet lands as a sheet 0.43 H thick, within the runs' lips; over its void in flight, about 1 H long in calm
+ *   air, it was 0.58 H. Only the landing reads it: the void, its carve, its trapped air and the jet's speed keep the
+ *   tube. Like the jet, it applies beyond Pick & Feddersen's fits.
  * - **The Reef's cap, 0.3, is provisional** (the advisor's inference, not a measurement). The game's broad crest holds about
  *   2.6 H² of water in the source window, so a 0.585 H² jet takes a share of about 0.225 of it: over the 0.2 cap,
  *   which starved 39-69 % of the 0.47 H² throws on main (docs/research/teahupoo-reef-report.md); 0.3 leaves the
  *   biggest waves headroom.
  */
 export const LIP_JET: Partial<Record<SpotName, LipJetSetting>> = {
-  reef: { jetArea: 0.585, sourceShare: 0.3 },
+  reef: { jetArea: 0.585, sourceShare: 0.3, landingLength: 1.35 },
 };
 
 /**
@@ -870,7 +879,9 @@ export class SurfZoneSimulation {
       breakerHeight: height,
       windOverCelerity: (this.config.windSpeed ?? 0) / Math.sqrt(GRAVITY * stillDepth),
       width: solver.dx,
-      reef: orthogonal !== undefined ? { orthogonalGradient: orthogonal, jetArea: LIP_JET[this.config.spot]?.jetArea } : undefined,
+      reef: orthogonal !== undefined
+        ? { orthogonalGradient: orthogonal, jetArea: LIP_JET[this.config.spot]?.jetArea, landingLength: LIP_JET[this.config.spot]?.landingLength }
+        : undefined,
     });
     if (!shape) return;
     // The jet leaves the way the crest travels, measured from the crest's own motion, and outruns it
@@ -880,11 +891,11 @@ export class SurfZoneSimulation {
     // It keeps pouring from the crest until it lands, as measured jets do (Erinin et al. 2023).
     const thrown = this.lip.launch(
       crest, { x: along.x * speed, z: along.z * speed }, solver.surfaceAt(crest), shape.volume, motion.speed, tubeGeometry(shape.shape, height),
-      jetFlightTime(shape.shape, height), height,
+      jetFlightTime(shape.shape, height), height, shape.landingLength,
     );
     this.onThrow?.({
-      asked: shape.volume, thrown, height, x, tube: tubeGeometry(shape.shape, height), vortexRatio: shape.reef?.vortexRatio, orthogonalGradient: orthogonal,
-      speedOverCrest: speed / motion.speed,
+      asked: shape.volume, thrown, height, x, tube: tubeGeometry(shape.shape, height), landingLength: shape.landingLength,
+      vortexRatio: shape.reef?.vortexRatio, orthogonalGradient: orthogonal, speedOverCrest: speed / motion.speed,
     });
     if (thrown > 0) {
       this.lipLaunches += 1;

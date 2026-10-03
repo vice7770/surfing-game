@@ -975,7 +975,7 @@ describe('the lip jet per spot (the Reef\'s periodic Basilisk runs)', () => {
 
   it('gives the Reef, and only the Reef, a jet of its own, and every other spot\'s lip the defaults', () => {
     expect(Object.keys(LIP_JET)).toEqual(['reef']);
-    expect(LIP_JET.reef).toEqual({ jetArea: 0.585, sourceShare: 0.3 });
+    expect(LIP_JET.reef).toEqual({ jetArea: 0.585, sourceShare: 0.3, landingLength: 1.35 });
     expect(SOURCE_SHARE).toBe(0.2);
     for (const spot of ['beach', 'point', 'reef', 'canyon', 'padang'] as const) {
       const { lip } = new SurfZoneSimulation(spot === 'padang' ? small_() : { ...small, spot }, 'warm');
@@ -999,19 +999,43 @@ describe('the lip jet per spot (the Reef\'s periodic Basilisk runs)', () => {
     expect(LIP_JET.reef!.sourceShare!).toBeLessThan(0.5);
   });
 
+  it('lands the Reef\'s jets over the median of the two runs\' tubes just before touchdown, so its sheet sits within their lips', () => {
+    const plunge = (run: string) => JSON.parse(readFileSync(`${RUNS}/periodic_${run}_L12_plunge.json`, 'utf8')) as {
+      at_vertical: { H_m: number };
+      pre_touchdown: { tube_L_m: number; 'per H at vertical': { jet: number; lip: number } };
+    };
+    const runs = [plunge('reef42'), plunge('reef60')];
+    // The tube's longest chord just before touchdown, over the breaking wave's height (at the vertical face), as the jet is.
+    const [short, long] = runs.map((run) => run.pre_touchdown.tube_L_m / run.at_vertical.H_m).sort((a, b) => a - b);
+    expect(short).toBeCloseTo(1.198, 3);
+    expect(long).toBeCloseTo(1.5, 3);
+    expect(LIP_JET.reef!.landingLength!).toBeCloseTo((short + long) / 2, 2);
+    // The runs' lip is their jet over that chord: 0.458 and 0.415 H. The Reef's sheet, its jet over its landing length, sits between.
+    for (const { at_vertical: { H_m }, pre_touchdown: { tube_L_m, 'per H at vertical': perH } } of runs) {
+      expect(perH.lip).toBeCloseTo(perH.jet / (tube_L_m / H_m), 9);
+    }
+    const [thinner, thicker] = runs.map((run) => run.pre_touchdown['per H at vertical'].lip).sort((a, b) => a - b);
+    const sheet = LIP_JET.reef!.jetArea! / LIP_JET.reef!.landingLength!;
+    expect(sheet).toBeCloseTo(0.433, 3);
+    expect(sheet).toBeGreaterThan(thinner);
+    expect(sheet).toBeLessThan(thicker);
+  });
+
   // A spot's reef breaks as thrown, each ask over its column and H², with what the slab would ask (beyond Pick &
-  // Feddersen's fits, no jet of the spot's own) or what theirs is (inside them); stepped until `enough` or `seconds`.
+  // Feddersen's fits, no jet of the spot's own) or what theirs is (inside them), and the length the jet lands over, in
+  // H, where the throw gives one; stepped until `enough` or `seconds`.
   const reefBreaks = (config: SurfZoneConfig, enough: (beyond: number, inside: number) => boolean, seconds: number) => {
     const simulation = new SurfZoneSimulation(config);
     const nonlinearity = edgeHeight(config, simulation.tank.edgeDepth) / (simulation.tank.edgeDepth + config.tide);
-    const beyond: { asked: number; slab: number }[] = [];
-    const inside: { asked: number; theirs: number }[] = [];
+    const beyond: { asked: number; slab: number; landing?: number }[] = [];
+    const inside: { asked: number; theirs: number; landing?: number }[] = [];
     simulation.onThrow = (event) => {
       if (event.orthogonalGradient === undefined) return;
       const asked = event.asked / (simulation.tubeColumnWidth * event.height * event.height);
+      const landing = event.landingLength === undefined ? undefined : event.landingLength / event.height;
       const psi = overturnParameter(event.orthogonalGradient, nonlinearity);
-      if (psi > PSI_RANGE.max) beyond.push({ asked, slab: reefOverturn(event.orthogonalGradient, nonlinearity)!.jetArea });
-      else inside.push({ asked, theirs: overturn(psi).jetArea });
+      if (psi > PSI_RANGE.max) beyond.push({ asked, slab: reefOverturn(event.orthogonalGradient, nonlinearity)!.jetArea, landing });
+      else inside.push({ asked, theirs: overturn(psi).jetArea, landing });
     };
     for (let frame = 0; frame < seconds * 30 && !enough(beyond.length, inside.length); frame += 1) simulation.step(1 / 30);
     return { simulation, beyond, inside };
@@ -1019,20 +1043,28 @@ describe('the lip jet per spot (the Reef\'s periodic Basilisk runs)', () => {
 
   // Inside the fits a Reef break keeps theirs (the reef overturn's tests in Overturn.test.ts): at game size such breaks
   // are 0.2-0.3 % of the Reef's throws, too few to wait for here, and this sea throws none in its first 90 s.
-  it('asks the Reef\'s ledge breaks beyond Pick & Feddersen\'s fits for its sourced jet, not the slab', () => {
+  it('asks the Reef\'s ledge breaks beyond Pick & Feddersen\'s fits for its sourced jet, not the slab, and lands it over its own length', () => {
     const config: SurfZoneConfig = { ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 };
     const { simulation, beyond } = reefBreaks(config, (count) => count >= 3, 60);
     expect(beyond.length).toBeGreaterThanOrEqual(3);
-    for (const { asked, slab } of beyond) {
+    for (const { asked, slab, landing } of beyond) {
       expect(asked).toBeCloseTo(LIP_JET.reef!.jetArea!, 9);
       // The slab would have asked about 0.47 H².
       expect(LIP_JET.reef!.jetArea! - slab).toBeGreaterThan(0.05);
+      // Over 1.35 H the sheet it lands as is about 0.43 H.
+      expect(landing).toBeCloseTo(LIP_JET.reef!.landingLength!, 12);
+      expect(asked / landing!).toBeCloseTo(0.433, 3);
     }
+    // The lip has it: the jets in the air carry it to their landing (the lip's own state, as a sea handover sends it).
+    const lengths = simulation.lip.exportState().strips.flatMap(([, strip]) =>
+      strip.tube?.landingLength === undefined ? [] : [strip.tube.landingLength / strip.waveHeight!]);
+    expect(lengths.length).toBeGreaterThan(0);
+    for (const length of lengths) expect(length).toBeCloseTo(LIP_JET.reef!.landingLength!, 12);
     expect(simulation.lip.sourceShare).toBe(0.3);
   }, 240_000);
 
   // The Reef's entry must not leak to another spot. Padang Padang's reef breaks go beyond the fits within seconds, so a
-  // leaked jet would show in their asks.
+  // leaked jet would show in their asks, and a leaked landing length in their landings.
   it('asks another spot\'s reef breaks for the slab beyond the fits and theirs inside them, never the Reef\'s jet (Padang Padang)', () => {
     const { simulation, beyond, inside } = reefBreaks(small_(), (out, within) => out >= 3 && within >= 3, 40);
     expect(beyond.length).toBeGreaterThanOrEqual(3);
@@ -1043,6 +1075,10 @@ describe('the lip jet per spot (the Reef\'s periodic Basilisk runs)', () => {
       expect(Math.abs(slab - LIP_JET.reef!.jetArea!)).toBeGreaterThan(1e-3);
     }
     for (const { asked, theirs } of inside) expect(asked).toBeCloseTo(theirs, 9);
+    // Each lands over its void.
+    for (const { landing } of [...beyond, ...inside]) expect(landing).toBeUndefined();
+    expect(simulation.lip.exportState().strips.some(([, strip]) => strip.tube !== undefined)).toBe(true);
+    for (const [, strip] of simulation.lip.exportState().strips) expect(strip.tube?.landingLength).toBeUndefined();
     expect(simulation.lip.sourceShare).toBe(SOURCE_SHARE);
   }, 240_000);
 });

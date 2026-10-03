@@ -68,13 +68,6 @@ describe('a reef break\'s lip (Teahupo\'o Reef, Part B)', () => {
     expect(own.shape.tilt).toBe(slab.shape.tilt);
     expect(own.relativeSpeed).toBe(slab.relativeSpeed);
     expect(own.reef?.vortexRatio).toBe(slab.reef?.vortexRatio);
-    // The void stays, so the sheet a jet lands as (its water over the void's length, PlungingLip's landing) thickens with
-    // the water: on the ledge's roundest tube in calm air, 0.99 H long, from the slab's 0.47 H to 0.59 H.
-    const calm = { windOverCelerity: 0, reef: { orthogonalGradient: 1 / 2.29 } };
-    const sheet = (lip: LipThrow) => lip.volume / (base.width * tubeGeometry(lip.shape, base.breakerHeight).length * base.breakerHeight);
-    expect(tubeGeometry(lipThrow({ ...base, ...calm })!.shape, 1).length).toBeCloseTo(0.991, 3);
-    expect(sheet(lipThrow({ ...base, ...calm })!)).toBeCloseTo(0.474, 3);
-    expect(sheet(lipThrow({ ...base, ...calm, reef: { ...calm.reef, jetArea: 0.585 } })!)).toBeCloseTo(0.590, 3);
     // Inside Pick & Feddersen's fits (1:30 here) the throw is theirs, whatever the spot asks.
     const gentle = { ...reef, reef: { orthogonalGradient: 1 / 30 } };
     expect(overturnParameter(1 / 30, base.nonlinearity)).toBeLessThan(PSI_RANGE.max);
@@ -82,6 +75,34 @@ describe('a reef break\'s lip (Teahupo\'o Reef, Part B)', () => {
     expect(lipThrow({ ...base, ...gentle })!.shape.jetArea).toBe(overturn(overturnParameter(1 / 30, base.nonlinearity)).jetArea);
     // A plane slope's lip is not a reef break's, so it has no reef conditions to carry a jet area: Pick & Feddersen's, as before.
     expect(lipThrow({ ...base, iribarren: 1, slope: 0.08 })!.volume).toBeCloseTo(overturn(overturnParameter(0.08, 0.05)).jetArea * 16, 12);
+  });
+
+  it('lands a spot\'s own jet over its own landing length beyond the fits, the void and the rest of the throw as they were', () => {
+    // The Reef's (`LIP_JET`): 0.585 H² over 1.35 H, the periodic runs' jet over their tube just before touchdown.
+    const own = { windOverCelerity: 0, reef: { orthogonalGradient: 1 / 2.29, jetArea: 0.585 } };
+    const raised = lipThrow({ ...base, ...own })!;
+    const landed = lipThrow({ ...base, ...own, reef: { ...own.reef, landingLength: 1.35 } })!;
+    expect(raised.landingLength).toBeUndefined();
+    // base.breakerHeight 4 m.
+    expect(landed.landingLength).toBeCloseTo(1.35 * 4, 12);
+    expect({ ...landed, landingLength: undefined }).toEqual(raised);
+    // The sheet a jet lands as is its water over the length it lands over (PlungingLip's landing). On the ledge's roundest
+    // tube in calm air, 0.99 H long: the slab's 0.47 H², over the void, 0.47 H; the Reef's 0.585 H² over the void 0.59 H,
+    // and over its landing length 0.43 H, inside the runs' 0.41-0.46 H.
+    const calm = { windOverCelerity: 0, reef: { orthogonalGradient: 1 / 2.29 } };
+    const sheet = (lip: LipThrow) =>
+      lip.volume / (base.width * (lip.landingLength ?? tubeGeometry(lip.shape, base.breakerHeight).length) * base.breakerHeight);
+    expect(tubeGeometry(lipThrow({ ...base, ...calm })!.shape, 1).length).toBeCloseTo(0.991, 3);
+    expect(sheet(lipThrow({ ...base, ...calm })!)).toBeCloseTo(0.474, 3);
+    expect(sheet(raised)).toBeCloseTo(0.590, 3);
+    expect(sheet(landed)).toBeCloseTo(0.433, 3);
+    // Inside Pick & Feddersen's fits (1:30 here) the void is theirs at jet impact, and the jet lands over it, whatever the
+    // spot asks; a plane slope's lip has no reef conditions to carry a landing length.
+    const gentle = { windOverCelerity: 0, reef: { orthogonalGradient: 1 / 30 } };
+    expect(overturnParameter(1 / 30, base.nonlinearity)).toBeLessThan(PSI_RANGE.max);
+    expect(lipThrow({ ...base, ...gentle, reef: { ...gentle.reef, jetArea: 0.585, landingLength: 1.35 } })).toEqual(lipThrow({ ...base, ...gentle }));
+    expect(lipThrow({ ...base, ...gentle, reef: { ...gentle.reef, landingLength: 1.35 } })!.landingLength).toBeUndefined();
+    expect(lipThrow({ ...base, iribarren: 1, slope: 0.08 })!.landingLength).toBeUndefined();
   });
 
   it('throws a steeper ledge\'s lip from the roundest tube measured, and never collapses it', () => {
@@ -123,19 +144,78 @@ describe('the wave a landing came from (the plunge zone)', () => {
 });
 
 describe('a jet\'s landing (Teahupo\'o Reef, Part B)', () => {
-  // Its water over the void's length is the sheet's thickness: a thick lip lands over as much of the face.
-  const land = (voidLength: number) => {
+  // Its water over the void's length, or over the length the throw gives it to land over, is the sheet's thickness: a
+  // thick lip lands over as much of the face.
+  const land = (voidLength: number, landingLength?: number) => {
     const solver = basin(2.5);
     const lip = new PlungingLip(solver, 64);
     const cell = solver.cellIndex(3.5, 12.5);
     // 1.5 m³ from the 1 m column: the crest's four rows give 0.375 m each, leaving their surface at 2.125 m.
-    expect(lip.launch(cell, { x: 0, z: 5 }, 2.135, 1.5, 0, { length: voidLength, width: 0.4, tilt: 0.4 })).toBeCloseTo(1.5, 9);
+    expect(lip.launch(cell, { x: 0, z: 5 }, 2.135, 1.5, 0, { length: voidLength, width: 0.4, tilt: 0.4 }, undefined, undefined, landingLength))
+      .toBeCloseTo(1.5, 9);
     const before = Float64Array.from(solver.h);
     // Two seconds bring every parcel down, splash-ups too.
     for (let k = 0; k < 480; k += 1) lip.step(1 / 240);
     return Array.from(solver.h, (depth, i) => depth - before[i]);
   };
   const total = (landed: number[]) => landed.reduce((sum, depth) => sum + depth, 0);
+
+  it('lands a jet over the length its throw gives it, where it gives one, not over its void (the Reef\'s, LIP_JET)', () => {
+    // The same 2 m void: alone, its 1.5 m³ is a sheet 0.75 m thick and comes down mostly in one cell; over a 0.5 m landing
+    // length it is a sheet 3 m thick, and the jet comes down evenly across three (its splash-ups land whole, further on).
+    const one = land(2);
+    const three = land(2, 0.5);
+    expect(total(three)).toBeCloseTo(1.5, 9);
+    expect(Math.max(...one)).toBeGreaterThan(0.55 * 1.5);
+    expect(Math.max(...three)).toBeLessThan(0.3 * 1.5);
+    for (const row of [14, 15, 16]) expect(three[row * 8 + 3]).toBeGreaterThan(0.25);
+    expect(three[14 * 8 + 3]).toBeCloseTo(three[16 * 8 + 3], 9);
+  });
+
+  it('keeps the void, its carve and its trapped air whatever the jet lands over', () => {
+    const fly = (landingLength?: number) => {
+      const solver = basin(2.5);
+      const lip = new PlungingLip(solver, 64);
+      lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 2.135, 1.5, 0, { length: 2, width: 0.4, tilt: 0.4 }, undefined, undefined, landingLength);
+      // The tube table (what the carve reads) while the jet flies, before any of it lands.
+      const rows: number[][] = [];
+      for (let k = 0; k < 480; k += 1) {
+        const landings = lip.landings;
+        lip.step(1 / 240);
+        if (landings === 0 && lip.landings === 0) {
+          const into = new Float32Array(4 * 12);
+          rows.push(Array.from(into.subarray(0, 12 * lip.writeTubes(into, 4))));
+        }
+      }
+      return { rows, air: lip.trappedAir };
+    };
+    const [overVoid, overLength] = [fly(), fly(0.5)];
+    expect(overVoid.rows.length).toBeGreaterThan(10);
+    expect(overLength.rows).toEqual(overVoid.rows);
+    expect(overLength.air).toBeGreaterThan(0);
+    expect(overLength.air).toBe(overVoid.air);
+  });
+
+  it('keeps the length a jet lands over through a sea handover', () => {
+    const run = (handover: boolean) => {
+      const solver = basin(2.5);
+      let lip = new PlungingLip(solver, 64);
+      lip.launch(solver.cellIndex(3.5, 12.5), { x: 0, z: 5 }, 2.135, 1.5, 0, { length: 2, width: 0.4, tilt: 0.4 }, undefined, undefined, 0.5);
+      lip.step(1 / 240);
+      if (handover) {
+        const joiner = new PlungingLip(solver, 64);
+        joiner.importState(JSON.parse(JSON.stringify(lip.exportState())));
+        lip = joiner;
+      }
+      const before = Float64Array.from(solver.h);
+      for (let k = 0; k < 480; k += 1) lip.step(1 / 240);
+      return Array.from(solver.h, (depth, i) => depth - before[i]);
+    };
+    const kept = run(true);
+    expect(kept).toEqual(run(false));
+    // Over the void it would have piled up instead (the test above).
+    expect(Math.max(...kept)).toBeLessThan(0.3 * 1.5);
+  });
 
   it('lands a sheet thicker than a cell over its thickness along its travel', () => {
     // 1.5 m³ over a 0.5 m void is a sheet 3 m thick: its jet comes down evenly across three cells (its
