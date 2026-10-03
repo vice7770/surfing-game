@@ -167,7 +167,7 @@ export class FarFieldOcean {
           : `#include <common>\n${farFragmentPars}`)
         .replace('#include <normal_fragment_begin>', rich ? richFarNormal + RICH_NORMAL_GUARD : waterChopNormal)
         .replace('#include <color_fragment>', 'diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );')
-        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, false, RICH_FAR_FOAM) : waterBodyFragment(false))
+        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, false, RICH_FAR_FOAM, '', true) : waterBodyFragment(false))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>');
     };
     material.customProgramCacheKey = () => `breakline-far-field-ocean-${this.currentLook}`;
