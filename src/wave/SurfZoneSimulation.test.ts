@@ -11,7 +11,7 @@ import {
   windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
 import { BoussinesqSolver } from './BoussinesqSolver';
-import { PSI_RANGE, REEF_OVERTURN, overturn, overturnParameter } from './Overturn';
+import { PSI_RANGE, REEF_OVERTURN, overturn, overturnParameter, reefOverturn } from './Overturn';
 import { shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
 import { PADANG_SWELLS, PADANG_TIDES, REEF_SWELLS } from '../game/SurfConditions';
 import { PADANG_PRACTICE_SWELL, PADANG_SPREADING, REEF_PRACTICE_SWELL } from '../game/PhysicalMode';
@@ -999,23 +999,50 @@ describe('the lip jet per spot (the Reef\'s periodic Basilisk runs)', () => {
     expect(LIP_JET.reef!.sourceShare!).toBeLessThan(0.5);
   });
 
-  it('asks the Reef\'s ledge breaks for its sourced jet beyond Pick & Feddersen\'s fits, and theirs inside them', () => {
-    const config: SurfZoneConfig = { ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 };
+  // A spot's reef breaks as thrown, each ask over its column and H², with what the slab would ask (beyond Pick &
+  // Feddersen's fits, no jet of the spot's own) or what theirs is (inside them); stepped until `enough` or `seconds`.
+  const reefBreaks = (config: SurfZoneConfig, enough: (beyond: number, inside: number) => boolean, seconds: number) => {
     const simulation = new SurfZoneSimulation(config);
     const nonlinearity = edgeHeight(config, simulation.tank.edgeDepth) / (simulation.tank.edgeDepth + config.tide);
-    const beyond: number[] = [];
-    const inside: { asked: number; expected: number }[] = [];
+    const beyond: { asked: number; slab: number }[] = [];
+    const inside: { asked: number; theirs: number }[] = [];
     simulation.onThrow = (event) => {
       if (event.orthogonalGradient === undefined) return;
-      const psi = overturnParameter(event.orthogonalGradient, nonlinearity);
       const asked = event.asked / (simulation.tubeColumnWidth * event.height * event.height);
-      if (psi > PSI_RANGE.max) beyond.push(asked);
-      else inside.push({ asked, expected: overturn(psi).jetArea });
+      const psi = overturnParameter(event.orthogonalGradient, nonlinearity);
+      if (psi > PSI_RANGE.max) beyond.push({ asked, slab: reefOverturn(event.orthogonalGradient, nonlinearity)!.jetArea });
+      else inside.push({ asked, theirs: overturn(psi).jetArea });
     };
-    for (let frame = 0; frame < 60 * 30 && beyond.length < 3; frame += 1) simulation.step(1 / 30);
+    for (let frame = 0; frame < seconds * 30 && !enough(beyond.length, inside.length); frame += 1) simulation.step(1 / 30);
+    return { simulation, beyond, inside };
+  };
+
+  // Inside the fits a Reef break keeps theirs (the reef overturn's tests in Overturn.test.ts): at game size such breaks
+  // are 0.2-0.3 % of the Reef's throws, too few to wait for here, and this sea throws none in its first 90 s.
+  it('asks the Reef\'s ledge breaks beyond Pick & Feddersen\'s fits for its sourced jet, not the slab', () => {
+    const config: SurfZoneConfig = { ...small, spot: 'reef', significantHeight: 1.8, peakPeriod: 12, dx: 1, fineSpacing: 1 };
+    const { simulation, beyond } = reefBreaks(config, (count) => count >= 3, 60);
     expect(beyond.length).toBeGreaterThanOrEqual(3);
-    for (const asked of beyond) expect(asked).toBeCloseTo(LIP_JET.reef!.jetArea!, 9);
-    for (const { asked, expected } of inside) expect(asked).toBeCloseTo(expected, 9);
+    for (const { asked, slab } of beyond) {
+      expect(asked).toBeCloseTo(LIP_JET.reef!.jetArea!, 9);
+      // The slab would have asked about 0.47 H².
+      expect(LIP_JET.reef!.jetArea! - slab).toBeGreaterThan(0.05);
+    }
     expect(simulation.lip.sourceShare).toBe(0.3);
+  }, 240_000);
+
+  // The Reef's entry must not leak to another spot. Padang Padang's reef breaks go beyond the fits within seconds, so a
+  // leaked jet would show in their asks.
+  it('asks another spot\'s reef breaks for the slab beyond the fits and theirs inside them, never the Reef\'s jet (Padang Padang)', () => {
+    const { simulation, beyond, inside } = reefBreaks(small_(), (out, within) => out >= 3 && within >= 3, 40);
+    expect(beyond.length).toBeGreaterThanOrEqual(3);
+    expect(inside.length).toBeGreaterThanOrEqual(3);
+    for (const { asked, slab } of beyond) {
+      expect(asked).toBeCloseTo(slab, 9);
+      // Each slab here differs from the Reef's jet, so a leaked one would fail the line above.
+      expect(Math.abs(slab - LIP_JET.reef!.jetArea!)).toBeGreaterThan(1e-3);
+    }
+    for (const { asked, theirs } of inside) expect(asked).toBeCloseTo(theirs, 9);
+    expect(simulation.lip.sourceShare).toBe(SOURCE_SHARE);
   }, 240_000);
 });

@@ -1,8 +1,8 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SOURCE_SHARE, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, spitSpeedLimit, type TubeRoller } from './PlungingLip';
+import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SOURCE_SHARE, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, spitSpeedLimit, type LipThrow, type TubeRoller } from './PlungingLip';
 import { GRAVITY } from './dispersion';
-import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, tubeFloorDepth, vortexRatio, type OverturnShape, type TubeGeometry } from './Overturn';
+import { LH82_AREA, PSI_RANGE, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, tubeFloorDepth, tubeGeometry, vortexRatio, type OverturnShape, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
 import { TUBE_EDGE } from './tubeTable';
 
@@ -57,7 +57,7 @@ describe('a reef break\'s lip (Teahupo\'o Reef, Part B)', () => {
     expect(aspect(0.3)).toBeLessThan(aspect(0));
   });
 
-  it('asks a spot\'s own jet area for a reef break beyond the fits, and changes only the water thrown', () => {
+  it('asks a spot\'s own jet area for a reef break beyond the fits, theirs inside them, and changes only the water thrown', () => {
     const reef = { windOverCelerity: REEF_OVERTURN.windOverCelerity, reef: { orthogonalGradient: 1 / 12 } };
     const slab = lipThrow({ ...base, ...reef })!;
     const own = lipThrow({ ...base, ...reef, reef: { ...reef.reef, jetArea: 0.585 } })!;
@@ -68,6 +68,18 @@ describe('a reef break\'s lip (Teahupo\'o Reef, Part B)', () => {
     expect(own.shape.tilt).toBe(slab.shape.tilt);
     expect(own.relativeSpeed).toBe(slab.relativeSpeed);
     expect(own.reef?.vortexRatio).toBe(slab.reef?.vortexRatio);
+    // The void stays, so the sheet a jet lands as (its water over the void's length, PlungingLip's landing) thickens with
+    // the water: on the ledge's roundest tube in calm air, 0.99 H long, from the slab's 0.47 H to 0.59 H.
+    const calm = { windOverCelerity: 0, reef: { orthogonalGradient: 1 / 2.29 } };
+    const sheet = (lip: LipThrow) => lip.volume / (base.width * tubeGeometry(lip.shape, base.breakerHeight).length * base.breakerHeight);
+    expect(tubeGeometry(lipThrow({ ...base, ...calm })!.shape, 1).length).toBeCloseTo(0.991, 3);
+    expect(sheet(lipThrow({ ...base, ...calm })!)).toBeCloseTo(0.474, 3);
+    expect(sheet(lipThrow({ ...base, ...calm, reef: { ...calm.reef, jetArea: 0.585 } })!)).toBeCloseTo(0.590, 3);
+    // Inside Pick & Feddersen's fits (1:30 here) the throw is theirs, whatever the spot asks.
+    const gentle = { ...reef, reef: { orthogonalGradient: 1 / 30 } };
+    expect(overturnParameter(1 / 30, base.nonlinearity)).toBeLessThan(PSI_RANGE.max);
+    expect(lipThrow({ ...base, ...gentle, reef: { ...gentle.reef, jetArea: 0.585 } })).toEqual(lipThrow({ ...base, ...gentle }));
+    expect(lipThrow({ ...base, ...gentle })!.shape.jetArea).toBe(overturn(overturnParameter(1 / 30, base.nonlinearity)).jetArea);
     // A plane slope's lip is not a reef break's, so it has no reef conditions to carry a jet area: Pick & Feddersen's, as before.
     expect(lipThrow({ ...base, iribarren: 1, slope: 0.08 })!.volume).toBeCloseTo(overturn(overturnParameter(0.08, 0.05)).jetArea * 16, 12);
   });
