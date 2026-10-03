@@ -3,21 +3,26 @@ import {
   WebGLRenderTarget, type Texture, type WebGLRenderer,
 } from 'three';
 import { chopFieldUniforms, waterChopPars } from './waterChop';
-import { WATER_IOR } from './waterOptics';
+import { CAUSTIC_PEAK, WATER_IOR } from './waterOptics';
+
+export { CAUSTIC_PEAK };
 
 /**
  * The map covers a square of CAUSTIC_WINDOW metres around the view, refracted through
  * VERTICES × VERTICES rays into TARGET × TARGET pixels: fine enough (about
  * 0.13 m) to resolve the wind chop's shortest ripples, which make most of the
  * visible caustics; the solver's own waves are too long to focus in the surf
- * zone's few metres of water. Its light fades out over the outer EDGE share.
+ * zone's few metres of water. Its light fades out over the outer EDGE share. The Rich look's body reads it through
+ * its own lookup (`waterBodyFragment`'s `rich` option): it takes the map's size from the texture, fades the light to its
+ * mean, 1, where a pixel spans several texels (the target has no mipmaps), and fades it radially over the window's
+ * outer half, not the square's EDGE.
  */
 export const CAUSTIC_WINDOW = 48;
 const VERTICES = 384;
-const TARGET = 512;
+/** The map's side, texels: a half-float target without mipmaps, which Classic's lookup and the seabed's read as it is. */
+export const CAUSTIC_TARGET = 512;
+const TARGET = CAUSTIC_TARGET;
 const EDGE = 0.2;
-/** The brightest a fold of rays may paint the bed, relative to flat water. */
-export const CAUSTIC_PEAK = 16;
 
 /** Surface uniforms the pass reads: the same objects the water mesh renders from. */
 export interface CausticSource {

@@ -222,6 +222,57 @@ float waterCrestThickness( vec3 origin, vec3 direction ) {
 export const BED_RAY_FLOOR = 0.05;
 
 /**
+ * The brightest a fold of rays may paint the bed, relative to flat water: the caustic map clamps its light here
+ * (CausticMap.ts), and so does every lookup of it.
+ */
+export const CAUSTIC_PEAK = 16;
+
+/**
+ * The Rich look's caustic light fades to its mean, 1, in two weights (`richCausticLight`). The map is energy conserving:
+ * each patch of rays deposits its flat-surface area, so flat water's light, 1, is the mean of what it holds, and a
+ * pattern a pixel cannot resolve is replaced by that mean, as the ripples' LEAN term turns their unresolved normals into
+ * roughness. Both ranges are rendering choices [provisional].
+ *
+ * `resolved`: the pixel's footprint on the map, in texels, the longer side of its screen derivatives of the map
+ * coordinate. The map has no mipmaps (it is shared with Classic), so a pixel that spans several texels samples one point
+ * of many. The light is whole up to 1.5 texels a pixel and the mean from 4. The range was set against a 16-sample
+ * supersampled render of the water sheet's horizon view (a sub-pixel grid of 4 × 4 views, the lookup's weight 1): the
+ * unfiltered lookup is within 0.7 of 255 levels of it, the footprint there reaching 1.8 texels where the window's fade
+ * is nearly done, and a fade that starts at half a texel (the first try) removes a fifth of the caustics' contrast where
+ * they are well resolved.
+ */
+export const CAUSTIC_RESOLVED = { from: 1.5, to: 4 } as const;
+/**
+ * `window`: the distance from the window's centre, as a share of its half-width. The light is whole inside half the
+ * half-width and gone at the window's inscribed circle, so no straight edge of the square window shows across the bed.
+ */
+export const CAUSTIC_WINDOW_FADE = { from: 0.5, to: 1 } as const;
+
+/**
+ * The Rich body's caustic light at the bed point `waterBedXZ`, GLSL run before the body's lit branch: the screen
+ * derivatives it reads are only defined in uniform control flow. Reads the uniforms of `causticLookupPars`
+ * (CausticMap.ts) and the map's own size, so it needs nothing declared beyond them. CPU twin: `richCausticLight`
+ * (water/richOptics.ts).
+ */
+function richCausticLight(): string {
+  const resolved = CAUSTIC_RESOLVED;
+  const fade = CAUSTIC_WINDOW_FADE;
+  return /* glsl */ `
+  vec3 waterDown = refract( -waterV, waterN, ${glsl(1 / WATER_IOR)} );
+  vec2 waterBedXZ = vWaterWorld.xz + waterDown.xz * ( vWaterDepth / max( ${BED_RAY_FLOOR.toFixed(2)}, -waterDown.y ) );
+  float waterBedLight = 1.0;
+  {
+    vec2 causticUv = ( waterBedXZ - causticDomain.xy ) / causticDomain.zw;
+    vec2 causticDx = dFdx( causticUv ) * vec2( textureSize( causticMap, 0 ) );
+    vec2 causticDy = dFdy( causticUv ) * vec2( textureSize( causticMap, 0 ) );
+    float causticWeight = causticStrength
+      * ( 1.0 - smoothstep( ${glsl(resolved.from)}, ${glsl(resolved.to)}, max( length( causticDx ), length( causticDy ) ) ) )
+      * ( 1.0 - smoothstep( ${glsl(fade.from)}, ${glsl(fade.to)}, 2.0 * length( causticUv - 0.5 ) ) );
+    if ( causticWeight > 0.0 ) waterBedLight = mix( 1.0, min( textureLod( causticMap, causticUv, 0.0 ).r, ${CAUSTIC_PEAK.toFixed(1)} ), causticWeight );
+  }`;
+}
+
+/**
  * The Rich body's GLSL (`waterBodyFragment`'s `rich` option): R∞ (1 − e) + A · bedLight · e, e = e^{−K · depth · (1/|r_v.y|
  * + 1/|r_s.y|)}. Maritorena, Morel & Gentili 1994 write the bed's path as 2KH for a bed parallel to the surface;
  * `shallowReflectance` lengthens it by the view and sun cosines against the surface normal, which on a steep face puts
@@ -234,13 +285,12 @@ export const BED_RAY_FLOOR = 0.05;
 function richBedPath(caustics: boolean): string {
   const eta = glsl(1 / WATER_IOR);
   const floor = BED_RAY_FLOOR.toFixed(2);
-  return /* glsl */ `
-    vec3 waterDown = refract( -waterV, waterN, ${eta} );
+  // With caustics the view ray and the bed's light come from `richCausticLight`, before the branch.
+  return /* glsl */ `${caustics ? '' : `
+    vec3 waterDown = refract( -waterV, waterN, ${eta} );`}
     vec3 waterSunDown = refract( -waterSunDirection, waterN, ${eta} );
-    vec3 waterReach = exp( -waterDiffuseAttenuation * ( max( vWaterDepth, 0.0 ) * ( 1.0 / max( ${floor}, -waterDown.y ) + 1.0 / max( ${floor}, -waterSunDown.y ) ) ) );${caustics ? `
-    vec2 waterBedXZ = vWaterWorld.xz + waterDown.xz * ( vWaterDepth / max( ${floor}, -waterDown.y ) );
-    waterBody = waterDeepReflectance * ( 1.0 - waterReach ) + waterBedAlbedo * causticLightAt( waterBedXZ ) * waterReach;` : `
-    waterBody = waterDeepReflectance * ( 1.0 - waterReach ) + waterBedAlbedo * waterReach;`}`;
+    vec3 waterReach = exp( -waterDiffuseAttenuation * ( max( vWaterDepth, 0.0 ) * ( 1.0 / max( ${floor}, -waterDown.y ) + 1.0 / max( ${floor}, -waterSunDown.y ) ) ) );
+    waterBody = waterDeepReflectance * ( 1.0 - waterReach ) + waterBedAlbedo * ${caustics ? 'waterBedLight * ' : ''}waterReach;`;
 }
 
 /** The Classic foam composition in `waterBodyFragment`: the lace (or a plain tint) over the body, matte where it covers. */
@@ -289,7 +339,7 @@ export function waterBodyFragment(crestLight: boolean, caustics = false, foam = 
   vec3 waterN = normalize( ( vec4( normal, 0.0 ) * viewMatrix ).xyz );
   vec3 waterV = normalize( cameraPosition - vWaterWorld );
   float waterViewCos = dot( waterN, waterV );
-  vec3 waterBody = waterDeepReflectance;
+  vec3 waterBody = waterDeepReflectance;${rich && caustics ? richCausticLight() : ''}
   if ( waterViewCos > 0.0 ) {${body}${crestLight ? crest : ''}
   }
   // Foam is a matte network over the water (plan §2.4) that drifts with the current.

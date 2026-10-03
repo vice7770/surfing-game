@@ -1,7 +1,8 @@
 import { Vector3 } from 'three';
+import { smoothstep } from '../../wave/Bathymetry';
 import {
-  BED_RAY_FLOOR, WATER_ABSORPTION, WATER_IOR, applyOptics, backscattering, particleAbsorption, refractedCosine, schlickFresnel, type OpticsUniforms, type Rgb,
-  type WaterOptics,
+  BED_RAY_FLOOR, CAUSTIC_PEAK, CAUSTIC_RESOLVED, CAUSTIC_WINDOW_FADE, WATER_ABSORPTION, WATER_IOR, applyOptics, backscattering, particleAbsorption,
+  refractedCosine, schlickFresnel, type OpticsUniforms, type Rgb, type WaterOptics,
 } from '../waterOptics';
 import type { WaterLook } from './waterLook';
 
@@ -73,6 +74,33 @@ export function richShallowReflectance(
     const reach = Math.exp(-water.diffuse[i] * path);
     return water.deep[i] * (1 - reach) + water.bed[i] * bedLight * reach;
   }) as unknown as Rgb;
+}
+
+/**
+ * The share of the caustic map's light a pixel keeps for its footprint on the map, `texelsPerPixel` texels across: whole
+ * while the pattern is resolved, the mean, 1, once a pixel spans several texels (`CAUSTIC_RESOLVED`). CPU twin of the
+ * first weight of `waterBodyFragment`'s Rich caustic lookup.
+ */
+export function causticResolvedWeight(texelsPerPixel: number): number {
+  return 1 - smoothstep(CAUSTIC_RESOLVED.from, CAUSTIC_RESOLVED.to, texelsPerPixel);
+}
+
+/**
+ * The share of the map's light kept at map coordinate (u, v) in [0, 1]²: whole within half the window's half-width of its
+ * centre and gone at its inscribed circle (`CAUSTIC_WINDOW_FADE`), a function of the distance alone, so the square
+ * window's straight edges never show. CPU twin of the second weight.
+ */
+export function causticWindowWeight(u: number, v: number): number {
+  return 1 - smoothstep(CAUSTIC_WINDOW_FADE.from, CAUSTIC_WINDOW_FADE.to, 2 * Math.hypot(u - 0.5, v - 0.5));
+}
+
+/**
+ * CPU twin of the Rich body's caustic light: `map`, the sampled light (capped at `CAUSTIC_PEAK` as Classic's lookup caps
+ * it), mixed toward flat water's 1 by the two weights and the map's `strength` (0 when no map is drawn).
+ */
+export function richCausticLight(map: number, texelsPerPixel: number, u: number, v: number, strength = 1): number {
+  const weight = strength * causticResolvedWeight(texelsPerPixel) * causticWindowWeight(u, v);
+  return 1 + weight * (Math.min(map, CAUSTIC_PEAK) - 1);
 }
 
 /** The game's channels (R, G, B) stand for these wavelengths, nm (waterOptics.ts). */

@@ -1,17 +1,18 @@
 import { PerspectiveCamera, ShaderLib, Vector3, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it } from 'vitest';
+import { CAUSTIC_TARGET, causticLookupPars } from '../CausticMap';
 import { FarFieldOcean } from '../FarFieldOcean';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import {
-  BED_RAY_FLOOR, CLASSIC_FOAM, PARTICLE_ALBEDO, PARTICLE_BACKSCATTER_FRACTION, SPOT_OPTICS, WATER_ABSORPTION, WATER_IOR, applyOptics, beamAttenuation,
+  BED_RAY_FLOOR, CAUSTIC_PEAK, CAUSTIC_RESOLVED, CAUSTIC_WINDOW_FADE, CLASSIC_FOAM, PARTICLE_ALBEDO, PARTICLE_BACKSCATTER_FRACTION, SPOT_OPTICS, WATER_ABSORPTION, WATER_IOR, applyOptics, beamAttenuation,
   createOpticsUniforms, deepReflectance, diffuseAttenuation, refractedCosine, schlickFresnel, shallowReflectance, WATER_F0, waterBodyFragment, type WaterOptics,
 } from '../waterOptics';
 import {
   CRITICAL_ANGLE, DIFFUSE_FRESNEL, DIFFUSE_STRETCH, FOAM_TRANSMITTANCE, LEVEL_OVER_NADIR, MIRROR_FLOOR, PHYTOPLANKTON, PLUME_OPTICAL_DEPTH, RICH_NORMAL_FLOOR,
   RICH_NORMAL_GUARD, RICH_UNDERSIDE_REFLECTION, UNDERWATER_MARGIN, WINDOW_ANGLE, applyLookOptics, applyRichWater, bedPathFactor, bricaudCdm,
-  dissolvedAbsorption, downwelling, eyeUnderwaterIn, guardedNormal, mirroredWaterShape, phytoplanktonAbsorption, plumeTransmission, refractOut, refractRay,
-  richAbsorption, richBeamAttenuation, richDeepReflectance, richDiffuseAttenuation, richShallowReflectance, richUndersideFragment, shareEyeTest,
-  undersideRadiance, windowGain,
+  causticResolvedWeight, causticWindowWeight, dissolvedAbsorption, downwelling, eyeUnderwaterIn, guardedNormal, mirroredWaterShape, phytoplanktonAbsorption,
+  plumeTransmission, refractOut, refractRay, richAbsorption, richBeamAttenuation, richCausticLight, richDeepReflectance, richDiffuseAttenuation,
+  richShallowReflectance, richUndersideFragment, shareEyeTest, undersideRadiance, windowGain,
 } from './richOptics';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
@@ -175,24 +176,131 @@ describe('the Rich bed path', () => {
     expect(rich).toContain('vec3 waterReach = exp( -waterDiffuseAttenuation * ( max( vWaterDepth, 0.0 ) * ( 1.0 / max( 0.05, -waterDown.y ) + 1.0 / max( 0.05, -waterSunDown.y ) ) ) );');
     // The bed lies along the same refracted ray the caustic lookup follows.
     expect(rich).toContain('vec2 waterBedXZ = vWaterWorld.xz + waterDown.xz * ( vWaterDepth / max( 0.05, -waterDown.y ) );');
-    expect(rich).toContain('waterBody = waterDeepReflectance * ( 1.0 - waterReach ) + waterBedAlbedo * causticLightAt( waterBedXZ ) * waterReach;');
+    expect(rich).toContain('waterBody = waterDeepReflectance * ( 1.0 - waterReach ) + waterBedAlbedo * waterBedLight * waterReach;');
     expect(rich).not.toContain('waterBodyReflectance');
     expect(waterBodyFragment(false, false, CLASSIC_FOAM, '', true)).toContain('waterBody = waterDeepReflectance * ( 1.0 - waterReach ) + waterBedAlbedo * waterReach;');
     // The curl's sheet follows the body, and the crest light is Classic's.
     const sheet = waterBodyFragment(true, true, CLASSIC_FOAM, 'SHEET();', true);
-    expect(sheet.indexOf('SHEET();')).toBeGreaterThan(sheet.indexOf('causticLightAt( waterBedXZ ) * waterReach;'));
+    expect(sheet.indexOf('SHEET();')).toBeGreaterThan(sheet.indexOf('waterBedAlbedo * waterBedLight * waterReach;'));
     expect(sheet).toContain('exp( -waterAttenuation * waterThickness )');
   });
 
   it('is compiled into the Rich tank and far ocean, and not into Classic', () => {
     const tank = new WaterSurface(source);
     tank.setLook('rich');
-    expect(fragmentOf(tank.mesh.material)).toContain('causticLightAt( waterBedXZ ) * waterReach;');
+    expect(fragmentOf(tank.mesh.material)).toContain('waterBedAlbedo * waterBedLight * waterReach;');
     const ocean = new FarFieldOcean();
     ocean.setLook('rich');
     expect(fragmentOf(ocean.mesh.material)).toContain('waterBody = waterDeepReflectance * ( 1.0 - waterReach ) + waterBedAlbedo * waterReach;');
     expect(fragmentOf(new WaterSurface({ ...source, cubic: false }).mesh.material)).not.toContain('waterReach');
     expect(fragmentOf(new FarFieldOcean().mesh.material)).not.toContain('waterReach');
+  });
+});
+
+describe('the Rich caustic light', () => {
+  const rich = waterBodyFragment(true, true, CLASSIC_FOAM, '', true);
+  const fixed = (value: number) => value.toFixed(6);
+
+  it('keeps the whole light while a pixel resolves the map, and the mean once it spans four texels', () => {
+    expect(causticResolvedWeight(0)).toBe(1);
+    expect(causticResolvedWeight(1)).toBe(1);
+    expect(causticResolvedWeight(CAUSTIC_RESOLVED.from)).toBe(1);
+    expect(causticResolvedWeight(CAUSTIC_RESOLVED.to)).toBe(0);
+    expect(causticResolvedWeight(40)).toBe(0);
+    expect(causticResolvedWeight((CAUSTIC_RESOLVED.from + CAUSTIC_RESOLVED.to) / 2)).toBeCloseTo(0.5, 12);
+    let last = 1;
+    for (let texels = 0; texels <= 3; texels += 0.01) {
+      const weight = causticResolvedWeight(texels);
+      expect(weight).toBeLessThanOrEqual(last + 1e-12);
+      last = weight;
+    }
+  });
+
+  it('fades the window by the distance from its centre alone, so no straight edge of the square survives', () => {
+    expect(causticWindowWeight(0.5, 0.5)).toBe(1);
+    // Whole within half the window's half-width of its centre.
+    for (const [u, v] of [[0.75, 0.5], [0.5, 0.25], [0.65, 0.65]]) expect(causticWindowWeight(u, v)).toBe(1);
+    // Gone at the inscribed circle, so also in the square's corners and along its sides' ends.
+    for (const [u, v] of [[1, 0.5], [0, 0.5], [0.5, 0], [0.5, 1], [0, 0], [1, 1], [0.95, 0.95], [1, 0.2]]) expect(causticWindowWeight(u, v), `${u},${v}`).toBe(0);
+    // The same at the same distance in every direction.
+    const radius = 0.4;
+    for (let degrees = 0; degrees < 360; degrees += 15) {
+      const angle = (degrees * Math.PI) / 180;
+      expect(causticWindowWeight(0.5 + radius * Math.cos(angle), 0.5 + radius * Math.sin(angle))).toBeCloseTo(causticWindowWeight(0.5 + radius, 0.5), 12);
+    }
+    // Along the old window's side the weight changes with the position along it, where a square fade is constant.
+    expect(causticWindowWeight(0.9, 0.5)).toBeGreaterThan(causticWindowWeight(0.9, 0.3) + 0.2);
+    expect(causticWindowWeight(0.9, 0.3)).toBeGreaterThan(causticWindowWeight(0.9, 0.15));
+  });
+
+  it('is the map’s light, capped, where it is resolved and inside the window, and flat water’s 1 elsewhere', () => {
+    expect(richCausticLight(3.2, 0.1, 0.5, 0.5)).toBe(3.2);
+    expect(richCausticLight(0.2, 0.1, 0.5, 0.5)).toBeCloseTo(0.2, 12);
+    expect(richCausticLight(1000, 0.1, 0.5, 0.5)).toBe(CAUSTIC_PEAK);
+    // A fold's light, on a pixel of several texels, outside the window, or with no map drawn, is flat water's.
+    expect(richCausticLight(9, 4, 0.5, 0.5)).toBe(1);
+    expect(richCausticLight(9, 0.1, 1, 1)).toBe(1);
+    expect(richCausticLight(9, 0.1, 0.5, 0.5, 0)).toBe(1);
+    // In between, a mix: half way through the footprint's range, half the way from 1 to the map.
+    expect(richCausticLight(5, (CAUSTIC_RESOLVED.from + CAUSTIC_RESOLVED.to) / 2, 0.5, 0.5)).toBeCloseTo(3, 12);
+  });
+
+  it('leaves no ring for a pattern that a pixel steps over: the aliasing of an unfiltered map is the mean', () => {
+    // A bright and dark texel in turn, sampled once per pixel at a step that is not a whole number of texels.
+    const texel = (x: number) => (Math.floor(x) % 2 === 0 ? 6 : 0.1);
+    for (const step of [4.3, 5.1, 7.7]) {
+      const samples = Array.from({ length: 64 }, (_, pixel) => texel(pixel * step));
+      expect(Math.max(...samples) - Math.min(...samples)).toBeGreaterThan(5);
+      for (let pixel = 0; pixel < samples.length; pixel += 1) expect(richCausticLight(samples[pixel], step, 0.5, 0.5)).toBe(1);
+    }
+    // At a fraction of a texel a pixel the pattern is kept whole.
+    for (let pixel = 0; pixel < 64; pixel += 1) expect(richCausticLight(texel(pixel * 0.3), 0.3, 0.5, 0.5)).toBeCloseTo(texel(pixel * 0.3), 12);
+  });
+
+  it('mirrors the CPU twin in its GLSL, on the map’s own size', () => {
+    expect(rich).toContain('vec2 causticUv = ( waterBedXZ - causticDomain.xy ) / causticDomain.zw;');
+    expect(rich).toContain('vec2 causticDx = dFdx( causticUv ) * vec2( textureSize( causticMap, 0 ) );');
+    expect(rich).toContain('vec2 causticDy = dFdy( causticUv ) * vec2( textureSize( causticMap, 0 ) );');
+    expect(rich).toContain(`( 1.0 - smoothstep( ${fixed(CAUSTIC_RESOLVED.from)}, ${fixed(CAUSTIC_RESOLVED.to)}, max( length( causticDx ), length( causticDy ) ) ) )`);
+    expect(rich).toContain(`( 1.0 - smoothstep( ${fixed(CAUSTIC_WINDOW_FADE.from)}, ${fixed(CAUSTIC_WINDOW_FADE.to)}, 2.0 * length( causticUv - 0.5 ) ) )`);
+    expect(rich).toContain('float causticWeight = causticStrength');
+    expect(rich).toContain(`waterBedLight = mix( 1.0, min( textureLod( causticMap, causticUv, 0.0 ).r, ${CAUSTIC_PEAK.toFixed(1)} ), causticWeight );`);
+    // The cap is Classic's lookup's own.
+    expect(causticLookupPars).toContain(`min( texture( causticMap, uv ).r, ${CAUSTIC_PEAK.toFixed(1)} )`);
+    // No texel count is written into the program: the map's size is read from the texture it samples.
+    expect(rich).not.toContain(String(CAUSTIC_TARGET));
+  });
+
+  it('looks the light up ahead of the lit branch, where the screen derivatives are defined', () => {
+    const branch = rich.indexOf('if ( waterViewCos > 0.0 ) {');
+    expect(branch).toBeGreaterThan(0);
+    for (const line of ['dFdx( causticUv )', 'dFdy( causticUv )', 'waterBedLight = mix(', 'vec2 waterBedXZ =']) {
+      expect(rich.indexOf(line), line).toBeGreaterThan(-1);
+      expect(rich.indexOf(line), line).toBeLessThan(branch);
+    }
+    // The branch only weighs it into the body; its own text never calls Classic's lookup.
+    expect(rich.slice(branch)).toContain('waterBedAlbedo * waterBedLight * waterReach;');
+    expect(rich).not.toContain('causticLightAt');
+    // Without caustics (the far ocean) the lookup is not run and the view ray stays in the branch.
+    const far = waterBodyFragment(false, false, CLASSIC_FOAM, '', true);
+    expect(far).not.toContain('causticUv');
+    expect(far.indexOf('vec3 waterDown = refract(')).toBeGreaterThan(far.indexOf('if ( waterViewCos > 0.0 ) {'));
+  });
+
+  it('is compiled into the Rich tank, and Classic keeps its lookup and the square window', () => {
+    const tank = new WaterSurface(source);
+    tank.setLook('rich');
+    const program = fragmentOf(tank.mesh.material);
+    expect(program).toContain('dFdx( causticUv )');
+    expect(program).toContain('textureLod( causticMap, causticUv, 0.0 )');
+    // The sampler and uniforms it reads are declared before it.
+    expect(program.indexOf('uniform sampler2D causticMap;')).toBeLessThan(program.indexOf('dFdx( causticUv )'));
+    expect(program).toContain('float causticLightAt( vec2 xz )');
+    const classic = fragmentOf(new WaterSurface({ ...source, cubic: false }).mesh.material);
+    expect(classic).toContain('causticLightAt( waterBedXZ )');
+    expect(classic).not.toContain('causticUv');
+    expect(causticLookupPars).toContain('vec2 edge = min( uv, 1.0 - uv ) / 0.20;');
+    expect(fragmentOf(new FarFieldOcean().mesh.material)).not.toContain('causticUv');
   });
 });
 
