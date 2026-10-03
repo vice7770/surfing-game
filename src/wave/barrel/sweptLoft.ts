@@ -1,6 +1,7 @@
 import type { SpotName } from '../Bathymetry';
 import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
 import { SHEET, THROAT, sheetTablesLookup, throatViews, type SheetLookup } from './lipSheet';
 
@@ -125,6 +126,11 @@ export interface LoftResult {
   overlaps: number;
   overlapsOpen: number;
   overlapOpenWeight: number;
+  /** Ray stabilization: slices corrected, largest shared blend, minimum stored row advance, and invalid input pairs. */
+  rayCorrections: number;
+  rayMaxBlend: number;
+  rayMinAdvance: number;
+  rayInvalidIntervals: number;
   /** Per slice, its ray (the front's shoreward normal, x and z), its weight on the water, and 1 if its profile overhangs. */
   sliceRayX: Float32Array;
   sliceRayZ: Float32Array;
@@ -240,6 +246,13 @@ export class SweptLoft {
   private readonly anchorZ = new Float64Array(MAX_SLICES + 1);
   private readonly reachBack = new Float64Array(MAX_SLICES + 1);
   private readonly reachFront = new Float64Array(MAX_SLICES + 1);
+  /** Reusable planned sigma samples: x, z, tau, foot height, foot depth, pace (double precision). */
+  private planned = new Float64Array(0);
+  private plannedLive = new Uint8Array(0);
+  private plannedRayX = new Float64Array(0);
+  private plannedRayZ = new Float64Array(0);
+  private readonly rayPlan: CrestRayPlan;
+  private readonly plannedRay = new Float64Array(2);
   /** Per strip, its footprint's corners (x, z × 4: its slices' back and front reach) and box (x0, x1, z0, z1). */
   private readonly corners = new Float64Array(8 * (MAX_SLICES + 1));
   private readonly boxes = new Float64Array(4 * (MAX_SLICES + 1));
@@ -259,6 +272,7 @@ export class SweptLoft {
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
     this.contact = options.contact ?? false;
     this.measureSheet = options.sheet ?? !this.contact;
+    this.rayPlan = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
     this.query = { slope, footHeight: 0, footDepth: 0, seconds: 0 };
     const vertices = (MAX_SLICES + 1) * LOFT_SAMPLES;
     const slices = MAX_SLICES + 1;
@@ -272,6 +286,7 @@ export class SweptLoft {
       sliceRestHold: new Float32Array(slices), sliceRestEnd: new Float32Array(slices), sliceRestClimb: new Float32Array(slices),
       sliceToeClimb: new Float32Array(slices), restSamples: 0,
       clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0,
+      rayCorrections: 0, rayMaxBlend: 0, rayMinAdvance: 0, rayInvalidIntervals: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
@@ -294,6 +309,10 @@ export class SweptLoft {
     r.overlapsOpen = 0;
     r.overlapOpenWeight = 0;
     r.restSamples = 0;
+    r.rayCorrections = 0;
+    r.rayMaxBlend = 0;
+    r.rayMinAdvance = 0;
+    r.rayInvalidIntervals = 0;
     const fronts = this.fronts(records, count);
     // The output budget limits live slices, not the length surveyed before faded slices are removed. A 320 m front
     // already needs more survey samples than the original fixed scratch buffer; grow these reusable arrays before
@@ -319,6 +338,7 @@ export class SweptLoft {
       const n = budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing);
       this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
     }
+    this.measureRayAdvance();
     this.dropOverlaps();
     this.sealRuns(heightAt);
     this.triangulate();
@@ -449,6 +469,56 @@ export class SweptLoft {
     return into;
   }
 
+  /** Sample the planned crest/ray/scale once, preserving the original live-run and budget-clock decisions. */
+  private planRays(records: Float32Array, f: Front, n: number, budgeted: boolean): number {
+    if (this.plannedLive.length < n) {
+      const capacity = Math.max(n, 2 * this.plannedLive.length);
+      this.planned = new Float64Array(6 * capacity);
+      this.plannedLive = new Uint8Array(capacity);
+      this.plannedRayX = new Float64Array(capacity);
+      this.plannedRayZ = new Float64Array(capacity);
+    }
+    this.plannedLive.fill(0, 0, n);
+    this.rayPlan.prepareRecords(records, f.start, f.end);
+    const r = this.result;
+    r.rayMaxBlend = Math.max(r.rayMaxBlend, this.rayPlan.diagnostics.blend);
+    r.rayInvalidIntervals += this.rayPlan.diagnostics.invalidIntervals;
+    let live = 0;
+    let inRun = false;
+    let previousTau = 0;
+    let limit = n;
+    for (let k = 0; k < n; k += 1) {
+      const sigma = this.sigmas[k];
+      const s = this.at(records, f, sigma, this.sample);
+      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+      let tau = s.tau;
+      if (budgeted && inRun) {
+        const bound = times.touchdownSeconds / 4;
+        const clamped = Math.min(previousTau + bound, Math.max(previousTau - bound, tau));
+        if (clamped !== tau) r.clamps += 1;
+        tau = clamped;
+      }
+      if (collapseFade(tau, times.touchdownSeconds, times.collapseSeconds) === 0) { inRun = false; continue; }
+      if (r.sliceCount + live >= MAX_SLICES) { limit = k; break; }
+      this.plannedLive[k] = 1;
+      inRun = true;
+      previousTau = tau;
+      live += 1;
+      const plan = 6 * k;
+      this.planned[plan] = s.x;
+      this.planned[plan + 1] = s.z;
+      this.planned[plan + 2] = tau;
+      this.planned[plan + 3] = s.footHeight;
+      this.planned[plan + 4] = s.footDepth;
+      this.planned[plan + 5] = s.pace;
+      this.rayPlan.rayAt(sigma, this.plannedRay);
+      this.plannedRayX[k] = this.plannedRay[0];
+      this.plannedRayZ[k] = this.plannedRay[1];
+      if (this.rayPlan.diagnostics.blend > 0) r.rayCorrections += 1;
+    }
+    return limit;
+  }
+
   private loftFront(
     records: Float32Array, f: Front, n: number, budgeted: boolean, stillLevel: number, heightAt: (x: number, z: number) => number,
   ): void {
@@ -460,34 +530,21 @@ export class SweptLoft {
       if (runStart >= 0) this.joinRun(runStart, r.sliceCount - 1);
       runStart = -1;
     };
-    let previousTau = 0;
-    for (let k = 0; k < n; k += 1) {
+    const plannedCount = this.planRays(records, f, n, budgeted);
+    for (let k = 0; k < plannedCount; k += 1) {
+      if (this.plannedLive[k] !== 1) { closeRun(); continue; }
       const sigma = this.sigmas[k];
-      const s = this.at(records, f, sigma, this.sample);
-      // The ray: the front's shoreward normal, from its tangent over ±2 m.
-      const ahead = this.at(records, f, sigma + 2, this.probe);
-      let tx = ahead.x;
-      let tz = ahead.z;
-      const behind = this.at(records, f, sigma - 2, this.probe);
-      tx -= behind.x;
-      tz -= behind.z;
-      const t = Math.sqrt(tx * tx + tz * tz);
-      if (t > 1e-9) {
-        tx /= t;
-        tz /= t;
-      } else {
-        tx = 1;
-        tz = 0;
-      }
-      const nx = -tz;
-      const nz = tx;
-      let tau = s.tau;
-      if (budgeted && runStart >= 0) {
-        const limit = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).touchdownSeconds / 4;
-        const clamped = Math.min(previousTau + limit, Math.max(previousTau - limit, tau));
-        if (clamped !== tau) r.clamps += 1;
-        tau = clamped;
-      }
+      const s = this.sample;
+      const plan = 6 * k;
+      s.x = this.planned[plan];
+      s.z = this.planned[plan + 1];
+      s.tau = this.planned[plan + 2];
+      s.footHeight = this.planned[plan + 3];
+      s.footDepth = this.planned[plan + 4];
+      s.pace = this.planned[plan + 5];
+      const nx = this.plannedRayX[k];
+      const nz = this.plannedRayZ[k];
+      const tau = s.tau;
       // The drawing keeps the touchdown frame, the visual event; the contact also holds each blended case at its own
       // last clear frame, never self-crossing (the advisor, 2026-09-30). Both clocks run on.
       const query = this.query;
@@ -543,7 +600,6 @@ export class SweptLoft {
       }
       if (r.sliceCount >= MAX_SLICES) break;
       if (runStart < 0) runStart = r.sliceCount;
-      previousTau = tau;
       if (lookup.clamped) r.clampedLookups += 1;
       // The anchor, the profile's x origin in the world: the crest point K = S − c n, so the profile's crest landmark
       // sits on the point's crest, before the throw and from it alike (the advisor, 2026-10-03: u = 1 from the throw).
@@ -714,6 +770,26 @@ export class SweptLoft {
     }
     closeRun();
     r.vertexCount = r.sliceCount * LOFT_SAMPLES;
+  }
+
+  /** Verify the float32 geometry using the exact rays the contact reads. */
+  private measureRayAdvance(): void {
+    const r = this.result;
+    // Verify the stored float32 geometry, using the exact rays the contact reads. Profile folds along a ray are
+    // authored overhang; a negative advance across a front is a different defect, reported independently.
+    let minimum = Infinity;
+    for (let s = 0; s + 1 < r.sliceCount; s += 1) {
+      if (r.sliceJoined[s] !== 1) continue;
+      for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+        const a = 3 * (s * LOFT_SAMPLES + j);
+        const b = a + 3 * LOFT_SAMPLES;
+        const dx = r.positions[b] - r.positions[a];
+        const dz = r.positions[b + 2] - r.positions[a + 2];
+        minimum = Math.min(minimum, dx * r.sliceRayZ[s] - dz * r.sliceRayX[s],
+          dx * r.sliceRayZ[s + 1] - dz * r.sliceRayX[s + 1]);
+      }
+    }
+    r.rayMinAdvance = minimum === Infinity ? 0 : minimum;
   }
 
   /**

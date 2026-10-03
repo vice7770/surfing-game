@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "checks": [
+    {
+      "fixture": "at-10.json",
+      "version": "baseline",
+      "drawingExact": true,
+      "contactExact": true,
+      "queriesExact": true,
+      "metadataExact": true,
+      "maskNodeCountExact": true,
+      "drawingHash": "a570c8633dd0f19caa83de989cefe40bcf2b145a4e5502dea407158602a7466e",
+      "contactHash": "3fc4db797f740f4e8bbf134036aa89fef3b2fc85f0dbac865b72ac57b8abda8d"
+    },
+    {
+      "fixture": "at-10.json",
+      "version": "current",
+      "drawingExact": true,
+      "contactExact": true,
+      "queriesExact": true,
+      "metadataExact": true,
+      "maskNodeCountExact": true,
+      "drawingHash": "1b675336374b996f254b31f8f6cd8ccb5256b0a5af319ac4555849b3bff5b36a",
+      "contactHash": "557c6532f85dbd37f2d8d5932e2e8fde481df8c168f57d7e196ea94ccf6cf637"
+    },
+    {
+      "fixture": "at-20.json",
+      "version": "baseline",
+      "drawingExact": true,
+      "contactExact": true,
+      "queriesExact": true,
+      "metadataExact": true,
+      "maskNodeCountExact": true,
+      "drawingHash": "78dde5946ec09dc186d7f238867292065df5690567eecd92283724dc02a64910",
+      "contactHash": "668b475422521f04a206bd60a9fb09119425564b0792156cd5c4dfcbab5c95db"
+    },
+    {
+      "fixture": "at-20.json",
+      "version": "current",
+      "drawingExact": true,
+      "contactExact": true,
+      "queriesExact": true,
+      "metadataExact": true,
+      "maskNodeCountExact": true,
+      "drawingHash": "da2fd31acded3e5e20a7a782ace9fee7ead5d48127af37bb50717fa13ed54bcf",
+      "contactHash": "5895898229eef7df807e7025d4c464c6173932dea0bb45db9cc4e996db3c5370"
+    }
+  ],
+  "limitations": "Exact geometry/contact/query outputs versus original full captures on these tests. Cropped masks have different array dimensions/hashes, with identical occupied-node counts. These derived fixtures do not reproduce the full original visual, water simulation or FPS."
+}

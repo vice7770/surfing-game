@@ -1,0 +1,346 @@
+{
+  "schema": 1,
+  "runs": [
+    {
+      "label": "before-c24",
+      "report": "/private/tmp/tube-live-final/before-c24/report.json",
+      "pass": false,
+      "failures": [
+        "Live geometry/source invariant failures"
+      ],
+      "failureSnapshots": {
+        "negativeRows": 156,
+        "liftedRunEnds": 5
+      },
+      "checkerRevision": 1,
+      "bundleSha256": "a493f04df31c598c1bb86575d9ee69617bac187d5407d27ac5c34c10db5b0a7d",
+      "scriptSha256": "1cd1a06e6c0df43400a738bef2906c08bc5b370614baf0795a4c57ef6403d81e",
+      "viewport": {
+        "width": 1708,
+        "height": 926,
+        "devicePixelRatio": 2,
+        "canvasWidth": 2989,
+        "canvasHeight": 1620
+      },
+      "summary": {
+        "wallSeconds": 20.14519999998808,
+        "renderedFramesPerSecond": 59.81573774401411,
+        "freshPublishedPerSecond": 33.45710144353984,
+        "inspectedSnapshotsPerSecond": 33.50674105992491,
+        "simulationSecondsPerWallSecond": 0.5579230033147254,
+        "visibleOpenSnapshots": 126,
+        "phaseEvidence": {
+          "pre": 66,
+          "open": 128,
+          "post": 108,
+          "newThrows": 19,
+          "touchdowns": 38
+        },
+        "uninspectedPublishedSnapshots": 0,
+        "inspectCpuMs": 1801.8999999761581,
+        "cameraCuts": 2,
+        "negativeRows": 55900,
+        "maximumTipRelativeStepMeters": 1.6525747385433116,
+        "maximumCrestMismatchMeters": 0.223904263567138
+      },
+      "minimumIndexedAdvanceMeters": -8.151510640512242,
+      "unusedIsolatedLiftedVerticesMax": 0,
+      "rawRasterMissingNodesMax": 240,
+      "restingSourceResidualMaxMeters": 8.445336726614627e-07,
+      "seaTime": [
+        164,
+        175.2333333333327
+      ],
+      "shots": [
+        {
+          "file": "/private/tmp/tube-live-final/before-c24/00-first-overturn.png",
+          "reason": "first-overturn",
+          "sha256": "6d3f5355e43dbcdb3092a2abfdca483aee50ff6cbb3fba6c973e0164420d4ae8",
+          "seaTimeBefore": 166.71666666666653,
+          "seaTimeAfter": 167.19999999999982
+        },
+        {
+          "file": "/private/tmp/tube-live-final/before-c24/01-first-open.png",
+          "reason": "first-open",
+          "sha256": "8d6f4964d99960c5f832a999131443bdaf847e20769769dc124025be3275f1c9",
+          "seaTimeBefore": 167.3166666666665,
+          "seaTimeAfter": 167.76666666666645,
+          "retainedFile": "before-c24-01-first-open.png"
+        },
+        {
+          "file": "/private/tmp/tube-live-final/before-c24/02-first-failure.png",
+          "reason": "first-failure",
+          "sha256": "3feedf9ef13108e5e10a9d7009c7b50cbdeea5c72b1e1d6a297a1d94b070d43f",
+          "seaTimeBefore": 167.8833333333331,
+          "seaTimeAfter": 168.3833333333331
+        },
+        {
+          "file": "/private/tmp/tube-live-final/before-c24/03-first-touchdown.png",
+          "reason": "first-touchdown",
+          "sha256": "3dc03be42a3598876f893822c28a31aaac46b756e933a7d3de69c9175e96638a",
+          "seaTimeBefore": 169.41666666666634,
+          "seaTimeAfter": 169.86666666666633
+        }
+      ],
+      "retainedReport": "before-c24.json.gz",
+      "retainedReportUncompressedSha256": "c08265bb13350b6ce97f1d5275d38b4bca40e0a93e7bfffd75b91cf39639234c"
+    },
+    {
+      "label": "before-c64",
+      "report": "/private/tmp/tube-live-final/before-c64/report.json",
+      "pass": false,
+      "failures": [
+        "Live geometry/source invariant failures"
+      ],
+      "failureSnapshots": {
+        "negativeRows": 180
+      },
+      "checkerRevision": 2,
+      "bundleSha256": "a493f04df31c598c1bb86575d9ee69617bac187d5407d27ac5c34c10db5b0a7d",
+      "scriptSha256": "036f233cd57b5765ebf6fa3d1ffce24c52a64846691b0f54206a7826e023616d",
+      "viewport": {
+        "width": 1708,
+        "height": 926,
+        "devicePixelRatio": 2,
+        "canvasWidth": 2989,
+        "canvasHeight": 1620
+      },
+      "summary": {
+        "wallSeconds": 20.029,
+        "renderedFramesPerSecond": 59.863198362374554,
+        "freshPublishedPerSecond": 35.79809276549004,
+        "inspectedSnapshotsPerSecond": 35.79809276549004,
+        "simulationSecondsPerWallSecond": 0.5966607000590988,
+        "visibleOpenSnapshots": 128,
+        "phaseEvidence": {
+          "pre": 139,
+          "open": 129,
+          "post": 114,
+          "newThrows": 52,
+          "touchdowns": 51
+        },
+        "uninspectedPublishedSnapshots": 1,
+        "inspectCpuMs": 2253.900000154972,
+        "cameraCuts": 2,
+        "negativeRows": 89426,
+        "maximumTipRelativeStepMeters": 2.207631852848916,
+        "maximumCrestMismatchMeters": 0.24264863690550495
+      },
+      "minimumIndexedAdvanceMeters": -10.07495641357525,
+      "unusedIsolatedLiftedVerticesMax": 90,
+      "rawRasterMissingNodesMax": 109,
+      "restingSourceResidualMaxMeters": 1.6706271440680709e-06,
+      "seaTime": [
+        164,
+        175.93333333333266
+      ],
+      "shots": [
+        {
+          "file": "/private/tmp/tube-live-final/before-c64/00-first-pre.png",
+          "reason": "first-pre",
+          "sha256": "714194bfa70138fc942ab7491a7f0e20f9a0160e1a5a3860fd072ba1ff15e68d",
+          "seaTimeBefore": 171.29999999999959,
+          "seaTimeAfter": 171.8166666666662
+        },
+        {
+          "file": "/private/tmp/tube-live-final/before-c64/01-first-failure.png",
+          "reason": "first-failure",
+          "sha256": "0c4d812a9c2012a26fbc2d57821e85f768e4d9821f6a58276a6005cd99879011",
+          "seaTimeBefore": 171.94999999999953,
+          "seaTimeAfter": 172.46666666666619
+        },
+        {
+          "file": "/private/tmp/tube-live-final/before-c64/02-first-open.png",
+          "reason": "first-open",
+          "sha256": "feef8f7860e880ca01c06f0eae54b9258ef65dee7f503990d5695eafefcd2111",
+          "seaTimeBefore": 172.58333333333286,
+          "seaTimeAfter": 173.11666666666616
+        },
+        {
+          "file": "/private/tmp/tube-live-final/before-c64/03-first-overturn.png",
+          "reason": "first-overturn",
+          "sha256": "6b964e87098e3d056dad65e56b2d0075b85de3febb0c8f646630abcbf9aa3259",
+          "seaTimeBefore": 173.2499999999995,
+          "seaTimeAfter": 173.7833333333328
+        },
+        {
+          "file": "/private/tmp/tube-live-final/before-c64/04-first-touchdown.png",
+          "reason": "first-touchdown",
+          "sha256": "56aee8d89ee78e4a7fee30751b7aca38dac230d49e588aae4b9a343411de87bc",
+          "seaTimeBefore": 174.28333333333273,
+          "seaTimeAfter": 174.83333333333272
+        }
+      ],
+      "retainedReport": "before-c64.json.gz",
+      "retainedReportUncompressedSha256": "03595bb88a8e0c65067496737de34e4d7a7fb7b3cb416ac64b3bbb361f85be2e"
+    },
+    {
+      "label": "after-c24",
+      "report": "/private/tmp/tube-live-final/after-c24/report.json",
+      "pass": true,
+      "failures": [],
+      "failureSnapshots": {},
+      "checkerRevision": 2,
+      "bundleSha256": "d8d8564409cac85cd0bfd742025a7835e0e8627184e89579358952cdb0510788",
+      "scriptSha256": "036f233cd57b5765ebf6fa3d1ffce24c52a64846691b0f54206a7826e023616d",
+      "viewport": {
+        "width": 1708,
+        "height": 926,
+        "devicePixelRatio": 2,
+        "canvasWidth": 2989,
+        "canvasHeight": 1620
+      },
+      "summary": {
+        "wallSeconds": 20.1965,
+        "renderedFramesPerSecond": 59.812343722922286,
+        "freshPublishedPerSecond": 34.70898422994083,
+        "inspectedSnapshotsPerSecond": 34.758497759512785,
+        "simulationSecondsPerWallSecond": 0.5793292672848046,
+        "visibleOpenSnapshots": 126,
+        "phaseEvidence": {
+          "pre": 66,
+          "open": 128,
+          "post": 107,
+          "newThrows": 19,
+          "touchdowns": 38
+        },
+        "uninspectedPublishedSnapshots": 0,
+        "inspectCpuMs": 1959.799999654293,
+        "cameraCuts": 2,
+        "negativeRows": 0,
+        "maximumTipRelativeStepMeters": 1.1068801853106558,
+        "maximumCrestMismatchMeters": 0.21621711479543942
+      },
+      "minimumIndexedAdvanceMeters": 0.08499014142682881,
+      "unusedIsolatedLiftedVerticesMax": 1202,
+      "rawRasterMissingNodesMax": 213,
+      "restingSourceResidualMaxMeters": 5.199506692560307e-07,
+      "seaTime": [
+        164,
+        175.68333333333266
+      ],
+      "shots": [
+        {
+          "file": "/private/tmp/tube-live-final/after-c24/00-first-overturn.png",
+          "reason": "first-overturn",
+          "sha256": "8c7e05405627337ee0adfae4e2a03cc0a4f692c32610c9d9a9e8f89065f50397",
+          "seaTimeBefore": 166.66666666666652,
+          "seaTimeAfter": 167.13333333333316
+        },
+        {
+          "file": "/private/tmp/tube-live-final/after-c24/01-first-open.png",
+          "reason": "first-open",
+          "sha256": "a7e9e16a376a71733d309bc8a097c24d8178d09b955cef5ba582339ab7ccd315",
+          "seaTimeBefore": 167.24999999999983,
+          "seaTimeAfter": 167.71666666666647,
+          "retainedFile": "after-c24-01-first-open.png"
+        },
+        {
+          "file": "/private/tmp/tube-live-final/after-c24/02-first-touchdown.png",
+          "reason": "first-touchdown",
+          "sha256": "00f4d51da7ff368c86fb6c2caf19f1f9f364c3e3e1071506c9c50faac63ed410",
+          "seaTimeBefore": 169.38333333333304,
+          "seaTimeAfter": 169.86666666666633,
+          "retainedFile": "after-c24-02-first-touchdown.png"
+        }
+      ],
+      "retainedReport": "after-c24.json.gz",
+      "retainedReportUncompressedSha256": "25d4d01c04bda0079395562392c14bb4c966ec14dd0f12dda83518808fefcbf0"
+    },
+    {
+      "label": "after-c64",
+      "report": "/private/tmp/tube-live-final/after-c64/report.json",
+      "pass": true,
+      "failures": [],
+      "failureSnapshots": {},
+      "checkerRevision": 2,
+      "bundleSha256": "d8d8564409cac85cd0bfd742025a7835e0e8627184e89579358952cdb0510788",
+      "scriptSha256": "036f233cd57b5765ebf6fa3d1ffce24c52a64846691b0f54206a7826e023616d",
+      "viewport": {
+        "width": 1708,
+        "height": 926,
+        "devicePixelRatio": 2,
+        "canvasWidth": 2989,
+        "canvasHeight": 1620
+      },
+      "summary": {
+        "wallSeconds": 20.166300000011923,
+        "renderedFramesPerSecond": 59.80274021507599,
+        "freshPublishedPerSecond": 35.80230384351979,
+        "inspectedSnapshotsPerSecond": 35.80230384351979,
+        "simulationSecondsPerWallSecond": 0.5963576690265434,
+        "visibleOpenSnapshots": 128,
+        "phaseEvidence": {
+          "pre": 139,
+          "open": 129,
+          "post": 110,
+          "newThrows": 52,
+          "touchdowns": 49
+        },
+        "uninspectedPublishedSnapshots": 1,
+        "inspectCpuMs": 1958.200000077486,
+        "cameraCuts": 2,
+        "negativeRows": 0,
+        "maximumTipRelativeStepMeters": 1.971889536125744,
+        "maximumCrestMismatchMeters": 0.2308135853708476
+      },
+      "minimumIndexedAdvanceMeters": 0.01373209149988952,
+      "unusedIsolatedLiftedVerticesMax": 99,
+      "rawRasterMissingNodesMax": 125,
+      "restingSourceResidualMaxMeters": 4.532818432823049e-07,
+      "seaTime": [
+        164,
+        176.01666666666597
+      ],
+      "shots": [
+        {
+          "file": "/private/tmp/tube-live-final/after-c64/00-first-pre.png",
+          "reason": "first-pre",
+          "sha256": "6fe18b995c218ebf8b22ebb125d8b5b33bbfd1682c26b1696b2b16b417561c69",
+          "seaTimeBefore": 171.2833333333329,
+          "seaTimeAfter": 171.79999999999956
+        },
+        {
+          "file": "/private/tmp/tube-live-final/after-c64/01-first-open.png",
+          "reason": "first-open",
+          "sha256": "b91094a2aa6af2276608d4ded967830029dbf6e6c6d995fcac8f10adfcacf993",
+          "seaTimeBefore": 172.14999999999952,
+          "seaTimeAfter": 172.66666666666617,
+          "retainedFile": "after-c64-01-first-open.png"
+        },
+        {
+          "file": "/private/tmp/tube-live-final/after-c64/02-first-overturn.png",
+          "reason": "first-overturn",
+          "sha256": "43ee06b0dd4106b843bf2bdb2f47e922a372bdced478905bb6e49357eebe49d9",
+          "seaTimeBefore": 172.78333333333285,
+          "seaTimeAfter": 173.29999999999947
+        },
+        {
+          "file": "/private/tmp/tube-live-final/after-c64/03-first-new-throw.png",
+          "reason": "first-new-throw",
+          "sha256": "a95833f865a296e9b3761f2abbf4dc92cdf5ac14a51999845c4e2972d6423a9c",
+          "seaTimeBefore": 173.4333333333328,
+          "seaTimeAfter": 173.98333333333278
+        },
+        {
+          "file": "/private/tmp/tube-live-final/after-c64/04-first-touchdown.png",
+          "reason": "first-touchdown",
+          "sha256": "4b56f9af73197b3e7451ea9a7cb3cc5bc5f7e8229e83ebe39569b278da3533ce",
+          "seaTimeBefore": 174.23333333333275,
+          "seaTimeAfter": 174.78333333333273
+        }
+      ],
+      "retainedReport": "after-c64.json.gz",
+      "retainedReportUncompressedSha256": "127313035e5b01f4aa7c392b0d534fd286b5c15636ecfbf6b5c326fc7189e599"
+    }
+  ],
+  "notes": [
+    "All cases used immutable verified bundles, seed1, Padang Hs4/T10/dir10/spreading11.720624206334085, dx1/fineSpacing1/renderSpacing1, full High particles/rich water, native DPR2.",
+    "Fine-grid instrumented frame/simulation rates are descriptive; this is not an ordinary-default 60FPS claim.",
+    "C24 baseline predates the indexed-only endpoint correction: its five lifted-end snapshots may consist solely of unused isolated vertices. Its negative rows are unaffected. C64 baseline and both current runs use checker revision2.",
+    "Raster-mask missing-node and temporal/crest residuals are raw diagnostics. Missing-node counts include unused isolated vertices; do not label them rendered gaps without index-set classification.",
+    "Native app windows were clamped to1708x926CSS for final cases although1728x1040 was requested; actual viewport/canvas dimensions are recorded.",
+    "PNG captures have before/after source-clock brackets; no exact same-state pixel comparison is claimed.",
+    "Current moving geometry is stable under strict checks, but close screenshots still show roof/seam/facet appearance problems. Reference visual quality is not established."
+  ]
+}

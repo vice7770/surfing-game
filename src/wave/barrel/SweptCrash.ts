@@ -3,6 +3,7 @@ import { GRAVITY } from '../dispersion';
 import { SOURCE_REACH, STRIP_PARCELS, type PlungingLip } from '../PlungingLip';
 import type { ShallowWaterSolver } from '../ShallowWaterSolver';
 import type { FrontPoint } from './BreakingFront';
+import type { CrestRayPlan } from './crestRays';
 import { CrashCurve, createCrashSlice, type CrashSlice, type JetMotion } from './crashCurve';
 import type { ProfileLibrary } from './ProfileLibrary';
 
@@ -137,6 +138,8 @@ export class SweptCrash {
   private readonly pool: CrashPoint[] = [];
   /** This step's drawn fronts, as [start, end) pairs of point indices. */
   private readonly runs: number[] = [];
+  /** Explicit plans for this update's fronts, rebuilt whenever a coordinate-finalization stage changes them. */
+  private readonly rayPlans: CrestRayPlan[] = [];
   /**
    * Per point this step: as drawn; whether it is live (before its collapse ends), and under an earlier front's barrel;
    * whether it throws, and the solver's crest cell its water leaves and the wave height measured there.
@@ -194,6 +197,7 @@ export class SweptCrash {
       if (p.jetPace === undefined || p.jetBase === undefined || p.jetUntil === undefined || !(p.tau < p.jetUntil)) continue;
       p.z = p.jetBase + p.jetPace * p.tau;
     }
+    this.measureArc(points);
     const heightAt = (x: number, z: number) => solver.sampleCentered(solver.h, x, z) + solver.sampleCentered(solver.bed, x, z);
     // The fronts the loft draws: two points or more, not bunched at one σ.
     const runs = this.runs;
@@ -212,14 +216,21 @@ export class SweptCrash {
     this.reserve(points.length);
     this.paced.length = 0;
     for (let r = 0; r < runs.length; r += 2) {
+      const rays = this.rayPlans[r / 2] = this.geometry.prepareRays(points, runs[r], runs[r + 1], this.rayPlans[r / 2]);
       for (let k = runs[r]; k < runs[r + 1]; k += 1) {
         const p = points[k];
         const times = this.geometry.times(p);
         this.live[k] = p.tau < times.touchdownSeconds + times.collapseSeconds ? 1 : 0;
-        if (this.live[k] && p.jetStrip === undefined && p.tau >= 0) this.paceThrow(points, runs[r], runs[r + 1], k, times, sea);
+        if (this.live[k] && p.jetStrip === undefined && p.tau >= 0) this.paceThrow(points, runs[r], runs[r + 1], k, times, sea, rays);
       }
     }
     for (const thrown of this.paced) thrown.point.z = thrown.point.jetBase! + thrown.point.jetPace! * thrown.point.tau;
+    if (this.paced.length > 0) {
+      // All throws first read the same existing-paced geometry. Only after all their positions are finalized do
+      // we replace its arc and ray plans; slices, widths and subsequently serialized records see this final stage.
+      this.measureArc(points);
+      for (let r = 0; r < runs.length; r += 2) this.geometry.prepareRays(points, runs[r], runs[r + 1], this.rayPlans[r / 2]);
+    }
     // Each live point as drawn, and its footprint.
     for (let r = 0; r < runs.length; r += 2) {
       for (let k = runs[r]; k < runs[r + 1]; k += 1) {
@@ -232,7 +243,7 @@ export class SweptCrash {
           }
           continue;
         }
-        this.footprint(k, this.geometry.slice(points, runs[r], runs[r + 1], k, sea.stillLevel, heightAt, this.slices[k]));
+        this.footprint(k, this.geometry.slice(points, runs[r], runs[r + 1], k, sea.stillLevel, heightAt, this.slices[k], {}, this.rayPlans[r / 2]));
       }
     }
     this.dropOverlaps(runs);
@@ -241,7 +252,7 @@ export class SweptCrash {
     for (let r = 0; r < runs.length; r += 2) {
       for (let k = runs[r]; k < runs[r + 1]; k += 1) {
         if (!this.live[k]) continue;
-        const thrown = this.advance(points, runs[r], runs[r + 1], k, sea, heightAt);
+        const thrown = this.advance(points, runs[r], runs[r + 1], k, sea, heightAt, this.rayPlans[r / 2]);
         if (thrown > 0) {
           throws += 1;
           volume += thrown;
@@ -262,7 +273,9 @@ export class SweptCrash {
   }
 
   /** Point k's step: the gate, the throw, the crash and the pour. Returns the water it threw. */
-  private advance(points: FrontPoint[], start: number, end: number, k: number, sea: CrashSea, heightAt: (x: number, z: number) => number): number {
+  private advance(
+    points: FrontPoint[], start: number, end: number, k: number, sea: CrashSea, heightAt: (x: number, z: number) => number, rays: CrestRayPlan,
+  ): number {
     const p = points[k];
     const s = this.slices[k];
     // Under an earlier front's barrel the drawing shows that one: this point's curl is not drawn (first wins).
@@ -273,7 +286,7 @@ export class SweptCrash {
     if (this.throwing[k]) {
       // Paced already this step (`paceThrow`), jet or not; its water leaves the solver's crest it stood on.
       if (drawn) {
-        thrown = this.throwJet(points, start, end, k, s, sea, heightAt, this.geometry.jetMotion(p, this.motion), this.throwCell[k], this.throwHeight[k]);
+        thrown = this.throwJet(points, start, end, k, s, sea, heightAt, this.geometry.jetMotion(p, this.motion), this.throwCell[k], this.throwHeight[k], rays);
         throwing = true;
       } else {
         // Water that was never drawn doesn't land.
@@ -329,12 +342,15 @@ export class SweptCrash {
    * other throws not yet on theirs), and the solver's crest cell it stands on, which its jet's water leaves (#86), with
    * the wave height measured there. Listed in `paced`.
    */
-  private paceThrow(points: FrontPoint[], start: number, end: number, k: number, times: { touchdownSeconds: number; collapseSeconds: number }, sea: CrashSea): void {
+  private paceThrow(
+    points: FrontPoint[], start: number, end: number, k: number, times: { touchdownSeconds: number; collapseSeconds: number },
+    sea: CrashSea, rays: CrestRayPlan,
+  ): void {
     const p = points[k];
     const motion = this.geometry.jetMotion(p, this.motion);
     const cell = sea.solver.cellIndex(p.x, p.z);
     const waveHeight = waveHeightAt(sea.solver, cell, 0.5 * Math.max(0, motion.crestSpeed) * sea.period);
-    const rayZ = this.geometry.ray(points, start, end, k, this.ray).z;
+    const rayZ = this.geometry.ray(points, start, end, k, this.ray, rays).z;
     this.pace(p, times, rayZ, sea, cell, waveHeight);
     this.throwing[k] = 1;
     this.throwCell[k] = cell;
@@ -376,7 +392,7 @@ export class SweptCrash {
   /** The point's jet leaves the crest, held until it pours (see the class). */
   private throwJet(
     points: FrontPoint[], start: number, end: number, k: number, s: CrashSlice, sea: CrashSea, heightAt: (x: number, z: number) => number,
-    motion: JetMotion, cell: number, waveHeight: number,
+    motion: JetMotion, cell: number, waveHeight: number, rays: CrestRayPlan,
   ): number {
     const p = points[k];
     const volume = s.jetArea * s.width * s.endWeight;
@@ -386,7 +402,7 @@ export class SweptCrash {
     }
     // Where it will land, foreseen: the slice at its touchdown, on the anchor's own rule there with the paced z then.
     const tau = Math.max(p.tau, s.touchdown);
-    const f = this.geometry.slice(points, start, end, k, sea.stillLevel, heightAt, this.foreseen, { tau, z: p.jetBase! + p.jetPace! * tau });
+    const f = this.geometry.slice(points, start, end, k, sea.stillLevel, heightAt, this.foreseen, { tau, z: p.jetBase! + p.jetPace! * tau }, rays);
     const { strip, thrown } = sea.lip.holdJet({
       cell, velocityX: motion.tipAlong * s.rayX, velocityZ: motion.tipAlong * s.rayZ, volume, waveHeight,
       launchX: s.crestX, launchY: s.crestY, launchZ: s.crestZ,
@@ -440,6 +456,21 @@ export class SweptCrash {
     this.live.fill(0, 0, count);
     this.covered.fill(0, 0, count);
     this.throwing.fill(0, 0, count);
+  }
+
+  /** The current coordinates' arc length, reset at each surviving front's first point, before any plan or width. */
+  private measureArc(points: FrontPoint[]): void {
+    for (let k = 0; k < points.length; k += 1) {
+      const point = points[k];
+      const previous = points[k - 1];
+      if (!previous || previous.front !== point.front) {
+        point.sigma = 0;
+      } else {
+        const dx = point.x - previous.x;
+        const dz = point.z - previous.z;
+        point.sigma = previous.sigma + Math.sqrt(dx * dx + dz * dz);
+      }
+    }
   }
 
   /**

@@ -1,0 +1,570 @@
+[
+  {
+    "fixture": 10,
+    "omitted": 29,
+    "transportPlanRaysBitExact": true,
+    "plans": [
+      {
+        "front": 2,
+        "blend": 0.9840467572212219,
+        "minimumAdvancePerSigma": 0.014695943713478127,
+        "invalidIntervals": 0
+      },
+      {
+        "front": 3,
+        "blend": 0.9923750758171082,
+        "minimumAdvancePerSigma": 0.016067078011373803,
+        "invalidIntervals": 0
+      }
+    ],
+    "allMaterialInvariantsExact": true,
+    "groups": {
+      "all": {
+        "count": 19,
+        "metrics": {
+          "angleDegrees": {
+            "count": 19,
+            "mean": 11.633461027548261,
+            "p95": 26.8514157449664,
+            "max": 31.031459421501854
+          },
+          "crashVsCorrectedTip": {
+            "count": 19,
+            "mean": 0.23903020603896488,
+            "p95": 0.48914730615250246,
+            "max": 0.7432332992304684
+          },
+          "crashVsLegacyTip": {
+            "count": 19,
+            "mean": 0.05162830709211984,
+            "p95": 0.1422465751339315,
+            "max": 0.16306607121163869
+          },
+          "alignedCrashVsCorrectedTip": {
+            "count": 19,
+            "mean": 0.0509407174862799,
+            "p95": 0.14509026205567546,
+            "max": 0.15334014743888583
+          },
+          "geometryOnlyTipDelta": {
+            "count": 19,
+            "mean": 0.2224527902841831,
+            "p95": 0.4829341319626004,
+            "max": 0.6676232574591535
+          },
+          "crashVsCorrectedCrestHorizontal": {
+            "count": 19,
+            "mean": 0.045439236498076206,
+            "p95": 0.14996507369439946,
+            "max": 0.1516563382603641
+          },
+          "rawVsAlignedLanding": {
+            "count": 19,
+            "mean": 0.1719854854307546,
+            "p95": 0.3263233540824337,
+            "max": 0.5674935981571392
+          },
+          "rawVsAlignedLandingHorizontal": {
+            "count": 19,
+            "mean": 0.17188761803018646,
+            "p95": 0.3263233540824337,
+            "max": 0.5674935981571392
+          },
+          "rawVsAlignedGateBack": {
+            "count": 19,
+            "mean": 0.49510905118945014,
+            "p95": 1.4189665978395922,
+            "max": 1.9662361911797284
+          },
+          "rawVsAlignedGateFront": {
+            "count": 19,
+            "mean": 0.28791178662605205,
+            "p95": 0.8294418778757411,
+            "max": 1.1461939049413088
+          }
+        }
+      },
+      "core": {
+        "count": 17,
+        "metrics": {
+          "angleDegrees": {
+            "count": 17,
+            "mean": 11.22288456019255,
+            "p95": 26.640021038046317,
+            "max": 31.031459421501854
+          },
+          "crashVsCorrectedTip": {
+            "count": 17,
+            "mean": 0.23823709802577303,
+            "p95": 0.48914730615250246,
+            "max": 0.7432332992304684
+          },
+          "crashVsLegacyTip": {
+            "count": 17,
+            "mean": 0.04908114831437414,
+            "p95": 0.09817575945795201,
+            "max": 0.16306607121163869
+          },
+          "alignedCrashVsCorrectedTip": {
+            "count": 17,
+            "mean": 0.04816093176648498,
+            "p95": 0.09800130304948174,
+            "max": 0.15334014743888583
+          },
+          "geometryOnlyTipDelta": {
+            "count": 17,
+            "mean": 0.22611386835782993,
+            "p95": 0.4829341319626004,
+            "max": 0.6676232574591535
+          },
+          "crashVsCorrectedCrestHorizontal": {
+            "count": 17,
+            "mean": 0.041860109351503326,
+            "p95": 0.09818385405547629,
+            "max": 0.14996507369439946
+          },
+          "rawVsAlignedLanding": {
+            "count": 17,
+            "mean": 0.17465774401584977,
+            "p95": 0.3263233540824337,
+            "max": 0.5674935981571392
+          },
+          "rawVsAlignedLandingHorizontal": {
+            "count": 17,
+            "mean": 0.17465774401584977,
+            "p95": 0.3263233540824337,
+            "max": 0.5674935981571392
+          },
+          "rawVsAlignedGateBack": {
+            "count": 17,
+            "mean": 0.5194893477664673,
+            "p95": 1.4189665978395922,
+            "max": 1.9662361911797284
+          },
+          "rawVsAlignedGateFront": {
+            "count": 17,
+            "mean": 0.30132506236032264,
+            "p95": 0.8294418778757411,
+            "max": 1.1461939049413088
+          }
+        }
+      },
+      "front-end-taper": {
+        "count": 2,
+        "metrics": {
+          "angleDegrees": {
+            "count": 2,
+            "mean": 15.123361000071808,
+            "p95": 3.3953062551772173,
+            "max": 26.8514157449664
+          },
+          "crashVsCorrectedTip": {
+            "count": 2,
+            "mean": 0.24577162415109577,
+            "p95": 0.1516175641765654,
+            "max": 0.3399256841256261
+          },
+          "crashVsLegacyTip": {
+            "count": 2,
+            "mean": 0.07327915670295825,
+            "p95": 0.004311738271984994,
+            "max": 0.1422465751339315
+          },
+          "alignedCrashVsCorrectedTip": {
+            "count": 2,
+            "mean": 0.07456889610453676,
+            "p95": 0.004047530153398076,
+            "max": 0.14509026205567546
+          },
+          "geometryOnlyTipDelta": {
+            "count": 2,
+            "mean": 0.19133362665818474,
+            "p95": 0.04382209406105049,
+            "max": 0.338845159255319
+          },
+          "crashVsCorrectedCrestHorizontal": {
+            "count": 2,
+            "mean": 0.07586181724394563,
+            "p95": 0.00006729622752715871,
+            "max": 0.1516563382603641
+          },
+          "rawVsAlignedLanding": {
+            "count": 2,
+            "mean": 0.14927128745744528,
+            "p95": 0.03256765429919081,
+            "max": 0.2659749206156997
+          },
+          "rawVsAlignedLandingHorizontal": {
+            "count": 2,
+            "mean": 0.14834154715204814,
+            "p95": 0.032564110456051634,
+            "max": 0.26411898384804466
+          },
+          "rawVsAlignedGateBack": {
+            "count": 2,
+            "mean": 0.2878765302848052,
+            "p95": 0.07772317463567191,
+            "max": 0.4980298859339385
+          },
+          "rawVsAlignedGateFront": {
+            "count": 2,
+            "mean": 0.17389894288475194,
+            "p95": 0.04659247933334498,
+            "max": 0.3012054064361589
+          }
+        }
+      },
+      "overlap-cut-or-gap": {
+        "count": 0,
+        "metrics": {
+          "angleDegrees": {
+            "count": 0,
+            "mean": null
+          },
+          "crashVsCorrectedTip": {
+            "count": 0,
+            "mean": null
+          },
+          "crashVsLegacyTip": {
+            "count": 0,
+            "mean": null
+          },
+          "alignedCrashVsCorrectedTip": {
+            "count": 0,
+            "mean": null
+          },
+          "geometryOnlyTipDelta": {
+            "count": 0,
+            "mean": null
+          },
+          "crashVsCorrectedCrestHorizontal": {
+            "count": 0,
+            "mean": null
+          },
+          "rawVsAlignedLanding": {
+            "count": 0,
+            "mean": null
+          },
+          "rawVsAlignedLandingHorizontal": {
+            "count": 0,
+            "mean": null
+          },
+          "rawVsAlignedGateBack": {
+            "count": 0,
+            "mean": null
+          },
+          "rawVsAlignedGateFront": {
+            "count": 0,
+            "mean": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "fixture": 20,
+    "omitted": 52,
+    "transportPlanRaysBitExact": true,
+    "plans": [
+      {
+        "front": 19,
+        "blend": 0.8358588814735413,
+        "minimumAdvancePerSigma": 0.04722032651330532,
+        "invalidIntervals": 0
+      },
+      {
+        "front": 24,
+        "blend": 0.9892302751541138,
+        "minimumAdvancePerSigma": 0.015841840443438227,
+        "invalidIntervals": 0
+      },
+      {
+        "front": 21,
+        "blend": 0.9104270339012146,
+        "minimumAdvancePerSigma": 0.04036353465128728,
+        "invalidIntervals": 0
+      },
+      {
+        "front": 2,
+        "blend": 0.826596736907959,
+        "minimumAdvancePerSigma": 0.0441726832157574,
+        "invalidIntervals": 0
+      },
+      {
+        "front": 5,
+        "blend": 0.825222909450531,
+        "minimumAdvancePerSigma": 0.04555172469090041,
+        "invalidIntervals": 0
+      },
+      {
+        "front": 3,
+        "blend": 0,
+        "minimumAdvancePerSigma": 1,
+        "invalidIntervals": 0
+      }
+    ],
+    "allMaterialInvariantsExact": true,
+    "groups": {
+      "all": {
+        "count": 35,
+        "metrics": {
+          "angleDegrees": {
+            "count": 35,
+            "mean": 19.552021340169645,
+            "p95": 59.05896766516229,
+            "max": 72.02420931787277
+          },
+          "crashVsCorrectedTip": {
+            "count": 35,
+            "mean": 0.6093697408533291,
+            "p95": 1.1713245989903283,
+            "max": 1.546960832657364
+          },
+          "crashVsLegacyTip": {
+            "count": 35,
+            "mean": 0.0752593500358294,
+            "p95": 0.1703396711688195,
+            "max": 0.9689883934952055
+          },
+          "alignedCrashVsCorrectedTip": {
+            "count": 35,
+            "mean": 0.06747955463335183,
+            "p95": 0.19825532909757676,
+            "max": 0.806101095937008
+          },
+          "geometryOnlyTipDelta": {
+            "count": 35,
+            "mean": 0.5785613384976566,
+            "p95": 1.1717846475652436,
+            "max": 1.5455801943411767
+          },
+          "crashVsCorrectedCrestHorizontal": {
+            "count": 35,
+            "mean": 0.06372744221498147,
+            "p95": 0.19491660338505135,
+            "max": 0.8071516335573663
+          },
+          "rawVsAlignedLanding": {
+            "count": 35,
+            "mean": 0.5090161440535501,
+            "p95": 1.0937446779492481,
+            "max": 1.1288438376918692
+          },
+          "rawVsAlignedLandingHorizontal": {
+            "count": 35,
+            "mean": 0.5084963830785616,
+            "p95": 1.0937446779492481,
+            "max": 1.1288438376918692
+          },
+          "rawVsAlignedGateBack": {
+            "count": 35,
+            "mean": 1.1993028784590305,
+            "p95": 4.711597225097407,
+            "max": 6.966536218644762
+          },
+          "rawVsAlignedGateFront": {
+            "count": 35,
+            "mean": 0.7745044255045437,
+            "p95": 3.524017361752513,
+            "max": 4.5216419781302335
+          }
+        }
+      },
+      "core": {
+        "count": 28,
+        "metrics": {
+          "angleDegrees": {
+            "count": 28,
+            "mean": 17.665123662792432,
+            "p95": 26.618629324880196,
+            "max": 72.02420931787277
+          },
+          "crashVsCorrectedTip": {
+            "count": 28,
+            "mean": 0.6171613824418823,
+            "p95": 1.1713245989903283,
+            "max": 1.546960832657364
+          },
+          "crashVsLegacyTip": {
+            "count": 28,
+            "mean": 0.035726128195413556,
+            "p95": 0.08783930280524836,
+            "max": 0.1703396711688195
+          },
+          "alignedCrashVsCorrectedTip": {
+            "count": 28,
+            "mean": 0.03469743703550197,
+            "p95": 0.08774397009623325,
+            "max": 0.19825532909757676
+          },
+          "geometryOnlyTipDelta": {
+            "count": 28,
+            "mean": 0.6115899749124031,
+            "p95": 1.1717846475652436,
+            "max": 1.5455801943411767
+          },
+          "crashVsCorrectedCrestHorizontal": {
+            "count": 28,
+            "mean": 0.03214915815818728,
+            "p95": 0.09013688782584293,
+            "max": 0.19491660338505135
+          },
+          "rawVsAlignedLanding": {
+            "count": 28,
+            "mean": 0.5391691388853177,
+            "p95": 1.0937446779492481,
+            "max": 1.1288438376918692
+          },
+          "rawVsAlignedLandingHorizontal": {
+            "count": 28,
+            "mean": 0.5391691388853177,
+            "p95": 1.0937446779492481,
+            "max": 1.1288438376918692
+          },
+          "rawVsAlignedGateBack": {
+            "count": 28,
+            "mean": 0.9948531960765337,
+            "p95": 1.4862767683291196,
+            "max": 6.966536218644762
+          },
+          "rawVsAlignedGateFront": {
+            "count": 28,
+            "mean": 0.6043155067637009,
+            "p95": 0.9172788875540903,
+            "max": 4.5216419781302335
+          }
+        }
+      },
+      "front-end-taper": {
+        "count": 2,
+        "metrics": {
+          "angleDegrees": {
+            "count": 2,
+            "mean": 61.483732856829114,
+            "p95": 59.05896766516229,
+            "max": 63.908498048495936
+          },
+          "crashVsCorrectedTip": {
+            "count": 2,
+            "mean": 0.8987209326594673,
+            "p95": 0.7507507092464487,
+            "max": 1.0466911560724859
+          },
+          "crashVsLegacyTip": {
+            "count": 2,
+            "mean": 0.012783164814730392,
+            "p95": 0.0047726729198078474,
+            "max": 0.020793656709652938
+          },
+          "alignedCrashVsCorrectedTip": {
+            "count": 2,
+            "mean": 0.012785531270734896,
+            "p95": 0.004847564024157319,
+            "max": 0.02072349851731247
+          },
+          "geometryOnlyTipDelta": {
+            "count": 2,
+            "mean": 0.8992615772432988,
+            "p95": 0.7540102852972738,
+            "max": 1.044512869189324
+          },
+          "crashVsCorrectedCrestHorizontal": {
+            "count": 2,
+            "mean": 0.010993233664047062,
+            "p95": 0.00033137735306819105,
+            "max": 0.021655089975025934
+          },
+          "rawVsAlignedLanding": {
+            "count": 2,
+            "mean": 0.9026696434333314,
+            "p95": 0.7569187974786996,
+            "max": 1.0484204893879632
+          },
+          "rawVsAlignedLandingHorizontal": {
+            "count": 2,
+            "mean": 0.8942452900498775,
+            "p95": 0.7566528983998726,
+            "max": 1.0318376816998824
+          },
+          "rawVsAlignedGateBack": {
+            "count": 2,
+            "mean": 5.11474799455749,
+            "p95": 4.711597225097407,
+            "max": 5.517898764017573
+          },
+          "rawVsAlignedGateFront": {
+            "count": 2,
+            "mean": 3.7289020683371064,
+            "p95": 3.524017361752513,
+            "max": 3.9337867749216997
+          }
+        }
+      },
+      "overlap-cut-or-gap": {
+        "count": 5,
+        "metrics": {
+          "angleDegrees": {
+            "count": 5,
+            "mean": 13.345963726818203,
+            "p95": 17.68062296971105,
+            "max": 23.82798636999614
+          },
+          "crashVsCorrectedTip": {
+            "count": 5,
+            "mean": 0.4499960712349731,
+            "p95": 0.5269986356043384,
+            "max": 0.86581696564375
+          },
+          "crashVsLegacyTip": {
+            "count": 5,
+            "mean": 0.32163586643059755,
+            "p95": 0.5497112954287128,
+            "max": 0.9689883934952055
+          },
+          "alignedCrashVsCorrectedTip": {
+            "count": 5,
+            "mean": 0.272937022526358,
+            "p95": 0.469502781811867,
+            "max": 0.806101095937008
+          },
+          "geometryOnlyTipDelta": {
+            "count": 5,
+            "mean": 0.2653208790768178,
+            "p95": 0.365602110818292,
+            "max": 0.5216302799266315
+          },
+          "crashVsCorrectedCrestHorizontal": {
+            "count": 5,
+            "mean": 0.2616595163534029,
+            "p95": 0.4675825383763173,
+            "max": 0.8071516335573663
+          },
+          "rawVsAlignedLanding": {
+            "count": 5,
+            "mean": 0.1826979732437402,
+            "p95": 0.23095703816965688,
+            "max": 0.2640234981139586
+          },
+          "rawVsAlignedLandingHorizontal": {
+            "count": 5,
+            "mean": 0.18242938777220147,
+            "p95": 0.23035243222281965,
+            "max": 0.2633384892333062
+          },
+          "rawVsAlignedGateBack": {
+            "count": 5,
+            "mean": 0.7780430533616283,
+            "p95": 0.9007677267955359,
+            "max": 2.035194236141308
+          },
+          "rawVsAlignedGateFront": {
+            "count": 5,
+            "mean": 0.5458033133202378,
+            "p95": 0.6007084046353128,
+            "max": 1.5272169728460057
+          }
+        }
+      }
+    }
+  }
+]

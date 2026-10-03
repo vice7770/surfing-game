@@ -1,0 +1,1909 @@
+{
+  "schema": 1,
+  "label": "compact-derived-fixtures",
+  "pass": true,
+  "method": "Frozen Float32 front records and 1 m cubic water snapshot. Restore JSON null to NaN. Rebuild actual drawing and held contact, no physics advance.",
+  "invariants": "Active finite fields; strictly positive corresponding-row progress on BOTH slice tangents; valid triangles; mask/lift support; surviving run ends rest on water; repeatability; full geometric scan of contact with half-open edge and y ties. Negative progress is an across-front fold, independent of intentional along-ray overhang.",
+  "limitations": "Two Hs4m/T10s mixed-sea snapshots. Contact uses the captured cubic 1 m water surface as heightAt, rather than uncaptured Float64 solver cells. Original captured drawing is also measured; the frozen baseline runtime is independently rebuilt. Seam residuals and landmark-layer swaps are raw diagnostics, without visual thresholds. No FPS claim.",
+  "runtime": {
+    "bundle": {
+      "name": "tube-geometry-final-compact.mjs",
+      "sha256": "08ca3d6844faee1c9b9758c40b13ddbc37ad3a74c41071637bac16dc3429b8b1"
+    },
+    "baseline": {
+      "name": "geometry.mjs",
+      "sha256": "20b5ffd3117d95990d64c4289a135db2069d1eb31d3f5c3b6c659d5f441c44a5"
+    }
+  },
+  "cases": [
+    {
+      "id": "pad19-a20-l12",
+      "spot": "padang",
+      "slope": 0.0526316,
+      "nonlinearity": 0.2,
+      "flatDepth": 0.1785714,
+      "asset": "barrels/pad19-a20-l12.bin",
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "bytes": 149848
+    },
+    {
+      "id": "pad19-a30-l12",
+      "spot": "padang",
+      "slope": 0.0526316,
+      "nonlinearity": 0.3,
+      "flatDepth": 0.1785714,
+      "asset": "barrels/pad19-a30-l12.bin",
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "bytes": 163264
+    },
+    {
+      "id": "pad19-a45-l12",
+      "spot": "padang",
+      "slope": 0.0526316,
+      "nonlinearity": 0.45,
+      "flatDepth": 0.1785714,
+      "asset": "barrels/pad19-a45-l12.bin",
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "bytes": 168424
+    },
+    {
+      "id": "periodic-padang19s-l12",
+      "spot": "padang",
+      "slope": 0.0526316,
+      "nonlinearity": 0.1414,
+      "flatDepth": 0.1785714,
+      "asset": "barrels/periodic-padang19s-l12.bin",
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "bytes": 181852
+    }
+  ],
+  "runs": [
+    {
+      "fixture": {
+        "name": "at-10.json",
+        "sha256": "bc0c41fc7c2c6676d49eecf64022ff547d66552eb3fc4ed2f100c9103aaf26a8",
+        "capturedAt": 33682.5,
+        "seaTime": 173.88921329749155,
+        "frontCount": 48,
+        "config": {
+          "spot": "padang",
+          "seed": 1,
+          "significantHeight": 4,
+          "peakPeriod": 10,
+          "directionDegrees": 10,
+          "spreading": 11.720624206334085,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "componentCount": 64
+        },
+        "init": {
+          "grid": {
+            "xMin": -160,
+            "zMin": -1130.37962116869,
+            "spacing": 1,
+            "nx": 321,
+            "nz": 1161
+          },
+          "focus": {
+            "x": -50,
+            "z": -261.09137870490895
+          },
+          "windowXMin": -160,
+          "dx": 1
+        },
+        "grid": {
+          "xMin": 71,
+          "zMin": -59.37962116868994,
+          "spacing": 1,
+          "nx": 90,
+          "nz": 90
+        }
+      },
+      "capturedDrawing": {
+        "available": false,
+        "note": "Original captured drawing omitted; baseline/current runtime geometry rebuilt from the retained physical inputs."
+      },
+      "baseline": {
+        "pass": false,
+        "drawing": {
+          "pass": false,
+          "failures": [
+            "667 rows reverse across the front"
+          ],
+          "hash": "a570c8633dd0f19caa83de989cefe40bcf2b145a4e5502dea407158602a7466e",
+          "counts": {
+            "slices": 48,
+            "vertices": 6432,
+            "triangles": 12236,
+            "joinedStrips": 46,
+            "runs": 2,
+            "overturnedSlices": 48
+          },
+          "finite": {
+            "invalidFields": []
+          },
+          "acrossFront": {
+            "negativeRows": 667,
+            "zeroRows": 0,
+            "invalidRay": 0,
+            "parts": {
+              "back": {
+                "rows": 1472,
+                "negativeRows": 313,
+                "zeroRows": 0,
+                "min": -3.3759063592728467,
+                "maxHorizontalSpan": 8.984933161216313,
+                "max3DSpan": 8.98610808826886
+              },
+              "roofTop": {
+                "rows": 1472,
+                "negativeRows": 27,
+                "zeroRows": 0,
+                "min": -0.5378564863628386,
+                "maxHorizontalSpan": 0.7498163301162012,
+                "max3DSpan": 0.7513029970266234
+              },
+              "roofUnder": {
+                "rows": 1104,
+                "negativeRows": 24,
+                "zeroRows": 0,
+                "min": -0.5537730524795044,
+                "maxHorizontalSpan": 0.7566408467030674,
+                "max3DSpan": 0.7581335598606966
+              },
+              "face": {
+                "rows": 1104,
+                "negativeRows": 39,
+                "zeroRows": 0,
+                "min": -1.1451524365191588,
+                "maxHorizontalSpan": 1.1459154814683514,
+                "max3DSpan": 1.1459156869769684
+              },
+              "front": {
+                "rows": 736,
+                "negativeRows": 168,
+                "zeroRows": 0,
+                "min": -5.355415276578858,
+                "maxHorizontalSpan": 5.519427354596048,
+                "max3DSpan": 5.51953652975752
+              },
+              "extension": {
+                "rows": 276,
+                "negativeRows": 96,
+                "zeroRows": 0,
+                "min": -6.241621042163103,
+                "maxHorizontalSpan": 9.916478017417575,
+                "max3DSpan": 9.91812980734533
+              }
+            },
+            "worstRows": [
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 133,
+                "layer": "extension",
+                "a": -5.9960673491058,
+                "b": -6.241621042163103
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 132,
+                "layer": "extension",
+                "a": -5.700665551034518,
+                "b": -5.946219120114916
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 131,
+                "layer": "extension",
+                "a": -5.405263752963236,
+                "b": -5.650817198066729
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 130,
+                "layer": "front",
+                "a": -5.10986188491561,
+                "b": -5.355415276578858
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 129,
+                "layer": "front",
+                "a": -4.8322910369009975,
+                "b": -5.07786961060796
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 128,
+                "layer": "front",
+                "a": -4.554704511739107,
+                "b": -4.800308712631233
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 127,
+                "layer": "front",
+                "a": -4.2771057907530885,
+                "b": -4.522732554772991
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 126,
+                "layer": "front",
+                "a": -3.9995775088148133,
+                "b": -4.245232620574701
+              }
+            ],
+            "maxHorizontalSpan": 9.916478017417575,
+            "max3DSpan": 9.91812980734533
+          },
+          "alongRay": {
+            "reverseSegments": 1163,
+            "interpretation": "Expected for an overturned profile; does not fail the harness."
+          },
+          "triangles": {
+            "indexFaults": 0,
+            "topologyFaults": 0,
+            "zeroArea3D": 0,
+            "collapsedProfileTriangles": 0,
+            "zeroAreaLiftedRoofFace": 0,
+            "minTwiceArea3D": 0.000010331206456988163
+          },
+          "seam": {
+            "unsupportedLift": 0,
+            "maskOutOfRange": 0,
+            "liftOutOfRange": 0,
+            "liftedRunEnds": 0,
+            "maskedRunEnds": 0,
+            "restingHeightErrorMeters": {
+              "count": 2640,
+              "min": 2.565159196166178e-11,
+              "max": 8.84211414059477e-7,
+              "mean": 6.063054994063792e-8
+            },
+            "runEndHeightErrorMeters": {
+              "count": 536,
+              "min": 1.3621970218480328e-10,
+              "max": 4.730478302406027e-7,
+              "mean": 6.79547863905604e-8
+            },
+            "maskNodes": 278,
+            "maskHash": "c14926c4b1307bebf27878a156df5038349291db485c7ad6e8b9a7db28e0172b",
+            "interpretation": "Height residuals include Float32 xyz rounding and cubic heightAt evaluation; no visual threshold is imposed."
+          },
+          "dropped": {
+            "strips": 0,
+            "openStrips": 0,
+            "openWeight": 0
+          }
+        },
+        "contact": {
+          "pass": false,
+          "failures": [
+            "667 rows reverse across the front"
+          ],
+          "hash": "3fc4db797f740f4e8bbf134036aa89fef3b2fc85f0dbac865b72ac57b8abda8d",
+          "counts": {
+            "slices": 48,
+            "vertices": 6432,
+            "triangles": 12236,
+            "joinedStrips": 46,
+            "runs": 2,
+            "overturnedSlices": 48
+          },
+          "finite": {
+            "invalidFields": []
+          },
+          "acrossFront": {
+            "negativeRows": 667,
+            "zeroRows": 0,
+            "invalidRay": 0,
+            "parts": {
+              "back": {
+                "rows": 1472,
+                "negativeRows": 313,
+                "zeroRows": 0,
+                "min": -3.3759063592728467,
+                "maxHorizontalSpan": 8.984933161216313,
+                "max3DSpan": 8.98610808826886
+              },
+              "roofTop": {
+                "rows": 1472,
+                "negativeRows": 27,
+                "zeroRows": 0,
+                "min": -0.5378564863628386,
+                "maxHorizontalSpan": 0.7498163301162012,
+                "max3DSpan": 0.7513029970266234
+              },
+              "roofUnder": {
+                "rows": 1104,
+                "negativeRows": 24,
+                "zeroRows": 0,
+                "min": -0.5537730524795044,
+                "maxHorizontalSpan": 0.7566408467030674,
+                "max3DSpan": 0.7581335598606966
+              },
+              "face": {
+                "rows": 1104,
+                "negativeRows": 39,
+                "zeroRows": 0,
+                "min": -1.1451524365191588,
+                "maxHorizontalSpan": 1.1459154814683514,
+                "max3DSpan": 1.1459156869769684
+              },
+              "front": {
+                "rows": 736,
+                "negativeRows": 168,
+                "zeroRows": 0,
+                "min": -5.355415276578858,
+                "maxHorizontalSpan": 5.519427354596048,
+                "max3DSpan": 5.51953652975752
+              },
+              "extension": {
+                "rows": 276,
+                "negativeRows": 96,
+                "zeroRows": 0,
+                "min": -6.241621042163103,
+                "maxHorizontalSpan": 9.916478017417575,
+                "max3DSpan": 9.91812980734533
+              }
+            },
+            "worstRows": [
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 133,
+                "layer": "extension",
+                "a": -5.9960673491058,
+                "b": -6.241621042163103
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 132,
+                "layer": "extension",
+                "a": -5.700665551034518,
+                "b": -5.946219120114916
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 131,
+                "layer": "extension",
+                "a": -5.405263752963236,
+                "b": -5.650817198066729
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 130,
+                "layer": "front",
+                "a": -5.10986188491561,
+                "b": -5.355415276578858
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 129,
+                "layer": "front",
+                "a": -4.8322910369009975,
+                "b": -5.07786961060796
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 128,
+                "layer": "front",
+                "a": -4.554704511739107,
+                "b": -4.800308712631233
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 127,
+                "layer": "front",
+                "a": -4.2771057907530885,
+                "b": -4.522732554772991
+              },
+              {
+                "strip": 46,
+                "front": 3,
+                "sigma": 10.991952896118164,
+                "row": 126,
+                "layer": "front",
+                "a": -3.9995775088148133,
+                "b": -4.245232620574701
+              }
+            ],
+            "maxHorizontalSpan": 9.916478017417575,
+            "max3DSpan": 9.91812980734533
+          },
+          "alongRay": {
+            "reverseSegments": 1163,
+            "interpretation": "Expected for an overturned profile; does not fail the harness."
+          },
+          "triangles": {
+            "indexFaults": 0,
+            "topologyFaults": 0,
+            "zeroArea3D": 0,
+            "collapsedProfileTriangles": 0,
+            "zeroAreaLiftedRoofFace": 0,
+            "minTwiceArea3D": 0.000010331206456988163
+          },
+          "seam": {
+            "unsupportedLift": 0,
+            "maskOutOfRange": 0,
+            "liftOutOfRange": 0,
+            "liftedRunEnds": 0,
+            "maskedRunEnds": 0,
+            "restingHeightErrorMeters": {
+              "count": 2640,
+              "min": 2.565159196166178e-11,
+              "max": 8.84211414059477e-7,
+              "mean": 6.063054994063792e-8
+            },
+            "runEndHeightErrorMeters": {
+              "count": 536,
+              "min": 1.3621970218480328e-10,
+              "max": 4.730478302406027e-7,
+              "mean": 6.79547863905604e-8
+            },
+            "interpretation": "Height residuals include Float32 xyz rounding and cubic heightAt evaluation; no visual threshold is imposed."
+          },
+          "dropped": {
+            "strips": 0,
+            "openStrips": 0,
+            "openWeight": 0
+          }
+        },
+        "queries": {
+          "pass": true,
+          "failures": [],
+          "points": 598,
+          "columns": 580,
+          "noColumn": 18,
+          "queries": 3984,
+          "exactRayAndRowTies": 46,
+          "nondeterministic": 0,
+          "mismatches": 0,
+          "nonfiniteHits": 0,
+          "evenColumns": 6,
+          "evenInteriorColumns": 0,
+          "evenTieColumns": 6,
+          "tieInterpretation": "The half-open full geometric oracle also validates exact ray/row ties. Both-or-neither at a boundary fold may have even parity and fall back to water; only interior even columns fail closure.",
+          "layers": {
+            "columns": 558,
+            "swappedColumns": 48,
+            "maxSwapMeters": 0.0002625118878807342,
+            "interpretation": "Raw landmark-layer separation; numeric sign is recorded without a visual tolerance."
+          },
+          "firstIssues": [
+            {
+              "point": {
+                "x": 114.01514906436205,
+                "z": -10.207466706633568
+              },
+              "strip": 8,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.8219441338470976,
+                1.4532893049371998
+              ]
+            },
+            {
+              "point": {
+                "x": 114.31017680466175,
+                "z": -9.954628020524979
+              },
+              "strip": 9,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.82367521334027,
+                1.862765211090278
+              ]
+            },
+            {
+              "point": {
+                "x": 115.10639652609825,
+                "z": -9.370200961828232
+              },
+              "strip": 11,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.7771960068138081,
+                1.2560692959746822
+              ]
+            },
+            {
+              "point": {
+                "x": 115.5574236959219,
+                "z": -9.046901553869247
+              },
+              "strip": 12,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.7293618583234589,
+                1.748005040921707
+              ]
+            },
+            {
+              "point": {
+                "x": 116.99581978470087,
+                "z": -8.256160452961922
+              },
+              "strip": 15,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.7017949167063339,
+                1.1507940142828492
+              ]
+            },
+            {
+              "point": {
+                "x": 117.47332753241062,
+                "z": -8.181745454668999
+              },
+              "strip": 16,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.7149637609853347,
+                1.7116331000999827
+              ]
+            }
+          ]
+        },
+        "metadata": {
+          "sliceFront": "80fdfea0c4f9ccb252c38871501ee75d8f435c812e650fa09a7e0ae3be639bb3",
+          "sliceSigma": "95fbd5c62404e60b215c073c3b6147d915f978cd49ef8a03e990879ce5893937",
+          "sliceTau": "109f42115a88558b9fce9d4528c3ab11e45717e5d9e9a2ef742588ec5517cb8b",
+          "slicePhase": "64093134a8ca99137feec230ef567b90175f147d553da56e7ec3f773b5938dc0",
+          "sliceLife": "72f59923293250f04a3f789fdadf6dd1764022f5ff72fcf7959d57f913223474",
+          "sliceCollapse": "81f6603945c3dbf79ce10f69acce092b045eaab6bbefd155e46a3078a543f98b",
+          "sliceFade": "faa24fd57112ca2b42649f0e65e703cb4c41b7c3714f76457fb5b788c1d2bc97",
+          "crestXZ": "c6f168b435506fe00ba5e188a427824741454327186cb1ebad3210de16bd2c6b"
+        },
+        "repeatedDrawingExact": true,
+        "physicalInputUnchanged": true
+      },
+      "current": {
+        "pass": true,
+        "drawing": {
+          "pass": true,
+          "failures": [],
+          "hash": "1b675336374b996f254b31f8f6cd8ccb5256b0a5af319ac4555849b3bff5b36a",
+          "counts": {
+            "slices": 48,
+            "vertices": 6432,
+            "triangles": 12236,
+            "joinedStrips": 46,
+            "runs": 2,
+            "overturnedSlices": 48
+          },
+          "finite": {
+            "invalidFields": []
+          },
+          "acrossFront": {
+            "negativeRows": 0,
+            "zeroRows": 0,
+            "invalidRay": 0,
+            "parts": {
+              "back": {
+                "rows": 1472,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.0844016602929969,
+                "maxHorizontalSpan": 0.522277825804003,
+                "max3DSpan": 0.5401179109204095
+              },
+              "roofTop": {
+                "rows": 1472,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.12223830237686428,
+                "maxHorizontalSpan": 0.5413630185190326,
+                "max3DSpan": 0.5758810995355982
+              },
+              "roofUnder": {
+                "rows": 1104,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.12365464922187286,
+                "maxHorizontalSpan": 0.539198494889147,
+                "max3DSpan": 0.5444568390736221
+              },
+              "face": {
+                "rows": 1104,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.11923919826181262,
+                "maxHorizontalSpan": 0.532151750447148,
+                "max3DSpan": 0.6092616748912453
+              },
+              "front": {
+                "rows": 736,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.0878537601973175,
+                "maxHorizontalSpan": 0.5337157196136386,
+                "max3DSpan": 0.6342676476576325
+              },
+              "extension": {
+                "rows": 276,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.08033606211824917,
+                "maxHorizontalSpan": 0.5251071606988013,
+                "max3DSpan": 0.5258338693255314
+              }
+            },
+            "worstRows": [],
+            "maxHorizontalSpan": 0.5413630185190326,
+            "max3DSpan": 0.6342676476576325
+          },
+          "alongRay": {
+            "reverseSegments": 1163,
+            "interpretation": "Expected for an overturned profile; does not fail the harness."
+          },
+          "triangles": {
+            "indexFaults": 0,
+            "topologyFaults": 0,
+            "zeroArea3D": 0,
+            "collapsedProfileTriangles": 0,
+            "zeroAreaLiftedRoofFace": 0,
+            "minTwiceArea3D": 0.00006835023726876091
+          },
+          "seam": {
+            "unsupportedLift": 0,
+            "maskOutOfRange": 0,
+            "liftOutOfRange": 0,
+            "liftedRunEnds": 0,
+            "maskedRunEnds": 0,
+            "restingHeightErrorMeters": {
+              "count": 2666,
+              "min": 6.051603662626803e-12,
+              "max": 6.197765886062356e-7,
+              "mean": 6.160026482992642e-8
+            },
+            "runEndHeightErrorMeters": {
+              "count": 536,
+              "min": 5.838485250819758e-11,
+              "max": 3.931049443739454e-7,
+              "mean": 5.842729702958707e-8
+            },
+            "maskNodes": 195,
+            "maskHash": "211116569d78946c94d6b3fe13adc705154e647206324c2659590b385136a69b",
+            "interpretation": "Height residuals include Float32 xyz rounding and cubic heightAt evaluation; no visual threshold is imposed."
+          },
+          "dropped": {
+            "strips": 0,
+            "openStrips": 0,
+            "openWeight": 0
+          }
+        },
+        "contact": {
+          "pass": true,
+          "failures": [],
+          "hash": "557c6532f85dbd37f2d8d5932e2e8fde481df8c168f57d7e196ea94ccf6cf637",
+          "counts": {
+            "slices": 48,
+            "vertices": 6432,
+            "triangles": 12236,
+            "joinedStrips": 46,
+            "runs": 2,
+            "overturnedSlices": 48
+          },
+          "finite": {
+            "invalidFields": []
+          },
+          "acrossFront": {
+            "negativeRows": 0,
+            "zeroRows": 0,
+            "invalidRay": 0,
+            "parts": {
+              "back": {
+                "rows": 1472,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.0844016602929969,
+                "maxHorizontalSpan": 0.522277825804003,
+                "max3DSpan": 0.5401179109204095
+              },
+              "roofTop": {
+                "rows": 1472,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.12223830237686428,
+                "maxHorizontalSpan": 0.5413630185190326,
+                "max3DSpan": 0.5758810995355982
+              },
+              "roofUnder": {
+                "rows": 1104,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.12365464922187286,
+                "maxHorizontalSpan": 0.539198494889147,
+                "max3DSpan": 0.5444568390736221
+              },
+              "face": {
+                "rows": 1104,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.11923919826181262,
+                "maxHorizontalSpan": 0.532151750447148,
+                "max3DSpan": 0.6092616748912453
+              },
+              "front": {
+                "rows": 736,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.0878537601973175,
+                "maxHorizontalSpan": 0.5337157196136386,
+                "max3DSpan": 0.6342676518208321
+              },
+              "extension": {
+                "rows": 276,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.08033606211824917,
+                "maxHorizontalSpan": 0.5251071606988013,
+                "max3DSpan": 0.5258338693255314
+              }
+            },
+            "worstRows": [],
+            "maxHorizontalSpan": 0.5413630185190326,
+            "max3DSpan": 0.6342676518208321
+          },
+          "alongRay": {
+            "reverseSegments": 1163,
+            "interpretation": "Expected for an overturned profile; does not fail the harness."
+          },
+          "triangles": {
+            "indexFaults": 0,
+            "topologyFaults": 0,
+            "zeroArea3D": 0,
+            "collapsedProfileTriangles": 0,
+            "zeroAreaLiftedRoofFace": 0,
+            "minTwiceArea3D": 0.00006835023726876091
+          },
+          "seam": {
+            "unsupportedLift": 0,
+            "maskOutOfRange": 0,
+            "liftOutOfRange": 0,
+            "liftedRunEnds": 0,
+            "maskedRunEnds": 0,
+            "restingHeightErrorMeters": {
+              "count": 2666,
+              "min": 6.051603662626803e-12,
+              "max": 6.197765886062356e-7,
+              "mean": 6.160026482992642e-8
+            },
+            "runEndHeightErrorMeters": {
+              "count": 536,
+              "min": 5.838485250819758e-11,
+              "max": 3.931049443739454e-7,
+              "mean": 5.842729702958707e-8
+            },
+            "interpretation": "Height residuals include Float32 xyz rounding and cubic heightAt evaluation; no visual threshold is imposed."
+          },
+          "dropped": {
+            "strips": 0,
+            "openStrips": 0,
+            "openWeight": 0
+          }
+        },
+        "queries": {
+          "pass": true,
+          "failures": [],
+          "points": 598,
+          "columns": 582,
+          "noColumn": 16,
+          "queries": 4016,
+          "exactRayAndRowTies": 46,
+          "nondeterministic": 0,
+          "mismatches": 0,
+          "nonfiniteHits": 0,
+          "evenColumns": 7,
+          "evenInteriorColumns": 0,
+          "evenTieColumns": 7,
+          "tieInterpretation": "The half-open full geometric oracle also validates exact ray/row ties. Both-or-neither at a boundary fold may have even parity and fall back to water; only interior even columns fail closure.",
+          "layers": {
+            "columns": 564,
+            "swappedColumns": 59,
+            "maxSwapMeters": 0.00045263852766286305,
+            "interpretation": "Raw landmark-layer separation; numeric sign is recorded without a visual tolerance."
+          },
+          "firstIssues": [
+            {
+              "point": {
+                "x": 113.22453546524048,
+                "z": -11.118529319763184
+              },
+              "strip": 5,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.1336654507467738,
+                1.3848411419643767
+              ]
+            },
+            {
+              "point": {
+                "x": 118.06136630102992,
+                "z": -8.269732892513275
+              },
+              "strip": 17,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.6960139061024501,
+                1.6869734962688412
+              ]
+            },
+            {
+              "point": {
+                "x": 118.5328389108181,
+                "z": -8.287175714969635
+              },
+              "strip": 18,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.132493933183367,
+                1.6702167296409933
+              ]
+            },
+            {
+              "point": {
+                "x": 122.83857737481594,
+                "z": -5.970076203346252
+              },
+              "strip": 28,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.4167915098570663,
+                1.291400663434246
+              ]
+            },
+            {
+              "point": {
+                "x": 125.49717946350574,
+                "z": -5.709893852472305
+              },
+              "strip": 34,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.7420509581310103,
+                1.3238174872832125
+              ]
+            },
+            {
+              "point": {
+                "x": 125.98289041221142,
+                "z": -5.659111469984055
+              },
+              "strip": 35,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.8358122521642539,
+                1.3501113512729308
+              ]
+            },
+            {
+              "point": {
+                "x": 140.28618658334017,
+                "z": -5.162287309765816
+              },
+              "strip": 46,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.4143993490961126,
+                1.4146384274869597
+              ]
+            }
+          ]
+        },
+        "metadata": {
+          "sliceFront": "80fdfea0c4f9ccb252c38871501ee75d8f435c812e650fa09a7e0ae3be639bb3",
+          "sliceSigma": "95fbd5c62404e60b215c073c3b6147d915f978cd49ef8a03e990879ce5893937",
+          "sliceTau": "109f42115a88558b9fce9d4528c3ab11e45717e5d9e9a2ef742588ec5517cb8b",
+          "slicePhase": "64093134a8ca99137feec230ef567b90175f147d553da56e7ec3f773b5938dc0",
+          "sliceLife": "72f59923293250f04a3f789fdadf6dd1764022f5ff72fcf7959d57f913223474",
+          "sliceCollapse": "81f6603945c3dbf79ce10f69acce092b045eaab6bbefd155e46a3078a543f98b",
+          "sliceFade": "faa24fd57112ca2b42649f0e65e703cb4c41b7c3714f76457fb5b788c1d2bc97",
+          "crestXZ": "c6f168b435506fe00ba5e188a427824741454327186cb1ebad3210de16bd2c6b"
+        },
+        "repeatedDrawingExact": true,
+        "physicalInputUnchanged": true
+      },
+      "metadataComparison": {
+        "sliceFront": true,
+        "sliceSigma": true,
+        "sliceTau": true,
+        "slicePhase": true,
+        "sliceLife": true,
+        "sliceCollapse": true,
+        "sliceFade": true,
+        "crestXZ": true
+      }
+    },
+    {
+      "fixture": {
+        "name": "at-20.json",
+        "sha256": "4137607e323dfe2153557b3087d142bfe4346c60611007e04e1cf7e76275774d",
+        "capturedAt": 43792,
+        "seaTime": 179.9392132974912,
+        "frontCount": 87,
+        "config": {
+          "spot": "padang",
+          "seed": 1,
+          "significantHeight": 4,
+          "peakPeriod": 10,
+          "directionDegrees": 10,
+          "spreading": 11.720624206334085,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "componentCount": 64
+        },
+        "init": {
+          "grid": {
+            "xMin": -160,
+            "zMin": -1130.37962116869,
+            "spacing": 1,
+            "nx": 321,
+            "nz": 1161
+          },
+          "focus": {
+            "x": -50,
+            "z": -261.09137870490895
+          },
+          "windowXMin": -160,
+          "dx": 1
+        },
+        "grid": {
+          "xMin": -23,
+          "zMin": -167.37962116868994,
+          "spacing": 1,
+          "nx": 119,
+          "nz": 104
+        }
+      },
+      "capturedDrawing": {
+        "available": false,
+        "note": "Original captured drawing omitted; baseline/current runtime geometry rebuilt from the retained physical inputs."
+      },
+      "baseline": {
+        "pass": false,
+        "drawing": {
+          "pass": false,
+          "failures": [
+            "729 rows reverse across the front"
+          ],
+          "hash": "78dde5946ec09dc186d7f238867292065df5690567eecd92283724dc02a64910",
+          "counts": {
+            "slices": 105,
+            "vertices": 14070,
+            "triangles": 23142,
+            "joinedStrips": 87,
+            "runs": 2,
+            "overturnedSlices": 100
+          },
+          "finite": {
+            "invalidFields": []
+          },
+          "acrossFront": {
+            "negativeRows": 729,
+            "zeroRows": 0,
+            "invalidRay": 0,
+            "parts": {
+              "back": {
+                "rows": 2784,
+                "negativeRows": 379,
+                "zeroRows": 0,
+                "min": -3.2478698514128155,
+                "maxHorizontalSpan": 6.7721542766454,
+                "max3DSpan": 6.775679910066247
+              },
+              "roofTop": {
+                "rows": 2784,
+                "negativeRows": 42,
+                "zeroRows": 0,
+                "min": -0.33547206077412284,
+                "maxHorizontalSpan": 1.026828055072816,
+                "max3DSpan": 1.0357731625965947
+              },
+              "roofUnder": {
+                "rows": 2088,
+                "negativeRows": 41,
+                "zeroRows": 0,
+                "min": -0.34873531800087676,
+                "maxHorizontalSpan": 1.3286579674270806,
+                "max3DSpan": 1.4715956395693057
+              },
+              "face": {
+                "rows": 2088,
+                "negativeRows": 48,
+                "zeroRows": 0,
+                "min": -0.79622330260338,
+                "maxHorizontalSpan": 1.3394923701510784,
+                "max3DSpan": 1.4552624553911637
+              },
+              "front": {
+                "rows": 1392,
+                "negativeRows": 116,
+                "zeroRows": 0,
+                "min": -4.037030475588381,
+                "maxHorizontalSpan": 4.11368559596776,
+                "max3DSpan": 4.123624682337005
+              },
+              "extension": {
+                "rows": 522,
+                "negativeRows": 103,
+                "zeroRows": 0,
+                "min": -4.718783893057434,
+                "maxHorizontalSpan": 7.473128376477754,
+                "max3DSpan": 7.476382483714427
+              }
+            },
+            "worstRows": [
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 133,
+                "layer": "extension",
+                "a": -4.636975600874166,
+                "b": -4.718783893057434
+              },
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 132,
+                "layer": "extension",
+                "a": -4.409728200398035,
+                "b": -4.491532522923421
+              },
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 131,
+                "layer": "extension",
+                "a": -4.182473660019809,
+                "b": -4.264280983039384
+              },
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 130,
+                "layer": "front",
+                "a": -3.9552235826372453,
+                "b": -4.037030475588381
+              },
+              {
+                "strip": 1,
+                "front": 24,
+                "sigma": 4.476097106933594,
+                "row": 133,
+                "layer": "extension",
+                "a": -3.8545655695339747,
+                "b": -3.712970254625816
+              },
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 129,
+                "layer": "front",
+                "a": -3.7415473022709875,
+                "b": -3.8233824929344564
+              },
+              {
+                "strip": 1,
+                "front": 24,
+                "sigma": 4.476097106933594,
+                "row": 132,
+                "layer": "extension",
+                "a": -3.66254963401974,
+                "b": -3.5209569426704093
+              },
+              {
+                "strip": 60,
+                "front": 24,
+                "sigma": 36.34861373901367,
+                "row": 0,
+                "layer": "extension",
+                "a": -3.5455581615210576,
+                "b": -3.6334057405242675
+              }
+            ],
+            "maxHorizontalSpan": 7.473128376477754,
+            "max3DSpan": 7.476382483714427
+          },
+          "alongRay": {
+            "reverseSegments": 2236,
+            "interpretation": "Expected for an overturned profile; does not fail the harness."
+          },
+          "triangles": {
+            "indexFaults": 0,
+            "topologyFaults": 0,
+            "zeroArea3D": 312,
+            "collapsedProfileTriangles": 312,
+            "zeroAreaLiftedRoofFace": 0,
+            "minTwiceArea3D": 0
+          },
+          "seam": {
+            "unsupportedLift": 0,
+            "maskOutOfRange": 0,
+            "liftOutOfRange": 0,
+            "liftedRunEnds": 0,
+            "maskedRunEnds": 0,
+            "restingHeightErrorMeters": {
+              "count": 5517,
+              "min": 9.290745950352175e-11,
+              "max": 0.000001918654872590242,
+              "mean": 2.0726170918681875e-7
+            },
+            "runEndHeightErrorMeters": {
+              "count": 536,
+              "min": 9.290745950352175e-11,
+              "max": 0.000001918654872590242,
+              "mean": 1.9387357814529398e-7
+            },
+            "maskNodes": 480,
+            "maskHash": "7eb92cf7c0f347389cf653e61ed7f47cfa9087e84f97f6c2bf288a069d58a50f",
+            "interpretation": "Height residuals include Float32 xyz rounding and cubic heightAt evaluation; no visual threshold is imposed."
+          },
+          "dropped": {
+            "strips": 9,
+            "openStrips": 9,
+            "openWeight": 0.5343009233474731
+          }
+        },
+        "contact": {
+          "pass": false,
+          "failures": [
+            "728 rows reverse across the front"
+          ],
+          "hash": "668b475422521f04a206bd60a9fb09119425564b0792156cd5c4dfcbab5c95db",
+          "counts": {
+            "slices": 105,
+            "vertices": 14070,
+            "triangles": 23142,
+            "joinedStrips": 87,
+            "runs": 2,
+            "overturnedSlices": 100
+          },
+          "finite": {
+            "invalidFields": []
+          },
+          "acrossFront": {
+            "negativeRows": 728,
+            "zeroRows": 0,
+            "invalidRay": 0,
+            "parts": {
+              "back": {
+                "rows": 2784,
+                "negativeRows": 379,
+                "zeroRows": 0,
+                "min": -3.2478698514128155,
+                "maxHorizontalSpan": 6.7721542766454,
+                "max3DSpan": 6.775679910066247
+              },
+              "roofTop": {
+                "rows": 2784,
+                "negativeRows": 42,
+                "zeroRows": 0,
+                "min": -0.33547206077412284,
+                "maxHorizontalSpan": 1.026828055072816,
+                "max3DSpan": 1.0357731625965947
+              },
+              "roofUnder": {
+                "rows": 2088,
+                "negativeRows": 41,
+                "zeroRows": 0,
+                "min": -0.34873531800087676,
+                "maxHorizontalSpan": 1.0294835921215308,
+                "max3DSpan": 1.0388684530086632
+              },
+              "face": {
+                "rows": 2088,
+                "negativeRows": 48,
+                "zeroRows": 0,
+                "min": -0.79622330260338,
+                "maxHorizontalSpan": 1.0920282013174023,
+                "max3DSpan": 1.092109385211871
+              },
+              "front": {
+                "rows": 1392,
+                "negativeRows": 115,
+                "zeroRows": 0,
+                "min": -4.037030475588381,
+                "maxHorizontalSpan": 4.11368559596776,
+                "max3DSpan": 4.123624682337005
+              },
+              "extension": {
+                "rows": 522,
+                "negativeRows": 103,
+                "zeroRows": 0,
+                "min": -4.718783893057434,
+                "maxHorizontalSpan": 7.473128376477754,
+                "max3DSpan": 7.476382483714427
+              }
+            },
+            "worstRows": [
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 133,
+                "layer": "extension",
+                "a": -4.636975600874166,
+                "b": -4.718783893057434
+              },
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 132,
+                "layer": "extension",
+                "a": -4.409728200398035,
+                "b": -4.491532522923421
+              },
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 131,
+                "layer": "extension",
+                "a": -4.182473660019809,
+                "b": -4.264280983039384
+              },
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 130,
+                "layer": "front",
+                "a": -3.9552235826372453,
+                "b": -4.037030475588381
+              },
+              {
+                "strip": 1,
+                "front": 24,
+                "sigma": 4.476097106933594,
+                "row": 133,
+                "layer": "extension",
+                "a": -3.8545655695339747,
+                "b": -3.712970254625816
+              },
+              {
+                "strip": 0,
+                "front": 24,
+                "sigma": 3.978088855743408,
+                "row": 129,
+                "layer": "front",
+                "a": -3.7415473022709875,
+                "b": -3.8233824929344564
+              },
+              {
+                "strip": 1,
+                "front": 24,
+                "sigma": 4.476097106933594,
+                "row": 132,
+                "layer": "extension",
+                "a": -3.66254963401974,
+                "b": -3.5209569426704093
+              },
+              {
+                "strip": 60,
+                "front": 24,
+                "sigma": 36.34861373901367,
+                "row": 0,
+                "layer": "extension",
+                "a": -3.5455581615210576,
+                "b": -3.6334057405242675
+              }
+            ],
+            "maxHorizontalSpan": 7.473128376477754,
+            "max3DSpan": 7.476382483714427
+          },
+          "alongRay": {
+            "reverseSegments": 2205,
+            "interpretation": "Expected for an overturned profile; does not fail the harness."
+          },
+          "triangles": {
+            "indexFaults": 0,
+            "topologyFaults": 0,
+            "zeroArea3D": 312,
+            "collapsedProfileTriangles": 312,
+            "zeroAreaLiftedRoofFace": 0,
+            "minTwiceArea3D": 0
+          },
+          "seam": {
+            "unsupportedLift": 0,
+            "maskOutOfRange": 0,
+            "liftOutOfRange": 0,
+            "liftedRunEnds": 0,
+            "maskedRunEnds": 0,
+            "restingHeightErrorMeters": {
+              "count": 5516,
+              "min": 7.545097879813056e-11,
+              "max": 0.000001918654872590242,
+              "mean": 2.0856236364859132e-7
+            },
+            "runEndHeightErrorMeters": {
+              "count": 536,
+              "min": 9.290745950352175e-11,
+              "max": 0.000001918654872590242,
+              "mean": 1.9387357814529398e-7
+            },
+            "interpretation": "Height residuals include Float32 xyz rounding and cubic heightAt evaluation; no visual threshold is imposed."
+          },
+          "dropped": {
+            "strips": 9,
+            "openStrips": 9,
+            "openWeight": 0.5343009233474731
+          }
+        },
+        "queries": {
+          "pass": true,
+          "failures": [],
+          "points": 1131,
+          "columns": 1090,
+          "noColumn": 41,
+          "queries": 7430,
+          "exactRayAndRowTies": 87,
+          "nondeterministic": 0,
+          "mismatches": 0,
+          "nonfiniteHits": 0,
+          "evenColumns": 12,
+          "evenInteriorColumns": 0,
+          "evenTieColumns": 12,
+          "tieInterpretation": "The half-open full geometric oracle also validates exact ray/row ties. Both-or-neither at a boundary fold may have even parity and fall back to water; only interior even columns fail closure.",
+          "layers": {
+            "columns": 988,
+            "swappedColumns": 10,
+            "maxSwapMeters": 0.0017283075752767552,
+            "interpretation": "Raw landmark-layer separation; numeric sign is recorded without a visual tolerance."
+          },
+          "firstIssues": [
+            {
+              "point": {
+                "x": 17.482601583003998,
+                "z": -118.79885886609554
+              },
+              "strip": 1,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.3666346279483559,
+                1.3671145900376924,
+                1.3680694327051444,
+                1.3681761517873294
+              ]
+            },
+            {
+              "point": {
+                "x": 24.950005784630775,
+                "z": -115.29996865987778
+              },
+              "strip": 16,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.2817461098239533,
+                1.5383076441514365
+              ]
+            },
+            {
+              "point": {
+                "x": 25.4617280960083,
+                "z": -115.16360899806023
+              },
+              "strip": 17,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.2841275421053948,
+                1.5525191159179377
+              ]
+            },
+            {
+              "point": {
+                "x": 30.105701334774494,
+                "z": -113.58517815172672
+              },
+              "strip": 27,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.6945904835763193,
+                1.358297242203695
+              ]
+            },
+            {
+              "point": {
+                "x": 35.46043425798416,
+                "z": -111.51520544290543
+              },
+              "strip": 39,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.563016817772665,
+                1.9509325913084923
+              ]
+            },
+            {
+              "point": {
+                "x": 41.52078431844711,
+                "z": -108.29823386669159
+              },
+              "strip": 54,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.5702177753497628,
+                2.6255022244758703
+              ]
+            },
+            {
+              "point": {
+                "x": 44.43549060076475,
+                "z": -107.15478986501694
+              },
+              "strip": 59,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                2.1733187476855726,
+                2.810144906122598
+              ]
+            },
+            {
+              "point": {
+                "x": 46.02759826183319,
+                "z": -106.76941239833832
+              },
+              "strip": 61,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.7137991724752721,
+                2.211625352987204
+              ]
+            }
+          ]
+        },
+        "metadata": {
+          "sliceFront": "5ffd78994890cf07ae62716a0a987748ccc0e35fbc8c8f9b597fde2702d08f83",
+          "sliceSigma": "a8730eeb8772138e6cb9f1d50f612218318b3c03b1a70cc0da226921178a6bbb",
+          "sliceTau": "0a8fd9f903678e98be6170d705470bd093981098f8c7220922685a18698448aa",
+          "slicePhase": "ca05793af280e3025b967e64c7ee12528a605b8e95d2f2df94a01db78d2b0cda",
+          "sliceLife": "5a746f12404390df0ee9bd68c2b14a687610dc68aa9cc4dfdd7e8a07863f4268",
+          "sliceCollapse": "4afcc746e86c11ac2f417a07c4b734898873fba69452f1cb6c89fa2979445324",
+          "sliceFade": "f6f47bbe166a339d2f17cd013df9d6f296776a95d775518806396dc59d11c999",
+          "crestXZ": "e07f83bd131af3709edaeec9eabad5f34d53bef1a588bab91394b5c840417191"
+        },
+        "repeatedDrawingExact": true,
+        "physicalInputUnchanged": true
+      },
+      "current": {
+        "pass": true,
+        "drawing": {
+          "pass": true,
+          "failures": [],
+          "hash": "da2fd31acded3e5e20a7a782ace9fee7ead5d48127af37bb50717fa13ed54bcf",
+          "counts": {
+            "slices": 105,
+            "vertices": 14070,
+            "triangles": 25802,
+            "joinedStrips": 97,
+            "runs": 3,
+            "overturnedSlices": 100
+          },
+          "finite": {
+            "invalidFields": []
+          },
+          "acrossFront": {
+            "negativeRows": 0,
+            "zeroRows": 0,
+            "invalidRay": 0,
+            "parts": {
+              "back": {
+                "rows": 3104,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.05134022925517456,
+                "maxHorizontalSpan": 0.5597674242676085,
+                "max3DSpan": 0.8307578178396708
+              },
+              "roofTop": {
+                "rows": 3104,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.06789510347118721,
+                "maxHorizontalSpan": 0.5387248956825439,
+                "max3DSpan": 0.8431719522856782
+              },
+              "roofUnder": {
+                "rows": 2328,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.06867740415827939,
+                "maxHorizontalSpan": 1.4103114923036535,
+                "max3DSpan": 1.5439662449215388
+              },
+              "face": {
+                "rows": 2328,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.06866476363882157,
+                "maxHorizontalSpan": 1.4210964776694794,
+                "max3DSpan": 1.5291441021991588
+              },
+              "front": {
+                "rows": 1552,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.06877391651602238,
+                "maxHorizontalSpan": 0.6357313179827991,
+                "max3DSpan": 0.635764875588012
+              },
+              "extension": {
+                "rows": 582,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.0495604819292339,
+                "maxHorizontalSpan": 0.6509755848351082,
+                "max3DSpan": 0.6510082254994978
+              }
+            },
+            "worstRows": [],
+            "maxHorizontalSpan": 1.4210964776694794,
+            "max3DSpan": 1.5439662449215388
+          },
+          "alongRay": {
+            "reverseSegments": 2236,
+            "interpretation": "Expected for an overturned profile; does not fail the harness."
+          },
+          "triangles": {
+            "indexFaults": 0,
+            "topologyFaults": 0,
+            "zeroArea3D": 432,
+            "collapsedProfileTriangles": 432,
+            "zeroAreaLiftedRoofFace": 0,
+            "minTwiceArea3D": 0
+          },
+          "seam": {
+            "unsupportedLift": 0,
+            "maskOutOfRange": 0,
+            "liftOutOfRange": 0,
+            "liftedRunEnds": 0,
+            "maskedRunEnds": 188,
+            "restingHeightErrorMeters": {
+              "count": 5552,
+              "min": 7.37596650424166e-11,
+              "max": 0.0000015581535849906736,
+              "mean": 2.1356113115569145e-7
+            },
+            "runEndHeightErrorMeters": {
+              "count": 804,
+              "min": 7.37596650424166e-11,
+              "max": 0.0000015581535849906736,
+              "mean": 2.0215125980118491e-7
+            },
+            "maskNodes": 372,
+            "maskHash": "1b733683150c37bdbd60f163f1d23d23f66f8d8e4ff0b18ffd70a5ea77f2ecc4",
+            "interpretation": "Height residuals include Float32 xyz rounding and cubic heightAt evaluation; no visual threshold is imposed."
+          },
+          "dropped": {
+            "strips": 0,
+            "openStrips": 0,
+            "openWeight": 0
+          }
+        },
+        "contact": {
+          "pass": true,
+          "failures": [],
+          "hash": "5895898229eef7df807e7025d4c464c6173932dea0bb45db9cc4e996db3c5370",
+          "counts": {
+            "slices": 105,
+            "vertices": 14070,
+            "triangles": 25802,
+            "joinedStrips": 97,
+            "runs": 3,
+            "overturnedSlices": 100
+          },
+          "finite": {
+            "invalidFields": []
+          },
+          "acrossFront": {
+            "negativeRows": 0,
+            "zeroRows": 0,
+            "invalidRay": 0,
+            "parts": {
+              "back": {
+                "rows": 3104,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.05134022925517456,
+                "maxHorizontalSpan": 0.5597674242676085,
+                "max3DSpan": 0.8307578178396708
+              },
+              "roofTop": {
+                "rows": 3104,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.06789510347118721,
+                "maxHorizontalSpan": 0.5265455621924096,
+                "max3DSpan": 0.8431719522856782
+              },
+              "roofUnder": {
+                "rows": 2328,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.06867740415827939,
+                "maxHorizontalSpan": 0.5266322926950622,
+                "max3DSpan": 0.7457445731088701
+              },
+              "face": {
+                "rows": 2328,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.06866476363882157,
+                "maxHorizontalSpan": 0.5629611140717193,
+                "max3DSpan": 0.7457445731088701
+              },
+              "front": {
+                "rows": 1552,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.06877391651602238,
+                "maxHorizontalSpan": 0.6357313179827991,
+                "max3DSpan": 0.635764875588012
+              },
+              "extension": {
+                "rows": 582,
+                "negativeRows": 0,
+                "zeroRows": 0,
+                "min": 0.0495604819292339,
+                "maxHorizontalSpan": 0.6509755848351082,
+                "max3DSpan": 0.6510082254994978
+              }
+            },
+            "worstRows": [],
+            "maxHorizontalSpan": 0.6509755848351082,
+            "max3DSpan": 0.8431719522856782
+          },
+          "alongRay": {
+            "reverseSegments": 2205,
+            "interpretation": "Expected for an overturned profile; does not fail the harness."
+          },
+          "triangles": {
+            "indexFaults": 0,
+            "topologyFaults": 0,
+            "zeroArea3D": 432,
+            "collapsedProfileTriangles": 432,
+            "zeroAreaLiftedRoofFace": 0,
+            "minTwiceArea3D": 0
+          },
+          "seam": {
+            "unsupportedLift": 0,
+            "maskOutOfRange": 0,
+            "liftOutOfRange": 0,
+            "liftedRunEnds": 0,
+            "maskedRunEnds": 188,
+            "restingHeightErrorMeters": {
+              "count": 5555,
+              "min": 7.37596650424166e-11,
+              "max": 0.0000015581535849906736,
+              "mean": 2.1334988063150145e-7
+            },
+            "runEndHeightErrorMeters": {
+              "count": 804,
+              "min": 7.37596650424166e-11,
+              "max": 0.0000015581535849906736,
+              "mean": 2.0215125980118491e-7
+            },
+            "interpretation": "Height residuals include Float32 xyz rounding and cubic heightAt evaluation; no visual threshold is imposed."
+          },
+          "dropped": {
+            "strips": 0,
+            "openStrips": 0,
+            "openWeight": 0
+          }
+        },
+        "queries": {
+          "pass": true,
+          "failures": [],
+          "points": 1261,
+          "columns": 1230,
+          "noColumn": 31,
+          "queries": 8404,
+          "exactRayAndRowTies": 97,
+          "nondeterministic": 0,
+          "mismatches": 0,
+          "nonfiniteHits": 0,
+          "evenColumns": 11,
+          "evenInteriorColumns": 0,
+          "evenTieColumns": 11,
+          "tieInterpretation": "The half-open full geometric oracle also validates exact ray/row ties. Both-or-neither at a boundary fold may have even parity and fall back to water; only interior even columns fail closure.",
+          "layers": {
+            "columns": 1100,
+            "swappedColumns": 14,
+            "maxSwapMeters": 0.0009066710892891017,
+            "interpretation": "Raw landmark-layer separation; numeric sign is recorded without a visual tolerance."
+          },
+          "firstIssues": [
+            {
+              "point": {
+                "x": 17.282968474552035,
+                "z": -118.5978289693594
+              },
+              "strip": 0,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.408969003117751,
+                1.4089899566412478
+              ]
+            },
+            {
+              "point": {
+                "x": 23.312740361317992,
+                "z": -116.11312763392925
+              },
+              "strip": 12,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.1871899969302164,
+                1.5320854533660317
+              ]
+            },
+            {
+              "point": {
+                "x": 26.575304713100195,
+                "z": -114.77054208517075
+              },
+              "strip": 19,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.0129657416449243,
+                1.6253589864539
+              ]
+            },
+            {
+              "point": {
+                "x": 40.678730607032776,
+                "z": -109.40033775568008
+              },
+              "strip": 50,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.8581694341947295,
+                2.4394042617928666
+              ]
+            },
+            {
+              "point": {
+                "x": 44.88865062594414,
+                "z": -106.91385048627853
+              },
+              "strip": 60,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                0.689177705540929,
+                2.1904743043413535
+              ]
+            },
+            {
+              "point": {
+                "x": 45.93894600123167,
+                "z": -108.62315395474434
+              },
+              "strip": 67,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.2181273797836125,
+                3.278603960972597
+              ]
+            },
+            {
+              "point": {
+                "x": 46.116674177348614,
+                "z": -109.12180542945862
+              },
+              "strip": 69,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                1.2781858553904257,
+                2.6322546272629395
+              ]
+            },
+            {
+              "point": {
+                "x": 46.715801045298576,
+                "z": -110.80407533049583
+              },
+              "strip": 75,
+              "tie": true,
+              "reason": "Even crossings over a column",
+              "ys": [
+                2.8994201212107145,
+                3.5231609051751436
+              ]
+            }
+          ]
+        },
+        "metadata": {
+          "sliceFront": "5ffd78994890cf07ae62716a0a987748ccc0e35fbc8c8f9b597fde2702d08f83",
+          "sliceSigma": "a8730eeb8772138e6cb9f1d50f612218318b3c03b1a70cc0da226921178a6bbb",
+          "sliceTau": "0a8fd9f903678e98be6170d705470bd093981098f8c7220922685a18698448aa",
+          "slicePhase": "ca05793af280e3025b967e64c7ee12528a605b8e95d2f2df94a01db78d2b0cda",
+          "sliceLife": "5a746f12404390df0ee9bd68c2b14a687610dc68aa9cc4dfdd7e8a07863f4268",
+          "sliceCollapse": "4afcc746e86c11ac2f417a07c4b734898873fba69452f1cb6c89fa2979445324",
+          "sliceFade": "f6f47bbe166a339d2f17cd013df9d6f296776a95d775518806396dc59d11c999",
+          "crestXZ": "e07f83bd131af3709edaeec9eabad5f34d53bef1a588bab91394b5c840417191"
+        },
+        "repeatedDrawingExact": true,
+        "physicalInputUnchanged": true
+      },
+      "metadataComparison": {
+        "sliceFront": true,
+        "sliceSigma": true,
+        "sliceTau": true,
+        "slicePhase": true,
+        "sliceLife": true,
+        "sliceCollapse": true,
+        "sliceFade": true,
+        "crestXZ": true
+      }
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
@@ -1064,6 +1065,94 @@ describe('the loft’s slices, for the contact', () => {
       expect(late.positions[u]).toBe(held.positions[v]);
       expect(late.positions[u + 2]).toBe(held.positions[v + 2]);
       expect(late.positions[u + 1]).toBeCloseTo(0.5 + fade * (held.positions[v + 1] - 0.5), 4);
+    }
+  });
+});
+
+
+describe('a kinked front’s stable full-front ray field', () => {
+  const padang = new ProfileLibrary(readBarrelCases('padang').map(decodeCase));
+  const source = () => {
+    const data = records(21, k => k === 10 ? 0.46829 : 0.48942, Number.NaN, k => k === 10 ? 5.2612 : Number.NaN);
+    let sigma = 0;
+    for (let k = 0; k < 21; k += 1) {
+      const z = k === 10 ? -6.420957 : -3.5;
+      if (k > 0) {
+        const dz = z - data[(k - 1) * FRONT_STRIDE + FRONT_FIELD.z];
+        sigma += Math.sqrt(1 + dz * dz);
+      }
+      const o = k * FRONT_STRIDE;
+      data[o + FRONT_FIELD.x] = 130.5 + k;
+      data[o + FRONT_FIELD.z] = z;
+      data[o + FRONT_FIELD.sigma] = sigma;
+      data[o + FRONT_FIELD.footHeight] = 1.3;
+    }
+    return data;
+  };
+
+  it('keeps every uploaded row’s two endpoint advances positive while retaining the crest anchors', () => {
+    const data = source();
+    for (const contact of [false, true]) {
+      const builder = new SweptLoft(padang, 1 / 19, { contact });
+      const loft = builder.build(data, 21, 0.5, flat);
+      const plannedSigmas = (builder as unknown as { sigmas: Float64Array }).sigmas;
+      expect(loft.rayCorrections).toBeGreaterThan(0);
+      expect(loft.rayInvalidIntervals).toBe(0);
+      expect(loft.rayMinAdvance).toBeGreaterThan(0);
+      expect(loft.sliceCount).toBeGreaterThan(40);
+      let rows = 0;
+      for (let s = 0; s < loft.sliceCount; s += 1) {
+        // Use the original query sigma; its float32 output metadata is rounded separately.
+        const sigma = plannedSigmas[s];
+        let k = 0;
+        while (k + 1 < 20 && data[(k + 1) * FRONT_STRIDE + FRONT_FIELD.sigma] < sigma) k += 1;
+        const a = k * FRONT_STRIDE;
+        const b = (k + 1) * FRONT_STRIDE;
+        // Anchors inside the controls interpolate the original transport points. Shoulder anchors extrapolate.
+        if (sigma >= 0 && sigma <= data[20 * FRONT_STRIDE + FRONT_FIELD.sigma]) {
+          const share = (sigma - data[a + FRONT_FIELD.sigma]) / (data[b + FRONT_FIELD.sigma] - data[a + FRONT_FIELD.sigma]);
+          const v = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest);
+          expect(loft.positions[v]).toBe(Math.fround(data[a + FRONT_FIELD.x] + share * (data[b + FRONT_FIELD.x] - data[a + FRONT_FIELD.x])));
+          expect(loft.positions[v + 2]).toBe(Math.fround(data[a + FRONT_FIELD.z] + share * (data[b + FRONT_FIELD.z] - data[a + FRONT_FIELD.z])));
+        }
+        if (!loft.sliceJoined[s]) continue;
+        for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+          const a = 3 * (s * LOFT_SAMPLES + j);
+          const b = a + 3 * LOFT_SAMPLES;
+          const dx = loft.positions[b] - loft.positions[a];
+          const dz = loft.positions[b + 2] - loft.positions[a + 2];
+          expect(dx * loft.sliceRayZ[s] - dz * loft.sliceRayX[s]).toBeGreaterThan(0);
+          expect(dx * loft.sliceRayZ[s + 1] - dz * loft.sliceRayX[s + 1]).toBeGreaterThan(0);
+          rows += 1;
+        }
+      }
+      expect(rows).toBeGreaterThan(5_000);
+      expect(Array.from(loft.positions.subarray(0, 3 * loft.vertexCount)).every(Number.isFinite)).toBe(true);
+    }
+  });
+
+  it('covers both shoulders and queries the same field despite phase, hold and refinement differences', () => {
+    const data = source();
+    const phase = data.slice();
+    for (let k = 0; k < 21; k += 1) phase[k * FRONT_STRIDE + FRONT_FIELD.tau] += k % 2 === 0 ? 0.12 : -0.12;
+    const plan = new CrestRayPlan(padang, 1 / 19, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
+    plan.prepareRecords(data, 0, 21);
+    const from = data[FRONT_FIELD.sigma] - LOFT.extension;
+    const to = data[20 * FRONT_STRIDE + FRONT_FIELD.sigma] + LOFT.extension;
+    const ray = new Float64Array(2);
+    for (const contact of [false, true]) for (const front of [data, phase]) {
+      const loft = new SweptLoft(padang, 1 / 19, { contact }).build(front, 21, 0.5, flat);
+      expect(loft.sliceCount).toBeGreaterThan(40);
+      expect(loft.sliceSigma[0]).toBeCloseTo(from, 6);
+      expect(loft.sliceSigma[loft.sliceCount - 1]).toBeCloseTo(to, 6);
+      for (let s = 0; s < loft.sliceCount; s += 1) {
+        expect(loft.sliceSigma[s]).toBeGreaterThanOrEqual(from);
+        expect(loft.sliceSigma[s]).toBeLessThanOrEqual(to);
+        // sliceSigma is stored in float32 while the original query is a planned double sigma.
+        plan.rayAt(loft.sliceSigma[s], ray);
+        expect(loft.sliceRayX[s]).toBeCloseTo(ray[0], 6);
+        expect(loft.sliceRayZ[s]).toBeCloseTo(ray[1], 6);
+      }
     }
   });
 });

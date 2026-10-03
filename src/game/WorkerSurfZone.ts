@@ -17,9 +17,9 @@ export function createSurfZoneWorker(): WorkerPort {
   return new Worker(new URL('./surfZoneWorker.ts', import.meta.url), { type: 'module' }) as unknown as WorkerPort;
 }
 
-/** Most steps queued while an advance is in flight (the page's accumulator caps its backlog the same way). */
+/** Most unsent steps kept while an advance is in flight; excess requested time is dropped. */
 export const MAX_QUEUED_STEPS = 6;
-/** Publish every offline physics step so a busy worker cannot turn six steps into one visible jump. */
+/** Publish every offline physics step to preserve fresh-water cadence; explicit host options may batch catch-up. */
 export const MAX_BATCH_STEPS = 1;
 
 export interface WorkerSurfZoneOptions {

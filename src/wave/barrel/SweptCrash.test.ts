@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { PlungingLip, STRIP_PARCELS } from '../PlungingLip';
 import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
 import type { FrontPoint } from './BreakingFront';
+import { CrashCurve, createCrashSlice } from './crashCurve';
 import { ProfileLibrary } from './ProfileLibrary';
 import { SweptCrash, type CrashSea } from './SweptCrash';
 import { tubeCase } from './toyCase';
@@ -129,6 +130,97 @@ describe('the swept barrel’s jets (the Padang Padang spec, Part B, PR 5)', () 
     for (const p of unanchored) {
       expect(p.jetBase).toBeCloseTo(11.5 - pace * 0.02, 12);
       expect(p.z).toBeCloseTo(11.5, 12);
+    }
+  });
+
+  it('prepares current arcs before pacing and after new throws, then uses the final shared ray for jets, foresight and pours', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const lib = library();
+    const crash = new SweptCrash(lib, 0.05);
+    const s = sea(solver, lip);
+    const points: FrontPoint[] = front(9, () => 0.02).map((p) => ({ ...p, throwZ: 6.5, crestSpeed: 4 }));
+    points[4].z += 1;
+    // A previously paced end moves before new throws choose their rays. Its stale sigma must not enter that plan.
+    Object.assign(points[0], { jetStrip: -1, jetPace: 3, jetBase: 6.5, jetUntil: 1, jetAt: solver.time });
+    const sourceCells = points.map(p => solver.cellIndex(p.x, p.z));
+    const geometry = (crash as unknown as { geometry: CrashCurve }).geometry;
+    const prepare = geometry.prepareRays.bind(geometry);
+    const stages: { x: number; z: number; sigma: number }[][] = [];
+    const observed = vi.spyOn(geometry, 'prepareRays').mockImplementation((controls, start, end, into) => {
+      stages.push(controls.slice(start, end).map(p => ({ x: p.x, z: p.z, sigma: p.sigma })));
+      return prepare(controls, start, end, into);
+    });
+    const hold = vi.spyOn(lip, 'holdJet');
+    const beforeWater = water(solver);
+    const result = crash.update(points, s);
+    expect(stages).toHaveLength(2);
+    expect(stages[0][0].z).toBe(6.5 + 3 * 0.02);
+    expect(stages[0][4].z).toBe(12.5);
+    expect(stages[1].map(p => p.z)).toEqual(points.map(p => p.z));
+    for (const stage of stages) {
+      expect(stage[0].sigma).toBe(0);
+      for (let k = 1; k < stage.length; k++) {
+        const dx = stage[k].x - stage[k - 1].x;
+        const dz = stage[k].z - stage[k - 1].z;
+        expect(stage[k].sigma).toBe(stage[k - 1].sigma + Math.sqrt(dx * dx + dz * dz));
+      }
+    }
+    expect(crash.paced).toHaveLength(8);
+    const firstPoints = points.map((p, k) => ({ ...p, ...stages[0][k] }));
+    const firstPlan = geometry.prepareRays(firstPoints, 0, points.length);
+    for (const thrown of crash.paced) {
+      const k = points.indexOf(thrown.point);
+      expect(thrown.rayZ).toBe(geometry.ray(firstPoints, 0, points.length, k, { x: 0, z: 0 }, firstPlan).z);
+      expect(thrown.crestZ).toBe(stages[0][k].z);
+      expect(thrown.point.jetPace).toBe(4 / Math.max(0.5, thrown.rayZ));
+    }
+    const finalPlan = geometry.prepareRays(points, 0, points.length);
+    const heightAt = (x: number, z: number) => solver.sampleCentered(solver.h, x, z) + solver.sampleCentered(solver.bed, x, z);
+    let asked = 0;
+    for (const [jet] of hold.mock.calls) {
+      const k = points.findIndex(p => p.x === jet.launchX);
+      expect(k).toBeGreaterThanOrEqual(0);
+      const p = points[k];
+      const slice = geometry.slice(points, 0, points.length, k, 0, heightAt, createCrashSlice(), {}, finalPlan);
+      const motion = geometry.jetMotion(p, { tipAlong: 0, tipUp: 0, crestSpeed: 0 });
+      expect(jet.cell).toBe(sourceCells[k]);
+      expect(jet.volume).toBe(slice.jetArea * slice.width * slice.endWeight);
+      asked += jet.volume;
+      expect(jet.dirX).toBe(slice.rayX);
+      expect(jet.dirZ).toBe(slice.rayZ);
+      expect(jet.velocityX).toBe(motion.tipAlong * slice.rayX);
+      expect(jet.velocityZ).toBe(motion.tipAlong * slice.rayZ);
+      const tau = Math.max(p.tau, slice.touchdown);
+      const foreseen = geometry.slice(points, 0, points.length, k, 0, heightAt, createCrashSlice(),
+        { tau, z: p.jetBase! + p.jetPace! * tau }, finalPlan);
+      expect(jet.pourX).toBe(foreseen.landX);
+      expect(jet.pourZ).toBe(foreseen.landZ);
+      expect(jet.pourSpacing).toBe(slice.collapse / (STRIP_PARCELS - 1));
+      expect(jet.voidArea).toBe(slice.voidArea);
+      expect(jet.voidLength).toBe(slice.voidLength);
+    }
+    expect(hold.mock.calls.length).toBeGreaterThan(0);
+    expect(crash.counts.asked).toBe(asked);
+    expect(beforeWater - water(solver)).toBeCloseTo(result.volume, 10);
+    observed.mockRestore();
+    hold.mockRestore();
+    for (const p of points) p.tau = TOUCHDOWN;
+    solver.time += 0.01;
+    crash.update(points, s);
+    const pouringPlan = geometry.prepareRays(points, 0, points.length);
+    const pouring = points.filter(p => (p.jetStrip ?? -1) >= 0);
+    expect(crash.curve).toHaveLength(pouring.length);
+    for (let i = 0; i < pouring.length; i++) {
+      const p = pouring[i], k = points.indexOf(p);
+      const slice = geometry.slice(points, 0, points.length, k, 0, heightAt, createCrashSlice(), {}, pouringPlan);
+      const motion = geometry.jetMotion(p, { tipAlong: 0, tipUp: 0, crestSpeed: 0 });
+      const pour = crash.curve[i];
+      expect(pour.x).toBe(slice.landX);
+      expect(pour.z).toBe(slice.landZ);
+      expect(pour.vx).toBe(motion.tipAlong * slice.rayX);
+      expect(pour.vz).toBe(motion.tipAlong * slice.rayZ);
+      expect(pour.air).toBe(slice.voidArea * slice.width * slice.endWeight);
     }
   });
 

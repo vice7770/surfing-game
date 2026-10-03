@@ -25,6 +25,7 @@ function oneQuad(): LoftResult {
     sliceLife: new Float32Array(2), sliceCollapse: new Float32Array(2), sliceFade: new Float32Array(2).fill(1),
     sliceTipGap: new Float32Array(2), tipGap: 0, sliceRestHold: new Float32Array(2), sliceRestEnd: new Float32Array(2),
     sliceRestClimb: new Float32Array(2), sliceToeClimb: new Float32Array(2), restSamples: 0, clamps: 0, clampedLookups: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0,
+    rayCorrections: 0, rayMaxBlend: 0, rayMinAdvance: 0, rayInvalidIntervals: 0,
     sliceJoined: new Uint8Array([1, 0]), sliceRayX: new Float32Array(2), sliceRayZ: new Float32Array(2).fill(1), sliceWeight: new Float32Array(2).fill(1),
     sliceOverturned: new Uint8Array(2), sliceTipAlong: new Float32Array(2), sliceTipUp: new Float32Array(2), sliceAnchorVX: new Float32Array(2),
     sliceTipTransportAlong: new Float32Array(2), sliceTipTransportUp: new Float32Array(2),

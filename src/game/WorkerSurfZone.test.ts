@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { LIP_HIT_STRIDE, LIP_STRIDE, STROKE_HIT_STRIDE, SURF_ZONE_STEP, type SurfZoneRunner } from '../wave/SurfZoneRunner';
+import { SPRAY_STRIDE } from '../wave/SprayCloud';
+import { FRONT_STRIDE } from '../wave/barrel/frontRecords';
+import { TUBE_STRIDE } from '../wave/tubeTable';
 import { decompress, encodeSurfZoneState } from '../wave/surfZoneState';
 import { LocalSurfZone, type SurfZoneSnapshot } from './SurfZoneHost';
 import { SurfZoneWorkerCore, type SurfZoneRequest, type SurfZoneReply } from './SurfZoneWorkerCore';
@@ -36,6 +40,45 @@ class FakePort implements WorkerPort {
 
   terminate(): void {
     this.terminated = true;
+  }
+}
+
+/** Executes the real synchronous core only when a test completes an advance. */
+class ControlledPort implements WorkerPort {
+  onmessage: ((event: MessageEvent<SurfZoneReply>) => void) | null = null;
+  onerror: ((event: ErrorEvent) => void) | null = null;
+  readonly requests: SurfZoneRequest[] = [];
+  terminated = false;
+  private readonly queued: Extract<SurfZoneRequest, { type: 'advance' }>[] = [];
+  private readonly replies: SurfZoneReply[] = [];
+  private readonly core = new SurfZoneWorkerCore((reply) => this.replies.push(reply));
+
+  postMessage(request: SurfZoneRequest): void {
+    this.requests.push(request);
+    if (request.type === 'advance') this.queued.push(request);
+    else this.core.handle(request);
+  }
+
+  deliverReady(): void {
+    this.deliver();
+  }
+
+  completeAdvance(): void {
+    const request = this.queued.shift();
+    if (!request) throw new Error('No advance in flight');
+    expect(this.queued).toHaveLength(0);
+    this.core.handle(request);
+    this.deliver();
+  }
+
+  terminate(): void {
+    this.terminated = true;
+  }
+
+  private deliver(): void {
+    const reply = this.replies.shift();
+    if (!reply) throw new Error('No reply ready');
+    this.onmessage?.({ data: reply } as MessageEvent<SurfZoneReply>);
   }
 }
 
@@ -125,6 +168,75 @@ describe('SurfZoneWorkerCore', () => {
     expect(created).toEqual(['auto']);
     expect(cpu.replies[0].type === 'ready' && cpu.replies[0].snapshot.status.compute).toBe('cpu');
   });
+
+  it.each(['cpu', 'device'] as const)('keeps two %s fixed steps equivalent to two single advances, retaining both steps\' events', async (backend) => {
+    const make = async () => {
+      const replies: SurfZoneReply[] = [];
+      const core = new SurfZoneWorkerCore((reply) => replies.push(reply), backend === 'device'
+        ? async (solver) => ({ step: async (dt: number) => solver.step(dt), dispose() {} }) : undefined);
+      await core.handle({ type: 'start', config, options: { rider: true } });
+      const ready = replies[0];
+      if (ready.type !== 'ready') throw new Error('expected ready');
+      const runner = (core as unknown as { runner: SurfZoneRunner }).runner;
+      const fixedSteps: number[] = [];
+      const record = (dt: number) => {
+        fixedSteps.push(dt);
+        const n = fixedSteps.length;
+        // A deterministic landing each step exercises the real sound queue and visual particle paths.
+        runner.simulation.lipImpacts.push({ x: n, z: -50, volume: n * 0.25, vx: n, vy: -5, vz: 3 });
+      };
+      if (backend === 'device') {
+        const step = runner.simulation.stepAsync.bind(runner.simulation);
+        vi.spyOn(runner.simulation, 'stepAsync').mockImplementation(async (dt) => { await step(dt); record(dt); });
+      } else {
+        const step = runner.simulation.step.bind(runner.simulation);
+        vi.spyOn(runner.simulation, 'step').mockImplementation((dt) => { step(dt); record(dt); });
+      }
+      const sessionSteps = vi.spyOn(runner.session!, 'step');
+      const { status: _status, ...buffers } = ready.snapshot;
+      return { core, runner, replies, buffers, fixedSteps, sessionSteps };
+    };
+    const batch = await make(), single = await make();
+    const place = { x: 1, z: -50, heading: 0, speed: 1, phase: 'prone' as const };
+    const input = { paddle: true, popUp: true, steer: 0.2, retry: true, place };
+    await batch.core.handle({ type: 'advance', steps: 2, buffers: batch.buffers, input });
+    await single.core.handle({ type: 'advance', steps: 1, buffers: single.buffers, input });
+    const first = single.replies[1];
+    if (first.type !== 'snapshot') throw new Error('expected snapshot');
+    const firstLip = Array.from(first.snapshot.lipHits.subarray(0, first.snapshot.lipHitCount * LIP_HIT_STRIDE));
+    const firstStroke = Array.from(first.snapshot.strokeHits.subarray(0, first.snapshot.strokeHitCount * STROKE_HIT_STRIDE));
+    const firstKnock = first.snapshot.status.ride?.knock ?? 0;
+    await single.core.handle({ type: 'advance', steps: 1, buffers: single.buffers,
+      input: { ...input, popUp: false, retry: false, place: undefined } });
+    const a = batch.replies[1], b = single.replies[2];
+    if (a.type !== 'snapshot' || b.type !== 'snapshot') throw new Error('expected snapshots');
+    expect(batch.replies).toHaveLength(2); // Ready, then one latest-state publication for two steps.
+    expect(batch.fixedSteps).toEqual([SURF_ZONE_STEP, SURF_ZONE_STEP]);
+    expect(single.fixedSteps).toEqual(batch.fixedSteps);
+    expect(batch.sessionSteps.mock.calls.map(([dt, _water, request]) => ({ dt, request })))
+      .toEqual(single.sessionSteps.mock.calls.map(([dt, _water, request]) => ({ dt, request })));
+    expect(batch.sessionSteps.mock.calls[0][2]).toMatchObject({ paddle: true, popUp: true, retry: true, place });
+    expect(batch.sessionSteps.mock.calls[1][2]).toMatchObject({ paddle: true, popUp: false, retry: false, place: undefined });
+    expect(batch.runner.simulation.exportState()).toEqual(single.runner.simulation.exportState());
+    const active = (snapshot: SurfZoneSnapshot) => ({
+      ...shown(snapshot),
+      lip: Array.from(snapshot.lip.subarray(0, snapshot.lipCount * LIP_STRIDE)),
+      tubes: Array.from(snapshot.tubes.subarray(0, snapshot.tubeCount * TUBE_STRIDE)),
+      spray: Array.from(snapshot.spray.subarray(0, snapshot.sprayCount * SPRAY_STRIDE)),
+      aeration: Array.from(snapshot.aeration),
+      front: Array.from(snapshot.front.subarray(0, snapshot.frontCount * FRONT_STRIDE)),
+      roar: Array.from(snapshot.roar),
+    });
+    const finalSingle = active(b.snapshot);
+    if (finalSingle.status.ride) finalSingle.status.ride.knock = Math.max(firstKnock, finalSingle.status.ride.knock);
+    expect(active(a.snapshot)).toEqual(finalSingle);
+    expect(a.snapshot.lipHitCount).toBe(2);
+    expect(Array.from(a.snapshot.lipHits.subarray(0, a.snapshot.lipHitCount * LIP_HIT_STRIDE)))
+      .toEqual([...firstLip, ...b.snapshot.lipHits.subarray(0, b.snapshot.lipHitCount * LIP_HIT_STRIDE)]);
+    expect(Array.from(a.snapshot.strokeHits.subarray(0, a.snapshot.strokeHitCount * STROKE_HIT_STRIDE)))
+      .toEqual([...firstStroke, ...b.snapshot.strokeHits.subarray(0, b.snapshot.strokeHitCount * STROKE_HIT_STRIDE)]);
+    expect(a.snapshot.status.ride?.resets).toBe(2);
+  });
 });
 
 describe('SurfZoneWorkerCore restore (L2)', () => {
@@ -169,6 +281,72 @@ describe('SurfZoneWorkerCore restore (L2)', () => {
 });
 
 describe('WorkerSurfZone', () => {
+  it('explicit two-step batching drains a lone step then a held backlog without replaying presses or reactions', async () => {
+    const port = new ControlledPort();
+    const host = new WorkerSurfZone(config, port, { rider: true }, { maxBatchSteps: 2 });
+    port.deliverReady();
+    await host.ready;
+    const place = { x: 1, z: -50, heading: 0, speed: 1, phase: 'prone' as const };
+    host.advance(1, { paddle: false, popUp: false, steer: 0, retry: false }, Float32Array.of(1, 2, 3, 4));
+    host.advance(3, { paddle: false, popUp: true, steer: 0.1, retry: true, place }, Float32Array.of(5, 6, 7, 8));
+    // A newer held input changes the controls, while pending presses and placement survive until dispatched.
+    host.advance(0, { paddle: true, popUp: false, steer: 0.4, retry: false }, Float32Array.of(9, 10, 11, 12));
+    const advances = () => port.requests.filter((request) => request.type === 'advance');
+    expect(advances().map((request) => request.steps)).toEqual([1]);
+    expect(host.outstandingSteps).toBe(4);
+    expect(Array.from(advances()[0].reactions!)).toEqual([1, 2, 3, 4]);
+    port.completeAdvance();
+    expect(advances().map((request) => request.steps)).toEqual([1, 2]);
+    expect(host.outstandingSteps).toBe(3);
+    expect(advances()[1].input).toEqual({ paddle: true, popUp: true, steer: 0.4, retry: true, place });
+    expect(Array.from(advances()[1].reactions!)).toEqual([5, 6, 7, 8, 9, 10, 11, 12]);
+    port.completeAdvance();
+    expect(advances().map((request) => request.steps)).toEqual([1, 2, 1]);
+    expect(host.outstandingSteps).toBe(1);
+    expect(advances()[2].input).toEqual({ paddle: true, popUp: false, steer: 0.4, retry: false, place: undefined });
+    expect(advances()[2].reactions).toBeUndefined();
+    port.completeAdvance();
+    expect(host.outstandingSteps).toBe(0);
+    host.dispose();
+  });
+
+  it.each([1, 2])('retains exactly six queued steps in addition to %i in flight, then drains every retained step', async (firstSteps) => {
+    const port = new ControlledPort();
+    const host = new WorkerSurfZone(config, port, {}, { maxBatchSteps: 2 });
+    port.deliverReady();
+    await host.ready;
+    host.advance(firstSteps);
+    host.advance(20);
+    host.advance(20);
+    expect(host.outstandingSteps).toBe(firstSteps + MAX_QUEUED_STEPS);
+    port.completeAdvance();
+    expect(host.outstandingSteps).toBe(MAX_QUEUED_STEPS);
+    for (const left of [4, 2, 0]) {
+      port.completeAdvance();
+      expect(host.outstandingSteps).toBe(left);
+    }
+    const advances = port.requests.filter((request) => request.type === 'advance');
+    expect(advances.map((request) => request.steps)).toEqual([firstSteps, 2, 2, 2]);
+    expect(advances.reduce((sum, request) => sum + request.steps, 0)).toBe(firstSteps + MAX_QUEUED_STEPS);
+    host.dispose();
+  });
+
+  it.each([
+    { options: { maxBatchSteps: 1 }, requests: [1, 1, 1, 1, 1] },
+    { options: { maxBatchSteps: 3 }, requests: [3, 2] },
+    { options: { maxQueuedSteps: 90 }, requests: [5] },
+    { options: { maxQueuedSteps: 90, maxBatchSteps: 1 }, requests: [1, 1, 1, 1, 1] },
+  ])('preserves explicit host batching $options', async ({ options, requests }) => {
+    const port = new ControlledPort();
+    const host = new WorkerSurfZone(config, port, {}, options);
+    port.deliverReady();
+    await host.ready;
+    host.advance(5);
+    while (host.outstandingSteps) port.completeAdvance();
+    expect(port.requests.filter((request) => request.type === 'advance').map((request) => request.steps)).toEqual(requests);
+    host.dispose();
+  });
+
   it('starts in the worker, keeps one advance in flight and shows the latest snapshot', async () => {
     const port = new FakePort();
     const host = new WorkerSurfZone(config, port);

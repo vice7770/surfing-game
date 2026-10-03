@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, type SpotName } from './Bathymetry';
 import { madsenSorensenWaveNumber } from './BoussinesqSolver';
 import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
@@ -25,6 +25,8 @@ import { SideFeed } from './SideFeed';
 import { JET_RELEASE_TIME, SOURCE_SHARE } from './PlungingLip';
 import { libraryFromBytes } from './barrel/barrelLibrary';
 import { readBarrelCases } from './barrel/nodeBarrelCases';
+import type { FrontPoint } from './barrel/BreakingFront';
+import { FRONT_FIELD, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
 
 const small_ = (): SurfZoneConfig => ({ ...small, spot: 'padang', alongShore: PADANG.alongShore });
 const small: Omit<SurfZoneConfig, 'spot'> = {
@@ -931,6 +933,82 @@ describe('the swept barrel’s breaking front (the Padang Padang spec, Part B)',
   const padang = (overrides: Partial<SurfZoneConfig> = {}): SurfZoneConfig => ({
     ...small_(), significantHeight: PADANG_SWELLS.small.significantHeight, peakPeriod: PADANG_SWELLS.small.peakPeriod,
     directionDegrees: 0, spreading: PADANG_SPREADING, ...overrides,
+  });
+
+  function pacedFrontFixture() {
+    const simulation = new SurfZoneSimulation({ ...small, spot: 'padang' }, 'warm', libraryFromBytes(readBarrelCases('padang')));
+    const point = (id: number, front: number, x: number, z: number, sigma: number, base: number, pace: number): FrontPoint => ({
+      id, front, column: id, sigma, x, z, b: 0, height: 2.1,
+      joined: 0, depth: 3, throwDepth: 2, crestDepth: 2, thrown: 0, throwZ: base,
+      footHeight: 2.1, footDepth: 7, broke: 0, tau: 0.1, fresh: null, seen: 0,
+      jetStrip: -1, jetPace: pace, jetBase: base, jetUntil: 10, jetAt: 0,
+    });
+    const points = [
+      point(0, 4, -6, -110, 0, -110, 3),
+      point(1, 4, -4, -110, 2, -112, 4),
+      point(2, 4, -2, -110, 4, -110, 5),
+      point(3, 9, 10, -140, 0, -140, 3),
+      point(4, 9, 12, -140, 2, -143, 6),
+    ];
+    simulation.front!.points = points;
+    // Keep these already linked crests for one frame; the real clock/crash pipeline moves them on their different paces.
+    const tracking = vi.spyOn(simulation.front!, 'update').mockImplementation(() => {});
+    return { simulation, points, tracking };
+  }
+
+  it('remeasures each front after the crash finalizes paced crest positions, including its serialized geometry', () => {
+    const { simulation, points, tracking } = pacedFrontFixture();
+    try {
+      simulation.step(1 / 60);
+    } finally {
+      tracking.mockRestore();
+    }
+    expect(points.map((p) => p.z)).toEqual([-109.7, -111.6, -109.5, -139.7, -142.4]);
+    const distance = (a: FrontPoint, b: FrontPoint) => {
+      const dx = b.x - a.x;
+      const dz = b.z - a.z;
+      return Math.sqrt(dx * dx + dz * dz);
+    };
+    expect(points.map((p) => p.sigma)).toEqual([0, distance(points[0], points[1]), distance(points[0], points[1]) + distance(points[1], points[2]), 0, distance(points[3], points[4])]);
+    expect(points.map((p) => [p.id, p.front, p.tau, p.footHeight, p.footDepth])).toEqual([
+      [0, 4, 0.1, 2.1, 7], [1, 4, 0.1, 2.1, 7], [2, 4, 0.1, 2.1, 7], [3, 9, 0.1, 2.1, 7], [4, 9, 0.1, 2.1, 7],
+    ]);
+    const records = new Float32Array(points.length * FRONT_STRIDE);
+    expect(writeFrontRecords(points, records)).toBe(points.length);
+    for (let k = 0; k < points.length; k += 1) {
+      expect(records[k * FRONT_STRIDE + FRONT_FIELD.sigma]).toBe(Math.fround(points[k].sigma));
+      if (k === 0 || points[k].front !== points[k - 1].front) {
+        expect(records[k * FRONT_STRIDE + FRONT_FIELD.sigma]).toBe(0);
+        continue;
+      }
+      const dx = records[k * FRONT_STRIDE + FRONT_FIELD.x] - records[(k - 1) * FRONT_STRIDE + FRONT_FIELD.x];
+      const dz = records[k * FRONT_STRIDE + FRONT_FIELD.z] - records[(k - 1) * FRONT_STRIDE + FRONT_FIELD.z];
+      const ds = records[k * FRONT_STRIDE + FRONT_FIELD.sigma] - records[(k - 1) * FRONT_STRIDE + FRONT_FIELD.sigma];
+      expect(ds).toBeCloseTo(Math.sqrt(dx * dx + dz * dz), 4);
+    }
+    expect(simulation.lipLaunches).toBe(0);
+    expect(simulation.lipJets).toBe(0);
+    expect(simulation.lipVolume).toBe(0);
+  });
+
+  it('starts a surviving crest at zero when the crash removes a front head, without carrying arc length across fronts', () => {
+    const { simulation, points, tracking } = pacedFrontFixture();
+    points[0].jetAt = -100;
+    try {
+      simulation.step(1 / 60);
+    } finally {
+      tracking.mockRestore();
+    }
+    expect(simulation.crash!.counts.exits).toBe(1);
+    expect(simulation.front!.points.map((p) => p.id)).toEqual([1, 2, 3, 4]);
+    const after = simulation.front!.points;
+    expect(after[0].front).toBe(4);
+    expect(after[0].sigma).toBe(0);
+    expect(after[1].sigma).toBeGreaterThan(2);
+    expect(after[2].front).toBe(9);
+    expect(after[2].sigma).toBe(0);
+    expect(after[3].sigma).toBeCloseTo(Math.sqrt(2 * 2 + 2.7 * 2.7), 12);
+    expect(simulation.exportState().front!.points.map((p) => p.sigma)).toEqual(after.map((p) => p.sigma));
   });
 
   it('runs on Padang Padang only', () => {

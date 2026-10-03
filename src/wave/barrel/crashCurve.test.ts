@@ -77,9 +77,11 @@ describe('the crash curve (the Padang Padang spec, Part B, PR 5)', () => {
     // Read at another z (the foresight's paced z), as if the point stood there.
     const curve = new CrashCurve(library(), 0.05);
     const there = slanted(TOUCHDOWN, true);
+    // Foresight moves one anchor, not the front's orientation. Both reads belong to the same explicit front plan.
+    const rays = curve.prepareRays(there, 0, 21);
     there[10].z = -98;
-    const moved = curve.slice(there, 0, 21, 10, 0, flat, createCrashSlice());
-    const foreseen = curve.slice(slanted(TOUCHDOWN, true), 0, 21, 10, 0, flat, createCrashSlice(), { z: -98 });
+    const moved = curve.slice(there, 0, 21, 10, 0, flat, createCrashSlice(), {}, rays);
+    const foreseen = curve.slice(slanted(TOUCHDOWN, true), 0, 21, 10, 0, flat, createCrashSlice(), { z: -98 }, rays);
     for (const key of ['anchorX', 'anchorZ', 'tipX', 'tipZ', 'landX', 'landZ'] as const) expect(foreseen[key]).toBeCloseTo(moved[key], 9);
   });
 
@@ -95,6 +97,55 @@ describe('the crash curve (the Padang Padang spec, Part B, PR 5)', () => {
     expect(ray.z).toBeCloseTo(0.8, 12);
     expect(ray.x).toBe(slice.rayX);
     expect(ray.z).toBe(slice.rayZ);
+  });
+
+  it('uses the same stabilized whole-front direction as drawing at a kink, preserving its local material law', () => {
+    const lib = library();
+    const points = front(21, () => 0.3 * TOUCHDOWN);
+    points[10].z -= 4;
+    const records = new Float32Array(points.length * FRONT_STRIDE);
+    writeFrontRecords(points, records);
+    const loft = new SweptLoft(lib, 0.05).build(records, points.length, 0, flat);
+    const curve = new CrashCurve(lib, 0.05);
+    const rays = curve.prepareRays(points, 0, points.length);
+    expect(rays.diagnostics.blend).toBeGreaterThan(0);
+    for (let k = 3; k < 18; k++) {
+      const s = Array.from(loft.sliceSigma.subarray(0, loft.sliceCount)).findIndex(sigma => sigma === points[k].sigma);
+      expect(s).toBeGreaterThanOrEqual(0);
+      const slice = curve.slice(points, 0, points.length, k, 0, flat, createCrashSlice(), {}, rays);
+      expect(Math.fround(slice.rayX)).toBe(loft.sliceRayX[s]);
+      expect(Math.fround(slice.rayZ)).toBe(loft.sliceRayZ[s]);
+      const tip = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.lip);
+      expect(slice.tipX).toBeCloseTo(loft.positions[tip], 4);
+      expect(slice.tipY).toBeCloseTo(loft.positions[tip + 1], 4);
+      expect(slice.tipZ).toBeCloseTo(loft.positions[tip + 2], 4);
+    }
+    const k = 8;
+    const corrected = curve.slice(points, 0, points.length, k, 0, flat, createCrashSlice(), {}, rays);
+    // A second explicitly prepared scope changes only the ray; the cross-section and its material/timing scalars
+    // must remain exactly those of the same original physical point, not interpolated drawing-row metadata.
+    const columnRays = curve.prepareRays(points, 0, points.length);
+    columnRays.rayAt = (_sigma, into) => { into[0] = 0; into[1] = 1; return into; };
+    const column = curve.slice(points, 0, points.length, k, 0, flat, createCrashSlice(), {}, columnRays);
+    for (const field of ['width', 'endWeight', 'scale', 'touchdown', 'clear', 'collapse', 'fade', 'weight',
+      'jetArea', 'voidArea', 'voidLength', 'axisX', 'axisY', 'voidHeight'] as const) expect(corrected[field]).toBe(column[field]);
+  });
+
+  it('prepares direct calls afresh after point mutation and keeps an explicit prepared scope independent of it', () => {
+    const points = front(21, () => 0);
+    const curve = new CrashCurve(library(), 0.05);
+    const rays = curve.prepareRays(points, 0, points.length);
+    const original = curve.ray(points, 0, points.length, 8, { x: 0, z: 0 }, rays);
+    for (const point of points) point.z += 0.25 * (point.x - 10.5);
+    const current = curve.ray(points, 0, points.length, 8, { x: 0, z: 0 });
+    expect(current).not.toEqual(original);
+    expect(curve.ray(points, 0, points.length, 8, { x: 0, z: 0 }, rays)).toEqual(original);
+    expect(curve.ray(points, 0, points.length, 8, { x: 0, z: 0 })).toEqual(current);
+    curve.prepareRays(points, 0, points.length, rays);
+    expect(curve.ray(points, 0, points.length, 8, { x: 0, z: 0 }, rays)).toEqual(current);
+    // Profile clock/hold state does not affect the front plan.
+    for (const point of points) point.tau = TOUCHDOWN + 0.1;
+    expect(curve.ray(points, 0, points.length, 8, { x: 0, z: 0 })).toEqual(current);
   });
 
   it('lands the lip on the face’s point nearest its tip (metrics.py’s closing of the void)', () => {

@@ -1,5 +1,6 @@
 import { GRAVITY } from '../dispersion';
 import type { FrontPoint } from './BreakingFront';
+import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
 import { LOFT, collapseFade } from './sweptLoft';
@@ -92,7 +93,7 @@ function pinOf(i: number): number {
  * The swept barrel at one front point, as the loft draws it (the Padang Padang spec, Part B, 13.6: the crash curve along
  * the landing line). It mirrors `SweptLoft.loftFront` in drawing mode at the point's own σ, and the crash test holds them
  * together, so keep them in step:
- * - the ray from the front's tangent over ±2 m, run on past its ends;
+ * - the shared front ray plan from its tangent over ±2 m, stabilized over the whole authored reach;
  * - the end weight, the profile at the clock (the touchdown frame from touchdown on: the drawing keeps it), and PR 4's
  *   fade over the tube's collapse;
  * - the anchor: the crest point K = S − c n, so the profile's crest landmark sits on the point's crest, before the
@@ -106,11 +107,12 @@ export class CrashCurve {
   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
   private readonly earlier = new Float32Array(2 * PROFILE_POINTS);
   private readonly overturns = new Map<BarrelCase, Overturn>();
-  private readonly ahead = { x: 0, z: 0 };
-  private readonly behind = { x: 0, z: 0 };
   private readonly normal = { x: 0, z: 0 };
+  private readonly raySample = new Float64Array(2);
+  private readonly directRays: CrestRayPlan;
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
+    this.directRays = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
     for (const c of library.cases) {
       const held = library.heldFrameOf(c);
       this.overturns.set(c, overturnAt(c.frames, Math.floor((held.tau - c.tauStart) / c.tauStep + 0.5)));
@@ -123,13 +125,13 @@ export class CrashCurve {
    */
   slice(
     points: readonly FrontPoint[], start: number, end: number, k: number, stillLevel: number, heightAt: (x: number, z: number) => number,
-    into: CrashSlice, clock: SliceClock = {},
+    into: CrashSlice, clock: SliceClock = {}, rays?: CrestRayPlan,
   ): CrashSlice {
     const p = points[k];
     const tau = clock.tau ?? p.tau;
     const first = points[start].sigma;
     const last = points[end - 1].sigma;
-    const { x: nx, z: nz } = this.ray(points, start, end, k, this.normal);
+    const { x: nx, z: nz } = this.ray(points, start, end, k, this.normal, rays);
     into.rayX = nx;
     into.rayZ = nz;
     into.width = ((k > start ? p.sigma - points[k - 1].sigma : 0) + (k + 1 < end ? points[k + 1].sigma - p.sigma : 0)) / 2;
@@ -228,25 +230,29 @@ export class CrashCurve {
   }
 
   /**
-   * Front point k's ray (its front's points are [start, end), at least two): the front's shoreward normal (x, z), from
-   * its tangent over ±2 m, run on past its ends, as `slice` and the loft read it; into `into`.
+   * Explicitly prepare the whole front after its positions and arc length have been finalized. The plan copies
+   * transport-precision controls, so later point mutations cannot change an already prepared scope. `into` lets
+   * SweptCrash reuse storage while preparing afresh at each coordinate-finalization stage.
    */
-  ray(points: readonly FrontPoint[], start: number, end: number, k: number, into: { x: number; z: number }): { x: number; z: number } {
-    const p = points[k];
-    this.positionAt(points, start, end, p.sigma + 2, this.ahead);
-    this.positionAt(points, start, end, p.sigma - 2, this.behind);
-    let tx = this.ahead.x - this.behind.x;
-    let tz = this.ahead.z - this.behind.z;
-    const t = Math.sqrt(tx * tx + tz * tz);
-    if (t > 1e-9) {
-      tx /= t;
-      tz /= t;
-    } else {
-      tx = 1;
-      tz = 0;
-    }
-    into.x = -tz;
-    into.z = tx;
+  prepareRays(points: readonly FrontPoint[], start: number, end: number, into?: CrestRayPlan): CrestRayPlan {
+    const plan = into ?? new CrestRayPlan(this.library, this.slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
+    plan.prepare(points, start, end);
+    return plan;
+  }
+
+  /**
+   * Front point k's shared drawing/contact/crash ray. An explicit plan belongs to the caller's prepared scope;
+   * without it, always prepare from the current values, rather than caching a mutable points-array identity.
+   */
+  ray(
+    points: readonly FrontPoint[], start: number, end: number, k: number, into: { x: number; z: number }, rays?: CrestRayPlan,
+  ): { x: number; z: number } {
+    const plan = rays ?? this.prepareRays(points, start, end, this.directRays);
+    // The page reads a Float32 record's sigma. Use that same query coordinate while retaining Float64 physical
+    // positions, profiles, clocks and material scalars everywhere else in this class.
+    plan.rayAt(Math.fround(points[k].sigma), this.raySample);
+    into.x = this.raySample[0];
+    into.z = this.raySample[1];
     return into;
   }
 
@@ -284,35 +290,4 @@ export class CrashCurve {
     return o;
   }
 
-  /** The front's crest position at σ: linear between its points, run on along the end segments past them (as the loft's). */
-  private positionAt(points: readonly FrontPoint[], start: number, end: number, sigma: number, into: { x: number; z: number }): void {
-    const runOn = (from: FrontPoint, to: FrontPoint, beyond: number) => {
-      const dx = to.x - from.x;
-      const dz = to.z - from.z;
-      const length = Math.sqrt(dx * dx + dz * dz);
-      if (length > 1e-9) {
-        into.x += (beyond * dx) / length;
-        into.z += (beyond * dz) / length;
-      }
-    };
-    if (sigma <= points[start].sigma) {
-      into.x = points[start].x;
-      into.z = points[start].z;
-      runOn(points[start + 1], points[start], points[start].sigma - sigma);
-      return;
-    }
-    if (sigma >= points[end - 1].sigma) {
-      into.x = points[end - 1].x;
-      into.z = points[end - 1].z;
-      runOn(points[end - 2], points[end - 1], sigma - points[end - 1].sigma);
-      return;
-    }
-    let k = start;
-    while (k + 2 < end && points[k + 1].sigma < sigma) k += 1;
-    const s0 = points[k].sigma;
-    const s1 = points[k + 1].sigma;
-    const t = s1 - s0 > 1e-12 ? (sigma - s0) / (s1 - s0) : 0;
-    into.x = points[k].x + t * (points[k + 1].x - points[k].x);
-    into.z = points[k].z + t * (points[k + 1].z - points[k].z);
-  }
 }
