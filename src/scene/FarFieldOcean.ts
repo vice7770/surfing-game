@@ -14,6 +14,7 @@ import {
 } from 'three';
 import type { WaterLook } from './water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, RICH_WATER, richFarNormal, richFragmentPars, richReflectionPars } from './water/richWaterGlsl';
+import { RICH_NORMAL_GUARD } from './water/richOptics';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
@@ -164,7 +165,7 @@ export class FarFieldOcean {
         .replace('#include <common>', rich
           ? `#include <common>\n${farFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}`
           : `#include <common>\n${farFragmentPars}`)
-        .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
+        .replace('#include <normal_fragment_begin>', rich ? richFarNormal + RICH_NORMAL_GUARD : waterChopNormal)
         .replace('#include <color_fragment>', 'diffuseColor.a *= 1.0 - smoothstep( farFade.x, farFade.y, length( vWaterWorld.xz - farFocus ) );')
         .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, false, RICH_FAR_FOAM) : waterBodyFragment(false))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION : '#include <lights_fragment_maps>');
