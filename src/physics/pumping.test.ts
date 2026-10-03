@@ -4,22 +4,24 @@ import { AttachedRider } from './AttachedRider';
 import { BoardBody } from './BoardBody';
 import { BumpWater } from './BumpWater';
 import { PlaneWater } from './PlaneWater';
+import type { StanceName } from './riderPosture';
 import type { SurfWater } from './SurfWater';
 
 const STEP = 1 / 60;
 
 /**
- * A standing rider planing along +z at `speed` on `water`, with `pump` setting its
+ * A standing rider (`stance`) planing along +z at `speed` on `water`, with `pump` setting its
  * crouch each step from the board's position along z and the time; the pair's speed,
- * kinetic energy, and the work its leg and gravity did on them after `seconds`.
+ * kinetic energy, and the work its leg and gravity did on them after `seconds`, how far it
+ * went along z, the hull's pressure work and the gameplay rules' work.
  */
-function ride(water: SurfWater, speed: number, seconds: number, pump: (z: number, time: number) => number) {
+function ride(water: SurfWater, speed: number, seconds: number, pump: (z: number, time: number) => number, stance: StanceName = 'regular') {
   const board = new BoardBody();
   const surface = water.surfaceAt(0, 0);
   const slope = (water.surfaceAt(0, 0.5) - water.surfaceAt(0, -0.5));
   const pitch = Math.atan(-slope);
   board.place(new Vector3(0, surface + board.shape.centerOfMass.y, 0), new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), pitch), new Vector3(0, -Math.sin(pitch), Math.cos(pitch)).multiplyScalar(speed));
-  const rider = new AttachedRider(board.shape, { phase: 'standing' });
+  const rider = new AttachedRider(board.shape, { phase: 'standing', stance });
   board.attach(rider);
   let time = 0;
   for (let i = 0; i < Math.round(seconds / STEP); i += 1) {
@@ -33,6 +35,9 @@ function ride(water: SurfWater, speed: number, seconds: number, pump: (z: number
     kinetic: board.kineticEnergy() + rider.kineticEnergy(),
     leg: rider.work.contact + board.work.rider,
     gravity: rider.work.gravity + board.work.gravity,
+    along: board.position.z,
+    pressure: board.work.pressure,
+    rules: rider.work.assist + rider.work.carry + rider.work.leanOut,
   };
 }
 
@@ -102,6 +107,62 @@ describe('pumping', () => {
   });
 });
 
+// The movement-flow spec's bar (pumping makes about 0.2–0.6 m/s a pump when extension is timed with the high-load part
+// of each up-and-down; mistimed pumps lose speed): a pump track, the up-and-down a face gives a board that rides up and
+// down it, here laid on still water as a 14° slope with 0.1 m bumps every 8 m, ridden from 6 m/s (about five bumps in
+// 6 s). The path swings the load on the feet 0.56–1.31 body weights a bump for a rider standing tall. Timed, the crouch
+// follows the board's place on the bumps (LEAD sets its phase): deepest a fifteenth of a bump before each crest and
+// tallest as far before each hollow. The legs follow about 0.15 s later, so the rider extends as the board drops into
+// each hollow and crouches as it climbs to the next crest. Mistimed by half a bump it does the opposite. Measured: the
+// best steady stance (tall) ends at 6.91 m/s, timed 8.44 (+0.29 m/s a pump), mistimed 5.93 (−0.23 a pump); Regular and
+// Goofy alike; any lead from 1.75 to 2.5 rad keeps at least +0.26 a pump. The timed rider's legs do no more net work
+// than standing (32 J against 33 J): what it gains is the hull's drag. A planing hull's drag rises faster than its load
+// (here 16–40 N a metre at 0.6 body weights, 237 at 1.3; Savitsky's trim grows with the load at a fixed load point), so
+// the flatter load the timed rider gives it, 0.83–1.16 body weights, costs 16% less pressure drag a metre (106.8 N
+// against 127.3). Mistimed, the load swings 0.47–1.45 and the drag a metre rises 17%. On longer, faster bumps the legs'
+// work counts instead (the first test above, 0.15 m every 12 m at 9–12 m/s: the legs do 557 J more for 481 J more
+// kinetic energy and the drag a metre is unchanged, Kogelbauer et al. 2024's work against the load), and the gain a
+// pump is smaller in m/s (0.09). With no up-and-down, on flat water or a uniform slope, there is no load swing to
+// flatten and a crouch rhythm only adds one: it keeps nothing.
+describe('pumping over a pump track (the movement-flow spec\'s bar)', () => {
+  const WAVELENGTH = 8;
+  const track = new BumpWater({ slopeZ: -Math.tan((14 * Math.PI) / 180), amplitude: 0.1, wavelength: WAVELENGTH });
+  const k = (2 * Math.PI) / WAVELENGTH;
+  const LEAD = 2;
+  const timed = (z: number) => 0.5 + 0.5 * Math.sin(k * z + LEAD);
+  const mistimed = (z: number) => 0.5 - 0.5 * Math.sin(k * z + LEAD);
+  const pumps = (run: { along: number }) => run.along / WAVELENGTH;
+  const dragPerMetre = (run: { along: number; pressure: number }) => -run.pressure / run.along;
+
+  it('timed pumps keep over 0.2 m/s a pump more than the best steady stance and mistimed ones lose speed, the legs adding no work: the hull carries a flatter load', () => {
+    const steady = [0, 0.5, 1].map((crouch) => ride(track, 6, 6, () => crouch));
+    const best = steady.reduce((a, b) => (b.speed > a.speed ? b : a));
+    const withPump = ride(track, 6, 6, timed);
+    const against = ride(track, 6, 6, mistimed);
+    expect([...steady, withPump, against].every((run) => run.attached)).toBe(true);
+    expect((withPump.speed - best.speed) / pumps(withPump)).toBeGreaterThan(0.2);
+    expect((against.speed - best.speed) / pumps(against)).toBeLessThan(-0.1);
+    // Nothing but the rider's own legs and the water: the compressed turn's rules never act.
+    expect(withPump.rules + against.rules).toBe(0);
+    // The speed is drag the hull no longer pays, not work the legs put in.
+    expect(Math.abs(withPump.leg - best.leg)).toBeLessThan(50);
+    expect(dragPerMetre(withPump)).toBeLessThan(0.9 * dragPerMetre(best));
+    expect(dragPerMetre(against)).toBeGreaterThan(1.1 * dragPerMetre(best));
+    // A straight line has no frontside or backside: Goofy keeps the same speed.
+    expect(ride(track, 6, 6, timed, 'goofy').speed).toBeCloseTo(withPump.speed, 6);
+  });
+
+  // The gain is the path's load swing flattened, so a path that hardly swings it leaves nothing to gain: on bumps
+  // 0.03 m high (the load 0.85–1.12 body weights a bump, standing tall) the same timed pump keeps +0.01 m/s a pump.
+  it('keeps nothing where the path hardly swings the load', () => {
+    const gentle = new BumpWater({ slopeZ: -Math.tan((14 * Math.PI) / 180), amplitude: 0.03, wavelength: WAVELENGTH });
+    const best = Math.max(...[0, 0.5, 1].map((crouch) => ride(gentle, 6, 6, () => crouch).speed));
+    const withPump = ride(gentle, 6, 6, timed);
+    expect(withPump.attached).toBe(true);
+    expect(Math.abs(withPump.speed - best) / pumps(withPump)).toBeLessThan(0.05);
+  });
+});
+
 // The movement-flow spec's pumping, weighting and unweighting with the rail changes: S-turns with the lean swept
 // from rail to rail once every PERIOD (a rail change a second, as Forsyth et al. 2024's 0.96 s bottom turn), and the
 // crouch at twice that frequency. Timed, it is deepest 3/16 of a period after the stick crosses the middle, as the
@@ -119,9 +180,11 @@ describe('pumping through rail changes (the movement-flow spec)', () => {
   const TIMED = (5 * Math.PI) / 4;
   const MISTIMED = Math.PI / 4;
 
-  // The spec's bar: about 0.2–0.6 m/s a pump. Measured: 15° from 6 m/s, 5.98 m/s held steady (crouched) against 7.49
-  // timed (+0.25 a pump) and 3.17 mistimed (−0.47); 12° from 7, 4.13 against 5.88 (+0.29) and 1.66 (−0.41). Regular
-  // and Goofy, starting either way, give the same numbers.
+  // At the pad's full lean. Measured: 15° from 6 m/s, 5.98 m/s held steady (crouched) against 7.49 timed (+0.25 a
+  // pump) and 3.17 mistimed (−0.47); 12° from 7, 4.13 against 5.88 (+0.29) and 1.66 (−0.41). Regular and Goofy,
+  // starting either way, give the same numbers. Only full S-turns swing the load enough for this (the pump track's
+  // law above): at 0.8 of the stick the timed pump keeps +0.11 and +0.13 a pump, at 0.6 −0.02 to 0.00, at 0.3–0.5
+  // −0.09 to −0.04, riding straight −0.10, where the crouch's own up-and-down costs the hull more than it saves.
   it.each([[15, 6], [12, 7]])('down a %i° still face from %i m/s, timed pumps keep over 0.2 m/s a pump more than the best steady stance, and mistimed ones lose it', (slope, speed) => {
     const steady = Math.max(...[0, 0.5, 1].map((crouch) => sTurns(slope, speed, SECONDS, PERIOD, () => crouch).speed));
     const timed = sTurns(slope, speed, SECONDS, PERIOD, crouched(TIMED));

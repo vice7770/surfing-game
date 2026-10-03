@@ -52,7 +52,12 @@ const ANKLE_REACH = 1.85;
 /**
  * Where a lesson puts the rider (Surf School, spec L2): a point on the water, a
  * heading (radians from +z toward +x), a speed along it on top of the water's own
- * flow, m/s, and whether the rider stands or lies.
+ * flow, m/s, and whether the rider stands or lies. With `followSurface` the board
+ * starts moving along the surface: its vertical speed is the surface's rise under
+ * its own motion, the water's rise at the point (the vertical flow at the surface,
+ * which `PhysicalSurfWater` reconstructs as ∂η/∂t) plus the slope along its
+ * horizontal velocity. Without it the board starts with the water's vertical flow
+ * alone, so on a sloped face, moving across it, it leaves the surface or digs in.
  */
 export interface RiderPlacement {
   x: number;
@@ -60,6 +65,7 @@ export interface RiderPlacement {
   heading: number;
   speed: number;
   phase: 'standing' | 'prone';
+  followSurface?: boolean;
 }
 
 export interface RideSessionOptions {
@@ -156,6 +162,10 @@ export class RideSession {
     // The placed speed runs along the heading, level: the water carries the rest.
     velocity.x += Math.sin(heading) * placement.speed;
     velocity.z += Math.cos(heading) * placement.speed;
+    if (placement.followSurface && moving) {
+      const top = water.sampleAt(at.x, surface, at.z, this.sample);
+      velocity.y = top.flowY + velocity.x * top.slopeX + velocity.z * top.slopeZ;
+    }
     this.board.place(new Vector3(at.x, surface + this.board.shape.centerOfMass.y - 0.05, at.z), orientation, velocity);
     this.rider.phase = placement.phase;
     this.board.attach(this.rider);
