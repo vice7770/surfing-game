@@ -60,6 +60,8 @@ export interface AutopilotOptions {
   flowFrom?: FlowPhase;
   /** Riding the flow, the heading from the fall line where the bottom turn is released, degrees (FLOW_BOTTOM_END by default). */
   bottomEnd?: number;
+  /** Riding the flow, once trimming keep pumping along the face: no bottom turn or cutback from the trim phase (the pool flow probe's pumping rides; a projection still goes to a cutback when one is due). */
+  pumpOnly?: boolean;
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
@@ -151,22 +153,28 @@ const SNAP_TRIM = -1;
  * - drop: crouched down the face from the pop-up, until below FLOW_BOTTOM_FACE of it, out on the flat
  *   (BOTTOM_REACH) or after FLOW_DROP_LIMIT, s;
  * - bottom turn: Compress with a little weight on the front foot (FLOW_DRIVE), leaning toward the open face, until
- *   the heading is FLOW_BOTTOM_END from the fall line. The body's lean carries the heading on 33–37° after the
- *   release, so the board comes out along the face, near the line that keeps pace with the pool's 4 m/s wave, with
- *   the body back to an 11–17° bank (the pool flow probe). Released at 85° the heading went on to 95–122°, up the
- *   face, with the rail at its 48° bite and the body still banked 33° into the turn; held to 110° the turn ended at
- *   2.6–3.7 m/s, off the plane;
+ *   the heading is FLOW_BOTTOM_END from the fall line. The body's lean carries the heading on after the release, to
+ *   about 55° (the pool flow probe). With the feet holding the board neutral through the extension, released at 45°
+ *   the body was still banked 29–30° on a 38–40° rail, the board carved on at 2.6–3.1 rad/s under 2.3–2.5 body
+ *   weights and kept 0.59–0.73 of its speed through the water, coming out along the face at 4.5–5.5 m/s; released at
+ *   25°, banked 18–19° on a 23° rail, it kept 0.85–0.86 and came out at 6.3 m/s. Released at 85° the heading went on
+ *   to 95–122°, up the face, with the rail at its 48° bite and the body still banked 33° into the turn; held to 110°
+ *   the turn ended at 2.6–3.7 m/s, off the plane;
  * - projection: Compress released, tall and centred, holding that heading up the face, until the body has come back
  *   within FLOW_UPRIGHT of upright (the cutback changes rails from there), the board is above FLOW_TOP_FACE of the
  *   face (its top), or after FLOW_PROJECT_LIMIT, s. Begun while the body was still banked 11–41° into the bottom
  *   turn (once the projection's speed had faded 15%), every cutback on the pool fell in 0.2 s or carved on up the
  *   face to a stall;
- * - trim: along the face on the riding line, pumping (crouched while the face fraction falls, extended while it
- *   rises: the extension meets the load at the foot of each dip), until CUTBACK_REACH ahead of the curl; low on the
- *   face heading down, another bottom turn;
- * - cutback: heading along the face or up it (past FLOW_CUTBACK_FROM), Compress with the weight on the back foot,
- *   leaning and looking back toward the curl (the rotation stick), until the heading has come round
- *   FLOW_CUTBACK_TURN;
+ * - trim: along the face, pumping through rail changes (PUMP_* below) about the riding line, until CUTBACK_REACH
+ *   ahead of the curl; low on the face heading down, another bottom turn;
+ * - cutback: heading along the face or up it (past FLOW_CUTBACK_FROM), Compress with the weight on the back foot
+ *   (FLOW_CUTBACK_TRIM), leaning and looking back toward the curl (the rotation stick), until the heading is
+ *   FLOW_CUTBACK_END past the fall line toward the curl, back down the face, or has come round FLOW_CUTBACK_TURN.
+ *   The weight is the coaching's 65/35 onto the back foot (at rest; Rapture's cutback, 65/35 to 70/30): full back,
+ *   82/18 at rest, sank the tail of a board doing 4.5–6 m/s through the water to a 19–26° trim, where the
+ *   tail-loaded hull planes (Savitsky), and its drag took every cutback on the pool off the plane. Carried on round
+ *   160°, the turns ended heading back toward the curl at 3.6–5 m/s, still banked 25–48°, and the rebound's rail
+ *   change from there fell within a second;
  * - rebound: the bottom turn again, off the foam, then the projection.
  * No turn is held longer than FLOW_TURN_LIMIT, s.
  *
@@ -179,16 +187,36 @@ const SNAP_TRIM = -1;
 const FLOW_BOTTOM_FACE = 0.4;
 const FLOW_DROP_LIMIT = 1.5;
 const FLOW_DRIVE = 0.3;
-const FLOW_BOTTOM_END = 45 * DEG;
+const FLOW_BOTTOM_END = 25 * DEG;
 const FLOW_TOP_FACE = 0.65;
 const FLOW_PROJECT_LIMIT = 1;
 const FLOW_UPRIGHT = 12 * DEG;
 const FLOW_CUTBACK_FROM = 45 * DEG;
 const FLOW_CUTBACK_TURN = 160 * DEG;
+const FLOW_CUTBACK_END = 30 * DEG;
+const FLOW_CUTBACK_TRIM = -0.5;
 const FLOW_TURN_LIMIT = 3;
 const CUTBACK_REACH = 10;
-/** Pumping, the face fraction's rate is smoothed over this, s: a falling or rising face, not the board's chatter. */
-const PUMP_SMOOTHING = 0.15;
+/**
+ * Pumping (the movement-flow spec: real physics, no pump bonus), as a pad's sticks would: S-turns about the riding
+ * line, the lean swept from one rail to the other as sin(2πt / PUMP_PERIOD) at PUMP_LEAN of the stick, plus
+ * PUMP_LINE of the line's own lean, and the crouch at twice that frequency, 0.5 + 0.5 cos(4πt / PUMP_PERIOD +
+ * PUMP_PHASE): deepest 3/16 of a period after the stick crosses the middle, as the body comes upright between the
+ * rails (unweighted), tallest 3/16 after the stick's peak, as the new rail sets (weighted). No Compress, so none of
+ * the compressed turn's gameplay rules act. On a still face from 6–8 m/s (15° from 6, 12° from 7, 10° from 8) this
+ * timing kept 0.21–0.29 m/s a pump more than the best steady stance, the same S-turns mistimed by half a pump
+ * 0.41–0.48 less (`pumping.test.ts` pins the first two): the load comes off the rail change, where the board rides
+ * nose-up to its flow and the planing hull's drag per unit of load is highest, and goes back on as the new rail
+ * sets. PUMP_PHASE is the best of eight phases, or within 0.03 m/s a pump of the best (270°), at each of those
+ * entries and at 15° from 8 m/s (which reaches 10–12 m/s and keeps only 0.04–0.05); from 6 m/s on 10° everything
+ * falls. PUMP_PERIOD a rail change a second (Forsyth et al. 2024's bottom turn, 0.96 s; 2.4 s kept 0.27–0.39 a pump,
+ * 1.6 s 0.15–0.20); PUMP_LEAN the stick's full sweep (at the best phase and period, 0.6 of it kept at most 0.04 a
+ * pump and 0.8 at most 0.19); PUMP_LINE provisional.
+ */
+const PUMP_PERIOD = 2;
+const PUMP_LEAN = 1;
+const PUMP_LINE = 0.3;
+const PUMP_PHASE = (5 * Math.PI) / 4;
 
 /**
  * A dev autopilot for the recorder and the ride report (spec P9 phase 0). It
@@ -231,13 +259,13 @@ export class Autopilot {
   private readonly cutbackReach: number;
   private readonly flowFrom: FlowPhase;
   private readonly bottomEnd: number;
-  /** Riding the flow: the open face it rides toward this attempt (kept, so passing the curl never reverses it), the heading turned in the phase under way and the last heading, and the face fraction's last value and smoothed rate (1/s). */
+  private readonly pumpOnly: boolean;
+  /** Riding the flow: the open face it rides toward this attempt (kept, so passing the curl never reverses it), the heading turned in the phase under way and the last heading, and the side the pumping's first turn leans to (+1 up the face). */
   private flowFace = 0;
   private flowYaw = 0;
   private flowHeading = 0;
   private flowOpen = false;
-  private lastFraction = Number.NaN;
-  private fractionRate = 0;
+  private pumpSide = 1;
   /** The turn under way and how long it has been held, and a turn given up that waits for its trigger to clear. */
   private turn?: Turn;
   private turnTime = 0;
@@ -262,6 +290,7 @@ export class Autopilot {
     this.cutbackReach = options.cutbackReach ?? CUTBACK_REACH;
     this.flowFrom = options.flowFrom ?? 'drop';
     this.bottomEnd = options.bottomEnd !== undefined ? options.bottomEnd * DEG : FLOW_BOTTOM_END;
+    this.pumpOnly = options.pumpOnly ?? false;
   }
 
   /** Start an attempt now, as when a crest rises behind the waiting board (a placed start: Surf School's, the probes'). */
@@ -293,8 +322,7 @@ export class Autopilot {
     this.flowRecords.length = 0;
     this.flowOpen = false;
     this.flowFace = 0;
-    this.lastFraction = Number.NaN;
-    this.fractionRate = 0;
+    this.pumpSide = 1;
   }
 
   next(view: AutopilotView, dt: number): RideInput {
@@ -352,7 +380,7 @@ export class Autopilot {
           break;
         }
         if (this.style === 'turns' && this.openFace(view) !== 0) Object.assign(input, this.turns(view, heading, dt));
-        else if (this.style === 'flow' && (this.flowFace || this.openFace(view)) !== 0) Object.assign(input, this.flow(view, heading, yawRate, dt));
+        else if (this.style === 'flow' && (this.flowFace || this.openFace(view)) !== 0) Object.assign(input, this.flow(view, heading, yawRate));
         else input.steer = this.steer(view, heading, yawRate);
         break;
       }
@@ -448,17 +476,13 @@ export class Autopilot {
    * The movement flow (FLOW_* above): the phase under way, ended when it reaches its end or its limit and the next
    * begun, and the inputs it asks for. The open face is kept for the whole ride.
    */
-  private flow(view: AutopilotView, heading: number, yawRate: number, dt: number): Pick<RideInput, 'steer' | 'trim' | 'crouch' | 'compress' | 'rotate'> {
+  private flow(view: AutopilotView, heading: number, yawRate: number): Pick<RideInput, 'steer' | 'trim' | 'crouch' | 'compress' | 'rotate'> {
     const { wave } = view.ride;
     if (this.flowFace === 0) this.flowFace = this.openFace(view);
     const face = this.flowFace;
     const angle = face * wrap(heading - this.travel);
     const fraction = wave.valid ? wave.faceFraction : 0;
     const curl = wave.valid ? wave.curlDistance : Infinity;
-    if (Number.isFinite(this.lastFraction) && dt > 0) {
-      this.fractionRate += ((fraction - this.lastFraction) / dt - this.fractionRate) * (1 - Math.exp(-dt / PUMP_SMOOTHING));
-    }
-    this.lastFraction = fraction;
     const record = this.trackFlow(view, heading);
     const time = record?.seconds ?? 0;
     const turned = face * this.flowYaw;
@@ -484,11 +508,12 @@ export class Autopilot {
         else if (time > FLOW_PROJECT_LIMIT) [next, reached] = [cutback ? 'cutback' : 'trim', false];
         break;
       case 'trim':
+        if (this.pumpOnly) break;
         if (cutback) next = 'cutback';
         else if (fraction < FLOW_BOTTOM_FACE && angle < BOTTOM_START) next = 'bottom';
         break;
       case 'cutback':
-        if (-turned > FLOW_CUTBACK_TURN) next = 'rebound';
+        if (-turned > FLOW_CUTBACK_TURN || angle < -FLOW_CUTBACK_END) next = 'rebound';
         else if (time > FLOW_TURN_LIMIT) [next, reached] = ['rebound', false];
         break;
     }
@@ -501,6 +526,8 @@ export class Autopilot {
       this.flowOpen = true;
       this.flowYaw = 0;
       this.flowHeading = heading;
+      // Pumping begins with a turn up the face from its lower half, down it from its upper half.
+      if (next === 'trim') this.pumpSide = fraction < 0.5 ? 1 : -1;
     }
     const phase = this.flowRecords[this.flowRecords.length - 1].phase;
     switch (phase) {
@@ -515,13 +542,17 @@ export class Autopilot {
         this.phase = 'FLOW · PROJECTION';
         return { steer: 0, trim: 0, crouch: 0, compress: 0 };
       case 'trim': {
-        const falling = this.fractionRate < 0;
-        this.phase = falling ? 'FLOW · PUMP · DOWN' : 'FLOW · PUMP · UP';
-        return { steer: this.steer(view, heading, yawRate, face), trim: 0, crouch: falling ? 1 : 0, compress: 0 };
+        const pumping = this.rideTime - this.flowRecords[this.flowRecords.length - 1].at;
+        const sweep = this.pumpSide * Math.sin((2 * Math.PI * pumping) / PUMP_PERIOD);
+        const steer = face * PUMP_LEAN * sweep + PUMP_LINE * this.steer(view, heading, yawRate, face);
+        this.phase = sweep > 0 ? 'FLOW · PUMP · UP' : 'FLOW · PUMP · DOWN';
+        return {
+          steer: Math.max(-1, Math.min(1, steer)), trim: 0, crouch: 0.5 + 0.5 * Math.cos((4 * Math.PI * pumping) / PUMP_PERIOD + PUMP_PHASE), compress: 0,
+        };
       }
       case 'cutback':
         this.phase = 'FLOW · CUTBACK';
-        return { steer: -face, trim: -1, crouch: 0, compress: 1, rotate: -face };
+        return { steer: -face, trim: FLOW_CUTBACK_TRIM, crouch: 0, compress: 1, rotate: -face };
     }
   }
 

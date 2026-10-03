@@ -203,6 +203,20 @@ const UPRIGHT_RATE = 0.2;
  * range, after which a held partial steer turned the wrong way (the final
  * review). Unsteered, near upright, the heading hold, the hand and a shove keep
  * the feet's whole range.
+ *
+ * The projection (the movement-flow spec: Compress released, the legs extend, the
+ * rail neutral): while the legs extend out of a crouch or Compress with no lean
+ * asked for, the body still banked (past UPRIGHT_BANK) from the turn it leaves and
+ * the board planing, the feet hold the board neutral under the body, an ankle rest
+ * of nothing, and the upper body's swing takes the rest of what the balance asks.
+ * Rolling the board on past the body there (the counter-steer above) held the rail
+ * 14–16° past the bank at its bite while the extension loaded it with 2–2.9 body
+ * weights: the old turn closed up, the board skidded out once the legs were
+ * straight, and on the deep U the rider fell within a second of letting go at
+ * 25–40° from the fall line (on the Wave Pool the projections lost about 40% of
+ * their speed, and 4 riders in 21 reached a cutback).
+ * Rolled flatter than the body instead, the feet threw it into the turn (the turn
+ * redesign's lesson: the hull rights about the rider's load line).
  */
 const ANKLE_STIFFNESS = 800;
 const ANKLE_DAMPING = 80;
@@ -319,6 +333,27 @@ const PULL_OVERLEAN = (10 * Math.PI) / 180;
  */
 const CARVE_CARRY = 0.4;
 const PULL_FULL_SPEED = 5;
+/**
+ * The rail change's lean-out pull (the movement-flow spec's cutback, a gameplay rule, not physics), under
+ * COMPRESS_PULL's gate. Leaning one way and steering the other, a body comes up out of its lean only as the board turns
+ * harder into it, as a bicycle steers into a lean to stand up (the rail-change study's counter-steer), and the rail
+ * follows the body, so the old turn runs on until the body is upright. On the Wave Pool the flow's cutbacks began with
+ * the body leaning 10–13° the old way, and the board first turned on 12° (median, up to 42°) that way, along the face,
+ * at 1.7–2.1 rad/s: about a body weight of push for about 0.2 s, while the crest closed (on Medium 14 of 38 cutbacks
+ * were caught by it, 13 of them falling). Changing rails from a full compressed carve (31°) at 7–9 m/s on a 3–8° still
+ * face, the old turn ran on 26–53° and 20 riders in 36 fell.
+ *
+ * So while Compress goes deeper than the crouch, the board planes, the rider steers and the body still leans the other
+ * way to the steer by more than UPRIGHT_BANK, the body is pulled toward the new rail, level and across the board's
+ * path, by LEAN_OUT_PULL of its weight, scaled by the steer and by Compress and faded with speed as COMPRESS_PULL is:
+ * the push the old turn gave, without the turn. Brought over faster than the balance asks, the body is braked by the
+ * feet, which roll the board onto the new rail ahead of it, so the new turn starts sooner. The pull ends as the body
+ * comes upright: it never pulls a body into a lean (the lean-in study's feed-forward) and does nothing in a turn begun
+ * upright. With it the Medium pool's cutbacks first turned 5° (median) the old way and 10 of 39 were caught, and from
+ * the full carve the old turn ran on 13–34° and 4 riders in 36 fell. At 0.7 the pool's cutbacks did about as well; at
+ * 1.5 more rebounds fell, changing rails from the cutback's deeper lean.
+ */
+const LEAN_OUT_PULL = 1;
 /** Below this load, in body weights, the centre of pressure says nothing and the rider does not rebalance. */
 const BALANCE_LOAD = 0.1;
 /** The fastest the body shifts, m/s, and accelerates, m/s² (so balance never jerks the contact), and how long the centre of pressure it reacts to is smoothed, s. */
@@ -608,6 +643,8 @@ export interface RiderWork {
   assist: number;
   /** Done by the carve's carry (CARVE_CARRY), a gameplay rule's. */
   carry: number;
+  /** Done by the rail change's lean-out pull (LEAN_OUT_PULL), a gameplay rule's. */
+  leanOut: number;
 }
 
 type V3 = { x: number; y: number; z: number };
@@ -666,7 +703,7 @@ export class AttachedRider {
   flightTime = 0;
   /** Distance of the centre of mass from where the posture puts it, m. */
   postureError = 0;
-  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0 };
+  readonly work: RiderWork = { gravity: 0, water: 0, contact: 0, lip: 0, assist: 0, carry: 0, leanOut: 0 };
   /** Impulse the lip gave the body since the latest step began, N·s. */
   readonly lastLipImpulse = new Vector3();
   /** The water's latest force on each stroking hand (left, right), N. */
@@ -815,6 +852,8 @@ export class AttachedRider {
   readonly handPoint = new Vector3();
   private handYaw = 0;
   private restRate = 0;
+  /** Standing, the leg's rest rising toward a shallower crouch asked for: a crouch or Compress released (the projection). */
+  private extending = false;
 
   private legFresh = true;
   private legDamping = 0;
@@ -872,6 +911,8 @@ export class AttachedRider {
   private readonly assistForce = new Vector3();
   /** The carve's carry on the body, N (world): CARVE_CARRY. */
   private readonly carryForce = new Vector3();
+  /** The rail change's lean-out pull on the body, N (world): LEAN_OUT_PULL. */
+  private readonly leanOutForce = new Vector3();
 
   constructor(shape: BoardShape, options: AttachedRiderOptions = {}) {
     this.shape = shape;
@@ -1081,6 +1122,7 @@ export class AttachedRider {
     this.work.lip = 0;
     this.work.assist = 0;
     this.work.carry = 0;
+    this.work.leanOut = 0;
     this.struckBy.clear();
     this.lastLipImpulse.set(0, 0, 0);
     this.sway.set(0, 0, 0);
@@ -1090,6 +1132,7 @@ export class AttachedRider {
     this.leg.rate = 0;
     this.leg.rest = 0;
     this.restRate = 0;
+    this.extending = false;
     this.legRateAfter = 0;
     this.balanceMargin = 1;
     this.rawMargin = 1;
@@ -1423,7 +1466,7 @@ export class AttachedRider {
     this.gravity.set(0, -this.mass * WATER.gravity, 0);
     this.waterForces(h, board, water);
     this.compressAssist(board);
-    this.external.copy(this.gravity).add(this.waterForce).add(this.assistForce).add(this.carryForce);
+    this.external.copy(this.gravity).add(this.waterForce).add(this.assistForce).add(this.carryForce).add(this.leanOutForce);
     if (this.upright) {
       this.prepareLeg(h, board, water);
       this.twistStep(h);
@@ -1484,7 +1527,10 @@ export class AttachedRider {
     // Steering into a lean the body lags, the feet never roll the board away from it: the upper body throws the lean.
     const asking = Math.abs(this.steer) > STEER_DEADBAND && Math.abs(this.bankReference) > UPRIGHT_BANK ? Math.sign(this.bankReference) : 0;
     const lagging = Math.abs(this.bankReference - this.bank.angle) > ANKLE_REST_RANGE / BANK_GAIN;
-    const lean = reach * asking > 0 && lagging ? 0 : reach;
+    // The projection: extending out of a crouch or Compress with no lean asked for, the feet hold the board neutral.
+    const projecting = this.extending && this.planing && Math.abs(this.steer) <= STEER_DEADBAND && !this.hand
+      && Math.abs(this.bank.angle) > UPRIGHT_BANK;
+    const lean = projecting ? 0 : reach * asking > 0 && lagging ? 0 : reach;
     this.swingStep(h, wanted - lean);
     this.ankleRest += (lean - this.ankleRest) * (1 - Math.exp(-h / BALANCE_LAG));
     // Backward Euler on the ankle: over the substep the bank and the roll move at their rates after the solve.
@@ -1531,10 +1577,14 @@ export class AttachedRider {
     }
   }
 
-  /** COMPRESS_PULL: compressing into a turn, planing, the body is pulled in across the board's path by the lean asked for. */
+  /**
+   * COMPRESS_PULL: compressing into a turn, planing, the body is pulled in across the board's path by the lean asked
+   * for; CARVE_CARRY pushes it along the path; LEAN_OUT_PULL pulls a body still leaning the other way toward the new rail.
+   */
   private compressAssist(board: BoardBody): void {
     this.assistForce.set(0, 0, 0);
     this.carryForce.set(0, 0, 0);
+    this.leanOutForce.set(0, 0, 0);
     const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const compress = Math.max(0, Math.min(1, this.compress));
     if (!this.upright || !this.banking || !this.planing || compress <= crouch || Math.abs(this.steer) <= STEER_DEADBAND) return;
@@ -1545,11 +1595,18 @@ export class AttachedRider {
     // Toward the lean's side of the path: the board's +x is its left, and the left of a path along v is up × v.
     const lean = Math.min(Math.abs(this.bankReference), MAX_BANK);
     const past = Math.max(0, this.bank.angle * Math.sign(this.bankReference) - lean);
-    const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * Math.min(1, Math.max(0, (speed - PLANING_DROP) / (PULL_FULL_SPEED - PLANING_DROP)));
+    const speedFade = Math.min(1, Math.max(0, (speed - PLANING_DROP) / (PULL_FULL_SPEED - PLANING_DROP)));
+    const fade = Math.max(0, 1 - past / PULL_OVERLEAN) * speedFade;
     this.assistForce.crossVectors(Y, along)
       .multiplyScalar(Math.sign(this.bankReference) * fade * compress * COMPRESS_PULL * this.mass * WATER.gravity * Math.tan(lean));
     // CARVE_CARRY: along the path, by the pull the body's own bank balances.
     this.carryForce.copy(along).multiplyScalar(compress * CARVE_CARRY * this.mass * WATER.gravity * Math.tan(Math.min(Math.abs(this.bank.angle), MAX_BANK)));
+    // LEAN_OUT_PULL: toward the steer's side of the path while the body still leans the other way, until it is upright.
+    const side = Math.sign(this.steer);
+    if (-this.bank.angle * side > UPRIGHT_BANK) {
+      this.leanOutForce.crossVectors(Y, along)
+        .multiplyScalar(side * Math.min(1, Math.abs(this.steer)) * speedFade * compress * LEAN_OUT_PULL * this.mass * WATER.gravity);
+    }
   }
 
   private resetTwist(): void {
@@ -1602,6 +1659,7 @@ export class AttachedRider {
       this.restRate = Math.max(this.restRate, this.leg.rate);
     }
     if (this.leg.rest === 0 || this.leg.rest === -CROUCH_DEPTH) this.restRate = 0;
+    this.extending = this.restRate > 0 && this.leg.rest < rest;
     this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * -this.leg.rest) / CROUCH_DEPTH);
     this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
     this.leg.height = this.localCenter.y - this.base.y;
@@ -1996,6 +2054,7 @@ export class AttachedRider {
     this.work.water += h * this.waterForce.dot(mean);
     this.work.assist += h * this.assistForce.dot(mean);
     this.work.carry += h * this.carryForce.dot(mean);
+    this.work.leanOut += h * this.leanOutForce.dot(mean);
     if (this.upright && this.feasible && this.swingTorque !== 0) {
       // The swing's couple, which the board did not take with the push along the line of force.
       board.work.rider -= (h * this.swingTorque * this.rollAxis.dot(this.scratch2.addVectors(this.boardSpin, board.angularVelocity))) / 2;

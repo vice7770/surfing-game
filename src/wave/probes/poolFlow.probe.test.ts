@@ -7,7 +7,9 @@
 // distance to the curl in and out, and how it ended) and the ride's end. TRACE=cutback (the default) logs the rider
 // at 10 Hz through each cutback and rebound and the 2 s before a fall; TRACE=all through the whole ride; TRACE=none
 // never. END is the seconds simulated after the spin-up, CUTBACK the cutback's reach (m), FLOW_FROM the phase the
-// flow starts in, BOTTOM_END the heading (degrees from the fall line) where the bottom turn is released. SEA=<file>
+// flow starts in, BOTTOM_END the heading (degrees from the fall line) where the bottom turn is released, PUMP_ONLY=1
+// keeps the rider pumping once it trims (no further bottom turn or cutback; with FLOW_FROM=trim, from the placement on),
+// and each ride then logs its time pumping on the plane and off it, and the gameplay rules' work meanwhile. SEA=<file>
 // starts from a spun-up sea saved there (and saves it there first when missing), so repeated runs skip the spin-up.
 // The bed is pool.ts's as committed (POOL is not overridden here).
 //
@@ -150,6 +152,7 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
     waitOutside, rise: 0.25 * config.significantHeight, giveUp: 8, style: 'flow',
     ...(cutbackReach ? { cutbackReach } : {}), ...(process.env.FLOW_FROM ? { flowFrom: process.env.FLOW_FROM as FlowPhase } : {}),
     ...(process.env.BOTTOM_END ? { bottomEnd: Number(process.env.BOTTOM_END) } : {}),
+    ...(process.env.PUMP_ONLY ? { pumpOnly: true } : {}),
   });
   const idle: RideRequest = { paddle: false, popUp: false, steer: 0, retry: false };
   const forward = new Vector3();
@@ -165,9 +168,12 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
   let settleSteps = 0;
   let carried = 0;
   let pressed = '';
+  /** Pumping (the flow's trim) this attempt: s on the plane and off it, and the gameplay rules' work meanwhile, J. */
+  const pumping = { planing: 0, off: 0, rules: 0 };
+  let lastRules = 0;
   let lines: { t: number; phase: FlowPhase | ''; text: string }[] = [];
   let catchLines: string[] = [];
-  const all: { side: number; frontside: boolean; records: FlowRecord[]; outcome: string; seconds: number }[] = [];
+  const all: { side: number; frontside: boolean; records: FlowRecord[]; outcome: string; seconds: number; pumping: typeof pumping }[] = [];
   const steps = Math.round(end / SURF_ZONE_STEP);
   for (let step = 0; step < steps; step += 1) {
     const onsets = sides.map((arm) => watchBreak(arm));
@@ -238,6 +244,15 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
         + ` angle ${angle.toFixed(0)}° | crest ${wave.crestSpeed.toFixed(2)} m/s face ${wave.valid ? wave.faceFraction.toFixed(2) : '-'} H ${wave.faceHeight.toFixed(2)}`
         + ` ahead ${wave.aheadOfCrest.toFixed(1)} curl ${metres(wave.curlDistance)} brk ${wave.crestBreaking.toFixed(2)}${ride.cue ? ' CUE' : ''}${input.popUp ? ' POP' : ''}`);
     }
+    if (pilot.state === 'ride' && ride?.phase === 'standing') {
+      const rules = rider.work.assist + rider.work.carry + rider.work.leanOut;
+      if (pilot.flowRecords[pilot.flowRecords.length - 1]?.phase === 'trim') {
+        if ((rider as unknown as { planing: boolean }).planing) pumping.planing += SURF_ZONE_STEP;
+        else pumping.off += SURF_ZONE_STEP;
+        pumping.rules += rules - lastRules;
+      }
+      lastRules = rules;
+    }
     if (pilot.state === 'ride' && ride?.phase === 'standing' && step % 6 === 0 && trace !== 'none') {
       const { wave } = ride;
       const record = pilot.flowRecords[pilot.flowRecords.length - 1];
@@ -266,7 +281,7 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
       const caught = `\n  ${pressed}${popUp ? `pop-up ${popUp.outcome} in ${popUp.duration.toFixed(2)} s` : ''}`
         + (catchLines.length && (pilot.rideTime < 4 || start !== 'catch') ? `\n  catch (phase, place, speed, heading from the wave's travel | the wave):\n${catchLines.join('\n')}` : '');
       if (pilot.rideTime > 0) {
-        all.push({ side, frontside, records, outcome, seconds: pilot.rideTime });
+        all.push({ side, frontside, records, outcome, seconds: pilot.rideTime, pumping: { ...pumping } });
         log(`\n${(runner.simulation.seaTime).toFixed(1)} s · attempt ${attempt} · ${side > 0 ? 'right +x' : 'left −x'} (${frontside ? 'frontside' : 'backside'}): rode ${pilot.rideTime.toFixed(1)} s, ${outcome}${caught}`);
         for (const record of records) {
           const how = record.completed ? 'done' : record === records[records.length - 1] ? `ENDED (${outcome})` : 'at its limit';
@@ -274,6 +289,7 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
             + ` ${record.degrees.toFixed(0).padStart(5)}° v ${record.speedIn.toFixed(2)}→${record.speedOut.toFixed(2)}`
             + ` face ${record.faceIn.toFixed(2)}→${record.faceOut.toFixed(2)} curl ${metres(record.curlIn)}→${metres(record.curlOut)} ${how}`);
         }
+        if (pumping.planing + pumping.off > 0) log(`  pumping: ${pumping.planing.toFixed(1)} s on the plane, ${pumping.off.toFixed(1)} s off it; the gameplay rules' work meanwhile ${pumping.rules.toFixed(0)} J`);
         const fell = outcome.startsWith('fell');
         const kept = trace === 'all' ? lines
           : lines.filter((line) => line.phase === 'cutback' || line.phase === 'rebound' || (fell && line.t > pilot.rideTime - 2));
@@ -285,6 +301,8 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
       catchLines = [];
       carried = 0;
       pressed = '';
+      Object.assign(pumping, { planing: 0, off: 0, rules: 0 });
+      lastRules = 0;
       pilot.reset();
       sideIndex = (sideIndex + 1) % sides.length;
       side = sides[sideIndex];
@@ -295,6 +313,11 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
     retry = false;
   }
   log(`\n${end} s simulated in ${((performance.now() - wall) / 1000).toFixed(0)} s wall (${(end / ((performance.now() - wall) / 1000)).toFixed(2)}× real time)`);
+  const pumped = all.filter((ride) => ride.pumping.planing + ride.pumping.off > 0);
+  if (pumped.length) {
+    const on = pumped.map((ride) => ride.pumping.planing).sort((a, b) => a - b);
+    log(`pumping: ${pumped.length} rides, on the plane ${on[0].toFixed(1)}–${on[on.length - 1].toFixed(1)} s (median ${on[Math.floor(on.length / 2)].toFixed(1)}), ${pumped.filter((ride) => ride.outcome.startsWith('fell')).length} fell; the gameplay rules' work while pumping ${pumped.reduce((sum, ride) => sum + ride.pumping.rules, 0).toFixed(0)} J`);
+  }
   // The phases over every ride, frontside and backside apart.
   for (const frontside of [true, false]) {
     const rides = all.filter((ride) => ride.frontside === frontside);
