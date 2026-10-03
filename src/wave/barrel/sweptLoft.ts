@@ -12,12 +12,12 @@ export { FRAY, NO_CHORD, SHEET, THROAT, arcView, frayShare, frayWhiteness, mouth
  * "Lofting" and "The seam"; the advisor's rulings, 2026-09-30):
  * - `spacing`, `fine`, m: slices every half metre along the front, a quarter where neighbouring clocks differ by more
  *   than `frames` library frames (the advisor: 2–4, so neighbours stay within a stage);
- * - `budget`, vertices: past it the spacing widens and neighbouring clocks are clamped to T_open/4 (the advisor);
+ * - `budget`, vertices: past it the spacing widens (the advisor);
  * - `pinned`: samples at each end of a profile blended onto the water, never reaching the lip or throat [inferred];
  * - `extension`, `extensionSamples`: the surface runs on over the water this far past each end, m, in this many
  *   samples, so the seam's band always has both surfaces [inferred];
  * - `band`, m: the mask's band past the rests, where the curl fades into the water it rests on [inferred];
- * - `endBlend`, m: a front's ends blend into the water over this length [inferred];
+ * - `endBlend`, m: a front's ends, and the end of any run of slices (where the next has faded), blend into the water over this length [inferred];
  * - `handover`, s: the anchor returns to the solver's crest over this long [inferred]. (After touchdown a slice fades
  *   into the water over its tube's own collapse, `ProfileLookup.collapseSeconds`, and a faded slice is dropped.)
  * - `offsetKnee`, `offsetReach`, m: the drawn crest's distance from the solver's is its own below the knee and
@@ -37,6 +37,14 @@ export const LOFT = {
  * as the curl's ripples' `FACE_MAP`].
  */
 export const LACE_LIFT = [0.1, 0.4] as const;
+/**
+ * The most two joined slices' clocks may differ, as a share of their tube's open time T_open (the time to touchdown): a
+ * quarter (the advisor, 2026-09-30; made the rule of every loft, not only one past its budget, 2026-10-03). A front
+ * record's clock can jump (a crest that restarted, two sections' clocks meeting: hundreds of pairs in a minute on the
+ * Small and Medium swells), and a jump put several library frames between neighbours, a lifted profile beside a very
+ * different stage; along a steady peel neighbouring slices stay within one stage (along-the-crest.md).
+ */
+export const CLOCK_STEP = 0.25;
 /** Vertices per slice: the profile and its extensions over the water at each end. */
 export const LOFT_SAMPLES = PROFILE_POINTS + 2 * LOFT.extensionSamples;
 /**
@@ -167,9 +175,15 @@ export interface LoftResult {
   sliceRestClimb: Float32Array;
   sliceToeClimb: Float32Array;
   restSamples: number;
-  /** Neighbouring slices' τ clamped to T_open/4 because the budget was reached; lookups outside the library's cases. */
+  /**
+   * Neighbouring slices' τ clamped to T_open/4 (`CLOCK_STEP`); lookups outside the library's cases. And per slice, the
+   * seconds its drawn clock was moved by the clamp, drawn − the front's (0 when it was not): where negative the drawn
+   * touchdown comes that much later than its point's jet crashes (`SweptCrash` runs on the front's own clock), where
+   * positive that much earlier. A loft made by hand may leave it out.
+   */
   clamps: number;
   clampedLookups: number;
+  sliceClamp?: Float32Array;
   /** Slices whose drawn crest's distance from the solver's was soft-capped. */
   caps: number;
   /** Per slice, 1 when it is triangulated to the next (the same run of live slices, not dropped for an overlap). */
@@ -280,6 +294,9 @@ interface Sample {
  *   and each vertex carries the mask's value: 1 over the profile, 0 a `band` past it.
  * - **Resampling** (ruling 4): `spacing`, refined to `fine` where neighbouring clocks differ by more than `frames`
  *   frames, within `budget` vertices.
+ * - **Clock** (the advisor, 2026-09-30, and 2026-10-03): joined neighbours' clocks differ by at most `CLOCK_STEP` of
+ *   their open time, clamped where the front's own clock jumps more, counted and kept per slice; and a run of slices ends, as a
+ *   front does, where the next have faded away after touchdown, easing down to the water over `endBlend`.
  * - **Overlapping fronts** (the advisor, 2026-09-30): the first front wins; a later front's strip over an earlier
  *   front's is dropped, and counted, so the drawing and the contact show one surface.
  * - **Contact mode** (PR 4, the advisor's ruling 2): each blended case is held at its own last clear frame
@@ -296,8 +313,22 @@ export class SweptLoft {
   /** Per front, its slices' σ, before and after refinement. */
   private readonly base = new Float64Array(2 * MAX_SLICES + 8);
   private readonly sigmas = new Float64Array(2 * MAX_SLICES + 8);
-  /** A slice's pin onto the water per sample (`loftFront`), for the lace's unroll. */
-  private readonly pins = new Float64Array(LOFT_SAMPLES);
+  /**
+   * Per vertex, the throat's views as its slice wrote them, before the tube's mouth (`throatNearMouth`) shaped them, so a
+   * run can be shaped again once a cut has split it (`easeCuts`); the strips (their first slice) `dropOverlaps` dropped this
+   * build; and per slice, what `easeCuts` leaves of its weight.
+   */
+  private readonly throatRaw: Float32Array;
+  private readonly cuts: number[] = [];
+  private readonly eases = new Float64Array(MAX_SLICES + 1);
+  /**
+   * Per slice of the front being lofted (`clockSlices`): the clock it is drawn at, its fade after touchdown (0: dropped),
+   * and the σ of the nearest dropped slice at or before it and at or after it (±∞ if none).
+   */
+  private readonly clocks = new Float64Array(2 * MAX_SLICES + 8);
+  private readonly fades = new Float64Array(2 * MAX_SLICES + 8);
+  private readonly lefts = new Float64Array(2 * MAX_SLICES + 8);
+  private readonly rights = new Float64Array(2 * MAX_SLICES + 8);
   private readonly sample: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, throwZ: 0 };
   private readonly query: ProfileQuery;
@@ -337,6 +368,7 @@ export class SweptLoft {
     this.query = { slope, footHeight: 0, footDepth: 0, seconds: 0 };
     const vertices = (MAX_SLICES + 1) * LOFT_SAMPLES;
     const slices = MAX_SLICES + 1;
+    this.throatRaw = new Float32Array(4 * vertices);
     this.result = {
       positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
       sheet: new Float32Array(vertices), sheetWeight: new Float32Array(vertices), sheetBack: new Float32Array(vertices), throat: new Float32Array(4 * vertices),
@@ -347,7 +379,7 @@ export class SweptLoft {
       sliceCollapse: new Float32Array(slices), sliceFade: new Float32Array(slices), sliceTipGap: new Float32Array(slices), tipGap: 0,
       sliceRestHold: new Float32Array(slices), sliceRestEnd: new Float32Array(slices), sliceRestClimb: new Float32Array(slices),
       sliceToeClimb: new Float32Array(slices), restSamples: 0,
-      clamps: 0, clampedLookups: 0, caps: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0,
+      clamps: 0, clampedLookups: 0, sliceClamp: new Float32Array(slices), caps: 0, overlaps: 0, overlapsOpen: 0, overlapOpenWeight: 0,
       sliceJoined: new Uint8Array(slices), sliceRayX: new Float32Array(slices), sliceRayZ: new Float32Array(slices),
       sliceWeight: new Float32Array(slices), sliceOverturned: new Uint8Array(slices), sliceTipAlong: new Float32Array(slices),
       sliceTipUp: new Float32Array(slices), sliceAnchorVX: new Float32Array(slices), sliceAnchorVZ: new Float32Array(slices),
@@ -392,9 +424,10 @@ export class SweptLoft {
     for (const f of fronts) {
       if (r.sliceCount >= MAX_SLICES) break;
       const n = budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing);
-      this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
+      this.loftFront(records, f, n, stillLevel, heightAt);
     }
     this.dropOverlaps();
+    this.easeCuts(heightAt);
     this.triangulate();
     return r;
   }
@@ -515,18 +548,58 @@ export class SweptLoft {
     return into;
   }
 
+  /**
+   * A front's slices' clocks and fades before any is lofted (look-fix round 2; the advisor's ruling): each slice's drawn
+   * clock, the front's own clock moved at most `CLOCK_STEP` T_open from the slice before it in its run (a run is the live
+   * slices, those not faded away after touchdown on the front's own clock, in a row; a slice faded on it is dropped, never
+   * drawn on by its neighbour's), what is left of it after touchdown (`collapseFade`), and the σ of the nearest slice
+   * dropped on either side, which ends a run as a front's end does (the loft eases both).
+   * The clamps are counted and each slice's kept (`LoftResult.sliceClamp`). Fills `clocks`, `fades`, `lefts` and `rights`.
+   */
+  private clockSlices(records: Float32Array, f: Front, n: number): void {
+    const r = this.result;
+    let previousTau = 0;
+    let previousLive = false;
+    for (let k = 0; k < n; k += 1) {
+      const s = this.at(records, f, this.sigmas[k], this.sample);
+      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+      let tau = s.tau;
+      // Only slices that are joined are clamped: one faded away on the front's own clock is dropped, not drawn on again.
+      const faded = collapseFade(tau, times.touchdownSeconds, times.collapseSeconds) === 0;
+      if (previousLive && !faded) {
+        const limit = CLOCK_STEP * times.touchdownSeconds;
+        tau = Math.min(previousTau + limit, Math.max(previousTau - limit, tau));
+        if (tau !== s.tau) r.clamps += 1;
+      }
+      this.clocks[k] = tau;
+      this.fades[k] = faded ? 0 : collapseFade(tau, times.touchdownSeconds, times.collapseSeconds);
+      previousLive = !faded;
+      previousTau = tau;
+    }
+    let left = Number.NEGATIVE_INFINITY;
+    for (let k = 0; k < n; k += 1) {
+      if (this.fades[k] === 0) left = this.sigmas[k];
+      this.lefts[k] = left;
+    }
+    let right = Number.POSITIVE_INFINITY;
+    for (let k = n - 1; k >= 0; k -= 1) {
+      if (this.fades[k] === 0) right = this.sigmas[k];
+      this.rights[k] = right;
+    }
+  }
+
   private loftFront(
-    records: Float32Array, f: Front, n: number, budgeted: boolean, stillLevel: number, heightAt: (x: number, z: number) => number,
+    records: Float32Array, f: Front, n: number, stillLevel: number, heightAt: (x: number, z: number) => number,
   ): void {
     const r = this.result;
     const { profile } = this;
+    this.clockSlices(records, f, n);
     // Runs of live slices: a faded slice is dropped, and the slices either side of it are never joined.
     let runStart = -1;
     const closeRun = () => {
       if (runStart >= 0) this.finishRun(runStart, r.sliceCount - 1);
       runStart = -1;
     };
-    let previousTau = 0;
     for (let k = 0; k < n; k += 1) {
       const sigma = this.sigmas[k];
       const s = this.at(records, f, sigma, this.sample);
@@ -547,13 +620,7 @@ export class SweptLoft {
       }
       const nx = -tz;
       const nz = tx;
-      let tau = s.tau;
-      if (budgeted && runStart >= 0) {
-        const limit = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth }).touchdownSeconds / 4;
-        const clamped = Math.min(previousTau + limit, Math.max(previousTau - limit, tau));
-        if (clamped !== tau) r.clamps += 1;
-        tau = clamped;
-      }
+      const tau = this.clocks[k];
       // The drawing keeps the touchdown frame, the visual event; the contact also holds each blended case at its own
       // last clear frame, never self-crossing (the advisor, 2026-09-30). Both clocks run on.
       const query = this.query;
@@ -561,13 +628,13 @@ export class SweptLoft {
       query.footDepth = s.footDepth;
       query.seconds = tau;
       query.hold = this.contact ? 'contact' : 'drawing';
-      const lookup = this.library.profileAt(query, profile);
-      const touchdown = lookup.touchdownSeconds;
-      const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
+      const wFade = this.fades[k];
       if (wFade === 0) {
         closeRun();
         continue;
       }
+      const lookup = this.library.profileAt(query, profile);
+      const touchdown = lookup.touchdownSeconds;
       // The drawn slice's lifted span along its ray, m, the same in both modes (overlapping fronts are judged on it:
       // where both rest on the water there is nothing to conflict; the advisor, 2026-10-01); and how far the contact's
       // held tip stands from the drawn one, m (the advisor: the touchdown's own approach).
@@ -593,8 +660,9 @@ export class SweptLoft {
       }
       const drawnHeight = restHeight(crestY, toeY, frontY);
       const reachBack = drawnCrestX - (REST.behind + REST.ramp) * drawnHeight;
-      // The weights: into the water at the front's ends, and after touchdown.
-      const d = Math.min(sigma - f.first, f.last - sigma);
+      // The weights: into the water at the front's ends, and where the slices after it have faded away (the end of its
+      // run, as a front's end is: look-fix round 2), and after touchdown.
+      const d = Math.min(sigma - f.first, f.last - sigma, sigma - this.lefts[k], this.rights[k] - sigma);
       const r0 = Math.min(1, d / LOFT.endBlend);
       const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
       // The contact follows the drawing's weight: the lerp toward the same water by the same weight keeps a vertical
@@ -609,7 +677,6 @@ export class SweptLoft {
       }
       if (r.sliceCount >= MAX_SLICES) break;
       if (runStart < 0) runStart = r.sliceCount;
-      previousTau = tau;
       if (lookup.clamped) r.clampedLookups += 1;
       // The anchor: the profile's x origin in the world.
       const crest = profile[2 * LANDMARK.crest];
@@ -711,6 +778,7 @@ export class SweptLoft {
       r.sliceFront[slice] = f.id;
       r.sliceSigma[slice] = sigma;
       r.sliceTau[slice] = tau;
+      r.sliceClamp![slice] = tau - s.tau;
       r.slicePhase[slice] = tau > touchdown ? PHASE.post : PHASE[lookup.phase];
       r.sliceCrestOffset[slice] = offset;
       r.sliceLife[slice] = life;
@@ -794,7 +862,6 @@ export class SweptLoft {
           pin = u * u * (3 - 2 * u);
           maskAlong = Math.min(1, Math.max(0, 1 - (past - restEnd) / LOFT.band));
         }
-        this.pins[j] = pin;
         const v = slice * LOFT_SAMPLES + j;
         const px = ax + along * nx;
         const pz = az + along * nz;
@@ -812,42 +879,14 @@ export class SweptLoft {
         r.sheet[v] = sheet;
         r.sheetWeight[v] = sheetShare * e;
         r.sheetBack[v] = sheetBack;
-        r.throat[4 * v] = sky;
-        r.throat[4 * v + 1] = underLip;
-        r.throat[4 * v + 2] = lipThickness;
-        r.throat[4 * v + 3] = inner * e;
+        r.throat[4 * v] = this.throatRaw[4 * v] = sky;
+        r.throat[4 * v + 1] = this.throatRaw[4 * v + 1] = underLip;
+        r.throat[4 * v + 2] = this.throatRaw[4 * v + 2] = lipThickness;
+        r.throat[4 * v + 3] = this.throatRaw[4 * v + 3] = inner * e;
         this.drawn[2 * j] = along;
         this.drawn[2 * j + 1] = r.positions[3 * v + 1];
       }
-      // The water the sun crosses through the slice as drawn, for the curl's crest light where it is lifted (the drawing).
-      if (chorded) polylineChords(this.drawn, LOFT_SAMPLES, this.chords);
-      for (let j = 0; j < LOFT_SAMPLES; j += 1) {
-        const v = slice * LOFT_SAMPLES + j;
-        const lifted = chorded && r.lift[v] > 0;
-        r.chord![2 * v] = lifted ? this.chords[2 * j] : NO_CHORD;
-        r.chord![2 * v + 1] = lifted ? this.chords[2 * j + 1] : NO_CHORD;
-      }
-      // The face coordinate along the slice as drawn: its arc length from the crest landmark (the drawing only).
-      if (this.measureSheet) {
-        drawnArcs(this.drawn, E + LANDMARK.crest, r.arc!, slice * LOFT_SAMPLES);
-        // ... less its reach along the ray, from the crest behind it and from the front end ahead of it: what the face has over
-        // the ground it covers, nothing on the level stretches at either foot; and where the profile is lifted, not where it
-        // rests (the lace there is the water's own).
-        const crestIndex = E + LANDMARK.crest;
-        const crestAlong = this.drawn[2 * crestIndex];
-        const frontExcess = r.arc![slice * LOFT_SAMPLES + LOFT_SAMPLES - 1] - (this.drawn[2 * (LOFT_SAMPLES - 1)] - crestAlong);
-        for (let j = 0; j < LOFT_SAMPLES; j += 1) {
-          const excess = r.arc![slice * LOFT_SAMPLES + j] - (this.drawn[2 * j] - crestAlong);
-          const lifted = Math.min(1, Math.max(0, (1 - this.pins[j] - LACE_LIFT[0]) / (LACE_LIFT[1] - LACE_LIFT[0])));
-          r.unroll![slice * LOFT_SAMPLES + j] = lifted * lifted * (3 - 2 * lifted) * (j <= crestIndex ? excess : excess - frontExcess);
-        }
-        // The lip frays at its leading edge while it flies: an open slice whose underside has formed.
-        const tipArc = formed > 0 && r.slicePhase[slice] === PHASE.open ? r.arc![slice * LOFT_SAMPLES + E + LANDMARK.lip] : 0;
-        for (let j = 0; j < LOFT_SAMPLES; j += 1) {
-          const i = j - E;
-          r.fray![slice * LOFT_SAMPLES + j] = i > LANDMARK.crest && i < LANDMARK.throat ? frayShare(r.arc![slice * LOFT_SAMPLES + j], tipArc) : 0;
-        }
-      }
+      this.measureDrawn(slice, chorded);
       const tip = 3 * (slice * LOFT_SAMPLES + E + LANDMARK.lip);
       r.sliceTipX[slice] = r.positions[tip];
       r.sliceTipY[slice] = r.positions[tip + 1];
@@ -856,6 +895,42 @@ export class SweptLoft {
     }
     closeRun();
     r.vertexCount = r.sliceCount * LOFT_SAMPLES;
+  }
+
+  /**
+   * A slice's values for the drawing alone, from the slice as drawn in its own plane (`drawn`: along its ray, up): the water
+   * the sun crosses through it, for the curl's crest light where it is lifted (`chord`); its face coordinate, the arc length
+   * from the crest landmark (`arc`); how far the lace is laid along the ray to lie on its face (`unroll`: the arc less the
+   * horizontal reach, from the crest behind it and from the front end ahead of it, so nothing on the level stretches at
+   * either foot; by how far the profile is lifted, `LACE_LIFT` over its lift share of the slice's weight, so the weight,
+   * which moves the whole slice, does not drag the lace across it); and the lip's fray at its leading edge while it
+   * flies, an open slice whose underside has formed (`fray`). Measured again where a slice is eased down (`scaleSlice`).
+   */
+  private measureDrawn(slice: number, chorded: boolean): void {
+    const r = this.result;
+    const base = slice * LOFT_SAMPLES;
+    if (chorded) polylineChords(this.drawn, LOFT_SAMPLES, this.chords);
+    for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+      const lifted = chorded && r.lift[base + j] > 0;
+      r.chord![2 * (base + j)] = lifted ? this.chords[2 * j] : NO_CHORD;
+      r.chord![2 * (base + j) + 1] = lifted ? this.chords[2 * j + 1] : NO_CHORD;
+    }
+    if (!this.measureSheet) return;
+    drawnArcs(this.drawn, E + LANDMARK.crest, r.arc!, base);
+    const crestIndex = E + LANDMARK.crest;
+    const crestAlong = this.drawn[2 * crestIndex];
+    const frontExcess = r.arc![base + LOFT_SAMPLES - 1] - (this.drawn[2 * (LOFT_SAMPLES - 1)] - crestAlong);
+    const weight = r.sliceWeight[slice];
+    for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+      const excess = r.arc![base + j] - (this.drawn[2 * j] - crestAlong);
+      const share = weight > 0 ? Math.min(1, Math.max(0, (r.lift[base + j] / weight - LACE_LIFT[0]) / (LACE_LIFT[1] - LACE_LIFT[0]))) : 0;
+      r.unroll![base + j] = share * share * (3 - 2 * share) * (j <= crestIndex ? excess : excess - frontExcess);
+    }
+    const tipArc = r.sliceFormed[slice] > 0 && r.slicePhase[slice] === PHASE.open ? r.arc![base + E + LANDMARK.lip] : 0;
+    for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+      const i = j - E;
+      r.fray![base + j] = i > LANDMARK.crest && i < LANDMARK.throat ? frayShare(r.arc![base + j], tipArc) : 0;
+    }
   }
 
   /**
@@ -901,8 +976,14 @@ export class SweptLoft {
     out[2] = climb;
   }
 
-  /** A run of consecutive slices: its normals, and its strips joined. */
+  /** A run of consecutive slices: shaped, and its strips joined. */
   private finishRun(firstSlice: number, lastSlice: number): void {
+    this.shapeRun(firstSlice, lastSlice);
+    for (let s = firstSlice; s < lastSlice; s += 1) this.result.sliceJoined[s] = 1;
+  }
+
+  /** A run's slices, shaped from what they are: their normals, their tubes' mouths and the throat near them. */
+  private shapeRun(firstSlice: number, lastSlice: number): void {
     const r = this.result;
     this.normals(firstSlice, lastSlice);
     // Each slice's tube's mouth: the nearest slice of the run without an underside on either side, or the run's end.
@@ -917,7 +998,6 @@ export class SweptLoft {
       if (r.sliceFormed[s] > 0) r.sliceMouth[s] = Math.min(r.sliceMouth[s], open - r.sliceSigma[s]);
     }
     if (this.measureSheet) this.throatNearMouth(firstSlice, lastSlice);
-    for (let s = firstSlice; s < lastSlice; s += 1) r.sliceJoined[s] = 1;
   }
 
   /**
@@ -926,11 +1006,14 @@ export class SweptLoft {
    * sky the opening and the lip leave it, F_w' = F_w + (1 − F_w − F_l) · ½ (1 − d / √(d² + R²)) (`mouthSkyShare`), d the
    * slice's distance to the mouth, R half its tip-to-throat distance; and the throat's weight eases in from 0 at the last
    * slice with an underside to 1 a slice spacing in (`throatEase`), so the dark never stops at a wall where the tube ends.
-   * The run's slices, in place.
+   * The run's slices, from the views their slices wrote (`throatRaw`), so a run shaped twice is shaped once.
    */
   private throatNearMouth(firstSlice: number, lastSlice: number): void {
     const r = this.result;
     const { positions: p, throat } = r;
+    const from = 4 * firstSlice * LOFT_SAMPLES;
+    const to = 4 * (lastSlice + 1) * LOFT_SAMPLES;
+    throat.set(this.throatRaw.subarray(from, to), from);
     for (let s = firstSlice; s <= lastSlice; s += 1) {
       if (!(r.sliceFormed[s] > 0)) continue;
       const tip = 3 * (s * LOFT_SAMPLES + E + LANDMARK.lip);
@@ -1018,6 +1101,7 @@ export class SweptLoft {
   private dropOverlaps(): void {
     const r = this.result;
     const { corners, boxes } = this;
+    this.cuts.length = 0;
     // Each joined strip's corners and box, and each front's run of slices [start, end) with its box.
     const starts: number[] = [];
     const resting = (s: number) => !(r.sliceWeight[s] > 0) && !(r.sliceWeight[s + 1] > 0);
@@ -1068,9 +1152,11 @@ export class SweptLoft {
             // A resting strip is the water: a lifted one over an earlier resting one keeps its place, and the water goes.
             if (!resting(s) && resting(t)) {
               r.sliceJoined[t] = 0;
+              this.cuts.push(t);
               continue;
             }
             r.sliceJoined[s] = 0;
+            this.cuts.push(s);
             if (resting(s)) break;
             r.overlaps += 1;
             // A dropped strip that held an open tube would show as a hole in a barrel (the advisor: report it), as
@@ -1086,6 +1172,82 @@ export class SweptLoft {
         }
       }
     }
+  }
+
+  /**
+   * Where a strip was dropped for an overlap the runs either side of it end, and end as a front does (look-fix round 2; the
+   * advisor's ruling): the slices within `endBlend` of such an end ease down to the water by the front's own smoothstep,
+   * from nothing at the end slice itself, in the drawing and the contact alike. Each lifted vertex keeps its water and
+   * gives up part of its lift, y′ = h + f (y − h) (the loft's lerp is linear in the weight, so this is the loft at a
+   * weight f times as much); the slice's weights, tip and throat follow it, and the runs the cut split are shaped again.
+   * The strips stay dropped. An end already at rest (no weight) has nothing to ease.
+   */
+  private easeCuts(heightAt: (x: number, z: number) => number): void {
+    const r = this.result;
+    if (this.cuts.length === 0) return;
+    const { eases } = this;
+    eases.fill(1, 0, r.sliceCount);
+    const touched: number[] = [];
+    const smooth = (distance: number) => {
+      const t = Math.min(1, Math.max(0, distance / LOFT.endBlend));
+      return t * t * (3 - 2 * t);
+    };
+    /** From the end slice `from`, away from the cut: `step` +1 along the run's slices, −1 back. */
+    const walk = (from: number, step: 1 | -1) => {
+      if (!(r.sliceWeight[from] > 0)) return;
+      for (let j = from; j >= 0 && j < r.sliceCount && r.sliceFront[j] === r.sliceFront[from]; j += step) {
+        const d = Math.abs(r.sliceSigma[j] - r.sliceSigma[from]);
+        if (d >= LOFT.endBlend) break;
+        if (eases[j] === 1) touched.push(j);
+        eases[j] *= smooth(d);
+        // The next slice is still this run's only if the strip between is joined.
+        if (r.sliceJoined[step === 1 ? j : j - 1] !== 1) break;
+      }
+    };
+    for (const strip of this.cuts) {
+      walk(strip, -1);
+      if (strip + 1 < r.sliceCount && r.sliceFront[strip + 1] === r.sliceFront[strip]) walk(strip + 1, 1);
+    }
+    for (const slice of touched) this.scaleSlice(slice, eases[slice], heightAt);
+    const shaped = new Set<number>();
+    for (const slice of touched) {
+      // The run it lies in now, between the cuts.
+      let first = slice;
+      while (first > 0 && r.sliceFront[first - 1] === r.sliceFront[slice] && r.sliceJoined[first - 1] === 1) first -= 1;
+      if (shaped.has(first)) continue;
+      shaped.add(first);
+      let last = slice;
+      while (last + 1 < r.sliceCount && r.sliceJoined[last] === 1) last += 1;
+      this.shapeRun(first, last);
+    }
+  }
+
+  /** A slice with `f` of its lift left (`easeCuts`). */
+  private scaleSlice(slice: number, f: number, heightAt: (x: number, z: number) => number): void {
+    const r = this.result;
+    const base = slice * LOFT_SAMPLES;
+    for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+      const v = base + j;
+      const e = r.lift[v];
+      if (!(e > 0)) continue;
+      const h = heightAt(r.positions[3 * v], r.positions[3 * v + 2]);
+      r.positions[3 * v + 1] = h + f * (r.positions[3 * v + 1] - h);
+      r.lift[v] = f * e;
+      r.sheetWeight[v] *= f;
+      this.throatRaw[4 * v + 3] *= f;
+    }
+    r.sliceWeight[slice] *= f;
+    r.sliceTipY[slice] = r.positions[3 * (base + E + LANDMARK.lip) + 1];
+    // The drawing's own measures follow the slice as it now stands, so a slice eased down to the water reads as that water:
+    // its face is as long as the ground it covers, and the lace on it is the water's own.
+    const nx = r.sliceRayX[slice];
+    const nz = r.sliceRayZ[slice];
+    for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+      const v = base + j;
+      this.drawn[2 * j] = (r.positions[3 * v] - this.anchorX[slice]) * nx + (r.positions[3 * v + 2] - this.anchorZ[slice]) * nz;
+      this.drawn[2 * j + 1] = r.positions[3 * v + 1];
+    }
+    this.measureDrawn(slice, this.measureSheet && r.sliceWeight[slice] > 0);
   }
 
   /**

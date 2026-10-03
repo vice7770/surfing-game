@@ -3,7 +3,7 @@ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
-import { LOFT, LOFT_SAMPLES, SHEET, SweptLoft, THROAT, mouthSkyShare, sheetAcross, throatViews, tubeSkyView, type LoftResult } from './sweptLoft';
+import { CLOCK_STEP, LACE_LIFT, LOFT, LOFT_SAMPLES, NO_CHORD, SHEET, SweptLoft, THROAT, mouthSkyShare, sheetAcross, throatViews, tubeSkyView, type LoftResult } from './sweptLoft';
 import { lipCase, toyCase, tubeCase } from './toyCase';
 
 /** The y where the vertical line at (x, z) meets triangle (u, v, w) strictly inside it; undefined where it misses. */
@@ -81,6 +81,30 @@ function checkLayers(loft: LoftResult): { lines: number; multiple: number; unifo
 }
 
 const flat = () => 0.5;
+
+/**
+ * A slice's face values measured from its vertices as they stand, apart from the loft: the arc length of its polyline in its
+ * own plane from the crest landmark, and the lace's unroll (the arc less the reach along the ray, from the crest behind and
+ * the front end ahead, by a smoothstep of the profile's own lift over `LACE_LIFT`).
+ */
+function faceOf(loft: LoftResult, s: number): { arc: number[]; unroll: number[] } {
+  const base = s * LOFT_SAMPLES;
+  const crest = LOFT.extensionSamples + LANDMARK.crest;
+  const last = LOFT_SAMPLES - 1;
+  const point = (j: number) => 3 * (base + j);
+  const along = (j: number) => (loft.positions[point(j)] - loft.positions[point(crest)]) * loft.sliceRayX[s] + (loft.positions[point(j) + 2] - loft.positions[point(crest) + 2]) * loft.sliceRayZ[s];
+  const step = (j: number, k: number) => Math.hypot(along(j) - along(k), loft.positions[point(j) + 1] - loft.positions[point(k) + 1]);
+  const arc = new Array<number>(LOFT_SAMPLES).fill(0);
+  for (let j = crest + 1; j < LOFT_SAMPLES; j += 1) arc[j] = arc[j - 1] + step(j, j - 1);
+  for (let j = crest - 1; j >= 0; j -= 1) arc[j] = arc[j + 1] - step(j + 1, j);
+  const frontExcess = arc[last] - along(last);
+  const weight = loft.sliceWeight[s];
+  const unroll = arc.map((a, j) => {
+    const t = weight > 0 ? Math.min(1, Math.max(0, (loft.lift[base + j] / weight - LACE_LIFT[0]) / (LACE_LIFT[1] - LACE_LIFT[0]))) : 0;
+    return t * t * (3 - 2 * t) * (j <= crest ? a - along(j) : a - along(j) - frontExcess);
+  });
+  return { arc, unroll };
+}
 /** A straight front along +x at z = −100, 1 m apart, every point at τ `tau(k)`, thrown at z `throwZ` once τ ≥ 0. */
 function records(n: number, tau: (k: number) => number, throwZ = -100.2): Float32Array {
   const out = new Float32Array(n * FRONT_STRIDE);
@@ -234,6 +258,79 @@ describe('the swept loft', () => {
     const loft = loftOf((k) => (k % 2) * 0.6, 400);
     expect(loft.vertexCount).toBeLessThanOrEqual(LOFT.budget);
     expect(loft.clamps).toBeGreaterThan(0);
+  });
+
+  it('clamps joined neighbours’ clocks to a quarter of the open time in every loft, not only one past its budget, and keeps what it moved (look-fix round 2)', () => {
+    const limit = CLOCK_STEP * TOUCHDOWN;
+    const joinedSteps = (loft: LoftResult) => {
+      const steps: number[] = [];
+      for (let s = 0; s + 1 < loft.sliceCount; s += 1) if (loft.sliceJoined[s]) steps.push(Math.abs(loft.sliceTau[s + 1] - loft.sliceTau[s]));
+      return steps;
+    };
+    // A steady peel (0.1 s a metre: 0.05 s a slice) is left alone.
+    const steady = loftOf((k) => 0.05 + 0.02 * k);
+    expect(steady.clamps).toBe(0);
+    expect(Array.from(steady.sliceClamp!.subarray(0, steady.sliceCount)).every((moved) => moved === 0)).toBe(true);
+    // A clock that jumps 0.35 s between two points, both before touchdown (0.42 s): the slices over the jump are held to a
+    // quarter of T_open each, so the drawn clock catches the jump up over three slices, not in one.
+    const raw = (k: number) => (k < 10 ? 0 : 0.35);
+    const jumped = loftOf(raw);
+    expect(Math.max(...joinedSteps(jumped))).toBeLessThanOrEqual(limit + 1e-6);
+    expect(jumped.clamps).toBeGreaterThan(0);
+    const moved = Array.from(jumped.sliceClamp!.subarray(0, jumped.sliceCount));
+    expect(moved.filter((seconds) => seconds !== 0)).toHaveLength(jumped.clamps);
+    // Each slice's moved seconds are its drawn clock less the front's at its σ: the drawn touchdown comes later than its
+    // jet's crash by that much where it lags, earlier where it leads.
+    for (let s = 0; s < jumped.sliceCount; s += 1) {
+      const sigma = jumped.sliceSigma[s];
+      const front = Math.min(1, Math.max(0, (sigma - 9) / 1)) * 0.35;
+      expect(jumped.sliceTau[s] - front).toBeCloseTo(moved[s], 5);
+    }
+    expect(Math.min(...moved)).toBeLessThan(-0.05);
+    // The contact clamps the same clocks.
+    const contact = new SweptLoft(library(), 0.05, { contact: true }).build(records(21, raw), 21, 0.5, flat);
+    expect(Array.from(contact.sliceTau.subarray(0, contact.sliceCount))).toEqual(Array.from(jumped.sliceTau.subarray(0, jumped.sliceCount)));
+    expect(contact.clamps).toBe(jumped.clamps);
+    // A faded slice breaks the run: the clamp never reaches across the slices dropped between two runs, and never draws on
+    // a slice that has faded on the front's own clock (its neighbour's clock would hold it up for the slices it takes to
+    // catch up).
+    const gap = loftOf((k) => (k < 6 ? 0 : k < 14 ? 5 : 0.3));
+    for (let s = 0; s + 1 < gap.sliceCount; s += 1) if (gap.sliceJoined[s]) expect(Math.abs(gap.sliceTau[s + 1] - gap.sliceTau[s])).toBeLessThanOrEqual(limit + 1e-6);
+    const faded = loftOf((k) => (k < 10 ? 0.1 : 5));
+    expect(Math.max(...Array.from(faded.sliceSigma.subarray(0, faded.sliceCount)))).toBeLessThanOrEqual(9.001);
+    expect(faded.clamps).toBe(0);
+    for (let s = 0; s < faded.sliceCount; s += 1) expect(faded.sliceTau[s]).toBeLessThan(TOUCHDOWN);
+  });
+
+  it('eases a run down to the water over 2.5 m where the slices after it have faded, as a front’s end does, in the drawing and the contact alike (look-fix round 2)', () => {
+    // The clock climbs 0.19 s a metre through touchdown (point 5) and the 0.9 s collapse after it: the slices from
+    // σ = 10 have faded away, and the run ends at σ = 9.5, mid-front, with its fade nearly spent.
+    const times = tubes().profileTimes({ slope: 0.05, footHeight: 2.1, footDepth: 7 });
+    const tau = (k: number) => times.touchdownSeconds + 0.19 * (k - 5);
+    const build = (contact: boolean) => new SweptLoft(tubes(), 0.05, { contact }).build(records(21, tau, -100), 21, 0.5, flat);
+    const drawn = build(false);
+    const contact = build(true);
+    // The first slice dropped, and the live slices before it.
+    const dropped = 10;
+    const live = Array.from({ length: drawn.sliceCount }, (_, s) => s).filter((s) => drawn.sliceSigma[s] < dropped && drawn.sliceSigma[s] >= 0);
+    expect(drawn.sliceSigma[drawn.sliceCount - 1]).toBeCloseTo(9.5, 5);
+    const smoothstep = (x: number) => x * x * (3 - 2 * x);
+    for (const s of live) {
+      const d = Math.min(drawn.sliceSigma[s], dropped - drawn.sliceSigma[s]);
+      const ease = d <= 0 ? 0 : smoothstep(Math.min(1, d / LOFT.endBlend));
+      expect(drawn.sliceWeight[s]).toBeCloseTo(ease * drawn.sliceFade[s], 5);
+    }
+    // The last live slice, half a metre from the dropped ones, stands at a tenth of its weight, not at its fade alone.
+    const last = drawn.sliceCount - 1;
+    expect(drawn.sliceWeight[last]).toBeCloseTo(smoothstep(0.2) * drawn.sliceFade[last], 5);
+    expect(drawn.sliceWeight[last]).toBeLessThan(0.1 * Math.max(drawn.sliceFade[last], 0.5));
+    // Weight falls toward the run's end, from full a front's blend in.
+    for (let s = live[0] + 6; s + 1 < drawn.sliceCount; s += 1) expect(drawn.sliceWeight[s + 1] / drawn.sliceFade[s + 1]).toBeLessThanOrEqual(drawn.sliceWeight[s] / drawn.sliceFade[s] + 1e-9);
+    // The contact takes the drawing's weights, and its lerped vertices.
+    expect(Array.from(contact.sliceWeight.subarray(0, contact.sliceCount))).toEqual(Array.from(drawn.sliceWeight.subarray(0, drawn.sliceCount)));
+    // The run's lift reaches the water there: the last slice's vertices stand on it (0.5 m) to a tenth of its tube's height.
+    const tip = last * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.lip;
+    expect(drawn.positions[3 * tip + 1] - 0.5).toBeLessThan(0.1 * 0.8 * 7);
   });
 
   it('knows a slice’s times without building its profile', () => {
@@ -776,6 +873,99 @@ describe('the loft’s slices, for the contact', () => {
       // These held open tubes: a hole in the second barrel (the advisor wants to hear of any).
       expect(drawn.overlapsOpen).toBeGreaterThan(0);
       expect(drawn.overlapOpenWeight).toBe(1);
+    });
+
+    it('eases the later front’s tube down to the water over 2.5 m from the cut, as a front’s end does, the same in the drawing and the contact (look-fix round 2)', () => {
+      const smoothstep = (x: number) => x * x * (3 - 2 * x);
+      // The second front alone: the same slices with no first front over them, so no cut.
+      const alone = (contact: boolean) => {
+        const both = two(10);
+        return new SweptLoft(tubes(), 0.05, { contact }).build(both.slice(21 * FRONT_STRIDE), 21, 0.5, flat);
+      };
+      for (const contact of [false, true]) {
+        const loft = new SweptLoft(tubes(), 0.05, { contact }).build(two(10), 42, 0.5, flat);
+        const single = alone(contact);
+        // The first kept slice of the second front: its strips before it are dropped, the strip after it kept.
+        const first = Array.from({ length: loft.sliceCount }, (_, s) => s).find((s) => loft.sliceFront[s] === 2 && loft.sliceJoined[s] === 1 && loft.sliceJoined[s - 1] === 0)!;
+        expect(first).toBeGreaterThan(0);
+        const cutSigma = loft.sliceSigma[first];
+        let eased = 0;
+        for (let s = first; s < loft.sliceCount && loft.sliceFront[s] === 2; s += 1) {
+          const d = loft.sliceSigma[s] - cutSigma;
+          const at = single.sliceSigma.findIndex((sigma) => Math.abs(sigma - loft.sliceSigma[s]) < 1e-6);
+          const f = d >= LOFT.endBlend ? 1 : smoothstep(d / LOFT.endBlend);
+          // Its weight is the slice's own, alone, times what the cut leaves (the front's own far end excepted: nothing yet).
+          if (single.sliceWeight[at] < 1 - 1e-6) continue;
+          expect(loft.sliceWeight[s]).toBeCloseTo(single.sliceWeight[at] * f, 5);
+          if (f < 1) eased += 1;
+          // And every lifted vertex keeps its water and gives up the same share of its lift: y′ = h + f (y − h), h = 0.5 m.
+          for (const j of [3, 20, LOFT.extensionSamples + 32, LOFT.extensionSamples + 64, LOFT.extensionSamples + 90]) {
+            const v = s * LOFT_SAMPLES + j;
+            const w = at * LOFT_SAMPLES + j;
+            expect(loft.positions[3 * v + 1]).toBeCloseTo(0.5 + f * (single.positions[3 * w + 1] - 0.5), 4);
+            expect(loft.lift[v]).toBeCloseTo(f * single.lift[w], 5);
+            expect(loft.sheetWeight[v]).toBeCloseTo(f * single.sheetWeight[w], 5);
+          }
+        }
+        // The end slice stands on the water, and several slices rise from it over the 2.5 m.
+        expect(loft.sliceWeight[first]).toBe(0);
+        expect(eased).toBeGreaterThanOrEqual(4);
+        if (!contact) {
+          // The drawing's own measures follow each slice as it now stands (its face coordinate and the lace's unroll), so the
+          // end slice reads as the water it stands on: a face as long as the ground it covers, the lace the water's own, and
+          // no crest light through a curl that is not there.
+          for (let s = first; s < loft.sliceCount && loft.sliceFront[s] === 2 && loft.sliceSigma[s] - cutSigma < LOFT.endBlend + 1; s += 1) {
+            const face = faceOf(loft, s);
+            for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+              expect(loft.arc![s * LOFT_SAMPLES + j]).toBeCloseTo(face.arc[j], 3);
+              expect(loft.unroll![s * LOFT_SAMPLES + j]).toBeCloseTo(face.unroll[j], 3);
+            }
+          }
+          for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+            expect(Math.abs(loft.unroll![first * LOFT_SAMPLES + j])).toBeLessThan(1e-3);
+            expect(loft.chord![2 * (first * LOFT_SAMPLES + j)]).toBe(NO_CHORD);
+          }
+          // Part-way, the lace is partly laid: the eased slices unroll by their own, flatter faces.
+          const mid = Array.from({ length: loft.sliceCount }, (_, s) => s).find((s) => loft.sliceFront[s] === 2 && loft.sliceSigma[s] - cutSigma >= 1)!;
+          const crestIndex = LOFT.extensionSamples + LANDMARK.crest;
+          let reached = 0;
+          for (let j = crestIndex + 1; j < LOFT_SAMPLES; j += 1) reached = Math.min(reached, loft.unroll![mid * LOFT_SAMPLES + j]);
+          expect(reached).toBeLessThan(-0.05);
+        }
+        // The shaped run's normals are of the eased surface (across the profile × along the front, by central differences),
+        // unit and finite, the tip follows its slice, the strips stay dropped.
+        for (let s = first; s < loft.sliceCount && loft.sliceFront[s] === 2; s += 1) {
+          for (let j = 0; j < LOFT_SAMPLES; j += 17) {
+            const o = 3 * (s * LOFT_SAMPLES + j);
+            expect(Math.hypot(loft.normals[o], loft.normals[o + 1], loft.normals[o + 2])).toBeCloseTo(1, 4);
+          }
+          if (s > first && s + 1 < loft.sliceCount && loft.sliceFront[s + 1] === 2 && loft.sliceSigma[s] - cutSigma < LOFT.endBlend) {
+            for (const j of [LOFT.extensionSamples + 40, LOFT.extensionSamples + 70, LOFT.extensionSamples + 100]) {
+              const at = (slice: number, k: number) => Array.from(loft.positions.subarray(3 * (slice * LOFT_SAMPLES + k), 3 * (slice * LOFT_SAMPLES + k) + 3));
+              const [p0, p1, q0, q1] = [at(s, j - 1), at(s, j + 1), at(s - 1, j), at(s + 1, j)];
+              const [a, b] = [p1.map((v, i) => v - p0[i]), q1.map((v, i) => v - q0[i])];
+              const c = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+              const length = Math.hypot(c[0], c[1], c[2]);
+              const o = 3 * (s * LOFT_SAMPLES + j);
+              for (let i = 0; i < 3; i += 1) expect(loft.normals[o + i]).toBeCloseTo(c[i] / length, 4);
+            }
+          }
+          const tip = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.lip);
+          expect(loft.sliceTipY[s]).toBe(loft.positions[tip + 1]);
+        }
+        expect(loft.sliceJoined[first - 1]).toBe(0);
+        expect(loft.overlaps).toBe(21);
+      }
+      // The tube stays a tube while it eases: its layers keep their order along vertical lines (the lerp toward the same
+      // water by a weight that changes from slice to slice, as at a front's end).
+      const layers = checkLayers(new SweptLoft(tubes(), 0.05).build(two(10), 42, 0.5, flat));
+      expect(layers.lines).toBeGreaterThan(100);
+      expect(layers.multiple).toBe(0);
+      expect(layers.swap).toBeLessThan(0.001 * 7);
+      // The drawing and the contact took the same weights.
+      const drawn = new SweptLoft(tubes(), 0.05).build(two(10), 42, 0.5, flat);
+      const held = new SweptLoft(tubes(), 0.05, { contact: true }).build(two(10), 42, 0.5, flat);
+      expect(Array.from(held.sliceWeight.subarray(0, held.sliceCount))).toEqual(Array.from(drawn.sliceWeight.subarray(0, drawn.sliceCount)));
     });
 
     it('leaves fronts apart alone, and where they meet end to end their resting ends drop nothing', () => {
