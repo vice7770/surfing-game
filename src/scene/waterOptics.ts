@@ -25,7 +25,38 @@ export interface WaterOptics {
   readonly turbidity: number;
   /** Seabed albedo, linear RGB. */
   readonly bedAlbedo: Rgb;
+  /**
+   * The Rich look's sourced water colour (`water/richOptics.ts`; Classic and `applyOptics` ignore these four): the
+   * chlorophyll, mg/m³, whose phytoplankton absorb; the absorption of dissolved and detrital matter at 440 nm, m⁻¹, and
+   * its spectral slope, nm⁻¹; and a spectrally flat absorption, m⁻¹. Where `chlorophyll` is given they replace the grey
+   * particle absorption b_p (1 − ω)/ω.
+   */
+  readonly chlorophyll?: number;
+  readonly cdom440?: number;
+  readonly cdomSlope?: number;
+  readonly flatAbsorption?: number;
 }
+
+type WaterColour = Required<Pick<WaterOptics, 'chlorophyll' | 'cdom440' | 'cdomSlope' | 'flatAbsorption'>>;
+
+/**
+ * Each spot's sourced water colour, for the Rich look (docs/research/water-physics/underwater-colour.md, decided
+ * 2026-09-29 and checked against the journals 2026-09-30; provisional, as the owner decided). Chlorophyll: NOAA-20
+ * VIIRS (OC3, NOAA STAR MSL12 v1.30), 2023, the median of valid pixels 3–5 km off each break; the water mass just
+ * offshore, not the surf zone, and an upper bound near a coast. Dissolved and detrital matter, a_cdm(443) ≈ a_g(440) and
+ * its slope S: Bricaud, Ciotti & Gentili 2012 (Global Biogeochemical Cycles 26), Table 1's November 2007 fit, from the
+ * chlorophyll (`bricaudCdm`). The flat term: variant (b) of notes/round5-underwater/water-colour.md §6, the spectrally
+ * flat absorption, floored at zero, that brings the game's Kd(490) ≈ 1.1 (a + b_b) to VIIRS's Kd490 (0.026, 0.122,
+ * 0.067 and 0.170 m⁻¹ at Teahupo'o, Padang Padang, Snapper Rocks and Nazaré; the Reef and the Beach need none). The
+ * Point follows Snapper Rocks and the Canyon Nazaré (the owner's decisions of 2026-09-29).
+ */
+const WATER_COLOUR: Record<SpotName, WaterColour> = {
+  beach: { chlorophyll: 1.6, cdom440: 0.11, cdomSlope: 0.011, flatAbsorption: 0 },
+  point: { chlorophyll: 0.32, cdom440: 0.02, cdomSlope: 0.015, flatAbsorption: 0.004 },
+  reef: { chlorophyll: 0.056, cdom440: 0.0032, cdomSlope: 0.025, flatAbsorption: 0 },
+  canyon: { chlorophyll: 1.7, cdom440: 0.12, cdomSlope: 0.011, flatAbsorption: 0.015 },
+  padang: { chlorophyll: 0.77, cdom440: 0.052, cdomSlope: 0.011, flatAbsorption: 0.04 },
+};
 
 /**
  * Water per spot. Particle beam attenuation runs from about 0.01 m⁻¹ offshore to
@@ -33,13 +64,14 @@ export interface WaterOptics {
  * sandy, the reef's water clear over bright carbonate sand.
  */
 export const SPOT_OPTICS: Record<SpotName, WaterOptics> = {
-  beach: { turbidity: 2, bedAlbedo: [0.42, 0.36, 0.24] },
-  point: { turbidity: 1, bedAlbedo: [0.36, 0.33, 0.24] },
-  reef: { turbidity: 0.15, bedAlbedo: [0.5, 0.47, 0.36] },
-  canyon: { turbidity: 1, bedAlbedo: [0.42, 0.36, 0.24] },
+  beach: { turbidity: 2, bedAlbedo: [0.42, 0.36, 0.24], ...WATER_COLOUR.beach },
+  point: { turbidity: 1, bedAlbedo: [0.36, 0.33, 0.24], ...WATER_COLOUR.point },
+  reef: { turbidity: 0.15, bedAlbedo: [0.5, 0.47, 0.36], ...WATER_COLOUR.reef },
+  canyon: { turbidity: 1, bedAlbedo: [0.42, 0.36, 0.24], ...WATER_COLOUR.canyon },
   // Clear water as the Reef's (nothing measured on the Bukit's west coast), over live coral: about 8 % at
   // 550–650 nm and 2.5 % at 400–500 nm (Hochberg & Atkinson 2003). docs/research/padang-padang-sources.md.
-  padang: { turbidity: 0.15, bedAlbedo: [0.08, 0.08, 0.025] },
+  // The satellite sees it murkier than the Reef's (Kd490 0.12 against 0.026 m⁻¹): the Rich look's colour above.
+  padang: { turbidity: 0.15, bedAlbedo: [0.08, 0.08, 0.025], ...WATER_COLOUR.padang },
 };
 
 const perChannel = (value: (channel: number) => number): Rgb => [value(0), value(1), value(2)];
@@ -55,8 +87,10 @@ export function refractedCosine(cosine: number): number {
   return Math.sqrt(1 - (1 - c * c) / (WATER_IOR * WATER_IOR));
 }
 
-const particleAbsorption = (optics: WaterOptics) => (optics.turbidity * (1 - PARTICLE_ALBEDO)) / PARTICLE_ALBEDO;
-const backscattering = (optics: WaterOptics, i: number) => WATER_BACKSCATTER[i] + PARTICLE_BACKSCATTER_FRACTION * optics.turbidity;
+/** The grey absorption the suspended particles are assumed to carry, b_p (1 − ω)/ω, m⁻¹. */
+export const particleAbsorption = (optics: WaterOptics) => (optics.turbidity * (1 - PARTICLE_ALBEDO)) / PARTICLE_ALBEDO;
+/** Backscattering b_b per channel: pure seawater's and the particles', m⁻¹. */
+export const backscattering = (optics: WaterOptics, i: number) => WATER_BACKSCATTER[i] + PARTICLE_BACKSCATTER_FRACTION * optics.turbidity;
 
 /** Beam attenuation c = a + b_p, m⁻¹: what a direct ray loses (pure-water scattering is negligible here). */
 export function beamAttenuation(optics: WaterOptics): Rgb {
