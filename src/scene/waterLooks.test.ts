@@ -257,6 +257,30 @@ describe('Classic water parity', () => {
     }
   });
 
+  it('draws the far ocean’s and the curl’s Rich foam from the water’s foam field, not the Classic network', () => {
+    const tank = new WaterSurface({ ...source, cubic: true });
+    tank.setLook('rich');
+    const ocean = new FarFieldOcean();
+    ocean.setLook('rich');
+    const curl = new SweptBarrelMesh(tank.materialUniforms);
+    curl.setLook('rich');
+    for (const { fragment } of [compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
+      expect(fragment).toContain('vec2 waterField = waterFoamField( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterAge, max( waterFootprint.x, waterFootprint.y ) );');
+      expect(fragment).not.toContain('waterFoamCover( vWaterWorld.xz');
+    }
+    // Every Rich program carries the field, guarded so the tank, which lists it twice, defines it once.
+    for (const { fragment } of [compiled(tank.mesh.material), compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
+      const guarded = fragment.slice(fragment.indexOf('#ifndef WATER_FOAM_FIELD'));
+      expect(guarded.indexOf('#define WATER_FOAM_FIELD')).toBeGreaterThan(0);
+      expect(guarded.indexOf('vec2 waterFoamField( vec2 p, vec2 flow, float foam, float age, float footprint )')).toBeLessThan(guarded.indexOf('#endif'));
+    }
+    // The curl shares the water's uniforms, so it reads the same map.
+    const shader = { uniforms: {}, vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader };
+    curl.mesh.material.onBeforeCompile(shader as unknown as WebGLProgramParametersWithUniforms, undefined as never);
+    expect((shader.uniforms as Record<string, { value: unknown }>).waterChurnMap.value).toBe(churnTexture());
+    expect(tank.materialUniforms.waterChurnMap.value).toBe(churnTexture());
+  });
+
   it('lights Rich mist toward the sun and fades spray into the water, and switches back to the Classic spray', () => {
     const spray = new SprayPoints();
     const classic = { vertex: spray.mesh.material.vertexShader, fragment: spray.mesh.material.fragmentShader };

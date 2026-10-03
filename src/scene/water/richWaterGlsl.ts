@@ -6,6 +6,7 @@ import { waterCubicPars } from './cubicSurface';
 import { PATCH_SKIRT } from './richPatch';
 import { RICH_SPECULAR } from './specular';
 import { FOAM_ALBEDO, FOAM_DENSE } from '../foamPattern';
+import { waterFoamFieldPars } from './churnTexture';
 
 export { waterCubicPars };
 
@@ -15,10 +16,14 @@ export { waterCubicPars };
  */
 export const PLUME_DENSITY = 15;
 
-/** File-scope values the normal chunk computes and the body chunk reads (Rich fragment only). */
+/**
+ * File-scope values the normal chunk computes and the body chunk reads (Rich fragment only), and the foam field every Rich
+ * water draws its foam from (`waterFoamFieldPars`: the tank, the far ocean and the curl; it reads `waterChurnMap`).
+ */
 export const richFragmentPars = /* glsl */ `
 vec2 waterSurfaceSlope;
 float waterRippleVariance = 0.0;
+${waterFoamFieldPars}
 `;
 
 /** The air in the water, for the tank's Rich fragment (G9): the vertex shader writes these (`richAerationVertexPars`). */
@@ -147,12 +152,16 @@ export const RICH_REFLECTION = `#include <lights_fragment_maps>
 #endif`;
 
 /**
- * The far ocean's Rich foam (and the swept barrel's): Classic's lace network, composed as the water's foam is, a layer
- * that adds light (`foamLayer`), with the Rich gloss. It has no churn, streaks or aeration, so its age is its foam's.
+ * The far ocean's Rich foam (and the swept barrel's): the water's foam field (`waterFoamField`, the baked life cycle by
+ * the same age proxy, from the foam value alone: it has no aeration), composed as the water's foam is, a layer that adds
+ * light (`foamLayer`), with the Rich gloss. It has no churn or streaks. Classic keeps its lace network.
  */
 export const RICH_FAR_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
-  float waterCover = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
-  float waterFoamR = waterCover * ${foamAlbedoAt(`( 1.0 - ${foamDense('vWaterFoam')} )`)};
+  float waterAge = 1.0 - ${foamDense('vWaterFoam')};
+  vec2 waterField = waterFoamField( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterAge, max( waterFootprint.x, waterFootprint.y ) );
+  float waterCover = mix( vWaterFoam, waterField.x, waterFoamPattern );
+  float waterThick = mix( 1.0, waterField.y, waterFoamPattern );
+  float waterFoamR = waterCover * mix( ${FOAM_ALBEDO.streak.toFixed(3)}, ${foamAlbedoAt('waterAge')}, waterThick );
   ${foamLayer('waterBody', unfocusedBody('waterBody'), 'waterCover', 'waterFoamR')}
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );`;

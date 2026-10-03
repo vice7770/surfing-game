@@ -396,34 +396,17 @@ export function foamFieldThickness(x: number, z: number, flowX: number, flowZ: n
 }
 
 /**
- * GLSL: the churn's (density, height) at p, carried by the current in the lace's two flow-map phases, and its relief as
- * a slope for the normal; and the foam's life cycle as a field of coverage (`waterFoamField`), in `waterChurnMap`'s blue
- * and alpha. Needs `foamPatternPars` and `waterTime`.
- *
- * The field is `foamFieldValue` in GLSL: for each flow-map phase, two octaves sampled hex-tiled and summed, at both stages;
- * the four components, weighed by phase and age, united before any threshold, each thresholded for its weight. Define it
- * here so that anything drawing the water's foam (the tank's water, and the curl once it takes the water's pars) can
- * call it.
+ * GLSL: the foam's life cycle as a field of coverage (`waterFoamField`), in `waterChurnMap`'s blue and alpha, and the
+ * sampler. The field is `foamFieldValue` in GLSL: for each flow-map phase, two octaves sampled hex-tiled and summed, at
+ * both stages; the four components, weighed by phase and age, united before any threshold, each thresholded for its
+ * weight. Needs `foamPatternPars` and `waterTime` first. Every Rich water program carries it (`richFragmentPars`), the
+ * tank's, the far ocean's and the curl's, so each draws its foam from it; it defines itself once whatever includes it
+ * again (`waterChurnPars` does, for the tank).
  */
-export const waterChurnPars = /* glsl */ `
+export const waterFoamFieldPars = /* glsl */ `
+#ifndef WATER_FOAM_FIELD
+#define WATER_FOAM_FIELD
 uniform sampler2D waterChurnMap;
-const float CHURN_TILE = ${CHURN_TILE.toFixed(3)};
-const float CHURN_RELIEF = ${CHURN_RELIEF.toFixed(3)};
-float waterFreshness( float voidFraction ) { return smoothstep( ${FRESH_AIR[0].toFixed(3)}, ${FRESH_AIR[1].toFixed(3)}, voidFraction ); }
-vec2 waterChurnTap( vec2 p ) { return texture( waterChurnMap, p / CHURN_TILE ).rg; }
-vec2 waterChurnAt( vec2 p, vec2 flow ) {
-  float a = fract( waterTime / FOAM_FLOW_PERIOD );
-  float b = fract( a + 0.5 );
-  float w = 1.0 - abs( 2.0 * a - 1.0 );
-  return w * waterChurnTap( p - flow * a * FOAM_FLOW_PERIOD )
-    + ( 1.0 - w ) * waterChurnTap( p - flow * b * FOAM_FLOW_PERIOD + vec2( 2.9, 1.7 ) );
-}
-vec2 waterChurnSlope( vec2 p, vec2 flow ) {
-  const float e = CHURN_TILE / ${CHURN_SIZE.toFixed(1)};
-  float h = waterChurnAt( p, flow ).y;
-  return CHURN_RELIEF * vec2( waterChurnAt( p + vec2( e, 0.0 ), flow ).y - h, waterChurnAt( p + vec2( 0.0, e ), flow ).y - h ) / e;
-}
-
 const float FOAM_TILE_LARGE = ${FOAM_OCTAVES.large.toFixed(3)};
 const float FOAM_TILE_SMALL = ${FOAM_OCTAVES.small.toFixed(3)};
 const float FOAM_RANGE = ${FOAM_RANGE.toFixed(3)};
@@ -509,6 +492,33 @@ vec2 waterFoamField( vec2 p, vec2 flow, float foam, float age, float footprint )
   float fade = smoothstep( ${FOAM_FADE[0].toFixed(3)}, ${FOAM_FADE[1].toFixed(3)}, footprint );
   return mix( vec2( smoothstep( -width, width, field ), smoothstep( 0.0, ${FOAM_THICK.toFixed(3)}, field ) ), vec2( foam, 1.0 ), fade );
 }
+#endif
+`;
+
+/**
+ * GLSL: the churn's (density, height) at p, carried by the current in the lace's two flow-map phases, and its relief as
+ * a slope for the normal; the foam field (`waterFoamFieldPars`); and the streaks' sample of its late stage. Needs
+ * `foamPatternPars` and `waterTime`.
+ */
+export const waterChurnPars = /* glsl */ `
+${waterFoamFieldPars}
+const float CHURN_TILE = ${CHURN_TILE.toFixed(3)};
+const float CHURN_RELIEF = ${CHURN_RELIEF.toFixed(3)};
+float waterFreshness( float voidFraction ) { return smoothstep( ${FRESH_AIR[0].toFixed(3)}, ${FRESH_AIR[1].toFixed(3)}, voidFraction ); }
+vec2 waterChurnTap( vec2 p ) { return texture( waterChurnMap, p / CHURN_TILE ).rg; }
+vec2 waterChurnAt( vec2 p, vec2 flow ) {
+  float a = fract( waterTime / FOAM_FLOW_PERIOD );
+  float b = fract( a + 0.5 );
+  float w = 1.0 - abs( 2.0 * a - 1.0 );
+  return w * waterChurnTap( p - flow * a * FOAM_FLOW_PERIOD )
+    + ( 1.0 - w ) * waterChurnTap( p - flow * b * FOAM_FLOW_PERIOD + vec2( 2.9, 1.7 ) );
+}
+vec2 waterChurnSlope( vec2 p, vec2 flow ) {
+  const float e = CHURN_TILE / ${CHURN_SIZE.toFixed(1)};
+  float h = waterChurnAt( p, flow ).y;
+  return CHURN_RELIEF * vec2( waterChurnAt( p + vec2( e, 0.0 ), flow ).y - h, waterChurnAt( p + vec2( 0.0, e ), flow ).y - h ) / e;
+}
+
 // The streaks' sample of the late stage at frame (tiles), in sigma, turned and shifted by an anchor's hash h as a hex corner's
 // sample is (declared in waterStreakPars, which the water's program lists first).
 float waterStreakField( vec2 frame, vec2 dx, vec2 dy, uvec2 h ) {
