@@ -72,6 +72,8 @@ Read in this order:
 
 ## Current state
 
+**Start with [the evening handoff of 2026-10-03](../../superpowers/handoffs/2026-10-03-evening-next-run.md)**: the run that took over on the new machine, stopped cleanly, with every PR's state, the rulings, the agents and the next run's finish line (all PRs closed, every build and test green). The morning handoff below is the background.
+
 Every open branch and PR, what is left on each, the owner's merge order and decisions, and the prompts for the sessions are in [the handoff of 2026-10-03](../../superpowers/handoffs/2026-10-03-all-pending-work.md), written when the work moved to another computer. Its `2026-10-03-data/` folder holds the run results that existed only on the old machine.
 
 - **Merged so far** (the advisor's threads): #86 (lip jets from the wave's upper half), #88 (the half-height taper, not kept), #89 (Padang Padang Part A), #90 (the swept barrel's profile library), #93 (the feet at their edge), #99 (jets landing past open edges dropped), #101 (the second advisor branch).
