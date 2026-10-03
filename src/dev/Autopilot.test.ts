@@ -272,47 +272,56 @@ describe('autopilot flow', () => {
   });
   /** Riding the flow, taken through the drop and the bottom turn into the projection. */
   const projecting = (options: AutopilotOptions = {}) => {
-    const autopilot = riding(30 * DEG, { style: 'flow', ...options });
-    autopilot.next(standing(30 * DEG, { faceFraction: 0.3 }), STEP);
-    autopilot.next(standing(30 * DEG, { faceFraction: 0.3 }), STEP);
+    const autopilot = riding(10 * DEG, { style: 'flow', ...options });
+    autopilot.next(standing(10 * DEG, { faceFraction: 0.3 }), STEP);
+    autopilot.next(standing(10 * DEG, { faceFraction: 0.3 }), STEP);
     autopilot.next(standing(115 * DEG, { faceFraction: 0.4 }), STEP);
     return autopilot;
   };
 
   it('drops crouched, bottom turns compressed toward the open face with a little front foot, and projects tall', () => {
-    const autopilot = riding(30 * DEG, { style: 'flow' });
-    expect(autopilot.next(standing(30 * DEG, { faceFraction: 0.7 }), STEP)).toMatchObject({ steer: 0, crouch: 1, compress: 0 });
+    const autopilot = riding(10 * DEG, { style: 'flow' });
+    expect(autopilot.next(standing(10 * DEG, { faceFraction: 0.7 }), STEP)).toMatchObject({ steer: 0, crouch: 1, compress: 0 });
     expect(autopilot.phase).toBe('FLOW · DROP');
-    const bottom = autopilot.next(standing(30 * DEG, { faceFraction: 0.3 }), STEP);
+    const bottom = autopilot.next(standing(10 * DEG, { faceFraction: 0.3 }), STEP);
     expect(bottom).toMatchObject({ steer: 1, crouch: 0, compress: 1 });
     expect(bottom.trim).toBeGreaterThan(0);
     expect(bottom.trim).toBeLessThan(0.5);
-    expect(autopilot.next(standing(40 * DEG, { faceFraction: 0.35 }), STEP).steer).toBe(1);
-    // Heading past 45°, Compress released (the lean carries it on along the face): the projection, tall and centred.
-    expect(autopilot.next(standing(50 * DEG, { faceFraction: 0.4 }), STEP)).toMatchObject({ steer: 0, trim: 0, crouch: 0, compress: 0 });
+    expect(autopilot.next(standing(20 * DEG, { faceFraction: 0.35 }), STEP).steer).toBe(1);
+    // Heading past 25°, Compress released (the body's lean carries the turn on): the projection, tall and centred.
+    expect(autopilot.next(standing(30 * DEG, { faceFraction: 0.4 }), STEP)).toMatchObject({ steer: 0, trim: 0, crouch: 0, compress: 0 });
     expect(autopilot.phase).toBe('FLOW · PROJECTION');
     // Mirrored for an open face toward −x.
-    const mirrored = riding(-30 * DEG, { style: 'flow' });
-    mirrored.next(standing(-30 * DEG, { faceFraction: 0.3 }, -1), STEP);
-    expect(mirrored.next(standing(-30 * DEG, { faceFraction: 0.3 }, -1), STEP)).toMatchObject({ steer: -1, compress: 1 });
+    const mirrored = riding(-10 * DEG, { style: 'flow' });
+    mirrored.next(standing(-10 * DEG, { faceFraction: 0.3 }, -1), STEP);
+    expect(mirrored.next(standing(-10 * DEG, { faceFraction: 0.3 }, -1), STEP)).toMatchObject({ steer: -1, compress: 1 });
   });
 
-  it('cuts back out on the shoulder: compressed, weight back, leaning and looking toward the curl until round 160°, then rebounds', () => {
+  it('cuts back out on the shoulder: compressed, weight back, leaning and looking toward the curl until back down the face past the fall line, then rebounds', () => {
     const autopilot = projecting();
     // High on the face near the curl: along the line.
     autopilot.next(standing(90 * DEG, { faceFraction: 0.7, curlDistance: 5, curlSide: -1 }), STEP);
     expect(autopilot.phase).toMatch(/^FLOW · PUMP/);
-    // CUTBACK_REACH (10 m) ahead of it: the cutback.
+    // CUTBACK_REACH (10 m) ahead of it: the cutback, with the coaching's 65/35 onto the back foot.
     const cutback = autopilot.next(standing(90 * DEG, { faceFraction: 0.7, curlDistance: 11, curlSide: -1 }), STEP);
-    expect(cutback).toMatchObject({ steer: -1, trim: -1, crouch: 0, compress: 1, rotate: -1 });
-    for (const degrees of [60, 20, -20, -60]) {
+    expect(cutback).toMatchObject({ steer: -1, trim: -0.5, crouch: 0, compress: 1, rotate: -1 });
+    for (const degrees of [60, 20, -20, -28]) {
       expect(autopilot.next(standing(degrees * DEG, { faceFraction: 0.5, curlDistance: 8, curlSide: -1 }), STEP).steer).toBe(-1);
     }
-    // Round 165°: the rebound off the foam, the bottom turn again, the rotation left to the body.
-    const rebound = autopilot.next(standing(-75 * DEG, { faceFraction: 0.4, curlDistance: 3, curlSide: -1 }), STEP);
+    // 30° past the fall line toward the curl, back down the face: the rebound, the bottom turn again, the rotation
+    // left to the body.
+    const rebound = autopilot.next(standing(-32 * DEG, { faceFraction: 0.4, curlDistance: 3, curlSide: -1 }), STEP);
     expect(rebound).toMatchObject({ steer: 1, compress: 1 });
     expect(rebound.rotate).toBeUndefined();
     expect(autopilot.phase).toBe('FLOW · REBOUND');
+    // Begun up the face, the cutback still ends round 160°, before the heading is that far past the fall line.
+    const steep = projecting();
+    steep.next(standing(140 * DEG, { faceFraction: 0.7, curlDistance: 11, curlSide: -1 }), STEP);
+    expect(steep.phase).toBe('FLOW · CUTBACK');
+    for (const degrees of [100, 60, 20, -15]) steep.next(standing(degrees * DEG, { faceFraction: 0.5, curlDistance: 8, curlSide: -1 }), STEP);
+    expect(steep.phase).toBe('FLOW · CUTBACK');
+    steep.next(standing(-22 * DEG, { faceFraction: 0.5, curlDistance: 8, curlSide: -1 }), STEP);
+    expect(steep.phase).toBe('FLOW · REBOUND');
     // A longer cutback reach: the same shoulder is not far enough out.
     const later = projecting({ cutbackReach: 15 });
     later.next(standing(90 * DEG, { faceFraction: 0.7, curlDistance: 11, curlSide: -1 }), STEP);
@@ -339,7 +348,7 @@ describe('autopilot flow', () => {
 
   it('starts in the phase asked for (the probe\'s isolated cutback)', () => {
     const autopilot = riding(90 * DEG, { style: 'flow', flowFrom: 'cutback' });
-    expect(autopilot.next(standing(90 * DEG, { faceFraction: 0.6 }), STEP)).toMatchObject({ steer: -1, trim: -1, compress: 1, rotate: -1 });
+    expect(autopilot.next(standing(90 * DEG, { faceFraction: 0.6 }), STEP)).toMatchObject({ steer: -1, trim: -0.5, compress: 1, rotate: -1 });
     expect(autopilot.flowRecords[0].phase).toBe('cutback');
   });
 
@@ -356,12 +365,12 @@ describe('autopilot flow', () => {
   });
 
   it('records each phase: how long, how far it turned toward the open face, the speed, face and curl in and out, and whether it finished', () => {
-    const autopilot = riding(30 * DEG, { style: 'flow' });
-    autopilot.next(standing(30 * DEG, { faceFraction: 0.7, curlDistance: 4, curlSide: -1 }), STEP);
-    autopilot.next(standing(30 * DEG, { faceFraction: 0.3, curlDistance: 5, curlSide: -1 }, 1, 7), STEP);
-    autopilot.next(standing(40 * DEG, { faceFraction: 0.35, curlDistance: 6, curlSide: -1 }, 1, 6.5), STEP);
-    autopilot.next(standing(115 * DEG, { faceFraction: 0.4, curlDistance: 7, curlSide: -1 }, 1, 6), STEP);
-    autopilot.next({ ...standing(120 * DEG, { faceFraction: 0.5 }), ride: ride({ phase: 'fallen', speed: 3 }) }, STEP);
+    const autopilot = riding(10 * DEG, { style: 'flow' });
+    autopilot.next(standing(10 * DEG, { faceFraction: 0.7, curlDistance: 4, curlSide: -1 }), STEP);
+    autopilot.next(standing(10 * DEG, { faceFraction: 0.3, curlDistance: 5, curlSide: -1 }, 1, 7), STEP);
+    autopilot.next(standing(20 * DEG, { faceFraction: 0.35, curlDistance: 6, curlSide: -1 }, 1, 6.5), STEP);
+    autopilot.next(standing(95 * DEG, { faceFraction: 0.4, curlDistance: 7, curlSide: -1 }, 1, 6), STEP);
+    autopilot.next({ ...standing(100 * DEG, { faceFraction: 0.5 }), ride: ride({ phase: 'fallen', speed: 3 }) }, STEP);
     expect(autopilot.flowRecords.map((record) => record.phase)).toEqual(['drop', 'bottom', 'project']);
     const [drop, bottom, project] = autopilot.flowRecords;
     expect(drop.completed).toBe(true);

@@ -151,11 +151,13 @@ const SNAP_TRIM = -1;
  * - drop: crouched down the face from the pop-up, until below FLOW_BOTTOM_FACE of it, out on the flat
  *   (BOTTOM_REACH) or after FLOW_DROP_LIMIT, s;
  * - bottom turn: Compress with a little weight on the front foot (FLOW_DRIVE), leaning toward the open face, until
- *   the heading is FLOW_BOTTOM_END from the fall line. The body's lean carries the heading on 33–37° after the
- *   release, so the board comes out along the face, near the line that keeps pace with the pool's 4 m/s wave, with
- *   the body back to an 11–17° bank (the pool flow probe). Released at 85° the heading went on to 95–122°, up the
- *   face, with the rail at its 48° bite and the body still banked 33° into the turn; held to 110° the turn ended at
- *   2.6–3.7 m/s, off the plane;
+ *   the heading is FLOW_BOTTOM_END from the fall line. The body's lean carries the heading on after the release, to
+ *   about 55° (the pool flow probe). With the feet holding the board neutral through the extension, released at 45°
+ *   the body was still banked 29–30° on a 38–40° rail, the board carved on at 2.6–3.1 rad/s under 2.3–2.5 body
+ *   weights and kept 0.59–0.73 of its speed through the water, coming out along the face at 4.5–5.5 m/s; released at
+ *   25°, banked 18–19° on a 23° rail, it kept 0.85–0.86 and came out at 6.3 m/s. Released at 85° the heading went on
+ *   to 95–122°, up the face, with the rail at its 48° bite and the body still banked 33° into the turn; held to 110°
+ *   the turn ended at 2.6–3.7 m/s, off the plane;
  * - projection: Compress released, tall and centred, holding that heading up the face, until the body has come back
  *   within FLOW_UPRIGHT of upright (the cutback changes rails from there), the board is above FLOW_TOP_FACE of the
  *   face (its top), or after FLOW_PROJECT_LIMIT, s. Begun while the body was still banked 11–41° into the bottom
@@ -164,9 +166,14 @@ const SNAP_TRIM = -1;
  * - trim: along the face on the riding line, pumping (crouched while the face fraction falls, extended while it
  *   rises: the extension meets the load at the foot of each dip), until CUTBACK_REACH ahead of the curl; low on the
  *   face heading down, another bottom turn;
- * - cutback: heading along the face or up it (past FLOW_CUTBACK_FROM), Compress with the weight on the back foot,
- *   leaning and looking back toward the curl (the rotation stick), until the heading has come round
- *   FLOW_CUTBACK_TURN;
+ * - cutback: heading along the face or up it (past FLOW_CUTBACK_FROM), Compress with the weight on the back foot
+ *   (FLOW_CUTBACK_TRIM), leaning and looking back toward the curl (the rotation stick), until the heading is
+ *   FLOW_CUTBACK_END past the fall line toward the curl, back down the face, or has come round FLOW_CUTBACK_TURN.
+ *   The weight is the coaching's 65/35 onto the back foot (at rest; Rapture's cutback, 65/35 to 70/30): full back,
+ *   82/18 at rest, sank the tail of a board doing 4.5–6 m/s through the water to a 19–26° trim, where the
+ *   tail-loaded hull planes (Savitsky), and its drag took every cutback on the pool off the plane. Carried on round
+ *   160°, the turns ended heading back toward the curl at 3.6–5 m/s, still banked 25–48°, and the rebound's rail
+ *   change from there fell within a second;
  * - rebound: the bottom turn again, off the foam, then the projection.
  * No turn is held longer than FLOW_TURN_LIMIT, s.
  *
@@ -179,12 +186,14 @@ const SNAP_TRIM = -1;
 const FLOW_BOTTOM_FACE = 0.4;
 const FLOW_DROP_LIMIT = 1.5;
 const FLOW_DRIVE = 0.3;
-const FLOW_BOTTOM_END = 45 * DEG;
+const FLOW_BOTTOM_END = 25 * DEG;
 const FLOW_TOP_FACE = 0.65;
 const FLOW_PROJECT_LIMIT = 1;
 const FLOW_UPRIGHT = 12 * DEG;
 const FLOW_CUTBACK_FROM = 45 * DEG;
 const FLOW_CUTBACK_TURN = 160 * DEG;
+const FLOW_CUTBACK_END = 30 * DEG;
+const FLOW_CUTBACK_TRIM = -0.5;
 const FLOW_TURN_LIMIT = 3;
 const CUTBACK_REACH = 10;
 /** Pumping, the face fraction's rate is smoothed over this, s: a falling or rising face, not the board's chatter. */
@@ -488,7 +497,7 @@ export class Autopilot {
         else if (fraction < FLOW_BOTTOM_FACE && angle < BOTTOM_START) next = 'bottom';
         break;
       case 'cutback':
-        if (-turned > FLOW_CUTBACK_TURN) next = 'rebound';
+        if (-turned > FLOW_CUTBACK_TURN || angle < -FLOW_CUTBACK_END) next = 'rebound';
         else if (time > FLOW_TURN_LIMIT) [next, reached] = ['rebound', false];
         break;
     }
@@ -521,7 +530,7 @@ export class Autopilot {
       }
       case 'cutback':
         this.phase = 'FLOW · CUTBACK';
-        return { steer: -face, trim: -1, crouch: 0, compress: 1, rotate: -face };
+        return { steer: -face, trim: FLOW_CUTBACK_TRIM, crouch: 0, compress: 1, rotate: -face };
     }
   }
 
