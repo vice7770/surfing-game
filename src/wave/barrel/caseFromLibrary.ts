@@ -109,6 +109,78 @@ export function refitTip(c: BarrelCase): BarrelCase {
   return { ...c, tipVelocity: tipVelocities(c.frames, c.tauStep, { ...span, usable: (f) => !copy(f) }) };
 }
 
+/**
+ * The underside's grid noise, smoothed (look-fix round 1; the ruled Part B follow-up, "the library's underside
+ * wiggles") [provisional]. Where a level-12 run's underside stands near vertical, its contour, traced on the grid, runs
+ * straight for about a cell (0.0117 h0: the round-6 sample's level-11 cell, 0.0234 h0, halved) and then turns a corner
+ * of 15–30°, which folds the loft's normals into a glint under a low sun and dark creases. Per frame, an interior point
+ * of the underside (between the lip's tip and the throat) whose tangent, the chord through its neighbours, stands within
+ * `vertical`° of vertical and whose two segments turn more than `turn`° at it takes a pass of a 1-2-1 filter (it moves
+ * halfway to its neighbours' midpoint), all such points at once, pass after pass until none is left (`passes` at most).
+ * A point moves only if it stays on the water's side of the lip's outer face; the landmarks stay where they are, so
+ * the tip's velocity is untouched. On the committed cases it takes at most 6 passes and moves no point a cell, so it
+ * removes grid noise, not shape; a smoothed case smooths to itself.
+ */
+export const UNDERSIDE_SMOOTHING = { vertical: 20, turn: 15, passes: 16 } as const;
+
+/**
+ * How far frame-offset `o`'s underside turns at point k, degrees, where it stands within `UNDERSIDE_SMOOTHING.vertical` of
+ * vertical (the chord through its neighbours); undefined elsewhere, and at a point folded onto its neighbour (the
+ * underside before the cavity forms).
+ */
+export function undersideTurn(frames: Float32Array, o: number, k: number): number | undefined {
+  const ax = frames[o + 2 * k - 2];
+  const ay = frames[o + 2 * k - 1];
+  const bx = frames[o + 2 * k];
+  const by = frames[o + 2 * k + 1];
+  const cx = frames[o + 2 * k + 2];
+  const cy = frames[o + 2 * k + 3];
+  const ux = bx - ax;
+  const uy = by - ay;
+  const vx = cx - bx;
+  const vy = cy - by;
+  if (Math.hypot(ux, uy) < 1e-6 || Math.hypot(vx, vy) < 1e-6) return undefined;
+  if (Math.abs(cx - ax) > Math.tan((UNDERSIDE_SMOOTHING.vertical * Math.PI) / 180) * Math.abs(cy - ay)) return undefined;
+  return (Math.abs(Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy)) * 180) / Math.PI;
+}
+
+/** Whether the move from (px, py) to (qx, qy) crosses frame-offset `o`'s lip's outer face, from the crest to the tip. */
+function crossesOuterFace(frames: Float32Array, o: number, px: number, py: number, qx: number, qy: number): boolean {
+  const side = (ax: number, ay: number, bx: number, by: number, x: number, y: number) => (bx - ax) * (y - ay) - (by - ay) * (x - ax);
+  for (let s = LANDMARK.crest; s < LANDMARK.lip; s += 1) {
+    const ax = frames[o + 2 * s];
+    const ay = frames[o + 2 * s + 1];
+    const bx = frames[o + 2 * s + 2];
+    const by = frames[o + 2 * s + 3];
+    if (side(px, py, qx, qy, ax, ay) * side(px, py, qx, qy, bx, by) < 0 && side(ax, ay, bx, by, px, py) * side(ax, ay, bx, by, qx, qy) < 0) return true;
+  }
+  return false;
+}
+
+/** A case with its undersides' grid noise smoothed (`UNDERSIDE_SMOOTHING`), every frame; its other points as they were. */
+export function smoothUnderside(c: BarrelCase): BarrelCase {
+  const floats = 2 * PROFILE_POINTS;
+  const frames = c.frames.slice();
+  const moves: number[] = [];
+  for (let o = 0; o < frames.length; o += floats) {
+    for (let pass = 0; pass < UNDERSIDE_SMOOTHING.passes; pass += 1) {
+      moves.length = 0;
+      for (let k = LANDMARK.lip + 1; k < LANDMARK.throat; k += 1) {
+        if (!((undersideTurn(frames, o, k) ?? 0) > UNDERSIDE_SMOOTHING.turn)) continue;
+        const x = 0.25 * frames[o + 2 * k - 2] + 0.5 * frames[o + 2 * k] + 0.25 * frames[o + 2 * k + 2];
+        const y = 0.25 * frames[o + 2 * k - 1] + 0.5 * frames[o + 2 * k + 1] + 0.25 * frames[o + 2 * k + 3];
+        if (!crossesOuterFace(frames, o, frames[o + 2 * k], frames[o + 2 * k + 1], x, y)) moves.push(k, x, y);
+      }
+      if (moves.length === 0) break;
+      for (let m = 0; m < moves.length; m += 3) {
+        frames[o + 2 * moves[m]] = moves[m + 1];
+        frames[o + 2 * moves[m] + 1] = moves[m + 2];
+      }
+    }
+  }
+  return { ...c, frames };
+}
+
 const RUN_FIELDS = ['level', 'dx_h0', 'slope', 'A0', 'h0_m', 'time_scale_s', 't_vertical', 't_impact'] as const;
 
 /**

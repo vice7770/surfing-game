@@ -10,8 +10,9 @@
  *   npm run barrels -- --run pad19_a20_L12 --run pad19_a30_L12 --run pad19_a45_L12 --flat 0.1785714 --spot padang
  *
  * --runs names the directory holding the runs (tools/basilisk/runs by default). --run NAME converts a run; --keep ID
- * keeps a committed case as it is (its .bin untouched, its rows carried over from barrel-cases.md), for a case whose
- * run is not on this machine. Per case, NAME=VALUE (or one VALUE for every case):
+ * keeps a committed case as it is (its rows carried over from barrel-cases.md), for a case whose run is not on this
+ * machine. Every case, converted or kept, has its underside's grid noise smoothed (`smoothUnderside`; a smoothed case
+ * smooths to itself) and its tip fitted by the regime rule. Per case, NAME=VALUE (or one VALUE for every case):
  *   --spot: the spot whose transect it was run on (each spot loads only its own cases; PR 7);
  *   --flat: the flat's depth beyond the slope, in h0 (Padang Padang: 1.25 m over 7 m);
  *   --a0: its H0/h0, the key cases blend by, where its own A0 is something else: a periodic train's is its wave height,
@@ -20,8 +21,8 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { SpotName } from '../src/wave/Bathymetry';
-import { caseFromLibrary, libraryJson, refitTip, sustainedOverturn } from '../src/wave/barrel/caseFromLibrary';
-import type { BarrelCase } from '../src/wave/barrel/ProfileLibrary';
+import { caseFromLibrary, libraryJson, refitTip, smoothUnderside, sustainedOverturn, UNDERSIDE_SMOOTHING, undersideTurn } from '../src/wave/barrel/caseFromLibrary';
+import { LANDMARK, PROFILE_POINTS, type BarrelCase } from '../src/wave/barrel/ProfileLibrary';
 import { decodeCase, encodeCase } from '../src/wave/barrel/profileFormat';
 import type { BarrelCaseEntry } from '../src/wave/barrel/barrelLibrary';
 
@@ -143,6 +144,38 @@ function tipRow(c: BarrelCase): string {
   return `| ${c.id} | ${fixed(horizontal[Math.floor(horizontal.length / 2)], 2)} | ${fixed(largest, 2)} | ${fixed(fall, 2)} | ${fixed(c.tauStart + from * c.tauStep, 3)} |`;
 }
 
+/**
+ * The underside table's row for a case (`UNDERSIDE_SMOOTHING`), over its open frames: its near-vertical underside points,
+ * how many turn past the limit as read and as written, how many points the smoothing moved and the furthest, h0.
+ */
+function undersideRow(read: BarrelCase, written: BarrelCase): string {
+  const floats = 2 * PROFILE_POINTS;
+  let frames = 0;
+  let points = 0;
+  let before = 0;
+  let after = 0;
+  let moved = 0;
+  let furthest = 0;
+  for (let f = 0; f * floats < written.frames.length; f += 1) {
+    const o = f * floats;
+    for (let p = 0; p < PROFILE_POINTS; p += 1) {
+      const d = Math.hypot(written.frames[o + 2 * p] - read.frames[o + 2 * p], written.frames[o + 2 * p + 1] - read.frames[o + 2 * p + 1]);
+      if (d > 0) moved += 1;
+      furthest = Math.max(furthest, d);
+    }
+    const tau = written.tauStart + f * written.tauStep;
+    if (tau < 0 || tau > written.touchdown) continue;
+    frames += 1;
+    for (let k = LANDMARK.lip + 1; k < LANDMARK.throat; k += 1) {
+      const turn = undersideTurn(written.frames, o, k);
+      if (turn !== undefined) points += 1;
+      if ((turn ?? 0) > UNDERSIDE_SMOOTHING.turn) after += 1;
+      if ((undersideTurn(read.frames, o, k) ?? 0) > UNDERSIDE_SMOOTHING.turn) before += 1;
+    }
+  }
+  return `| ${written.id} | ${frames} | ${points} | ${before} → ${after} | ${moved} | ${furthest.toFixed(4)} |`;
+}
+
 /** The rows barrel-cases.md holds for a case, by section, so a kept case's are carried over unchanged. */
 function rowsOf(id: string): { validation?: string; tip?: string; landmarks: string[] } {
   const path = 'docs/research/barrel-cases.md';
@@ -164,6 +197,7 @@ const entries: BarrelCaseEntry[] = [];
 const rows: string[] = [];
 const cleanliness: string[] = [];
 const tips: string[] = [];
+const undersides: string[] = [];
 const sources: string[] = [];
 for (const name of [...keeps, ...runs]) {
   const spot = spotOf(name) as SpotName;
@@ -171,8 +205,10 @@ for (const name of [...keeps, ...runs]) {
     // A committed case kept as it is: its index entry from its own header, its rows as barrel-cases.md has them.
     // Its frames as they are; its tip fitted again by the regime rule (the advisor's ruling, PR 7).
     const asset = `barrels/${name}.bin`;
-    const barrel = refitTip(decodeCase(new Uint8Array(readFileSync(`public/${asset}`))));
+    const read = decodeCase(new Uint8Array(readFileSync(`public/${asset}`)));
+    const barrel = refitTip(smoothUnderside(read));
     writeFileSync(`public/${asset}`, encodeCase(barrel));
+    undersides.push(undersideRow(read, barrel));
     entries.push({ id: name, spot, slope: barrel.slope, nonlinearity: barrel.nonlinearity, flatDepth: barrel.flatDepth, asset });
     const carried = rowsOf(name);
     if (!carried.validation) throw new Error(`${name}: kept, but barrel-cases.md has no row for it`);
@@ -192,7 +228,9 @@ for (const name of [...keeps, ...runs]) {
     library.run.level, library.run.slope, library.run.A0, library.run.h0_m,
   );
   const id = run.toLowerCase().replaceAll('_', '-');
-  const { barrel, refilled } = caseFromLibrary(library, id, flat);
+  const { barrel: converted, refilled } = caseFromLibrary(library, id, flat);
+  const barrel = smoothUnderside(converted);
+  undersides.push(undersideRow(converted, barrel));
   const asset = `barrels/${id}.bin`;
   const bytes = encodeCase(barrel);
   writeFileSync(`public/${asset}`, bytes);
@@ -267,6 +305,14 @@ The tip landmark's velocity over the sustained overturn, a local line over ±4 f
 | Case | Median horizontal | Largest \\|v\\| | Fall (g) | Overturned from τ |
 |---|---|---|---|---|
 ${tips.join('\n')}
+
+## The underside
+
+The level-12 runs' undersides carry grid noise where they stand near vertical: the contour, traced on the grid, runs straight for about a cell (0.0117 h0) and then turns a corner of 15–30°, which folds the loft's normals into a glint under a low sun and dark creases across the lip. Each case's underside is smoothed as it is written (\`smoothUnderside\`; look-fix round 1 [provisional]): per frame, an interior point of the underside (between the lip's tip and the throat) whose tangent stands within ${UNDERSIDE_SMOOTHING.vertical}° of vertical and whose segments turn more than ${UNDERSIDE_SMOOTHING.turn}° at it takes a pass of a 1-2-1 filter, pass after pass until none is left (${UNDERSIDE_SMOOTHING.passes} at most), never across the lip's outer face, with the tip, the throat and the crest where they were: the tip's velocity is untouched. It removes grid noise, not shape, and a smoothed case smooths to itself, so a kept case written again reads 0 → 0. Over each case's open frames (τ from 0 to touchdown), with the furthest any point moved, h0:
+
+| Case | Open frames | Near-vertical underside points | Turning over ${UNDERSIDE_SMOOTHING.turn}°, as read → as written | Points moved | Furthest (h0) |
+|---|---|---|---|---|---|
+${undersides.join('\n')}
 
 ## Landmarks
 
