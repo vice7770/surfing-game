@@ -390,13 +390,16 @@ float waterFoamQuantile( float p ) {
 // and scaled back to unit variance) passes the value that leaves a share foam of it above, the edge as soft as the field
 // changes across the pixel (half its fwidth); thin (a single layer of bubbles) at the edge, full once the field is
 // FOAM_THICK sigma over it. Both give way to the foam's mean and full thickness where a pixel (footprint, m) spans more
-// than they can show. The branch is taken by a whole 2 x 2 quad together, so that fwidth reads real neighbours: a pixel
-// with no foam may only return early when the foam at its neighbours, which its derivatives bound, is gone as well.
+// than they can show. The branches are taken by a whole 2 x 2 quad together, so that fwidth reads real neighbours: a
+// pixel with no foam may only return early when the foam at its neighbours, which its derivatives bound, is gone as
+// well, and a pixel may return the mean at once only when the smallest footprint in its quad is past the fade.
 vec2 waterFoamField( vec2 p, vec2 flow, float foam, float age, float footprint ) {
   vec2 dpdx = dFdx( p );
   vec2 dpdy = dFdy( p );
   float reach = foam + abs( dFdx( foam ) ) + abs( dFdy( foam ) );
+  float least = footprint - abs( dFdx( footprint ) ) - abs( dFdy( footprint ) );
   if ( reach <= 0.001 ) return vec2( 0.0, 1.0 );
+  if ( least >= ${FOAM_FADE[1].toFixed(3)} ) return vec2( foam, 1.0 );
   vec2 g = waterFoamGauss( p, dpdx, dpdy, flow );
   float blend = ( ( 1.0 - age ) * g.x + age * g.y ) / sqrt( ( 1.0 - age ) * ( 1.0 - age ) + age * age + 2.0 * age * ( 1.0 - age ) * ${FOAM_STAGE_CORRELATION.toFixed(3)} );
   float t = waterFoamQuantile( 1.0 - min( foam, 1.0 ) );
