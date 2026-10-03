@@ -471,6 +471,28 @@ describe('the clock link', () => {
     expect(fronts(joinTogether(LINKED, halves(11, 16, 9)))).toBe(2);
   });
 
+  it('refuses a handed-over order that names a point the state does not hold, or misses or repeats one, taking none of it', () => {
+    // The last step's clock link joined the halves, so the state lists its points in the order they match by.
+    const state = joinTogether(LINKED, halves(10, 16, 0.25)).exportState();
+    expect(state.order).toBeDefined();
+    const order = state.order!;
+    const byNumber = (a: number, b: number) => a - b;
+    expect([...order].sort(byNumber)).toEqual(state.points.map((point) => point.id).sort(byNumber));
+    const front = new BreakingFront(1, TIMING, LINKED);
+    const own = JSON.stringify(front.exportState());
+    // The next ID, which no point has yet, in place of the last; one left out; one listed twice, as an extra or in the
+    // last one's place.
+    expect(() => front.importState({ ...state, order: [...order.slice(0, -1), state.nextId] }))
+      .toThrow(`A front state whose order names point ${state.nextId}, which it does not hold`);
+    for (const wrong of [order.slice(1), [order[0], ...order], [...order.slice(0, -1), order[0]]]) {
+      expect(() => front.importState({ ...state, order: wrong })).toThrow(`A front state whose order does not list each of its ${order.length} points once`);
+    }
+    expect(JSON.stringify(front.exportState())).toBe(own);
+    // The state as exported is taken whole.
+    front.importState(state);
+    expect(front.exportState()).toEqual(state);
+  });
+
   interface CrestLine { z: number; first: number }
   /**
    * Seeded crest lines over 36 columns joining column by column (`lines`: each one's z, and the step its column 0 joins,

@@ -74,7 +74,7 @@ export interface FrontOptions {
   /**
    * Links by the clock what the 3-row reach and an empty column split (the advisor, 2026-10-03; off): one breaking crest
    * drawn as two fronts end to end. On #105's Small sea (150 s) 1262 such pairs formed, 638 of them where the highest cell
-   * jumped and the crest restarted unsized, 190 where the neighbour stood more than 3 rows off in z and 79 where a point
+   * jumped and the crest restarted unsized, 190 where the neighbour stood 3 rows or more off in z and 79 where a point
    * flickered; Medium's 3071 were led by 1109 restarted points. A point that no neighbour in the column before took continues
    * the nearest chain end in that column or the one before it (a one-column gap) within CLOCK_REACH, when their joins
    * differ by at most CLOCK_SLOPE per metre between them. The 1 s/m split (SPLIT) is left as it is: it still refuses the
@@ -533,13 +533,22 @@ export class BreakingFront {
   }
 
   importState(state: FrontState): void {
+    const points = state.points.map((p) => ({ ...p }));
+    // The order lists these same points (`FrontState.order`). One that names a point the state lacks, or misses or
+    // repeats one, is not this front's: it is refused before anything is taken over.
+    const byId = new Map(points.map((p) => [p.id, p]));
+    const order = state.order?.map((id) => {
+      const point = byId.get(id);
+      if (!point) throw new Error(`A front state whose order names point ${id}, which it does not hold`);
+      return point;
+    });
+    if (order && (order.length !== points.length || new Set(order).size !== points.length)) {
+      throw new Error(`A front state whose order does not list each of its ${points.length} points once`);
+    }
     this.nextId = state.nextId;
     this.nextFront = state.nextFront;
-    this.points = state.points.map((p) => ({ ...p }));
-    if (state.order) {
-      const byId = new Map(this.points.map((p) => [p.id, p]));
-      this.order = state.order.map((id) => byId.get(id)!);
-    } else this.order = undefined;
+    this.points = points;
+    this.order = order;
     this.held = state.held.map((p) => ({ ...p }));
     this.tracks = (state.tracks ?? []).map((t) => ({ ...t }));
   }
