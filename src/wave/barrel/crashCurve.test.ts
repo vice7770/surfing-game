@@ -40,6 +40,48 @@ describe('the crash curve (the Padang Padang spec, Part B, PR 5)', () => {
     }
   });
 
+  it('lands where the loft draws its lip, on a front at an angle thrown behind its crest, through the hand-back (the advisor, 2026-10-03)', () => {
+    // A front at 36.9° to the columns (its ray (−0.6, 0.8)), its crest crossing its throw depth 1 m behind each point.
+    const slanted = (tau: number): FrontPoint[] => Array.from({ length: 21 }, (_, k) => ({
+      id: k, front: 1, column: k, sigma: 1.25 * k, x: k + 0.5, z: -100 + 0.75 * (k - 10), b: 0, height: 2, joined: 0, depth: 3, throwDepth: 2.5,
+      crestDepth: 2, thrown: 0, throwZ: -101 + 0.75 * (k - 10), footHeight: 2.1, footDepth: 7, broke: 0, tau, fresh: null, seen: 0,
+    }));
+    for (const tau of [0, 0.2 * TOUCHDOWN, 0.4 * TOUCHDOWN, 0.7 * TOUCHDOWN, TOUCHDOWN, TOUCHDOWN + 0.1]) {
+      const points = slanted(tau);
+      const records = new Float32Array(21 * FRONT_STRIDE);
+      writeFrontRecords(points, records);
+      const loft = new SweptLoft(library(), 0.05).build(records, 21, 0, flat);
+      const crash = new CrashCurve(library(), 0.05).slice(points, 0, 21, 10, 0, flat, createCrashSlice());
+      // σ 12.5 is slice 28 (from −1.5 m every half metre). The tube's crest is its profile's origin: its vertex is the anchor.
+      const vertex = (landmark: number) => 3 * (28 * LOFT_SAMPLES + LOFT.extensionSamples + landmark);
+      const crest = vertex(LANDMARK.crest);
+      const tip = vertex(LANDMARK.lip);
+      expect(crash.anchorX).toBeCloseTo(loft.positions[crest], 3);
+      expect(crash.anchorZ).toBeCloseTo(loft.positions[crest + 2], 3);
+      for (const [mine, theirs] of [[crash.tipX, tip], [crash.tipY, tip + 1], [crash.tipZ, tip + 2], [crash.crestX, crest], [crash.crestY, crest + 1], [crash.crestZ, crest + 2]]) {
+        expect(mine).toBeCloseTo(loft.positions[theirs], 3);
+      }
+      // On the ray through the point, (1 − u) of the throw point's 0.8 m behind it.
+      const x = Math.min(1, tau / (0.8 * TOUCHDOWN));
+      expect(-0.6 * (crash.anchorX - 10.5) + 0.8 * (crash.anchorZ + 100)).toBeCloseTo(-0.8 * (1 - (3 * x * x - 2 * x * x * x)), 4);
+      expect(0.8 * (crash.anchorX - 10.5) + 0.6 * (crash.anchorZ + 100)).toBeCloseTo(0, 4);
+      // From touchdown the lip lands on the flat under the drawn tip.
+      if (tau >= TOUCHDOWN) {
+        expect(crash.landX).toBeCloseTo(loft.positions[tip], 3);
+        expect(crash.landZ).toBeCloseTo(loft.positions[tip + 2], 3);
+      }
+    }
+    // Read at another z (the foresight's paced z), as if the point stood there; and with its anchor at the throw point.
+    const curve = new CrashCurve(library(), 0.05);
+    const there = slanted(TOUCHDOWN);
+    there[10].z = -98;
+    const moved = curve.slice(there, 0, 21, 10, 0, flat, createCrashSlice());
+    const foreseen = curve.slice(slanted(TOUCHDOWN), 0, 21, 10, 0, flat, createCrashSlice(), { z: -98 });
+    for (const key of ['anchorX', 'anchorZ', 'tipX', 'tipZ', 'landX', 'landZ'] as const) expect(foreseen[key]).toBeCloseTo(moved[key], 9);
+    const held = curve.slice(slanted(0.4 * TOUCHDOWN), 0, 21, 10, 0, flat, createCrashSlice(), { throwAnchor: true });
+    expect(-0.6 * (held.anchorX - 10.5) + 0.8 * (held.anchorZ + 100)).toBeCloseTo(-0.8, 6);
+  });
+
   it('lands the lip on the face’s point nearest its tip (metrics.py’s closing of the void)', () => {
     const crash = new CrashCurve(library(), 0.05).slice(front(21, () => TOUCHDOWN), 0, 21, 10, 0, flat, createCrashSlice());
     // In h0 the tip is (1.2, 0.5): the face from the throat (0.6, 0.6) to the toe (0.8, 0) lies 0.54 from it, the flat

@@ -195,78 +195,91 @@ describe('the breaking front as lines', () => {
     expect(front.points.map((point) => point.column)).toEqual([0, 1, 3, 4]);
   });
 
-  // PR 5 (the advisor, 2026-10-01): once its lip is thrown the solver's crest maximum leaps 3–8 m as the face turns
-  // into a bore, so from the throw to its crash a point runs on its own pace and only claims its column's crest.
-  it('runs a point holding an uncrashed jet on its own pace to its crash, claiming its crest over the throw’s window, at most 10 m (PR 5)', () => {
+  // PR 5 (the advisor, 2026-10-01 and 2026-10-03): once its lip is thrown the solver's crest maximum leaps 3–8 m as the
+  // face turns into a bore, so from its throw until its slice has faded a point, jet or not, runs on its own pace and
+  // only claims its column's crest.
+  it('runs a point past its throw on its own pace, jet or not, crashed or not, claiming its crest over the throw’s window, at most 10 m (PR 5)', () => {
     const front = new BreakingFront(1, TIMING);
     joinAt(front, range(0, 7), 10, 0, 1);
     const ids = front.points.map((point) => point.id);
-    const hold = (k: number, strip: number, window: number, crashedAt?: number) => {
-      Object.assign(front.points[k], { jetStrip: strip, jetWindow: window, jetPace: 5, jetBase: 10, ...(crashedAt !== undefined ? { crashedAt } : {}) });
+    const pace = (k: number, strip: number, window: number, crashedAt?: number) => {
+      Object.assign(front.points[k], {
+        jetStrip: strip, jetWindow: window, jetPace: 5, jetBase: 10, jetUntil: 2, tau: 0.3, ...(crashedAt !== undefined ? { crashedAt } : {}),
+      });
     };
-    hold(1, 4, 3);
-    hold(2, 5, 20);
+    pace(1, 4, 3);
+    pace(2, 5, 20);
     // A window too short for the jump: it claims no crest, and runs on all the same.
-    hold(5, 7, 0.5);
-    // Crashed, or threw none: matched as before.
-    hold(3, 6, 3, 1.05);
-    hold(4, -1, 3);
+    pace(5, 7, 0.5);
+    // Crashed, or threw no jet: on their pace all the same, until their slice has faded.
+    pace(3, 6, 3, 1.05);
+    pace(4, -1, 3);
     // Every crest leaps 5 m shoreward in 0.1 s: past the 3 m match reach. The paced points run 0.5 m and claim the crest
-    // 4.5 m ahead, inside 3 + 3 m and the 10 m cap, without taking its z.
+    // 4.5 m ahead, inside 3 + 3 m and the 10 m cap, without taking its z; columns 0 and 6, not thrown, lose theirs.
     const jumped = line(range(0, 7), 15, 0, 2.4, 0.5);
     front.update(jumped, jumped.length, 1.1);
-    expect(front.points.map((point) => point.id)).toEqual([ids[1], ids[2], ids[5]]);
-    expect(front.points.map((point) => point.z)).toEqual([10.5, 10.5, 10.5]);
-    expect(front.points.map((point) => point.jetStrip)).toEqual([4, 5, 7]);
+    expect(front.points.map((point) => point.id)).toEqual(ids.slice(1, 6));
+    expect(front.points.map((point) => point.z)).toEqual([10.5, 10.5, 10.5, 10.5, 10.5]);
+    expect(front.points.map((point) => point.jetStrip)).toEqual([4, 5, 6, -1, 7]);
+    expect(front.points.map((point) => point.crestZ)).toEqual([15, 15, 15, 15, undefined]);
     expect(front.coasted).toBe(1);
-    // Linked on their own z: columns 1 and 2 one front, column 5 apart from them.
-    expect(fronts(front)).toBe(2);
+    // Linked on their own z: one front.
+    expect(fronts(front)).toBe(1);
     // Now at 11 m: column 1's crest 6.5 m away is past its 3 + 3 m, and column 2's 10.5 m away past the 10 m cap on 3 + 20 m.
-    // None claims a crest, and all run on at their pace until their crash.
+    // None claims a crest, and all run on at their pace.
     const far = [sample(1, 17.5, 2.3, 0.5), sample(2, 21.5, 2.3, 0.5)];
     front.update(far, far.length, 1.2);
-    expect(front.points.map((point) => point.id)).toEqual([ids[1], ids[2], ids[5]]);
-    expect(front.points.map((point) => point.z)).toEqual([11, 11, 11]);
-    expect(fronts(front)).toBe(2);
-    expect(front.coasted).toBe(4);
-    // Crashed, they match as before: with no crest in reach they leave.
-    for (const point of front.points) point.crashedAt = 1.25;
+    expect(front.points.map((point) => point.id)).toEqual(ids.slice(1, 6));
+    expect(front.points.map((point) => point.z)).toEqual([11, 11, 11, 11, 11]);
+    expect(fronts(front)).toBe(1);
+    expect(front.coasted).toBe(6);
+    // Their slices faded (their clocks at `jetUntil`), they match as before: with no crest in reach they leave.
+    for (const point of front.points) point.tau = 2;
     front.update(far, far.length, 1.3);
     expect(front.points).toHaveLength(0);
   });
 
-  it('gives a paced point the crest nearest its own z, ahead of the others, and the ordinary match once it crashes (PR 5)', () => {
+  it('gives a paced point the crest nearest its own z, ahead of the others, and the ordinary match once its slice has faded (PR 5)', () => {
     const front = new BreakingFront(1, TIMING);
     joinAt(front, range(0, 3), 10, 0, 1);
     const ids = front.points.map((point) => point.id);
-    Object.assign(front.points[1], { jetStrip: 2, jetWindow: 3, jetPace: 4, jetBase: 10 });
+    Object.assign(front.points[1], { jetStrip: 2, jetWindow: 3, jetPace: 4, jetBase: 10, jetUntil: 1, tau: 0.3 });
     // Column 1's crest split about its dip: shoulders 3.5 m behind and 3.2 m ahead of where it was; it ran 0.4 m.
     const split = [sample(0, 10.3, 2.4, 0.5), sample(1, 6.5, 2.4, 0.5), sample(1, 13.2, 2.4, 0.5), sample(2, 10.3, 2.4, 0.5)];
     front.update(split, split.length, 1.1);
     expect(front.points.map((point) => point.id)).toEqual(ids);
     expect(front.points[1].z).toBeCloseTo(10.4, 12);
     expect(front.points[1].height).toBe(split[2].eta);
-    // Crashed, it matches as before: the crest 0.2 m away is its own, and it takes that crest's z.
+    // Crashed, it still runs on its pace: it claims the crest 0.2 m away, but not its z.
     front.points[1].crashedAt = 1.15;
     const near = [sample(0, 10.6, 2.4, 0.5), sample(1, 10.6, 2.4, 0.5), sample(2, 10.6, 2.4, 0.5)];
     front.update(near, near.length, 1.2);
     expect(front.points.map((point) => point.id)).toEqual(ids);
+    expect(front.points[1].z).toBeCloseTo(10.8, 12);
+    expect(front.points[1].crestZ).toBe(10.6);
+    // Its slice faded (its clock at `jetUntil`), it matches as before: the crest 0.2 m away is its own, and it takes its z.
+    front.points[1].tau = 1;
+    front.update(near, near.length, 1.3);
+    expect(front.points.map((point) => point.id)).toEqual(ids);
     expect(front.points[1].z).toBe(10.6);
   });
 
-  it('keeps a crashed point on its pace while it blends toward the crest it claims, and lets one with none go (PR 5)', () => {
+  it('holds a point on its pace through its slice’s fade, claiming a crest or coasting, then lets it go to the ordinary match (PR 5; the advisor, 2026-10-03)', () => {
     const front = new BreakingFront(1, TIMING);
     joinAt(front, range(0, 3), 10, 0, 1);
     const ids = front.points.map((point) => point.id);
-    for (const k of [1, 2]) Object.assign(front.points[k], { jetStrip: k, jetWindow: 3, jetPace: 5, jetBase: 10, jetBlend: 0.2, jetUntil: 0.5, crashedAt: 1, tau: 0.3 });
-    // Column 1's crest leaps 4.5 m ahead of its paced z, in reach; column 2 has none.
+    for (const k of [1, 2]) Object.assign(front.points[k], { jetStrip: k, jetWindow: 3, jetPace: 5, jetBase: 10, jetUntil: 0.5, crashedAt: 1, tau: 0.3 });
+    // Pouring (crashed, its slice fading): column 1's crest leaps 4.5 m ahead of its paced z, in reach; column 2 has none.
     const crests = [sample(0, 10.3, 2.4, 0.5), sample(1, 15, 2.4, 0.5)];
     front.update(crests, crests.length, 1.1);
-    expect(front.points.map((point) => point.id)).toEqual([ids[0], ids[1]]);
+    expect(front.points.map((point) => point.id)).toEqual(ids);
     expect(front.points[1].crestZ).toBe(15);
     expect(front.points[1].z).toBeCloseTo(10.5, 12);
-    // Past its blend it matches as before: the crest 4.5 m away is past the match reach, and it leaves.
-    front.points[1].tau = 0.6;
+    expect(front.points[2].crestZ).toBeUndefined();
+    expect(front.points[2].z).toBeCloseTo(10.5, 12);
+    expect(front.coasted).toBe(1);
+    // Its slice faded, it matches as before: the crest 4.5 m away is past the match reach, and with none column 2 leaves too.
+    for (const k of [1, 2]) front.points[k].tau = 0.6;
     front.update(crests, crests.length, 1.2);
     expect(front.points.map((point) => point.id)).toEqual([ids[0]]);
   });

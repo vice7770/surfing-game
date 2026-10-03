@@ -2,7 +2,7 @@ import { GRAVITY } from '../dispersion';
 import type { FrontPoint } from './BreakingFront';
 import { blendOverturn, overturnAt, type Overturn } from './heldOverturn';
 import { LANDMARK, PROFILE_POINTS, type BarrelCase, type ProfileLibrary } from './ProfileLibrary';
-import { LOFT, collapseFade } from './sweptLoft';
+import { LOFT, anchorOnRay, collapseFade, type RayAnchor } from './sweptLoft';
 
 /** One front point's barrel as the loft draws it at its clock (the Padang Padang spec, Part B, PR 5: the crash). */
 export interface CrashSlice {
@@ -66,9 +66,13 @@ export interface JetMotion {
   crestSpeed: number;
 }
 
-/** How a slice is read: at the point's own clock, or another (`tau`, s); with the throw's anchor held (`throwAnchor`). */
+/**
+ * How a slice is read: at the point's own clock, or another (`tau`, s), with the point's own z or another (`z`, m: the
+ * foresight reads its paced z at its τ); with the anchor held at its throw point, u = 0 (`throwAnchor`, for the probes).
+ */
 export interface SliceClock {
   tau?: number;
+  z?: number;
   throwAnchor?: boolean;
 }
 
@@ -92,8 +96,8 @@ function pinOf(i: number): number {
  * - the ray from the front's tangent over ±2 m, run on past its ends;
  * - the end weight, the profile at the clock (the touchdown frame from touchdown on: the drawing keeps it), and PR 4's
  *   fade over the tube's collapse;
- * - the anchor: on the solver's crest before the throw, at the throw point after it (soft-capped), handed back from
- *   0.8 of the open time.
+ * - the anchor: on the solver's crest before the throw; from the throw, at the throw point on the slice's own ray
+ *   (soft-capped along it), handed back to the crest point by a smoothstep whole by 0.8 of the open time (`anchorOnRay`).
  * Where the lip lands (the advisor, 2026-10-01): on the drawn frame's face, at its point nearest the tip, `metrics.py`'s
  * closing of the void, whose gap closing is the runs' touchdown. In the runs the face rises to meet the jet, so the tip
  * carried on at its own velocity to a still face would land 0.3–1 m too far. The jet and void are the cases' held
@@ -105,6 +109,7 @@ export class CrashCurve {
   private readonly overturns = new Map<BarrelCase, Overturn>();
   private readonly ahead = { x: 0, z: 0 };
   private readonly behind = { x: 0, z: 0 };
+  private readonly anchor: RayAnchor = { held: 0, distance: 0, capped: false, slope: 1, u: 0, rate: 0 };
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
     for (const c of library.cases) {
@@ -157,28 +162,18 @@ export class CrashCurve {
     into.collapse = lookup.collapseSeconds;
     into.fade = collapseFade(tau, touchdown, lookup.collapseSeconds);
     into.weight = into.endWeight * into.fade;
-    // The anchor, as the loft places it.
+    // The anchor, as the loft places it: K = S − c n, and from the throw K + (1 − u) held n (`anchorOnRay`).
+    const z = clock.z ?? p.z;
     const crest = profile[2 * LANDMARK.crest];
     const crestX = p.x - crest * nx;
-    const crestZ = p.z - crest * nz;
+    const crestZ = z - crest * nz;
     let ax = crestX;
     let az = crestZ;
     if (tau >= 0 && p.throwZ !== null) {
-      const ox = crest * nx;
-      const oz = p.throwZ + crest * nz - p.z;
-      const raw = Math.sqrt(ox * ox + oz * oz);
-      let throwX = p.x;
-      let throwZ = p.throwZ;
-      if (raw > LOFT.offsetKnee) {
-        const beyond = (raw - LOFT.offsetKnee) / LOFT.offsetReach;
-        const scale = (LOFT.offsetKnee + (LOFT.offsetReach * beyond) / (1 + beyond)) / raw;
-        throwX = crestX + scale * ox;
-        throwZ = crestZ + scale * oz;
-      }
-      const handover = LOFT.handoverStart * touchdown;
-      const u = clock.throwAnchor || tau <= handover ? 0 : Math.min(1, (tau - handover) / LOFT.handover);
-      ax = throwX + u * (crestX - throwX);
-      az = throwZ + u * (crestZ - throwZ);
+      const anchor = anchorOnRay((p.throwZ - z) * nz + crest, tau, touchdown, this.anchor);
+      const u = clock.throwAnchor ? 0 : anchor.u;
+      ax = crestX + (1 - u) * anchor.held * nx;
+      az = crestZ + (1 - u) * anchor.held * nz;
     }
     into.anchorX = ax;
     into.anchorZ = az;
