@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CLASSIC_SPRAY_CAPACITY, COLUMN_CELL, COLUMN_EVERY, DROP_LAW, FOAM_BALL_VOLUME, LIP_CREST_STRIDE, SPRAY_CAPACITY, SPRAY_PER_AIR, SPRAY_STRIDE, STREAK_EXPOSURE,
-  SprayCloud, VEIL_AIR, VEIL_DRAW, VEIL_FALL, VEIL_ONSET, VEIL_RADIUS, VEIL_RATE, VEIL_ROOM, createLipCrests, dropDiameter, opticalDepth, placePhase, relativeWind,
+  SprayCloud, VEIL_AIR, VEIL_CELL, VEIL_DRAW, VEIL_FALL, VEIL_ONSET, VEIL_RADIUS, VEIL_RATE, VEIL_REACH, VEIL_ROOM, VEIL_TAU, VEIL_TAU_CELL, createLipCrests, dropDiameter, opticalDepth, placePhase, relativeWind,
   splashLaunch, veilRate, writeLipCrests, type LipCrests, type LipImpact, type SprayScene, type StrokeSplash,
 } from './SprayCloud';
 import { LANDMARK } from './barrel/ProfileLibrary';
@@ -841,6 +841,116 @@ describe('the offshore veil (decided 2026-09-29, spray item 4)', () => {
     };
     expect(fill('classic')).toBe(4096);
     expect(fill('rich')).toBeGreaterThan(4096);
+  });
+
+  describe('bounded by its optical depth along the camera’s ray (the cap)', () => {
+    /** A drawn crest of `stretches` stretches laid over each other along x from 0 to `to` m: that many times the places' particles, crowding the cells. */
+    function crowded(stretches: number, to: number): LipCrests {
+      const crests = createLipCrests(stretches * Math.ceil(to / 0.5));
+      let count = 0;
+      for (let layer = 0; layer < stretches; layer += 1) for (let x = 0; x < to - 1e-9; x += 0.5) crests.data.set([x, 1.5, 30.5, x + 0.5, 1.5, 30.5], LIP_CREST_STRIDE * count++);
+      crests.count = count;
+      return crests;
+    }
+    /** The depth (a ray through every particle in the cell would see it) of the veil in each cell of `VEIL_CELL` m, by the cell, from the packed particles. */
+    function cells(cloud: SprayCloud): Map<string, { depth: number; n: number }> {
+      const out = new Map<string, { depth: number; n: number }>();
+      for (let k = 0; k < cloud.count; k += 1) {
+        const o = k * SPRAY_STRIDE;
+        // The packed centre is half the streak behind the particle.
+        const key = [0, 1, 2].map((axis) => Math.floor((cloud.particles[o + axis] + cloud.particles[o + 6 + axis] / 2) / VEIL_CELL)).join(',');
+        const cell = out.get(key) ?? { depth: 0, n: 0 };
+        cell.depth += cloud.particles[o + 9];
+        cell.n += 1;
+        out.set(key, cell);
+      }
+      return out;
+    }
+    const kept = (cloud: SprayCloud) => Array.from((cloud as unknown as { kept: Float64Array }).kept.subarray(0, cloud.count));
+    const run = (seed: number, stretches: number, to: number, seconds: number) => {
+      const cloud = new SprayCloud(seed);
+      for (let step = 0; step < Math.round(seconds * 60); step += 1) cloud.update(sea(-5, 3, { lipCrests: crowded(stretches, to) }), 1 / 60);
+      return cloud;
+    };
+
+    it('is a trail’s worth of cells at the see-through limit: VEIL_TAU over the reach of a trail, in cells of the spacing of its particles', () => {
+      expect(VEIL_TAU).toBe(1);
+      expect(VEIL_CELL).toBe(4);
+      expect(VEIL_REACH).toBe(32);
+      expect(VEIL_TAU_CELL).toBeCloseTo(0.125, 12);
+      // A particle sheds every interval and flies at the relative wind: Padang Padang Medium at 5 m/s offshore, some 10 m/s.
+      expect(VEIL_DRAW.interval * 10).toBeCloseTo(VEIL_CELL, 12);
+    });
+
+    it('holds the veil’s optical depth in any cell to what a ray through all of it may see, thinning a crowded cell’s particles in proportion', () => {
+      const cloud = run(70, 12, 8, 3);
+      expect(cloud.count).toBeGreaterThan(300);
+      const all = cells(cloud);
+      let crowdedCells = 0;
+      for (const { depth, n } of all.values()) {
+        expect(depth).toBeLessThanOrEqual(VEIL_TAU_CELL * (1 + 1e-6));
+        if (n > 10) crowdedCells += 1;
+      }
+      // Crowded enough that the cap had to thin them.
+      expect(crowdedCells).toBeGreaterThan(0);
+      const share = kept(cloud);
+      expect(Math.min(...share)).toBeLessThan(0.5);
+      expect(Math.max(...share)).toBeLessThanOrEqual(1);
+      // And a cell at the cap sits on it: its particles together are all the cap allows, not under it.
+      expect(Math.max(...[...all.values()].map((cell) => cell.depth))).toBeGreaterThan(0.99 * VEIL_TAU_CELL);
+    });
+
+    it('thins every particle of a cell by the same share', () => {
+      const cloud = run(71, 12, 8, 2);
+      const share = kept(cloud);
+      const byCell = new Map<string, number[]>();
+      for (let k = 0; k < cloud.count; k += 1) {
+        const o = k * SPRAY_STRIDE;
+        const key = [0, 1, 2].map((axis) => Math.floor((cloud.particles[o + axis] + cloud.particles[o + 6 + axis] / 2) / VEIL_CELL)).join(',');
+        byCell.set(key, [...(byCell.get(key) ?? []), share[k]]);
+      }
+      for (const group of byCell.values()) for (const one of group) expect(one).toBeCloseTo(group[0], 12);
+    });
+
+    it('leaves a thin veil as it is: a place or two shed no more than the cap', () => {
+      const cloud = run(72, 1, 1, 1.5);
+      expect(cloud.count).toBeGreaterThan(1);
+      expect(kept(cloud).every((share) => share === 1)).toBe(true);
+    });
+
+    it('keeps a trail seen along its length, with the trails beside it, at the see-through limit: the cells a ray runs through sum to VEIL_TAU at most', () => {
+      // Five stretches over 2 m: the places beside each other shed over each other for the length of a trail, which the
+      // wind (seaward, −z) and the updraft (up) stretch out.
+      const cloud = run(73, 5, 2, 4.5);
+      const columns = new Map<string, { depth: number; cells: number }>();
+      for (const [key, { depth }] of cells(cloud)) {
+        const [x, y] = key.split(',');
+        const column = columns.get(`${x},${y}`) ?? { depth: 0, cells: 0 };
+        column.depth += depth;
+        column.cells += 1;
+        columns.set(`${x},${y}`, column);
+      }
+      let worst = 0;
+      for (const { depth, cells: n } of columns.values()) {
+        // A ray along the wind passes the veil of every cell of its column: the most any ray sees is their sum.
+        expect(n).toBeLessThanOrEqual(VEIL_REACH / VEIL_CELL + 2);
+        worst = Math.max(worst, depth);
+      }
+      expect(worst).toBeGreaterThan(0);
+      expect(worst).toBeLessThanOrEqual((VEIL_REACH / VEIL_CELL + 2) * VEIL_TAU_CELL * (1 + 1e-6));
+    });
+
+    it('leaves the rest of the spray as it was: the cap is the veil’s alone', () => {
+      const withVeil = new SprayCloud(74);
+      const without = new SprayCloud(74);
+      for (let step = 0; step < 90; step += 1) {
+        withVeil.update(sea(3, 3, { impacts: step === 0 ? [impact(0.4)] : [] }), 1 / 60);
+        without.update(sea(3, 3, { impacts: step === 0 ? [impact(0.4)] : [] }), 1 / 60);
+      }
+      // No wind to speak of and no crest: no veil, so no particle is thinned and the packed arrays agree to the float.
+      expect(kept(withVeil).every((share) => share === 1)).toBe(true);
+      expect(Array.from(withVeil.particles.subarray(0, withVeil.count * SPRAY_STRIDE))).toEqual(Array.from(without.particles.subarray(0, without.count * SPRAY_STRIDE)));
+    });
   });
 
   it('takes the drawn crest from the swept barrel’s open slices: the stretch each stands for, halfway to its neighbours', () => {

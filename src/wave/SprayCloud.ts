@@ -156,11 +156,15 @@ export const VEIL_FALL = 0.72;
 /**
  * The water the veil sheds, m³ per metre of crest per second, on the square of the relative wind over the onset, as
  * feathering's rate was on the absolute wind's excess (spray-and-mist.md: "Amount provisional (square law on the
- * excess, as today)") [the rate provisional: no surf-zone measurement exists, set by eye so that at Padang Padang's
- * sourced 5 m/s offshore over a medium swell, some 9–12 m/s relative, the veil is a haze over the crest and not a row
- * of white plumes: a particle's optical depth about 1 as it leaves the crest and a few tenths once it has spread].
+ * excess, as today)") [the rate provisional: no surf-zone measurement exists, and open-ocean estimates of spray production
+ * span six orders of magnitude (round-4 notes §2c)]. It was 3e-6, set by eye for a particle's optical depth of about 1 as
+ * it leaves the crest; a trail seen along its length stacks tens of such particles, and at Padang Padang's sourced
+ * 5 m/s offshore over a medium swell (some 9–12 m/s relative) the cells of the veil held on average three times what
+ * the cap allows (`VEIL_TAU_CELL`), the densest 150 times, so the cap thinned 88 % of its particles and flattened the
+ * square law into one even haze. A tenth of it keeps the veil where the wind is strong and thin where it is not: the cap
+ * thins the densest third.
  */
-export const VEIL_RATE = 3e-6;
+export const VEIL_RATE = 3e-7;
 /**
  * It is drawn as particles each standing for the water `spacing` m of crest sheds over `interval` s: every place
  * `spacing` m apart along a crest sheds one every `interval` s, at a moment of its own (`placePhase`), drawn over the
@@ -197,6 +201,25 @@ export const VEIL_ROOM = { lip: 0.15, crest: 0.1, look: 64 } as const;
  * [provisional].
  */
 export const VEIL_COVER = 3;
+/**
+ * The veil is bounded by its optical depth along the camera's ray, not particle by particle. A trail seen along its
+ * length stacks its particles, one every `VEIL_DRAW.interval` and so `VEIL_CELL` m apart at the 10 m/s or so of relative
+ * wind that Padang Padang's sourced 5 m/s offshore gives, with those of the places beside it, and each is a few tenths
+ * thick: their depths add (round 1's opaque white plumes). Spray is see-through near an optical depth of 1 and white
+ * only past about 15 (Bohren 1987; spray-and-mist.md), and a trail runs some `VEIL_REACH` m (that wind over a veil
+ * particle's 2.4–4 s of life, most of whose water it keeps for the first third). So the depths of the veil's particles in
+ * one `VEIL_CELL` m cell, as a ray through all of them would see them (their discs' depths, `tau`), add up to at most
+ * `VEIL_TAU_CELL`, and the cells of a trail along a ray sum to `VEIL_TAU`; a cell with more thins every particle in it
+ * in proportion (`SprayCloud.capVeil`). Measured on Padang Padang Medium at the sourced 5 m/s offshore (seed 1, 18
+ * snapshots between 22 and 48 s): the capsules of the veil beyond 1 m of its crest, painted as the Rich draw does and
+ * read along four cameras (down a trail, along the crest, across it, from the shore side), reached a largest depth along
+ * a ray of 13.5 before the cap (3 to 6 on average over the cameras), 0.9 with it at the old rate and 0.5 at `VEIL_RATE`
+ * [all four provisional: no measured veil].
+ */
+export const VEIL_TAU = 1;
+export const VEIL_REACH = 32;
+export const VEIL_CELL = 4;
+export const VEIL_TAU_CELL = (VEIL_TAU * VEIL_CELL) / VEIL_REACH;
 
 /** The wind relative to a crest over `depth` m of water, m/s, positive when the air flows seaward past it: the offshore wind plus the crest's own speed √(g d). */
 export function relativeWind(windSpeed: number, depth: number): number {
@@ -402,6 +425,11 @@ export class SprayCloud {
   private veilClock = 0;
   /** Scratch for `veil`: the coarse cells a drawn stretch of crest covers (`VEIL_COVER`). */
   private readonly veilCover = new Set<number>();
+  /** Scratch for `capVeil`: the veil's particles this pass, the share of each the cap leaves (1 for all else), and a hash of the cells (x, y, z, the pass that wrote it) of `VEIL_CELL` m and the depth in each. */
+  private readonly veilList: Uint32Array;
+  private readonly kept: Float64Array;
+  private readonly veilKeys: Int32Array;
+  private readonly veilSums: Float64Array;
   /** Scratch for `pack`: each cluster's width, and its water in drops and in sheets, now (`optics`). */
   private readonly widthNow: Float64Array;
   private readonly dropsNow: Float64Array;
@@ -437,6 +465,11 @@ export class SprayCloud {
     this.radius = make(); this.water = make(); this.spread = make(); this.streak = make(); this.around = make(); this.settle = make();
     this.widthNow = make(); this.dropsNow = make(); this.sheetsNow = make();
     this.veilOf = new Uint8Array(total); this.lift = make(); this.liftTime = make();
+    this.veilList = new Uint32Array(total); this.kept = make();
+    // The veil holds at most the shares of the pool `VEIL_ROOM` gives it, a quarter: the hash is a power of two over the pool, so at most a quarter full.
+    const veilSlots = 2 ** Math.ceil(Math.log2(Math.max(64, total)));
+    this.veilKeys = new Int32Array(veilSlots * 4);
+    this.veilSums = new Float64Array(veilSlots);
     this.particles = new Float32Array(total * SPRAY_STRIDE);
   }
 
@@ -940,14 +973,23 @@ export class SprayCloud {
     // The cross-section of each cluster's drops, gathered into the cells round it for the optical depth of the spray there.
     this.pass += 1;
     this.slots = Math.min(COLUMN_SLOTS, Math.max(256, 2 ** Math.ceil(Math.log2(2 * this.count + 1))));
+    let veils = 0;
     for (let k = 0; k < this.count; k += 1) {
+      this.kept[k] = 1;
       if (this.kind[k] === FOAM_BALL) continue;
       this.optics(k);
       const drops = this.dropsNow[k];
       if (!(drops > 0)) continue;
+      // The veil's joins the spray round it once it is capped (`capVeil`).
+      if (rich && this.veilOf[k] !== 0) {
+        this.veilList[veils] = k;
+        veils += 1;
+        continue;
+      }
       const slot = this.cell(Math.floor(this.x[k] / COLUMN_CELL), Math.floor(this.y[k] / COLUMN_CELL), Math.floor(this.z[k] / COLUMN_CELL), true);
       this.cellSums[slot] += opticalDepth(drops, this.radius[k]);
     }
+    if (veils > 0) this.capVeil(veils);
     for (let k = 0; k < this.count; k += 1) {
       const o = k * SPRAY_STRIDE;
       const t = this.age[k] / this.life[k];
@@ -984,10 +1026,58 @@ export class SprayCloud {
         continue;
       }
       const disc = (Math.PI * width * width) / 4;
-      particles[o + 9] = opticalDepth(drops / disc, this.radius[k]);
+      // What the cap leaves of the veil's water thins its drops and its sheets alike.
+      const kept = this.kept[k];
+      particles[o + 9] = kept * opticalDepth(drops / disc, this.radius[k]);
       if (Number.isNaN(this.around[k]) || (k + this.pass) % COLUMN_EVERY === 0) this.around[k] = this.column(this.x[k], this.y[k], this.z[k]);
       particles[o + 10] = this.around[k];
-      particles[o + 11] = Math.min(1, (LIGAMENT * sheets) / (disc * 2 * this.radius[k]));
+      particles[o + 11] = Math.min(1, (kept * LIGAMENT * sheets) / (disc * 2 * this.radius[k]));
+    }
+  }
+
+  /**
+   * The cap on the veil (`VEIL_TAU_CELL`): the `count` particles of veil in `veilList` have their discs' optical depths
+   * summed into the cells of `VEIL_CELL` m about them, and those in a cell that holds more than the cap allows are thinned
+   * in proportion (`kept`, the share of its water left), to what a ray through the whole cell would see: at most
+   * `VEIL_TAU_CELL`. What is left joins the spray round each cluster (`column`).
+   */
+  private capVeil(count: number): void {
+    const mask = Math.min(this.veilSums.length, Math.max(64, 2 ** Math.ceil(Math.log2(2 * count + 1)))) - 1;
+    for (let n = 0; n < count; n += 1) {
+      const k = this.veilList[n];
+      const disc = (Math.PI * this.widthNow[k] * this.widthNow[k]) / 4;
+      this.veilSums[this.veilCell(k, mask, true)] += opticalDepth(this.dropsNow[k] / disc, this.radius[k]);
+    }
+    for (let n = 0; n < count; n += 1) {
+      const k = this.veilList[n];
+      const gathered = this.veilSums[this.veilCell(k, mask, false)];
+      const kept = gathered > VEIL_TAU_CELL ? VEIL_TAU_CELL / gathered : 1;
+      this.kept[k] = kept;
+      const slot = this.cell(Math.floor(this.x[k] / COLUMN_CELL), Math.floor(this.y[k] / COLUMN_CELL), Math.floor(this.z[k] / COLUMN_CELL), true);
+      this.cellSums[slot] += kept * opticalDepth(this.dropsNow[k], this.radius[k]);
+    }
+  }
+
+  /** The slot of the `VEIL_CELL` m cell particle `k` is in, in the veil's hash of this pass (`mask` wide), made if `create`, else −1 where there is none. */
+  private veilCell(k: number, mask: number, create: boolean): number {
+    const keys = this.veilKeys;
+    const i = Math.floor(this.x[k] / VEIL_CELL);
+    const j = Math.floor(this.y[k] / VEIL_CELL);
+    const l = Math.floor(this.z[k] / VEIL_CELL);
+    let slot = (Math.imul(i, 73856093) ^ Math.imul(j, 19349663) ^ Math.imul(l, 83492791)) & mask;
+    for (;;) {
+      const o = slot * 4;
+      if (keys[o + 3] !== this.pass) {
+        if (!create) return -1;
+        keys[o] = i;
+        keys[o + 1] = j;
+        keys[o + 2] = l;
+        keys[o + 3] = this.pass;
+        this.veilSums[slot] = 0;
+        return slot;
+      }
+      if (keys[o] === i && keys[o + 1] === j && keys[o + 2] === l) return slot;
+      slot = (slot + 1) & mask;
     }
   }
 
