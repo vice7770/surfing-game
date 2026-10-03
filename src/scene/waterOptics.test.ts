@@ -117,4 +117,21 @@ describe('water optics', () => {
     expect(waterOpticsPars).toContain(`${WATER_IOR}`);
     expect(waterOpticsPars).toContain(WATER_F0.toFixed(6));
   });
+
+  it('keeps Classic’s water: the Rich look’s colour fields change none of its optics or uniforms', () => {
+    for (const optics of Object.values(SPOT_OPTICS)) {
+      expect(optics.chlorophyll).toBeGreaterThan(0);
+      const grey: WaterOptics = { turbidity: optics.turbidity, bedAlbedo: optics.bedAlbedo };
+      expect(beamAttenuation(optics)).toEqual(beamAttenuation(grey));
+      expect(diffuseAttenuation(optics)).toEqual(diffuseAttenuation(grey));
+      expect(deepReflectance(optics)).toEqual(deepReflectance(grey));
+      expect(shallowReflectance(optics, 3, 0.8, 0.6)).toEqual(shallowReflectance(grey, 3, 0.8, 0.6));
+      const [withColour, without] = [createOpticsUniforms(), createOpticsUniforms()];
+      applyOptics(withColour, optics);
+      applyOptics(without, grey);
+      for (const name of ['waterAttenuation', 'waterDiffuseAttenuation', 'waterDeepReflectance', 'waterBedAlbedo']) {
+        expect((withColour[name].value as Vector3).toArray()).toEqual((without[name].value as Vector3).toArray());
+      }
+    }
+  });
 });

@@ -25,7 +25,7 @@ import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
 import { churnTexture, waterChurnPars } from './water/churnTexture';
-import { RICH_NORMAL_GUARD } from './water/richOptics';
+import { RICH_NORMAL_GUARD, applyLookOptics } from './water/richOptics';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterStreakPars } from './water/streaks';
@@ -36,7 +36,7 @@ import { causticLookupPars, createCausticUniforms, type CausticSource, type Caus
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
 import {
-  WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
+  SPOT_OPTICS, WATER_BODY_GAIN, WATER_IOR, applySun, createOpticsUniforms, waterBodyFragment, waterCrestPars, waterOpticsPars, type WaterOptics,
 } from './waterOptics';
 
 export interface SurfaceGrid {
@@ -241,6 +241,8 @@ export class WaterSurface {
   private readonly uniforms: Record<string, { value: unknown }>;
   private detailedFoam = true;
   private currentLook: WaterLook = 'classic';
+  /** The spot's water, applied for the look drawn (`createOpticsUniforms` starts at the Beach's). */
+  private optics: WaterOptics = SPOT_OPTICS.beach;
   /** The swept barrel's seam (Part B, PR 3): its mask on the render grid's nodes, compiled in only at a swept spot. */
   private barrelEnabled = false;
   private barrelMaskData: Uint8Array;
@@ -469,6 +471,7 @@ export class WaterSurface {
     this.uniforms.waterPatchActive.value = rich ? 1 : 0;
     this.mesh.material.roughness = rich ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
     this.uniforms.waterBodyGain.value = rich ? RICH_WATER.bodyGain : WATER_BODY_GAIN;
+    applyLookOptics(this.uniforms, this.optics, this.effectiveLook);
   }
 
   private readonly patchCamera = new Vector3();
@@ -509,9 +512,13 @@ export class WaterSurface {
     return this.uniforms.waterFoamPattern.value as number;
   }
 
-  /** Water clarity and seabed colour for the current spot. */
+  /**
+   * Water clarity and seabed colour for the current spot, for the look drawn: Classic's grey particles, or the Rich
+   * look's sourced colour (water/richOptics.ts). The swept barrel's curl shares these uniform objects.
+   */
   setOptics(optics: WaterOptics): void {
-    applyOptics(this.uniforms, optics);
+    this.optics = optics;
+    applyLookOptics(this.uniforms, optics, this.effectiveLook);
   }
 
   /** `direction` points toward the sun; `radiance` is the sun light's colour × intensity. */

@@ -14,14 +14,14 @@ import {
 } from 'three';
 import type { WaterLook } from './water/waterLook';
 import { RICH_FAR_FOAM, RICH_REFLECTION, RICH_WATER, richFarNormal, richFragmentPars, richReflectionPars } from './water/richWaterGlsl';
-import { RICH_NORMAL_GUARD } from './water/richOptics';
+import { RICH_NORMAL_GUARD, applyLookOptics } from './water/richOptics';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
-import { WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
+import { SPOT_OPTICS, WATER_BODY_GAIN, WATER_IOR, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
 export type { HoleRect } from './gridGeometry';
 
@@ -124,6 +124,8 @@ export class FarFieldOcean {
   private extent = 1500;
   private view: 'near' | 'far' = 'far';
   private currentLook: WaterLook = 'classic';
+  /** The spot's water, applied for the look drawn (`createOpticsUniforms` starts at the Beach's). */
+  private optics: WaterOptics = SPOT_OPTICS.beach;
 
   constructor() {
     this.uniforms = {
@@ -182,6 +184,7 @@ export class FarFieldOcean {
     this.currentLook = look;
     this.mesh.material.roughness = look === 'rich' ? RICH_BASE_ROUGHNESS : CLASSIC_ROUGHNESS;
     this.uniforms.waterBodyGain.value = look === 'rich' ? RICH_WATER.bodyGain : WATER_BODY_GAIN;
+    applyLookOptics(this.uniforms, this.optics, look);
     this.mesh.material.needsUpdate = true;
   }
 
@@ -244,8 +247,10 @@ export class FarFieldOcean {
     (this.uniforms.farFade.value as Vector2).set(this.extent * start, this.extent * end);
   }
 
+  /** The spot's water, for the look drawn: Classic's grey particles, or the Rich look's sourced colour (water/richOptics.ts). */
   setOptics(optics: WaterOptics): void {
-    applyOptics(this.uniforms, optics);
+    this.optics = optics;
+    applyLookOptics(this.uniforms, optics, this.currentLook);
   }
 
   /** `direction` points toward the sun; `radiance` is the sun light's colour × intensity. */
