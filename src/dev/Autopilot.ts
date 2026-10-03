@@ -156,10 +156,11 @@ const SNAP_TRIM = -1;
  *   the body back to an 11–17° bank (the pool flow probe). Released at 85° the heading went on to 95–122°, up the
  *   face, with the rail at its 48° bite and the body still banked 33° into the turn; held to 110° the turn ended at
  *   2.6–3.7 m/s, off the plane;
- * - projection: Compress released, tall and centred, holding that heading up the face, until above FLOW_TOP_FACE of
- *   it, its speed fallen FLOW_PROJECT_FADE below the phase's best (the top of the projection: on the pool's slow 1.1 m
- *   wave, carried up to FLOW_TOP_FACE the board fell from 6.2 to 1.3–1.9 m/s, off the plane, and every cutback after
- *   it fell), or after FLOW_PROJECT_LIMIT, s;
+ * - projection: Compress released, tall and centred, holding that heading up the face, until the body has come back
+ *   within FLOW_UPRIGHT of upright (the cutback changes rails from there), the board is above FLOW_TOP_FACE of the
+ *   face (its top), or after FLOW_PROJECT_LIMIT, s. Begun while the body was still banked 11–41° into the bottom
+ *   turn (once the projection's speed had faded 15%), every cutback on the pool fell in 0.2 s or carved on up the
+ *   face to a stall;
  * - trim: along the face on the riding line, pumping (crouched while the face fraction falls, extended while it
  *   rises: the extension meets the load at the foot of each dip), until CUTBACK_REACH ahead of the curl; low on the
  *   face heading down, another bottom turn;
@@ -181,7 +182,7 @@ const FLOW_DRIVE = 0.3;
 const FLOW_BOTTOM_END = 45 * DEG;
 const FLOW_TOP_FACE = 0.65;
 const FLOW_PROJECT_LIMIT = 1;
-const FLOW_PROJECT_FADE = 0.15;
+const FLOW_UPRIGHT = 12 * DEG;
 const FLOW_CUTBACK_FROM = 45 * DEG;
 const FLOW_CUTBACK_TURN = 160 * DEG;
 const FLOW_TURN_LIMIT = 3;
@@ -235,8 +236,6 @@ export class Autopilot {
   private flowYaw = 0;
   private flowHeading = 0;
   private flowOpen = false;
-  /** The best speed over ground in the phase under way, m/s. */
-  private flowBest = 0;
   private lastFraction = Number.NaN;
   private fractionRate = 0;
   /** The turn under way and how long it has been held, and a turn given up that waits for its trigger to clear. */
@@ -461,7 +460,6 @@ export class Autopilot {
     }
     this.lastFraction = fraction;
     const record = this.trackFlow(view, heading);
-    this.flowBest = Math.max(this.flowBest, view.ride.speed);
     const time = record?.seconds ?? 0;
     const turned = face * this.flowYaw;
     const cutback = curl >= this.cutbackReach && angle > FLOW_CUTBACK_FROM;
@@ -482,7 +480,7 @@ export class Autopilot {
         else if (time > FLOW_TURN_LIMIT) [next, reached] = ['project', false];
         break;
       case 'project':
-        if (fraction > FLOW_TOP_FACE || view.ride.speed < (1 - FLOW_PROJECT_FADE) * this.flowBest) next = cutback ? 'cutback' : 'trim';
+        if (Math.abs(view.ride.bank ?? 0) <= FLOW_UPRIGHT || fraction > FLOW_TOP_FACE) next = cutback ? 'cutback' : 'trim';
         else if (time > FLOW_PROJECT_LIMIT) [next, reached] = [cutback ? 'cutback' : 'trim', false];
         break;
       case 'trim':
@@ -503,7 +501,6 @@ export class Autopilot {
       this.flowOpen = true;
       this.flowYaw = 0;
       this.flowHeading = heading;
-      this.flowBest = view.ride.speed;
     }
     const phase = this.flowRecords[this.flowRecords.length - 1].phase;
     switch (phase) {

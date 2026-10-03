@@ -200,6 +200,8 @@ export interface SurfZoneStatus {
     separation?: RiderSeparation; resets: number; wave: WaveFrame; live?: Maneuver; report?: RideReport & { id: number };
     /** The rider's balance reserve, 0–1 (0 once fallen). */
     balance: number;
+    /** Standing, the body's bank on its ankles, rad, toward the board's +x (its left); 0 otherwise (the dev autopilot's flow). */
+    bank?: number;
     /** The leash (the wipeout spec): snapped, its tension (N) and the ends' distance (m), and whether it is being reeled in. */
     leash: { snapped: boolean; tension: number; distance: number; reeling: boolean };
     /** The duck-dive's press, 0–1. */
@@ -677,6 +679,7 @@ export class SurfZoneRunner {
         live: this.analyzer?.latest && { ...this.analyzer.latest },
         report: this.rideReport && { ...this.rideReport, maneuvers: this.rideReport.maneuvers.map((maneuver) => ({ ...maneuver })) },
         balance: this.session.phase === 'fallen' ? 0 : this.session.rider.balanceReserve,
+        bank: this.session.rider.attached ? this.session.rider.bank.angle : 0,
         leash: { snapped: this.session.leash.snapped, tension: this.session.leash.tension, distance: this.session.leash.distance, reeling: this.session.leash.reeling },
         duck: this.session.rider.attached ? this.session.rider.duck.press : 0,
         boardInReach: this.session.surfer.active && this.session.recovery.state === 'free' && this.session.recovery.inReach(this.session.board),

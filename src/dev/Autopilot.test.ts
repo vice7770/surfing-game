@@ -319,12 +319,22 @@ describe('autopilot flow', () => {
     expect(later.phase).toMatch(/^FLOW · PUMP/);
   });
 
-  it('ends the projection at its top: high on the face, or once its speed has faded', () => {
-    const autopilot = projecting();
-    autopilot.next(standing(100 * DEG, { faceFraction: 0.45, curlDistance: 11, curlSide: -1 }, 1, 6.5), STEP);
-    expect(autopilot.phase).toBe('FLOW · PROJECTION');
-    autopilot.next(standing(100 * DEG, { faceFraction: 0.5, curlDistance: 11, curlSide: -1 }, 1, 5.3), STEP);
-    expect(autopilot.phase).toBe('FLOW · CUTBACK');
+  it('ends the projection once the body is back near upright, or at the top of the face', () => {
+    const banked = (degrees: number, at: AutopilotView) => ({ ...at, ride: { ...at.ride, bank: degrees * DEG } });
+    const top = (frames: [number, number][]) => {
+      const autopilot = riding(30 * DEG, { style: 'flow' });
+      autopilot.next(standing(30 * DEG, { faceFraction: 0.3 }), STEP);
+      autopilot.next(standing(30 * DEG, { faceFraction: 0.3 }), STEP);
+      autopilot.next(banked(25, standing(50 * DEG, { faceFraction: 0.3 })), STEP);
+      return frames.map(([bank, fraction]) => {
+        autopilot.next(banked(bank, standing(80 * DEG, { faceFraction: fraction, curlDistance: 11, curlSide: -1 })), STEP);
+        return autopilot.phase;
+      });
+    };
+    // Still banked 20° into the bottom turn it projects on; within 12° of upright, the cutback.
+    expect(top([[20, 0.4], [-18, 0.45], [10, 0.5]])).toEqual(['FLOW · PROJECTION', 'FLOW · PROJECTION', 'FLOW · CUTBACK']);
+    // At the top of the face, though still banked.
+    expect(top([[25, 0.5], [25, 0.7]])).toEqual(['FLOW · PROJECTION', 'FLOW · CUTBACK']);
   });
 
   it('starts in the phase asked for (the probe\'s isolated cutback)', () => {

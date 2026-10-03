@@ -72,7 +72,9 @@ const PLACES = {
 const PLACE_AHEAD = Number(process.env.PLACE_AHEAD ?? 8);
 
 it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => {
-  const pool = physicalSettingsFor('pool', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
+  // SIZE=small|medium|big: the pool's size (Medium by default, as the lesson-wave script records it).
+  const size = process.env.SIZE === 'small' || process.env.SIZE === 'big' ? process.env.SIZE : 'medium';
+  const pool = physicalSettingsFor('pool', { swell: size, tide: 'mid', wind: 'calm', time: 'midday' }, { stage: 2, compute: 'cpu' });
   const config: SurfZoneConfig = {
     spot: 'pool', seed: 1, significantHeight: pool.significantHeight, peakPeriod: pool.peakPeriod, directionDegrees: pool.directionDegrees,
     spreading: 1000, tide: 0, windSpeed: 0, componentCount: 1, stage: 2, compute: 'cpu',
@@ -93,7 +95,7 @@ it.skipIf(!process.env.PROBE)('rides the movement flow on the Wave Pool', () => 
   const session = runner.session!;
   const { rider, board } = session;
   const focus = runner.focus;
-  log(`pool Medium: Hs ${config.significantHeight.toFixed(2)} m, T ${config.peakPeriod} s; take-off point x ${focus.x.toFixed(1)} z ${focus.z.toFixed(1)}; waiting ${along} m along each arm; stance ${rider.stance}; cutback reach ${cutbackReach ?? 'default'}; ${saved ? 'sea from ' + process.env.SEA : 'spin-up'} ${((performance.now() - wall) / 1000).toFixed(0)} s wall`);
+  log(`pool ${size}: Hs ${config.significantHeight.toFixed(2)} m, T ${config.peakPeriod} s; take-off point x ${focus.x.toFixed(1)} z ${focus.z.toFixed(1)}; waiting ${along} m along each arm; stance ${rider.stance}; cutback reach ${cutbackReach ?? 'default'}; ${saved ? 'sea from ' + process.env.SEA : 'spin-up'} ${((performance.now() - wall) / 1000).toFixed(0)} s wall`);
   // Where each arm's column first breaks on the reef, the most seaward over the run (the pool probe's rule).
   const { solver } = runner.simulation;
   const strength = (runner.simulation as unknown as { breaking: { strength: Float64Array } }).breaking.strength;
