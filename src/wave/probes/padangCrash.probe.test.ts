@@ -125,12 +125,16 @@ interface Life {
   backAfterRelease: boolean;
   /** Its slice at its last measured step (see `Step`). */
   previous?: Step;
-  /** The most its hand-back's term reached, per second of its clock and per real second, m/s; its steps measured inside the hand-back and per real second; the most its drawn crest stood from it along its ray, m. */
+  /**
+   * The most its hand-back's term reached, per second of its clock and per real second, m/s; its steps measured inside the
+   * hand-back and per real second; the most its drawn crest stood from it along its ray, m, and the steps that measured.
+   */
   handover: number;
   realHandover: number;
   steps: number;
   realSteps: number;
   crestDistance: number;
+  crestSteps: number;
   /** Its place among the traced jets (0: not traced). */
   traced: number;
 }
@@ -451,7 +455,8 @@ class JetTracker {
       lastTau: p.tau, lastOnPace: false, drawn: false, covered: false, jetStrip: p.jetStrip, pacedStep: 0, pacedTime: 0, pacedTau: 0, normal: 0,
       pace: 0, height: 0, unanchored: false, thrownStep: 0, strip: -1, crashedStep: 0, crashTime: 0, crash: '', coveredAtCrash: false,
       closeStep: 0, exitStep: 0, exitTau: 0, exitDrawn: false, coasted: 0, run: 0, episodes: 0, alone: 0, lateClaims: 0, oldest: 0,
-      atTouchdown: false, releaseStep: 0, backAfterRelease: false, handover: 0, realHandover: 0, steps: 0, realSteps: 0, crestDistance: 0, traced: 0,
+      atTouchdown: false, releaseStep: 0, backAfterRelease: false, handover: 0, realHandover: 0, steps: 0, realSteps: 0, crestDistance: 0, crestSteps: 0,
+      traced: 0,
     };
   }
 
@@ -617,6 +622,7 @@ class JetTracker {
       if (jet) {
         this.crestDistances.push(crestAlong);
         life.crestDistance = Math.max(life.crestDistance, Math.abs(crestAlong));
+        life.crestSteps += 1;
       }
     }
     // Over the step: from this point's slice the step before, or, entering the hand-back at its throw, from its slice the
@@ -837,7 +843,7 @@ class JetTracker {
     out.push(`    steps the hand-back moved in whose anchor moved more than ${JUMP} m: ${aj.handover + aj.crestPoint + aj.throwPoint + aj.appearance} of ${this.realMeasured} (largest ${fixed(aj.largest)} m); the largest part: the hand-back's ${aj.handover}, following K (u₁ ΔK, or ΔK entering) ${aj.crestPoint}, (1 − u₁) ΔT′ ${aj.throwPoint}, the throw point's appearance (entering) ${aj.appearance}`);
     out.push(`    those whose K moved more than ${JUMP} m: ${kj.z + kj.landmark + kj.ray} (largest ${fixed(kj.largest)} m); the largest part: the point's z ${kj.z}, the crest landmark's advance ${kj.landmark}, the ray turning (c₀ Δn) ${kj.ray}`);
     out.push(`    thrown points with no jet, with a throw point: the term over C per hand-back step ${spread(this.otherShares)}; per point, its largest ${spread(thrownPoints.filter((life) => life.thrownStep === 0 && life.steps > 0).map((life) => life.handover / life.normal))}`);
-    out.push(`  the drawn crest's distance from its point along the ray (+ forward), m, per step from the throw to touchdown (jets on a drawn front): ${spread(this.crestDistances)}; per jet, its largest |…|: ${spread(jets.filter((life) => life.crestDistance > 0).map((life) => life.crestDistance))}`);
+    out.push(`  the drawn crest's distance from its point along the ray (+ forward), m, per step from the throw to touchdown (jets on a drawn front): ${spread(this.crestDistances)}; per jet, its largest |…| (${jets.filter((life) => life.crestSteps > 0).length} jets with a measured step): ${spread(jets.filter((life) => life.crestSteps > 0).map((life) => life.crestDistance))}`);
     out.push(`  the clock's rate in the open window (τ gained over the step's time, each step from a jet's throw to its touchdown): ${spread(this.openRates)}; paused (under ${PAUSED}) on ${outOf(this.openRates.filter((v) => v < PAUSED).length, this.openRates.length)} steps, more than ${FAST} times real time on ${outOf(this.openRates.filter((v) => v > FAST).length, this.openRates.length)}`);
     // The clamp.
     out.push(`  the pace clamp (0.5–1.5 × √(g (h + η)) on c_n): of ${thrownPoints.length} thrown points ${this.paceSlow} slow, ${this.paceFast} fast, ${this.paceUnmeasured} unmeasured (the long-wave speed used); of ${jets.length} jets ${this.jetPace.slow} slow, ${this.jetPace.fast} fast, ${this.jetPace.unmeasured} unmeasured; jets' measured crest speed over √(g (h + η)): ${spread(this.speedRatio)}`);
@@ -886,7 +892,7 @@ class JetTracker {
       `    the hand-back's own term over C, per second of the clock, ${anchoredJets.length} jets with a throw point (+ ${unanchoredJets} without, term 0): per hand-back step, ${ninetyMedian(this.termShares)}; per jet (its largest), ${ninetyMedian(mostShares)}; over 0.5 C on ${outOf(over(this.termShares, 0.5), this.termShares.length)} steps and ${outOf(over(mostShares, 0.5), mostShares.length)} jets; the term in m/s per hand-back step, ${ninetyMedian(this.terms)}`,
       `    the same per real second over C: per step the hand-back moves in, ${ninetyMedian(this.realShares)}; per jet (its largest), ${ninetyMedian(realMost)}`,
       `    K − T′ per hand-back step, m: along the ray ${spread(this.alongs)}; across it ${spread(this.acrosses, 9)}`,
-      `    the drawn crest from its point along the ray, m, per step from the throw to touchdown: ${spread(this.crestDistances)}; per jet, its largest |…|: ${ninetyMedian(jets.filter((life) => life.crestDistance > 0).map((life) => life.crestDistance))}`,
+      `    the drawn crest from its point along the ray, m, per step from the throw to touchdown: ${spread(this.crestDistances)}; per jet, its largest |…|: ${ninetyMedian(jets.filter((life) => life.crestSteps > 0).map((life) => life.crestDistance))}`,
       `    the gap at release, m: ${spread(this.releaseGap)} (${this.releasedCoasting} released coasting); over 1 H ${outOf(ahead + behind, this.releaseGap.length)}; back on the ordinary match the step after ${this.returned} of ${released.length} released jets`,
       `    a jet's z step onto its pace the step after its throw (its z at the throw step less its pace there), m: ${spread(this.throwSteps)}`,
       `    2 T exits ${this.exits.length} (with a jet ${exitJets.length}; drawn when last seen ${this.exits.filter((life) => life.exitDrawn).length}); points joined past their throw ${lateJoins.length} of ${thrownPoints.length} thrown points (jets ${lateJoins.filter((life) => life.thrownStep > 0).length})`,
