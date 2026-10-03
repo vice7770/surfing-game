@@ -86,6 +86,21 @@ export interface FastFront {
   points: readonly FastPoint[];
 }
 
+/**
+ * A fast front to dump: its peels (`peels`) and, of the points whose first throw the probe counted on it (`throws`: each
+ * point's front at its throw, by ID), each one logged with its throw (`logs`).
+ */
+export function fastFront(
+  peels: Omit<FastFront, 'points'>, throws: ReadonlyMap<number, { front: number }>, logs: ReadonlyMap<number, PointLog>,
+): FastFront {
+  const points: FastPoint[] = [];
+  for (const [id, counted] of throws) {
+    const log = logs.get(id);
+    if (counted.front === peels.front && log?.thrown) points.push({ id, column: log.column, join: log.join, throw: log.thrown, joinDepth: log.joinDepth, throwDepth: log.throwDepth });
+  }
+  return { ...peels, points };
+}
+
 const COLUMNS = ['front', 'point', 'column']
   .concat(['join', 'throw'].flatMap((event) => ['t', 'x', 'z', 'eta', 'd', 'travel', 'line'].map((field) => `${event}_${field}`)))
   .concat(['lag', 'join_table_d', 'throw_table_d']);
