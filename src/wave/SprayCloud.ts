@@ -119,9 +119,15 @@ const WATER_DENSITY = 1025;
 /**
  * Floats per particle in `particles`: x, y, z, size (m), opacity, and kind:
  * 0 spray, 1 mist, and a closing tube's whitewater (G9, drawn in Rich only):
- * 2 foam ball, 3 the spit's and eruption's spray, 4 their mist.
+ * 2 foam ball, 3 the spit's and eruption's spray, 4 their mist. Then, after
+ * the kind so every older reader keeps its offsets, what the Rich look draws
+ * a cluster by (decided 2026-09-29, spray item 1), written in both looks so a
+ * switch to Rich draws at once: its streak (the metres it travels while the
+ * eye takes it in, x, y, z), `tau` (its drops' optical depth, its mean over
+ * its disc), `column` (the optical depth of the spray round it) and `glass`
+ * (the share of its disc its water still covers as sheets).
  */
-export const SPRAY_STRIDE = 6;
+export const SPRAY_STRIDE = 12;
 /** The worker's pools: spray and mist, and a closing tube's whitewater beside them, so neither crowds the other out. */
 export const SPRAY_CAPACITY = 4096;
 export const WHITEWATER_CAPACITY = 1024;
@@ -132,6 +138,82 @@ const MIST: Kind = 1;
 const FOAM_BALL: Kind = 2;
 const TUBE_SPRAY: Kind = 3;
 const TUBE_MIST: Kind = 4;
+/**
+ * The law of spray drop sizes (Erinin et al. 2023, fitted to plunging breakers' splash; round-4 notes §2a): the count
+ * of drops falls as d^-2 below the knee and d^-6 above it, which sits at 0.8–1.5 mm.
+ */
+export const DROP_LAW = { knee: 1e-3, below: -2, above: -6 } as const;
+
+/**
+ * A drop diameter, m, for a cluster: a drop picked by the water it holds, not by count, so that clusters of equal water
+ * drawn this way have the mean extinction of the law's Sauter mean (τ = 1.5 w / r₃₂, Bohren 1987). By volume the law
+ * weighs d³ · d^-2 = d below the knee and d³ · knee⁴ d^-6 above it; `u` in [0, 1) walks that weight between `smallest`
+ * and `largest`.
+ */
+export function dropDiameter(u: number, smallest: number, largest: number): number {
+  const knee = DROP_LAW.knee;
+  const below = smallest < knee ? (Math.min(largest, knee) ** 2 - smallest ** 2) / 2 : 0;
+  const start = Math.max(smallest, knee);
+  const above = largest > knee ? (knee ** 4 * (start ** -2 - largest ** -2)) / 2 : 0;
+  const target = u * (below + above);
+  if (target < below) return Math.sqrt(smallest ** 2 + 2 * target);
+  return (start ** -2 - (2 * (target - below)) / knee ** 4) ** -0.5;
+}
+
+/** The optical depth of drops of radius `radius` over a water path `water` (a depth, m): Bohren 1987, τ = 1.5 w / r. */
+export function opticalDepth(water: number, radius: number): number {
+  return (1.5 * water) / radius;
+}
+
+/**
+ * The drops each kind of cluster holds: the diameters its fall speeds stand for (G6's 3–7 m/s for drops and
+ * 0.3–0.6 m/s for mist are drops of 0.7–2.3 mm and 0.11–0.17 mm by their terminal speeds, round-4 notes §1 and §2f),
+ * drawn by the law of drop sizes (`dropDiameter`).
+ */
+const DROPS: readonly { smallest: number; largest: number }[] = [
+  { smallest: 0.7e-3, largest: 2.3e-3 },
+  { smallest: 0.11e-3, largest: 0.17e-3 },
+  { smallest: 1e-3, largest: 1e-3 },
+  { smallest: 0.7e-3, largest: 2.3e-3 },
+  { smallest: 0.11e-3, largest: 0.17e-3 },
+];
+/**
+ * The water share of a cluster's volume at birth, by where it comes from [all provisional: no field measurement of a
+ * splash's, a bore's or a spit's spray water exists]:
+ * - `splash`: a lip impact's, 2 %, the most Chanson et al. 2002 measured in a near-full-scale splash ("less than 2 %"),
+ *   so that an impact's clusters together reach the optical depth over 15 that makes a reef splash's core white
+ *   (round-4 notes §3);
+ * - `fizz`: a bore's and a paddle stroke's, a twentieth of a splash's: the spray off a broken wave's face is sparse;
+ * - `spit`: a closing tube's air blows its spray out dense (spray-and-mist.md: "fine and dense, it glows hard when
+ *   backlit"), half a splash's;
+ * - `mist`: mist a 250th of its source's drops: its drops are a tenth the size, so the same water would be ten times as
+ *   deep, and a mist cluster is a faint haze, glowing toward the sun, not a puff.
+ */
+export const SPRAY_WATER = { splash: 2e-2, fizz: 1e-3, spit: 1e-2, mist: 4e-3 } as const;
+/**
+ * A cluster stands for drops launched with its emitter's spread of speeds, even over `spread` m/s on each axis, so
+ * they fly apart evenly, its width growing by that spread each second, until the air has taken their speeds: over
+ * v_t / g, their terminal speed over gravity (the quadratic drag they fly with), a few tenths of a second for
+ * millimetre drops and a few hundredths for mist. Mist then spreads as G6 draws it, to twice its width over its life.
+ */
+const DISPERSION = 1;
+/**
+ * A cluster's water is born as sheets and ligaments, which tear into drops: a ligament of radius a pinches off in a
+ * few of Rayleigh's capillary times, 2.91 √(ρ a³ / σ) (about 4 ms for a 0.5 mm ligament, 20 ms for 1.5 mm), and a
+ * splash-up's sheets fly a few tenths of a second first (Chanson et al. 2002: the splash is over in under 0.4 s). The
+ * share still sheets falls as e^(−age / BREAKUP) [the time provisional]. Sheets are about the drops' diameter over
+ * 1.89 thick (Rayleigh–Plateau: a jet breaks into drops 1.89 times its diameter).
+ */
+const BREAKUP = 0.1;
+const LIGAMENT = 1.89;
+/** How long the eye takes a cluster in, s: it is drawn streaked over the way it travels in it, a frame at 60 Hz (round-4 notes §5, item 1). */
+export const STREAK_EXPOSURE = 1 / 60;
+/** The cell the optical depth of the spray round a cluster (`column`) is gathered over, m: about a splash's core [provisional]. */
+export const COLUMN_CELL = 0.5;
+/** Each cluster reads the spray round it every this many steps (a newborn one at once): it changes over tenths of a second, a step is a sixtieth. */
+export const COLUMN_EVERY = 4;
+const COLUMN_SLOTS = 1 << 16;
+
 /** A closing tube's whitewater, drawn in Rich only. */
 const isWhitewater = (kind: number) => kind >= FOAM_BALL;
 const isMist = (kind: number) => kind === MIST || kind === TUBE_MIST;
@@ -168,18 +250,42 @@ export class SprayCloud {
   private readonly drag: Float64Array;
   private readonly size: Float64Array;
   private readonly kind: Uint8Array;
+  /**
+   * Per particle, for the Rich look: its drops' radius, m, the water it holds, m³, its emitter's spread of speeds, m/s,
+   * how long it is streaked over, s, and the optical depth of the spray round it when it last read it (NaN till then).
+   */
+  private readonly radius: Float64Array;
+  private readonly water: Float64Array;
+  private readonly spread: Float64Array;
+  private readonly streak: Float64Array;
+  private readonly around: Float64Array;
+  /** Per particle, how long the air takes to take its drops' speeds, v_t / g, s (`DISPERSION`). */
+  private readonly settle: Float64Array;
+  /** Scratch for `pack`: each cluster's width, and its water in drops and in sheets, now (`optics`). */
+  private readonly widthNow: Float64Array;
+  private readonly dropsNow: Float64Array;
+  private readonly sheetsNow: Float64Array;
   /** A foam-ball sprite's roller, and where it sits in it: its distance from the axis, angle round it, and offset along it. */
   private readonly owner: Float64Array;
   private readonly radial: Float64Array;
   private readonly spin: Float64Array;
   private readonly lateral: Float64Array;
   private readonly random: () => number;
+  /** A stream of its own for the optics (drop sizes, water), so the particles' flight is the same whatever is drawn of them. */
+  private readonly optical: () => number;
+  /** Scratch for `gather`: a hash of cells (x, y, z, the pass that wrote it) and the cross-section of spray in each, m². */
+  private readonly cellKeys = new Int32Array(COLUMN_SLOTS * 4);
+  private readonly cellSums = new Float64Array(COLUMN_SLOTS);
+  private pass = 0;
+  /** The hash's size this pass (a power of two, at least twice the particles, so it stays small and in cache). */
+  private slots = 256;
   /** Scratch for `roll`: each roller's sprites, and the rollers by id. */
   private readonly held = new Map<number, number>();
   private readonly rollerById = new Map<number, TubeRoller>();
 
   constructor(seed: number, readonly capacity = SPRAY_CAPACITY, readonly whitewaterCapacity = Math.round(capacity / 4)) {
     this.random = seededRandom(seed, 0x5b1a54);
+    this.optical = seededRandom(seed, 0x0d70b5);
     const total = capacity + whitewaterCapacity;
     const make = () => new Float64Array(total);
     this.x = make(); this.y = make(); this.z = make();
@@ -187,6 +293,8 @@ export class SprayCloud {
     this.age = make(); this.life = make(); this.drag = make(); this.size = make();
     this.owner = make(); this.radial = make(); this.spin = make(); this.lateral = make();
     this.kind = new Uint8Array(total);
+    this.radius = make(); this.water = make(); this.spread = make(); this.streak = make(); this.around = make(); this.settle = make();
+    this.widthNow = make(); this.dropsNow = make(); this.sheetsNow = make();
     this.particles = new Float32Array(total * SPRAY_STRIDE);
   }
 
@@ -267,6 +375,7 @@ export class SprayCloud {
         mist ? MIST : SPRAY,
         impact.x + (this.random() - 0.5) * 0.8, surface + 0.05, impact.z + (this.random() - 0.5) * 0.8,
         impact.vx * forward + (this.random() - 0.5) * spread, up, impact.vz * forward + (this.random() - 0.5) * spread,
+        spread, SPRAY_WATER.splash,
       );
     }
   }
@@ -294,6 +403,7 @@ export class SprayCloud {
         mist ? MIST : SPRAY,
         impact.x + (this.random() - 0.5) * 0.8, surface + 0.05, impact.z + (this.random() - 0.5) * 0.8,
         impact.vx * forward + (this.random() - 0.5) * spread, up, impact.vz * forward + (this.random() - 0.5) * spread,
+        spread, SPRAY_WATER.splash,
       );
     }
   }
@@ -320,6 +430,7 @@ export class SprayCloud {
         SPRAY,
         stroke.x + (this.random() - 0.5) * 0.15, surface + 0.03, stroke.z + (this.random() - 0.5) * 0.15,
         backX * back + (this.random() - 0.5) * spread, up, backZ * back + (this.random() - 0.5) * spread,
+        spread, SPRAY_WATER.fizz,
       );
     }
   }
@@ -339,6 +450,7 @@ export class SprayCloud {
         this.random() < mistShare ? TUBE_MIST : TUBE_SPRAY,
         x + (this.random() - 0.5) * 0.3, y + (this.random() - 0.5) * 0.3, z + (this.random() - 0.5) * 0.3,
         vx * pace + (this.random() - 0.5) * spread, vy * pace + (this.random() - 0.5) * spread, vz * pace + (this.random() - 0.5) * spread,
+        spread, SPRAY_WATER.spit,
       );
     }
   }
@@ -410,6 +522,7 @@ export class SprayCloud {
           this.random() < 0.3 ? MIST : SPRAY,
           xCenters[i - row * nx] + (this.random() - 0.5) * dx, surface + 0.05, zCenters[row] + (this.random() - 0.5) * dz[row],
           u + (this.random() - 0.5), lift * (0.4 + 0.6 * this.random()), w + (this.random() - 0.5),
+          1, SPRAY_WATER.fizz,
         );
       }
     }
@@ -443,13 +556,18 @@ export class SprayCloud {
           this.spawn(
             MIST, xCenters[column] + (this.random() - 0.5) * dx, depth + bed[i] + 0.1, zCenters[row],
             (this.random() - 0.5) * 0.5, 0.5 + this.random(), windSpeed * (0.3 + 0.4 * this.random()),
+            0.5, SPRAY_WATER.fizz,
           );
         }
       }
     }
   }
 
-  private spawn(kind: Kind, x: number, y: number, z: number, vx: number, vy: number, vz: number): void {
+  /**
+   * A particle of `kind`, launched with its emitter's `spread` of speeds, m/s (how its cluster widens, `DISPERSION`),
+   * its drops the water share `water` of its volume (`SPRAY_WATER`, mist a fraction of it).
+   */
+  private spawn(kind: Kind, x: number, y: number, z: number, vx: number, vy: number, vz: number, spread = 0, water = 0): void {
     const k = this.count;
     this.x[k] = x;
     this.y[k] = y;
@@ -459,19 +577,30 @@ export class SprayCloud {
     this.vz[k] = vz;
     this.age[k] = 0;
     this.kind[k] = kind;
+    this.spread[k] = spread;
+    this.streak[k] = STREAK_EXPOSURE;
+    this.around[k] = Number.NaN;
     this.count += 1;
     if (isWhitewater(kind)) this.whitewaterCount += 1;
     if (kind === FOAM_BALL) {
       this.drag[k] = 0;
       this.life[k] = FOAM_BALL_LINGER;
       this.size[k] = this.between(FOAM_BALL_SIZE);
+      this.radius[k] = 1;
+      this.water[k] = 0;
+      this.settle[k] = 0;
       return;
     }
     const mist = isMist(kind);
     const fall = mist ? this.between(MIST_FALL) : this.between(SPRAY_FALL);
     this.drag[k] = GRAVITY / (fall * fall);
+    this.settle[k] = fall / GRAVITY;
     this.life[k] = (mist ? MIST_LIFE : SPRAY_LIFE) * (0.6 + 0.4 * this.random());
     this.size[k] = mist ? 0.35 + 0.45 * this.random() : 0.06 + 0.08 * this.random();
+    // Its optics, from a stream of their own: its drops' size by the law, and the water a cluster of its width holds.
+    const drops = DROPS[kind];
+    this.radius[k] = dropDiameter(this.optical(), drops.smallest, drops.largest) / 2;
+    this.water[k] = (water * (mist ? SPRAY_WATER.mist : 1) * Math.PI * this.size[k] ** 3) / 6;
   }
 
   private remove(k: number): void {
@@ -489,6 +618,12 @@ export class SprayCloud {
     this.drag[k] = this.drag[last];
     this.size[k] = this.size[last];
     this.kind[k] = this.kind[last];
+    this.radius[k] = this.radius[last];
+    this.water[k] = this.water[last];
+    this.spread[k] = this.spread[last];
+    this.streak[k] = this.streak[last];
+    this.around[k] = this.around[last];
+    this.settle[k] = this.settle[last];
     this.owner[k] = this.owner[last];
     this.radial[k] = this.radial[last];
     this.spin[k] = this.spin[last];
@@ -496,20 +631,114 @@ export class SprayCloud {
   }
 
   private pack(): void {
+    const rich = this.look === 'rich';
+    const { particles } = this;
+    // The cross-section of each cluster's drops, gathered into the cells round it for the optical depth of the spray there.
+    this.pass += 1;
+    this.slots = Math.min(COLUMN_SLOTS, Math.max(256, 2 ** Math.ceil(Math.log2(2 * this.count + 1))));
+    for (let k = 0; k < this.count; k += 1) {
+      if (this.kind[k] === FOAM_BALL) continue;
+      this.optics(k);
+      const drops = this.dropsNow[k];
+      if (!(drops > 0)) continue;
+      const slot = this.cell(Math.floor(this.x[k] / COLUMN_CELL), Math.floor(this.y[k] / COLUMN_CELL), Math.floor(this.z[k] / COLUMN_CELL), true);
+      this.cellSums[slot] += opticalDepth(drops, this.radius[k]);
+    }
     for (let k = 0; k < this.count; k += 1) {
       const o = k * SPRAY_STRIDE;
       const t = this.age[k] / this.life[k];
       const mist = isMist(this.kind[k]);
-      this.particles[o] = this.x[k];
-      this.particles[o + 1] = this.y[k];
-      this.particles[o + 2] = this.z[k];
-      this.particles[o + 3] = this.size[k] * (mist ? 1 + t : 1);
+      const ball = this.kind[k] === FOAM_BALL;
+      const width = ball ? this.size[k] : this.widthNow[k];
+      const drops = this.dropsNow[k];
+      const sheets = this.sheetsNow[k];
+      particles[o] = this.x[k];
+      particles[o + 1] = this.y[k];
+      particles[o + 2] = this.z[k];
+      // Classic draws mist growing to twice its width; Rich draws each cluster as wide as its drops have spread.
+      particles[o + 3] = rich ? width : this.size[k] * (mist ? 1 + t : 1);
       // A foam ball holds until its roller is gone, then fades over the time it lingers; while it holds it is as
-      // opaque as its own optical depth makes it (Rich draws it, `foamBallDepth`).
-      this.particles[o + 4] = this.kind[k] === FOAM_BALL
+      // opaque as its own optical depth makes it (Rich draws it, `foamBallDepth`). Rich draws a cluster by its
+      // optical depth, which thins as its water does.
+      particles[o + 4] = ball
         ? Math.min(1, (this.life[k] - this.age[k]) / FOAM_BALL_LINGER)
-        : (mist ? 0.25 : 0.8) * (1 - t * t);
-      this.particles[o + 5] = this.kind[k];
+        : rich ? 1 : (mist ? 0.25 : 0.8) * (1 - t * t);
+      particles[o + 5] = this.kind[k];
+      particles[o + 6] = this.vx[k] * this.streak[k];
+      particles[o + 7] = this.vy[k] * this.streak[k];
+      particles[o + 8] = this.vz[k] * this.streak[k];
+      if (ball) {
+        particles[o + 9] = 0;
+        particles[o + 10] = 0;
+        particles[o + 11] = 0;
+        continue;
+      }
+      const disc = (Math.PI * width * width) / 4;
+      particles[o + 9] = opticalDepth(drops / disc, this.radius[k]);
+      if (Number.isNaN(this.around[k]) || (k + this.pass) % COLUMN_EVERY === 0) this.around[k] = this.column(this.x[k], this.y[k], this.z[k]);
+      particles[o + 10] = this.around[k];
+      particles[o + 11] = Math.min(1, (LIGAMENT * sheets) / (disc * 2 * this.radius[k]));
+    }
+  }
+
+  /**
+   * A cluster as the Rich look sees it now: its width, spread by its emitter's speeds till the air takes them
+   * (`DISPERSION`), and its water,
+   * m³, in drops and still in sheets (`BREAKUP`); its water thins over its life as G6's opacity fades, 1 − t².
+   */
+  private optics(k: number): void {
+    const t = this.age[k] / this.life[k];
+    const water = this.water[k] * Math.max(0, 1 - t * t);
+    const sheet = Math.exp(-this.age[k] / BREAKUP);
+    const settle = this.settle[k];
+    const flown = settle > 0 ? DISPERSION * this.spread[k] * settle * (1 - Math.exp(-this.age[k] / settle)) : 0;
+    this.widthNow[k] = (this.size[k] + flown) * (isMist(this.kind[k]) ? 1 + t : 1);
+    this.dropsNow[k] = water * (1 - sheet);
+    this.sheetsNow[k] = water * sheet;
+  }
+
+  /** The optical depth of the spray round a point: its drops' cross-section in the cells about it, read trilinearly, over a cell's face. */
+  private column(x: number, y: number, z: number): number {
+    const u = x / COLUMN_CELL - 0.5;
+    const v = y / COLUMN_CELL - 0.5;
+    const w = z / COLUMN_CELL - 0.5;
+    const i = Math.floor(u);
+    const j = Math.floor(v);
+    const l = Math.floor(w);
+    const fu = u - i;
+    const fv = v - j;
+    const fw = w - l;
+    let sum = 0;
+    for (let a = 0; a < 2; a += 1) {
+      for (let b = 0; b < 2; b += 1) {
+        for (let c = 0; c < 2; c += 1) {
+          const slot = this.cell(i + a, j + b, l + c, false);
+          if (slot < 0) continue;
+          sum += this.cellSums[slot] * (a ? fu : 1 - fu) * (b ? fv : 1 - fv) * (c ? fw : 1 - fw);
+        }
+      }
+    }
+    return sum / (COLUMN_CELL * COLUMN_CELL);
+  }
+
+  /** The hash slot of cell (i, j, k) for this pass, made if `create`, else −1 where there is none. */
+  private cell(i: number, j: number, k: number, create: boolean): number {
+    const keys = this.cellKeys;
+    const mask = this.slots - 1;
+    let slot = (Math.imul(i, 73856093) ^ Math.imul(j, 19349663) ^ Math.imul(k, 83492791)) & mask;
+    for (;;) {
+      const o = slot * 4;
+      if (keys[o + 3] !== this.pass) {
+        if (!create) return -1;
+        keys[o] = i;
+        keys[o + 1] = j;
+        keys[o + 2] = k;
+        keys[o + 3] = this.pass;
+        this.cellSums[slot] = 0;
+        return slot;
+      }
+      if (keys[o] === i && keys[o + 1] === j && keys[o + 2] === k) return slot;
+      slot = (slot + 1) & mask;
     }
   }
 
