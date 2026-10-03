@@ -1,7 +1,7 @@
 /**
  * Dev tool (`?inpage&record`): an autopilot (`Autopilot`) paddles for waves in
  * the physical surf zone, pops up on the cue and rides S-turns up and down the face (`&style=line`:
- * holds a line along it), while the game's own
+ * holds a line along it; `&style=flow`: rides the movement flow, bottom turn, projection, trim, cutback), while the game's own
  * renderer films it frame by frame into an H.264 MP4 (WebCodecs). Failed
  * attempts are dropped; the first ride of at least MIN_RIDE seconds is posted
  * to a local receiver (RECEIVER, `npm run record:ride`) as `ride.mp4`. It
@@ -16,7 +16,7 @@ import { PerspectiveCamera, Vector3 } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
 import { SEA_COMPONENTS, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
 import { LIP_STRIDE } from '../wave/SurfZoneRunner';
-import { Autopilot, autopilotView, type TurnRecord } from './Autopilot';
+import { Autopilot, autopilotView, type FlowRecord, type TurnRecord } from './Autopilot';
 import { advance, breathe } from './devStepping';
 
 interface RecordingHooks {
@@ -48,10 +48,11 @@ const WAIT_OUTSIDE = Number(params.get('outside') ?? 5);
 const LEAD = 4;
 const AFTER = 2.5;
 const MAX_SIM_SECONDS = Number(params.get('maxMinutes') ?? 20) * 60;
-const STYLE = params.get('style') === 'line' ? 'line' : 'turns';
+const STYLE = params.get('style') === 'line' ? 'line' : params.get('style') === 'flow' ? 'flow' : 'turns';
 /**
  * `need=bottom`: keep only a ride with a bottom turn in it (and at least MIN_RIDE s long): one that reached its end,
- * heading up the face, or with `&turn=D`, one that turned at least D degrees.
+ * heading up the face, or with `&turn=D`, one that turned at least D degrees. Riding the flow (`&style=flow`) any of its
+ * phases can be asked for, such as `need=cutback`.
  */
 const NEED = params.get('need');
 const NEED_TURN = params.has('turn') ? Number(params.get('turn')) : undefined;
@@ -175,16 +176,18 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
     if (state === 'done') {
       after += STEP;
       if (after > AFTER) {
-        const needed = NEED !== 'bottom' || autopilot.turnRecords.some((turn) => turn.kind === 'bottom'
-          && (NEED_TURN === undefined ? turn.completed : turn.degrees >= NEED_TURN));
+        const needed = STYLE === 'flow'
+          ? !NEED || autopilot.flowRecords.some((phase) => phase.phase === NEED && (NEED_TURN === undefined ? phase.completed : Math.abs(phase.degrees) >= NEED_TURN))
+          : NEED !== 'bottom' || autopilot.turnRecords.some((turn) => turn.kind === 'bottom'
+            && (NEED_TURN === undefined ? turn.completed : turn.degrees >= NEED_TURN));
         if (autopilot.rideTime >= MIN_RIDE && needed) {
           const video = await clip.finish();
           await post('/upload?name=ride.mp4', video);
           await log(`saved a ${autopilot.rideTime.toFixed(1)} s ride after ${autopilot.attempts} attempts, ${(simulated / 60).toFixed(1)} min simulated, ${clip.frames} frames`);
-          await log(`turns (the film starts ${(clip.frames / FPS - autopilot.rideTime - AFTER).toFixed(1)} s before standing): ${turnLines(autopilot.turnRecords)}`);
+          await log(`${rideLines(autopilot, clip.frames / FPS - autopilot.rideTime - AFTER)}`);
           return;
         }
-        await log(`attempt ${autopilot.attempts}: ${label} (${(simulated / 60).toFixed(1)} min simulated); turns: ${turnLines(autopilot.turnRecords)}`);
+        await log(`attempt ${autopilot.attempts}: ${label} (${(simulated / 60).toFixed(1)} min simulated); ${rideLines(autopilot, clip.frames / FPS - autopilot.rideTime - AFTER)}`);
         clip.drop();
         clip = new Clip();
         hooks.retry();
@@ -205,6 +208,23 @@ export async function recordRide(hooks: RecordingHooks): Promise<void> {
     if (step % 30 === 0) await breathe();
   }
   await log(`no ride of ${MIN_RIDE} s in ${autopilot.attempts} attempts`);
+}
+
+/**
+ * What the ride did, for the log: the turns ridden (style `turns`), or the flow's phases (style `flow`), with the film
+ * standing `lead` s into it (`ffmpeg -ss` takes the film's own time).
+ */
+function rideLines(autopilot: Autopilot, lead: number): string {
+  return STYLE === 'flow'
+    ? `flow (the film stands at ${lead.toFixed(1)} s; times are the film's): ${flowLines(autopilot.flowRecords, lead)}`
+    : `turns (the film starts ${lead.toFixed(1)} s before standing): ${turnLines(autopilot.turnRecords)}`;
+}
+
+/** The flow's phases ridden, one line each: when in the film, which, how long and far, and the speed and face kept. */
+function flowLines(phases: readonly FlowRecord[], lead: number): string {
+  if (!phases.length) return 'none';
+  return phases.map((phase) => `${phase.phase} at ${(lead + phase.at).toFixed(2)} s: ${phase.degrees.toFixed(0)}° in ${phase.seconds.toFixed(2)} s, `
+    + `${(phase.speedIn * 3.6).toFixed(0)} → ${(phase.speedOut * 3.6).toFixed(0)} km/h, face ${phase.faceIn.toFixed(2)} → ${phase.faceOut.toFixed(2)}${phase.completed ? '' : ', unfinished'}`).join('; ');
 }
 
 /** The turns ridden, one line each: when, which, how far and long, and the speed kept. */
