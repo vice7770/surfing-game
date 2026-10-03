@@ -1,0 +1,1038 @@
+{
+  "schema": 1,
+  "decision": "rejected; original FFT remains in production",
+  "runs": [
+    {
+      "report": "fft-temporal-before-fps.json",
+      "sha256": "7e146612451c9726083c0789afe9fdea227019cdeb6bd7fe383a183c61014d1e",
+      "date": "2026-10-03T20:13:34.759Z",
+      "build": "tube-default-before-fft-temporal",
+      "url": "http://127.0.0.1:4201/?diagnostics",
+      "artifact": {
+        "root": "/private/tmp/surf-tube-stability-current-20261003",
+        "sha256": "7c2e14bade277ece4f1100a09dda8fe731073a41572a6619cfeb2970328fc7a3",
+        "entry": "assets/index-Dhp1E5Jm.js",
+        "worker": "assets/surfZoneWorker-BH6FhcTP.js",
+        "files": [
+          {
+            "file": "index.html",
+            "sha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/index-Dhp1E5Jm.js",
+            "sha256": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3"
+          },
+          {
+            "file": "assets/jevRecorder-DKAk_GxP.js",
+            "sha256": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-DdzH6W7j.js",
+            "sha256": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          }
+        ],
+        "verified": [
+          {
+            "file": "index.html",
+            "sha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/index-Dhp1E5Jm.js",
+            "sha256": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3"
+          },
+          {
+            "file": "assets/jevRecorder-DKAk_GxP.js",
+            "sha256": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-DdzH6W7j.js",
+            "sha256": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          }
+        ]
+      },
+      "ordinary": {
+        "method": "Ordinary menu \u2192 Surf \u2192 Padang \u2192 Big \u2192 Paddle out; idle rider; five-second warmup and 90-second passive sample",
+        "diagnosticGpuProfile": false,
+        "timingComparableToPassiveBaseline": true,
+        "edition": "fft-temporal-before",
+        "fixedPhysicsStepSeconds": 0.016666666666666666,
+        "pipelineMetricSemantics": "Physics/device/step timings describe the final step of a batch; batch spans the advance loop; snapshot/summary occur once per publication; total is (batch+snapshot+summary)/batchSteps, not full request latency. Independent stage quantiles must not be summed.",
+        "baseline": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/padang-live-frame-pacing.json",
+        "expectedConfig": {
+          "spot": "padang",
+          "seed": 8761,
+          "significantHeight": 3.8,
+          "peakPeriod": 18,
+          "directionDegrees": 0,
+          "spreading": 150,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "dx": 2,
+          "fineSpacing": 1,
+          "componentCount": 64
+        },
+        "expectedViewport": "1708 \u00d7 926",
+        "expectedBrowserDpr": 2,
+        "expectedCanvas": "2989 \u00d7 1620",
+        "expectedRenderPixelRatio": 1.75,
+        "graphics": {
+          "renderScale": 1,
+          "nativePixelDensity": true,
+          "frameLimit": 60,
+          "waterSimulation": "auto",
+          "seaDetail": "rich",
+          "caustics": true,
+          "sprayMist": true,
+          "oceanView": "far",
+          "foam": "detailed",
+          "waterLook": "rich",
+          "particles": "high",
+          "preset": "high"
+        },
+        "normalMode": "production pixel normals (no waterNormals flag)",
+        "runtimeOverrides": [],
+        "sourceAudit": {
+          "ref": "eea68720f9a096063cb09e72173ae580ce853ebf",
+          "files": [
+            {
+              "file": "src/game/Graphics.ts",
+              "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/game/Settings.ts",
+              "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/WaterSurface.ts",
+              "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/water/richWaterGlsl.ts",
+              "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/water/richSpray.ts",
+              "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/SprayPoints.ts",
+              "sha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/BubblePoints.ts",
+              "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/wave/particleBudget.ts",
+              "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+              "sameAsReference": true
+            }
+          ]
+        }
+      },
+      "config": {
+        "spot": "padang",
+        "seed": 8761,
+        "significantHeight": 3.8,
+        "peakPeriod": 18,
+        "directionDegrees": 0,
+        "spreading": 150,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "dx": 2,
+        "fineSpacing": 1,
+        "componentCount": 64
+      },
+      "renderedFps": 60,
+      "freshSnapshotsPerSecond": 56.98,
+      "physicsStepsPerWallSecond": 56.98,
+      "simulationSecondsPerWallSecond": 0.95,
+      "baselineComparable": true,
+      "comparisonFailures": [],
+      "pipelineMsP50": {
+        "water": 5.7,
+        "breaking": 0.2,
+        "front": 1.5,
+        "lip": 0,
+        "foam": 2.1,
+        "airSources": 0.1,
+        "aeration": 1.6,
+        "board": 0.5,
+        "contact": 1.1,
+        "bubbles": 0.2,
+        "spray": 0.3,
+        "sounds": 0,
+        "step": 13.9,
+        "surface": 0,
+        "snapshotAeration": 0,
+        "flow": 0,
+        "snapshotFields": 2.4,
+        "snapshot": 2.7,
+        "summary": 0.2,
+        "batch": 13.9,
+        "batchSteps": 1,
+        "total": 16.7,
+        "deviceSubsteps": 1,
+        "devicePack": 1,
+        "deviceCfl": 0.3,
+        "deviceEncode": 0.5,
+        "deviceMap": 3,
+        "deviceUnpack": 0.8
+      }
+    },
+    {
+      "report": "fft-temporal-after-fps.json",
+      "sha256": "75d3eaad0a069edad48b78ce5b6d8ca7ebd34ceca3700a78f7cf8ff73ce6adaf",
+      "date": "2026-10-03T20:16:37.272Z",
+      "build": "tube-30hz-fft-interpolation-only",
+      "url": "http://127.0.0.1:4203/?diagnostics",
+      "artifact": {
+        "root": "/private/tmp/surf-fft-temporal-20261003",
+        "sha256": "e435580eb3776fd71f67baae8ef509499e6c6a005e592f4b15d09f733201119c",
+        "entry": "assets/index-BeHNHiel.js",
+        "worker": "assets/surfZoneWorker-BH6FhcTP.js",
+        "files": [
+          {
+            "file": "index.html",
+            "sha256": "685766a3cddd88d6fabdd3a9f4feb71c0d6135fabbf47cfcce2ee3d1353b7fb2"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-BeHNHiel.js",
+            "sha256": "81856879ff8adf7310b61ac29735072dd04dcf0083eb0a8f0605d2e85f551a01"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/jevRecorder-gw_3_bGH.js",
+            "sha256": "85b8fc2bcca17ebb40c24a5989b05c7100a13213d39fb232654d5acbd48ff726"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-Dbh7iLs6.js",
+            "sha256": "b38996ac876a45dd13a4a1f722cf23b0342f172ab0078f094ef73c95ac79a374"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          }
+        ],
+        "verified": [
+          {
+            "file": "index.html",
+            "sha256": "685766a3cddd88d6fabdd3a9f4feb71c0d6135fabbf47cfcce2ee3d1353b7fb2"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-BeHNHiel.js",
+            "sha256": "81856879ff8adf7310b61ac29735072dd04dcf0083eb0a8f0605d2e85f551a01"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/jevRecorder-gw_3_bGH.js",
+            "sha256": "85b8fc2bcca17ebb40c24a5989b05c7100a13213d39fb232654d5acbd48ff726"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-Dbh7iLs6.js",
+            "sha256": "b38996ac876a45dd13a4a1f722cf23b0342f172ab0078f094ef73c95ac79a374"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          },
+          {
+            "file": "qa-source.json",
+            "sha256": "c42a4225c5d318b457fbbd5d9d8cc6870f0d3be7d9eb9e040ff10afff726911e"
+          }
+        ],
+        "sourceProvenance": {
+          "candidate": "30Hz FFT endpoints+same-time256 composite; physics worker unchanged",
+          "baseCommit": "5606527dbf15409eb407cbdebd2cf7f05209fdff",
+          "sourceFiles": [
+            {
+              "file": "src/scene/FftChop.ts",
+              "sha256": "ee233c137b43fec51536a40c262f3b6d59e3d8d28acde3660d904556ca06d682"
+            },
+            {
+              "file": "src/scene/fftChopTemporal.ts",
+              "sha256": "32bb0e809b6f02f85faa8689eec8281b9dd1e119646a41d49be51a064cf4e9c3"
+            },
+            {
+              "file": "src/scene/fftChopMath.ts",
+              "sha256": "18dd410ab5a4fb927c0acc268202dd618bc422c3eca826a363e0722ec938e240"
+            },
+            {
+              "file": "src/scene/waterChop.ts",
+              "sha256": "4a486370db15aead8214a01d7d48975e7bd6d13a20d0cd4c15525ee5a6860fad"
+            },
+            {
+              "file": "src/main.ts",
+              "sha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490"
+            },
+            {
+              "file": "src/game/WorkerSurfZone.ts",
+              "sha256": "c82b23a4724d7085098af45256b7e5e5014a91a238f39aa1e4d58e1fa8f8c0ce"
+            },
+            {
+              "file": "src/wave/gpu/GpuBoussinesq.ts",
+              "sha256": "4487b00fcecbda83f14e14da06c63eddd837639d4c48c8a25deaa5c9714c90e9"
+            }
+          ],
+          "file": "qa-source.json",
+          "sha256": "c42a4225c5d318b457fbbd5d9d8cc6870f0d3be7d9eb9e040ff10afff726911e",
+          "matchesWorkingTree": true
+        }
+      },
+      "ordinary": {
+        "method": "Ordinary menu \u2192 Surf \u2192 Padang \u2192 Big \u2192 Paddle out; idle rider; five-second warmup and 90-second passive sample",
+        "diagnosticGpuProfile": false,
+        "timingComparableToPassiveBaseline": true,
+        "edition": "fft-temporal-interpolation",
+        "fixedPhysicsStepSeconds": 0.016666666666666666,
+        "pipelineMetricSemantics": "Physics/device/step timings describe the final step of a batch; batch spans the advance loop; snapshot/summary occur once per publication; total is (batch+snapshot+summary)/batchSteps, not full request latency. Independent stage quantiles must not be summed.",
+        "baseline": "/private/tmp/fft-temporal-before-fps.json",
+        "expectedConfig": {
+          "spot": "padang",
+          "seed": 8761,
+          "significantHeight": 3.8,
+          "peakPeriod": 18,
+          "directionDegrees": 0,
+          "spreading": 150,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "dx": 2,
+          "fineSpacing": 1,
+          "componentCount": 64
+        },
+        "expectedViewport": "1708 \u00d7 926",
+        "expectedBrowserDpr": 2,
+        "expectedCanvas": "2989 \u00d7 1620",
+        "expectedRenderPixelRatio": 1.75,
+        "graphics": {
+          "renderScale": 1,
+          "nativePixelDensity": true,
+          "frameLimit": 60,
+          "waterSimulation": "auto",
+          "seaDetail": "rich",
+          "caustics": true,
+          "sprayMist": true,
+          "oceanView": "far",
+          "foam": "detailed",
+          "waterLook": "rich",
+          "particles": "high",
+          "preset": "high"
+        },
+        "normalMode": "production pixel normals (no waterNormals flag)",
+        "runtimeOverrides": [],
+        "sourceAudit": {
+          "ref": "eea68720f9a096063cb09e72173ae580ce853ebf",
+          "files": [
+            {
+              "file": "src/game/Graphics.ts",
+              "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/game/Settings.ts",
+              "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/WaterSurface.ts",
+              "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/water/richWaterGlsl.ts",
+              "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/water/richSpray.ts",
+              "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/SprayPoints.ts",
+              "sha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/BubblePoints.ts",
+              "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/wave/particleBudget.ts",
+              "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+              "sameAsReference": true
+            }
+          ]
+        }
+      },
+      "config": {
+        "spot": "padang",
+        "seed": 3761,
+        "significantHeight": 3.8,
+        "peakPeriod": 18,
+        "directionDegrees": 0,
+        "spreading": 150,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "dx": 2,
+        "fineSpacing": 1,
+        "componentCount": 64
+      },
+      "renderedFps": 60,
+      "freshSnapshotsPerSecond": 52.71,
+      "physicsStepsPerWallSecond": 52.71,
+      "simulationSecondsPerWallSecond": 0.878,
+      "baselineComparable": false,
+      "comparisonFailures": [
+        "config.seed: 3761 versus 8761"
+      ],
+      "pipelineMsP50": {
+        "water": 5.7,
+        "breaking": 0.1,
+        "front": 1.7,
+        "lip": 0.1,
+        "foam": 2.1,
+        "airSources": 0.1,
+        "aeration": 1.6,
+        "board": 0.5,
+        "contact": 1.6,
+        "bubbles": 0.1,
+        "spray": 0.3,
+        "sounds": 0,
+        "step": 14.6,
+        "surface": 0,
+        "snapshotAeration": 0,
+        "flow": 0,
+        "snapshotFields": 2.3,
+        "snapshot": 2.6,
+        "summary": 0.2,
+        "batch": 14.6,
+        "batchSteps": 1,
+        "total": 17.4,
+        "deviceSubsteps": 2,
+        "devicePack": 1,
+        "deviceCfl": 0.3,
+        "deviceEncode": 0.8,
+        "deviceMap": 2.7,
+        "deviceUnpack": 0.8
+      }
+    },
+    {
+      "report": "fft-temporal-lazy-after-fps.json",
+      "sha256": "3ee02f311c8ab3570720dc5304c6f44889890b6caf62686005bc13ea895feec3",
+      "date": "2026-10-03T20:25:46.549Z",
+      "build": "lazy-fft-temporal-candidate",
+      "url": "http://127.0.0.1:4204/?diagnostics",
+      "artifact": {
+        "root": "/private/tmp/surf-fft-temporal-lazy-20261003",
+        "sha256": "a9ba4e8c6ed8a986e5df0705ea3cfbc4b7d3dbd7c94eb3ea6483f8e1aecc010b",
+        "entry": "assets/index-C74ZP_x3.js",
+        "worker": "assets/surfZoneWorker-BH6FhcTP.js",
+        "files": [
+          {
+            "file": "index.html",
+            "sha256": "a334f6853e55f381ae5702da144ec9ff50b471a0f829bc0670b9faf0b220dcc8"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-C74ZP_x3.js",
+            "sha256": "3f087e73ce7a7f4833aea7eed48ae50fcedade0086378a3504531f3395b87d09"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/jevRecorder-CsFou1oJ.js",
+            "sha256": "17080cda99dc36355242b956f25bad58909a24133c3474db82669602d6db04b2"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-iPRlAN30.js",
+            "sha256": "08801b5be3fb0baa36f2a4ff0e0ec342bbe1b6251d5c8607151d55c067f67c6d"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          }
+        ],
+        "verified": [
+          {
+            "file": "index.html",
+            "sha256": "a334f6853e55f381ae5702da144ec9ff50b471a0f829bc0670b9faf0b220dcc8"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-C74ZP_x3.js",
+            "sha256": "3f087e73ce7a7f4833aea7eed48ae50fcedade0086378a3504531f3395b87d09"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/jevRecorder-CsFou1oJ.js",
+            "sha256": "17080cda99dc36355242b956f25bad58909a24133c3474db82669602d6db04b2"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-iPRlAN30.js",
+            "sha256": "08801b5be3fb0baa36f2a4ff0e0ec342bbe1b6251d5c8607151d55c067f67c6d"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          },
+          {
+            "file": "qa-source.json",
+            "sha256": "9108bb8eab84db8cb4942657502d5c130339fe37beae8419cc98aabb2927548f"
+          }
+        ],
+        "sourceProvenance": {
+          "candidate": "lazy allocation 30Hz FFT endpoints+same-time256 composite; physics worker unchanged",
+          "baseCommit": "5606527dbf15409eb407cbdebd2cf7f05209fdff",
+          "sourceFiles": [
+            {
+              "file": "src/scene/FftChop.ts",
+              "sha256": "acf29fd2ac320b3f0c654b1ec517eac94e59d2332ea6c4eb6c80c8c1c38845c5"
+            },
+            {
+              "file": "src/scene/fftChopTemporal.ts",
+              "sha256": "32bb0e809b6f02f85faa8689eec8281b9dd1e119646a41d49be51a064cf4e9c3"
+            },
+            {
+              "file": "src/scene/fftChopMath.ts",
+              "sha256": "18dd410ab5a4fb927c0acc268202dd618bc422c3eca826a363e0722ec938e240"
+            },
+            {
+              "file": "src/scene/waterChop.ts",
+              "sha256": "4a486370db15aead8214a01d7d48975e7bd6d13a20d0cd4c15525ee5a6860fad"
+            },
+            {
+              "file": "src/main.ts",
+              "sha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490"
+            },
+            {
+              "file": "src/game/WorkerSurfZone.ts",
+              "sha256": "c82b23a4724d7085098af45256b7e5e5014a91a238f39aa1e4d58e1fa8f8c0ce"
+            },
+            {
+              "file": "src/wave/gpu/GpuBoussinesq.ts",
+              "sha256": "4487b00fcecbda83f14e14da06c63eddd837639d4c48c8a25deaa5c9714c90e9"
+            }
+          ],
+          "file": "qa-source.json",
+          "sha256": "9108bb8eab84db8cb4942657502d5c130339fe37beae8419cc98aabb2927548f",
+          "matchesWorkingTree": true
+        }
+      },
+      "ordinary": {
+        "method": "Ordinary menu \u2192 Surf \u2192 Padang \u2192 Big \u2192 Paddle out; idle rider; five-second warmup and 90-second passive sample",
+        "diagnosticGpuProfile": false,
+        "timingComparableToPassiveBaseline": true,
+        "edition": "fft-temporal-lazy-after",
+        "fixedPhysicsStepSeconds": 0.016666666666666666,
+        "pipelineMetricSemantics": "Physics/device/step timings describe the final step of a batch; batch spans the advance loop; snapshot/summary occur once per publication; total is (batch+snapshot+summary)/batchSteps, not full request latency. Independent stage quantiles must not be summed.",
+        "baseline": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/padang-live-frame-pacing.json",
+        "expectedConfig": {
+          "spot": "padang",
+          "seed": 8761,
+          "significantHeight": 3.8,
+          "peakPeriod": 18,
+          "directionDegrees": 0,
+          "spreading": 150,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "dx": 2,
+          "fineSpacing": 1,
+          "componentCount": 64
+        },
+        "expectedViewport": "1708 \u00d7 926",
+        "expectedBrowserDpr": 2,
+        "expectedCanvas": "2989 \u00d7 1620",
+        "expectedRenderPixelRatio": 1.75,
+        "graphics": {
+          "renderScale": 1,
+          "nativePixelDensity": true,
+          "frameLimit": 60,
+          "waterSimulation": "auto",
+          "seaDetail": "rich",
+          "caustics": true,
+          "sprayMist": true,
+          "oceanView": "far",
+          "foam": "detailed",
+          "waterLook": "rich",
+          "particles": "high",
+          "preset": "high"
+        },
+        "normalMode": "production pixel normals (no waterNormals flag)",
+        "runtimeOverrides": [],
+        "sourceAudit": {
+          "ref": "eea68720f9a096063cb09e72173ae580ce853ebf",
+          "files": [
+            {
+              "file": "src/game/Graphics.ts",
+              "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/game/Settings.ts",
+              "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/WaterSurface.ts",
+              "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/water/richWaterGlsl.ts",
+              "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/water/richSpray.ts",
+              "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/SprayPoints.ts",
+              "sha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/BubblePoints.ts",
+              "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/wave/particleBudget.ts",
+              "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+              "sameAsReference": true
+            }
+          ]
+        }
+      },
+      "config": {
+        "spot": "padang",
+        "seed": 8761,
+        "significantHeight": 3.8,
+        "peakPeriod": 18,
+        "directionDegrees": 0,
+        "spreading": 150,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "dx": 2,
+        "fineSpacing": 1,
+        "componentCount": 64
+      },
+      "renderedFps": 60,
+      "freshSnapshotsPerSecond": 57.44,
+      "physicsStepsPerWallSecond": 57.44,
+      "simulationSecondsPerWallSecond": 0.957,
+      "baselineComparable": true,
+      "comparisonFailures": [],
+      "pipelineMsP50": {
+        "water": 5.7,
+        "breaking": 0.2,
+        "front": 1.5,
+        "lip": 0,
+        "foam": 2.1,
+        "airSources": 0.1,
+        "aeration": 1.6,
+        "board": 0.5,
+        "contact": 1.1,
+        "bubbles": 0.2,
+        "spray": 0.3,
+        "sounds": 0,
+        "step": 13.8,
+        "surface": 0,
+        "snapshotAeration": 0,
+        "flow": 0,
+        "snapshotFields": 2.3,
+        "snapshot": 2.6,
+        "summary": 0.2,
+        "batch": 13.8,
+        "batchSteps": 1,
+        "total": 16.7,
+        "deviceSubsteps": 1,
+        "devicePack": 1,
+        "deviceCfl": 0.3,
+        "deviceEncode": 0.5,
+        "deviceMap": 3,
+        "deviceUnpack": 0.8
+      }
+    },
+    {
+      "report": "fft-temporal-lazy-baseline-return-fps.json",
+      "sha256": "b06d64467fe7dfbb36a0675ac2faaabd31ff2690e2f1ce257bda2330ec053969",
+      "date": "2026-10-03T20:28:03.422Z",
+      "build": "tube-default-after-fft-temporal-trial",
+      "url": "http://127.0.0.1:4201/?diagnostics",
+      "artifact": {
+        "root": "/private/tmp/surf-tube-stability-current-20261003",
+        "sha256": "7c2e14bade277ece4f1100a09dda8fe731073a41572a6619cfeb2970328fc7a3",
+        "entry": "assets/index-Dhp1E5Jm.js",
+        "worker": "assets/surfZoneWorker-BH6FhcTP.js",
+        "files": [
+          {
+            "file": "index.html",
+            "sha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/index-Dhp1E5Jm.js",
+            "sha256": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3"
+          },
+          {
+            "file": "assets/jevRecorder-DKAk_GxP.js",
+            "sha256": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-DdzH6W7j.js",
+            "sha256": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          }
+        ],
+        "verified": [
+          {
+            "file": "index.html",
+            "sha256": "df9f5b5b9064eeb635ad5ce1838f2f06aee37b9fe1481f8ab1c5ac360571552b"
+          },
+          {
+            "file": "assets/WorkerSurfZone-DsoxOk5J.js",
+            "sha256": "377f7261f1824af130b24fee4875cd16206455194fa94334cc8201cca27dd606"
+          },
+          {
+            "file": "assets/devStepping-CLfXNMh-.js",
+            "sha256": "8b2d4bd9697aa41988a1d77bfbd3ceb9eb82a8cae53314a5859273ba473df677"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/index-Dhp1E5Jm.js",
+            "sha256": "cff7f235604df399fe95d2f872a877ca95fca141a66e588c0d9a5eb8efc90cf3"
+          },
+          {
+            "file": "assets/jevRecorder-DKAk_GxP.js",
+            "sha256": "aa5a9ec59dc47571b87c9a62901bca07c54e39430b6cafe5d4abe8d05dc61300"
+          },
+          {
+            "file": "assets/particleBench-UFIniUOA.js",
+            "sha256": "b8575e6ab27c08c37511df15916c8222319a3299a179f94c09490700abb5407e"
+          },
+          {
+            "file": "assets/rideRecorder-DdzH6W7j.js",
+            "sha256": "cc1f6cc0fb23c4aa8416dbe123564f02239e4db55fbc14f97d2d51072c540674"
+          },
+          {
+            "file": "assets/surfZoneWorker-BH6FhcTP.js",
+            "sha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+          },
+          {
+            "file": "assets/waterSheet-heYJdhwA.js",
+            "sha256": "a77e152a5c0df1db98d204bba18289e08d5db943bff1c4f7603a49208a38efb1"
+          }
+        ]
+      },
+      "ordinary": {
+        "method": "Ordinary menu \u2192 Surf \u2192 Padang \u2192 Big \u2192 Paddle out; idle rider; five-second warmup and 90-second passive sample",
+        "diagnosticGpuProfile": false,
+        "timingComparableToPassiveBaseline": true,
+        "edition": "fft-temporal-baseline-return",
+        "fixedPhysicsStepSeconds": 0.016666666666666666,
+        "pipelineMetricSemantics": "Physics/device/step timings describe the final step of a batch; batch spans the advance loop; snapshot/summary occur once per publication; total is (batch+snapshot+summary)/batchSteps, not full request latency. Independent stage quantiles must not be summed.",
+        "baseline": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/padang-live-frame-pacing.json",
+        "expectedConfig": {
+          "spot": "padang",
+          "seed": 8761,
+          "significantHeight": 3.8,
+          "peakPeriod": 18,
+          "directionDegrees": 0,
+          "spreading": 150,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "dx": 2,
+          "fineSpacing": 1,
+          "componentCount": 64
+        },
+        "expectedViewport": "1708 \u00d7 926",
+        "expectedBrowserDpr": 2,
+        "expectedCanvas": "2989 \u00d7 1620",
+        "expectedRenderPixelRatio": 1.75,
+        "graphics": {
+          "renderScale": 1,
+          "nativePixelDensity": true,
+          "frameLimit": 60,
+          "waterSimulation": "auto",
+          "seaDetail": "rich",
+          "caustics": true,
+          "sprayMist": true,
+          "oceanView": "far",
+          "foam": "detailed",
+          "waterLook": "rich",
+          "particles": "high",
+          "preset": "high"
+        },
+        "normalMode": "production pixel normals (no waterNormals flag)",
+        "runtimeOverrides": [],
+        "sourceAudit": {
+          "ref": "eea68720f9a096063cb09e72173ae580ce853ebf",
+          "files": [
+            {
+              "file": "src/game/Graphics.ts",
+              "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/game/Settings.ts",
+              "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/WaterSurface.ts",
+              "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/water/richWaterGlsl.ts",
+              "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/water/richSpray.ts",
+              "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/SprayPoints.ts",
+              "sha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/scene/BubblePoints.ts",
+              "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a",
+              "sameAsReference": true
+            },
+            {
+              "file": "src/wave/particleBudget.ts",
+              "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+              "sameAsReference": true
+            }
+          ]
+        }
+      },
+      "config": {
+        "spot": "padang",
+        "seed": 8761,
+        "significantHeight": 3.8,
+        "peakPeriod": 18,
+        "directionDegrees": 0,
+        "spreading": 150,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "dx": 2,
+        "fineSpacing": 1,
+        "componentCount": 64
+      },
+      "renderedFps": 60,
+      "freshSnapshotsPerSecond": 56.35,
+      "physicsStepsPerWallSecond": 56.35,
+      "simulationSecondsPerWallSecond": 0.939,
+      "baselineComparable": true,
+      "comparisonFailures": [],
+      "pipelineMsP50": {
+        "water": 5.9,
+        "breaking": 0.2,
+        "front": 1.5,
+        "lip": 0,
+        "foam": 2.1,
+        "airSources": 0.1,
+        "aeration": 1.6,
+        "board": 0.5,
+        "contact": 1.1,
+        "bubbles": 0.2,
+        "spray": 0.3,
+        "sounds": 0,
+        "step": 13.9,
+        "surface": 0,
+        "snapshotAeration": 0,
+        "flow": 0,
+        "snapshotFields": 2.3,
+        "snapshot": 2.6,
+        "summary": 0.2,
+        "batch": 13.9,
+        "batchSteps": 1,
+        "total": 16.7,
+        "deviceSubsteps": 1,
+        "devicePack": 1,
+        "deviceCfl": 0.3,
+        "deviceEncode": 0.5,
+        "deviceMap": 3.2,
+        "deviceUnpack": 0.8
+      }
+    }
+  ]
+}

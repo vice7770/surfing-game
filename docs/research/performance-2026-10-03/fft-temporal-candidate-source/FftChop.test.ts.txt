@@ -1,0 +1,161 @@
+import type { Mesh, Scene, ShaderMaterial, Texture, WebGLRenderer, WebGLRenderTarget } from 'three';
+import { describe, expect, it, vi } from 'vitest';
+import { FftChop } from './FftChop';
+import { chopFieldUniforms } from './waterChop';
+import { fftChopBracket } from './fftChopTemporal';
+
+function rendererStub() {
+  const initial = {} as WebGLRenderTarget;
+  let target: WebGLRenderTarget | null = initial;
+  const rows: { target: WebGLRenderTarget | null; time?: number; left?: Texture; right?: Texture; share?: number }[] = [];
+  const render = vi.fn((scene: Scene) => {
+    const material = (scene.children[0] as Mesh).material as ShaderMaterial;
+    const u = material.uniforms;
+    rows.push({ target, time: u.time?.value, left: u.leftField?.value, right: u.rightField?.value, share: u.share?.value });
+  });
+  const renderer = {
+    getRenderTarget: () => target,
+    setRenderTarget: (next: WebGLRenderTarget | null) => { target = next; },
+    render,
+  } as unknown as WebGLRenderer;
+  return { initial, renderer, render, rows };
+}
+
+describe('FFT chop snapshot reuse', () => {
+  it('retains the original constructor random sequence and creates no unused endpoint resources', () => {
+    const random = vi.spyOn(Math, 'random').mockReturnValue(.123);
+    let fft: FftChop;
+    try {
+      fft = new FftChop();
+      // Retained canonical FftChop + installed Three.js issue 72 random calls for their UUIDs.
+      // Extra constructor UUIDs alter the later ordinary menu-selected sea seed.
+      expect(random).toHaveBeenCalledTimes(72);
+    } finally { random.mockRestore(); }
+    const internals = fft! as unknown as { endpoints?: unknown; ping: WebGLRenderTarget; pong: WebGLRenderTarget };
+    expect(internals.endpoints).toBeUndefined();
+    fft!.setWind(3);
+    fft!.disable();
+    expect(internals.endpoints).toBeUndefined();
+    const disposals = [fft!.output, internals.ping, internals.pong].map(target => vi.spyOn(target, 'dispose'));
+    fft!.dispose();
+    for (const disposal of disposals) expect(disposal).toHaveBeenCalledTimes(1);
+    expect(internals.endpoints).toBeUndefined();
+  });
+
+  it('composites two 30 Hz endpoints once for a held sea and restores its single sampler after disabling', () => {
+    const fft = new FftChop();
+    const first = rendererStub();
+    fft.setWind(3);
+    fft.render(first.renderer, 10);
+    expect(first.render).toHaveBeenCalledTimes(35);
+    expect(first.rows.filter((row) => row.time !== undefined).map((row) => row.time)).toEqual([10, 301 / 30]);
+    expect(first.renderer.getRenderTarget()).toBe(first.initial);
+    for (let frame = 0; frame < 120; frame += 1) fft.render(first.renderer, 10);
+    expect(first.render).toHaveBeenCalledTimes(35);
+    // A temporary graphics change may disable the shared sampler without changing the cached transform.
+    fft.disable();
+    expect(chopFieldUniforms.waterChopFft.value).toBe(0);
+    fft.render(first.renderer, 10);
+    expect(first.render).toHaveBeenCalledTimes(35);
+    expect(chopFieldUniforms.waterChopFft.value).toBe(1);
+    expect(chopFieldUniforms.waterChopMap.value).toBe(fft.output.texture);
+    fft.dispose();
+  });
+
+  it('composites inside an interval and reuses the prior right endpoint in the next interval', () => {
+    const fft = new FftChop(), frame = rendererStub();
+    fft.render(frame.renderer, 10);
+    const first = frame.rows.at(-1)!;
+    fft.render(frame.renderer, 10 + 1 / 60);
+    expect(frame.render).toHaveBeenCalledTimes(36);
+    expect(frame.rows.at(-1)).toMatchObject({ target: fft.output, left: first.left, right: first.right });
+    expect(frame.rows.at(-1)!.share).toBeCloseTo(.5, 12);
+    fft.render(frame.renderer, 301 / 30);
+    expect(frame.render).toHaveBeenCalledTimes(54);
+    expect(frame.rows.filter((row) => row.time !== undefined).map((row) => row.time)).toEqual([10, 301 / 30, 302 / 30]);
+    expect(frame.rows.at(-1)).toMatchObject({ target: fft.output, left: first.right, right: first.left, share: 0 });
+    expect(frame.renderer.getRenderTarget()).toBe(frame.initial);
+    fft.dispose();
+  });
+
+  it('uses one new FFT per 30 Hz boundary at a 60 Hz sequence of actual sea times', () => {
+    const fft = new FftChop(), frame = rendererStub();
+    for (let step = 0; step < 120; step += 1) fft.render(frame.renderer, 10 + step / 60);
+    const times = frame.rows.filter((row) => row.time !== undefined).map((row) => row.time);
+    expect(times).toEqual(Array.from({ length: 61 }, (_, i) => (300 + i) / 30));
+    expect(frame.render).toHaveBeenCalledTimes(61 * 17 + 120);
+    expect(frame.rows.filter((row) => row.share !== undefined)).toHaveLength(120);
+    fft.dispose();
+  });
+
+  it('rebuilds both endpoints for skipped intervals, backwards jumps, spectra and renderer changes', () => {
+    const fft = new FftChop(), frame = rendererStub();
+    fft.setWind(3);
+    for (const time of [10, 12, 9]) fft.render(frame.renderer, time);
+    expect(frame.render).toHaveBeenCalledTimes(3 * 35);
+    fft.render(frame.renderer, 9 + 1 / 120);
+    fft.render(frame.renderer, 9);
+    expect(frame.render).toHaveBeenCalledTimes(3 * 35 + 2);
+    fft.setWind(3);
+    fft.render(frame.renderer, 9);
+    expect(frame.render).toHaveBeenCalledTimes(3 * 35 + 2);
+    fft.setWind(4);
+    fft.render(frame.renderer, 9);
+    fft.setWind(4, 2);
+    fft.render(frame.renderer, 9);
+    expect(frame.render).toHaveBeenCalledTimes(5 * 35 + 2);
+    const other = rendererStub();
+    fft.render(other.renderer, 9);
+    expect(other.render).toHaveBeenCalledTimes(35);
+    expect(other.renderer.getRenderTarget()).toBe(other.initial);
+    fft.dispose();
+  });
+
+  it.each([301 / 30, 10 + 1 / 60])('restores the render target and rebuilds endpoints after an interrupted render at %s', (time) => {
+    const fft = new FftChop(), frame = rendererStub();
+    fft.render(frame.renderer, 10);
+    frame.render.mockImplementationOnce(() => { throw new Error('interrupted'); });
+    expect(() => fft.render(frame.renderer, time)).toThrow('interrupted');
+    expect(frame.renderer.getRenderTarget()).toBe(frame.initial);
+    const calls = frame.render.mock.calls.length;
+    fft.render(frame.renderer, time);
+    expect(frame.render).toHaveBeenCalledTimes(calls + 35);
+    fft.dispose();
+  });
+
+  it('rejects invalid times without damaging the held output and disposes all targets after swaps', () => {
+    const fft = new FftChop(), frame = rendererStub();
+    fft.render(frame.renderer, 10);
+    expect(() => fft.render(frame.renderer, Number.NaN)).toThrow(RangeError);
+    fft.render(frame.renderer, 10);
+    expect(frame.render).toHaveBeenCalledTimes(35);
+    const targets = fft as unknown as { ping: WebGLRenderTarget; pong: WebGLRenderTarget;
+      endpoints: { left: WebGLRenderTarget; right: WebGLRenderTarget; material: ShaderMaterial } };
+    const initialEndpoints = targets.endpoints;
+    const disposals = [fft.output, targets.ping, targets.pong, initialEndpoints.left, initialEndpoints.right].map((target) => vi.spyOn(target, 'dispose'));
+    const compositeDisposal = vi.spyOn(initialEndpoints.material, 'dispose');
+    fft.render(frame.renderer, 301 / 30);
+    expect(targets.endpoints).toBe(initialEndpoints);
+    fft.dispose();
+    for (const disposal of disposals) expect(disposal).toHaveBeenCalledTimes(1);
+    expect(compositeDisposal).toHaveBeenCalledTimes(1);
+    expect(chopFieldUniforms.waterChopFft.value).toBe(0);
+  });
+});
+
+describe('FFT chop temporal endpoints', () => {
+  it('encloses negative, ordinary and large sea clocks without changing the requested clock', () => {
+    for (const time of [-2.1, -1 / 120, 0, 1 / 60, 10 - Number.EPSILON * 10, 10, 10 + Number.EPSILON * 10,
+      10 + 1 / 120, 173.889, 400, 400 + 1 / 60, 1_000_000.125]) {
+      const bracket = fftChopBracket(time);
+      expect(bracket.left).toBeLessThanOrEqual(time);
+      expect(bracket.right).toBeGreaterThanOrEqual(time);
+      expect(bracket.right - bracket.left).toBeCloseTo(1 / 30, 8);
+      expect(bracket.share).toBeGreaterThanOrEqual(0);
+      expect(bracket.share).toBeLessThanOrEqual(1);
+      const rounding = 2 * Number.EPSILON * Math.max(Math.abs(time), Math.abs(bracket.left), Math.abs(bracket.right), 1 / 30);
+      expect(Math.abs(bracket.left + bracket.share * (bracket.right - bracket.left) - time)).toBeLessThanOrEqual(rounding);
+    }
+    for (const time of [Number.NaN, Infinity, -Infinity, Number.MAX_VALUE]) expect(() => fftChopBracket(time)).toThrow(RangeError);
+  });
+});

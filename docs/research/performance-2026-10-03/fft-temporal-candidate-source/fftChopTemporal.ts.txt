@@ -1,0 +1,15 @@
+/** Shading-only endpoint cadence, in simulated sea seconds; physics and waterTime keep their original clocks. */
+export const FFT_CHOP_RATE = 30;
+
+/** Two consecutive endpoint times enclosing the requested sea time, including rewinds. */
+export function fftChopBracket(time: number): { index: number; left: number; right: number; share: number } {
+  let index = Math.floor(time * FFT_CHOP_RATE);
+  if (!Number.isFinite(time) || !Number.isSafeInteger(index)) throw new RangeError('Invalid FFT chop time');
+  // Multiplication can round a clock immediately below a boundary onto that boundary.
+  if (time < index / FFT_CHOP_RATE) index -= 1;
+  else if (time >= (index + 1) / FFT_CHOP_RATE) index += 1;
+  const left = index / FFT_CHOP_RATE;
+  const right = (index + 1) / FFT_CHOP_RATE;
+  if (!(right > left)) throw new RangeError('FFT chop time exceeds endpoint precision');
+  return { index, left, right, share: Math.max(0, Math.min(1, (time - left) / (right - left))) };
+}

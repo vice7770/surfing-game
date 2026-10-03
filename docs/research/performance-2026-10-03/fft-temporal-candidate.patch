@@ -1,0 +1,363 @@
+diff --git a/src/scene/FftChop.test.ts b/src/scene/FftChop.test.ts
+index ebfa4b51d..877f61735 100644
+--- a/src/scene/FftChop.test.ts
++++ b/src/scene/FftChop.test.ts
+@@ -1,47 +1,161 @@
+-import type { WebGLRenderer, WebGLRenderTarget } from 'three';
++import type { Mesh, Scene, ShaderMaterial, Texture, WebGLRenderer, WebGLRenderTarget } from 'three';
+ import { describe, expect, it, vi } from 'vitest';
+ import { FftChop } from './FftChop';
+ import { chopFieldUniforms } from './waterChop';
++import { fftChopBracket } from './fftChopTemporal';
+ 
+ function rendererStub() {
+   const initial = {} as WebGLRenderTarget;
+   let target: WebGLRenderTarget | null = initial;
+-  const render = vi.fn();
++  const rows: { target: WebGLRenderTarget | null; time?: number; left?: Texture; right?: Texture; share?: number }[] = [];
++  const render = vi.fn((scene: Scene) => {
++    const material = (scene.children[0] as Mesh).material as ShaderMaterial;
++    const u = material.uniforms;
++    rows.push({ target, time: u.time?.value, left: u.leftField?.value, right: u.rightField?.value, share: u.share?.value });
++  });
+   const renderer = {
+     getRenderTarget: () => target,
+     setRenderTarget: (next: WebGLRenderTarget | null) => { target = next; },
+     render,
+   } as unknown as WebGLRenderer;
+-  return { initial, renderer, render };
++  return { initial, renderer, render, rows };
+ }
+ 
+ describe('FFT chop snapshot reuse', () => {
+-  it('runs its 17 passes once for a held sea and invalidates time, wind, seed and renderer changes', () => {
++  it('retains the original constructor random sequence and creates no unused endpoint resources', () => {
++    const random = vi.spyOn(Math, 'random').mockReturnValue(.123);
++    let fft: FftChop;
++    try {
++      fft = new FftChop();
++      // Retained canonical FftChop + installed Three.js issue 72 random calls for their UUIDs.
++      // Extra constructor UUIDs alter the later ordinary menu-selected sea seed.
++      expect(random).toHaveBeenCalledTimes(72);
++    } finally { random.mockRestore(); }
++    const internals = fft! as unknown as { endpoints?: unknown; ping: WebGLRenderTarget; pong: WebGLRenderTarget };
++    expect(internals.endpoints).toBeUndefined();
++    fft!.setWind(3);
++    fft!.disable();
++    expect(internals.endpoints).toBeUndefined();
++    const disposals = [fft!.output, internals.ping, internals.pong].map(target => vi.spyOn(target, 'dispose'));
++    fft!.dispose();
++    for (const disposal of disposals) expect(disposal).toHaveBeenCalledTimes(1);
++    expect(internals.endpoints).toBeUndefined();
++  });
++
++  it('composites two 30 Hz endpoints once for a held sea and restores its single sampler after disabling', () => {
+     const fft = new FftChop();
+     const first = rendererStub();
+     fft.setWind(3);
+     fft.render(first.renderer, 10);
+-    expect(first.render).toHaveBeenCalledTimes(17);
++    expect(first.render).toHaveBeenCalledTimes(35);
++    expect(first.rows.filter((row) => row.time !== undefined).map((row) => row.time)).toEqual([10, 301 / 30]);
+     expect(first.renderer.getRenderTarget()).toBe(first.initial);
+     for (let frame = 0; frame < 120; frame += 1) fft.render(first.renderer, 10);
+-    expect(first.render).toHaveBeenCalledTimes(17);
++    expect(first.render).toHaveBeenCalledTimes(35);
+     // A temporary graphics change may disable the shared sampler without changing the cached transform.
+     fft.disable();
+     expect(chopFieldUniforms.waterChopFft.value).toBe(0);
+     fft.render(first.renderer, 10);
+-    expect(first.render).toHaveBeenCalledTimes(17);
++    expect(first.render).toHaveBeenCalledTimes(35);
+     expect(chopFieldUniforms.waterChopFft.value).toBe(1);
+     expect(chopFieldUniforms.waterChopMap.value).toBe(fft.output.texture);
+-    fft.render(first.renderer, 11);
++    fft.dispose();
++  });
++
++  it('composites inside an interval and reuses the prior right endpoint in the next interval', () => {
++    const fft = new FftChop(), frame = rendererStub();
++    fft.render(frame.renderer, 10);
++    const first = frame.rows.at(-1)!;
++    fft.render(frame.renderer, 10 + 1 / 60);
++    expect(frame.render).toHaveBeenCalledTimes(36);
++    expect(frame.rows.at(-1)).toMatchObject({ target: fft.output, left: first.left, right: first.right });
++    expect(frame.rows.at(-1)!.share).toBeCloseTo(.5, 12);
++    fft.render(frame.renderer, 301 / 30);
++    expect(frame.render).toHaveBeenCalledTimes(54);
++    expect(frame.rows.filter((row) => row.time !== undefined).map((row) => row.time)).toEqual([10, 301 / 30, 302 / 30]);
++    expect(frame.rows.at(-1)).toMatchObject({ target: fft.output, left: first.right, right: first.left, share: 0 });
++    expect(frame.renderer.getRenderTarget()).toBe(frame.initial);
++    fft.dispose();
++  });
++
++  it('uses one new FFT per 30 Hz boundary at a 60 Hz sequence of actual sea times', () => {
++    const fft = new FftChop(), frame = rendererStub();
++    for (let step = 0; step < 120; step += 1) fft.render(frame.renderer, 10 + step / 60);
++    const times = frame.rows.filter((row) => row.time !== undefined).map((row) => row.time);
++    expect(times).toEqual(Array.from({ length: 61 }, (_, i) => (300 + i) / 30));
++    expect(frame.render).toHaveBeenCalledTimes(61 * 17 + 120);
++    expect(frame.rows.filter((row) => row.share !== undefined)).toHaveLength(120);
++    fft.dispose();
++  });
++
++  it('rebuilds both endpoints for skipped intervals, backwards jumps, spectra and renderer changes', () => {
++    const fft = new FftChop(), frame = rendererStub();
++    fft.setWind(3);
++    for (const time of [10, 12, 9]) fft.render(frame.renderer, time);
++    expect(frame.render).toHaveBeenCalledTimes(3 * 35);
++    fft.render(frame.renderer, 9 + 1 / 120);
++    fft.render(frame.renderer, 9);
++    expect(frame.render).toHaveBeenCalledTimes(3 * 35 + 2);
++    fft.setWind(3);
++    fft.render(frame.renderer, 9);
++    expect(frame.render).toHaveBeenCalledTimes(3 * 35 + 2);
+     fft.setWind(4);
+-    fft.render(first.renderer, 11);
++    fft.render(frame.renderer, 9);
+     fft.setWind(4, 2);
+-    fft.render(first.renderer, 11);
+-    expect(first.render).toHaveBeenCalledTimes(68);
+-    const second = rendererStub();
+-    fft.render(second.renderer, 11);
+-    expect(second.render).toHaveBeenCalledTimes(17);
+-    expect(second.renderer.getRenderTarget()).toBe(second.initial);
++    fft.render(frame.renderer, 9);
++    expect(frame.render).toHaveBeenCalledTimes(5 * 35 + 2);
++    const other = rendererStub();
++    fft.render(other.renderer, 9);
++    expect(other.render).toHaveBeenCalledTimes(35);
++    expect(other.renderer.getRenderTarget()).toBe(other.initial);
++    fft.dispose();
++  });
++
++  it.each([301 / 30, 10 + 1 / 60])('restores the render target and rebuilds endpoints after an interrupted render at %s', (time) => {
++    const fft = new FftChop(), frame = rendererStub();
++    fft.render(frame.renderer, 10);
++    frame.render.mockImplementationOnce(() => { throw new Error('interrupted'); });
++    expect(() => fft.render(frame.renderer, time)).toThrow('interrupted');
++    expect(frame.renderer.getRenderTarget()).toBe(frame.initial);
++    const calls = frame.render.mock.calls.length;
++    fft.render(frame.renderer, time);
++    expect(frame.render).toHaveBeenCalledTimes(calls + 35);
++    fft.dispose();
++  });
++
++  it('rejects invalid times without damaging the held output and disposes all targets after swaps', () => {
++    const fft = new FftChop(), frame = rendererStub();
++    fft.render(frame.renderer, 10);
++    expect(() => fft.render(frame.renderer, Number.NaN)).toThrow(RangeError);
++    fft.render(frame.renderer, 10);
++    expect(frame.render).toHaveBeenCalledTimes(35);
++    const targets = fft as unknown as { ping: WebGLRenderTarget; pong: WebGLRenderTarget;
++      endpoints: { left: WebGLRenderTarget; right: WebGLRenderTarget; material: ShaderMaterial } };
++    const initialEndpoints = targets.endpoints;
++    const disposals = [fft.output, targets.ping, targets.pong, initialEndpoints.left, initialEndpoints.right].map((target) => vi.spyOn(target, 'dispose'));
++    const compositeDisposal = vi.spyOn(initialEndpoints.material, 'dispose');
++    fft.render(frame.renderer, 301 / 30);
++    expect(targets.endpoints).toBe(initialEndpoints);
+     fft.dispose();
++    for (const disposal of disposals) expect(disposal).toHaveBeenCalledTimes(1);
++    expect(compositeDisposal).toHaveBeenCalledTimes(1);
++    expect(chopFieldUniforms.waterChopFft.value).toBe(0);
++  });
++});
++
++describe('FFT chop temporal endpoints', () => {
++  it('encloses negative, ordinary and large sea clocks without changing the requested clock', () => {
++    for (const time of [-2.1, -1 / 120, 0, 1 / 60, 10 - Number.EPSILON * 10, 10, 10 + Number.EPSILON * 10,
++      10 + 1 / 120, 173.889, 400, 400 + 1 / 60, 1_000_000.125]) {
++      const bracket = fftChopBracket(time);
++      expect(bracket.left).toBeLessThanOrEqual(time);
++      expect(bracket.right).toBeGreaterThanOrEqual(time);
++      expect(bracket.right - bracket.left).toBeCloseTo(1 / 30, 8);
++      expect(bracket.share).toBeGreaterThanOrEqual(0);
++      expect(bracket.share).toBeLessThanOrEqual(1);
++      const rounding = 2 * Number.EPSILON * Math.max(Math.abs(time), Math.abs(bracket.left), Math.abs(bracket.right), 1 / 30);
++      expect(Math.abs(bracket.left + bracket.share * (bracket.right - bracket.left) - time)).toBeLessThanOrEqual(rounding);
++    }
++    for (const time of [Number.NaN, Infinity, -Infinity, Number.MAX_VALUE]) expect(() => fftChopBracket(time)).toThrow(RangeError);
+   });
+ });
+diff --git a/src/scene/FftChop.ts b/src/scene/FftChop.ts
+index 23df0af17..10953e590 100644
+--- a/src/scene/FftChop.ts
++++ b/src/scene/FftChop.ts
+@@ -3,6 +3,7 @@ import {
+   RGBAFormat, RepeatWrapping, Scene, ShaderMaterial, WebGLRenderTarget, type WebGLRenderer,
+ } from 'three';
+ import { FFT_CHOP_PATCH, FFT_CHOP_SIZE, chopSpectrum } from './fftChopMath';
++import { fftChopBracket } from './fftChopTemporal';
+ import { chopFieldUniforms } from './waterChop';
+ 
+ const vertexShader = /* glsl */ `
+@@ -58,11 +59,23 @@ void main() {
+ }
+ `;
+ 
++/** Interpolate the shading slopes into the existing single sampler, rather than sampling twice at every water pixel. */
++const compositeShader = /* glsl */ `
++uniform sampler2D leftField;
++uniform sampler2D rightField;
++uniform float share;
++varying vec2 vUv;
++void main() {
++  vec2 slopes = mix( texture2D( leftField, vUv ).xy, texture2D( rightField, vUv ).xy, share );
++  gl_FragColor = vec4( slopes, 0.0, 1.0 );
++}
++`;
++
+ /**
+- * The FFT chop (plan §2.2 WebGPU tier, P6): each frame a 256² inverse FFT of the
+- * wind sea's slope spectrum on the GPU, 17 full-screen passes, into a
+- * repeating slope map every water shader samples through `waterChopSlope`
+- * (`chopFieldUniforms`). The spectrum follows the local wind.
++ * The FFT chop (plan §2.2 WebGPU tier, P6): a 256² inverse FFT of the wind sea's slope spectrum at 30 Hz in sea time,
++ * interpolated at the displayed snapshot's actual time. Each new endpoint takes 17 passes; a small compositing pass
++ * retains the single repeating slope map every water shader samples through `waterChopSlope` (`chopFieldUniforms`).
++ * This changes shading only. The spectrum follows the local wind; water heights, physics and their clocks are untouched.
+  */
+ export class FftChop {
+   private readonly scene = new Scene();
+@@ -74,6 +87,10 @@ export class FftChop {
+   private readonly pong: WebGLRenderTarget;
+   /** The slope map the water shaders read: (sx, sz) per texel, repeating every patch. */
+   readonly output: WebGLRenderTarget;
++  private endpoints?: { left: WebGLRenderTarget; right: WebGLRenderTarget; material: ShaderMaterial };
++  private interval?: number;
++  private endpointRenderer?: WebGLRenderer;
++  private endpointSpectrum?: DataTexture;
+   private spectrum?: DataTexture;
+   private wind = Number.NaN;
+   private seed = Number.NaN;
+@@ -87,10 +104,11 @@ export class FftChop {
+     const work = { type: FloatType, format: RGBAFormat, minFilter: NearestFilter, magFilter: NearestFilter, depthBuffer: false, generateMipmaps: false } as const;
+     this.ping = new WebGLRenderTarget(size, size, work);
+     this.pong = new WebGLRenderTarget(size, size, work);
+-    this.output = new WebGLRenderTarget(size, size, {
++    const slopeTarget = {
+       type: HalfFloatType, format: RGBAFormat, minFilter: LinearFilter, magFilter: LinearFilter,
+       wrapS: RepeatWrapping, wrapT: RepeatWrapping, depthBuffer: false, generateMipmaps: false,
+-    });
++    } as const;
++    this.output = new WebGLRenderTarget(size, size, slopeTarget);
+     this.spectrumMaterial = new ShaderMaterial({
+       uniforms: { spectrum: { value: null }, size: { value: size }, patchSize: { value: patch }, time: { value: 0 } },
+       vertexShader, fragmentShader: spectrumShader, depthTest: false, depthWrite: false,
+@@ -124,7 +142,65 @@ export class FftChop {
+       this.useOutput();
+       return;
+     }
++    const bracket = fftChopBracket(time);
++    const endpoints = this.getEndpoints();
+     const previous = renderer.getRenderTarget();
++    const valid = renderer === this.endpointRenderer && this.spectrum === this.endpointSpectrum;
++    const interval = this.interval;
++    // A failed render may have overwritten an endpoint or the output. Only a completed composite restores validity.
++    this.endpointRenderer = undefined;
++    this.drawnRenderer = undefined;
++    try {
++      if (valid && bracket.index === interval) {
++        // Both endpoints already exist, including for a rewind within this interval.
++      } else if (valid && interval !== undefined && bracket.index === interval + 1) {
++        [endpoints.left, endpoints.right] = [endpoints.right, endpoints.left];
++        this.transform(renderer, bracket.right, endpoints.right);
++      } else {
++        // A new spectrum/renderer, skipped interval or backwards jump starts from these two actual endpoint times.
++        this.transform(renderer, bracket.left, endpoints.left);
++        this.transform(renderer, bracket.right, endpoints.right);
++      }
++      this.quad.material = endpoints.material;
++      endpoints.material.uniforms.leftField.value = endpoints.left.texture;
++      endpoints.material.uniforms.rightField.value = endpoints.right.texture;
++      endpoints.material.uniforms.share.value = bracket.share;
++      renderer.setRenderTarget(this.output);
++      renderer.render(this.scene, this.camera);
++    } finally {
++      renderer.setRenderTarget(previous);
++    }
++    this.interval = bracket.index;
++    this.endpointRenderer = renderer;
++    this.endpointSpectrum = this.spectrum;
++    this.drawnRenderer = renderer;
++    this.drawnSpectrum = this.spectrum;
++    this.drawnTime = time;
++    this.useOutput();
++  }
++
++  private getEndpoints(): NonNullable<FftChop['endpoints']> {
++    // Three.js UUID construction consumes Math.random. Keep the original constructor's
++    // allocation sequence so unused FFT resources cannot change the menu's selected sea seed.
++    if (!this.endpoints) {
++      const format = {
++        type: HalfFloatType, format: RGBAFormat, minFilter: LinearFilter, magFilter: LinearFilter,
++        wrapS: RepeatWrapping, wrapT: RepeatWrapping, depthBuffer: false, generateMipmaps: false,
++      } as const;
++      this.endpoints = {
++        left: new WebGLRenderTarget(this.size, this.size, format),
++        right: new WebGLRenderTarget(this.size, this.size, format),
++        material: new ShaderMaterial({
++          uniforms: { leftField: { value: null }, rightField: { value: null }, share: { value: 0 } },
++          vertexShader, fragmentShader: compositeShader, depthTest: false, depthWrite: false,
++        }),
++      };
++    }
++    return this.endpoints;
++  }
++
++  /** One unchanged 17-pass transform into a cached endpoint. */
++  private transform(renderer: WebGLRenderer, time: number, output: WebGLRenderTarget): void {
+     this.quad.material = this.spectrumMaterial;
+     this.spectrumMaterial.uniforms.spectrum.value = this.spectrum;
+     this.spectrumMaterial.uniforms.time.value = time;
+@@ -139,15 +215,10 @@ export class FftChop {
+       this.butterflyMaterial.uniforms.field.value = from.texture;
+       this.butterflyMaterial.uniforms.span.value = 1 << (pass % stages);
+       this.butterflyMaterial.uniforms.alongRows.value = pass < stages ? 1 : 0;
+-      renderer.setRenderTarget(last ? this.output : to);
++      renderer.setRenderTarget(last ? output : to);
+       renderer.render(this.scene, this.camera);
+       [from, to] = [to, from];
+     }
+-    renderer.setRenderTarget(previous);
+-    this.drawnRenderer = renderer;
+-    this.drawnSpectrum = this.spectrum;
+-    this.drawnTime = time;
+-    this.useOutput();
+   }
+ 
+   private useOutput(): void {
+@@ -166,9 +237,12 @@ export class FftChop {
+     this.ping.dispose();
+     this.pong.dispose();
+     this.output.dispose();
++    this.endpoints?.left.dispose();
++    this.endpoints?.right.dispose();
+     this.spectrum?.dispose();
+     this.spectrumMaterial.dispose();
+     this.butterflyMaterial.dispose();
++    this.endpoints?.material.dispose();
+     this.quad.geometry.dispose();
+   }
+ }
+diff --git a/src/scene/fftChopTemporal.ts b/src/scene/fftChopTemporal.ts
+new file mode 100644
+index 000000000..27a138be0
+--- /dev/null
++++ b/src/scene/fftChopTemporal.ts
+@@ -0,0 +1,15 @@
++/** Shading-only endpoint cadence, in simulated sea seconds; physics and waterTime keep their original clocks. */
++export const FFT_CHOP_RATE = 30;
++
++/** Two consecutive endpoint times enclosing the requested sea time, including rewinds. */
++export function fftChopBracket(time: number): { index: number; left: number; right: number; share: number } {
++  let index = Math.floor(time * FFT_CHOP_RATE);
++  if (!Number.isFinite(time) || !Number.isSafeInteger(index)) throw new RangeError('Invalid FFT chop time');
++  // Multiplication can round a clock immediately below a boundary onto that boundary.
++  if (time < index / FFT_CHOP_RATE) index -= 1;
++  else if (time >= (index + 1) / FFT_CHOP_RATE) index += 1;
++  const left = index / FFT_CHOP_RATE;
++  const right = (index + 1) / FFT_CHOP_RATE;
++  if (!(right > left)) throw new RangeError('FFT chop time exceeds endpoint precision');
++  return { index, left, right, share: Math.max(0, Math.min(1, (time - left) / (right - left))) };
++}

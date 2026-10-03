@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "baseCommit": "5606527dbf15409eb407cbdebd2cf7f05209fdff",
+  "patchSha256": "87c5450f8c84b64f68aca88be3744368559f01070dd68bfe60caa408d63feaa1",
+  "recoveredSources": [
+    {
+      "path": "src/scene/FftChop.ts",
+      "sha256": "acf29fd2ac320b3f0c654b1ec517eac94e59d2332ea6c4eb6c80c8c1c38845c5",
+      "matchesArchivedSourceExactly": true
+    },
+    {
+      "path": "src/scene/FftChop.test.ts",
+      "sha256": "fd243e14230ee31251bf848cce6983ae602083fc0f28648fc20d7e8b39fc0790",
+      "matchesArchivedSourceExactly": true
+    },
+    {
+      "path": "src/scene/fftChopTemporal.ts",
+      "sha256": "32bb0e809b6f02f85faa8689eec8281b9dd1e119646a41d49be51a064cf4e9c3",
+      "matchesArchivedSourceExactly": true
+    }
+  ],
+  "rawReports": [
+    {
+      "file": "fft-temporal-before-fps.json",
+      "sha256": "7e146612451c9726083c0789afe9fdea227019cdeb6bd7fe383a183c61014d1e",
+      "byteExactOriginalArtifact": true
+    },
+    {
+      "file": "fft-temporal-after-fps.json",
+      "sha256": "75d3eaad0a069edad48b78ce5b6d8ca7ebd34ceca3700a78f7cf8ff73ce6adaf",
+      "byteExactOriginalArtifact": true
+    },
+    {
+      "file": "fft-temporal-lazy-after-fps.json",
+      "sha256": "3ee02f311c8ab3570720dc5304c6f44889890b6caf62686005bc13ea895feec3",
+      "byteExactOriginalArtifact": true
+    },
+    {
+      "file": "fft-temporal-lazy-baseline-return-fps.json",
+      "sha256": "b06d64467fe7dfbb36a0675ac2faaabd31ff2690e2f1ce257bda2330ec053969",
+      "byteExactOriginalArtifact": true
+    },
+    {
+      "file": "fft-temporal-quality.json",
+      "sha256": "2d889bced4b1ae33863384a65b43b22769025b2bba1e98de8a11a28dbd7e6ca1",
+      "byteExactOriginalArtifact": true
+    }
+  ],
+  "productionRollbackByteExact": true,
+  "productionHelperAbsent": true,
+  "browserLaunched": false,
+  "compiled": false
+}

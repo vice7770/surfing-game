@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "status": "rejected candidate; production rolled back",
+  "baseCommit": "5606527dbf15409eb407cbdebd2cf7f05209fdff",
+  "files": [
+    {
+      "productionPath": "src/scene/FftChop.ts",
+      "archivedPath": "docs/research/performance-2026-10-03/fft-temporal-candidate-source/FftChop.ts.txt",
+      "sha256": "acf29fd2ac320b3f0c654b1ec517eac94e59d2332ea6c4eb6c80c8c1c38845c5"
+    },
+    {
+      "productionPath": "src/scene/FftChop.test.ts",
+      "archivedPath": "docs/research/performance-2026-10-03/fft-temporal-candidate-source/FftChop.test.ts.txt",
+      "sha256": "fd243e14230ee31251bf848cce6983ae602083fc0f28648fc20d7e8b39fc0790"
+    },
+    {
+      "productionPath": "src/scene/fftChopTemporal.ts",
+      "archivedPath": "docs/research/performance-2026-10-03/fft-temporal-candidate-source/fftChopTemporal.ts.txt",
+      "sha256": "32bb0e809b6f02f85faa8689eec8281b9dd1e119646a41d49be51a064cf4e9c3"
+    },
+    {
+      "productionPath": "scripts/fft-chop-temporal-report.ts",
+      "archivedPath": "docs/research/performance-2026-10-03/fft-temporal-candidate-source/fft-chop-temporal-report.ts.txt",
+      "sha256": "781b7e91d7462895791df3ba9da8b89720e5baa3ff115f349acff2a3e78257ba"
+    }
+  ],
+  "patch": {
+    "path": "docs/research/performance-2026-10-03/fft-temporal-candidate.patch",
+    "sha256": "87c5450f8c84b64f68aca88be3744368559f01070dd68bfe60caa408d63feaa1"
+  }
+}

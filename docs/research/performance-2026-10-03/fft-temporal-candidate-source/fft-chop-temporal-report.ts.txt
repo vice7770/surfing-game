@@ -1,0 +1,184 @@
+/**
+ * CPU quality of the shading-only temporal approximation. No browser, GPU or water simulation.
+ * Bundle with rolldown, then pass --oracle=/absolute/path/to/retained-original.mjs and --out=report.json.
+ * The oracle exports chopSpectrum, slopeSpectrum and inverseFft2d from the original fftChopMath module.
+ */
+import { createHash } from 'node:crypto';
+import { readFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import {
+  CHOP_RMS_SLOPE, FFT_CHOP_PATCH, FFT_CHOP_SIZE, binWave, chopSpectrum, inverseFft2d, slopeSpectrum,
+} from '../src/scene/fftChopMath';
+import { FFT_CHOP_RATE, fftChopBracket } from '../src/scene/fftChopTemporal';
+
+const flags = new Map(process.argv.slice(2).map((arg) => {
+  const at = arg.indexOf('=');
+  return [arg.slice(0, at), arg.slice(at + 1)];
+}));
+const oraclePath = flags.get('--oracle');
+const out = flags.get('--out');
+if (!oraclePath || !out) throw new Error('Required: --oracle=/absolute/original.mjs --out=/absolute/report.json');
+const oracle = await import(pathToFileURL(resolve(oraclePath)).href) as {
+  chopSpectrum: typeof chopSpectrum;
+  slopeSpectrum: typeof slopeSpectrum;
+  inverseFft2d: typeof inverseFft2d;
+};
+const digest = (data: Uint8Array) => createHash('sha256').update(data).digest('hex');
+const fileHash = async (path: string) => digest(await readFile(path));
+const radiansToDegrees = 180 / Math.PI;
+const n = FFT_CHOP_SIZE;
+const patch = FFT_CHOP_PATCH;
+const count = n * n;
+const winds = [-8, 0, 8];
+const seeds = [1, 7];
+const intervals = [0, 75, 12_000];
+const phases = [0, .125, .25, .5, .75, .875];
+const omega = new Float64Array(count);
+const k2 = new Float64Array(count);
+for (let z = 0; z < n; z += 1) {
+  for (let x = 0; x < n; x += 1) {
+    const i = z * n + x;
+    k2[i] = ((2 * Math.PI) / patch) ** 2 * (binWave(x, n) ** 2 + binWave(z, n) ** 2);
+    omega[i] = Math.sqrt(9.81 * Math.sqrt(k2[i]));
+  }
+}
+
+/** Relative error of interpolating either travelling complex exponential at a requested share of an interval. */
+function modalError(phase: number, delta: number): number {
+  const re = (1 - phase) * Math.cos(phase * delta) + phase * Math.cos((1 - phase) * delta) - 1;
+  const im = -(1 - phase) * Math.sin(phase * delta) + phase * Math.sin((1 - phase) * delta);
+  return Math.hypot(re, im);
+}
+
+function metrics(exact: Float64Array, left: Float64Array, right: Float64Array, share: number, chop: number) {
+  let squared = 0, exactSquared = 0, maxSlope = 0, normalSquared = 0, maxNormal = 0;
+  for (let i = 0; i < exact.length; i += 2) {
+    const sx = left[i] + share * (right[i] - left[i]);
+    const sz = left[i + 1] + share * (right[i + 1] - left[i + 1]);
+    const dx = sx - exact[i], dz = sz - exact[i + 1];
+    const error = Math.hypot(dx, dz);
+    squared += dx * dx + dz * dz;
+    exactSquared += exact[i] ** 2 + exact[i + 1] ** 2;
+    maxSlope = Math.max(maxSlope, error);
+    // The actual shader's flat-water base normal (0,1,0), with chopFade=1.
+    const ax = -chop * exact[i], az = -chop * exact[i + 1];
+    const bx = -chop * sx, bz = -chop * sz;
+    const cross = Math.hypot(bz - az, az * bx - ax * bz, ax - bx);
+    const angle = Math.atan2(cross, ax * bx + 1 + az * bz);
+    normalSquared += angle * angle;
+    maxNormal = Math.max(maxNormal, angle);
+  }
+  return {
+    exactSlopeRms: Math.sqrt(exactSquared / count),
+    slopeErrorRms: Math.sqrt(squared / count),
+    slopeErrorMax: maxSlope,
+    normalAngleRmsDegrees: Math.sqrt(normalSquared / count) * radiansToDegrees,
+    normalAngleMaxDegrees: maxNormal * radiansToDegrees,
+  };
+}
+
+const cases = [];
+for (const wind of winds) {
+  for (const seed of seeds) {
+    const spectrum = chopSpectrum(wind, seed, n, patch);
+    const original = oracle.chopSpectrum(wind, seed, n, patch);
+    const bytes = new Uint8Array(spectrum.buffer, spectrum.byteOffset, spectrum.byteLength);
+    if (digest(bytes) !== digest(new Uint8Array(original.buffer, original.byteOffset, original.byteLength))) {
+      throw new Error(`Changed spectrum for wind=${wind}, seed=${seed}`);
+    }
+    const energy = new Float64Array(count);
+    let totalEnergy = 0;
+    for (let i = 0; i < count; i += 1) {
+      const p = i * 4;
+      energy[i] = k2[i] * (spectrum[p] ** 2 + spectrum[p + 1] ** 2 + spectrum[p + 2] ** 2 + spectrum[p + 3] ** 2);
+      totalEnergy += energy[i];
+    }
+    // Matches PhysicalMode.chopForWind without importing the entire game into this CPU report.
+    const chop = wind >= 0 ? .12 + .03 * wind : .12 + .008 * -wind;
+    const transform = (time: number) => oracle.inverseFft2d(oracle.slopeSpectrum(original, time, n, patch), n);
+    const samples = [];
+    for (const index of intervals) {
+      const leftTime = index / FFT_CHOP_RATE;
+      const rightTime = (index + 1) / FFT_CHOP_RATE;
+      const left = transform(leftTime), right = transform(rightTime);
+      for (const phase of phases) {
+        const time = leftTime + phase * (rightTime - leftTime);
+        const bracket = fftChopBracket(time);
+        if (bracket.index !== index) throw new Error(`Unexpected interval at ${time}`);
+        const exact = phase === 0 ? left : transform(time);
+        const errors = metrics(exact, left, right, bracket.share, chop);
+        let weightedError = 0, pointBound = 0;
+        for (let i = 0; i < count; i += 1) {
+          const factor = modalError(bracket.share, omega[i] * (bracket.right - bracket.left));
+          weightedError += energy[i] * factor ** 2;
+          const p = i * 4;
+          pointBound += Math.sqrt(k2[i]) * (Math.hypot(spectrum[p], spectrum[p + 1]) + Math.hypot(spectrum[p + 2], spectrum[p + 3])) * factor;
+        }
+        // Parseval plus |a+b|² <= 2(|a|²+|b|²) covers arbitrary instantaneous phase cancellation.
+        const spatialRmsBound = Math.sqrt(2 * weightedError);
+        const rounding = 64 * Number.EPSILON * Math.max(1, pointBound);
+        if (!Object.values(errors).every(Number.isFinite)
+          || errors.slopeErrorRms > spatialRmsBound + rounding
+          || errors.slopeErrorMax > pointBound + rounding) {
+          throw new Error(`Interpolation violated harmonic bound for wind=${wind} seed=${seed} t=${time}`);
+        }
+        samples.push({
+          time, requestedPhase: phase, ...bracket, ...errors,
+          slopeErrorRmsFractionOfNominal: errors.slopeErrorRms / CHOP_RMS_SLOPE,
+          spectrumWeightedRmsFraction: Math.sqrt(weightedError / totalEnergy),
+          instantaneousSpatialRmsBound: spatialRmsBound,
+          instantaneousPointBound: pointBound,
+        });
+      }
+    }
+    cases.push({ wind, seed, chop, spectrumSha256: digest(bytes), nominalSlopeRms: Math.sqrt(totalEnergy), samples });
+  }
+}
+
+const samples = cases.flatMap((entry) => entry.samples);
+const maximum = (key: keyof ReturnType<typeof metrics>) => Math.max(...samples.map((sample) => sample[key]));
+const omegaMax = Math.max(...omega);
+const report = {
+  schema: 1,
+  candidate: '30Hz 256² FFT endpoints, linearly composited at the unchanged requested seaTime',
+  scope: 'CPU ideal arithmetic against retained original spectrum+inverse transform, not a GPU or FPS measurement',
+  provenance: {
+    oraclePath: resolve(oraclePath), oracleSha256: await fileHash(oraclePath),
+    originalFftChopSourceSha256: await fileHash('/private/tmp/FftChop-before-temporal-3313.ts'),
+    candidateSourceSha256: await fileHash('src/scene/FftChop.ts'),
+    temporalSourceSha256: await fileHash('src/scene/fftChopTemporal.ts'),
+    unchangedMathSourceSha256: await fileHash('src/scene/fftChopMath.ts'),
+    scriptSourceSha256: await fileHash('scripts/fft-chop-temporal-report.ts'),
+  },
+  parameters: { size: n, patch, rate: FFT_CHOP_RATE, winds, seeds, intervals, phases },
+  harmonicBounds: {
+    omegaMaxRadiansPerSecond: omegaMax,
+    maximumRelativeAmplitudeError: omegaMax ** 2 / (8 * FFT_CHOP_RATE ** 2),
+    maximumMidpointRelativeAmplitudeError: 1 - Math.cos(omegaMax / (2 * FFT_CHOP_RATE)),
+  },
+  summary: {
+    cases: cases.length, samples: samples.length,
+    maximumSlopeErrorRms: maximum('slopeErrorRms'),
+    maximumSlopeErrorRmsFractionOfNominal: Math.max(...samples.map((sample) => sample.slopeErrorRmsFractionOfNominal)),
+    maximumPointSlopeError: maximum('slopeErrorMax'),
+    maximumFlatWaterNormalRmsDegrees: maximum('normalAngleRmsDegrees'),
+    maximumFlatWaterNormalPointDegrees: maximum('normalAngleMaxDegrees'),
+    maximumSpectrumWeightedRmsFraction: Math.max(...samples.map((sample) => sample.spectrumWeightedRmsFraction)),
+    changedSpectrumCases: 0, harmonicBoundViolations: 0,
+  },
+  scheduling: {
+    heldTimePasses: 0, initialOrResetPasses: 35, sameIntervalNewTimePasses: 1, nextIntervalPasses: 18,
+    steady60HzPassesPerFreshTime: 9.5, originalPassesPerFreshTime: 17,
+    extraEndpointBytes: 2 * n * n * 4 * 2,
+  },
+  exclusions: [
+    'GPU GLSL float32 phase/arithmetic and half-float endpoint/composite rounding require actual GPU comparison.',
+    'Normal angles use a flat unit base normal with chopFade=1. Steep barrel normals, occlusion and Fresnel response are unproven.',
+    'Nonlinear caustic ray intersections, compression and bright peaks are not bounded by this slope error report.',
+    'Actual pass timing, rendered FPS and physics/snapshot rates require a separate controlled live browser measurement.',
+  ],
+  cases,
+};
+await writeFile(resolve(out), `${JSON.stringify(report, null, 2)}\n`);
+process.stdout.write(`${JSON.stringify({ output: resolve(out), summary: report.summary, harmonicBounds: report.harmonicBounds }, null, 2)}\n`);

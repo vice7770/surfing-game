@@ -4,6 +4,16 @@ Continuation of the merged long run on `claude/wave-pool`, starting at `0cccd955
 
 ## Current live result: Padang Big on the M5 Pro
 
+### Later continuation on the tube-stability checkpoint
+
+The source checkpoint `1bcc7c0c` now shares a continuous crest-ray plan across drawing, contact and crash placement. The retained [moving geometry checks](tube-stability-2026-10-03/README.md) remove the reproduced across-front ray reversals; they do not establish acceptable cavity shape, seam coverage or rider behavior. The earlier unresolved-front statements below describe the first performance pass.
+
+Two further ordinary 90-second checks of this checkpoint reached **60 display FPS**, **56.98 and 56.35 fresh physics frames/s**, and **0.950 and 0.939 simulation seconds/wall second**. A 30 Hz interpolated FFT shading candidate reached 57.44 fresh frames/s between them. That small single-sequence difference does not establish a repeatable gain, and the extra cache, targets and shading approximation were rejected. The simpler original FFT remains the production choice. [Candidate, rejection and raw measurements](performance-2026-10-03/fft-temporal-candidate.md).
+
+An isolated [GPU kernel probe](performance-2026-10-03/gpu-kernel-probe.md) preserved all nine mapped fields, CPU uploads and clocks. The original full compute pass took a median 0.918 ms per CFL substep in its warm held fixture. The intrusive split classified columns as the largest kernel there, but does not explain late live map waits or establish an FPS optimization. Further work must address the actual live critical path without treating warm kernel timings or a 60 FPS display counter as complete simulation evidence.
+
+### Earlier accepted performance pass
+
 The ordinary menu → Padang Padang → Big → Paddle out test now averages **60.0 rendered FPS over 90 seconds** at High settings, Rich water, 64 wave components and High particles. The actual visible Chrome viewport is 1708 × 926, with a 2989 × 1620 drawing buffer on the 120 Hz display. No resolution override or vertex-normal shader was used. [Final passive live report](performance-2026-10-03/padang-live-frame-pacing.json). The script verified the served index, main entry and worker against the frozen build; combined bundle SHA-256 is `a493f04df31c598c1bb86575d9ee69617bac187d5407d27ac5c34c10db5b0a7d`.
 
 Rendering and advancing the sea are measured separately: this run published **57.70 fresh water snapshots/s**, advancing **0.962 simulation seconds per wall second**. Most early two-second intervals reached 60 water updates/s, but late heavy-breaking intervals fell to about 45–55. Actual rendered intervals were 16.7 ms median, 25.0 ms p95, 25.7 ms p99 and 32.8 ms maximum: **60 is the average, not a guarantee that every frame takes 16.7 ms**. This is a substantial improvement, with remaining frame jitter and contact/solver throughput gaps; a 60 FPS display alone does not establish a steady 60 Hz simulation.
