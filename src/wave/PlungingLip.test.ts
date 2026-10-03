@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, spitSpeedLimit, type TubeRoller } from './PlungingLip';
+import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SOURCE_SHARE, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, spitSpeedLimit, type TubeRoller } from './PlungingLip';
 import { GRAVITY } from './dispersion';
 import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, tubeFloorDepth, vortexRatio, type OverturnShape, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
@@ -55,6 +55,21 @@ describe('a reef break\'s lip (Teahupo\'o Reef, Part B)', () => {
     expect(aspect(2 * REEF_OVERTURN.windOverCelerity)).toBeCloseTo(measured, 12);
     expect(aspect(0)).toBeCloseTo(measured + 0.18 * REEF_OVERTURN.windOverCelerity, 12);
     expect(aspect(0.3)).toBeLessThan(aspect(0));
+  });
+
+  it('asks a spot\'s own jet area for a reef break beyond the fits, and changes only the water thrown', () => {
+    const reef = { windOverCelerity: REEF_OVERTURN.windOverCelerity, reef: { orthogonalGradient: 1 / 12 } };
+    const slab = lipThrow({ ...base, ...reef })!;
+    const own = lipThrow({ ...base, ...reef, reef: { ...reef.reef, jetArea: 0.585 } })!;
+    // base.breakerHeight 4 m over a 1 m column: H² = 16 m².
+    expect(own.volume).toBeCloseTo(0.585 * 16, 12);
+    expect(own.volume).not.toBeCloseTo(slab.volume, 6);
+    expect(own.shape.aspect).toBe(slab.shape.aspect);
+    expect(own.shape.tilt).toBe(slab.shape.tilt);
+    expect(own.relativeSpeed).toBe(slab.relativeSpeed);
+    expect(own.reef?.vortexRatio).toBe(slab.reef?.vortexRatio);
+    // A plane slope's lip is not a reef break's, so it has no reef conditions to carry a jet area: Pick & Feddersen's, as before.
+    expect(lipThrow({ ...base, iribarren: 1, slope: 0.08 })!.volume).toBeCloseTo(overturn(overturnParameter(0.08, 0.05)).jetArea * 16, 12);
   });
 
   it('throws a steeper ledge\'s lip from the roundest tube measured, and never collapses it', () => {
@@ -552,6 +567,38 @@ describe('PlungingLip', () => {
       for (const row of [10, 11, 12]) expect(solver.h[rowOf(solver, row)]).toBeCloseTo(2 + PROFILE[row] - 0.2 * weight(row), 9);
       // Behind or ahead of the upper half, or 2H from the crest, the water stays.
       for (const row of [8, 9, 13, 14]) expect(solver.h[rowOf(solver, row)]).toBe(2 + PROFILE[row]);
+    });
+
+    it('takes a fifth at most unless its lip has a share of its own, and then up to that', () => {
+      expect(SOURCE_SHARE).toBe(0.2);
+      const { solver, lip, cell } = crest();
+      expect(lip.sourceShare).toBe(SOURCE_SHARE);
+      expect(new PlungingLip(solver, 256, undefined).sourceShare).toBe(SOURCE_SHARE);
+      const own = crest();
+      const wider = new PlungingLip(own.solver, 256, 0.3);
+      expect(wider.sourceShare).toBe(0.3);
+      expect(throwFrom(wider, own.cell, 100)).toBeCloseTo(0.3 * WINDOW, 9);
+      for (const row of [10, 11, 12]) expect(own.solver.h[rowOf(own.solver, row)]).toBeCloseTo(2 + PROFILE[row] - 0.3 * weight(row), 9);
+      // The one with the default share took only its fifth from the same crest.
+      expect(throwFrom(lip, cell, 100)).toBeCloseTo(0.2 * WINDOW, 9);
+    });
+
+    it('starves a throw only past its own share: an ask between a fifth and 0.3 of the window\'s water is filled by the wider lip alone', () => {
+      const ask = 0.25 * WINDOW;
+      const fifth = crest();
+      expect(throwFrom(fifth.lip, fifth.cell, ask)).toBeCloseTo(0.2 * WINDOW, 9);
+      expect(fifth.lip.starvedThrows).toBe(1);
+      expect(fifth.lip.starvedVolume).toBeCloseTo(ask - 0.2 * WINDOW, 9);
+      const own = crest();
+      const wider = new PlungingLip(own.solver, 256, 0.3);
+      expect(throwFrom(wider, own.cell, ask)).toBeCloseTo(ask, 9);
+      expect(wider.starvedThrows).toBe(0);
+      // Past 0.3 it starves too, by what is left.
+      const most = crest();
+      const widest = new PlungingLip(most.solver, 256, 0.3);
+      throwFrom(widest, most.cell, 1);
+      expect(widest.starvedThrows).toBe(1);
+      expect(widest.starvedVolume).toBeCloseTo(1 - 0.3 * WINDOW, 9);
     });
 
     it('takes only what the throw asks, in the same proportions', () => {

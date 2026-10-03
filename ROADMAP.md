@@ -554,14 +554,14 @@ Requirements agreed in a grilling session on 2026-09-27: [spec](docs/superpowers
     - the −x corner, where the Reef's 45° ledge meets the game window's open edge, still peaked at 17.7 m/s with the Froude switch; the bed now eases over 20 m to uniform along shore there (10.0 m/s), and FUNWAVE-TVD's Froude cap is the counted net under the switch (CPU and WGSL; branch `claude/reef-stability`).
     - a lip's jet took a fifth of the whole column under its crest, water from metres below still level, and drove its source cells' flow backwards; it now takes the wave's top: its upper half above its own trough, within ±2H of the crest and tapered, and its momentum from the forward-moving upper half nearest the crest, never reversing a cell (ruled with the water-physics advisor; branch `claude/jet-source`, [report](docs/research/teahupoo-reef-report.md#where-a-jets-water-comes-from)).
     - jets that flew out through the window's +x open edge came down clamped into its last column: a one-cell spike 4 m high on the Big swell at high tide (dη/dz 4.22). Water that comes down past an open edge now leaves the window with its momentum, splash-up, foam and air, and is counted; walls keep it and periodic edges wrap it (ruled with the water-physics advisor; branch `claude/edge-landings`, [report](docs/research/teahupoo-reef-report.md#jets-that-come-down-past-the-open-edges)).
+    - the Reef's jet ask was the slab's provisional 0.47 H², with its source capped at a fifth, and 39–69 % of throws fell short of it; the ask is now 0.585 H², the median of the advisor's two periodic Basilisk runs of the ledge (0.55 and 0.62 H²), and the cap 0.3 (provisional), on the Reef only: throws that fall short are 12–24 %, the water not thrown 0.8–3.3 % of the asked, the jets carry 25–37 % more water, and the surf readout and the water's speeds hold within their spread; every other spot is bit-identical (the owner's call, 2026-10-03; branch `claude/reef-jet-ask`, [report](docs/research/teahupoo-reef-report.md#the-reefs-lip-jet-raised-to-the-periodic-runs)).
   - **Measured:**
     - rounder tubes (width/length 0.71 → 0.77–0.80) that open wider;
-    - jets 0.47 H² and 0.47 H thick;
+    - jets 0.47 H² and 0.47 H thick (the jet since raised to 0.585 H²: see above);
     - the crest gives the whole jet except on the Big swell's biggest waves;
     - jets leave at 1.95× crest speed against the lab's 1.25–1.32 (reported for the user);
     - easing a jet's source in at its upper half's edge (smoothstep from H/2 to 3H/4 above the trough, or the water above H/2 only) did not change the steps near throws: they sit at the wave's mid-face whatever the source does. Not kept (the water-physics advisor; branch `claude/jet-half-taper`, [report](docs/research/teahupoo-reef-report.md#a-softer-edge-at-half-height-measured-not-kept)).
   - **Open:**
-    - the Reef's jet ask: the advisor's periodic Basilisk runs give 0.55–0.62 H² against the provisional 0.47, where 48–62 % of throws on main already fall short (the owner's call);
     - seed 3's +x edge column reaching dη/dz 4 near t 110 s under the Big swell ([report](docs/research/teahupoo-reef-report.md#a-softer-edge-at-half-height-measured-not-kept));
     - validating the water against the open Teahupo'o lab dataset (download needs the user's OK);
     - peel against makeability before Part D (the user's call).
