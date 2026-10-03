@@ -49,6 +49,7 @@ import { Environment } from './scene/Environment';
 import { PhotoSky, sunElevationFromSlider } from './scene/PhotoSky';
 import { ShadowRig, parseShadowLevel } from './scene/ShadowRig';
 import { WaterSurface } from './scene/WaterSurface';
+import { DISPLAY_EXPOSURE, UNDERWATER_GAIN, UnderwaterFog, installUnderwaterFog, photoSkyLight, underwaterWaterOf, type SurfaceLight } from './scene/underwaterFog';
 import { CAUSTIC_WINDOW, CausticMap } from './scene/CausticMap';
 import { FftChop } from './scene/FftChop';
 import { FlatSurfaceSource } from './scene/FlatSurfaceSource';
@@ -165,6 +166,8 @@ class SurfGame {
   private isBelowSurface = false;
   private readonly underwaterFog = new FogExp2('#367e83', 0.035);
   private readonly underwaterColor = new Color('#367e83');
+  /** The Rich look's underwater fog (underwater item 1): the spot's own water, per channel, in the materials, and its backdrop. Classic keeps the flat fog above. */
+  private readonly richFog = new UnderwaterFog();
   private readonly skyColor = new Color('#b8e3e5');
   private readonly physicalMode: PhysicalMode;
   private physicalSettings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS };
@@ -211,13 +214,15 @@ class SurfGame {
   private lastRender = 0;
 
   constructor() {
+    // Before any program is built: the shared fog chunks take the Rich underwater path beside three's own (warns, and the flat fog stays, if three's chunks have changed).
+    installUnderwaterFog();
     this.renderer = new WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(this.pixelRatio());
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.outputColorSpace = 'srgb';
     // Photographed skies carry a real sun; neutral tone mapping keeps colours and rolls off its highlights.
     this.renderer.toneMapping = NeutralToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = DISPLAY_EXPOSURE;
     this.renderer.domElement.tabIndex = 0;
     this.renderer.domElement.setAttribute('aria-label', 'Surf game canvas. Click here to use keyboard controls.');
     getElement('#scene').append(this.renderer.domElement);
@@ -238,6 +243,7 @@ class SurfGame {
 
     this.scene.background = new Color('#b8e3e5');
     this.scene.add(this.environment.group);
+    this.scene.add(this.richFog.backdrop);
     this.scene.add(this.ambient);
     this.sunlight = new DirectionalLight('#ffe7bd', 1.2 + 0.6 * START_SUN.sunHeight);
     this.sunlight.position.copy(this.environment.sunPosition).normalize().multiplyScalar(45);
@@ -944,6 +950,7 @@ class SurfGame {
 
   /** The water, sea and shadows around `view`, drawn from it (the physical camera, or a water sheet shot). */
   private drawPhysical(view: PerspectiveCamera): void {
+    if (this.richFog.active) this.refreshRichFog(view);
     this.water.update();
     // The swept barrel lofts over the heights the water just uploaded (Padang Padang, Part B, PR 3).
     this.physicalMode.drawBarrel();
@@ -1038,7 +1045,7 @@ class SurfGame {
     this.environment.group.scale.setScalar(1);
     this.environment.group.position.set(0, 0, 0);
     const hidden = [this.water.mesh, this.physicalMode.seabed.mesh, this.physicalMode.farField.mesh,
-      this.physicalMode.lipSheet.mesh, this.physicalMode.bubbles.mesh, this.physicalMode.spray.mesh, this.environment.sunMesh];
+      this.physicalMode.lipSheet.mesh, this.physicalMode.bubbles.mesh, this.physicalMode.spray.mesh, this.environment.sunMesh, this.richFog.backdrop];
     const visibility = hidden.map((object) => object.visible);
     hidden.forEach((object) => { object.visible = false; });
     const capture = new WebGLCubeRenderTarget(128);
@@ -1070,6 +1077,32 @@ class SurfGame {
       this.scene.background = below ? this.underwaterColor : (this.photoSky.background ?? this.skyColor);
       this.environment.group.visible = !below;
     }
+    // Rich fades what is under the surface by the spot's own water per channel (the flat fog stays set for the
+    // materials' define), shows that water at infinity where nothing is drawn, and takes the underwater exposure gain on
+    // everything the eye sees (underwater item 1). Without the chunks installed it keeps the flat fog, as Classic.
+    this.richFog.setActive(below && this.water.drawnLook === 'rich');
+    const rich = this.richFog.active;
+    if (below) this.scene.background = rich ? null : this.underwaterColor;
+    this.renderer.toneMappingExposure = rich ? DISPLAY_EXPOSURE * UNDERWATER_GAIN : DISPLAY_EXPOSURE;
+  }
+
+  /** The Rich underwater fog from the spot's water (the water mesh's own optics), the light shown now and the eye's depth under the surface. */
+  private refreshRichFog(view: PerspectiveCamera): void {
+    const host = this.physicalMode.host;
+    const depth = host ? Math.max(0, host.heightAt(view.position.x, view.position.z) - view.position.y) : 0;
+    this.richFog.update(underwaterWaterOf(this.water.materialUniforms), this.surfaceLight(), depth);
+  }
+
+  /** The sun's and the sky's light at the surface, in the scene's units: the photographed sky's, else the painted one's lights. */
+  private surfaceLight(): SurfaceLight {
+    if (this.photoSky.ready) return photoSkyLight(this.photoSky.sunDirection.y, this.photoSky.sunIntensity, this.photoSky.sunColor, this.photoSky.skyColor);
+    const { sunlight, ambient } = this;
+    const sun = sunlight.intensity;
+    return {
+      sun: [sunlight.color.r * sun, sunlight.color.g * sun, sunlight.color.b * sun],
+      sunCosine: Math.max(0, sunlight.position.y / Math.max(1e-6, sunlight.position.length())),
+      sky: [ambient.color.r * ambient.intensity, ambient.color.g * ambient.intensity, ambient.color.b * ambient.intensity],
+    };
   }
 
   private focusGame(): void {

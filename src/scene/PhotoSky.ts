@@ -1,6 +1,8 @@
 import {
   Color,
+  DataUtils,
   EquirectangularReflectionMapping,
+  HalfFloatType,
   PMREMGenerator,
   SRGBColorSpace,
   TextureLoader,
@@ -82,10 +84,42 @@ export function skyExposure(entry: SkyEntry): { environment: number; sun: number
   };
 }
 
-/** A loaded sky's textures, and how to free them. */
+/**
+ * The horizontal irradiance of an equirectangular sky, per channel, in its own units: the cosine-weighted integral of
+ * its radiance over the upper hemisphere, Σ L cos θ sin θ Δθ Δφ, row 0 at the zenith (an HDR's first scanline). The
+ * manifest gives the sky's luminance only (`skyIrradiance`, which this reproduces); this gives its colour. `half`: the
+ * data are half floats (HDRLoader's default). RGBA texels.
+ */
+export function skyIrradianceOf(image: { data: ArrayLike<number>; width: number; height: number }, half = false): [number, number, number] {
+  const { data, width, height } = image;
+  const value = half ? (k: number) => DataUtils.fromHalfFloat(data[k]) : (k: number) => data[k];
+  const out: [number, number, number] = [0, 0, 0];
+  const dTheta = Math.PI / height;
+  const dPhi = (2 * Math.PI) / width;
+  for (let row = 0; row < height; row += 1) {
+    const theta = (row + 0.5) * dTheta;
+    if (theta >= Math.PI / 2) break;
+    const weight = Math.cos(theta) * Math.sin(theta) * dTheta * dPhi;
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    for (let column = 0, k = 4 * row * width; column < width; column += 1, k += 4) {
+      r += value(k);
+      g += value(k + 1);
+      b += value(k + 2);
+    }
+    out[0] += r * weight;
+    out[1] += g * weight;
+    out[2] += b * weight;
+  }
+  return out;
+}
+
+/** A loaded sky's textures, how to free them, and its sky's horizontal irradiance per channel where measured (`skyIrradianceOf`). */
 export interface LoadedSky {
   environment: Texture;
   background: Texture;
+  skyIrradiance?: readonly [number, number, number];
   dispose(): void;
 }
 
@@ -108,6 +142,7 @@ function webLoads(renderer: WebGLRenderer, baseUrl: string): PhotoSkyLoads {
         new HDRLoader().loadAsync(`${baseUrl}${entry.hdr}`),
         new TextureLoader().loadAsync(`${baseUrl}${entry.background}`),
       ]);
+      const skyIrradiance = skyIrradianceOf(hdr.image as { data: ArrayLike<number>; width: number; height: number }, hdr.type === HalfFloatType);
       hdr.mapping = EquirectangularReflectionMapping;
       background.mapping = EquirectangularReflectionMapping;
       background.colorSpace = SRGBColorSpace;
@@ -115,7 +150,7 @@ function webLoads(renderer: WebGLRenderer, baseUrl: string): PhotoSkyLoads {
       const target: WebGLRenderTarget = pmrem.fromEquirectangular(hdr);
       pmrem.dispose();
       hdr.dispose();
-      return { environment: target.texture, background, dispose: () => { target.dispose(); background.dispose(); } };
+      return { environment: target.texture, background, skyIrradiance, dispose: () => { target.dispose(); background.dispose(); } };
     },
   };
 }
@@ -125,6 +160,8 @@ export class PhotoSky {
   readonly sunDirection = new Vector3(0, 1, 0);
   readonly sunColor = new Color(1, 1, 1);
   sunIntensity = 0;
+  /** The colour of the sky's light on a level surface, its luminance 1: the photograph's own, measured from its HDR; grey until then. */
+  readonly skyColor: [number, number, number] = [1, 1, 1];
   environment?: Texture;
   background?: Texture;
   environmentIntensity = 1;
@@ -177,6 +214,9 @@ export class PhotoSky {
       this.environmentIntensity = exposure.environment;
       this.sunIntensity = exposure.sun;
       this.sunColor.copy(exposure.sunColor);
+      const sky = loaded.skyIrradiance;
+      const lum = sky ? 0.2126 * sky[0] + 0.7152 * sky[1] + 0.0722 * sky[2] : 0;
+      for (let i = 0; i < 3; i += 1) this.skyColor[i] = sky && lum > 0 ? sky[i] / lum : 1;
     }
     this.rotation = skyRotation(entry.sun.direction, azimuthDegrees);
     rotatedSun(entry.sun.direction, this.rotation, this.sunDirection);

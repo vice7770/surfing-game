@@ -1,6 +1,9 @@
-import { Texture, Vector3 } from 'three';
+import { readFileSync } from 'node:fs';
+import { DataUtils, HalfFloatType, Texture, Vector3 } from 'three';
+import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import { describe, expect, it } from 'vitest';
-import { PhotoSky, REFERENCE_LIGHT, nearestSky, rotatedSun, skyExposure, skyRotation, sunElevationFromSlider, type PhotoSkyLoads, type SkyEntry } from './PhotoSky';
+import skyManifest from '../../public/assets/skies/skies.json';
+import { PhotoSky, REFERENCE_LIGHT, nearestSky, rotatedSun, skyExposure, skyIrradianceOf, skyRotation, sunElevationFromSlider, type PhotoSkyLoads, type SkyEntry } from './PhotoSky';
 
 const sky = (id: string, timeOfDay: SkyEntry['timeOfDay'], elevation: number, irradiance: [number, number, number], skyIrradiance: number): SkyEntry => {
   const e = (elevation * Math.PI) / 180;
@@ -111,5 +114,63 @@ describe('photo sky', () => {
     expect(horizontal(skies[2])).toBeGreaterThan(horizontal(skies[0]));
     expect(noon).toBeLessThanOrEqual(REFERENCE_LIGHT + 1e-9);
     expect(skyExposure(skies[2]).sunColor.r).toBeGreaterThan(skyExposure(skies[2]).sunColor.b);
+  });
+});
+
+describe('the photographed sky\'s own light on a level surface', () => {
+  /** An RGBA equirectangular sky, `width` × `height`, of radiance `at(θ)` (θ from the zenith). */
+  const equirect = (width: number, height: number, at: (theta: number) => [number, number, number]) => {
+    const data = new Float32Array(4 * width * height);
+    for (let row = 0; row < height; row += 1) {
+      const value = at(((row + 0.5) / height) * Math.PI);
+      for (let column = 0; column < width; column += 1) data.set([...value, 1], 4 * (row * width + column));
+    }
+    return { data, width, height };
+  };
+
+  it('integrates the radiance over the upper hemisphere with the cosine: a uniform sky of L gives π L, the ground none', () => {
+    const uniform = skyIrradianceOf(equirect(64, 256, () => [1, 2, 3]));
+    [1, 2, 3].forEach((value, i) => expect(uniform[i] / (Math.PI * value)).toBeCloseTo(1, 4));
+    // Light below the horizon does not reach a level surface; a sky bright at the zenith gives more than one bright low down.
+    expect(skyIrradianceOf(equirect(64, 256, (theta) => (theta > Math.PI / 2 ? [5, 5, 5] : [0, 0, 0])))).toEqual([0, 0, 0]);
+    // A bright cap of half-angle α about the zenith gives π sin²α.
+    for (const alpha of [0.3, 0.8, 1.2]) {
+      const cap = skyIrradianceOf(equirect(64, 1024, (theta) => (theta < alpha ? [1, 1, 1] : [0, 0, 0])))[0];
+      expect(cap / (Math.PI * Math.sin(alpha) ** 2)).toBeCloseTo(1, 2);
+    }
+    // Half floats, as HDRLoader gives them.
+    const sky = equirect(16, 64, () => [0.5, 1, 1.5]);
+    const half = { ...sky, data: Uint16Array.from(sky.data, (v) => DataUtils.toHalfFloat(v)) };
+    skyIrradianceOf(half, true).forEach((value, i) => expect(value).toBeCloseTo(skyIrradianceOf(sky)[i], 6));
+  });
+
+  it('measures each committed photograph\'s sky: its luminance the manifest\'s, its colour bluer than grey', () => {
+    for (const entry of skyManifest.skies as unknown as SkyEntry[]) {
+      const bytes = readFileSync(`public/assets/${entry.hdr}`);
+      const parsed = new HDRLoader().parse(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
+      expect(parsed.type).toBe(HalfFloatType);
+      const [r, g, b] = skyIrradianceOf(parsed as unknown as { data: Uint16Array; width: number; height: number }, true);
+      expect((0.2126 * r + 0.7152 * g + 0.0722 * b) / entry.skyIrradiance).toBeCloseTo(1, 2);
+      // The clear skies' blue: their light on a level surface has 1.37–1.46 times its luminance in blue, 0.78–0.89 in red.
+      const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      expect(b / luminance).toBeGreaterThan(1.3);
+      expect(r / luminance).toBeLessThan(0.9);
+    }
+  });
+
+  it('takes the loaded sky\'s colour, luminance 1, and grey where a load gives none', async () => {
+    const measured: [number, number, number] = [2.781, 3.457, 4.65];
+    const loads = (skyIrradiance?: [number, number, number]): PhotoSkyLoads => ({
+      manifest: async () => skies,
+      sky: async () => ({ environment: new Texture(), background: new Texture(), ...(skyIrradiance ? { skyIrradiance } : {}), dispose: () => undefined }),
+    });
+    const sky = new PhotoSky(undefined as never, 'assets/', loads(measured));
+    await sky.select(2, 0);
+    const lum = 0.2126 * measured[0] + 0.7152 * measured[1] + 0.0722 * measured[2];
+    sky.skyColor.forEach((value, i) => expect(value).toBeCloseTo(measured[i] / lum, 9));
+    expect(0.2126 * sky.skyColor[0] + 0.7152 * sky.skyColor[1] + 0.0722 * sky.skyColor[2]).toBeCloseTo(1, 9);
+    const grey = new PhotoSky(undefined as never, 'assets/', loads());
+    await grey.select(2, 0);
+    expect(grey.skyColor).toEqual([1, 1, 1]);
   });
 });
