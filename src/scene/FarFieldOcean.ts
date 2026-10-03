@@ -19,6 +19,7 @@ import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './wat
 import type { FarFieldProfile } from '../wave/FarFieldProfile';
 import { buildGridGeometry, gradedAxis, type HoleRect } from './gridGeometry';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
+import { churnTexture } from './water/churnTexture';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
 import { WATER_BODY_GAIN, WATER_IOR, applyOptics, applySun, createOpticsUniforms, waterBodyFragment, waterOpticsPars, type WaterOptics } from './waterOptics';
 
@@ -140,6 +141,8 @@ export class FarFieldOcean {
       farFade: { value: new Vector2(1000, 1450) },
       waterFoamColor: { value: new Color('#d8f2e9') },
       waterFoamTile: { value: foamTileTexture() },
+      // Rich only: the foam field's map (`richFragmentPars`), the tank's own.
+      waterChurnMap: { value: churnTexture() },
       waterFoamPattern: { value: 1 },
       waterTime: { value: 0 },
       waterChop: { value: DEFAULT_WATER_CHOP },
