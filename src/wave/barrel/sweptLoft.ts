@@ -3,9 +3,9 @@ import { GRAVITY } from '../dispersion';
 import { BARREL_SPOTS } from './barrelSpots';
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
 import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
-import { NO_CHORD, SHEET, THROAT, mouthSkyShare, polylineChords, sheetTablesLookup, throatEase, throatViews, type SheetLookup } from './lipSheet';
+import { NO_CHORD, SHEET, THROAT, frayShare, mouthSkyShare, polylineChords, sheetTablesLookup, throatEase, throatViews, type SheetLookup } from './lipSheet';
 
-export { NO_CHORD, SHEET, THROAT, arcView, mouthSkyShare, polylineChords, sheetAcross, throatEase, throatViews, tubeSkyView } from './lipSheet';
+export { FRAY, NO_CHORD, SHEET, THROAT, arcView, frayShare, frayWhiteness, mouthSkyShare, polylineChords, sheetAcross, throatEase, throatViews, tubeSkyView } from './lipSheet';
 
 /**
  * The swept loft's constants (the Padang Padang spec, Part B, PR 3; docs/research/water-physics/swept-barrel-build.md,
@@ -106,6 +106,11 @@ export interface LoftResult {
    * it out, which reads as 0.
    */
   arc?: Float32Array;
+  /**
+   * Per vertex, the share of the lip's sheet fraying into drops there, 0–1 (`frayShare`; look-fix round 1): near the tip
+   * of an open slice whose underside has formed, 0 elsewhere. Drawn lofts only; a loft made by hand may leave it out.
+   */
+  fray?: Float32Array;
   indices: Uint32Array;
   vertexCount: number;
   indexCount: number;
@@ -315,7 +320,7 @@ export class SweptLoft {
     this.result = {
       positions: new Float32Array(3 * vertices), normals: new Float32Array(3 * vertices), mask: new Float32Array(vertices), lift: new Float32Array(vertices),
       sheet: new Float32Array(vertices), sheetWeight: new Float32Array(vertices), sheetBack: new Float32Array(vertices), throat: new Float32Array(4 * vertices),
-      chord: new Float32Array(2 * vertices).fill(NO_CHORD), arc: new Float32Array(vertices),
+      chord: new Float32Array(2 * vertices).fill(NO_CHORD), arc: new Float32Array(vertices), fray: new Float32Array(vertices),
       indices: new Uint32Array(6 * (LOFT_SAMPLES - 1) * slices), vertexCount: 0, indexCount: 0, sliceCount: 0,
       sliceFront: new Int32Array(slices), sliceSigma: new Float32Array(slices), sliceTau: new Float32Array(slices),
       slicePhase: new Uint8Array(slices), sliceCrestOffset: new Float32Array(slices), sliceLife: new Float32Array(slices),
@@ -802,7 +807,15 @@ export class SweptLoft {
         r.chord![2 * v + 1] = lifted ? this.chords[2 * j + 1] : NO_CHORD;
       }
       // The face coordinate along the slice as drawn: its arc length from the crest landmark (the drawing only).
-      if (this.measureSheet) drawnArcs(this.drawn, E + LANDMARK.crest, r.arc!, slice * LOFT_SAMPLES);
+      if (this.measureSheet) {
+        drawnArcs(this.drawn, E + LANDMARK.crest, r.arc!, slice * LOFT_SAMPLES);
+        // The lip frays at its leading edge while it flies: an open slice whose underside has formed.
+        const tipArc = formed > 0 && r.slicePhase[slice] === PHASE.open ? r.arc![slice * LOFT_SAMPLES + E + LANDMARK.lip] : 0;
+        for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+          const i = j - E;
+          r.fray![slice * LOFT_SAMPLES + j] = i > LANDMARK.crest && i < LANDMARK.throat ? frayShare(r.arc![slice * LOFT_SAMPLES + j], tipArc) : 0;
+        }
+      }
       const tip = 3 * (slice * LOFT_SAMPLES + E + LANDMARK.lip);
       r.sliceTipX[slice] = r.positions[tip];
       r.sliceTipY[slice] = r.positions[tip + 1];

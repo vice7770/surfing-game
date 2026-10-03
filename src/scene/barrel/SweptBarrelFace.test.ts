@@ -53,11 +53,11 @@ describe('the curl’s face coordinates and relief (look-fix round 1)', () => {
     swept.update(l);
     const face = swept.mesh.geometry.getAttribute('sweptFace').array;
     for (const v of [7 * LOFT_SAMPLES + 3, 7 * LOFT_SAMPLES + 60, 12 * LOFT_SAMPLES + 100]) {
-      expect(face[2 * v]).toBeCloseTo(l.sliceSigma[Math.floor(v / LOFT_SAMPLES)], 6);
-      expect(face[2 * v + 1]).toBeCloseTo(l.arc![v], 6);
+      expect(face[3 * v]).toBeCloseTo(l.sliceSigma[Math.floor(v / LOFT_SAMPLES)], 6);
+      expect(face[3 * v + 1]).toBeCloseTo(l.arc![v], 6);
     }
     swept.update({ ...l, arc: undefined });
-    expect(face[2 * (7 * LOFT_SAMPLES + 60) + 1]).toBe(0);
+    expect(face[3 * (7 * LOFT_SAMPLES + 60) + 1]).toBe(0);
   });
 
   it('in the Rich look, tilts the lifted curl by the ripples at its face coordinates, in the frame of the crest and the profile', () => {
@@ -100,7 +100,7 @@ describe('the curl’s face coordinates and relief (look-fix round 1)', () => {
       swept.setLook(look);
       const { fragment } = compiled(swept.mesh.material);
       expect(fragment).toContain('mix( vWaterFoam, sweptFoamCover( waterFootprint ), waterFoamPattern );');
-      expect(fragment).toContain('float face = waterFoamCover( vSweptFace, vec2( 0.0 ), vWaterFoam, waterTime, max( faceFootprint.x, faceFootprint.y ) );');
+      expect(fragment).toContain('float face = waterFoamCover( vSweptFace.xy, vec2( 0.0 ), vWaterFoam, waterTime, max( faceFootprint.x, faceFootprint.y ) );');
       expect(fragment).toContain(SWEPT_LIFTED_BED);
       // After the column's own body, caustics and all, and before the sheet's.
       expect(fragment.indexOf(SWEPT_LIFTED_BED)).toBeGreaterThan(fragment.indexOf('causticLightAt( waterBedXZ ) );'));

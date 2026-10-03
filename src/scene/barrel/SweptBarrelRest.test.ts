@@ -14,7 +14,7 @@ import { waterTubePars } from '../water/tubeCarve';
 import { waterChopNormal } from '../waterChop';
 import { CLASSIC_FOAM } from '../waterOptics';
 import { WaterSurface, waterFragmentPars, type SurfaceSource } from '../WaterSurface';
-import { REST_NORMAL, SWEPT_CHORD_LIGHT, SweptBarrelMesh, waterTriangle } from './SweptBarrelMesh';
+import { REST_NORMAL, RICH_FRAY, SWEPT_CHORD_LIGHT, SweptBarrelMesh, waterTriangle } from './SweptBarrelMesh';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 /** The water's lace in both looks' foam blocks, which the curl maps on its face where lifted. */
@@ -68,8 +68,10 @@ describe('the curl where it rests on the water (look-fix round 1)', () => {
     swept.setLook('rich');
     const { vertex, fragment } = compiled(swept.mesh.material);
     expect(vertex).toContain('vWaterAir = ( 1.0 - sweptLift ) * waterAerationAt( position.xz ).x;');
-    // The water's own foam, its lace on the curl's own map where lifted (the face's).
-    expect(fragment).toContain(RICH_FOAM.replace(FOAM_COVER_CALL, 'sweptFoamCover( waterFootprint )'));
+    // The water's own foam, its lace on the curl's own map where lifted (the face's), and the lip's fray after its streaks.
+    const foam = RICH_FOAM.replace(FOAM_COVER_CALL, 'sweptFoamCover( waterFootprint )');
+    const streaks = foam.split('\n').find((line) => line.includes('waterStreak('))!;
+    expect(fragment).toContain(foam.replace(streaks, streaks + RICH_FRAY));
     // The water's relief, from its own normal chunk: the chop, the ripples on the current, the churn's clumps.
     const relief = richNormalFragment({ ripples: true, churn: true });
     for (const line of ['waterSlope += waterChop * chopFade * waterChopSlope( vWaterWorld.xz, waterTime );', 'waterSlope += waterRippleSlopeAt( vWaterWorld.xz, vWaterFlow );', 'waterSlope += waterFreshNormal * waterChurnSlope( vWaterWorld.xz, vWaterFlow );']) {
