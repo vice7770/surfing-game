@@ -5,7 +5,7 @@
 import { waterCubicPars } from './cubicSurface';
 import { PATCH_SKIRT } from './richPatch';
 import { RICH_SPECULAR } from './specular';
-import { CLASSIC_FOAM } from '../waterOptics';
+import { FOAM_ALBEDO, FOAM_DENSE } from '../foamPattern';
 
 export { waterCubicPars };
 
@@ -67,24 +67,44 @@ vPatch = onPatch;
 vWaterSkirt = skirt;`;
 
 /**
+ * GLSL: the foam as a layer that adds light to the water under it (`foamOverWater`, with `FOAM_ALBEDO`), and Rich's
+ * gain on the whole, not on the water alone. `under` is the water's reflectance before the gain, `reflectance` the
+ * layer's; it needs `waterBodyGain`. The foam is white, whatever the light: it takes the colour of the sky and sun
+ * that fall on it, where it used to be tinted mint.
+ */
+const foamLayer = (under: string, reflectance: string) => `float waterFoamT = 1.0 - ${reflectance};
+  diffuseColor.rgb = waterBodyGain * ( vec3( ${reflectance} ) + waterFoamT * waterFoamT * ${under} / ( 1.0 - ${reflectance} * ${under} ) );`;
+
+/** GLSL: the reflectance of foam by its age proxy `age` (`foamAge`): fresh whitewater to lace. */
+const foamAlbedoAt = (age: string) => `mix( ${FOAM_ALBEDO.fresh.toFixed(3)}, ${FOAM_ALBEDO.lace.toFixed(3)}, ${age} )`;
+
+/** GLSL: how dense the foam still is, `smoothstep( FOAM_DENSE, foam )` of `foamAge`. */
+const foamDense = (foam: string) => `smoothstep( ${FOAM_DENSE[0].toFixed(2)}, ${FOAM_DENSE[1].toFixed(2)}, ${foam} )`;
+
+/**
  * The Rich foam composition for `waterBodyFragment`: fresh whitewater as dense
  * churn, creased between its clumps, opening into the lace as it ages; the
  * lace streaked up steep faces along the current; a glossy body that turns
  * matte under foam; and thin fresh foam glowing when the sun is behind it.
  * Under it all, the bubble plume (G9) whitens the body as far down as the air
  * went: from above seen through the water over its middle, from below plainly.
+ * The foam is a layer that adds light to that water (`foamLayer`): bright
+ * white where it is fresh (0.55), dimmer as lace (0.25), a veil as streaks (0.10).
  */
 export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
   float waterLace = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
   vec2 waterChurn = waterChurnAt( vWaterWorld.xz, vWaterFlow );
   float waterFresh = waterFreshness( vWaterAir ) * waterFoamPattern;
   float waterCover = mix( waterLace, max( waterLace, waterChurn.x ), waterFresh );
-  waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );
+  float waterStreakCover = waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam );
   float waterCrease = mix( 1.0, 0.88 + 0.12 * waterChurn.y, waterFresh );
   float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );
   float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;
-  vec3 waterUnder = mix( waterBody * waterBodyGain, waterFoamColor * exp( -waterAttenuation * waterPlumePath ), waterPlume );
-  diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );
+  vec3 waterUnder = mix( waterBody, waterFoamColor * exp( -waterAttenuation * waterPlumePath ) / waterBodyGain, waterPlume );
+  float waterAge = 1.0 - max( waterFresh, ${foamDense('vWaterFoam')} );
+  float waterFoamR = max( waterCover * waterCrease * ${foamAlbedoAt('waterAge')}, waterStreakCover * ${FOAM_ALBEDO.streak.toFixed(3)} );
+  ${foamLayer('waterUnder', 'waterFoamR')}
+  waterCover = max( waterCover, waterStreakCover );
   ${RICH_SPECULAR}
   roughnessFactor = mix( roughnessFactor, 0.7, waterCover );
   totalEmissiveRadiance += 0.18 * waterFresh * ( 1.0 - waterChurn.x ) * pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 6.0 ) * waterSunRadiance;`;
@@ -106,11 +126,16 @@ export const RICH_REFLECTION = `#include <lights_fragment_maps>
   radiance *= waterReflection;
 #endif`;
 
-/** The far ocean's Rich foam: Classic's composition with the Rich gloss (it has no churn or streaks). */
-export const RICH_FAR_FOAM = CLASSIC_FOAM.replace(
-  'roughnessFactor = mix( roughnessFactor, 0.9, waterCover );',
-  `${RICH_SPECULAR}\n  roughnessFactor = mix( roughnessFactor, 0.7, waterCover );`,
-);
+/**
+ * The far ocean's Rich foam (and the swept barrel's): Classic's lace network, composed as the water's foam is, a layer
+ * that adds light (`foamLayer`), with the Rich gloss. It has no churn, streaks or aeration, so its age is its foam's.
+ */
+export const RICH_FAR_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );
+  float waterCover = mix( vWaterFoam, waterFoamCover( vWaterWorld.xz, vWaterFlow, vWaterFoam, waterTime, max( waterFootprint.x, waterFootprint.y ) ), waterFoamPattern );
+  float waterFoamR = waterCover * ${foamAlbedoAt(`( 1.0 - ${foamDense('vWaterFoam')} )`)};
+  ${foamLayer('waterBody', 'waterFoamR')}
+  ${RICH_SPECULAR}
+  roughnessFactor = mix( roughnessFactor, 0.7, waterCover );`;
 
 /** The far ocean's Rich <normal_fragment_begin>: its analytic normal and the chop, as Classic, plus the ripples on still water. */
 export const richFarNormal = /* glsl */ `

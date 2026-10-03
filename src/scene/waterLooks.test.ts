@@ -12,6 +12,8 @@ import { DEFAULT_WATER_CHOP } from './waterChop';
 import { CLASSIC_FOAM, WATER_BODY_GAIN, waterBodyFragment } from './waterOptics';
 import { PLUME_DENSITY, RICH_REFLECTION, RICH_WATER } from './water/richWaterGlsl';
 import { mirrorsBarrelDither } from './barrel/barrelMaskGlsl';
+import { SweptBarrelMesh } from './barrel/SweptBarrelMesh';
+import { FOAM_ALBEDO } from './foamPattern';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -148,7 +150,11 @@ describe('Classic water parity', () => {
     const water = new WaterSurface({ ...source, cubic: true });
     water.setLook('rich');
     const { fragment } = compiled(water.mesh.material);
-    expect(fragment).toContain('waterCover = max( waterCover, waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam ) );');
+    expect(fragment).toContain('float waterStreakCover = waterFoamPattern * waterStreak( vWaterWorld.xz, vWaterFlow, length( waterSurfaceSlope ), vWaterFoam );');
+    expect(fragment).toContain('waterCover = max( waterCover, waterStreakCover );');
+    // A streak is a bubble monolayer: its thinness is its reflectance, not a hand opacity.
+    expect(fragment).toContain(`waterStreakCover * ${FOAM_ALBEDO.streak.toFixed(3)}`);
+    expect(fragment).not.toContain('STREAK_OPACITY');
     expect(fragment).toContain('float waterStreak( vec2 p, vec2 flow, float steepness, float foam )');
     expect(fragment).not.toContain('roughnessFactor = mix( roughnessFactor, 0.9, waterCover );');
   });
@@ -172,10 +178,33 @@ describe('Classic water parity', () => {
     expect(fragment).toContain(`const float PLUME_DENSITY = ${PLUME_DENSITY.toFixed(3)};`);
     expect(fragment).toContain('float waterPlume = 1.0 - exp( -PLUME_DENSITY * vWaterAir * min( vWaterPlumeDepth, vWaterDepth ) );');
     expect(fragment).toContain('float waterPlumePath = faceDirection > 0.0 ? 0.5 * min( vWaterPlumeDepth, vWaterDepth ) / waterRefractedCosine( abs( waterViewCos ) ) : 0.0;');
-    expect(fragment).toContain('vec3 waterUnder = mix( waterBody * waterBodyGain, waterFoamColor * exp( -waterAttenuation * waterPlumePath ), waterPlume );');
-    expect(fragment).toContain('diffuseColor.rgb = mix( waterUnder, waterFoamColor * waterCrease, waterCover );');
+    // The plume keeps the colour it had as displayed; Rich's gain now multiplies the whole, foam layer included.
+    expect(fragment).toContain('vec3 waterUnder = mix( waterBody, waterFoamColor * exp( -waterAttenuation * waterPlumePath ) / waterBodyGain, waterPlume );');
+    expect(fragment).toContain('diffuseColor.rgb = waterBodyGain * ( vec3( waterFoamR ) + waterFoamT * waterFoamT * waterUnder / ( 1.0 - waterFoamR * waterUnder ) );');
     // A fully aerated metre of plume reads near white.
     expect(1 - Math.exp(-PLUME_DENSITY * 0.2 * 1)).toBeGreaterThan(0.9);
+  });
+
+  it('lays the Rich foam over the water as white light that adds to it, the gain on the whole: in the tank, the far ocean and the curl', () => {
+    const tank = new WaterSurface({ ...source, cubic: true });
+    tank.setLook('rich');
+    const ocean = new FarFieldOcean();
+    ocean.setLook('rich');
+    const curl = new SweptBarrelMesh(tank.materialUniforms);
+    curl.setLook('rich');
+    const reflectances = `mix( ${FOAM_ALBEDO.fresh.toFixed(3)}, ${FOAM_ALBEDO.lace.toFixed(3)}, `;
+    for (const { fragment } of [compiled(tank.mesh.material), compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
+      expect(fragment).toContain('float waterFoamT = 1.0 - waterFoamR;');
+      expect(fragment).toContain('diffuseColor.rgb = waterBodyGain * ( vec3( waterFoamR ) + waterFoamT * waterFoamT * ');
+      expect(fragment).toContain(reflectances);
+      // Not an opaque tint laid over a gained water.
+      expect(fragment).not.toContain('waterFoamColor * waterCrease');
+      expect(fragment).not.toContain('mix( waterBody * waterBodyGain, waterFoamColor, waterCover )');
+    }
+    // The far ocean and the curl lay it over the body itself; the tank over the body the plume whitens.
+    for (const { fragment } of [compiled(ocean.mesh.material), compiled(curl.mesh.material)]) {
+      expect(fragment).toContain('waterFoamT * waterFoamT * waterBody / ( 1.0 - waterFoamR * waterBody )');
+    }
   });
 
   it('lights Rich mist toward the sun and fades spray into the water, and switches back to the Classic spray', () => {

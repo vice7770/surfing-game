@@ -200,6 +200,46 @@ export function foamCover(x: number, z: number, flowX: number, flowZ: number, fo
   return fade > 0 ? cover + (foam - cover) * fade : cover;
 }
 
+/**
+ * Rich foam as a layer that adds light to the water under it, not an opaque tint (foam-and-whitewater.md, item 1;
+ * decided 2026-09-29). Bubbles scatter every colour alike, so the layer's reflectance R_f is flat across the visible
+ * (Koepke 1984: about 55 % for dense foam, lowered only by water's absorption in the infrared) and the foam takes the
+ * colour of the light that falls on it. The water below shows through by what the layer lets pass, T_f = 1 − R_f, down
+ * and up again, and the two reflect between each other: R = R_f + T_f² R_w / (1 − R_f R_w). Foam never darkens the
+ * water it covers. Rich draws it so; Classic keeps its opaque tint.
+ *
+ * The reflectance by what the foam is:
+ * - fresh, dense whitewater (more than 25 bubble layers): 0.55 (Whitlock et al. and Stabeno & Monahan, both via
+ *   Koepke 1984; Dierssen 2019 measured stage-A foam near 0.50);
+ * - a streak, one bubble layer ("one bubble layer", Koepke 1984): 0.10;
+ * - lace, two to three layers: 0.25, the three-layer value of the saturating fit R(N) = 0.55 (1 − e^(−N/5)) through
+ *   those two anchors. The fit's constant of 5 layers is fitted, so the lace value is provisional.
+ */
+export const FOAM_ALBEDO = { fresh: 0.55, lace: 0.25, streak: 0.1 } as const;
+
+/** The foam values over which dense foam gives way to lace in `foamAge`. Provisional. */
+export const FOAM_DENSE = [0.45, 0.9] as const;
+
+/**
+ * How far foam has aged, 0 fresh to 1 old: the foam is fresh while the air breaking drove in is still in the
+ * water (`freshness`, from the void fraction) and while it is still dense (`foam` near 1), and lace once both have
+ * gone. Provisional: neither the edges nor the form is measured.
+ */
+export function foamAge(freshness: number, foam: number): number {
+  return 1 - Math.max(freshness, smoothstep(FOAM_DENSE[0], FOAM_DENSE[1], foam));
+}
+
+/** Reflectance of foam at an age, `foamAge`: from fresh whitewater (0.55) to lace (0.25). */
+export function foamReflectance(age: number): number {
+  return FOAM_ALBEDO.fresh + (FOAM_ALBEDO.lace - FOAM_ALBEDO.fresh) * age;
+}
+
+/** CPU mirror of the shader's foam layer: a layer of reflectance `layer` over water of reflectance `water`. */
+export function foamOverWater(layer: number, water: number): number {
+  const transmitted = 1 - layer;
+  return layer + (transmitted * transmitted * water) / (1 - layer * water);
+}
+
 export const foamPatternPars = /* glsl */ `
 uniform sampler2D waterFoamTile;
 // 1 where foam is a covered fraction (the physical sea), 0 for a plain tint strength (the legacy field).

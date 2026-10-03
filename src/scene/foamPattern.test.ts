@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  FOAM_CELL, FOAM_FLOW_PERIOD, FOAM_TILE, FOAM_TILE_TEXELS, foamCover, foamCoverage, foamDistance, foamPatternPars, foamTileData,
-  foamTileTexture, sampleFoamTile,
+  FOAM_ALBEDO, FOAM_CELL, FOAM_FLOW_PERIOD, FOAM_TILE, FOAM_TILE_TEXELS, foamAge, foamCover, foamCoverage, foamDistance, foamOverWater,
+  foamPatternPars, foamReflectance, foamTileData, foamTileTexture, sampleFoamTile,
 } from './foamPattern';
+import { SPOT_OPTICS, shallowReflectance } from './waterOptics';
 
 /** Mean still-water coverage over a 150 × 150 m area away from where the thresholds were measured. */
 function meanCoverage(foam: number): number {
@@ -89,5 +90,59 @@ describe('foam pattern', () => {
     expect(foamPatternPars).toContain('float waterFoamCover( vec2 p, vec2 flow, float foam, float time, float footprint )');
     expect(foamPatternPars).toContain('uniform sampler2D waterFoamTile;');
     expect(foamPatternPars).toContain(`${FOAM_CELL.toFixed(3)}`);
+  });
+});
+
+describe('Rich foam as a layer that adds light', () => {
+  it('never darkens the water it covers, and shows its own reflectance over black water', () => {
+    for (const water of [0, 0.02, 0.1, 0.3, 0.6, 0.9, 1]) {
+      expect(foamOverWater(0, water)).toBeCloseTo(water, 12);
+      let previous = water;
+      for (const layer of [0.05, 0.1, 0.25, 0.4, 0.55]) {
+        const total = foamOverWater(layer, water);
+        expect(total).toBeGreaterThanOrEqual(previous - 1e-12);
+        previous = total;
+      }
+    }
+    // The layer alone over a black bed, and over a perfectly reflecting one, which has nothing to add to.
+    expect(foamOverWater(FOAM_ALBEDO.fresh, 0)).toBeCloseTo(0.55, 12);
+    expect(foamOverWater(FOAM_ALBEDO.fresh, 1)).toBeCloseTo(1, 12);
+  });
+
+  it('is sourced at fresh 0.55, lace 0.25 and a monolayer streak 0.10, dimming as the foam ages', () => {
+    expect(FOAM_ALBEDO).toEqual({ fresh: 0.55, lace: 0.25, streak: 0.1 });
+    expect(foamReflectance(0)).toBe(0.55);
+    expect(foamReflectance(1)).toBeCloseTo(0.25, 12);
+    expect(foamReflectance(0.5)).toBeLessThan(foamReflectance(0.25));
+    // The saturating fit R(N) = 0.55 (1 − e^(−N/5)) through Koepke's anchors gives 0.10 at one layer and 0.25 at three.
+    const fit = (layers: number) => 0.55 * (1 - Math.exp(-layers / 5));
+    expect(fit(1)).toBeCloseTo(FOAM_ALBEDO.streak, 1);
+    expect(fit(3)).toBeCloseTo(FOAM_ALBEDO.lace, 1);
+    expect(fit(25)).toBeCloseTo(FOAM_ALBEDO.fresh, 1);
+  });
+
+  it('is fresh while air is in the water or the foam is dense, and lace once both are gone', () => {
+    expect(foamAge(1, 0.1)).toBe(0);
+    expect(foamAge(0, 1)).toBe(0);
+    expect(foamAge(0, 0.2)).toBe(1);
+    expect(foamAge(0, 0.7)).toBeGreaterThan(0);
+    expect(foamAge(0, 0.7)).toBeLessThan(1);
+    expect(foamAge(0.8, 0.7)).toBeLessThan(foamAge(0, 0.7));
+  });
+
+  it('flashes at least twice the dark water it covers when fresh, and stays above it as lace and as a veil', () => {
+    // Padang Padang's water: clear, over dark coral (the Reef's pale sand leaves foam little headroom).
+    const optics = SPOT_OPTICS.padang;
+    for (const depth of [1, 2, 4, 8]) {
+      const water = shallowReflectance(optics, depth, 0.5, 0.8);
+      for (let channel = 0; channel < 3; channel += 1) {
+        expect(foamOverWater(foamReflectance(0), water[channel]) / water[channel]).toBeGreaterThan(2);
+        expect(foamOverWater(foamReflectance(1), water[channel]) / water[channel]).toBeGreaterThan(1.1);
+        expect(foamOverWater(FOAM_ALBEDO.streak, water[channel]) / water[channel]).toBeGreaterThan(1.1);
+      }
+    }
+    // Over the Reef's sand, lace still reads above the water, as foam at the Reef was measured at 0.92 times it.
+    const sand = shallowReflectance(SPOT_OPTICS.reef, 0.5, 0.5, 0.8);
+    expect(foamOverWater(foamReflectance(1), sand[1]) / sand[1]).toBeGreaterThan(1.1);
   });
 });
