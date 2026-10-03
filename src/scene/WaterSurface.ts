@@ -25,6 +25,7 @@ import {
   PATCH_SIZE, PATCH_SPACING, createPatchGeometry, patchRect, richPatchDiscard, richPatchFragmentPars, richPatchVertexPars,
 } from './water/richPatch';
 import { churnTexture, waterChurnPars } from './water/churnTexture';
+import { RICH_NORMAL_GUARD } from './water/richOptics';
 import { rippleStrength, rippleTexture, waterRipplePars } from './water/rippleTexture';
 import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './water/specular';
 import { waterStreakPars } from './water/streaks';
@@ -310,7 +311,7 @@ export class WaterSurface {
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
-          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }))
+          .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }) + RICH_NORMAL_GUARD)
           .replace('#include <color_fragment>', '')
           .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true, RICH_FOAM))
           .replace('#include <lights_fragment_maps>', RICH_REFLECTION);
