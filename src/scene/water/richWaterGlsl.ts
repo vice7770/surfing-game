@@ -105,7 +105,7 @@ const foamDense = (foam: string) => `smoothstep( ${FOAM_DENSE[0].toFixed(2)}, ${
  * The foam is a layer that adds light to that water (`foamLayer`): bright
  * white where it is fresh (0.55), dimmer as lace (0.25), a veil as streaks (0.10),
  * and a single layer of bubbles (also 0.10) at the edge of a patch, thickening to
- * its stage's reflectance within `FOAM_THICK` sigma of the field. The light it lets
+ * its stage's reflectance within `FOAM_FRINGE` (2 cm) of the edge. The light it lets
  * through is diffuse, so under it the caustics lose their focus.
  */
 export const RICH_FOAM = /* glsl */ `  vec2 waterFootprint = fwidth( vWaterWorld.xz );

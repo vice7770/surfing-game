@@ -4,7 +4,7 @@ import { foamCover } from '../foamPattern';
 import { FOAM_BAKE, FOAM_RANGE, inverseNormal, mulberry32 } from './foamBake';
 import {
   CHURN_TEXTURE_SIZE, CHURN_TILE, FOAM_EDGE, FOAM_FADE, FOAM_OCTAVES, FOAM_STAGE_CORRELATION, FOAM_WEIGHTS, churnSample, churnTexture, churnTextureData,
-  FOAM_THICK, foamFieldCover, foamFieldThickness, foamFieldValue, foamHexGauss, foamPhaseGauss, foamQuantile, freshness, sampleFoamField, waterChurnPars,
+  FOAM_FRINGE, foamFieldCover, foamFieldThickness, foamFieldValue, foamHexGauss, foamPhaseGauss, foamQuantile, freshness, sampleFoamField, waterChurnPars,
 } from './churnTexture';
 
 describe('churn whitewater', () => {
@@ -361,29 +361,44 @@ describe('the foam field', () => {
     expect(FOAM_EDGE).toBeLessThan(0.1);
   });
 
-  it('is a single layer of bubbles at a patch’s edge and full foam once the field climbs over its threshold', () => {
-    const foam = 0.5;
-    let edge = 0;
-    let core = 0;
-    let between = 0;
-    let counted = 0;
-    for (let z = 3; z < 23; z += 0.17) {
-      for (let x = 3; x < 23; x += 0.17) {
-        const cover = foamFieldCover(x, z, 0, 0, foam, 0, 1);
-        const thick = foamFieldThickness(x, z, 0, 0, foam, 0, 1);
-        expect(thick).toBeGreaterThanOrEqual(0);
-        expect(thick).toBeLessThanOrEqual(1);
-        // Thickness rises with the field, and the cover is full only where it is not zero.
-        if (cover > 0.99) expect(thick).toBeGreaterThan(0);
-        if (cover < 0.01) expect(thick).toBeLessThan(0.2);
-        if (cover > 0.99) { core += thick; counted += 1; }
-        if (cover > 0.2 && cover < 0.8) { edge += thick; between += 1; }
+  it('is a single layer of bubbles at a patch’s edge and full foam a fringe of 2 cm inside it, not a milky tube', () => {
+    // Lace at 15 % cover, sampled every centimetre across a few metres: where the foam is, how far in from its edge each
+    // pixel lies, and how thick it is there.
+    const size = 300;
+    const step = 0.01;
+    const covered = new Uint8Array(size * size);
+    const thick = new Float32Array(size * size);
+    for (let j = 0; j < size; j += 1) {
+      for (let i = 0; i < size; i += 1) {
+        const [x, z] = [6 + i * step, 9 + j * step];
+        covered[j * size + i] = foamFieldCover(x, z, 0, 0, 0.15, 1, 1) >= 0.5 ? 1 : 0;
+        thick[j * size + i] = foamFieldThickness(x, z, 0, 0, 0.15, 1, 1);
       }
     }
-    // Over the same patch the cores are thicker than the edges, and the edges are thin.
-    expect(core / counted).toBeGreaterThan(edge / between);
-    expect(edge / between).toBeLessThan(0.15);
-    expect(FOAM_THICK).toBeGreaterThan(0);
+    let rim = 0;
+    let rimCount = 0;
+    let inner = 0;
+    let innerCount = 0;
+    for (let j = 5; j < size - 5; j += 1) {
+      for (let i = 5; i < size - 5; i += 1) {
+        const k = j * size + i;
+        if (!covered[k]) continue;
+        // Distance in from the edge, in centimetre steps, along the axes.
+        let depth = 5;
+        for (let d = 1; d <= 5; d += 1) {
+          if (!covered[k - d] || !covered[k + d] || !covered[k - d * size] || !covered[k + d * size]) { depth = d; break; }
+        }
+        expect(thick[k]).toBeGreaterThanOrEqual(0);
+        expect(thick[k]).toBeLessThanOrEqual(1);
+        if (depth === 1) { rim += thick[k]; rimCount += 1; }
+        if (depth >= 4) { inner += thick[k]; innerCount += 1; }
+      }
+    }
+    // The rim is thin, and 4 cm in the foam is at its full thickness: a thread is white to its edge's fringe.
+    expect(rim / rimCount).toBeLessThan(0.6);
+    expect(inner / innerCount).toBeGreaterThan(0.9);
+    expect(FOAM_FRINGE).toBeGreaterThan(0.005);
+    expect(FOAM_FRINGE).toBeLessThan(0.05);
     // A pixel that spans more than the pattern shows is full foam.
     expect(foamFieldThickness(5, 5, 0, 0, 0.5, 0, 1, FOAM_FADE[1])).toBe(1);
   });
@@ -419,7 +434,8 @@ describe('the foam field', () => {
 
   it('has a GLSL twin: the same hash, the hex corners, the blends and the threshold', () => {
     expect(waterChurnPars).toContain('vec2 waterFoamField( vec2 p, vec2 flow, float foam, float age, float footprint )');
-    expect(waterChurnPars).toContain(`smoothstep( 0.0, ${FOAM_THICK.toFixed(3)}, field )`);
+    expect(waterChurnPars).toContain(`float fringe = max( ${FOAM_FRINGE.toFixed(3)} * change / max( footprint, 1e-4 ), 1e-3 );`);
+    expect(waterChurnPars).toContain('smoothstep( 0.0, fringe, field )');
     expect(waterChurnPars).toContain('v = v * 1664525u + 1013904223u;');
     expect(waterChurnPars).toContain('uvec2( ivec2( corner ) + 1024 ) + salt');
     expect(waterChurnPars).toContain('textureGrad( waterChurnMap');
