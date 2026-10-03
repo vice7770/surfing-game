@@ -1,6 +1,6 @@
 import { waterHeightPars } from '../WaterSurface';
 import { CHURN_TILE } from './churnTexture';
-import { mistPars } from './mist';
+import { ballPars, mistPars } from './mist';
 import { waterTubeCarvePars } from './tubeCarve';
 
 /**
@@ -8,7 +8,8 @@ import { waterTubeCarvePars } from './tubeCarve';
  * lit by forward scattering, so it glows toward the sun; drops lit plainly;
  * both fading out just under the water's surface, so no hard line shows
  * where a sprite meets it. The foam ball (G9) is a ball of churned
- * whitewater, opaque to near its rim, lit by the sun and the sky.
+ * whitewater, lit as the foam it tumbles on is (`foamBallColour`): by the sky
+ * all round and the sun on its lit side, glowing at its rim when backlit.
  */
 export const richSprayVertex = /* glsl */ `
 attribute vec2 look;
@@ -40,8 +41,11 @@ export const richSprayFragment = /* glsl */ `
 uniform vec3 sprayColor;
 uniform vec3 spraySunDirection;
 uniform vec3 spraySunRadiance;
+uniform float spraySkyIrradiance;
+uniform float sprayGroundIrradiance;
 uniform sampler2D waterChurnMap;
 ${mistPars}
+${ballPars}
 const float CHURN_TILE = ${CHURN_TILE.toFixed(3)};
 varying float vOpacity;
 varying float vAbove;
@@ -53,13 +57,26 @@ void main() {
   float r = length( gl_PointCoord - 0.5 ) * 2.0;
   if ( r > 1.0 ) discard;
   if ( abs( vKind - 2.0 ) < 0.5 ) {
-    // A foam ball: churn over a sphere, lit by the sky all round and the sun on its lit side.
+    // A foam ball: lumps of fresh churn over a sphere, lit as the foam under it is (the sky all round, the sun on its lit side).
     vec2 q = ( gl_PointCoord - 0.5 ) * 2.0;
-    vec3 ballNormal = normalize( vec3( q.x, -q.y, sqrt( max( 0.0, 1.0 - r * r ) ) ) );
+    vec2 lump = ( gl_PointCoord * BALL_LUMPS + vSprayWorld.xz + vec2( vSprayWorld.y ) ) / CHURN_TILE;
+    vec2 churn = texture( waterChurnMap, lump ).rg;
+    // The clumps stand proud of the sphere: their slope tilts its normal, and their creases are shaded.
+    float lumpStep = 0.04 * BALL_LUMPS / CHURN_TILE;
+    vec2 lumpSlope = vec2( texture( waterChurnMap, lump + vec2( lumpStep, 0.0 ) ).g, texture( waterChurnMap, lump + vec2( 0.0, lumpStep ) ).g ) - churn.y;
+    vec3 ballNormal = normalize( vec3( q.x, -q.y, sqrt( max( 0.0, 1.0 - r * r ) ) ) + BALL_RELIEF * vec3( -lumpSlope.x, lumpSlope.y, 0.0 ) / 0.04 );
     vec3 sunView = normalize( ( viewMatrix * vec4( spraySunDirection, 0.0 ) ).xyz );
-    vec2 churn = texture( waterChurnMap, ( gl_PointCoord * 0.6 + vSprayWorld.xz + vec2( vSprayWorld.y ) ) / CHURN_TILE ).rg;
-    vec3 ballLight = 0.45 + spraySunRadiance * 0.6 * max( 0.0, dot( ballNormal, sunView ) );
-    gl_FragColor = vec4( sprayColor * ballLight * ( 0.8 + 0.2 * churn.y ), vOpacity * ( 1.0 - smoothstep( 0.55, 1.0, r ) ) * mix( 0.55, 1.0, churn.x ) * smoothstep( -0.3, 0.1, vAbove ) );
+    // The drops' phase function toward the eye (1 for an isotropic scatterer): backlit, the thin rim passes the sun on.
+    float ballPhase = 12.566370614 * henyeyGreenstein( dot( normalize( vSprayWorld - cameraPosition ), spraySunDirection ), DROP_G );
+    float ballUp = dot( ballNormal, normalize( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz ) );
+    vec3 ballLight = foamBallColour( dot( ballNormal, sunView ), ballUp, spraySkyIrradiance, sprayGroundIrradiance, spraySunRadiance ) * ( 1.0 + BALL_CREASE * ( churn.y - BALL_CREASE_MEAN ) );
+    // The thin rim, backlit, shines with the whole of the sun's colour, over the body.
+    float water = smoothstep( -0.3, 0.1, vAbove );
+    float bodyAlpha = vOpacity * ( 1.0 - smoothstep( 0.55, 1.0, r ) ) * mix( 0.7, 1.0, churn.x ) * water;
+    float glowAlpha = foamBallGlowCoverage( ballPhase, sqrt( max( 0.0, 1.0 - r * r ) ), churn.x ) * water;
+    float ballAlpha = 1.0 - ( 1.0 - bodyAlpha ) * ( 1.0 - glowAlpha );
+    vec3 glowLight = BALL_ALBEDO * spraySunRadiance / 3.14159265;
+    gl_FragColor = vec4( ( ballLight * bodyAlpha * ( 1.0 - glowAlpha ) + glowLight * glowAlpha ) / max( ballAlpha, 1e-4 ), ballAlpha );
   } else {
     float phase = vMist > 0.5
       ? 12.566370614 * henyeyGreenstein( dot( normalize( vSprayWorld - cameraPosition ), spraySunDirection ), MIST_G ) * 0.25

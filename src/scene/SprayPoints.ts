@@ -1,6 +1,8 @@
 import { BufferAttribute, BufferGeometry, Color, NormalBlending, PerspectiveCamera, Points, ShaderMaterial, Vector2, Vector3, Vector4 } from 'three';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, WHITEWATER_CAPACITY } from '../wave/SprayCloud';
+import { REFERENCE_LIGHT } from './PhotoSky';
 import { churnTexture } from './water/churnTexture';
+import { FOAM_BALL } from './water/mist';
 import { richSprayFragment, richSprayVertex } from './water/richSpray';
 import type { WaterLook } from './water/waterLook';
 
@@ -8,6 +10,29 @@ import type { WaterLook } from './water/waterLook';
 export interface RenderableSpray {
   readonly particles: Float32Array;
   readonly count: number;
+}
+
+/**
+ * The sky's irradiance on a level surface, in the scene's light units, taken from the sun the scene is lit by
+ * (`skyExposure` scales each photographed sky so that the sky plus the sun's horizontal share is
+ * REFERENCE_LIGHT × (0.4 + 0.6 √sin h) whatever the photo): what the sun does not bring is the sky's. The sky's colour
+ * is taken as neutral [provisional]. Painted-sky light (before the photo loads) does not follow that scale, so the sky
+ * keeps a floor of 10 % of the total, about the least a clear sky's diffuse share is at noon [provisional].
+ */
+export function skyIrradiance(sunHeight: number, sunRadiance: { r: number; g: number; b: number }): number {
+  const sine = Math.max(0, sunHeight);
+  const horizontal = REFERENCE_LIGHT * (0.4 + 0.6 * Math.sqrt(sine));
+  const sun = 0.2126 * sunRadiance.r + 0.7152 * sunRadiance.g + 0.0722 * sunRadiance.b;
+  return Math.max(0.1 * horizontal, horizontal - sun * sine);
+}
+
+/**
+ * The light the whitewater sheet under a foam ball gets, which it bounces up onto the ball's underside: the sky's and the
+ * sun's horizontal share, times the foam's reflectance (`FOAM_BALL.bounce`).
+ */
+export function groundIrradiance(sky: number, sunHeight: number, sunRadiance: { r: number; g: number; b: number }): number {
+  const sun = 0.2126 * sunRadiance.r + 0.7152 * sunRadiance.g + 0.0722 * sunRadiance.b;
+  return FOAM_BALL.bounce * (sky + sun * Math.max(0, sunHeight));
 }
 
 const vertexShader = /* glsl */ `
@@ -65,6 +90,8 @@ export class SprayPoints {
         // Rich only: the sun for the mist, and the water's height (shared with the water by `useWater`).
         spraySunDirection: { value: new Vector3(0, 1, 0) },
         spraySunRadiance: { value: new Color(1, 1, 1) },
+        spraySkyIrradiance: { value: REFERENCE_LIGHT },
+        sprayGroundIrradiance: { value: FOAM_BALL.bounce * REFERENCE_LIGHT },
         waterSurface: { value: null },
         waterGrid: { value: new Vector4() },
         waterGridSize: { value: new Vector2() },
@@ -113,11 +140,14 @@ export class SprayPoints {
     }
   }
 
-  /** The Rich mist glows toward the sun. */
+  /** The Rich mist glows toward the sun, and the foam ball is lit by it and by the sky it leaves (`skyIrradiance`). */
   setSun(direction: Vector3, radiance: Color): void {
     const { uniforms } = this.mesh.material;
-    (uniforms.spraySunDirection.value as Vector3).copy(direction).normalize();
+    const toSun = (uniforms.spraySunDirection.value as Vector3).copy(direction).normalize();
     (uniforms.spraySunRadiance.value as Color).copy(radiance);
+    const sky = skyIrradiance(toSun.y, radiance);
+    uniforms.spraySkyIrradiance.value = sky;
+    uniforms.sprayGroundIrradiance.value = groundIrradiance(sky, toSun.y, radiance);
   }
 
   get look(): WaterLook {
