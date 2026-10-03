@@ -82,8 +82,6 @@ export const FOAM_STAGE_CORRELATION = 0.12;
 export const FOAM_HEX_POWER = 3;
 /** Past this footprint, m, the foam gives way to its mean, as it did with Classic's lace; the tile has few fine texels left to show. [provisional] */
 export const FOAM_FADE = [0.12, 0.6] as const;
-/** The current, m/s, below which the second flow-map phase is not mixed in, so still water keeps one pattern. [provisional] */
-export const FOAM_FLOW_GATE = [0.03, 0.2] as const;
 /**
  * The half-width of a covered edge, in sigma of the Gaussian field: half of what the field changes across a pixel (the
  * shader reads it off the derivatives; the edge is as soft as the pixel is large), and at least this, so an edge seen
@@ -329,13 +327,19 @@ export function foamHexGauss(qx: number, qz: number, salt: number): [number, num
   return [early * norm, late * norm];
 }
 
-/** Where the two flow-map phases sit and how they weigh, as the shader's: positions carried back by the current. */
+/**
+ * Where the two flow-map phases sit and how they weigh, as the shader's: positions carried back by the current, and
+ * weights that cross-fade on a triangle at every current, so each phase weighs nothing at the moment it wraps back to its
+ * start (Neyret 2003; Vlachos 2010). Nothing here depends on how fast the current is but the positions, which are
+ * linear in it: a weight or an offset that changed with the speed would jump a phase's whole pattern in one frame, at its
+ * wrap in a slow current (a gate that kept still water on one phase did, every 2 s below 0.2 m/s) or whenever the current
+ * turns (the wave's own orbital flow turns twice a period). In still water the two phases are two patterns trading
+ * places, at the rate they do in moving water.
+ */
 export function foamPhases(flowX: number, flowZ: number, time: number, period: number): { a: [number, number]; b: [number, number]; weightA: number } {
   const a = time / period - Math.floor(time / period);
   const b = a + 0.5 - Math.floor(a + 0.5);
-  const triangle = 1 - Math.abs(2 * a - 1);
-  const gate = smoothstep(FOAM_FLOW_GATE[0], FOAM_FLOW_GATE[1], Math.hypot(flowX, flowZ));
-  return { a: [-flowX * a * period, -flowZ * a * period], b: [-flowX * b * period, -flowZ * b * period], weightA: 1 + (triangle - 1) * gate };
+  return { a: [-flowX * a * period, -flowZ * a * period], b: [-flowX * b * period, -flowZ * b * period], weightA: 1 - Math.abs(2 * a - 1) };
 }
 
 /** The foam's Gaussian pair (early, late) of each flow-map phase at world (x, z), m, with the phase's weight: two octaves, each hex-tiled. */
@@ -486,8 +490,8 @@ float waterFoamPass( vec2 g, vec2 w, float keep ) {
 float waterFoamUnion( vec2 p, vec2 dpdx, vec2 dpdy, vec2 flow, float foam, float age ) {
   float a = fract( waterTime / FOAM_FLOW_PERIOD );
   float b = fract( a + 0.5 );
-  float gate = smoothstep( ${FOAM_FLOW_GATE[0].toFixed(3)}, ${FOAM_FLOW_GATE[1].toFixed(3)}, length( flow ) );
-  float wa = 1.0 + ( ( 1.0 - abs( 2.0 * a - 1.0 ) ) - 1.0 ) * gate;
+  // Each phase weighs nothing as it wraps, at every current (foamPhases).
+  float wa = 1.0 - abs( 2.0 * a - 1.0 );
   float wb = 1.0 - wa;
   float keep = log( 1.0 - min( foam, ${FOAM_MOST} ) );
   vec2 stages = vec2( 1.0 - age, age );

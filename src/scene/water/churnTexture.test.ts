@@ -4,7 +4,7 @@ import { foamCover } from '../foamPattern';
 import { FOAM_BAKE, FOAM_RANGE, inverseNormal, mulberry32 } from './foamBake';
 import {
   CHURN_TEXTURE_SIZE, CHURN_TILE, churnShare, FOAM_EDGE, FOAM_FADE, FOAM_OCTAVES, FOAM_STAGE_CORRELATION, FOAM_WEIGHTS, churnSample, churnTexture, churnTextureData,
-  FOAM_FRINGE, foamFieldCover, foamFieldThickness, foamFieldValue, foamHexGauss, foamPhaseGauss, foamQuantile, freshness, sampleFoamField, waterChurnPars,
+  FOAM_FRINGE, foamFieldCover, foamFieldThickness, foamFieldValue, foamHexGauss, foamPhaseGauss, foamPhases, foamQuantile, freshness, sampleFoamField, waterChurnPars,
 } from './churnTexture';
 
 describe('churn whitewater', () => {
@@ -163,7 +163,7 @@ describe('the foam field’s texture', () => {
 
 describe('the foam field', () => {
   it('unites its components, each thresholded for its weight: one alone at the plain quantile, any mix covering the foam’s share', () => {
-    // Still water, early foam: one component, thresholded where it leaves 1 - F below.
+    // Mid-period, early foam: one component, thresholded where it leaves 1 - F below.
     const [{ weight, early }] = foamPhaseGauss(4.2, 7.9, 0, 0, 1);
     expect(weight).toBe(1);
     expect(foamFieldValue(4.2, 7.9, 0, 0, 0.3, 0, 1)).toBeCloseTo(early - foamQuantile(0.7), 9);
@@ -412,8 +412,47 @@ describe('the foam field', () => {
     expect(foamFieldThickness(5, 5, 0, 0, 0.5, 0, 1, FOAM_FADE[1])).toBe(1);
   });
 
-  it('keeps one pattern in still water, and carries it with the current', () => {
-    for (const time of [0.3, 1.1, 3.7]) expect(foamFieldCover(7, 9, 0, 0, 0.5, 0.5, time)).toBeCloseTo(foamFieldCover(7, 9, 0, 0, 0.5, 0.5, 0.9), 12);
+  it('weighs each flow-map phase on a triangle at every current, so a phase weighs nothing when it wraps', () => {
+    for (const speed of [0, 0.01, 0.05, 0.15, 0.5, 2]) {
+      for (const time of [0, 0.25, 0.5, 1, 1.5, 1.999]) {
+        const { weightA } = foamPhases(speed * 0.6, -speed * 0.8, time, 2);
+        expect(weightA).toBeCloseTo(1 - Math.abs(time - 1), 12);
+      }
+    }
+    // The positions are carried back by the current, linearly: still water puts both phases where the pixel is.
+    const still = foamPhases(0, 0, 0.7, 2);
+    expect(Math.hypot(...still.a) + Math.hypot(...still.b)).toBe(0);
+    const { a, b } = foamPhases(0.4, 0.2, 0.5, 2);
+    expect(a[0]).toBeCloseTo(-0.2, 12);
+    expect(b[1]).toBeCloseTo(-0.3, 12);
+  });
+
+  it('never jumps: across either phase’s wrap the lace changes no more in a frame than it does between, at any current', () => {
+    // Summed change of cover in one frame at 60 fps, following the current, over the summed cover: how much of the lace
+    // changes. A phase that still weighed something when it wrapped would jump its whole pattern back a period's drift in
+    // one frame (80-120 % of the lace between 0.02 and 0.1 m/s, when a gate kept slow water on one phase).
+    const change = (speed: number, time: number) => {
+      let delta = 0;
+      let total = 0;
+      for (let j = 0; j < 40; j += 1) {
+        for (let i = 0; i < 40; i += 1) {
+          const x = 3 + i * 0.07;
+          const z = 3 + j * 0.07;
+          const now = foamFieldCover(x, z, speed, 0, 0.15, 1, time);
+          delta += Math.abs(foamFieldCover(x + speed / 60, z, speed, 0, 0.15, 1, time + 1 / 60) - now);
+          total += now;
+        }
+      }
+      return delta / total;
+    };
+    for (const speed of [0, 0.02, 0.06, 0.15, 0.4]) {
+      const between = change(speed, 4.5 - 1 / 120);
+      expect(between).toBeLessThan(0.05);
+      for (const wrap of [4 - 1 / 120, 5 - 1 / 120]) expect(change(speed, wrap)).toBeLessThan(Math.max(0.01, 1.2 * between));
+    }
+  });
+
+  it('carries the lace with the current', () => {
     // At mid-period only the first phase shows, and a short step later the pattern has moved with the current.
     let moved = 0;
     let stayed = 0;
