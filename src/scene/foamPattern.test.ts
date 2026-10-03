@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   FOAM_ALBEDO, FOAM_CELL, FOAM_FLOW_PERIOD, FOAM_TILE, FOAM_TILE_TEXELS, foamAge, foamCover, foamCoverage, foamDistance, foamOverWater,
-  foamPatternPars, foamReflectance, foamTileData, foamTileTexture, sampleFoamTile,
+  foamPatternPars, foamReflectance, foamTileData, foamTileTexture, sampleFoamTile, unfocusedWater,
 } from './foamPattern';
 import { SPOT_OPTICS, shallowReflectance } from './waterOptics';
 
@@ -107,6 +107,43 @@ describe('Rich foam as a layer that adds light', () => {
     // The layer alone over a black bed, and over a perfectly reflecting one, which has nothing to add to.
     expect(foamOverWater(FOAM_ALBEDO.fresh, 0)).toBeCloseTo(0.55, 12);
     expect(foamOverWater(FOAM_ALBEDO.fresh, 1)).toBeCloseTo(1, 12);
+  });
+
+  it('is the adding formula wherever the water is not focused, whatever share of the pixel it covers', () => {
+    for (const water of [0, 0.05, 0.3, 0.8, 1]) {
+      for (const layer of [0, 0.1, 0.25, 0.55]) {
+        const adding = layer + ((1 - layer) ** 2 * water) / (1 - layer * water);
+        for (const cover of [layer, 0.6, 1]) expect(foamOverWater(layer, water, cover, water)).toBeCloseTo(adding, 12);
+      }
+    }
+  });
+
+  it('puts out the caustics’ focus under foam, and stays finite where it was focused 16 times, the caustic map’s peak', () => {
+    // The Reef's sand under a metre of clear water, the sun focused on it: the lit water's reflectance passes 1.
+    const { bedAlbedo } = SPOT_OPTICS.reef;
+    const deep = 0.002;
+    for (const focus of [1, 2, 4, 8, 16]) {
+      const lit = deep + bedAlbedo[0] * 0.9 * focus;
+      const unfocused = unfocusedWater(lit, deep, bedAlbedo[0]);
+      expect(unfocused).toBeLessThanOrEqual(Math.max(deep, bedAlbedo[0]));
+      // No foam: the water as lit, focus and all.
+      expect(foamOverWater(0, lit, 0, unfocused)).toBeCloseTo(lit, 12);
+      for (const cover of [0.05, 0.3, 0.7, 1]) {
+        for (const reflectance of [FOAM_ALBEDO.streak, FOAM_ALBEDO.lace, FOAM_ALBEDO.fresh]) {
+          const layer = cover * reflectance;
+          const total = foamOverWater(layer, lit, cover, unfocused);
+          expect(Number.isFinite(total)).toBe(true);
+          expect(total).toBeGreaterThanOrEqual(layer);
+          // Never brighter than the brighter of the focused water and a white sheet: no blow-up where the focus is strong.
+          expect(total).toBeLessThanOrEqual(Math.max(lit, 1) + 1e-9);
+        }
+      }
+      // Fresh foam over the whole pixel shows no focus at all: the same as over the unfocused water.
+      expect(foamOverWater(FOAM_ALBEDO.fresh, lit, 1, unfocused)).toBeCloseTo(foamOverWater(FOAM_ALBEDO.fresh, unfocused), 12);
+    }
+    // Under unfocused water, nothing is clipped: the bound is the brightest an unfocused column can be.
+    expect(unfocusedWater(0.3, 0.02, 0.5)).toBe(0.3);
+    expect(unfocusedWater(3.2, 0.02, 0.5)).toBe(0.5);
   });
 
   it('is sourced at fresh 0.55, lace 0.25 and a monolayer streak 0.10, dimming as the foam ages', () => {

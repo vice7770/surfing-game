@@ -205,8 +205,9 @@ export function foamCover(x: number, z: number, flowX: number, flowZ: number, fo
  * decided 2026-09-29). Bubbles scatter every colour alike, so the layer's reflectance R_f is flat across the visible
  * (Koepke 1984: about 55 % for dense foam, lowered only by water's absorption in the infrared) and the foam takes the
  * colour of the light that falls on it. The water below shows through by what the layer lets pass, T_f = 1 − R_f, down
- * and up again, and the two reflect between each other: R = R_f + T_f² R_w / (1 − R_f R_w). Foam never darkens the
- * water it covers. Rich draws it so; Classic keeps its opaque tint.
+ * and up again, and the two reflect between each other: R = R_f + T_f² R_w / (1 − R_f R_w). Foam never darkens water the
+ * sun is not focused on (`foamOverWater`: under the caustics' bright lines it puts out their focus). Rich draws it so;
+ * Classic keeps its opaque tint.
  *
  * The reflectance by what the foam is:
  * - fresh, dense whitewater (more than 25 bubble layers): 0.55 (Whitlock et al. and Stabeno & Monahan, both via
@@ -234,10 +235,30 @@ export function foamReflectance(age: number): number {
   return FOAM_ALBEDO.fresh + (FOAM_ALBEDO.lace - FOAM_ALBEDO.fresh) * age;
 }
 
-/** CPU mirror of the shader's foam layer: a layer of reflectance `layer` over water of reflectance `water`. */
-export function foamOverWater(layer: number, water: number): number {
+/**
+ * The brightest water lit without the caustics' focus: its reflectance lies between R∞ and the bed's albedo (it is R∞ (1 −
+ * e) + A e, `shallowReflectance`, e between 0 and 1), never above the larger of the two, so never above 1.
+ */
+export function unfocusedWater(water: number, deep: number, bed: number): number {
+  return Math.min(water, Math.max(deep, bed));
+}
+
+/**
+ * CPU mirror of the shader's foam layer: a layer of reflectance `layer`, covering a share `cover` of the pixel (at least
+ * `layer`, which is the cover times the foam's own reflectance), over water of reflectance `water`.
+ *
+ * The adding formula R_f + T_f² R_w / (1 − R_f R_w) holds for a water whose reflectance is at most 1. The Rich water's
+ * caustics focus the sun on the bed up to 16 times (CausticMap's `CAUSTIC_PEAK`), so its reflectance as lit can pass 1, and there the
+ * denominator would vanish and turn negative. Foam is a diffuser: the light it lets through reaches the water without a
+ * focus, and so does all the light that bounces between the two. So that light sees the water `unfocused` (by default the
+ * same water), and only the open share of the pixel, 1 − cover, keeps the focused light: R = R_f + T_f [(1 − c) R_w +
+ * (c − R_f) R_u] / (1 − R_f R_u). Where the water is not focused (R_u = R_w) this is the adding formula exactly, whatever
+ * the cover; with no foam it is the water.
+ */
+export function foamOverWater(layer: number, water: number, cover = 1, unfocused = water): number {
   const transmitted = 1 - layer;
-  return layer + (transmitted * transmitted * water) / (1 - layer * water);
+  const shared = Math.max(layer, cover);
+  return layer + (transmitted * ((1 - shared) * water + (shared - layer) * unfocused)) / (1 - layer * unfocused);
 }
 
 export const foamPatternPars = /* glsl */ `
