@@ -1,6 +1,6 @@
 import { DataTexture, LinearFilter, LinearMipmapLinearFilter, RGBAFormat, RepeatWrapping, UnsignedByteType } from 'three';
 import { smoothstep } from '../../wave/Bathymetry';
-import { pcg2d } from '../foamPattern';
+import { FOAM_DENSE, pcg2d } from '../foamPattern';
 import { FOAM_BAKE, FOAM_RANGE, bakeFoamCycle } from './foamBake';
 
 /** The churn tile's size, m: a few clumps of fresh whitewater across a metre or two each. */
@@ -46,6 +46,16 @@ export function freshness(voidFraction: number): number {
 
 /** The void fraction over which churn takes over from the lace: measured peaks under breakers are near 0.2 (whitewater-sources.md). */
 const FRESH_AIR = [0.02, 0.15] as const;
+
+/**
+ * How much of the foam is drawn as fresh churn (RICH_FOAM's `waterChurnShare`): dense fresh foam, so both the air the
+ * breaking drove in still in the water (`freshness`) and the foam on top of it still dense (the foam value over
+ * `FOAM_DENSE`, as churn was drawn before G9). With the air alone, a trough the plume had drifted under drew the churn's
+ * clumps at a fraction of their strength over thin foam, as cream blobs on bare water.
+ */
+export function churnShare(voidFraction: number, foam: number): number {
+  return freshness(voidFraction) * smoothstep(FOAM_DENSE[0], FOAM_DENSE[1], foam);
+}
 
 // --- The foam's life cycle (foam-and-whitewater.md item 2): two stages, early and late, baked once by `foamBake`. ---
 
