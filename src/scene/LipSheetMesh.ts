@@ -155,6 +155,8 @@ export class LipSheetMesh {
   private built = { parcels: undefined as Float32Array | undefined, count: -1, sum: 0 };
   /** Spline points the Rich sheet draws between parcels (the Particles setting draws fewer at its lower levels). */
   private subdivisions = LIP_SUBDIVISIONS;
+  /** A swept spot's splash-up parcels, gathered from a snapshot (PR 5). */
+  private splashes = new Float32Array(0);
 
   constructor() {
     const material = new ShaderMaterial({
@@ -221,8 +223,23 @@ export class LipSheetMesh {
     this.richUniforms.waterBodyGain.value = RICH_WATER.bodyGain;
   }
 
-  /** Rebuild the sheet from `count` parcels of a snapshot, with columns `width` m wide. */
-  update(parcels: Float32Array, count: number, width: number): void {
+  /**
+   * Rebuild the sheet from `count` parcels of a snapshot, with columns `width` m wide. At a swept spot (`splashOnly`) the
+   * barrel draws the jet, so the sheet is the splash-ups' alone (the Padang Padang spec, Part B, PR 5; the advisor,
+   * 2026-10-01): drawn in Rich as at every spot, and so nothing in Classic.
+   */
+  update(parcels: Float32Array, count: number, width: number, splashOnly = false): void {
+    if (splashOnly) {
+      if (this.splashes.length < count * LIP_STRIDE) this.splashes = new Float32Array(count * LIP_STRIDE);
+      let kept = 0;
+      for (let i = 0; i < count; i += 1) {
+        if (parcels[i * LIP_STRIDE + 8] !== 1) continue;
+        this.splashes.set(parcels.subarray(i * LIP_STRIDE, (i + 1) * LIP_STRIDE), kept * LIP_STRIDE);
+        kept += 1;
+      }
+      parcels = this.splashes;
+      count = kept;
+    }
     // The page draws several frames per snapshot: rebuild only when the parcels changed.
     let sum = 0;
     for (let k = 0; k < count * LIP_STRIDE; k += 1) sum += parcels[k];

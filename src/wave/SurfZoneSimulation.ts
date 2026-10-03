@@ -20,6 +20,13 @@ import type { LipImpact } from './SprayCloud';
 import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
 import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
 import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
+import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
+import { BARREL_SPOTS } from './barrel/barrelSpots';
+import { columnCrests, type CrestSample } from './barrel/crestOnset';
+import type { ProfileLibrary } from './barrel/ProfileLibrary';
+import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
+import { SweptCrash } from './barrel/SweptCrash';
+import { BARREL_SLOPE } from './barrel/sweptLoft';
 
 /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
 const WATER_DENSITY = 1025;
@@ -81,7 +88,38 @@ export interface SurfZoneConfig {
   compute?: 'auto' | 'cpu';
   /** Online (spec N1): warm start so the sea, once spun up, sits at this sea time (the room's clock). */
   startSeaTime?: number;
+  /** Whether the swept barrel's breaking front runs (the Padang Padang spec, Part B); defaults to SWEPT_BARREL. */
+  sweptBarrel?: boolean;
+  /** Where the swept barrel's lip throws: where the Navier–Stokes wave goes vertical ('measured', the default), or where the solver's onset joins it ('none'). */
+  barrelLag?: 'measured' | 'none';
+  /**
+   * Where the swept barrel's front follows crests from, in place of the spot's own (`BarrelSpot.frontFrom`): the
+   * relaxation zone's inner edge ('zone'), so a crest is sized at the foot wherever the foot lies, or the fine zone's
+   * first row ('fine', Padang Padang's rows before the peak-sizing fix).
+   */
+  barrelFrontFrom?: 'fine' | 'zone';
+  /** The swept barrel's front rules (`FrontOptions`), in place of the spot's own (`BarrelSpot.front`); `{}` for none. */
+  barrelFront?: FrontOptions;
+  /**
+   * Whether the swept barrel's jets leave and land on its clock (the Padang Padang spec, Part B, PR 5): on wherever the
+   * profile library is given at a swept spot (the default); off keeps Kennedy's lip there (the before-and-after probes).
+   */
+  sweptCrash?: boolean;
 }
+
+/**
+ * Spots whose barrel is the swept surface (the Padang Padang spec, Part B): their breaking fronts and slice clocks run.
+ * The owner's switch: a spot with a barrel transect (`BARREL_SPOTS`) is switched on by adding it here (Part B, PR 7).
+ */
+export const SWEPT_BARREL: readonly SpotName[] = ['padang'];
+
+/** Whether a sea runs, and draws, the swept barrel: the config's say, else SWEPT_BARREL; never at a spot without a barrel transect. */
+export function sweptBarrelOn(config: Pick<SurfZoneConfig, 'spot' | 'sweptBarrel'>): boolean {
+  return (config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)) && BARREL_SPOTS[config.spot] !== undefined;
+}
+
+/** A crest joins a breaking front from this share of the edge's wave height above still water (provisional). */
+const FRONT_MIN_HEIGHT = 0.25;
 
 /** Columns at each open along-shore edge where no lip is thrown: the reach of the solver's stencils. */
 const OPEN_EDGE_COLUMNS = OPEN_EDGE_REACH;
@@ -373,6 +411,18 @@ export function takeOffPoint(config: SurfZoneConfig): { x: number; z: number } {
   return { x, z: breakZ(x) };
 }
 
+/**
+ * Where the swept barrel's front follows crests from, z: the spot's rows (`BarrelSpot.frontFrom`) unless the config says
+ * (`barrelFrontFrom`): the relaxation zone's inner edge, or the fine zone's first row (Padang Padang's before the
+ * peak-sizing fix). At Padang Padang's peak, on Practice and Small, the fine
+ * zone starts 3.7–6 m deep, shallower than the 6–7 m foot band, so crests first seen there were never sized and the
+ * peak drew no barrel (the advisor, 2026-10-01). No crest is followed seaward of the foot, so what changes is where a
+ * crest is sized: at the foot itself rather than at the fine zone's first row.
+ */
+export function barrelFrontFrom(config: Pick<SurfZoneConfig, 'spot' | 'barrelFrontFrom'>, layout: Pick<TankLayout, 'zoneInner' | 'fineFrom'>): number {
+  return (config.barrelFrontFrom ?? BARREL_SPOTS[config.spot]?.frontFrom ?? 'zone') === 'fine' ? layout.fineFrom : layout.zoneInner;
+}
+
 /** Spot seabed with a flat floor under the relaxation zone at the edge depth, blended over the layout's zoneInner…blendEnd. */
 export function tankDepth(
   spot: SurfSpot, edgeDepth: number, x: number, z: number, layout: Pick<TankLayout, 'zoneInner' | 'blendEnd'> = TANK,
@@ -418,6 +468,22 @@ export class SurfZoneSimulation {
   readonly surf: SurfMeter;
   /** Called with every wave measured starting to break, anywhere in the window (reports listen here). */
   onBreak?: (wave: BreakingWave) => void;
+  /** The swept barrel's breaking front and its slice clocks, on SWEPT_BARREL spots only. It reads the water, never writes it. */
+  readonly front?: BreakingFront;
+  /** Shown slice clocks that paused rather than ran back, since the start (the advisor's check on the onsets' noise). */
+  frontPauses = 0;
+  /**
+   * The swept barrel's jets on its own clock (the Padang Padang spec, Part B, PR 5), at a swept spot given the profile
+   * library: they replace Kennedy's lip there, and the whitewater waits for their touchdown.
+   */
+  readonly crash?: SweptCrash;
+  /** The breaking the whitewater sees at a swept spot with the crash: withheld over open curls (`SweptCrash`). */
+  private readonly whitewater?: Float64Array;
+  private readonly crestSamples: CrestSample[] = [];
+  /** When a front's lips throw after the solver's onset: the spot's barrel transect, its foot at the tide (BARREL_SPOTS). */
+  private readonly onsetTiming?: OnsetTiming;
+  /** Where the front follows crests from, z: the fine zone's start, or the relaxation zone's inner edge (`BarrelSpot.frontFrom`). */
+  private readonly frontFrom: number;
   lastStepMs = 0;
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
@@ -446,7 +512,8 @@ export class SurfZoneSimulation {
   /** Solver seconds of spin-up that settle the warm-started sea's nonlinear shape. */
   private readonly spinUpSeconds: number;
 
-  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up') {
+  /** `barrel`: the swept barrel's profile library, at a swept spot (the page's cases): the crash runs on it (PR 5). */
+  constructor(readonly config: SurfZoneConfig, start: SurfZoneStart = 'spun-up', barrel?: ProfileLibrary) {
     this.spot = createSpot(config.spot, config.seed);
     const tank = tankLayout(config);
     this.tank = tank;
@@ -492,7 +559,8 @@ export class SurfZoneSimulation {
     this.aeration = new AerationField(this.solver, { period: config.peakPeriod });
     this.lip.onLand = (x, z, volume, vx, vy, vz, flight) => {
       this.foam.addSplash(x, z, volume);
-      this.lipImpacts.push({ x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0 });
+      // A swept barrel's pour lands under the solver's hump, where the drawn lip comes down: its spray rises from there (PR 5).
+      this.lipImpacts.push({ x, z, volume, vx, vy, vz, whole: flight?.volume ?? volume, kind: flight?.kind ?? 0, ...(flight?.swept ? { y: flight.y } : {}) });
       // Its impact's energy drives air down in proportion to how far it fell (G9).
       const drop = flight ? Math.max(0.1, flight.launch.y - flight.y) : 1;
       this.aeration.addPlunge(x, z, 0.5 * WATER_DENSITY * volume * (vx * vx + vy * vy + vz * vz), AERATION.plungeDepth * drop);
@@ -508,6 +576,19 @@ export class SurfZoneSimulation {
     this.lip.onAir = (x, z, volume, penetration) => this.aeration.addAir(x, z, volume, penetration);
     this.lastThrow = new Float64Array(this.solver.nx).fill(-Infinity);
     this.lastOnset = new Float64Array(this.solver.nx).fill(-Infinity);
+    this.frontFrom = tank.fineFrom;
+    if (sweptBarrelOn(config)) {
+      // The spot's barrel record (`BARREL_SPOTS`); `barrel` is the constructor's profile library, for the crash.
+      const record = BARREL_SPOTS[config.spot]!;
+      this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', record.onset);
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? record.front);
+      this.frontFrom = barrelFrontFrom(config, tank);
+      const slope = BARREL_SLOPE[config.spot];
+      if (barrel && slope !== undefined && config.sweptCrash !== false) {
+        this.crash = new SweptCrash(barrel, slope);
+        this.whitewater = new Float64Array(this.solver.h.length);
+      }
+    }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
     if (start === 'spun-up') {
@@ -588,6 +669,7 @@ export class SurfZoneSimulation {
       nx: this.solver.nx, nz: this.solver.nz, solverTime: this.solver.time, seaTimeOffset: this.seaTimeOffset, arrays,
       counters: { lipLaunches: this.lipLaunches, lipVolume: this.lipVolume, lipJets: this.lipJets, lipRollers: this.lipRollers, onsetsArmed: this.onsetsArmed },
       lip: this.lip.exportState(),
+      ...(this.front ? { front: this.front.exportState() } : {}),
     };
   }
 
@@ -618,6 +700,8 @@ export class SurfZoneSimulation {
     this.lipJets = state.counters.lipJets;
     this.lipRollers = state.counters.lipRollers;
     this.lip.importState(state.lip);
+    // A donor without a front (an older build) hands over none: this one starts afresh.
+    this.front?.importState(state.front ?? { nextId: 0, nextFront: 0, points: [], held: [], tracks: [] });
     if (solver instanceof BoussinesqSolver) solver.invalidateDeviceLayout();
   }
 
@@ -668,11 +752,41 @@ export class SurfZoneSimulation {
   private afterWater(dt: number, start: number): void {
     this.breaking.update(dt);
     this.markBreakingOnsets();
+    this.advanceFront();
     this.lip.step(dt);
-    this.foam.update(dt, this.breaking.strength);
+    this.foam.update(dt, this.whitewaterStrength);
     this.aerateBores(dt);
     this.aeration.update(dt);
     this.lastStepMs = performance.now() - start;
+  }
+
+  /** The swept barrel's front (Part B): the crests breaking in the fine zone, linked into lines, and their clocks. */
+  private advanceFront(): void {
+    const { front, solver } = this;
+    if (!front) return;
+    const minHeight = FRONT_MIN_HEIGHT * edgeHeight(this.config, this.tank.edgeDepth);
+    const count = columnCrests(solver, this.breaking, solver.rowBelow(this.frontFrom), minHeight, this.crestSamples);
+    front.update(this.crestSamples, count, solver.time);
+    this.frontPauses += advanceClocks(front.points, solver.time, this.onsetTiming!);
+    if (this.crash) {
+      // The barrel's jets leave and land on its clock, and the whitewater waits for its touchdown (PR 5).
+      const { throws, volume } = this.crash.update(front.points, {
+        solver, lip: this.lip, stillLevel: solver.restLevel, period: this.config.peakPeriod, strength: this.breaking.strength,
+        whitewater: this.whitewater!,
+      });
+      this.lipLaunches += throws;
+      this.lipJets += throws;
+      this.lipVolume += volume;
+    }
+  }
+
+  /**
+   * The breaking the whitewater sees: the foam's bore source (and the spray and bubbles it drives), the bore's air and
+   * turbulence, and the roar. At a swept spot with the crash it waits, over each open curl, for the barrel's touchdown
+   * (PR 5); anywhere else it is the solver's own.
+   */
+  get whitewaterStrength(): Float64Array {
+    return this.whitewater ?? this.breaking.strength;
   }
 
   /** Still depth where the shoaled swell breaks, h_b = (Hs·D^¼/γ)^⅘, m. */
@@ -796,6 +910,11 @@ export class SurfZoneSimulation {
    * new breakers, and a lip there would carry almost no water (volume ∝ H²).
    */
   private throwLip(column: number, row: number): void {
+    // At a swept spot with the crash the barrel alone plunges, on its own clock; a wave no front joins spills (PR 5).
+    if (this.crash) {
+      this.crash.counts.onsets += 1;
+      return;
+    }
     const { solver } = this;
     const { nx, nz, bed, zCenters } = solver;
     if (solver.time - this.lastThrow[column] < 0.7 * this.config.peakPeriod) return;
@@ -967,7 +1086,8 @@ export class SurfZoneSimulation {
   /** G9: every breaking bore drives air in by its dissipation, spilling shallower than a plunge. */
   private aerateBores(dt: number): void {
     const { h, bed, restLevel } = this.solver;
-    const strength = this.breaking.strength;
+    // An open tube's water is clear until its lip lands (PR 5; the advisor's ruling 9b).
+    const strength = this.whitewaterStrength;
     for (let i = 0; i < h.length; i += 1) {
       if (!(strength[i] > 0)) continue;
       const still = restLevel - bed[i];

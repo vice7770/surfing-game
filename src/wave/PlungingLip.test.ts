@@ -1,6 +1,9 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, spitSpeedLimit, type TubeRoller } from './PlungingLip';
+import {
+  JET_RELEASE_TIME, LINK_TIME, PlungingLip, ROLLER_AREA, SPLASH_UP, STRIP_PARCELS, TUBE_AIR, lipThrow, overturnArea, spitSpeedLimit, type SweptJet,
+  type TubeRoller,
+} from './PlungingLip';
 import { GRAVITY } from './dispersion';
 import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, tubeFloorDepth, vortexRatio, type OverturnShape, type TubeGeometry } from './Overturn';
 import { ShallowWaterSolver, uniformEdges } from './ShallowWaterSolver';
@@ -917,6 +920,148 @@ describe('lip shape', () => {
     expect(offshore.shape.area / calm.shape.area).toBeCloseTo(overturnArea(-0.4) / overturnArea(0), 12);
     expect(offshore.shape.aspect - calm.shape.aspect).toBeCloseTo(0.18 * 0.4, 12);
     expect(onshore.shape.area).toBeLessThan(calm.shape.area);
+  });
+});
+
+describe('a swept barrel’s held jet (Padang Padang, Part B, PR 5)', () => {
+  const water = (solver: ShallowWaterSolver) => solver.h.reduce((sum, h, i) => sum + h * solver.dx * solver.dz[Math.floor(i / solver.nx)], 0);
+  /** A jet held off the basin's hump at x 3.5, z 11.5, poured onto the water ahead of it. */
+  const jet = (solver: ShallowWaterSolver, overrides: Partial<SweptJet> = {}): SweptJet => ({
+    cell: 11 * solver.nx + 3, velocityX: 0, velocityZ: 4, volume: 0.3, waveHeight: 0.8, launchX: 3.5, launchY: 2.8, launchZ: 11.5,
+    pourX: 3.5, pourY: 2.2, pourZ: 14, pourIn: 0.5, pourSpacing: 0.05, pourVY: -2,
+    voidLength: 1, axisX: 0.8, axisY: -0.6, voidHeight: 0.4, voidArea: 0.3, span: 1,
+    dirX: 0, dirZ: 1, crestSpeed: 3, relativeSpeed: 1, ...overrides,
+  });
+  const flying = (lip: PlungingLip) => {
+    let count = 0;
+    lip.forEachActive(() => { count += 1; });
+    return count;
+  };
+
+  it('holds its water off the crest until it pours, neither flying nor carving, then lands it all', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const before = water(solver);
+    const { strip, thrown } = lip.holdJet(jet(solver));
+    expect(strip).toBeGreaterThan(0);
+    expect(thrown).toBeCloseTo(0.3, 9);
+    expect(water(solver) + lip.airborneVolume()).toBeCloseTo(before, 9);
+    lip.step(0.1);
+    expect(flying(lip)).toBe(0);
+    expect(lip.tubeCount).toBe(0);
+    expect(lip.carve(3.5, 12, 1)).toBe(1);
+    for (let k = 0; k < 60; k += 1) lip.step(0.05);
+    expect(lip.airborneVolume()).toBe(0);
+    expect(water(solver)).toBeCloseTo(before, 9);
+  });
+
+  it('balances the water’s forward momentum through the hold, the pour and the splash-ups', () => {
+    const solver = basin();
+    flowingCrest(solver);
+    const lip = new PlungingLip(solver);
+    const before = momentumZ(solver);
+    lip.holdJet(jet(solver));
+    expect(lip.unplacedMomentum).toBe(0);
+    for (let k = 0; k < 60; k += 1) lip.step(0.05);
+    expect(lip.airborneVolume()).toBe(0);
+    expect(momentumZ(solver)).toBeCloseTo(before, 9);
+  });
+
+  it('closes its void at the crash, traps its own air, and pours from the crash a parcel every spacing, from where the pour moved', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const { strip } = lip.holdJet(jet(solver, { pourIn: 10 }));
+    lip.step(0.05);
+    const trapped = lip.trappedAir;
+    expect(lip.crashJet(strip, { x: 3.5, y: 0.1, z: 15, spacing: 0.1, vy: -3 }, { x: 3.5, y: 0.8, z: 13 })).toBe(true);
+    expect(lip.trappedAir - trapped).toBeCloseTo(0.3, 12);
+    const landed: { z: number; swept: boolean; drop: number }[] = [];
+    lip.onLand = (_x, z, _volume, _vx, _vy, _vz, flight) => landed.push({ z, swept: flight!.swept === true, drop: flight!.launch.y - flight!.y });
+    lip.step(0.05);
+    expect(landed.length).toBe(1);
+    expect(landed[0].z).toBeLessThan(15.5);
+    // The aeration's drop is the jet's own fall, from the crest it left.
+    expect(landed[0].drop).toBeGreaterThan(2.7);
+    lip.movePour(strip, 3.5, 0.1, 16);
+    for (let k = 0; k < 60; k += 1) lip.step(0.05);
+    const jets = landed.filter((landing) => landing.swept);
+    expect(jets.length).toBe(STRIP_PARCELS);
+    expect(jets.at(-1)!.z).toBeGreaterThan(16);
+  });
+
+  it('spits its air toward the barrel’s open end: a neighbour still held', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const closing = lip.holdJet(jet(solver, { pourIn: 10 })).strip;
+    lip.holdJet(jet(solver, { cell: 11 * solver.nx + 4, launchX: 4.5, pourX: 4.5, pourIn: 10 }));
+    lip.step(0.05);
+    lip.crashJet(closing, { x: 3.5, y: 0.1, z: 15, spacing: 0.1, vy: -3 }, { x: 3.5, y: 0.8, z: 13 });
+    lip.step(0.05);
+    expect(lip.spits.length).toBe(1);
+    expect(lip.spits[0].dirX).toBeGreaterThan(0.99);
+  });
+
+  it('pours a lost point’s jet where and when it was foreseen, its void closing as it starts to', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const landed: number[] = [];
+    lip.onLand = (_x, z) => landed.push(z);
+    const { strip } = lip.holdJet(jet(solver, { pourIn: 0.3 }));
+    const closedAt = () => lip.exportState().strips.find(([id]) => id === strip)?.[1].tube?.closedAt;
+    lip.step(0.25);
+    expect(closedAt()).toBeNull();
+    expect(lip.trappedAir).toBe(0);
+    lip.step(0.05);
+    // Its first parcel leaves at 0.3 s: the void closes then, trapping its own air.
+    expect(closedAt()).toBeCloseTo(0.3, 12);
+    expect(lip.trappedAir).toBeGreaterThan(0);
+    expect(lip.closedAtPour).toBe(1);
+    for (let k = 0; k < 60; k += 1) lip.step(0.05);
+    expect(landed.length).toBeGreaterThanOrEqual(STRIP_PARCELS);
+    expect(Math.min(...landed)).toBeGreaterThanOrEqual(14);
+    expect(lip.airborneVolume()).toBe(0);
+    expect(lip.closedAtPour).toBe(1);
+  });
+
+  it('closes a held jet as foreseen once, and nothing else', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver);
+    const { strip } = lip.holdJet(jet(solver, { pourIn: 0.3 }));
+    expect(lip.closeJet(strip)).toBe(true);
+    const air = lip.trappedAir;
+    expect(air).toBeGreaterThan(0);
+    expect(lip.closeJet(strip)).toBe(false);
+    expect(lip.closeJet(strip + 1)).toBe(false);
+    for (let k = 0; k < 20; k += 1) lip.step(0.05);
+    expect(lip.trappedAir).toBe(air);
+    // Closed by the crash, its void has nothing left to close at its pour.
+    expect(lip.closedAtPour).toBe(0);
+  });
+
+  it('takes no water when the pool can’t hold its parcels', () => {
+    const solver = basin();
+    const lip = new PlungingLip(solver, STRIP_PARCELS - 1);
+    const before = water(solver);
+    expect(lip.holdJet(jet(solver))).toEqual({ strip: -1, thrown: 0 });
+    expect(water(solver)).toBe(before);
+  });
+
+  it('hands a held jet over, and the joiner pours it exactly as the donor', () => {
+    const solver = basin();
+    const donor = new PlungingLip(solver);
+    donor.holdJet(jet(solver));
+    donor.step(0.1);
+    const copy = basin();
+    copy.h.set(solver.h);
+    copy.qz.set(solver.qz);
+    const joiner = new PlungingLip(copy);
+    joiner.importState(JSON.parse(JSON.stringify(donor.exportState())));
+    for (let k = 0; k < 30; k += 1) {
+      donor.step(0.05);
+      joiner.step(0.05);
+    }
+    expect(Array.from(copy.h)).toEqual(Array.from(solver.h));
+    expect(joiner.exportState()).toEqual(donor.exportState());
   });
 });
 

@@ -60,9 +60,14 @@ The advice it builds on, in `docs/research/water-physics/` on `main`:
 
 1. **The profile library.** This plan, Tasks 1–3.
 2. **The slice clock and onset.** This plan, Tasks 4–7.
-3. **The drawn mesh.** The loft, the seam and the mask.
+3. **The drawn mesh.** The loft, the seam and the mask. Planned in `2026-09-30-padang-padang-part-b-pr3.md` and built (branch `claude/padang-mesh`); measured on the Small swell: the loft 0.6 % of the step, the open curl 3–9 m at the median, 5.4 % of open slices' crests over 2 m from the solver's, every lookup clamped under the library's smallest case (`docs/research/barrel-library.md`, "The loft").
 4. **The contact.** Wave-attached signed distance, and the Reef's Part D interface.
-5. **The crash curve, parcels and sound.**
+5. **The crash curve, parcels and sound.** Planned in `2026-10-01-padang-padang-part-b-pr5.md` with the advisor's rulings, and built (branch `claude/padang-crash`, PR #102). Measured before and after in `docs/research/barrel-library.md`, "The crash": stable, the surf readout held, a tenth to half of Kennedy's water moved. Open: only 36–42 % of the jets crash on their point, since the throw moves the solver's crest past the front's match reach (for the advisor).
+   - The lip lands on the drawn touchdown frame's face, at its point nearest the tip.
+   - The jet the loft draws leaves the crest at the barrel's throw, is held, and pours there over the tube's collapse; Kennedy's lip is off at the swept spot.
+   - The whitewater (the foam, the bore's air and turbulence, the roar) waits for the touchdown.
+   - The splash-up sheet is drawn there as at every spot.
+   - The before-and-after game-size checks are in `docs/research/barrel-library.md`, "The crash".
 6. **The shading** (Rich only): the lip glow and the dark throat.
 7. **The switch for every spot** and the deletion of `PlungingLip.ts`, `Overturn.ts`, `tubeTable.ts`, `tubeCarve.ts`, `LipSheetMesh.ts` and `richLip.ts`.
 
@@ -409,96 +414,60 @@ describe('a Basilisk library as a barrel case', () => {
 
 ## PR 2 · The slice clock and onset
 
-### Task 4: The crest and its B = U/C, column by column
+> **Revised 2026-09-30, as built (the advisor's rulings and three probes).** Tasks 4–6 changed in four ways:
+> - **The onset is the solver's own Kennedy onset, not B = U/C.** At Padang Padang's breaking crests the depth-averaged U/C reads 0.1–0.5, no different from calm crests: q ≈ cη makes U/C ≈ η/(h + η). Derakhti's 0.85/1.0 and Bacigaluppi's 0.75 are for the reconstructed surface velocity (`padangFront` probe).
+> - **The breaking age records the event, not the column.** A newly breaking cell takes the oldest age behind its face, including one column along the crest, so age-backdated onsets were equal along 60–90 m of peeling crest.
+> - **The rise is contaminated too.** Once a neighbour breaks, its eddy viscosity damps a column's rise, so the fresh test (η_t ≥ 0.65 √(g d)) fired ~2 s late or never, and the 1 s/m split then cut single waves. So a crest joins by where it is: followed from the wedge's 7 m foot, where its height sizes it, it joins as it crosses the depth where the solver first breaks swell that size fresh (the `periodicOnset` probe: one-column periodic runs of our solver on the transect, per period). A soliton's depths sat well shoreward of swell's.
+> - **The throw lags the onset.** On round 6's transect the solver's crest stands where Basilisk's does, but Kennedy fires 2.3–2.8 √(h0/g) before a soliton's face goes vertical (`kennedyLag` probe).
+> - **The throw is keyed on depth, not lag.** The advisor's periodic Basilisk runs (level 12) read lags of 0.22, 2.30 and 1.60 √(h0/g) at 14, 16 and 18 s: no function of depth. So a lip throws where its crest crosses the depth at which the Navier–Stokes wave goes vertical: d = 1.56 + 0.56 η_foot at h0 = 7 m, one line in foot height through the four runs (0.99 → 1.99, 1.22 → 2.45, 1.65 → 2.38, 2.50 → 2.97 m; the first three gave 1.80 + 0.45 η, which put the Small wave 0.26 m too deep), clamped to the measured heights, scaled by h0/7, never deeper than the join (the advisor's option b, 2026-09-30). Period dependence is untested.
+> - **No stage clamp on the clock.** Mihalef's rule is for the loft's slices (PR 3).
 
-**Files:**
-- Create: `src/wave/barrel/crestOnset.ts`, `src/wave/barrel/crestOnset.test.ts`
+### Task 4: The crest and its breaking, column by column
+
+**Files:** `src/wave/barrel/crestOnset.ts`, `src/wave/barrel/crestOnset.test.ts`
 
 **Interfaces:**
-- Consumes: `crestMotion(solver, crest): CrestMotion | undefined` (`src/wave/CrestKinematics.ts`).
-- Produces:
-  - `ONSET = { face: 0.85, throw: 1.0, depthAveraged: 0.75 } as const`;
-  - `columnCrests(solver: ShallowWaterSolver, fromRow: number, minHeight: number, out: CrestSample[]): number`: every crest in every column, the count returned;
-  - `CrestSample = { column: number; row: number; x: number; z: number; eta: number; b: number; speed: number; dirX: number; dirZ: number }`, where `b` is U/C: U the depth-averaged velocity along the crest's travel, C its speed.
+- `ONSET = { join: 0 } as const`: a crest joins its front when its segment's Kennedy strength exceeds this.
+- `columnCrests(solver, breaking: { strength }, fromRow, minHeight, out: CrestSample[]): number`. Every column's crests (strict local maxima above `minHeight`), each with its segment's strongest breaking (the crest to 10 m shoreward) and the still depth under it.
+- `CrestSample = { column, row, x, z, eta, strength, depth, b, speed }`. `b` = U/C is a logged diagnostic, NaN when the crest is slower than 0.5 √(gh).
 
-**The onset (spec 13.3, sourced):**
-- B = U/C forms the face at about 0.85 and throws the lip at 1.0 (Derakhti et al. 2020).
-- On depth-averaged equations U reads low, and the throw sits near 0.75 (Bacigaluppi et al. 2019).
-- So the thresholds are `face × depthAveraged` and `throw × depthAveraged`. That scaling is provisional until the library's own runs give U/C at their vertical face (Task 3's metrics).
-
-- [ ] **Step 1: Write the failing tests.** Build a small `BoussinesqSolver` over flat 3 m water, 20 × 60 cells, in the `BoussinesqSolver.test.ts` style. Set `h`, `qx`, `qz` and the `rateH` its motion reads to a travelling bump. Assert:
-  - one crest per column, at the bump's peak row;
-  - `b` equals (flux along the travel ÷ depth) ÷ `crestMotion`'s speed at that cell;
-  - two bumps 15 m apart give two samples per column (Review Focus 5).
-- [ ] **Step 2: Run them to see them fail.**
-- [ ] **Step 3: Implement** `columnCrests`:
-  - scan each column's rows from `fromRow` shoreward for strict local maxima of η above `minHeight`;
-  - take `crestMotion` for each and skip it if there is none;
-  - set `b = ((qx·dirX + qz·dirZ) / h) / speed`.
-- [ ] **Step 4: Run the tests**; expected PASS.
-- [ ] **Step 5: Commit** with the message "feat(barrel): each column's crests and their U/C, the swept barrel's onset signal".
+- [x] **Tests:** one crest per column at the bump's peak; the segment's strongest breaking (not behind the crest, not past the face's reach); U/C as a diagnostic, NaN below the speed floor; two bumps 15 m apart are two samples (Review Focus 5); the height and first-row filters.
 
 ### Task 5: The breaking front as lines
 
-**Files:**
-- Create: `src/wave/barrel/BreakingFront.ts`, `src/wave/barrel/BreakingFront.test.ts`
+**Files:** `src/wave/barrel/BreakingFront.ts`, `src/wave/barrel/BreakingFront.test.ts`
 
 **Interfaces:**
-- Consumes: `CrestSample`, `ONSET` (Task 4).
-- Produces:
-  - `class BreakingFront` with:
-    - `update(samples: readonly CrestSample[], count: number, time: number): void`;
-    - `readonly points: FrontPoint[]`;
-    - `exportState(): FrontState` and `importState(state: FrontState): void`.
-  - `FrontPoint = { id: number; front: number; column: number; sigma: number; x: number; z: number; b: number; height: number; tau: number; thrown: boolean; seen: number }`;
-  - `FrontState = { nextId: number; nextFront: number; points: FrontPoint[] }`.
+- `new BreakingFront(cell)`, where `cell` is the rows' spacing, m.
+- `update(samples, count, time)`, `points`, `exportState()` and `importState(state)`.
+- `FrontPoint = { id, front, column, sigma, x, z, b, height, joined, depth, throwDepth, crestDepth, thrown, broke, tau, seen, fresh }`.
+- `FrontState = { nextId, nextFront, points, held }`.
 
-**The rule (`swept-barrel-build.md`, "Front line"; Thürey et al. 2007):**
-- **Joining:** a crest sample with `b ≥ ONSET.face × ONSET.depthAveraged` joins a front.
-- **Linking:** samples in neighbouring columns link if their z differ by under 3 m (provisional: three 1 m cells). A column's samples never link to each other, so two crests in a column are two fronts.
-- **Matching:** a point matches last step's point in its column if its z moved under 2 m (provisional: a crest runs under 20 m/s × 0.1 s). It then keeps that point's `id`, `tau` and `thrown`.
-- **IDs:** a new point takes `nextId++`, and a new front `nextFront++`.
-- **σ** is the arc length along the front from its −x end.
-- **Dropping:** a point unseen for 0.5 s is dropped.
-- **Determinism:** columns are visited in order, with no randomness.
+**The rule:**
+- A crest is followed from where it crosses the wedge's foot (h0), its height there sizing it; crests first seen past the foot (reformed and broken water) are never sized. Its height is its highest while the still depth falls from 6 to 5 m (both in 2D and in the 1D runs that built the table). It joins as it crosses its join depth (`OnsetTiming.joinDepth(height)`) if the solver breaks its segment before its crest reaches its throw depth (`OnsetTiming.throwDepth(footHeight)`, no deeper than the join; at the latest in the step it gets there), recording `joined` (the crossing, interpolated), `depth`, `throwDepth`, `broke` (when the solver was first seen breaking it), and, each step, `crestDepth` and `thrown` (when its crest crossed its throw depth, interpolated). Small swell under the table's first row clamps to it and draws no barrel unless the solver breaks it there. It stays on the front while its segment breaks at all. Crests on their way in match within 10 m (a broad swell crest's highest cell jumps).
+- Neighbours whose joins differ by more than 1 s per metre are two waves (a peel under 1 m/s, θ > 79°), so they form two fronts, which are never smoothed across. The splits are counted.
+- Neighbouring columns within 3 rows link; a column's own crests never do.
+- A point within 2 m plus one row of last step's point in its column keeps its ID, join and clock.
+- A point unseen for 0.5 s is dropped. σ is the arc length from the −x end.
+- Only + − × ÷ and √.
 
-- [ ] **Step 1: Write the failing tests:**
-  - an oblique straight crest over 20 columns (all with `b` over the face threshold) gives one front of 20 points, σ increasing by √(1 + slope²) per column;
-  - moved 0.3 m shoreward the next step, every ID stays;
-  - two crests 15 m apart in the same 20 columns give two fronts (Review Focus 5);
-  - five empty columns in the middle split it into two fronts, and the points on each side keep their IDs (Review Focus 2);
-  - `importState(exportState())` gives equal points.
-- [ ] **Step 2: Run them to see them fail.**
-- [ ] **Step 3: Implement** the rule above, using only + − × ÷, √ and integer loops.
-- [ ] **Step 4: Run the tests**; expected PASS.
-- [ ] **Step 5: Commit** with the message "feat(barrel): the breaking front as lines of points with fixed IDs and σ".
+- [x] **Tests:** an oblique line is one front, σ its arc length; IDs, joins and clocks kept as the crest moves; joins and depths recorded; no join below the fresh onset, breaking or not; a joined crest kept while it breaks, dropped when it stops; two waves' crests split; a whole-row jump on a 2 m grid kept; two crests are two fronts; a split at five empty columns keeps both sides' IDs; flicker held for 0.5 s, then dropped; export and import.
 
 ### Task 6: The slice clock
 
-**Files:**
-- Create: `src/wave/barrel/sliceClock.ts`, `src/wave/barrel/sliceClock.test.ts`
+**Files:** `src/wave/barrel/sliceClock.ts`, `src/wave/barrel/sliceClock.test.ts`
 
 **Interfaces:**
-- Consumes: `FrontPoint` (Task 5); `ONSET` (Task 4).
-- Produces:
-  - `CLOCK = { stages: 64, endTaper: 3, preThrow: 1 } as const`: one stage is a case's open duration over 64 (at least 64 stages blend smoothly, per `swept-barrel-build.md`); the end taper is in metres; the pre-throw clamp is in seconds.
-  - `advanceClocks(points: FrontPoint[], dt: number, stage: number): void`: `stage` is one stage in seconds at the local H.
+- `CLOCK = { smoothing: 2, bunched: 0.1, earliest: -3 } as const`.
+- `onsetTiming(h0, period, lagged = true): OnsetTiming = { h0, band, joinDepth(height), throwDepth(footHeight), lagged, earliest }`. The join depth is the solver's own swell onset (periods 14–18 s, crest heights 1.2–3.3 m over the 6–5 m band → 2.3–4.6 m). The throw depth is the Navier–Stokes vertical depth by foot height (above). `barrelLag: 'none'` makes it unlagged (the throw at the join), for PR 3 to show both. Both tables are interpolated and never extrapolated.
+- `advanceClocks(points, time, timing): number` returns the pauses.
 
 **The rule:**
-- **The throw:** a point's clock starts when its `b` first reaches `ONSET.throw × ONSET.depthAveraged`. `thrown` becomes true and τ = 0; after that τ += dt each step.
-- **Before the throw:** τ = −(throw − b) ÷ (b's rise over the last step ÷ dt), clamped to [−preThrow, 0]. Where b is not rising, τ = −preThrow.
-- **The soft update** (Mihalef et al. 2004): after advancing, each front's points (ordered by σ) are clamped so neighbours differ by at most `stage`. A forward sweep, then a backward one, pull each τ toward its neighbour's. That removes the teeth (spec 13.2; Judging Part B 1, "no teeth").
-- **The end taper:** within `endTaper` metres of a front's ends, τ is multiplied by (distance to the end ÷ `endTaper`). Slices then appear and vanish at τ = 0, unseen (`swept-barrel-build.md`; Review Focus 2).
+- A point throws at the later of `thrown` and `broke` (unlagged, of `joined` and `broke`): never before the solver breaks it. Before its crest reaches its throw depth, the throw is foreseen at the pace its crest has come shoreward since it joined, no later than the earliest frame from now; τ is negative, floored at the library's earliest frame. The front's newest end therefore reads the steepening frames, and PR 3 blends it into the height field over 2–3 m; there is no taper.
+- Throw times are fitted along each front by a biweight-weighted local line (2 m standard deviation), clamped to the window's throws. A single point uses its own throw; bunched points use the mean.
+- τ = time − the fitted throw. A new point starts there; after that τ never falls, and every pause is counted.
 
-- [ ] **Step 1: Write the failing tests:**
-  - a front whose middle point throws first, then runs 2 s, has no two neighbours more than `stage` apart;
-  - a point that never reaches the throw keeps τ in [−1, 0];
-  - the two end points' τ is 0, rising linearly over the end metres;
-  - over 10 s at dt 1/30, a thrown point's τ never falls, except by at most `stage` when the sweep pulls it.
-- [ ] **Step 2: Run them to see them fail.**
-- [ ] **Step 3: Implement.**
-- [ ] **Step 4: Run the tests**; expected PASS.
-- [ ] **Step 5: Commit** with the message "feat(barrel): the slice clock, soft-updated along the crest and tapered at its ends".
+- [x] **Tests:** the throw where the crest crosses its throw depth, foreseen from its pace till then; the earliest-frame floor; a steady 10 m/s peel exact to its leading edge with no pauses; grouped joins become a 0.1 s/m ramp; never back, pauses counted; one point, and bunched points; fronts independent; the join and throw tables interpolated and clamped, the throw independent of period.
 
 ### Task 7: Padang Padang's front in the simulation, and in the handover
 
@@ -508,23 +477,23 @@ describe('a Basilisk library as a barrel case', () => {
 - Test: `src/wave/SurfZoneSimulation.test.ts`, `src/wave/surfZoneState.test.ts`
 
 **Interfaces:**
-- Consumes: Tasks 4–6; `BARREL_CASES` and `ProfileLibrary` (Task 3) for the stage length.
+- Consumes: Tasks 4–6. The clock no longer needs the library's stage length (Task 6's revision).
 - Produces:
   - `SWEPT_BARREL: readonly SpotName[] = ['padang']`;
   - `SurfZoneSimulation.front?: BreakingFront`, present only on those spots;
   - the handover carries `front`.
 
 - [ ] **Step 1: Write the failing tests:**
-  - Padang Padang's Small swell, run 60 s, has at least one front whose thrown points' τ spans over 0.5 s, with no neighbour step over one stage;
-  - the Canyon has no `front`, and its state arrays and lip counters equal a run with the switch forced off, so every other spot is unchanged;
+  - Padang Padang's Small swell, run 60 s, has at least one front whose thrown points' τ spans over 0.5 s;
+  - the Canyon has no `front`; Padang Padang's state arrays and lip counters equal a run with the front switched off (`sweptBarrel: false`), so the front only reads the water;
   - a Padang Padang sea exported at 50 s and imported into a fresh simulation steps to 55 s with `front.points` equal to the donor's (Review Focus 3).
 - [ ] **Step 2: Run them to see them fail.**
 - [ ] **Step 3: Implement.**
-  - Construct the front when `SWEPT_BARREL.includes(config.spot)`.
+  - Construct the front (`new BreakingFront(fineSpacing)`) when `config.sweptBarrel ?? SWEPT_BARREL.includes(config.spot)`.
   - In `afterWater`:
-    1. `columnCrests` from the fine zone's first row, with `minHeight` = 0.25 × the edge height;
+    1. `columnCrests(solver, breaking, …)` from the fine zone's first row, with `minHeight` = 0.25 × the edge height;
     2. `front.update(samples, count, solver.time)`;
-    3. `advanceClocks(front.points, dt, stage)`, with `stage` = the Padang Padang case's open duration (its `touchdown`) over `CLOCK.stages`, scaled by √(h0/g) at the local height.
+    3. `advanceClocks(front.points, solver.time, onsetTiming(PADANG.baseDepth + tide))`, its pauses summed in `frontPauses`.
   - Include the front in the state's export and import.
 - [ ] **Step 4: Run the tests, then the suites:** `npx vitest run src/wave/SurfZoneSimulation.test.ts -t "front|Canyon"` and `npx vitest run src/wave/surfZoneState.test.ts`; expected PASS. Then `npx vitest run src/wave src/game` for regressions.
 - [ ] **Step 5: Measure the cost** on the M1: the step time with and without the front over 60 s. Report it in `docs/research/barrel-library.md`.
@@ -534,7 +503,17 @@ describe('a Basilisk library as a barrel case', () => {
 
 ## After PR 2
 
-Write the detailed plans for PRs 3–7 (the mesh, the contact, the crash curve, the shading, the rollout) from the library and clock as built. Consult the water-physics advisor before settling any shape value (the lip glow's k, the seam's band width, the contact's softness). PR 4's interface is agreed with the Reef session, which owns tube riding (Part D):
+Write the detailed plans for PRs 3–7 (the mesh, the contact, the crash curve, the shading, the rollout) from the library and clock as built. PR 3's loft takes Mihalef's rule from the clock (the advisor, 2026-09-30):
+- neighbouring loft slices differ by at most 2–4 library frames, met by resampling the front finer (0.5 m, down to 0.25 m where the open curl spans under about 8 slices), not by clamping the clock;
+- only when the vertex budget would be exceeded is |dτ/dσ| clamped to T_open/(4·Δσ) (at least 4 slices across the curl), and each clamp is counted. Consult the water-physics advisor before settling any shape value (the lip glow's k, the seam's band width, the contact's softness). Open numbers from PR 2's probes (1 m, Padang's Small swell, the join keyed on the crest's height at 5.5 m):
+- **Join depth against a seed crest's own fresh onset:** set waves within −0.04…+0.14 m. The outliers (+0.7…+1.4 m) are crests the 2D solver breaks later than the 1D table predicts: the table predicts earlier onsets than the 2D solver makes on some crests. Small waves, under the table's first row (≈1.2 m over the band), clamp to 2.6 m and join ≈0.9 m deep when the solver breaks them. The advisor hoped for ±0.3 m.
+- **The peels, wave by wave on the final bed** (`padangPeelPair`, 11 clean pairs): whitewater median 11.0 m/s; barrel joins 12.7 m/s (ratio 1.17); **the lips' throws 12.5 m/s**, 8 % over the design's 11.6 and 1.10 times the whitewater, with the throw at the Navier–Stokes depth (per wave from 0.3 m/s faster to 1.5 m/s slower than the joins). 5 of 18 waves, the smaller ones, drew no barrel, as under the lag gate; 765 of 767 joins threw.
+
+PR 3's loft shows whether either is visible.
+
+Open item from the onset's lead (the advisor, 2026-09-30): the solver's Kennedy onset leads the lip by up to about 2 s and 20 m on Padang Padang's wedge, and the foam, aeration, Kennedy-driven whitewater and crash sound all key on it. Where the swept barrel runs, Rich's whitewater and the sound should start from the barrel's clock (foam from touchdown, as in the roller handover). That is visuals only, so one-water is unaffected. Agree it with the whitewater (G9) owner before building; it belongs with PR 5 or PR 6. **Built in PR 5** (the advisor ruled in the G9 owner's place, 2026-10-01). It gates the shared foam field, so Classic's foam at Padang Padang follows the barrel too. It also gates the bore's air and turbulence, since an open tube's water is clear, which makes it physics for the rider in the tube. The rider's roller push stays the solver's: a known inconsistency, left to Part D.
+
+PR 4's interface is agreed with the Reef session, which owns tube riding (Part D):
 - water or air at a point, with the surface's height, normal and velocity;
 - whether the rider is covered, and the clearance;
 - the tube's state at the rider's slice;

@@ -43,6 +43,22 @@ describe('lip sheet mesh', () => {
     }
   });
 
+  it('draws only the splash-ups at a swept spot, where the barrel draws the jet: in Rich as anywhere, and nothing in Classic (PR 5)', () => {
+    const { parcels, count } = strips({ column: 4, launchTime: 1 }, { column: 5, launchTime: 1.1, kind: 1 });
+    const rich = new LipSheetMesh();
+    rich.setLook('rich');
+    rich.update(parcels, count, 1, true);
+    const splash = strips({ column: 5, launchTime: 1.1, kind: 1 });
+    const alone = buildRichLipSheet(splash.parcels, splash.count, 1);
+    expect(Array.from(rich.mesh.geometry.getAttribute('position').array)).toEqual(Array.from(alone.positions));
+    const classic = new LipSheetMesh();
+    classic.update(parcels, count, 1, true);
+    expect(classic.mesh.geometry.getIndex()!.count).toBe(0);
+    // Everywhere else, the jet's sheet as before.
+    classic.update(parcels, count, 1);
+    expect(classic.mesh.geometry.getIndex()!.count).toBe(3 * 2 * 7 * 2);
+  });
+
   it('rebuilds only when a new snapshot brings different parcels, in either look', () => {
     for (const look of ['classic', 'rich'] as const) {
       const lip = new LipSheetMesh();

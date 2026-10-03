@@ -399,3 +399,20 @@ describe('the Particles setting', () => {
     expect(cloud.count - cloud.whitewaterCount).toBe(400);
   });
 });
+
+describe('a swept barrel’s landing spray (Padang Padang, Part B, PR 5)', () => {
+  it('rises from the landing’s own height in both looks, not from the water under the drawn curl; every other landing as before', () => {
+    for (const look of ['rich', 'classic'] as const) {
+      // The landing lies half a metre under the solver's surface there (the hump under the drawn tube).
+      const swept = new SprayCloud(3);
+      swept.look = look;
+      swept.update(flatScene(0, [{ ...impact(0.05), y: -0.5 }]), 1 / 60);
+      expect(swept.count).toBeGreaterThan(0);
+      for (let k = 0; k < swept.count; k += 1) expect(swept.particles[k * SPRAY_STRIDE + 1]).toBeCloseTo(-0.45, 6);
+      const plain = new SprayCloud(3);
+      plain.look = look;
+      plain.update(flatScene(0, [impact(0.05)]), 1 / 60);
+      for (let k = 0; k < plain.count; k += 1) expect(plain.particles[k * SPRAY_STRIDE + 1]).toBeCloseTo(0.05, 6);
+    }
+  });
+});

@@ -1,4 +1,5 @@
 import type { BedMaterial } from '../wave/Bathymetry';
+import type { TubeState } from '../wave/barrel/sweptContact';
 
 
 /**
@@ -47,13 +48,30 @@ export interface WaterSample {
   bedNormalY: number;
   bedNormalZ: number;
   bedMaterial?: BedMaterial;
+  /**
+   * Where the swept barrel's surface lies over itself (the Padang Padang spec, Part B, PR 4; absent elsewhere). In the
+   * curl's water, its underside below the point, m; in the tube's air, its underside and top above the point.
+   */
+  waterFloorY?: number;
+  ceilingY?: number;
+  ceilingTopY?: number;
+  /**
+   * Part D's tube riding (the spec's Coordination section): the curl's water is above the point, before touchdown; the
+   * air between the point and the curl's underside, m; and the tube's state where it has thrown.
+   */
+  covered?: boolean;
+  clearance?: number;
+  tube?: TubeState;
 }
+
+export type { TubeState };
 
 export function createWaterSample(): WaterSample {
   return {
     surfaceY: 0, stillDepth: 0, waterDepth: 0, bedY: -Infinity, wet: false, outsideDomain: false, slopeX: 0, slopeZ: 0,
     normalX: 0, normalY: 1, normalZ: 0, flowX: 0, flowY: 0, flowZ: 0, regime: 'outside', breaking: 0, voidFraction: 0, turbulence: 0,
     bedNormalX: 0, bedNormalY: 1, bedNormalZ: 0, bedMaterial: 'sand',
+    waterFloorY: undefined, ceilingY: undefined, ceilingTopY: undefined, covered: undefined, clearance: undefined, tube: undefined,
   };
 }
 

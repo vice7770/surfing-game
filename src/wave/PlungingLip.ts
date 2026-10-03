@@ -103,7 +103,7 @@ const SOURCE_SHARE = 0.2;
  * ±2H. Basilisk's jet water sits within about ±0.5 H of its crest; the solver's crest is about twice as broad,
  * and ±2H leaves margin (the water-physics advisor, 2026-09-29).
  */
-const SOURCE_REACH = 2;
+export const SOURCE_REACH = 2;
 /** Parcels still airborne after this long land where they are, s. */
 const MAX_FLIGHT = 3;
 
@@ -163,6 +163,44 @@ export interface LipFlight {
   kind: number;
   volume: number;
   waveHeight: number;
+  /** A swept barrel's jet, poured from its crash curve (the Padang Padang spec, Part B, PR 5): it lands where its spray rises. */
+  swept?: boolean;
+}
+
+/**
+ * A swept barrel's jet (the Padang Padang spec, Part B, PR 5): taken from the crest at its throw, held through the open
+ * tube, and poured from the crash curve once the lip touches down.
+ */
+export interface SweptJet {
+  /** The crest cell its water leaves, its horizontal velocity (m/s), the water asked (m³) and the breaking wave's height (m). */
+  cell: number;
+  velocityX: number;
+  velocityZ: number;
+  volume: number;
+  waveHeight: number;
+  /** Where it left the crest, m: its landings' drop, and the plunge zone's back, are measured from there. */
+  launchX: number;
+  launchY: number;
+  launchZ: number;
+  /** The pour as foreseen at the throw: from where (m), starting how long from now and how far apart (s), falling how fast (m/s). */
+  pourX: number;
+  pourY: number;
+  pourZ: number;
+  pourIn: number;
+  pourSpacing: number;
+  pourVY: number;
+  /** Its void: its length along its axis (m) and that axis (unit, forward and down), its height W (m), its cross-section (m²) and the crest it spans (m). */
+  voidLength: number;
+  axisX: number;
+  axisY: number;
+  voidHeight: number;
+  voidArea: number;
+  span: number;
+  /** The drawn crest: which way it travels (unit), how fast (m/s), and how much faster the lip's tip runs (m/s). */
+  dirX: number;
+  dirZ: number;
+  crestSpeed: number;
+  relativeSpeed: number;
 }
 
 export interface LipConditions {
@@ -244,6 +282,8 @@ interface LipStrip {
   tube?: FlyingTube;
   /** A jet's splash-up strip, once it has one. */
   splash?: number;
+  /** A swept barrel's held jet (PR 5): released from where it stands, carving nothing. */
+  swept?: boolean;
 }
 
 /** A void under a flying jet, riding with the crest that threw it. */
@@ -281,6 +321,7 @@ interface LipStripState {
   kind?: 0 | 1;
   waveHeight?: number;
   splash?: number;
+  swept?: boolean;
   tube?: Omit<FlyingTube, 'closedAt'> & { closedAt: number | null };
 }
 
@@ -305,6 +346,14 @@ interface FlyingTube {
   released: number;
   /** How far its jet's tip fell, m: its air is driven down in proportion. */
   drop: number;
+  /**
+   * A swept barrel's void (PR 5): its own cross-section, m², over the crest it spans, m (its air is their product, in
+   * place of LH82's over a column's width), and its long axis, forward and down (in place of the tilt's cosine and sine).
+   */
+  area?: number;
+  span?: number;
+  axisX?: number;
+  axisY?: number;
 }
 
 /** The share of a tube's collapse done by `time`: 0 while it flies, 1 once its void is gone. */
@@ -342,6 +391,11 @@ export class PlungingLip implements LipParcelSource {
   escapedVolume = 0;
   /** Air its tubes have trapped as they closed, m³ (G9; a running total for the air's balance). */
   trappedAir = 0;
+  /**
+   * Held jets (PR 5) whose void closed as their pour began, as foreseen at the throw: their point left its front before
+   * its crash, or its clock ran behind the foresight (a diagnostic).
+   */
+  closedAtPour = 0;
   /**
    * Told of every landing: where the parcel fell, how much water it returned
    * (m³), how fast it hit (m/s), and its flight: where it left the crest and
@@ -398,7 +452,7 @@ export class PlungingLip implements LipParcelSource {
   private readonly linked: Uint32Array;
   private query = 0;
   private readonly near = { a: new Vector3(), b: new Vector3(), pa: new Vector3(), pb: new Vector3(), velocity: new Vector3() };
-  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0, kind: 0, volume: 0, waveHeight: 0 };
+  private readonly flight: LipFlight = { launch: { x: 0, y: 0, z: 0 }, y: 0, age: 0, crestSpeed: 0, kind: 0, volume: 0, waveHeight: 0, swept: false };
   private readonly free: number[] = [];
   /** The flying tubes as a `tubeTable` (G9), refreshed as the clock moves and strips come and go. */
   private tubes = new Float64Array(64 * TUBE_STRIDE);
@@ -456,6 +510,7 @@ export class PlungingLip implements LipParcelSource {
         column: strip.column, launchTime: strip.launchTime, parcels: [...strip.parcels], live: strip.live, kind: strip.kind,
         waveHeight: strip.waveHeight,
         ...(strip.splash === undefined ? {} : { splash: strip.splash }),
+        ...(strip.swept ? { swept: true } : {}),
         ...(strip.tube ? {
           tube: { ...strip.tube, geometry: { ...strip.tube.geometry }, closedAt: Number.isNaN(strip.tube.closedAt) ? null : strip.tube.closedAt },
         } : {}),
@@ -482,6 +537,7 @@ export class PlungingLip implements LipParcelSource {
         column: strip.column, launchTime: strip.launchTime, parcels: [...strip.parcels], live: strip.live, kind: strip.kind ?? 0,
         waveHeight: strip.waveHeight ?? 0,
         ...(strip.splash === undefined ? {} : { splash: strip.splash }),
+        ...(strip.swept ? { swept: true } : {}),
         ...(tube ? {
           tube: {
             ...tube, geometry: { ...tube.geometry }, id: tube.id ?? id,
@@ -643,6 +699,120 @@ export class PlungingLip implements LipParcelSource {
     return thrown;
   }
 
+  /**
+   * A swept barrel's jet (the Padang Padang spec, Part B, PR 5; the advisor's rulings, 2026-10-01): its water leaves the
+   * crest at the barrel's throw, by `drawFromCrest`'s rule (its momentum along the jet nearest first, never reversed, the
+   * rest counted), and waits as a strip of parcels until it pours from the crash curve: from where `pourIn` s from now,
+   * a parcel every `pourSpacing`, as foreseen at the throw (`crashJet` re-times it at the crash; `movePour` follows the
+   * drawn lip). The drawn barrel is the tube, so its void carves nothing. Returns the strip and the water thrown; strip
+   * −1 when none was (the pool can't hold a strip, or the crest has nothing above its trough).
+   */
+  holdJet(jet: SweptJet): { strip: number; thrown: number } {
+    if (this.free.length < STRIP_PARCELS || !(jet.volume > 0)) return { strip: -1, thrown: 0 };
+    const thrown = this.drawFromCrest(jet.cell, { x: jet.velocityX, z: jet.velocityZ }, jet.volume, jet.waveHeight);
+    if (!(thrown > 0)) return { strip: -1, thrown: 0 };
+    const stripId = this.nextStrip;
+    this.nextStrip += 1;
+    const column = Math.round(jet.launchX / this.solver.dx - 0.5);
+    const strip: LipStrip = {
+      column, launchTime: this.time, parcels: [], live: STRIP_PARCELS, kind: 0, waveHeight: jet.waveHeight, swept: true,
+      tube: {
+        id: stripId, geometry: { length: jet.voidLength, width: jet.voidHeight, tilt: 0 }, x: jet.launchX, z: jet.launchZ, y: jet.launchY,
+        dirX: jet.dirX, dirZ: jet.dirZ, crestSpeed: jet.crestSpeed, relativeSpeed: jet.relativeSpeed, closedAt: Number.NaN, air: 0, released: 0,
+        drop: 0, area: jet.voidArea, span: jet.span, axisX: jet.axisX, axisY: jet.axisY,
+      },
+    };
+    for (let k = 0; k < STRIP_PARCELS; k += 1) {
+      const parcel = this.free.pop()!;
+      strip.parcels.push(parcel);
+      this.active[parcel] = 1;
+      this.state[parcel] = 2;
+      this.releaseAt[parcel] = this.time + jet.pourIn + k * jet.pourSpacing;
+      this.x[parcel] = this.px[parcel] = jet.pourX;
+      this.y[parcel] = this.py[parcel] = jet.pourY;
+      this.z[parcel] = this.pz[parcel] = jet.pourZ;
+      this.lx[parcel] = jet.launchX;
+      this.ly[parcel] = jet.launchY;
+      this.lz[parcel] = jet.launchZ;
+      this.crestSpeed[parcel] = jet.crestSpeed;
+      this.id[parcel] = this.nextId;
+      this.nextId += 1;
+      this.vx[parcel] = jet.velocityX;
+      this.vy[parcel] = jet.pourVY;
+      this.vz[parcel] = jet.velocityZ;
+      this.volume[parcel] = thrown / STRIP_PARCELS;
+      this.age[parcel] = 0;
+      this.strip[parcel] = stripId;
+      this.column[parcel] = column;
+      this.index[parcel] = k;
+      this.launchTime[parcel] = this.time;
+      this.kind[parcel] = 0;
+    }
+    this.strips.set(stripId, strip);
+    const inColumn = this.byColumn.get(column);
+    if (inColumn) inColumn.push(stripId);
+    else this.byColumn.set(column, [stripId]);
+    return { strip: stripId, thrown };
+  }
+
+  /**
+   * A held jet's lip touches down (the crash, PR 5): its void closes now, trapping its own air (its cross-section over
+   * the crest it spans), and rides on from the drawn crest `crest`; its water still waiting pours from (x, y, z), a
+   * parcel every `spacing` s from now, falling at `vy`, m/s. False for a strip that is not a held jet.
+   */
+  crashJet(stripId: number, pour: { x: number; y: number; z: number; spacing: number; vy: number }, crest: { x: number; y: number; z: number }): boolean {
+    const strip = this.strips.get(stripId);
+    if (!strip?.swept || !strip.tube) return false;
+    const { tube } = strip;
+    if (Number.isNaN(tube.closedAt)) this.closeHeld(tube);
+    const age = this.time - strip.launchTime;
+    tube.x = crest.x - tube.dirX * tube.crestSpeed * age;
+    tube.z = crest.z - tube.dirZ * tube.crestSpeed * age;
+    tube.y = crest.y;
+    let n = 0;
+    for (const parcel of strip.parcels) {
+      if (parcel < 0 || this.state[parcel] !== 2) continue;
+      this.releaseAt[parcel] = this.time + n * pour.spacing;
+      this.x[parcel] = this.px[parcel] = pour.x;
+      this.y[parcel] = this.py[parcel] = pour.y;
+      this.z[parcel] = this.pz[parcel] = pour.z;
+      this.vy[parcel] = pour.vy;
+      n += 1;
+    }
+    return true;
+  }
+
+  /**
+   * A held jet the crash couldn't follow to its touchdown (its point alone on its front, or past its collapse) closes as
+   * foreseen at its throw (PR 5): its void traps its air where its tube has ridden, and its water pours on its foreseen
+   * schedule. True when it closed now.
+   */
+  closeJet(stripId: number): boolean {
+    const strip = this.strips.get(stripId);
+    if (!strip?.swept || !strip.tube || !Number.isNaN(strip.tube.closedAt)) return false;
+    this.closeHeld(strip.tube);
+    return true;
+  }
+
+  /** A held jet's void closes now, trapping its own air: its cross-section over the crest it spans (PR 5). */
+  private closeHeld(tube: FlyingTube): void {
+    tube.closedAt = this.time;
+    tube.air = (tube.area ?? 0) * (tube.span ?? this.solver.dx);
+    this.trappedAir += tube.air;
+  }
+
+  /** A pouring jet's parcels still waiting move to (x, y, z), where its drawn lip now lands (PR 5). */
+  movePour(stripId: number, x: number, y: number, z: number): void {
+    const strip = this.strips.get(stripId);
+    if (!strip?.swept) return;
+    for (const parcel of strip.parcels) {
+      if (parcel < 0 || this.state[parcel] !== 2) continue;
+      this.x[parcel] = this.px[parcel] = x;
+      this.y[parcel] = this.py[parcel] = y;
+      this.z[parcel] = this.pz[parcel] = z;
+    }
+  }
+
   /** Release the parcels whose time has come, fly them under gravity, and land those that fall through the surface. */
   step(dt: number): void {
     if (!(dt > 0)) return;
@@ -659,9 +829,17 @@ export class PlungingLip implements LipParcelSource {
         if (this.releaseAt[parcel] > this.time) continue;
         this.state[parcel] = 1;
         flight = this.time - this.releaseAt[parcel];
-        // A crest still rising as it throws lets the later jet go from higher up.
-        const crest = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
-        if (crest > this.y[parcel]) this.y[parcel] = this.ly[parcel] = crest;
+        // A crest still rising as it throws lets the later jet go from higher up; a swept barrel's pour leaves its lip where it stands.
+        const strip = this.strips.get(this.strip[parcel]);
+        if (!strip?.swept) {
+          const crest = solver.sampleCentered(solver.h, this.x[parcel], this.z[parcel]) + solver.sampleCentered(solver.bed, this.x[parcel], this.z[parcel]);
+          if (crest > this.y[parcel]) this.y[parcel] = this.ly[parcel] = crest;
+        } else if (strip.tube && Number.isNaN(strip.tube.closedAt)) {
+          // A held jet whose point left its front before its crash pours as foreseen at its throw, and its void closes
+          // as it starts to (PR 5).
+          this.closeHeld(strip.tube);
+          this.closedAtPour += 1;
+        }
       }
       this.px[parcel] = this.x[parcel];
       this.py[parcel] = this.y[parcel];
@@ -716,7 +894,8 @@ export class PlungingLip implements LipParcelSource {
     let rows = 0;
     for (const strip of this.strips.values()) {
       const tube = strip.tube;
-      if (!tube) continue;
+      // A swept barrel's void is drawn and ridden as the barrel's own surface: it carves nothing.
+      if (!tube || strip.swept) continue;
       const scale = 1 - collapsed(tube, this.time);
       if (!(scale > 0)) continue;
       if ((rows + 1) * TUBE_STRIDE > this.tubes.length) {
@@ -949,6 +1128,7 @@ export class PlungingLip implements LipParcelSource {
     flight.kind = this.kind[parcel];
     flight.volume = volume;
     flight.waveHeight = strip?.waveHeight ?? 0;
+    flight.swept = strip?.swept ?? false;
     this.active[parcel] = 0;
     this.state[parcel] = 0;
     this.free.push(parcel);
@@ -964,7 +1144,7 @@ export class PlungingLip implements LipParcelSource {
         // The jet has all come down: its void closes, trapping its air (its cross-section over its column's width).
         // While it still pours, the curtain holds the void whole and the pour lands where the tube is, not on the crest.
         tube.closedAt = this.time;
-        tube.air = LH82_AREA * tube.geometry.length * tube.geometry.width * solver.dx;
+        tube.air = (tube.area ?? LH82_AREA * tube.geometry.length * tube.geometry.width) * (tube.span ?? solver.dx);
         this.trappedAir += tube.air;
       }
       // A strip stays while its water flies or its void is still collapsing.
@@ -1050,7 +1230,7 @@ export class PlungingLip implements LipParcelSource {
         const centre = this.voidCentre(strip, 1 - done);
         this.rollers.push({
           id: tube.id, x: centre.x, y: centre.y, z: centre.z, dirX: tube.dirX, dirZ: tube.dirZ, speed: tube.crestSpeed,
-          area: ROLLER_AREA * tube.drop * tube.drop, width: this.solver.dx,
+          area: ROLLER_AREA * tube.drop * tube.drop, width: tube.span ?? this.solver.dx,
         });
         const escaping = TUBE_AIR.escape * volume;
         this.breakIntoBubbles(strip, 1 - done, volume - escaping);
@@ -1081,7 +1261,7 @@ export class PlungingLip implements LipParcelSource {
         const alongZ = tube.dirX;
         const outward = (centre.x - fed[m].x / rate) * alongX + (centre.z - fed[m].z / rate) * alongZ >= 0 ? 1 : -1;
         // The mouth passes air no faster than the falling lip can drive it; the rest bursts up through the lip.
-        const area = LH82_AREA * tube.geometry.length * tube.geometry.width;
+        const area = tube.area ?? LH82_AREA * tube.geometry.length * tube.geometry.width;
         const spat = Math.min(rate, spitSpeedLimit(tube.geometry.width) * area);
         this.spits.push({
           x: centre.x, y: centre.y, z: centre.z, dirX: outward * alongX, dirZ: outward * alongZ, speed: spat / area, airRate: spat,
@@ -1111,7 +1291,7 @@ export class PlungingLip implements LipParcelSource {
   private breakIntoBubbles(strip: LipStrip, scale: number, volume: number): void {
     if (!this.onAir) return;
     const tube = strip.tube!;
-    const reach = tube.geometry.length * Math.max(scale, 0) * Math.cos(tube.geometry.tilt);
+    const reach = tube.geometry.length * Math.max(scale, 0) * (tube.axisX ?? Math.cos(tube.geometry.tilt));
     const age = this.time - strip.launchTime;
     const crestX = tube.x + tube.dirX * tube.crestSpeed * age;
     const crestZ = tube.z + tube.dirZ * tube.crestSpeed * age;
@@ -1126,10 +1306,11 @@ export class PlungingLip implements LipParcelSource {
     const tube = strip.tube!;
     const { length, width, tilt } = tube.geometry;
     const age = this.time - strip.launchTime;
-    const ahead = 0.5 * length * scale * Math.cos(tilt);
+    // A swept void's own axis, forward and down; else the overturn's tilt.
+    const ahead = 0.5 * length * scale * (tube.axisX ?? Math.cos(tilt));
     return {
       x: tube.x + tube.dirX * (tube.crestSpeed * age + ahead),
-      y: tube.y - 0.5 * width * scale - 0.5 * length * scale * Math.sin(tilt),
+      y: tube.y - 0.5 * width * scale - 0.5 * length * scale * (tube.axisY === undefined ? Math.sin(tilt) : -tube.axisY),
       z: tube.z + tube.dirZ * (tube.crestSpeed * age + ahead),
     };
   }

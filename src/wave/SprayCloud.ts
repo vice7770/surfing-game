@@ -17,6 +17,11 @@ export interface LipImpact {
   vz: number;
   whole?: number;
   kind?: number;
+  /**
+   * A swept barrel's landing (the Padang Padang spec, Part B, PR 5): the height it came down at, m, where its spray rises,
+   * since the solver's water there is the hump under the drawn tube. Every other landing's spray rises from the water.
+   */
+  y?: number;
 }
 
 /** Which water look the spray is for: Classic keeps its spray as it was before G9, Rich follows the splash-up. */
@@ -278,8 +283,7 @@ export class SprayCloud {
     const energy = 0.5 * WATER_DENSITY * impact.volume * speed * speed;
     const expected = energy * SPRAY_PER_JOULE * this.budget.spawn;
     let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
-    const cell = scene.solver.cellIndex(impact.x, impact.z);
-    const surface = scene.solver.h[cell] + scene.solver.bed[cell];
+    const surface = impact.y ?? this.waterAt(scene, impact);
     for (; spawns > 0 && this.room(false); spawns -= 1) {
       const { up, forward } = splashLaunch(Math.abs(impact.vy), this.random());
       const spread = 1.5;
@@ -305,8 +309,7 @@ export class SprayCloud {
     const energy = 0.5 * WATER_DENSITY * volume * speed * speed;
     const expected = energy * SPRAY_PER_JOULE * this.budget.spawn;
     let spawns = Math.floor(expected) + (this.random() < expected - Math.floor(expected) ? 1 : 0);
-    const cell = scene.solver.cellIndex(impact.x, impact.z);
-    const surface = scene.solver.h[cell] + scene.solver.bed[cell];
+    const surface = impact.y ?? this.waterAt(scene, impact);
     for (; spawns > 0 && this.room(false); spawns -= 1) {
       const up = speed * this.between(CLASSIC_SPLASH_UP);
       const forward = this.between(CLASSIC_SPLASH_FORWARD);
@@ -537,5 +540,11 @@ export class SprayCloud {
 
   private between(range: { min: number; max: number }): number {
     return range.min + (range.max - range.min) * this.random();
+  }
+
+  /** The water's surface in the cell a lip impact lands in, m. */
+  private waterAt(scene: SprayScene, impact: LipImpact): number {
+    const cell = scene.solver.cellIndex(impact.x, impact.z);
+    return scene.solver.h[cell] + scene.solver.bed[cell];
   }
 }

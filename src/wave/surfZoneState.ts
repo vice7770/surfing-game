@@ -1,4 +1,5 @@
 import type { LipState } from './PlungingLip';
+import type { FrontState } from './barrel/BreakingFront';
 
 /**
  * A running sea as data (spec N1: the sea handover): its grid (to check it
@@ -14,6 +15,8 @@ export interface SurfZoneState {
   /** `onsetsArmed`: whether the donor watches for new breakers (absent from states before Part B of the Teahupo'o Reef). */
   counters: { lipLaunches: number; lipVolume: number; lipJets: number; lipRollers: number; onsetsArmed?: boolean };
   lip: LipState;
+  /** The swept barrel's breaking front, on the spots that run it (the Padang Padang spec, Part B). */
+  front?: FrontState;
 }
 
 const MAGIC = 0x53455431; // "SET1"
@@ -28,7 +31,7 @@ const MAGIC = 0x53455431; // "SET1"
 export function encodeSurfZoneState(state: SurfZoneState): Uint8Array {
   const names = Object.keys(state.arrays);
   const header = new TextEncoder().encode(JSON.stringify({
-    nx: state.nx, nz: state.nz, solverTime: state.solverTime, seaTimeOffset: state.seaTimeOffset, counters: state.counters, lip: state.lip,
+    nx: state.nx, nz: state.nz, solverTime: state.solverTime, seaTimeOffset: state.seaTimeOffset, counters: state.counters, lip: state.lip, front: state.front,
     arrays: names.map((name) => [name, state.arrays[name].length]),
   }));
   const start = 8 + Math.ceil(header.length / 4) * 4;

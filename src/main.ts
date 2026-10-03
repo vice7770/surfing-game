@@ -92,8 +92,8 @@ function surfZoneFactory(rider: boolean, stance: StanceName): SurfZoneHostFactor
   // `?renderSpacing=0.5` draws the water on a finer grid, for close recordings (dev flag).
   const renderSpacing = Number(devParam('renderSpacing')) || undefined;
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider, renderSpacing, stance })
-    : (config) => new WorkerSurfZone(config, undefined, { rider, renderSpacing, stance });
+    ? (config, extra) => new LocalSurfZone(config, { rider, renderSpacing, stance, ...extra })
+    : (config, extra) => new WorkerSurfZone(config, undefined, { rider, renderSpacing, stance, ...extra });
 }
 /**
  * Online (spec N1): the rider starts at `spawn` (m along shore from the take-off, and
@@ -103,13 +103,13 @@ function surfZoneFactory(rider: boolean, stance: StanceName): SurfZoneHostFactor
 /** Surf School (spec L2): a surf zone with the player's rider, starting from a recorded sea. */
 function recordedSurfZoneFactory(sea: Uint8Array, stance: StanceName): SurfZoneHostFactory {
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider: true, stance }, sea)
-    : (config) => new WorkerSurfZone(config, undefined, { rider: true, stance }, { sea });
+    ? (config, extra) => new LocalSurfZone(config, { rider: true, stance, ...extra }, sea)
+    : (config, extra) => new WorkerSurfZone(config, undefined, { rider: true, stance, ...extra }, { sea });
 }
 function onlineSurfZoneFactory(spawn: { spawnAlong: number; spawnOut: number }, sea: Uint8Array | undefined, stance: StanceName): SurfZoneHostFactory {
   return inPage
-    ? (config) => new LocalSurfZone(config, { rider: true, stance, ...spawn }, sea)
-    : (config) => new WorkerSurfZone(config, undefined, { rider: true, stance, ...spawn }, { maxQueuedSteps: ONLINE_QUEUE, ...(sea ? { sea } : {}) });
+    ? (config, extra) => new LocalSurfZone(config, { rider: true, stance, ...spawn, ...extra }, sea)
+    : (config, extra) => new WorkerSurfZone(config, undefined, { rider: true, stance, ...spawn, ...extra }, { maxQueuedSteps: ONLINE_QUEUE, ...(sea ? { sea } : {}) });
 }
 /** Only the worker steps on the GPU (plan P6), so only it gets the GPU tier's sea. */
 const gpuTier = inPage ? undefined : webGpuAvailable;
@@ -300,6 +300,8 @@ class SurfGame {
       /** G8's water sheet: the look, the time of day (resolved once its sky is in), and a render from any camera. */
       setWaterLook: (look: WaterLook) => this.applyWaterLook(look),
       setTimeOfDay: (time: TimeOfDay) => this.applySun(TIMES[time]),
+      /** Any sun (the slider's height, and its azimuth, degrees): the water sheet's lighting checks. */
+      setSun: (sun: { sunHeight: number; sunDirection: number }) => this.applySun(sun),
       renderView: (camera: PerspectiveCamera) => {
         const host = this.physicalMode.host;
         this.setUnderwater(host !== undefined && camera.position.y < host.heightAt(camera.position.x, camera.position.z) - 0.1);
@@ -953,6 +955,8 @@ class SurfGame {
   /** The water, sea and shadows around `view`, drawn from it (the physical camera, or a water sheet shot). */
   private drawPhysical(view: PerspectiveCamera): void {
     this.water.update();
+    // The swept barrel lofts over the heights the water just uploaded (Padang Padang, Part B, PR 3).
+    this.physicalMode.drawBarrel();
     // Caustics where the view looks: a window a third of its width ahead of the camera.
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);
     if (ahead.lengthSq() > 1e-6) ahead.normalize();

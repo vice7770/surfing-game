@@ -5,6 +5,7 @@ import {
   DataTexture,
   DoubleSide,
   FloatType,
+  LinearFilter,
   Mesh,
   MeshPhysicalMaterial,
   NearestFilter,
@@ -13,6 +14,7 @@ import {
   RGBAFormat,
   RGFormat,
   Uint8BufferAttribute,
+  UnsignedByteType,
   Vector2,
   Vector3,
   Vector4,
@@ -28,6 +30,7 @@ import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from './wat
 import { waterStreakPars } from './water/streaks';
 import { packTubeTextures, tubeColumnCount, waterTubePars } from './water/tubeCarve';
 import { TUBE_CAPACITY, TUBE_STRIDE } from '../wave/tubeTable';
+import { WATER_BARREL_DISCARD, waterBarrelMaskPars } from './barrel/barrelMaskGlsl';
 import { causticLookupPars, createCausticUniforms, type CausticSource, type CausticUniforms } from './CausticMap';
 import { foamPatternPars, foamTileTexture } from './foamPattern';
 import { DEFAULT_WATER_CHOP, chopFieldUniforms, waterChopNormal, waterChopPars } from './waterChop';
@@ -118,7 +121,7 @@ float waterHeightAt( vec2 xz ) {
 }
 `;
 
-const waterVertexPars = /* glsl */ `
+export const waterVertexPars = /* glsl */ `
 ${waterHeightPars}
 uniform sampler2D waterBed;
 uniform sampler2D waterFlow;
@@ -171,7 +174,7 @@ vWaterFoam = waterFoamAt( waterXZ );
 vWaterFlow = waterFlowAt( waterXZ );
 `;
 
-const waterFragmentPars = /* glsl */ `
+export const waterFragmentPars = /* glsl */ `
 ${waterHeightPars}
 uniform vec3 waterFoamColor;
 varying float vWaterDepth;
@@ -237,6 +240,10 @@ export class WaterSurface {
   private readonly uniforms: Record<string, { value: unknown }>;
   private detailedFoam = true;
   private currentLook: WaterLook = 'classic';
+  /** The swept barrel's seam (Part B, PR 3): its mask on the render grid's nodes, compiled in only at a swept spot. */
+  private barrelEnabled = false;
+  private barrelMaskData: Uint8Array;
+  private barrelMaskTexture: DataTexture;
   /** Caustic map lighting the bed seen through the water (G5); off until a `CausticMap` draws into it. */
   readonly causticUniforms: CausticUniforms = createCausticUniforms();
 
@@ -250,6 +257,8 @@ export class WaterSurface {
     this.flowTexture = WaterSurface.createTexture(this.flowData, grid);
     this.aerationData = new Float32Array(grid.nx * grid.nz * 2);
     this.aerationTexture = WaterSurface.createTexture(this.aerationData, grid);
+    this.barrelMaskData = new Uint8Array(grid.nx * grid.nz);
+    this.barrelMaskTexture = WaterSurface.createMaskTexture(this.barrelMaskData, grid);
     this.uniforms = {
       waterSurface: { value: this.texture },
       waterBed: { value: this.bedTexture },
@@ -276,6 +285,8 @@ export class WaterSurface {
       waterTubeCount: { value: 0 },
       waterAeration: { value: this.aerationTexture },
       waterReflection: { value: RICH_WATER.reflection },
+      waterBarrelMask: { value: this.barrelMaskTexture },
+      waterBarrelMaskActive: { value: 0 },
     };
     // One air–water interface: Fresnel from n = 1.333 (F0 = 0.020), no clearcoat.
     const material = new MeshPhysicalMaterial({
@@ -295,8 +306,8 @@ export class WaterSurface {
           .replace('#include <beginnormal_vertex>', richBeginNormal)
           .replace('#include <begin_vertex>', richVertexHeight);
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}`)
-          .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}`)
+          .replace('#include <common>', `#include <common>\nfloat waterCarve( vec2 xz, float surface );\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${richPatchFragmentPars}${this.barrelEnabled ? `\n${waterBarrelMaskPars}` : ''}`)
+          .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${richPatchDiscard}${this.barrelEnabled ? `\n${WATER_BARREL_DISCARD}` : ''}`)
           // The crest light marches through the carved surface (G9): through a tube's void, not water.
           .replace('float gap = waterHeightAt( p.xz ) - p.y;', 'float gap = waterCarve( p.xz, waterHeightAt( p.xz ) ) - p.y;')
           .replace('#include <normal_fragment_begin>', richNormalFragment({ ripples: true, churn: true }))
@@ -314,8 +325,14 @@ export class WaterSurface {
         .replace('#include <normal_fragment_begin>', waterChopNormal)
         .replace('#include <color_fragment>', '')
         .replace('#include <emissivemap_fragment>', waterBodyFragment(true, true));
+      // The swept barrel's seam, only at a swept spot, so every other spot's program is today's byte for byte.
+      if (this.barrelEnabled) {
+        shader.fragmentShader = shader.fragmentShader
+          .replace(`#include <common>\n${waterFragmentPars}`, `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}`)
+          .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${WATER_BARREL_DISCARD}`);
+      }
     };
-    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}`;
+    material.customProgramCacheKey = () => `breakline-water-surface-${this.effectiveLook}${this.barrelEnabled ? '-barrel' : ''}`;
     this.mesh = new Mesh(WaterSurface.createGeometry(grid), material);
     this.refreshTubeColumns();
     this.mesh.frustumCulled = false;
@@ -401,6 +418,39 @@ export class WaterSurface {
     this.tubeColumnTexture.dispose();
     this.tubeColumnTexture = new DataTexture(this.tubeColumnData, columns, 1, RGFormat, FloatType);
     this.uniforms.waterTubeColumns.value = this.tubeColumnTexture;
+  }
+
+  /**
+   * The swept barrel (the Padang Padang spec, Part B, PR 3): compile the seam's mask into the water's program, at a
+   * swept spot, or take it out again, leaving the program exactly as before.
+   */
+  setBarrelEnabled(on: boolean): void {
+    if (on === this.barrelEnabled) return;
+    this.barrelEnabled = on;
+    if (!on) this.setBarrelMask(null);
+    this.mesh.material.needsUpdate = true;
+  }
+
+  /** The seam's mask on the render grid's nodes (`rasterizeBarrelMask`), copied; null lets the water draw everywhere. */
+  setBarrelMask(mask: Uint8Array | null): void {
+    this.uniforms.waterBarrelMaskActive.value = mask ? 1 : 0;
+    if (!mask) return;
+    this.barrelMaskData.set(mask.subarray(0, this.barrelMaskData.length));
+    this.barrelMaskTexture.needsUpdate = true;
+  }
+
+  get barrelMaskActive(): boolean {
+    return this.uniforms.waterBarrelMaskActive.value === 1;
+  }
+
+  /** The water's uniform objects, shared by a surface drawn with its shading (the swept barrel). */
+  get materialUniforms(): Record<string, { value: unknown }> {
+    return this.uniforms;
+  }
+
+  /** The look actually drawn: Rich only over a source whose bodies ride the Catmull-Rom surface. */
+  get drawnLook(): WaterLook {
+    return this.effectiveLook;
   }
 
   /** Graphics setting (G8): the Classic water, or the Rich look. */
@@ -500,6 +550,11 @@ export class WaterSurface {
     this.aerationTexture.dispose();
     this.aerationTexture = WaterSurface.createTexture(this.aerationData, grid);
     this.uniforms.waterAeration.value = this.aerationTexture;
+    this.barrelMaskData = new Uint8Array(grid.nx * grid.nz);
+    this.barrelMaskTexture.dispose();
+    this.barrelMaskTexture = WaterSurface.createMaskTexture(this.barrelMaskData, grid);
+    this.uniforms.waterBarrelMask.value = this.barrelMaskTexture;
+    this.uniforms.waterBarrelMaskActive.value = 0;
     this.flowSource = undefined;
     (this.uniforms.waterGridSize.value as Vector2).set(grid.nx, grid.nz);
     this.mesh.geometry.dispose();
@@ -515,6 +570,7 @@ export class WaterSurface {
     this.aerationTexture.dispose();
     this.tubeTexture.dispose();
     this.tubeColumnTexture.dispose();
+    this.barrelMaskTexture.dispose();
     this.mesh.material.dispose();
   }
 
@@ -522,6 +578,15 @@ export class WaterSurface {
     const texture = new DataTexture(data, grid.nx, grid.nz, RGFormat, FloatType);
     texture.magFilter = NearestFilter;
     texture.minFilter = NearestFilter;
+    texture.generateMipmaps = false;
+    return texture;
+  }
+
+  /** The swept barrel's seam mask, 0–255 per node, filtered linearly so the band ramps between nodes. */
+  private static createMaskTexture(data: Uint8Array, grid: SurfaceGrid): DataTexture {
+    const texture = new DataTexture(data, grid.nx, grid.nz, RedFormat, UnsignedByteType);
+    texture.magFilter = LinearFilter;
+    texture.minFilter = LinearFilter;
     texture.generateMipmaps = false;
     return texture;
   }

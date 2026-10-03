@@ -8,15 +8,18 @@
  * `&compute=gpu` (or `auto`) steps the sea in the game's worker, on the GPU as
  * an M4 player's does (the GPU tier's 64-component sea); `cpu`, the default,
  * steps it in the page as before.
+ * `&swell=small|medium|big` runs the spot's own swell of that size in place of the practice groundswell.
  */
-import { PerspectiveCamera, Vector3 } from 'three';
+import { PerspectiveCamera, Vector3, type Color } from 'three';
 import { DEFAULT_PHYSICAL_SETTINGS, GPU_TIER_COMPONENTS, type PhysicalMode, type PhysicalSettings } from '../game/PhysicalMode';
-import type { TimeOfDay } from '../game/SurfConditions';
+import { swellChoice, type TimeOfDay } from '../game/SurfConditions';
 import type { WaterLook } from '../scene/water/waterLook';
 import { sampleSurfaceHeight, type WaterSurface } from '../scene/WaterSurface';
 import { tubeFloorDepth } from '../wave/Overturn';
 import { SPRAY_STRIDE } from '../wave/SprayCloud';
 import { SEA_COMPONENTS, type SurfZoneConfig } from '../wave/SurfZoneSimulation';
+import { LANDMARK } from '../wave/barrel/ProfileLibrary';
+import { LOFT, LOFT_SAMPLES } from '../wave/barrel/sweptLoft';
 import { TUBE_STRIDE } from '../wave/tubeTable';
 import { advance, breathe } from './devStepping';
 
@@ -29,6 +32,7 @@ interface SheetHooks {
   canvas: HTMLCanvasElement;
   setWaterLook(look: WaterLook): void;
   setTimeOfDay(time: TimeOfDay): Promise<void>;
+  setSun(sun: { sunHeight: number; sunDirection: number }): Promise<void>;
   renderView(camera: PerspectiveCamera): void;
   water: WaterSurface;
 }
@@ -50,8 +54,12 @@ interface Shot { name: string; eye: Vector3; target: Vector3 }
 const PARAMETERS = new URLSearchParams(window.location.search);
 /** `?waterSheet&spot=reef` or `padang` (G9): the practice Reef or Padang Padang, held on an open tube, with tube shots in place of the face and bore. */
 const SPOT = (['reef', 'beach', 'padang'] as const).find((spot) => spot === PARAMETERS.get('spot')) ?? 'point';
+/** `&swell=small|medium|big`: the spot's own swell of that size, in place of the practice groundswell. */
+const SWELL = (['small', 'medium', 'big'] as const).find((size) => size === PARAMETERS.get('swell'));
 /** Reef breaks: the sheet holds them on an open tube. */
 const TUBE_SPOT = SPOT === 'reef' || SPOT === 'padang';
+/** Padang Padang draws the swept barrel (Part B): its sheet holds on the swept curl, not the old lip's tube. */
+const SWEPT_SPOT = SPOT === 'padang';
 /** `&whitewater` (G9): hold on a collapsing tube's foam ball, and shoot its whitewater in place of the face and bore. */
 const WHITEWATER = PARAMETERS.has('whitewater');
 /** `&compute=gpu|auto`: the sea steps in the game's worker, on its GPU tier (main.ts leaves `inpage` for it); `cpu` in the page. */
@@ -98,6 +106,69 @@ function whitewaterShots(water: WaterSurface, ball: Vector3): Shot[] {
 }
 /** The Reef sheet holds once a tube is open this far ahead of its crest, m. */
 const TUBE_OPEN = 0.8;
+/** Padang Padang's sheet holds once the swept curl is open over this much crest, m (the checklist's 3–10 m). */
+const CURL_OPEN = 3;
+
+/** The swept barrel's longest open run (Padang Padang, Part B): its slices, middle slice and length along the crest, m. */
+interface OpenCurl { first: number; last: number; middle: number; length: number; shoulder: 1 | -1 }
+
+/** The drawn loft's longest run of joined, standing, open slices on one front; the shoulder is the side whose clocks are younger. */
+function openCurl(mode: PhysicalMode): OpenCurl | undefined {
+  const loft = mode.barrelLoft;
+  if (!loft) return undefined;
+  let best: OpenCurl | undefined;
+  let first = -1;
+  const close = (last: number) => {
+    if (first < 0) return;
+    const length = loft.sliceSigma[last] - loft.sliceSigma[first];
+    if (!best || length > best.length) {
+      // Younger (smaller τ) slices lie toward the shoulder, the way it peels.
+      const shoulder = loft.sliceTau[first] < loft.sliceTau[last] ? -1 : 1;
+      best = { first, last, middle: Math.round((first + last) / 2), length, shoulder };
+    }
+    first = -1;
+  };
+  for (let s = 0; s < loft.sliceCount; s += 1) {
+    const open = loft.slicePhase[s] === 1 && loft.sliceWeight[s] >= 0.5;
+    const continues = first >= 0 && loft.sliceFront[s] === loft.sliceFront[first] && loft.sliceJoined[s - 1] === 1;
+    if (first >= 0 && (!open || !continues)) close(s - 1);
+    if (open && first < 0) first = s;
+  }
+  close(loft.sliceCount - 1);
+  return best;
+}
+
+/** A landmark of a loft slice, in the world. */
+function landmark(mode: PhysicalMode, slice: number, index: number): Vector3 {
+  const loft = mode.barrelLoft!;
+  const v = 3 * (slice * LOFT_SAMPLES + LOFT.extensionSamples + index);
+  return new Vector3(loft.positions[v], loft.positions[v + 1], loft.positions[v + 2]);
+}
+
+/**
+ * Shots of the swept curl's middle open slice: from the channel (down the line on the shoulder side, in front of the
+ * face, looking back into the tube), square on from in front of the face, from behind the wave, and inside the tube at
+ * half its height looking out along the crest toward the shoulder.
+ */
+function curlShots(mode: PhysicalMode, curl: OpenCurl): Shot[] {
+  const loft = mode.barrelLoft!;
+  const [rx, rz] = [loft.sliceRayX[curl.middle], loft.sliceRayZ[curl.middle]];
+  // Along the crest toward the shoulder: the front's tangent (the ray turned back a right angle), signed.
+  const [sx, sz] = [rz * curl.shoulder, -rx * curl.shoulder];
+  const crest = landmark(mode, curl.middle, LANDMARK.crest);
+  const tip = landmark(mode, curl.middle, LANDMARK.lip);
+  const throat = landmark(mode, curl.middle, LANDMARK.throat);
+  const toe = landmark(mode, curl.middle, LANDMARK.toe);
+  const mouth = tip.clone().add(throat).multiplyScalar(0.5);
+  const inside = new Vector3((throat.x + toe.x) / 2, (throat.y + toe.y) / 2, (throat.z + toe.z) / 2).lerp(mouth, 0.3);
+  return [
+    { name: 'curl-channel', eye: new Vector3(tip.x + sx * 14 + rx * 6, crest.y - 0.5, tip.z + sz * 14 + rz * 6), target: mouth },
+    { name: 'curl-close', eye: new Vector3(tip.x + sx * 7 + rx * 3, crest.y - 0.3, tip.z + sz * 7 + rz * 3), target: mouth },
+    { name: 'curl-front', eye: new Vector3(crest.x + rx * 12 + sx * 2, crest.y - 0.5, crest.z + rz * 12 + sz * 2), target: mouth },
+    { name: 'curl-behind', eye: new Vector3(crest.x - rx * 9 + sx * 5, crest.y + 3, crest.z - rz * 9 + sz * 5), target: tip },
+    { name: 'curl-inside', eye: inside, target: new Vector3(inside.x + sx * 8, inside.y, inside.z + sz * 8) },
+  ];
+}
 
 /** The most open flying tube in the snapshot: its row and how far its void reaches ahead of the crest, m. */
 function openTube(mode: PhysicalMode): { row: number; reach: number } | undefined {
@@ -202,32 +273,52 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   status.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:1000;padding:6px 10px;background:#0d1117;color:#d6dde6;font:12px ui-monospace,monospace';
   status.textContent = 'Water sheet: settling the sea…';
   document.body.append(status);
-  const settings: PhysicalSettings = { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute: COMPUTE === 'cpu' ? 'cpu' : 'auto' };
+  const compute = COMPUTE === 'cpu' ? 'cpu' : 'auto';
+  const settings: PhysicalSettings = SWELL
+    ? { ...DEFAULT_PHYSICAL_SETTINGS, ...swellChoice(SPOT, SWELL), spot: SPOT, source: 'buoy', compute }
+    : { ...DEFAULT_PHYSICAL_SETTINGS, spot: SPOT, source: 'practice', compute };
   await hooks.start(settings, COMPONENTS ? { componentCount: COMPONENTS } : undefined);
   hooks.resize(RENDER.width, RENDER.height);
   const idle = { paddle: false, popUp: false, steer: 0 };
   let simulated = 0;
-  while (simulated < MAX_SETTLE) {
-    // A tube flies about a second: once settled, the Reef looks for one every 0.2 s.
-    const chunk = (TUBE_SPOT || WHITEWATER) && simulated >= MIN_SETTLE ? 12 : 60;
-    await advance(hooks, chunk, idle);
-    simulated += chunk * STEP;
-    if (simulated >= MIN_SETTLE) {
-      hooks.render(0);
-      const held = WHITEWATER
-        ? (foamBall(hooks.mode)?.count ?? 0) >= FOAM_BALL_HOLD
-        : TUBE_SPOT ? (openTube(hooks.mode)?.reach ?? 0) >= TUBE_OPEN : steepestFace(hooks.water, hooks.mode.focus).slope >= FACE_SLOPE;
-      if (held) break;
+  /** Steps the sea until the spot's hold (after at least `least` s more), or MAX_SETTLE in all. */
+  const settle = async (least: number) => {
+    const until = simulated + least;
+    while (simulated < MAX_SETTLE + until - MIN_SETTLE) {
+      // A tube flies about a second: once settled, the Reef looks for one every 0.2 s.
+      const chunk = (TUBE_SPOT || WHITEWATER) && simulated >= MIN_SETTLE ? 12 : 60;
+      await advance(hooks, chunk, idle);
+      simulated += chunk * STEP;
+      if (simulated >= until) {
+        hooks.render(0);
+        const held = WHITEWATER
+          ? (foamBall(hooks.mode)?.count ?? 0) >= FOAM_BALL_HOLD
+          : SWEPT_SPOT ? (openCurl(hooks.mode)?.length ?? 0) >= CURL_OPEN
+            : TUBE_SPOT ? (openTube(hooks.mode)?.reach ?? 0) >= TUBE_OPEN : steepestFace(hooks.water, hooks.mode.focus).slope >= FACE_SLOPE;
+        if (held) break;
+      }
+      await breathe();
     }
-    await breathe();
-  }
-  hooks.render(0);
-  const tube = TUBE_SPOT && !WHITEWATER ? openTube(hooks.mode) : undefined;
-  const ball = WHITEWATER ? foamBall(hooks.mode) : undefined;
-  const shots = findShots(hooks.water, hooks.mode.focus).flatMap((shot) => {
-    if (shot.name === 'face') return ball ? whitewaterShots(hooks.water, ball.centre) : tube ? tubeShots(hooks.mode, tube) : [shot];
-    return (tube || ball) && shot.name === 'bore' ? [] : [shot];
-  });
+    hooks.render(0);
+  };
+  await settle(MIN_SETTLE);
+  const heldShots = () => {
+    const curl = SWEPT_SPOT ? openCurl(hooks.mode) : undefined;
+    const tube = TUBE_SPOT && !SWEPT_SPOT && !WHITEWATER ? openTube(hooks.mode) : undefined;
+    const ball = WHITEWATER ? foamBall(hooks.mode) : undefined;
+    const found = findShots(hooks.water, hooks.mode.focus).flatMap((shot) => {
+      if (shot.name === 'face') {
+        // Padang Padang's swept curl, when one is open at the hold (beside the whitewater's, with `&whitewater`).
+        const curlOnes = curl ? curlShots(hooks.mode, curl) : [];
+        return [...(ball ? whitewaterShots(hooks.water, ball.centre) : tube ? tubeShots(hooks.mode, tube) : curl ? [] : [shot]), ...curlOnes];
+      }
+      return (tube || ball || curl) && shot.name === 'bore' ? [] : [shot];
+    });
+    return { shots: found, curl, ball };
+  };
+  let held = heldShots();
+  let { shots } = held;
+  const { ball } = held;
   const sheet = document.createElement('canvas');
   sheet.width = TILE.width * TIMES.length * LOOKS.length;
   sheet.height = TILE.height * shots.length;
@@ -258,7 +349,7 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
   // Which tier stepped the sea: asked for the GPU and given the CPU (no WebGPU) must not pass for the GPU's water.
   const stepped = hooks.mode.host?.snapshot.status.compute ?? 'cpu';
   const tier = `water on the ${stepped.toUpperCase()}, ${hooks.mode.config?.componentCount ?? SEA_COMPONENTS} components${COMPUTE === 'gpu' && stepped !== 'gpu' ? ' (ASKED FOR THE GPU)' : ''}`;
-  status.textContent = `Water sheet: ${SPOT} practice${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled, ${tier} · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
+  status.textContent = `Water sheet: ${SPOT} ${SWELL ?? 'practice'}${ball ? `, ${ball.count} foam-ball sprites` : ''}, ${simulated.toFixed(0)} s settled, ${tier} · columns ${TIMES.map((t) => LOOKS.map((l) => `${l} ${t}`).join(', ')).join(', ')} · rows ${shots.map((s) => s.name).join(', ')}`;
   const face = steepestFace(hooks.water, hooks.mode.focus);
   status.textContent += ` · face slope ${face.slope.toFixed(2)} · program ${hooks.water.mesh.material.customProgramCacheKey()}`;
   /** One shot at full size, posted as water-shot.png: for close checks from the console once the sheet is done. */
@@ -306,7 +397,180 @@ export async function renderWaterSheet(hooks: SheetHooks): Promise<void> {
     times.sort((a, b) => a - b);
     return { median: times[Math.floor(times.length / 2)], p90: times[Math.floor(times.length * 0.9)] };
   };
-  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped });
+  /**
+   * The held curl (Padang Padang): its open run, and the slices of its front as drawn (σ, τ, phase, weight), for
+   * reading a still against the loft.
+   */
+  const waterSheetCurl = () => {
+    const loft = hooks.mode.barrelLoft;
+    const curl = held.curl;
+    if (!loft || !curl) return undefined;
+    const front = loft.sliceFront[curl.middle];
+    const slices = [];
+    for (let s = 0; s < loft.sliceCount; s += 1) {
+      if (loft.sliceFront[s] !== front) continue;
+      slices.push({ s, sigma: +loft.sliceSigma[s].toFixed(2), tau: +loft.sliceTau[s].toFixed(3), phase: loft.slicePhase[s], weight: +loft.sliceWeight[s].toFixed(2), joined: loft.sliceJoined[s] });
+    }
+    const fronts = new Set(Array.from(loft.sliceFront.subarray(0, loft.sliceCount)));
+    return { ...curl, front, fronts: [...fronts], sliceCount: loft.sliceCount, slices };
+  };
+  /**
+   * The curl's light against the face beside it (tube-colour-fix.md, "How to check it"), measured on screen from one
+   * view: the lip (the loft's sheet), the tube's back wall (throat to toe of the open slices whose underside has
+   * formed: the wall a lip covers) and the face beside them (the water's own pixels around them, and the curl's
+   * shoulder face), each's mean relative luminance and hue, as drawn, with the sheet off, and as the owner's clip drew
+   * it (the loft's own winding, no sheet).
+   * `sun`: 'behind' puts the sun where the camera looks, behind the lip; 'front' behind the camera; or a time of day.
+   * The regions come from a pass with the curl in its `region` view and one without the water; the marked frame is
+   * posted as curl-luma.png.
+   */
+  const waterSheetCurlLuma = async (name: string | View, look: WaterLook, sun: 'behind' | 'front' | TimeOfDay = 'behind', height = 0.1) => {
+    const shot = typeof name === 'string'
+      ? shots.find((candidate) => candidate.name === name)
+      : { name: 'view', eye: new Vector3(...name.eye), target: new Vector3(...name.target) };
+    const mesh = hooks.mode.barrelMesh;
+    const gl = hooks.canvas.getContext('webgl2');
+    if (!shot || !mesh || !gl) return undefined;
+    const forward = shot.target.clone().sub(shot.eye).setY(0).normalize();
+    const toward = sun === 'behind' ? forward : sun === 'front' ? forward.clone().negate() : undefined;
+    // An azimuth a puts the sun toward (sin a, −cos a) (PhotoSky's skyRotation).
+    const lighting = toward ? { sunHeight: height, sunDirection: (Math.atan2(toward.x, -toward.z) * 180) / Math.PI } : undefined;
+    for (let pass = 0; pass < 2; pass += 1) {
+      if (lighting) await hooks.setSun(lighting);
+      else await hooks.setTimeOfDay(sun as TimeOfDay);
+      hooks.setWaterLook(look);
+    }
+    camera.position.copy(shot.eye);
+    camera.lookAt(shot.target);
+    camera.updateMatrixWorld();
+    const { width, height: rows } = hooks.canvas;
+    const frame = () => {
+      hooks.renderView(camera);
+      const pixels = new Uint8Array(width * rows * 4);
+      gl.readPixels(0, 0, width, rows, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return pixels;
+    };
+    hooks.renderView(camera);
+    const drawn = frame();
+    const view = mesh.view;
+    mesh.sheetShown = false;
+    const before = frame();
+    // As the owner's clip drew it: the loft's own winding, no sheet.
+    mesh.facesOut = false;
+    const owner = frame();
+    mesh.facesOut = true;
+    mesh.sheetShown = true;
+    mesh.setView('region');
+    const regions = frame();
+    mesh.setView(view);
+    const water = hooks.water.mesh;
+    water.visible = false;
+    const dry = frame();
+    water.visible = true;
+    // Foam: the pixels that change when the foam's colour does (the curl shares the water's uniforms).
+    const foamColour = hooks.water.materialUniforms.waterFoamColor.value as Color;
+    const foamWas = foamColour.clone();
+    foamColour.setRGB(1, 0, 1);
+    const foamed = frame();
+    foamColour.copy(foamWas);
+    hooks.renderView(camera);
+    // Each curl pixel's region by the region pass's strongest channel; the water's own pixels where hiding it showed.
+    const same = (a: Uint8Array, b: Uint8Array, k: number) => a[k] === b[k] && a[k + 1] === b[k + 1] && a[k + 2] === b[k + 2];
+    const region = new Uint8Array(width * rows);
+    const foam = new Uint8Array(width * rows);
+    let x0 = width;
+    let x1 = -1;
+    let y0 = rows;
+    let y1 = -1;
+    for (let p = 0; p < width * rows; p += 1) {
+      const k = 4 * p;
+      foam[p] = Math.max(Math.abs(drawn[k] - foamed[k]), Math.abs(drawn[k + 1] - foamed[k + 1]), Math.abs(drawn[k + 2] - foamed[k + 2])) > 12 ? 1 : 0;
+      if (!same(drawn, regions, k)) {
+        const [r, g, b] = [regions[k], regions[k + 1], regions[k + 2]];
+        // Red the lip, blue the back wall, yellow the shoulder's face, green the rest of the curl.
+        region[p] = r > 2 * Math.max(g, b) ? 1 : b > 2 * Math.max(r, g) ? 2 : r > 2 * b && g > 2 * b ? 5 : 3;
+        if (region[p] <= 2) {
+          const [x, y] = [p % width, Math.floor(p / width)];
+          x0 = Math.min(x0, x);
+          x1 = Math.max(x1, x);
+          y0 = Math.min(y0, y);
+          y1 = Math.max(y1, y);
+        }
+      } else if (!same(drawn, dry, k)) {
+        region[p] = 4;
+      }
+    }
+    // The face: the water's pixels around the lip and back wall, their box widened by half each way.
+    const [wx, wy] = [(x1 - x0) / 2, (y1 - y0) / 2];
+    const inBox = (p: number) => {
+      const [x, y] = [p % width, Math.floor(p / width)];
+      return x >= x0 - wx && x <= x1 + wx && y >= y0 - wy && y <= y1 + wy;
+    };
+    const linear = (c: number) => {
+      const v = c / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    /** A region's mean luminance and hue; `clear`: its foam-free pixels only. */
+    const stats = (pixels: Uint8Array, wanted: number, clear = false) => {
+      let n = 0;
+      let luma = 0;
+      const sum = [0, 0, 0];
+      for (let p = 0; p < width * rows; p += 1) {
+        if (region[p] !== wanted || (wanted === 4 && !inBox(p)) || (clear && foam[p])) continue;
+        const k = 4 * p;
+        const [r, g, b] = [linear(pixels[k]), linear(pixels[k + 1]), linear(pixels[k + 2])];
+        luma += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        sum[0] += r;
+        sum[1] += g;
+        sum[2] += b;
+        n += 1;
+      }
+      if (!n) return { pixels: 0 };
+      const [r, g, b] = sum.map((c) => c / n);
+      // Hue, degrees (green 120, cyan 180, blue 240), and the green share of the mean colour.
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const hue = max === min ? 0 : max === r ? (60 * ((g - b) / (max - min)) + 360) % 360 : max === g ? 60 * ((b - r) / (max - min)) + 120 : 60 * ((r - g) / (max - min)) + 240;
+      return { pixels: n, luminance: +(luma / n).toFixed(4), hue: +hue.toFixed(1), green: +(g / (r + g + b)).toFixed(3), rgb: [r, g, b].map((c) => +c.toFixed(4)) };
+    };
+    // The face beside the lip: the water's own pixels around the lip and back wall, and the curl's shoulder face.
+    const all = (pixels: Uint8Array) => ({
+      lip: stats(pixels, 1), backWall: stats(pixels, 2), faceWater: stats(pixels, 4), faceWaterClear: stats(pixels, 4, true),
+      faceCurl: stats(pixels, 5), otherCurl: stats(pixels, 3),
+    });
+    const result = { shot: shot.name, look, sun: lighting ?? sun, drawn: all(drawn), before: all(before), owner: all(owner) };
+    // The drawn frame with the regions marked: the lip red, the back wall blue, the face's pixels yellow, one in four.
+    const marked = new ImageData(width, rows);
+    for (let y = 0; y < rows; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const p = (rows - 1 - y) * width + x;
+        const k = 4 * p;
+        const o = 4 * (y * width + x);
+        let [r, g, b] = [drawn[k], drawn[k + 1], drawn[k + 2]];
+        const mark = (x + y) % 4 === 0;
+        if (mark && region[p] === 1) [r, g, b] = [255, 0, 0];
+        else if (mark && region[p] === 2) [r, g, b] = [0, 80, 255];
+        else if (mark && region[p] === 4 && inBox(p)) [r, g, b] = [255, 230, 0];
+        else if (mark && region[p] === 5) [r, g, b] = [255, 140, 0];
+        marked.data.set([r, g, b, 255], o);
+      }
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = rows;
+    canvas.getContext('2d')!.putImageData(marked, 0, 0);
+    await post(canvas, 'curl-luma.png');
+    return result;
+  };
+  /** Steps the sea on (at least `seconds`) to the next hold, and shoots from there; the new shots' names. */
+  const waterSheetAdvance = async (seconds = 1) => {
+    await settle(seconds);
+    held = heldShots();
+    shots = held.shots;
+    Object.assign(window, { waterSheetShots: shots });
+    return shots.map((shot) => shot.name);
+  };
+  Object.assign(window, { waterSheetReady: true, waterSheetWater: hooks.water, waterSheetShot, waterSheetShots: shots, waterSheetTime, waterSheetCompute: stepped, waterSheetCurl, waterSheetAdvance, waterSheetCurlLuma, waterSheetBarrel: hooks.mode.barrelMesh });
   await post(sheet, COMPUTE === 'cpu' ? 'water-sheet.png' : `water-sheet-${stepped}.png`);
 }
 

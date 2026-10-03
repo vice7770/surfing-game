@@ -16,7 +16,11 @@ import { BubbleCloud } from './BubbleCloud';
 import { SPRAY_CAPACITY, SPRAY_STRIDE, SprayCloud, WHITEWATER_CAPACITY, type SprayLook } from './SprayCloud';
 import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
-import { SurfZoneSimulation, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
+import { libraryFromBytes } from './barrel/barrelLibrary';
+import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
+import { SweptContact } from './barrel/sweptContact';
+import { BARREL_SLOPE } from './barrel/sweptLoft';
+import { SurfZoneSimulation, sweptBarrelOn, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
 import type { SurfReading } from './SurfMeter';
 
@@ -109,6 +113,14 @@ export interface SurfZoneRunnerOptions {
   spawnOut?: number;
   /** The player's stance for the first ride (the stances spec); later rides take the request's. */
   stance?: StanceName;
+  /**
+   * The barrel library's case files (public/barrels, in the index's order). At a swept spot the board and rider
+   * collide with the swept surface the page draws (the Padang Padang spec, Part B, PR 4); without them they ride the
+   * carved water, as before. Every sea at a swept spot runs the crash on them (PR 5).
+   */
+  barrelCases?: readonly Uint8Array[];
+  /** Build the swept contact with no board or rider of the runner's own (reports whose bots ride `water`). */
+  contact?: boolean;
 }
 
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
@@ -250,6 +262,9 @@ export interface SurfZoneBuffers {
   roar: Float32Array;
   /** Online (spec N1): the board's push on the water since the last snapshot: its point (x, z) and impulse (jx, jz). */
   reaction: Float64Array;
+  /** The swept barrel's front points (the Padang Padang spec, Part B, PR 3): `FRONT_STRIDE` floats each. */
+  front: Float32Array;
+  frontCount: number;
 }
 
 /**
@@ -271,6 +286,11 @@ export class SurfZoneRunner {
   readonly board?: BoardBody;
   /** The board, its rider and the rider's fall body, when the player rides. */
   readonly session?: RideSession;
+  /** The swept barrel's contact at a swept spot, given the barrel files (the Padang Padang spec, Part B, PR 4). */
+  readonly contact?: SweptContact;
+  /** The contact's last update, ms. */
+  contactMs = 0;
+  private readonly contactRecords = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
   private rideResets = 0;
   private readonly lipHits = new SoundEvents(LIP_HIT_STRIDE);
   private readonly strokeHits = new SoundEvents(STROKE_HIT_STRIDE);
@@ -303,7 +323,10 @@ export class SurfZoneRunner {
   /** `'warm'` leaves the spin-up, and seating the board and rider, to `spinUp` (the worker spins up on its GPU). */
   constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up') {
     const renderSpacing = options.renderSpacing ?? 1;
-    this.simulation = new SurfZoneSimulation(config, start);
+    // At a swept spot the cases run the crash in every sea (PR 5), and the rider's contact with a board or rider (PR 4).
+    const slope = BARREL_SLOPE[config.spot];
+    const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases) : undefined;
+    this.simulation = new SurfZoneSimulation(config, start, library);
     this.bubbles = new BubbleCloud(config.seed, PARCEL_CAPACITY);
     this.spray = new SprayCloud(config.seed, SPRAY_CAPACITY, WHITEWATER_CAPACITY);
     this.grid = this.simulation.renderGrid(renderSpacing);
@@ -312,7 +335,8 @@ export class SurfZoneRunner {
     this.focus = this.simulation.breakPoint();
     this.breaker = this.simulation.iribarren();
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
-    this.water = PhysicalSurfWater.forSimulation(this.simulation);
+    if (library && (options.rider || options.board || options.contact) && this.simulation.front) this.contact = new SweptContact(library, slope!);
+    this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contact);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));
     if (options.rider) {
@@ -418,9 +442,26 @@ export class SurfZoneRunner {
     return this.simulation.device !== undefined;
   }
 
+  /**
+   * The swept surface after the water's step, before any body samples it: once a step, no extra substeps (the
+   * advisor's ruling 3).
+   */
+  private updateContact(): void {
+    const { contact, simulation } = this;
+    if (!contact || !simulation.front) return;
+    const start = performance.now();
+    const count = writeFrontRecords(simulation.front.points, this.contactRecords);
+    const { solver } = simulation;
+    contact.update(
+      this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z), (x, z) => solver.sampleCentered(solver.h, x, z),
+    );
+    this.contactMs = performance.now() - start;
+  }
+
   /** The board, rider and particles after the water's step `step` of a batch. */
   private afterWater(step: number, input: RideRequest): void {
     const { board, session } = this;
+    this.updateContact();
     if (session) {
       // A press (pop-up, retry) counts once per batch; held controls apply to every step.
       const request = step === 0 ? input : { ...input, popUp: false, retry: false, place: undefined };
@@ -442,7 +483,9 @@ export class SurfZoneRunner {
       const start = performance.now();
       const ridden = request.pocketReflex ? withPocketReflex(request, this.wave, session.phase) : request;
       session.step(SURF_ZONE_STEP, this.water, ridden);
-      session.strike(this.simulation.lip);
+      // At a swept spot the lip strikes through the contact; its parcels' strips are off, so they would strike from
+      // where nothing is drawn (the advisor's ruling 4).
+      if (!this.contact) session.strike(this.simulation.lip);
       if (session.surfer.active) this.knock = Math.max(this.knock, session.surfer.lastContacts.board.length());
       this.boardMs = performance.now() - start;
       const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
@@ -571,6 +614,8 @@ export class SurfZoneRunner {
       strokeHitCount: 0,
       roar: new Float32Array(ROAR_SECTORS * 3),
       reaction: new Float64Array(REACTION_STRIDE),
+      front: new Float32Array(FRONT_CAPACITY * FRONT_STRIDE),
+      frontCount: 0,
     };
   }
 
@@ -616,6 +661,7 @@ export class SurfZoneRunner {
     buffers.strokeHitCount = this.strokeHits.drain(buffers.strokeHits);
     this.water.drainReaction(buffers.reaction);
     this.measureRoar(buffers.roar);
+    buffers.frontCount = simulation.front ? writeFrontRecords(simulation.front.points, buffers.front) : 0;
   }
 
   /**
@@ -624,9 +670,10 @@ export class SurfZoneRunner {
    * follows how much water is breaking and how fast it moves.
    */
   private measureRoar(roar: Float32Array): void {
-    const { solver, breaking } = this.simulation;
+    const { solver } = this.simulation;
     const { nx, nz, dx, dz, qx, qz, xCenters, zCenters } = solver;
-    const strength = breaking.strength;
+    // The whitewater's breaking: at a swept spot it waits for the barrel's touchdown (PR 5).
+    const strength = this.simulation.whitewaterStrength;
     roar.fill(0);
     const perSector = nx / ROAR_SECTORS;
     for (let iz = 0; iz < nz; iz += 1) {
