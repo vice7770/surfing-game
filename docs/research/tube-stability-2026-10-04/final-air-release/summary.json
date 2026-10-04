@@ -1,0 +1,115 @@
+{
+  "schema": "final-air-release-summary/v1",
+  "decision": "INTEGRATED_CONSERVATION_CORRECTION_ONLY",
+  "baselineRuntime": "c6982456ca9f73bd19527f8032a6790f1d2b8b85",
+  "integrationCommit": "0b17d603cb8d7b06bc60a56e599f06f4f362afd5",
+  "readySha256": "3872bae79f1743471ddf7782d99ba1e636137ee4d93a17d9df71718dd371ee5b",
+  "readyPins": 625,
+  "scratchFirstGate": {
+    "startedAt": "2026-10-04T09:15:20.831091+00:00",
+    "endedAt": "2026-10-04T09:15:34.248705+00:00",
+    "elapsedSeconds": 13.417468333966099,
+    "valid": true,
+    "pinsUnchanged": true
+  },
+  "cases": [
+    {
+      "name": "Finite swept isolated tube",
+      "ticks": 240,
+      "dt": 0.016666666666666666,
+      "finalJetStep": 18,
+      "finalResidualAirM3": 0.0008748210168545656,
+      "finalStepOutputAirM3": 0.0008748210168545434,
+      "maxOriginalDeficitM3": 0.0008748210168544324,
+      "maxCandidateLedgerErrorM3": 1.6653345369377348e-16,
+      "trappedAirM3": 0.3,
+      "ledger": {
+        "bubbles": 0.15000000000000013,
+        "spit": 0,
+        "eruption": 0.14999999999999997,
+        "output": 0.3000000000000001,
+        "held": 0,
+        "trapped": 0.3,
+        "deficit": -1.1102230246251565e-16
+      },
+      "waterCallbacksM3": 0.29999999999999993,
+      "jetLandings": 8,
+      "splashLandings": 8,
+      "exactParcelAndSolverProtocol": true,
+      "finalParcelReusedAsOwnedSplash": true,
+      "nextPositiveStepRetirement": true,
+      "noActiveTubeRowOrCavityFromRetention": true
+    },
+    {
+      "name": "Finite swept tube with open held mouth",
+      "ticks": 240,
+      "dt": 0.016666666666666666,
+      "finalJetStep": 18,
+      "finalResidualAirM3": 0.0008748210168545656,
+      "finalStepOutputAirM3": 0.0008748210168545434,
+      "maxOriginalDeficitM3": 0.0008748210168545434,
+      "maxCandidateLedgerErrorM3": 2.220446049250313e-16,
+      "trappedAirM3": 0.6,
+      "ledger": {
+        "bubbles": 0.3000000000000001,
+        "spit": 0.14999999999999997,
+        "eruption": 0.15000000000000002,
+        "output": 0.6000000000000001,
+        "held": 0,
+        "trapped": 0.6,
+        "deficit": -1.1102230246251565e-16
+      },
+      "waterCallbacksM3": 0.5999999999999998,
+      "jetLandings": 16,
+      "splashLandings": 16,
+      "exactParcelAndSolverProtocol": true,
+      "finalParcelReusedAsOwnedSplash": true,
+      "nextPositiveStepRetirement": true,
+      "noActiveTubeRowOrCavityFromRetention": true
+    },
+    {
+      "name": "Ordinary non-swept finite tube control",
+      "ticks": 240,
+      "exactLifecycleAndWaterAndAir": true,
+      "closingSteps": 18,
+      "maxCandidateLedgerErrorM3": 1.6653345369377348e-16,
+      "trappedAirM3": 0.3048409421321224,
+      "noExtraTubeRows": true
+    }
+  ],
+  "virtualConditionOnly": true,
+  "canonicalCommentAndTwoTestsAdditional": true,
+  "canonicalTests": {
+    "command": [
+      "./node_modules/.bin/vitest",
+      "run",
+      "src/wave/PlungingLip.test.ts"
+    ],
+    "exitCode": 0,
+    "testFilesPassed": 1,
+    "testsPassed": 71,
+    "durationMs": 558,
+    "localStartTime": "10:28:00 Europe/Lisbon,2026-10-04"
+  },
+  "canonicalBuild": {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "session": 39502,
+    "exitCode": 0,
+    "tscBuildPassed": true,
+    "viteVersion": "8.3.1",
+    "modulesTransformed": 251,
+    "viteReportedDurationMs": 504
+  },
+  "integrationResultsAttribution": "Root executed canonical workspace checks; this record summarizes original tool outputs and does not replay them.",
+  "canonicalRawStdoutRetained": false,
+  "oneExtraEmptyMapExportInterval": true,
+  "activeZeroScaleTubeRowAdded": false,
+  "intendedDownstreamAirSprayRngOutputsMayChange": true,
+  "majorFinsReferenceVisualOrFpsAccepted": false,
+  "rejectedMaterialCandidatesAdopted": false,
+  "archiveExperimentReexecuted": false
+}

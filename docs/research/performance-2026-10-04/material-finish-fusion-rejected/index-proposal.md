@@ -1,0 +1,5 @@
+Root-only shared-index proposal (the producer did not edit any index):
+
+> **Rejected: internal material finish from next planes.** Runtime authority c698. Seven checks and nine finite byte-exact proof cases passed with stable public/raw-next F64 arrays and original generic defaults; the single complete memory-host cost gate failed after 32 fixed eight-tick pairs. Mean baseline-minus-candidate saving −0.379812 ms/step, median −0.377143, lower95 −0.517876; AB −0.293128 / BA −0.466496, 3/32 positive. No retry, native comparison, integration or enablement. This removes five `.set` copies in source but showed no useful complete-path saving. [Retained evidence](performance-2026-10-04/material-finish-fusion-rejected/README.md).
+
+Do not treat the default compatibility proof as an opt-in callback/exception-state theorem, the no-op-WGSL host cost as native FPS evidence, or this pre-correction runtime as the current source tree. The separately successful final-air correction has its own evidence and scope.

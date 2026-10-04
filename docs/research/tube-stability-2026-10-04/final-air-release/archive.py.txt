@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""Copy original evidence and identities only; no experiment import/replay/build."""
+import gzip,hashlib,json,pathlib,os
+R=pathlib.Path('/Users/regina/Desktop/Projects/surfing-game')
+A=R/'docs/research/tube-stability-2026-10-04/final-air-release'
+W=pathlib.Path('/private/tmp/surf-tube-final-air-release-20261004')
+F=R/'docs/research/performance-2026-10-04/foam-coverage-f32-rejected'
+READY='3872bae79f1743471ddf7782d99ba1e636137ee4d93a17d9df71718dd371ee5b'
+F32_MANIFEST='48828b1817a53d5a34f8d3b7f26ff9b01c3654bed4bffcfeeee1086a79f508bd'
+BASE='c6982456ca9f73bd19527f8032a6790f1d2b8b85';INTEGRATED='0b17d603cb8d7b06bc60a56e599f06f4f362afd5'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+key=lambda p:(p['path'],p['bytes'],p['sha256'])
+def ident(path,b):return{'path':str(path),'bytes':len(b),'sha256':sha(b)}
+def dump(path,x):path.write_text(json.dumps(x,indent=2)+'\n')
+assert not(A/'manifest.json').exists(),'Archive once'
+fraw=(F/'manifest.json').read_bytes();assert sha(fraw)==F32_MANIFEST;fm=json.loads(fraw)
+known=set();borrowed={};borrow_records={};identity_bindings={}
+for kind in ['payloads','reusedInputs','gitReferences','externalIdentityReferences']:
+ for p in fm[kind]:
+  for alias in p['originalAliases']:borrow_records[key(alias)]=(kind,p)
+payloads=[];decoded={}
+def store(path,name):
+ b=path.read_bytes();target=A/'evidence'/name;target.parent.mkdir(parents=True,exist_ok=True)
+ target=pathlib.Path(str(target)+('.txt'if path.suffix in{'.ts','.mjs','.py'}else'')+'.gz')
+ packed=gzip.compress(b,compresslevel=9,mtime=0);target.write_bytes(packed);alias=ident(path,b)
+ payloads.append({'storedPath':str(target.relative_to(A)),'storedBytes':len(packed),'storedSha256':sha(packed),'encoding':'gzip-mtime0','originalBytes':len(b),'originalSha256':sha(b),'originalAliases':[alias],'name':name})
+ known.add(key(alias));decoded[name]=b
+for name in ['patch-source.mjs','entry.ts','regression.ts','proposal.md','strict.mjs','build.mjs','freeze.mjs','tsconfig.qa.json','ready.json','compiled.json','root-first/terminal.json','root-first/transformSyntax.log','root-first/buildSyntax.log','root-first/strict.log','root-first/bundle.log','root-first/unarmedRegression.log','root-first/regression.log','regression-first/report.json','regression-first/terminal.json','canonical-verification.json','canonical.diff']:store(W/name,name)
+store(pathlib.Path('/private/tmp/surf-final-air-test-port-20261004.txt'),'test-port.txt')
+ready=json.loads(decoded['ready.json']);assert sha(decoded['ready.json'])==READY and len(ready['inputs'])==625 and ready['canonicalRuntimeCheckpoint']==BASE
+assert sha(decoded['canonical-verification.json'])=='666f6c99e9c2b06c1c31be48e22399584dfb727cbfd4b0c2e93819c447237220'
+assert sha(decoded['canonical.diff'])=='b510c43816051641ae1957097301c259b8691eb7e26fec6e80d4a7337196df6d'
+for p in ready['inputs']:
+ if key(p)in known:continue
+ kind,row=borrow_records[key(p)];known.add(key(p));identity_bindings[key(p)]={'kind':kind,'originalIdentity':p}
+ if kind in{'payloads','reusedInputs'}:
+  original=F/row['storedPath'];stored=original.read_bytes();assert len(stored)==row['storedBytes']and sha(stored)==row['storedSha256']
+  encoding='gzip'if(kind=='payloads'and row['encoding']=='gzip-generated-mtime0')or(kind=='reusedInputs'and row['aliasEncoding']=='gzip')else'identity'
+  raw=gzip.decompress(stored)if encoding=='gzip'else stored;assert len(raw)==p['bytes']and sha(raw)==p['sha256']
+  rel=os.path.relpath(original,A);b=borrowed.setdefault(rel,{'storedPath':rel,'storedBytes':row['storedBytes'],'storedSha256':row['storedSha256'],'aliasEncoding':encoding,'originalAliases':[]})
+  if p not in b['originalAliases']:b['originalAliases'].append(p)
+compiled=json.loads(decoded['compiled.json']);receipt=json.loads(decoded['canonical-verification.json']);report=json.loads(decoded['regression-first/report.json']);terminal=json.loads(decoded['root-first/terminal.json'])
+external=[{'kind':'scratch-compiled-module'if'/compiled/'in p['path']else'production-compiled-output','originalAliases':[p],'availability':'Recorded identity only; bytes not copied or required by default verification.'}for p in compiled['outputs']+receipt['build']['compiledFiles']]
+canonical=[{'commit':INTEGRATED,'repositoryPath':str(pathlib.Path(p['path']).relative_to(R)),'originalAliases':[p],'availability':'Immutable correction-commit identity, attributed to root receipt; blob availability is not reverified by default.'}for p in receipt['source']]
+for p in compiled['outputs']+receipt['build']['compiledFiles']+receipt['source']:known.add(key(p))
+summary={'schema':'final-air-release-summary/v1','decision':'INTEGRATED_CONSERVATION_CORRECTION_ONLY','baselineRuntime':BASE,'integrationCommit':INTEGRATED,'readySha256':READY,'readyPins':625,'scratchFirstGate':{k:terminal[k]for k in['startedAt','endedAt','elapsedSeconds','valid','pinsUnchanged']},'cases':report['cases'],'virtualConditionOnly':True,'canonicalCommentAndTwoTestsAdditional':True,'canonicalTests':receipt['tests'],'canonicalBuild':{k:v for k,v in receipt['build'].items()if k!='compiledFiles'},'integrationResultsAttribution':receipt['attributedTo'],'canonicalRawStdoutRetained':False,'oneExtraEmptyMapExportInterval':True,'activeZeroScaleTubeRowAdded':False,'intendedDownstreamAirSprayRngOutputsMayChange':True,'majorFinsReferenceVisualOrFpsAccepted':False,'rejectedMaterialCandidatesAdopted':False,'archiveExperimentReexecuted':False}
+dump(A/'summary.json',summary)
+generated=[ident(name,(A/name).read_bytes())for name in['README.md','INDEX-ADDITION.md','summary.json','verify.py','archive.py.txt']]
+m={'schema':'final-air-release-archive/v1','baselineRuntime':BASE,'integrationCommit':INTEGRATED,'readySha256':READY,'scratchRoot':str(W),'payloads':payloads,'borrowedPayloads':list(borrowed.values()),'authorityLinks':[ident(os.path.relpath(F/'manifest.json',A),fraw)],'borrowedIdentityBindings':list(identity_bindings.values()),'canonicalGitReferences':canonical,'externalIdentityReferences':external,'generatedRecords':generated,'closureAuthorities':['ready.json','compiled.json','root-first/terminal.json','regression-first/terminal.json','canonical-verification.json'],'storedPayloadCount':len(payloads),'storedPayloadBytes':sum(p['storedBytes']for p in payloads),'scope':{'bytesAndRecordedFinalLedgerArithmeticOnly':True,'noGameImportsOrReplayBuildTestBenchmarkNative':True,'noFullSourceAssetDependencyOrCompiledTreeCopied':True,'defaultDoesNotRequireOriginalCanonicalScratchToolBundlePaths':True,'baselineCanonicalAliasesAreHistorical':True,'perStepErrorAggregateOnlyNotReconstructed':True}}
+dump(A/'manifest.json',m)
+print(json.dumps({'archived':True,'payloads':len(payloads),'storedBytes':m['storedPayloadBytes'],'borrowedPayloads':len(borrowed),'borrowedInputBindings':len(identity_bindings),'compiledIdentities':len(external),'canonicalRefs':len(canonical)},indent=2))

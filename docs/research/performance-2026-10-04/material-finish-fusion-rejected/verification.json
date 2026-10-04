@@ -1,0 +1,17 @@
+{
+  "valid": true,
+  "manifestSha256": "0a6c7847ab2cc3511e25f7437336817d3e6133cb7b7a9550fa3dc79764fe1fe2",
+  "storedPayloads": 32,
+  "storedPayloadBytes": 144603,
+  "reusedInputs": 13,
+  "immutableGitReferences": 556,
+  "immutableGitBytesChecked": 556,
+  "externalIdentities": 18,
+  "closureChecks": 2414,
+  "proofCasesChecked": 9,
+  "costRowsChecked": 32,
+  "originalPathsChecked": 0,
+  "recordedMeanSavingPerStepMs": -0.37981237109377197,
+  "recordedMedianSavingPerStepMs": -0.3771432499999605,
+  "experimentReexecuted": false
+}

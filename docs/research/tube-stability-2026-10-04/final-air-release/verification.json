@@ -1,0 +1,16 @@
+{
+  "valid": true,
+  "manifestSha256": "d7e221dd9b4e75cfd17016316498f6d07cfa6f1d31cad29608b841783d0bf5be",
+  "storedPayloads": 22,
+  "storedPayloadBytes": 54601,
+  "borrowedPayloads": 46,
+  "borrowedInputBindings": 617,
+  "recordedClosureChecks": 650,
+  "readyPins": 625,
+  "finiteCasesChecked": 3,
+  "ticksPerRecordedCase": 240,
+  "canonicalTestsFromRootReceipt": 71,
+  "externalCompiledIdentities": 14,
+  "originalRuntimePathsRequired": false,
+  "numericalExperimentReexecuted": false
+}

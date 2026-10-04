@@ -1,0 +1,321 @@
+{
+  "schema": "material-finish-fusion-rejected-summary/v1",
+  "decision": "REJECT_NO_NATIVE_NO_INTEGRATION_NO_ENABLEMENT",
+  "runtimeAtExperiment": "c6982456ca9f73bd19527f8032a6790f1d2b8b85",
+  "readySha256": "6b19c544a161c6fce16c226484c8b9bcd035e3a7f4c6d3d4b8839b5a0fd8026b",
+  "proofCases": [
+    {
+      "name": "Small canonical transformed default F64 24 complete mocked ticks",
+      "ticks": 24,
+      "allPublicRawNextAndSnapshotByteExact": true,
+      "physicalSourceDissipationListsStencilHostAndRngInputsExact": true,
+      "internalModeEnabled": false,
+      "identitiesStable": true,
+      "SET1HeaderAndNonFoamStateExact": true
+    },
+    {
+      "name": "Small canonical internal finish-from-next 24 complete mocked ticks",
+      "ticks": 24,
+      "allPublicRawNextAndSnapshotByteExact": true,
+      "physicalSourceDissipationListsStencilHostAndRngInputsExact": true,
+      "internalModeEnabled": true,
+      "identitiesStable": true,
+      "SET1HeaderAndNonFoamStateExact": true
+    },
+    {
+      "name": "Held 116k internal finish-from-next 24 complete mocked ticks",
+      "ticks": 24,
+      "allPublicRawNextAndSnapshotByteExact": true,
+      "physicalSourceDissipationListsStencilHostAndRngInputsExact": true,
+      "internalModeEnabled": true,
+      "identitiesStable": true,
+      "SET1HeaderAndNonFoamStateExact": true
+    },
+    {
+      "name": "24 evolving controlled ticks, repeated one-step pulses, stretched rows/dry clearing, +2/-3/full-width shifts and splash/plunge/air",
+      "physicalSourceRngInputsAndDeparturesExact": true,
+      "allPublicAndRawNextF64Exact": true
+    },
+    {
+      "name": "24 fallback ticks: F64 TRACE boundaries, repeated small splash stores, saturation, and internal/default nonpositive no-op",
+      "tracePresence": [
+        {
+          "baseline": [
+            false,
+            false,
+            true
+          ],
+          "candidate": [
+            false,
+            false,
+            true
+          ]
+        }
+      ],
+      "smallSplashAbsoluteError": 0,
+      "allPublicAndRawNextF64Exact": true,
+      "physicalSourceRngInputsExact": true
+    },
+    {
+      "name": "25/26 evolving CPU donor ticks and odd/even read-only captures; direct F64/F32 and unchanged SET1 F32 handovers, 24 CPU ticks each",
+      "details": [
+        {
+          "donorTicks": 25,
+          "recipientTicksBeforeImport": 2,
+          "kind": "direct-F64",
+          "subsequentCpuTicks": 24
+        },
+        {
+          "donorTicks": 25,
+          "recipientTicksBeforeImport": 2,
+          "kind": "direct-F32",
+          "subsequentCpuTicks": 24
+        },
+        {
+          "donorTicks": 25,
+          "recipientTicksBeforeImport": 2,
+          "kind": "SET1-F32",
+          "subsequentCpuTicks": 24
+        },
+        {
+          "donorTicks": 26,
+          "recipientTicksBeforeImport": 1,
+          "kind": "direct-F64",
+          "subsequentCpuTicks": 24
+        },
+        {
+          "donorTicks": 26,
+          "recipientTicksBeforeImport": 1,
+          "kind": "direct-F32",
+          "subsequentCpuTicks": 24
+        },
+        {
+          "donorTicks": 26,
+          "recipientTicksBeforeImport": 1,
+          "kind": "SET1-F32",
+          "subsequentCpuTicks": 24
+        }
+      ],
+      "stateHeaderAndNonFoamArraysExact": true,
+      "sourceRngInputsAndPhysicalSamplesExact": true,
+      "allPublicAndRawNextF64Exact": true,
+      "originalTkeReset": true
+    },
+    {
+      "name": "Default function and afterWater call arities with actual update overrides",
+      "calls": [
+        {
+          "stage": "foam",
+          "arity": 3
+        },
+        {
+          "stage": "air",
+          "arity": 2
+        }
+      ],
+      "endAndRawNextByteExact": true
+    },
+    {
+      "name": "Actual defaults with ArrayLike aliases/subarray, getters, throws, commit/decay/publication witnesses",
+      "compatibility": [
+        {
+          "name": "dense-alias",
+          "observations": [
+            "stencil.commit"
+          ],
+          "thrown": null
+        },
+        {
+          "name": "residual-alias",
+          "observations": [
+            "stencil.commit"
+          ],
+          "thrown": null
+        },
+        {
+          "name": "dense-subarray",
+          "observations": [
+            "stencil.commit"
+          ],
+          "thrown": null
+        },
+        {
+          "name": "breaking-getter",
+          "observations": [
+            "stencil.commit",
+            "breaking[0]",
+            "breaking[1]",
+            "breaking[2]",
+            "breaking[3]",
+            "breaking[4]",
+            "breaking[5]",
+            "breaking[6]",
+            "breaking[7]",
+            "breaking[8]",
+            "breaking[9]",
+            "breaking[10]",
+            "breaking[11]",
+            "breaking[12]",
+            "breaking[13]",
+            "breaking[14]",
+            "breaking[15]"
+          ],
+          "thrown": null
+        },
+        {
+          "name": "breaking-throw",
+          "observations": [
+            "stencil.commit",
+            "breaking[0]",
+            "breaking[1]",
+            "breaking[2]",
+            "breaking[3]",
+            "breaking[4]",
+            "breaking[5]",
+            "breaking[6]",
+            "breaking[7]"
+          ],
+          "thrown": "Error: chosen breaking throw"
+        },
+        {
+          "name": "decay-getter",
+          "observations": [
+            "stencil.commit",
+            "decay.dense",
+            "decay.residual"
+          ],
+          "thrown": null
+        },
+        {
+          "name": "decay-throw",
+          "observations": [
+            "stencil.commit",
+            "decay.dense",
+            "decay.residual"
+          ],
+          "thrown": "Error: chosen decay throw"
+        },
+        {
+          "name": "commit-throw",
+          "observations": [
+            "stencil.commit"
+          ],
+          "thrown": "Error: chosen commit throw"
+        },
+        {
+          "name": "foam-set-throw",
+          "observations": [
+            "residual.set-before",
+            "residual.set-after"
+          ],
+          "thrown": "Error: chosen foam set throw"
+        },
+        {
+          "name": "air-set-throw",
+          "observations": [
+            "stencil.commit",
+            "depth.set-before",
+            "depth.set-after"
+          ],
+          "thrown": "Error: chosen air set throw"
+        }
+      ],
+      "optInCallbackAndExceptionFidelityClaim": false
+    },
+    {
+      "name": "Material-only special F64 words and both advection variants",
+      "special": [
+        {
+          "sharedStencil": false,
+          "cells": 16,
+          "rawNextAndFinalF64BytesExact": true,
+          "chosenNanPayloads": [
+            "7ff8000000001234",
+            "fff8000000005678",
+            "7ff8000000009abc"
+          ],
+          "nonpositiveDt": [
+            0,
+            -0.125,
+            "NaN"
+          ]
+        },
+        {
+          "sharedStencil": true,
+          "cells": 16,
+          "rawNextAndFinalF64BytesExact": true,
+          "chosenNanPayloads": [
+            "7ff8000000001234",
+            "fff8000000005678",
+            "7ff8000000009abc"
+          ],
+          "nonpositiveDt": [
+            0,
+            -0.125,
+            "NaN"
+          ]
+        }
+      ]
+    }
+  ],
+  "statistics": {
+    "pairs": 32,
+    "ticksPerSample": 8,
+    "meanSavingPerStepMs": -0.37981237109377197,
+    "medianSavingPerStepMs": -0.3771432499999605,
+    "minSavingPerStepMs": -1.1740103749999662,
+    "maxSavingPerStepMs": 1.0681613750000452,
+    "positivePairs": 3,
+    "heuristicLower95Ms": -0.5178760096989229,
+    "orderStrata": [
+      {
+        "order": "AB",
+        "pairs": 16,
+        "meanSavingPerStepMs": -0.2931282968750146
+      },
+      {
+        "order": "BA",
+        "pairs": 16,
+        "meanSavingPerStepMs": -0.4664964453125293
+      }
+    ],
+    "thresholdMs": 0.1,
+    "thresholdPass": false,
+    "qualification": "Fixed ABBA order, one CPU operation. Approximate paired-mean bound only; no population confidence, adaptive pairs, retry or native/FPS claim."
+  },
+  "completedTicksPerCostArm": 288,
+  "sessions": {
+    "checks": 29868,
+    "proof": 5277,
+    "cost": 11431
+  },
+  "outcomes": {
+    "checks": {
+      "valid": true,
+      "pinsUnchanged": true,
+      "startedAt": "2026-10-04T09:24:43.655839+00:00",
+      "endedAt": "2026-10-04T09:24:56.274549+00:00",
+      "elapsedSeconds": 12.618376291997265
+    },
+    "proof": {
+      "valid": true,
+      "pinsUnchanged": true,
+      "startedAt": "2026-10-04T09:25:09.778594+00:00",
+      "endedAt": "2026-10-04T09:25:13.294614+00:00",
+      "elapsedSeconds": 3.5158224159968086
+    },
+    "cost": {
+      "valid": false,
+      "pinsUnchanged": true,
+      "startedAt": "2026-10-04T09:25:45.281951+00:00",
+      "endedAt": "2026-10-04T09:25:53.371650+00:00",
+      "elapsedSeconds": 8.089399249991402
+    }
+  },
+  "nativeExecuted": false,
+  "candidateIntegrated": false,
+  "candidateEnabled": false,
+  "visualOrFpsClaim": false,
+  "optInIntermediateCallbackExceptionFidelityClaim": false,
+  "futureRuntimeMayDiffer": "Use immutable c698 Git refs, not the current source tree; separate successful physics corrections are outside this experiment."
+}

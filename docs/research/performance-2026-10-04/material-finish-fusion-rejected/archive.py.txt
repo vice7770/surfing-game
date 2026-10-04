@@ -1,0 +1,71 @@
+"""Copy/hash compact recorded evidence only. Never import candidate/game code or execute an experiment."""
+import gzip, hashlib, json, os, pathlib, subprocess
+
+R=pathlib.Path('/Users/regina/Desktop/Projects/surfing-game')
+W=pathlib.Path('/private/tmp/surf-material-finish-fusion-20261004')
+A=R/'docs/research/performance-2026-10-04/material-finish-fusion-rejected'
+C='c6982456ca9f73bd19527f8032a6790f1d2b8b85'
+sha=lambda b:hashlib.sha256(b).hexdigest()
+def pin(p):
+ b=p.read_bytes();return{'path':str(p),'bytes':len(b),'sha256':sha(b)}
+def write(name,value):
+ p=A/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(value,indent=2)+'\n');return p
+assert A.is_dir() and not (A/'manifest.json').exists(),'README/verifier must be prepared; preserve first archive'
+ready_raw=(W/'ready.json').read_bytes();ready=json.loads(ready_raw)
+assert sha(ready_raw)=='6b19c544a161c6fce16c226484c8b9bcd035e3a7f4c6d3d4b8839b5a0fd8026b'
+assert ready['canonicalRuntimeCheckpoint']==C and len(ready['inputs'])==597
+parent_names=['foam-coverage-f32-rejected','material-buffer-swap-rejected','feed-components-cache-cpu','feed-components-cache-fps']
+borrowed={};parents=[]
+for name in parent_names:
+ d=A.parent/name;m=json.loads((d/'manifest.json').read_bytes());parents.append({**pin(d/'manifest.json'),'path':os.path.relpath(d/'manifest.json',A)})
+ for kind in ['payloads','reusedInputs']:
+  for p in m.get(kind,[]):
+   encoding=p.get('encoding',p.get('aliasEncoding','identity'))
+   for original in p.get('originalAliases',[]):
+    key=(original['path'],original['bytes'],original['sha256'])
+    borrowed.setdefault(key,{'storedPath':os.path.relpath((d/p['storedPath']).resolve(),A),'storedBytes':p['storedBytes'],'storedSha256':p['storedSha256'],'aliasEncoding':'gzip' if 'gzip' in encoding else 'identity','originalAliases':[original]})
+tree=subprocess.check_output(['git','ls-tree','-r',C,'--','src','public','package.json','package-lock.json','tsconfig.json'],cwd=R).decode()
+git_blobs={line.split('\t',1)[1]:line.split('\t',1)[0].split()[2] for line in tree.splitlines()}
+payloads=[];dedup={};owned={};known={};reused=[];git_refs=[];external=[]
+def add_file(path,name):
+ b=path.read_bytes();p=pin(path);k=(p['path'],p['bytes'],p['sha256']);h=(len(b),sha(b))
+ if h in dedup:
+  row=dedup[h];row['originalAliases'].append(p);row['ownedNames'].append(name)
+ else:
+  suffix='.txt' if path.suffix in {'.ts','.mjs','.js','.py'} else ''
+  store='evidence/'+name+suffix+'.gz';target=A/store;target.parent.mkdir(parents=True,exist_ok=True)
+  packed=gzip.compress(b,compresslevel=9,mtime=0);target.write_bytes(packed)
+  row={'storedPath':store,'storedBytes':len(packed),'storedSha256':sha(packed),'encoding':'gzip-mtime0','originalBytes':len(b),'originalSha256':sha(b),'originalAliases':[p],'ownedNames':[name]}
+  payloads.append(row);dedup[h]=row
+ owned[path]=row;known[k]=True
+for p in sorted(W.rglob('*')):
+ if p.is_file() and not p.is_symlink() and 'compiled' not in p.relative_to(W).parts:add_file(p,str(p.relative_to(W)))
+compiled=json.loads((W/'compiled.json').read_bytes())
+for p in ready['inputs']+compiled['outputs']:
+ k=(p['path'],p['bytes'],p['sha256'])
+ if k in known:continue
+ original=pathlib.Path(p['path'])
+ if original.is_relative_to(R) and original.relative_to(R).as_posix() in git_blobs:
+  relative=original.relative_to(R).as_posix()
+  git_refs.append({'commit':C,'repositoryPath':relative,'gitBlob':git_blobs[relative],'originalAliases':[p]});known[k]=True
+ elif k in borrowed:
+  reused.append(borrowed[k]);known[k]=True
+ elif '/node_modules/' in p['path'] or '/compiled/' in p['path']:
+  external.append({'kind':'compiled-identity' if '/compiled/' in p['path'] else 'installed-dependency-identity','originalAliases':[p],'availability':'Identity-only original path, not copied or required by default verification; --originals checks continued exact availability.'});known[k]=True
+ else:
+  # Missing small borrowed references may be retained; no broad runtime/assets/toolchain copy.
+  assert p['bytes']<256*1024 and not p['path'].startswith(str(R/'src')+'/') and not p['path'].startswith(str(R/'public')+'/'),p['path']
+  assert pin(original)==p,p['path']
+  add_file(original,'borrowed/'+original.parent.name+'/'+original.name)
+assert len(known)==len(set(known))
+stats=json.loads((W/'cost-first/report.json').read_bytes())['statistics']
+proof=json.loads((W/'proof-first/report.json').read_bytes())
+terminals={name:json.loads((W/('root-'+name+'-first/terminal.json')).read_bytes()) for name in ['checks','proof','cost']}
+summary={'schema':'material-finish-fusion-rejected-summary/v1','decision':'REJECT_NO_NATIVE_NO_INTEGRATION_NO_ENABLEMENT','runtimeAtExperiment':C,'readySha256':sha(ready_raw),'proofCases':proof['cases'],'statistics':stats,'completedTicksPerCostArm':288,'sessions':{'checks':29868,'proof':5277,'cost':11431},'outcomes':{k:{name:v[name] for name in ['valid','pinsUnchanged','startedAt','endedAt','elapsedSeconds']} for k,v in terminals.items()},'nativeExecuted':False,'candidateIntegrated':False,'candidateEnabled':False,'visualOrFpsClaim':False,'optInIntermediateCallbackExceptionFidelityClaim':False,'futureRuntimeMayDiffer':'Use immutable c698 Git refs, not the current source tree; separate successful physics corrections are outside this experiment.'}
+write('summary.json',summary)
+(A/'archive.py.txt').write_bytes(pathlib.Path(__file__).read_bytes())
+generated=[{**pin(A/name),'path':name} for name in ['README.md','verify.py','summary.json','index-proposal.md','archive.py.txt']]
+closure=['ready.json','compiled.json','root-checks-first/pins.json','root-checks-first/terminal.json','root-proof-first/pins.json','root-proof-first/terminal.json','root-cost-first/pins.json','root-cost-first/terminal.json','proof-first/report.json','proof-first/terminal.json','cost-first/report.json','cost-first/terminal.json']
+manifest={'schema':'material-finish-fusion-rejected-archive/v1','status':summary['decision'],'canonicalRuntimeCheckpoint':C,'scratchOriginalRoot':str(W),'readySha256':sha(ready_raw),'payloads':payloads,'reusedInputs':reused,'gitReferences':git_refs,'externalIdentityReferences':external,'authorityLinks':parents,'closureAuthorities':closure,'generatedRecords':generated,'dependencyLink':ready['dependencyLink'],'scope':{'recordedEvidenceOnly':True,'producerExperimentExecution':False,'simulationReplay':False,'compiledTreesCopied':False,'dependencyTreeCopied':False,'canonicalSourceTreeCopied':False,'publicAssetTreeCopied':False,'candidateAdopted':False,'nativeExecuted':False},'storedPayloadCount':len(payloads),'storedPayloadBytes':sum(p['storedBytes'] for p in payloads),'originalPayloadAliasCount':sum(len(p['originalAliases']) for p in payloads)}
+write('manifest.json',manifest)
+print(json.dumps({'archivePrepared':True,'manifestSha256':sha((A/'manifest.json').read_bytes()),'payloads':len(payloads),'storedPayloadBytes':manifest['storedPayloadBytes'],'reusedInputs':len(reused),'gitReferences':len(git_refs),'externalIdentities':len(external),'recordedStatisticsOnly':True}))

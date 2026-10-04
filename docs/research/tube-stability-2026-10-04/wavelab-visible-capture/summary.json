@@ -1,0 +1,186 @@
+{
+  "status": "VISIBLE_DIAGNOSTIC_LIFECYCLE_NOT_VISUAL_ACCEPTANCE",
+  "pointId": 12,
+  "originalStripId": 2,
+  "frames": 7,
+  "publicationRows": 52,
+  "events": 3,
+  "originalPayloads": 379,
+  "originalStoredBytes": 59405979,
+  "ownedRawBytes": 174642678,
+  "frameRows": [
+    {
+      "index": 0,
+      "reason": "selected-OPEN",
+      "publication": 382,
+      "seaTime": 542.0730587494496,
+      "visible": true,
+      "retirementAbsence": false,
+      "indexedVertices": 536,
+      "visibleTriangles": 760,
+      "clipWRange": [
+        4.820405655940888,
+        19.555214032242958
+      ],
+      "projectedSpan": {
+        "width": 2456.0175200786134,
+        "height": 1020.1607272950691,
+        "bounds": [
+          56.30680504492069,
+          499.9229182883457,
+          2512.324325123534,
+          1520.0836455834149
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "reason": "later-OPEN-1",
+      "publication": 386,
+      "seaTime": 542.1397254161162,
+      "visible": true,
+      "retirementAbsence": false,
+      "indexedVertices": 536,
+      "visibleTriangles": 762,
+      "clipWRange": [
+        4.836001607106027,
+        19.58515733436397
+      ],
+      "projectedSpan": {
+        "width": 2463.191726159439,
+        "height": 1034.4291702331207,
+        "bounds": [
+          51.23487002231658,
+          499.6511294316726,
+          2514.4265961817555,
+          1534.0802996647933
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "reason": "later-OPEN-2",
+      "publication": 389,
+      "seaTime": 542.1897254161163,
+      "visible": true,
+      "retirementAbsence": false,
+      "indexedVertices": 536,
+      "visibleTriangles": 763,
+      "clipWRange": [
+        4.897377550331953,
+        19.61936792801184
+      ],
+      "projectedSpan": {
+        "width": 2500.236004224145,
+        "height": 1031.2966706299117,
+        "bounds": [
+          19.3190525841188,
+          499.096667124185,
+          2519.5550568082635,
+          1530.3933377540966
+        ]
+      }
+    },
+    {
+      "index": 3,
+      "reason": "late-pre-TD",
+      "publication": 410,
+      "seaTime": 542.5397254161162,
+      "visible": true,
+      "retirementAbsence": false,
+      "indexedVertices": 536,
+      "visibleTriangles": 766,
+      "clipWRange": [
+        4.91503120080921,
+        19.618247386004313
+      ],
+      "projectedSpan": {
+        "width": 2507.0062593934854,
+        "height": 1001.7910766521964,
+        "bounds": [
+          30.55265381215368,
+          497.7204976535899,
+          2537.558913205639,
+          1499.5115743057863
+        ]
+      }
+    },
+    {
+      "index": 4,
+      "reason": "first-completed-draw-after-TD-event",
+      "publication": 415,
+      "seaTime": 542.6230587494496,
+      "visible": true,
+      "retirementAbsence": false,
+      "indexedVertices": 536,
+      "visibleTriangles": 618,
+      "clipWRange": [
+        4.971601319594271,
+        19.663900608544566
+      ],
+      "projectedSpan": {
+        "width": 2500.8428301307795,
+        "height": 1041.9910274085805,
+        "bounds": [
+          32.722455138312284,
+          495.7867594819967,
+          2533.565285269092,
+          1537.7777868905773
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "reason": "post-TD-moving",
+      "publication": 420,
+      "seaTime": 542.7063920827828,
+      "visible": true,
+      "retirementAbsence": false,
+      "indexedVertices": 536,
+      "visibleTriangles": 620,
+      "clipWRange": [
+        5.034106135571264,
+        19.715356249381202
+      ],
+      "projectedSpan": {
+        "width": 2491.905505155043,
+        "height": 1027.3681113007974,
+        "bounds": [
+          36.74430306983456,
+          494.56974405570526,
+          2528.6498082248777,
+          1521.9378553565027
+        ]
+      }
+    },
+    {
+      "index": 6,
+      "reason": "original-strip-retired",
+      "publication": 433,
+      "seaTime": 542.9230587494495,
+      "visible": false,
+      "retirementAbsence": true,
+      "indexedVertices": 0,
+      "visibleTriangles": 0,
+      "clipWRange": null,
+      "projectedSpan": {
+        "width": 0,
+        "height": 0,
+        "bounds": null
+      }
+    }
+  ],
+  "visualReviewSha256": "6b00f8336b3d67dd1531fdbb6cd70ea361e6eaa1da9c8d4d9710331cc19fd51e",
+  "visualAcceptance": false,
+  "referenceEquivalence": false,
+  "originalFinDefectResolved": false,
+  "fpsAcceptance": false,
+  "physicsCandidate": false,
+  "seed": 1,
+  "statedLight": "midday",
+  "displayedSpread": 12,
+  "actualSpread": 11.720624206334085,
+  "gpuCells": 203200,
+  "defaultComponents": 24,
+  "retirementOtherCurrentFrontTriangles": 12502
+}
