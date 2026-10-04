@@ -790,9 +790,10 @@ export class PhysicalMode {
     this.spray.mesh.visible = this.shown && visible;
   }
 
-  cameraBelowSurface(margin = 0.1): boolean {
+  cameraBelowSurface(margin = 0.1, position = this.camera.camera.position): boolean {
     if (!this.host) return false;
-    const position = this.camera.camera.position;
+    const drawn = this.sweptBarrel?.waterAt(position.x, position.y, position.z, margin);
+    if (drawn !== undefined) return drawn;
     return position.y < this.host.heightAt(position.x, position.z) - margin;
   }
 

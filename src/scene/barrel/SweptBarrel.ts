@@ -7,6 +7,7 @@ import { sampleCubicSurface } from '../water/cubicSurface';
 import type { WaterLook } from '../water/waterLook';
 import { sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
 import { rasterizeBarrelMask } from './barrelMask';
+import { BarrelWater } from './barrelWater';
 import { SweptBarrelMesh, type SweptBarrelView } from './SweptBarrelMesh';
 
 /**
@@ -28,6 +29,8 @@ export class SweptBarrel {
   private mask = new Uint8Array(0);
   private look?: WaterLook;
   private holdClearDrawing = true;
+  private readonly cameraWater = new BarrelWater();
+  private cameraWaterRevision = 0;
   private drawn?: {
     loft: SweptLoft; revision: unknown; surfaceRevision: number; front: Float32Array; count: number; stillLevel: number;
     look: WaterLook; maskGrid: SurfaceGrid; view: SweptBarrelView | undefined; sheetShown: boolean; facesOut: boolean;
@@ -51,6 +54,7 @@ export class SweptBarrel {
    */
   setSpot(spot: SpotName | undefined, swept = spot !== undefined && SWEPT_BARREL.includes(spot)): void {
     this.drawn = undefined;
+    this.cameraWater.prepare(undefined, undefined);
     const on = spot !== undefined && swept && BARREL_SLOPE[spot] !== undefined;
     this.spot = on ? spot : undefined;
     this.water.setBarrelEnabled(on);
@@ -77,6 +81,7 @@ export class SweptBarrel {
     if (enabled === this.holdClearDrawing) return;
     this.holdClearDrawing = enabled;
     this.drawn = undefined;
+    this.cameraWater.prepare(undefined, undefined);
     const library = this.spot !== undefined ? this.libraries.get(this.spot) : undefined;
     this.loft = library && this.spot !== undefined
       ? new SweptLoft(library, BARREL_SLOPE[this.spot]!, { holdClearDrawing: enabled })
@@ -91,6 +96,7 @@ export class SweptBarrel {
   draw(front: Float32Array, count: number, stillLevel: number, revision?: unknown): void {
     if (!this.loft) {
       this.drawn = undefined;
+      this.cameraWater.prepare(undefined, undefined);
       this.water.setBarrelMask(null);
       this.mesh.update(undefined);
       this.lastLoft = undefined;
@@ -121,10 +127,16 @@ export class SweptBarrel {
     }
     this.mesh.update(loft);
     this.lastLoft = loft;
+    this.cameraWater.prepare(loft, ++this.cameraWaterRevision);
     this.drawn = {
       loft: this.loft, revision, surfaceRevision: water.surfaceRevision, front, count, stillLevel, look, maskGrid,
       view: mesh.view, sheetShown: mesh.sheetShown, facesOut: mesh.facesOut,
     };
+  }
+
+  /** Water or air in the current drawn curl; undefined where the ordinary water answers. */
+  waterAt(x: number, y: number, z: number, margin = 0): boolean | undefined {
+    return this.cameraWater.query(x, y, z, margin);
   }
 
   dispose(): void {

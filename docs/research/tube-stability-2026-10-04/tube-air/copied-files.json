@@ -1,0 +1,97 @@
+[
+  {
+    "file": "baseline/inside-first.png",
+    "bytes": 767721,
+    "sha256": "2ec7417a13bd859344fe55b2a3873d598f17643acfbcc2045153edac0e56b1a9"
+  },
+  {
+    "file": "baseline/launcher.json",
+    "bytes": 10798,
+    "sha256": "4331098c72618f64baa4188a98a20e9b826ca9002d04e308ac01b2a60b020dfd"
+  },
+  {
+    "file": "baseline/native-first-owner.json",
+    "bytes": 2660,
+    "sha256": "8d9c8f78f05ec5ab898d34107ae6b7de744d45656fcd4b131032d92594a8055b"
+  },
+  {
+    "file": "baseline/native.mjs",
+    "bytes": 17976,
+    "sha256": "7ec15fda7b8106134f761a45409b6a31ce1d852a052c689b453f9fc675927373"
+  },
+  {
+    "file": "baseline/report.json",
+    "bytes": 103926,
+    "sha256": "36633d1e4a5407e11c85652f603f9dc33f6e01aa070f4927bd1b5155b66aa6f9"
+  },
+  {
+    "file": "baseline/run.py",
+    "bytes": 6435,
+    "sha256": "44b74da14b27a6c36f149d8f5de4df78cc91933cced8d256f99985a2d598db81"
+  },
+  {
+    "file": "final/inside-first.png",
+    "bytes": 769875,
+    "sha256": "b8babfd17c531b37a308365e6d994e1a397d79a3656ce73ee3ba9453432aaf60"
+  },
+  {
+    "file": "final/launcher.json",
+    "bytes": 10513,
+    "sha256": "9642949565e60d4f457eaf60788f1e2e1276df5ea9a22ad4943b3cda14daefec"
+  },
+  {
+    "file": "final/native-first-owner.json",
+    "bytes": 2644,
+    "sha256": "7357592750f75e0d22b2cb6d46b23e9e82e8fd13b9ab4aed1c88d0188d18b894"
+  },
+  {
+    "file": "final/native.mjs",
+    "bytes": 21025,
+    "sha256": "425a4f90f3540b23af66a08cc127e1c9ec506c3f5953b70af094333f931f9d21"
+  },
+  {
+    "file": "final/outside-first.png",
+    "bytes": 1799688,
+    "sha256": "6d8e1fc601f4ee3a4ece2719b4f114ab4889f87ac8b553f2f89ab34a565794ae"
+  },
+  {
+    "file": "final/report.json",
+    "bytes": 110555,
+    "sha256": "509fa7bf7cb5bcdec17c6f10234db226fc575f01dd08267109618b3860753752"
+  },
+  {
+    "file": "final/run.py",
+    "bytes": 6424,
+    "sha256": "f41788be64504b4cfb37e81f89537d74609ffe5587f324f9a6e7c3415366332d"
+  },
+  {
+    "file": "rejected-seam/launcher.json",
+    "bytes": 12024,
+    "sha256": "2d21b586e5242dc649609055586d5fb77d86af2531950da542c880652b3ba552"
+  },
+  {
+    "file": "rejected-seam/native-first-owner.json",
+    "bytes": 2675,
+    "sha256": "dc0137b03d019747ffc65f996d7d17c21184d66d0b6ff1d91e4e0d14390b1895"
+  },
+  {
+    "file": "rejected-seam/native.mjs",
+    "bytes": 19476,
+    "sha256": "b3eb118ec9b4761e0337ae312d789b4b4067d5d86e9c3b2395d9d7a336b0a17a"
+  },
+  {
+    "file": "rejected-seam/rejected-seam.patch",
+    "bytes": 6672,
+    "sha256": "07471b5ec25e463f2f065a53020ca8e2e4058a68170e41cdec3ce4d4bf8214f9"
+  },
+  {
+    "file": "rejected-seam/report.json",
+    "bytes": 105148,
+    "sha256": "c2e0e8de520e7768e0e1db5d41ec6f9be9f387ab447104e00978825b7cafbc1d"
+  },
+  {
+    "file": "rejected-seam/run.py",
+    "bytes": 6442,
+    "sha256": "c3c8571e3a625ee4002800056211622b8a1b462086b66afbbc4d805b262fec13"
+  }
+]

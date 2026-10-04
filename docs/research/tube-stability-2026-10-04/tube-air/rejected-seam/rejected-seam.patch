@@ -1,0 +1,98 @@
+diff --git a/src/scene/barrel/SweptBarrelMesh.ts b/src/scene/barrel/SweptBarrelMesh.ts
+index fd5ce0481..f4bf945bb 100644
+--- a/src/scene/barrel/SweptBarrelMesh.ts
++++ b/src/scene/barrel/SweptBarrelMesh.ts
+@@ -2,9 +2,12 @@ import { BufferAttribute, BufferGeometry, DoubleSide, DynamicDrawUsage, Mesh, Me
+ import { LANDMARK } from '../../wave/barrel/ProfileLibrary';
+ import { LOFT, LOFT_SAMPLES, THROAT, type LoftResult } from '../../wave/barrel/sweptLoft';
+ import type { WaterLook } from '../water/waterLook';
+-import { RICH_FAR_FOAM, RICH_REFLECTION, richFarNormal, richFragmentPars, richReflectionPars } from '../water/richWaterGlsl';
++import { RICH_FAR_FOAM, RICH_FOAM, RICH_REFLECTION, richAerationFragmentPars, richAerationVertexPars, richFarNormal, richFragmentPars, richNormalFragment, richReflectionPars, waterCubicPars } from '../water/richWaterGlsl';
++import { waterChurnPars } from '../water/churnTexture';
+ import { waterRipplePars } from '../water/rippleTexture';
+ import { CLASSIC_ROUGHNESS, RICH_BASE_ROUGHNESS, waterSpecularPars } from '../water/specular';
++import { waterStreakPars } from '../water/streaks';
++import { waterTubePars } from '../water/tubeCarve';
+ import { waterChopNormal } from '../waterChop';
+ import { CLASSIC_FOAM, CREST_SCATTER, WATER_ABSORPTION, WATER_IOR, waterBodyFragment } from '../waterOptics';
+ import { waterFragmentPars, waterVertexPars } from '../WaterSurface';
+@@ -177,14 +180,20 @@ const glslVec3 = (rgb: readonly number[]) => `vec3( ${rgb.map((c) => c.toFixed(6
+ const richThroatVertexPars = /* glsl */ `attribute vec4 sweptThroat;
+ attribute vec4 sweptTube;
+ attribute vec4 sweptRay;
++varying float vSweptLift;
+ varying vec4 vSweptThroat;
+ varying vec4 vSweptTube;
+ varying vec4 vSweptRay;`;
+ const richThroatVertex = /* glsl */ `
++vSweptLift = sweptLift;
++vec2 sweptAeration = waterAerationAt( position.xz );
++vWaterAir = ( 1.0 - sweptLift ) * sweptAeration.x;
++vWaterPlumeDepth = sweptAeration.y;
+ vSweptThroat = sweptThroat;
+ vSweptTube = sweptTube;
+ vSweptRay = sweptRay;`;
+-const richThroatFragmentPars = /* glsl */ `varying vec4 vSweptThroat;
++const richThroatFragmentPars = /* glsl */ `varying float vSweptLift;
++varying vec4 vSweptThroat;
+ varying vec4 vSweptTube;
+ varying vec4 vSweptRay;
+ 
+@@ -198,6 +207,35 @@ bool sweptLeaves( vec3 direction, vec2 tip ) {
+   return opening || along * length( tip ) > vSweptTube.w * length( across );
+ }`;
+ 
++/** Match the surrounding Rich water where the loft rests, preserving its own normal on the raised curl. */
++const richSweptNormal = /* glsl */ `${richFarNormal}
++if ( vSweptLift < 1.0 ) {
++  vec3 sweptRaisedNormal = normal;
++  float sweptRaisedVariance = waterRippleVariance;
++  ${richNormalFragment({ ripples: true, churn: true }).replace('#include <normal_fragment_begin>', '')}
++  float sweptRaisedShare = clamp( vSweptLift, 0.0, 1.0 );
++  normal = normalize( mix( normal, sweptRaisedNormal, sweptRaisedShare ) );
++  waterRippleVariance = mix( waterRippleVariance, sweptRaisedVariance, sweptRaisedShare );
++}`;
++
++/** The same foam and aerated body as the Rich water at rest; the fully raised lip keeps its existing sheet shading. */
++const richSweptFoam = /* glsl */ `
++  float sweptBaseRoughness = roughnessFactor;
++  vec3 sweptBaseEmissive = totalEmissiveRadiance;
++  { ${RICH_FAR_FOAM} }
++  if ( vSweptLift < 1.0 ) {
++    vec3 sweptRaisedColour = diffuseColor.rgb;
++    float sweptRaisedRoughness = roughnessFactor;
++    vec3 sweptRaisedEmissive = totalEmissiveRadiance;
++    roughnessFactor = sweptBaseRoughness;
++    totalEmissiveRadiance = sweptBaseEmissive;
++    { ${RICH_FOAM} }
++    float sweptRaisedShare = clamp( vSweptLift, 0.0, 1.0 );
++    diffuseColor.rgb = mix( diffuseColor.rgb, sweptRaisedColour, sweptRaisedShare );
++    roughnessFactor = mix( roughnessFactor, sweptRaisedRoughness, sweptRaisedShare );
++    totalEmissiveRadiance = mix( totalEmissiveRadiance, sweptRaisedEmissive, sweptRaisedShare );
++  }`;
++
+ /**
+  * The lip's glow (Rich; the spec's item 16; the advisor's rulings, 2026-10-01): sunlight entering the sheet's far side
+  * scatters through it and leaves toward the viewer diffusely, over a path lengthened k times its thickness and absorbed
+@@ -307,17 +345,17 @@ export class SweptBarrelMesh {
+       Object.assign(shader.uniforms, uniforms);
+       const rich = this.look === 'rich';
+       shader.vertexShader = shader.vertexShader
+-        .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
++        .replace('#include <common>', rich ? `#include <common>\n${waterVertexPars}\n${sweptVertexPars}\n${richAerationVertexPars}\n${richThroatVertexPars}` : `#include <common>\n${waterVertexPars}\n${sweptVertexPars}`)
+         .replace('#include <beginnormal_vertex>', rich ? sweptBeginNormal + richThroatVertex : sweptBeginNormal)
+         .replace('#include <begin_vertex>', sweptBeginVertex);
+       shader.fragmentShader = shader.fragmentShader
+         .replace('#include <common>', rich
+-          ? `#include <common>\n${waterFragmentPars}\n${richFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
++          ? `#include <common>\n${waterFragmentPars}\n${waterCubicPars}\n${waterTubePars}\n${richFragmentPars}\n${richAerationFragmentPars}\n${waterRipplePars}\n${waterSpecularPars}\n${waterStreakPars}\n${waterChurnPars}\n${richReflectionPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}\n${richThroatFragmentPars}`
+           : `#include <common>\n${waterFragmentPars}\n${waterBarrelMaskPars}\n${sweptFragmentPars}`)
+         .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_DISCARD}`)
+-        .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
++        .replace('#include <normal_fragment_begin>', rich ? richSweptNormal : waterChopNormal)
+         .replace('#include <color_fragment>', '')
+-        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET_BODY + RICH_LIP_GLOW) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
++        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, richSweptFoam, SWEPT_SHEET_BODY + RICH_LIP_GLOW) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
+         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>');
+       const view = this.currentView;
+       if (!view) return;

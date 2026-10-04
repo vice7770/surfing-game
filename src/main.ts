@@ -304,8 +304,6 @@ class SurfGame {
       /** Any sun (the slider's height, and its azimuth, degrees): the water sheet's lighting checks. */
       setSun: (sun: { sunHeight: number; sunDirection: number }) => this.applySun(sun),
       renderView: (camera: PerspectiveCamera) => {
-        const host = this.physicalMode.host;
-        this.setUnderwater(host !== undefined && camera.position.y < host.heightAt(camera.position.x, camera.position.z) - 0.1);
         this.drawPhysical(camera);
       },
       water: this.water,
@@ -934,7 +932,6 @@ class SurfGame {
   private physicalRender(simElapsed: number, camera?: PerspectiveCamera): void {
     this.physicalMode.update(simElapsed || this.fixedStep);
     this.drawOnline();
-    this.setUnderwater(this.physicalMode.cameraBelowSurface());
     this.drawPhysical(camera ?? this.physicalMode.camera.camera);
   }
 
@@ -948,7 +945,6 @@ class SurfGame {
     const view = this.physicalMode.camera.camera;
     if (!this.stillFrame.needsDraw(view, now, this.needsRender)) return;
     this.needsRender = false;
-    this.setUnderwater(this.physicalMode.cameraBelowSurface());
     this.drawPhysical(view);
     this.stillFrame.drawn(view, now);
   }
@@ -958,6 +954,7 @@ class SurfGame {
     this.water.update();
     // The swept barrel lofts over the heights the water just uploaded (Padang Padang, Part B, PR 3).
     this.physicalMode.drawBarrel();
+    this.setUnderwater(this.physicalMode.cameraBelowSurface(0.1, view.position));
     // Caustics where the view looks: a window a third of its width ahead of the camera.
     const ahead = view.getWorldDirection(this.causticAhead).setY(0);
     if (ahead.lengthSq() > 1e-6) ahead.normalize();
