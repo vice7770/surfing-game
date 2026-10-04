@@ -1,0 +1,808 @@
+{
+  "arm": "candidate-smooth",
+  "complete": true,
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 4,
+    "peakPeriod": 10,
+    "directionDegrees": 10,
+    "spread": 0.4,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 1,
+    "componentCount": 24,
+    "spreading": 11.720624206334085,
+    "dx": 1,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "standard",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "camera": {
+    "position": [
+      155.32094597816467,
+      4.819468761980533,
+      -0.038138747215270996
+    ],
+    "quaternion": [
+      -0.20802491978287327,
+      0.29824286239101605,
+      0.06677285880698988,
+      0.9291491877566725
+    ],
+    "projection": [
+      1.0551622229204924,
+      0,
+      0,
+      0,
+      0,
+      2.050303841579296,
+      0,
+      0,
+      0,
+      0,
+      -1.000066668888963,
+      -1,
+      0,
+      0,
+      -0.2000066668888963,
+      0
+    ],
+    "matrixWorld": [
+      0.8131851607191105,
+      0,
+      -0.5820050638836697,
+      0,
+      -0.2481677900988225,
+      0.9045340361521419,
+      -0.34674331341755166,
+      0,
+      0.5264433894956809,
+      0.426401427580063,
+      0.7355536555642852,
+      0,
+      155.32094597816467,
+      4.819468761980533,
+      -0.038138747215270996,
+      1
+    ],
+    "near": 0.1,
+    "far": 3000,
+    "fov": 52,
+    "aspect": 1.9431171786120591
+  },
+  "schedule": {
+    "settleSteps": 1047,
+    "fixedStepSeconds": 0.016666666666666666,
+    "settlePhysicalSeconds": 17.45,
+    "heldFrames": 4,
+    "stepsBetweenFrames": [
+      6,
+      12,
+      12
+    ],
+    "offsetsPhysicalSeconds": [
+      0,
+      0.1,
+      0.3,
+      0.5
+    ],
+    "nominalSeaTime": {
+      "initial": 535.723,
+      "settled": 553.173,
+      "qualification": "Nominal original trace clock, not a substituted exact capture clock"
+    }
+  },
+  "artifacts": [
+    {
+      "file": "held-00.png",
+      "bytes": 2614991,
+      "sha256": "bef38ce0849f8a67386aa79140927daee0e0625fec9515cf9148769b91e65c50"
+    },
+    {
+      "file": "inspect-00.png",
+      "bytes": 2606510,
+      "sha256": "10fba600f00cb6fcbfc3624e0066a7209fdc55c55efa25436303cddfaaabc0eb"
+    },
+    {
+      "file": "held-01.png",
+      "bytes": 2617115,
+      "sha256": "9b74eb62b99ef94b69111b50fa93bf2767442b729e6f38b51f439953ea0f85d2"
+    },
+    {
+      "file": "inspect-01.png",
+      "bytes": 2681475,
+      "sha256": "6d6611e375664bf4969eea55bcebd7f0843365965abac9741bc1a9a5099ba848"
+    },
+    {
+      "file": "held-02.png",
+      "bytes": 2428089,
+      "sha256": "16c7f9fd596bf1456460a25a939f8e802d9128859422625115c72189dc1eeff3"
+    },
+    {
+      "file": "inspect-02.png",
+      "bytes": 2681411,
+      "sha256": "2517db1395bc63e78d0ea776076ee8cd108a9782cc3a0fe3fbe1764ff886953b"
+    },
+    {
+      "file": "held-03.png",
+      "bytes": 2279965,
+      "sha256": "e46a455e486fa4328ab5f1859f2923d7b038085e0f359d90b29a008f54b3bb4a"
+    },
+    {
+      "file": "inspect-03.png",
+      "bytes": 2492092,
+      "sha256": "1ba93ba73bcf1594a6c49e00ef0f1149c6cec1c20ce1ee3ae209aa7de195b10b"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "seaTime": 553.173058749449,
+      "pointVisibilityRestored": true,
+      "metrics": {
+        "selected": {
+          "row": 126,
+          "front": 48,
+          "sigma": 32.379207611083984,
+          "tau": 0.9530038833618164,
+          "life": 0.9483453631401062,
+          "phase": 1,
+          "formed": 1,
+          "weight": 1,
+          "fade": 1,
+          "overturned": 1,
+          "ray": [
+            -0.16346897184848785,
+            0.9865484833717346
+          ]
+        },
+        "roof": {
+          "joinedPairs": 90,
+          "minAdvance": 0.23633869481392367,
+          "worstRoof": {
+            "rows": [
+              70,
+              71
+            ],
+            "profilePoint": 88,
+            "absDy": 0.5790971517562866,
+            "length": 0.8033028919283709,
+            "from": {
+              "row": 70,
+              "front": 48,
+              "sigma": 4.4786834716796875,
+              "tau": -0.02536178007721901,
+              "life": null,
+              "phase": 0,
+              "formed": 0,
+              "weight": 1,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.16075259447097778,
+                0.986994743347168
+              ]
+            },
+            "to": {
+              "row": 71,
+              "front": 48,
+              "sigma": 4.976907253265381,
+              "tau": 0.03060685284435749,
+              "life": 0.050806812942028046,
+              "phase": 1,
+              "formed": 0.9698693752288818,
+              "weight": 1,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.15834814310073853,
+                0.9873833656311035
+              ]
+            }
+          },
+          "nonfinite": 0
+        },
+        "localWorstRoof": {
+          "radiusMeters": 2,
+          "anchorSigma": 32.379207611083984,
+          "joinedPairs": 8,
+          "minAdvance": 0.2960850396755319,
+          "worstRoof": {
+            "rows": [
+              125,
+              126
+            ],
+            "profilePoint": 65,
+            "absDy": 0.23872408270835876,
+            "length": 0.5907396502650519,
+            "from": {
+              "row": 125,
+              "front": 48,
+              "sigma": 31.880983352661133,
+              "tau": 0.9066241979598999,
+              "life": 0.9058327674865723,
+              "phase": 1,
+              "formed": 1,
+              "weight": 1,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.16832225024700165,
+                0.9857320189476013
+              ]
+            },
+            "to": {
+              "row": 126,
+              "front": 48,
+              "sigma": 32.379207611083984,
+              "tau": 0.9530038833618164,
+              "life": 0.9483453631401062,
+              "phase": 1,
+              "formed": 1,
+              "weight": 1,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.16346897184848785,
+                0.9865484833717346
+              ]
+            }
+          },
+          "selectedPairPoint83": {
+            "profilePoint": 83,
+            "from": {
+              "row": 126,
+              "front": 48,
+              "sigma": 32.379207611083984,
+              "tau": 0.9530038833618164,
+              "life": 0.9483453631401062,
+              "phase": 1,
+              "formed": 1,
+              "weight": 1,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.16346897184848785,
+                0.9865484833717346
+              ]
+            },
+            "to": {
+              "row": 127,
+              "front": 48,
+              "sigma": 32.8774299621582,
+              "tau": 0.986842691898346,
+              "life": 0.9777179956436157,
+              "phase": 1,
+              "formed": 1,
+              "weight": 1,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.15817144513130188,
+                0.9874116778373718
+              ]
+            },
+            "signedDy": 0.02395474910736084,
+            "absDy": 0.02395474910736084,
+            "edgeLength": 0.5065283377011532
+          },
+          "coreInFrustum": 513,
+          "coreDepthSupported": 513,
+          "bounds": {
+            "minX": 775.5536421086308,
+            "minY": 208.40672025706837,
+            "maxX": 1126.3490480895755,
+            "maxY": 575.4259083366105
+          }
+        }
+      }
+    },
+    {
+      "index": 1,
+      "seaTime": 553.273058749449,
+      "pointVisibilityRestored": true,
+      "metrics": {
+        "selected": {
+          "row": 125,
+          "front": 48,
+          "sigma": 32.30292892456055,
+          "tau": 1.0906081199645996,
+          "life": 1.0802661180496216,
+          "phase": 2,
+          "formed": 1,
+          "weight": 0.8366903066635132,
+          "fade": 0.8366903066635132,
+          "overturned": 1,
+          "ray": [
+            -0.1472986489534378,
+            0.9890920519828796
+          ]
+        },
+        "roof": {
+          "joinedPairs": 88,
+          "minAdvance": 0.27129194080471564,
+          "worstRoof": {
+            "rows": [
+              62,
+              63
+            ],
+            "profilePoint": 64,
+            "absDy": 0.37201833724975586,
+            "length": 0.6182054341802403,
+            "from": {
+              "row": 62,
+              "front": 48,
+              "sigma": 0.9855093359947205,
+              "tau": -0.06212177872657776,
+              "life": null,
+              "phase": 0,
+              "formed": 0,
+              "weight": 0.3436739444732666,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.15607032179832458,
+                0.9877459406852722
+              ]
+            },
+            "to": {
+              "row": 63,
+              "front": 48,
+              "sigma": 1.4826111793518066,
+              "tau": -0.023960595950484276,
+              "life": null,
+              "phase": 0,
+              "formed": 0,
+              "weight": 0.6379557251930237,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.15375374257564545,
+                0.9881091713905334
+              ]
+            }
+          },
+          "nonfinite": 0
+        },
+        "localWorstRoof": {
+          "radiusMeters": 2,
+          "anchorSigma": 32.379207611083984,
+          "joinedPairs": 7,
+          "minAdvance": 0.45284215009633044,
+          "worstRoof": {
+            "rows": [
+              123,
+              124
+            ],
+            "profilePoint": 69,
+            "absDy": 0.07262629270553589,
+            "length": 0.5183672065209708,
+            "from": {
+              "row": 123,
+              "front": 48,
+              "sigma": 31.30872344970703,
+              "tau": 1.0122567415237427,
+              "life": 1.0110982656478882,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.977314293384552,
+              "fade": 0.977314293384552,
+              "overturned": 1,
+              "ray": [
+                -0.15801763534545898,
+                0.9874362945556641
+              ]
+            },
+            "to": {
+              "row": 124,
+              "front": 48,
+              "sigma": 31.80582618713379,
+              "tau": 1.0575147867202759,
+              "life": 1.0520753860473633,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.8937934637069702,
+              "fade": 0.8937934637069702,
+              "overturned": 1,
+              "ray": [
+                -0.15286609530448914,
+                0.9882469177246094
+              ]
+            }
+          },
+          "selectedPairPoint83": {
+            "profilePoint": 83,
+            "from": {
+              "row": 125,
+              "front": 48,
+              "sigma": 32.30292892456055,
+              "tau": 1.0906081199645996,
+              "life": 1.0802661180496216,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.8366903066635132,
+              "fade": 0.8366903066635132,
+              "overturned": 1,
+              "ray": [
+                -0.1472986489534378,
+                0.9890920519828796
+              ]
+            },
+            "to": {
+              "row": 126,
+              "front": 48,
+              "sigma": 32.80002975463867,
+              "tau": 1.1190532445907593,
+              "life": 1.1038426160812378,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.7891895174980164,
+              "fade": 0.7891895174980164,
+              "overturned": 1,
+              "ray": [
+                -0.14346754550933838,
+                0.9896550178527832
+              ]
+            },
+            "signedDy": -0.007059335708618164,
+            "absDy": 0.007059335708618164,
+            "edgeLength": 0.506471043016169
+          },
+          "coreInFrustum": 456,
+          "coreDepthSupported": 456,
+          "bounds": {
+            "minX": 726.1246504659479,
+            "minY": 239.63717407559005,
+            "maxX": 1161.629161725025,
+            "maxY": 620.4403777618816
+          }
+        }
+      }
+    },
+    {
+      "index": 2,
+      "seaTime": 553.4730587494489,
+      "pointVisibilityRestored": true,
+      "metrics": {
+        "selected": {
+          "row": 139,
+          "front": 48,
+          "sigma": 32.48783493041992,
+          "tau": 1.3211320638656616,
+          "life": 1.3035467863082886,
+          "phase": 2,
+          "formed": 1,
+          "weight": 0.3836776912212372,
+          "fade": 0.3836776912212372,
+          "overturned": 1,
+          "ray": [
+            -0.1361338496208191,
+            0.9906904697418213
+          ]
+        },
+        "roof": {
+          "joinedPairs": 86,
+          "minAdvance": 0.26068569058670477,
+          "worstRoof": {
+            "rows": [
+              76,
+              77
+            ],
+            "profilePoint": 32,
+            "absDy": 0.26726651191711426,
+            "length": 0.5667959800578327,
+            "from": {
+              "row": 76,
+              "front": 48,
+              "sigma": 0.9991055130958557,
+              "tau": 0.20032243430614471,
+              "life": 0.33536696434020996,
+              "phase": 1,
+              "formed": 1,
+              "weight": 0.35148486495018005,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.14051318168640137,
+                0.9900788068771362
+              ]
+            },
+            "to": {
+              "row": 77,
+              "front": 48,
+              "sigma": 1.4989266395568848,
+              "tau": 0.22626180946826935,
+              "life": 0.37884756922721863,
+              "phase": 1,
+              "formed": 1,
+              "weight": 0.647381603717804,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.14028972387313843,
+                0.9901105165481567
+              ]
+            }
+          },
+          "nonfinite": 0
+        },
+        "localWorstRoof": {
+          "radiusMeters": 2,
+          "anchorSigma": 32.379207611083984,
+          "joinedPairs": 7,
+          "minAdvance": 0.44455026704746103,
+          "worstRoof": {
+            "rows": [
+              136,
+              137
+            ],
+            "profilePoint": 38,
+            "absDy": 0.13808631896972656,
+            "length": 0.6507449471508551,
+            "from": {
+              "row": 136,
+              "front": 48,
+              "sigma": 30.988370895385742,
+              "tau": 1.2131060361862183,
+              "life": 1.21205472946167,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.5664772391319275,
+              "fade": 0.5664772391319275,
+              "overturned": 1,
+              "ray": [
+                -0.15069320797920227,
+                0.988580584526062
+              ]
+            },
+            "to": {
+              "row": 137,
+              "front": 48,
+              "sigma": 31.48819351196289,
+              "tau": 1.2604976892471313,
+              "life": 1.2545058727264404,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.4808289706707001,
+              "fade": 0.4808289706707001,
+              "overturned": 1,
+              "ray": [
+                -0.14563599228858948,
+                0.989338219165802
+              ]
+            }
+          },
+          "selectedPairPoint83": {
+            "profilePoint": 83,
+            "from": {
+              "row": 139,
+              "front": 48,
+              "sigma": 32.48783493041992,
+              "tau": 1.3211320638656616,
+              "life": 1.3035467863082886,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.3836776912212372,
+              "fade": 0.3836776912212372,
+              "overturned": 1,
+              "ray": [
+                -0.1361338496208191,
+                0.9906904697418213
+              ]
+            },
+            "to": {
+              "row": 140,
+              "front": 48,
+              "sigma": 32.98765563964844,
+              "tau": 1.3308664560317993,
+              "life": 1.308647632598877,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.37444475293159485,
+              "fade": 0.37444475293159485,
+              "overturned": 1,
+              "ray": [
+                -0.13364432752132416,
+                0.9910293817520142
+              ]
+            },
+            "signedDy": 0.03912460803985596,
+            "absDy": 0.03912460803985596,
+            "edgeLength": 0.5005138059986435
+          },
+          "coreInFrustum": 456,
+          "coreDepthSupported": 456,
+          "bounds": {
+            "minX": 644.9730300589,
+            "minY": 292.44065981308984,
+            "maxX": 1101.039169212712,
+            "maxY": 661.3997450676163
+          }
+        }
+      }
+    },
+    {
+      "index": 3,
+      "seaTime": 553.673058749449,
+      "pointVisibilityRestored": true,
+      "metrics": {
+        "selected": {
+          "row": 139,
+          "front": 48,
+          "sigma": 31.86682891845703,
+          "tau": 1.4817711114883423,
+          "life": 1.4715194702148438,
+          "phase": 2,
+          "formed": 1,
+          "weight": 0,
+          "fade": 0.039294254034757614,
+          "overturned": 1,
+          "ray": [
+            -0.18495868146419525,
+            0.9827463030815125
+          ]
+        },
+        "roof": {
+          "joinedPairs": 66,
+          "minAdvance": 0.26218873480278404,
+          "worstRoof": {
+            "rows": [
+              77,
+              78
+            ],
+            "profilePoint": 32,
+            "absDy": 0.3044252395629883,
+            "length": 0.5836665768045972,
+            "from": {
+              "row": 77,
+              "front": 48,
+              "sigma": 0.99006187915802,
+              "tau": 0.3996121883392334,
+              "life": 0.6690012216567993,
+              "phase": 1,
+              "formed": 1,
+              "weight": 0.34628525376319885,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.18281662464141846,
+                0.9831470251083374
+              ]
+            },
+            "to": {
+              "row": 78,
+              "front": 48,
+              "sigma": 1.4880741834640503,
+              "tau": 0.42543482780456543,
+              "life": 0.7123355269432068,
+              "phase": 1,
+              "formed": 1,
+              "weight": 0.6411173343658447,
+              "fade": 1,
+              "overturned": 1,
+              "ray": [
+                -0.18264140188694,
+                0.9831795692443848
+              ]
+            }
+          },
+          "nonfinite": 0
+        },
+        "localWorstRoof": {
+          "radiusMeters": 2,
+          "anchorSigma": 32.379207611083984,
+          "joinedPairs": 2,
+          "minAdvance": 0.44318828422755274,
+          "worstRoof": {
+            "rows": [
+              137,
+              138
+            ],
+            "profilePoint": 37,
+            "absDy": 0.13068807125091553,
+            "length": 0.599093907744665,
+            "from": {
+              "row": 137,
+              "front": 48,
+              "sigma": 30.870803833007812,
+              "tau": 1.3929039239883423,
+              "life": 1.3976534605026245,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.06554627418518066,
+              "fade": 0.1874293088912964,
+              "overturned": 1,
+              "ray": [
+                -0.19546028971672058,
+                0.9807116389274597
+              ]
+            },
+            "to": {
+              "row": 138,
+              "front": 48,
+              "sigma": 31.368816375732422,
+              "tau": 1.4460854530334473,
+              "life": 1.442100167274475,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.010028633289039135,
+              "fade": 0.09714095294475555,
+              "overturned": 1,
+              "ray": [
+                -0.19044671952724457,
+                0.9816975593566895
+              ]
+            }
+          },
+          "selectedPairPoint83": {
+            "profilePoint": 83,
+            "from": {
+              "row": 138,
+              "front": 48,
+              "sigma": 31.368816375732422,
+              "tau": 1.4460854530334473,
+              "life": 1.442100167274475,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0.010028633289039135,
+              "fade": 0.09714095294475555,
+              "overturned": 1,
+              "ray": [
+                -0.19044671952724457,
+                0.9816975593566895
+              ]
+            },
+            "to": {
+              "row": 139,
+              "front": 48,
+              "sigma": 31.86682891845703,
+              "tau": 1.4817711114883423,
+              "life": 1.4715194702148438,
+              "phase": 2,
+              "formed": 1,
+              "weight": 0,
+              "fade": 0.039294254034757614,
+              "overturned": 1,
+              "ray": [
+                -0.18495868146419525,
+                0.9827463030815125
+              ]
+            },
+            "signedDy": 0.023599982261657715,
+            "absDy": 0.023599982261657715,
+            "edgeLength": 0.5196797494853276
+          },
+          "coreInFrustum": 114,
+          "coreDepthSupported": 114,
+          "bounds": {
+            "minX": 525.3289477553536,
+            "minY": 401.9856411648535,
+            "maxX": 777.8525493606702,
+            "maxY": 547.1586414694498
+          }
+        }
+      }
+    }
+  ]
+}

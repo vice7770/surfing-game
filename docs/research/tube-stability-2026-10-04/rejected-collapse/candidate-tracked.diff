@@ -1,0 +1,412 @@
+diff --git a/src/wave/barrel/sweptContact.test.ts b/src/wave/barrel/sweptContact.test.ts
+index d7231f667..067711931 100644
+--- a/src/wave/barrel/sweptContact.test.ts
++++ b/src/wave/barrel/sweptContact.test.ts
+@@ -161,14 +161,17 @@ describe('the swept contact', () => {
+     expect(hit.tangentX).toBeCloseTo(1, 6);
+   });
+ 
+-  it('lowers the held lip by the fade through the collapse, and weighs its flow by the same (the advisor, 2026-09-30)', () => {
++  it('queries the moved held lip through collapse and keeps its material flow weighed by the same fade', () => {
+     const times = library().profileTimes({ slope: 0.05, footHeight: 2.1, footDepth: 7 });
+     const contact = contactAt(times.touchdownSeconds + times.collapseSeconds / 2);
+     const hit = createContactHit();
+-    // Halfway through: the underside and the top at half their heights over the still water.
++    // The toy's lip overruns its toe: the common chart contracts about toe x=.8h0.
++    // At half collapse, smoothstep=.5; old x=1h0 moves to .9h0. Authored Y stays intact before the existing
++    // .5 world-height fade. This checks the analytic moved geometry without the mapper helper.
++    const z = -100 + 0.9 * H0;
+     const under = STILL + (UNDER - STILL) / 2;
+     const top = STILL + (TOP - STILL) / 2;
+-    expect(contact.query(10.3, (under + top) / 2, -93, hit)).toBe(true);
++    expect(contact.query(10.3, (under + top) / 2, z, hit)).toBe(true);
+     expect(hit.inWater).toBe(true);
+     expect(hit.surfaceY).toBeCloseTo(top, 3);
+     expect(hit.waterFloorY).toBeCloseTo(under, 3);
+@@ -178,7 +181,7 @@ describe('the swept contact', () => {
+     expect(hit.lipVZ).toBeCloseTo(0.9 * Math.sqrt(9.81 * H0), 2);
+     expect(tubeState(hit.life)).toBe('closed');
+     // Under the lowered lip, the tube's air over the face.
+-    contact.query(10.3, (STILL + under) / 2, -93, hit);
++    contact.query(10.3, (STILL + under) / 2, z, hit);
+     expect(hit.inWater).toBe(false);
+     expect(hit.ceilingY).toBeCloseTo(under, 3);
+   });
+diff --git a/src/wave/barrel/sweptLoft.test.ts b/src/wave/barrel/sweptLoft.test.ts
+index c7af17a27..caf848047 100644
+--- a/src/wave/barrel/sweptLoft.test.ts
++++ b/src/wave/barrel/sweptLoft.test.ts
+@@ -1,5 +1,6 @@
+ import { describe, expect, it } from 'vitest';
+ import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
++import { BARREL_CASES } from './barrelLibraryIndex';
+ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+ import { readBarrelCases } from './nodeBarrelCases';
+ import { decodeCase } from './profileFormat';
+@@ -26,7 +27,7 @@ function crossing(p: Float32Array, u: number, v: number, w: number, x: number, z
+  * lines met all three, how many met one more than once (a profile's own wiggle), and the most two layers swapped, m
+  * (a lower one's highest over a higher one's lowest), in strips of one weight and in strips whose weight changes.
+  */
+-function checkLayers(loft: LoftResult): { lines: number; multiple: number; uniformSwap: number; swap: number } {
++function checkLayers(loft: LoftResult): { lines: number; multiple: number; uniformSwap: number; swap: number; minimumGap: number; worst?: object; worstUniform?: object } {
+   const p = loft.positions;
+   const throat = LOFT.extensionSamples + LANDMARK.throat;
+   const tip = LOFT.extensionSamples + LANDMARK.lip;
+@@ -34,6 +35,9 @@ function checkLayers(loft: LoftResult): { lines: number; multiple: number; unifo
+   let multiple = 0;
+   let uniformSwap = -Infinity;
+   let swap = -Infinity;
++  let worst: object | undefined;
++  let worstUniform: object | undefined;
++  let minimumGap = Infinity;
+   for (let s = 0; s + 1 < loft.sliceCount; s += 1) {
+     if (!loft.sliceJoined[s] || !loft.sliceOverturned[s] || !loft.sliceOverturned[s + 1]) continue;
+     // Past a front's ends both slices lie wholly on the water: every layer is the water there.
+@@ -72,13 +76,23 @@ function checkLayers(loft: LoftResult): { lines: number; multiple: number; unifo
+         expect((lower.length + under.length + top.length) % 2).toBe(1);
+         if (lower.length + under.length + top.length > 3) multiple += 1;
+         const swapped = Math.max(Math.max(...lower) - Math.min(...under), Math.max(...under) - Math.min(...top));
+-        if (uniform) uniformSwap = Math.max(uniformSwap, swapped);
+-        else swap = Math.max(swap, swapped);
++        if (lower.length === 1 && under.length === 1 && top.length === 1) minimumGap = Math.min(minimumGap, under[0] - lower[0], top[0] - under[0]);
++        if (uniform) {
++          if (swapped > uniformSwap) {
++            uniformSwap = swapped;
++            worstUniform = { s, sigma: loft.sliceSigma[s], weight: loft.sliceWeight[s], x, z, lower, under, top };
++          }
++        } else if (swapped > swap) {
++          swap = swapped;
++          worst = { s, sigmas: [loft.sliceSigma[s], loft.sliceSigma[s + 1]], taus: [loft.sliceTau[s], loft.sliceTau[s + 1]],
++            weights: [loft.sliceWeight[s], loft.sliceWeight[s + 1]], fades: [loft.sliceFade[s], loft.sliceFade[s + 1]],
++            x, z, lower, under, top };
++        }
+         lines += 1;
+       }
+     }
+   }
+-  return { lines, multiple, uniformSwap, swap };
++  return { lines, multiple, uniformSwap, swap, minimumGap, worst, worstUniform };
+ }
+ 
+ const flat = () => 0.5;
+@@ -224,7 +238,7 @@ describe('the swept loft', () => {
+     expect(loft.mask[Math.floor(loft.sliceCount / 2) * LOFT_SAMPLES + first]).toBe(1);
+   });
+ 
+-  it('fades a slice into the water over its tube’s collapse after touchdown, drawing the touchdown frame (the advisor, 2026-09-30)', () => {
++  it('unfolds and lowers a slice over its existing collapse clock, keeping the crest/toe anchors', () => {
+     // The toy tube at h0 7 m: its void 0.567 h0 tall, so it collapses over √(2 × 3.97 m / g) = 0.90 s. Halfway through,
+     // its 5.6 m crest stands half as high over the 0.5 m water, where the touchdown frame put it.
+     const times = tubes().profileTimes({ slope: 0.05, footHeight: 2.1, footDepth: 7 });
+@@ -238,9 +252,16 @@ describe('the swept loft', () => {
+     expect(halfway.slicePhase[middle]).toBe(2);
+     expect(halfway.sliceFade[middle]).toBeCloseTo(0.5, 5);
+     expect(halfway.sliceCollapse[middle]).toBeCloseTo(times.collapseSeconds, 5);
+-    // The drawing keeps the touchdown frame: the vertices stand where they did at touchdown, only lowered.
+-    const at = (loft: LoftResult, s: number, k: number) => Array.from(loft.positions.subarray(3 * s * LOFT_SAMPLES, 3 * (s + 1) * LOFT_SAMPLES)).filter((_, i) => i % 3 === k);
+-    for (const k of [0, 2]) expect(at(halfway, middle, k)).toEqual(at(touchdown, sliceAt(touchdown, 10), k));
++    const previous = sliceAt(touchdown, 10);
++    const at = (loft: LoftResult, s: number, point: number, axis: number) => loft.positions[3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + point) + axis];
++    for (const point of [0, LANDMARK.crest, LANDMARK.toe, LANDMARK.front]) {
++      for (const axis of [0, 2]) expect(at(halfway, middle, point, axis)).toBe(at(touchdown, previous, point, axis));
++    }
++    // This artificial lip lies beyond its toe; a bounded rest strip clips its impact to the toe's X plane.
++    expect(at(halfway, middle, LANDMARK.lip, 2)).toBeCloseTo((at(touchdown, previous, LANDMARK.lip, 2) + at(touchdown, previous, LANDMARK.toe, 2)) / 2, 4);
++    const beforeWidth = at(touchdown, previous, LANDMARK.lip, 2) - at(touchdown, previous, LANDMARK.throat, 2);
++    const halfWidth = at(halfway, middle, LANDMARK.lip, 2) - at(halfway, middle, LANDMARK.throat, 2);
++    expect(halfWidth).toBeCloseTo(beforeWidth / 2, 4);
+     // Gone once it has collapsed.
+     expect(loftAt(times.touchdownSeconds + times.collapseSeconds + 0.01).vertexCount).toBe(0);
+   });
+@@ -926,7 +947,7 @@ describe('the loft’s slices, for the contact', () => {
+         multiple += layers.multiple;
+         // A hair at the fold where a strip's weight is one; at most 2 × 10⁻³ h0 at the tip where the front's ends ramp it.
+         expect(layers.uniformSwap).toBeLessThan(1e-4);
+-        expect(layers.swap).toBeLessThan(0.002 * 7);
++        expect(layers.swap, JSON.stringify({ seconds, worst: layers.worst })).toBeLessThan(0.002 * 7);
+       }
+       expect(lines).toBeGreaterThan(50_000);
+       // Short S-wiggles in the cases' own nearly vertical undersides meet a line three times, about 1 % of lines.
+@@ -1049,7 +1070,7 @@ describe('the loft’s slices, for the contact', () => {
+     });
+   });
+ 
+-  it('in contact mode holds the geometry at the last clear frame after touchdown, lowered by the fade, and keeps the clock', () => {
++  it('in contact mode shares the held contour’s post-touchdown unfolding and vertical fade while keeping the clock', () => {
+     const late = new SweptLoft(tubes(), 0.05, { contact: true }).build(records(21, () => 0.5 * TUBE_UNIT + 0.1, -100), 21, 0.5, flat);
+     const held = new SweptLoft(tubes(), 0.05, { contact: true }).build(records(21, () => 0.25 * TUBE_UNIT, -100), 21, 0.5, flat);
+     const a = sliceAt(late, 10);
+@@ -1057,15 +1078,147 @@ describe('the loft’s slices, for the contact', () => {
+     expect(late.sliceTau[a]).toBeCloseTo(0.5 * TUBE_UNIT + 0.1, 5);
+     expect(late.slicePhase[a]).toBe(2);
+     const fade = late.sliceFade[a];
++    const progress = 1 - fade;
++    const ease = progress * progress * (3 - 2 * progress);
+     expect(fade).toBeCloseTo(1 - 0.1 / late.sliceCollapse[a], 6);
+-    // Where each vertex stood at the clear frame, lowered toward the 0.5 m water by the fade (the drawing's lerp).
++    let moved = 0;
++    const zAt = (point: number) => held.positions[3 * (b * LOFT_SAMPLES + LOFT.extensionSamples + point) + 2];
++    const crest = zAt(LANDMARK.crest);
++    const back = zAt(LANDMARK.throat);
++    const toe = zAt(LANDMARK.toe);
++    const movedBack = back + ease * (toe - back);
++    // This toy's lip overruns the toe. The shared chart stretches crest→throat and contracts all remaining
++    // interior points toward the fixed toe, leaving authored Y to the existing vertical fade.
+     for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+       const u = 3 * (a * LOFT_SAMPLES + j);
+       const v = 3 * (b * LOFT_SAMPLES + j);
+       expect(late.positions[u]).toBe(held.positions[v]);
+-      expect(late.positions[u + 2]).toBe(held.positions[v + 2]);
++      const point = j - LOFT.extensionSamples;
++      const z = held.positions[v + 2];
++      let expectedZ = z;
++      if (point > LANDMARK.crest && point < LANDMARK.toe) {
++        if (z > crest && z < back) {
++          const t = (z - crest) / (back - crest);
++          const t2 = t * t;
++          const t3 = t2 * t;
++          expectedZ = (2 * t3 - 3 * t2 + 1) * crest + (-2 * t3 + 3 * t2) * movedBack
++            + (t3 - 2 * t2 + t) * (back - crest) + (t3 - t2) * (1 - ease) * (back - crest);
++        }
++        else if (z >= back) expectedZ = z + ease * (toe - z);
++      }
++      expect(late.positions[u + 2]).toBeCloseTo(expectedZ, 4);
+       expect(late.positions[u + 1]).toBeCloseTo(0.5 + fade * (held.positions[v + 1] - 0.5), 4);
++      if (late.positions[u + 2] !== held.positions[v + 2]) moved += 1;
++    }
++    expect(moved).toBeGreaterThan(0);
++  });
++
++  it('reports the mapped tip’s horizontal transport separately from the unchanged material jet during collapse', () => {
++    const lib = tubes();
++    const times = lib.profileTimes({ slope: 0.05, footHeight: 2.1, footDepth: 7 });
++    const tau = times.touchdownSeconds + times.collapseSeconds / 2;
++    const at = (seconds: number) => {
++      const loft = new SweptLoft(lib, 0.05, { contact: true }).build(records(21, () => seconds, -100), 21, 0.5, flat);
++      const s = sliceAt(loft, 10);
++      const v = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.lip);
++      return { along: loft.positions[v + 2], above: (loft.positions[v + 1] - 0.5) / loft.sliceFade[s],
++        transportAlong: loft.sliceTipTransportAlong[s], transportUp: loft.sliceTipTransportUp[s],
++        materialAlong: loft.sliceTipAlong[s], materialUp: loft.sliceTipUp[s] };
++    };
++    const delta = 0.001;
++    const ahead = at(tau + delta);
++    const behind = at(tau - delta);
++    const middle = at(tau);
++    expect(Math.abs(middle.transportAlong)).toBeGreaterThan(1);
++    expect(middle.transportUp).toBe(0);
++    expect(middle.transportAlong).toBeCloseTo((ahead.along - behind.along) / (2 * delta), 2);
++    expect(middle.transportUp).toBeCloseTo((ahead.above - behind.above) / (2 * delta), 2);
++    expect(middle.materialAlong).toBeCloseTo(0.9 * Math.sqrt(9.81 * 7), 3);
++    expect(middle.materialUp).toBeCloseTo(-0.3 * Math.sqrt(9.81 * 7), 3);
++  });
++
++  it('keeps intermediate and near-retirement folds ordered over a curved heightfield at the moved XZ', () => {
++    const curved = (x: number, z: number) => 0.5 + 0.025 * (z + 94) * (z + 94) + 0.008 * (x - 10.5) * (x - 10.5);
++    const shipped = readBarrelCases().map(decodeCase);
++    const fixtures = [
++      { name: 'toy', lib: tubes(), slope: 0.05, footHeight: 2.1 },
++      ...shipped.map(c => ({ name: c.id, lib: new ProfileLibrary([c]), slope: c.slope, footHeight: c.nonlinearity * 7 })),
++      ...[0.26, 0.37].map(a0 => ({ name: `padang-blend-${a0}`, lib: new ProfileLibrary(shipped.filter(c => BARREL_CASES.find(entry => entry.id === c.id)?.spot === 'padang')), slope: 1 / 19, footHeight: a0 * 7 })),
++      ...[0.19, 0.26].map(a0 => ({ name: `point-blend-${a0}`, lib: new ProfileLibrary(shipped.filter(c => BARREL_CASES.find(entry => entry.id === c.id)?.spot === 'point')), slope: 0.0465116, footHeight: a0 * 7 })),
++    ];
++    const report: { name: string; fraction: number; lines: number; multiple: number; uniformSwap: number;
++      swap: number; minimumGap: number; foldWidth: number }[] = [];
++    const legacyReport: { name: string; fraction: number; uniformSwap: number; swap: number; lines: number }[] = [];
++    for (const { name, lib, slope, footHeight } of fixtures) {
++      const times = lib.profileTimes({ slope, footHeight, footDepth: 7 });
++      let initialWidth = 0;
++      let initialMultiple = 0;
++      let sourceLegacyUniform = 0;
++      let sourceLegacyVarying = 0;
++      for (const fraction of [0, 0.25, 0.5, 0.85, 0.99]) {
++        const tau = times.touchdownSeconds + fraction * times.collapseSeconds;
++        const front = records(21, () => tau, -100);
++        for (let k = 0; k < 21; k += 1) front[k * FRONT_STRIDE + FRONT_FIELD.footHeight] = footHeight;
++        const contact = new SweptLoft(lib, slope, { contact: true }).build(front, 21, 0.5, curved);
++        const drawing = new SweptLoft(lib, slope, { holdClearDrawing: true }).build(front, 21, 0.5, curved);
++        expect(drawing.sliceCount).toBe(contact.sliceCount);
++        // Main held geometry is shared exactly. Existing contact-only forward-rest probes use F64 pointAt while
++        // drawing ramps use F32 profileAt; their exterior seam rounding is outside this collapse mapping's domain.
++        for (let s = 0; s < contact.sliceCount; s += 1) {
++          const from = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest);
++          const to = 3 * (s * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.toe + 1);
++          expect(drawing.positions.subarray(from, to)).toEqual(contact.positions.subarray(from, to));
++        }
++        const layers = checkLayers(contact);
++        expect(layers.uniformSwap, JSON.stringify({ name, fraction, worst: layers.worstUniform })).toBeLessThan(1e-4);
++        expect(layers.swap, JSON.stringify({ name, fraction, worst: layers.worst })).toBeLessThan(0.002 * 7);
++        // Some source undersides have valid short S-wiggles (a30 alone already repeats 2.44% of probes before
++        // collapse). Preserve their baseline multiplicity instead of inventing a per-case 2% acceptance bound.
++        if (fraction === 0) initialMultiple = layers.multiple;
++        else if (fraction < 0.99) expect(layers.multiple, `${name} fraction=${fraction}`).toBeLessThanOrEqual(initialMultiple);
++        const middle = sliceAt(contact, 10);
++        const lip = 3 * (middle * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.lip);
++        const throat = 3 * (middle * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.throat);
++        const width = (contact.positions[lip] - contact.positions[throat]) * contact.sliceRayX[middle]
++          + (contact.positions[lip + 2] - contact.positions[throat + 2]) * contact.sliceRayZ[middle];
++        if (fraction === 0) initialWidth = width;
++        if (fraction === 0.99) {
++          expect(layers.lines).toBeGreaterThan(0);
++          // Remaining fold support contracts quadratically, rather than leaving broad coincident replacement layers.
++          // Very thin tip layers can coincide within F32 precision; record their signed gap without claiming strict
++          // numerical separation at retirement. Existing order bounds above remain unchanged.
++          expect(width, `${name} near-retirement footprint`).toBeLessThan(initialWidth * 0.0003 + 2 ** -15);
++        }
++        report.push({ name, fraction, lines: layers.lines, multiple: layers.multiple,
++          uniformSwap: layers.uniformSwap, swap: layers.swap, minimumGap: layers.minimumGap, foldWidth: width });
++        const legacy = new SweptLoft(lib, slope, { holdClearDrawing: false }).build(front, 21, 0.5, curved);
++        const legacyLayers = checkLayers(legacy);
++        if (fraction === 0) {
++          sourceLegacyUniform = legacyLayers.uniformSwap;
++          sourceLegacyVarying = legacyLayers.swap;
++        }
++        // Legacy drawing uses the source touchdown contour, which can already cross. Its common chart must not
++        // introduce a greater layer-order error than that source; the independent held bounds above stay strict.
++        expect(legacyLayers.uniformSwap, JSON.stringify({ name, fraction, legacy: legacyLayers.worstUniform }))
++          .toBeLessThanOrEqual(Math.max(1e-4, sourceLegacyUniform));
++        expect(legacyLayers.swap, JSON.stringify({ name, fraction, legacy: legacyLayers.worst }))
++          .toBeLessThanOrEqual(Math.max(0.002 * 7, sourceLegacyVarying));
++        expect(Array.from(legacy.positions.subarray(0, 3 * legacy.vertexCount)).every(Number.isFinite)).toBe(true);
++        legacyReport.push({ name, fraction, uniformSwap: legacyLayers.uniformSwap, swap: legacyLayers.swap, lines: legacyLayers.lines });
++      }
+     }
++    console.info('collapse curved-sea layers', JSON.stringify({
++      fixtureCount: fixtures.length, stagesPerFixture: 5, probes: report.reduce((sum, row) => sum + row.lines, 0),
++      maximumUniformSwap: Math.max(...report.map(row => row.uniformSwap)),
++      maximumVaryingSwap: Math.max(...report.map(row => row.swap)),
++      late: report.filter(row => row.fraction === 0.99),
++      legacy: {
++        probes: legacyReport.reduce((sum, row) => sum + row.lines, 0),
++        maximumUniformSwap: Math.max(...legacyReport.map(row => row.uniformSwap)),
++        maximumVaryingSwap: Math.max(...legacyReport.map(row => row.swap)),
++        source: legacyReport.filter(row => row.fraction === 0),
++      },
++    }));
+   });
+ });
+ 
+diff --git a/src/wave/barrel/sweptLoft.ts b/src/wave/barrel/sweptLoft.ts
+index 456c83487..146b3d275 100644
+--- a/src/wave/barrel/sweptLoft.ts
++++ b/src/wave/barrel/sweptLoft.ts
+@@ -1,5 +1,6 @@
+ import type { SpotName } from '../Bathymetry';
+ import { BARREL_SPOTS } from './barrelSpots';
++import { collapseEaseRate, collapseProfile } from './collapseProfile';
+ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+ import { CrestRayPlan, minimumCrestRaySpacing } from './crestRays';
+ import { LANDMARK, PROFILE_POINTS, type FrameBlend, type ProfileLibrary, type ProfileQuery } from './ProfileLibrary';
+@@ -98,8 +99,8 @@ export interface LoftResult {
+   sliceCollapse: Float32Array;
+   sliceFade: Float32Array;
+   /**
+-   * Contact mode: per slice, how far its held lip tip stands from the drawn one, m, and the most this build: about a
+-   * frame's travel between a case's held frame and touchdown (the advisor, 2026-09-30); 0 in the drawing.
++   * Contact mode: per slice, the source held/drawing lip-tip gap before collapse mapping, m, and the most this build:
++   * about a frame's travel between a case's held frame and touchdown (the advisor, 2026-09-30); 0 in the drawing.
+    */
+   sliceTipGap: Float32Array;
+   tipGap: number;
+@@ -143,9 +144,10 @@ export interface LoftResult {
+   sliceTipAlong: Float32Array;
+   sliceTipUp: Float32Array;
+   /**
+-   * Contact mode: the lip landmark's geometric transport along the ray and up, m/s. Before sustained overturn this
+-   * landmark moves along the steep face and is not a material jet; after the contact holds, its geometric motion
+-   * stops while the measured material flow above can continue. These values describe movement of the contact shape.
++   * Contact mode: the lip landmark's unweighted profile transport along the ray and up, m/s. Before sustained overturn
++   * this landmark moves along the steep face and is not a material jet; after the contact holds, its geometric motion
++   * stops while the measured material flow above can continue. Post-touchdown unfolding adds its horizontal transport.
++   * These values exclude the loft's vertical fade, end sealing and the sea's motion; they are not material jet flow.
+    */
+   sliceTipTransportAlong: Float32Array;
+   sliceTipTransportUp: Float32Array;
+@@ -214,8 +216,10 @@ interface Sample {
+  *   point's crest, the anchor on the crest point K = S − c n, before the throw and from it alike, with or without a
+  *   throw point. From its throw the point runs on its pace (`SweptCrash`) from where its crest crossed its throw depth,
+  *   so the drawn crest leaves from there and runs on at the crest's measured speed.
+- * - **After touchdown** (the advisor, 2026-09-30): the drawing keeps the touchdown frame, the visual event; the slice
+- *   fades into the water over its tube's collapse, √(2W/g), and is dropped once faded.
++ * - **After touchdown**: one shared monotone X chart compresses the contour's pocket interval about its impact point,
++ *   preserving ordinary held lip impact points (contracting an overrun toward the fixed toe), while fading onto the
++ *   water sampled at its moved XZ. It keeps the tube's collapse clock, √(2W/g), and is dropped once faded. This
++ *   replaces vertical-only flattening of a wide folded ribbon.
+  * - **Seam** (ruling 3): a profile's first and last `pinned` samples blend onto the water, the extensions lie on it,
+  *   and each vertex carries the mask's value: 1 over the profile, 0 a `band` past it.
+  * - **Resampling** (ruling 4): `spacing`, refined to `fine` where neighbouring clocks differ by more than `frames`
+@@ -224,9 +228,9 @@ interface Sample {
+  *   front's is dropped, and counted, so the drawing and the contact show one surface.
+  * - **Contact mode** (PR 4, the advisor's ruling 2): each blended case is held at its own last clear frame
+  *   (`heldFrame`: the jet off the face, the void open) through touchdown and the collapse (the clock and phase run on),
+- *   so it never self-crosses yet follows the drawing until then; each slice's held tip's distance from the drawn one is
+- *   kept. Its weights are the drawing's: the lerp toward the same water by the same weight keeps a vertical line's
+- *   crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
++ *   avoiding the source frames' touchdown crossings while following the drawing until then; each slice's source held
++ *   tip's distance from the source drawn one is kept. Its unfolding and weights are the drawing's, shared by the page
++ *   and worker.
+  * A vertex resting on the water asks its height; one lifted fully off it is still level plus the profile.
+  * Only + − × ÷ and √, for online determinism: PR 4's contact runs the same code in the worker.
+  */
+@@ -596,7 +600,7 @@ export class SweptLoft {
+       const nz = this.plannedRayZ[k];
+       const tau = s.tau;
+       // The drawing keeps the touchdown frame, the visual event; the contact also holds each blended case at its own
+-      // last clear frame, never self-crossing (the advisor, 2026-09-30). The clear-profile drawing option uses that hold;
++      // last clear frame, avoiding the source's touchdown crossings. The clear-profile drawing option uses that hold;
+       // both clocks run on.
+       const query = this.query;
+       query.footHeight = s.footHeight;
+@@ -639,9 +643,9 @@ export class SweptLoft {
+       const d = Math.min(sigma - f.first, f.last - sigma);
+       const r0 = Math.min(1, d / LOFT.endBlend);
+       const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
+-      // The contact follows the drawing's weight: the lerp toward the same water by the same weight keeps a vertical
+-      // line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
++      // Both modes use the same post-touchdown unfolding before sampling the sea at each moved vertex.
+       const w = wEnd * wFade;
++      const collapseTipDisplacement = collapseProfile(profile, wFade);
+       let overturned = 0;
+       for (let i = LOFT.pinned; i < LAST - LOFT.pinned; i += 1) {
+         if (profile[2 * (i + 1)] < profile[2 * i]) {
+@@ -724,7 +728,8 @@ export class SweptLoft {
+       r.sliceTipUp[slice] = lookup.tipUp;
+       if (this.contact) {
+         const transport = this.landmarkVelocity(s, tau, lookup.frameSeconds, LANDMARK.lip);
+-        r.sliceTipTransportAlong[slice] = transport[0];
++        r.sliceTipTransportAlong[slice] = tau > touchdown
++          ? transport[0] + collapseTipDisplacement * collapseEaseRate(wFade, lookup.collapseSeconds) : transport[0];
+         r.sliceTipTransportUp[slice] = transport[1];
+       } else {
+         r.sliceTipTransportAlong[slice] = 0;
+diff --git a/src/wave/barrel/sweptLoftClearRoof.test.ts b/src/wave/barrel/sweptLoftClearRoof.test.ts
+index aa5f1de35..e172a8c33 100644
+--- a/src/wave/barrel/sweptLoftClearRoof.test.ts
++++ b/src/wave/barrel/sweptLoftClearRoof.test.ts
+@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer';
+ import { describe, expect, it } from 'vitest';
+ import { BARREL_CASES } from './barrelLibraryIndex';
+ import { BARREL_SPOTS } from './barrelSpots';
++import { collapseProfile } from './collapseProfile';
+ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+ import { sheetTablesLookup } from './lipSheet';
+ import { readBarrelCases } from './nodeBarrelCases';
+@@ -155,12 +156,18 @@ describe('the clear-profile drawing hold', () => {
+       const lookup = library.profileAt(actual, profile);
+       const fade = collapseFade(actual.seconds, lookup.touchdownSeconds, lookup.collapseSeconds);
+       const formed = sheetTablesLookup(library.frameBlend(actual, blend()), sheets);
++      collapseProfile(profile, fade);
+       expect(b.sliceTau[middle]).toBe(actual.seconds);
+       expect(b.sliceFade[middle]).toBe(Math.fround(fade));
+       expect(b.sliceFormed[middle]).toBe(Math.fround(formed));
+       for (let point = LANDMARK.crest; point <= LANDMARK.toe; point += 1) {
+         const v = middle * LOFT_SAMPLES + LOFT.extensionSamples + point;
+         expect(b.positions[3 * v + 1], `tau=${actual.seconds}, point=${point}`).toBe(Math.fround(0.5 + fade * profile[2 * point + 1]));
++        if (actual.seconds <= lookup.touchdownSeconds) {
++          // Independent pre-touchdown placement: the unchanged held profile sits exactly on the crest anchor.
++          expect(b.positions[3 * v]).toBe(10);
++          expect(b.positions[3 * v + 2]).toBe(Math.fround(-100 + profile[2 * point] - profile[2 * LANDMARK.crest]));
++        }
+         expect(b.lift[v]).toBe(Math.fround(fade));
+         if (formed > 0 && point > LANDMARK.crest && point < LANDMARK.throat) {
+           const ramp = Math.min(1, Math.min(point - LANDMARK.crest, LANDMARK.throat - point) / (SHEET.ramp + 1));

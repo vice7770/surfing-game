@@ -1,0 +1,59 @@
+import { LANDMARK } from './ProfileLibrary';
+
+/** Smooth post-touchdown unfolding, using the same remaining-life fraction as the vertical collapse. */
+export function collapseEase(fade: number): number {
+  const progress = Math.max(0, Math.min(1, 1 - fade));
+  return progress * progress * (3 - 2 * progress);
+}
+
+/** The unfolding share's rate per second; zero at touchdown and retirement. */
+export function collapseEaseRate(fade: number, seconds: number): number {
+  if (!(seconds > 0)) return 0;
+  const progress = Math.max(0, Math.min(1, 1 - fade));
+  return 6 * progress * (1 - progress) / seconds;
+}
+
+/**
+ * Collapse the pocket with ONE monotone horizontal chart shared by outer lip, underside and face. Compress the
+ * pocket's [back, impact] interval about impact. A cubic Hermite crest→back transition keeps the crest slope at 1
+ * and meets the pocket's remaining-width slope without a kink; impact→toe stays fixed.
+ * Keeping authored Y avoids a branch-specific chord crossing a curved outer roof, or different envelope-height
+ * interpolants crossing the face through the underside. The loft's existing Y fade samples heightAt at MOVED XZ.
+ *
+ * Only crest→toe interior points change. Shipped held tips lie within those endpoints and keep their impact point;
+ * an overrun beyond toe instead contracts about toe, without changing the toe or exterior. A contour without a
+ * nonempty pocket inside the endpoints retains its geometry. Before touchdown no profile store occurs.
+ *
+ * Returns tip X motion per unfolding share. This geometric transport
+ * is independent of the library's material jet velocity. No allocations or transcendental functions are required;
+ * the page and worker perform the same arithmetic and F32 stores.
+ */
+export function collapseProfile(profile: Float32Array, fade: number): number {
+  if (fade >= 1) return 0;
+  const crest = profile[2 * LANDMARK.crest];
+  const toe = profile[2 * LANDMARK.toe];
+  const originalTip = profile[2 * LANDMARK.lip];
+  const impact = Math.min(toe, originalTip);
+  let back = originalTip;
+  for (let i = LANDMARK.lip + 1; i <= LANDMARK.throat; i += 1) back = Math.min(back, profile[2 * i]);
+  if (!(crest < back && back < impact)) return 0;
+  const ease = collapseEase(fade);
+  const remaining = 1 - ease;
+  const movedBack = back + ease * (impact - back);
+  const oldSpan = back - crest;
+  const newSpan = movedBack - crest;
+  // Normalized Hermite endpoint slopes oldSpan/newSpan and remaining*oldSpan/newSpan are both in [0,1],
+  // so this transition is monotone. Its world slopes are 1 at crest and remaining at the affine pocket join.
+  const quadratic = 3 * newSpan - (2 + remaining) * oldSpan;
+  const cubic = (1 + remaining) * oldSpan - 2 * newSpan;
+  for (let i = LANDMARK.crest + 1; i < LANDMARK.toe; i += 1) {
+    const x = profile[2 * i];
+    if (x > crest && x < back) {
+      const t = (x - crest) / oldSpan;
+      profile[2 * i] = crest + t * (oldSpan + t * (quadratic + t * cubic));
+    }
+    else if (x >= back && (x <= impact || impact === toe)) profile[2 * i] = x + ease * (impact - x);
+  }
+  const displacement = originalTip > impact ? impact - originalTip : 0;
+  return displacement;
+}

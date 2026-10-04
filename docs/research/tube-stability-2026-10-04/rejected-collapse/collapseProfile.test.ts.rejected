@@ -1,0 +1,170 @@
+import { describe, expect, it } from 'vitest';
+import { collapseEase, collapseEaseRate, collapseProfile } from './collapseProfile';
+import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
+import { readBarrelCases } from './nodeBarrelCases';
+import { decodeCase } from './profileFormat';
+
+/** A crest at (0,4), lip (4,2), retreating underside to (2,3), and toe (6,0). */
+function folded(): Float32Array {
+  const points = new Float32Array(2 * PROFILE_POINTS);
+  const knots = [[0, -2, 0], [32, 0, 4], [64, 4, 2], [88, 2, 3], [112, 6, 0], [127, 8, 0]];
+  for (let k = 0; k + 1 < knots.length; k += 1) {
+    const [from, x, y] = knots[k];
+    const [to, endX, endY] = knots[k + 1];
+    for (let i = from; i <= to; i += 1) {
+      const share = (i - from) / (to - from);
+      points[2 * i] = x + share * (endX - x);
+      points[2 * i + 1] = y + share * (endY - y);
+    }
+  }
+  return points;
+}
+
+/** The curved outer roof whose chord toward the lip cuts through an initially clear underside. */
+function curvedRoof(): Float32Array {
+  const points = new Float32Array(2 * PROFILE_POINTS);
+  const knots = [[0, -2, 0], [32, 0, 4], [40, 1, 2.75], [48, 2, 1.5], [56, 3, 1.25], [64, 4, 1],
+    [72, 3, 1.05], [80, 2, 1.4], [88, 1, 2.7], [96, 1, 0], [112, 6, 0], [127, 8, 0]];
+  for (let k = 0; k + 1 < knots.length; k += 1) {
+    const [from, x, y] = knots[k];
+    const [to, endX, endY] = knots[k + 1];
+    for (let i = from; i <= to; i += 1) {
+      const share = (i - from) / (to - from);
+      points[2 * i] = x + share * (endX - x);
+      points[2 * i + 1] = y + share * (endY - y);
+    }
+  }
+  return points;
+}
+
+/** Proper intersection of non-neighbouring polyline segments; shared endpoints and collinear contact do not cross. */
+function properCrossings(points: Float32Array): number {
+  const side = (a: number, b: number, c: number) => (points[2 * b] - points[2 * a]) * (points[2 * c + 1] - points[2 * a + 1])
+    - (points[2 * b + 1] - points[2 * a + 1]) * (points[2 * c] - points[2 * a]);
+  let count = 0;
+  for (let i = LANDMARK.crest; i < LANDMARK.toe; i += 1) {
+    for (let j = i + 2; j < LANDMARK.toe; j += 1) {
+      if (side(i, i + 1, j) * side(i, i + 1, j + 1) < 0 && side(j, j + 1, i) * side(j, j + 1, i + 1) < 0) count += 1;
+    }
+  }
+  return count;
+}
+
+describe('the post-touchdown profile unfolding', () => {
+  it('leaves the original bytes untouched until touchdown, including the crest/toe exterior', () => {
+    const profile = folded();
+    const original = profile.slice();
+    for (const fade of [2, 1]) {
+      expect(collapseProfile(profile, fade)).toBe(0);
+      expect(profile).toEqual(original);
+    }
+    collapseProfile(profile, 0.5);
+    for (let i = 0; i < PROFILE_POINTS; i += 1) {
+      expect(profile[2 * i + 1]).toBe(original[2 * i + 1]);
+      if (i <= LANDMARK.crest || i >= LANDMARK.toe) {
+        expect(profile[2 * i]).toBe(original[2 * i]);
+        expect(profile[2 * i + 1]).toBe(original[2 * i + 1]);
+      }
+    }
+    expect(profile[2 * LANDMARK.lip]).toBe(original[2 * LANDMARK.lip]);
+  });
+
+  it('closes the retreating underside toward the existing impact point and a monotone rest strip', () => {
+    const half = folded();
+    collapseProfile(half, 0.5);
+    expect(half[2 * LANDMARK.throat]).toBe(3);
+    expect(half[2 * LANDMARK.throat + 1]).toBe(3);
+    const late = folded();
+    collapseProfile(late, 0.01);
+    const lateWidth = late[2 * LANDMARK.lip] - late[2 * LANDMARK.throat];
+    expect(lateWidth).toBeGreaterThan(0);
+    expect(lateWidth).toBeLessThan(0.0006);
+    const rest = folded();
+    collapseProfile(rest, 0);
+    for (let i = LANDMARK.crest; i < LANDMARK.toe; i += 1) expect(rest[2 * (i + 1)]).toBeGreaterThanOrEqual(rest[2 * i]);
+  });
+
+  it('starts and ends horizontal collapse smoothly, and reports tip transport separately from material velocity', () => {
+    expect(collapseEase(1)).toBe(0);
+    expect(collapseEase(0)).toBe(1);
+    expect(collapseEaseRate(1, 2)).toBe(0);
+    expect(collapseEaseRate(0, 2)).toBe(0);
+    expect(collapseEaseRate(0.5, 2)).toBe(0.75);
+    // An artificial lip overruns its fixed toe: the common chart contracts its tip toward that bound.
+    const source = folded();
+    source[2 * LANDMARK.toe] = 3.5;
+    const displaced = source.slice();
+    const displacement = collapseProfile(displaced, 0.5);
+    expect(displacement).toBe(-0.5);
+    expect(displaced[2 * LANDMARK.lip]).toBe(3.75);
+    const delta = 0.001;
+    const ahead = source.slice();
+    const behind = source.slice();
+    collapseProfile(ahead, 0.5 - delta / 2);
+    collapseProfile(behind, 0.5 + delta / 2);
+    expect((ahead[2 * LANDMARK.lip] - behind[2 * LANDMARK.lip]) / (2 * delta)).toBeCloseTo(displacement * collapseEaseRate(0.5, 2), 3);
+  });
+
+  it('keeps the crest slope at one and joins the compressed pocket without a derivative kink', () => {
+    const profile = folded();
+    const epsilon = 0.001;
+    profile[2 * 33] = epsilon;
+    profile[2 * 63] = 2 - epsilon;
+    profile[2 * 65] = 2 + epsilon;
+    const original = profile.slice();
+    collapseProfile(profile, 0.5);
+    const secant = (a: number, b: number) => (profile[2 * b] - profile[2 * a]) / (original[2 * b] - original[2 * a]);
+    expect(secant(LANDMARK.crest, 33)).toBeCloseTo(1, 2);
+    expect(secant(63, LANDMARK.throat)).toBeCloseTo(0.5, 2);
+    expect(secant(LANDMARK.throat, 65)).toBeCloseTo(0.5, 2);
+    // The transition stretches from x=0 to movedBack=3, while both ends meet their neighboring chart slopes.
+    expect(profile[2 * LANDMARK.crest]).toBe(0);
+    expect(profile[2 * LANDMARK.throat]).toBe(3);
+  });
+
+  it('moves the curved outer roof and returning contour together rather than crossing it on a chord', () => {
+    expect(properCrossings(curvedRoof())).toBe(0);
+    for (const fade of [0.75, 0.5, 0.25, 0.15, 0.01]) {
+      const profile = curvedRoof();
+      collapseProfile(profile, fade);
+      expect(properCrossings(profile), `fade=${fade}`).toBe(0);
+      if (fade === 0.5) {
+        expect(profile[2 * LANDMARK.throat]).toBe(2.5);
+        expect(profile[2 * LANDMARK.throat + 1]).toBeCloseTo(2.7, 6);
+        // The outer point originally at (1,2.75) also moves to x=2.5, retaining its clearance over the underside.
+        expect(profile[2 * 40]).toBe(2.5);
+        expect(profile[2 * LANDMARK.throat + 1]).toBeLessThan(profile[2 * 40 + 1]);
+      }
+    }
+  });
+
+  it('keeps reconnected real profile segments clear when they straddle the chart’s back and impact knots', () => {
+    const source = readBarrelCases('padang').map(decodeCase).find(c => c.id === 'periodic-padang19s-l12')!;
+    const library = new ProfileLibrary([source]);
+    const query = { slope: source.slope, footHeight: source.nonlinearity * 7, footDepth: 7, seconds: 0, hold: 'contact' as const };
+    query.seconds = library.profileTimes(query).touchdownSeconds;
+    const original = new Float32Array(2 * PROFILE_POINTS);
+    library.profileAt(query, original);
+    const back = original[2 * LANDMARK.throat];
+    const impact = original[2 * LANDMARK.lip];
+    // Actual outer 41→42 crosses the back knot, and face 100→101 crosses impact. The mesh reconnects the moved
+    // endpoints with straight chords, rather than bending each edge through the chart knot; test those chords.
+    expect(original[2 * 41]).toBeLessThan(back);
+    expect(original[2 * 42]).toBeGreaterThan(back);
+    expect(original[2 * 100]).toBeLessThan(impact);
+    expect(original[2 * 101]).toBeGreaterThan(impact);
+    const chord = (profile: Float32Array, point: number, x: number) => {
+      const u = 2 * point;
+      const share = (x - profile[u]) / (profile[u + 2] - profile[u]);
+      expect(share).toBeGreaterThanOrEqual(0);
+      expect(share).toBeLessThanOrEqual(1);
+      return profile[u + 1] + share * (profile[u + 3] - profile[u + 1]);
+    };
+    for (const fade of [1, 0.75, 0.5, 0.25, 0.15, 0.01]) {
+      const profile = original.slice();
+      collapseProfile(profile, fade);
+      expect(chord(profile, 41, profile[2 * LANDMARK.throat])).toBeGreaterThan(profile[2 * LANDMARK.throat + 1]);
+      expect(chord(profile, 100, profile[2 * LANDMARK.lip])).toBeLessThan(profile[2 * LANDMARK.lip + 1]);
+    }
+  });
+});
