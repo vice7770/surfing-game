@@ -395,7 +395,8 @@ export class BoussinesqSolver extends ShallowWaterSolver {
   adoptDeviceStep(elapsed: number): void {
     this.time += elapsed;
     let peak = 0;
-    for (const nu of this.viscosity) if (nu > peak) peak = nu;
+    const viscosity = this.viscosity;
+    for (let i = 0; i < viscosity.length; i += 1) if (viscosity[i] > peak) peak = viscosity[i];
     this.viscosityPeak = peak;
     this.agePlunge(elapsed);
   }

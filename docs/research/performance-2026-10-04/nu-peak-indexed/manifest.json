@@ -1,0 +1,944 @@
+{
+  "schema": "nu-peak-archive/v1",
+  "runtimeBaseline": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+  "adoptedSourceSha256": "c1d87564677e35ece932831139426e31f19b69490d961dccaf8b8e665e3e0910",
+  "payloads": [
+    {
+      "archive": "evidence/cpu/build.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/build.mjs",
+      "rawBytes": 2785,
+      "rawSha256": "49054955d08d7377e203f1ad3a5fa9cd307cfd7e0fe5602a636b6063c09dcd57",
+      "gzipBytes": 1247,
+      "gzipSha256": "4c6ee659856467f2dfe7092f397d06ea5e196f8ffb7e520c9b611325b63f6852"
+    },
+    {
+      "archive": "evidence/cpu/common.ts.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/common.ts",
+      "rawBytes": 2843,
+      "rawSha256": "dae98072e2d680d165884f0dd8d3504f70518f52e30b88eb75fa1f8ee0c07a02",
+      "gzipBytes": 1185,
+      "gzipSha256": "36dd6a506d12972f715e5b115bb87e8bcfb99939a715ff449a62f7b95b7166aa"
+    },
+    {
+      "archive": "evidence/cpu/compiled/candidate.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/compiled/candidate.mjs",
+      "rawBytes": 721952,
+      "rawSha256": "4798190258a488311f2a1aa893ca108d1e411d68bceae75c3eeda37c27e64b2c",
+      "gzipBytes": 189846,
+      "gzipSha256": "a6990838a71c2df111b4ecd3c0ccefa1c447b5bccb49a2e92da9629a2bfa857e"
+    },
+    {
+      "archive": "evidence/cpu/compiled/cost.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/compiled/cost.mjs",
+      "rawBytes": 16078,
+      "rawSha256": "3970f9b69a93fb0c82d0ece13f0f22fa63fa35aa202b2e1ac5e3a762353fd0c2",
+      "gzipBytes": 5757,
+      "gzipSha256": "0d165b5acf1320a71df4ac8213c7e6e2733f117c31d9ec948fb448dd823f2791"
+    },
+    {
+      "archive": "evidence/cpu/compiled/proof.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/compiled/proof.mjs",
+      "rawBytes": 23875,
+      "rawSha256": "0374fa02daddae5c75ba03b6cae7c5f44929a4b75993b46c4476ec81d864d04a",
+      "gzipBytes": 7282,
+      "gzipSha256": "09113055c51105f57b3b6668f3a046b1dbc4679bd85d5258d19fec6ba5edc4c4"
+    },
+    {
+      "archive": "evidence/cpu/compiled.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/compiled.json",
+      "rawBytes": 960,
+      "rawSha256": "3605914add2bf47d1ae29b08d3170249c1bee1ec539d6a03193e9028eec564f8",
+      "gzipBytes": 452,
+      "gzipSha256": "a924c79c525aa9b0238f4fe76f451ebbde326e2a9b456811ebff13f292937291"
+    },
+    {
+      "archive": "evidence/cpu/cost-first/report.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/cost-first/report.json",
+      "rawBytes": 24989,
+      "rawSha256": "1648b51ae4aa6fb681688a36ad93b6f84cb714cb6c126a824e1242f8e9b288cf",
+      "gzipBytes": 5421,
+      "gzipSha256": "166b8a9d617dd9cffe391aeac108d4f4ba3121bf53aebf1cb78712f1ab75be60"
+    },
+    {
+      "archive": "evidence/cpu/cost-first/terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/cost-first/terminal.json",
+      "rawBytes": 362,
+      "rawSha256": "92b7bb6db50fbef06c25cba730b3ad243b64a47389bc2d0d18a939fb3b6c9906",
+      "gzipBytes": 271,
+      "gzipSha256": "f1d873883bb4e196d39d1ad81aea99a9380f4bff3a7f4a1014c293a04b512175"
+    },
+    {
+      "archive": "evidence/cpu/cost.ts.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/cost.ts",
+      "rawBytes": 7442,
+      "rawSha256": "751d0b6008ff188145181515f22c1e30967b1d664b31c4dfe8df33443290dbd2",
+      "gzipBytes": 3178,
+      "gzipSha256": "46ebd157cde84c303ecb66ff9ce6050e442e4ba947641b008f4fcc95997fa7ed"
+    },
+    {
+      "archive": "evidence/cpu/entry.ts.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/entry.ts",
+      "rawBytes": 882,
+      "rawSha256": "4b432664a538f10d2d0594bebf8bafaee6e5afd52ce109a412b3b4e42d732ae6",
+      "gzipBytes": 277,
+      "gzipSha256": "21059c3e066633b88d7f90e9564e831236d7a21eb8629f8e74485c9e92dbaf14"
+    },
+    {
+      "archive": "evidence/cpu/gates.py.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/gates.py",
+      "rawBytes": 4124,
+      "rawSha256": "d56f6fa0b555b3282c7dce33011305fca6966264ac9e4fff45152fbd6d975ff5",
+      "gzipBytes": 1623,
+      "gzipSha256": "80882e2df4482b803fc20fc387554d46b55a29909da37226f5d03284636fe6c1"
+    },
+    {
+      "archive": "evidence/cpu/inputs.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/inputs.json",
+      "rawBytes": 1425,
+      "rawSha256": "26eb9536c009bbcbbfcc41dd5974bf54ee071ef0d6553ef9b5cb77e33129dc6d",
+      "gzipBytes": 755,
+      "gzipSha256": "7f2441b03d6042d44dba724dbe7fb440d5440268dd44f0db4909234009d5a0c7"
+    },
+    {
+      "archive": "evidence/cpu/patch-source.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/patch-source.mjs",
+      "rawBytes": 533,
+      "rawSha256": "234a4c1e24ca1a8c11d3851f581bdb5226235e5bec67601f6568d09921e6325c",
+      "gzipBytes": 320,
+      "gzipSha256": "e2669aeb3b8b8ae262e80f5f4515b1052a34dafd80f5aee510bb0e0471ca34cd"
+    },
+    {
+      "archive": "evidence/cpu/proof-first/report.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/proof-first/report.json",
+      "rawBytes": 4644,
+      "rawSha256": "c8638e99fb86e07fbca4bf81813ec77d67a2fa4bb9daf34b7fe42ad8f5efaea6",
+      "gzipBytes": 1565,
+      "gzipSha256": "2bf8eb481f5e7bed2fe3e4823363557ededffac8a423938f74ff02f541d5b2c7"
+    },
+    {
+      "archive": "evidence/cpu/proof-first/terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/proof-first/terminal.json",
+      "rawBytes": 336,
+      "rawSha256": "7f003c065f8a03d6b1ebaf749e81d91ad08efefd780718c8adbb2e0b8f3d91ba",
+      "gzipBytes": 257,
+      "gzipSha256": "cb52a8b39b014bddea607f138d4dbd0f5ddbc867489350eb906bd9f1e04a1242"
+    },
+    {
+      "archive": "evidence/cpu/proof.ts.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/proof.ts",
+      "rawBytes": 14450,
+      "rawSha256": "889e9362eac9288ddf653b7cac98cb94b51354edfe1090252b295913b912cfa3",
+      "gzipBytes": 4786,
+      "gzipSha256": "b4186c2b8d916603bf28653c17a839bc0a64a0af60363287da298838cbc089c6"
+    },
+    {
+      "archive": "evidence/cpu/proposal.md.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/proposal.md",
+      "rawBytes": 5888,
+      "rawSha256": "7f32fd5c0e7cfa804c34e03c4d64f98f50e3954237bf88b8ad7fcaa7dfdfafd2",
+      "gzipBytes": 2882,
+      "gzipSha256": "320c92b718f286daf2f707ba6a03dfc14a49b9946b9f0134cfbf81ce57de4445"
+    },
+    {
+      "archive": "evidence/cpu/ready.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/ready.json",
+      "rawBytes": 17886,
+      "rawSha256": "0e421b1a74f6cd5f2b641138d2a3923270b40012cfc9575ec4c19ccadba4d8df",
+      "gzipBytes": 5303,
+      "gzipSha256": "ce9b120ca085d22bf4730c62d66f284171b6490012568057f590b3d5fe6e9b6e"
+    },
+    {
+      "archive": "evidence/cpu/root-checks/command-0.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-checks/command-0.log",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/cpu/root-checks/command-1.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-checks/command-1.log",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/cpu/root-checks/command-2.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-checks/command-2.log",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/cpu/root-checks/command-3.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-checks/command-3.log",
+      "rawBytes": 747,
+      "rawSha256": "fdb8b4501424567112c1c55075edd9cb3976832d5fb051d65d3e5a5d39e80621",
+      "gzipBytes": 399,
+      "gzipSha256": "03761018e1202a4510bd46d29a9025b5396b2b064484675e6862d827dcae2acb"
+    },
+    {
+      "archive": "evidence/cpu/root-checks/command-4.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-checks/command-4.log",
+      "rawBytes": 183,
+      "rawSha256": "f3e156443837b2f8a63e795a8ee71a1fa32612041a7ca671576979c441d02409",
+      "gzipBytes": 158,
+      "gzipSha256": "1884ba7abd7c477cd4e5a0def0a5aa43bbcf77bd04978c08b172257a3065460d"
+    },
+    {
+      "archive": "evidence/cpu/root-checks/command-5.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-checks/command-5.log",
+      "rawBytes": 204,
+      "rawSha256": "32c28c407021665db15ae7a9b0079e6246b4b93929ff5452ba549af3631634ff",
+      "gzipBytes": 187,
+      "gzipSha256": "c5fdb1a6f70fb2a0ebe8794d0d4e1882b0eb7b7f01c080afc4637154b19a9ac8"
+    },
+    {
+      "archive": "evidence/cpu/root-checks/pins.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-checks/pins.json",
+      "rawBytes": 12945,
+      "rawSha256": "fc5e1fc2fd73dc1b47fc33fd1f630ee3977cdf40bb362f832f3efcf5122e2556",
+      "gzipBytes": 3972,
+      "gzipSha256": "f4074264ab9138b4e425d9469a89fd88344c68b1aa2877ba36ba13832d9c23d7"
+    },
+    {
+      "archive": "evidence/cpu/root-checks/terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-checks/terminal.json",
+      "rawBytes": 2968,
+      "rawSha256": "eedef12bf036a76b4b70bbfad237e237ff2448a7bb1015ef924185bf6fe42800",
+      "gzipBytes": 693,
+      "gzipSha256": "7f6cbbab77af280d177642d7c5a69972c3f6d8f64633520e1c207e64db0bd6f7"
+    },
+    {
+      "archive": "evidence/cpu/root-cost-first/command-0.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-cost-first/command-0.log",
+      "rawBytes": 696,
+      "rawSha256": "efb4e21e0c42891d511a59fedfaf399b75c7b63078b3fe57c906eef97c45f300",
+      "gzipBytes": 452,
+      "gzipSha256": "0583818c838e566e583c367f29a515d313762213ddf1543143b2464847cae798"
+    },
+    {
+      "archive": "evidence/cpu/root-cost-first/pins.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-cost-first/pins.json",
+      "rawBytes": 14073,
+      "rawSha256": "cd03862ec0debcb3059b4f68e3a20ba135e98c3cc226fac710e19a3de832ea7d",
+      "gzipBytes": 4301,
+      "gzipSha256": "d18d70588e4e030aa5e5d4bf9c06a8adfde43c2220f4dbb9d589ed916934f7ed"
+    },
+    {
+      "archive": "evidence/cpu/root-cost-first/terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-cost-first/terminal.json",
+      "rawBytes": 844,
+      "rawSha256": "c25b53c85d77dcfc43a31f00594d08b84d22f4b972882802383f418689ef0cc8",
+      "gzipBytes": 434,
+      "gzipSha256": "8bd5efe581add4851c96c7be0ecf5570b90e3482b650841ba6e6e7e0108f73c7"
+    },
+    {
+      "archive": "evidence/cpu/root-proof-first/command-0.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-proof-first/command-0.log",
+      "rawBytes": 202,
+      "rawSha256": "c2ca037002cee7d29e20e907f1c998c9ccfbf2b78f3743a7c92416e1c2f8c840",
+      "gzipBytes": 178,
+      "gzipSha256": "5d27664fde9273372bb9c158ccd3de481a535f271077f3b49c194fdd233b6209"
+    },
+    {
+      "archive": "evidence/cpu/root-proof-first/pins.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-proof-first/pins.json",
+      "rawBytes": 13690,
+      "rawSha256": "e86de66879153ca1b6747a394178099ec6a7ffe30114ee9a6cd5d621397cc0fe",
+      "gzipBytes": 4187,
+      "gzipSha256": "ad0d6cdc57513d030a0a655f77665f64723d878cdfcdf1f5d2280447576bc9bc"
+    },
+    {
+      "archive": "evidence/cpu/root-proof-first/terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/root-proof-first/terminal.json",
+      "rawBytes": 835,
+      "rawSha256": "143b7affb05c79ff40ebb85098377ed27a469454a0a1e9f821d92c9162d3292f",
+      "gzipBytes": 419,
+      "gzipSha256": "e72362b07cb88202195b719185b76c78c874da79161a7b5c06b5174db00ae6ba"
+    },
+    {
+      "archive": "evidence/cpu/tsconfig.qa.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-indexed-20261004/tsconfig.qa.json",
+      "rawBytes": 630,
+      "rawSha256": "f41d788346bd336f35242f4d9d94be6cec3a7fa1bd7f7e65ef751971494de141",
+      "gzipBytes": 341,
+      "gzipSha256": "f6e79f54db0dced2d7fb494366206a10f5ae4251a755808547d341de220991dd"
+    },
+    {
+      "archive": "evidence/native/README.md.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/README.md",
+      "rawBytes": 5790,
+      "rawSha256": "50faaf7e3ad92d00ef7b2f5daed42012033c7db51519ffda1c1327954b2ead33",
+      "gzipBytes": 2957,
+      "gzipSha256": "b36ac344195e40eea30ff19118c017e197331c8ac938e297335990c454fd94c1"
+    },
+    {
+      "archive": "evidence/native/authority.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/authority.mjs",
+      "rawBytes": 2604,
+      "rawSha256": "3eba470f325d5871d79326bcfb63b6f2b99cc60dc9c1a85eaef0869a2942cbf8",
+      "gzipBytes": 1102,
+      "gzipSha256": "c88e773e25a6731d172f3ca4d271d0e4a170dbe63bff2ee8e9e2e0be1f5e81f7"
+    },
+    {
+      "archive": "evidence/native/authority.mjs.diff.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/authority.mjs.diff",
+      "rawBytes": 3244,
+      "rawSha256": "3a59693498b801c22321eb5db84c348ee70410b9e80b33fff580d22e850cc5bf",
+      "gzipBytes": 1103,
+      "gzipSha256": "c6a17955adee4e2937af0e37529f3d99d8b16a4e7a8236621ec40b6dd5910153"
+    },
+    {
+      "archive": "evidence/native/baseline/build-manifest.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/baseline/build-manifest.json",
+      "rawBytes": 3028,
+      "rawSha256": "61f5a33fe19a73bff6c7d83a3be822e24a51821cd27ebb90a27d825740bf7fdb",
+      "gzipBytes": 1330,
+      "gzipSha256": "cbf7ad15fb38832ee0b4e64e55c4396673983eba07b3d5c2d3c28a12abbe0086"
+    },
+    {
+      "archive": "evidence/native/baseline-reuse.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/baseline-reuse.json",
+      "rawBytes": 3064,
+      "rawSha256": "3300a9f018b3b8e464a5f47f59ea70617dd474feed6dbeca992aa66b7e8f1469",
+      "gzipBytes": 1327,
+      "gzipSha256": "4da364bb8ce50185bc14aa110fb1d98983258e312c05e330956ec51b2ec31d62"
+    },
+    {
+      "archive": "evidence/native/bind-launch.py.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/bind-launch.py",
+      "rawBytes": 1244,
+      "rawSha256": "c00e3bcfab319fe1d1dc0fcd764d10bb595a981b488bbff273f1f8d35d61ed2d",
+      "gzipBytes": 650,
+      "gzipSha256": "a5ccdfa46fc83c6edcfe017a22a15a7b3a39a02ff83c93f6583ff5aa3f564d18"
+    },
+    {
+      "archive": "evidence/native/bind-launch.py.diff.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/bind-launch.py.diff",
+      "rawBytes": 1572,
+      "rawSha256": "7fbebf6bf5f4dbd39a23d1d3f7b808fd216c4971fc8ab3547612cce119057218",
+      "gzipBytes": 675,
+      "gzipSha256": "1f86fb007bc82f9b067f5a1e2d8439a82e245df63d886898c4d37d60095329c1"
+    },
+    {
+      "archive": "evidence/native/bindings.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/bindings.json",
+      "rawBytes": 1430,
+      "rawSha256": "30bd3fb147f0b7ff3c26cc1187cec0701f2e4fce4c3e13abcf7d896392332478",
+      "gzipBytes": 601,
+      "gzipSha256": "2979ef73392e11bfa34b73ab340945025a59e62e06c78080dcd2713cd7c66a97"
+    },
+    {
+      "archive": "evidence/native/borrowed-authorities.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/borrowed-authorities.json",
+      "rawBytes": 6599,
+      "rawSha256": "0cfa787416058bf7ded76572f60e3a4c214d80e7233684ec2996f8de69643773",
+      "gzipBytes": 2089,
+      "gzipSha256": "7fbdd3088c91b9bdac105a48ccc0fec9dea7d467547f30a7ae4bae1aff9bc031"
+    },
+    {
+      "archive": "evidence/native/build-only.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/build-only.mjs",
+      "rawBytes": 5698,
+      "rawSha256": "de8cdcd6ddf7ad4ddb3b214369504aad0a356035aa8919ef8ce960a76679e295",
+      "gzipBytes": 2315,
+      "gzipSha256": "16be45400f16893f69f434ac8482824f363cb6c3828ed080858185583e78e1b3"
+    },
+    {
+      "archive": "evidence/native/build-only.mjs.diff.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/build-only.mjs.diff",
+      "rawBytes": 6781,
+      "rawSha256": "548493a8a639d6e9079a9186731c9d4666d1cfd57eff78dfd2842e2f5b1d4914",
+      "gzipBytes": 2243,
+      "gzipSha256": "3d0d602f3e70a3fd25d2de1ec580025268c6c46de6b4764ecb71ec302dbd2d69"
+    },
+    {
+      "archive": "evidence/native/build-terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/build-terminal.json",
+      "rawBytes": 280917,
+      "rawSha256": "de453767686064b7035536b751e824744951414a2a7a00b84d4dd43eec10b6f1",
+      "gzipBytes": 72585,
+      "gzipSha256": "6f05e43c1dca33c04cf0e09653cdf039c7c13c2376bca295f73f623403d98107"
+    },
+    {
+      "archive": "evidence/native/candidate/build-manifest.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/candidate/build-manifest.json",
+      "rawBytes": 5591,
+      "rawSha256": "0fc03278a88c023666c56a0f92e07751a42ac1cedb132c3e9289a46e1c6c77f2",
+      "gzipBytes": 2062,
+      "gzipSha256": "d9f16b753bd78f5e8124a4f9e8b0a5d0a3b3a9a87aa7607a2638c9e1e1e11066"
+    },
+    {
+      "archive": "evidence/native/checks/01.stderr.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/01.stderr",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/01.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/01.stdout",
+      "rawBytes": 314,
+      "rawSha256": "07e8e977734aec4cbcee6a1c0b8b79d88850707367c7a1605859c1ac41adf6c0",
+      "gzipBytes": 257,
+      "gzipSha256": "0b1dd16a3c243b482b56935844c3b66e69851e26d80ac8241e21757b4d04aa54"
+    },
+    {
+      "archive": "evidence/native/checks/02.stderr.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/02.stderr",
+      "rawBytes": 360,
+      "rawSha256": "351b524197fb492920789369e7f1a271420c757633fbb553b280a181ac4c31a4",
+      "gzipBytes": 254,
+      "gzipSha256": "9b83688569a4cd40d38326b1914108e7df31d7e3abc9c88dc66d2afb77b0d70f"
+    },
+    {
+      "archive": "evidence/native/checks/02.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/02.stdout",
+      "rawBytes": 2393,
+      "rawSha256": "94ebbb72affffb19d1ba40732776da4d2b5fee249e50e7ab69e1ee6db05df88b",
+      "gzipBytes": 955,
+      "gzipSha256": "11824647a5af02140326f17a89210817ea8a35fc184928a98d80e13f30a1c254"
+    },
+    {
+      "archive": "evidence/native/checks/03.stderr.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/03.stderr",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/03.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/03.stdout",
+      "rawBytes": 202,
+      "rawSha256": "3c9ecdb921b73334f2fa0df50f19c7fc60758395e561745e755513bf4604fdcb",
+      "gzipBytes": 181,
+      "gzipSha256": "af26abf25d77a14cc87fb12721dfe9f0ce46f48ac2a8fdcf56dbba85532953ea"
+    },
+    {
+      "archive": "evidence/native/checks/04.stderr.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/04.stderr",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/04.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/04.stdout",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/05.stderr.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/05.stderr",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/05.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/05.stdout",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/06.stderr.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/06.stderr",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/06.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/06.stdout",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/07.stderr.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/07.stderr",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/07.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/07.stdout",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/08.stderr.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/08.stderr",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/08.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/08.stdout",
+      "rawBytes": 13130,
+      "rawSha256": "5736c7ff47f64f670788ca2cfaf1b1d655c032558f01bc2b5c8c2200f47457af",
+      "gzipBytes": 4756,
+      "gzipSha256": "6c4e7f33dd66cd7d4074e03f5c21dc50acee4a9b714185d4f72c2ac8fb2f74f6"
+    },
+    {
+      "archive": "evidence/native/checks/09.stderr.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/09.stderr",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83"
+    },
+    {
+      "archive": "evidence/native/checks/09.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/09.stdout",
+      "rawBytes": 10600,
+      "rawSha256": "21d3c5a5793083a4b2b968360cfc5092dae593d06c576ecce142531810e0fd18",
+      "gzipBytes": 4424,
+      "gzipSha256": "474d01e9184c5391d4acf40dbfb2cb046d1b12ce97e52efc5bb26614e182990c"
+    },
+    {
+      "archive": "evidence/native/checks/source-after.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/source-after.json",
+      "rawBytes": 139781,
+      "rawSha256": "19db3999185ee6616fe96f05c15820188c701eedd082500feef71bbdc2ff0daa",
+      "gzipBytes": 36255,
+      "gzipSha256": "a5ab969074be1faa232d4dab3efb542d8fa79f3842dc9b15287c709fc7e28c6e"
+    },
+    {
+      "archive": "evidence/native/checks/source-before.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/source-before.json",
+      "rawBytes": 139781,
+      "rawSha256": "19db3999185ee6616fe96f05c15820188c701eedd082500feef71bbdc2ff0daa",
+      "gzipBytes": 36255,
+      "gzipSha256": "a5ab969074be1faa232d4dab3efb542d8fa79f3842dc9b15287c709fc7e28c6e"
+    },
+    {
+      "archive": "evidence/native/checks/terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks/terminal.json",
+      "rawBytes": 14319,
+      "rawSha256": "0d2ade4994c3386326c0798d6a519c14007ee1c66d212ef7a999cb145f6c7b1b",
+      "gzipBytes": 2918,
+      "gzipSha256": "91b2c4504d0a903ccd1be647bb8f7090a7c6c7ba511d87bf8bbed575306e0a73"
+    },
+    {
+      "archive": "evidence/native/checks-driver-ready.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks-driver-ready.json",
+      "rawBytes": 1100,
+      "rawSha256": "5fe9ea1d8e6a4697f2c6f96e061ef24659c859dda7c9c4635902f4b3e1b41e21",
+      "gzipBytes": 457,
+      "gzipSha256": "6365dc7c7abcd20fae17440e5999f7b8f5c36752335297f3030963fc5ac646fd"
+    },
+    {
+      "archive": "evidence/native/checks-driver.py.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks-driver.py",
+      "rawBytes": 7474,
+      "rawSha256": "ba627469b4c7f876bdbe767fccea679843f77069421b91c9a9401ca9072b5241",
+      "gzipBytes": 2717,
+      "gzipSha256": "957261899746bd53eecd01e947ee95f68c06e7f0c639a7de946865ab7528a000"
+    },
+    {
+      "archive": "evidence/native/checks-driver.py.diff.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/checks-driver.py.diff",
+      "rawBytes": 3963,
+      "rawSha256": "72d7585589235f0e61cae3c3043cfac96c0cfa86dd6708f02ea82226953663a1",
+      "gzipBytes": 1509,
+      "gzipSha256": "e11903e4ffbd34b9a7804a6d9e7825b84ea3eaa7e92b9eb37c7c55cf5d24da72"
+    },
+    {
+      "archive": "evidence/native/commands.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/commands.json",
+      "rawBytes": 1460,
+      "rawSha256": "d8a655d98657e8ebefc6c6eda2d7b02cc5512d218a18ab324c4511abec3dfa31",
+      "gzipBytes": 514,
+      "gzipSha256": "17427389243a43544da445ed6dc33e6a6f86dd155f2ccaee7986216045f3ea28"
+    },
+    {
+      "archive": "evidence/native/dependency-authority.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/dependency-authority.json",
+      "rawBytes": 3641,
+      "rawSha256": "7a0abf83ef1087264c3b087a87083b5222554cb704f04ec7147d485570517632",
+      "gzipBytes": 1218,
+      "gzipSha256": "030cc813291283bc1c7a496880aabc1ae5f7ad35fa1006462d515a7e6e74dc2a"
+    },
+    {
+      "archive": "evidence/native/derivation.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/derivation.json",
+      "rawBytes": 5448,
+      "rawSha256": "cbe54141792c0ced467a948c5e5cd56e2036d4a6205a18af067bc7f0ec7f1e1f",
+      "gzipBytes": 1874,
+      "gzipSha256": "88f298733da1be42a8fc7651aadf969d80cf4109ad796cb657f9be4d541e045a"
+    },
+    {
+      "archive": "evidence/native/freeze-source.py.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/freeze-source.py",
+      "rawBytes": 5005,
+      "rawSha256": "97e867dda83435f3d9dbeaa891e7ba6a5efa509854830e4f191153237270a3d4",
+      "gzipBytes": 2083,
+      "gzipSha256": "6711ab06677507892df8ca1d7fc0d500f8f1adecfbc836550f7abaf17eea6598"
+    },
+    {
+      "archive": "evidence/native/freeze.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/freeze.json",
+      "rawBytes": 6388,
+      "rawSha256": "dff1616b87fba9a229cfd52f63598117503d68307451aaf3a9a98c7096a8cabf",
+      "gzipBytes": 1837,
+      "gzipSha256": "3d7a70139ea91bac4c6e0b630788d6b129bed60efe4d7a98564c26570118c61c"
+    },
+    {
+      "archive": "evidence/native/independent-closure.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/independent-closure.json",
+      "rawBytes": 721,
+      "rawSha256": "3208685c86e709d902dd792134057eb6e45d7f858a7ab49bd4fcbd007bc0a5b7",
+      "gzipBytes": 161,
+      "gzipSha256": "a91e4779be9bc533b24f526db9717ff3824c6e1d0e274bb6cbc1ef6e672f1121"
+    },
+    {
+      "archive": "evidence/native/native-driver-ready.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/native-driver-ready.json",
+      "rawBytes": 1007,
+      "rawSha256": "0d9c0cd14eee711ad5887e1b5895b5a949c34ee732d4c7f5794fbda9222a1038",
+      "gzipBytes": 488,
+      "gzipSha256": "0c0d548d5fda0ad0ca1feeb541420056379f38e4c486788a1460dfdf9567a575"
+    },
+    {
+      "archive": "evidence/native/native-driver.py.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/native-driver.py",
+      "rawBytes": 4966,
+      "rawSha256": "1de96cc5e4c5e4b974b0b0c0d1a2d66e25356c4b3c6aa4af145f5da93d3d30c0",
+      "gzipBytes": 2065,
+      "gzipSha256": "b72c810166357321179a1ecc592e2ed53eab6234218538e47a434692313421cf"
+    },
+    {
+      "archive": "evidence/native/native-owned.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/native-owned.mjs",
+      "rawBytes": 5515,
+      "rawSha256": "4e3f9511440eabf9fe6f404114484158c88ca8467c43eafc840a116b5548315f",
+      "gzipBytes": 2275,
+      "gzipSha256": "fd546b0bb8b3fdf7cb42f2482c21e4c66ca3711af12e960d31ff4b9ad477554a"
+    },
+    {
+      "archive": "evidence/native/pair.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/pair.mjs",
+      "rawBytes": 16554,
+      "rawSha256": "ff7cb6c1f27838e008f26466e60927bbd1094b0667fabaf115a9a088d4d358bb",
+      "gzipBytes": 5360,
+      "gzipSha256": "73fd6a454d107850fbe78a729163c588091f2a56e61863fe6ce0320a9075d03e"
+    },
+    {
+      "archive": "evidence/native/pair.mjs.diff.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/pair.mjs.diff",
+      "rawBytes": 15857,
+      "rawSha256": "9d90e194105df6c7203dfab06522447805a8dd1c1a98d537c36b89e1d4656b3d",
+      "gzipBytes": 4739,
+      "gzipSha256": "7e5ebced62da7a7e727256d4064882d64c84ccb9bdcb51b309d89893f1f47dbb"
+    },
+    {
+      "archive": "evidence/native/passive-guard.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/passive-guard.mjs",
+      "rawBytes": 11267,
+      "rawSha256": "90fdfac1b0259214db3f760bcc5c3d0e47c2521c770696cc0b67e5f797ba9850",
+      "gzipBytes": 4255,
+      "gzipSha256": "727b1863272129699af5ff71c79f4ffc3bbb4315272213b948e811c5012f8de8"
+    },
+    {
+      "archive": "evidence/native/plan.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/plan.json",
+      "rawBytes": 11932,
+      "rawSha256": "ac5b0d84d9cf330e73a450ae1392a420e05f1c0a39baaf97ecc4b3d7c77e0b6d",
+      "gzipBytes": 4537,
+      "gzipSha256": "c95ca072f6f29e23ec9533fbc76baf97a67a736937448af4604e9a8b47e3a307"
+    },
+    {
+      "archive": "evidence/native/prepare.py.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/prepare.py",
+      "rawBytes": 18044,
+      "rawSha256": "3a76def4d3ac1fe97a078d53bf411222750efde613268a875ac96df6fa58ef12",
+      "gzipBytes": 6422,
+      "gzipSha256": "506a3531cce0a453f498bcee686a3660a18d2d54a58fcbe03a7622c58f692249"
+    },
+    {
+      "archive": "evidence/native/public-assets.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/public-assets.json",
+      "rawBytes": 10729,
+      "rawSha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830",
+      "gzipBytes": 2577,
+      "gzipSha256": "e91176cdfa16ff5e786d793557c3b8538c98b9f0c459d1b4eff26589526c8538"
+    },
+    {
+      "archive": "evidence/native/ready.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/ready.json",
+      "rawBytes": 19743,
+      "rawSha256": "1627e5323d49e8ca462f815e9bca83d7817258f3d06cef446572bf6b2d02a4e5",
+      "gzipBytes": 5729,
+      "gzipSha256": "47636019d6472f4bf37a9b80bb313ef390465aa6584dff20b53caa95113e3d7f"
+    },
+    {
+      "archive": "evidence/native/root-run/AB-baseline/fps.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/AB-baseline/fps.json",
+      "rawBytes": 100607,
+      "rawSha256": "fc3fe08d61aa6b509b153fc96574b367fa3462bee6c59e9671d381b89f6e80bc",
+      "gzipBytes": 9344,
+      "gzipSha256": "6f994e2f43341d0c4f0c1833adbc2b6504a21bc09c94ba0e00ddcee0c583d2b6"
+    },
+    {
+      "archive": "evidence/native/root-run/AB-baseline/launcher.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/AB-baseline/launcher.json",
+      "rawBytes": 11978,
+      "rawSha256": "94df59cbf23a434ebf31f2c3cff469a269cbd9d8e5c3858c8526f7f662532fbf",
+      "gzipBytes": 2516,
+      "gzipSha256": "566a524ef66082e6508112d6b5b945984c7e9cf9df3227e374ecdc92563be565"
+    },
+    {
+      "archive": "evidence/native/root-run/AB-baseline/native-audit.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/AB-baseline/native-audit.json",
+      "rawBytes": 26941,
+      "rawSha256": "77b82bd1ac3e3003ead48f35985a3ccba9151c174c8c59180eef8310ac876a5e",
+      "gzipBytes": 2154,
+      "gzipSha256": "95bfaa3e559ac3a7f8655472d29d19d013214fd6fc431a865c77c853723411b2"
+    },
+    {
+      "archive": "evidence/native/root-run/AB-baseline/stdout.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/AB-baseline/stdout.log",
+      "rawBytes": 1157,
+      "rawSha256": "552fe50daf9c79fa4bb1fcf486bbe07ae6c5a7c4eedbd2691e58801b38551e7f",
+      "gzipBytes": 700,
+      "gzipSha256": "37568728218f88b72e958adc41d8ceb5efa85b422de4195cfa4f31bf943e2807"
+    },
+    {
+      "archive": "evidence/native/root-run/AB-candidate/fps.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/AB-candidate/fps.json",
+      "rawBytes": 100685,
+      "rawSha256": "a1e3848df0a4381ad430b4111397ad6657446b30c29bea1878d5953f84362b9b",
+      "gzipBytes": 9362,
+      "gzipSha256": "ada55af4002a32f673da4fbdc2a9468c90df005e7d5815e8ec45aba7b659cbb6"
+    },
+    {
+      "archive": "evidence/native/root-run/AB-candidate/launcher.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/AB-candidate/launcher.json",
+      "rawBytes": 11174,
+      "rawSha256": "bc2a22754711d85edf3c9344e1bc9747e6ca514aac8a6ef2908281dc035b029f",
+      "gzipBytes": 2224,
+      "gzipSha256": "703a7a3ca3cbb0edd4341a16971b6b69fafd8d81e9b28efceaa1107c1ad454c7"
+    },
+    {
+      "archive": "evidence/native/root-run/AB-candidate/native-audit.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/AB-candidate/native-audit.json",
+      "rawBytes": 27049,
+      "rawSha256": "ff54fae7f586ab56c56380612746abce137a2931e5581a8df256a469c5424fd6",
+      "gzipBytes": 2149,
+      "gzipSha256": "befefd1802b977f6475280ae4728b9e475b455acd2d91a48878b86b61e622534"
+    },
+    {
+      "archive": "evidence/native/root-run/AB-candidate/stdout.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/AB-candidate/stdout.log",
+      "rawBytes": 1156,
+      "rawSha256": "0cf9fbbb341597861f31bf9c9a32e68b1b1bcc6539bbdde0520358deb97ebb04",
+      "gzipBytes": 698,
+      "gzipSha256": "67b997dce2401d51cb701a1b8389275c5bb701dd18314d0222e521bd4e805fb9"
+    },
+    {
+      "archive": "evidence/native/root-run/BA-baseline/fps.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/BA-baseline/fps.json",
+      "rawBytes": 100634,
+      "rawSha256": "cb61a49fb40e96426ab5a01184a470774426a474479b9c913388a153d87e700d",
+      "gzipBytes": 9265,
+      "gzipSha256": "be2c7853e8bc969bf06a38872b8f849af77dd2bb505b4c6e2f6012831f368fac"
+    },
+    {
+      "archive": "evidence/native/root-run/BA-baseline/launcher.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/BA-baseline/launcher.json",
+      "rawBytes": 12923,
+      "rawSha256": "7cee9f2cdbf0c92860fcb55853528fa2c3b01fa89532a38cb2ccf8c2f56218fc",
+      "gzipBytes": 2466,
+      "gzipSha256": "f59eef0bd6fc88112b00c3b8cd6ee55a652da38c50c77bb420b237ffaef9e9d7"
+    },
+    {
+      "archive": "evidence/native/root-run/BA-baseline/native-audit.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/BA-baseline/native-audit.json",
+      "rawBytes": 26993,
+      "rawSha256": "ab24c7fe0240c1f425ed1152ed6c08620d66c985e1538794734d26a39855a4ad",
+      "gzipBytes": 2138,
+      "gzipSha256": "5b152ae0d10f18e8098b902738a368f34d729f2a9a3141ec359447992f86cf6f"
+    },
+    {
+      "archive": "evidence/native/root-run/BA-baseline/stdout.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/BA-baseline/stdout.log",
+      "rawBytes": 1157,
+      "rawSha256": "ba7d8608edb6aa3c41fcc6d46ebbf200c0a3acb090090a14d5023301d4bc60fe",
+      "gzipBytes": 700,
+      "gzipSha256": "7a7e90f571fb3a41ecfd4fc14be8dd0168038845d89e260f68964c74851568d8"
+    },
+    {
+      "archive": "evidence/native/root-run/BA-candidate/fps.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/BA-candidate/fps.json",
+      "rawBytes": 100675,
+      "rawSha256": "b625cbbe5de27122a1905e5316996c7a038facff841c1ce53f55568f62c632a0",
+      "gzipBytes": 9365,
+      "gzipSha256": "56c9f7ce291074f0e3424013f50535d4baadb1de0a62d3a9e000f2ab5a7acc99"
+    },
+    {
+      "archive": "evidence/native/root-run/BA-candidate/launcher.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/BA-candidate/launcher.json",
+      "rawBytes": 12207,
+      "rawSha256": "b0fce1afc861b3dfbedcf39b900372d443b1dd5d17ba16368f7196b9a4f40124",
+      "gzipBytes": 2443,
+      "gzipSha256": "573ea24da61db2473fba48e4e4bf53135e92a0431c3d4055c58d9c4086136fec"
+    },
+    {
+      "archive": "evidence/native/root-run/BA-candidate/native-audit.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/BA-candidate/native-audit.json",
+      "rawBytes": 27053,
+      "rawSha256": "9481dd6844336d760bb442f9a2cb32e3ec70fe612cf05db2242aca22db5fa4c5",
+      "gzipBytes": 2157,
+      "gzipSha256": "49e4903598b276007ccb4c92906ca1152e4dc640dff9c84047af14b19d104d7a"
+    },
+    {
+      "archive": "evidence/native/root-run/BA-candidate/stdout.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/BA-candidate/stdout.log",
+      "rawBytes": 1157,
+      "rawSha256": "cd47dd0070804f87efd3d80ec73f0a3b22bcd83e8f0fdf4b9d6b525c1a1e1e05",
+      "gzipBytes": 700,
+      "gzipSha256": "dafce86b204739e52341aa16c3e21a2db982a38ecdc695fbc3e59189c82a3582"
+    },
+    {
+      "archive": "evidence/native/root-run/report.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run/report.json",
+      "rawBytes": 32952,
+      "rawSha256": "f12e6144a672affdc8d0f53f3fb5d892a97ca5aa65b81ab9a190bda2e336c6aa",
+      "gzipBytes": 7601,
+      "gzipSha256": "4627cc6b257e7405442d9c38d02bafdd5e3cead88015cbfd3868c70fd74aed29"
+    },
+    {
+      "archive": "evidence/native/root-run.native-driver.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run.native-driver.json",
+      "rawBytes": 1519,
+      "rawSha256": "c4fceb118bfd042bb579bb415fdf38b6934326ca90bf15697d3a5760c8cb04f8",
+      "gzipBytes": 660,
+      "gzipSha256": "7dbc829d9bdca51bd2b86d0f0c450b3539e8891a52e08031b85e1c1094018bc5"
+    },
+    {
+      "archive": "evidence/native/root-run.native-driver.log.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/root-run.native-driver.log",
+      "rawBytes": 1205,
+      "rawSha256": "5315cb0bdd3f139a1eaf94168c0fd6afa657e5f88e591826cf0c1d3fcc2cd617",
+      "gzipBytes": 401,
+      "gzipSha256": "c7ce201995a385f3040cc9d79a78d694917e2ecfd03543cfe80cd9fc44290c56"
+    },
+    {
+      "archive": "evidence/native/source-manifest.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/source-manifest.json",
+      "rawBytes": 2773,
+      "rawSha256": "74aedb3c9a46f1c60fd2155bafa7a25c393d29564e1c4f7374c3cb45724600f5",
+      "gzipBytes": 1211,
+      "gzipSha256": "ec660425585ecc11c0350d3d7284bd59cd1faf7c2ecfb72ef099c05caf56662e"
+    },
+    {
+      "archive": "evidence/native/strict-terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/strict-terminal.json",
+      "rawBytes": 279789,
+      "rawSha256": "0591090e3f300bf72ff1c1f4e0d420904a0d392264a9103debb8074cabde78e2",
+      "gzipBytes": 72417,
+      "gzipSha256": "e876fdb3e76b16fe023b1c2bff4a6f9a1941539a47b15b58e610ddfc11e19d0c"
+    },
+    {
+      "archive": "evidence/native/strict.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/strict.mjs",
+      "rawBytes": 3457,
+      "rawSha256": "1e82fcb5e64b0357bfb1acf467abd8f146a9c76d799014bb43b82dc24b7367b9",
+      "gzipBytes": 1506,
+      "gzipSha256": "a075ef6584df66cd16a7a854d8f285ecf8478c0ce6754a9974a542801b3eae58"
+    },
+    {
+      "archive": "evidence/native/strict.mjs.diff.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/strict.mjs.diff",
+      "rawBytes": 3054,
+      "rawSha256": "5ab18cbe3af417b7d2578cfed649ce708f3d3e8cf9fcb82636200c014bbc56df",
+      "gzipBytes": 1101,
+      "gzipSha256": "a2c9e70a8b426defb817939711dc1d7aa908be3f1849455442560957993d83be"
+    },
+    {
+      "archive": "evidence/native/survey.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-fps-20261004/survey.mjs",
+      "rawBytes": 37750,
+      "rawSha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759",
+      "gzipBytes": 12479,
+      "gzipSha256": "a631021d06239b187e97501cdc648f4ae2ba52e088ba684708c8c99bca8be5c6"
+    },
+    {
+      "archive": "evidence/adoption/checks.mjs.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-adoption-20261004/checks.mjs",
+      "rawBytes": 3699,
+      "rawSha256": "efafda866d32684234a0a87ac01447a4f2b8df56cf438ca9d60f5a5553c151c5",
+      "gzipBytes": 1643,
+      "gzipSha256": "0e98d26e8a8b67ed662434e37c3fc2a8c72acdb69056b9047781cf8615cc2be0"
+    },
+    {
+      "archive": "evidence/adoption/checks.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-adoption-20261004/checks.stdout",
+      "rawBytes": 2872,
+      "rawSha256": "70e861c723243a1f4d2597acd2f240dcc48904540483483b36ac8cc9f056e5e6",
+      "gzipBytes": 1390,
+      "gzipSha256": "fdb15ccd6f439f190c9436696ad6a391a840e116ea65ca58f59f36b12f88b63f"
+    },
+    {
+      "archive": "evidence/adoption/focused-tests-terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-adoption-20261004/focused-tests-terminal.json",
+      "rawBytes": 534,
+      "rawSha256": "57471e1b9a1305a82ad572fe042e5a083db392ad02ad930f8b8bb0cf06ddccd5",
+      "gzipBytes": 317,
+      "gzipSha256": "1425e2858d73fbb66ec83cba19af09826ae1a0f22bdf148ff36a647ec0880392"
+    },
+    {
+      "archive": "evidence/adoption/focused-tests.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-adoption-20261004/focused-tests.stdout",
+      "rawBytes": 218,
+      "rawSha256": "819768b1e36cec0b9c3b7258bf359371ef46894e0d8ed876270febad5c6b65d2",
+      "gzipBytes": 187,
+      "gzipSha256": "679577fde630f9f4c40a037984fddf6c3cf10f1b4d15a99748d3af8f119b99cc"
+    },
+    {
+      "archive": "evidence/adoption/terminal.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-adoption-20261004/terminal.json",
+      "rawBytes": 2027,
+      "rawSha256": "2730cc0daef9033e953fd3d3ad80a71f9c090cb78184e3ab96b8e0c8be34de64",
+      "gzipBytes": 911,
+      "gzipSha256": "a9edb5efd424e407cbc3834bedb50c57992129ee3e65c9fc55ba3c967a188012"
+    },
+    {
+      "archive": "evidence/adoption/tests-timeout.json.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-adoption-20261004/tests-timeout.json",
+      "rawBytes": 427,
+      "rawSha256": "b4cd6d82fb0b5b7bfc2684de50e3ddd7b9ee1f1f418eea2bef7d0f2d9cae745b",
+      "gzipBytes": 293,
+      "gzipSha256": "ddf65c3f746d9192ece8ffa62467eb7318bd7cd82e1ef6f64c4a182e1ce98b15"
+    },
+    {
+      "archive": "evidence/adoption/tests.stdout.gz",
+      "originalPath": "/private/tmp/surf-nu-peak-adoption-20261004/tests.stdout",
+      "rawBytes": 59,
+      "rawSha256": "6877b0be7d20804733627129f82293a8aebfef8c4e41c22b05ee9fe4ac2df16e",
+      "gzipBytes": 79,
+      "gzipSha256": "f51ba6675199bdd22f99f6947cc46a03eab137758ee90f285f6ad29ca54c1009"
+    }
+  ],
+  "scope": "Owned source, first actual proof/cost/checks, four native runs, canonical validation and recorded timeout. Native/canonical dist outputs are referenced by complete 11-output manifests; public/dependency/held-fixture files remain referenced through original authorities."
+}

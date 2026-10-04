@@ -209,4 +209,6 @@ The OS clamps that requested window to its available work area; use the report's
 
 ## Remaining work
 
+The indexed viscosity-peak scan is now adopted. Ten exact mock-host cases and 32 CPU pairs passed; two predeclared ordinary High Padang Big browser orders improved fresh simulation rates by +0.77 and +0.78 Hz, with readback processing p50 0.9→0.5 ms in both. Canonical strict typing, nine focused existing regression cases and byte identity of all eleven measured build outputs passed. Rendering stayed about 60 FPS, while late simulation still fell below 60 Hz and stalls were mixed. The [retained comparison](performance-2026-10-04/nu-peak-indexed/README.md) includes both orders, raw audits, the broad-suite timeout and the narrower verification scope.
+
 The first pass preserves the prior wave dynamics; the accepted Padang alongshore-grid reduction changes numerical physics as quantified above. Late tube-contact construction and solver/readback remain the main observed throughput gap. Front self-folding, live rider/catch behavior after the numerical change, wider sea-state fidelity and nine inherited rider tests still need separate work. Menu/Auto tuning on slower hardware also remains open.
