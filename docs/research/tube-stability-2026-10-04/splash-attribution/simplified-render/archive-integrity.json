@@ -1,0 +1,47 @@
+[
+  {
+    "file": "comparison.json",
+    "bytes": 2349,
+    "sha256": "1533a74b6dca78261918e3b47342e4fc08f5321a8f4baf96b1f2b0a14aa8611d"
+  },
+  {
+    "file": "native-launcher.json",
+    "bytes": 11781,
+    "sha256": "85854b69f732254425754b398e78c3074f674d08bf3f761ad322e17b24eaf271"
+  },
+  {
+    "file": "native-owned.mjs",
+    "bytes": 6532,
+    "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+  },
+  {
+    "file": "native-owner.json",
+    "bytes": 2755,
+    "sha256": "6486e1847a87657e405027d763d23a83dc7a6385c41976b51a27f3ef3bf11696"
+  },
+  {
+    "file": "native-report.json",
+    "bytes": 97451,
+    "sha256": "d0c24d9f300f036f6eeee94b3dc282bccc64a73633b0a67019f04ccf2274e8cc"
+  },
+  {
+    "file": "native.mjs",
+    "bytes": 23609,
+    "sha256": "fd6461368ecdec2e9813795cc080f59a4a3759119028c5892b236183d1e7f714"
+  },
+  {
+    "file": "normal-030.png",
+    "bytes": 2476746,
+    "sha256": "b104795a5af6adcad40e8d10bc98a370913d493e0a0ba7fbcfc8581e3c99fd82"
+  },
+  {
+    "file": "ray-faces.mjs",
+    "bytes": 5770,
+    "sha256": "b6dd37e64884c900dfb209720896b0be295f883ec15f0a86f23a30a54d811828"
+  },
+  {
+    "file": "run.py",
+    "bytes": 6621,
+    "sha256": "de51c6117dd2babfc804c93ac6cf23470b770cf2b9f04e22cfd9282e1e741b0c"
+  }
+]

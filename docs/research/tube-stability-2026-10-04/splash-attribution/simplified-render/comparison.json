@@ -1,0 +1,83 @@
+{
+  "scope": "Two separate fresh seeded scenes; bounded actual config/camera/initial profile and retained barrel metric comparisons, not full physical-state equality or FPS/quality acceptance",
+  "checks": {
+    "candidateComplete": true,
+    "errorFree": true,
+    "closure": true,
+    "actualConfigEqual": true,
+    "graphicsEqual": true,
+    "selectedInitialSectionsEqual": true,
+    "selectionCameraEqual": true
+  },
+  "frames": [
+    {
+      "index": 0,
+      "seaTimes": [
+        553.4730587494489,
+        553.4730587494489
+      ],
+      "clockEqual": true,
+      "frontTubeLipCountsEqual": true,
+      "barrelMetricEquality": {
+        "selected": true,
+        "selectedWithinInitialTolerance": true,
+        "nearestSigmaDelta": true,
+        "selectedFrontPresent": true,
+        "loft": true,
+        "mesh": true,
+        "roof": true,
+        "projection": true,
+        "landmarks": true,
+        "localWorstRoof": true,
+        "openingLipThroatMeters": true,
+        "cameraWaterClassification": true,
+        "waterTime": true,
+        "waterTubeCount": true,
+        "holdClearDrawing": true
+      },
+      "barrelRunTraceEqual": true,
+      "candidateSplashGeometry": {
+        "visible": true,
+        "drawCount": null,
+        "vertices": 0
+      },
+      "candidateCaptureRestored": true,
+      "inspectionEqualsBaselineNoSplashPng": true
+    },
+    {
+      "index": 1,
+      "seaTimes": [
+        553.673058749449,
+        553.673058749449
+      ],
+      "clockEqual": true,
+      "frontTubeLipCountsEqual": true,
+      "barrelMetricEquality": {
+        "selected": true,
+        "selectedWithinInitialTolerance": true,
+        "nearestSigmaDelta": true,
+        "selectedFrontPresent": true,
+        "loft": true,
+        "mesh": true,
+        "roof": true,
+        "projection": true,
+        "landmarks": true,
+        "localWorstRoof": true,
+        "openingLipThroatMeters": true,
+        "cameraWaterClassification": true,
+        "waterTime": true,
+        "waterTubeCount": true,
+        "holdClearDrawing": true
+      },
+      "barrelRunTraceEqual": true,
+      "candidateSplashGeometry": {
+        "visible": true,
+        "drawCount": null,
+        "vertices": 0
+      },
+      "candidateCaptureRestored": true,
+      "inspectionEqualsBaselineNoSplashPng": true
+    }
+  ],
+  "ownerSeconds": 57.74531987501541
+}

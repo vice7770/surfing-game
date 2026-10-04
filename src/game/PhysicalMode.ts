@@ -723,8 +723,8 @@ export class PhysicalMode {
     this.camera.update(host, this.focus, dt, pose[7] > 0 ? this.follow : undefined);
     if (refreshVisuals) {
       this.farField.update(status.seaTime);
-      // At a swept spot the barrel draws the jet, and the sheet only its splash-ups (PR 5).
-      this.lipSheet.update(host.snapshot.lip, host.snapshot.lipCount, host.init.dx, this.swept);
+      // Swept barrels draw the jet; foam and spray draw the splash water. Extra splash ribbons form detached white bands.
+      this.lipSheet.update(host.snapshot.lip, this.swept ? 0 : host.snapshot.lipCount, host.init.dx);
       this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
       this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
       this.visualHost = host;
