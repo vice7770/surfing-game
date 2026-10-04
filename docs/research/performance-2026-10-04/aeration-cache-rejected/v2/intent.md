@@ -1,0 +1,9 @@
+# Corrected consumed-material intake — one CPU update cost attempt
+
+The original attempt failed before scene construction, warmup or timing because an all-saved-array finite guard rejected lastThrow=-Infinity. The exact baseline constructor initializes that valid history sentinel. This is neither a corrupted field nor a physical state defect. All raw gzip/JSON/SET1 hashes and decoded word offsets had passed. The original source, bundle, ready, stdout/stderr remain untouched in ../aeration-last-argument-cache-20261004/.
+
+V2 changes only harness intake and version/output paths: require finite/count-matching saved h/qx/qz/aeration.air/aeration.depth, then finite actual imported h/bed/qx/qz/air/plume/xCenters/zCenters/dz and finite solver clock, dx2, period18 and positive dz. Unused history sentinels are preserved verbatim by import; no wave/front/history update runs. Raw state word/offset gates are unchanged. Solver dz also joins final unchanged-byte/identity validation. Candidate/field classes are unchanged.
+
+Full actual AerationField.update shared-stencil and independent full-advection paths,12 warm pairs and30 measured adjacent AB/BA pairs each, same20s total bound. Every measured pair compares all7 field arrays and public/scratch identities. Held solver/stencil bytes/clocks/identities are checked after all measurements. Reset/intake/copy/parity validation are outside each update timer; descriptor/advection/finish overhead are inside. Fixture is captured F32 post-state as a new controlled update, not historical pre-degas argument evidence. No GPU, browser, source events, water advance, production edit, or FPS/adoption claim.
+
+Original8/8 focused parity tests and clean strict compilation authority are retained. Compile this v2 harness cleanly, freeze hashes, and wait root review before ONE corrected timed attempt; no automatic widening/repeat.

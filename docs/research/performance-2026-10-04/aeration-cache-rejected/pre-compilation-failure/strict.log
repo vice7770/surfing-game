@@ -1,0 +1,2 @@
+../../../../../private/tmp/aeration-last-argument-cache-20261004/surfZoneState.ts(1,31): error TS2307: Cannot find module './PlungingLip' or its corresponding type declarations.
+../../../../../private/tmp/aeration-last-argument-cache-20261004/surfZoneState.ts(2,33): error TS2307: Cannot find module './barrel/BreakingFront' or its corresponding type declarations.

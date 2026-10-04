@@ -1,0 +1,137 @@
+{
+  "decision": "REJECTED complete CPU update gate; no production change",
+  "oneValidCostRunOnly": true,
+  "v1FailedBeforeMeasurement": true,
+  "reportSha256": "4bcb9bd0e140234bfbe5f89779a98ad95c45a2bcf80852ce2895f12de991a718",
+  "readyFrozenPreRunSha256": "1cf67a55fadee50d2fdf96c9b707f5462f3cf03c517bff7d60cd49f499f5087f",
+  "sourceBase": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "ordinaryFixtureNotHistoricalPreDegasState": true,
+  "noBrowserGpuFpsTrial": true,
+  "artifacts": [
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/ready.json",
+      "bytes": 5943,
+      "sha256": "1cf67a55fadee50d2fdf96c9b707f5462f3cf03c517bff7d60cd49f499f5087f"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost.ts",
+      "bytes": 10395,
+      "sha256": "4a741b531b53b2629abeca608b058870fc7cfb62d61e4de03c8cc70401f26d8c"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost.mjs",
+      "bytes": 700303,
+      "sha256": "07c7cc5d192dc27d8e204537bea23d2ff47f7ad6644363ed0800131bf8ddb050"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost-v2.delta.patch",
+      "bytes": 6909,
+      "sha256": "bff52da7a95c66ac170c1c9a097b096a4301774a4c1cef66867e8b8b0e02391b"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost-report.json",
+      "bytes": 19129,
+      "sha256": "4bcb9bd0e140234bfbe5f89779a98ad95c45a2bcf80852ce2895f12de991a718"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost-stdout.json",
+      "bytes": 448,
+      "sha256": "2483f9714a91c8163a93be125c4e7834abc32c9614e5668213d64cc531123bdc"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost-stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/strict.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/compile.log",
+      "bytes": 85,
+      "sha256": "db3a0f2c79968a2650ab0710e2d1e3c43f80ee02954ff11d6091ab8f730635ce"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/plan.json",
+      "bytes": 338,
+      "sha256": "369d74fbf575b8defe4fd05a029f2dba3e57137dc80aafc573a02ef3759d151d"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/intent.md",
+      "bytes": 1877,
+      "sha256": "e5a19f42522b78422a1c45af9d80670d46873e4d991d7dd6f61f3a08fd2eb177"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/interpretation.md",
+      "bytes": 3933,
+      "sha256": "c80c4270b7b8b3245605f4d497c418b8b7aceab58bc59c861919c431673645b0"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/ready.json",
+      "bytes": 21561,
+      "sha256": "a18a134210c1c5a1bc6241a4caec59966db5a04d28f0f5d18d6010e0af1bbc59"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/cost.ts",
+      "bytes": 9354,
+      "sha256": "a01b02fc108cd235b613366a201714165fa8ede1764f9be87f760b2480baecba"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/cost.mjs",
+      "bytes": 699266,
+      "sha256": "9d7130744ef79cd043f6de315e000826d76d12227e989938d5f5765a103d9e7b"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/cost-stdout.json",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/cost-stderr.txt",
+      "bytes": 702,
+      "sha256": "0f265d4a21e07e1f1de10e56c940f8c5e79701a30add0276ccb6cb84fc88e0e6"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/parity.log",
+      "bytes": 952,
+      "sha256": "a72fbb77021ee766ef2f9de8cb803312f87cd9c083e4a03098a74bfd519e5933"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/parity.test.mjs",
+      "bytes": 5427,
+      "sha256": "582962cf48986428e8e37f6b2fd27621913ee0ded4619268a8a73e3d57a70bf2"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/AerationField.original.ts",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/AerationField.candidate.ts",
+      "bytes": 14101,
+      "sha256": "0165408d8502b2d1b821720bcba417846df381c8c534fef38e6da2429159d610"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/AerationField.patch",
+      "bytes": 2078,
+      "sha256": "bb702f8c85e9e3cab26da194711ce527577703b0698a09b5ed18b57b1dd90ac8"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/load.mjs",
+      "bytes": 1091,
+      "sha256": "f98b45d48865b38b800d5353b0437f8834fad5ddaabfd805aaa8c5c2e81320e7"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/failed-compile/strict.log",
+      "bytes": 365,
+      "sha256": "c362c7aa41efc631aefd2d0ffe1a9545299632010095fb1b4b4f4ae497959c11"
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/failed-compile/cost.ts",
+      "bytes": 8571,
+      "sha256": "ea1317571d8c75905377ccb1cb0c10ca6ed98f079af6694d20c298cc49c322bc"
+    }
+  ]
+}

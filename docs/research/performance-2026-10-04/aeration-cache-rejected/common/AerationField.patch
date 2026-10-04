@@ -1,0 +1,42 @@
+--- a/src/wave/AerationField.ts
++++ b/src/wave/AerationField.ts
+@@ -32,6 +32,10 @@
+ const ACROSS = [-1, 1] as const;
+ /** Plumes thinner than this still degas at this depth's rate, m (a numerical floor). */
+ const MIN_DEPTH = 0.05;
++// Only the original ordinary native exp is reusable; changed functions/accessors keep every call.
++const INITIAL_EXP = Object.getOwnPropertyDescriptor(Math, 'exp')?.value as typeof Math.exp | undefined;
++const CACHEABLE_EXP = typeof INITIAL_EXP === 'function'
++  && Function.prototype.toString.call(INITIAL_EXP) === 'function exp() { [native code] }' ? INITIAL_EXP : undefined;
+ 
+ /**
+  * Entrained air on the solver grid (G9): per cell, the air it holds per unit
+@@ -132,6 +136,9 @@
+     this.advect(dt, stencil?.take(this.solver, dt));
+     const { h } = this.solver;
+     const fade = Math.exp(-dt / (TURBULENCE.decayShare * this.period));
++    const exp = CACHEABLE_EXP && Object.getOwnPropertyDescriptor(Math, 'exp')?.value === CACHEABLE_EXP ? CACHEABLE_EXP : undefined;
++    let lastArgument = Number.NaN;
++    let lastFactor = Number.NaN;
+     for (let i = 0; i < h.length; i += 1) {
+       this.turbulence[i] = h[i] <= WET || this.turbulence[i] < TRACE ? 0 : this.turbulence[i] * (this.stirred[i] ? 1 : fade);
+       this.stirred[i] = 0;
+@@ -142,7 +149,17 @@
+         continue;
+       }
+       const depth = Math.min(this.depth[i], h[i]);
+-      const air = this.air[i] * Math.exp((-AERATION.riseSpeed * dt) / Math.max(MIN_DEPTH, depth));
++      let air: number;
++      if (exp) {
++        const heldAir = this.air[i];
++        const argument = (-AERATION.riseSpeed * dt) / Math.max(MIN_DEPTH, depth);
++        const factor = argument === lastArgument ? lastFactor : exp(argument);
++        lastArgument = argument;
++        lastFactor = factor;
++        air = heldAir * factor;
++      } else {
++        air = this.air[i] * Math.exp((-AERATION.riseSpeed * dt) / Math.max(MIN_DEPTH, depth));
++      }
+       this.air[i] = air < TRACE ? 0 : Math.min(air, AERATION.peak * depth);
+       this.depth[i] = this.air[i] > 0 ? depth : 0;
+     }

@@ -1,0 +1,16 @@
+{
+  "status": "source-only proposed exact cache, no production edit/test/build/benchmark/hardware",
+  "base": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "originalSha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+  "candidateSha256": "0165408d8502b2d1b821720bcba417846df381c8c534fef38e6da2429159d610",
+  "patchSha256": "bb702f8c85e9e3cab26da194711ce527577703b0698a09b5ed18b57b1dd90ac8",
+  "actualEarlierObservation": {
+    "sourceBase": "56bf750996cd48cdc5ef45954c479a268053c0b9",
+    "report": "/private/tmp/aeration-live-arguments-20261004/v3/run/report.json",
+    "reportSha256": "b68161c00552a4c7d5e7dd00a3c24fe99f7e48ed22612444890da702a779b11e",
+    "eligible": 10153,
+    "repeats": 9054,
+    "cells": 116000,
+    "timingClaim": false
+  }
+}

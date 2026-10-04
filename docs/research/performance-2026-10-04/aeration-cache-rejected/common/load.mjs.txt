@@ -1,0 +1,15 @@
+// Tiny test-only TS module loader. It exposes the existing module constant, not a production API.
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const require=createRequire('/Users/regina/Desktop/Projects/surfing-game/package.json');
+const ts=require('typescript');
+const modules=new Map();
+export function load(name,{fresh=false}={}){
+ if(!fresh&&modules.has(name))return modules.get(name);
+ const source=readFileSync(new URL('./'+name+'.ts',import.meta.url),'utf8');
+ const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
+ const exports={};
+ const privateExp=new Function('exports','require',js+'\nreturn typeof CACHEABLE_EXP === "undefined" ? undefined : CACHEABLE_EXP;')(exports,id=>load(id.replace('./','')).exports);
+ const module={exports,privateExp};if(!fresh)modules.set(name,module);return module;
+}
+export function cachedNativeBranchIsSelected(module){return typeof module.privateExp==='function'&&Object.getOwnPropertyDescriptor(Math,'exp')?.value===module.privateExp;}

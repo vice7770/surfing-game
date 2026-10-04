@@ -1,0 +1,1 @@
+{"prepared":true,"method":"one bounded CPU paired full-update cost, not FPS","fixture":"/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz","paths":["shared-stencil","full-advection"],"warmPairs":12,"measuredPairs":30,"rotatingOrder":"AB then BA","secondsBound":20}

@@ -1,0 +1,16 @@
+✔ actual native-cache branch: full-update byte identity, dry/trace/cap/boundary cells and fresh changing dt (3.018875ms)
+✔ actual native-cache branch: shared departure path with source/stir and moving window (4.471417ms)
+✔ NaN/Infinity/signed-zero arguments and empty air remain byte-identical under original advect (0.640875ms)
+✔ finish-only signed-zero/NaN arguments and skip order use native branch without relaxing comparisons (0.351625ms)
+✔ changed Math.exp data function after import preserves every call, this and side effect order (0.670875ms)
+✔ Math.exp accessor after import does not receive extra getter invocations (0.393792ms)
+✔ nonnative startup exp remains uncached, preserving original call side effects (23.637625ms)
+✔ accessor startup exp is not invoked by candidate module initialization (26.404042ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 349.440459

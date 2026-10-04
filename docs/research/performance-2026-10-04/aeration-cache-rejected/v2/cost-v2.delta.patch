@@ -1,0 +1,44 @@
+--- v1/cost.ts
++++ v2/cost.ts
+@@ -8,7 +8,7 @@
+ import {AerationField as Candidate} from './AerationField.candidate';
+ import {AdvectionStencil} from './AdvectionStencil';
+ import {FoamField} from './FoamField';
+-const WORK='/private/tmp/aeration-last-argument-cache-20261004';
++const WORK='/private/tmp/aeration-last-argument-cache-20261004-v2';
+ const INPUT='/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz';
+ const sha=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
+ const args=Object.fromEntries(process.argv.slice(2).map(a=>{const at=a.indexOf('=');if(at<0||!a.startsWith('--'))throw Error('Use --name=value');return[a.slice(2,at),a.slice(at+1)];}));
+@@ -29,10 +29,15 @@
+ let offset=8+Math.ceil(headerBytes/4)*4;
+ for(const[name,count]of header.arrays){const values=state.arrays[name];if(!values||values.length!==count)throw Error('Decoded count differs:'+name);const words=new Uint32Array(values.buffer,values.byteOffset,values.length);for(let i=0;i<count;i++)if(words[i]!==view.getUint32(offset+i*4,true))throw Error('Raw offset/word differs:'+name);offset+=count*4;}
+ if(offset!==raw.length)throw Error('Trailing/truncated SET1 data');
+-for(const[name,values]of Object.entries(state.arrays))if(!values.every(Number.isFinite))throw Error('Nonfinite retained input:'+name);
++const retainedMaterialNames=['h','qx','qz','aeration.air','aeration.depth'] as const;
++for(const name of retainedMaterialNames){const values=state.arrays[name];if(!values||values.length!==state.nx*state.nz||!values.every(Number.isFinite))throw Error('Consumed retained material differs/nonfinite:'+name);}
++// lastThrow/lastOnset/outerBreak contain intentional +/-Infinity sentinels; no water or field step reads them here.
+ const scene=new OriginalSimulation(capture.scalars.config,'warm');scene.importState(state); // construct actual original grid, never step water
+ const solver=scene.solver as unknown as ConstructorParameters<typeof Original>[0];if(solver.nx!==160||solver.nz!==725||solver.h.length!==116000)throw Error('Actual fixture grid differs');
+ const dt=1/60,period=capture.scalars.config.peakPeriod;
++const postImportMaterial={h:solver.h,bed:solver.bed,qx:solver.qx,qz:solver.qz,air:scene.aeration.air,plume:scene.aeration.depth,xCenters:solver.xCenters,zCenters:solver.zCenters,dz:solver.dz};
++for(const[name,values]of Object.entries(postImportMaterial))if(!values.every(Number.isFinite))throw Error('Consumed actual material/grid nonfinite:'+name);
++if(!Number.isFinite(solver.time)||solver.dx!==2||period!==18||solver.dz.some(z=>!(z>0)))throw Error('Actual held clock/grid/period differs');
+ const names=['air','depth','turbulence','nextAir','nextDepth','nextTurbulence','stirred'] as const;
+ type Field=Pick<Original,'air'|'depth'|'turbulence'|'update'>;
+ const initialAir=scene.aeration.air.slice(),initialDepth=scene.aeration.depth.slice();
+@@ -40,7 +45,7 @@
+ if(Function.prototype.toString.call(native)!=='function exp() { [native code] }'||Object.getOwnPropertyDescriptor(Math,'exp')?.value!==native)throw Error('Expected native data Math.exp');
+ const stencil=new AdvectionStencil();const foam=new FoamField(solver,{dense:9,residual:18});foam.update(dt,new Float64Array(solver.h.length),stencil);
+ // Foam's unchanged exact departure fractions are reusable here ONLY because held h/q/grid/time stay unchanged.
+-const solverNames=['h','bed','qx','qz','xCenters','zCenters'] as const;
++const solverNames=['h','bed','qx','qz','xCenters','zCenters','dz'] as const;
+ const solverRefs=solverNames.map(n=>solver[n]);
+ const solverHashes=solverRefs.map(a=>sha(new Uint8Array(a.buffer,a.byteOffset,a.byteLength)));
+ const solverTime=solver.time;
+@@ -70,5 +75,5 @@
+ solverNames.forEach((n,i)=>{const a=solver[n];if(a!==solverRefs[i]||sha(new Uint8Array(a.buffer,a.byteOffset,a.byteLength))!==solverHashes[i])throw Error('Held solver identity/bytes changed:'+n);});
+ if(solver.time!==solverTime)throw Error('Held solver clock changed');
+ if(departureIndicesSha!==sha(new Uint8Array(stencil.indices.buffer))||departureFractionsSha!==sha(new Uint8Array(stencil.values.buffer)))throw Error('Held stencil bytes changed');
+-const report={valid:true,kind:'bounded CPU full AerationField.update paired cost; no water advance/browser/FPS',base:'58ceb6a29617c00f93fb3b21eff3058d824319d5',fixture:INPUT,compressedSha256:sha(input),jsonSha256:sha(json),rawSet1Sha256:sha(raw),rawStateWordsAndOffsetsVerified:true,newControlledPostStateInput:true,historicalCountedArguments:false,turbulenceInitialization:'original importState handover sets zero; same zero stirred on both variants',sourceInjection:'none added before this controlled update; separate parity tests cover sources/stir/window',solverTime:solver.time,nx:solver.nx,nz:solver.nz,dt,period,cells:solver.h.length,warmPairs:12,pairs:30,order:'AB/BA adjacent alternating',nativeDataExpAtModuleInitialization:true,fullUpdateDescriptorBranchAdvectionFinishIncluded:true,stencilPreparedUntimedFromOriginalFoam:true,departureIndicesSha,departureFractionsSha,unchangedSolverIdentitiesBytesAndClock:true,solverArraySha256:Object.fromEntries(solverNames.map((n,i)=>[n,solverHashes[i]])),outputs,elapsedCpuMs:performance.now()-allStart,performanceOrAdoptionClaim:false};
++const report={valid:true,kind:'bounded CPU full AerationField.update paired cost; no water advance/browser/FPS',base:'58ceb6a29617c00f93fb3b21eff3058d824319d5',fixture:INPUT,compressedSha256:sha(input),jsonSha256:sha(json),rawSet1Sha256:sha(raw),rawStateWordsAndOffsetsVerified:true,harnessVersion:2,earlierIntakeFailure:'/private/tmp/aeration-last-argument-cache-20261004/cost-stderr.txt',materialFiniteGuards:{retained:Array.from(retainedMaterialNames),postImport:Object.keys(postImportMaterial),unconsumedHistorySentinelsAllowed:true},newControlledPostStateInput:true,historicalCountedArguments:false,turbulenceInitialization:'original importState handover sets zero; same zero stirred on both variants',sourceInjection:'none added before this controlled update; separate parity tests cover sources/stir/window',solverTime:solver.time,nx:solver.nx,nz:solver.nz,dt,period,cells:solver.h.length,warmPairs:12,pairs:30,order:'AB/BA adjacent alternating',nativeDataExpAtModuleInitialization:true,fullUpdateDescriptorBranchAdvectionFinishIncluded:true,stencilPreparedUntimedFromOriginalFoam:true,departureIndicesSha,departureFractionsSha,unchangedSolverIdentitiesBytesAndClock:true,solverArraySha256:Object.fromEntries(solverNames.map((n,i)=>[n,solverHashes[i]])),outputs,elapsedCpuMs:performance.now()-allStart,performanceOrAdoptionClaim:false};
+ writeFileSync(out,JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({path:out,valid:report.valid,outputs:Object.fromEntries(Object.entries(outputs).map(([k,v])=>[k,(v as {pairedSavingMs:unknown}).pairedSavingMs])),elapsedCpuMs:report.elapsedCpuMs}));

@@ -1,0 +1,477 @@
+{
+  "decision": "REJECTED complete-update CPU cost gate; no production adoption",
+  "baselineCommit": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "observedCountsNotGain": "Earlier one old56bf update89.1756% repeats among10153 eligible of116000cells; not this benchmark input or FPS evidence",
+  "costReportRawSha256": "4bcb9bd0e140234bfbe5f89779a98ad95c45a2bcf80852ce2895f12de991a718",
+  "costValid": true,
+  "correctedRuns": 1,
+  "earlierFailedIntakeRuns": 1,
+  "earlierFailureBeforeMeasurement": true,
+  "productionChanged": false,
+  "browserGpuFpsTrials": 0,
+  "fixtureNotDuplicated": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz",
+    "archiveRelativePath": "../../performance-2026-10-03/render-scale/baseline-held-source.json.gz",
+    "sha256": "95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584",
+    "rawSet1Sha256": "38b63fbe297eeb143c6449902855be39802455d4f14d540a07d152ead7ec32e0"
+  },
+  "artifactVerification": "Every copy equals source; every gzip decompresses byte-exact and recompresses deterministically",
+  "artifacts": [
+    {
+      "archivePath": "common/AerationField.original.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/AerationField.original.ts",
+      "sourceBytes": 13174,
+      "sourceSha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+      "archiveBytes": 13174,
+      "archiveSha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/AerationField.candidate.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/AerationField.candidate.ts",
+      "sourceBytes": 14101,
+      "sourceSha256": "0165408d8502b2d1b821720bcba417846df381c8c534fef38e6da2429159d610",
+      "archiveBytes": 14101,
+      "archiveSha256": "0165408d8502b2d1b821720bcba417846df381c8c534fef38e6da2429159d610",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/AerationField.patch",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/AerationField.patch",
+      "sourceBytes": 2078,
+      "sourceSha256": "bb702f8c85e9e3cab26da194711ce527577703b0698a09b5ed18b57b1dd90ac8",
+      "archiveBytes": 2078,
+      "archiveSha256": "bb702f8c85e9e3cab26da194711ce527577703b0698a09b5ed18b57b1dd90ac8",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/load.mjs.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/load.mjs",
+      "sourceBytes": 1091,
+      "sourceSha256": "f98b45d48865b38b800d5353b0437f8834fad5ddaabfd805aaa8c5c2e81320e7",
+      "archiveBytes": 1091,
+      "archiveSha256": "f98b45d48865b38b800d5353b0437f8834fad5ddaabfd805aaa8c5c2e81320e7",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/parity.test.mjs.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/parity.test.mjs",
+      "sourceBytes": 5427,
+      "sourceSha256": "582962cf48986428e8e37f6b2fd27621913ee0ded4619268a8a73e3d57a70bf2",
+      "archiveBytes": 5427,
+      "archiveSha256": "582962cf48986428e8e37f6b2fd27621913ee0ded4619268a8a73e3d57a70bf2",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/parity.log",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/parity.log",
+      "sourceBytes": 952,
+      "sourceSha256": "a72fbb77021ee766ef2f9de8cb803312f87cd9c083e4a03098a74bfd519e5933",
+      "archiveBytes": 952,
+      "archiveSha256": "a72fbb77021ee766ef2f9de8cb803312f87cd9c083e4a03098a74bfd519e5933",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/source-review-intent.md",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/intent.md",
+      "sourceBytes": 2773,
+      "sourceSha256": "551652dc3c44beb1de1148978d12873253a97b7099f72a0c061a2bd8f834ccfa",
+      "archiveBytes": 2773,
+      "archiveSha256": "551652dc3c44beb1de1148978d12873253a97b7099f72a0c061a2bd8f834ccfa",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/source-review-manifest.json",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/manifest.json",
+      "sourceBytes": 776,
+      "sourceSha256": "8dc5368ee8fa6c29cb812dae94bb02a69baf2923ace8ee5b385dc2799532febf",
+      "archiveBytes": 776,
+      "archiveSha256": "8dc5368ee8fa6c29cb812dae94bb02a69baf2923ace8ee5b385dc2799532febf",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/AdvectionStencil.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/AdvectionStencil.ts",
+      "sourceBytes": 2316,
+      "sourceSha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54",
+      "archiveBytes": 2316,
+      "archiveSha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/FoamField.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/FoamField.ts",
+      "sourceBytes": 8686,
+      "sourceSha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "archiveBytes": 8686,
+      "archiveSha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/ShallowWaterSolver.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/ShallowWaterSolver.ts",
+      "sourceBytes": 33545,
+      "sourceSha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980",
+      "archiveBytes": 33545,
+      "archiveSha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/dispersion.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/dispersion.ts",
+      "sourceBytes": 3285,
+      "sourceSha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "archiveBytes": 3285,
+      "archiveSha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "common/surfZoneState.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/surfZoneState.ts",
+      "sourceBytes": 3955,
+      "sourceSha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab",
+      "archiveBytes": 3955,
+      "archiveSha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "pre-compilation-failure/cost.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/failed-compile/cost.ts",
+      "sourceBytes": 8571,
+      "sourceSha256": "ea1317571d8c75905377ccb1cb0c10ca6ed98f079af6694d20c298cc49c322bc",
+      "archiveBytes": 8571,
+      "archiveSha256": "ea1317571d8c75905377ccb1cb0c10ca6ed98f079af6694d20c298cc49c322bc",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "pre-compilation-failure/strict.log",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/failed-compile/strict.log",
+      "sourceBytes": 365,
+      "sourceSha256": "c362c7aa41efc631aefd2d0ffe1a9545299632010095fb1b4b4f4ae497959c11",
+      "archiveBytes": 365,
+      "archiveSha256": "c362c7aa41efc631aefd2d0ffe1a9545299632010095fb1b4b4f4ae497959c11",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v1-invalid-intake/cost.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/cost.ts",
+      "sourceBytes": 9354,
+      "sourceSha256": "a01b02fc108cd235b613366a201714165fa8ede1764f9be87f760b2480baecba",
+      "archiveBytes": 9354,
+      "archiveSha256": "a01b02fc108cd235b613366a201714165fa8ede1764f9be87f760b2480baecba",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v1-invalid-intake/cost.mjs.gz",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/cost.mjs",
+      "sourceBytes": 699266,
+      "sourceSha256": "9d7130744ef79cd043f6de315e000826d76d12227e989938d5f5765a103d9e7b",
+      "archiveBytes": 181283,
+      "archiveSha256": "850d4f2c4039766df9cbbfc17d97ab89bb0968d96b60be41eed01eb48ec83e2f",
+      "encoding": "deterministic gzip mtime0 no filename level9",
+      "decompressedByteParity": true
+    },
+    {
+      "archivePath": "v1-invalid-intake/ready.json.gz",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/ready.json",
+      "sourceBytes": 21561,
+      "sourceSha256": "a18a134210c1c5a1bc6241a4caec59966db5a04d28f0f5d18d6010e0af1bbc59",
+      "archiveBytes": 4875,
+      "archiveSha256": "9e9e59fc2d74989536906eaeff9ed82e65301fb28643bd0ee52ba3f23e14d006",
+      "encoding": "deterministic gzip mtime0 no filename level9",
+      "decompressedByteParity": true
+    },
+    {
+      "archivePath": "v1-invalid-intake/strict.log",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/strict.log",
+      "sourceBytes": 0,
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveBytes": 0,
+      "archiveSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v1-invalid-intake/compile.log",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/compile.log",
+      "sourceBytes": 85,
+      "sourceSha256": "71c40bdaaeeed72bd2fadefca646160717904c9a183e3ebd4d163e545f7f2432",
+      "archiveBytes": 85,
+      "archiveSha256": "71c40bdaaeeed72bd2fadefca646160717904c9a183e3ebd4d163e545f7f2432",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v1-invalid-intake/plan.json",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/plan.json",
+      "sourceBytes": 338,
+      "sourceSha256": "369d74fbf575b8defe4fd05a029f2dba3e57137dc80aafc573a02ef3759d151d",
+      "archiveBytes": 338,
+      "archiveSha256": "369d74fbf575b8defe4fd05a029f2dba3e57137dc80aafc573a02ef3759d151d",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v1-invalid-intake/stdout.json",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/cost-stdout.json",
+      "sourceBytes": 0,
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveBytes": 0,
+      "archiveSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v1-invalid-intake/stderr.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004/cost-stderr.txt",
+      "sourceBytes": 702,
+      "sourceSha256": "0f265d4a21e07e1f1de10e56c940f8c5e79701a30add0276ccb6cb84fc88e0e6",
+      "archiveBytes": 702,
+      "archiveSha256": "0f265d4a21e07e1f1de10e56c940f8c5e79701a30add0276ccb6cb84fc88e0e6",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/cost.ts.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost.ts",
+      "sourceBytes": 10395,
+      "sourceSha256": "4a741b531b53b2629abeca608b058870fc7cfb62d61e4de03c8cc70401f26d8c",
+      "archiveBytes": 10395,
+      "archiveSha256": "4a741b531b53b2629abeca608b058870fc7cfb62d61e4de03c8cc70401f26d8c",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/cost.mjs.gz",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost.mjs",
+      "sourceBytes": 700303,
+      "sourceSha256": "07c7cc5d192dc27d8e204537bea23d2ff47f7ad6644363ed0800131bf8ddb050",
+      "archiveBytes": 181578,
+      "archiveSha256": "caf4ef339cb5d7179ca4188eed4a2ef2c7dcdcdafc7097ec0869bb632289d48d",
+      "encoding": "deterministic gzip mtime0 no filename level9",
+      "decompressedByteParity": true
+    },
+    {
+      "archivePath": "v2/ready.json.gz",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/ready.json",
+      "sourceBytes": 5943,
+      "sourceSha256": "1cf67a55fadee50d2fdf96c9b707f5462f3cf03c517bff7d60cd49f499f5087f",
+      "archiveBytes": 1864,
+      "archiveSha256": "2c9814a6084eab7d262435d4b2f844b97fd11b739592618c2908e45bacbe8960",
+      "encoding": "deterministic gzip mtime0 no filename level9",
+      "decompressedByteParity": true
+    },
+    {
+      "archivePath": "v2/cost-v2.delta.patch",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost-v2.delta.patch",
+      "sourceBytes": 6909,
+      "sourceSha256": "bff52da7a95c66ac170c1c9a097b096a4301774a4c1cef66867e8b8b0e02391b",
+      "archiveBytes": 6909,
+      "archiveSha256": "bff52da7a95c66ac170c1c9a097b096a4301774a4c1cef66867e8b8b0e02391b",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/strict.log",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/strict.log",
+      "sourceBytes": 0,
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveBytes": 0,
+      "archiveSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/compile.log",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/compile.log",
+      "sourceBytes": 85,
+      "sourceSha256": "db3a0f2c79968a2650ab0710e2d1e3c43f80ee02954ff11d6091ab8f730635ce",
+      "archiveBytes": 85,
+      "archiveSha256": "db3a0f2c79968a2650ab0710e2d1e3c43f80ee02954ff11d6091ab8f730635ce",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/plan.json",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/plan.json",
+      "sourceBytes": 338,
+      "sourceSha256": "369d74fbf575b8defe4fd05a029f2dba3e57137dc80aafc573a02ef3759d151d",
+      "archiveBytes": 338,
+      "archiveSha256": "369d74fbf575b8defe4fd05a029f2dba3e57137dc80aafc573a02ef3759d151d",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/intent.md",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/intent.md",
+      "sourceBytes": 1877,
+      "sourceSha256": "e5a19f42522b78422a1c45af9d80670d46873e4d991d7dd6f61f3a08fd2eb177",
+      "archiveBytes": 1877,
+      "archiveSha256": "e5a19f42522b78422a1c45af9d80670d46873e4d991d7dd6f61f3a08fd2eb177",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/cost-report.json",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost-report.json",
+      "sourceBytes": 19129,
+      "sourceSha256": "4bcb9bd0e140234bfbe5f89779a98ad95c45a2bcf80852ce2895f12de991a718",
+      "archiveBytes": 19129,
+      "archiveSha256": "4bcb9bd0e140234bfbe5f89779a98ad95c45a2bcf80852ce2895f12de991a718",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/stdout.json",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost-stdout.json",
+      "sourceBytes": 448,
+      "sourceSha256": "2483f9714a91c8163a93be125c4e7834abc32c9614e5668213d64cc531123bdc",
+      "archiveBytes": 448,
+      "archiveSha256": "2483f9714a91c8163a93be125c4e7834abc32c9614e5668213d64cc531123bdc",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/stderr.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/cost-stderr.txt",
+      "sourceBytes": 0,
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveBytes": 0,
+      "archiveSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/interpretation.md",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/interpretation.md",
+      "sourceBytes": 3933,
+      "sourceSha256": "c80c4270b7b8b3245605f4d497c418b8b7aceab58bc59c861919c431673645b0",
+      "archiveBytes": 3933,
+      "archiveSha256": "c80c4270b7b8b3245605f4d497c418b8b7aceab58bc59c861919c431673645b0",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "v2/result-authority.json",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/result-authority.json",
+      "sourceBytes": 5725,
+      "sourceSha256": "36509532a8b342fb793546a6c31d187d19059450ebbf8ffee1ad0ac845379e9f",
+      "archiveBytes": 5725,
+      "archiveSha256": "36509532a8b342fb793546a6c31d187d19059450ebbf8ffee1ad0ac845379e9f",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    },
+    {
+      "archivePath": "archive.py.txt",
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/archive.py",
+      "sourceBytes": 10929,
+      "sourceSha256": "4cf1debc478e52cb758afaf2fe2a26f85009541606f882a1dee22749eac67e24",
+      "archiveBytes": 10929,
+      "archiveSha256": "4cf1debc478e52cb758afaf2fe2a26f85009541606f882a1dee22749eac67e24",
+      "encoding": "byte-exact copy",
+      "decompressedByteParity": null
+    }
+  ],
+  "exactAliases": [
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/AerationField.original.ts",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/AerationField.original.ts",
+      "archivePath": "common/AerationField.original.ts.txt",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+      "byteExactAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/AerationField.candidate.ts",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/AerationField.candidate.ts",
+      "archivePath": "common/AerationField.candidate.ts.txt",
+      "bytes": 14101,
+      "sha256": "0165408d8502b2d1b821720bcba417846df381c8c534fef38e6da2429159d610",
+      "byteExactAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/AerationField.patch",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/AerationField.patch",
+      "archivePath": "common/AerationField.patch",
+      "bytes": 2078,
+      "sha256": "bb702f8c85e9e3cab26da194711ce527577703b0698a09b5ed18b57b1dd90ac8",
+      "byteExactAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/AdvectionStencil.ts",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/AdvectionStencil.ts",
+      "archivePath": "common/AdvectionStencil.ts.txt",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54",
+      "byteExactAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/FoamField.ts",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/FoamField.ts",
+      "archivePath": "common/FoamField.ts.txt",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "byteExactAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/ShallowWaterSolver.ts",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/ShallowWaterSolver.ts",
+      "archivePath": "common/ShallowWaterSolver.ts.txt",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980",
+      "byteExactAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/dispersion.ts",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/dispersion.ts",
+      "archivePath": "common/dispersion.ts.txt",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "byteExactAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/surfZoneState.ts",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/surfZoneState.ts",
+      "archivePath": "common/surfZoneState.ts.txt",
+      "bytes": 3955,
+      "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab",
+      "byteExactAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/load.mjs",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/load.mjs",
+      "archivePath": "common/load.mjs.txt",
+      "bytes": 1091,
+      "sha256": "f98b45d48865b38b800d5353b0437f8834fad5ddaabfd805aaa8c5c2e81320e7",
+      "byteExactAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/aeration-last-argument-cache-20261004-v2/parity.test.mjs",
+      "aliasOfOriginalPath": "/private/tmp/aeration-last-argument-cache-20261004/parity.test.mjs",
+      "archivePath": "common/parity.test.mjs.txt",
+      "bytes": 5427,
+      "sha256": "582962cf48986428e8e37f6b2fd27621913ee0ded4619268a8a73e3d57a70bf2",
+      "byteExactAlias": true
+    }
+  ],
+  "generatedDocumentation": {
+    "README.md": "15a3778524ac5b8904c73d87e22870bbe5aeb10cbf9a099e49d0371368e5641c"
+  },
+  "archiveScope": "Complete local candidate, proof/checks and both full CPU bundles/readiness. No whole repository/scratch tree or held fixture duplicate. Original oracle53-file closure remains git-ref/checksum authority in readiness and compiled standalone bytes."
+}

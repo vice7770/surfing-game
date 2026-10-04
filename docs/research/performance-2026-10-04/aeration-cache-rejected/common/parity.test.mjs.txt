@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {load,cachedNativeBranchIsSelected} from './load.mjs';
+const oldModule=load('AerationField.original'),newModule=load('AerationField.candidate');
+const Old=oldModule.exports.AerationField,New=newModule.exports.AerationField;
+const {ShallowWaterSolver,uniformEdges}=load('ShallowWaterSolver').exports;
+const {FoamField}=load('FoamField').exports,{AdvectionStencil}=load('AdvectionStencil').exports;
+const FIELD=['air','depth','turbulence','nextAir','nextDepth','nextTurbulence','stirred'];
+const byte=a=>Buffer.from(a.buffer,a.byteOffset,a.byteLength);
+function solver(){return new ShallowWaterSolver({nx:24,xMin:-12,dx:1,zEdges:uniformEdges(-4,4,8),xBoundary:'open'},(x,z)=>1.1+.01*x+.025*z);}
+function pair(A=Old,B=New){const a=solver(),b=solver();return{a,b,old:new A(a,{period:18}),now:new B(b,{period:18})};}
+function seed(p){for(const[s,f]of[[p.a,p.old],[p.b,p.now]])for(let i=0;i<s.h.length;i++){s.qx[i]=.2*Math.sin(i);s.qz[i]=.1*Math.cos(i);if(i%13===0)s.h[i]=.001;f.air[i]=i%7===0?0:(i%5+1)*.006;f.depth[i]=.04+(i%4)*.012;f.turbulence[i]=i%9===0?1e-9:.2;}}
+function exact(p){for(const f of FIELD)assert.deepEqual(byte(p.old[f]),byte(p.now[f]),f);for(const k of['h','qx','qz','xCenters','zCenters'])assert.deepEqual(byte(p.a[k]),byte(p.b[k]),k);}
+function snapshotRefs(p){return{old:FIELD.map(k=>p.old[k]),now:FIELD.map(k=>p.now[k])};}
+function identity(p,refs){FIELD.forEach((k,i)=>{assert.equal(p.old[k],refs.old[i]);assert.equal(p.now[k],refs.now[i]);});assert.deepEqual(Object.keys(p.now).sort(),Object.keys(p.old).sort(),'no persistent cache state');}
+function advance(p,dt,shared=false){let refs=snapshotRefs(p);if(shared){for(const[s,f]of[[p.a,p.old],[p.b,p.now]]){const foam=new FoamField(s,{dense:9,residual:18}),stencil=new AdvectionStencil();foam.update(dt,new Float64Array(s.h.length),stencil);f.update(dt,stencil);}}else{p.old.update(dt);p.now.update(dt);}exact(p);identity(p,refs);}
+const native=Math.exp;
+test('actual native-cache branch: full-update byte identity, dry/trace/cap/boundary cells and fresh changing dt',()=>{
+ assert.equal(cachedNativeBranchIsSelected(newModule),true);const p=pair();seed(p);for(const dt of[1/60,1/30,0,1/120,1/60])advance(p,dt);assert.equal(Math.exp,native);
+});
+test('actual native-cache branch: shared departure path with source/stir and moving window',()=>{
+ const p=pair();seed(p);for(let step=0;step<4;step++){
+  for(const[s,f]of[[p.a,p.old],[p.b,p.now]]){f.addBore(4*24+12,.4,.5,1/60);f.addPlunge(0,.5,100,.6);f.addAir(0,.5,.001,.4);f.stir(4*24+12,.7,1/60);if(step===2)for(let i=0;i<s.xCenters.length;i++)s.xCenters[i]+=s.dx;}
+  advance(p,1/60,true);
+ }
+});
+test('NaN/Infinity/signed-zero arguments and empty air remain byte-identical under original advect',()=>{
+ const p=pair();seed(p);for(const[s,f]of[[p.a,p.old],[p.b,p.now]]){f.air[2]=NaN;f.depth[3]=NaN;f.depth[4]=Infinity;f.air[5]=-0;s.h[6]=0;}advance(p,1/60);advance(p,1/30,true);
+});
+test('finish-only signed-zero/NaN arguments and skip order use native branch without relaxing comparisons',()=>{
+ const p=pair();for(const[s,f]of[[p.a,p.old],[p.b,p.now]]){f.advect=()=>{};f.air.fill(.01);f.depth.fill(.4);s.h[0]=Infinity;s.h[1]=Infinity;f.depth[0]=Infinity;f.depth[1]=Infinity;f.depth[2]=NaN;f.depth[3]=NaN;f.air[4]=-0;s.h[5]=0;}advance(p,1/60);advance(p,1/30);
+});
+function changedRun(expDescriptor,{freshModules=false}={}){
+ const saved=Object.getOwnPropertyDescriptor(Math,'exp');let results=[];
+ try{
+  Object.defineProperty(Math,'exp',expDescriptor);
+  const a=freshModules?load('AerationField.original',{fresh:true}):oldModule,b=freshModules?load('AerationField.candidate',{fresh:true}):newModule;
+  assert.equal(cachedNativeBranchIsSelected(b),false);
+  const p=pair(a.exports.AerationField,b.exports.AerationField);seed(p);
+  for(const side of['old','now']){expDescriptor.reset();p[side].update(1/60);results.push(expDescriptor.result());}
+  exact(p);assert.deepEqual(results[0],results[1]);
+ }finally{Object.defineProperty(Math,'exp',saved);}
+}
+function expSideEffects(){let calls=0,gets=0,args=[];const fn=function expShim(x){assert.equal(this,Math);calls++;args.push(x);return native(x)*(1+(calls%3)*1e-6);};return{fn,reset(){calls=0;gets=0;args=[];},result(){return{calls,gets,args};},get(){gets++;return fn;}};}
+test('changed Math.exp data function after import preserves every call, this and side effect order',()=>{const s=expSideEffects();changedRun({configurable:true,writable:true,value:s.fn,reset:s.reset,result:s.result});});
+test('Math.exp accessor after import does not receive extra getter invocations',()=>{const s=expSideEffects();changedRun({configurable:true,get:s.get,reset:s.reset,result:s.result});});
+test('nonnative startup exp remains uncached, preserving original call side effects',()=>{const s=expSideEffects();changedRun({configurable:true,writable:true,value:s.fn,reset:s.reset,result:s.result},{freshModules:true});});
+test('accessor startup exp is not invoked by candidate module initialization',()=>{
+ const saved=Object.getOwnPropertyDescriptor(Math,'exp');let gets=0;try{Object.defineProperty(Math,'exp',{configurable:true,get(){gets++;return native;}});load('AerationField.original',{fresh:true});const before=gets;const m=load('AerationField.candidate',{fresh:true});assert.equal(gets,before);assert.equal(m.privateExp,undefined);}finally{Object.defineProperty(Math,'exp',saved);}
+});

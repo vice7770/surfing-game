@@ -1,0 +1,67 @@
+// CPU ONLY; full AerationField.update, fixed retained post-state as a new controlled input.
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {gunzipSync,inflateSync} from 'node:zlib';
+import {SurfZoneSimulation as OriginalSimulation} from '/private/tmp/coarse-foam-coverage-20261004/oracle/src/wave/SurfZoneSimulation';
+import {decodeSurfZoneState} from './surfZoneState';
+import {AerationField as Original} from './AerationField.original';
+import {AerationField as Candidate} from './AerationField.candidate';
+import {AdvectionStencil} from './AdvectionStencil';
+import {FoamField} from './FoamField';
+const WORK='/private/tmp/aeration-last-argument-cache-20261004';
+const INPUT='/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz';
+const sha=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
+const args=Object.fromEntries(process.argv.slice(2).map(a=>{const at=a.indexOf('=');if(at<0||!a.startsWith('--'))throw Error('Use --name=value');return[a.slice(2,at),a.slice(at+1)];}));
+if(Object.keys(args).some(k=>!['run','out'].includes(k)))throw Error('Only run/out allowed');
+if(args.run!=='true'){console.log(JSON.stringify({prepared:true,method:'one bounded CPU paired full-update cost, not FPS',fixture:INPUT,paths:['shared-stencil','full-advection'],warmPairs:12,measuredPairs:30,rotatingOrder:'AB then BA',secondsBound:20}));process.exit(0);}
+const out=args.out??WORK+'/cost-report.json';
+const allStart=performance.now();const input=readFileSync(INPUT);
+if(sha(input)!=='95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584')throw Error('Fixture compressed hash differs');
+const json=gunzipSync(input);if(sha(json)!=='8e73b4d10d268081891d0bf89b93c6706b37617a6bea5543af443d6963443587')throw Error('Fixture JSON hash differs');
+const capture=JSON.parse(json.toString('utf8'));
+const compressed=Buffer.from(capture.serialized.compressed.base64,'base64');if(sha(compressed)!==capture.serialized.compressed.sha256)throw Error('Serialized compressed hash differs');
+const raw=capture.serialized.deflated?inflateSync(compressed):compressed;
+if(sha(raw)!=='38b63fbe297eeb143c6449902855be39802455d4f14d540a07d152ead7ec32e0'||sha(raw)!==capture.serialized.rawSha256)throw Error('SET1 raw hash differs');
+const stateBytes=new Uint8Array(raw); // plain owning copy: never pass Node Buffer into browser .slice codec
+const state=decodeSurfZoneState(stateBytes),view=new DataView(stateBytes.buffer);
+const headerBytes=view.getUint32(4,true);const header=JSON.parse(new TextDecoder().decode(stateBytes.subarray(8,8+headerBytes)));
+let offset=8+Math.ceil(headerBytes/4)*4;
+for(const[name,count]of header.arrays){const values=state.arrays[name];if(!values||values.length!==count)throw Error('Decoded count differs:'+name);const words=new Uint32Array(values.buffer,values.byteOffset,values.length);for(let i=0;i<count;i++)if(words[i]!==view.getUint32(offset+i*4,true))throw Error('Raw offset/word differs:'+name);offset+=count*4;}
+if(offset!==raw.length)throw Error('Trailing/truncated SET1 data');
+for(const[name,values]of Object.entries(state.arrays))if(!values.every(Number.isFinite))throw Error('Nonfinite retained input:'+name);
+const scene=new OriginalSimulation(capture.scalars.config,'warm');scene.importState(state); // construct actual original grid, never step water
+const solver=scene.solver as unknown as ConstructorParameters<typeof Original>[0];if(solver.nx!==160||solver.nz!==725||solver.h.length!==116000)throw Error('Actual fixture grid differs');
+const dt=1/60,period=capture.scalars.config.peakPeriod;
+const names=['air','depth','turbulence','nextAir','nextDepth','nextTurbulence','stirred'] as const;
+type Field=Pick<Original,'air'|'depth'|'turbulence'|'update'>;
+const initialAir=scene.aeration.air.slice(),initialDepth=scene.aeration.depth.slice();
+const native=Math.exp;
+if(Function.prototype.toString.call(native)!=='function exp() { [native code] }'||Object.getOwnPropertyDescriptor(Math,'exp')?.value!==native)throw Error('Expected native data Math.exp');
+const stencil=new AdvectionStencil();const foam=new FoamField(solver,{dense:9,residual:18});foam.update(dt,new Float64Array(solver.h.length),stencil);
+// Foam's unchanged exact departure fractions are reusable here ONLY because held h/q/grid/time stay unchanged.
+const departureIndicesSha=sha(new Uint8Array(stencil.indices.buffer));const departureFractionsSha=sha(new Uint8Array(stencil.values.buffer));
+const byte=(a:ArrayBufferView)=>new Uint8Array(a.buffer,a.byteOffset,a.byteLength);
+const variants=[{name:'original',field:new Original(solver,{period})},{name:'candidate',field:new Candidate(solver,{period})}].map(v=>({...v,refs:names.map(n=>(v.field as unknown as Record<string,ArrayBufferView>)[n])}));
+const reset=(field:Field)=>{field.air.set(initialAir);field.depth.set(initialDepth);field.turbulence.fill(0);(field as unknown as {stirred:Uint8Array}).stirred.fill(0);};
+const armStencil=()=>{stencil.begin(solver,dt);stencil.commit();}; // no array writes/allocation with same size
+const update=(field:Field,shared:boolean)=>{if(shared)armStencil();field.update(dt,shared?stencil:undefined);};
+const check=()=>{for(const n of names){const a=(variants[0].field as unknown as Record<string,ArrayBufferView>)[n],b=(variants[1].field as unknown as Record<string,ArrayBufferView>)[n];if(Buffer.compare(byte(a),byte(b))!==0)throw Error('Full field byte parity failed:'+n);}variants.forEach(v=>names.forEach((n,i)=>{if(v.refs[i]!== (v.field as unknown as Record<string,ArrayBufferView>)[n])throw Error('Array identity changed:'+n);}));};
+const outputs:Record<string,unknown>={};
+for(const shared of[true,false]){
+ const path=shared?'shared-stencil':'full-advection';for(const v of variants){reset(v.field);update(v.field,shared);}check();
+ // Matched warmups, then adjacent paired measurements with reversed order each pair.
+ for(let r=0;r<12;r++)for(const ix of(r%2?[1,0]:[0,1])){reset(variants[ix].field);update(variants[ix].field,shared);}
+ const rows:{pair:number;order:string[];original:number;candidate:number;savingMs:number}[]=[];
+ for(let r=0;r<30;r++){
+  if(performance.now()-allStart>20000)throw Error('Predeclared20s CPU bound');
+  const values:Record<string,number>={};const order=r%2?[1,0]:[0,1];
+  for(const ix of order){const v=variants[ix];reset(v.field);if(shared)armStencil();const start=performance.now();v.field.update(dt,shared?stencil:undefined);values[v.name]=performance.now()-start;}
+  check();rows.push({pair:r,order:order.map(i=>variants[i].name),original:values.original,candidate:values.candidate,savingMs:values.original-values.candidate});
+ }
+ const stats=(a:number[])=>{const s=a.toSorted((x,y)=>x-y);return{median:(s[(s.length-1)>>1]+s[s.length>>1])/2,mean:a.reduce((x,y)=>x+y,0)/a.length,p95:s[Math.ceil(s.length*.95)-1],min:s[0],max:s.at(-1)};};
+ outputs[path]={rows,originalMs:stats(rows.map(r=>r.original!)),candidateMs:stats(rows.map(r=>r.candidate!)),pairedSavingMs:stats(rows.map(r=>r.savingMs)),allPairsBitExact:true};
+}
+if(Math.exp!==native)throw Error('Math.exp changed during measurement');
+if(departureIndicesSha!==sha(new Uint8Array(stencil.indices.buffer))||departureFractionsSha!==sha(new Uint8Array(stencil.values.buffer)))throw Error('Held stencil bytes changed');
+const report={valid:true,kind:'bounded CPU full AerationField.update paired cost; no water advance/browser/FPS',base:'58ceb6a29617c00f93fb3b21eff3058d824319d5',fixture:INPUT,compressedSha256:sha(input),jsonSha256:sha(json),rawSet1Sha256:sha(raw),rawStateWordsAndOffsetsVerified:true,newControlledPostStateInput:true,historicalCountedArguments:false,turbulenceInitialization:'original importState handover sets zero; same zero stirred on both variants',sourceInjection:'none added before this controlled update; separate parity tests cover sources/stir/window',solverTime:solver.time,nx:solver.nx,nz:solver.nz,dt,period,cells:solver.h.length,warmPairs:12,pairs:30,order:'AB/BA adjacent alternating',nativeDataExpAtModuleInitialization:true,fullUpdateDescriptorBranchAdvectionFinishIncluded:true,stencilPreparedUntimedFromOriginalFoam:true,departureIndicesSha,departureFractionsSha,outputs,elapsedCpuMs:performance.now()-allStart,performanceOrAdoptionClaim:false};
+writeFileSync(out,JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({path:out,valid:report.valid,outputs:Object.fromEntries(Object.entries(outputs).map(([k,v])=>[k,(v as {pairedSavingMs:unknown}).pairedSavingMs])),elapsedCpuMs:report.elapsedCpuMs}));

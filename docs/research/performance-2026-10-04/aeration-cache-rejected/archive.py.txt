@@ -1,0 +1,72 @@
+from pathlib import Path
+import gzip,io,json,hashlib,shutil
+root=Path('/Users/regina/Desktop/Projects/surfing-game'); dest=root/'docs/research/performance-2026-10-04/aeration-cache-rejected'
+w=Path('/private/tmp/aeration-last-argument-cache-20261004'); v=Path('/private/tmp/aeration-last-argument-cache-20261004-v2')
+sha=lambda b:hashlib.sha256(b).hexdigest()
+def zipped(b):
+    out=io.BytesIO()
+    with gzip.GzipFile(filename='',mode='wb',fileobj=out,mtime=0,compresslevel=9) as f:f.write(b)
+    return out.getvalue()
+if dest.exists():raise RuntimeError('Archive already exists: refusing overwrite')
+dest.mkdir(parents=True)
+map=[
+(w/'AerationField.original.ts','common/AerationField.original.ts.txt',False),
+(w/'AerationField.candidate.ts','common/AerationField.candidate.ts.txt',False),
+(w/'AerationField.patch','common/AerationField.patch',False),
+(w/'load.mjs','common/load.mjs.txt',False),
+(w/'parity.test.mjs','common/parity.test.mjs.txt',False),
+(w/'parity.log','common/parity.log',False),
+(w/'intent.md','common/source-review-intent.md',False),
+(w/'manifest.json','common/source-review-manifest.json',False),
+(w/'AdvectionStencil.ts','common/AdvectionStencil.ts.txt',False),
+(w/'FoamField.ts','common/FoamField.ts.txt',False),
+(w/'ShallowWaterSolver.ts','common/ShallowWaterSolver.ts.txt',False),
+(w/'dispersion.ts','common/dispersion.ts.txt',False),
+(w/'surfZoneState.ts','common/surfZoneState.ts.txt',False),
+(w/'failed-compile/cost.ts','pre-compilation-failure/cost.ts.txt',False),
+(w/'failed-compile/strict.log','pre-compilation-failure/strict.log',False),
+(w/'cost.ts','v1-invalid-intake/cost.ts.txt',False),
+(w/'cost.mjs','v1-invalid-intake/cost.mjs.gz',True),
+(w/'ready.json','v1-invalid-intake/ready.json.gz',True),
+(w/'strict.log','v1-invalid-intake/strict.log',False),
+(w/'compile.log','v1-invalid-intake/compile.log',False),
+(w/'plan.json','v1-invalid-intake/plan.json',False),
+(w/'cost-stdout.json','v1-invalid-intake/stdout.json',False),
+(w/'cost-stderr.txt','v1-invalid-intake/stderr.txt',False),
+(v/'cost.ts','v2/cost.ts.txt',False),
+(v/'cost.mjs','v2/cost.mjs.gz',True),
+(v/'ready.json','v2/ready.json.gz',True),
+(v/'cost-v2.delta.patch','v2/cost-v2.delta.patch',False),
+(v/'strict.log','v2/strict.log',False),
+(v/'compile.log','v2/compile.log',False),
+(v/'plan.json','v2/plan.json',False),
+(v/'intent.md','v2/intent.md',False),
+(v/'cost-report.json','v2/cost-report.json',False),
+(v/'cost-stdout.json','v2/stdout.json',False),
+(v/'cost-stderr.txt','v2/stderr.txt',False),
+(v/'interpretation.md','v2/interpretation.md',False),
+(v/'result-authority.json','v2/result-authority.json',False),
+(v/'archive.py','archive.py.txt',False),
+]
+artifacts=[]
+for src,relative,compressed in map:
+    raw=src.read_bytes();b=zipped(raw) if compressed else raw;p=dest/relative;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b)
+    if compressed:
+        assert gzip.decompress(b)==raw
+        assert zipped(raw)==b
+    else:assert p.read_bytes()==raw
+    artifacts.append({'archivePath':relative,'originalPath':str(src),'sourceBytes':len(raw),'sourceSha256':sha(raw),'archiveBytes':len(b),'archiveSha256':sha(b),'encoding':'deterministic gzip mtime0 no filename level9' if compressed else 'byte-exact copy','decompressedByteParity':True if compressed else None})
+aliases=[]
+for name in ['AerationField.original.ts','AerationField.candidate.ts','AerationField.patch','AdvectionStencil.ts','FoamField.ts','ShallowWaterSolver.ts','dispersion.ts','surfZoneState.ts','load.mjs','parity.test.mjs']:
+    p=v/name;old=w/name;assert p.read_bytes()==old.read_bytes()
+    a=next(x for x in artifacts if x['originalPath']==str(old));aliases.append({'originalPath':str(p),'aliasOfOriginalPath':str(old),'archivePath':a['archivePath'],'bytes':p.stat().st_size,'sha256':sha(p.read_bytes()),'byteExactAlias':True})
+readme='''# Rejected aeration degas cache\n\nThe exact one-entry `Math.exp` cache failed the complete-update CPU cost gate. With the shared stencil, medians were **1.53125 → 1.59694 ms**, with adjacent paired saving **−0.10042 ms**. Independent advection was **1.98146 → 2.08075 ms**, paired **−0.13842 ms**. Production remains unchanged. The separate observation of89.1756% repeated eligible arguments did not establish a complete-field benefit.\n\n| Complete `AerationField.update` path | Original median ms | Candidate median ms | Paired saving median ms | Paired saving mean ms |\n|---|---:|---:|---:|---:|\n| Shared stencil | 1.531250 | 1.596938 | −0.100416 | −0.059656 |\n| Independent full advection | 1.981458 | 2.080750 | −0.138417 | −0.112617 |\n\nSaving is original minus candidate within each adjacent pair. The raw report retains every AB/BA pair; no independent quantile subtraction is used. The native-descriptor check, advection and finishing are inside each update timer.\n\nOne valid corrected run used30 adjacent alternating pairs and12 warm pairs per path, completing intake/construction/warmup/measurement in1.18s under its20s bound. All seven material/scratch arrays and their identities were bit-exact after each measured pair; held solver bytes/identities/clock and shared departure bytes were unchanged. All8 focused Node tests passed, including native branch selection, fresh dt/window/source/stir handling, NaN/signed zero and changed/accessor/nonnative `Math.exp` call effects. Strict compilation passed. No browser/GPU/FPS trial, production edit, repeat timing or adoption occurred.\n\nThe input is the existing [full held source](../../performance-2026-10-03/render-scale/baseline-held-source.json.gz), gzip SHA`95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584`. This is a **new controlled update from a saved F32 post-state**, restored into the original58ceb grid (160×725,116,000cells, dx2/T18/dt1/60); it is not the historical pre-degas state of the [live argument observation](../aeration-degas-arguments/README.md). Import zeros turbulence equally, no new bore/plunge source is injected, and no solver/front step runs. Every decoded word is checked against raw SET1 offsets using an owning plain Uint8Array. See the [interpretation](v2/interpretation.md) and [full cost report](v2/cost-report.json) for limitations. A short Node fixed-input cost gate cannot establish moving-gameplay FPS or browser causality.\n\nThe first cost attempt failed before simulation construction or any timing: its generic all-array finite guard rejected the valid `lastThrow=-Infinity` history sentinel. The [first failure](v1-invalid-intake/stderr.txt), original source/bundle/readiness and empty stdout remain exact. V2 only narrows intake to actual consumed material/grid arrays, retains history sentinels verbatim, adds final dz byte/identity checking and uses a new output directory; root reviewed the [delta](v2/cost-v2.delta.patch) before one corrected attempt. The earlier missing-type strict-compilation failure is also retained separately; resolution uses the exact original oracle decoder with its original type dependency closure, not ignored errors or type stubs.\n\nThe runtime source authority is`58ceb6a29617c00f93fb3b21eff3058d824319d5`. The pre-run readiness proves all53 original oracle source files against that ref; subsequent HEAD changes during this experiment were documentation only. The original/candidate [patch](common/AerationField.patch), [parity test source](common/parity.test.mjs.txt), [8-pass log](common/parity.log), strict logs, complete standalone bundles and frozen readiness are retained. Archived tests have `.txt` suffixes so normal repository discovery does not run evidence as a suite. Native fallback safety is covered by tests; arbitrary reentrant getter replacements outside the ordinary typed-array field contract were not modeled.\n\n`manifest.json` records original paths, raw/compressed SHA256 and byte counts, exact v1/v2 common-source aliases, and fixture references. The two compiled bundles and readiness files are deterministic gzip (`mtime=0`, no stored filename); decompressed bytes equal originals. Full original sources remain reconstructible from the exact git ref and readiness paths/hashes; the standalone bundle retains the actual compiled original module closure. No second large held fixture is copied here. `SHA256SUMS` covers every archived file except itself, including the manifest.\n\nFor future authorized reproduction only, verify checksums, decompress`v2/cost.mjs.gz`, then run Node with`--run=true --out=/private/tmp/<new-output>.json` while CPU timing is exclusive. The bundle uses the retained fixture's recorded absolute repository path; that path must exist and its hashes must match. It refuses to overwrite a prior report. Such a new run would be separate evidence; this archive contains only the original failed intake and one valid cost attempt. No reproduction was run during archival.\n'''
+(dest/'README.md').write_text(readme)
+fixture=root/'docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz'
+manifest={'decision':'REJECTED complete-update CPU cost gate; no production adoption','baselineCommit':'58ceb6a29617c00f93fb3b21eff3058d824319d5','observedCountsNotGain':'Earlier one old56bf update89.1756% repeats among10153 eligible of116000cells; not this benchmark input or FPS evidence','costReportRawSha256':'4bcb9bd0e140234bfbe5f89779a98ad95c45a2bcf80852ce2895f12de991a718','costValid':True,'correctedRuns':1,'earlierFailedIntakeRuns':1,'earlierFailureBeforeMeasurement':True,'productionChanged':False,'browserGpuFpsTrials':0,'fixtureNotDuplicated':{'path':str(fixture),'archiveRelativePath':'../../performance-2026-10-03/render-scale/baseline-held-source.json.gz','sha256':'95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584','rawSet1Sha256':'38b63fbe297eeb143c6449902855be39802455d4f14d540a07d152ead7ec32e0'},'artifactVerification':'Every copy equals source; every gzip decompresses byte-exact and recompresses deterministically','artifacts':artifacts,'exactAliases':aliases,'generatedDocumentation':{'README.md':sha((dest/'README.md').read_bytes())},'archiveScope':'Complete local candidate, proof/checks and both full CPU bundles/readiness. No whole repository/scratch tree or held fixture duplicate. Original oracle53-file closure remains git-ref/checksum authority in readiness and compiled standalone bytes.'}
+(dest/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+checks=[]
+for p in sorted(dest.rglob('*')):
+    if p.is_file():checks.append(sha(p.read_bytes())+'  '+str(p.relative_to(dest)))
+(dest/'SHA256SUMS').write_text('\n'.join(checks)+'\n')
+print(json.dumps({'directory':str(dest),'files':len(checks)+1,'archiveBytes':sum(p.stat().st_size for p in dest.rglob('*') if p.is_file()),'manifestSha256':sha((dest/'manifest.json').read_bytes()),'readmeSha256':sha((dest/'README.md').read_bytes()),'sha256sumsSha256':sha((dest/'SHA256SUMS').read_bytes()),'rawArtifactBytes':sum(a['sourceBytes'] for a in artifacts)}))
