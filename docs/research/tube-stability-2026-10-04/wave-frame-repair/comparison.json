@@ -1,0 +1,525 @@
+{
+  "schema": "tube-gauge-natural-entry-comparison/v1",
+  "receipts": {
+    "baseline": {
+      "file": "/private/tmp/tube-natural-entry-ready-20261004/native-first/report.json",
+      "bytes": 2714404,
+      "sha256": "bcf63be6ba4eac997a19933aaaf3281162a188e22b250d2906ca8b8f3924fd2c"
+    },
+    "candidate": {
+      "file": "/private/tmp/tube-gauge-natural-entry-20261004/native-first/report.json",
+      "bytes": 2787675,
+      "sha256": "09cede9d3715e9949d519db9ef5158f10e964823fbd7562672ac5e5f6dc7c042"
+    }
+  },
+  "candidateTerminalOwner": "/private/tmp/tube-gauge-natural-entry-20261004/native-first-owner.json",
+  "candidateOwnerComplete": true,
+  "sameRecordedConfigurationAndSpawn": {
+    "settings": true,
+    "overrides": true,
+    "graphics": true,
+    "policy": true,
+    "schedule": true,
+    "initialBoardPose": true,
+    "initialRiderPoints": true,
+    "initialSeaTime": true
+  },
+  "sameTrajectoryClaim": false,
+  "candidateInstrumentationScope": "No added private worker instrumentation. Candidate intentionally changes the physical host gauge; inherited wording is not evidence of unchanged physics or equal trajectory.",
+  "baseline": {
+    "complete": true,
+    "firstFailure": null,
+    "steps": 762,
+    "physicalSeconds": 12.7,
+    "initialSeaTime": 535.7230587494499,
+    "finalSeaTime": 548.4230587494492,
+    "phaseCounts": {
+      "prone": 762
+    },
+    "paddleSteps": 761,
+    "cueSteps": [],
+    "popUpSteps": [],
+    "firstCue": null,
+    "firstPopUp": null,
+    "firstStanding": null,
+    "firstFall": null,
+    "firstGo": {
+      "step": 282,
+      "physicalSeconds": 4.7,
+      "seaTime": 540.4230587494496,
+      "cue": false,
+      "separation": null,
+      "phase": "prone",
+      "speed": 2.445075293592635,
+      "boardSpeed": 2.6535139250601003,
+      "boardXZ": [
+        -50.07279099528749,
+        -266.00473626505493
+      ],
+      "wave": {
+        "valid": false,
+        "directionX": -0.12650958339582435,
+        "directionZ": -0.9919653851365052,
+        "aheadOfCrest": 0,
+        "crestSpeed": 85.59130808031546,
+        "faceHeight": 0,
+        "faceFraction": 0,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 2.445075293592635,
+        "speedShoreward": -2.405753203514503,
+        "speedAlongCrest": -0.43674330574929304,
+        "requiredSpeed": 104.62986616339772
+      },
+      "pilot": {
+        "state": "go",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 0,
+        "phase": ""
+      }
+    },
+    "stop": {
+      "kind": "pilot-done-before-step",
+      "noStep": true,
+      "pilot": {
+        "state": "done",
+        "outcome": "missed the wave"
+      },
+      "view": {
+        "ride": {
+          "phase": "prone",
+          "speed": 0.4401769088590684,
+          "boardSpeed": 0.5132537876870379,
+          "cue": false,
+          "popUp": {
+            "outcome": "none",
+            "duration": 0,
+            "landingPeak": 0,
+            "frontShare": 0
+          },
+          "resets": 0,
+          "wave": {
+            "valid": true,
+            "directionX": -0.16679236969386405,
+            "directionZ": 0.9859920412518072,
+            "aheadOfCrest": 31.525432095508236,
+            "crestSpeed": -14.821338770052506,
+            "faceHeight": 2.181218544640449,
+            "faceFraction": 0.10316654069776365,
+            "crestBreaking": 0,
+            "curlDistance": null,
+            "curlSide": 0,
+            "speedOverGround": 0.4401769088590684,
+            "speedShoreward": 0.32508255862006,
+            "speedAlongCrest": 0.29677776394763794,
+            "requiredSpeed": -15.634240079773823
+          },
+          "balance": 0.9995829186998844,
+          "bank": 0,
+          "leash": {
+            "snapped": false,
+            "tension": 0,
+            "distance": 0,
+            "reeling": false
+          },
+          "duck": 0,
+          "boardInReach": false,
+          "knock": 0,
+          "breath": 1,
+          "rescues": 0
+        },
+        "peelDirection": 1,
+        "board": {
+          "x": -48.67576213427037,
+          "z": -246.35824498217886,
+          "heading": 0.050441209275563496
+        },
+        "focusZ": -261.09137870490895,
+        "crestBehind": -0.6193231421428569
+      }
+    },
+    "initialBoardPose": [
+      -50,
+      -0.8237760698144957,
+      -267.09137870490895,
+      0.010426087851655714,
+      -0.00020008845999532553,
+      0.01918655869037355,
+      0.9997615378790778,
+      1
+    ],
+    "spawnOutsideFocus": 6.0,
+    "boardXZChange": [
+      1.3242378657296285,
+      20.733133722730088
+    ],
+    "boardPositionFiniteDifferenceZ": {
+      "min": -1.1846702111131435,
+      "max": 3.916563816131884,
+      "stepsAtLeast3": 218,
+      "scope": "Observed world-z position finite differences, not worker velocity or paddling-force attribution"
+    },
+    "speed": {
+      "min": 0.09889759473804999,
+      "max": 3.9169783714201416
+    },
+    "boardSpeed": {
+      "min": 0.34699392667398626,
+      "max": 3.917510500454152
+    },
+    "incomingDirectionDotAll": {
+      "min": -0.9999999056161023,
+      "max": 0.9999991243119916
+    },
+    "incomingDirectionDotValid": {
+      "min": -0.9999467388058944,
+      "max": 0.9999753405872092
+    },
+    "incomingDirectionNegativeSteps": 381,
+    "incomingDirectionNegativeValidSteps": 199,
+    "waveValidSteps": 394,
+    "crestSpeedAll": {
+      "min": -176.09101453767607,
+      "max": 178.94272385719034
+    },
+    "crestSpeedValid": {
+      "min": -176.09101453767607,
+      "max": 178.94272385719034
+    },
+    "waveRangesValid": {
+      "speedShoreward": {
+        "min": -3.6962088635418895,
+        "max": 2.7748675242415812
+      },
+      "faceFraction": {
+        "min": 0,
+        "max": 0.985971980071364
+      },
+      "faceHeight": {
+        "min": 0.22298571548931959,
+        "max": 4.154486259004239
+      },
+      "aheadOfCrest": {
+        "min": -11.556399434541731,
+        "max": 39.72273096170714
+      }
+    },
+    "takeoffWindow": {
+      "thresholdsUnchanged": {
+        "crestSpeedMinimum": 3,
+        "shorewardMinimum": 3,
+        "crestSpeedShare": 0.8,
+        "faceFractionMinimum": 0.5,
+        "aheadMinimum": "min(2,1.1*max(0,faceHeight))",
+        "aheadMaximum": "min(4,2.2*max(0,faceHeight))"
+      },
+      "allRowsGatePassCounts": {
+        "valid": 394,
+        "crestSpeed": 362,
+        "caughtSpeed": 0,
+        "faceFraction": 195,
+        "aheadLower": 581,
+        "aheadUpper": 549
+      },
+      "validRowsGatePassCounts": {
+        "valid": 394,
+        "crestSpeed": 158,
+        "caughtSpeed": 0,
+        "faceFraction": 195,
+        "aheadLower": 213,
+        "aheadUpper": 181
+      },
+      "allGatesPassSteps": [],
+      "validDistanceBandPassCount": 0,
+      "validFailures": {
+        "crestSpeed,caughtSpeed,faceFraction,aheadUpper": 82,
+        "crestSpeed,caughtSpeed,faceFraction,aheadLower": 23,
+        "caughtSpeed,faceFraction,aheadLower": 35,
+        "caughtSpeed,aheadLower": 63,
+        "caughtSpeed,aheadUpper": 1,
+        "crestSpeed,caughtSpeed,aheadUpper": 71,
+        "crestSpeed,caughtSpeed,aheadLower": 60,
+        "caughtSpeed,faceFraction,aheadUpper": 59
+      },
+      "scope": "Exact published inTakeOffWindow clauses; not raw AttachedRider.popUpCue refusal reasons"
+    },
+    "privateRiderCueObservable": {
+      "boardSpeedBelow2Steps": 369,
+      "boardSpeedAtLeast2Steps": 393,
+      "minimumProjectedForwardLengthSquared": 0.9016591802779235,
+      "scope": "Pressure support, sampled downhill slope and sample-domain predicate are unlogged. Combined cue false implies raw rider cue false, but does not identify its private rejecting clause."
+    },
+    "witnessRows": 0,
+    "witnessClassifications": {},
+    "standingUnmeasuredRows": 0,
+    "detectorDisabledReasons": {},
+    "entry": {
+      "observedStandingOutside": false,
+      "firstPartial": null,
+      "firstConnectedWitnessEntry": null,
+      "containmentWithoutObservedOutside": null,
+      "firstConnectedWitnessExit": null,
+      "maximumConsecutiveContainedSteps": 0,
+      "residenceIntervals": [],
+      "fullBodyClearancePass": false
+    },
+    "entryScope": "Seven air-column witnesses on one connected indexed mesh component plus reference trunk spheres; no full-body/capsule or air-volume connectivity proof",
+    "inheritedWorkerWording": [
+      "No worker internals changed: published separation reason is retained; flightTime, support-limit history and postureError are unavailable."
+    ],
+    "wordingCorrection": "No added private worker instrumentation. Candidate intentionally changes the physical host gauge; inherited wording is not evidence of unchanged physics or equal trajectory.",
+    "renderer": "Immutable accepted957, older billboard renderer with foam balls",
+    "browserErrors": []
+  },
+  "candidate": {
+    "complete": true,
+    "firstFailure": null,
+    "steps": 762,
+    "physicalSeconds": 12.7,
+    "initialSeaTime": 535.7230587494499,
+    "finalSeaTime": 548.4230587494492,
+    "phaseCounts": {
+      "prone": 762
+    },
+    "paddleSteps": 761,
+    "cueSteps": [],
+    "popUpSteps": [],
+    "firstCue": null,
+    "firstPopUp": null,
+    "firstStanding": null,
+    "firstFall": null,
+    "firstGo": {
+      "step": 282,
+      "physicalSeconds": 4.7,
+      "seaTime": 540.4230587494496,
+      "cue": false,
+      "separation": null,
+      "phase": "prone",
+      "speed": 2.489112638660162,
+      "boardSpeed": 2.698752111086972,
+      "boardXZ": [
+        -50.07262761785898,
+        -266.00430935931024
+      ],
+      "wave": {
+        "valid": true,
+        "directionX": 0.11061392404058232,
+        "directionZ": 0.9938634512891318,
+        "aheadOfCrest": 15.501765595365946,
+        "crestSpeed": 7.764493997856496,
+        "faceHeight": 4.109368590477743,
+        "faceFraction": 0.49212956899084603,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 2.489112638660162,
+        "speedShoreward": 2.4411592387861285,
+        "speedAlongCrest": 0.48623379029730907,
+        "requiredSpeed": 9.491594252303148
+      },
+      "pilot": {
+        "state": "go",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 0,
+        "phase": ""
+      }
+    },
+    "stop": {
+      "kind": "pilot-done-before-step",
+      "noStep": true,
+      "pilot": {
+        "state": "done",
+        "outcome": "missed the wave"
+      },
+      "view": {
+        "ride": {
+          "phase": "prone",
+          "speed": 0.49827352176944395,
+          "boardSpeed": 0.6465107828309217,
+          "cue": false,
+          "popUp": {
+            "outcome": "none",
+            "duration": 0,
+            "landingPeak": 0,
+            "frontShare": 0
+          },
+          "resets": 0,
+          "wave": {
+            "valid": true,
+            "directionX": 0.16627886918889748,
+            "directionZ": 0.9860787684872144,
+            "aheadOfCrest": 35.063401400641936,
+            "crestSpeed": 6.164480055992784,
+            "faceHeight": 2.476849950591977,
+            "faceFraction": 0.02398168173286214,
+            "crestBreaking": 0,
+            "curlDistance": null,
+            "curlSide": 0,
+            "speedOverGround": 0.49827352176944395,
+            "speedShoreward": 0.09345988062134902,
+            "speedAlongCrest": 0.4894300289221818,
+            "requiredSpeed": 6.502581356355256
+          },
+          "balance": 0.9998787406405406,
+          "bank": 0,
+          "leash": {
+            "snapped": false,
+            "tension": 0,
+            "distance": 0,
+            "reeling": false
+          },
+          "duck": 0,
+          "boardInReach": false,
+          "knock": 0,
+          "breath": 1,
+          "rescues": 0
+        },
+        "peelDirection": 1,
+        "board": {
+          "x": -42.0601247697482,
+          "z": -242.4658325396315,
+          "heading": 0.6653012792111254
+        },
+        "focusZ": -261.09137870490895,
+        "crestBehind": -0.564893289370721
+      }
+    },
+    "initialBoardPose": [
+      -50,
+      -0.8237760698144957,
+      -267.09137870490895,
+      0.010426087851655714,
+      -0.00020008845999532553,
+      0.01918655869037355,
+      0.9997615378790778,
+      1
+    ],
+    "spawnOutsideFocus": 6.0,
+    "boardXZChange": [
+      7.9398752302518005,
+      24.625546165277456
+    ],
+    "boardPositionFiniteDifferenceZ": {
+      "min": -1.1846702111131435,
+      "max": 4.361798222331572,
+      "stepsAtLeast3": 285,
+      "scope": "Observed world-z position finite differences, not worker velocity or paddling-force attribution"
+    },
+    "speed": {
+      "min": 0.04058312389445046,
+      "max": 4.556011891594673
+    },
+    "boardSpeed": {
+      "min": 0.36801645390263577,
+      "max": 4.564145983417536
+    },
+    "incomingDirectionDotAll": {
+      "min": 0.4426422693963087,
+      "max": 0.9999997863059228
+    },
+    "incomingDirectionDotValid": {
+      "min": 0.4426422693963087,
+      "max": 0.9999997863059228
+    },
+    "incomingDirectionNegativeSteps": 0,
+    "incomingDirectionNegativeValidSteps": 0,
+    "waveValidSteps": 518,
+    "crestSpeedAll": {
+      "min": -7.292312214216835,
+      "max": 62.41812993150729
+    },
+    "crestSpeedValid": {
+      "min": -7.292312214216835,
+      "max": 62.41812993150729
+    },
+    "waveRangesValid": {
+      "speedShoreward": {
+        "min": -0.6433890549450643,
+        "max": 3.9545482153277667
+      },
+      "faceFraction": {
+        "min": 0,
+        "max": 0.9908115606777298
+      },
+      "faceHeight": {
+        "min": 1.4337270223347955,
+        "max": 4.904075228997227
+      },
+      "aheadOfCrest": {
+        "min": -11.746973457637353,
+        "max": 39.6785502541072
+      }
+    },
+    "takeoffWindow": {
+      "thresholdsUnchanged": {
+        "crestSpeedMinimum": 3,
+        "shorewardMinimum": 3,
+        "crestSpeedShare": 0.8,
+        "faceFractionMinimum": 0.5,
+        "aheadMinimum": "min(2,1.1*max(0,faceHeight))",
+        "aheadMaximum": "min(4,2.2*max(0,faceHeight))"
+      },
+      "allRowsGatePassCounts": {
+        "valid": 518,
+        "crestSpeed": 615,
+        "caughtSpeed": 0,
+        "faceFraction": 286,
+        "aheadLower": 609,
+        "aheadUpper": 397
+      },
+      "validRowsGatePassCounts": {
+        "valid": 518,
+        "crestSpeed": 471,
+        "caughtSpeed": 0,
+        "faceFraction": 286,
+        "aheadLower": 365,
+        "aheadUpper": 153
+      },
+      "allGatesPassSteps": [],
+      "validDistanceBandPassCount": 0,
+      "validFailures": {
+        "crestSpeed,caughtSpeed,faceFraction,aheadUpper": 7,
+        "caughtSpeed,faceFraction,aheadUpper": 225,
+        "caughtSpeed,aheadUpper": 93,
+        "crestSpeed,caughtSpeed,aheadUpper": 40,
+        "caughtSpeed,aheadLower": 153
+      },
+      "scope": "Exact published inTakeOffWindow clauses; not raw AttachedRider.popUpCue refusal reasons"
+    },
+    "privateRiderCueObservable": {
+      "boardSpeedBelow2Steps": 302,
+      "boardSpeedAtLeast2Steps": 460,
+      "minimumProjectedForwardLengthSquared": 0.8381858075867886,
+      "scope": "Pressure support, sampled downhill slope and sample-domain predicate are unlogged. Combined cue false implies raw rider cue false, but does not identify its private rejecting clause."
+    },
+    "witnessRows": 0,
+    "witnessClassifications": {},
+    "standingUnmeasuredRows": 0,
+    "detectorDisabledReasons": {},
+    "entry": {
+      "observedStandingOutside": false,
+      "firstPartial": null,
+      "firstConnectedWitnessEntry": null,
+      "containmentWithoutObservedOutside": null,
+      "firstConnectedWitnessExit": null,
+      "maximumConsecutiveContainedSteps": 0,
+      "residenceIntervals": [],
+      "fullBodyClearancePass": false
+    },
+    "entryScope": "Seven air-column witnesses on one connected indexed mesh component plus reference trunk spheres; no full-body/capsule or air-volume connectivity proof",
+    "inheritedWorkerWording": [
+      "No worker internals changed: published separation reason is retained; flightTime, support-limit history and postureError are unavailable."
+    ],
+    "wordingCorrection": "No added private worker instrumentation. Candidate intentionally changes the physical host gauge; inherited wording is not evidence of unchanged physics or equal trajectory.",
+    "renderer": "Current8f79 renderer omits swept foam balls; intentional candidate host gauge delta",
+    "browserErrors": []
+  },
+  "limitations": [
+    "Independent fresh seeded scenes and gauge-dependent inputs do not establish equal trajectories.",
+    "Renderer also changes from957 foam balls tocurrent8f79 omission; body evidence does not establish identical rendered fragments.",
+    "Connected witness entry is not complete-body clearance. Raw private pop-up cue clauses remain uninstrumented."
+  ]
+}

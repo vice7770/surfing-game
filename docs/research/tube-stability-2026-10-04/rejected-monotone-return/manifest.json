@@ -1,0 +1,79 @@
+{
+  "schema": "rejected-monotone-return-archive/v1",
+  "complete": true,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 4727,
+      "sha256": "8e7dcb4d817c653afd129718692036c8c3606ef1ea6cb0b61648976a136d738d"
+    },
+    {
+      "path": "archive-origins.json",
+      "bytes": 1719,
+      "sha256": "6337ba93f50116c095f1bfc1d6ef8f299fb701a6f40546c2bdc66c7542432ac6"
+    },
+    {
+      "path": "evidence/archive-verification.json",
+      "bytes": 830,
+      "sha256": "ee59702a5f4e3d022a464253f19ec252333b81d4d0a094dfda8979a848027361"
+    },
+    {
+      "path": "evidence/crossing-changes.tsv",
+      "bytes": 1734,
+      "sha256": "c93df7429fb56786f1d88e215c4ac3695bbf8db3179d79752988305a9c16a03f"
+    },
+    {
+      "path": "evidence/failure-receipt.json",
+      "bytes": 151771,
+      "sha256": "ee42bc559b4a85379792dd3fea00b3ee97ba4dd1561629f6cba4ec0e5bdc5705"
+    },
+    {
+      "path": "evidence/local-and-held-table.tsv",
+      "bytes": 2254,
+      "sha256": "06707eb0fe6cfe8890d043114b83506e6924b5a7e250f64e1650da822f4e799a"
+    },
+    {
+      "path": "evidence/original-report.json.gz",
+      "bytes": 2447128,
+      "sha256": "c3736ed0adb3d7b31b0d96fd80a1ba7a6889211f131ccb617fe7b30539900452",
+      "uncompressedBytes": 9681830,
+      "uncompressedSha256": "105ff8671dbaddbdfd33a58f6c290c9f5253c1c4e7a8573c5ce8e12acc2344e2"
+    },
+    {
+      "path": "input-references.json",
+      "bytes": 5042,
+      "sha256": "b43f5c506119aebf6391206b8b1b2f9ebbf3d0c8a6ce5fbf3872c8791d901afe"
+    },
+    {
+      "path": "integration-review.md",
+      "bytes": 2326,
+      "sha256": "a832df3fc2bdf4a4388029531cf5a821f0234c8a9078689dfa896e7fd75ddf03"
+    },
+    {
+      "path": "replay.py",
+      "bytes": 4186,
+      "sha256": "e968e54ba5dfa29aa90bfde40f0027ccaa9f6ecbf272720f6c18468b0f08c23a"
+    },
+    {
+      "path": "source/air_metrics.py",
+      "bytes": 3250,
+      "sha256": "f22fa4f178be309d11d908a8e11b773784e90732f8cb467685f9f340d798031d"
+    },
+    {
+      "path": "source/measurement_functions.py",
+      "bytes": 2654,
+      "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+    },
+    {
+      "path": "source/prototype.py",
+      "bytes": 22793,
+      "sha256": "4b0e5cf050554f9a96fdbef9ffa797caaffda5cdbfbcca636d38c4d7e363c07d"
+    }
+  ],
+  "totalBytesExcludingManifest": 2650414,
+  "originalReceiptSha256": "105ff8671dbaddbdfd33a58f6c290c9f5253c1c4e7a8573c5ce8e12acc2344e2",
+  "compressedReceiptSha256": "c3736ed0adb3d7b31b0d96fd80a1ba7a6889211f131ccb617fe7b30539900452",
+  "reusedInputReferences": "input-references.json",
+  "stopped": true,
+  "productionChanges": false
+}

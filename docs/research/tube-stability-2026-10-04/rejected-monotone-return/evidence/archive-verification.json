@@ -1,0 +1,17 @@
+{
+  "schema": "rejected-monotone-return-archive-hash-verification/v1",
+  "complete": true,
+  "exactOriginalReceiptBytes": 9681830,
+  "originalReceiptSha256": "105ff8671dbaddbdfd33a58f6c290c9f5253c1c4e7a8573c5ce8e12acc2344e2",
+  "compressedReceiptBytes": 2447128,
+  "compressedReceiptSha256": "c3736ed0adb3d7b31b0d96fd80a1ba7a6889211f131ccb617fe7b30539900452",
+  "decompressedReceiptMatchesExactOriginal": true,
+  "prototypeAndTwoHelpersMatchOriginalReceiptHashes": true,
+  "newReplayScriptParses": true,
+  "reusedArchivedInputAndLoaderHashesVerified": 5,
+  "publicAssetHashesVerified": 8,
+  "numericReplayRepeated": false,
+  "newGeometryIterations": 0,
+  "productionEdits": false,
+  "scope": "Archival byte/hash verification only. The fixed original trial evaluated all five retained sections and all 293 eligible frames once."
+}

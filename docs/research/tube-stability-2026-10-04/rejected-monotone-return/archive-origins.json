@@ -1,0 +1,46 @@
+{
+  "schema": "rejected-monotone-return-archive-origins/v1",
+  "complete": true,
+  "originalReceipt": {
+    "file": "/private/tmp/tube-monotone-inner-profile-20261004/report.json",
+    "bytes": 9681830,
+    "sha256": "105ff8671dbaddbdfd33a58f6c290c9f5253c1c4e7a8573c5ce8e12acc2344e2"
+  },
+  "compressedReceipt": {
+    "archiveRelative": "evidence/original-report.json.gz",
+    "bytes": 2447128,
+    "sha256": "c3736ed0adb3d7b31b0d96fd80a1ba7a6889211f131ccb617fe7b30539900452",
+    "uncompressedMatchesOriginalExactly": true
+  },
+  "sourceFiles": [
+    {
+      "file": "/private/tmp/tube-monotone-inner-profile-20261004/load-cases.ts",
+      "bytes": 3293,
+      "sha256": "bace19e675790042084918c6eaf76a54c4a5af16b3f3959a8f6fb5c8f7399a4b"
+    },
+    {
+      "file": "/private/tmp/tube-monotone-inner-profile-20261004/load-cases.mjs",
+      "bytes": 6960,
+      "sha256": "060b199b4ea75b8ddd9437da0230dc9f8a73f307c768ac2d95918e86f2f877f0"
+    },
+    {
+      "file": "/private/tmp/tube-monotone-inner-profile-20261004/measurement_functions.py",
+      "bytes": 2654,
+      "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+    },
+    {
+      "file": "/private/tmp/tube-monotone-inner-profile-20261004/air_metrics.py",
+      "bytes": 3250,
+      "sha256": "f22fa4f178be309d11d908a8e11b773784e90732f8cb467685f9f340d798031d"
+    },
+    {
+      "file": "/private/tmp/tube-monotone-inner-profile-20261004/prototype.py",
+      "bytes": 22793,
+      "sha256": "4b0e5cf050554f9a96fdbef9ffa797caaffda5cdbfbcca636d38c4d7e363c07d"
+    }
+  ],
+  "originalScratchDirectory": "/private/tmp/tube-monotone-inner-profile-20261004",
+  "geometryTrials": 1,
+  "coefficientRetuning": false,
+  "stoppedUnsafe": true
+}

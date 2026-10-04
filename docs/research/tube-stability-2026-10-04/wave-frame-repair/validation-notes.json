@@ -1,0 +1,63 @@
+{
+  "schema": "wave-frame-repair-validation-notes/v1",
+  "scope": "Execution notes from completed production validation; commands are not rerun for this archive. Raw test stdout was not retained here.",
+  "before": {
+    "existingGaugeTests": 7,
+    "existingGaugePassed": 7,
+    "newRegressionsFailed": [
+      "translation of turning oblique water and rider changed measured crest speed by up to 35.227519379702294 m/s",
+      "rotating crossed components let local direction oppose incoming seed, z approximately −0.9999999970915502"
+    ],
+    "discardedExperimentalAssertion": "A curved-front fixture initially asserted unpromised phase-speed accuracy within 10%. It was replaced with meaningful direction and translation invariance checks; no production thresholds were tuned."
+  },
+  "after": [
+    {
+      "command": "node_modules/.bin/vitest run src/physics/waveFrame.test.ts src/physics/takeOffCue.test.ts src/dev/Autopilot.test.ts src/game/pocketReflex.test.ts src/game/rideAnalysis.test.ts src/wave/SurfZoneRunner.test.ts",
+      "testsPassed": 111,
+      "elapsedSeconds": 54.7,
+      "scope": "Six focused suites, before the final additional incoming-seed parameter case"
+    },
+    {
+      "command": "node_modules/.bin/vitest run src/physics/waveFrame.test.ts src/physics/takeOffCue.test.ts",
+      "testsPassed": 16,
+      "scope": "Final source with both incoming-seed parameter cases; overlaps the focused run"
+    },
+    {
+      "command": "node_modules/.bin/tsc --noEmit -p tsconfig.json",
+      "result": "passed",
+      "completedExecutions": 2
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "BUILD_ID=tube-gauge-natural-entry-20261004-f300e28b node_modules/.bin/vite build --outDir /private/tmp/tube-gauge-natural-entry-20261004/dist",
+      "result": "passed",
+      "scope": "Fresh candidate output; existing served dists untouched"
+    },
+    {
+      "result": "passed",
+      "scope": "Offline JS syntax, Python AST/source-only plan, and four helper/source checks retained in candidate/source-check.json; no browser launched during preparation"
+    }
+  ],
+  "native": {
+    "completedOwnerSeconds": 47.682265167008154,
+    "steps": 762,
+    "physicalSeconds": 12.7,
+    "standing": false,
+    "cue": false,
+    "entryClaim": false,
+    "scope": "One root-owned fresh same-policy attempt; no added private worker instrumentation. Gauge intentionally changed physical host measurement."
+  },
+  "remaining": "Highest sampled ray peak is not tracked material crest identity. Translation invariance and incoming hemisphere do not establish true crest phase speed for moving/rotating rays or across a peak switch.",
+  "claimsNotMade": [
+    "full suite",
+    "FPS improvement from gauge repair",
+    "visual acceptance",
+    "natural catch",
+    "tube entry",
+    "full-body clearance",
+    "equal physical state or trajectory"
+  ]
+}

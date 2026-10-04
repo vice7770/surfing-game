@@ -1,0 +1,12 @@
+{
+  "schema": "tube-natural-entry-source-check/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "scope": "Finite offline synthetic detector/source checks; no runtime or trajectory claim",
+  "outcomes": [
+    "three ordered component crossings with clear reference spheres",
+    "production water parity blocks apparent cavity",
+    "collinear and coincident triangles retain actual segment contact",
+    "unchanged input module exports and positive-radius guard"
+  ]
+}

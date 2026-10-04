@@ -1,0 +1,272 @@
+[
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/native-first/report.json",
+    "retained": "candidate/native-first/report.json.gz",
+    "originalBytes": 2787675,
+    "originalSha256": "09cede9d3715e9949d519db9ef5158f10e964823fbd7562672ac5e5f6dc7c042",
+    "compressed": true,
+    "gzipMtime": 0,
+    "retainedBytes": 546405,
+    "retainedSha256": "792888abc5c8ba63b16a04f1f51f4ca1fc752a3153201ab5c0f0d665a22c2551"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/native-first/steps.ndjson",
+    "retained": "candidate/native-first/steps.ndjson.gz",
+    "originalBytes": 2707525,
+    "originalSha256": "a8ca98b069d5f4cddd0f9abdc5ea277c3e9ac9170649cdbc63477348f6b6cf33",
+    "compressed": true,
+    "gzipMtime": 0,
+    "retainedBytes": 519819,
+    "retainedSha256": "42c78477f11c7d94c68d2cf1d16cdd0e216c1102a8d3ad4e2bcbc92b42e16849"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/native-first/00-final.png",
+    "retained": "candidate/native-first/00-final.png",
+    "originalBytes": 2358711,
+    "originalSha256": "78f7d1aaf8c44a559893409341bd47f21180aa44dfb918092cff1127703c05de",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 2358711,
+    "retainedSha256": "78f7d1aaf8c44a559893409341bd47f21180aa44dfb918092cff1127703c05de"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/native-first/launcher.json",
+    "retained": "candidate/native-first/launcher.json",
+    "originalBytes": 11781,
+    "originalSha256": "9bfa39518a5943119b6312f2d028135ebc334e8d5b01890e877298109952a63e",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 11781,
+    "retainedSha256": "9bfa39518a5943119b6312f2d028135ebc334e8d5b01890e877298109952a63e"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/native-first-owner.json",
+    "retained": "candidate/native-first-owner.json",
+    "originalBytes": 3113,
+    "originalSha256": "992fd8bc584116dea45d294762b3352bba57f5d0ad8bd063cf1f524c8e2b16bf",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 3113,
+    "retainedSha256": "992fd8bc584116dea45d294762b3352bba57f5d0ad8bd063cf1f524c8e2b16bf"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/native-first-owner.log",
+    "retained": "candidate/native-first-owner.log",
+    "originalBytes": 2104,
+    "originalSha256": "eedadc342b7aa6d3abb2c1838b73d474ed5b2c921ca71f5bd495dc5223a41a7d",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 2104,
+    "retainedSha256": "eedadc342b7aa6d3abb2c1838b73d474ed5b2c921ca71f5bd495dc5223a41a7d"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/preparation.json",
+    "retained": "candidate/preparation.json",
+    "originalBytes": 82206,
+    "originalSha256": "d9e0ffc089a222e2cd9f576b4258f0eb6d06bb56e7019c4961f8fa314019665e",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 82206,
+    "retainedSha256": "d9e0ffc089a222e2cd9f576b4258f0eb6d06bb56e7019c4961f8fa314019665e"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/preparation.sha256",
+    "retained": "candidate/preparation.sha256",
+    "originalBytes": 83,
+    "originalSha256": "4013c46f89dcde2c039a892c0d4d2b378cb5337c8ad68edc28f9e1095275abb2",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 83,
+    "retainedSha256": "4013c46f89dcde2c039a892c0d4d2b378cb5337c8ad68edc28f9e1095275abb2"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/source-check.json",
+    "retained": "candidate/source-check.json",
+    "originalBytes": 476,
+    "originalSha256": "1c5ceecf116d059a0c2b4a0eea7638eba7a3901f49bfce1f400670f09b5bda4b",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 476,
+    "retainedSha256": "1c5ceecf116d059a0c2b4a0eea7638eba7a3901f49bfce1f400670f09b5bda4b"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/native.mjs",
+    "retained": "candidate/native.mjs",
+    "originalBytes": 18198,
+    "originalSha256": "eecc4f4017f44e29452281de8f815a9b0bdd7515a60db895792636341f5b7ce1",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 18198,
+    "retainedSha256": "eecc4f4017f44e29452281de8f815a9b0bdd7515a60db895792636341f5b7ce1"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/native-owned.mjs",
+    "retained": "candidate/native-owned.mjs",
+    "originalBytes": 6532,
+    "originalSha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 6532,
+    "retainedSha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/run.py",
+    "retained": "candidate/run.py",
+    "originalBytes": 8333,
+    "originalSha256": "13b2aa3e1cc1b7b67e761b5f10bd853c85377b81f6b98baf295f6e9f28bcd881",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 8333,
+    "retainedSha256": "13b2aa3e1cc1b7b67e761b5f10bd853c85377b81f6b98baf295f6e9f28bcd881"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/body-witnesses.mjs",
+    "retained": "candidate/body-witnesses.mjs",
+    "originalBytes": 11089,
+    "originalSha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 11089,
+    "retainedSha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/source-check.mjs",
+    "retained": "candidate/source-check.mjs",
+    "originalBytes": 2604,
+    "originalSha256": "5ef3fab03148e9928cef171811755339af02cd71be3a39b3e594aae3d9667689",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 2604,
+    "retainedSha256": "5ef3fab03148e9928cef171811755339af02cd71be3a39b3e594aae3d9667689"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/autopilot-entry.ts",
+    "retained": "candidate/autopilot-entry.ts",
+    "originalBytes": 296,
+    "originalSha256": "daa2e72a04e87ed97e2814ea1b7115440e796b2ec62f650caf20609ee6e2ebb1",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 296,
+    "retainedSha256": "daa2e72a04e87ed97e2814ea1b7115440e796b2ec62f650caf20609ee6e2ebb1"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/dist/build.json",
+    "retained": "candidate/build.json",
+    "originalBytes": 54,
+    "originalSha256": "8f7e7067e6e215715ecfbadc688e7e95c2044b85fe9aaacd43cae187596d52b4",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 54,
+    "retainedSha256": "8f7e7067e6e215715ecfbadc688e7e95c2044b85fe9aaacd43cae187596d52b4"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/dist/diagnostic-autopilot.mjs",
+    "retained": "candidate/diagnostic-autopilot.mjs.gz",
+    "originalBytes": 347555,
+    "originalSha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2",
+    "compressed": true,
+    "gzipMtime": 0,
+    "retainedBytes": 80582,
+    "retainedSha256": "d1c0ea0cbace9be8efc7252654dc8a808ded1ad0fcca1cb3e1e851de6563b85b"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/source/waveFrame.ts",
+    "retained": "source/waveFrame.ts",
+    "originalBytes": 11626,
+    "originalSha256": "1fc4cca2787e2a9064f779f3905fa762dd37e0664a34e08565c94d28bbaff6a2",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 11626,
+    "retainedSha256": "1fc4cca2787e2a9064f779f3905fa762dd37e0664a34e08565c94d28bbaff6a2"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/source/waveFrame.test.ts",
+    "retained": "source/waveFrame.test.ts",
+    "originalBytes": 10329,
+    "originalSha256": "2426bae646c8efeda28008eb6fa0b7f36d008c95672cbdbf298b0b2fd927ae46",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 10329,
+    "retainedSha256": "2426bae646c8efeda28008eb6fa0b7f36d008c95672cbdbf298b0b2fd927ae46"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/source/base-waveFrame.ts",
+    "retained": "source/base-waveFrame.ts",
+    "originalBytes": 10744,
+    "originalSha256": "d800f6bac7f4790e0bef33469246a847272dc2b617438a18a8f03c684e212079",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 10744,
+    "retainedSha256": "d800f6bac7f4790e0bef33469246a847272dc2b617438a18a8f03c684e212079"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/source/base-waveFrame.test.ts",
+    "retained": "source/base-waveFrame.test.ts",
+    "originalBytes": 5120,
+    "originalSha256": "34c553e335014e3f14b2e3712a0ba715b0a651b6c7d1b17adec06e1c2f781dcd",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 5120,
+    "retainedSha256": "34c553e335014e3f14b2e3712a0ba715b0a651b6c7d1b17adec06e1c2f781dcd"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/source/gauge.patch",
+    "retained": "source/gauge.patch",
+    "originalBytes": 10819,
+    "originalSha256": "1549865be3359be1b6438da3777ef8fafc6fea8873b2aa55024b1cdbcebd396f",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 10819,
+    "retainedSha256": "1549865be3359be1b6438da3777ef8fafc6fea8873b2aa55024b1cdbcebd396f"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-natural-entry-20261004/source/protocol.patch",
+    "retained": "source/protocol.patch",
+    "originalBytes": 8547,
+    "originalSha256": "41c36bc9801709ece9fa1e951d4738ad92f7794748827170e3a8fe3ee962fd81",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 8547,
+    "retainedSha256": "41c36bc9801709ece9fa1e951d4738ad92f7794748827170e3a8fe3ee962fd81"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-analysis-20261004/compare.py",
+    "retained": "compare.py",
+    "originalBytes": 9581,
+    "originalSha256": "05fd00f3bd384eb7f673cb765133f58c6af0f72a6f608c61c25e9d837776e540",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 9581,
+    "retainedSha256": "05fd00f3bd384eb7f673cb765133f58c6af0f72a6f608c61c25e9d837776e540"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-analysis-20261004/comparison.json",
+    "retained": "comparison.json",
+    "originalBytes": 16794,
+    "originalSha256": "d447fd5ce3e674bd034eda9877c86002f00e2f424c9830bfb1e1513aefe48618",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 16794,
+    "retainedSha256": "d447fd5ce3e674bd034eda9877c86002f00e2f424c9830bfb1e1513aefe48618"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-analysis-20261004/next-source-action.json",
+    "retained": "next-source-action.json",
+    "originalBytes": 3426,
+    "originalSha256": "7e4fc896a97499b61ed13175560bce838982304a37bdd5a21fd13f4bc47f8f90",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 3426,
+    "retainedSha256": "7e4fc896a97499b61ed13175560bce838982304a37bdd5a21fd13f4bc47f8f90"
+  },
+  {
+    "original": "/private/tmp/tube-gauge-analysis-20261004/baseline-schema.json",
+    "retained": "baseline-schema.json",
+    "originalBytes": 372,
+    "originalSha256": "1d55affce89698e6063932aea6c7f995fa77ac4900aa32b6850d7bee2a13afdd",
+    "compressed": false,
+    "gzipMtime": null,
+    "retainedBytes": 372,
+    "retainedSha256": "1d55affce89698e6063932aea6c7f995fa77ac4900aa32b6850d7bee2a13afdd"
+  }
+]

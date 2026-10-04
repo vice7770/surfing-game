@@ -1,0 +1,93 @@
+--- prior/native.mjs
++++ candidate/native.mjs
+@@ -5,7 +5,7 @@
+ import { createHash } from 'node:crypto';
+ import { launch } from './native-owned.mjs';
+ import { createWitnessSampler } from './body-witnesses.mjs';
+-const WORK='/private/tmp/tube-natural-entry-ready-20261004',PORT=4288,CDP=9698,DT=1/60;
++const WORK='/private/tmp/tube-gauge-natural-entry-20261004',PORT=4289,CDP=9699,DT=1/60;
+ const args=Object.fromEntries(process.argv.slice(2).map(a=>{const i=a.indexOf('=');assert(a.startsWith('--')&&i>2);return[a.slice(2,i),a.slice(i+1)];}));
+ assert.equal(args.run,'true','Only the bounded Python owner may arm');assert.equal(args.arm,'baseline');
+ assert.equal(args.url,`http://127.0.0.1:${PORT}/?diagnostics&physicsDx=1&physicsDz=1`);
+@@ -23,13 +23,13 @@
+  stop:'First published fall/separation or pilot done; one ordinary fixed step and update(1/60) each iteration',noSettle:true,noPlacements:true,noReset:true,noRetries:true},
+  detector:{maximumCumulativeMilliseconds:20000,scope:'Seven published air-column witnesses on one connected indexed mesh component plus reference trunk spheres; air-volume connectivity and full body/capsule clearance are not proved',elapsedMilliseconds:0},
+  diagnosticOutput:{canvas:[1708,879],pixelRatio:1,resizeCalls:1,maximumPngs:3,maximumPngBytes:12*1024*1024,maximumReportBytes:32*1024*1024,
+- fidelityPass:false,fpsClaim:false,renderer:'Immutable accepted957, older billboard renderer with foam balls'},
++ fidelityPass:false,fpsClaim:false,renderer:'Current8f79 renderer omits swept foam balls; intentional candidate host gauge delta'},
+  browserErrors:[],steps:[],stepCount:0,checkpoints:[],artifacts:[],pngCount:0,pngBytes:0,
+  entry:{observedStandingOutside:false,firstPartial:null,firstConnectedWitnessEntry:null,containmentWithoutObservedOutside:null,
+  firstConnectedWitnessExit:null,maximumConsecutiveContainedSteps:0,residenceIntervals:[],fullBodyClearancePass:false},
+  limitations:['No worker internals changed: published separation reason is retained; flightTime, support-limit history and postureError are unavailable.',
+  'Five crossings, disconnected components, parity disagreements and detector bounds are retained without claiming entry.',
+- 'Visible skinned extents use the drawn/interpolated clock; trajectory body points use the current worker clock. PNGs use the older957 billboard renderer.',
++ 'Visible skinned extents use the drawn/interpolated clock; trajectory body points use the current worker clock. PNGs use current8f79 swept foam-ball omission, unlike the prior957 attempt.',
+  'No FPS, full-body collision, visual acceptance or adoption pass is inferred.']};
+ let ndjsonBytes=0,lastComponent=null,residence=null,consecutive=0,entryOccurred=false,wasContained=false;
+ const hash=b=>createHash('sha256').update(b).digest('hex');
+--- prior/run.py
++++ candidate/run.py
+@@ -4,7 +4,7 @@
+ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+ import argparse, datetime, hashlib, json, os, selectors, signal, socket, subprocess, threading, time, shutil
+ 
+-WORK=Path('/private/tmp/tube-natural-entry-ready-20261004')
++WORK=Path('/private/tmp/tube-gauge-natural-entry-20261004')
+ def tcp(port):
+     sock=socket.socket();sock.settimeout(.25)
+     try: sock.connect(('127.0.0.1',port));return False
+@@ -16,13 +16,15 @@
+     return [int(p[0]) for line in result.stdout.splitlines() if len(p:=line.split())==3 and int(p[1])==group and not p[2].startswith('Z')]
+ parser=argparse.ArgumentParser();parser.add_argument('--run',action='store_true');parser.add_argument('--arm',choices=['baseline','candidate'],required=True);parser.add_argument('--out');args=parser.parse_args()
+ DIST=WORK/'dist'
+-PORTS=(4288,9698)
++PORTS=(4289,9699)
+ if not args.run:
+-    print(json.dumps({'sourceOnlyPlan':True,'arm':args.arm,'dist':str(DIST),'wholeSeconds':180,'commandSeconds':168,'cleanupSeconds':7,'maximumSteps':1080,'maximumPhysicalSeconds':18,'maximumPngs':3,'ports':PORTS,'resourcesStarted':False}));raise SystemExit(0)
++    print(json.dumps({'sourceOnlyPlan':True,'arm':args.arm,'dist':str(DIST),'wholeSeconds':180,'commandSeconds':168,'cleanupSeconds':7,'maximumSteps':1080,'maximumPhysicalSeconds':18,'maximumPngs':3,'ports':PORTS,'userPorts':[4310,4311],'userPortsMustStayOpen':True,'resourcesStarted':False}));raise SystemExit(0)
+ start=time.monotonic();out=Path(args.out or WORK/(args.arm+'-first')).resolve();owner=out.with_name(out.name+'-owner.json');log=out.with_name(out.name+'-owner.log')
+ assert out==WORK/'native-first' and not out.exists() and not owner.exists() and not log.exists(),'Only one fresh native-first invocation is prepared'
+ assert (DIST/'index.html').is_file(),'Existing root-built dist required; this owner never copies/rebuilds'
+ assert all(tcp(p) is True for p in PORTS),'Both fresh owned ports must be closed'
++user_ports_before={str(p):tcp(p) is False for p in (4310,4311)}
++assert all(user_ports_before.values()),'Existing user4310 and4311 must both be open before launch'
+ node=shutil.which('node');assert node,'Installed Node required'
+ preparation=json.loads((WORK/'preparation.json').read_text())
+ expected_assets={**preparation['assets'],**preparation['diagnosticAssets']}
+@@ -33,7 +35,7 @@
+ assert verify_copy() and verify_sources(),'Prepared copied dist and frozen sources must match manifest before launch'
+ report={'schema':'tube-natural-entry-owner/v1','arm':args.arm,'physicalStateEqualityClaim':False,'startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+     'wholeSeconds':180,'commandSeconds':168,'cleanupSeconds':7,'complete':False,'firstFailure':None,'ports':PORTS,
+-    'dist':str(DIST),'nativeOutput':str(out),'served':{},'logBytes':0,'nativeGroup':None}
++    'dist':str(DIST),'nativeOutput':str(out),'userPortsOpenBefore':user_ports_before,'served':{},'logBytes':0,'nativeGroup':None}
+ lock=threading.Lock();server=None;proc=None;sel=selectors.DefaultSelector()
+ def save():
+     with lock: body=json.dumps(report,separators=(',',':')).encode()
+@@ -97,12 +99,15 @@
+         except subprocess.TimeoutExpired:report['remainingOwnerChild']=True
+     if server is not None:server.shutdown();server.server_close()
+     report['closedPorts']={str(p):tcp(p) for p in PORTS}
+-    report['user4310StillOpen']=tcp(4310) is False
++    report['userPortsOpenAfter']={str(p):tcp(p) is False for p in (4310,4311)}
++    report['user4310StillOpen']=report['userPortsOpenAfter']['4310']
++    report['user4311StillOpen']=report['userPortsOpenAfter']['4311']
++    report['userServersStayedOpen']=all(report['userPortsOpenAfter'].values())
+     report['copiedDistUnchanged']=verify_copy()
+     report['diagnosticSourcesUnchanged']=verify_sources()
+     report['independentClosureValid']=not report.get('remainingOwnedPids') and all(v is True for v in report['closedPorts'].values())
+     report['elapsedSeconds']=time.monotonic()-start
+-    if not report['independentClosureValid'] or not report['copiedDistUnchanged'] or not report['diagnosticSourcesUnchanged'] or report['elapsedSeconds']>180:report['complete']=False
++    if not report['independentClosureValid'] or not report['copiedDistUnchanged'] or not report['diagnosticSourcesUnchanged'] or not report['userServersStayedOpen'] or report['elapsedSeconds']>180:report['complete']=False
+     save();sel.close()
+ print(json.dumps({'complete':report['complete'],'firstFailure':report['firstFailure'],'independentClosureValid':report['independentClosureValid'],'elapsedSeconds':report['elapsedSeconds'],'owner':str(owner)}))
+ raise SystemExit(0 if report['complete'] else 1)
+--- prior/source-check.mjs
++++ candidate/source-check.mjs
+@@ -26,6 +26,6 @@
+ assert.throws(()=>createWitnessSampler()(fixture(),words,Array(7).fill(-.1),()=>false),/positive reference radii/);
+ assert.equal(typeof autopilotView,'function');assert.equal(new Autopilot({style:'line',stall:false}).state,'position');
+ assert.equal(riderPartVolumes().length,7);outcomes.push('unchanged input module exports and positive-radius guard');
+-writeFileSync('/private/tmp/tube-natural-entry-ready-20261004/source-check.json',JSON.stringify({schema:'tube-natural-entry-source-check/v1',complete:true,resourcesStarted:false,
++writeFileSync('/private/tmp/tube-gauge-natural-entry-20261004/source-check.json',JSON.stringify({schema:'tube-natural-entry-source-check/v1',complete:true,resourcesStarted:false,
+  scope:'Finite offline synthetic detector/source checks; no runtime or trajectory claim',outcomes},null,2)+'\n');
+ console.log(JSON.stringify({complete:true,resourcesStarted:false,checks:outcomes.length}));

@@ -88,10 +88,10 @@ function createWaveFrame(directionX: number, directionZ: number): WaveFrame {
 /**
  * Measures the rider against the crest of the wave under it, from the water
  * surface alone. The direction follows the surface slope at the rider (smoothed,
- * within the incoming swell's hemisphere); the crest is the highest water in
- * a window along it, refined between samples. Its speed is the smoothed world
- * displacement of that crest projected onto the mean travel direction. The
- * returned frame is the gauge's own and is overwritten by the next update.
+ * and kept pointing the way the wave travels); the crest is the highest water in
+ * a window along it, refined between samples; its speed is the smoothed rate of
+ * change of its position. The returned frame is the gauge's own and is
+ * overwritten by the next update.
  */
 export class WaveFrameGauge {
   private readonly initialX: number;
@@ -101,10 +101,7 @@ export class WaveFrameGauge {
   private readonly sample = createWaterSample();
   private directionX: number;
   private directionZ: number;
-  private lastCrestX = Number.NaN;
-  private lastCrestZ = Number.NaN;
-  private lastDirectionX = 0;
-  private lastDirectionZ = 0;
+  private lastCrest = Number.NaN;
   private seeded = false;
   private speed = 0;
 
@@ -122,8 +119,7 @@ export class WaveFrameGauge {
   reset(): void {
     this.directionX = this.initialX;
     this.directionZ = this.initialZ;
-    this.lastCrestX = Number.NaN;
-    this.lastCrestZ = Number.NaN;
+    this.lastCrest = Number.NaN;
     this.seeded = false;
     this.speed = 0;
     Object.assign(this.frame, createWaveFrame(this.initialX, this.initialZ));
@@ -165,8 +161,7 @@ export class WaveFrameGauge {
     const faceHeight = crestHeight - heights[trough];
     frame.valid = interior && Number.isFinite(faceHeight) && faceHeight >= MIN_FACE;
     if (!frame.valid) {
-      this.lastCrestX = Number.NaN;
-      this.lastCrestZ = Number.NaN;
+      this.lastCrest = Number.NaN;
       this.seeded = false;
       frame.aheadOfCrest = 0;
       frame.faceHeight = 0;
@@ -184,18 +179,10 @@ export class WaveFrameGauge {
     frame.faceHeight = faceHeight;
     frame.faceFraction = Math.min(1, Math.max(0, (heights[RIDER_INDEX] - heights[trough]) / faceHeight));
 
-    const crestX = position.x + dx * along;
-    const crestZ = position.z + dz * along;
-    if (Number.isFinite(this.lastCrestX) && dt > 0) {
-      // Subtract world points before projecting: projecting absolute positions
-      // onto a changing direction makes speed depend on the world's origin.
-      // The mean direction avoids favouring either end of a turning front.
-      const meanX = dx + this.lastDirectionX;
-      const meanZ = dz + this.lastDirectionZ;
-      const norm = Math.hypot(meanX, meanZ);
-      const speedX = norm > 1e-9 ? meanX / norm : dx;
-      const speedZ = norm > 1e-9 ? meanZ / norm : dz;
-      const moved = (crestX - this.lastCrestX) * speedX + (crestZ - this.lastCrestZ) * speedZ;
+    // The crest's world coordinate along the direction, and its smoothed rate of change.
+    const world = position.x * dx + position.z * dz + along;
+    if (Number.isFinite(this.lastCrest) && dt > 0) {
+      const moved = world - this.lastCrest;
       if (Math.abs(moved) > NEW_CREST) {
         this.seeded = false;
       } else if (!this.seeded) {
@@ -205,14 +192,13 @@ export class WaveFrameGauge {
         this.speed += (moved / dt - this.speed) * (1 - Math.exp(-dt / SPEED_TIME));
       }
     }
-    this.lastCrestX = crestX;
-    this.lastCrestZ = crestZ;
-    this.lastDirectionX = dx;
-    this.lastDirectionZ = dz;
+    this.lastCrest = world;
     frame.crestSpeed = this.speed;
     frame.requiredSpeed = requiredSpeed(this.speed, peelAngleDegrees);
 
     // Breaking at the crest near the rider, along the crest axis (dz, −dx).
+    const crestX = position.x + dx * along;
+    const crestZ = position.z + dz * along;
     let breaking = 0;
     for (const offsetAlong of CREST_OFFSETS) {
       const x = crestX + dz * offsetAlong;
@@ -248,11 +234,8 @@ export class WaveFrameGauge {
     if (!(slope > MIN_SLOPE)) return;
     let x = -sample.slopeX / slope;
     let z = -sample.slopeZ / slope;
-    // A gradient gives an unoriented wave axis: front and back slopes have
-    // opposite signs. Resolve that ambiguity against the incoming swell,
-    // rather than the previous local slope, which can drift all the way around
-    // when components interfere. Local oblique/curved fronts still turn it.
-    if (x * this.initialX + z * this.initialZ < 0) {
+    // On the back of a wave the surface falls seaward: that is still the same wave travelling on.
+    if (x * this.directionX + z * this.directionZ < 0) {
       x = -x;
       z = -z;
     }

@@ -1,0 +1,39 @@
+{
+  "scope": "References existing corrected957 archive without duplicating its reports or PNG",
+  "files": [
+    {
+      "retained": "../natural-entry/README.md",
+      "bytes": 5167,
+      "sha256": "cd561ea161999a0fc01d57d643b5b1bbd843a0bcf00fd044a63c7dfc68b5846e"
+    },
+    {
+      "retained": "../natural-entry/corrected/native-first/report.json.gz",
+      "bytes": 517330,
+      "sha256": "4c7b56225fecf088c9cb8fc32da2e5c0dd1c1f1f4f8459135791ff782de70b27",
+      "originalBytes": 2714404,
+      "originalSha256": "bcf63be6ba4eac997a19933aaaf3281162a188e22b250d2906ca8b8f3924fd2c"
+    },
+    {
+      "retained": "../natural-entry/corrected/native-first/steps.ndjson.gz",
+      "bytes": 508332,
+      "sha256": "2141e8df4cadd1721fee64268dfa911f4051db4f7d9509ab3ec2f55e4ae066fc",
+      "originalBytes": 2693053,
+      "originalSha256": "197bd51f33b3b73a1321d31487541558266407499e0557bac66519fd5c895fb2"
+    },
+    {
+      "retained": "../natural-entry/corrected/native-first-owner.json",
+      "bytes": 2963,
+      "sha256": "c6f3c08fbdebe85b16b4e3667db52b7ddf0e67551f9b2293e6693414a249739c"
+    },
+    {
+      "retained": "../natural-entry/corrected/preparation.json",
+      "bytes": 12973,
+      "sha256": "694709e5071ec7d7da8703acf8f810e5a30581e865fdd4f80fac49f31b07de68"
+    },
+    {
+      "retained": "../natural-entry/archive-origins.json",
+      "bytes": 9324,
+      "sha256": "29ac107782af1e1d46213babc728ccfcf62c2eb6c28af90237f96b677360f3c7"
+    }
+  ]
+}

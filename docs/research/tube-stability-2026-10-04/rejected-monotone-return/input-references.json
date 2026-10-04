@@ -1,0 +1,122 @@
+{
+  "schema": "rejected-monotone-return-input-references/v1",
+  "complete": true,
+  "priorArchiveManifest": {
+    "repositoryRelative": "docs/research/tube-stability-2026-10-04/rejected-roof-thinning/manifest.json",
+    "sha256": "d3b5dd3800e9150e0e4a51acdfaeb630ea590de686c3ea05485148eaf3666929"
+  },
+  "reusedArchivedInputsAndLoaders": [
+    {
+      "repositoryRelative": "docs/research/tube-stability-2026-10-04/rejected-roof-thinning/inputs/captured-polylines.json.gz",
+      "bytes": 11188,
+      "sha256": "9209ec5559e879955756db49ed66cf54c82fab3b076bcca3c649f950729ecf94",
+      "uncompressedBytes": 24838,
+      "uncompressedSha256": "4393da0633def6a9c79000c4cf87cf20eeba582bb9d81e60e81cf7a2aa78263b"
+    },
+    {
+      "repositoryRelative": "docs/research/tube-stability-2026-10-04/rejected-roof-thinning/inputs/air-baseline.json.gz",
+      "bytes": 37127,
+      "sha256": "f3b025f61a470b731b963ea0d9c369d7121a2b4031f5e204156308c4f3b400c8",
+      "uncompressedBytes": 194702,
+      "uncompressedSha256": "20f3f4acb52cf7732683b04cc27a96709364fbb386b33d9fa0fe3e65ab76f409"
+    },
+    {
+      "repositoryRelative": "docs/research/tube-stability-2026-10-04/rejected-roof-thinning/inputs/case-frame-index.json.gz",
+      "bytes": 23816,
+      "sha256": "47e1302e19fceaa701146e5f2033d0d40c5d7190dce24a7a98477190cef7afa1",
+      "uncompressedBytes": 75642,
+      "uncompressedSha256": "793b238187b0c16c87069c0df6360758fd73d4c085902d3b7ce9fe73b4cc54d4"
+    },
+    {
+      "repositoryRelative": "docs/research/tube-stability-2026-10-04/rejected-roof-thinning/source/load-cases.ts",
+      "bytes": 3293,
+      "sha256": "bace19e675790042084918c6eaf76a54c4a5af16b3f3959a8f6fb5c8f7399a4b"
+    },
+    {
+      "repositoryRelative": "docs/research/tube-stability-2026-10-04/rejected-roof-thinning/source/load-cases.mjs",
+      "bytes": 6960,
+      "sha256": "060b199b4ea75b8ddd9437da0230dc9f8a73f307c768ac2d95918e86f2f877f0"
+    }
+  ],
+  "caseAssets": [
+    {
+      "id": "pad19-a20-l12",
+      "repositoryRelative": "public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "matchedNativeReceipt": true,
+      "eligibleCount": 23
+    },
+    {
+      "id": "pad19-a30-l12",
+      "repositoryRelative": "public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "matchedNativeReceipt": true,
+      "eligibleCount": 39
+    },
+    {
+      "id": "pad19-a45-l12",
+      "repositoryRelative": "public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "matchedNativeReceipt": true,
+      "eligibleCount": 49
+    },
+    {
+      "id": "periodic-padang19s-l12",
+      "repositoryRelative": "public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "matchedNativeReceipt": true,
+      "eligibleCount": 24
+    },
+    {
+      "id": "periodic-point21-a15-l12",
+      "repositoryRelative": "public/barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2",
+      "matchedNativeReceipt": false,
+      "eligibleCount": 25
+    },
+    {
+      "id": "periodic-point21-a23-l12",
+      "repositoryRelative": "public/barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72",
+      "matchedNativeReceipt": false,
+      "eligibleCount": 30
+    },
+    {
+      "id": "periodic-point21-a30-l12",
+      "repositoryRelative": "public/barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081",
+      "matchedNativeReceipt": false,
+      "eligibleCount": 42
+    },
+    {
+      "id": "periodic-reef42-l12",
+      "repositoryRelative": "public/barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0",
+      "matchedNativeReceipt": false,
+      "eligibleCount": 61
+    }
+  ],
+  "totalEligibleFrames": 293,
+  "capturedSections": 5,
+  "originalScratchInputs": [
+    {
+      "file": "/private/tmp/tube-lip-attribution-20261004/native-first/report.json",
+      "bytes": 97930,
+      "sha256": "b3a498dd6afe77bde1429b0d1b0aefb434f6304c0bb9d728b37dc865c69373c9"
+    },
+    {
+      "file": "/private/tmp/tube-monotone-inner-profile-20261004/eligible-cases.json",
+      "bytes": 1505981,
+      "sha256": "ecee538fc85d492507e8609a996285fa377d8cb1cd8f08b4f7a88d09eb4cb6dc"
+    }
+  ],
+  "reconstruction": "Use archived captured-polylines and air-baseline; decode every indexed case frame at its retained byteOffset/floatCount from the hash-identified public asset. See the prior archive replay.py for parser reconstruction. No frame payload duplication in this new archive."
+}

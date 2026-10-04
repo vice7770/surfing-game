@@ -1,0 +1,10 @@
+{
+  "schema": "tube-gauge-analysis-baseline-schema/v1",
+  "baseline": "/private/tmp/tube-natural-entry-ready-20261004/native-first/report.json",
+  "bytes": 2714404,
+  "sha256": "bcf63be6ba4eac997a19933aaaf3281162a188e22b250d2906ca8b8f3924fd2c",
+  "nativeSchema": "tube-natural-entry-native/v1",
+  "rowsValidated": 762,
+  "candidateRead": false,
+  "comparisonRun": false
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "tube-gauge-next-source-action/v1",
+  "closestDistanceBandSamples": [
+    {
+      "step": 419,
+      "distanceOutsideBand": 1.6280940459080142,
+      "aheadOfCrest": 5.628094045908014,
+      "lower": 2,
+      "upper": 4,
+      "faceFraction": 0.920361812389484,
+      "crestSpeed": 21.265631282391855,
+      "speedShoreward": 3.8285702690159407
+    },
+    {
+      "step": 418,
+      "distanceOutsideBand": 1.803274550465467,
+      "aheadOfCrest": 5.803274550465467,
+      "lower": 2,
+      "upper": 4,
+      "faceFraction": 0.919476090403753,
+      "crestSpeed": 21.66224216262381,
+      "speedShoreward": 3.7988357564245887
+    },
+    {
+      "step": 417,
+      "distanceOutsideBand": 2.0434932883034946,
+      "aheadOfCrest": 6.043493288303495,
+      "lower": 2,
+      "upper": 4,
+      "faceFraction": 0.9183847632424562,
+      "crestSpeed": 21.860436101304035,
+      "speedShoreward": 3.7648042964280237
+    },
+    {
+      "step": 627,
+      "distanceOutsideBand": 2.0748931889985234,
+      "aheadOfCrest": -0.4928531482038778,
+      "lower": 1.5820400407946456,
+      "upper": 3.164080081589291,
+      "faceFraction": 0.9908115606777298,
+      "crestSpeed": 6.21655704556758,
+      "speedShoreward": 3.1528354359728468
+    },
+    {
+      "step": 628,
+      "distanceOutsideBand": 2.116651528202466,
+      "aheadOfCrest": -0.5372557041552426,
+      "lower": 1.5793958240472232,
+      "upper": 3.1587916480944465,
+      "faceFraction": 0.9890725726832268,
+      "crestSpeed": 5.80604450011084,
+      "speedShoreward": 3.135505639291248
+    }
+  ],
+  "validAheadJumpEvents": [
+    {
+      "steps": [
+        419,
+        420
+      ],
+      "aheadOfCrest": [
+        5.628094045908014,
+        -5.725001862255333
+      ],
+      "faceFraction": [
+        0.920361812389484,
+        0.9208388694330629
+      ],
+      "crestSpeed": [
+        21.265631282391855,
+        21.265631282391855
+      ],
+      "speedShoreward": [
+        3.8285702690159407,
+        3.8540741716074196
+      ],
+      "directionTurnDegrees": 1.8765885541246166,
+      "boardXZStepDistance": 0.06575342116342821
+    }
+  ],
+  "sourceMechanism": {
+    "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/waveFrame.ts",
+    "selection": "Highest sampled height in the whole40m-behind/12m-ahead window",
+    "reseed": "Projected displacement over3m clears seeded; previous speed remains in published valid frame until stable reseeding"
+  },
+  "inference": "The419\u2192420 event supports a selected-crest discontinuity and stale-speed limitation. It does not prove a nearer catchable crest existed or that choosing one would stand the rider.",
+  "oneRecommendedNextSourceAction": "Add a deterministic two-crest selection/reseed regression, then evaluate coherent crest selection against it so a peak switch cannot publish the previous peak speed as a current caught-wave measurement. Preserve all cue thresholds and the ordinary input policy.",
+  "privateCueUnknown": "302 samples fail boardSpeed>=2;460 pass it. Pressure support, sample-domain predicate and local downhill slope are unlogged, so no exact private cue refusal claim is made.",
+  "inheritedWordingCorrection": "Candidate report says No worker internals changed. Interpret narrowly as no added private instrumentation; gauge source intentionally changed and policy-driven inputs/trajectory changed.",
+  "noGoalEntryClaim": true,
+  "noNativeOrSourceMutations": true
+}

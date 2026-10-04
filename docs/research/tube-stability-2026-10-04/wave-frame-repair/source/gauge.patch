@@ -1,0 +1,223 @@
+diff --git a/src/physics/waveFrame.test.ts b/src/physics/waveFrame.test.ts
+index 508d112df..a06492bba 100644
+--- a/src/physics/waveFrame.test.ts
++++ b/src/physics/waveFrame.test.ts
+@@ -57,6 +57,112 @@ describe('wave frame', () => {
+     expect(frame.speedAlongCrest).toBeCloseTo(3, 2);
+   });
+ 
++  it('measures the same turning oblique crest after translating the whole water and rider', () => {
++    const swell = new SwellWater({ height: 1, period, depth, direction: Math.PI / 3 });
++    const shift = { x: 1200, z: -900 };
++    const translated: SurfWater = {
++      surfaceAt: (x, z) => swell.surfaceAt(x - shift.x, z - shift.z),
++      sampleAt: (x, y, z, out) => swell.sampleAt(x - shift.x, y, z - shift.z, out),
++      addReaction() {},
++    };
++    const near = new WaveFrameGauge();
++    const far = new WaveFrameGauge();
++    const at = { x: 2, y: 0, z: 5 };
++    const moved = { x: at.x + shift.x, y: at.y, z: at.z + shift.z };
++    let maximumSpeedDifference = 0;
++    let directionX = 0;
++    for (let step = 0; step < 120; step += 1) {
++      const a = { ...near.update(swell, at, still, 1 / 60, 60) };
++      const b = far.update(translated, moved, still, 1 / 60, 60);
++      expect(b.valid).toBe(a.valid);
++      expect(b.aheadOfCrest).toBeCloseTo(a.aheadOfCrest, 7);
++      expect(b.directionX).toBeCloseTo(a.directionX, 9);
++      expect(b.directionZ).toBeCloseTo(a.directionZ, 9);
++      directionX = a.directionX;
++      maximumSpeedDifference = Math.max(maximumSpeedDifference, Math.abs(a.crestSpeed - b.crestSpeed));
++      swell.advance(1 / 60);
++    }
++    expect(maximumSpeedDifference).toBeLessThan(1e-6);
++    expect(directionX).toBeGreaterThan(0.5);
++  });
++
++  it.each([0, 2 * Math.PI / 3])('keeps crossed front/back slopes in the configured incoming hemisphere (%s rad)', (direction) => {
++    // Components at ±45° from the incoming direction, a quarter cycle apart.
++    // Their combined gradient rotates through front/back slopes, not a reversing swell.
++    let time = 0;
++    const omega = 2 * Math.PI / period;
++    const axis = Math.SQRT1_2;
++    const incomingX = Math.sin(direction);
++    const incomingZ = Math.cos(direction);
++    const phases = (x: number, z: number) => {
++      const across = x * incomingZ - z * incomingX;
++      const along = x * incomingX + z * incomingZ;
++      return [k * (axis * across + axis * along) - omega * time,
++        k * (-axis * across + axis * along) - omega * time + Math.PI / 2];
++    };
++    const water: SurfWater = {
++      surfaceAt: (x, z) => { const [a, b] = phases(x, z); return 0.5 * (Math.cos(a) + Math.cos(b)); },
++      sampleAt: (x, _y, z, out) => {
++        const [a, b] = phases(x, z);
++        const acrossSlope = -0.5 * k * axis * (Math.sin(a) - Math.sin(b));
++        const alongSlope = -0.5 * k * axis * (Math.sin(a) + Math.sin(b));
++        return Object.assign(out, { wet: true, outsideDomain: false, breaking: 0,
++          surfaceY: water.surfaceAt(x, z), slopeX: acrossSlope * incomingZ + alongSlope * incomingX,
++          slopeZ: -acrossSlope * incomingX + alongSlope * incomingZ });
++      },
++      addReaction() {},
++    };
++    const gauge = new WaveFrameGauge({ directionX: incomingX, directionZ: incomingZ });
++    let minimumIncomingComponent = 1;
++    for (let step = 0; step < 450; step += 1) {
++      const frame = gauge.update(water, still, still, 1 / 60, 90);
++      expect(Math.hypot(frame.directionX, frame.directionZ)).toBeCloseTo(1, 9);
++      minimumIncomingComponent = Math.min(minimumIncomingComponent, frame.directionX * incomingX + frame.directionZ * incomingZ);
++      time += 1 / 60;
++    }
++    expect(minimumIncomingComponent).toBeGreaterThan(0);
++  });
++
++  it('follows a curved incoming front while the rider moves along its crest', () => {
++    let time = 0;
++    const bend = 0.03;
++    const phase = (x: number, z: number) => k * (z - bend * x * x - c * time);
++    const water: SurfWater = {
++      surfaceAt: (x, z) => 0.5 * Math.cos(phase(x, z)),
++      sampleAt: (x, _y, z, out) => Object.assign(out, { wet: true, outsideDomain: false, breaking: 0,
++        surfaceY: water.surfaceAt(x, z), slopeX: k * bend * x * Math.sin(phase(x, z)),
++        slopeZ: -0.5 * k * Math.sin(phase(x, z)) }),
++      addReaction() {},
++    };
++    const gauge = new WaveFrameGauge();
++    const shiftedGauge = new WaveFrameGauge();
++    const shift = { x: -500, z: 700 };
++    const translated: SurfWater = {
++      surfaceAt: (x, z) => water.surfaceAt(x - shift.x, z - shift.z),
++      sampleAt: (x, y, z, out) => water.sampleAt(x - shift.x, y, z - shift.z, out),
++      addReaction() {},
++    };
++    let earlyX = 0;
++    let lateX = 0;
++    for (let step = 0; step < 240; step += 1) {
++      const x = -6 + 3 * time;
++      const at = { x, y: 0, z: bend * x * x + c * time + 5 };
++      const velocity = { x: 3, y: 0, z: 6 * bend * x + c };
++      const frame = gauge.update(water, at, velocity, 1 / 60, 90);
++      const translatedFrame = shiftedGauge.update(translated, { x: x + shift.x, y: 0, z: at.z + shift.z }, velocity, 1 / 60, 90);
++      expect(frame.valid).toBe(true);
++      expect(frame.directionZ).toBeGreaterThan(0);
++      expect(translatedFrame.directionX).toBeCloseTo(frame.directionX, 9);
++      expect(translatedFrame.directionZ).toBeCloseTo(frame.directionZ, 9);
++      expect(translatedFrame.crestSpeed).toBeCloseTo(frame.crestSpeed, 6);
++      if (step === 60) earlyX = frame.directionX;
++      if (step === 239) lateX = frame.directionX;
++      time += 1 / 60;
++    }
++    expect(earlyX).toBeGreaterThan(0.1);
++    expect(lateX).toBeLessThan(-0.15);
++  });
++
+   // The spec's done criteria and the pocket reflex (riding-the-wave plan, Task 1): how far along the crest the curl is.
+   it('finds the curl along the crest, or none', () => {
+     const swell = new SwellWater({ height: 1, period, depth });
+diff --git a/src/physics/waveFrame.ts b/src/physics/waveFrame.ts
+index 485b84b18..866d7689a 100644
+--- a/src/physics/waveFrame.ts
++++ b/src/physics/waveFrame.ts
+@@ -88,10 +88,10 @@ function createWaveFrame(directionX: number, directionZ: number): WaveFrame {
+ /**
+  * Measures the rider against the crest of the wave under it, from the water
+  * surface alone. The direction follows the surface slope at the rider (smoothed,
+- * and kept pointing the way the wave travels); the crest is the highest water in
+- * a window along it, refined between samples; its speed is the smoothed rate of
+- * change of its position. The returned frame is the gauge's own and is
+- * overwritten by the next update.
++ * within the incoming swell's hemisphere); the crest is the highest water in
++ * a window along it, refined between samples. Its speed is the smoothed world
++ * displacement of that crest projected onto the mean travel direction. The
++ * returned frame is the gauge's own and is overwritten by the next update.
+  */
+ export class WaveFrameGauge {
+   private readonly initialX: number;
+@@ -101,7 +101,10 @@ export class WaveFrameGauge {
+   private readonly sample = createWaterSample();
+   private directionX: number;
+   private directionZ: number;
+-  private lastCrest = Number.NaN;
++  private lastCrestX = Number.NaN;
++  private lastCrestZ = Number.NaN;
++  private lastDirectionX = 0;
++  private lastDirectionZ = 0;
+   private seeded = false;
+   private speed = 0;
+ 
+@@ -119,7 +122,8 @@ export class WaveFrameGauge {
+   reset(): void {
+     this.directionX = this.initialX;
+     this.directionZ = this.initialZ;
+-    this.lastCrest = Number.NaN;
++    this.lastCrestX = Number.NaN;
++    this.lastCrestZ = Number.NaN;
+     this.seeded = false;
+     this.speed = 0;
+     Object.assign(this.frame, createWaveFrame(this.initialX, this.initialZ));
+@@ -161,7 +165,8 @@ export class WaveFrameGauge {
+     const faceHeight = crestHeight - heights[trough];
+     frame.valid = interior && Number.isFinite(faceHeight) && faceHeight >= MIN_FACE;
+     if (!frame.valid) {
+-      this.lastCrest = Number.NaN;
++      this.lastCrestX = Number.NaN;
++      this.lastCrestZ = Number.NaN;
+       this.seeded = false;
+       frame.aheadOfCrest = 0;
+       frame.faceHeight = 0;
+@@ -179,10 +184,18 @@ export class WaveFrameGauge {
+     frame.faceHeight = faceHeight;
+     frame.faceFraction = Math.min(1, Math.max(0, (heights[RIDER_INDEX] - heights[trough]) / faceHeight));
+ 
+-    // The crest's world coordinate along the direction, and its smoothed rate of change.
+-    const world = position.x * dx + position.z * dz + along;
+-    if (Number.isFinite(this.lastCrest) && dt > 0) {
+-      const moved = world - this.lastCrest;
++    const crestX = position.x + dx * along;
++    const crestZ = position.z + dz * along;
++    if (Number.isFinite(this.lastCrestX) && dt > 0) {
++      // Subtract world points before projecting: projecting absolute positions
++      // onto a changing direction makes speed depend on the world's origin.
++      // The mean direction avoids favouring either end of a turning front.
++      const meanX = dx + this.lastDirectionX;
++      const meanZ = dz + this.lastDirectionZ;
++      const norm = Math.hypot(meanX, meanZ);
++      const speedX = norm > 1e-9 ? meanX / norm : dx;
++      const speedZ = norm > 1e-9 ? meanZ / norm : dz;
++      const moved = (crestX - this.lastCrestX) * speedX + (crestZ - this.lastCrestZ) * speedZ;
+       if (Math.abs(moved) > NEW_CREST) {
+         this.seeded = false;
+       } else if (!this.seeded) {
+@@ -192,13 +205,14 @@ export class WaveFrameGauge {
+         this.speed += (moved / dt - this.speed) * (1 - Math.exp(-dt / SPEED_TIME));
+       }
+     }
+-    this.lastCrest = world;
++    this.lastCrestX = crestX;
++    this.lastCrestZ = crestZ;
++    this.lastDirectionX = dx;
++    this.lastDirectionZ = dz;
+     frame.crestSpeed = this.speed;
+     frame.requiredSpeed = requiredSpeed(this.speed, peelAngleDegrees);
+ 
+     // Breaking at the crest near the rider, along the crest axis (dz, −dx).
+-    const crestX = position.x + dx * along;
+-    const crestZ = position.z + dz * along;
+     let breaking = 0;
+     for (const offsetAlong of CREST_OFFSETS) {
+       const x = crestX + dz * offsetAlong;
+@@ -234,8 +248,11 @@ export class WaveFrameGauge {
+     if (!(slope > MIN_SLOPE)) return;
+     let x = -sample.slopeX / slope;
+     let z = -sample.slopeZ / slope;
+-    // On the back of a wave the surface falls seaward: that is still the same wave travelling on.
+-    if (x * this.directionX + z * this.directionZ < 0) {
++    // A gradient gives an unoriented wave axis: front and back slopes have
++    // opposite signs. Resolve that ambiguity against the incoming swell,
++    // rather than the previous local slope, which can drift all the way around
++    // when components interfere. Local oblique/curved fronts still turn it.
++    if (x * this.initialX + z * this.initialZ < 0) {
+       x = -x;
+       z = -z;
+     }

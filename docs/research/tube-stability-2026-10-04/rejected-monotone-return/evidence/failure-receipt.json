@@ -1,0 +1,6070 @@
+{
+  "schema": "monotone-inner-profile-review-summary/v1",
+  "complete": true,
+  "receiptSha256": "105ff8671dbaddbdfd33a58f6c290c9f5253c1c4e7a8573c5ce8e12acc2344e2",
+  "geometryTrialCount": 1,
+  "stoppedUnsafe": true,
+  "aggregate": {
+    "totalFrames": 293,
+    "validCandidates": 270,
+    "invalidEnvelopeOrEndpointFrames": 23,
+    "framesWithNewCorePairs": 21,
+    "framesWithNewFullPairs": 21,
+    "framesWithMovedRetainedCorePairs": 0,
+    "framesWithMovedRetainedFullPairs": 0,
+    "previouslyCleanCoreFramesBecomingCrossed": 19,
+    "previouslyCleanFullFramesBecomingCrossed": 19,
+    "beforeCoreCrossedFrames": 8,
+    "afterCoreCrossedValidFrames": 21,
+    "beforeFullCrossedFrames": 10,
+    "afterFullCrossedValidFrames": 23,
+    "framesWithBetweenVertexEnvelopeFailure": 21,
+    "maxGapGainRange": [
+      -2.630535735348438e-07,
+      0.1258591522024221
+    ],
+    "usefulWidthGainRange": [
+      -0.006609725111114795,
+      0.15462218793188964
+    ],
+    "maxGapAfterRange": [
+      0.023636031313953247,
+      0.33475637273448955
+    ],
+    "maxAbsoluteLipJoinDegreesAfter": 178.59206488748848,
+    "maxAbsoluteThroatJoinDegreesAfter": 178.45902500570614,
+    "maxAbsoluteInnerTurnDegreesAfter": 178.59206488748848
+  },
+  "actualAggregate": {
+    "totalFrames": 5,
+    "validCandidates": 5,
+    "invalidEnvelopeOrEndpointFrames": 0,
+    "framesWithNewCorePairs": 0,
+    "framesWithNewFullPairs": 0,
+    "framesWithMovedRetainedCorePairs": 0,
+    "framesWithMovedRetainedFullPairs": 0,
+    "previouslyCleanCoreFramesBecomingCrossed": 0,
+    "previouslyCleanFullFramesBecomingCrossed": 0,
+    "beforeCoreCrossedFrames": 0,
+    "afterCoreCrossedValidFrames": 0,
+    "beforeFullCrossedFrames": 0,
+    "afterFullCrossedValidFrames": 0,
+    "framesWithBetweenVertexEnvelopeFailure": 0,
+    "maxGapGainRange": [
+      0.38060565877113794,
+      0.4140409399353431
+    ],
+    "usefulWidthGainRange": [
+      0.6270383490681424,
+      0.6943662100233923
+    ],
+    "maxGapAfterRange": [
+      1.5735385089830887,
+      1.6018226130802258
+    ],
+    "maxAbsoluteLipJoinDegreesAfter": 177.49833232593699,
+    "maxAbsoluteThroatJoinDegreesAfter": 172.64621406755288,
+    "maxAbsoluteInnerTurnDegreesAfter": 177.49833232593699
+  },
+  "invalidFrameCategories": {
+    "missingOuterEnvelope": 20,
+    "endpointFormulaLimitDiscontinuity": 3
+  },
+  "crossingPairTotals": {
+    "newCorePairs": 44,
+    "newFullPairs": 44,
+    "removedCorePairs": 8,
+    "removedFullPairs": 8,
+    "retainedPairsMoved": 0
+  },
+  "invalidFrames": [
+    {
+      "case": "pad19-a45-l12",
+      "frame": 136,
+      "tau": 0.7187314291937916,
+      "failures": [
+        {
+          "point": 88,
+          "reason": "endpoint_formula_discontinuity",
+          "mismatch": -0.007779985666275024
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 143,
+      "tau": 0.5499999999997982,
+      "failures": [
+        {
+          "point": 88,
+          "reason": "endpoint_formula_discontinuity",
+          "mismatch": -0.008230000734329224
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 146,
+      "tau": 0.6249999999997939,
+      "failures": [
+        {
+          "point": 88,
+          "reason": "endpoint_formula_discontinuity",
+          "mismatch": -0.011170001700520515
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 156,
+      "tau": 0.8749999999997797,
+      "failures": [
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5739511698484421,
+          "floor": {
+            "y": -0.001699834719674241,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5714844641862092,
+          "floor": {
+            "y": 0.005901037171629063,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5699370277148705,
+          "floor": {
+            "y": 0.01339428156075948,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5694007873535156,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 157,
+      "tau": 0.8999999999997783,
+      "failures": [
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5852156987896672,
+          "floor": {
+            "y": 0.006051567714031957,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5835703525830198,
+          "floor": {
+            "y": 0.014608478076639408,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5830001831054688,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 158,
+      "tau": 0.9249999999997769,
+      "failures": [
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6054366782859519,
+          "floor": {
+            "y": -0.008450885382869502,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6017257869243622,
+          "floor": {
+            "y": -0.0014770356979850793,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5989469333931252,
+          "floor": {
+            "y": 0.005929116762647475,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5972036774511691,
+          "floor": {
+            "y": 0.014700856619523833,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.5965995788574219,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 159,
+      "tau": 0.9499999999997755,
+      "failures": [
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6197641160753038,
+          "floor": {
+            "y": -0.009554108222033541,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6158324033021927,
+          "floor": {
+            "y": -0.0023326321689626324,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6128881904813979,
+          "floor": {
+            "y": 0.005057238313246146,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6110411998298433,
+          "floor": {
+            "y": 0.013659848434293456,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6104011535644531,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 160,
+      "tau": 0.974999999999774,
+      "failures": [
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6391244136072971,
+          "floor": {
+            "y": -0.015962225167687416,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6340257150155526,
+          "floor": {
+            "y": -0.009698166005021287,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6298575773835182,
+          "floor": {
+            "y": -0.00207530340236569,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6267363208311576,
+          "floor": {
+            "y": 0.005739017936128378,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6247782654784344,
+          "floor": {
+            "y": 0.015001657546045351,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6240997314453125,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 161,
+      "tau": 0.9999999999997726,
+      "failures": [
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6671695827885911,
+          "floor": {
+            "y": -0.028619711895931467,
+            "segment": [
+              96,
+              97
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6601936221122742,
+          "floor": {
+            "y": -0.023088451754117063,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6539541264926946,
+          "floor": {
+            "y": -0.016768399766055757,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6485738401059751,
+          "floor": {
+            "y": -0.009911225922465182,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6441755071282387,
+          "floor": {
+            "y": -0.0026608093064495594,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6408818717356082,
+          "floor": {
+            "y": 0.005129801101448019,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6388156781042064,
+          "floor": {
+            "y": 0.014307480778406635,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6380996704101562,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 162,
+      "tau": 1.0249999999997712,
+      "failures": [
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.675297200679779,
+          "floor": {
+            "y": -0.023533682474773797,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6687180192934142,
+          "floor": {
+            "y": -0.017143910840141302,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6630448235405816,
+          "floor": {
+            "y": -0.010069600515170248,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6584070399403572,
+          "floor": {
+            "y": -0.002894412015412628,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6549340950118171,
+          "floor": {
+            "y": 0.00544354484502654,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6527554152740372,
+          "floor": {
+            "y": 0.01447474236377774,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6520004272460938,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 163,
+      "tau": 1.0499999999997698,
+      "failures": [
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6903542876243591,
+          "floor": {
+            "y": -0.02408244982011598,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6834485500499055,
+          "floor": {
+            "y": -0.017573689764063476,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6774937665020978,
+          "floor": {
+            "y": -0.010479064751993207,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6726257875561714,
+          "floor": {
+            "y": -0.0030510535779206547,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6689804637873614,
+          "floor": {
+            "y": 0.005628949494120709,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.666693645770903,
+          "floor": {
+            "y": 0.014520273870916377,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6659011840820312,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 164,
+      "tau": 1.0749999999997684,
+      "failures": [
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7138395888937844,
+          "floor": {
+            "y": -0.03072546941629708,
+            "segment": [
+              95,
+              96
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7057191133499146,
+          "floor": {
+            "y": -0.024683957462671536,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6984559314118491,
+          "floor": {
+            "y": -0.01822723273064817,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6921929253472222,
+          "floor": {
+            "y": -0.010799114862481038,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6870729774236679,
+          "floor": {
+            "y": -0.0032411844690959516,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6832389699088203,
+          "floor": {
+            "y": 0.005473645814927862,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6808337850703133,
+          "floor": {
+            "y": 0.01479644538014652,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6800003051757812,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 165,
+      "tau": 1.099999999999767,
+      "failures": [
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7294805309286824,
+          "floor": {
+            "y": -0.031147554832352767,
+            "segment": [
+              95,
+              96
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7209900617599487,
+          "floor": {
+            "y": -0.02534845482937155,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7133959471075624,
+          "floor": {
+            "y": -0.01868271086991438,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7068475793909144,
+          "floor": {
+            "y": -0.011307981361543155,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7014943510293961,
+          "floor": {
+            "y": -0.0035267409322355067,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6974856544423986,
+          "floor": {
+            "y": 0.0054645155175514284,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6949708820493132,
+          "floor": {
+            "y": 0.014918490152850971,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.6940994262695312,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 166,
+      "tau": 1.1249999999997655,
+      "failures": [
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7453460806497821,
+          "floor": {
+            "y": -0.03188853311835554,
+            "segment": [
+              95,
+              96
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7364559769630432,
+          "floor": {
+            "y": -0.02601083469035446,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7285044179470451,
+          "floor": {
+            "y": -0.019400581446227257,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7216478277135778,
+          "floor": {
+            "y": -0.011811671765219928,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7160426303744316,
+          "floor": {
+            "y": -0.0037203210496152992,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7118452500413965,
+          "floor": {
+            "y": 0.005401450037405072,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7092121108262627,
+          "floor": {
+            "y": 0.01450592033512544,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7082996368408203,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 167,
+      "tau": 1.149999999999764,
+      "failures": [
+        {
+          "point": 80,
+          "u": 0.6666666666666666,
+          "s": 0.7407407407407407,
+          "alpha": 0.6333333333333334,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7712924392135055,
+          "floor": {
+            "y": -0.037711874326594105,
+            "segment": [
+              96,
+              97
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7611908479421227,
+          "floor": {
+            "y": -0.03247834731070498,
+            "segment": [
+              95,
+              96
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7519060969352722,
+          "floor": {
+            "y": -0.026576948468973443,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7436015542458605,
+          "floor": {
+            "y": -0.019776088503138885,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7364405879267939,
+          "floor": {
+            "y": -0.012361193073823553,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7305865660309792,
+          "floor": {
+            "y": -0.0040358474036785615,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7262028566113224,
+          "floor": {
+            "y": 0.004964532053774136,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7234528277207304,
+          "floor": {
+            "y": 0.014161043219585296,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7224998474121094,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 168,
+      "tau": 1.1749999999997627,
+      "failures": [
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7771778774482232,
+          "floor": {
+            "y": -0.03312168280096036,
+            "segment": [
+              95,
+              96
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7674885988235474,
+          "floor": {
+            "y": -0.02714735404699988,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7588222352442918,
+          "floor": {
+            "y": -0.020253560889198805,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.75134927255136,
+          "floor": {
+            "y": -0.013062355433776181,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7452401965856552,
+          "floor": {
+            "y": -0.0042785651906999435,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.740665493188081,
+          "floor": {
+            "y": 0.00474913640240265,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7377956481995406,
+          "floor": {
+            "y": 0.015662710163898228,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7368011474609375,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 169,
+      "tau": 1.1999999999997613,
+      "failures": [
+        {
+          "point": 80,
+          "u": 0.6666666666666666,
+          "s": 0.7407407407407407,
+          "alpha": 0.6333333333333334,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8042224601463035,
+          "floor": {
+            "y": -0.038925748052337596,
+            "segment": [
+              96,
+              97
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7932245626493737,
+          "floor": {
+            "y": -0.03366155989443149,
+            "segment": [
+              95,
+              96
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7831159830093384,
+          "floor": {
+            "y": -0.027718895119617955,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7740745847975766,
+          "floor": {
+            "y": -0.021204985470040814,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7662782315854673,
+          "floor": {
+            "y": -0.013284003377618139,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7599047869443893,
+          "floor": {
+            "y": -0.0045412078249912405,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7551321144457217,
+          "floor": {
+            "y": 0.004738446287157682,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7521380776608432,
+          "floor": {
+            "y": 0.014085948081683092,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7511005401611328,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 170,
+      "tau": 1.2249999999997598,
+      "failures": [
+        {
+          "point": 80,
+          "u": 0.6666666666666666,
+          "s": 0.7407407407407407,
+          "alpha": 0.6333333333333334,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8208526328757957,
+          "floor": {
+            "y": -0.03950108194383584,
+            "segment": [
+              96,
+              97
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8093931197568223,
+          "floor": {
+            "y": -0.034451266768550114,
+            "segment": [
+              95,
+              96
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7988602519035339,
+          "floor": {
+            "y": -0.028456191475603347,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7894393583690679,
+          "floor": {
+            "y": -0.021528383719119762,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.781315768206561,
+          "floor": {
+            "y": -0.013658186618011783,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7746748104691505,
+          "floor": {
+            "y": -0.0046839518457555,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7697018142099734,
+          "floor": {
+            "y": 0.004552404959841345,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7665821084821666,
+          "floor": {
+            "y": 0.014396955783440987,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7655010223388672,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 171,
+      "tau": 1.2499999999997584,
+      "failures": [
+        {
+          "point": 80,
+          "u": 0.6666666666666666,
+          "s": 0.7407407407407407,
+          "alpha": 0.6333333333333334,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8374855606644243,
+          "floor": {
+            "y": -0.0401474194577178,
+            "segment": [
+              96,
+              97
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8255429328591735,
+          "floor": {
+            "y": -0.035011498997958225,
+            "segment": [
+              95,
+              96
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8145660161972046,
+          "floor": {
+            "y": -0.02892731273573205,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8047479529071737,
+          "floor": {
+            "y": -0.021981505036987464,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7962818852177372,
+          "floor": {
+            "y": -0.014064645313297652,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7893609553575516,
+          "floor": {
+            "y": -0.004889872477036096,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.784178305555273,
+          "floor": {
+            "y": 0.004380892120026765,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7809270780395579,
+          "floor": {
+            "y": 0.014616024360735568,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7798004150390625,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 172,
+      "tau": 1.274999999999757,
+      "failures": [
+        {
+          "point": 80,
+          "u": 0.6666666666666666,
+          "s": 0.7407407407407407,
+          "alpha": 0.6333333333333334,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8543963962131076,
+          "floor": {
+            "y": -0.04074728592970531,
+            "segment": [
+              96,
+              97
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8419545806116528,
+          "floor": {
+            "y": -0.035676173167805955,
+            "segment": [
+              95,
+              96
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8305188417434692,
+          "floor": {
+            "y": -0.0297242402641557,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8202903949552112,
+          "floor": {
+            "y": -0.02251215612724077,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8114704555935329,
+          "floor": {
+            "y": -0.014220828500435042,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8042602390050888,
+          "floor": {
+            "y": -0.005401173905314014,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7988609605365329,
+          "floor": {
+            "y": 0.003660199092967182,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7954738355345197,
+          "floor": {
+            "y": 0.012842202955810114,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.7943000793457031,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 173,
+      "tau": 1.2999999999997556,
+      "failures": [
+        {
+          "point": 80,
+          "u": 0.6666666666666666,
+          "s": 0.7407407407407407,
+          "alpha": 0.6333333333333334,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8711116225631149,
+          "floor": {
+            "y": -0.04136517018747992,
+            "segment": [
+              96,
+              97
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8581491201012222,
+          "floor": {
+            "y": -0.03627951671707708,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8462347984313965,
+          "floor": {
+            "y": -0.029980422138789858,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8355782937120508,
+          "floor": {
+            "y": -0.022801530127223864,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8263892421015986,
+          "floor": {
+            "y": -0.014652739527730453,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8188772797584534,
+          "floor": {
+            "y": -0.005598036055558888,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8132520428410283,
+          "floor": {
+            "y": 0.003959330440706692,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8097231675077368,
+          "floor": {
+            "y": 0.013909096221411935,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8085002899169922,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 174,
+      "tau": 1.3249999999997542,
+      "failures": [
+        {
+          "point": 79,
+          "u": 0.625,
+          "s": 0.68359375,
+          "alpha": 0.7164213562373095,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.9020970836281776,
+          "floor": {
+            "y": -0.04597795734093576,
+            "segment": [
+              97,
+              98
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 80,
+          "u": 0.6666666666666666,
+          "s": 0.7407407407407407,
+          "alpha": 0.6333333333333334,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8877932230631511,
+          "floor": {
+            "y": -0.04184129478695936,
+            "segment": [
+              96,
+              97
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8743584578235943,
+          "floor": {
+            "y": -0.03671385842118118,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8620100617408752,
+          "floor": {
+            "y": -0.030528046916582622,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8509653086463611,
+          "floor": {
+            "y": -0.023337467670649828,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8414414723714192,
+          "floor": {
+            "y": -0.015015696252264675,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8336558267474174,
+          "floor": {
+            "y": -0.005664466014339188,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.827825645605723,
+          "floor": {
+            "y": 0.004151540960059127,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8241682027777035,
+          "floor": {
+            "y": 0.014988539658381057,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8229007720947266,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 175,
+      "tau": 1.3499999999997527,
+      "failures": [
+        {
+          "point": 79,
+          "u": 0.625,
+          "s": 0.68359375,
+          "alpha": 0.7164213562373095,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.9195393994450569,
+          "floor": {
+            "y": -0.04650732251828677,
+            "segment": [
+              97,
+              98
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 80,
+          "u": 0.6666666666666666,
+          "s": 0.7407407407407407,
+          "alpha": 0.6333333333333334,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.9047040586118344,
+          "floor": {
+            "y": -0.042431525692542944,
+            "segment": [
+              96,
+              97
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 81,
+          "u": 0.7083333333333334,
+          "s": 0.7944155092592593,
+          "alpha": 0.5434304756871708,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8907701055760737,
+          "floor": {
+            "y": -0.037343654678191514,
+            "segment": [
+              94,
+              95
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 82,
+          "u": 0.75,
+          "s": 0.84375,
+          "alpha": 0.45000000000000007,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8779628872871399,
+          "floor": {
+            "y": -0.03110659818491067,
+            "segment": [
+              93,
+              94
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 83,
+          "u": 0.7916666666666666,
+          "s": 0.8878761574074073,
+          "alpha": 0.35656952431282934,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8665077506943986,
+          "floor": {
+            "y": -0.02366591201675562,
+            "segment": [
+              92,
+              93
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 84,
+          "u": 0.8333333333333334,
+          "s": 0.925925925925926,
+          "alpha": 0.2666666666666666,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.856630042747215,
+          "floor": {
+            "y": -0.01527130032322634,
+            "segment": [
+              91,
+              92
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 85,
+          "u": 0.875,
+          "s": 0.95703125,
+          "alpha": 0.18357864376269054,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8485551103949547,
+          "floor": {
+            "y": -0.006266103402014311,
+            "segment": [
+              90,
+              91
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 86,
+          "u": 0.9166666666666666,
+          "s": 0.9803240740740741,
+          "alpha": 0.11012825257644569,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.842508300586983,
+          "floor": {
+            "y": 0.003558025785139093,
+            "segment": [
+              89,
+              90
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 87,
+          "u": 0.9583333333333334,
+          "s": 0.9949363425925927,
+          "alpha": 0.04848150140885297,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8387149602726653,
+          "floor": {
+            "y": 0.015083922559052032,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        },
+        {
+          "point": 88,
+          "endpoint": true,
+          "reason": "missing_outer_strictly_above_floor",
+          "q": 0.8374004364013672,
+          "floor": {
+            "y": 0.023439999669790268,
+            "segment": [
+              88,
+              89
+            ]
+          },
+          "originalOuterCrossings": []
+        }
+      ]
+    }
+  ],
+  "crossingChanges": [
+    {
+      "case": "pad19-a20-l12",
+      "frame": 130,
+      "tau": 0.34852941405965865,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.4187847576521328,
+            "y": 0.21482509331498226,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                66,
+                67
+              ]
+            ]
+          },
+          {
+            "q": 0.4190605551702745,
+            "y": 0.21319401380666506,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                66,
+                67
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.4187847576521328,
+            "y": 0.21482509331498226,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                66,
+                67
+              ]
+            ]
+          },
+          {
+            "q": 0.4190605551702745,
+            "y": 0.21319401380666506,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                66,
+                67
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "pad19-a20-l12",
+      "frame": 131,
+      "tau": 0.3735294140596572,
+      "core": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.4273574755584872,
+            "y": 0.1878963529969925,
+            "segments": [
+              [
+                70,
+                71
+              ],
+              [
+                74,
+                75
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.4273574755584872,
+            "y": 0.1878963529969925,
+            "segments": [
+              [
+                70,
+                71
+              ],
+              [
+                74,
+                75
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "pad19-a20-l12",
+      "frame": 133,
+      "tau": 0.4235294140596544,
+      "core": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.47621446025036757,
+            "y": 0.17577999830245972,
+            "segments": [
+              [
+                68,
+                69
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.47621446025036757,
+            "y": 0.17577999830245972,
+            "segments": [
+              [
+                68,
+                69
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "pad19-a20-l12",
+      "frame": 142,
+      "tau": 0.6485294140596416,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6920528973162857,
+            "y": 0.1409649991264934,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                66,
+                67
+              ]
+            ]
+          },
+          {
+            "q": 0.6936460605342744,
+            "y": 0.1236569869551893,
+            "segments": [
+              [
+                63,
+                64
+              ],
+              [
+                66,
+                67
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6920528973162857,
+            "y": 0.1409649991264934,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                66,
+                67
+              ]
+            ]
+          },
+          {
+            "q": 0.6936460605342744,
+            "y": 0.1236569869551893,
+            "segments": [
+              [
+                63,
+                64
+              ],
+              [
+                66,
+                67
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "pad19-a20-l12",
+      "frame": 143,
+      "tau": 0.6735294140596402,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7142497757058622,
+            "y": 0.1332099447094976,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                67,
+                68
+              ]
+            ]
+          },
+          {
+            "q": 0.7160733217333397,
+            "y": 0.1157515132429967,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                67,
+                68
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7142497757058622,
+            "y": 0.1332099447094976,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                67,
+                68
+              ]
+            ]
+          },
+          {
+            "q": 0.7160733217333397,
+            "y": 0.1157515132429967,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                67,
+                68
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 153,
+      "tau": 0.424999999999784,
+      "core": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.4213123734173197,
+            "y": 0.1778784273350462,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.4213123734173197,
+            "y": 0.1778784273350462,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 160,
+      "tau": 0.599999999999774,
+      "core": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.5624008178710938,
+            "y": 0.15650039763129941,
+            "segments": [
+              [
+                63,
+                64
+              ],
+              [
+                65,
+                66
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.5624008178710938,
+            "y": 0.15650039763129941,
+            "segments": [
+              [
+                63,
+                64
+              ],
+              [
+                65,
+                66
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 167,
+      "tau": 0.7749999999997641,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6857696420229161,
+            "y": 0.13135330006114848,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                68,
+                69
+              ]
+            ]
+          },
+          {
+            "q": 0.6865376054219746,
+            "y": 0.12213011758047794,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                68,
+                69
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6857696420229161,
+            "y": 0.13135330006114848,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                68,
+                69
+              ]
+            ]
+          },
+          {
+            "q": 0.6865376054219746,
+            "y": 0.12213011758047794,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                68,
+                69
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 168,
+      "tau": 0.7999999999997627,
+      "core": {
+        "beforePairCount": 1,
+        "afterPairCount": 3,
+        "newPairs": [
+          {
+            "q": 0.703442385339929,
+            "y": 0.13160441576088935,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                68,
+                69
+              ]
+            ]
+          },
+          {
+            "q": 0.7047675625922583,
+            "y": 0.11373258687413082,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                68,
+                69
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 1,
+        "afterPairCount": 3,
+        "newPairs": [
+          {
+            "q": 0.703442385339929,
+            "y": 0.13160441576088935,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                68,
+                69
+              ]
+            ]
+          },
+          {
+            "q": 0.7047675625922583,
+            "y": 0.11373258687413082,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                68,
+                69
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 169,
+      "tau": 0.8249999999997613,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7225335998089492,
+            "y": 0.1225158308809098,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                67,
+                68
+              ]
+            ]
+          },
+          {
+            "q": 0.7236246245901342,
+            "y": 0.10400498828070454,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                67,
+                68
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7225335998089492,
+            "y": 0.1225158308809098,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                67,
+                68
+              ]
+            ]
+          },
+          {
+            "q": 0.7236246245901342,
+            "y": 0.10400498828070454,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                67,
+                68
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 170,
+      "tau": 0.8499999999997598,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7408229164305576,
+            "y": 0.11642393635441704,
+            "segments": [
+              [
+                56,
+                57
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.7422165069277452,
+            "y": 0.09905338259184536,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7408229164305576,
+            "y": 0.11642393635441704,
+            "segments": [
+              [
+                56,
+                57
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.7422165069277452,
+            "y": 0.09905338259184536,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 171,
+      "tau": 0.8749999999997584,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7578521965335326,
+            "y": 0.1137016953839992,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7584541153393479,
+            "y": 0.10788959302393504,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7578521965335326,
+            "y": 0.1137016953839992,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7584541153393479,
+            "y": 0.10788959302393504,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 172,
+      "tau": 0.899999999999757,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7776442624700858,
+            "y": 0.10111787851248032,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7788445140723179,
+            "y": 0.08757865764000151,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7776442624700858,
+            "y": 0.10111787851248032,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7788445140723179,
+            "y": 0.08757865764000151,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 173,
+      "tau": 0.9249999999997556,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7962860129674199,
+            "y": 0.09013880080863912,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7972209103328405,
+            "y": 0.07971829023988344,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7962860129674199,
+            "y": 0.09013880080863912,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7972209103328405,
+            "y": 0.07971829023988344,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 174,
+      "tau": 0.9499999999997542,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.8142548631193639,
+            "y": 0.1014853281714173,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.8170156452664182,
+            "y": 0.0726693683744559,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.8142548631193639,
+            "y": 0.1014853281714173,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.8170156452664182,
+            "y": 0.0726693683744559,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "frame": 88,
+      "tau": 0.4500000000001876,
+      "core": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.41208180759421975,
+            "y": 0.19922000169754028,
+            "segments": [
+              [
+                77,
+                78
+              ],
+              [
+                79,
+                80
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": 0.41208180759421975,
+            "y": 0.19922000169754028,
+            "segments": [
+              [
+                77,
+                78
+              ],
+              [
+                79,
+                80
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "frame": 99,
+      "tau": 0.725000000000211,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6749325765997036,
+            "y": 0.1450754887913861,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.6763354964109598,
+            "y": 0.13898370403468072,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6749325765997036,
+            "y": 0.1450754887913861,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.6763354964109598,
+            "y": 0.13898370403468072,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "frame": 101,
+      "tau": 0.7750000000002153,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7186927149545664,
+            "y": 0.11516709576342642,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.7191990347558508,
+            "y": 0.11289438999822808,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7186927149545664,
+            "y": 0.11516709576342642,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.7191990347558508,
+            "y": 0.11289438999822808,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 112,
+      "tau": 0.6000000000002359,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6444597211936474,
+            "y": 0.28029148008007476,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.6450929302992929,
+            "y": 0.275161014431352,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6444597211936474,
+            "y": 0.28029148008007476,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.6450929302992929,
+            "y": 0.275161014431352,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 114,
+      "tau": 0.6500000000002402,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6935772766827184,
+            "y": 0.2586344090385027,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.6938089098509622,
+            "y": 0.2573638549262199,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.6935772766827184,
+            "y": 0.2586344090385027,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.6938089098509622,
+            "y": 0.2573638549262199,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 115,
+      "tau": 0.6750000000002423,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7184445787314824,
+            "y": 0.2440286584704983,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.7185421981161267,
+            "y": 0.24376427323608169,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.7184445787314824,
+            "y": 0.2440286584704983,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          },
+          {
+            "q": 0.7185421981161267,
+            "y": 0.24376427323608169,
+            "segments": [
+              [
+                60,
+                61
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 117,
+      "tau": 0.7250000000002466,
+      "core": {
+        "beforePairCount": 2,
+        "afterPairCount": 4,
+        "newPairs": [
+          {
+            "q": 0.7608598782698999,
+            "y": 0.25698245785775975,
+            "segments": [
+              [
+                55,
+                56
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7616911834189942,
+            "y": 0.25119647907674736,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7626775370905517,
+            "y": 0.24433134487130734,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7629289891918071,
+            "y": 0.24258120952823975,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [
+          {
+            "q": 0.6899800298872525,
+            "y": 0.28639063078473065,
+            "segments": [
+              [
+                80,
+                81
+              ],
+              [
+                84,
+                85
+              ]
+            ]
+          },
+          {
+            "q": 0.6900554430016839,
+            "y": 0.28644508167781224,
+            "segments": [
+              [
+                81,
+                82
+              ],
+              [
+                84,
+                85
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 2,
+        "afterPairCount": 4,
+        "newPairs": [
+          {
+            "q": 0.7608598782698999,
+            "y": 0.25698245785775975,
+            "segments": [
+              [
+                55,
+                56
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7616911834189942,
+            "y": 0.25119647907674736,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7626775370905517,
+            "y": 0.24433134487130734,
+            "segments": [
+              [
+                58,
+                59
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          },
+          {
+            "q": 0.7629289891918071,
+            "y": 0.24258120952823975,
+            "segments": [
+              [
+                59,
+                60
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [
+          {
+            "q": 0.6899800298872525,
+            "y": 0.28639063078473065,
+            "segments": [
+              [
+                80,
+                81
+              ],
+              [
+                84,
+                85
+              ]
+            ]
+          },
+          {
+            "q": 0.6900554430016839,
+            "y": 0.28644508167781224,
+            "segments": [
+              [
+                81,
+                82
+              ],
+              [
+                84,
+                85
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 119,
+      "tau": 0.7750000000002508,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.8054636770285674,
+            "y": 0.2538698059048028,
+            "segments": [
+              [
+                55,
+                56
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          },
+          {
+            "q": 0.8079501922859634,
+            "y": 0.23705603364422767,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.8054636770285674,
+            "y": 0.2538698059048028,
+            "segments": [
+              [
+                55,
+                56
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          },
+          {
+            "q": 0.8079501922859634,
+            "y": 0.23705603364422767,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 120,
+      "tau": 0.800000000000253,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.8290190019222041,
+            "y": 0.24118229779765438,
+            "segments": [
+              [
+                55,
+                56
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          },
+          {
+            "q": 0.8292981741474323,
+            "y": 0.23979704140025193,
+            "segments": [
+              [
+                56,
+                57
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.8290190019222041,
+            "y": 0.24118229779765438,
+            "segments": [
+              [
+                55,
+                56
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          },
+          {
+            "q": 0.8292981741474323,
+            "y": 0.23979704140025193,
+            "segments": [
+              [
+                56,
+                57
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 121,
+      "tau": 0.8250000000002551,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.8513115988146724,
+            "y": 0.24216533751948513,
+            "segments": [
+              [
+                53,
+                54
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          },
+          {
+            "q": 0.855543630359447,
+            "y": 0.21508354984433375,
+            "segments": [
+              [
+                56,
+                57
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.8513115988146724,
+            "y": 0.24216533751948513,
+            "segments": [
+              [
+                53,
+                54
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          },
+          {
+            "q": 0.855543630359447,
+            "y": 0.21508354984433375,
+            "segments": [
+              [
+                56,
+                57
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 122,
+      "tau": 0.8500000000002572,
+      "core": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.877658606209327,
+            "y": 0.20671983732848498,
+            "segments": [
+              [
+                56,
+                57
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          },
+          {
+            "q": 0.8799459873460433,
+            "y": 0.20019000702129042,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 0,
+        "afterPairCount": 2,
+        "newPairs": [
+          {
+            "q": 0.877658606209327,
+            "y": 0.20671983732848498,
+            "segments": [
+              [
+                56,
+                57
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          },
+          {
+            "q": 0.8799459873460433,
+            "y": 0.20019000702129042,
+            "segments": [
+              [
+                57,
+                58
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 70,
+      "tau": -1.275000000000098,
+      "core": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": -1.0871537945293295,
+            "y": 0.008703687275904544,
+            "segments": [
+              [
+                80,
+                81
+              ],
+              [
+                88,
+                89
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      },
+      "full": {
+        "beforePairCount": 1,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [
+          {
+            "q": -1.0871537945293295,
+            "y": 0.008703687275904544,
+            "segments": [
+              [
+                80,
+                81
+              ],
+              [
+                88,
+                89
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    }
+  ],
+  "actualSections": [
+    {
+      "row": 124,
+      "valid": true,
+      "before": {
+        "maxGap": 1.1877816731448827,
+        "maxGapQ": 1.2325550703378922,
+        "cavityRayWidth": 1.563218006095936,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": []
+      },
+      "after": {
+        "maxGap": 1.6018226130802258,
+        "maxGapQ": 1.4629826094488065,
+        "cavityRayWidth": 1.563218006095936,
+        "usefulWidth": 0.6270383490681424,
+        "usefulWidthIntervals": [
+          [
+            1.1677824432947068,
+            1.7948207923628492
+          ]
+        ]
+      },
+      "beforeJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -17.48966547715342,
+          "absoluteTurnDegrees": 17.48966547715342,
+          "threePointCurvature": 3.065257586164369,
+          "incomingLength": 0.08987334410718906,
+          "outgoingLength": 0.1085026623166061
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 13.038042596630934,
+          "absoluteTurnDegrees": 13.038042596630934,
+          "threePointCurvature": 2.2704260804962515,
+          "incomingLength": 0.10913004373633771,
+          "outgoingLength": 0.09087979145759635
+        },
+        "maxInnerCurvature": {
+          "point": 68,
+          "signedTurnDegrees": -25.964559436865077,
+          "absoluteTurnDegrees": 25.964559436865077,
+          "threePointCurvature": 4.180470973217224,
+          "incomingLength": 0.10801125582914338,
+          "outgoingLength": 0.10694016595420179
+        },
+        "innerSegmentLengthRange": [
+          0.10694016595420179,
+          0.10932448149606783
+        ]
+      },
+      "afterJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -170.32680819926597,
+          "absoluteTurnDegrees": 170.32680819926597,
+          "threePointCurvature": 5.213159793468427,
+          "incomingLength": 0.08987334410718906,
+          "outgoingLength": 0.025926248672479217
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 172.64621406755288,
+          "absoluteTurnDegrees": 172.64621406755288,
+          "threePointCurvature": 5.228867281211598,
+          "incomingLength": 0.042576929376854186,
+          "outgoingLength": 0.09087979145759635
+        },
+        "maxInnerCurvature": {
+          "point": 87,
+          "signedTurnDegrees": -57.597113868641124,
+          "absoluteTurnDegrees": 57.597113868641124,
+          "threePointCurvature": 28.38559462333134,
+          "incomingLength": 0.02458243532404194,
+          "outgoingLength": 0.042576929376854186
+        },
+        "innerSegmentLengthRange": [
+          0.02458243532404194,
+          0.14397804243454662
+        ]
+      },
+      "endpointLimits": [
+        {
+          "point": 64,
+          "preservedY": 1.0453670024871826,
+          "formulaLimitY": 1.0453670024871826,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 0.21272919984384872,
+              "segment": [
+                111,
+                112
+              ]
+            },
+            "ceiling": {
+              "y": 1.0453670024871826,
+              "segment": [
+                63,
+                64
+              ]
+            },
+            "height": 0.8326378026433339
+          }
+        },
+        {
+          "point": 88,
+          "preservedY": 1.3873767852783203,
+          "formulaLimitY": 1.3873767852783203,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 1.3873767852783203,
+              "segment": [
+                88,
+                89
+              ]
+            },
+            "ceiling": {
+              "y": 2.55701319742106,
+              "segment": [
+                38,
+                39
+              ]
+            },
+            "height": 1.1696364121427396
+          }
+        }
+      ],
+      "coreCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "fullCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "atQ1_35": {
+        "before": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.4624996382483293,
+              "segment": [
+                101,
+                102
+              ]
+            },
+            {
+              "y": 1.6370773220817547,
+              "segment": [
+                78,
+                79
+              ]
+            },
+            {
+              "y": 2.219497057827254,
+              "segment": [
+                47,
+                48
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.4624996382483293,
+              "roofY": 1.6370773220817547,
+              "gap": 1.1745776838334254
+            }
+          ],
+          "largestAirGap": 1.1745776838334254,
+          "outerY": 2.219497057827254,
+          "upperUndersideY": 1.6370773220817547,
+          "floorY": 0.4624996382483293,
+          "verticalRoofThickness": 0.5824197357454994
+        },
+        "after": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.4624996382483293,
+              "segment": [
+                101,
+                102
+              ]
+            },
+            {
+              "y": 2.029467592158027,
+              "segment": [
+                76,
+                77
+              ]
+            },
+            {
+              "y": 2.219497057827254,
+              "segment": [
+                47,
+                48
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.4624996382483293,
+              "roofY": 2.029467592158027,
+              "gap": 1.5669679539096977
+            }
+          ],
+          "largestAirGap": 1.5669679539096977,
+          "outerY": 2.219497057827254,
+          "upperUndersideY": 2.029467592158027,
+          "floorY": 0.4624996382483293,
+          "verticalRoofThickness": 0.19002946566922718
+        }
+      }
+    },
+    {
+      "row": 125,
+      "valid": true,
+      "before": {
+        "maxGap": 1.2032285732880754,
+        "maxGapQ": 1.3605269120234103,
+        "cavityRayWidth": 1.7063401840677836,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": []
+      },
+      "after": {
+        "maxGap": 1.5966226365977951,
+        "maxGapQ": 1.5964885852847297,
+        "cavityRayWidth": 1.7063401840677836,
+        "usefulWidth": 0.6407045846423851,
+        "usefulWidthIntervals": [
+          [
+            1.2609601253650313,
+            1.9016647100074164
+          ]
+        ]
+      },
+      "beforeJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -16.836969564141757,
+          "absoluteTurnDegrees": 16.836969564141757,
+          "threePointCurvature": 2.6228047943359876,
+          "incomingLength": 0.0990326487428393,
+          "outgoingLength": 0.12421200700221258
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 12.304975056476886,
+          "absoluteTurnDegrees": 12.304975056476886,
+          "threePointCurvature": 1.9685015390693648,
+          "incomingLength": 0.12477188505382683,
+          "outgoingLength": 0.09298085298084065
+        },
+        "maxInnerCurvature": {
+          "point": 68,
+          "signedTurnDegrees": -26.464046687445904,
+          "absoluteTurnDegrees": 26.464046687445904,
+          "threePointCurvature": 3.715082977260326,
+          "incomingLength": 0.12285956824846914,
+          "outgoingLength": 0.12358975841852447
+        },
+        "innerSegmentLengthRange": [
+          0.12285956824846914,
+          0.12512459371002424
+        ]
+      },
+      "afterJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -169.12037128180683,
+          "absoluteTurnDegrees": 169.12037128180683,
+          "threePointCurvature": 4.988962696362807,
+          "incomingLength": 0.0990326487428393,
+          "outgoingLength": 0.023932213383677445
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 122.07201935910952,
+          "absoluteTurnDegrees": 122.07201935910952,
+          "threePointCurvature": 19.193659303197787,
+          "incomingLength": 0.00951362891147432,
+          "outgoingLength": 0.09298085298084065
+        },
+        "maxInnerCurvature": {
+          "point": 86,
+          "signedTurnDegrees": -47.123607005053636,
+          "absoluteTurnDegrees": 47.123607005053636,
+          "threePointCurvature": 22.177581721099706,
+          "incomingLength": 0.045347988473945194,
+          "outgoingLength": 0.026267938169413096
+        },
+        "innerSegmentLengthRange": [
+          0.00951362891147432,
+          0.16426583293055708
+        ]
+      },
+      "endpointLimits": [
+        {
+          "point": 64,
+          "preservedY": 0.8605586290359497,
+          "formulaLimitY": 0.8605586290359497,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 0.18067825537260335,
+              "segment": [
+                111,
+                112
+              ]
+            },
+            "ceiling": {
+              "y": 0.8605586290359497,
+              "segment": [
+                63,
+                64
+              ]
+            },
+            "height": 0.6798803736633463
+          }
+        },
+        {
+          "point": 88,
+          "preservedY": 1.317442774772644,
+          "formulaLimitY": 1.317442774772644,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 1.317442774772644,
+              "segment": [
+                88,
+                89
+              ]
+            },
+            "ceiling": {
+              "y": 2.555269528200899,
+              "segment": [
+                38,
+                39
+              ]
+            },
+            "height": 1.237826753428255
+          }
+        }
+      ],
+      "coreCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "fullCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "atQ1_35": {
+        "before": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.47637101116211866,
+              "segment": [
+                100,
+                101
+              ]
+            },
+            {
+              "y": 1.678584107686652,
+              "segment": [
+                80,
+                81
+              ]
+            },
+            {
+              "y": 2.270573127549546,
+              "segment": [
+                46,
+                47
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.47637101116211866,
+              "roofY": 1.678584107686652,
+              "gap": 1.2022130965245332
+            }
+          ],
+          "largestAirGap": 1.2022130965245332,
+          "outerY": 2.270573127549546,
+          "upperUndersideY": 1.678584107686652,
+          "floorY": 0.47637101116211866,
+          "verticalRoofThickness": 0.5919890198628943
+        },
+        "after": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.47637101116211866,
+              "segment": [
+                100,
+                101
+              ]
+            },
+            {
+              "y": 1.9676242670011976,
+              "segment": [
+                77,
+                78
+              ]
+            },
+            {
+              "y": 2.270573127549546,
+              "segment": [
+                46,
+                47
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.47637101116211866,
+              "roofY": 1.9676242670011976,
+              "gap": 1.491253255839079
+            }
+          ],
+          "largestAirGap": 1.491253255839079,
+          "outerY": 2.270573127549546,
+          "upperUndersideY": 1.9676242670011976,
+          "floorY": 0.47637101116211866,
+          "verticalRoofThickness": 0.3029488605483486
+        }
+      }
+    },
+    {
+      "row": 126,
+      "valid": true,
+      "before": {
+        "maxGap": 1.192469327095234,
+        "maxGapQ": 1.3498769954346537,
+        "cavityRayWidth": 1.8285965041613375,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": []
+      },
+      "after": {
+        "maxGap": 1.5735385089830887,
+        "maxGapQ": 1.6452620736853163,
+        "cavityRayWidth": 1.8285965041613375,
+        "usefulWidth": 0.642473738724646,
+        "usefulWidthIntervals": [
+          [
+            1.282805095703351,
+            1.925278834427997
+          ]
+        ]
+      },
+      "beforeJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -20.391617137188923,
+          "absoluteTurnDegrees": 20.391617137188923,
+          "threePointCurvature": 2.9578321281455966,
+          "incomingLength": 0.10713402764005421,
+          "outgoingLength": 0.132205228687709
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 14.89942803565033,
+          "absoluteTurnDegrees": 14.89942803565033,
+          "threePointCurvature": 2.235362920214663,
+          "incomingLength": 0.13252049338158714,
+          "outgoingLength": 0.09944804833982854
+        },
+        "maxInnerCurvature": {
+          "point": 69,
+          "signedTurnDegrees": -31.780686147394395,
+          "absoluteTurnDegrees": 31.780686147394395,
+          "threePointCurvature": 4.270808885490679,
+          "incomingLength": 0.13094546022387532,
+          "outgoingLength": 0.1254856713268401
+        },
+        "innerSegmentLengthRange": [
+          0.1254856713268401,
+          0.13296956829400622
+        ]
+      },
+      "afterJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -177.49833232593699,
+          "absoluteTurnDegrees": 177.49833232593699,
+          "threePointCurvature": 1.65094802321646,
+          "incomingLength": 0.10713402764005421,
+          "outgoingLength": 0.05436225356511294
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 169.73631001974053,
+          "absoluteTurnDegrees": 169.73631001974053,
+          "threePointCurvature": 5.388649691686039,
+          "incomingLength": 0.034143739377521416,
+          "outgoingLength": 0.09944804833982854
+        },
+        "maxInnerCurvature": {
+          "point": 87,
+          "signedTurnDegrees": -54.87482224955719,
+          "absoluteTurnDegrees": 54.87482224955719,
+          "threePointCurvature": 29.469443889568364,
+          "incomingLength": 0.028326642645618287,
+          "outgoingLength": 0.034143739377521416
+        },
+        "innerSegmentLengthRange": [
+          0.028326642645618287,
+          0.18657739641632876
+        ]
+      },
+      "endpointLimits": [
+        {
+          "point": 64,
+          "preservedY": 0.6272058486938477,
+          "formulaLimitY": 0.6272058486938477,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 0.16267154580597795,
+              "segment": [
+                111,
+                112
+              ]
+            },
+            "ceiling": {
+              "y": 0.6272058486938477,
+              "segment": [
+                63,
+                64
+              ]
+            },
+            "height": 0.4645343028878697
+          }
+        },
+        {
+          "point": 88,
+          "preservedY": 1.3398041725158691,
+          "formulaLimitY": 1.3398041725158691,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 1.3398041725158691,
+              "segment": [
+                88,
+                89
+              ]
+            },
+            "ceiling": {
+              "y": 2.56092133721401,
+              "segment": [
+                37,
+                38
+              ]
+            },
+            "height": 1.221117164698141
+          }
+        }
+      ],
+      "coreCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "fullCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "atQ1_35": {
+        "before": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.47129748776889935,
+              "segment": [
+                100,
+                101
+              ]
+            },
+            {
+              "y": 1.663763998046422,
+              "segment": [
+                80,
+                81
+              ]
+            },
+            {
+              "y": 2.270339663498695,
+              "segment": [
+                45,
+                46
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.47129748776889935,
+              "roofY": 1.663763998046422,
+              "gap": 1.1924665102775227
+            }
+          ],
+          "largestAirGap": 1.1924665102775227,
+          "outerY": 2.270339663498695,
+          "upperUndersideY": 1.663763998046422,
+          "floorY": 0.47129748776889935,
+          "verticalRoofThickness": 0.6065756654522729
+        },
+        "after": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.47129748776889935,
+              "segment": [
+                100,
+                101
+              ]
+            },
+            {
+              "y": 1.9357456152233639,
+              "segment": [
+                77,
+                78
+              ]
+            },
+            {
+              "y": 2.270339663498695,
+              "segment": [
+                45,
+                46
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.47129748776889935,
+              "roofY": 1.9357456152233639,
+              "gap": 1.4644481274544645
+            }
+          ],
+          "largestAirGap": 1.4644481274544645,
+          "outerY": 2.270339663498695,
+          "upperUndersideY": 1.9357456152233639,
+          "floorY": 0.47129748776889935,
+          "verticalRoofThickness": 0.3345940482753311
+        }
+      }
+    },
+    {
+      "row": 127,
+      "valid": true,
+      "before": {
+        "maxGap": 1.205670540929749,
+        "maxGapQ": 1.3566132932127284,
+        "cavityRayWidth": 1.8558788673275426,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": []
+      },
+      "after": {
+        "maxGap": 1.5871911381068977,
+        "maxGapQ": 1.6630504739211167,
+        "cavityRayWidth": 1.8558788673275426,
+        "usefulWidth": 0.6770846592028514,
+        "usefulWidthIntervals": [
+          [
+            1.2834013097210268,
+            1.9604859689238783
+          ]
+        ]
+      },
+      "beforeJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -20.55326492200433,
+          "absoluteTurnDegrees": 20.55326492200433,
+          "threePointCurvature": 2.9373975011034443,
+          "incomingLength": 0.10854206790079449,
+          "outgoingLength": 0.13435026933832256
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 15.107097964214665,
+          "absoluteTurnDegrees": 15.107097964214665,
+          "threePointCurvature": 2.2379562361704264,
+          "incomingLength": 0.13450558324309655,
+          "outgoingLength": 0.10040230607874302
+        },
+        "maxInnerCurvature": {
+          "point": 69,
+          "signedTurnDegrees": -33.220775923325654,
+          "absoluteTurnDegrees": 33.220775923325654,
+          "threePointCurvature": 4.429042064434135,
+          "incomingLength": 0.13263587439606617,
+          "outgoingLength": 0.12552601224141052
+        },
+        "innerSegmentLengthRange": [
+          0.12552601224141052,
+          0.13486902225529343
+        ]
+      },
+      "afterJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -177.08523069282268,
+          "absoluteTurnDegrees": 177.08523069282268,
+          "threePointCurvature": 1.7341229212058251,
+          "incomingLength": 0.10854206790079449,
+          "outgoingLength": 0.0500151442779683
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 170.61334584868098,
+          "absoluteTurnDegrees": 170.61334584868098,
+          "threePointCurvature": 5.077889149731009,
+          "incomingLength": 0.03694236830267138,
+          "outgoingLength": 0.10040230607874302
+        },
+        "maxInnerCurvature": {
+          "point": 87,
+          "signedTurnDegrees": -57.129400422867825,
+          "absoluteTurnDegrees": 57.129400422867825,
+          "threePointCurvature": 29.13866544089079,
+          "incomingLength": 0.028535870163818155,
+          "outgoingLength": 0.03694236830267138
+        },
+        "innerSegmentLengthRange": [
+          0.028535870163818155,
+          0.19027713250011516
+        ]
+      },
+      "endpointLimits": [
+        {
+          "point": 64,
+          "preservedY": 0.6282169818878174,
+          "formulaLimitY": 0.6282169818878174,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 0.1645500418394679,
+              "segment": [
+                111,
+                112
+              ]
+            },
+            "ceiling": {
+              "y": 0.6282169818878174,
+              "segment": [
+                63,
+                64
+              ]
+            },
+            "height": 0.4636669400483495
+          }
+        },
+        {
+          "point": 88,
+          "preservedY": 1.361423373222351,
+          "formulaLimitY": 1.361423373222351,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 1.361423373222351,
+              "segment": [
+                88,
+                89
+              ]
+            },
+            "ceiling": {
+              "y": 2.5908605476210314,
+              "segment": [
+                37,
+                38
+              ]
+            },
+            "height": 1.2294371743986803
+          }
+        }
+      ],
+      "coreCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "fullCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "atQ1_35": {
+        "before": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.4857740340056068,
+              "segment": [
+                99,
+                100
+              ]
+            },
+            {
+              "y": 1.69131419060872,
+              "segment": [
+                80,
+                81
+              ]
+            },
+            {
+              "y": 2.3046839538786337,
+              "segment": [
+                44,
+                45
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.4857740340056068,
+              "roofY": 1.69131419060872,
+              "gap": 1.2055401566031132
+            }
+          ],
+          "largestAirGap": 1.2055401566031132,
+          "outerY": 2.3046839538786337,
+          "upperUndersideY": 1.69131419060872,
+          "floorY": 0.4857740340056068,
+          "verticalRoofThickness": 0.6133697632699138
+        },
+        "after": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.4857740340056068,
+              "segment": [
+                99,
+                100
+              ]
+            },
+            {
+              "y": 1.952950783946638,
+              "segment": [
+                77,
+                78
+              ]
+            },
+            {
+              "y": 2.3046839538786337,
+              "segment": [
+                44,
+                45
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.4857740340056068,
+              "roofY": 1.952950783946638,
+              "gap": 1.4671767499410313
+            }
+          ],
+          "largestAirGap": 1.4671767499410313,
+          "outerY": 2.3046839538786337,
+          "upperUndersideY": 1.952950783946638,
+          "floorY": 0.4857740340056068,
+          "verticalRoofThickness": 0.35173316993199566
+        }
+      }
+    },
+    {
+      "row": 128,
+      "valid": true,
+      "before": {
+        "maxGap": 1.213434148378387,
+        "maxGapQ": 1.3610596667325667,
+        "cavityRayWidth": 1.8751749961561308,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": []
+      },
+      "after": {
+        "maxGap": 1.594039807149525,
+        "maxGapQ": 1.672354765031015,
+        "cavityRayWidth": 1.8751749961561308,
+        "usefulWidth": 0.6943662100233923,
+        "usefulWidthIntervals": [
+          [
+            1.28473620904333,
+            1.9791024190667224
+          ]
+        ]
+      },
+      "beforeJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -20.552049006450556,
+          "absoluteTurnDegrees": 20.552049006450556,
+          "threePointCurvature": 2.9333307019279777,
+          "incomingLength": 0.10863843696130235,
+          "outgoingLength": 0.13457608646002417
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 15.122955791154615,
+          "absoluteTurnDegrees": 15.122955791154615,
+          "threePointCurvature": 2.232183756202705,
+          "incomingLength": 0.13486436071251312,
+          "outgoingLength": 0.10089735895910011
+        },
+        "maxInnerCurvature": {
+          "point": 69,
+          "signedTurnDegrees": -32.7202922129778,
+          "absoluteTurnDegrees": 32.7202922129778,
+          "threePointCurvature": 4.326463601938067,
+          "incomingLength": 0.1337449957066597,
+          "outgoingLength": 0.1266664312786294
+        },
+        "innerSegmentLengthRange": [
+          0.1266664312786294,
+          0.13624579946721121
+        ]
+      },
+      "afterJoinAndCurvature": {
+        "lipJoin": {
+          "point": 64,
+          "signedTurnDegrees": -176.73892075075975,
+          "absoluteTurnDegrees": 176.73892075075975,
+          "threePointCurvature": 1.8543646374340668,
+          "incomingLength": 0.10863843696130235,
+          "outgoingLength": 0.04742109724973776
+        },
+        "throatJoin": {
+          "point": 88,
+          "signedTurnDegrees": 170.82018489477642,
+          "absoluteTurnDegrees": 170.82018489477642,
+          "threePointCurvature": 5.010703205305873,
+          "incomingLength": 0.03799610776998608,
+          "outgoingLength": 0.10089735895910011
+        },
+        "maxInnerCurvature": {
+          "point": 87,
+          "signedTurnDegrees": -56.38399375693748,
+          "absoluteTurnDegrees": 56.38399375693748,
+          "threePointCurvature": 28.131626198316763,
+          "incomingLength": 0.02900465919131188,
+          "outgoingLength": 0.03799610776998608
+        },
+        "innerSegmentLengthRange": [
+          0.02900465919131188,
+          0.1916622440174203
+        ]
+      },
+      "endpointLimits": [
+        {
+          "point": 64,
+          "preservedY": 0.6424874067306519,
+          "formulaLimitY": 0.6424874067306519,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 0.1693751304437779,
+              "segment": [
+                111,
+                112
+              ]
+            },
+            "ceiling": {
+              "y": 0.6424874067306519,
+              "segment": [
+                63,
+                64
+              ]
+            },
+            "height": 0.47311227628687397
+          }
+        },
+        {
+          "point": 88,
+          "preservedY": 1.3858156204223633,
+          "formulaLimitY": 1.3858156204223633,
+          "formulaLimitMinusPreservedY": 0.0,
+          "envelope": {
+            "floor": {
+              "y": 1.3858156204223633,
+              "segment": [
+                88,
+                89
+              ]
+            },
+            "ceiling": {
+              "y": 2.6148610654346145,
+              "segment": [
+                37,
+                38
+              ]
+            },
+            "height": 1.2290454450122512
+          }
+        }
+      ],
+      "coreCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "fullCrossings": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      },
+      "atQ1_35": {
+        "before": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.5035606515813659,
+              "segment": [
+                99,
+                100
+              ]
+            },
+            {
+              "y": 1.716717419597984,
+              "segment": [
+                80,
+                81
+              ]
+            },
+            {
+              "y": 2.3293700473487142,
+              "segment": [
+                44,
+                45
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.5035606515813659,
+              "roofY": 1.716717419597984,
+              "gap": 1.213156768016618
+            }
+          ],
+          "largestAirGap": 1.213156768016618,
+          "outerY": 2.3293700473487142,
+          "upperUndersideY": 1.716717419597984,
+          "floorY": 0.5035606515813659,
+          "verticalRoofThickness": 0.6126526277507303
+        },
+        "after": {
+          "q": 1.35,
+          "crossingCount": 3,
+          "crossings": [
+            {
+              "y": 0.5035606515813659,
+              "segment": [
+                99,
+                100
+              ]
+            },
+            {
+              "y": 1.9707121850663578,
+              "segment": [
+                77,
+                78
+              ]
+            },
+            {
+              "y": 2.3293700473487142,
+              "segment": [
+                44,
+                45
+              ]
+            }
+          ],
+          "boundedVerticalAirGaps": [
+            {
+              "floorY": 0.5035606515813659,
+              "roofY": 1.9707121850663578,
+              "gap": 1.467151533484992
+            }
+          ],
+          "largestAirGap": 1.467151533484992,
+          "outerY": 2.3293700473487142,
+          "upperUndersideY": 1.9707121850663578,
+          "floorY": 0.5035606515813659,
+          "verticalRoofThickness": 0.3586578622823564
+        }
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "pad19-a20-l12",
+      "eligible": 23,
+      "aggregate": {
+        "totalFrames": 23,
+        "validCandidates": 23,
+        "invalidEnvelopeOrEndpointFrames": 0,
+        "framesWithNewCorePairs": 3,
+        "framesWithNewFullPairs": 3,
+        "framesWithMovedRetainedCorePairs": 0,
+        "framesWithMovedRetainedFullPairs": 0,
+        "previouslyCleanCoreFramesBecomingCrossed": 3,
+        "previouslyCleanFullFramesBecomingCrossed": 3,
+        "beforeCoreCrossedFrames": 2,
+        "afterCoreCrossedValidFrames": 3,
+        "beforeFullCrossedFrames": 2,
+        "afterFullCrossedValidFrames": 3,
+        "framesWithBetweenVertexEnvelopeFailure": 3,
+        "maxGapGainRange": [
+          0.0024793936505368985,
+          0.06688127974188933
+        ],
+        "usefulWidthGainRange": [
+          0,
+          0
+        ],
+        "maxGapAfterRange": [
+          0.10885133176932624,
+          0.1390202643151764
+        ],
+        "maxAbsoluteLipJoinDegreesAfter": 177.9219250851566,
+        "maxAbsoluteThroatJoinDegreesAfter": 172.41786867706827,
+        "maxAbsoluteInnerTurnDegreesAfter": 177.9219250851566
+      }
+    },
+    {
+      "id": "pad19-a30-l12",
+      "eligible": 39,
+      "aggregate": {
+        "totalFrames": 39,
+        "validCandidates": 39,
+        "invalidEnvelopeOrEndpointFrames": 0,
+        "framesWithNewCorePairs": 0,
+        "framesWithNewFullPairs": 0,
+        "framesWithMovedRetainedCorePairs": 0,
+        "framesWithMovedRetainedFullPairs": 0,
+        "previouslyCleanCoreFramesBecomingCrossed": 0,
+        "previouslyCleanFullFramesBecomingCrossed": 0,
+        "beforeCoreCrossedFrames": 0,
+        "afterCoreCrossedValidFrames": 0,
+        "beforeFullCrossedFrames": 0,
+        "afterFullCrossedValidFrames": 0,
+        "framesWithBetweenVertexEnvelopeFailure": 0,
+        "maxGapGainRange": [
+          8.223950151986514e-07,
+          0.06862546045480866
+        ],
+        "usefulWidthGainRange": [
+          0,
+          0.10259416784971132
+        ],
+        "maxGapAfterRange": [
+          0.166019080535639,
+          0.2459495106143963
+        ],
+        "maxAbsoluteLipJoinDegreesAfter": 178.40557531380128,
+        "maxAbsoluteThroatJoinDegreesAfter": 176.6595404180471,
+        "maxAbsoluteInnerTurnDegreesAfter": 178.40557531380128
+      }
+    },
+    {
+      "id": "pad19-a45-l12",
+      "eligible": 49,
+      "aggregate": {
+        "totalFrames": 49,
+        "validCandidates": 48,
+        "invalidEnvelopeOrEndpointFrames": 1,
+        "framesWithNewCorePairs": 0,
+        "framesWithNewFullPairs": 0,
+        "framesWithMovedRetainedCorePairs": 0,
+        "framesWithMovedRetainedFullPairs": 0,
+        "previouslyCleanCoreFramesBecomingCrossed": 0,
+        "previouslyCleanFullFramesBecomingCrossed": 0,
+        "beforeCoreCrossedFrames": 0,
+        "afterCoreCrossedValidFrames": 0,
+        "beforeFullCrossedFrames": 0,
+        "afterFullCrossedValidFrames": 0,
+        "framesWithBetweenVertexEnvelopeFailure": 0,
+        "maxGapGainRange": [
+          6.643851369059206e-08,
+          0.07580618505112374
+        ],
+        "usefulWidthGainRange": [
+          -0.006609725111114795,
+          0.07566312660334096
+        ],
+        "maxGapAfterRange": [
+          0.18806111057178043,
+          0.33475637273448955
+        ],
+        "maxAbsoluteLipJoinDegreesAfter": 178.59206488748848,
+        "maxAbsoluteThroatJoinDegreesAfter": 175.9079196631068,
+        "maxAbsoluteInnerTurnDegreesAfter": 178.59206488748848
+      }
+    },
+    {
+      "id": "periodic-padang19s-l12",
+      "eligible": 24,
+      "aggregate": {
+        "totalFrames": 24,
+        "validCandidates": 24,
+        "invalidEnvelopeOrEndpointFrames": 0,
+        "framesWithNewCorePairs": 8,
+        "framesWithNewFullPairs": 8,
+        "framesWithMovedRetainedCorePairs": 0,
+        "framesWithMovedRetainedFullPairs": 0,
+        "previouslyCleanCoreFramesBecomingCrossed": 7,
+        "previouslyCleanFullFramesBecomingCrossed": 7,
+        "beforeCoreCrossedFrames": 3,
+        "afterCoreCrossedValidFrames": 8,
+        "beforeFullCrossedFrames": 3,
+        "afterFullCrossedValidFrames": 8,
+        "framesWithBetweenVertexEnvelopeFailure": 8,
+        "maxGapGainRange": [
+          -1.9209292467792238e-07,
+          0.06967674066166998
+        ],
+        "usefulWidthGainRange": [
+          0,
+          0
+        ],
+        "maxGapAfterRange": [
+          0.09009709674980584,
+          0.13476122103221608
+        ],
+        "maxAbsoluteLipJoinDegreesAfter": 178.37019420472046,
+        "maxAbsoluteThroatJoinDegreesAfter": 178.45902500570614,
+        "maxAbsoluteInnerTurnDegreesAfter": 178.45902500570614
+      }
+    },
+    {
+      "id": "periodic-point21-a15-l12",
+      "eligible": 25,
+      "aggregate": {
+        "totalFrames": 25,
+        "validCandidates": 25,
+        "invalidEnvelopeOrEndpointFrames": 0,
+        "framesWithNewCorePairs": 2,
+        "framesWithNewFullPairs": 2,
+        "framesWithMovedRetainedCorePairs": 0,
+        "framesWithMovedRetainedFullPairs": 0,
+        "previouslyCleanCoreFramesBecomingCrossed": 2,
+        "previouslyCleanFullFramesBecomingCrossed": 2,
+        "beforeCoreCrossedFrames": 1,
+        "afterCoreCrossedValidFrames": 2,
+        "beforeFullCrossedFrames": 1,
+        "afterFullCrossedValidFrames": 2,
+        "framesWithBetweenVertexEnvelopeFailure": 2,
+        "maxGapGainRange": [
+          -2.414737898526198e-07,
+          0.06496312875770709
+        ],
+        "usefulWidthGainRange": [
+          0,
+          0
+        ],
+        "maxGapAfterRange": [
+          0.11750599137751702,
+          0.14295195378317133
+        ],
+        "maxAbsoluteLipJoinDegreesAfter": 166.29028344888258,
+        "maxAbsoluteThroatJoinDegreesAfter": 84.96279743900021,
+        "maxAbsoluteInnerTurnDegreesAfter": 167.6103338133843
+      }
+    },
+    {
+      "id": "periodic-point21-a23-l12",
+      "eligible": 30,
+      "aggregate": {
+        "totalFrames": 30,
+        "validCandidates": 30,
+        "invalidEnvelopeOrEndpointFrames": 0,
+        "framesWithNewCorePairs": 8,
+        "framesWithNewFullPairs": 8,
+        "framesWithMovedRetainedCorePairs": 0,
+        "framesWithMovedRetainedFullPairs": 0,
+        "previouslyCleanCoreFramesBecomingCrossed": 7,
+        "previouslyCleanFullFramesBecomingCrossed": 7,
+        "beforeCoreCrossedFrames": 1,
+        "afterCoreCrossedValidFrames": 8,
+        "beforeFullCrossedFrames": 1,
+        "afterFullCrossedValidFrames": 8,
+        "framesWithBetweenVertexEnvelopeFailure": 8,
+        "maxGapGainRange": [
+          -2.630535735348438e-07,
+          0.06610190966121754
+        ],
+        "usefulWidthGainRange": [
+          0,
+          0
+        ],
+        "maxGapAfterRange": [
+          0.10765548624912638,
+          0.16125427046812865
+        ],
+        "maxAbsoluteLipJoinDegreesAfter": 177.67918516467628,
+        "maxAbsoluteThroatJoinDegreesAfter": 31.145918131085875,
+        "maxAbsoluteInnerTurnDegreesAfter": 177.67918516467628
+      }
+    },
+    {
+      "id": "periodic-point21-a30-l12",
+      "eligible": 42,
+      "aggregate": {
+        "totalFrames": 42,
+        "validCandidates": 42,
+        "invalidEnvelopeOrEndpointFrames": 0,
+        "framesWithNewCorePairs": 0,
+        "framesWithNewFullPairs": 0,
+        "framesWithMovedRetainedCorePairs": 0,
+        "framesWithMovedRetainedFullPairs": 0,
+        "previouslyCleanCoreFramesBecomingCrossed": 0,
+        "previouslyCleanFullFramesBecomingCrossed": 0,
+        "beforeCoreCrossedFrames": 0,
+        "afterCoreCrossedValidFrames": 0,
+        "beforeFullCrossedFrames": 0,
+        "afterFullCrossedValidFrames": 0,
+        "framesWithBetweenVertexEnvelopeFailure": 0,
+        "maxGapGainRange": [
+          0.00031850745918565737,
+          0.07966898593668911
+        ],
+        "usefulWidthGainRange": [
+          0,
+          0.14351991459697921
+        ],
+        "maxGapAfterRange": [
+          0.17756406685112464,
+          0.2778933919460928
+        ],
+        "maxAbsoluteLipJoinDegreesAfter": 177.43292390643475,
+        "maxAbsoluteThroatJoinDegreesAfter": 177.93851553680463,
+        "maxAbsoluteInnerTurnDegreesAfter": 177.93851553680463
+      }
+    },
+    {
+      "id": "periodic-reef42-l12",
+      "eligible": 61,
+      "aggregate": {
+        "totalFrames": 61,
+        "validCandidates": 39,
+        "invalidEnvelopeOrEndpointFrames": 22,
+        "framesWithNewCorePairs": 0,
+        "framesWithNewFullPairs": 0,
+        "framesWithMovedRetainedCorePairs": 0,
+        "framesWithMovedRetainedFullPairs": 0,
+        "previouslyCleanCoreFramesBecomingCrossed": 0,
+        "previouslyCleanFullFramesBecomingCrossed": 0,
+        "beforeCoreCrossedFrames": 1,
+        "afterCoreCrossedValidFrames": 0,
+        "beforeFullCrossedFrames": 3,
+        "afterFullCrossedValidFrames": 2,
+        "framesWithBetweenVertexEnvelopeFailure": 0,
+        "maxGapGainRange": [
+          2.4814301564923813e-08,
+          0.1258591522024221
+        ],
+        "usefulWidthGainRange": [
+          0,
+          0.15462218793188964
+        ],
+        "maxGapAfterRange": [
+          0.023636031313953247,
+          0.32503282061769795
+        ],
+        "maxAbsoluteLipJoinDegreesAfter": 177.45098936230053,
+        "maxAbsoluteThroatJoinDegreesAfter": 165.6541015296947,
+        "maxAbsoluteInnerTurnDegreesAfter": 177.45098936230053
+      }
+    }
+  ]
+}
