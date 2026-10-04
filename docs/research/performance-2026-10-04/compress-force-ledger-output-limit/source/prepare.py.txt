@@ -1,0 +1,52 @@
+"""Source-only authority extraction; no import/evaluation/build/numerical path."""
+import hashlib, json, pathlib, re, subprocess
+here = pathlib.Path('/private/tmp/compress-force-ledger-20261004')
+root = pathlib.Path('/Users/regina/Desktop/Projects/surfing-game')
+sha = lambda data: hashlib.sha256(data).hexdigest()
+entries = ['src/physics/AttachedRider.ts', 'src/physics/BoardBody.ts', 'src/physics/PlaneWater.ts', 'src/physics/hullForces.ts']
+seen, stack = set(), [root / x for x in entries]
+records = []
+while stack:
+    path = stack.pop().resolve()
+    if path in seen:
+        continue
+    seen.add(path)
+    data = path.read_bytes()
+    records.append({'path': str(path), 'role': 'conservative-runtime-import-closure', 'bytes': len(data), 'sha256': sha(data)})
+    if path.suffix not in ['.ts', '.js', '.mjs']:
+        continue
+    for line in data.decode().splitlines():
+        if not line.startswith(('import ', 'export ')) or line.startswith(('import type ', 'export type ')):
+            continue
+        match = re.search(r'''(?:from\s+|^import\s*)['"]([^'"]+)['"]''', line)
+        if not match or not match[1].startswith('.'):
+            continue
+        base = path.parent / match[1]
+        candidates = [base, pathlib.Path(str(base) + '.ts'), pathlib.Path(str(base) + '.json'), base / 'index.ts']
+        dependency = next((p for p in candidates if p.is_file()), None)
+        if dependency is None:
+            raise RuntimeError(f'Unresolved source authority {path}: {match[1]}')
+        stack.append(dependency)
+references = {
+    'src/physics/AttachedRider.test.ts': 'exact-current-fixture-definition',
+    'docs/research/performance-2026-10-03/rider-legacy-diagnosis.md': 'given-prior-diagnosis-not-rerun',
+    'package.json': 'root-package-authority', 'package-lock.json': 'root-dependency-lock',
+    'node_modules/three/package.json': 'actual-three-package',
+    'node_modules/three/build/three.module.js': 'actual-three-runtime-module',
+    'node_modules/three/build/three.core.js': 'actual-three-runtime-core',
+}
+for relative, role in references.items():
+    path = (root / relative).resolve(); data = path.read_bytes()
+    records.append({'path': str(path), 'role': role, 'bytes': len(data), 'sha256': sha(data)})
+for name in ['attached-midturn-probe.ts', 'attached-midturn-isolation.ts']:
+    path = pathlib.Path('/private/tmp') / name; data = path.read_bytes()
+    records.append({'path': str(path), 'role': 'historical-reference-only-not-imported', 'bytes': len(data), 'sha256': sha(data)})
+authority = {'edition': 'compress-force-ledger-source-only', 'headAtPreparation': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip(), 'sourceRoot': str(root), 'riderSourcePath': str(root / entries[0]), 'sourceEntryPoints': entries, 'nodeModulesLink': {'path': str(here / 'node_modules'), 'target': str((here / 'node_modules').resolve()), 'use': 'read-only existing dependencies, no install or mutation'}, 'closureRule': 'Conservative current single-line runtime imports/exports; whole import type/export type skipped; mixed named type imports retained; no dynamic import observed in this closure. Three runtime explicitly pinned.', 'originalSourceEdited': False, 'originalNumericalMethodsCopied': False, 'files': sorted(records, key=lambda x: x['path'])}
+(here / 'authority.json').write_text(json.dumps(authority, indent=2) + '\n')
+prepared = []
+for name in ['observer.ts', 'driver.ts', 'observer.test.ts', 'vitest.config.ts', 'launcher.py', 'plan.md', 'prepare.py', 'authority.json']:
+    path = here / name; data = path.read_bytes()
+    prepared.append({'path': str(path), 'bytes': len(data), 'sha256': sha(data)})
+ready = {'edition': 'source-only-unexecuted-compress-force-ledger', 'rootReviewRequiredBeforeExecution': True, 'syntaxChecked': False, 'testsRun': 0, 'typecheckRun': False, 'bundleBuilt': False, 'numericalRuns': 0, 'browserRuns': 0, 'gpuRuns': 0, 'productionEdits': [], 'gitMutations': [], 'sourceAuthorityFileCount': len(records), 'sourceAuthorityBytes': sum(x['bytes'] for x in records), 'preparedFiles': prepared, 'futureOperation': 'one 8-case exact held/Compress trajectory observation with unwrapped controls; 20scooperative/30shard wall, 60,000substeps/512rich rows per case/64MiB output; no retuning or automatic retry'}
+(here / 'ready.json').write_text(json.dumps(ready, indent=2) + '\n')
+print(json.dumps({'sourceAuthorityFileCount': len(records), 'preparedFiles': prepared, 'readySha256': sha((here / 'ready.json').read_bytes())}, indent=2))

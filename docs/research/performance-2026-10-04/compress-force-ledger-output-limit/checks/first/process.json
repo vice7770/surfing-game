@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/vitest",
+    "run",
+    "--config=/private/tmp/compress-force-ledger-20261004/vitest.config.ts",
+    "--maxWorkers=1"
+  ],
+  "startedUtc": "2026-10-04T01:24:27.425257+00:00",
+  "phase": "five-focused-tests",
+  "automaticRetry": false,
+  "pid": 39190
+}

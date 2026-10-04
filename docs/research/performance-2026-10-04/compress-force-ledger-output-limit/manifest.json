@@ -1,0 +1,812 @@
+{
+  "edition": "compress-force-ledger-first-operation-output-limit",
+  "archivalScope": "Exact retained first operation/check history plus a separately labelled unexecuted compact output proposal; no numerical code executed by archive.",
+  "records": [
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/observer.ts",
+      "storedPath": "source/observer.ts.txt",
+      "encoding": "identity",
+      "originalBytes": 11769,
+      "storedBytes": 11769,
+      "expandedBytes": 11769,
+      "originalSha256": "aaa021c7d6c2521bf0a67579440426ecfb73b458280b85787030ff9e4d6d3363",
+      "storedSha256": "aaa021c7d6c2521bf0a67579440426ecfb73b458280b85787030ff9e4d6d3363",
+      "expandedSha256": "aaa021c7d6c2521bf0a67579440426ecfb73b458280b85787030ff9e4d6d3363"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/driver.ts",
+      "storedPath": "source/driver.ts.txt",
+      "encoding": "identity",
+      "originalBytes": 11899,
+      "storedBytes": 11899,
+      "expandedBytes": 11899,
+      "originalSha256": "5609a6a3294c138bc22a94bd98cb1c4ca1a1c45dee9a708b3a03d713e0e7c080",
+      "storedSha256": "5609a6a3294c138bc22a94bd98cb1c4ca1a1c45dee9a708b3a03d713e0e7c080",
+      "expandedSha256": "5609a6a3294c138bc22a94bd98cb1c4ca1a1c45dee9a708b3a03d713e0e7c080"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/launcher.py",
+      "storedPath": "source/launcher.py.txt",
+      "encoding": "identity",
+      "originalBytes": 1399,
+      "storedBytes": 1399,
+      "expandedBytes": 1399,
+      "originalSha256": "ec88d2cef0fcdc33326379b1e9a32698ec752a9bb43843914b0396a96f2ab7d9",
+      "storedSha256": "ec88d2cef0fcdc33326379b1e9a32698ec752a9bb43843914b0396a96f2ab7d9",
+      "expandedSha256": "ec88d2cef0fcdc33326379b1e9a32698ec752a9bb43843914b0396a96f2ab7d9"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/vitest.config.ts",
+      "storedPath": "source/vitest.config.ts.txt",
+      "encoding": "identity",
+      "originalBytes": 179,
+      "storedBytes": 179,
+      "expandedBytes": 179,
+      "originalSha256": "a84163580aab8852578b4ddce805cbe239c25ce8436151787025a7f21b5235c9",
+      "storedSha256": "a84163580aab8852578b4ddce805cbe239c25ce8436151787025a7f21b5235c9",
+      "expandedSha256": "a84163580aab8852578b4ddce805cbe239c25ce8436151787025a7f21b5235c9"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/plan.md",
+      "storedPath": "source/plan.md",
+      "encoding": "identity",
+      "originalBytes": 10082,
+      "storedBytes": 10082,
+      "expandedBytes": 10082,
+      "originalSha256": "08ba15d508db30b1d836a83c9df9adbe300f6d0ba6f1a10aedd9de4ef594a7ee",
+      "storedSha256": "08ba15d508db30b1d836a83c9df9adbe300f6d0ba6f1a10aedd9de4ef594a7ee",
+      "expandedSha256": "08ba15d508db30b1d836a83c9df9adbe300f6d0ba6f1a10aedd9de4ef594a7ee"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/prepare.py",
+      "storedPath": "source/prepare.py.txt",
+      "encoding": "identity",
+      "originalBytes": 4523,
+      "storedBytes": 4523,
+      "expandedBytes": 4523,
+      "originalSha256": "eaaba707b08cb0258f6a15663c6a42df5f640ec65906b0a2ec30e32dd1edbe80",
+      "storedSha256": "eaaba707b08cb0258f6a15663c6a42df5f640ec65906b0a2ec30e32dd1edbe80",
+      "expandedSha256": "eaaba707b08cb0258f6a15663c6a42df5f640ec65906b0a2ec30e32dd1edbe80"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/README.md",
+      "storedPath": "source/README-history.md",
+      "encoding": "identity",
+      "originalBytes": 1222,
+      "storedBytes": 1222,
+      "expandedBytes": 1222,
+      "originalSha256": "28140d88706863e2137fa250861fdb2ec7dd20f758fceb14a4bcc5fe8a710581",
+      "storedSha256": "28140d88706863e2137fa250861fdb2ec7dd20f758fceb14a4bcc5fe8a710581",
+      "expandedSha256": "28140d88706863e2137fa250861fdb2ec7dd20f758fceb14a4bcc5fe8a710581"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/authority.json",
+      "storedPath": "authority/source-authority.json",
+      "encoding": "identity",
+      "originalBytes": 9992,
+      "storedBytes": 9992,
+      "expandedBytes": 9992,
+      "originalSha256": "10d68c5371dfcc09a03db879ca72325fc35e671853e6a4793f7d98a064a56008",
+      "storedSha256": "10d68c5371dfcc09a03db879ca72325fc35e671853e6a4793f7d98a064a56008",
+      "expandedSha256": "10d68c5371dfcc09a03db879ca72325fc35e671853e6a4793f7d98a064a56008"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/ready.json",
+      "storedPath": "checks/first/ready.json",
+      "encoding": "identity",
+      "originalBytes": 2142,
+      "storedBytes": 2142,
+      "expandedBytes": 2142,
+      "originalSha256": "2458248572cb2a99d3dd145a7c717c6015529dd0eccad85731b63001978a9376",
+      "storedSha256": "2458248572cb2a99d3dd145a7c717c6015529dd0eccad85731b63001978a9376",
+      "expandedSha256": "2458248572cb2a99d3dd145a7c717c6015529dd0eccad85731b63001978a9376"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/pre-correction/observer.test.ts.txt",
+      "storedPath": "checks/first/observer.test.ts.txt",
+      "encoding": "identity",
+      "originalBytes": 4439,
+      "storedBytes": 4439,
+      "expandedBytes": 4439,
+      "originalSha256": "464d010139e4fd031e9a78ff1a1597a6a1e38551e0b395dc7fb039f228599609",
+      "storedSha256": "464d010139e4fd031e9a78ff1a1597a6a1e38551e0b395dc7fb039f228599609",
+      "expandedSha256": "464d010139e4fd031e9a78ff1a1597a6a1e38551e0b395dc7fb039f228599609"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/focused-tests.log",
+      "storedPath": "checks/first/focused-tests.log",
+      "encoding": "identity",
+      "originalBytes": 2024,
+      "storedBytes": 2024,
+      "expandedBytes": 2024,
+      "originalSha256": "e7f78e0a1ffb16da92af2f81d16b8397b5c3b31b8781edbdb78eb217a1aafa8d",
+      "storedSha256": "e7f78e0a1ffb16da92af2f81d16b8397b5c3b31b8781edbdb78eb217a1aafa8d",
+      "expandedSha256": "e7f78e0a1ffb16da92af2f81d16b8397b5c3b31b8781edbdb78eb217a1aafa8d"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/focused-tests-process.json",
+      "storedPath": "checks/first/process.json",
+      "encoding": "identity",
+      "originalBytes": 333,
+      "storedBytes": 333,
+      "expandedBytes": 333,
+      "originalSha256": "7cf1777c0939a6e18ce49239519a1228c808151735136725549b7ac4b745fdaf",
+      "storedSha256": "7cf1777c0939a6e18ce49239519a1228c808151735136725549b7ac4b745fdaf",
+      "expandedSha256": "7cf1777c0939a6e18ce49239519a1228c808151735136725549b7ac4b745fdaf"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/focused-tests-terminal.json",
+      "storedPath": "checks/first/terminal.json",
+      "encoding": "identity",
+      "originalBytes": 403,
+      "storedBytes": 403,
+      "expandedBytes": 403,
+      "originalSha256": "33ee197945b69422122fdfa3a5ec763e70c979378dc83b22130e1a916826175d",
+      "storedSha256": "33ee197945b69422122fdfa3a5ec763e70c979378dc83b22130e1a916826175d",
+      "expandedSha256": "33ee197945b69422122fdfa3a5ec763e70c979378dc83b22130e1a916826175d"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/first-verification.freeze.json",
+      "storedPath": "checks/first/verification.freeze.json",
+      "encoding": "identity",
+      "originalBytes": 1315,
+      "storedBytes": 1315,
+      "expandedBytes": 1315,
+      "originalSha256": "b233448975ae00f02855d133c1d27c7bb3d0ff05dad9864312f0a2dc685ff6be",
+      "storedSha256": "b233448975ae00f02855d133c1d27c7bb3d0ff05dad9864312f0a2dc685ff6be",
+      "expandedSha256": "b233448975ae00f02855d133c1d27c7bb3d0ff05dad9864312f0a2dc685ff6be"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/observer.test.ts",
+      "storedPath": "checks/corrected/observer.test.ts.txt",
+      "encoding": "identity",
+      "originalBytes": 4515,
+      "storedBytes": 4515,
+      "expandedBytes": 4515,
+      "originalSha256": "491b201c9d66699ed4f66f89f322d1c7d940eaa52483fac25a2fc7b4cadc5c55",
+      "storedSha256": "491b201c9d66699ed4f66f89f322d1c7d940eaa52483fac25a2fc7b4cadc5c55",
+      "expandedSha256": "491b201c9d66699ed4f66f89f322d1c7d940eaa52483fac25a2fc7b4cadc5c55"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/expectations-only.delta.patch",
+      "storedPath": "checks/corrected/expectations-only.delta.patch",
+      "encoding": "identity",
+      "originalBytes": 1063,
+      "storedBytes": 1063,
+      "expandedBytes": 1063,
+      "originalSha256": "55df8fb1a6b926b7db6989629a3b6d6e753dda88b0630804981e57268bb91782",
+      "storedSha256": "55df8fb1a6b926b7db6989629a3b6d6e753dda88b0630804981e57268bb91782",
+      "expandedSha256": "55df8fb1a6b926b7db6989629a3b6d6e753dda88b0630804981e57268bb91782"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/ready-corrected.json",
+      "storedPath": "checks/corrected/ready.json",
+      "encoding": "identity",
+      "originalBytes": 2734,
+      "storedBytes": 2734,
+      "expandedBytes": 2734,
+      "originalSha256": "1273252f121d40b309c1194a3d5a2d687727c7b69f0e6d6909f0427f65584b0c",
+      "storedSha256": "1273252f121d40b309c1194a3d5a2d687727c7b69f0e6d6909f0427f65584b0c",
+      "expandedSha256": "1273252f121d40b309c1194a3d5a2d687727c7b69f0e6d6909f0427f65584b0c"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/focused-tests-corrected.log",
+      "storedPath": "checks/corrected/focused-tests.log",
+      "encoding": "identity",
+      "originalBytes": 637,
+      "storedBytes": 637,
+      "expandedBytes": 637,
+      "originalSha256": "425ce8c58e3d2244efc808062a11a16521d79026cee9b40870961a489c2d59a8",
+      "storedSha256": "425ce8c58e3d2244efc808062a11a16521d79026cee9b40870961a489c2d59a8",
+      "expandedSha256": "425ce8c58e3d2244efc808062a11a16521d79026cee9b40870961a489c2d59a8"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/focused-tests-corrected-process.json",
+      "storedPath": "checks/corrected/process.json",
+      "encoding": "identity",
+      "originalBytes": 356,
+      "storedBytes": 356,
+      "expandedBytes": 356,
+      "originalSha256": "cc133f5a1da34e43f81611fdc0c448c5072730281123c33a7d5425441005cd17",
+      "storedSha256": "cc133f5a1da34e43f81611fdc0c448c5072730281123c33a7d5425441005cd17",
+      "expandedSha256": "cc133f5a1da34e43f81611fdc0c448c5072730281123c33a7d5425441005cd17"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/focused-tests-corrected-terminal.json",
+      "storedPath": "checks/corrected/terminal.json",
+      "encoding": "identity",
+      "originalBytes": 426,
+      "storedBytes": 426,
+      "expandedBytes": 426,
+      "originalSha256": "142a8c753a09abc6a4d524b130bf0e0b70b8d9a524091b0087273867c0a5ddfd",
+      "storedSha256": "142a8c753a09abc6a4d524b130bf0e0b70b8d9a524091b0087273867c0a5ddfd",
+      "expandedSha256": "142a8c753a09abc6a4d524b130bf0e0b70b8d9a524091b0087273867c0a5ddfd"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/bundle.log",
+      "storedPath": "bundle/bundle.log",
+      "encoding": "identity",
+      "originalBytes": 87,
+      "storedBytes": 87,
+      "expandedBytes": 87,
+      "originalSha256": "a4e8089aaf1f4b33641ea9e035460751715e9f9cd40e146eb9316ef2ce1d92ab",
+      "storedSha256": "a4e8089aaf1f4b33641ea9e035460751715e9f9cd40e146eb9316ef2ce1d92ab",
+      "expandedSha256": "a4e8089aaf1f4b33641ea9e035460751715e9f9cd40e146eb9316ef2ce1d92ab"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/bundle-process.json",
+      "storedPath": "bundle/process.json",
+      "encoding": "identity",
+      "originalBytes": 414,
+      "storedBytes": 414,
+      "expandedBytes": 414,
+      "originalSha256": "59a36dc88bb06861de46045343159ffa3f42e14da951fdbea1e2190d15db7f62",
+      "storedSha256": "59a36dc88bb06861de46045343159ffa3f42e14da951fdbea1e2190d15db7f62",
+      "expandedSha256": "59a36dc88bb06861de46045343159ffa3f42e14da951fdbea1e2190d15db7f62"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/bundle-terminal.json",
+      "storedPath": "bundle/terminal.json",
+      "encoding": "identity",
+      "originalBytes": 484,
+      "storedBytes": 484,
+      "expandedBytes": 484,
+      "originalSha256": "05ba2550ddd4123e35f7f3bd93f71ff9462b5aad7cda2c0b2ee564909614dac1",
+      "storedSha256": "05ba2550ddd4123e35f7f3bd93f71ff9462b5aad7cda2c0b2ee564909614dac1",
+      "expandedSha256": "05ba2550ddd4123e35f7f3bd93f71ff9462b5aad7cda2c0b2ee564909614dac1"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/compiled-ready.json",
+      "storedPath": "bundle/compiled-ready.json",
+      "encoding": "identity",
+      "originalBytes": 4058,
+      "storedBytes": 4058,
+      "expandedBytes": 4058,
+      "originalSha256": "a5748fb19fafa7fa3c1785c62147c73f38988f150f410f704c9faf3af9105339",
+      "storedSha256": "a5748fb19fafa7fa3c1785c62147c73f38988f150f410f704c9faf3af9105339",
+      "expandedSha256": "a5748fb19fafa7fa3c1785c62147c73f38988f150f410f704c9faf3af9105339"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/stdout.txt",
+      "storedPath": "operation/stdout.txt",
+      "encoding": "identity",
+      "originalBytes": 0,
+      "storedBytes": 0,
+      "expandedBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/stderr.txt",
+      "storedPath": "operation/stderr.txt",
+      "encoding": "identity",
+      "originalBytes": 502,
+      "storedBytes": 502,
+      "expandedBytes": 502,
+      "originalSha256": "cac74a40c8d0f9976adc94b7827171071b9461205c7279fbb95fca0f4634c1c4",
+      "storedSha256": "cac74a40c8d0f9976adc94b7827171071b9461205c7279fbb95fca0f4634c1c4",
+      "expandedSha256": "cac74a40c8d0f9976adc94b7827171071b9461205c7279fbb95fca0f4634c1c4"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/terminal.json",
+      "storedPath": "operation/terminal.json",
+      "encoding": "identity",
+      "originalBytes": 373,
+      "storedBytes": 373,
+      "expandedBytes": 373,
+      "originalSha256": "f6d38c88e1a64abaa67a7c8d0bfb582c44e95f35ae91d8bb21c043280d5eb012",
+      "storedSha256": "f6d38c88e1a64abaa67a7c8d0bfb582c44e95f35ae91d8bb21c043280d5eb012",
+      "expandedSha256": "f6d38c88e1a64abaa67a7c8d0bfb582c44e95f35ae91d8bb21c043280d5eb012"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/report.oversize-summary.json",
+      "storedPath": "operation/report.oversize-summary.json",
+      "encoding": "identity",
+      "originalBytes": 88,
+      "storedBytes": 88,
+      "expandedBytes": 88,
+      "originalSha256": "0a702b848bff3dccd8044a14f767b32a94f33a46e0055a95e193c25bcd9620fd",
+      "storedSha256": "0a702b848bff3dccd8044a14f767b32a94f33a46e0055a95e193c25bcd9620fd",
+      "expandedSha256": "0a702b848bff3dccd8044a14f767b32a94f33a46e0055a95e193c25bcd9620fd"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/diagnostic-terminal.freeze.json",
+      "storedPath": "operation/diagnostic-terminal.freeze.json",
+      "encoding": "identity",
+      "originalBytes": 1386,
+      "storedBytes": 1386,
+      "expandedBytes": 1386,
+      "originalSha256": "f2a273129fda4708f0c470376d33a82c9122ccedba35ddda39689c231bd52b0b",
+      "storedSha256": "f2a273129fda4708f0c470376d33a82c9122ccedba35ddda39689c231bd52b0b",
+      "expandedSha256": "f2a273129fda4708f0c470376d33a82c9122ccedba35ddda39689c231bd52b0b"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/interpretation.md",
+      "storedPath": "operation/interpretation.md",
+      "encoding": "identity",
+      "originalBytes": 1535,
+      "storedBytes": 1535,
+      "expandedBytes": 1535,
+      "originalSha256": "2dd135b650ee8cf48e819c8c862c8f8a95e31a11cc6a0b41100ec4dc5f5ef348",
+      "storedSha256": "2dd135b650ee8cf48e819c8c862c8f8a95e31a11cc6a0b41100ec4dc5f5ef348",
+      "expandedSha256": "2dd135b650ee8cf48e819c8c862c8f8a95e31a11cc6a0b41100ec4dc5f5ef348"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-compact-20261004/schema.ts",
+      "storedPath": "SOURCE-ONLY/schema.ts.txt",
+      "encoding": "identity",
+      "originalBytes": 4187,
+      "storedBytes": 4187,
+      "expandedBytes": 4187,
+      "originalSha256": "848c5a92792c79de6d7c1001ae7436ce4ec20814a6527376f3ddd12bbbcc4b4b",
+      "storedSha256": "848c5a92792c79de6d7c1001ae7436ce4ec20814a6527376f3ddd12bbbcc4b4b",
+      "expandedSha256": "848c5a92792c79de6d7c1001ae7436ce4ec20814a6527376f3ddd12bbbcc4b4b"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-compact-20261004/schema.test.ts",
+      "storedPath": "SOURCE-ONLY/schema.test.ts.txt",
+      "encoding": "identity",
+      "originalBytes": 3149,
+      "storedBytes": 3149,
+      "expandedBytes": 3149,
+      "originalSha256": "df862b4de6ce084df0e860a2c7286d233988ffdfa3693f3183b2b79e01ecade1",
+      "storedSha256": "df862b4de6ce084df0e860a2c7286d233988ffdfa3693f3183b2b79e01ecade1",
+      "expandedSha256": "df862b4de6ce084df0e860a2c7286d233988ffdfa3693f3183b2b79e01ecade1"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-compact-20261004/driver.ts",
+      "storedPath": "SOURCE-ONLY/driver.ts.txt",
+      "encoding": "identity",
+      "originalBytes": 13597,
+      "storedBytes": 13597,
+      "expandedBytes": 13597,
+      "originalSha256": "5cff9d0b0d54590b7b1a6257f0874160b5694916e7502feb01d0107fc341f050",
+      "storedSha256": "5cff9d0b0d54590b7b1a6257f0874160b5694916e7502feb01d0107fc341f050",
+      "expandedSha256": "5cff9d0b0d54590b7b1a6257f0874160b5694916e7502feb01d0107fc341f050"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-compact-20261004/driver.output-only.patch",
+      "storedPath": "SOURCE-ONLY/driver.output-only.patch",
+      "encoding": "identity",
+      "originalBytes": 6407,
+      "storedBytes": 6407,
+      "expandedBytes": 6407,
+      "originalSha256": "5ad4d213e0a26310a5343566983df2aa31849627af0c28ac34c29832d1d0b253",
+      "storedSha256": "5ad4d213e0a26310a5343566983df2aa31849627af0c28ac34c29832d1d0b253",
+      "expandedSha256": "5ad4d213e0a26310a5343566983df2aa31849627af0c28ac34c29832d1d0b253"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-compact-20261004/launcher.py",
+      "storedPath": "SOURCE-ONLY/launcher.py.txt",
+      "encoding": "identity",
+      "originalBytes": 1441,
+      "storedBytes": 1441,
+      "expandedBytes": 1441,
+      "originalSha256": "4d7913c1573dd3aa5b30bb15f4b54d4cf5d18c9feae45a5b98e901b3ed8f3e93",
+      "storedSha256": "4d7913c1573dd3aa5b30bb15f4b54d4cf5d18c9feae45a5b98e901b3ed8f3e93",
+      "expandedSha256": "4d7913c1573dd3aa5b30bb15f4b54d4cf5d18c9feae45a5b98e901b3ed8f3e93"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-compact-20261004/vitest.config.ts",
+      "storedPath": "SOURCE-ONLY/vitest.config.ts.txt",
+      "encoding": "identity",
+      "originalBytes": 185,
+      "storedBytes": 185,
+      "expandedBytes": 185,
+      "originalSha256": "65d90939c8c389554450c42d31e3d3e9ab13db1af7e5bd4baa09b3e15dbbcea0",
+      "storedSha256": "65d90939c8c389554450c42d31e3d3e9ab13db1af7e5bd4baa09b3e15dbbcea0",
+      "expandedSha256": "65d90939c8c389554450c42d31e3d3e9ab13db1af7e5bd4baa09b3e15dbbcea0"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-compact-20261004/plan.md",
+      "storedPath": "SOURCE-ONLY/plan.md",
+      "encoding": "identity",
+      "originalBytes": 4747,
+      "storedBytes": 4747,
+      "expandedBytes": 4747,
+      "originalSha256": "3ea77decd2a4dc744b1aadd42098eb87877165312f26840b3e1867e6867c7c1d",
+      "storedSha256": "3ea77decd2a4dc744b1aadd42098eb87877165312f26840b3e1867e6867c7c1d",
+      "expandedSha256": "3ea77decd2a4dc744b1aadd42098eb87877165312f26840b3e1867e6867c7c1d"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-compact-20261004/ready.json",
+      "storedPath": "SOURCE-ONLY/ready.json",
+      "encoding": "identity",
+      "originalBytes": 3495,
+      "storedBytes": 3495,
+      "expandedBytes": 3495,
+      "originalSha256": "128e0bf72c10ba3418217961fb95d80761de02b9a72bec778d89fc50012d61f7",
+      "storedSha256": "128e0bf72c10ba3418217961fb95d80761de02b9a72bec778d89fc50012d61f7",
+      "expandedSha256": "128e0bf72c10ba3418217961fb95d80761de02b9a72bec778d89fc50012d61f7"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/archive-output-limit.py",
+      "storedPath": "archive.py.txt",
+      "encoding": "identity",
+      "originalBytes": 12995,
+      "storedBytes": 12995,
+      "expandedBytes": 12995,
+      "originalSha256": "d9cc88d05c784359c3ed6b2ceea7821ebdaeaa949cc22056df10a04e3d6de9e2",
+      "storedSha256": "d9cc88d05c784359c3ed6b2ceea7821ebdaeaa949cc22056df10a04e3d6de9e2",
+      "expandedSha256": "d9cc88d05c784359c3ed6b2ceea7821ebdaeaa949cc22056df10a04e3d6de9e2"
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/archive-before-sums-order-fix.py.txt",
+      "storedPath": "archive-before-sums-order-fix.py.txt",
+      "encoding": "identity",
+      "originalBytes": 12904,
+      "storedBytes": 12904,
+      "expandedBytes": 12904,
+      "originalSha256": "b4fda4a04a5956c6cf0e4bb3431bf31873164df2be342dd208e4c33a514aed0c",
+      "storedSha256": "b4fda4a04a5956c6cf0e4bb3431bf31873164df2be342dd208e4c33a514aed0c",
+      "expandedSha256": "b4fda4a04a5956c6cf0e4bb3431bf31873164df2be342dd208e4c33a514aed0c"
+    }
+  ],
+  "aliases": [
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-compact-20261004/authority.json",
+      "requestedArchivePath": "SOURCE-ONLY/authority.json",
+      "storedPath": "authority/source-authority.json",
+      "bytes": 9992,
+      "originalSha256": "10d68c5371dfcc09a03db879ca72325fc35e671853e6a4793f7d98a064a56008",
+      "byteIdenticalAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/pre-correction/ready.json",
+      "requestedArchivePath": "aliases/pre-correction/ready.json",
+      "storedPath": "checks/first/ready.json",
+      "bytes": 2142,
+      "originalSha256": "2458248572cb2a99d3dd145a7c717c6015529dd0eccad85731b63001978a9376",
+      "byteIdenticalAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/pre-correction/focused-tests.log",
+      "requestedArchivePath": "aliases/pre-correction/focused-tests.log",
+      "storedPath": "checks/first/focused-tests.log",
+      "bytes": 2024,
+      "originalSha256": "e7f78e0a1ffb16da92af2f81d16b8397b5c3b31b8781edbdb78eb217a1aafa8d",
+      "byteIdenticalAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/pre-correction/focused-tests-process.json",
+      "requestedArchivePath": "aliases/pre-correction/focused-tests-process.json",
+      "storedPath": "checks/first/process.json",
+      "bytes": 333,
+      "originalSha256": "7cf1777c0939a6e18ce49239519a1228c808151735136725549b7ac4b745fdaf",
+      "byteIdenticalAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/pre-correction/focused-tests-terminal.json",
+      "requestedArchivePath": "aliases/pre-correction/focused-tests-terminal.json",
+      "storedPath": "checks/first/terminal.json",
+      "bytes": 403,
+      "originalSha256": "33ee197945b69422122fdfa3a5ec763e70c979378dc83b22130e1a916826175d",
+      "byteIdenticalAlias": true
+    },
+    {
+      "originalPath": "/private/tmp/compress-force-ledger-20261004/pre-correction/first-verification.freeze.json",
+      "requestedArchivePath": "aliases/pre-correction/first-verification.freeze.json",
+      "storedPath": "checks/first/verification.freeze.json",
+      "bytes": 1315,
+      "originalSha256": "b233448975ae00f02855d133c1d27c7bb3d0ff05dad9864312f0a2dc685ff6be",
+      "byteIdenticalAlias": true
+    }
+  ],
+  "externalByteReferences": [
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/rider-legacy-diagnosis.md",
+      "role": "given-prior-diagnosis-not-rerun",
+      "bytes": 5048,
+      "sha256": "667e8464726321b1ceb3d5a62e7a07ad0430361a578c7fcb6448ebb20eb906b4",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/build/three.core.js",
+      "role": "actual-three-runtime-core",
+      "bytes": 1458113,
+      "sha256": "9edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/build/three.module.js",
+      "role": "actual-three-runtime-module",
+      "bytes": 662772,
+      "sha256": "9052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/package.json",
+      "role": "actual-three-package",
+      "bytes": 3672,
+      "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/package-lock.json",
+      "role": "root-dependency-lock",
+      "bytes": 42710,
+      "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/package.json",
+      "role": "root-package-authority",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.test.ts",
+      "role": "exact-current-fixture-definition",
+      "bytes": 90495,
+      "sha256": "cc7c428de475eeb5c6eef97ef7bf66de7a0bbdd25d96e503959b5c7642684717",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 134070,
+      "sha256": "9a4781251cb3def1f43d1f598e9cb8149ad09257233ca0fe6ee2790d6e189362",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardBody.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/DetachedSurfer.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 30945,
+      "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/MinimumJerkTrack.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 2659,
+      "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PhysicalSurfWater.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 23514,
+      "sha256": "6edc9f0eb3c857bfbb041c49cc4039af9f8897203772b20ffae3e1a0d223beea",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PlaneWater.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 2414,
+      "sha256": "116bd2e95cd9e91b35818c8cdf5dcfda65acad43a3648e997c5f133ab3fc9e75",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/SurfWater.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardReference.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardShape.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/finForces.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/hullForces.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/legSpring.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 5593,
+      "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/riderPosture.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 26862,
+      "sha256": "f3e3dc50315d2b9a68dde6d56d7da03cf95921d377b58dbc53130b2d8d6a7f0e",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 54858,
+      "sha256": "bda23f0eb188a9568cbe368b542cff2e073bd5e6e7d98bdda4f3d84b8f961f7b",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/private/tmp/attached-midturn-isolation.ts",
+      "role": "historical-reference-only-not-imported",
+      "bytes": 4912,
+      "sha256": "af3d4f46c02cacfb62a40b0155d3f055c84feb9f4064c93a0bfb372e6d1944c4",
+      "archivedBytes": false
+    },
+    {
+      "authorityFile": "authority/source-authority.json",
+      "path": "/private/tmp/attached-midturn-probe.ts",
+      "role": "historical-reference-only-not-imported",
+      "bytes": 4277,
+      "sha256": "9e4d37d62502fc12c7db8e0ed228b7f34283343112d4240ea30970b83f8e20ff",
+      "archivedBytes": false
+    }
+  ],
+  "compiledBundleHashReference": {
+    "path": "/private/tmp/compress-force-ledger-20261004/driver.mjs",
+    "bytes": 529407,
+    "sha256": "7b913fdc574d09182ae8ec54894f294e52512773946487a380de8ba8ec622caa",
+    "archivedBytes": false,
+    "authorityFile": "bundle/compiled-ready.json",
+    "reason": "Root requested hash-reference only; original compiled source remains TMP."
+  },
+  "unretainedPrimaryReport": {
+    "originalPath": "/private/tmp/compress-force-ledger-20261004/report.json.gz",
+    "retained": false,
+    "reason": "The94,521,423-byteJSON exceeded64MiBbefore primary gzip writing; Node then exited. No recoverable primary report is claimed."
+  },
+  "excluded": [
+    "node_modules pointer/installed dependency bytes",
+    "full repository/source tree",
+    "all35external authority source/reference/dependency bytes",
+    "compiled529407-bytebundle",
+    "unretained in-memory numerical trace"
+  ],
+  "totals": {
+    "uniquePayloadFiles": 40,
+    "byteIdenticalAliases": 6,
+    "storedPayloadBytes": 143486,
+    "expandedPayloadBytes": 143486,
+    "originalMappedBytes": 159695
+  },
+  "generatedControls": [
+    "README.md",
+    "manifest.json",
+    "SHA256SUMS",
+    "root-review-ready.json"
+  ],
+  "archivalPreparationNote": "Initial archive filesystem finalization checked the generated SHA256SUMS README link before creating that control file. Only finalization order was corrected; the exact first method is retained as archive-before-sums-order-fix.py.txt. No evidence source, log, assertion or numerical result changed; no numerical/check/build/hardware rerun occurred."
+}

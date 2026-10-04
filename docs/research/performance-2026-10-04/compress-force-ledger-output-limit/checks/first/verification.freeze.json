@@ -1,0 +1,37 @@
+{
+  "edition": "first-focused-verification-terminal",
+  "frozenUtc": "2026-10-04T01:24:41.165623+00:00",
+  "originalPreparedFilesUnchanged": true,
+  "sourceAuthorityFilesUnchanged": true,
+  "focusedTestExitCode": 1,
+  "bundleRun": false,
+  "numericalDiagnosticRun": false,
+  "automaticRepairOrRetry": false,
+  "records": [
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/ready.json",
+      "bytes": 2142,
+      "sha256": "2458248572cb2a99d3dd145a7c717c6015529dd0eccad85731b63001978a9376"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/authority.json",
+      "bytes": 9992,
+      "sha256": "10d68c5371dfcc09a03db879ca72325fc35e671853e6a4793f7d98a064a56008"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/focused-tests.log",
+      "bytes": 2024,
+      "sha256": "e7f78e0a1ffb16da92af2f81d16b8397b5c3b31b8781edbdb78eb217a1aafa8d"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/focused-tests-process.json",
+      "bytes": 333,
+      "sha256": "7cf1777c0939a6e18ce49239519a1228c808151735136725549b7ac4b745fdaf"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/focused-tests-terminal.json",
+      "bytes": 403,
+      "sha256": "33ee197945b69422122fdfa3a5ec763e70c979378dc83b22130e1a916826175d"
+    }
+  ]
+}

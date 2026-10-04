@@ -1,0 +1,77 @@
+--- frozen-first/driver.ts
++++ compact/driver.ts
+@@ -7,9 +7,11 @@
+ import { BoardBody } from '/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardBody.ts';
+ import { PlaneWater } from '/Users/regina/Desktop/Projects/surfing-game/src/physics/PlaneWater.ts';
+ import { WATER } from '/Users/regina/Desktop/Projects/surfing-game/src/physics/hullForces.ts';
+-import { installLedger, posture, stateToken, turningPoints } from './observer';
++import { installLedger, posture, stateToken, turningPoints } from '/private/tmp/compress-force-ledger-20261004/observer';
++import { isDeepStrictEqual } from 'node:util';
++import { decodeReport, encodeReport, failureSummary } from './schema';
+ 
+-const HERE = '/private/tmp/compress-force-ledger-20261004';
++const HERE = '/private/tmp/compress-force-ledger-compact-20261004';
+ const DT = 1 / 60;
+ const MAX_MS = 20_000;
+ const MAX_SUBSTEPS = 60_000;
+@@ -19,7 +21,7 @@
+ if (args.get('run') !== 'true') throw new Error('Source-only preparation: explicit --run=true required AFTER root review');
+ const out = args.get('out') ?? `${HERE}/report.json.gz`;
+ if (!out.startsWith(`${HERE}/`) || !out.endsWith('.json.gz')) throw new Error('Owned gzip output required');
+-if (existsSync(out) || existsSync(out.replace('.json.gz', '.oversize-summary.json'))) throw new Error('Refuse to overwrite previous diagnostic');
++if (existsSync(out) || existsSync(out.replace('.json.gz', '.failure-summary.json.gz'))) throw new Error('Refuse to overwrite previous diagnostic');
+ const startedUtc = new Date().toISOString();
+ const started = performance.now();
+ const checkBound = () => { if (performance.now() - started > MAX_MS) throw new Error('Predeclared 20s diagnostic deadline'); };
+@@ -115,6 +117,8 @@
+           ...posture(observed.board, observed.rider), heading: now, accumulatedHeading: accumulated,
+           substepsTaken: observed.board.substepsTaken, contactForce: observed.rider.contact.force.toArray(), contactLoad: observed.rider.contact.load,
+           boardForces: Object.fromEntries(Object.entries(observed.board.forces).map(([k, v]) => [k, v.toArray()])) });
++        // Output-only progress witness AFTER the existing successful parity assertion.
++        report.latestVerified = { speed, variant, step, phase, state: outer[outer.length - 1] };
+       }
+     } finally { restore(); }
+     const rates = outer.filter(x => x.phase === 'compress').map(x => x.spin[1]);
+@@ -130,8 +134,37 @@
+ report.paritySteps = paritySteps; report.observedSubsteps = observedSubsteps;
+ report.elapsedMs = performance.now() - started; report.finishedUtc = new Date().toISOString();
+ report.limitations = ['Original reported upright rider kinetic omits torso rotor/elastic energy. Residual is a diagnostic, not a closed total-energy proof.', 'Hull pre-rider RHS combines external impulses, gyro and implicit water terms. Its entries are not individually labelled physical forces.', 'Current real hull/contact/rider unchanged; no parameter, input, force, contact-limit or assertion is altered.', 'First threshold crossing is chronological evidence, not alone a causal diagnosis.', 'Existing bank/crouch/hand controllers and self-selected 32 standing substeps plus entry refinement remain active.', 'No FPS, solver, GPU, browser or tube-clearance evidence.'];
+-const json = JSON.stringify(report, (_key, value) => typeof value === 'number' && !Number.isFinite(value) ? { nonfinite: String(value) } : value);
+-if (Buffer.byteLength(json) > MAX_JSON_BYTES) { writeFileSync(out.replace('.json.gz', '.oversize-summary.json'), JSON.stringify({ valid: false, error: 'Predeclared output bound', bytes: Buffer.byteLength(json), elapsedMs: report.elapsedMs })); throw new Error('Output bound exceeded; no rerun'); }
+-writeFileSync(out, gzipSync(json, { level: 9, mtime: 0 } as any));
+-console.log(JSON.stringify({ valid: report.valid, out, rawBytes: Buffer.byteLength(json), rawSha256: sha(json), elapsedMs: report.elapsedMs, paritySteps, observedSubsteps, cases: cases.map(x => ({ speed: x.speed, variant: x.variant, events: x.events, legacyYawTurningPoints: x.legacyYawTurningPoints })) }, null, 2));
+-if (!report.valid) process.exitCode = 1;
++let encodedBytes: number | null = null;
++try {
++  const encoded = encodeReport(report);
++  const json = JSON.stringify(encoded);
++  encodedBytes = Buffer.byteLength(json);
++  if (encodedBytes > MAX_JSON_BYTES) throw new Error('Predeclared 64MiB compact output bound');
++  const decoded = decodeReport(JSON.parse(json));
++  if (!isDeepStrictEqual(decoded, report)) throw new Error('Actual output value roundtrip mismatch');
++  writeFileSync(out, gzipSync(json, { level: 9, mtime: 0 } as any));
++  console.log(JSON.stringify({ valid: report.valid, out, encodedBytes, rawSha256: sha(json), actualOutputValuesRoundtrip: true,
++    elapsedMs: report.elapsedMs, paritySteps, observedSubsteps,
++    cases: cases.map(x => ({ speed: x.speed, variant: x.variant, events: x.events, legacyYawTurningPoints: x.legacyYawTurningPoints })) }, null, 2));
++  if (!report.valid) process.exitCode = 1;
++} catch (error) {
++  // No widening/retry. A bounded, usable progress/event/verified-state summary
++  // survives even if the complete detailed trace cannot be serialized.
++  const summary = failureSummary(report, error, encodedBytes);
++  let json: string;
++  try {
++    json = JSON.stringify(encodeReport(summary));
++    if (Buffer.byteLength(json) > MAX_JSON_BYTES) throw new Error('Failure summary exceeds same declared bound');
++  } catch (summaryError) {
++    json = JSON.stringify({ edition: 'compress-ledger-emergency-summary', valid: false,
++      error: String(error), summaryError: String(summaryError), encodedBytes,
++      paritySteps, observedSubsteps, completedCases: cases.length,
++      startedUtc: report.startedUtc, finishedUtc: report.finishedUtc,
++      latestVerifiedStep: report.latestVerified && { speed: report.latestVerified.speed, variant: report.latestVerified.variant, step: report.latestVerified.step, phase: report.latestVerified.phase },
++      detailedTraceRetained: false });
++  }
++  const failureOut = out.replace('.json.gz', '.failure-summary.json.gz');
++  writeFileSync(failureOut, gzipSync(json, { level: 9, mtime: 0 } as any));
++  console.error(JSON.stringify({ valid: false, failureOut, error: String(error), encodedBytes, summaryBytes: Buffer.byteLength(json), paritySteps, observedSubsteps }));
++  process.exitCode = 1;
++}

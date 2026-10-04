@@ -1,0 +1,232 @@
+{
+  "edition": "compress-force-ledger-source-only",
+  "headAtPreparation": "bffba2e69c4a64e4489f02412dab79f5ea967447",
+  "sourceRoot": "/Users/regina/Desktop/Projects/surfing-game",
+  "riderSourcePath": "/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.ts",
+  "sourceEntryPoints": [
+    "src/physics/AttachedRider.ts",
+    "src/physics/BoardBody.ts",
+    "src/physics/PlaneWater.ts",
+    "src/physics/hullForces.ts"
+  ],
+  "nodeModulesLink": {
+    "path": "/private/tmp/compress-force-ledger-20261004/node_modules",
+    "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules",
+    "use": "read-only existing dependencies, no install or mutation"
+  },
+  "closureRule": "Conservative current single-line runtime imports/exports; whole import type/export type skipped; mixed named type imports retained; no dynamic import observed in this closure. Three runtime explicitly pinned.",
+  "originalSourceEdited": false,
+  "originalNumericalMethodsCopied": false,
+  "files": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/rider-legacy-diagnosis.md",
+      "role": "given-prior-diagnosis-not-rerun",
+      "bytes": 5048,
+      "sha256": "667e8464726321b1ceb3d5a62e7a07ad0430361a578c7fcb6448ebb20eb906b4"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/build/three.core.js",
+      "role": "actual-three-runtime-core",
+      "bytes": 1458113,
+      "sha256": "9edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/build/three.module.js",
+      "role": "actual-three-runtime-module",
+      "bytes": 662772,
+      "sha256": "9052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/package.json",
+      "role": "actual-three-package",
+      "bytes": 3672,
+      "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/package-lock.json",
+      "role": "root-dependency-lock",
+      "bytes": 42710,
+      "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/package.json",
+      "role": "root-package-authority",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.test.ts",
+      "role": "exact-current-fixture-definition",
+      "bytes": 90495,
+      "sha256": "cc7c428de475eeb5c6eef97ef7bf66de7a0bbdd25d96e503959b5c7642684717"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 134070,
+      "sha256": "9a4781251cb3def1f43d1f598e9cb8149ad09257233ca0fe6ee2790d6e189362"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardBody.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/DetachedSurfer.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 30945,
+      "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/MinimumJerkTrack.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 2659,
+      "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PhysicalSurfWater.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 23514,
+      "sha256": "6edc9f0eb3c857bfbb041c49cc4039af9f8897203772b20ffae3e1a0d223beea"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PlaneWater.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 2414,
+      "sha256": "116bd2e95cd9e91b35818c8cdf5dcfda65acad43a3648e997c5f133ab3fc9e75"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/SurfWater.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardReference.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardShape.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/finForces.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/hullForces.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/legSpring.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 5593,
+      "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/riderPosture.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 26862,
+      "sha256": "f3e3dc50315d2b9a68dde6d56d7da03cf95921d377b58dbc53130b2d8d6a7f0e"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 54858,
+      "sha256": "bda23f0eb188a9568cbe368b542cff2e073bd5e6e7d98bdda4f3d84b8f961f7b"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+      "role": "conservative-runtime-import-closure",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e"
+    },
+    {
+      "path": "/private/tmp/attached-midturn-isolation.ts",
+      "role": "historical-reference-only-not-imported",
+      "bytes": 4912,
+      "sha256": "af3d4f46c02cacfb62a40b0155d3f055c84feb9f4064c93a0bfb372e6d1944c4"
+    },
+    {
+      "path": "/private/tmp/attached-midturn-probe.ts",
+      "role": "historical-reference-only-not-imported",
+      "bytes": 4277,
+      "sha256": "9e4d37d62502fc12c7db8e0ed228b7f34283343112d4240ea30970b83f8e20ff"
+    }
+  ]
+}

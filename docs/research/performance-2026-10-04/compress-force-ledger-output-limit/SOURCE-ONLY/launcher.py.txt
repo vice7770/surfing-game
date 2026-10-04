@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""Prepared, unexecuted hard wall bound around the one reviewed Node diagnostic."""
+import datetime, json, pathlib, subprocess, sys
+here = pathlib.Path('/private/tmp/compress-force-ledger-compact-20261004')
+if sys.argv[1:] != ['--run=true']:
+    raise SystemExit('Explicit reviewed --run=true required; no automatic build or retry')
+for name in ['report.json.gz', 'report.failure-summary.json.gz', 'stdout.txt', 'stderr.txt', 'terminal.json']:
+    if (here / name).exists():
+        raise SystemExit(f'Refuse to overwrite {name}')
+utc = lambda: datetime.datetime.now(datetime.timezone.utc).isoformat()
+argv = ['node', str(here / 'driver.mjs'), '--run=true', f'--out={here}/report.json.gz']
+terminal = {'argv': argv, 'startedUtc': utc(), 'hardWallSeconds': 30, 'automaticRetry': False}
+with (here / 'stdout.txt').open('wb') as stdout, (here / 'stderr.txt').open('wb') as stderr:
+    process = subprocess.Popen(argv, cwd=here, stdout=stdout, stderr=stderr)
+    terminal['pid'] = process.pid
+    try:
+        terminal['exitCode'] = process.wait(timeout=30)
+    except subprocess.TimeoutExpired:
+        terminal['hardTimeout'] = True
+        process.kill()
+        terminal['exitCode'] = process.wait()
+terminal['finishedUtc'] = utc()
+(here / 'terminal.json').write_text(json.dumps(terminal, indent=2) + '\n')
+print(json.dumps(terminal))
+raise SystemExit(terminal['exitCode'] if not terminal.get('hardTimeout') else 124)

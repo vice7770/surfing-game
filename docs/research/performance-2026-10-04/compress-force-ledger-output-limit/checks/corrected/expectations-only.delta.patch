@@ -1,0 +1,15 @@
+--- first/observer.test.ts
++++ corrected/observer.test.ts
+@@ -32,9 +32,9 @@
+     base.x = 0; expect(stateToken([base])).not.toBe(original);
+     base.x = -0; base.bytes[0] = 0x7fc00003; expect(stateToken([base])).not.toBe(original);
+   });
+-  it('reports the historical deadband turning points without inventing endpoints', () => {
+-    expect(turningPoints([0, 1, 0.7, 0.2, 0.6])).toEqual({ points: [{ index: 1, value: 1 }, { index: 3, value: 0.2 }], largestSwing: 0.8 });
+-    expect(turningPoints([0, 0.1, 0.2, 0.4]).points).toEqual([]);
++  it('preserves the historical initial-low anchor when the first rise exceeds the deadband', () => {
++    expect(turningPoints([0, 1, 0.7, 0.2, 0.6])).toEqual({ points: [{ index: 0, value: 0 }, { index: 1, value: 1 }, { index: 3, value: 0.2 }], largestSwing: 1 });
++    expect(turningPoints([0, 0.1, 0.2, 0.4])).toEqual({ points: [{ index: 0, value: 0 }], largestSwing: 0 });
+   });
+   it('observes the real Compress order and full own-data parity without changing hull/contact/forces', () => {
+     const make = () => {

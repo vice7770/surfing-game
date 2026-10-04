@@ -1,0 +1,67 @@
+import { describe, expect, it } from 'vitest';
+import { Quaternion, Vector3 } from 'three';
+import { AttachedRider } from '/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.ts';
+import { BoardBody } from '/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardBody.ts';
+import { PlaneWater } from '/Users/regina/Desktop/Projects/surfing-game/src/physics/PlaneWater.ts';
+import { WATER } from '/Users/regina/Desktop/Projects/surfing-game/src/physics/hullForces.ts';
+import { installLedger, stateToken, turningPoints, wrapObserved } from './observer';
+
+describe('QA observer mechanics (unexecuted preparation)', () => {
+  it('calls the original exactly once with original this, args, return and descriptor restoration', () => {
+    const argument = { force: 12 }; const calls: any[] = [];
+    const prototype = { force(this: any, arg: any) { calls.push([this, arg]); return argument; } };
+    const receiver = Object.create(prototype);
+    const stages: string[] = [];
+    const restore = wrapObserved(receiver, 'force', () => stages.push('before'), (_token, result, arg) => {
+      expect(result).toBe(argument); expect(arg).toBe(argument); stages.push('after');
+    });
+    expect(receiver.force(argument)).toBe(argument);
+    expect(calls).toEqual([[receiver, argument]]); expect(stages).toEqual(['before', 'after']);
+    restore(); expect(Object.hasOwn(receiver, 'force')).toBe(false); expect(receiver.force).toBe(prototype.force);
+  });
+  it('propagates the identical original error and skips post-observation', () => {
+    const error = new Error('original failure'); let after = false;
+    const receiver = { force() { throw error; } };
+    const restore = wrapObserved(receiver, 'force', () => undefined, () => { after = true; });
+    try { receiver.force(); throw new Error('should throw'); } catch (actual) { expect(actual).toBe(error); }
+    expect(after).toBe(false); restore();
+  });
+  it('detects signed zero and exact typed-array payload changes, ignores function shadowing only', () => {
+    const base: any = { x: -0, bytes: new Uint32Array([0x7fc00002]), call() {} };
+    const original = stateToken([base]); base.call = () => 1; expect(stateToken([base])).toBe(original);
+    base.x = 0; expect(stateToken([base])).not.toBe(original);
+    base.x = -0; base.bytes[0] = 0x7fc00003; expect(stateToken([base])).not.toBe(original);
+  });
+  it('reports the historical deadband turning points without inventing endpoints', () => {
+    expect(turningPoints([0, 1, 0.7, 0.2, 0.6])).toEqual({ points: [{ index: 1, value: 1 }, { index: 3, value: 0.2 }], largestSwing: 0.8 });
+    expect(turningPoints([0, 0.1, 0.2, 0.4]).points).toEqual([]);
+  });
+  it('observes the real Compress order and full own-data parity without changing hull/contact/forces', () => {
+    const make = () => {
+      const board = new BoardBody(); board.place(new Vector3(0, board.shape.centerOfMass.y, 0), new Quaternion(), new Vector3(0, 0, 7));
+      const rider = new AttachedRider(board.shape, { phase: 'standing' }); board.attach(rider);
+      return { board, rider, water: new PlaneWater() };
+    };
+    const control = make(), observed = make();
+    for (let step = 0; step < 48; step++) {
+      if (step === 18) observed.rider.steer = control.rider.steer = 1;
+      observed.board.step(1 / 60, observed.water); control.board.step(1 / 60, control.water);
+    }
+    observed.rider.compress = control.rider.compress = 1;
+    const rows: any[] = [];
+    const restore = installLedger(observed.board, observed.rider, { footFriction: 0.9, maxLoad: 4, gravity: WATER.gravity }, row => rows.push(row));
+    try {
+      for (let step = 0; step < 2; step++) {
+        observed.board.step(1 / 60, observed.water); control.board.step(1 / 60, control.water);
+        expect(stateToken([observed.board, observed.rider, observed.water])).toBe(stateToken([control.board, control.rider, control.water]));
+      }
+      expect(rows.length).toBeGreaterThan(0);
+      for (const row of rows) {
+        expect(row.stages.map((stage: any) => stage.method)).toEqual(['compressAssist', 'prepareLeg', 'prepareBank']);
+        expect(row.standingSolve.returnedFeasible).toBeTypeOf('boolean');
+        for (const key of ['assist', 'carry', 'leanOut']) expect(Object.is(row.finish.riderWorkDelta[key], row.riderWorkDelta[key])).toBe(true);
+      }
+    } finally { restore(); }
+    expect(Object.hasOwn(observed.board, 'substep')).toBe(false);
+  });
+});

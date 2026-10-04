@@ -1,0 +1,30 @@
+{
+  "edition": "compress-output-limit-archive-root-review-ready",
+  "uniquePayloadFiles": 40,
+  "byteIdenticalAliases": 6,
+  "payloadStoredBytes": 143486,
+  "payloadExpandedBytes": 143486,
+  "readmeLocalLinksResolved": 28,
+  "archivedTestsAreTextOnly": true,
+  "primaryNumericalReportAbsent": true,
+  "compactProposalUnexecuted": true,
+  "compiledBundleHashReferenceOnly": true,
+  "physicsOrTestsRerunByArchive": false,
+  "controlRecords": [
+    {
+      "path": "README.md",
+      "bytes": 4875,
+      "sha256": "1316b2474064ef3c2b85cfa36d85dbb3b3d595e655426a28034e684909dd11b8"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 37957,
+      "sha256": "79cdef03ece3e2ae90aef49a0bccb14c708b8732059c79c9aacb4816d63dffcf"
+    },
+    {
+      "path": "SHA256SUMS",
+      "bytes": 3911,
+      "sha256": "2cd74487bc03c15ffb1c9fa395426807599e104993d58afb1f20947a9c787887"
+    }
+  ]
+}

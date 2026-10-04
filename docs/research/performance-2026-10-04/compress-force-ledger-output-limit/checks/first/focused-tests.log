@@ -1,0 +1,49 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (../../../../../private/tmp/compress-force-ledger-20261004/vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+ ❯ ../../../../../private/tmp/compress-force-ledger-20261004/observer.test.ts (5 tests | 1 failed) 207ms
+   ❯ QA observer mechanics (unexecuted preparation) (5)
+     × reports the historical deadband turning points without inventing endpoints 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  ../../../../../private/tmp/compress-force-ledger-20261004/observer.test.ts > QA observer mechanics (unexecuted preparation) > reports the historical deadband turning points without inventing endpoints
+AssertionError: expected { points: [ …(3) ], largestSwing: 1 } to deeply equal { points: [ …(2) ], largestSwing: 0.8 }
+
+- Expected
++ Received
+
+@@ -1,8 +1,12 @@
+  {
+-   "largestSwing": 0.8,
++   "largestSwing": 1,
+    "points": [
++     {
++       "index": 0,
++       "value": 0,
++     },
+      {
+        "index": 1,
+        "value": 1,
+      },
+      {
+
+ ❯ ../../../../../private/tmp/compress-force-ledger-20261004/observer.test.ts:36:50
+     34|   });
+     35|   it('reports the historical deadband turning points without inventing…
+     36|     expect(turningPoints([0, 1, 0.7, 0.2, 0.6])).toEqual({ points: [{ …
+       |                                                  ^
+     37|     expect(turningPoints([0, 0.1, 0.2, 0.4]).points).toEqual([]);
+     38|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  02:24:27
+   Duration  534ms (tests 46%, transform 42%, import 12%, worker 1%)
+

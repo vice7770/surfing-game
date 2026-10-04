@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/rolldown",
+    "/private/tmp/compress-force-ledger-20261004/driver.ts",
+    "-o",
+    "/private/tmp/compress-force-ledger-20261004/driver.mjs",
+    "--format=esm",
+    "--platform=node"
+  ],
+  "startedUtc": "2026-10-04T01:25:43.952684+00:00",
+  "phase": "one-conditional-node-esm-bundle",
+  "automaticRetry": false,
+  "pid": 39698,
+  "exitCode": 0,
+  "finishedUtc": "2026-10-04T01:25:44.070829+00:00"
+}

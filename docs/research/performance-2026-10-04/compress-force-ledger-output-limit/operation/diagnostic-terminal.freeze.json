@@ -1,0 +1,37 @@
+{
+  "edition": "one-compress-ledger-terminal-output-bound-failure",
+  "frozenUtc": "2026-10-04T01:27:16.179611+00:00",
+  "compiledAndSourceAuthorityUnchanged": true,
+  "nodeExitCode": 1,
+  "rawPrimaryReportRetained": false,
+  "failure": "driver refused JSON larger than64MiB before gzip writing",
+  "noAutomaticRepairRetryOrExtension": true,
+  "noPhysicsFindingsClaimedFromUnretainedReport": true,
+  "records": [
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/compiled-ready.json",
+      "bytes": 4058,
+      "sha256": "a5748fb19fafa7fa3c1785c62147c73f38988f150f410f704c9faf3af9105339"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/report.oversize-summary.json",
+      "bytes": 88,
+      "sha256": "0a702b848bff3dccd8044a14f767b32a94f33a46e0055a95e193c25bcd9620fd"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/stderr.txt",
+      "bytes": 502,
+      "sha256": "cac74a40c8d0f9976adc94b7827171071b9461205c7279fbb95fca0f4634c1c4"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/terminal.json",
+      "bytes": 373,
+      "sha256": "f6d38c88e1a64abaa67a7c8d0bfb582c44e95f35ae91d8bb21c043280d5eb012"
+    }
+  ]
+}

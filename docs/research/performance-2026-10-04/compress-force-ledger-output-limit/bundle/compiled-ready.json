@@ -1,0 +1,107 @@
+{
+  "edition": "corrected-five-pass-one-node-bundle-ready",
+  "frozenUtc": "2026-10-04T01:26:00.879786+00:00",
+  "focusedTestPassed": 5,
+  "focusedTestFailed": 0,
+  "bundleExitCode": 0,
+  "originalObserverAndDriverUnchanged": true,
+  "onlyTestExpectationTitleCorrection": true,
+  "allCorrectedPreparedFilesUnchanged": true,
+  "all35AuthorityFilesUnchanged": true,
+  "standaloneEightCaseDiagnosticRuns": 0,
+  "rootCompiledReviewRequiredBeforeDiagnostic": true,
+  "preparedFiles": [
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/observer.ts",
+      "bytes": 11769,
+      "sha256": "aaa021c7d6c2521bf0a67579440426ecfb73b458280b85787030ff9e4d6d3363"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/driver.ts",
+      "bytes": 11899,
+      "sha256": "5609a6a3294c138bc22a94bd98cb1c4ca1a1c45dee9a708b3a03d713e0e7c080"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/observer.test.ts",
+      "bytes": 4515,
+      "sha256": "491b201c9d66699ed4f66f89f322d1c7d940eaa52483fac25a2fc7b4cadc5c55"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/vitest.config.ts",
+      "bytes": 179,
+      "sha256": "a84163580aab8852578b4ddce805cbe239c25ce8436151787025a7f21b5235c9"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/launcher.py",
+      "bytes": 1399,
+      "sha256": "ec88d2cef0fcdc33326379b1e9a32698ec752a9bb43843914b0396a96f2ab7d9"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/plan.md",
+      "bytes": 10082,
+      "sha256": "08ba15d508db30b1d836a83c9df9adbe300f6d0ba6f1a10aedd9de4ef594a7ee"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/prepare.py",
+      "bytes": 4523,
+      "sha256": "eaaba707b08cb0258f6a15663c6a42df5f640ec65906b0a2ec30e32dd1edbe80"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/authority.json",
+      "bytes": 9992,
+      "sha256": "10d68c5371dfcc09a03db879ca72325fc35e671853e6a4793f7d98a064a56008"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/README.md",
+      "bytes": 1222,
+      "sha256": "28140d88706863e2137fa250861fdb2ec7dd20f758fceb14a4bcc5fe8a710581"
+    }
+  ],
+  "compiledAndVerificationRecords": [
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/ready-corrected.json",
+      "bytes": 2734,
+      "sha256": "1273252f121d40b309c1194a3d5a2d687727c7b69f0e6d6909f0427f65584b0c"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/expectations-only.delta.patch",
+      "bytes": 1063,
+      "sha256": "55df8fb1a6b926b7db6989629a3b6d6e753dda88b0630804981e57268bb91782"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/focused-tests-corrected.log",
+      "bytes": 637,
+      "sha256": "425ce8c58e3d2244efc808062a11a16521d79026cee9b40870961a489c2d59a8"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/focused-tests-corrected-process.json",
+      "bytes": 356,
+      "sha256": "cc133f5a1da34e43f81611fdc0c448c5072730281123c33a7d5425441005cd17"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/focused-tests-corrected-terminal.json",
+      "bytes": 426,
+      "sha256": "142a8c753a09abc6a4d524b130bf0e0b70b8d9a524091b0087273867c0a5ddfd"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/bundle.log",
+      "bytes": 87,
+      "sha256": "a4e8089aaf1f4b33641ea9e035460751715e9f9cd40e146eb9316ef2ce1d92ab"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/bundle-process.json",
+      "bytes": 414,
+      "sha256": "59a36dc88bb06861de46045343159ffa3f42e14da951fdbea1e2190d15db7f62"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/bundle-terminal.json",
+      "bytes": 484,
+      "sha256": "05ba2550ddd4123e35f7f3bd93f71ff9462b5aad7cda2c0b2ee564909614dac1"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/driver.mjs",
+      "bytes": 529407,
+      "sha256": "7b913fdc574d09182ae8ec54894f294e52512773946487a380de8ba8ec622caa"
+    }
+  ]
+}

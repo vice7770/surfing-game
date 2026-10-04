@@ -1,0 +1,129 @@
+"""Docs-only byte copying/hash manifest; no imported diagnostic or numerical code."""
+from pathlib import Path
+import hashlib, json, re, shutil
+
+root = Path('/Users/regina/Desktop/Projects/surfing-game')
+first = Path('/private/tmp/compress-force-ledger-20261004')
+compact = Path('/private/tmp/compress-force-ledger-compact-20261004')
+dest = root / 'docs/research/performance-2026-10-04/compress-force-ledger-output-limit'
+assert not dest.exists(), 'Refuse to overwrite an existing archive'
+dest.mkdir(parents=True)
+hash_bytes = lambda b: hashlib.sha256(b).hexdigest()
+mapping = [
+    (first/'observer.ts', 'source/observer.ts.txt'),
+    (first/'driver.ts', 'source/driver.ts.txt'),
+    (first/'launcher.py', 'source/launcher.py.txt'),
+    (first/'vitest.config.ts', 'source/vitest.config.ts.txt'),
+    (first/'plan.md', 'source/plan.md'),
+    (first/'prepare.py', 'source/prepare.py.txt'),
+    (first/'README.md', 'source/README-history.md'),
+    (first/'authority.json', 'authority/source-authority.json'),
+    (first/'ready.json', 'checks/first/ready.json'),
+    (first/'pre-correction/observer.test.ts.txt', 'checks/first/observer.test.ts.txt'),
+    (first/'focused-tests.log', 'checks/first/focused-tests.log'),
+    (first/'focused-tests-process.json', 'checks/first/process.json'),
+    (first/'focused-tests-terminal.json', 'checks/first/terminal.json'),
+    (first/'first-verification.freeze.json', 'checks/first/verification.freeze.json'),
+    (first/'observer.test.ts', 'checks/corrected/observer.test.ts.txt'),
+    (first/'expectations-only.delta.patch', 'checks/corrected/expectations-only.delta.patch'),
+    (first/'ready-corrected.json', 'checks/corrected/ready.json'),
+    (first/'focused-tests-corrected.log', 'checks/corrected/focused-tests.log'),
+    (first/'focused-tests-corrected-process.json', 'checks/corrected/process.json'),
+    (first/'focused-tests-corrected-terminal.json', 'checks/corrected/terminal.json'),
+    (first/'bundle.log', 'bundle/bundle.log'),
+    (first/'bundle-process.json', 'bundle/process.json'),
+    (first/'bundle-terminal.json', 'bundle/terminal.json'),
+    (first/'compiled-ready.json', 'bundle/compiled-ready.json'),
+    (first/'stdout.txt', 'operation/stdout.txt'),
+    (first/'stderr.txt', 'operation/stderr.txt'),
+    (first/'terminal.json', 'operation/terminal.json'),
+    (first/'report.oversize-summary.json', 'operation/report.oversize-summary.json'),
+    (first/'diagnostic-terminal.freeze.json', 'operation/diagnostic-terminal.freeze.json'),
+    (first/'interpretation.md', 'operation/interpretation.md'),
+    (compact/'schema.ts', 'SOURCE-ONLY/schema.ts.txt'),
+    (compact/'schema.test.ts', 'SOURCE-ONLY/schema.test.ts.txt'),
+    (compact/'driver.ts', 'SOURCE-ONLY/driver.ts.txt'),
+    (compact/'driver.output-only.patch', 'SOURCE-ONLY/driver.output-only.patch'),
+    (compact/'launcher.py', 'SOURCE-ONLY/launcher.py.txt'),
+    (compact/'vitest.config.ts', 'SOURCE-ONLY/vitest.config.ts.txt'),
+    (compact/'plan.md', 'SOURCE-ONLY/plan.md'),
+    (compact/'ready.json', 'SOURCE-ONLY/ready.json'),
+    (compact/'authority.json', 'SOURCE-ONLY/authority.json'),
+    (Path(__file__), 'archive.py.txt'),
+]
+for name in ['ready.json', 'focused-tests.log', 'focused-tests-process.json', 'focused-tests-terminal.json', 'first-verification.freeze.json']:
+    mapping.append((first/'pre-correction'/name, 'aliases/pre-correction/'+name))
+
+records, aliases, stored = [], [], {}
+for original, logical in mapping:
+    data = original.read_bytes(); key = (len(data), hash_bytes(data))
+    if key in stored:
+        actual = stored[key]
+        assert (dest/actual).read_bytes() == data
+        aliases.append({'originalPath':str(original), 'requestedArchivePath':logical, 'storedPath':actual,
+            'bytes':len(data), 'originalSha256':key[1], 'byteIdenticalAlias':True})
+        continue
+    actual = logical; target = dest/actual; target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(original, target); assert target.read_bytes() == data
+    stored[key] = actual
+    records.append({'originalPath':str(original), 'storedPath':actual, 'encoding':'identity',
+        'originalBytes':len(data), 'storedBytes':len(data), 'expandedBytes':len(data),
+        'originalSha256':key[1], 'storedSha256':key[1], 'expandedSha256':key[1]})
+
+authority = json.loads((first/'authority.json').read_text())
+bundle = next(x for x in json.loads((first/'compiled-ready.json').read_text())['compiledAndVerificationRecords'] if Path(x['path']).name=='driver.mjs')
+manifest = {
+    'edition':'compress-force-ledger-first-operation-output-limit',
+    'archivalScope':'Exact retained first operation/check history plus a separately labelled unexecuted compact output proposal; no numerical code executed by archive.',
+    'records':records, 'aliases':aliases,
+    'externalByteReferences':[{'authorityFile':'authority/source-authority.json', **x, 'archivedBytes':False} for x in authority['files']],
+    'compiledBundleHashReference':{**bundle, 'archivedBytes':False, 'authorityFile':'bundle/compiled-ready.json', 'reason':'Root requested hash-reference only; original compiled source remains TMP.'},
+    'unretainedPrimaryReport':{'originalPath':str(first/'report.json.gz'), 'retained':False, 'reason':'The94,521,423-byteJSON exceeded64MiBbefore primary gzip writing; Node then exited. No recoverable primary report is claimed.'},
+    'excluded':['node_modules pointer/installed dependency bytes','full repository/source tree','all35external authority source/reference/dependency bytes','compiled529407-bytebundle','unretained in-memory numerical trace'],
+    'totals':{'uniquePayloadFiles':len(records),'byteIdenticalAliases':len(aliases),'storedPayloadBytes':sum(x['storedBytes'] for x in records),'expandedPayloadBytes':sum(x['expandedBytes'] for x in records),'originalMappedBytes':sum(x['originalBytes'] for x in records)+sum(x['bytes'] for x in aliases)},
+    'generatedControls':['README.md','manifest.json','SHA256SUMS','root-review-ready.json'],
+}
+(dest/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+readme = '''# Compress force ledger: output-limit failure
+
+The one diagnostic operation failed recording: its JSON was **94,521,423bytes**, exceeding the declared64MiB(67,108,864bytes) limit. The detailed in-memory report was discarded before primary gzip writing. No all-eight completion/parity, force chronology, physical cause, or adoption claim is supported by the retained output. Production was unchanged and there was no automatic retry or limit extension. [Exact interpretation](operation/interpretation.md) and [failure summary](operation/report.oversize-summary.json) state the scope.
+
+The prepared fixture used the original flat-water hull/rider/contact APIs:18steps settle,30steps full steer,60steps held or Compress, at1/60sfor7/8/10/11m/s. Its original observers called/returned original methods and compared own data/typed bytes against separate unwrapped controls. The intended8case result is unretained; these source rules do not prove it completed. [Original plan](source/plan.md), [observer](source/observer.ts.txt) and [driver](source/driver.ts.txt) preserve the intended method/order, limits and energy-accounting cautions.
+
+The first [five-test log](checks/first/focused-tests.log) had4passes/1failure because the synthetic expected yaw turning-point list omitted the historical initial-low anchor. Root authorized only two expectations/title corrections. The [exact correction](checks/corrected/expectations-only.delta.patch) left the observer/driver and historical algorithm unchanged; the [corrected log](checks/corrected/focused-tests.log) reports5/5passes in517ms. The actual real-state test covered7m/swith the exact48stepentry and2Compress steps, not all eight trajectories. Original [first test bytes](checks/first/observer.test.ts.txt), [corrected test bytes](checks/corrected/observer.test.ts.txt), [first readiness](checks/first/ready.json) and [corrected readiness](checks/corrected/ready.json) remain exact. Source preparation documents retain their historical unexecuted labels; current execution status is stated here.
+
+The conditional Node ESM bundle built successfully; [bundle log](bundle/bundle.log), [terminal](bundle/terminal.json) and [compiled authority](bundle/compiled-ready.json) retain identity. The529,407-bytecompiled bundle remains at its originalTMPpath and is deliberately a hash-reference only: `7b913fdc574d09182ae8ec54894f294e52512773946487a380de8ba8ec622caa`. The [35external authority records](authority/source-authority.json) pin exact source/reference/dependency hashes and original paths without duplicating those bytes. They include tracked sources, installed Three bytes and historicalTMPreference probes; this is not a claim all35are tracked files.
+
+Actual NodePID40047 started2026-10-04T01:26:49.158579Zand exited1at01:26:54.783344Zwithout the30shard timeout. [Launcher terminal](operation/terminal.json), [stderr](operation/stderr.txt), [stdout](operation/stdout.txt) and [own freeze](operation/diagnostic-terminal.freeze.json) are preserved. The88bytefailure summary reports4911.293msbefore final encoding; this observer duration is not performance/FPS evidence. The driver could pass either successful or caught-partial state through the size guard, so the retained summary cannot resolve completed cases or prior parity assertions.
+
+`SOURCE-ONLY/` separately preserves the new compact recording [plan](SOURCE-ONLY/plan.md), [schema](SOURCE-ONLY/schema.ts.txt), [driver](SOURCE-ONLY/driver.ts.txt), [output-onlydiff](SOURCE-ONLY/driver.output-only.patch), [four synthetic written tests](SOURCE-ONLY/schema.test.ts.txt) and [readiness](SOURCE-ONLY/ready.json). This proposal is **unexecuted**: no syntax/tests/typecheck/bundle/numerical run and no estimate that the actual lost report will fit. It reuses the frozen observer/35authority; a header field map and tuple rows preserve values rather than decimating physics observations. Proposed failure summaries would retain partial verified state/events within the same bound. It never overwrites or rehabilitates the first failed operation.
+
+All copied evidence retains exact bytes and assertions; archived test sources end`.test.ts.txt`so root Vitest discovery cannot execute them. [Manifest](manifest.json) records original/stored/expanded SHA256and bytes, exact aliases, external references and omissions. [SHA256SUMS](SHA256SUMS) covers all stored evidence/README/manifest, excluding itself and the final root-review-ready record. This is archival filesystem verification only; no physics, tests, bundle, benchmark, browser or GPU rerun occurred.
+
+To inspect existing evidence without executing the harness, read the stored JSON/logs and verify copied files against the manifest/checksums. OriginalTMPpaths are retained for provenance, not a guarantee those transient files survive indefinitely. No repository index or production source was edited by this archive.
+'''
+(dest/'README.md').write_text(readme)
+
+for record in records:
+    data=(dest/record['storedPath']).read_bytes()
+    assert len(data)==record['storedBytes'] and hash_bytes(data)==record['storedSha256']
+for alias in aliases:
+    data=(dest/alias['storedPath']).read_bytes()
+    assert len(data)==alias['bytes'] and hash_bytes(data)==alias['originalSha256']
+links=re.findall(r'\]\(([^)]+)\)',readme)
+for link in links:
+    assert (dest/link).is_file(), link
+assert not any(p.name.endswith(('.test.ts','.test.mjs','.test.js')) for p in dest.rglob('*'))
+sum_paths=sorted(p for p in dest.rglob('*') if p.is_file())
+(dest/'SHA256SUMS').write_text(''.join(f'{hash_bytes(p.read_bytes())}  {p.relative_to(dest)}\n' for p in sum_paths))
+ready={'edition':'compress-output-limit-archive-root-review-ready','uniquePayloadFiles':len(records),'byteIdenticalAliases':len(aliases),
+    'payloadStoredBytes':manifest['totals']['storedPayloadBytes'],'payloadExpandedBytes':manifest['totals']['expandedPayloadBytes'],
+    'readmeLocalLinksResolved':len(links),'archivedTestsAreTextOnly':True,'primaryNumericalReportAbsent':True,
+    'compactProposalUnexecuted':True,'compiledBundleHashReferenceOnly':True,'physicsOrTestsRerunByArchive':False,
+    'controlRecords':[{'path':name,'bytes':len((dest/name).read_bytes()),'sha256':hash_bytes((dest/name).read_bytes())} for name in ['README.md','manifest.json','SHA256SUMS']]}
+(dest/'root-review-ready.json').write_text(json.dumps(ready,indent=2)+'\n')
+all_files=[p for p in dest.rglob('*') if p.is_file()]
+print(json.dumps({'archivePath':str(dest),'files':len(all_files),'storedBytes':sum(p.stat().st_size for p in all_files),
+    'payloadFiles':len(records),'aliases':len(aliases),'localLinks':len(links),
+    'manifestSha256':hash_bytes((dest/'manifest.json').read_bytes()),'sumsSha256':hash_bytes((dest/'SHA256SUMS').read_bytes()),
+    'readySha256':hash_bytes((dest/'root-review-ready.json').read_bytes())},indent=2))

@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "node",
+    "/private/tmp/compress-force-ledger-20261004/driver.mjs",
+    "--run=true",
+    "--out=/private/tmp/compress-force-ledger-20261004/report.json.gz"
+  ],
+  "startedUtc": "2026-10-04T01:26:49.158579+00:00",
+  "hardWallSeconds": 30,
+  "automaticRetry": false,
+  "pid": 40047,
+  "exitCode": 1,
+  "finishedUtc": "2026-10-04T01:26:54.783344+00:00"
+}

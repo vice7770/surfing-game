@@ -1,0 +1,71 @@
+{
+  "edition": "expectations-only-corrected-compress-force-ledger",
+  "rootReviewRequiredBeforeExecution": true,
+  "syntaxChecked": false,
+  "testsRun": 0,
+  "typecheckRun": false,
+  "bundleBuilt": false,
+  "numericalRuns": 0,
+  "browserRuns": 0,
+  "gpuRuns": 0,
+  "productionEdits": [],
+  "gitMutations": [],
+  "sourceAuthorityFileCount": 35,
+  "sourceAuthorityBytes": 2763814,
+  "preparedFiles": [
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/observer.ts",
+      "bytes": 11769,
+      "sha256": "aaa021c7d6c2521bf0a67579440426ecfb73b458280b85787030ff9e4d6d3363"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/driver.ts",
+      "bytes": 11899,
+      "sha256": "5609a6a3294c138bc22a94bd98cb1c4ca1a1c45dee9a708b3a03d713e0e7c080"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/observer.test.ts",
+      "bytes": 4515,
+      "sha256": "491b201c9d66699ed4f66f89f322d1c7d940eaa52483fac25a2fc7b4cadc5c55"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/vitest.config.ts",
+      "bytes": 179,
+      "sha256": "a84163580aab8852578b4ddce805cbe239c25ce8436151787025a7f21b5235c9"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/launcher.py",
+      "bytes": 1399,
+      "sha256": "ec88d2cef0fcdc33326379b1e9a32698ec752a9bb43843914b0396a96f2ab7d9"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/plan.md",
+      "bytes": 10082,
+      "sha256": "08ba15d508db30b1d836a83c9df9adbe300f6d0ba6f1a10aedd9de4ef594a7ee"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/prepare.py",
+      "bytes": 4523,
+      "sha256": "eaaba707b08cb0258f6a15663c6a42df5f640ec65906b0a2ec30e32dd1edbe80"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/authority.json",
+      "bytes": 9992,
+      "sha256": "10d68c5371dfcc09a03db879ca72325fc35e671853e6a4793f7d98a064a56008"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/README.md",
+      "bytes": 1222,
+      "sha256": "28140d88706863e2137fa250861fdb2ec7dd20f758fceb14a4bcc5fe8a710581"
+    }
+  ],
+  "futureOperation": "one 8-case exact held/Compress trajectory observation with unwrapped controls; 20scooperative/30shard wall, 60,000substeps/512rich rows per case/64MiB output; no retuning or automatic retry",
+  "firstFocusedTest": {
+    "exitCode": 1,
+    "passed": 4,
+    "failed": 1,
+    "cause": "synthetic expected initial-low anchor omitted; original algorithm unchanged",
+    "preservedDirectory": "/private/tmp/compress-force-ledger-20261004/pre-correction"
+  },
+  "correction": "Only two synthetic expected arrays/largestSwing and test title; original driver/observer and all other tests unchanged"
+}

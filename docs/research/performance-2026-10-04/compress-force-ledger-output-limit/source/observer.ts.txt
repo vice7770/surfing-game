@@ -1,0 +1,159 @@
+import { Quaternion, Vector3 } from 'three';
+
+// QA-only instance observers. No original numerical expression is replaced.
+type Body = any;
+type Row = Record<string, any>;
+const vector = (v: any) => [v.x, v.y, v.z];
+const copyWork = (x: any) => ({ ...x.work });
+const delta = (after: any, before: any) => Object.fromEntries(Object.keys(after).map(k => [k, after[k] - before[k]]));
+const dot = (a: number[], b: number[]) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+export const WRAPPED = ['substep', 'prepare', 'compressAssist', 'prepareLeg', 'prepareBank', 'coupleStanding', 'settleStanding', 'project', 'finish'] as const;
+
+export function wrapObserved(target: Body, key: string, before: (...args: any[]) => any, after: (token: any, result: any, ...args: any[]) => void): () => void {
+  const own = Object.getOwnPropertyDescriptor(target, key);
+  const original = target[key];
+  if (typeof original !== 'function') throw new Error(`Missing original method ${key}`);
+  Object.defineProperty(target, key, { configurable: true, writable: true, value: function(this: any, ...args: any[]) {
+    const token = before(...args);
+    const result = Reflect.apply(original, this, args);
+    after(token, result, ...args);
+    return result;
+  } });
+  return () => { if (own) Object.defineProperty(target, key, own); else delete target[key]; };
+}
+
+// Complete own-data state (including typed-array bytes and private scratch) for
+// outer-step observer/control parity. Functions are excluded on BOTH sides;
+// no getter, engine sample, transform, or original scratch helper is called.
+export function stateToken(roots: any[]): string {
+  const seen = new Map<object, number>();
+  const numberBytes = new ArrayBuffer(8);
+  const numberView = new DataView(numberBytes);
+  const encode = (value: any): any => {
+    if (typeof value === 'number') { numberView.setFloat64(0, value, true); return ['f64', Buffer.from(numberBytes).toString('hex')]; }
+    if (typeof value === 'undefined') return ['undefined'];
+    if (typeof value === 'function') return ['function'];
+    if (value === null || typeof value !== 'object') return value;
+    const existing = seen.get(value); if (existing !== undefined) return ['ref', existing];
+    seen.set(value, seen.size);
+    if (ArrayBuffer.isView(value)) return [value.constructor.name, Buffer.from(value.buffer, value.byteOffset, value.byteLength).toString('base64')];
+    if (value instanceof ArrayBuffer) return ['ArrayBuffer', Buffer.from(value).toString('base64')];
+    if (value instanceof Map) return ['Map', Array.from(value.entries(), ([k, v]) => [encode(k), encode(v)])];
+    if (value instanceof Set) return ['Set', Array.from(value, encode)];
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    return [value.constructor?.name ?? 'object', Object.keys(descriptors).sort().flatMap(key => {
+      const d = descriptors[key]; if (!('value' in d) || typeof d.value === 'function') return [];
+      return [[key, encode(d.value)]];
+    })];
+  };
+  return JSON.stringify(roots.map(encode));
+}
+
+export function posture(board: Body, rider: Body): Row {
+  const side = new Vector3(1, 0, 0).applyQuaternion(rider.heading);
+  const boardUp = new Vector3(0, 1, 0).applyQuaternion(board.orientation);
+  const local = new Vector3().copy(rider.position).sub(board.position).applyQuaternion(new Quaternion().copy(board.orientation).invert()).add(new Vector3(board.shape.centerOfMass.x, board.shape.centerOfMass.y, board.shape.centerOfMass.z));
+  return {
+    attached: rider.attached, inContact: rider.inContact, separation: rider.separation ?? null,
+    phase: rider.phase, upright: rider.upright, banking: rider.banking, planing: rider.planing,
+    speed: board.velocity.length(), velocity: vector(board.velocity), spin: vector(board.angularVelocity),
+    bodyBank: rider.bank.angle, bankRate: rider.bank.rate, referenceBank: rider.bankReference,
+    boardRoll: Math.atan2(boardUp.dot(side), boardUp.y), leg: { ...rider.leg },
+    achievedRestDepth: -rider.leg.rest, achievedExtensionDepth: -rider.leg.extension,
+    restRate: rider.restRate, legLoad: rider.legLoad, legStiffness: rider.legStiffness, legDamping: rider.legDamping,
+    ankleRest: rider.ankleRest, ankleTorque: rider.ankleTorque, swingTorque: rider.swingTorque,
+    swing: { ...rider.swing }, twist: { ...rider.twist }, twistTorque: rider.twistTorque,
+    handYaw: rider.handYaw, handSide: rider.handSide, handLoad: Array.from(rider.handLoad),
+    cop: vector(rider.contact.centreOfPressure), desiredCop: { x: rider.desiredCop.x, z: rider.desiredCop.z }, support: { ...rider.support },
+    localBody: vector(local), contactFeasible: rider.contact.feasible, solveFeasible: rider.feasible,
+    limit: rider.limit, rawMargin: rider.rawMargin, balanceMargin: rider.balanceMargin,
+    limitTime: { ...rider.limitTime }, postureError: rider.postureError, sway: { x: rider.sway.x, z: rider.sway.z }, flightTime: rider.flightTime,
+    boardPosition: vector(board.position), riderPosition: vector(rider.position), riderVelocity: vector(rider.velocity),
+    boardKinetic: board.kineticEnergy(), riderReportedKinetic: rider.kineticEnergy(),
+    boardWork: copyWork(board), riderWork: copyWork(rider),
+  };
+}
+
+function stagePosture(board: Body, rider: Body): Row {
+  return { bodyBank: rider.bank.angle, referenceBank: rider.bankReference, bankRate: rider.bank.rate,
+    leg: { ...rider.leg }, restRate: rider.restRate, legLoad: rider.legLoad,
+    ankleRest: rider.ankleRest, ankleTorque: rider.ankleTorque, swingTorque: rider.swingTorque, swing: { ...rider.swing },
+    velocity: vector(board.velocity), riderVelocity: vector(rider.velocity), speed: board.velocity.length(),
+    planing: rider.planing, banking: rider.banking, attached: rider.attached,
+    cop: vector(rider.contact.centreOfPressure), support: { ...rider.support }, limit: rider.limit,
+    rawMargin: rider.rawMargin, postureError: rider.postureError };
+}
+
+export function installLedger(board: Body, rider: Body, constants: { footFriction: number; maxLoad: number; gravity: number }, each: (row: Row) => void): () => void {
+  const restore: (() => void)[] = [];
+  let current: Row | null = null;
+  let ordinal = 0;
+  const must = () => { if (!current) throw new Error('Observer stage outside hull substep'); return current; };
+  restore.push(wrapObserved(board, 'substep', h => {
+    if (current) throw new Error('Nested original hull substep');
+    current = { ordinal: ordinal++, dt: h, before: posture(board, rider), stages: [], projections: [] };
+    return current;
+  }, (row: Row) => {
+    row.after = posture(board, rider);
+    row.boardWorkDelta = delta(board.work, row.before.boardWork);
+    row.riderWorkDelta = delta(rider.work, row.before.riderWork);
+    row.kineticDelta = row.after.boardKinetic + row.after.riderReportedKinetic - row.before.boardKinetic - row.before.riderReportedKinetic;
+    row.bookedWork = Object.values(row.boardWorkDelta).reduce((s: number, v: any) => s + v, 0) + Object.values(row.riderWorkDelta).reduce((s: number, v: any) => s + v, 0);
+    row.reportedKineticMinusBookedWork = row.kineticDelta - row.bookedWork;
+    each(row); current = null;
+  }));
+  restore.push(wrapObserved(rider, 'prepare', () => {
+    // Actual original hull RHS before rider joins: F/T impulses plus added
+    // mass/entry/radiation terms and gyro, rather than an invented force split.
+    const row = must(); row.hullRhsBeforeRider = Array.from(board.rhs);
+    row.hullSystemBeforeRider = Array.from(board.system);
+    return null;
+  }, () => {
+    const row = must(); row.external = { gravity: vector(rider.gravity), water: vector(rider.waterForce), assist: vector(rider.assistForce), carry: vector(rider.carryForce), leanOut: vector(rider.leanOutForce), total: vector(rider.external) };
+    row.afterPrepare = stagePosture(board, rider);
+  }));
+  for (const key of ['compressAssist', 'prepareLeg', 'prepareBank']) restore.push(wrapObserved(rider, key, () => stagePosture(board, rider), before => {
+    const row = must(); const stage: Row = { method: key, before, after: stagePosture(board, rider) };
+    if (key === 'compressAssist') {
+      stage.forces = { pull: vector(rider.assistForce), carry: vector(rider.carryForce), leanOut: vector(rider.leanOutForce) };
+      stage.instantaneousBodyPower = Object.fromEntries(Object.entries(stage.forces).map(([k, v]) => [k, dot(v as number[], before.riderVelocity)]));
+      stage.instantaneousBoardPathPower = Object.fromEntries(Object.entries(stage.forces).map(([k, v]) => [k, dot(v as number[], before.velocity)]));
+      // These are observation powers at force formation. Signed original work
+      // is the actual finish() ledger delta recorded below, using mean v.
+    }
+    row.stages.push(stage);
+  }));
+  restore.push(wrapObserved(rider, 'coupleStanding', (system, rhs) => ({ rhs: Array.from(rhs), system: Array.from(system) }), (before, _result, system, rhs) => {
+    must().coupling = { before, after: { rhs: Array.from(rhs), system: Array.from(system) } };
+  }));
+  restore.push(wrapObserved(rider, 'settleStanding', solution => ({ solution: Array.from(solution) }), (token, result) => {
+    must().standingSolve = { ...token, returnedFeasible: result, requestedImpulse: vector(rider.impulse), projectedImpulse: vector(rider.projected), bankSpeedAfter: rider.bankSpeedAfter, legRateAfter: rider.legRateAfter };
+  }));
+  restore.push(wrapObserved(rider, 'project', (impulse, h) => {
+    const localImpulse = new Vector3().copy(impulse).applyQuaternion(new Quaternion().copy(board.orientation).invert());
+    return { dt: h, requestedWorld: vector(impulse), requestedDeck: vector(localImpulse), before: stagePosture(board, rider) };
+  }, (token, result) => {
+    const localImpulse = new Vector3().copy(result).applyQuaternion(new Quaternion().copy(board.orientation).invert());
+    const normalCap = constants.maxLoad * rider.mass * constants.gravity * token.dt;
+    must().projections.push({ ...token, projectedWorld: vector(result), projectedDeck: vector(localImpulse), normalCap, frictionCoefficient: constants.footFriction,
+      projectedFrictionCap: constants.footFriction * localImpulse.y,
+      projectedTangential: Math.hypot(localImpulse.x, localImpulse.z), limit: rider.limit,
+      cop: vector(rider.contact.centreOfPressure), desiredCop: { x: rider.desiredCop.x, z: rider.desiredCop.z }, rawMargin: rider.rawMargin });
+  }));
+  restore.push(wrapObserved(rider, 'finish', () => ({ work: copyWork(rider), boardWork: copyWork(board), velocity: vector(rider.velocity) }), before => {
+    must().finish = { beforeVelocity: before.velocity, afterVelocity: vector(rider.velocity), riderWorkDelta: delta(rider.work, before.work), boardWorkDelta: delta(board.work, before.boardWork), after: stagePosture(board, rider) };
+  }));
+  return () => { for (const fn of restore.reverse()) fn(); };
+}
+
+export function turningPoints(values: number[], deadband = 0.2): { points: { index: number; value: number }[]; largestSwing: number } {
+  const points: { index: number; value: number }[] = []; let high = values[0], low = values[0], highAt = 0, lowAt = 0, direction = 0;
+  values.forEach((value, index) => {
+    if (direction >= 0 && value > high) { high = value; highAt = index; }
+    if (direction <= 0 && value < low) { low = value; lowAt = index; }
+    if (direction >= 0 && high - value > deadband) { points.push({ index: highAt, value: high }); direction = -1; low = value; lowAt = index; }
+    else if (direction <= 0 && value - low > deadband) { points.push({ index: lowAt, value: low }); direction = 1; high = value; highAt = index; }
+  });
+  let largestSwing = 0; for (let i = 1; i < points.length; i++) largestSwing = Math.max(largestSwing, Math.abs(points[i].value - points[i - 1].value));
+  return { points, largestSwing };
+}
