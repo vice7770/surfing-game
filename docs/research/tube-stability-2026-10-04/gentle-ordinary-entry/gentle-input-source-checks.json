@@ -1,0 +1,22 @@
+{
+  "schema": "tube-gentle-input-source-checks/v1",
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "steering": {
+    "passed": true,
+    "blockSha256": "acdfca22d2bae43eb64244432b951107399b6b878323d9e8513012755f1afa53",
+    "initialStandingActual": 0,
+    "maximumActual": 0.2,
+    "maximumStepDelta": 0.006666666666666667,
+    "nonstandingUnchanged": true
+  },
+  "frontInventory": {
+    "passed": true,
+    "functionSha256": "f18813d55a72af46a1cc0d7672045363df7327931c290d43527617ec975ff915",
+    "stride": 9,
+    "rawRecordCount": 3,
+    "rawCountsIndependentFromDrawn": true
+  },
+  "scope": "Mock tests of extracted ordinary input filter and read-only front-record grouping only; no physics trajectory, body/geometry acceptance or real front evidence."
+}

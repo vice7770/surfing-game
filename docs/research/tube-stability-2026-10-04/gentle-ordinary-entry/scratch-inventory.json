@@ -1,0 +1,327 @@
+{
+  "schema": "gentle-original-scratch-inventory/v1",
+  "root": "/private/tmp/tube-menu-big-gentle-entry-20261004",
+  "files": {
+    "README.md": {
+      "bytes": 4972,
+      "sha256": "7537ab8a55db57373cd96200c168a6fff2c937641cb23c529af13ccb8e5f00eb"
+    },
+    "autopilot-entry.ts": {
+      "bytes": 296,
+      "sha256": "daa2e72a04e87ed97e2814ea1b7115440e796b2ec62f650caf20609ee6e2ebb1"
+    },
+    "body-witnesses.mjs": {
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    "dist/assets/WorkerSurfZone-D_PFvR7h.js": {
+      "bytes": 872463,
+      "sha256": "c086f46eef6da2a6cdb4485779e319382ae4e6bc21041d32fde6494de4aa8ba5"
+    },
+    "dist/assets/audio/bubbles-1.m4a": {
+      "bytes": 256855,
+      "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+    },
+    "dist/assets/audio/bubbles-2.m4a": {
+      "bytes": 198252,
+      "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+    },
+    "dist/assets/audio/distant-1.m4a": {
+      "bytes": 883404,
+      "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+    },
+    "dist/assets/audio/distant-2.m4a": {
+      "bytes": 912023,
+      "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+    },
+    "dist/assets/audio/lipJet-1.m4a": {
+      "bytes": 62354,
+      "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+    },
+    "dist/assets/audio/lipJet-2.m4a": {
+      "bytes": 47086,
+      "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+    },
+    "dist/assets/audio/lipRoller-1.m4a": {
+      "bytes": 36688,
+      "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+    },
+    "dist/assets/audio/lipRoller-2.m4a": {
+      "bytes": 27855,
+      "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+    },
+    "dist/assets/audio/paddle-1.m4a": {
+      "bytes": 14645,
+      "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+    },
+    "dist/assets/audio/paddle-2.m4a": {
+      "bytes": 13593,
+      "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+    },
+    "dist/assets/audio/plunge-1.m4a": {
+      "bytes": 24612,
+      "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+    },
+    "dist/assets/audio/plunge-2.m4a": {
+      "bytes": 22031,
+      "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+    },
+    "dist/assets/audio/roar-1.m4a": {
+      "bytes": 419823,
+      "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+    },
+    "dist/assets/audio/roar-2.m4a": {
+      "bytes": 387857,
+      "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+    },
+    "dist/assets/audio/sounds.json": {
+      "bytes": 3499,
+      "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+    },
+    "dist/assets/devStepping-DwuhWxX0.js": {
+      "bytes": 320,
+      "sha256": "93e2166132b16e209d7e50e998a43d5188d1681784d9cadb865b0e1d909f4d9a"
+    },
+    "dist/assets/index-DA8NEfOT.css": {
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    "dist/assets/index-b-VrQkvK.js": {
+      "bytes": 582411,
+      "sha256": "6dea4dd7abdb600111181130450191579e5086947ebbb11745efcf9ed105f0b0"
+    },
+    "dist/assets/jevRecorder-CbsRIahA.js": {
+      "bytes": 15917,
+      "sha256": "9c4dd391a50a7c4658de808c753b7c56fc6d2270f9997f92c49327075c750549"
+    },
+    "dist/assets/particleBench-pMk_Bt39.js": {
+      "bytes": 10708,
+      "sha256": "e23e76b10360c0b687ece010496a7dd2f3fde136cd08c9099a51cf168bd46a4d"
+    },
+    "dist/assets/rideRecorder-UpIyaSrS.js": {
+      "bytes": 41108,
+      "sha256": "aaf6f8f20b04824caf5580fdcd4fe9dd36c137ca0af6d4f23be5ab17069a2453"
+    },
+    "dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg": {
+      "bytes": 681062,
+      "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+    },
+    "dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+    },
+    "dist/assets/skies/qwantani_sunrise_puresky.jpg": {
+      "bytes": 357301,
+      "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+    },
+    "dist/assets/skies/qwantani_sunrise_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+    },
+    "dist/assets/skies/qwantani_sunset_puresky.jpg": {
+      "bytes": 372349,
+      "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+    },
+    "dist/assets/skies/qwantani_sunset_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+    },
+    "dist/assets/skies/skies.json": {
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    "dist/assets/surfZoneWorker-ms23wI7Q.js": {
+      "bytes": 452320,
+      "sha256": "99d6f272c326036529f0b3760224f14c0ba3d496b8b0fbfe9250ed78751a5b69"
+    },
+    "dist/assets/surfers/surfer1.glb": {
+      "bytes": 1007368,
+      "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+    },
+    "dist/assets/surfers/surfer2.glb": {
+      "bytes": 1595524,
+      "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+    },
+    "dist/assets/surfers/surfer3.glb": {
+      "bytes": 1545008,
+      "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+    },
+    "dist/assets/surfers/surfer4.glb": {
+      "bytes": 1229872,
+      "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+    },
+    "dist/assets/surfers/surfers.json": {
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    },
+    "dist/assets/waterSheet-BOkyCRqg.js": {
+      "bytes": 11689,
+      "sha256": "729c54b7dd7eafaf10e87d116002b6b0a3597ce1b206b65d115bd4455dbdb883"
+    },
+    "dist/barrels/pad19-a20-l12.bin": {
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    "dist/barrels/pad19-a30-l12.bin": {
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    "dist/barrels/pad19-a45-l12.bin": {
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    "dist/barrels/periodic-padang19s-l12.bin": {
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    "dist/barrels/periodic-point21-a15-l12.bin": {
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    "dist/barrels/periodic-point21-a23-l12.bin": {
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    "dist/barrels/periodic-point21-a30-l12.bin": {
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    "dist/barrels/periodic-reef42-l12.bin": {
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    "dist/build.json": {
+      "bytes": 57,
+      "sha256": "85d4adbb54ec0beded2e131dced55c368221b4a3889bc78828917ba63d3a3f8f"
+    },
+    "dist/diagnostic-autopilot.mjs": {
+      "bytes": 347555,
+      "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2"
+    },
+    "dist/index.html": {
+      "bytes": 1626,
+      "sha256": "518da3ced4b45530a76d0f3a877a44ac81924b127a50e8c46d477c0ef5bf3707"
+    },
+    "dist/lessons/pool-s2-caught.sea": {
+      "bytes": 2180693,
+      "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+    },
+    "dist/lessons/pool-s2-pocket.sea": {
+      "bytes": 2176894,
+      "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+    },
+    "dist/lessons/pool-s2-waiting.sea": {
+      "bytes": 2232988,
+      "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+    },
+    "gentle-input-source-check.mjs": {
+      "bytes": 3572,
+      "sha256": "e1c5700593a908d1e1f1f0ceadc613c36dfb0f7f8176f2cfd3f4eee869802cb3"
+    },
+    "gentle-input-source-checks.json": {
+      "bytes": 784,
+      "sha256": "ba954e183d03e1bcd5211d3bba0bbfa70876ee90153d9682104a48431d20c107"
+    },
+    "native-before-gentle-policy.mjs": {
+      "bytes": 25991,
+      "sha256": "686c3b0033a010a59d92579ab6e391a6748d170ed955ce7cc9ea0557b0481bfc"
+    },
+    "native-first/00-first-standing.png": {
+      "bytes": 1914510,
+      "sha256": "3892e81a41697c34f5c97bb0ee00e814c92ba320885ee86a5d8f315860cbff1a"
+    },
+    "native-first/01-final.png": {
+      "bytes": 2123023,
+      "sha256": "df5f92a16cf235629794f525af7ee9bfad00b9180935542eca309f46e574b023"
+    },
+    "native-first/launcher.json": {
+      "bytes": 10182,
+      "sha256": "c3700b7f6ab789baee49e247521b143c3c57de1f1b24096808d4f85671e768b8"
+    },
+    "native-first/report.json": {
+      "bytes": 2415750,
+      "sha256": "42b8de8da117b00af099b619af7836cedf1a1949d1239b95ef4bb531f12bd27c"
+    },
+    "native-first/steps.ndjson": {
+      "bytes": 2388245,
+      "sha256": "19eead6e913395a188d2933c19baec022442a005301ed35ffbd812e1c3758d6e"
+    },
+    "native-first-owner.json": {
+      "bytes": 4215,
+      "sha256": "ebe232b26b709b1ee9643dc5619787b53b1304ed4749059fb43aebe970cfca92"
+    },
+    "native-first-owner.log": {
+      "bytes": 1713,
+      "sha256": "a17e3ce491fde018fe8eae1cb326cc9ad52a094ffd8c6f9ad5c797aea8f41a31"
+    },
+    "native-owned.mjs": {
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    "native.mjs": {
+      "bytes": 31419,
+      "sha256": "f0d4461ecdedf9ede7bf80b6cf7a265fb7e3a6051fced144505da2a845e8ddba"
+    },
+    "preparation.json": {
+      "bytes": 16844,
+      "sha256": "a00692959349591b99ef5611fa2f5d4cdd7a52e1f434547c3c111c25ccd4cc49"
+    },
+    "prepare-source.py": {
+      "bytes": 11419,
+      "sha256": "9bab1a3ad303fdbf76b59f164f93f6a9e99b089bd0350ec3b75d52d24f3950bc"
+    },
+    "prior-big-launcher.json": {
+      "bytes": 10776,
+      "sha256": "1447ee8223f474c208c270ba00c4f5d8958b220e8f71aaf165829c58db294eb2"
+    },
+    "prior-big-owner.json": {
+      "bytes": 3963,
+      "sha256": "3385b982670a0fbfcef7cca5b45df3bc6a580cff2560ee335eef0e0c1cb3f2b9"
+    },
+    "prior-big-owner.log": {
+      "bytes": 1685,
+      "sha256": "7db80643c1fa6decb42b5f152bef25476c7c8bc08d2149722bab48ed9c97e249"
+    },
+    "prior-big-preparation.json": {
+      "bytes": 88631,
+      "sha256": "b16d247c66235905326ec690f9e40583ce801fc368ad7ad8187ea39a508b7e91"
+    },
+    "prior-big-report.json": {
+      "bytes": 940153,
+      "sha256": "82ec643a581e5675b1240c5048e886001765dbc2fdbb1548a387b7e0089e1beb"
+    },
+    "prior-big-work-after.json": {
+      "bytes": 13381,
+      "sha256": "915d87075e044e7530900b4e37d473f02e293d7a997e46a51696983a3fe4c99b"
+    },
+    "prior-big-work-before.json": {
+      "bytes": 13381,
+      "sha256": "915d87075e044e7530900b4e37d473f02e293d7a997e46a51696983a3fe4c99b"
+    },
+    "production-model.diff": {
+      "bytes": 20413,
+      "sha256": "d72328a014db2c2574c347569cde58e948e608139984600115823caffce9593b"
+    },
+    "production-source-after.json": {
+      "bytes": 74108,
+      "sha256": "450a44eaef995b5ffce5bcf7490b87b5bcea32dbaff49f5af3bdb523b87ec870"
+    },
+    "production-source-frozen.json": {
+      "bytes": 74108,
+      "sha256": "450a44eaef995b5ffce5bcf7490b87b5bcea32dbaff49f5af3bdb523b87ec870"
+    },
+    "read-only-tcp-preparation-proof.json": {
+      "bytes": 603,
+      "sha256": "cd391df5ee33a4508937d3d17f3f782f3e8dcee0e1c1fa2f9871a61d49754225"
+    },
+    "run.py": {
+      "bytes": 22395,
+      "sha256": "52271eed08442d6cde1675eb37700f8a76e28aeb1f9a1013cd6052ecc4317e80"
+    },
+    "source-checks.json": {
+      "bytes": 10428,
+      "sha256": "39b99d569102b29486febf5b697ff3965960d542dc7a350144cbd0e018e8c573"
+    }
+  },
+  "scope": "Byte preservation inventory only; no native/numerical rerun."
+}

@@ -1,0 +1,426 @@
+{
+  "schema": "tube-gentle-analog-source-checks/v1",
+  "complete": true,
+  "checkedAt": "2026-10-04T19:01:43.728402+00:00",
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "checks": [
+    {
+      "name": "Node for syntax/mock source checks",
+      "passed": true
+    },
+    {
+      "name": "native.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "native-owned.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "body-witnesses.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "gentle-input-source-check.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "run.py AST syntax",
+      "passed": true
+    },
+    {
+      "name": "prepare-source.py AST syntax",
+      "passed": true
+    },
+    {
+      "name": "SETTINGS exact completed Big source",
+      "passed": true
+    },
+    {
+      "name": "EXPECTED_CONFIG exact completed Big source",
+      "passed": true
+    },
+    {
+      "name": "GRAPHICS exact completed Big source",
+      "passed": true
+    },
+    {
+      "name": "POLICY exact completed Big source",
+      "passed": true
+    },
+    {
+      "name": "Popup gate and standing stance overlay unchanged",
+      "passed": true
+    },
+    {
+      "name": "No overrides / rider ordinary start",
+      "passed": true
+    },
+    {
+      "name": "One ordinary worker request, normal update",
+      "passed": true
+    },
+    {
+      "name": "Same bounds/stopping policy",
+      "passed": true
+    },
+    {
+      "name": "No reset/placement/forced-go calls",
+      "passed": true
+    },
+    {
+      "name": "No camera hunt/view assignment added",
+      "passed": true
+    },
+    {
+      "name": "Explicit steering cap and slew",
+      "passed": true
+    },
+    {
+      "name": "Nullable first eligible movie trigger",
+      "passed": true
+    },
+    {
+      "name": "No duplicate initial frame",
+      "passed": true
+    },
+    {
+      "name": "Entry priority prevents partial PNG overflow",
+      "passed": true
+    },
+    {
+      "name": "Front inventory exact stride/count/offsets",
+      "passed": true
+    },
+    {
+      "name": "Dry owner exit",
+      "passed": true
+    },
+    {
+      "name": "No resources in dry plan",
+      "passed": true
+    },
+    {
+      "name": "Isolated ports and user ports",
+      "passed": true
+    },
+    {
+      "name": "Deadlines preserved",
+      "passed": true
+    },
+    {
+      "name": "Movie and steering policy owner checks",
+      "passed": true
+    },
+    {
+      "name": "Fresh owned ports currently closed",
+      "passed": true
+    },
+    {
+      "name": "User servers currently open; read-only TCP proof",
+      "passed": true
+    },
+    {
+      "name": "Extracted input/filter schema mocks",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/WorkerSurfZone-D_PFvR7h.js",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/bubbles-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/bubbles-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/distant-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/distant-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/lipJet-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/lipJet-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/lipRoller-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/lipRoller-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/paddle-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/paddle-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/plunge-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/plunge-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/roar-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/roar-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/audio/sounds.json",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/devStepping-DwuhWxX0.js",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/index-DA8NEfOT.css",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/index-b-VrQkvK.js",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/jevRecorder-CbsRIahA.js",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/particleBench-pMk_Bt39.js",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/rideRecorder-UpIyaSrS.js",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/skies/qwantani_sunrise_puresky.jpg",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/skies/qwantani_sunrise_puresky_1k.hdr",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/skies/qwantani_sunset_puresky.jpg",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/skies/qwantani_sunset_puresky_1k.hdr",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/skies/skies.json",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/surfZoneWorker-ms23wI7Q.js",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/surfers/surfer1.glb",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/surfers/surfer2.glb",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/surfers/surfer3.glb",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/surfers/surfer4.glb",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/surfers/surfers.json",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset assets/waterSheet-BOkyCRqg.js",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset barrels/pad19-a20-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset barrels/pad19-a30-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset barrels/pad19-a45-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset barrels/periodic-padang19s-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset barrels/periodic-point21-a15-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset barrels/periodic-point21-a23-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset barrels/periodic-point21-a30-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset barrels/periodic-reef42-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset build.json",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset index.html",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset lessons/pool-s2-caught.sea",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset lessons/pool-s2-pocket.sea",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset lessons/pool-s2-waiting.sea",
+      "passed": true
+    },
+    {
+      "name": "Exact frozen asset diagnostic-autopilot.mjs",
+      "passed": true
+    },
+    {
+      "name": "Exactly50 copied files",
+      "passed": true
+    },
+    {
+      "name": "Build ID unchanged",
+      "passed": true
+    },
+    {
+      "name": "All328 production/public/build hashes unchanged during prepare",
+      "passed": true
+    },
+    {
+      "name": "Completed old Big WORK unchanged",
+      "passed": true
+    },
+    {
+      "name": "Exact completed Big receipt prior-big-preparation.json",
+      "passed": true
+    },
+    {
+      "name": "Exact completed Big receipt prior-big-report.json",
+      "passed": true
+    },
+    {
+      "name": "Exact completed Big receipt prior-big-owner.json",
+      "passed": true
+    },
+    {
+      "name": "Exact completed Big receipt prior-big-owner.log",
+      "passed": true
+    },
+    {
+      "name": "Exact completed Big receipt prior-big-launcher.json",
+      "passed": true
+    },
+    {
+      "name": "SharedCDP helper unchanged",
+      "passed": true
+    }
+  ],
+  "dryOwnerPlan": {
+    "sourceOnlyPlan": true,
+    "arm": "candidate",
+    "dist": "/private/tmp/tube-menu-big-gentle-entry-20261004/dist",
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7,
+    "maximumSteps": 1800,
+    "maximumPhysicalSeconds": 30,
+    "maximumPngs": 3,
+    "maximumPngBytesEach": 12582912,
+    "maximumPngBytesTotal": 37748736,
+    "maximumReportBytes": 33554432,
+    "maximumNdjsonBytes": 25165824,
+    "optionalMovieMaximumAdvances": 240,
+    "optionalMovieMaximumRequests": 241,
+    "optionalMovieMaximumBytes": 16777216,
+    "optionalMovieTrigger": "First post-step standing row with positive drawn loft indices and finite abs(curlDistance)<=15 or partial/contained witness",
+    "standingInputPhase": "inputView.ride.phase",
+    "maximumStandingSteer": 0.2,
+    "standingSteerSlewPerSecond": 0.4,
+    "captureCompletionIsEntryPass": false,
+    "ports": [
+      4291,
+      9701
+    ],
+    "userPorts": [
+      4310,
+      4311
+    ],
+    "userPortsMustStayOpen": true,
+    "resourcesStarted": false
+  },
+  "readOnlyTcpProof": {
+    "4291": {
+      "closed": true,
+      "reason": "Connection refused"
+    },
+    "9701": {
+      "closed": true,
+      "reason": "Connection refused"
+    },
+    "4310": {
+      "closed": false,
+      "reason": "TCP accepted"
+    },
+    "4311": {
+      "closed": false,
+      "reason": "TCP accepted"
+    }
+  },
+  "extractedMockChecks": {
+    "file": "/private/tmp/tube-menu-big-gentle-entry-20261004/gentle-input-source-checks.json",
+    "bytes": 784,
+    "sha256": "ba954e183d03e1bcd5211d3bba0bbfa70876ee90153d9682104a48431d20c107"
+  },
+  "limitations": "Syntax, source/policy, TCP and hash checks only; no new rider/wave dynamics, pixels, movie capability, runtime cleanup or entry verified."
+}

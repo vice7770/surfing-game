@@ -1,0 +1,256 @@
+{
+  "schema": "gentle-ordinary-entry-review/v1",
+  "scope": "Read-only summary of preserved receipts; no native/numerical rerun or entry/adoption pass.",
+  "trial": "Predeclared gentle analog input; prior completed Big trial is retained unchanged.",
+  "currentHeadAtPreparation": "0ab379ba1cdb64b44e8023833399a428990afa60",
+  "acceptedBaseRevision": "513ad9d396fd7f33b11ab1bbf5e0b460fad3e931",
+  "buildId": "tube-whole-curl-descending-20261004-513ad9d39",
+  "actualConfig": {
+    "spot": "padang",
+    "seed": 1,
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stage": 2,
+    "compute": "auto",
+    "dx": 2,
+    "fineSpacing": 1,
+    "componentCount": 64
+  },
+  "overrides": null,
+  "policy": {
+    "style": "line",
+    "waitOutside": 5,
+    "rise": 1,
+    "lineDegrees": 60,
+    "giveUp": 30,
+    "stall": false,
+    "popup": "One pulse on cue OR valid ahead[0,8]m,faceFraction>=.35,speedShoreward>=2m/s, first natural go and actually prone",
+    "standingCrouch": 1,
+    "compress": 0,
+    "trim": 0,
+    "pocketReflex": false,
+    "trial": "predeclared gentle analog input; completed old Big run retains its original interpretation",
+    "standingSteering": {
+      "maximumAbsolute": 0.2,
+      "slewRatePerSecond": 0.4,
+      "firstStandingInput": 0,
+      "phaseAuthority": "inputView.ride.phase"
+    },
+    "loggedEveryStep": [
+      "requestedPilotSteer",
+      "targetLimitedSteer",
+      "actualInputSteer"
+    ]
+  },
+  "gentle": {
+    "stepCount": 395,
+    "physicalSeconds": 6.583333333333333,
+    "firstStanding": {
+      "step": 83,
+      "seaTime": 363.19004276701423,
+      "physicalSeconds": 1.3833333333333333
+    },
+    "standingPostStepRows": 312,
+    "standingPostStepFirst": 83,
+    "standingPostStepLast": 394,
+    "firstStandingToFallSeconds": 5.2,
+    "maximumAbsoluteStandingBankDegrees": 10.790108507017347,
+    "firstInvalidStandingWaveStep": 376,
+    "zeroDrawnLoftIndexRows": 395,
+    "zeroCrestBreakingRows": 395,
+    "recordedWitnessClassifications": [
+      "outside"
+    ],
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 395,
+      "phase": "fallen",
+      "separation": "balance",
+      "resets": 0
+    },
+    "entry": {
+      "observedStandingOutside": true,
+      "firstPartial": null,
+      "firstConnectedWitnessEntry": null,
+      "containmentWithoutObservedOutside": null,
+      "firstConnectedWitnessExit": null,
+      "maximumConsecutiveContainedSteps": 0,
+      "residenceIntervals": [],
+      "fullBodyClearancePass": false
+    }
+  },
+  "priorBig": {
+    "stepCount": 162,
+    "physicalSeconds": 2.7,
+    "firstStanding": {
+      "step": 83,
+      "seaTime": 363.19004276701423,
+      "physicalSeconds": 1.3833333333333333
+    },
+    "standingPostStepRows": 79,
+    "standingPostStepFirst": 83,
+    "standingPostStepLast": 161,
+    "firstStandingToFallSeconds": 1.3166666666666667,
+    "maximumAbsoluteStandingBankDegrees": 70.0,
+    "firstInvalidStandingWaveStep": null,
+    "zeroDrawnLoftIndexRows": 162,
+    "zeroCrestBreakingRows": 162,
+    "recordedWitnessClassifications": [
+      "outside"
+    ],
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 162,
+      "phase": "fallen",
+      "separation": "balance",
+      "resets": 0
+    },
+    "entry": {
+      "observedStandingOutside": true,
+      "firstPartial": null,
+      "firstConnectedWitnessEntry": null,
+      "containmentWithoutObservedOutside": null,
+      "firstConnectedWitnessExit": null,
+      "maximumConsecutiveContainedSteps": 0,
+      "residenceIntervals": [],
+      "fullBodyClearancePass": false
+    }
+  },
+  "checkpoints": [
+    {
+      "label": "first-standing",
+      "step": 83,
+      "frontInventory": {
+        "seaTime": 363.19004276701423,
+        "raw": {
+          "recordCount": 0,
+          "stride": 9,
+          "fieldOffsets": {
+            "id": 2,
+            "sigma": 3,
+            "tau": 4
+          },
+          "groups": []
+        },
+        "drawn": {
+          "sliceCount": 0,
+          "vertexCount": 0,
+          "indexCount": 0,
+          "groups": []
+        },
+        "scope": "Read-only raw snapshot front records grouped separately from actual drawn loft rows; no geometry/source replacement or target selection"
+      }
+    },
+    {
+      "label": "final",
+      "step": 395,
+      "frontInventory": {
+        "seaTime": 368.39004276701394,
+        "raw": {
+          "recordCount": 0,
+          "stride": 9,
+          "fieldOffsets": {
+            "id": 2,
+            "sigma": 3,
+            "tau": 4
+          },
+          "groups": []
+        },
+        "drawn": {
+          "sliceCount": 0,
+          "vertexCount": 0,
+          "indexCount": 0,
+          "groups": []
+        },
+        "scope": "Read-only raw snapshot front records grouped separately from actual drawn loft rows; no geometry/source replacement or target selection"
+      }
+    }
+  ],
+  "optionalVideo": {
+    "trigger": null,
+    "video": null,
+    "requests": []
+  },
+  "ownerRecorded": {
+    "complete": true,
+    "exitCode": 0,
+    "firstFailure": null,
+    "independentClosureValid": true,
+    "remainingOwnedPids": [],
+    "closedPorts": {
+      "4291": true,
+      "9701": true
+    },
+    "userPortsOpenBefore": {
+      "4310": true,
+      "4311": true
+    },
+    "userPortsOpenAfter": {
+      "4310": true,
+      "4311": true
+    },
+    "userServersStayedOpen": true,
+    "copiedDistUnchanged": true,
+    "diagnosticSourcesUnchanged": true,
+    "elapsedSeconds": 25.697067332977895,
+    "cleanupElapsedSeconds": 0.19922325003426522
+  },
+  "ownerCaptureValidation": {
+    "stepCount": 395,
+    "pngCount": 2,
+    "pngBytes": 4037533,
+    "artifactReceipts": [
+      {
+        "file": "00-first-standing.png",
+        "bytes": 1914510,
+        "sha256": "3892e81a41697c34f5c97bb0ee00e814c92ba320885ee86a5d8f315860cbff1a"
+      },
+      {
+        "file": "01-final.png",
+        "bytes": 2123023,
+        "sha256": "df5f92a16cf235629794f525af7ee9bfad00b9180935542eca309f46e574b023"
+      },
+      {
+        "file": "steps.ndjson",
+        "bytes": 2388245,
+        "sha256": "19eead6e913395a188d2933c19baec022442a005301ed35ffbd812e1c3758d6e"
+      }
+    ],
+    "ndjsonRows": 395,
+    "video": {
+      "required": false,
+      "trigger": null,
+      "firstStanding": {
+        "step": 83,
+        "seaTime": 363.19004276701423,
+        "physicalSeconds": 1.3833333333333333
+      },
+      "completeClip": false,
+      "entryPass": false
+    },
+    "steeringControl": {
+      "inputTimePhaseAuthority": "inputView.ride.phase",
+      "standingInputs": 312,
+      "firstStandingInputs": 1,
+      "maximumAbsoluteActualStandingSteer": 0.2,
+      "maximumStandingSteerDelta": 0.006666666666666668,
+      "maximumAbsolute": 0.2,
+      "slewRatePerSecond": 0.4
+    },
+    "reportBytes": 2415750,
+    "captureCompletionIsEntryPass": false
+  },
+  "visualReview": {
+    "authority": "Root independently inspected both original PNGs before this archive task",
+    "result": "No visible tube."
+  },
+  "actionableCounterevidence": "Gentle standing steering delays the balance fall, but the ordinary Big path still publishes no drawn loft at any recorded step and no raw front at either checkpoint. Resolve the missing front/path evidence before using this trajectory to assess tube shape or rider clearance.",
+  "shapeVerdict": null,
+  "clearanceVerdict": null,
+  "entryPass": false,
+  "adoptionPass": false
+}

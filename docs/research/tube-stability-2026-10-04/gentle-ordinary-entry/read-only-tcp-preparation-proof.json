@@ -1,0 +1,23 @@
+{
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "proof": {
+    "4291": {
+      "closed": null,
+      "reason": "PermissionError: [Errno 1] Operation not permitted"
+    },
+    "9701": {
+      "closed": null,
+      "reason": "PermissionError: [Errno 1] Operation not permitted"
+    },
+    "4310": {
+      "closed": null,
+      "reason": "PermissionError: [Errno 1] Operation not permitted"
+    },
+    "4311": {
+      "closed": null,
+      "reason": "PermissionError: [Errno 1] Operation not permitted"
+    }
+  },
+  "scope": "Only read-only TCP connect attempts; no process or server management."
+}
