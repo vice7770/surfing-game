@@ -1,0 +1,899 @@
+{
+  "schema": 1,
+  "archive": "Private contact normal-demand prototype, first-epoch parity and complete-path cost evidence",
+  "verdict": "Small controlled saving retained as isolated foundation; no production adoption/FPS claim.",
+  "runtimeBaseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "documentationCheckpointProvidedByRoot": "43641bf33654ce8f0954ee9045bcddab28738bc9",
+  "normalPrototypeProductionAdopted": false,
+  "scope": "One actual F64 first epoch, separate 111-test focused verification, separate one-test actual replay, separate 74-test root integration, QA build verification and controlled repeated complete-contact cost. No 15-epoch historical/body/render/GPU/FPS result.",
+  "historicalPreparationMetadata": "Original prepared/pending flags are preserved byte-exact; actual terminal authority is in retained logs/results/proofs and README.",
+  "payloadRecords": 49,
+  "originalAliases": 62,
+  "totalFilesIncludingManifest": 50,
+  "storedBytesExcludingManifest": 410193,
+  "records": [
+    {
+      "archivePath": "prototype/candidate.patch",
+      "encoding": "identity",
+      "storedBytes": 82788,
+      "storedSha256": "907d5463489ccec1967bf4fab525b13a8c3f608062506c3a32dfe7427dd541cb",
+      "expandedBytes": 82788,
+      "expandedSha256": "907d5463489ccec1967bf4fab525b13a8c3f608062506c3a32dfe7427dd541cb",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/candidate.patch",
+          "bytes": 82788,
+          "sha256": "907d5463489ccec1967bf4fab525b13a8c3f608062506c3a32dfe7427dd541cb"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/candidate.patch",
+          "bytes": 82788,
+          "sha256": "907d5463489ccec1967bf4fab525b13a8c3f608062506c3a32dfe7427dd541cb"
+        }
+      ]
+    },
+    {
+      "archivePath": "prototype/prepared-manifest.json",
+      "encoding": "identity",
+      "storedBytes": 9291,
+      "storedSha256": "b3bd2f7700abb1db27a66904284d9b3dc2484b8691a8a3f93a6fc02a68be43a0",
+      "expandedBytes": 9291,
+      "expandedSha256": "b3bd2f7700abb1db27a66904284d9b3dc2484b8691a8a3f93a6fc02a68be43a0",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/candidate-manifest.json",
+          "bytes": 9291,
+          "sha256": "b3bd2f7700abb1db27a66904284d9b3dc2484b8691a8a3f93a6fc02a68be43a0"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/candidate-manifest.json",
+          "bytes": 9291,
+          "sha256": "b3bd2f7700abb1db27a66904284d9b3dc2484b8691a8a3f93a6fc02a68be43a0"
+        }
+      ]
+    },
+    {
+      "archivePath": "prototype/original-source-manifest.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 28642,
+      "storedSha256": "1ae40a956aa1b69d19492b1d421814062987bfd6537739567d0b0aa1f8a5f8d2",
+      "expandedBytes": 89591,
+      "expandedSha256": "1d38668ed6e64cf70163c266b6aaa430a210e4273a3bb7418fc62ada1408ee33",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/original-source-manifest.json",
+          "bytes": 89591,
+          "sha256": "1d38668ed6e64cf70163c266b6aaa430a210e4273a3bb7418fc62ada1408ee33"
+        }
+      ]
+    },
+    {
+      "archivePath": "prototype/prepared-README.md",
+      "encoding": "identity",
+      "storedBytes": 9132,
+      "storedSha256": "668cdf4e26a1d040376f40994b99f35aa5ddefd18769d045b4d6d7de96d9ad94",
+      "expandedBytes": 9132,
+      "expandedSha256": "668cdf4e26a1d040376f40994b99f35aa5ddefd18769d045b4d6d7de96d9ad94",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/README.md",
+          "bytes": 9132,
+          "sha256": "668cdf4e26a1d040376f40994b99f35aa5ddefd18769d045b4d6d7de96d9ad94"
+        }
+      ]
+    },
+    {
+      "archivePath": "tests/contactNormalDemand.prototype.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 22675,
+      "storedSha256": "d86f16727c6fdb43bd0ba07e4641da0ae5bd88161e1096e6a60c0ac29da90449",
+      "expandedBytes": 22675,
+      "expandedSha256": "d86f16727c6fdb43bd0ba07e4641da0ae5bd88161e1096e6a60c0ac29da90449",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/src/wave/barrel/contactNormalDemand.prototype.test.ts",
+          "bytes": 22675,
+          "sha256": "d86f16727c6fdb43bd0ba07e4641da0ae5bd88161e1096e6a60c0ac29da90449"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/second-run.test-source.ts",
+          "bytes": 22675,
+          "sha256": "d86f16727c6fdb43bd0ba07e4641da0ae5bd88161e1096e6a60c0ac29da90449"
+        }
+      ]
+    },
+    {
+      "archivePath": "tests/contactNormalDemand.f64-replay.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 23022,
+      "storedSha256": "bf4e412357338eab65e87a6c6ff9fe60212255b50cb698a0142cf0808d4cf8f2",
+      "expandedBytes": 23022,
+      "expandedSha256": "bf4e412357338eab65e87a6c6ff9fe60212255b50cb698a0142cf0808d4cf8f2",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/src/wave/barrel/contactNormalDemand.f64-replay.test.ts",
+          "bytes": 23022,
+          "sha256": "bf4e412357338eab65e87a6c6ff9fe60212255b50cb698a0142cf0808d4cf8f2"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-corrected-run.test-source.ts",
+          "bytes": 23022,
+          "sha256": "bf4e412357338eab65e87a6c6ff9fe60212255b50cb698a0142cf0808d4cf8f2"
+        }
+      ]
+    },
+    {
+      "archivePath": "tests/vitest.prototype.config.ts",
+      "encoding": "identity",
+      "storedBytes": 254,
+      "storedSha256": "de1b305fbfc47cd2ffc53c708dab940feea70a9e07b762103e473dfc7b1defbe",
+      "expandedBytes": 254,
+      "expandedSha256": "de1b305fbfc47cd2ffc53c708dab940feea70a9e07b762103e473dfc7b1defbe",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/vitest.prototype.config.ts",
+          "bytes": 254,
+          "sha256": "de1b305fbfc47cd2ffc53c708dab940feea70a9e07b762103e473dfc7b1defbe"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/contactNormalDemand.cost.ts",
+      "encoding": "identity",
+      "storedBytes": 19229,
+      "storedSha256": "f78bfe2e8bc254bdb651278f3f38df6fe2d75bc1bd3d213687059ec257508d1a",
+      "expandedBytes": 19229,
+      "expandedSha256": "f78bfe2e8bc254bdb651278f3f38df6fe2d75bc1bd3d213687059ec257508d1a",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/src/wave/barrel/contactNormalDemand.cost.ts",
+          "bytes": 19229,
+          "sha256": "f78bfe2e8bc254bdb651278f3f38df6fe2d75bc1bd3d213687059ec257508d1a"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/src/wave/barrel/contactNormalDemand.cost.ts",
+          "bytes": 19229,
+          "sha256": "f78bfe2e8bc254bdb651278f3f38df6fe2d75bc1bd3d213687059ec257508d1a"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/cost.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 336,
+      "storedSha256": "f12816e470f1597b4ef63cc33242f420992243d556b2ac3da065904d50547718",
+      "expandedBytes": 336,
+      "expandedSha256": "f12816e470f1597b4ef63cc33242f420992243d556b2ac3da065904d50547718",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/cost.test.ts",
+          "bytes": 336,
+          "sha256": "f12816e470f1597b4ef63cc33242f420992243d556b2ac3da065904d50547718"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/performance/cost.test.ts",
+          "bytes": 336,
+          "sha256": "f12816e470f1597b4ef63cc33242f420992243d556b2ac3da065904d50547718"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/vitest.cost.config.ts",
+      "encoding": "identity",
+      "storedBytes": 185,
+      "storedSha256": "513d3f36b4af0cff1120e1485c6d5419292a4cad2b98e4ae71fe2e39e8b00593",
+      "expandedBytes": 185,
+      "expandedSha256": "513d3f36b4af0cff1120e1485c6d5419292a4cad2b98e4ae71fe2e39e8b00593",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/vitest.cost.config.ts",
+          "bytes": 185,
+          "sha256": "513d3f36b4af0cff1120e1485c6d5419292a4cad2b98e4ae71fe2e39e8b00593"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/vitest.cost.config.ts",
+          "bytes": 185,
+          "sha256": "513d3f36b4af0cff1120e1485c6d5419292a4cad2b98e4ae71fe2e39e8b00593"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/plan.md",
+      "encoding": "identity",
+      "storedBytes": 4700,
+      "storedSha256": "de620f94b8c562e329e66f3355e3799cd1d8b49dc18458edef09b1cc44940df0",
+      "expandedBytes": 4700,
+      "expandedSha256": "de620f94b8c562e329e66f3355e3799cd1d8b49dc18458edef09b1cc44940df0",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/plan.md",
+          "bytes": 4700,
+          "sha256": "de620f94b8c562e329e66f3355e3799cd1d8b49dc18458edef09b1cc44940df0"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/performance/plan.md",
+          "bytes": 4700,
+          "sha256": "de620f94b8c562e329e66f3355e3799cd1d8b49dc18458edef09b1cc44940df0"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/ready.json",
+      "encoding": "identity",
+      "storedBytes": 1453,
+      "storedSha256": "836586bae4327b6aab28eff19fe572e937852a2e3a5caf41c2199c49b349fb1d",
+      "expandedBytes": 1453,
+      "expandedSha256": "836586bae4327b6aab28eff19fe572e937852a2e3a5caf41c2199c49b349fb1d",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/ready.json",
+          "bytes": 1453,
+          "sha256": "836586bae4327b6aab28eff19fe572e937852a2e3a5caf41c2199c49b349fb1d"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/performance/ready.json",
+          "bytes": 1453,
+          "sha256": "836586bae4327b6aab28eff19fe572e937852a2e3a5caf41c2199c49b349fb1d"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/authority.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 32120,
+      "storedSha256": "baa247aaae463d41bcea3863a51d709e19ac3b24dc2aa619f66a42fd9c720d9b",
+      "expandedBytes": 94989,
+      "expandedSha256": "bff03b94fe750139f56745a481cdfc52eb7892038ef7d4692f49aba2223bc6a6",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/authority.json",
+          "bytes": 94989,
+          "sha256": "bff03b94fe750139f56745a481cdfc52eb7892038ef7d4692f49aba2223bc6a6"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/performance/authority.json",
+          "bytes": 94989,
+          "sha256": "bff03b94fe750139f56745a481cdfc52eb7892038ef7d4692f49aba2223bc6a6"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/report.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 6180,
+      "storedSha256": "fd700fa0f1ee96a09e23932419bef0f4beebdabca6bb0edeb17952dd1522ccdc",
+      "expandedBytes": 41210,
+      "expandedSha256": "7145994ac03f78afcc8e2c0eacfe320b3952db5e84a36524bdd927485b2ce2bd",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/cost-first-report.json",
+          "bytes": 41210,
+          "sha256": "7145994ac03f78afcc8e2c0eacfe320b3952db5e84a36524bdd927485b2ce2bd"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/performance/cost-first-report.json",
+          "bytes": 41210,
+          "sha256": "7145994ac03f78afcc8e2c0eacfe320b3952db5e84a36524bdd927485b2ce2bd"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/f64-proof.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 7067,
+      "storedSha256": "9b65da6891602a0db82892a787d490cbd45e0f9377bc94acf1b53dfe756658b3",
+      "expandedBytes": 235928,
+      "expandedSha256": "2694b938529bc35f366804e35de42870144c3d9cf49202640dffc6656e121f31",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-replay-first-proof.json",
+          "bytes": 235928,
+          "sha256": "2694b938529bc35f366804e35de42870144c3d9cf49202640dffc6656e121f31"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-replay-corrected-proof.json",
+          "bytes": 235928,
+          "sha256": "2694b938529bc35f366804e35de42870144c3d9cf49202640dffc6656e121f31"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze/checks/f64-replay-corrected-proof.json",
+          "bytes": 235928,
+          "sha256": "2694b938529bc35f366804e35de42870144c3d9cf49202640dffc6656e121f31"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/focus-first.test-source.ts",
+      "encoding": "identity",
+      "storedBytes": 19693,
+      "storedSha256": "87a0653d2c3ce0a339f244b6926166ddbd7bb6e446fc6a4fbe88c13bcfb6b987",
+      "expandedBytes": 19693,
+      "expandedSha256": "87a0653d2c3ce0a339f244b6926166ddbd7bb6e446fc6a4fbe88c13bcfb6b987",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/first-run.test-source.ts",
+          "bytes": 19693,
+          "sha256": "87a0653d2c3ce0a339f244b6926166ddbd7bb6e446fc6a4fbe88c13bcfb6b987"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/focus-first.patch.gz",
+      "encoding": "gzip",
+      "storedBytes": 10423,
+      "storedSha256": "f33f55327e8d5bb4afc904d75cf86bd8d6b5c00b54442e7235115866d1e6dfc3",
+      "expandedBytes": 36154,
+      "expandedSha256": "e4f854ba824222f9d2f26032ccb954347898026f51c3c996628b7bf3507058b8",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/first-candidate.patch",
+          "bytes": 36154,
+          "sha256": "e4f854ba824222f9d2f26032ccb954347898026f51c3c996628b7bf3507058b8"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/focus-first-prepared-manifest.json",
+      "encoding": "identity",
+      "storedBytes": 4827,
+      "storedSha256": "b089048ab2cfdd823559b0712de46b8853e03764b28c45ccc54116d8cbf778d2",
+      "expandedBytes": 4827,
+      "expandedSha256": "b089048ab2cfdd823559b0712de46b8853e03764b28c45ccc54116d8cbf778d2",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/first-candidate-manifest.json",
+          "bytes": 4827,
+          "sha256": "b089048ab2cfdd823559b0712de46b8853e03764b28c45ccc54116d8cbf778d2"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/focus-first.log",
+      "encoding": "identity",
+      "storedBytes": 1694,
+      "storedSha256": "cd714f9f8be69acd522fba5b7e1ee6d5f67234934bd02e1f3b92be6a85e07a63",
+      "expandedBytes": 1694,
+      "expandedSha256": "cd714f9f8be69acd522fba5b7e1ee6d5f67234934bd02e1f3b92be6a85e07a63",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/focused-first.log",
+          "bytes": 1694,
+          "sha256": "cd714f9f8be69acd522fba5b7e1ee6d5f67234934bd02e1f3b92be6a85e07a63"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/focus-first-results.json",
+      "encoding": "identity",
+      "storedBytes": 629,
+      "storedSha256": "4e7d89009ec8ea07ff8ee1b92db8c8cbd65ea2f7af19809e06f52276acb154ed",
+      "expandedBytes": 629,
+      "expandedSha256": "4e7d89009ec8ea07ff8ee1b92db8c8cbd65ea2f7af19809e06f52276acb154ed",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/first-check-results.json",
+          "bytes": 629,
+          "sha256": "4e7d89009ec8ea07ff8ee1b92db8c8cbd65ea2f7af19809e06f52276acb154ed"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/focus-first-evidence.json",
+      "encoding": "identity",
+      "storedBytes": 1118,
+      "storedSha256": "3611ac1373366400882c9deac5a3d9db2020bb458f60890cec2711736a16ff5d",
+      "expandedBytes": 1118,
+      "expandedSha256": "3611ac1373366400882c9deac5a3d9db2020bb458f60890cec2711736a16ff5d",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/first-run-evidence.json",
+          "bytes": 1118,
+          "sha256": "3611ac1373366400882c9deac5a3d9db2020bb458f60890cec2711736a16ff5d"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/focused-passed.patch.gz",
+      "encoding": "gzip",
+      "storedBytes": 11264,
+      "storedSha256": "fa69b94f964ce257c7343b62f1f7612408e6d18e35bdcf47ab475a229d86ba76",
+      "expandedBytes": 39185,
+      "expandedSha256": "14b5e0a0c1d27a67dbef424c9788ae5685899e4e207cd16eddd6db5409256f45",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/second-candidate.patch",
+          "bytes": 39185,
+          "sha256": "14b5e0a0c1d27a67dbef424c9788ae5685899e4e207cd16eddd6db5409256f45"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/focused-passed.log",
+      "encoding": "identity",
+      "storedBytes": 205,
+      "storedSha256": "c72f7894d05c48decbd5e0220f80a316286aeb262b052cd0552fd16253ff0df9",
+      "expandedBytes": 205,
+      "expandedSha256": "c72f7894d05c48decbd5e0220f80a316286aeb262b052cd0552fd16253ff0df9",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/focused-second.log",
+          "bytes": 205,
+          "sha256": "c72f7894d05c48decbd5e0220f80a316286aeb262b052cd0552fd16253ff0df9"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/focused-passed-results.json",
+      "encoding": "identity",
+      "storedBytes": 631,
+      "storedSha256": "5737f7d28583fa67989c13fb6b04a8c41a538d4c47fcd3316025d6b9ad1f68cb",
+      "expandedBytes": 631,
+      "expandedSha256": "5737f7d28583fa67989c13fb6b04a8c41a538d4c47fcd3316025d6b9ad1f68cb",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/second-check-results.json",
+          "bytes": 631,
+          "sha256": "5737f7d28583fa67989c13fb6b04a8c41a538d4c47fcd3316025d6b9ad1f68cb"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/focused-passed-evidence.json",
+      "encoding": "identity",
+      "storedBytes": 1096,
+      "storedSha256": "853b5e2c1fbd9c5202bb2eae252f355060084f1b5425825db45973a03f407b4f",
+      "expandedBytes": 1096,
+      "expandedSha256": "853b5e2c1fbd9c5202bb2eae252f355060084f1b5425825db45973a03f407b4f",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/second-run-evidence.json",
+          "bytes": 1096,
+          "sha256": "853b5e2c1fbd9c5202bb2eae252f355060084f1b5425825db45973a03f407b4f"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/f64-ts-first.test-source.ts",
+      "encoding": "identity",
+      "storedBytes": 23014,
+      "storedSha256": "07c6650cc19bf85af85231eb2ef2a412f0c61d40a211ac1c98d79422369efaf1",
+      "expandedBytes": 23014,
+      "expandedSha256": "07c6650cc19bf85af85231eb2ef2a412f0c61d40a211ac1c98d79422369efaf1",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-first-run.test-source.ts",
+          "bytes": 23014,
+          "sha256": "07c6650cc19bf85af85231eb2ef2a412f0c61d40a211ac1c98d79422369efaf1"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/f64-ts-first.patch.gz",
+      "encoding": "gzip",
+      "storedBytes": 17042,
+      "storedSha256": "af9d60280155688f1cfb64409b8a9795ca16a8e075316e7965be1c3fb4140a16",
+      "expandedBytes": 62605,
+      "expandedSha256": "69a1e01cce0604237561faf97e375efdc9e10d9d670942e274c606c091c900f8",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-first-candidate.patch",
+          "bytes": 62605,
+          "sha256": "69a1e01cce0604237561faf97e375efdc9e10d9d670942e274c606c091c900f8"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/f64-ts-first-prepared-manifest.json",
+      "encoding": "identity",
+      "storedBytes": 6901,
+      "storedSha256": "539d610d0e8e9c2d79a958755960f3e64e6d9639ecf70697fe69a88f4daf9cf3",
+      "expandedBytes": 6901,
+      "expandedSha256": "539d610d0e8e9c2d79a958755960f3e64e6d9639ecf70697fe69a88f4daf9cf3",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-first-candidate-manifest.json",
+          "bytes": 6901,
+          "sha256": "539d610d0e8e9c2d79a958755960f3e64e6d9639ecf70697fe69a88f4daf9cf3"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/f64-ts-first.log",
+      "encoding": "identity",
+      "storedBytes": 221,
+      "storedSha256": "8a806431f881a3ef7780fa58e5e7672d746039c4371accafb62a2d11d0c54d46",
+      "expandedBytes": 221,
+      "expandedSha256": "8a806431f881a3ef7780fa58e5e7672d746039c4371accafb62a2d11d0c54d46",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/strict-tsc-f64-first.log",
+          "bytes": 221,
+          "sha256": "8a806431f881a3ef7780fa58e5e7672d746039c4371accafb62a2d11d0c54d46"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/f64-ts-first-results.json",
+      "encoding": "identity",
+      "storedBytes": 216,
+      "storedSha256": "9f98996249604c61fa6a32c3de30a8b0fb3b2c9ca2d69e68710cfa58eef79b13",
+      "expandedBytes": 216,
+      "expandedSha256": "9f98996249604c61fa6a32c3de30a8b0fb3b2c9ca2d69e68710cfa58eef79b13",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-first-check-results.json",
+          "bytes": 216,
+          "sha256": "9f98996249604c61fa6a32c3de30a8b0fb3b2c9ca2d69e68710cfa58eef79b13"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/f64-ts-first-freeze.json",
+      "encoding": "identity",
+      "storedBytes": 1315,
+      "storedSha256": "e3233356b6d10480c86924b787a56fba1461134ec1502bbfb3a231933ed3feb1",
+      "expandedBytes": 1315,
+      "expandedSha256": "e3233356b6d10480c86924b787a56fba1461134ec1502bbfb3a231933ed3feb1",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-first-freeze-manifest.json",
+          "bytes": 1315,
+          "sha256": "e3233356b6d10480c86924b787a56fba1461134ec1502bbfb3a231933ed3feb1"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/f64-corrected.patch.gz",
+      "encoding": "gzip",
+      "storedBytes": 17045,
+      "storedSha256": "09f55983413dbed06b204c949363021dcecee3af3689ed8ba111d5c0e7488b59",
+      "expandedBytes": 62613,
+      "expandedSha256": "4635c65e08218ca5a7a43f97213add01d65a56ed689143f99b6d6b41d773daab",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-corrected-candidate.patch",
+          "bytes": 62613,
+          "sha256": "4635c65e08218ca5a7a43f97213add01d65a56ed689143f99b6d6b41d773daab"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/f64-corrected-prepared-manifest.json",
+      "encoding": "identity",
+      "storedBytes": 7376,
+      "storedSha256": "2d6fac0b8a70126ded28733394069c2e179f90d749f47031de5ce2990befd8b9",
+      "expandedBytes": 7376,
+      "expandedSha256": "2d6fac0b8a70126ded28733394069c2e179f90d749f47031de5ce2990befd8b9",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-corrected-candidate-manifest.json",
+          "bytes": 7376,
+          "sha256": "2d6fac0b8a70126ded28733394069c2e179f90d749f47031de5ce2990befd8b9"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/f64-corrected-results.json",
+      "encoding": "identity",
+      "storedBytes": 509,
+      "storedSha256": "520b1d3b62b97f7950539093d70d1140eb9b55bc9cae4e5f4958859c77e16e64",
+      "expandedBytes": 509,
+      "expandedSha256": "520b1d3b62b97f7950539093d70d1140eb9b55bc9cae4e5f4958859c77e16e64",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-corrected-check-results.json",
+          "bytes": 509,
+          "sha256": "520b1d3b62b97f7950539093d70d1140eb9b55bc9cae4e5f4958859c77e16e64"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/f64-corrected-freeze.json",
+      "encoding": "identity",
+      "storedBytes": 2156,
+      "storedSha256": "68e6f35665f9c64f19369a31acc6190b92daff51eef9e5dd62f8efa02ba8ab3f",
+      "expandedBytes": 2156,
+      "expandedSha256": "68e6f35665f9c64f19369a31acc6190b92daff51eef9e5dd62f8efa02ba8ab3f",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-corrected-freeze-manifest.json",
+          "bytes": 2156,
+          "sha256": "68e6f35665f9c64f19369a31acc6190b92daff51eef9e5dd62f8efa02ba8ab3f"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/f64-corrected.log",
+      "encoding": "identity",
+      "storedBytes": 213,
+      "storedSha256": "431d4b48f3216fd121b4f334f7b19d8417e6d27299d26eb9e2f4d92fc17f7bd8",
+      "expandedBytes": 213,
+      "expandedSha256": "431d4b48f3216fd121b4f334f7b19d8417e6d27299d26eb9e2f4d92fc17f7bd8",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-replay-corrected.log",
+          "bytes": 213,
+          "sha256": "431d4b48f3216fd121b4f334f7b19d8417e6d27299d26eb9e2f4d92fc17f7bd8"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/strict-tsc-success-empty.log",
+      "encoding": "identity",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/strict-tsc-first.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/strict-tsc-second.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/strict-tsc-f64-corrected.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/strict-tsc-cost-first.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/passed.log",
+      "encoding": "identity",
+      "storedBytes": 202,
+      "storedSha256": "db32d4b19cc95b963d0e0162a13089f36b7748264592ffd051e2b0c61e4290c7",
+      "expandedBytes": 202,
+      "expandedSha256": "db32d4b19cc95b963d0e0162a13089f36b7748264592ffd051e2b0c61e4290c7",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/cost-first.log",
+          "bytes": 202,
+          "sha256": "db32d4b19cc95b963d0e0162a13089f36b7748264592ffd051e2b0c61e4290c7"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/passed-results.json",
+      "encoding": "identity",
+      "storedBytes": 461,
+      "storedSha256": "7f3c1c840d8cd9435df492f0782f0fcf8004c1b134046b98cee337d026223dd6",
+      "expandedBytes": 461,
+      "expandedSha256": "7f3c1c840d8cd9435df492f0782f0fcf8004c1b134046b98cee337d026223dd6",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-check-results.json",
+          "bytes": 461,
+          "sha256": "7f3c1c840d8cd9435df492f0782f0fcf8004c1b134046b98cee337d026223dd6"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/passed-freeze.json",
+      "encoding": "identity",
+      "storedBytes": 3068,
+      "storedSha256": "f4b922b20121dcd7be21cc44c78668d385f75eb9a32817bb5c01caadbefe444d",
+      "expandedBytes": 3068,
+      "expandedSha256": "f4b922b20121dcd7be21cc44c78668d385f75eb9a32817bb5c01caadbefe444d",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/performance/first-cost-freeze-manifest.json",
+          "bytes": 3068,
+          "sha256": "f4b922b20121dcd7be21cc44c78668d385f75eb9a32817bb5c01caadbefe444d"
+        }
+      ]
+    },
+    {
+      "archivePath": "prototype/runtime-hashes.json",
+      "encoding": "identity",
+      "storedBytes": 2387,
+      "storedSha256": "8a8aebc6518ef51f9da524a6c91994d81ab3ef4a8d3bca0a6e3bb7acf8f17c3c",
+      "expandedBytes": 2387,
+      "expandedSha256": "8a8aebc6518ef51f9da524a6c91994d81ab3ef4a8d3bca0a6e3bb7acf8f17c3c",
+      "generated": true,
+      "authority": "prototype/prepared-manifest.json plus read-only baseline/candidate five-file verification",
+      "originalAliases": []
+    },
+    {
+      "archivePath": "checks/root-integration-passed.log",
+      "encoding": "identity",
+      "storedBytes": 204,
+      "storedSha256": "18466fa033ae853f7ee94efcca2828860c84195ac77348dd86bd8d8264e09766",
+      "expandedBytes": 204,
+      "expandedSha256": "18466fa033ae853f7ee94efcca2828860c84195ac77348dd86bd8d8264e09766",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-integration-20261004.log",
+          "bytes": 204,
+          "sha256": "18466fa033ae853f7ee94efcca2828860c84195ac77348dd86bd8d8264e09766"
+        }
+      ]
+    },
+    {
+      "archivePath": "failures/root-build-first.log",
+      "encoding": "identity",
+      "storedBytes": 1118,
+      "storedSha256": "9aee048afe412e8195a8a9b4c1bfcbdfb055716915e2ef48ba4b0d0235bbad8b",
+      "expandedBytes": 1118,
+      "expandedSha256": "9aee048afe412e8195a8a9b4c1bfcbdfb055716915e2ef48ba4b0d0235bbad8b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-build-20261004.log",
+          "bytes": 1118,
+          "sha256": "9aee048afe412e8195a8a9b4c1bfcbdfb055716915e2ef48ba4b0d0235bbad8b"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/root-build-entry-authority.json",
+      "encoding": "identity",
+      "storedBytes": 348,
+      "storedSha256": "b1ea7aea4b85043791fd044d15e0c45cba39efd38cad5fbd24a179481a53d9ad",
+      "expandedBytes": 348,
+      "expandedSha256": "b1ea7aea4b85043791fd044d15e0c45cba39efd38cad5fbd24a179481a53d9ad",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-build-entry-20261004.json",
+          "bytes": 348,
+          "sha256": "b1ea7aea4b85043791fd044d15e0c45cba39efd38cad5fbd24a179481a53d9ad"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/root-build-corrected.log",
+      "encoding": "identity",
+      "storedBytes": 1716,
+      "storedSha256": "40e8ad2e56f8807f51bbf64ebaa06ecc3dd3337b9f82e7b07d7acafff52f2aae",
+      "expandedBytes": 1716,
+      "expandedSha256": "40e8ad2e56f8807f51bbf64ebaa06ecc3dd3337b9f82e7b07d7acafff52f2aae",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-build-corrected-20261004.log",
+          "bytes": 1716,
+          "sha256": "40e8ad2e56f8807f51bbf64ebaa06ecc3dd3337b9f82e7b07d7acafff52f2aae"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/root-build-asset-hashes.json",
+      "encoding": "identity",
+      "storedBytes": 3303,
+      "storedSha256": "7675ab74e5d5f7afefa5cd595cc0252e5ca9338bbf7f352f90db261307822cd1",
+      "expandedBytes": 3303,
+      "expandedSha256": "7675ab74e5d5f7afefa5cd595cc0252e5ca9338bbf7f352f90db261307822cd1",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-build-20261004/manifest.json",
+          "bytes": 3303,
+          "sha256": "7675ab74e5d5f7afefa5cd595cc0252e5ca9338bbf7f352f90db261307822cd1"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/baseline-entry-index.html",
+      "encoding": "identity",
+      "storedBytes": 1442,
+      "storedSha256": "60675d1b7e6f739633646d53fd74d07f90d913151f5adb2a65b71fc786372392",
+      "expandedBytes": 1442,
+      "expandedSha256": "60675d1b7e6f739633646d53fd74d07f90d913151f5adb2a65b71fc786372392",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-normal-demand-prototype-20261004/index.html",
+          "bytes": 1442,
+          "sha256": "60675d1b7e6f739633646d53fd74d07f90d913151f5adb2a65b71fc786372392"
+        }
+      ]
+    },
+    {
+      "archivePath": "README.md",
+      "encoding": "identity",
+      "storedBytes": 9850,
+      "storedSha256": "41e7389903155f04850b1e98835aa94878b07528739dbb7f46066a4b91b9e586",
+      "expandedBytes": 9850,
+      "expandedSha256": "41e7389903155f04850b1e98835aa94878b07528739dbb7f46066a4b91b9e586",
+      "generated": true,
+      "authority": "Retained original verification evidence plus root-requested filename-discovery safety bookkeeping; no source contents or runtime contracts changed.",
+      "originalAliases": []
+    },
+    {
+      "archivePath": "verification.json",
+      "encoding": "identity",
+      "storedBytes": 11432,
+      "storedSha256": "cd611ac566184bee6af97d83f1f2ac053158f63c69ee2efd726fa0afaf28cdc8",
+      "expandedBytes": 11432,
+      "expandedSha256": "cd611ac566184bee6af97d83f1f2ac053158f63c69ee2efd726fa0afaf28cdc8",
+      "generated": true,
+      "authority": "Archive-only verification, including filename-discovery safety and local README references; excludes itself and manifest from verified-record count.",
+      "originalAliases": []
+    }
+  ],
+  "externalReferences": [
+    {
+      "archivePath": "performance-2026-10-04/contact-demand/manifest.json",
+      "relativeReference": "../contact-demand/manifest.json",
+      "bytes": 19682,
+      "sha256": "2cbffff5e09db367ad7c34b79717566e4b5da6485f49510d07942d529d242ab9"
+    },
+    {
+      "archivePath": "performance-2026-10-04/contact-demand/README.md",
+      "relativeReference": "../contact-demand/README.md",
+      "bytes": 6118,
+      "sha256": "3833576ed8586252948b0f790018b35f2133f1385a8c269bf485b67df1f55385"
+    },
+    {
+      "archivePath": "performance-2026-10-04/contact-demand/run/capture.json.gz",
+      "relativeReference": "../contact-demand/run/capture.json.gz",
+      "bytes": 2451650,
+      "sha256": "e7bbbb85cf03450f97fe8807414f749dbada7a5b5fa814e490f578f26f965e2f",
+      "encoding": "gzip",
+      "expandedBytes": 13547682,
+      "expandedSha256": "a9c1e4d0b759aac2a9123e9d02cef97a957e959415d65ad098f53b3f99287648",
+      "originalAlias": "/private/tmp/contact-lazy-height-20261004-v3/run/capture.json.gz",
+      "expandedIdentityAuthority": "Existing contact-demand manifest and independently verified root capture; not expanded or duplicated during this archive operation."
+    },
+    {
+      "archivePath": "performance-2026-10-04/contact-normal-demand-design.md",
+      "relativeReference": "../contact-normal-demand-design.md",
+      "bytes": 18916,
+      "sha256": "f4860124d5e21b390d34f61181faa0ebfe074281fcdf7019bd12299ce6cc6218"
+    }
+  ],
+  "reconstruction": "Original source paths and fixture path remain unchanged in evidence; reconstruct pinned ef60 scratch plus untouched oracle, apply candidate.patch, restore mapped metadata to original names, and supply the existing capture bytes. No dependency, source tree, raw capture or build asset duplication is included.",
+  "filenameDiscoveryFix": {
+    "scope": "Archive filenames, generated documentation, manifest and verification only; no runtime/assertion/Vitest configuration edits or execution.",
+    "reason": "Root default Vitest config has no include filter and could discover *.test.ts under docs.",
+    "renamedSources": [
+      {
+        "before": "cost/cost.test.ts",
+        "after": "cost/cost.test.ts.txt",
+        "bytes": 336,
+        "sha256": "f12816e470f1597b4ef63cc33242f420992243d556b2ac3da065904d50547718",
+        "contentChanged": false
+      },
+      {
+        "before": "tests/contactNormalDemand.f64-replay.test.ts",
+        "after": "tests/contactNormalDemand.f64-replay.test.ts.txt",
+        "bytes": 23022,
+        "sha256": "bf4e412357338eab65e87a6c6ff9fe60212255b50cb698a0142cf0808d4cf8f2",
+        "contentChanged": false
+      },
+      {
+        "before": "tests/contactNormalDemand.prototype.test.ts",
+        "after": "tests/contactNormalDemand.prototype.test.ts.txt",
+        "bytes": 22675,
+        "sha256": "d86f16727c6fdb43bd0ba07e4641da0ae5bd88161e1096e6a60c0ac29da90449",
+        "contentChanged": false
+      }
+    ],
+    "liveTestSourceFilesRemaining": 0,
+    "historicalPreFixMetadata": [
+      {
+        "originalArchivePath": "manifest.json",
+        "preFixPath": "/private/tmp/contact-normal-demand-archive-pre-discovery-fix-20261004/manifest.json",
+        "bytes": 36376,
+        "sha256": "67743cb00c2ffc4fabe0b9a997dcea6a60707a92df6a71208374359df8fbf1ae"
+      },
+      {
+        "originalArchivePath": "README.md",
+        "preFixPath": "/private/tmp/contact-normal-demand-archive-pre-discovery-fix-20261004/README.md",
+        "bytes": 9332,
+        "sha256": "3828c57475282ea1904c5ab5718522136457010750192fb9043e03fbe9a30bbf"
+      },
+      {
+        "originalArchivePath": "verification.json",
+        "preFixPath": "/private/tmp/contact-normal-demand-archive-pre-discovery-fix-20261004/verification.json",
+        "bytes": 8460,
+        "sha256": "4c71dfbe42e0e998d72c32f393346cb916324edde1b5a56df82c495944752a1b"
+      }
+    ]
+  }
+}

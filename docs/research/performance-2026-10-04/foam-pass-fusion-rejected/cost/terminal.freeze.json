@@ -1,0 +1,92 @@
+{
+  "status": "ONE VALID TERMINAL RUN; ROOT REJECTED, no repeat/adoption",
+  "actualUtc": {
+    "start": "2026-10-04T01:07:02.634353+00:00",
+    "terminal": "2026-10-04T01:07:04.806243+00:00"
+  },
+  "session": 63379,
+  "exitCode": 0,
+  "elapsedDriverCpuMs": 2093.6226250000004,
+  "preRunFrozenAuthorityAllRecordsUnchanged": true,
+  "pairs": 30,
+  "positiveCompletePairedSavings": 14,
+  "completePairedSavingMs": {
+    "median": -0.024188500000036584,
+    "mean": -0.04781813333336989,
+    "p95": 0.516791000000012,
+    "min": -1.158542000000125,
+    "max": 0.8127090000000408
+  },
+  "foamPairedSavingMs": {
+    "median": -0.008584000000155356,
+    "mean": -0.025515266666654195,
+    "p95": 0.3235419999998612,
+    "min": -0.8541660000000775,
+    "max": 0.6344180000000961
+  },
+  "fieldsAndSolverGatesPassed": {
+    "everyPreflightWarmupMeasuredPairFullBytes": true,
+    "fullIndexDissipationTails": true,
+    "publicAndPrivateIdentities": true,
+    "numericPrivateScratchFinalContract": true,
+    "sharedStencilIdentityBytesDescriptorsAndConsumed": true,
+    "solverIdentityBytesClockUnchanged": true,
+    "nativeNumericEligibilityInsideTimedCall": true,
+    "sharedAirAndActualSourceFunction": true
+  },
+  "files": [
+    {
+      "path": "cost-report.json",
+      "bytes": 26249,
+      "sha256": "6201fd99054969fd8358fbf624f12fe016360c0dbbdb617840bed841bab8d40d"
+    },
+    {
+      "path": "cost-stdout.txt",
+      "bytes": 994,
+      "sha256": "9a6e77e9e52c27b879078d741eb3a7157cd9356331700a7926b7d9b38c570d28"
+    },
+    {
+      "path": "cost-stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cost-run-terminal.json",
+      "bytes": 371,
+      "sha256": "f3cfb31ca54980684ea369e66ba30e88499a6c92e636d567e73a915676c0c1de"
+    },
+    {
+      "path": "cost.mjs",
+      "bytes": 1036015,
+      "sha256": "2cbe4d0cb8c41d3ca0addc6814c6bfd7de7081ea2d84c358c34501f2180fa959"
+    },
+    {
+      "path": "cost.ts",
+      "bytes": 13900,
+      "sha256": "384e401c73e3c8e6699389b3dd8b54e662752bf00598d7132f2358c23a379428"
+    },
+    {
+      "path": "intake.ts",
+      "bytes": 4778,
+      "sha256": "befea0ef86b7bd19ecacbc45959fc8fb8b6a6e47d5685bed5f5ea2624f063af5"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 10916,
+      "sha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60"
+    },
+    {
+      "path": "cost-compiled-ready.json",
+      "bytes": 4079,
+      "sha256": "c4e323e8b8ef0efcd45813421e64aa00777bb9b667d67de468ec41495b13dd42"
+    },
+    {
+      "path": "checks/corrected/terminal.freeze.json",
+      "bytes": 2236,
+      "sha256": "365a64fb20be41db57675b71a3ab616c9749e0b475dd3c9a86d36e8b62411880"
+    }
+  ],
+  "productionChanged": false,
+  "waterStepBrowserGpuExecuted": false,
+  "benchmarkRepeated": false
+}

@@ -1,0 +1,14 @@
+{
+  "status": "ARCHIVE ONLY ready for root review; rejected/no new runtime work",
+  "manifestSha256": "5a736131b7c2a01881ea32551dd6035ecf9233a5a153e443aee16dc54bbc86fd",
+  "sumsSha256": "39f915351058671bc1cc18e47614a9fe73e85adc690b940fe2678ffe140d3355",
+  "reportOriginalSha256": "6201fd99054969fd8358fbf624f12fe016360c0dbbdb617840bed841bab8d40d",
+  "payloadEntries": 41,
+  "byteExactAliases": 9,
+  "readmeLocalLinksResolved": 29,
+  "everyCopyExpandedAndOriginalByteParity": true,
+  "compiledFingerprintOnlyNotDuplicated": true,
+  "payloadStoredBytes": 291223,
+  "payloadExpandedBytes": 471830,
+  "checksTestsBuildBenchGpuGitProductionNotPerformedForArchive": true
+}

@@ -1,0 +1,47 @@
+{
+  "baseline": "ef60d3cee",
+  "approvedSourceSha256": "07c6650cc19bf85af85231eb2ef2a412f0c61d40a211ac1c98d79422369efaf1",
+  "checkResults": [
+    {
+      "log": "strict-tsc-f64-first.log",
+      "command": [
+        "./node_modules/.bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exitCode": 2
+    }
+  ],
+  "records": [
+    {
+      "path": "checks/f64-first-candidate-manifest.json",
+      "bytes": 6901,
+      "sha256": "539d610d0e8e9c2d79a958755960f3e64e6d9639ecf70697fe69a88f4daf9cf3"
+    },
+    {
+      "path": "checks/f64-first-candidate.patch",
+      "bytes": 62605,
+      "sha256": "69a1e01cce0604237561faf97e375efdc9e10d9d670942e274c606c091c900f8"
+    },
+    {
+      "path": "checks/f64-first-check-results.json",
+      "bytes": 216,
+      "sha256": "9f98996249604c61fa6a32c3de30a8b0fb3b2c9ca2d69e68710cfa58eef79b13"
+    },
+    {
+      "path": "checks/f64-first-run.test-source.ts",
+      "bytes": 23014,
+      "sha256": "07c6650cc19bf85af85231eb2ef2a412f0c61d40a211ac1c98d79422369efaf1"
+    },
+    {
+      "path": "checks/strict-tsc-f64-first.log",
+      "bytes": 221,
+      "sha256": "8a806431f881a3ef7780fa58e5e7672d746039c4371accafb62a2d11d0c54d46"
+    }
+  ],
+  "runtimeChangedDuringVerification": false,
+  "retry": false
+}

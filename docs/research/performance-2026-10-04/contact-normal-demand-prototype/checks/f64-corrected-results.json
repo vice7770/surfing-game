@@ -1,0 +1,27 @@
+[
+  {
+    "log": "strict-tsc-f64-corrected.log",
+    "command": [
+      "./node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "log": "f64-replay-corrected.log",
+    "command": [
+      "./node_modules/.bin/vitest",
+      "run",
+      "--config",
+      "vitest.prototype.config.ts",
+      "--maxWorkers",
+      "1",
+      "src/wave/barrel/contactNormalDemand.f64-replay.test.ts"
+    ],
+    "exitCode": 0
+  }
+]

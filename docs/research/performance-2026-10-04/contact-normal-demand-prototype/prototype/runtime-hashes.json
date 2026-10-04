@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "baseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "documentationCheckpointProvidedByRoot": "43641bf33654ce8f0954ee9045bcddab28738bc9",
+  "normalPrototypeProductionAdopted": false,
+  "scope": "Five TMP runtime files; baseline and candidate read-only hashes verified against the frozen prepared manifest. This does not attest that unrelated global production work was unchanged.",
+  "runtimeFiles": [
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "baseline": {
+        "bytes": 54858,
+        "sha256": "bda23f0eb188a9568cbe368b542cff2e073bd5e6e7d98bdda4f3d84b8f961f7b"
+      },
+      "candidate": {
+        "bytes": 57487,
+        "sha256": "45f827aa2dbaae335396d41e3f1f6f757e4a1da95ac9576c82dadc9a8c3680a6"
+      }
+    },
+    {
+      "path": "src/wave/barrel/sweptContact.ts",
+      "baseline": {
+        "bytes": 26862,
+        "sha256": "f3e3dc50315d2b9a68dde6d56d7da03cf95921d377b58dbc53130b2d8d6a7f0e"
+      },
+      "candidate": {
+        "bytes": 28490,
+        "sha256": "2e4cc356b2a970b5fb545703996dfb9b63129b538ba1c41bd63aefbb888aff3b"
+      }
+    },
+    {
+      "path": "src/physics/PhysicalSurfWater.ts",
+      "baseline": {
+        "bytes": 23514,
+        "sha256": "6edc9f0eb3c857bfbb041c49cc4039af9f8897203772b20ffae3e1a0d223beea"
+      },
+      "candidate": {
+        "bytes": 23535,
+        "sha256": "0968979485f03ed7df681203a081b1be417bcf3d7b4ebd11bd649377bda27a57"
+      }
+    },
+    {
+      "path": "src/wave/SurfZoneRunner.ts",
+      "baseline": {
+        "bytes": 38802,
+        "sha256": "78eb334ff36986d5a5f46c9bd86d9bc9a87857289c45cd1db8a6b31cebd2c477"
+      },
+      "candidate": {
+        "bytes": 39955,
+        "sha256": "48892eea1be50a39708376662908511900ad02ef8d24f3fc361e69260372130f"
+      }
+    },
+    {
+      "path": "src/game/SurfZoneWorkerCore.ts",
+      "baseline": {
+        "bytes": 7105,
+        "sha256": "9b745478716d39ff18483b9ae62b4edfed9afe6dd74067d6f45e7c2f8e3ec710"
+      },
+      "candidate": {
+        "bytes": 7117,
+        "sha256": "284675cc587b9f12c70ae518d1a8c4f128396482883f549989fc69b327437a69"
+      }
+    }
+  ],
+  "independentOracle": "Untouched ef60d3cee git-archive source; no new candidate normal helper shared with oracle",
+  "originalSourceClosure": "original-source-manifest.json.gz (547 files; original archive bytes/hash preserved there)",
+  "extraPersistentPrivateBytes": 42458
+}

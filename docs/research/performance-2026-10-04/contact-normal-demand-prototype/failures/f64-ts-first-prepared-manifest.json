@@ -1,0 +1,214 @@
+{
+  "baseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "archive": {
+    "gitArchiveArgs": [
+      "git",
+      "archive",
+      "ef60d3cee",
+      "src",
+      "package.json",
+      "tsconfig.json",
+      "vite.config.ts",
+      "vitest.config.ts"
+    ],
+    "archiveBytes": 5242880,
+    "archiveSha256": "0f981d261185651a46dfe934eac42b397af3df74caca043639b5e96e76b511f8"
+  },
+  "originalManifest": {
+    "path": "original-source-manifest.json",
+    "bytes": 89591,
+    "sha256": "1d38668ed6e64cf70163c266b6aaa430a210e4273a3bb7418fc62ada1408ee33"
+  },
+  "oracleFileCount": 547,
+  "oracleIntegrity": "All 547 original oracle files match their preparation hashes and byte counts; only metadata hashing performed.",
+  "changedExistingPaths": [
+    "src/wave/barrel/sweptLoft.ts",
+    "src/wave/barrel/sweptContact.ts",
+    "src/physics/PhysicalSurfWater.ts",
+    "src/wave/SurfZoneRunner.ts",
+    "src/game/SurfZoneWorkerCore.ts"
+  ],
+  "newSourceAndHelperPaths": [
+    "src/wave/barrel/contactNormalDemand.prototype.test.ts",
+    "vitest.prototype.config.ts",
+    "src/wave/barrel/contactNormalDemand.f64-replay.test.ts"
+  ],
+  "changedAndNew": [
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "original": {
+        "path": "src/wave/barrel/sweptLoft.ts",
+        "bytes": 54858,
+        "sha256": "bda23f0eb188a9568cbe368b542cff2e073bd5e6e7d98bdda4f3d84b8f961f7b"
+      },
+      "candidate": {
+        "path": "src/wave/barrel/sweptLoft.ts",
+        "bytes": 57487,
+        "sha256": "45f827aa2dbaae335396d41e3f1f6f757e4a1da95ac9576c82dadc9a8c3680a6"
+      }
+    },
+    {
+      "path": "src/wave/barrel/sweptContact.ts",
+      "original": {
+        "path": "src/wave/barrel/sweptContact.ts",
+        "bytes": 26862,
+        "sha256": "f3e3dc50315d2b9a68dde6d56d7da03cf95921d377b58dbc53130b2d8d6a7f0e"
+      },
+      "candidate": {
+        "path": "src/wave/barrel/sweptContact.ts",
+        "bytes": 28490,
+        "sha256": "2e4cc356b2a970b5fb545703996dfb9b63129b538ba1c41bd63aefbb888aff3b"
+      }
+    },
+    {
+      "path": "src/physics/PhysicalSurfWater.ts",
+      "original": {
+        "path": "src/physics/PhysicalSurfWater.ts",
+        "bytes": 23514,
+        "sha256": "6edc9f0eb3c857bfbb041c49cc4039af9f8897203772b20ffae3e1a0d223beea"
+      },
+      "candidate": {
+        "path": "src/physics/PhysicalSurfWater.ts",
+        "bytes": 23535,
+        "sha256": "0968979485f03ed7df681203a081b1be417bcf3d7b4ebd11bd649377bda27a57"
+      }
+    },
+    {
+      "path": "src/wave/SurfZoneRunner.ts",
+      "original": {
+        "path": "src/wave/SurfZoneRunner.ts",
+        "bytes": 38802,
+        "sha256": "78eb334ff36986d5a5f46c9bd86d9bc9a87857289c45cd1db8a6b31cebd2c477"
+      },
+      "candidate": {
+        "path": "src/wave/SurfZoneRunner.ts",
+        "bytes": 39955,
+        "sha256": "48892eea1be50a39708376662908511900ad02ef8d24f3fc361e69260372130f"
+      }
+    },
+    {
+      "path": "src/game/SurfZoneWorkerCore.ts",
+      "original": {
+        "path": "src/game/SurfZoneWorkerCore.ts",
+        "bytes": 7105,
+        "sha256": "9b745478716d39ff18483b9ae62b4edfed9afe6dd74067d6f45e7c2f8e3ec710"
+      },
+      "candidate": {
+        "path": "src/game/SurfZoneWorkerCore.ts",
+        "bytes": 7117,
+        "sha256": "284675cc587b9f12c70ae518d1a8c4f128396482883f549989fc69b327437a69"
+      }
+    },
+    {
+      "path": "src/wave/barrel/contactNormalDemand.prototype.test.ts",
+      "original": null,
+      "candidate": {
+        "path": "src/wave/barrel/contactNormalDemand.prototype.test.ts",
+        "bytes": 22675,
+        "sha256": "d86f16727c6fdb43bd0ba07e4641da0ae5bd88161e1096e6a60c0ac29da90449"
+      }
+    },
+    {
+      "path": "vitest.prototype.config.ts",
+      "original": null,
+      "candidate": {
+        "path": "vitest.prototype.config.ts",
+        "bytes": 254,
+        "sha256": "de1b305fbfc47cd2ffc53c708dab940feea70a9e07b762103e473dfc7b1defbe"
+      }
+    },
+    {
+      "path": "src/wave/barrel/contactNormalDemand.f64-replay.test.ts",
+      "original": null,
+      "candidate": {
+        "path": "src/wave/barrel/contactNormalDemand.f64-replay.test.ts",
+        "bytes": 23014,
+        "sha256": "07c6650cc19bf85af85231eb2ef2a412f0c61d40a211ac1c98d79422369efaf1"
+      }
+    }
+  ],
+  "preparationFiles": [
+    {
+      "path": "candidate.patch",
+      "bytes": 62605,
+      "sha256": "69a1e01cce0604237561faf97e375efdc9e10d9d670942e274c606c091c900f8"
+    },
+    {
+      "path": "README.md",
+      "bytes": 8340,
+      "sha256": "3c1c3f608ee17b136c62f5ba4849408b528ab2729a682f1b8607141eb74add20"
+    }
+  ],
+  "symlinks": [
+    {
+      "path": "node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules"
+    },
+    {
+      "path": "public",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/public"
+    }
+  ],
+  "checks": {
+    "status": "Strict second pass and 111/111 focused tests passed; new F64 replay source awaiting review, not compiled or executed.",
+    "originalStrictTsc": {
+      "exitCode": 0,
+      "log": {
+        "path": "checks/strict-tsc-first.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "originalFocused": {
+      "exitCode": 1,
+      "testsPassed": 109,
+      "testsFailed": 1,
+      "testsTotal": 110,
+      "log": {
+        "path": "checks/focused-first.log",
+        "bytes": 1694,
+        "sha256": "cd714f9f8be69acd522fba5b7e1ee6d5f67234934bd02e1f3b92be6a85e07a63"
+      }
+    },
+    "firstRunEvidence": {
+      "path": "checks/first-run-evidence.json",
+      "bytes": 1118,
+      "sha256": "3611ac1373366400882c9deac5a3d9db2020bb458f60890cec2711736a16ff5d"
+    },
+    "firstCandidateManifest": {
+      "path": "checks/first-candidate-manifest.json",
+      "bytes": 4827,
+      "sha256": "b089048ab2cfdd823559b0712de46b8853e03764b28c45ccc54116d8cbf778d2"
+    },
+    "pending": [
+      "Strict TS including new F64 harness",
+      "Reviewed first-epoch 627-call F64 replay",
+      "Complete-path cost gate",
+      "SurfZoneRunner broader suite"
+    ],
+    "correctedFocusedEvidence": {
+      "path": "checks/second-run-evidence.json",
+      "bytes": 1096,
+      "sha256": "853b5e2c1fbd9c5202bb2eae252f355060084f1b5425825db45973a03f407b4f"
+    }
+  },
+  "productionEdits": false,
+  "gitMutations": false,
+  "gpuOrBrowser": false,
+  "fixture": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v3/run/capture.json.gz",
+    "compressedBytes": 2451650,
+    "compressedSha256": "e7bbbb85cf03450f97fe8807414f749dbada7a5b5fa814e490f578f26f965e2f",
+    "expandedBytes": 13547682,
+    "expandedSha256": "a9c1e4d0b759aac2a9123e9d02cef97a957e959415d65ad098f53b3f99287648",
+    "replayEpochs": 1,
+    "sourceStatus": "Written, not executed",
+    "methodCounts": {
+      "publicCalls": 627,
+      "queryCalls": 441,
+      "floorAtCalls": 186,
+      "hits": 28,
+      "mixedOrderPreserved": true
+    }
+  }
+}

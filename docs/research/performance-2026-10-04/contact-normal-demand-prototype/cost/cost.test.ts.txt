@@ -1,0 +1,5 @@
+import { it } from 'vitest';
+import { runContactNormalCost } from '../src/wave/barrel/contactNormalDemand.cost';
+
+// This driver is excluded from the ordinary prototype test config; only the reviewed cost config discovers it.
+it('controlled repeated first-epoch complete contact cost, with exact guards', () => runContactNormalCost());

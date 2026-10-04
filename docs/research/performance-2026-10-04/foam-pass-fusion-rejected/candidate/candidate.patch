@@ -1,0 +1,214 @@
+--- a/src/wave/FoamField.ts
++++ b/src/wave/FoamField.ts
+@@ -1,6 +1,40 @@
+ import { GRAVITY } from './dispersion';
+ import type { ShallowWaterSolver } from './ShallowWaterSolver';
+-import type { AdvectionStencil } from './AdvectionStencil';
++import { AdvectionStencil } from './AdvectionStencil';
++
++
++// Numeric worker eligibility only. The public ArrayLike update below retains its eager chronology.
++const GRID_MATH_NAMES = ['round', 'floor', 'min', 'max', 'sqrt', 'exp'] as const;
++const GRID_MATH = GRID_MATH_NAMES.map(name => ({ name, descriptor: Object.getOwnPropertyDescriptor(Math, name) }));
++const GRID_TYPED_PROTOTYPE = Object.getPrototypeOf(Float64Array.prototype) as object;
++const GRID_ARRAY_NAMES = ['set', 'copyWithin', 'fill'] as const;
++const GRID_ARRAY = GRID_ARRAY_NAMES.map(name => ({ name, descriptor: Object.getOwnPropertyDescriptor(GRID_TYPED_PROTOTYPE, name) }));
++const GRID_STENCIL = { begin: AdvectionStencil.prototype.begin, commit: AdvectionStencil.prototype.commit };
++const GRID_FUNCTION_TEXT = Function.prototype.toString;
++const GRID_NATIVE = [...GRID_MATH, ...GRID_ARRAY].every(({ descriptor }) =>
++  descriptor && typeof descriptor.value === 'function'
++  && /\{\s*\[native code\]\s*\}/.test(Reflect.apply(GRID_FUNCTION_TEXT, descriptor.value, []) as string));
++
++function gridIntrinsics(): boolean {
++  if (!GRID_NATIVE || Object.getPrototypeOf(Float64Array.prototype) !== GRID_TYPED_PROTOTYPE) return false;
++  for (const { name, descriptor } of GRID_MATH) {
++    if (Object.getOwnPropertyDescriptor(Math, name)?.value !== descriptor?.value) return false;
++  }
++  for (const { name, descriptor } of GRID_ARRAY) {
++    if (Object.getOwnPropertyDescriptor(Float64Array.prototype, name)
++      || Object.getOwnPropertyDescriptor(GRID_TYPED_PROTOTYPE, name)?.value !== descriptor?.value) return false;
++  }
++  return true;
++}
++
++function gridArray(value: Float64Array): boolean {
++  return value instanceof Float64Array && Object.getPrototypeOf(value) === Float64Array.prototype
++    && !Object.getOwnPropertyDescriptor(value, 'length')
++    && !Object.getOwnPropertyDescriptor(value, 'buffer')
++    && !Object.getOwnPropertyDescriptor(value, 'set')
++    && !Object.getOwnPropertyDescriptor(value, 'copyWithin')
++    && !Object.getOwnPropertyDescriptor(value, 'fill');
++}
+ 
+ /** Foam e-folding times, s: dense whitewater, and the residual lace it leaves. */
+ export interface FoamDecay {
+@@ -127,20 +161,26 @@
+     }
+   }
+ 
+-  /** Rebuild the derived index after a tool or test directly edits `source`; normal updates build it as they go. */
+-  reindexSources(): void {
+-    this.sourceCount = 0;
+-    for (let i = 0; i < this.source.length; i += 1) {
+-      if (this.source[i] > 0) this.sourceCells[this.sourceCount++] = i;
+-    }
+-  }
+-
+-  /** Semi-Lagrangian step: each cell takes the foam found upstream at x − u·dt. */
+-  private advect(dt: number, stencil?: AdvectionStencil): void {
+-    const { nx, nz, h, qx, qz, xCenters, zCenters, dx } = this.solver;
++  /**
++   * @internal The simulation's independent numeric grid: finish each destination before publishing.
++   * nextDense/nextResidual hold final values here; only their private end contents differ from update.
++   * Nonstandard callbacks/methods or aliased strengths delegate the whole call before any mutation.
++   */
++  updateGrid(dt: number, breaking: Float64Array, stencil?: AdvectionStencil): void {
++    if (!(dt > 0)) return;
++    if (!this.gridEligible(breaking, stencil)) {
++      this.update(dt, breaking, stencil);
++      return;
++    }
++    this.followWindow();
++    const { nx, nz, h, bed, restLevel, qx, qz, xCenters, zCenters, dx } = this.solver;
++    const keepDense = Math.exp(-dt / this.decay.dense);
++    const keepLace = Math.exp(-dt / this.decay.residual);
+     stencil?.begin(this.solver, dt);
+     const indices = stencil?.indices;
+     const values = stencil?.values;
++    this.sourceCount = 0;
++    this.breakingCount = 0;
+     for (let iz = 0; iz < nz; iz += 1) {
+       for (let ix = 0; ix < nx; ix += 1) {
+         const i = iz * nx + ix;
+@@ -148,6 +188,7 @@
+         if (depth <= WET) {
+           this.nextDense[i] = 0;
+           this.nextResidual[i] = 0;
++          this.source[i] = 0;
+           continue;
+         }
+         const x = xCenters[ix] - (qx[i] / depth) * dt;
+@@ -169,6 +210,112 @@
+           values[i * 2] = tx;
+           values[i * 2 + 1] = tz;
+         }
++        const previous = this.dense[k] * w00 + this.dense[k + 1] * w10 + this.dense[k + nx] * w01 + this.dense[k + nx + 1] * w11;
++        const advectedLace = this.residual[k] * w00 + this.residual[k + 1] * w10 + this.residual[k + nx] * w01 + this.residual[k + nx + 1] * w11;
++        let dense = previous * keepDense;
++        const lace = advectedLace * keepLace + LACE_SHARE * (previous - dense);
++        const strength = breaking[i];
++        let bore = 0;
++        if (strength > 0) {
++          bore = boreDissipation(restLevel - bed[i], h[i]);
++          this.breakingCells[this.breakingCount++] = i;
++          this.dissipation[i] = strength * bore;
++        }
++        const rate = strength > 0 ? (strength * FOAM_SOURCE_RATE * bore) / REFERENCE_DISSIPATION : 0;
++        this.source[i] = rate;
++        if (rate > 0) this.sourceCells[this.sourceCount++] = i;
++        dense += rate * dt;
++        this.nextDense[i] = dense < TRACE ? 0 : Math.min(1, dense);
++        this.nextResidual[i] = lace < TRACE ? 0 : Math.min(lace, 1 - this.nextDense[i]);
++      }
++    }
++    this.dense.set(this.nextDense);
++    this.residual.set(this.nextResidual);
++    stencil?.commit();
++  }
++
++  private gridEligible(breaking: Float64Array, stencil?: AdvectionStencil): boolean {
++    if (!gridIntrinsics() || !gridArray(breaking) || !gridArray(this.dense) || !gridArray(this.residual)) return false;
++    const denseDecay = Object.getOwnPropertyDescriptor(this.decay, 'dense');
++    const residualDecay = Object.getOwnPropertyDescriptor(this.decay, 'residual');
++    if (typeof denseDecay?.value !== 'number' || typeof residualDecay?.value !== 'number') return false;
++    for (const key of ['h', 'bed', 'qx', 'qz', 'xCenters', 'zCenters', 'nx', 'nz', 'dx', 'restLevel'] as const) {
++      const descriptor = Object.getOwnPropertyDescriptor(this.solver, key);
++      if (!descriptor || !('value' in descriptor)) return false;
++      if (key === 'nx' || key === 'nz' || key === 'dx' || key === 'restLevel') {
++        if (typeof descriptor.value !== 'number') return false;
++      } else if (!gridArray(descriptor.value)) return false;
++    }
++    if (this.solver.h.length !== this.solver.nx * this.solver.nz) return false;
++    if (breaking.length !== this.solver.h.length || this.gridAlias(breaking.buffer)) return false;
++    if (stencil) {
++      if (Object.getPrototypeOf(stencil) !== AdvectionStencil.prototype) return false;
++      for (const key of ['begin', 'commit'] as const) {
++        if (Object.getOwnPropertyDescriptor(stencil, key)
++          || Object.getOwnPropertyDescriptor(AdvectionStencil.prototype, key)?.value !== GRID_STENCIL[key]) return false;
++      }
++      const indices = Object.getOwnPropertyDescriptor(stencil, 'indices');
++      const values = Object.getOwnPropertyDescriptor(stencil, 'values');
++      if (!indices || !('value' in indices) || !values || !('value' in values)) return false;
++      if (!(indices.value instanceof Uint32Array) || Object.getPrototypeOf(indices.value) !== Uint32Array.prototype
++        || Object.getOwnPropertyDescriptor(indices.value, 'buffer') || !gridArray(values.value)) return false;
++      if (this.gridAlias(values.value.buffer) || this.gridAlias(indices.value.buffer)
++        || values.value.buffer === breaking.buffer || indices.value.buffer === breaking.buffer) return false;
++    }
++    return true;
++  }
++
++  private gridAlias(buffer: ArrayBufferLike): boolean {
++    const { h, bed, qx, qz, xCenters, zCenters } = this.solver;
++    return buffer === this.dense.buffer || buffer === this.residual.buffer || buffer === this.source.buffer
++      || buffer === this.sourceCells.buffer || buffer === this.breakingCells.buffer || buffer === this.dissipation.buffer
++      || buffer === this.nextDense.buffer || buffer === this.nextResidual.buffer
++      || buffer === h.buffer || buffer === bed.buffer || buffer === qx.buffer || buffer === qz.buffer
++      || buffer === xCenters.buffer || buffer === zCenters.buffer;
++  }
++
++  /** Rebuild the derived index after a tool or test directly edits `source`; normal updates build it as they go. */
++  reindexSources(): void {
++    this.sourceCount = 0;
++    for (let i = 0; i < this.source.length; i += 1) {
++      if (this.source[i] > 0) this.sourceCells[this.sourceCount++] = i;
++    }
++  }
++
++  /** Semi-Lagrangian step: each cell takes the foam found upstream at x − u·dt. */
++  private advect(dt: number, stencil?: AdvectionStencil): void {
++    const { nx, nz, h, qx, qz, xCenters, zCenters, dx } = this.solver;
++    stencil?.begin(this.solver, dt);
++    const indices = stencil?.indices;
++    const values = stencil?.values;
++    for (let iz = 0; iz < nz; iz += 1) {
++      for (let ix = 0; ix < nx; ix += 1) {
++        const i = iz * nx + ix;
++        const depth = h[i];
++        if (depth <= WET) {
++          this.nextDense[i] = 0;
++          this.nextResidual[i] = 0;
++          continue;
++        }
++        const x = xCenters[ix] - (qx[i] / depth) * dt;
++        const z = zCenters[iz] - (qz[i] / depth) * dt;
++        const gx = Math.min(nx - 1, Math.max(0, (x - xCenters[0]) / dx));
++        const column = Math.min(nx - 2, Math.floor(gx));
++        const tx = gx - column;
++        let row = Math.min(iz, nz - 2);
++        while (row > 0 && zCenters[row] > z) row -= 1;
++        while (row < nz - 2 && zCenters[row + 1] <= z) row += 1;
++        const tz = Math.min(1, Math.max(0, (z - zCenters[row]) / (zCenters[row + 1] - zCenters[row])));
++        const k = row * nx + column;
++        const w00 = (1 - tx) * (1 - tz);
++        const w10 = tx * (1 - tz);
++        const w01 = (1 - tx) * tz;
++        const w11 = tx * tz;
++        if (indices && values) {
++          indices[i] = k;
++          values[i * 2] = tx;
++          values[i * 2 + 1] = tz;
++        }
+         this.nextDense[i] = this.dense[k] * w00 + this.dense[k + 1] * w10 + this.dense[k + nx] * w01 + this.dense[k + nx + 1] * w11;
+         this.nextResidual[i] = this.residual[k] * w00 + this.residual[k + 1] * w10 + this.residual[k + nx] * w01 + this.residual[k + nx + 1] * w11;
+       }
+--- a/src/wave/SurfZoneSimulation.ts
++++ b/src/wave/SurfZoneSimulation.ts
+@@ -804,7 +804,7 @@
+     end = performance.now();
+     this.stepCosts.lip = end - phase;
+     phase = end;
+-    this.foam.update(dt, this.whitewaterStrength, this.advectionStencil);
++    this.foam.updateGrid(dt, this.whitewaterStrength, this.advectionStencil);
+     end = performance.now();
+     this.stepCosts.foam = end - phase;
+     phase = end;

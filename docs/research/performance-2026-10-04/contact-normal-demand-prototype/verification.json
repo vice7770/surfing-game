@@ -1,0 +1,371 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "scope": "Archive-only byte/hash, lossless gzip, original alias, JSON, retained evidence consistency, filename and local-reference verification; no new runtime tests, build, benchmark or hardware execution.",
+  "verifiedRecordsExcludingThisFileAndManifest": 48,
+  "verifiedOriginalAliases": 62,
+  "gzipRecords": 8,
+  "parseableJsonRecords": 22,
+  "verifiedExternalReferences": 4,
+  "originalSourceClosureRecords": 547,
+  "costAuthorityRecords": 561,
+  "recordChecks": [
+    {
+      "archivePath": "prototype/candidate.patch",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "prototype/prepared-manifest.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "prototype/original-source-manifest.json.gz",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "prototype/prepared-README.md",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "tests/contactNormalDemand.prototype.test.ts.txt",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "tests/contactNormalDemand.f64-replay.test.ts.txt",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "tests/vitest.prototype.config.ts",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "cost/contactNormalDemand.cost.ts",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "cost/cost.test.ts.txt",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "cost/vitest.cost.config.ts",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "cost/plan.md",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "cost/ready.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "cost/authority.json.gz",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "cost/report.json.gz",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 2
+    },
+    {
+      "archivePath": "checks/f64-proof.json.gz",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 3
+    },
+    {
+      "archivePath": "failures/focus-first.test-source.ts",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/focus-first.patch.gz",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/focus-first-prepared-manifest.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/focus-first.log",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/focus-first-results.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/focus-first-evidence.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/focused-passed.patch.gz",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/focused-passed.log",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/focused-passed-results.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/focused-passed-evidence.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/f64-ts-first.test-source.ts",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/f64-ts-first.patch.gz",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/f64-ts-first-prepared-manifest.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/f64-ts-first.log",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/f64-ts-first-results.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/f64-ts-first-freeze.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/f64-corrected.patch.gz",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/f64-corrected-prepared-manifest.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/f64-corrected-results.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/f64-corrected-freeze.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/f64-corrected.log",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/strict-tsc-success-empty.log",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 4
+    },
+    {
+      "archivePath": "cost/passed.log",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "cost/passed-results.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "cost/passed-freeze.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "prototype/runtime-hashes.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 0
+    },
+    {
+      "archivePath": "checks/root-integration-passed.log",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "failures/root-build-first.log",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/root-build-entry-authority.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/root-build-corrected.log",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/root-build-asset-hashes.json",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "checks/baseline-entry-index.html",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 1
+    },
+    {
+      "archivePath": "README.md",
+      "storedAndExpanded": "exact",
+      "originalAliasesVerified": 0
+    }
+  ],
+  "retainedTerminalAuthorities": {
+    "focused": {
+      "tests": 111,
+      "files": 4
+    },
+    "actualF64Replay": {
+      "tests": 1,
+      "epochs": 1,
+      "publicCalls": 627,
+      "queryCalls": 441,
+      "floorAtCalls": 186,
+      "hits": 28,
+      "anomalies": 0,
+      "heightCallbackTriples": 20117,
+      "eagerNormals": 23852,
+      "selectedNormalVertices": 65
+    },
+    "rootIntegration": {
+      "tests": 74,
+      "files": 3,
+      "exitCode": 0,
+      "durationSeconds": 69.86
+    },
+    "rootQaBuild": {
+      "firstFailed": "missing baseline index.html in minimal extraction",
+      "correctedExitCode": 0,
+      "buildId": "43641bf33-qa-contact-normal",
+      "outputHashRecords": 11,
+      "outputFilesCopied": 0
+    },
+    "cost": {
+      "measuredTrials": 240,
+      "pairedBlocks": 60,
+      "positiveBlocks": 43,
+      "negativeBlocks": 17,
+      "pairedSavingMedianMs": 0.11889599999989287,
+      "pairedSavingMeanMs": 0.11059474999998713
+    }
+  },
+  "f64TypingRepairByteComparison": "Exact sole : number annotation; eight added bytes, no runtime/assertion change.",
+  "historicalPreparationFlags": "Preserved verbatim; terminal logs/results/proofs establish actual status.",
+  "failureBytesPreserved": true,
+  "normalPrototypeProductionAdopted": false,
+  "fpsClaim": false,
+  "filenameDiscoveryFix": {
+    "scope": "Archive filenames, generated documentation, manifest and verification only; no runtime/assertion/Vitest configuration edits or execution.",
+    "reason": "Root default Vitest config has no include filter and could discover *.test.ts under docs.",
+    "renamedSources": [
+      {
+        "before": "cost/cost.test.ts",
+        "after": "cost/cost.test.ts.txt",
+        "bytes": 336,
+        "sha256": "f12816e470f1597b4ef63cc33242f420992243d556b2ac3da065904d50547718",
+        "contentChanged": false
+      },
+      {
+        "before": "tests/contactNormalDemand.f64-replay.test.ts",
+        "after": "tests/contactNormalDemand.f64-replay.test.ts.txt",
+        "bytes": 23022,
+        "sha256": "bf4e412357338eab65e87a6c6ff9fe60212255b50cb698a0142cf0808d4cf8f2",
+        "contentChanged": false
+      },
+      {
+        "before": "tests/contactNormalDemand.prototype.test.ts",
+        "after": "tests/contactNormalDemand.prototype.test.ts.txt",
+        "bytes": 22675,
+        "sha256": "d86f16727c6fdb43bd0ba07e4641da0ae5bd88161e1096e6a60c0ac29da90449",
+        "contentChanged": false
+      }
+    ],
+    "liveTestSourceFilesRemaining": 0,
+    "historicalPreFixMetadata": [
+      {
+        "originalArchivePath": "manifest.json",
+        "preFixPath": "/private/tmp/contact-normal-demand-archive-pre-discovery-fix-20261004/manifest.json",
+        "bytes": 36376,
+        "sha256": "67743cb00c2ffc4fabe0b9a997dcea6a60707a92df6a71208374359df8fbf1ae"
+      },
+      {
+        "originalArchivePath": "README.md",
+        "preFixPath": "/private/tmp/contact-normal-demand-archive-pre-discovery-fix-20261004/README.md",
+        "bytes": 9332,
+        "sha256": "3828c57475282ea1904c5ab5718522136457010750192fb9043e03fbe9a30bbf"
+      },
+      {
+        "originalArchivePath": "verification.json",
+        "preFixPath": "/private/tmp/contact-normal-demand-archive-pre-discovery-fix-20261004/verification.json",
+        "bytes": 8460,
+        "sha256": "4c71dfbe42e0e998d72c32f393346cb916324edde1b5a56df82c495944752a1b"
+      }
+    ]
+  },
+  "verifiedLocalReadmeReferences": [
+    "cost/report.json.gz",
+    "prototype/original-source-manifest.json.gz",
+    "prototype/candidate.patch",
+    "prototype/runtime-hashes.json",
+    "failures/",
+    "checks/root-integration-passed.log",
+    "failures/root-build-first.log",
+    "checks/root-build-entry-authority.json",
+    "checks/root-build-corrected.log",
+    "checks/root-build-asset-hashes.json",
+    "../contact-demand/run/capture.json.gz",
+    "checks/f64-proof.json.gz",
+    "cost/plan.md",
+    "cost/ready.json",
+    "cost/authority.json.gz",
+    "cost/passed-freeze.json",
+    "manifest.json",
+    "verification.json",
+    "../contact-demand/manifest.json",
+    "../contact-normal-demand-design.md",
+    "tests/contactNormalDemand.prototype.test.ts.txt",
+    "tests/contactNormalDemand.f64-replay.test.ts.txt",
+    "cost/cost.test.ts.txt"
+  ]
+}

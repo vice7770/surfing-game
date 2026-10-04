@@ -1,0 +1,27 @@
+[
+  {
+    "log": "strict-tsc-cost-first.log",
+    "command": [
+      "./node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "log": "cost-first.log",
+    "command": [
+      "./node_modules/.bin/vitest",
+      "run",
+      "--config",
+      "vitest.cost.config.ts",
+      "--maxWorkers",
+      "1",
+      "performance/cost.test.ts"
+    ],
+    "exitCode": 0
+  }
+]

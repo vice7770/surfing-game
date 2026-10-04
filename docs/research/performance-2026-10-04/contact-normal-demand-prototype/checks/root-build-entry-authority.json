@@ -1,0 +1,8 @@
+{
+  "sourceRef": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "path": "index.html",
+  "bytes": 1442,
+  "sha256": "60675d1b7e6f739633646d53fd74d07f90d913151f5adb2a65b71fc786372392",
+  "scope": "Only missing browser entry from unchanged baseline; no runtime edits",
+  "firstFailedBuildLog": "/private/tmp/contact-normal-demand-build-20261004.log"
+}

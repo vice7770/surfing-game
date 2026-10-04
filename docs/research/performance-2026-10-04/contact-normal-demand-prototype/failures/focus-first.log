@@ -1,0 +1,38 @@
+
+ RUN  v5.0.1 /private/tmp/contact-normal-demand-prototype-20261004
+
+ ❯ src/wave/barrel/contactNormalDemand.prototype.test.ts (9 tests | 1 failed) 695ms
+   ❯ private ordinary normal demand, against untouched ef60d3cee (9)
+     × keeps the worker owner opaque and frozen while default/direct runners remain eager 87ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/contactNormalDemand.prototype.test.ts > private ordinary normal demand, against untouched ef60d3cee > keeps the worker owner opaque and frozen while default/direct runners remain eager
+AssertionError: contact: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ inspect src/wave/barrel/contactNormalDemand.prototype.test.ts:343:91
+    341|       if (!value || typeof value !== 'object' || ArrayBuffer.isView(va…
+    342|       expect(value).not.toBeInstanceOf(SweptContact);
+    343|       for (const [key, child] of Object.entries(value)) { expect(forbi…
+       |                                                                                           ^
+    344|     }
+    345|     replies.forEach(inspect);
+ ❯ inspect src/wave/barrel/contactNormalDemand.prototype.test.ts:343:104
+ ❯ inspect src/wave/barrel/contactNormalDemand.prototype.test.ts:343:104
+ ❯ inspect src/wave/barrel/contactNormalDemand.prototype.test.ts:343:104
+ ❯ src/wave/barrel/contactNormalDemand.prototype.test.ts:345:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 109 passed (110)
+   Start at  01:40:22
+   Duration  8.48s (tests 89%, transform 7%, import 4%)
+

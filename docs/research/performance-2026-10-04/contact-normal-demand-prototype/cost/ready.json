@@ -1,0 +1,48 @@
+{
+  "status": "Source ready; no cost execution",
+  "runtimeBaseline": "ef60d3cee",
+  "runtimeFilesUnchangedSinceCorrectedParity": true,
+  "runtimeSourceRecordsPerTree": 278,
+  "files": [
+    {
+      "path": "src/wave/barrel/contactNormalDemand.cost.ts",
+      "bytes": 19229,
+      "sha256": "f78bfe2e8bc254bdb651278f3f38df6fe2d75bc1bd3d213687059ec257508d1a"
+    },
+    {
+      "path": "performance/cost.test.ts",
+      "bytes": 336,
+      "sha256": "f12816e470f1597b4ef63cc33242f420992243d556b2ac3da065904d50547718"
+    },
+    {
+      "path": "vitest.cost.config.ts",
+      "bytes": 185,
+      "sha256": "513d3f36b4af0cff1120e1485c6d5419292a4cad2b98e4ae71fe2e39e8b00593"
+    },
+    {
+      "path": "performance/plan.md",
+      "bytes": 4700,
+      "sha256": "de620f94b8c562e329e66f3355e3799cd1d8b49dc18458edef09b1cc44940df0"
+    },
+    {
+      "path": "performance/authority.json",
+      "bytes": 94989,
+      "sha256": "bff03b94fe750139f56745a481cdfc52eb7892038ef7d4692f49aba2223bc6a6"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 82788,
+      "sha256": "907d5463489ccec1967bf4fab525b13a8c3f608062506c3a32dfe7427dd541cb"
+    },
+    {
+      "path": "candidate-manifest.json",
+      "bytes": 9291,
+      "sha256": "b3bd2f7700abb1db27a66904284d9b3dc2484b8691a8a3f93a6fc02a68be43a0"
+    },
+    {
+      "path": "README.md",
+      "bytes": 9132,
+      "sha256": "668cdf4e26a1d040376f40994b99f35aa5ddefd18769d045b4d6d7de96d9ad94"
+    }
+  ]
+}

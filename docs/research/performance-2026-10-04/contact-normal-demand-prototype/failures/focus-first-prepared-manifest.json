@@ -1,0 +1,156 @@
+{
+  "baseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "archive": {
+    "gitArchiveArgs": [
+      "git",
+      "archive",
+      "ef60d3cee",
+      "src",
+      "package.json",
+      "tsconfig.json",
+      "vite.config.ts",
+      "vitest.config.ts"
+    ],
+    "archiveBytes": 5242880,
+    "archiveSha256": "0f981d261185651a46dfe934eac42b397af3df74caca043639b5e96e76b511f8"
+  },
+  "originalManifest": {
+    "path": "original-source-manifest.json",
+    "bytes": 89591,
+    "sha256": "1d38668ed6e64cf70163c266b6aaa430a210e4273a3bb7418fc62ada1408ee33"
+  },
+  "oracleFileCount": 547,
+  "oracleIntegrity": "All 547 original oracle files match their preparation hashes and byte counts; only metadata hashing performed.",
+  "changedExistingPaths": [
+    "src/wave/barrel/sweptLoft.ts",
+    "src/wave/barrel/sweptContact.ts",
+    "src/physics/PhysicalSurfWater.ts",
+    "src/wave/SurfZoneRunner.ts",
+    "src/game/SurfZoneWorkerCore.ts"
+  ],
+  "newSourceAndHelperPaths": [
+    "src/wave/barrel/contactNormalDemand.prototype.test.ts",
+    "vitest.prototype.config.ts"
+  ],
+  "changedAndNew": [
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "original": {
+        "path": "src/wave/barrel/sweptLoft.ts",
+        "bytes": 54858,
+        "sha256": "bda23f0eb188a9568cbe368b542cff2e073bd5e6e7d98bdda4f3d84b8f961f7b"
+      },
+      "candidate": {
+        "path": "src/wave/barrel/sweptLoft.ts",
+        "bytes": 57487,
+        "sha256": "45f827aa2dbaae335396d41e3f1f6f757e4a1da95ac9576c82dadc9a8c3680a6"
+      }
+    },
+    {
+      "path": "src/wave/barrel/sweptContact.ts",
+      "original": {
+        "path": "src/wave/barrel/sweptContact.ts",
+        "bytes": 26862,
+        "sha256": "f3e3dc50315d2b9a68dde6d56d7da03cf95921d377b58dbc53130b2d8d6a7f0e"
+      },
+      "candidate": {
+        "path": "src/wave/barrel/sweptContact.ts",
+        "bytes": 28490,
+        "sha256": "2e4cc356b2a970b5fb545703996dfb9b63129b538ba1c41bd63aefbb888aff3b"
+      }
+    },
+    {
+      "path": "src/physics/PhysicalSurfWater.ts",
+      "original": {
+        "path": "src/physics/PhysicalSurfWater.ts",
+        "bytes": 23514,
+        "sha256": "6edc9f0eb3c857bfbb041c49cc4039af9f8897203772b20ffae3e1a0d223beea"
+      },
+      "candidate": {
+        "path": "src/physics/PhysicalSurfWater.ts",
+        "bytes": 23535,
+        "sha256": "0968979485f03ed7df681203a081b1be417bcf3d7b4ebd11bd649377bda27a57"
+      }
+    },
+    {
+      "path": "src/wave/SurfZoneRunner.ts",
+      "original": {
+        "path": "src/wave/SurfZoneRunner.ts",
+        "bytes": 38802,
+        "sha256": "78eb334ff36986d5a5f46c9bd86d9bc9a87857289c45cd1db8a6b31cebd2c477"
+      },
+      "candidate": {
+        "path": "src/wave/SurfZoneRunner.ts",
+        "bytes": 39955,
+        "sha256": "48892eea1be50a39708376662908511900ad02ef8d24f3fc361e69260372130f"
+      }
+    },
+    {
+      "path": "src/game/SurfZoneWorkerCore.ts",
+      "original": {
+        "path": "src/game/SurfZoneWorkerCore.ts",
+        "bytes": 7105,
+        "sha256": "9b745478716d39ff18483b9ae62b4edfed9afe6dd74067d6f45e7c2f8e3ec710"
+      },
+      "candidate": {
+        "path": "src/game/SurfZoneWorkerCore.ts",
+        "bytes": 7117,
+        "sha256": "284675cc587b9f12c70ae518d1a8c4f128396482883f549989fc69b327437a69"
+      }
+    },
+    {
+      "path": "src/wave/barrel/contactNormalDemand.prototype.test.ts",
+      "original": null,
+      "candidate": {
+        "path": "src/wave/barrel/contactNormalDemand.prototype.test.ts",
+        "bytes": 19693,
+        "sha256": "87a0653d2c3ce0a339f244b6926166ddbd7bb6e446fc6a4fbe88c13bcfb6b987"
+      }
+    },
+    {
+      "path": "vitest.prototype.config.ts",
+      "original": null,
+      "candidate": {
+        "path": "vitest.prototype.config.ts",
+        "bytes": 254,
+        "sha256": "de1b305fbfc47cd2ffc53c708dab940feea70a9e07b762103e473dfc7b1defbe"
+      }
+    }
+  ],
+  "preparationFiles": [
+    {
+      "path": "candidate.patch",
+      "bytes": 36154,
+      "sha256": "e4f854ba824222f9d2f26032ccb954347898026f51c3c996628b7bf3507058b8"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4633,
+      "sha256": "64399a842dc67598d99302d16a8cf172f50bd74010a314f6a38edfe095d710e0"
+    }
+  ],
+  "symlinks": [
+    {
+      "path": "node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules"
+    },
+    {
+      "path": "public",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/public"
+    }
+  ],
+  "checks": {
+    "status": "Not executed; source and test writing only",
+    "pending": [
+      "Strict TypeScript",
+      "Prospective nine-test parity suite",
+      "Existing focused public/default suites",
+      "Actual F64 first-epoch replay",
+      "Actual anomaly coverage audit",
+      "Complete-path cost gate"
+    ]
+  },
+  "productionEdits": false,
+  "gitMutations": false,
+  "gpuOrBrowser": false
+}

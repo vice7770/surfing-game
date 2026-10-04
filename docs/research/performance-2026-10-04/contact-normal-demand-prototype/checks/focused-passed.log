@@ -1,0 +1,9 @@
+
+ RUN  v5.0.1 /private/tmp/contact-normal-demand-prototype-20261004
+
+
+ Test Files  4 passed (4)
+      Tests  111 passed (111)
+   Start at  01:45:34
+   Duration  8.83s (tests 89%, transform 7%, import 4%)
+

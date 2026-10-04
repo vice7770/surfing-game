@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "cost.mjs",
+    "--run=true",
+    "--out=/private/tmp/foam-pass-fusion-20261004/cost-report.json"
+  ],
+  "cwd": "/private/tmp/foam-pass-fusion-20261004",
+  "attempts": 1,
+  "startedAtUtc": "2026-10-04T01:07:02.634353+00:00",
+  "terminalAtUtc": "2026-10-04T01:07:04.806243+00:00",
+  "exitCode": 0,
+  "reportExists": true,
+  "pid": 32926
+}

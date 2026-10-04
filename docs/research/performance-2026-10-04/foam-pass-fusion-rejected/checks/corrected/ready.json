@@ -1,0 +1,43 @@
+{
+  "status": "ONE CORRECTED VERIFICATION AUTHORIZED; not yet executed",
+  "firstFreezeSha256": "b716df1319703380e8d4c39b86a3e942bb2a0c7dc1a9a6fa1b0d3eb94731e012",
+  "candidatePatchUnchangedSha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60",
+  "candidateFoamUnchangedSha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c",
+  "candidateSimulationUnchangedSha256": "850c425c81824adf227265ecc19d08c1d305527139a25145392651c61abe0dd3",
+  "correctedTestSha256": "82c305b07a548af6ab78d8d7c3bb188ad2ee4fe86164267c20e8d662235ba7e6",
+  "testFixOnly": "net\u00b19 via real \u00b15 then\u00b14; all 36 test cases/assertions retained",
+  "links": [
+    {
+      "path": "/private/tmp/foam-pass-fusion-20261004/oracle/public",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/public",
+      "use": "readonly canonical asset reference; no duplicate assets"
+    },
+    {
+      "path": "/private/tmp/foam-pass-fusion-20261004/oracle/package.json",
+      "target": "/private/tmp/foam-pass-fusion-20261004/package.json",
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "use": "exact extracted package bytes; readonly"
+    }
+  ],
+  "canonicalAssetJsonAuthority": [
+    {
+      "path": "/private/tmp/foam-pass-fusion-20261004/oracle/public/assets/skies/skies.json",
+      "canonicalPath": "/Users/regina/Desktop/Projects/surfing-game/public/assets/skies/skies.json",
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    {
+      "path": "/private/tmp/foam-pass-fusion-20261004/oracle/public/assets/surfers/surfers.json",
+      "canonicalPath": "/Users/regina/Desktop/Projects/surfing-game/public/assets/surfers/surfers.json",
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    }
+  ],
+  "commands": [
+    "node_modules/.bin/vitest run tests/parity.test.ts --maxWorkers=1 > checks/corrected/focused-tests.log 2>&1",
+    "node_modules/.bin/tsc -p tsconfig.qa.json > checks/corrected/strict.log 2>&1"
+  ],
+  "runtimeCodeChangedSinceFirstVerification": false,
+  "productionChanged": false,
+  "benchmarkExecuted": false
+}

@@ -1,0 +1,45 @@
+{
+  "status": "COST SOURCE ONLY PREPARED; no cost typecheck/bundle/plan execution/intake/material scan/timing",
+  "verificationFreezeSha256": "365a64fb20be41db57675b71a3ab616c9749e0b475dd3c9a86d36e8b62411880",
+  "files": [
+    {
+      "path": "cost.ts",
+      "bytes": 13899,
+      "sha256": "c56e26fbfe77278647a7bbb952faf510cc7a3f536796e9cfb161d32b25ce08eb"
+    },
+    {
+      "path": "intake.ts",
+      "bytes": 4778,
+      "sha256": "befea0ef86b7bd19ecacbc45959fc8fb8b6a6e47d5685bed5f5ea2624f063af5"
+    },
+    {
+      "path": "cost-plan.md",
+      "bytes": 6858,
+      "sha256": "ac4f4140c5e3579302e73ebcfeb84361bfc50b0d8fda785f228beb54f34bb078"
+    },
+    {
+      "path": "tsconfig.cost.json",
+      "bytes": 95,
+      "sha256": "a0abe8c36d7ccaf385d784ebe800e4932b82561a27d8605294c2c6fd6a2908c3"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 10916,
+      "sha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60"
+    },
+    {
+      "path": "checks/corrected/terminal.freeze.json",
+      "bytes": 2236,
+      "sha256": "365a64fb20be41db57675b71a3ab616c9749e0b475dd3c9a86d36e8b62411880"
+    }
+  ],
+  "wholeOperationBoundMs": 20000,
+  "warmPairs": 12,
+  "pairs": 30,
+  "sourceProxyDeclared": true,
+  "postStateNotHistoricalPrestate": true,
+  "entireNumericGateInsideTiming": true,
+  "nextRequired": "Root source review before strict cost/bundle checks; frozen compiled review and separate quiet timing authorization",
+  "productionChanged": false,
+  "gpuOrBrowserUsed": false
+}

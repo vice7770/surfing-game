@@ -1,0 +1,261 @@
+import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { FoamField } from '../src/wave/FoamField';
+import { FoamField as OriginalFoam } from '../oracle/src/wave/FoamField';
+import { AerationField } from '../src/wave/AerationField';
+import { AerationField as OriginalAir } from '../oracle/src/wave/AerationField';
+import { AdvectionStencil } from '../src/wave/AdvectionStencil';
+import { AdvectionStencil as OriginalStencil } from '../oracle/src/wave/AdvectionStencil';
+import { ShallowWaterSolver, uniformEdges, stretchedEdges } from '../src/wave/ShallowWaterSolver';
+import { ShallowWaterSolver as OriginalSolver } from '../oracle/src/wave/ShallowWaterSolver';
+import { SurfZoneSimulation, type SurfZoneConfig } from '../src/wave/SurfZoneSimulation';
+import { SurfZoneSimulation as OriginalSimulation } from '../oracle/src/wave/SurfZoneSimulation';
+
+const foamKeys = ['dense', 'residual', 'source', 'sourceCells', 'breakingCells', 'dissipation'] as const;
+const airKeys = ['air', 'depth', 'turbulence'] as const;
+const bytes = (array: ArrayBufferView) => new Uint8Array(array.buffer, array.byteOffset, array.byteLength);
+function exact(a: ArrayBufferView, b: ArrayBufferView, label: string): void {
+  expect(Buffer.compare(bytes(a), bytes(b)), label).toBe(0);
+}
+function foams(a: FoamField, b: OriginalFoam): void {
+  for (const key of foamKeys) exact(a[key], b[key], 'foam.' + key);
+  expect(a.sourceCount).toBe(b.sourceCount); expect(a.breakingCount).toBe(b.breakingCount);
+}
+const privateFoam = (foam: FoamField | OriginalFoam) => foam as unknown as { nextDense: Float64Array; nextResidual: Float64Array; windowX: number };
+const privateStencil = (stencil: AdvectionStencil | OriginalStencil) => stencil as unknown as {
+  solver: unknown; xCenters: Float64Array; zCenters: Float64Array; dt: number; time: number;
+  xMin: number; zMin: number; dx: number; nx: number; nz: number; ready: boolean;
+};
+function stencils(a: AdvectionStencil, b: OriginalStencil, water: ShallowWaterSolver, oldWater: OriginalSolver): void {
+  exact(a.indices, b.indices, 'stencil.indices'); exact(a.values, b.values, 'stencil.values');
+  const aa = privateStencil(a), bb = privateStencil(b);
+  for (const key of ['dt', 'time', 'xMin', 'zMin', 'dx', 'nx', 'nz', 'ready'] as const) expect(aa[key], 'stencil.' + key).toBe(bb[key]);
+  if (aa.solver) { expect(aa.solver).toBe(water); expect(bb.solver).toBe(oldWater); }
+  if (aa.xCenters) { expect(aa.xCenters).toBe(water.xCenters); expect(bb.xCenters).toBe(oldWater.xCenters); }
+  if (aa.zCenters) { expect(aa.zCenters).toBe(water.zCenters); expect(bb.zCenters).toBe(oldWater.zCenters); }
+}
+function pair(stretched = false) {
+  const zEdges = stretched ? stretchedEdges(-14, 6, -4, 1, 3) : uniformEdges(-8, 8, 8);
+  const grid = { nx: 8, xMin: -4, dx: 1, zEdges, xBoundary: 'open' as const };
+  const water = new ShallowWaterSolver(grid, () => 1), oldWater = new OriginalSolver(grid, () => 1);
+  const foam = new FoamField(water, { dense: 3, residual: 18 }), oldFoam = new OriginalFoam(oldWater, { dense: 3, residual: 18 });
+  const air = new AerationField(water, { period: 18 }), oldAir = new OriginalAir(oldWater, { period: 18 });
+  const stencil = new AdvectionStencil(), oldStencil = new OriginalStencil();
+  for (const f of [foam, oldFoam]) {
+    for (let i = 0; i < f.dense.length; i += 1) { f.dense[i] = (i % 7) / 8; f.residual[i] = (i % 5) / 10; f.source[i] = 99 + i; f.dissipation[i] = -3 - i; f.sourceCells[i] = 700 + i; f.breakingCells[i] = 900 + i; }
+    f.sourceCount = 5; f.breakingCount = 9;
+  }
+  for (const field of [air, oldAir]) for (let i = 0; i < field.air.length; i += 1) {
+    field.air[i] = (i % 4) / 100; field.depth[i] = (i % 5) / 10; field.turbulence[i] = (i % 3) / 100;
+  }
+  return { water, oldWater, foam, oldFoam, air, oldAir, stencil, oldStencil, strength: new Float64Array(water.h.length) };
+}
+function bores(field: AerationField | OriginalAir, foam: FoamField | OriginalFoam, water: ShallowWaterSolver | OriginalSolver, strength: Float64Array, dt: number) {
+  for (let n = 0; n < foam.breakingCount; n += 1) {
+    const i = foam.breakingCells[n], still = water.restLevel - water.bed[i];
+    if (foam.dissipation[i] > 0) field.addBore(i, foam.dissipation[i], water.h[i] - still, dt);
+    field.stir(i, strength[i], dt);
+  }
+}
+function identities(p: ReturnType<typeof pair>) {
+  return { foam: foamKeys.map(k => p.foam[k]), air: airKeys.map(k => p.air[k]), next: [privateFoam(p.foam).nextDense, privateFoam(p.foam).nextResidual] };
+}
+function preserved(p: ReturnType<typeof pair>, id: ReturnType<typeof identities>) {
+  foamKeys.forEach((k, i) => expect(p.foam[k]).toBe(id.foam[i]));
+  airKeys.forEach((k, i) => expect(p.air[k]).toBe(id.air[i]));
+  expect(privateFoam(p.foam).nextDense).toBe(id.next[0]); expect(privateFoam(p.foam).nextResidual).toBe(id.next[1]);
+}
+function fieldEvent(foam: FoamField | OriginalFoam) {
+  return { dense: Buffer.from(bytes(foam.dense)).toString('hex'), residual: Buffer.from(bytes(foam.residual)).toString('hex'), sourceCount: foam.sourceCount, breakingCount: foam.breakingCount };
+}
+
+describe('TMP Foam numeric pass fusion — independent unchanged oracle', () => {
+  it('retains the public generic update source verbatim', () => {
+    const body = (name: string) => readFileSync(new URL(name, import.meta.url), 'utf8').split('  update(dt:')[1].split('  /**')[0];
+    expect(body('../src/wave/FoamField.ts')).toBe(body('../oracle/src/wave/FoamField.ts'));
+  });
+  it.each([false, true])('has bit-exact multi-step Foam/Air/stencil outcomes on stretched=%s', stretched => {
+    const p = pair(stretched), id = identities(p); let retainedStencil: [Uint32Array, Float64Array] | undefined;
+    for (let step = 0; step < 45; step += 1) {
+      if ([8, 17, 26, 35].includes(step)) for (const w of [p.water, p.oldWater]) {
+        const shift = step === 8 ? 2 : step === 17 ? -3 : step === 26 ? 9 : -9;
+        if (Math.abs(shift) >= w.nx) { w.shiftAlongShore(Math.sign(shift) * 5); w.shiftAlongShore(Math.sign(shift) * 4); }
+        else w.shiftAlongShore(shift);
+      }
+      const dt = step % 4 === 0 ? 1 / 30 : 1 / 60;
+      for (const w of [p.water, p.oldWater]) for (let i = 0; i < w.h.length; i += 1) {
+        w.h[i] = (i + step) % 13 === 0 ? 0.01 : (i + step) % 17 === 0 ? 0 : 1 + (i % 7) / 10;
+        w.bed[i] = -1; w.qx[i] = w.h[i] * ((i % 5) - 2) * 2; w.qz[i] = w.h[i] * ((i % 7) - 3) * 3;
+      }
+      for (let i = 0; i < p.strength.length; i += 1) p.strength[i] = (i + step) % 5 === 0 ? 0.6 : 0;
+      if (step % 6 === 0) for (const f of [p.foam, p.oldFoam]) {
+        f.dense[3] = 4e-7; f.residual[4] = 5e-7; f.dense[7] = 1.2; f.residual[7] = .9;
+        f.addSplash(p.water.xCenters[5], p.water.zCenters[2], .003);
+        f.addSplash(p.water.xCenters[0] - 100, p.water.zCenters[0], .5);
+      }
+      p.foam.updateGrid(dt, p.strength, p.stencil); p.oldFoam.update(dt, p.strength, p.oldStencil);
+      foams(p.foam, p.oldFoam); stencils(p.stencil, p.oldStencil, p.water, p.oldWater);
+      if (retainedStencil) { expect(p.stencil.indices).toBe(retainedStencil[0]); expect(p.stencil.values).toBe(retainedStencil[1]); }
+      retainedStencil = [p.stencil.indices, p.stencil.values];
+      bores(p.air, p.foam, p.water, p.strength, dt); bores(p.oldAir, p.oldFoam, p.oldWater, p.strength, dt);
+      p.air.update(dt, p.stencil); p.oldAir.update(dt, p.oldStencil);
+      airKeys.forEach(k => exact(p.air[k], p.oldAir[k], 'air.' + k));
+      expect(privateStencil(p.stencil).ready).toBe(false); expect(privateStencil(p.oldStencil).ready).toBe(false);
+      expect(p.stencil.take(p.water, dt)).toBeUndefined(); expect(p.oldStencil.take(p.oldWater, dt)).toBeUndefined();
+      preserved(p, id);
+    }
+  });
+  it('actually uses final private destinations in the eligible numeric path, and keeps public generic scratch raw', () => {
+    const p = pair(); p.foam.dense.fill(.5); p.oldFoam.dense.fill(.5); p.foam.residual.fill(.1); p.oldFoam.residual.fill(.1);
+    p.foam.updateGrid(1 / 60, p.strength, p.stencil); p.oldFoam.update(1 / 60, p.strength, p.oldStencil);
+    foams(p.foam, p.oldFoam);
+    exact(privateFoam(p.foam).nextDense, p.foam.dense, 'eligible private final dense');
+    expect(Buffer.compare(bytes(privateFoam(p.foam).nextDense), bytes(privateFoam(p.oldFoam).nextDense))).not.toBe(0);
+  });
+  it.each([0, -1, Number.NaN])('does not mutate any public/private/stencil/window state for dt=%s', dt => {
+    const p = pair(); for (const w of [p.water, p.oldWater]) w.shiftAlongShore(2);
+    const before = { event: fieldEvent(p.foam), next: Buffer.from(bytes(privateFoam(p.foam).nextDense)), window: privateFoam(p.foam).windowX, stencil: p.stencil.indices };
+    p.foam.updateGrid(dt, p.strength, p.stencil); p.oldFoam.update(dt, p.strength, p.oldStencil);
+    foams(p.foam, p.oldFoam); expect(fieldEvent(p.foam)).toEqual(before.event); exact(privateFoam(p.foam).nextDense, before.next, 'nonpositive scratch');
+    expect(privateFoam(p.foam).windowX).toBe(before.window); expect(p.stencil.indices).toBe(before.stencil); expect(privateStencil(p.stencil).ready).toBe(false);
+  });
+  it('matches signed-zero, infinities and explicit NaN-payload field outputs byte for byte', () => {
+    const p = pair();
+    const inject = (values: Float64Array) => { const v = new DataView(values.buffer); v.setBigUint64(0, 0x8000000000000000n, true); v.setBigUint64(8, 0x7ff8000000001234n, true); v.setBigUint64(16, 0xfff8000000004321n, true); values[4] = Infinity; values[5] = -Infinity; };
+    for (const f of [p.foam, p.oldFoam]) { inject(f.dense); inject(f.residual); }
+    p.strength[9] = Number.NaN; p.strength[10] = -0;
+    for (let step = 0; step < 3; step += 1) { p.foam.updateGrid(1 / 60, p.strength, p.stencil); p.oldFoam.update(1 / 60, p.strength, p.oldStencil); foams(p.foam, p.oldFoam); stencils(p.stencil, p.oldStencil, p.water, p.oldWater); }
+  });
+  it.each(['dense', 'residual', 'source', 'dissipation', 'subarray'] as const)('delegates aliased %s strengths before mutation', key => {
+    const p = pair();
+    const a = key === 'subarray' ? p.foam.dense.subarray(1) : p.foam[key];
+    const b = key === 'subarray' ? p.oldFoam.dense.subarray(1) : p.oldFoam[key];
+    p.foam.updateGrid(1 / 60, a, p.stencil); p.oldFoam.update(1 / 60, b, p.oldStencil);
+    foams(p.foam, p.oldFoam); exact(privateFoam(p.foam).nextDense, privateFoam(p.oldFoam).nextDense, 'alias generic raw scratch');
+  });
+  it('keeps default stateful breaking getter chronology and mutations', () => {
+    const p = pair(), events: object[][] = [[], []];
+    function getters(f: FoamField | OriginalFoam, log: object[]) {
+      const x: Record<number, number> & { length: number } = { length: f.dense.length };
+      for (let i = 0; i < x.length; i += 1) Object.defineProperty(x, i, { get() { if (i < 3) log.push({ i, ...fieldEvent(f) }); if (i === 1) f.dense[5] = .123; return i % 3 === 0 ? .5 : 0; } });
+      return x;
+    }
+    p.foam.update(1 / 60, getters(p.foam, events[0]), p.stencil); p.oldFoam.update(1 / 60, getters(p.oldFoam, events[1]), p.oldStencil);
+    foams(p.foam, p.oldFoam); expect(events[0]).toEqual(events[1]);
+  });
+  it.each(['round', 'floor', 'min', 'max', 'sqrt', 'exp'] as const)('delegates substituted Math.%s with original ordered side effects', name => {
+    const p = pair(), original = Object.getOwnPropertyDescriptor(Math, name)!, native = original.value as (...args: number[]) => number, events: object[][] = [[], []];
+    p.strength.fill(.4); p.water.h.fill(1.2); p.oldWater.h.fill(1.2);
+    let active: FoamField | OriginalFoam, log: object[];
+    try {
+      Object.defineProperty(Math, name, { ...original, value: (...args: number[]) => { log.push({ args, ...fieldEvent(active) }); return native(...args); } });
+      active = p.foam; log = events[0]; p.foam.updateGrid(1 / 60, p.strength, p.stencil);
+      active = p.oldFoam; log = events[1]; p.oldFoam.update(1 / 60, p.strength, p.oldStencil);
+    } finally { Object.defineProperty(Math, name, original); }
+    foams(p.foam, p.oldFoam); expect(events[0]).toEqual(events[1]); exact(privateFoam(p.foam).nextDense, privateFoam(p.oldFoam).nextDense, 'Math fallback raw scratch');
+  });
+  it('delegates accessor Math.exp without invoking its getter during eligibility', () => {
+    const p = pair(), original = Object.getOwnPropertyDescriptor(Math, 'exp')!, events: object[][] = [[], []];
+    let active: FoamField | OriginalFoam, log: object[];
+    try {
+      Object.defineProperty(Math, 'exp', { configurable: true, get() { log.push({ get: true, ...fieldEvent(active) }); return original.value; } });
+      active = p.foam; log = events[0]; p.foam.updateGrid(1 / 60, p.strength, p.stencil);
+      active = p.oldFoam; log = events[1]; p.oldFoam.update(1 / 60, p.strength, p.oldStencil);
+    } finally { Object.defineProperty(Math, 'exp', original); }
+    foams(p.foam, p.oldFoam); expect(events[0]).toEqual(events[1]); expect(events[0].length).toBe(2);
+  });
+  it.each(['set', 'copyWithin', 'fill'] as const)('delegates instance array.%s with original publication/window events', method => {
+    const p = pair(), events: object[][] = [[], []]; if (method !== 'set') for (const w of [p.water, p.oldWater]) w.shiftAlongShore(2);
+    for (const [f, log] of [[p.foam, events[0]], [p.oldFoam, events[1]]] as const) {
+      const native = f.dense[method] as (...args: unknown[]) => Float64Array | void;
+      Object.defineProperty(f.dense, method, { configurable: true, value(...args: unknown[]) { log.push({ method, ...fieldEvent(f) }); return Reflect.apply(native, this, args); } });
+    }
+    p.foam.updateGrid(1 / 60, p.strength, p.stencil); p.oldFoam.update(1 / 60, p.strength, p.oldStencil);
+    foams(p.foam, p.oldFoam); expect(events[0]).toEqual(events[1]); expect(events[0].length).toBeGreaterThan(0);
+  });
+  it.each(['begin', 'commit'] as const)('delegates custom stencil.%s with original callback state', method => {
+    const p = pair(), events: object[][] = [[], []];
+    for (const [s, f, log] of [[p.stencil, p.foam, events[0]], [p.oldStencil, p.oldFoam, events[1]]] as const) {
+      const native = s[method]; Object.defineProperty(s, method, { configurable: true, value(...args: unknown[]) { log.push({ method, ...fieldEvent(f) }); return Reflect.apply(native, this, args); } });
+    }
+    p.foam.updateGrid(1 / 60, p.strength, p.stencil); p.oldFoam.update(1 / 60, p.strength, p.oldStencil);
+    foams(p.foam, p.oldFoam); expect(events[0]).toEqual(events[1]);
+  });
+  it.each(['dt', 'time', 'window', 'invalidate'] as const)('keeps stale-stencil Air fallback for change=%s', change => {
+    const p = pair(); const dt = 1 / 60; p.foam.updateGrid(dt, p.strength, p.stencil); p.oldFoam.update(dt, p.strength, p.oldStencil);
+    if (change === 'time') { p.water.time += dt; p.oldWater.time += dt; }
+    if (change === 'window') { p.water.shiftAlongShore(2); p.oldWater.shiftAlongShore(2); }
+    if (change === 'invalidate') { p.stencil.invalidate(); p.oldStencil.invalidate(); p.water.qx.fill(1); p.oldWater.qx.fill(1); }
+    p.air.update(change === 'dt' ? 2 * dt : dt, p.stencil); p.oldAir.update(change === 'dt' ? 2 * dt : dt, p.oldStencil);
+    airKeys.forEach(k => exact(p.air[k], p.oldAir[k], 'stale air.' + k));
+  });
+  it('matches actual afterWater Foam→source injection→Air→snapshot entry over sequential prescribed water states', () => {
+    const config: SurfZoneConfig = { spot: 'beach', stage: 1, seed: 31, significantHeight: 1, peakPeriod: 8, directionDegrees: 0, spreading: 20, tide: 0,
+      componentCount: 2, alongShore: 8, dx: 1, fineSpacing: 4, coarseSpacing: 12, spinUpPeriods: 0, startSeaTime: 200 };
+    const scene = new SurfZoneSimulation(config, 'warm'), old = new OriginalSimulation(config, 'warm');
+    const grid = scene.renderGrid(2), oldGrid = old.renderGrid(2), size = grid.nx * grid.nz * 2;
+    const outputs = [new Float32Array(size), new Float32Array(size), new Float32Array(size)], oldOutputs = outputs.map(x => new Float32Array(x.length));
+    const id = foamKeys.map(k => scene.foam[k]);
+    for (let step = 0; step < 12; step += 1) {
+      for (const s of [scene, old]) {
+        if (step === 5) s.solver.shiftAlongShore(2);
+        for (let i = 0; i < s.solver.h.length; i += 1) {
+          s.solver.h[i] = i % 19 === 0 ? 0 : 1.2 + (i % 5) / 10 + step / 50;
+          s.solver.bed[i] = -1; s.solver.qx[i] = ((i % 7) - 3) / 10; s.solver.qz[i] = ((i % 9) - 4) / 5;
+        }
+        s.foam.addSplash(s.solver.xCenters[4], s.solver.zCenters[4], .002);
+        (s as unknown as { afterWater(dt: number, start: number): void }).afterWater(1 / 60, performance.now());
+      }
+      foams(scene.foam, old.foam); airKeys.forEach(k => exact(scene.aeration[k], old.aeration[k], 'actual simulation air.' + k));
+      exact(scene.whitewaterStrength, old.whitewaterStrength, 'actual strength');
+      scene.writeUniformSnapshot(outputs[0], outputs[1], outputs[2], grid); old.writeUniformSnapshot(oldOutputs[0], oldOutputs[1], oldOutputs[2], oldGrid);
+      outputs.forEach((x, i) => exact(x, oldOutputs[i], 'actual snapshot' + i));
+      foamKeys.forEach((k, i) => expect(scene.foam[k]).toBe(id[i]));
+    }
+  });
+  it('preserves nonfinite water/velocity interpolation and stencil bytes without sanitizing input', () => {
+    const p = pair();
+    for (const water of [p.water, p.oldWater]) { water.h[3] = Number.NaN; water.h[8] = Infinity; water.qx[11] = Number.NaN; water.qz[17] = Infinity; water.qx[23] = -Infinity; }
+    p.foam.updateGrid(1 / 60, p.strength, p.stencil); p.oldFoam.update(1 / 60, p.strength, p.oldStencil);
+    foams(p.foam, p.oldFoam); stencils(p.stencil, p.oldStencil, p.water, p.oldWater);
+  });
+  it('delegates an accessor array.set without eligibility invoking the getter', () => {
+    const p = pair(), events: object[][] = [[], []];
+    for (const [f, log] of [[p.foam, events[0]], [p.oldFoam, events[1]]] as const) {
+      const native = f.dense.set;
+      Object.defineProperty(f.dense, 'set', { configurable: true, get() { log.push(fieldEvent(f)); return native; } });
+    }
+    p.foam.updateGrid(1 / 60, p.strength, p.stencil); p.oldFoam.update(1 / 60, p.strength, p.oldStencil);
+    foams(p.foam, p.oldFoam); expect(events[0]).toEqual(events[1]); expect(events[0].length).toBe(1);
+  });
+  it('delegates an accessor stencil.commit without eligibility invoking the getter', () => {
+    const p = pair(), events: object[][] = [[], []];
+    for (const [stencil, f, log] of [[p.stencil, p.foam, events[0]], [p.oldStencil, p.oldFoam, events[1]]] as const) {
+      const native = stencil.commit;
+      Object.defineProperty(stencil, 'commit', { configurable: true, get() { log.push(fieldEvent(f)); return native; } });
+    }
+    p.foam.updateGrid(1 / 60, p.strength, p.stencil); p.oldFoam.update(1 / 60, p.strength, p.oldStencil);
+    foams(p.foam, p.oldFoam); expect(events[0]).toEqual(events[1]); expect(events[0].length).toBe(1);
+  });
+  it('delegates accessor decay values in their original after-advection order', () => {
+    const p = pair(), events: object[][] = [[], []];
+    for (const [f, log] of [[p.foam, events[0]], [p.oldFoam, events[1]]] as const) {
+      Object.defineProperty(f.decay, 'dense', { configurable: true, get() { log.push(fieldEvent(f)); return 3; } });
+      Object.defineProperty(f.decay, 'residual', { configurable: true, get() { log.push(fieldEvent(f)); return 18; } });
+    }
+    p.foam.updateGrid(1 / 60, p.strength, p.stencil); p.oldFoam.update(1 / 60, p.strength, p.oldStencil);
+    foams(p.foam, p.oldFoam); expect(events[0]).toEqual(events[1]); expect(events[0].length).toBe(2);
+  });
+  it('disables fusion when Math.exp was already non-native when the fresh module initialized', async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(Math, 'exp')!, native = descriptor.value as (x: number) => number;
+    try {
+      Object.defineProperty(Math, 'exp', { ...descriptor, value: (x: number) => native(x) }); vi.resetModules();
+      const fresh = await import('../src/wave/FoamField'); const p = pair(); const field = new fresh.FoamField(p.water, { dense: 3, residual: 18 });
+      field.dense.set(p.oldFoam.dense); field.residual.set(p.oldFoam.residual);
+      field.source.set(p.oldFoam.source); field.sourceCells.set(p.oldFoam.sourceCells); field.breakingCells.set(p.oldFoam.breakingCells); field.dissipation.set(p.oldFoam.dissipation);
+      field.sourceCount = p.oldFoam.sourceCount; field.breakingCount = p.oldFoam.breakingCount;
+      field.updateGrid(1 / 60, p.strength); p.oldFoam.update(1 / 60, p.strength);
+      foams(field, p.oldFoam); exact(privateFoam(field).nextDense, privateFoam(p.oldFoam).nextDense, 'initial nonnative raw scratch');
+    } finally { Object.defineProperty(Math, 'exp', descriptor); vi.resetModules(); }
+  });
+});

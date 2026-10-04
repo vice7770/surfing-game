@@ -1,0 +1,30 @@
+[
+  {
+    "log": "strict-tsc-first.log",
+    "command": [
+      "./node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "log": "focused-first.log",
+    "command": [
+      "./node_modules/.bin/vitest",
+      "run",
+      "--config",
+      "vitest.prototype.config.ts",
+      "--maxWorkers",
+      "1",
+      "src/wave/barrel/contactNormalDemand.prototype.test.ts",
+      "src/wave/barrel/sweptContact.test.ts",
+      "src/wave/barrel/sweptLoft.test.ts",
+      "src/physics/PhysicalSurfWater.test.ts"
+    ],
+    "exitCode": 1
+  }
+]

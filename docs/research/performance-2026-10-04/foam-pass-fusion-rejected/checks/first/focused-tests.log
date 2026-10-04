@@ -1,0 +1,30 @@
+
+ RUN  v5.0.1 /private/tmp/foam-pass-fusion-20261004
+
+ ❯ tests/parity.test.ts (36 tests | 2 failed) 81ms
+   ❯ TMP Foam numeric pass fusion — independent unchanged oracle (36)
+     × has bit-exact multi-step Foam/Air/stencil outcomes on stretched=false 16ms
+     × has bit-exact multi-step Foam/Air/stencil outcomes on stretched=true 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/parity.test.ts > TMP Foam numeric pass fusion — independent unchanged oracle > has bit-exact multi-step Foam/Air/stencil outcomes on stretched=false
+ FAIL  tests/parity.test.ts > TMP Foam numeric pass fusion — independent unchanged oracle > has bit-exact multi-step Foam/Air/stencil outcomes on stretched=true
+RangeError: Cannot shift 9 columns in a 8-column window
+ ❯ ShallowWaterSolver.shiftAlongShore src/wave/ShallowWaterSolver.ts:430:38
+    428|     if (shift === 0) return;
+    429|     const { nx, nz } = this;
+    430|     if (Math.abs(shift) >= nx) throw new RangeError(`Cannot shift ${sh…
+       |                                      ^
+    431|     // The edges move: their columns get the spot's seabed back before…
+    432|     this.levelOpenEdges(false);
+ ❯ tests/parity.test.ts:80:84
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 34 passed (36)
+   Start at  01:55:25
+   Duration  674ms (transform 70%, import 16%, tests 14%)
+

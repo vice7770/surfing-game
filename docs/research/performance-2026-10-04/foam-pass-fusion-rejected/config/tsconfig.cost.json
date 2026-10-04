@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src", "oracle/src", "intake.ts", "cost.ts"]
+}

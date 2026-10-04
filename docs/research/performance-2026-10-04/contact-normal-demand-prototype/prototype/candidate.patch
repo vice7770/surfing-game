@@ -1,0 +1,1274 @@
+--- a/src/wave/barrel/sweptLoft.ts
++++ b/src/wave/barrel/sweptLoft.ts
+@@ -230,6 +230,10 @@
+  */
+ export class SweptLoft {
+   private readonly result: LoftResult;
++  private normalDemand = false;
++  private normalReady = new Uint8Array(0);
++  private normalFirst = new Int32Array(0);
++  private normalLast = new Int32Array(0);
+   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
+   /** Per front, its slices' σ, before and after refinement. */
+   private base = new Float64Array(2 * MAX_SLICES + 8);
+@@ -296,9 +300,29 @@
+     };
+   }
+ 
++  /** Internal query backend only: no mutable LoftResult escapes the worker owner. */
++  static forContactQueries(library: ProfileLibrary, slope: number): {
++    build: SweptLoft['build']; prepareNormal(vertex: number): void;
++  } {
++    const loft = new SweptLoft(library, slope, { contact: true });
++    loft.normalDemand = true;
++    loft.normalReady = new Uint8Array(loft.result.positions.length / 3);
++    loft.normalFirst = new Int32Array(MAX_SLICES + 1);
++    loft.normalLast = new Int32Array(MAX_SLICES + 1);
++    return {
++      build: loft.build.bind(loft),
++      prepareNormal: loft.prepareNormal.bind(loft),
++    };
++  }
++
+   /** Loft the records' fronts over the water (`heightAt`). */
+   build(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): LoftResult {
+     const r = this.result;
++    if (this.normalDemand) {
++      this.normalReady.fill(0);
++      this.normalFirst.fill(-1);
++      this.normalLast.fill(-1);
++    }
+     r.vertexCount = 0;
+     r.indexCount = 0;
+     r.sliceCount = 0;
+@@ -838,7 +862,10 @@
+   /** A run of consecutive slices: its normals, and its strips joined. */
+   private finishRun(firstSlice: number, lastSlice: number): void {
+     const r = this.result;
+-    this.normals(firstSlice, lastSlice);
++    if (this.normalDemand) {
++      this.normalFirst.fill(firstSlice, firstSlice, lastSlice + 1);
++      this.normalLast.fill(lastSlice, firstSlice, lastSlice + 1);
++    } else this.normals(firstSlice, lastSlice);
+     // Each slice's tube's mouth: the nearest slice of the run without an underside on either side, or the run's end.
+     let open = r.sliceSigma[firstSlice];
+     for (let s = firstSlice; s <= lastSlice; s += 1) {
+@@ -1077,6 +1104,50 @@
+   }
+ 
+   /** Each vertex's normal: across the profile × along the front, by central differences (one-sided at the edges). */
++  private prepareNormal(vertex: number): void {
++    if (this.normalReady[vertex] === 1) return;
++    const s = Math.floor(vertex / LOFT_SAMPLES);
++    const j = vertex % LOFT_SAMPLES;
++    const firstSlice = this.normalFirst[s];
++    const lastSlice = this.normalLast[s];
++    if (!(vertex >= 0 && vertex < this.result.vertexCount && firstSlice >= 0 && lastSlice >= firstSlice)) {
++      throw new Error('A selected contact normal is outside its captured final run');
++    }
++    const { positions: p, normals } = this.result;
++    const sBack = Math.max(firstSlice, s - 1);
++    const sAhead = Math.min(lastSlice, s + 1);
++    const jBack = Math.max(0, j - 1);
++    const jAhead = Math.min(LOFT_SAMPLES - 1, j + 1);
++    const a0 = 3 * (s * LOFT_SAMPLES + jBack);
++    const a1 = 3 * (s * LOFT_SAMPLES + jAhead);
++    const b0 = 3 * (sBack * LOFT_SAMPLES + j);
++    const b1 = 3 * (sAhead * LOFT_SAMPLES + j);
++    const ax = p[a1] - p[a0];
++    const ay = p[a1 + 1] - p[a0 + 1];
++    const az = p[a1 + 2] - p[a0 + 2];
++    const bx = p[b1] - p[b0];
++    const by = p[b1 + 1] - p[b0 + 1];
++    const bz = p[b1 + 2] - p[b0 + 2];
++    let cx = ay * bz - az * by;
++    let cy = az * bx - ax * bz;
++    let cz = ax * by - ay * bx;
++    const length = Math.sqrt(cx * cx + cy * cy + cz * cz);
++    if (length > 1e-12) {
++      cx /= length;
++      cy /= length;
++      cz /= length;
++    } else {
++      cx = 0;
++      cy = 1;
++      cz = 0;
++    }
++    const o = 3 * vertex;
++    normals[o] = cx;
++    normals[o + 1] = cy;
++    normals[o + 2] = cz;
++    this.normalReady[vertex] = 1;
++  }
++
+   private normals(firstSlice: number, lastSlice: number): void {
+     const { positions: p, normals } = this.result;
+     for (let s = firstSlice; s <= lastSlice; s += 1) {
+--- a/src/wave/barrel/sweptContact.ts
++++ b/src/wave/barrel/sweptContact.ts
+@@ -1,5 +1,15 @@
+ import { LANDMARK, type ProfileLibrary } from './ProfileLibrary';
+ import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++import type { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
++
++/** The physical water needs answers, not mutable contact geometry. */
++export type SweptSurfaceQueries = Pick<SweptContact, 'query' | 'floorAt'>;
++/** Internal ordinary-worker owner; neither object publishes a raw contact or loft. */
++export interface OrdinaryContactOwner {
++  readonly queries: SweptSurfaceQueries;
++  updateFromPlainSurface(records: Float32Array, count: number, stillLevel: number, water: PhysicalSurfWater): void;
++}
++const ORDINARY_QUERY_NORMALS = Symbol('ordinary query normals');
+ 
+ /**
+  * The contact's constants (the Padang Padang spec, Part B, PR 4):
+@@ -105,7 +115,8 @@
+    */
+   readonly stats = { queries: 0, hits: 0, anomalies: 0, quads: 0, overlaps: 0 };
+   last: LoftResult | undefined;
+-  private readonly loft: SweptLoft;
++  private readonly loft: Pick<SweptLoft, 'build'>;
++  private readonly prepareNormal?: (vertex: number) => void;
+   private readonly bucket: number;
+   /** Per vertex, its along-ray coordinate on its own slice's ray, and (a joined slice's next) on the previous slice's. */
+   private own = new Float32Array(0);
+@@ -148,9 +159,28 @@
+   private sideB = 0;
+   private found = 0;
+ 
+-  constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}) {
+-    this.loft = new SweptLoft(library, slope, { contact: true });
++  constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS) {
++    if (internal === ORDINARY_QUERY_NORMALS) {
++      const queryLoft = SweptLoft.forContactQueries(library, slope);
++      this.loft = queryLoft;
++      this.prepareNormal = queryLoft.prepareNormal;
++    } else this.loft = new SweptLoft(library, slope, { contact: true });
+     this.bucket = options.bucket ?? CONTACT.bucket;
++  }
++
++  /** Internal worker construction, never a posted option or public lazy-output mode. */
++  static forOrdinaryWorker(library: ProfileLibrary, slope: number): OrdinaryContactOwner {
++    const contact = new SweptContact(library, slope, {}, ORDINARY_QUERY_NORMALS);
++    const queries = Object.freeze({
++      query: contact.query.bind(contact),
++      floorAt: contact.floorAt.bind(contact),
++    });
++    return Object.freeze({
++      queries,
++      updateFromPlainSurface(records: Float32Array, count: number, stillLevel: number, water: PhysicalSurfWater): void {
++        water.withSurfaceNodeCache(() => contact.update(records, count, stillLevel, (x, z) => water.plainSurfaceAt(x, z)));
++      },
++    });
+   }
+ 
+   /** Loft the fronts over the water (`heightAt`, uncarved) and index the strips for this step's queries. */
+@@ -430,6 +460,7 @@
+     for (let m = 0; m < 3; m += 1) {
+       const v = this.at[3 * k + m];
+       const w = this.weights[3 * k + m];
++      this.prepareNormal?.(v);
+       nx += w * loft.normals[3 * v];
+       ny += w * loft.normals[3 * v + 1];
+       nz += w * loft.normals[3 * v + 2];
+--- a/src/physics/PhysicalSurfWater.ts
++++ b/src/physics/PhysicalSurfWater.ts
+@@ -1,5 +1,5 @@
+ import type { BedMaterial } from '../wave/Bathymetry';
+-import { createContactHit, tubeState, type SweptContact } from '../wave/barrel/sweptContact';
++import { createContactHit, tubeState, type SweptSurfaceQueries } from '../wave/barrel/sweptContact';
+ import { waveNumber } from '../wave/dispersion';
+ import type { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
+ import type { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
+@@ -73,7 +73,7 @@
+    * The swept barrel's contact (the Padang Padang spec, Part B, PR 4): where its loft is, it answers the surface, the
+    * curl's layers and the lip's flow, in place of a carve.
+    */
+-  swept?: SweptContact;
++  swept?: SweptSurfaceQueries;
+ }
+ 
+ /**
+@@ -119,7 +119,7 @@
+   }
+ 
+   /** The simulation's water; with the swept barrel's contact, that in place of the lip's carve (Part B, PR 4). */
+-  static forSimulation(simulation: SurfZoneSimulation, swept?: SweptContact, nodeSpacing = 1): PhysicalSurfWater {
++  static forSimulation(simulation: SurfZoneSimulation, swept?: SweptSurfaceQueries, nodeSpacing = 1): PhysicalSurfWater {
+     const { lip } = simulation;
+     return new PhysicalSurfWater(simulation.solver, {
+       peakPeriod: simulation.config.peakPeriod, breaking: simulation.breaking.strength, nodeSpacing,
+--- a/src/wave/SurfZoneRunner.ts
++++ b/src/wave/SurfZoneRunner.ts
+@@ -18,7 +18,7 @@
+ import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
+ import { libraryFromBytes } from './barrel/barrelLibrary';
+ import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
+-import { SweptContact } from './barrel/sweptContact';
++import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } from './barrel/sweptContact';
+ import { BARREL_SLOPE } from './barrel/sweptLoft';
+ import { SurfZoneSimulation, sweptBarrelOn, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
+ import type { BreakerType } from './SwellReadout';
+@@ -28,6 +28,7 @@
+ 
+ /** Fixed simulation step, s: the game's physics rate. */
+ export const SURF_ZONE_STEP = 1 / 60;
++const WORKER_CONTACT_OWNER = Symbol('private worker contact owner');
+ /** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time, the parcel's age (plan P7), its volume, m³, and its kind: 0 a jet's water, 1 a splash-up's (G9). */
+ export const LIP_STRIDE = 9;
+ 
+@@ -300,6 +301,8 @@
+   readonly session?: RideSession;
+   /** The swept barrel's contact at a swept spot, given the barrel files (the Padang Padang spec, Part B, PR 4). */
+   readonly contact?: SweptContact;
++  private readonly contactQueries?: SweptSurfaceQueries;
++  private readonly ordinaryContactOwner?: OrdinaryContactOwner;
+   /** The contact's last update, ms. */
+   contactMs = 0;
+   private readonly contactRecords = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
+@@ -341,7 +344,7 @@
+   private readonly axis = new Vector3();
+ 
+   /** `'warm'` leaves the spin-up, and seating the board and rider, to `spinUp` (the worker spins up on its GPU). */
+-  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up') {
++  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up', internal?: typeof WORKER_CONTACT_OWNER) {
+     // At a swept spot the cases run the crash in every sea (PR 5), and the rider's contact with a board or rider (PR 4).
+     const slope = BARREL_SLOPE[config.spot];
+     const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases) : undefined;
+@@ -359,8 +362,16 @@
+     this.focus = this.simulation.breakPoint();
+     this.breaker = this.simulation.iribarren();
+     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
+-    if (library && (options.rider || options.board || options.contact) && this.simulation.front) this.contact = new SweptContact(library, slope!);
+-    this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contact, renderSpacing);
++    if (library && (options.rider || options.board || options.contact) && this.simulation.front) {
++      if (internal === WORKER_CONTACT_OWNER && config.spot === 'padang' && this.simulation.solver instanceof BoussinesqSolver) {
++        this.ordinaryContactOwner = SweptContact.forOrdinaryWorker(library, slope!);
++        this.contactQueries = this.ordinaryContactOwner.queries;
++      } else {
++        this.contact = new SweptContact(library, slope!);
++        this.contactQueries = this.contact;
++      }
++    }
++    this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contactQueries, renderSpacing);
+     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
+     this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));
+     if (options.rider) {
+@@ -372,6 +383,11 @@
+       this.board = new BoardBody();
+     }
+     if (start === 'spun-up') this.seat();
++  }
++
++  /** Only WorkerCore retains this runner; replies never publish the owner or query backend. */
++  static forWorker(config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up'): SurfZoneRunner {
++    return new SurfZoneRunner(config, options, start, WORKER_CONTACT_OWNER);
+   }
+ 
+   /** Spin a `'warm'`-built surf zone up (on its device when it has one), then seat the board and rider on it. */
+@@ -487,13 +503,14 @@
+    * advisor's ruling 3).
+    */
+   private updateContact(): void {
+-    const { contact, simulation } = this;
+-    if (!contact || !simulation.front) return;
++    const { contact, simulation, contactQueries, ordinaryContactOwner } = this;
++    if (!contactQueries || !simulation.front) return;
+     const start = performance.now();
+     const count = writeFrontRecords(simulation.front.points, this.contactRecords);
+     // The solver has finished all water mutations; the contact only reads heights for this synchronous build.
+-    this.water.withSurfaceNodeCache(() => {
+-      contact.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
++    if (ordinaryContactOwner) ordinaryContactOwner.updateFromPlainSurface(this.contactRecords, count, this.config.tide, this.water);
++    else this.water.withSurfaceNodeCache(() => {
++      contact!.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
+     });
+     this.contactMs = performance.now() - start;
+   }
+@@ -525,7 +542,7 @@
+       session.step(SURF_ZONE_STEP, this.water, ridden);
+       // At a swept spot the lip strikes through the contact; its parcels' strips are off, so they would strike from
+       // where nothing is drawn (the advisor's ruling 4).
+-      if (!this.contact) session.strike(this.simulation.lip);
++      if (!this.contactQueries) session.strike(this.simulation.lip);
+       if (session.surfer.active) this.knock = Math.max(this.knock, session.surfer.lastContacts.board.length());
+       this.boardMs = performance.now() - start;
+       const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)
+--- a/src/game/SurfZoneWorkerCore.ts
++++ b/src/game/SurfZoneWorkerCore.ts
+@@ -79,7 +79,7 @@
+       const { config, options, sea } = request;
+       if (this.createDevice && (config.compute ?? 'auto') === 'auto') {
+         // The device first, so the spin-up runs on the GPU too (several times faster than the CPU).
+-        const runner = new SurfZoneRunner(config, options, 'warm');
++        const runner = SurfZoneRunner.forWorker(config, options, 'warm');
+         const createDevice = this.createDevice;
+         return (async () => {
+           await runner.useDevice(createDevice);
+@@ -93,7 +93,7 @@
+           this.ready(runner);
+         })();
+       }
+-      const runner = new SurfZoneRunner(config, options);
++      const runner = SurfZoneRunner.forWorker(config, options);
+       if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
+       runner.setSprayLook(this.sprayLook);
+       runner.setSprayEnabled(this.sprayEnabled);
+--- /dev/null
++++ b/src/wave/barrel/contactNormalDemand.prototype.test.ts
+@@ -0,0 +1,396 @@
++/** TMP-only prospective parity suite. The oracle tree is byte-exact ef60d3cee and shares no new normal helper. */
++import { afterEach, describe, expect, it, vi } from 'vitest';
++import { Buffer } from 'node:buffer';
++import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
++import { createWaterSample } from '../../physics/SurfWater';
++import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
++import { SurfZoneRunner } from '../SurfZoneRunner';
++import { SurfZoneWorkerCore, type SurfZoneReply } from '../../game/SurfZoneWorkerCore';
++import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
++import { LANDMARK, PROFILE_POINTS, ProfileLibrary, type BarrelCase } from './ProfileLibrary';
++import { encodeCase } from './profileFormat';
++import { SweptContact, createContactHit, type ContactHit } from './sweptContact';
++import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++import { tubeCase } from './toyCase';
++import { PhysicalSurfWater as OriginalWater } from '../../../oracle/src/physics/PhysicalSurfWater';
++import { ShallowWaterSolver as OriginalSolver, uniformEdges as originalEdges } from '../../../oracle/src/wave/ShallowWaterSolver';
++import { ProfileLibrary as OriginalLibrary } from '../../../oracle/src/wave/barrel/ProfileLibrary';
++import { tubeCase as originalTube } from '../../../oracle/src/wave/barrel/toyCase';
++import { SweptContact as OriginalContact, createContactHit as originalHit } from '../../../oracle/src/wave/barrel/sweptContact';
++import { SweptLoft as OriginalLoft } from '../../../oracle/src/wave/barrel/sweptLoft';
++
++const STILL = 0.5;
++function records(n: number, tau: number, front = 1, xOffset = 0, bend = false): Float32Array {
++  const a = new Float32Array(n * FRONT_STRIDE);
++  for (let k = 0; k < n; k++) {
++    const o = k * FRONT_STRIDE;
++    a[o + FRONT_FIELD.x] = k + 0.5 + xOffset;
++    a[o + FRONT_FIELD.z] = -100 + (bend ? 0.3 * Math.sin(k * 0.24) : 0);
++    a[o + FRONT_FIELD.front] = front;
++    a[o + FRONT_FIELD.sigma] = k;
++    a[o + FRONT_FIELD.tau] = tau + (bend ? 0.01 * Math.cos(k * 0.15) : 0);
++    a[o + FRONT_FIELD.footHeight] = 2.1;
++    a[o + FRONT_FIELD.footDepth] = 7;
++    a[o + FRONT_FIELD.throwZ] = tau >= 0 ? a[o + FRONT_FIELD.z] : Number.NaN;
++  }
++  return a;
++}
++function bytes(a: ArrayBufferView): Buffer {
++  return Buffer.from(a.buffer, a.byteOffset, a.byteLength);
++}
++function exactFields(a: Record<string, unknown>, b: Record<string, unknown>): void {
++  expect(Object.keys(a).sort()).toEqual(Object.keys(b).sort());
++  for (const key of Object.keys(a)) expect(Object.is(a[key], b[key]), key).toBe(true);
++}
++function geometry(a: LoftResult, b: LoftResult): void {
++  expect(Object.keys(a).sort()).toEqual(Object.keys(b).sort());
++  for (const key of Object.keys(a) as (keyof LoftResult)[]) {
++    if (key === 'normals') continue; // Private backend has no unused-normal buffer contract.
++    const av = a[key], bv = b[key];
++    if (ArrayBuffer.isView(av) && ArrayBuffer.isView(bv)) expect(Buffer.compare(bytes(av), bytes(bv)), key).toBe(0);
++    else expect(Object.is(av, bv), key).toBe(true);
++  }
++}
++function initialHit(): ContactHit {
++  return { ...createContactHit(), surfaceY: 123, normalX: -0, normalY: -4, normalZ: 9, tangentX: -7, tangentZ: -8, life: 99 };
++}
++type PrivateLoft = {
++  result: LoftResult; normalReady: Uint8Array; normalFirst: Int32Array; normalLast: Int32Array;
++  prepareNormal(v: number): void;
++};
++type PrivateContact = {
++  at: Int32Array; weights: Float64Array; count: number; found: number; cellStrips: Int32Array;
++};
++
++/** Instrumentation observes private source state only in this scratch test; production facades expose none of it. */
++function pair(flat = false, syntheticFrontEnd?: number) {
++  // Input-only anomaly fixture: a toy profile's front/rest ends before its lip.
++  // Real profile/loft/contact APIs construct and classify the resulting open column;
++  // no contact metadata, crossing arrays or query methods are fabricated.
++  const cCase = tubeCase(0.3), oCase = originalTube(0.3);
++  if (syntheticFrontEnd !== undefined) {
++    const frontEnd = syntheticFrontEnd;
++    const setFront = (c: BarrelCase) => {
++      for (let f = 0; f < c.frames.length / (2 * PROFILE_POINTS); f++) {
++        for (let j = LANDMARK.toe + 1; j <= LANDMARK.front; j++) {
++          const t = (j - LANDMARK.toe) / (LANDMARK.front - LANDMARK.toe);
++          c.frames[2 * (f * PROFILE_POINTS + j)] = 0.8 + t * (frontEnd - 0.8);
++        }
++      }
++    };
++    setFront(cCase); setFront(oCase);
++  }
++  const cSolver = new ShallowWaterSolver({ nx: 56, xMin: -12, dx: 1, zEdges: uniformEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
++  const oSolver = new OriginalSolver({ nx: 56, xMin: -12, dx: 1, zEdges: originalEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
++  for (let i = 0; i < cSolver.h.length; i++) {
++    const depth = 7 + STILL + (flat ? 0 : 0.03 * Math.sin(i * 0.17));
++    cSolver.h[i] = depth; oSolver.h[i] = depth;
++  }
++  let backend!: SweptContact, loft!: PrivateLoft;
++  const computed: number[] = [];
++  const originalUpdate = SweptContact.prototype.update;
++  vi.spyOn(SweptContact.prototype, 'update').mockImplementation(function (this: SweptContact, ...args) {
++    backend = this;
++    return originalUpdate.apply(this, args);
++  });
++  const originalBuild = SweptLoft.prototype.build;
++  vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) {
++    const result = originalBuild.apply(this, args);
++    loft = this as unknown as PrivateLoft;
++    return result;
++  });
++  const proto = SweptLoft.prototype as unknown as PrivateLoft;
++  const originalPrepare = proto.prepareNormal;
++  vi.spyOn(proto, 'prepareNormal').mockImplementation(function (this: PrivateLoft, vertex: number) {
++    if (this.normalReady[vertex] !== 1) computed.push(vertex);
++    return originalPrepare.call(this, vertex);
++  });
++  const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary([cCase]), 0.05);
++  const eager = new OriginalContact(new OriginalLibrary([oCase]), 0.05);
++  const water = new PhysicalSurfWater(cSolver, { peakPeriod: 18, nodeSpacing: 2, swept: owner.queries });
++  const oldWater = new OriginalWater(oSolver, { peakPeriod: 18, nodeSpacing: 2, swept: eager });
++  const reads: [number, number, number][] = [], oldReads: [number, number, number][] = [];
++  const plain = water.plainSurfaceAt.bind(water), oldPlain = oldWater.plainSurfaceAt.bind(oldWater);
++  vi.spyOn(water, 'plainSurfaceAt').mockImplementation((x, z) => {
++    const value = plain(x, z); reads.push([x, z, value]); return value;
++  });
++  vi.spyOn(oldWater, 'plainSurfaceAt').mockImplementation((x, z) => {
++    const value = oldPlain(x, z); oldReads.push([x, z, value]); return value;
++  });
++  const a = initialHit(), b = { ...originalHit(), ...a };
++  return {
++    owner, eager, water, oldWater, cSolver, oSolver, computed,
++    backend: () => backend, loft: () => loft, hit: () => ({ ...a }),
++    update(data: Float32Array) {
++      reads.length = 0; oldReads.length = 0; computed.length = 0;
++      owner.updateFromPlainSurface(data, data.length / FRONT_STRIDE, STILL, water);
++      oldWater.withSurfaceNodeCache(() => eager.update(data, data.length / FRONT_STRIDE, STILL, (x, z) => oldWater.plainSurfaceAt(x, z)));
++      expect(reads.length).toBe(oldReads.length);
++      for (let k = 0; k < reads.length; k++) for (let j = 0; j < 3; j++) expect(Object.is(reads[k][j], oldReads[k][j])).toBe(true);
++      geometry(backend.last!, eager.last!);
++      expect(computed).toEqual([]);
++    },
++    query(x: number, y: number, z: number): boolean {
++      const ok = owner.queries.query(x, y, z, a), oldOk = eager.query(x, y, z, b);
++      expect(ok).toBe(oldOk);
++      exactFields(a as unknown as Record<string, unknown>, b as unknown as Record<string, unknown>);
++      expect(backend.stats).toEqual(eager.stats);
++      if (ok) {
++        const state = backend as unknown as PrivateContact;
++        const ys = (backend as unknown as { ys: Float64Array }).ys;
++        let above = 0;
++        for (let k = 0; k < state.count; k++) if (ys[k] > y) above++;
++        const below = state.count - above;
++        const selected = a.inWater ? below : below - 1;
++        expect(Object.is(ys[selected], a.surfaceY)).toBe(true);
++        for (let m = 0; m < 3; m++) {
++          const v = state.at[3 * selected + m];
++          expect(loft.normalReady[v]).toBe(1);
++          expect(Buffer.compare(bytes(backend.last!.normals.subarray(3 * v, 3 * v + 3)), bytes(eager.last!.normals.subarray(3 * v, 3 * v + 3)))).toBe(0);
++        }
++      }
++      return ok;
++    },
++    floor(x: number, z: number): number {
++      const floor = owner.queries.floorAt(x, z);
++      expect(Object.is(floor, eager.floorAt(x, z))).toBe(true);
++      expect(backend.stats).toEqual(eager.stats);
++      return floor;
++    },
++    callbackCounts: () => [reads.length, oldReads.length],
++  };
++}
++
++afterEach(() => vi.restoreAllMocks());
++
++describe('private ordinary normal demand, against untouched ef60d3cee', () => {
++  it('matches real eager geometry, callback ordering and every layered answer across changed, shrinking and empty epochs', () => {
++    const p = pair();
++    let successes = 0;
++    for (const [n, tau] of [[21, -0.3], [21, 0.1], [31, 0.25], [13, 0.4], [0, 0.1], [21, 0.1]]) {
++      p.update(records(n, tau, 1, 0, true));
++      for (const x of [-20, 0.5, 5.2, 10.3, 15.7, 26.3, 50]) for (const z of [-106, -100, -96.2, -93, -90, -80]) {
++        p.floor(x, z);
++        for (const y of [-Infinity, -0, 0.5, 2.5, 4.3, 9, Infinity, NaN]) successes += p.query(x, y, z) ? 1 : 0;
++      }
++      expect(new Set(p.computed).size).toBe(p.computed.length);
++    }
++    expect(successes).toBeGreaterThan(100);
++  });
++
++  it('does zero normal preparation for a floor-only epoch and leaves reused hit fields exact on true then outside false queries', () => {
++    const p = pair(true); p.update(records(21, 0.1));
++    for (let x = -10; x < 31; x += 0.7) for (const z of [-110, -100, -96, -93, -90, -80]) p.floor(x, z);
++    expect(p.computed).toEqual([]);
++    expect(p.query(10.3, 2.5, -93)).toBe(true);
++    const before = p.computed.length;
++    expect(p.query(999, -Infinity, 999)).toBe(false);
++    expect(p.query(10.3, 3, -999)).toBe(false);
++    expect(p.computed.length).toBe(before);
++  });
++
++  it('retains exact false partial hits and prepares zero normals for an actual open-column anomaly', () => {
++    const p = pair(true, 0.5); p.update(records(21, 0.1));
++    const untouched = p.hit();
++    expect(p.query(10.3, -Infinity, -93)).toBe(false);
++    expect(p.backend().stats.anomalies).toBe(1);
++    expect((p.backend() as unknown as PrivateContact).count).toBe(2);
++    expect(p.computed).toEqual([]);
++    const first = p.hit();
++    const retained = ['surfaceY', 'normalX', 'normalY', 'normalZ', 'tangentX', 'tangentZ', 'life'] as const;
++    for (const key of retained) expect(Object.is(first[key], untouched[key]), key).toBe(true);
++    expect(first.inWater).toBe(false); expect(Number.isFinite(first.floorY)).toBe(true);
++    for (const key of ['waterFloorY', 'ceilingY', 'ceilingTopY'] as const) expect(Number.isNaN(first[key]), key).toBe(true);
++    for (const key of ['lipShare', 'lipVX', 'lipVY', 'lipVZ', 'lipWeight'] as const) expect(Object.is(first[key], 0), key).toBe(true);
++    // A real successful curl query fills normal/life/material-lip fields, then the anomaly resets only its original fields.
++    expect(p.query(10.3, 4.3, -93)).toBe(true);
++    const previous = p.hit(); expect(previous.inWater).toBe(true); expect(previous.lipWeight).toBeGreaterThan(0);
++    const prepared = [...p.computed];
++    expect(p.query(10.3, -Infinity, -93)).toBe(false);
++    expect(p.backend().stats.anomalies).toBe(2);
++    expect(p.computed).toEqual(prepared);
++    const again = p.hit();
++    for (const key of retained) expect(Object.is(again[key], previous[key]), key).toBe(true);
++    for (const key of ['lipShare', 'lipVX', 'lipVY', 'lipVZ', 'lipWeight'] as const) expect(Object.is(again[key], 0), key).toBe(true);
++  });
++
++  it('reuses only selected vertices, including exact shared-edge/fold ties and both sides of surfaces', () => {
++    const p = pair(true); p.update(records(21, 0.1));
++    expect(p.query(10.3, 2.5, -93)).toBe(true);
++    const once = p.computed.length;
++    expect(once).toBe(3);
++    expect(p.query(10.3, 2.5, -93)).toBe(true);
++    expect(p.computed.length).toBe(once);
++    const r = p.eager.last!, s = Math.floor(r.sliceCount / 2);
++    for (const j of [LOFT.extensionSamples + 100, LOFT.extensionSamples + 64]) {
++      const v = s * LOFT_SAMPLES + j, next = v + LOFT_SAMPLES;
++      const mid = (k: number) => (r.positions[3 * v + k] + r.positions[3 * next + k]) / 2;
++      for (const offset of [-1, -1e-4, 0, 1e-4, 0.5]) p.query(mid(0), mid(1) + offset, mid(2));
++    }
++    expect(new Set(p.computed).size).toBe(p.computed.length);
++  });
++
++  it('preserves original final-run clamping at cut seals and retains first-front overlap answers', () => {
++    const p = pair();
++    const a = records(21, 0.1), b = records(21, 0.2, 2, 9.5);
++    const both = new Float32Array(a.length + b.length); both.set(a); both.set(b, a.length);
++    p.update(both);
++    expect(p.eager.last!.overlaps).toBeGreaterThan(0);
++    const r = p.eager.last!;
++    let checked = 0;
++    for (let t = 0; t < r.indexCount; t += 3) {
++      const vertices = [r.indices[t], r.indices[t + 1], r.indices[t + 2]];
++      const row = Math.floor(vertices[0] / LOFT_SAMPLES), j = vertices[0] % LOFT_SAMPLES;
++      const end = p.loft().normalFirst[row] === row || p.loft().normalLast[row] === row || p.loft().normalLast[row] === row + 1;
++      if (!end && j !== 1 && j !== LOFT_SAMPLES - 2 && t % 117 !== 0) continue;
++      const xyz = [0, 1, 2].map(c => vertices.reduce((sum, v) => sum + r.positions[3 * v + c], 0) / 3);
++      checked += p.query(xyz[0], Infinity, xyz[2]) ? 1 : 0;
++    }
++    expect(checked).toBeGreaterThan(20);
++    for (const x of [8.3, 15.3, 26.3]) for (const y of [-0.5, 2.5, 5, 9]) p.query(x, y, -93);
++  });
++
++  it('uses captured positions after the height scope closes and resets caches even on a same-time rebuild', () => {
++    const p = pair(); const data = records(21, 0.1); p.update(data);
++    const callbacks = p.callbackCounts();
++    p.cSolver.h.fill(0.2); p.oSolver.h.fill(0.2);
++    p.cSolver.bed.fill(-9); p.oSolver.bed.fill(-9);
++    p.cSolver.qx.fill(1.25); p.oSolver.qx.fill(1.25);
++    data.fill(0); // Input records were fully consumed by the prior eager build.
++    expect(p.query(10.3, 2.5, -93)).toBe(true);
++    expect(p.callbackCounts()).toEqual(callbacks);
++    expect(p.computed.length).toBe(3);
++    p.update(records(21, 0.1)); // Same clocks; genuinely different physical height inputs.
++    p.query(10.3, 2.5, -93);
++    expect(new Set(p.computed).size).toBe(p.computed.length);
++    p.update(new Float32Array(0));
++    expect(p.query(10.3, 2.5, -93)).toBe(false);
++    expect(p.computed).toEqual([]);
++  });
++
++  it('keeps full PhysicalSurfWater body samples exact, rather than checking ContactHit alone', () => {
++    const p = pair(); p.update(records(21, 0.1, 1, 0, true));
++    const a = createWaterSample(), b = createWaterSample();
++    for (const x of [5.2, 10.3, 15.7]) for (const y of [0, 2.5, 4.4, 9]) {
++      p.water.sampleAt(x, y, -93, a); p.oldWater.sampleAt(x, y, -93, b);
++      exactFields(a as unknown as Record<string, unknown>, b as unknown as Record<string, unknown>);
++      expect(p.backend().stats).toEqual(p.eager.stats);
++    }
++    expect(p.computed.length).toBeGreaterThan(0);
++  });
++
++  it('retains every public eager buffer and held-alias mutation behavior across growth, shrink and empty builds', () => {
++    const contact = new SweptContact(new ProfileLibrary([tubeCase(0.3)]), 0.05);
++    const eager = new OriginalContact(new OriginalLibrary([originalTube(0.3)]), 0.05);
++    const heightCalls: [number, number][] = [], oldCalls: [number, number][] = [];
++    const read = (x: number, z: number) => { heightCalls.push([x, z]); return STILL + 0.01 * Math.sin(x + z); };
++    const oldRead = (x: number, z: number) => { oldCalls.push([x, z]); return STILL + 0.01 * Math.sin(x + z); };
++    let held: LoftResult | undefined;
++    for (const n of [31, 13, 0, 21]) {
++      const data = records(n, 0.1, 1, 0, true);
++      contact.update(data, n, STILL, read); eager.update(data, n, STILL, oldRead);
++      expect(heightCalls).toEqual(oldCalls);
++      if (held) expect(contact.last).toBe(held);
++      held = contact.last!;
++      geometry(contact.last!, eager.last!);
++      expect(Buffer.compare(bytes(contact.last!.normals), bytes(eager.last!.normals))).toBe(0);
++    }
++    for (const r of [contact.last!, eager.last!]) {
++      for (let v = 0; v < r.vertexCount; v++) { r.positions[3 * v + 1] += 0.125; r.positions[3 * v + 2] += 0.037; }
++      r.sliceJoined.fill(0); r.sliceCount = 0;
++    }
++    const a = initialHit(), b = { ...originalHit(), ...a };
++    for (const y of [0.1, 2.5, 4.4, 9]) {
++      expect(contact.query(10.3, y, -93 + 0.037, a)).toBe(eager.query(10.3, y, -93 + 0.037, b));
++      exactFields(a as unknown as Record<string, unknown>, b as unknown as Record<string, unknown>);
++    }
++  });
++
++  it('stores original Float32 normal bits including numerical fallbacks without sharing an oracle helper', () => {
++    const deferred = SweptLoft.forContactQueries(new ProfileLibrary([tubeCase(0.3)]), 0.05);
++    const original = new OriginalLoft(new OriginalLibrary([originalTube(0.3)]), 0.05, { contact: true });
++    const data = records(5, 0.1);
++    const candidate = deferred.build(data, 5, STILL, () => STILL);
++    const expected = original.build(data, 5, STILL, () => STILL);
++    const proto = original as unknown as { normals(first: number, last: number): void };
++    for (const scale of [0, 1e-8, 1e-6, 1, NaN]) {
++      const internal = deferred as unknown as Record<string, unknown>;
++      expect(Object.keys(internal).sort()).toEqual(['build', 'prepareNormal']);
++      // Refresh the query-only epoch then alter only the numeric unit fixture, not real contact metadata.
++      deferred.build(data, 5, STILL, () => STILL);
++      for (let s = 0; s < candidate.sliceCount; s++) for (let j = 0; j < LOFT_SAMPLES; j++) {
++        const o = 3 * (s * LOFT_SAMPLES + j);
++        for (const p of [candidate.positions, expected.positions]) { p[o] = s * scale; p[o + 1] = -0; p[o + 2] = j * scale; }
++      }
++      // Derive final runs from unchanged real topology; isolated rows are never selected by contact.
++      const runs: [number, number][] = [];
++      for (let first = 0; first + 1 < expected.sliceCount;) {
++        if (expected.sliceJoined[first] !== 1) { first++; continue; }
++        let last = first + 1;
++        while (last + 1 < expected.sliceCount && expected.sliceJoined[last] === 1) last++;
++        runs.push([first, last]);
++        first = last + 1;
++      }
++      expect(runs.length).toBeGreaterThan(0);
++      for (const [first, last] of runs) {
++        proto.normals(first, last);
++        for (const row of [first, Math.floor((first + last) / 2), last]) for (const j of [0, 1, 64, LOFT_SAMPLES - 1]) {
++          const v = row * LOFT_SAMPLES + j; deferred.prepareNormal(v);
++          expect(Buffer.compare(bytes(candidate.normals.subarray(3 * v, 3 * v + 3)), bytes(expected.normals.subarray(3 * v, 3 * v + 3)))).toBe(0);
++        }
++      }
++    }
++  });
++
++  it('keeps the worker owner opaque and frozen while default/direct runners remain eager', async () => {
++    const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary([tubeCase(0.3)]), 0.05);
++    expect(Object.isFrozen(owner)).toBe(true); expect(Object.isFrozen(owner.queries)).toBe(true);
++    expect(Object.keys(owner).sort()).toEqual(['queries', 'updateFromPlainSurface']);
++    expect(Object.keys(owner.queries).sort()).toEqual(['floorAt', 'query']);
++    expect(owner.queries).not.toBeInstanceOf(SweptContact);
++    const config = { spot: 'padang' as const, seed: 1, significantHeight: 1.2, peakPeriod: 16, directionDegrees: 0, spreading: 150, tide: 0,
++      alongShore: 40, dx: 2, fineSpacing: 4, coarseSpacing: 8, componentCount: 4, spinUpPeriods: 0 };
++    const options = { contact: true, barrelCases: [encodeCase(tubeCase(0.3))] };
++    const direct = new SurfZoneRunner(config, options, 'warm');
++    expect(direct.contact).toBeInstanceOf(SweptContact);
++    (direct as unknown as { updateContact(): void }).updateContact();
++    expect(direct.contact!.last).toBeDefined();
++    const ordinary = vi.spyOn(SweptContact, 'forOrdinaryWorker');
++    const replies: SurfZoneReply[] = [];
++    const post = (reply: SurfZoneReply) => replies.push(reply);
++    const plainCore = new SurfZoneWorkerCore(post);
++    await plainCore.handle({ type: 'start', config: { ...config, compute: 'cpu' }, options });
++    const warmCore = new SurfZoneWorkerCore(post, async () => undefined); // Actual warm branch, no GPU object.
++    await warmCore.handle({ type: 'start', config, options });
++    expect(ordinary).toHaveBeenCalledTimes(2);
++    await plainCore.handle({ type: 'exportState', id: 7 });
++    expect(replies.filter(r => r.type === 'ready')).toHaveLength(2);
++    expect(replies.some(r => r.type === 'state')).toBe(true);
++    // The internal worker entry still declines private ownership unless the real ordinary eligibility holds.
++    for (const [otherConfig, otherOptions] of [
++      [config, { contact: true }], // No library.
++      [config, { barrelCases: options.barrelCases }], // No rider/board/contact request.
++      [{ ...config, spot: 'reef' as const, sweptBarrel: true }, options], // Other eligible swept spot remains eager.
++    ] as const) {
++      const other = SurfZoneRunner.forWorker(otherConfig, otherOptions, 'warm');
++      expect((other as unknown as { ordinaryContactOwner?: unknown }).ordinaryContactOwner).toBeUndefined();
++      if (other.contact) expect(other.contact).toBeInstanceOf(SweptContact);
++    }
++    expect(ordinary).toHaveBeenCalledTimes(2);
++    const forbidden = new Set(['contact', 'contactQueries', 'ordinaryContactOwner', 'last', 'normals', 'positions']);
++    function inspect(value: unknown, path: string[] = []): void {
++      if (!value || typeof value !== 'object' || ArrayBuffer.isView(value) || value instanceof ArrayBuffer) return;
++      expect(value).not.toBeInstanceOf(SweptContact);
++      for (const [key, child] of Object.entries(value)) {
++        if (key === 'contact') {
++          // Existing wire contract: status.pipelineMs.contact is a number, never the contact owner/backend.
++          expect(path.slice(-3)).toEqual(['snapshot', 'status', 'pipelineMs']);
++          expect(typeof child).toBe('number');
++        } else expect(forbidden.has(key), key).toBe(false);
++        expect(typeof child).not.toBe('function');
++        inspect(child, [...path, key]);
++      }
++    }
++    replies.forEach(reply => inspect(reply));
++  });
++});
+--- /dev/null
++++ b/vitest.prototype.config.ts
+@@ -0,0 +1,7 @@
++import { defineConfig } from 'vitest/config';
++
++// TMP-only helper: do not discover the independent archived oracle's test files.
++export default defineConfig({
++  cacheDir: '.cache/vite',
++  test: { include: ['src/**/*.test.ts'], testTimeout: 60_000 },
++});
+--- /dev/null
++++ b/src/wave/barrel/contactNormalDemand.f64-replay.test.ts
+@@ -0,0 +1,313 @@
++/** TMP-only single actual-epoch replay; no water stepping, body trajectory replay, GPU, or timing. */
++import { afterEach, describe, it, vi } from 'vitest';
++import assert from 'node:assert/strict';
++import { Buffer } from 'node:buffer';
++import { createHash } from 'node:crypto';
++import { readFileSync, writeFileSync } from 'node:fs';
++import { gunzipSync } from 'node:zlib';
++import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
++import { ShallowWaterSolver } from '../ShallowWaterSolver';
++import type { SurfZoneConfig } from '../SurfZoneSimulation';
++import { FRONT_STRIDE } from './frontRecords';
++import { ProfileLibrary } from './ProfileLibrary';
++import { decodeCase } from './profileFormat';
++import { CONTACT, createContactHit, SweptContact, type ContactHit } from './sweptContact';
++import { BARREL_SLOPE, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++import { PhysicalSurfWater as OriginalWater } from '../../../oracle/src/physics/PhysicalSurfWater';
++import { ShallowWaterSolver as OriginalSolver } from '../../../oracle/src/wave/ShallowWaterSolver';
++import { ProfileLibrary as OriginalLibrary } from '../../../oracle/src/wave/barrel/ProfileLibrary';
++import { decodeCase as originalDecodeCase } from '../../../oracle/src/wave/barrel/profileFormat';
++import { createContactHit as originalHit, SweptContact as OriginalContact } from '../../../oracle/src/wave/barrel/sweptContact';
++import { BARREL_SLOPE as ORIGINAL_SLOPE, SweptLoft as OriginalLoft } from '../../../oracle/src/wave/barrel/sweptLoft';
++
++const FIXTURE = '/private/tmp/contact-lazy-height-20261004-v3/run/capture.json.gz';
++const COMPRESSED_SHA = 'e7bbbb85cf03450f97fe8807414f749dbada7a5b5fa814e490f578f26f965e2f';
++const EXPANDED_SHA = 'a9c1e4d0b759aac2a9123e9d02cef97a957e959415d65ad098f53b3f99287648';
++const PROOF = 'checks/f64-replay-first-proof.json';
++type NumericArray = Float32Array | Float64Array | Uint8Array | Uint32Array | Int32Array;
++type CandidateTrace = { strip: number; x: number; z: number; crossings: number };
++type QueryTrace = {
++  ordinal: number; phase: string; method: 'query' | 'floorAt'; input: number[];
++  initial?: ContactHit; result: boolean | number; output?: ContactHit;
++  candidates: CandidateTrace[]; heldXz: number[]; normalVertices: number[]; error?: string;
++};
++type NumericState = {
++  nx: number; nz: number; dx: number; restLevel: number; time: number;
++  h: Float64Array; bed: Float64Array; xCenters: Float64Array; zCenters: Float64Array; dz: Float64Array;
++};
++type Epoch = {
++  ordinal: number; seaTime: number; afterWaterEnded: boolean; slices: number; vertices: number; indices: number;
++  joinedStrips: number; runs: [number, number][]; heightCalls: Record<string, number>;
++  normalCalls: number; normalRows: number; hitNormalVertices: number[]; queries: QueryTrace[];
++};
++type Fixture = {
++  byteOrder: string; seaTime: number; config: SurfZoneConfig; options: { barrelCases: Uint8Array[] };
++  grid: { xMin: number; zMin: number; nx: number; nz: number; spacing: number };
++  windowXMin: number; restLevel: number; nodeSpacing: number; solver: Omit<NumericState, 'restLevel' | 'time'>;
++  records: Float32Array; recordCount: number; stillLevel: number;
++  contactOptions: { bucket: number }; loftOptions: { contact: boolean; sheet: boolean };
++  loft: LoftResult;
++};
++type Capture = { status: { complete: boolean; ordinaryArraysIdentical: boolean }; epochs: Epoch[]; firstFixture: Fixture };
++type PrivateLoft = {
++  normalReady: Uint8Array; normalFirst: Int32Array; normalLast: Int32Array;
++  prepareNormal(v: number): void;
++};
++type ContactInspection = {
++  at: Int32Array;
++  normalAt(loft: LoftResult, k: number, hit: ContactHit): void;
++  crossings(loft: LoftResult, s: number, x: number, z: number): number;
++  heldByAnother(loft: LoftResult, s: number, x: number, z: number): boolean;
++  ensureBucket(s: number): void;
++};
++const sha = (value: ArrayBufferView) => createHash('sha256').update(Buffer.from(value.buffer, value.byteOffset, value.byteLength)).digest('hex');
++const bytes = (value: ArrayBufferView) => Buffer.from(value.buffer, value.byteOffset, value.byteLength);
++function same(actual: unknown, expected: unknown, label: string): void {
++  assert(Object.is(actual, expected), `${label}: actual ${String(actual)}, expected ${String(expected)}`);
++}
++function sameBytes(actual: ArrayBufferView, expected: ArrayBufferView, label: string): void {
++  const a = bytes(actual), b = bytes(expected);
++  assert.equal(a.length, b.length, `${label} byte length`);
++  if (Buffer.compare(a, b) !== 0) {
++    let i = 0; while (a[i] === b[i] && i < a.length) i++;
++    assert.fail(`${label}: first differing byte ${i}, actual ${a[i]}, expected ${b[i]}`);
++  }
++}
++function sameFields(actual: object, expected: object, label: string): void {
++  assert.deepEqual(Object.keys(actual).sort(), Object.keys(expected).sort(), `${label} fields`);
++  const a = actual as Record<string, unknown>, b = expected as Record<string, unknown>;
++  for (const key of Object.keys(b)) same(a[key], b[key], `${label}.${key}`);
++}
++/** Decode tags without deleting undefined fields; typed bytes always use plain owning Uint8Array, never Buffer.slice. */
++function unpack(value: unknown): unknown {
++  if (Array.isArray(value)) return value.map(unpack);
++  if (!value || typeof value !== 'object') return value;
++  const item = value as Record<string, unknown>;
++  if (Object.keys(item).length === 1 && item.undefined === true) return undefined;
++  if (Object.keys(item).length === 1 && typeof item.number === 'string') {
++    switch (item.number) {
++      case 'NaN': return Number.NaN;
++      case '-0': return -0;
++      case 'Infinity': return Infinity;
++      case '-Infinity': return -Infinity;
++      default: assert.fail(`Unknown number tag ${item.number}`);
++    }
++  }
++  if (typeof item.type === 'string' && typeof item.byteLength === 'number' && typeof item.base64 === 'string') {
++    const owned = new Uint8Array(Buffer.from(item.base64, 'base64'));
++    assert.equal(owned.byteOffset, 0); assert.equal(owned.buffer.byteLength, owned.byteLength);
++    assert.equal(owned.byteLength, item.byteLength);
++    switch (item.type) {
++      case 'Uint8Array': return owned;
++      case 'Float32Array': return new Float32Array(owned.buffer);
++      case 'Float64Array': return new Float64Array(owned.buffer);
++      case 'Uint32Array': return new Uint32Array(owned.buffer);
++      case 'Int32Array': return new Int32Array(owned.buffer);
++      default: assert.fail(`Unknown typed payload ${item.type}`);
++    }
++  }
++  return Object.fromEntries(Object.entries(item).map(([key, entry]) => [key, unpack(entry)]));
++}
++function encode(_key: string, value: unknown): unknown {
++  if (typeof value === 'number' && (!Number.isFinite(value) || Object.is(value, -0))) {
++    return { number: Object.is(value, -0) ? '-0' : String(value) };
++  }
++  if (value === undefined) return { undefined: true };
++  return value;
++}
++/**
++ * Fixed numeric height state only. Both sides execute their own real solver sampleCentered/rowBelow methods
++ * and their own real PhysicalSurfWater plainSurfaceAt/node cache. No new interpolation formula is shared.
++ * Missing fields throw if replay unexpectedly reaches flow, stepping, carving, or other uncaptured behavior.
++ */
++function numericProvider<T extends object>(prototype: T, fixture: Fixture): { solver: T & NumericState; reads: Set<string> } {
++  const fields: NumericState = {
++    nx: fixture.solver.nx, nz: fixture.solver.nz, dx: fixture.solver.dx, restLevel: fixture.restLevel, time: fixture.seaTime,
++    h: fixture.solver.h.slice(), bed: fixture.solver.bed.slice(), xCenters: fixture.solver.xCenters.slice(),
++    zCenters: fixture.solver.zCenters.slice(), dz: fixture.solver.dz.slice(),
++  };
++  const target = Object.assign(Object.create(prototype) as T, fields);
++  const reads = new Set<string>();
++  const solver = new Proxy(target, {
++    get(object, key, receiver) {
++      if (!Reflect.has(object, key)) assert.fail(`Plain numeric provider read uncaptured ${String(key)}`);
++      if (typeof key === 'string') reads.add(key);
++      return Reflect.get(object, key, receiver);
++    },
++  });
++  return { solver, reads };
++}
++function compareFreshGeometry(a: LoftResult, b: LoftResult): void {
++  assert.deepEqual(Object.keys(a).sort(), Object.keys(b).sort());
++  for (const key of Object.keys(a) as (keyof LoftResult)[]) {
++    if (key === 'normals') continue; // Private unused normals have no full-result contract.
++    const av = a[key], bv = b[key];
++    if (ArrayBuffer.isView(av) && ArrayBuffer.isView(bv)) sameBytes(av, bv, `fresh geometry ${key}`);
++    else same(av, bv, `fresh geometry ${key}`);
++  }
++}
++/** Capture comparisons cover active geometry/metadata actually read by contact, not old unused output history. */
++function compareCapturedQueryGeometry(actual: LoftResult, recorded: LoftResult): void {
++  for (const key of ['vertexCount', 'indexCount', 'sliceCount', 'restSamples', 'clamps', 'clampedLookups', 'overlaps',
++    'overlapsOpen', 'overlapOpenWeight', 'rayCorrections', 'rayMaxBlend', 'rayMinAdvance', 'rayInvalidIntervals', 'tipGap'] as const) {
++    same(actual[key], recorded[key], `captured scalar ${key}`);
++  }
++  for (const key of ['positions', 'indices', 'sliceFront', 'sliceJoined', 'sliceRayX', 'sliceRayZ', 'sliceLife',
++    'sliceTipAlong', 'sliceTipUp', 'sliceAnchorVX', 'sliceAnchorVZ', 'sliceWeight'] as const) {
++    const expected = recorded[key] as NumericArray;
++    sameBytes((actual[key] as NumericArray).subarray(0, expected.length), expected, `captured query geometry ${key}`);
++  }
++}
++function traceQueries(contact: ContactInspection) {
++  const trace = { candidates: [] as CandidateTrace[], heldXz: [] as number[], normalVertices: [] as number[] };
++  let holding = false;
++  const crossings = contact.crossings, held = contact.heldByAnother, bucket = contact.ensureBucket, normal = contact.normalAt;
++  vi.spyOn(contact, 'crossings').mockImplementation(function (this: ContactInspection, ...args) {
++    const result = crossings.apply(this, args);
++    trace.candidates.push({ strip: args[1], x: args[2], z: args[3], crossings: result }); return result;
++  });
++  vi.spyOn(contact, 'heldByAnother').mockImplementation(function (this: ContactInspection, ...args) {
++    const previous = holding; holding = true;
++    try { return held.apply(this, args); } finally { holding = previous; }
++  });
++  vi.spyOn(contact, 'ensureBucket').mockImplementation(function (this: ContactInspection, s) {
++    if (holding) trace.heldXz.push(s); return bucket.call(this, s);
++  });
++  vi.spyOn(contact, 'normalAt').mockImplementation(function (this: ContactInspection, ...args) {
++    for (let m = 0; m < 3; m++) trace.normalVertices.push(this.at[3 * args[1] + m]);
++    return normal.apply(this, args);
++  });
++  return { trace, reset() { trace.candidates.length = 0; trace.heldXz.length = 0; trace.normalVertices.length = 0; } };
++}
++
++afterEach(() => vi.restoreAllMocks());
++describe('actual first-epoch F64 ordinary contact replay', () => {
++  it('replays exactly 627 recorded calls and exactly 65 demanded normal vertices against capture and independent eager oracle', () => {
++    const proof: Record<string, unknown> = { schema: 1, status: 'running', baseline: 'ef60d3cee', fixture: FIXTURE,
++      compressedSha256: COMPRESSED_SHA, expandedSha256: EXPANDED_SHA, replayEpochs: 1,
++      scope: 'Contact/query/floor parity only; no body trajectory or later-epoch replay, cost or FPS claim' };
++    try {
++      const packed = readFileSync(FIXTURE), expanded = gunzipSync(packed);
++      assert.equal(packed.byteLength, 2_451_650); assert.equal(sha(packed), COMPRESSED_SHA);
++      assert.equal(expanded.byteLength, 13_547_682); assert.equal(sha(expanded), EXPANDED_SHA);
++      const capture = unpack(JSON.parse(expanded.toString('utf8'))) as Capture;
++      const f = capture.firstFixture, epoch = capture.epochs[0];
++      assert.equal(capture.epochs.length, 15); assert.equal(capture.status.complete, true); assert.equal(capture.status.ordinaryArraysIdentical, true);
++      assert.equal(f.byteOrder, 'little'); assert.equal(new Uint8Array(new Uint32Array([0x01020304]).buffer)[0], 4);
++      assert.equal(epoch.ordinal, 1); same(f.seaTime, epoch.seaTime, 'epoch sea time'); assert.equal(epoch.afterWaterEnded, true);
++      assert.equal(f.recordCount, 125); assert.equal(f.records.byteLength, f.recordCount * FRONT_STRIDE * 4);
++      assert.equal(f.solver.nx, 160); assert.equal(f.solver.nz, 725); assert.equal(f.solver.h.length, f.solver.nx * f.solver.nz);
++      assert.equal(f.solver.bed.length, f.solver.h.length);
++      assert(f.solver.h instanceof Float64Array && f.solver.bed instanceof Float64Array);
++      assert(f.solver.h.every(Number.isFinite) && f.solver.bed.every(Number.isFinite), 'captured F64 h/bed are finite before case intake');
++      assert.equal(f.nodeSpacing, 2); assert.equal(f.options.barrelCases.length, 4);
++      same(f.contactOptions.bucket, CONTACT.bucket, 'ordinary bucket'); assert.deepEqual(f.loftOptions, { contact: true, sheet: false });
++      same(f.solver.xCenters[0] - f.solver.dx / 2, f.grid.xMin, 'captured grid x origin'); same(f.grid.xMin, f.windowXMin, 'window origin');
++      same(f.solver.zCenters[0] - f.solver.dz[0] / 2, f.grid.zMin, 'captured grid z origin'); same(f.grid.spacing, f.nodeSpacing, 'node spacing');
++      assert.equal(Math.round(f.solver.nx * f.solver.dx / f.nodeSpacing) + 1, f.grid.nx);
++      const zSpan = f.solver.zCenters[f.solver.nz - 1] + f.solver.dz[f.solver.nz - 1] / 2 - f.grid.zMin;
++      assert.equal(Math.round(zSpan / f.nodeSpacing) + 1, f.grid.nz);
++      const cState = numericProvider(ShallowWaterSolver.prototype, f), oState = numericProvider(OriginalSolver.prototype, f);
++      for (const key of ['h', 'bed', 'xCenters', 'zCenters', 'dz'] as const) {
++        assert.notEqual(cState.solver[key].buffer, oState.solver[key].buffer);
++        sameBytes(cState.solver[key], f.solver[key], `candidate F64 ${key}`); sameBytes(oState.solver[key], f.solver[key], `oracle F64 ${key}`);
++      }
++      const slope = BARREL_SLOPE[f.config.spot]; assert.notEqual(slope, undefined); same(slope, ORIGINAL_SLOPE[f.config.spot], 'slope');
++      let backend!: SweptContact, privateLoft!: PrivateLoft;
++      const computed: number[] = [], eagerRuns: [number, number][] = [];
++      const update = SweptContact.prototype.update, build = SweptLoft.prototype.build;
++      vi.spyOn(SweptContact.prototype, 'update').mockImplementation(function (this: SweptContact, ...args) { backend = this; return update.apply(this, args); });
++      vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) { privateLoft = this as unknown as PrivateLoft; return build.apply(this, args); });
++      const cProto = SweptLoft.prototype as unknown as PrivateLoft, prepare = cProto.prepareNormal;
++      vi.spyOn(cProto, 'prepareNormal').mockImplementation(function (this: PrivateLoft, v) {
++        if (this.normalReady[v] !== 1) computed.push(v); return prepare.call(this, v);
++      });
++      const oProto = OriginalLoft.prototype as unknown as { normals(first: number, last: number): void }, normals = oProto.normals;
++      vi.spyOn(oProto, 'normals').mockImplementation(function (this: typeof oProto, first, last) { eagerRuns.push([first, last]); return normals.call(this, first, last); });
++      // Each decode receives a plain Uint8Array with its own complete buffer, avoiding Buffer.slice intake semantics.
++      const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary(f.options.barrelCases.map(raw => decodeCase(new Uint8Array(raw)))), slope!);
++      const oracle = new OriginalContact(new OriginalLibrary(f.options.barrelCases.map(raw => originalDecodeCase(new Uint8Array(raw)))), slope!, f.contactOptions);
++      const water = new PhysicalSurfWater(cState.solver, { peakPeriod: f.config.peakPeriod, nodeSpacing: f.nodeSpacing, swept: owner.queries });
++      const oldWater = new OriginalWater(oState.solver, { peakPeriod: f.config.peakPeriod, nodeSpacing: f.nodeSpacing, swept: oracle });
++      const callbacks: [number, number, number][] = [], oldCallbacks: [number, number, number][] = [];
++      const plain = water.plainSurfaceAt.bind(water), oldPlain = oldWater.plainSurfaceAt.bind(oldWater);
++      vi.spyOn(water, 'plainSurfaceAt').mockImplementation((x, z) => { const value = plain(x, z); callbacks.push([x, z, value]); return value; });
++      vi.spyOn(oldWater, 'plainSurfaceAt').mockImplementation((x, z) => { const value = oldPlain(x, z); oldCallbacks.push([x, z, value]); return value; });
++      owner.updateFromPlainSurface(f.records.slice(), f.recordCount, f.stillLevel, water);
++      oldWater.withSurfaceNodeCache(() => oracle.update(f.records.slice(), f.recordCount, f.stillLevel, (x, z) => oldWater.plainSurfaceAt(x, z)));
++      assert.equal(computed.length, 0); assert.equal(callbacks.length, Object.values(epoch.heightCalls).reduce((a, b) => a + b, 0));
++      assert.equal(callbacks.length, oldCallbacks.length);
++      for (let i = 0; i < callbacks.length; i++) for (let j = 0; j < 3; j++) same(callbacks[i][j], oldCallbacks[i][j], `height callback ${i}[${j}]`);
++      assert.deepEqual(eagerRuns, epoch.runs); assert.equal(eagerRuns.length, epoch.normalCalls);
++      const eagerRows = eagerRuns.reduce((sum, [first, last]) => sum + last - first + 1, 0);
++      assert.equal(eagerRows, epoch.normalRows); assert.equal(eagerRows * LOFT_SAMPLES, 23_852);
++      for (const [first, last] of eagerRuns) for (let row = first; row <= last; row++) {
++        assert.equal(privateLoft.normalFirst[row], first); assert.equal(privateLoft.normalLast[row], last);
++      }
++      compareFreshGeometry(backend.last!, oracle.last!); compareCapturedQueryGeometry(backend.last!, f.loft); compareCapturedQueryGeometry(oracle.last!, f.loft);
++      assert.equal(backend.last!.sliceCount, 187); assert.equal(backend.last!.vertexCount, 25_058);
++      const cTrace = traceQueries(backend as unknown as ContactInspection), oTrace = traceQueries(oracle as unknown as ContactInspection);
++      const a = createContactHit(), b = originalHit();
++      const results: Record<string, unknown>[] = []; let floors = 0, hits = 0, anomalies = 0;
++      assert.equal(epoch.queries.length, 627);
++      for (let i = 0; i < epoch.queries.length; i++) {
++        const q = epoch.queries[i]; assert.equal(q.ordinal, i + 1); assert.equal(q.error, undefined);
++        cTrace.reset(); oTrace.reset(); const before: number = computed.length;
++        const [x, y, z] = q.input;
++        let result: number | boolean;
++        if (q.method === 'floorAt') {
++          assert.equal(q.input.length, 2); floors++;
++          result = owner.queries.floorAt(x, y); same(result, oracle.floorAt(x, y), `oracle floor ${q.ordinal}`);
++          assert.equal(computed.length, before, `floor ${q.ordinal} normal work`);
++        } else {
++          assert.equal(q.method, 'query'); assert.equal(q.input.length, 3); assert(q.initial && q.output);
++          assert.deepEqual(Object.keys(a).sort(), Object.keys(q.initial).sort(), 'recorded initial hit schema');
++          Object.assign(a, q.initial); Object.assign(b, q.initial);
++          sameFields(a, q.initial, `candidate initial ${q.ordinal}`); sameFields(b, q.initial, `oracle initial ${q.ordinal}`);
++          result = owner.queries.query(x, y, z, a); same(result, oracle.query(x, y, z, b), `oracle result ${q.ordinal}`);
++          sameFields(a, q.output, `captured output ${q.ordinal}`); sameFields(b, q.output, `oracle captured output ${q.ordinal}`);
++          if (result) hits++;
++          else {
++            assert.equal(computed.length, before, `false ${q.ordinal} normal work`);
++            if (q.candidates.some(c => c.crossings > 0)) anomalies++;
++          }
++        }
++        same(result, q.result, `captured result ${q.ordinal}`);
++        assert.deepEqual(cTrace.trace, { candidates: q.candidates, heldXz: q.heldXz, normalVertices: q.normalVertices }, `candidate trace ${q.ordinal}`);
++        assert.deepEqual(oTrace.trace, cTrace.trace, `oracle trace ${q.ordinal}`);
++        assert.deepEqual(backend.stats, oracle.stats, `stats ${q.ordinal}`);
++        for (const v of q.normalVertices) {
++          assert.equal(privateLoft.normalReady[v], 1); assert(v >= 0 && v < f.loft.vertexCount);
++          sameBytes(backend.last!.normals.subarray(3 * v, 3 * v + 3), oracle.last!.normals.subarray(3 * v, 3 * v + 3), `oracle selected normal ${q.ordinal}/${v}`);
++          sameBytes(backend.last!.normals.subarray(3 * v, 3 * v + 3), f.loft.normals.subarray(3 * v, 3 * v + 3), `captured selected normal ${q.ordinal}/${v}`);
++        }
++        results.push({ ordinal: q.ordinal, phase: q.phase, method: q.method, result,
++          outputSha256: q.method === 'query' ? createHash('sha256').update(JSON.stringify(a, encode)).digest('hex') : undefined,
++          normalVertices: [...cTrace.trace.normalVertices], stats: { ...backend.stats } });
++      }
++      assert.equal(floors, 186); assert.equal(hits, 28);
++      assert.equal(backend.stats.queries, 627 - floors); assert.equal(backend.stats.hits, hits); assert.equal(backend.stats.anomalies, anomalies);
++      assert.equal(computed.length, 65); assert.equal(new Set(computed).size, 65);
++      assert.deepEqual([...computed].sort((a, b) => a - b), epoch.hitNormalVertices);
++      assert.equal(callbacks.length, oldCallbacks.length); // No normal/floor/query operation asks the height provider again.
++      assert.equal(callbacks.length, Object.values(epoch.heightCalls).reduce((a, b) => a + b, 0));
++      for (const key of ['h', 'bed', 'xCenters', 'zCenters', 'dz'] as const) {
++        sameBytes(cState.solver[key], f.solver[key], `unchanged candidate F64 ${key}`); sameBytes(oState.solver[key], f.solver[key], `unchanged oracle F64 ${key}`);
++      }
++      assert.deepEqual([...cState.reads].sort(), [...oState.reads].sort());
++      const heightStream = Float64Array.from(callbacks.flat());
++      Object.assign(proof, { status: 'passed', seaTime: f.seaTime, slices: 187, vertices: 25_058, records: 125,
++        heightCalls: callbacks.length, heightCallbackStreamSha256: sha(heightStream), providerFieldsRead: [...cState.reads].sort(),
++        publicCalls: 627, queryCalls: 627 - floors, floorCalls: floors, hits, anomalies, eagerNormalRows: eagerRows, eagerNormalVertices: eagerRows * LOFT_SAMPLES,
++        demandedNormalVertices: computed.length, demandedVertexOrder: computed, stats: { ...backend.stats }, results,
++        captureContract: { activeArrays: ['positions', 'indices', 'sliceFront', 'sliceJoined', 'sliceRayX', 'sliceRayZ', 'sliceLife',
++          'sliceTipAlong', 'sliceTipUp', 'sliceAnchorVX', 'sliceAnchorVZ', 'sliceWeight'], selectedNormalVertices: epoch.hitNormalVertices,
++          excludedHistoricalUnused: ['unselected/isolated normal slots', 'unused old mouth/sheet output slots'],
++          freshCandidateOracle: 'All full geometry buffers/scalars except private unused normal buffer are byte/value-identical' } });
++    } catch (cause) {
++      proof.status = 'failed'; proof.failure = String(cause); throw cause;
++    } finally {
++      writeFileSync(PROOF, JSON.stringify(proof, encode, 2) + '\n');
++    }
++  });
++});
+--- /dev/null
++++ b/src/wave/barrel/contactNormalDemand.cost.ts
+@@ -0,0 +1,213 @@
++/** TMP-only controlled repeated-epoch contact cost harness. Calling this export requires root's quiet CPU lease. */
++import assert from 'node:assert/strict';
++import { Buffer } from 'node:buffer';
++import { createHash } from 'node:crypto';
++import { readFileSync, writeFileSync } from 'node:fs';
++import { performance } from 'node:perf_hooks';
++import { gunzipSync } from 'node:zlib';
++import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
++import { ShallowWaterSolver } from '../ShallowWaterSolver';
++import { ProfileLibrary } from './ProfileLibrary';
++import { decodeCase } from './profileFormat';
++import { createContactHit, SweptContact, type ContactHit, type SweptSurfaceQueries } from './sweptContact';
++import { BARREL_SLOPE, SweptLoft, type LoftResult } from './sweptLoft';
++import { PhysicalSurfWater as OriginalWater } from '../../../oracle/src/physics/PhysicalSurfWater';
++import { ShallowWaterSolver as OriginalSolver } from '../../../oracle/src/wave/ShallowWaterSolver';
++import { ProfileLibrary as OriginalLibrary } from '../../../oracle/src/wave/barrel/ProfileLibrary';
++import { decodeCase as originalDecodeCase } from '../../../oracle/src/wave/barrel/profileFormat';
++import { createContactHit as originalHit, SweptContact as OriginalContact } from '../../../oracle/src/wave/barrel/sweptContact';
++import { SweptLoft as OriginalLoft } from '../../../oracle/src/wave/barrel/sweptLoft';
++
++const FIXTURE = '/private/tmp/contact-lazy-height-20261004-v3/run/capture.json.gz';
++const AUTHORITY = 'performance/authority.json';
++const RESULT = 'performance/cost-first-report.json';
++const NUMERIC_HIT_FIELDS = ['surfaceY', 'normalX', 'normalY', 'normalZ', 'floorY', 'waterFloorY', 'ceilingY', 'ceilingTopY',
++  'lipShare', 'lipVX', 'lipVY', 'lipVZ', 'lipWeight', 'tangentX', 'tangentZ', 'life'] as const;
++type NumericState = { nx: number; nz: number; dx: number; restLevel: number; time: number; h: Float64Array; bed: Float64Array;
++  xCenters: Float64Array; zCenters: Float64Array; dz: Float64Array };
++type Call = { ordinal: number; method: 'query' | 'floorAt'; input: number[]; initial?: ContactHit; result: number | boolean; output?: ContactHit };
++type Fixture = { byteOrder: string; seaTime: number; config: { spot: 'padang'; peakPeriod: number };
++  options: { barrelCases: Uint8Array[] }; restLevel: number; nodeSpacing: number; solver: Omit<NumericState, 'restLevel' | 'time'>;
++  records: Float32Array; recordCount: number; stillLevel: number; contactOptions: { bucket: number }; loft: LoftResult };
++type Capture = { firstFixture: Fixture; epochs: { queries: Call[]; hitNormalVertices: number[] }[] };
++type Sink = { results: Uint8Array; inWater: Uint8Array; fields: Float64Array; floors: Float64Array };
++type Context = { label: 'A-original' | 'B-private'; update(): void; queries: SweptSurfaceQueries; hit: ContactHit; sink: Sink;
++  backend: SweptContact | OriginalContact; solver: NumericState };
++type Plan = { schema: number; baseline: string; warmupPassesPerVariant: number; measuredBlocks: number;
++  capture: { compressedBytes: number; compressedSha256: string; expandedBytes: number; expandedSha256: string };
++  parity: { path: string; sha256: string }; sourceFiles: { path: string; bytes: number; sha256: string }[] };
++const sha = (raw: ArrayBufferView) => createHash('sha256').update(Buffer.from(raw.buffer, raw.byteOffset, raw.byteLength)).digest('hex');
++const bytes = (raw: ArrayBufferView) => Buffer.from(raw.buffer, raw.byteOffset, raw.byteLength);
++function same(actual: unknown, expected: unknown, label: string): void { assert(Object.is(actual, expected), label); }
++function sameBytes(actual: ArrayBufferView, expected: ArrayBufferView, label: string): void {
++  assert.equal(actual.byteLength, expected.byteLength, `${label} length`); assert.equal(Buffer.compare(bytes(actual), bytes(expected)), 0, label);
++}
++function unpack(value: unknown): unknown {
++  if (Array.isArray(value)) return value.map(unpack);
++  if (!value || typeof value !== 'object') return value;
++  const item = value as Record<string, unknown>;
++  if (Object.keys(item).length === 1 && item.undefined === true) return undefined;
++  if (Object.keys(item).length === 1 && typeof item.number === 'string') {
++    switch (item.number) { case 'NaN': return NaN; case '-0': return -0; case 'Infinity': return Infinity;
++      case '-Infinity': return -Infinity; default: assert.fail('Unknown number tag'); }
++  }
++  if (typeof item.type === 'string' && typeof item.byteLength === 'number' && typeof item.base64 === 'string') {
++    const owned = new Uint8Array(Buffer.from(item.base64, 'base64'));
++    assert.equal(owned.byteOffset, 0); assert.equal(owned.buffer.byteLength, owned.byteLength); assert.equal(owned.byteLength, item.byteLength);
++    switch (item.type) { case 'Uint8Array': return owned; case 'Float64Array': return new Float64Array(owned.buffer);
++      case 'Float32Array': return new Float32Array(owned.buffer); case 'Int32Array': return new Int32Array(owned.buffer);
++      case 'Uint32Array': return new Uint32Array(owned.buffer); default: assert.fail('Unknown typed payload'); }
++  }
++  return Object.fromEntries(Object.entries(item).map(([key, entry]) => [key, unpack(entry)]));
++}
++function numericState<T extends object>(prototype: T, f: Fixture): T & NumericState {
++  // All fields required by the separately verified real plain provider; no Proxy, tracking, interpolation helper or step.
++  return Object.assign(Object.create(prototype) as T, { nx: f.solver.nx, nz: f.solver.nz, dx: f.solver.dx,
++    restLevel: f.restLevel, time: f.seaTime, h: f.solver.h.slice(), bed: f.solver.bed.slice(), xCenters: f.solver.xCenters.slice(),
++    zCenters: f.solver.zCenters.slice(), dz: f.solver.dz.slice() });
++}
++function newSink(): Sink { return { results: new Uint8Array(441), inWater: new Uint8Array(441), fields: new Float64Array(441 * 16), floors: new Float64Array(186) }; }
++function expectedSink(calls: Call[]): Sink {
++  const sink = newSink(); let query = 0, floor = 0;
++  for (const call of calls) {
++    if (call.method === 'floorAt') sink.floors[floor++] = call.result as number;
++    else {
++      assert(call.output); sink.results[query] = call.result ? 1 : 0; sink.inWater[query] = call.output.inWater ? 1 : 0;
++      for (let k = 0; k < NUMERIC_HIT_FIELDS.length; k++) sink.fields[query * 16 + k] = call.output[NUMERIC_HIT_FIELDS[k]];
++      query++;
++    }
++  }
++  assert.equal(query, 441); assert.equal(floor, 186); return sink;
++}
++function contextA(f: Fixture): Context {
++  const solver = numericState(OriginalSolver.prototype, f);
++  const backend = new OriginalContact(new OriginalLibrary(f.options.barrelCases.map(raw => originalDecodeCase(new Uint8Array(raw)))), BARREL_SLOPE.padang!, f.contactOptions);
++  const water = new OriginalWater(solver, { peakPeriod: f.config.peakPeriod, nodeSpacing: f.nodeSpacing, swept: backend });
++  // Same untimed empty ownership/setup epoch as the private context; no queries or fixture build yet.
++  water.withSurfaceNodeCache(() => backend.update(new Float32Array(0), 0, f.stillLevel, (x, z) => water.plainSurfaceAt(x, z)));
++  return { label: 'A-original', backend, solver, queries: backend, hit: originalHit(), sink: newSink(),
++    update() { water.withSurfaceNodeCache(() => backend.update(f.records, f.recordCount, f.stillLevel, (x, z) => water.plainSurfaceAt(x, z))); } };
++}
++function contextB(f: Fixture): Context {
++  const solver = numericState(ShallowWaterSolver.prototype, f);
++  // One-time QA ownership acquisition only, on an empty epoch, restored BEFORE any preflight/warmup/measurement.
++  // No wrappers/spies/proxies remain on any measured contact, loft, provider or selected-normal call.
++  let backend: SweptContact | undefined;
++  const originalUpdate = SweptContact.prototype.update;
++  SweptContact.prototype.update = function (this: SweptContact, ...args) { backend = this; return originalUpdate.apply(this, args); };
++  let owner!: ReturnType<typeof SweptContact.forOrdinaryWorker>, water!: PhysicalSurfWater;
++  try {
++    owner = SweptContact.forOrdinaryWorker(new ProfileLibrary(f.options.barrelCases.map(raw => decodeCase(new Uint8Array(raw)))), BARREL_SLOPE.padang!);
++    water = new PhysicalSurfWater(solver, { peakPeriod: f.config.peakPeriod, nodeSpacing: f.nodeSpacing, swept: owner.queries });
++    owner.updateFromPlainSurface(new Float32Array(0), 0, f.stillLevel, water);
++  } finally { SweptContact.prototype.update = originalUpdate; }
++  assert(backend); assert.equal(backend.update, originalUpdate);
++  return { label: 'B-private', backend, solver, queries: owner.queries, hit: createContactHit(), sink: newSink(),
++    update() { owner.updateFromPlainSurface(f.records, f.recordCount, f.stillLevel, water); } };
++}
++/** Entire measured workload: stats reset + full original eager-Y build + every original call/restore + output sink stores. */
++function workload(context: Context, calls: Call[]): void {
++  const stats = context.backend.stats;
++  stats.queries = 0; stats.hits = 0; stats.anomalies = 0; stats.quads = 0; stats.overlaps = 0;
++  context.update();
++  let query = 0, floor = 0;
++  for (const call of calls) {
++    if (call.method === 'floorAt') context.sink.floors[floor++] = context.queries.floorAt(call.input[0], call.input[1]);
++    else {
++      Object.assign(context.hit, call.initial!); // Required captured reused-hit state, charged to both variants.
++      context.sink.results[query] = context.queries.query(call.input[0], call.input[1], call.input[2], context.hit) ? 1 : 0;
++      context.sink.inWater[query] = context.hit.inWater ? 1 : 0;
++      for (let k = 0; k < NUMERIC_HIT_FIELDS.length; k++) context.sink.fields[query * 16 + k] = context.hit[NUMERIC_HIT_FIELDS[k]];
++      query++;
++    }
++  }
++}
++function guard(context: Context, expected: Sink, f: Fixture, vertices: number[]): void {
++  sameBytes(context.sink.results, expected.results, `${context.label} results`); sameBytes(context.sink.inWater, expected.inWater, `${context.label} water`);
++  // Object.is retains the public numeric contract including signed zero and NaN, independent of NaN payload bits in a sink.
++  for (let i = 0; i < expected.fields.length; i++) same(context.sink.fields[i], expected.fields[i], `${context.label} field ${i}`);
++  for (let i = 0; i < expected.floors.length; i++) same(context.sink.floors[i], expected.floors[i], `${context.label} floor ${i}`);
++  assert.deepEqual(context.backend.stats, { queries: 441, hits: 28, anomalies: 0, quads: 142, overlaps: 0 });
++  const actual = context.backend.last!; assert.equal(actual.sliceCount, 187); assert.equal(actual.vertexCount, 25_058); assert.equal(actual.indexCount, 136_458);
++  sameBytes(actual.positions.subarray(0, f.loft.positions.length), f.loft.positions, `${context.label} active positions`);
++  sameBytes(actual.indices.subarray(0, f.loft.indices.length), f.loft.indices, `${context.label} active indices`);
++  for (const key of ['sliceFront', 'sliceJoined', 'sliceRayX', 'sliceRayZ', 'sliceLife', 'sliceTipAlong', 'sliceTipUp', 'sliceAnchorVX', 'sliceAnchorVZ', 'sliceWeight'] as const) {
++    sameBytes(actual[key].subarray(0, f.loft[key].length), f.loft[key], `${context.label} ${key}`);
++  }
++  for (const v of vertices) sameBytes(actual.normals.subarray(3 * v, 3 * v + 3), f.loft.normals.subarray(3 * v, 3 * v + 3), `${context.label} selected normal ${v}`);
++}
++function guardSource(plan: Plan): void {
++  for (const file of plan.sourceFiles) { const raw = readFileSync(file.path); assert.equal(raw.byteLength, file.bytes, file.path); assert.equal(sha(raw), file.sha256, file.path); }
++}
++function median(values: number[]): number { const sorted = [...values].sort((a, b) => a - b), at = sorted.length >> 1; return sorted.length & 1 ? sorted[at] : (sorted[at - 1] + sorted[at]) / 2; }
++const prototypeEntries: [string, object, string][] = [
++  ['candidate contact update', SweptContact.prototype, 'update'], ['candidate query', SweptContact.prototype, 'query'], ['candidate floor', SweptContact.prototype, 'floorAt'],
++  ['candidate loft build', SweptLoft.prototype, 'build'], ['candidate prepare normal', SweptLoft.prototype, 'prepareNormal'], ['candidate eager normals', SweptLoft.prototype, 'normals'],
++  ['candidate plain surface', PhysicalSurfWater.prototype, 'plainSurfaceAt'], ['candidate height cache', PhysicalSurfWater.prototype, 'withSurfaceNodeCache'],
++  ['candidate sample', ShallowWaterSolver.prototype, 'sampleCentered'], ['candidate rows', ShallowWaterSolver.prototype, 'rowBelow'],
++  ['oracle update', OriginalContact.prototype, 'update'], ['oracle query', OriginalContact.prototype, 'query'], ['oracle floor', OriginalContact.prototype, 'floorAt'],
++  ['oracle loft build', OriginalLoft.prototype, 'build'], ['oracle normals', OriginalLoft.prototype, 'normals'], ['oracle plain surface', OriginalWater.prototype, 'plainSurfaceAt'],
++  ['oracle height cache', OriginalWater.prototype, 'withSurfaceNodeCache'], ['oracle sample', OriginalSolver.prototype, 'sampleCentered'], ['oracle rows', OriginalSolver.prototype, 'rowBelow'],
++];
++const prototypePins = prototypeEntries.map(([name, target, key]) => ({ name, target, key, fn: Reflect.get(target, key) as Function }));
++function guardPrototypes(): void { for (const entry of prototypePins) assert.equal(Reflect.get(entry.target, entry.key), entry.fn, entry.name); }
++
++export function runContactNormalCost(): void {
++  const report: Record<string, unknown> = { schema: 1, status: 'running', scope: 'Controlled repeated actual first epoch; no 15-epoch history, render/FPS or gameplay timing claim',
++    node: process.version, platform: process.platform, arch: process.arch, measuredCallTimers: 'Only one outer performance.now pair per complete workload',
++    outputSinks: 'Preallocated sink stores charged equally inside timing; all exact guards outside timing' };
++  try {
++    const planBytes = readFileSync(AUTHORITY), plan = JSON.parse(planBytes.toString('utf8')) as Plan;
++    assert.equal(plan.schema, 1); assert.equal(plan.baseline, 'ef60d3cee'); assert.equal(plan.warmupPassesPerVariant, 16); assert.equal(plan.measuredBlocks, 60);
++    guardSource(plan); guardPrototypes();
++    const parityBytes = readFileSync(plan.parity.path); assert.equal(sha(parityBytes), plan.parity.sha256);
++    const parity = JSON.parse(parityBytes.toString('utf8')); assert.equal(parity.status, 'passed'); assert.equal(parity.publicCalls, 627); assert.equal(parity.demandedNormalVertices, 65);
++    const packed = readFileSync(FIXTURE), expanded = gunzipSync(packed);
++    assert.equal(packed.byteLength, plan.capture.compressedBytes); assert.equal(sha(packed), plan.capture.compressedSha256);
++    assert.equal(expanded.byteLength, plan.capture.expandedBytes); assert.equal(sha(expanded), plan.capture.expandedSha256);
++    const capture = unpack(JSON.parse(expanded.toString('utf8'))) as Capture, f = capture.firstFixture, epoch = capture.epochs[0];
++    assert.equal(f.byteOrder, 'little'); assert.equal(new Uint8Array(new Uint32Array([0x01020304]).buffer)[0], 4);
++    assert.equal(epoch.queries.length, 627); assert.equal(epoch.hitNormalVertices.length, 65); assert.equal(f.recordCount, 125); assert.equal(f.nodeSpacing, 2);
++    assert(f.solver.h instanceof Float64Array && f.solver.bed instanceof Float64Array); assert(f.solver.h.every(Number.isFinite) && f.solver.bed.every(Number.isFinite));
++    assert.deepEqual(Object.keys(createContactHit()).filter(key => key !== 'inWater'), [...NUMERIC_HIT_FIELDS]);
++    const expected = expectedSink(epoch.queries), A = contextA(f), B = contextB(f); guardPrototypes();
++    for (const key of ['h', 'bed', 'xCenters', 'zCenters', 'dz'] as const) assert.notEqual(A.solver[key].buffer, B.solver[key].buffer);
++    // One complete preflight per variant plus exactly sixteen alternating complete warmups per variant, all untimed.
++    for (const context of [A, B]) { workload(context, epoch.queries); guard(context, expected, f, epoch.hitNormalVertices); }
++    for (let pass = 0; pass < plan.warmupPassesPerVariant; pass++) for (const context of (pass & 1 ? [B, A] : [A, B])) {
++      workload(context, epoch.queries); guard(context, expected, f, epoch.hitNormalVertices);
++    }
++    const trials: { block: number; slot: number; variant: string; ms: number }[] = [];
++    const blocks: { block: number; order: string; originalMs: number; privateMs: number; savingMs: number }[] = [];
++    for (let block = 0; block < plan.measuredBlocks; block++) {
++      const order = block & 1 ? [B, A, A, B] : [A, B, B, A];
++      const old: number[] = [], deferred: number[] = [];
++      for (let slot = 0; slot < order.length; slot++) {
++        const context = order[slot]; guardPrototypes();
++        const begin = performance.now();
++        workload(context, epoch.queries);
++        const ms = performance.now() - begin;
++        // All result, geometry, selected Float32 normal and stats guards run after the measured window.
++        guard(context, expected, f, epoch.hitNormalVertices);
++        assert(Number.isFinite(ms) && ms >= 0); trials.push({ block, slot, variant: context.label, ms });
++        (context === A ? old : deferred).push(ms);
++      }
++      const originalMs = (old[0] + old[1]) / 2, privateMs = (deferred[0] + deferred[1]) / 2;
++      blocks.push({ block, order: block & 1 ? 'BAAB' : 'ABBA', originalMs, privateMs, savingMs: originalMs - privateMs });
++    }
++    guardPrototypes(); guardSource(plan);
++    for (const context of [A, B]) for (const key of ['h', 'bed', 'xCenters', 'zCenters', 'dz'] as const) sameBytes(context.solver[key], f.solver[key], `${context.label} unchanged ${key}`);
++    Object.assign(report, { status: 'passed', planSha256: sha(planBytes), paritySha256: plan.parity.sha256, captureSha256: plan.capture.compressedSha256,
++      seaTime: f.seaTime, publicCallsPerWorkload: 627, queryCallsPerWorkload: 441, floorCallsPerWorkload: 186, hitsPerWorkload: 28,
++      heightCallsPerWorkloadEstablishedByParity: 20_117, eagerNormalVertices: 23_852, demandedNormalVerticesEstablishedByParity: 65,
++      emptySetupEpochsPerVariant: 1, fullPreflightsPerVariant: 1, warmupPassesPerVariant: 16, measuredBlocks: 60, measuredWorkloadsPerVariant: 120,
++      completeOriginalMedianMs: median(trials.filter(t => t.variant === A.label).map(t => t.ms)), completePrivateMedianMs: median(trials.filter(t => t.variant === B.label).map(t => t.ms)),
++      pairedSavingMedianMs: median(blocks.map(block => block.savingMs)), trials, blocks,
++      prototypes: prototypePins.map(pin => ({ name: pin.name, functionTextSha256: createHash('sha256').update(Function.prototype.toString.call(pin.fn)).digest('hex') })),
++      state: 'Independent fixed F64 state; no per-workload h/bed copies; full contact/node cache and ready/run reset inside update',
++      exclusions: ['fixture decode/context construction/one-time empty QA ownership acquisition', 'initial packed front-record extraction', 'ordinary water/body/particle simulation and renderer',
++        'output guards/source hashes outside timer', 'other fourteen capture epochs'], persistentPrivateExtraBytes: 42_458,
++      adoption: 'Requires separate root review; this controlled repeated epoch cannot establish browser FPS or historical workload behavior' });
++  } catch (cause) { report.status = 'failed'; report.failure = String(cause); throw cause; }
++  finally { writeFileSync(RESULT, JSON.stringify(report, null, 2) + '\n'); }
++}
+--- /dev/null
++++ b/performance/cost.test.ts
+@@ -0,0 +1,5 @@
++import { it } from 'vitest';
++import { runContactNormalCost } from '../src/wave/barrel/contactNormalDemand.cost';
++
++// This driver is excluded from the ordinary prototype test config; only the reviewed cost config discovers it.
++it('controlled repeated first-epoch complete contact cost, with exact guards', () => runContactNormalCost());
+--- /dev/null
++++ b/vitest.cost.config.ts
+@@ -0,0 +1,6 @@
++import { defineConfig } from 'vitest/config';
++
++export default defineConfig({
++  cacheDir: '.cache/cost-vite',
++  test: { include: ['performance/cost.test.ts'], testTimeout: 60_000 },
++});

@@ -1,0 +1,14 @@
+[
+  {
+    "log": "strict-tsc-f64-first.log",
+    "command": [
+      "./node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "exitCode": 2
+  }
+]

@@ -1,0 +1,74 @@
+{
+  "baseline": "ef60d3cee",
+  "sourceRepair": "Only explicit number annotation of before at255; no assertions/runtime changes",
+  "source": {
+    "path": "src/wave/barrel/contactNormalDemand.f64-replay.test.ts",
+    "bytes": 23022,
+    "sha256": "bf4e412357338eab65e87a6c6ff9fe60212255b50cb698a0142cf0808d4cf8f2"
+  },
+  "checkResults": [
+    {
+      "log": "strict-tsc-f64-corrected.log",
+      "command": [
+        "./node_modules/.bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "log": "f64-replay-corrected.log",
+      "command": [
+        "./node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "vitest.prototype.config.ts",
+        "--maxWorkers",
+        "1",
+        "src/wave/barrel/contactNormalDemand.f64-replay.test.ts"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "records": [
+    {
+      "path": "checks/f64-corrected-candidate-manifest.json",
+      "bytes": 7376,
+      "sha256": "2d6fac0b8a70126ded28733394069c2e179f90d749f47031de5ce2990befd8b9"
+    },
+    {
+      "path": "checks/f64-corrected-candidate.patch",
+      "bytes": 62613,
+      "sha256": "4635c65e08218ca5a7a43f97213add01d65a56ed689143f99b6d6b41d773daab"
+    },
+    {
+      "path": "checks/f64-corrected-check-results.json",
+      "bytes": 509,
+      "sha256": "520b1d3b62b97f7950539093d70d1140eb9b55bc9cae4e5f4958859c77e16e64"
+    },
+    {
+      "path": "checks/f64-corrected-run.test-source.ts",
+      "bytes": 23022,
+      "sha256": "bf4e412357338eab65e87a6c6ff9fe60212255b50cb698a0142cf0808d4cf8f2"
+    },
+    {
+      "path": "checks/strict-tsc-f64-corrected.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks/f64-replay-corrected-proof.json",
+      "bytes": 235928,
+      "sha256": "2694b938529bc35f366804e35de42870144c3d9cf49202640dffc6656e121f31"
+    },
+    {
+      "path": "checks/f64-replay-corrected.log",
+      "bytes": 213,
+      "sha256": "431d4b48f3216fd121b4f334f7b19d8417e6d27299d26eb9e2f4d92fc17f7bd8"
+    }
+  ],
+  "retryAfterTerminal": false
+}

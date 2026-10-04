@@ -1,0 +1,118 @@
+{
+  "status": "COST STRICT AND STANDALONE BUNDLE CLEAN; benchmark NOT EXECUTED",
+  "strict": {
+    "session": 73702,
+    "exitCode": 0,
+    "logEmpty": true
+  },
+  "bundle": {
+    "exitCode": 0,
+    "path": "cost.mjs"
+  },
+  "fixture": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz",
+    "gzipSha256": "95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584",
+    "jsonSha256": "8e73b4d10d268081891d0bf89b93c6706b37617a6bea5543af443d6963443587",
+    "set1Sha256": "38b63fbe297eeb143c6449902855be39802455d4f14d540a07d152ead7ec32e0",
+    "materialDecodedOrScannedHere": false
+  },
+  "operation": {
+    "wholeBoundMs": 20000,
+    "warmPairs": 12,
+    "measuredPairs": 30,
+    "order": "adjacent AB/BA alternating",
+    "completeNumericGateSourcesAirSnapshot": true,
+    "sourceProxyAndF32PoststateScopeDeclared": true
+  },
+  "sourceRef": "e58e398555d8b4d4f7ada4b664d4a923d383f06a",
+  "candidateRuntimePatchUnchangedSha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60",
+  "firstFailuresPreserved": true,
+  "harnessOnlySortCompatibilityEdit": true,
+  "files": [
+    {
+      "path": "cost.ts",
+      "bytes": 13900,
+      "sha256": "384e401c73e3c8e6699389b3dd8b54e662752bf00598d7132f2358c23a379428"
+    },
+    {
+      "path": "intake.ts",
+      "bytes": 4778,
+      "sha256": "befea0ef86b7bd19ecacbc45959fc8fb8b6a6e47d5685bed5f5ea2624f063af5"
+    },
+    {
+      "path": "cost.mjs",
+      "bytes": 1036015,
+      "sha256": "2cbe4d0cb8c41d3ca0addc6814c6bfd7de7081ea2d84c358c34501f2180fa959"
+    },
+    {
+      "path": "cost-plan.md",
+      "bytes": 6858,
+      "sha256": "ac4f4140c5e3579302e73ebcfeb84361bfc50b0d8fda785f228beb54f34bb078"
+    },
+    {
+      "path": "tsconfig.cost.json",
+      "bytes": 95,
+      "sha256": "a0abe8c36d7ccaf385d784ebe800e4932b82561a27d8605294c2c6fd6a2908c3"
+    },
+    {
+      "path": "cost-ready.json",
+      "bytes": 1514,
+      "sha256": "cc07bd683968c5131d9419f9ac0159f5f437fcab916d6eeecd6a37eda8776648"
+    },
+    {
+      "path": "cost-ready-es2022.json",
+      "bytes": 1793,
+      "sha256": "1c65884caad3780306fe51977506fb3844b23841d30103cf8ce4a365c4d083a3"
+    },
+    {
+      "path": "checks/cost-compatibility/cost.ts.txt",
+      "bytes": 13899,
+      "sha256": "c56e26fbfe77278647a7bbb952faf510cc7a3f536796e9cfb161d32b25ce08eb"
+    },
+    {
+      "path": "checks/cost-compatibility/cost-ready.json",
+      "bytes": 1514,
+      "sha256": "cc07bd683968c5131d9419f9ac0159f5f437fcab916d6eeecd6a37eda8776648"
+    },
+    {
+      "path": "checks/cost-compatibility/strict.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks/cost-compatibility/bundle.log",
+      "bytes": 87,
+      "sha256": "65f447872a79f4e09024d15698bdcc577933e08e21770c00b2e0e57f1af40ad9"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 10916,
+      "sha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60"
+    },
+    {
+      "path": "src/wave/FoamField.ts",
+      "bytes": 16665,
+      "sha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c"
+    },
+    {
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "bytes": 65368,
+      "sha256": "850c425c81824adf227265ecc19d08c1d305527139a25145392651c61abe0dd3"
+    },
+    {
+      "path": "input-authority.json",
+      "bytes": 120841,
+      "sha256": "31ac6f6aa3901bd49e6030dbade1ff9d232818b00b3a3cf2fedd1ea2c859b46b"
+    },
+    {
+      "path": "checks/corrected/terminal.freeze.json",
+      "bytes": 2236,
+      "sha256": "365a64fb20be41db57675b71a3ab616c9749e0b475dd3c9a86d36e8b62411880"
+    }
+  ],
+  "benchmarkCommandNotExecuted": "node cost.mjs --run=true --out=/private/tmp/foam-pass-fusion-20261004/cost-report.json > cost-stdout.txt 2> cost-stderr.txt",
+  "nextGate": "Root final compiled/source authority review plus exclusive quietCPU lease before ONE operation",
+  "productionChanged": false,
+  "benchmarkExecuted": false,
+  "browserGpuServerUsed": false
+}

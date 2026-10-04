@@ -1,0 +1,139 @@
+// SOURCE PREPARATION ONLY until root review. One bounded CPU complete-chain trial, not water/GPU/FPS.
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { SurfZoneSimulation } from './src/wave/SurfZoneSimulation';
+import { SurfZoneSimulation as OriginalSimulation } from './oracle/src/wave/SurfZoneSimulation';
+import { intake, sha, FIXTURE } from './intake';
+import type { AdvectionStencil } from './src/wave/AdvectionStencil';
+import type { AdvectionStencil as OriginalStencil } from './oracle/src/wave/AdvectionStencil';
+const WORK = '/private/tmp/foam-pass-fusion-20261004';
+const args = Object.fromEntries(process.argv.slice(2).map(a => { const at = a.indexOf('='); if (!a.startsWith('--') || at < 0) throw Error('Use --name=value'); return [a.slice(2, at), a.slice(at + 1)]; }));
+if (Object.keys(args).some(k => !['run', 'out'].includes(k))) throw Error('Only run/out arguments supported');
+const plan = { fixture: FIXTURE, sourceRef: 'e58e398555d8b4d4f7ada4b664d4a923d383f06a', cells: 116000, dt: 1 / 60,
+  path: 'complete Foam public call incl updateGrid guard → unchanged actual aerateBores → unchanged shared-stencil Air.update → fused snapshot',
+  warmPairs: 12, measuredPairs: 30, order: 'adjacent AB/BA alternating', wholeOperationBoundMs: 20000,
+  resetOutsideTiming: true, allOutputAndSourceTailsBitParity: true, solverAndStencilIdentityAndBytesGates: true,
+  historicalPrestateOrActualGatedStrength: false, gpuWaterAdvanceAndFps: false, retries: 0 };
+if (args.run !== 'true') { console.log(JSON.stringify({ preparedOnly: true, ...plan }, null, 2)); process.exit(0); }
+const out = args.out ?? WORK + '/cost-report.json'; if (existsSync(out)) throw Error('Refuse overwrite prior cost report');
+const started = performance.now(); const bounds = () => { if (performance.now() - started > plan.wholeOperationBoundMs) throw Error('Predeclared20s whole CPU operation bound'); };
+const input = intake(); bounds();
+const inputAuthority = JSON.parse(readFileSync(WORK + '/input-authority.json', 'utf8')) as { files: { path: string; oraclePath: string; sha256: string }[] };
+for (const file of inputAuthority.files) if (sha(readFileSync(WORK + '/' + file.oraclePath)) !== file.sha256) throw Error('Independent oracle source authority changed:' + file.path);
+const foamKeys = ['dense', 'residual', 'source', 'sourceCells', 'breakingCells', 'dissipation'] as const;
+const airKeys = ['air', 'depth', 'turbulence', 'nextAir', 'nextDepth', 'nextTurbulence', 'stirred'] as const;
+const solverKeys = ['h', 'bed', 'qx', 'qz', 'xCenters', 'zCenters', 'dz'] as const;
+const bytes = (a: ArrayBufferView) => new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+const exact = (a: ArrayBufferView, b: ArrayBufferView, label: string) => { if (Buffer.compare(bytes(a), bytes(b)) !== 0) throw Error('Byte parity failed:' + label); };
+interface PrivateFoam { nextDense: Float64Array; nextResidual: Float64Array; windowX: number; gridEligible?: (breaking: Float64Array, stencil?: AdvectionStencil) => boolean }
+interface PrivateAir { nextAir: Float64Array; nextDepth: Float64Array; nextTurbulence: Float64Array; stirred: Uint8Array; windowX: number; stirDt: number; stirGain: number }
+interface StencilState { indices: Uint32Array; values: Float64Array; solver: unknown; xCenters: Float64Array; zCenters: Float64Array; dt: number; time: number; xMin: number; zMin: number; dx: number; nx: number; nz: number; ready: boolean }
+const scenes = [
+  { name: 'original' as const, scene: new OriginalSimulation(input.config, 'warm') },
+  { name: 'candidate' as const, scene: new SurfZoneSimulation(input.config, 'warm') },
+];
+const variants = scenes.map(v => {
+  v.scene.importState(input.state); v.scene.breaking.update(0); // no solver/front/crash update or ProfileLibrary constructed
+  const s = v.scene.solver;
+  if (s.nx !== 160 || s.nz !== 725 || s.h.length !== 116000 || s.dx !== 2 || v.scene.windowXMin !== input.grid.xMin
+    || s.time !== input.state.solverTime || !Number.isFinite(s.time)) throw Error('Actual held grid/window/clock differs:' + v.name);
+  const generated = v.scene.renderGrid(2);
+  for (const key of ['nx', 'nz', 'spacing', 'xMin', 'zMin'] as const) if (generated[key] !== input.grid[key]) throw Error('Retained/generated render grid differs:' + key);
+  for (const key of solverKeys) if (!s[key].every(Number.isFinite)) throw Error('Consumed canonical solver array nonfinite:' + key);
+  if (s.dz.some(x => !(x > 0)) || !v.scene.whitewaterStrength.every(Number.isFinite)) throw Error('Invalid consumed dz/strength');
+  const foam = v.scene.foam as unknown as PrivateFoam, air = v.scene.aeration as unknown as PrivateAir;
+  const stencil = (v.scene as unknown as { advectionStencil: AdvectionStencil | OriginalStencil }).advectionStencil;
+  const outputs = Array.from({ length: 3 }, () => new Float32Array(input.grid.nx * input.grid.nz * 2));
+  const initial = { foam: foamKeys.map(k => v.scene.foam[k].slice()), air: [v.scene.aeration.air.slice(), v.scene.aeration.depth.slice(), v.scene.aeration.turbulence.slice()], sourceCount: v.scene.foam.sourceCount, breakingCount: v.scene.foam.breakingCount };
+  const identities = { foam: foamKeys.map(k => v.scene.foam[k]), air: airKeys.map(k => (v.scene.aeration as unknown as Record<string, ArrayBufferView>)[k]),
+    nextFoam: [foam.nextDense, foam.nextResidual], solver: solverKeys.map(k => s[k]), strength: v.scene.whitewaterStrength };
+  return { ...v, foam, air, stencil, outputs, initial, identities, solverHashes: identities.solver.map(a => sha(bytes(a))),
+    strengthSha: sha(bytes(v.scene.whitewaterStrength)), time: s.time, windowX: [foam.windowX, air.windowX] };
+});
+type Variant = typeof variants[number];
+const candidate = variants[1];
+if (!candidate.foam.gridEligible?.call(candidate.scene.foam, candidate.scene.whitewaterStrength, candidate.stencil as AdvectionStencil)) throw Error('Prepared ordinary numeric eligibility gate not taken');
+const nativeExp = Object.getOwnPropertyDescriptor(Math, 'exp')?.value;
+if (Function.prototype.toString.call(nativeExp) !== 'function exp() { [native code] }') throw Error('Actual CPU realm is not native data Math.exp');
+function reset(v: Variant) {
+  foamKeys.forEach((k, i) => v.scene.foam[k].set(v.initial.foam[i] as never));
+  v.scene.foam.sourceCount = v.initial.sourceCount; v.scene.foam.breakingCount = v.initial.breakingCount;
+  v.scene.aeration.air.set(v.initial.air[0]); v.scene.aeration.depth.set(v.initial.air[1]); v.scene.aeration.turbulence.set(v.initial.air[2]);
+  v.foam.nextDense.fill(0); v.foam.nextResidual.fill(0);
+  v.air.nextAir.fill(0); v.air.nextDepth.fill(0); v.air.nextTurbulence.fill(0); v.air.stirred.fill(0);
+  // Same steady dt after warmup: leave unchanged original per-field stirGain/stirDt cache and snapshot caches intact.
+}
+function run(v: Variant): number[] {
+  const t0 = performance.now();
+  if (v.name === 'original') (v.scene as OriginalSimulation).foam.update(plan.dt, v.scene.whitewaterStrength, v.stencil as OriginalStencil);
+  else (v.scene as SurfZoneSimulation).foam.updateGrid(plan.dt, v.scene.whitewaterStrength, v.stencil as AdvectionStencil);
+  const t1 = performance.now();
+  (v.scene as unknown as { aerateBores(dt: number): void }).aerateBores(plan.dt);
+  const t2 = performance.now();
+  if (v.name === 'original') (v.scene as OriginalSimulation).aeration.update(plan.dt, v.stencil as OriginalStencil);
+  else (v.scene as SurfZoneSimulation).aeration.update(plan.dt, v.stencil as AdvectionStencil);
+  const t3 = performance.now();
+  v.scene.writeUniformSnapshot(v.outputs[0], v.outputs[1], v.outputs[2], input.grid);
+  const t4 = performance.now();
+  return [t1 - t0, t2 - t1, t3 - t2, t4 - t3, t4 - t0];
+}
+function stable(v: Variant) {
+  const s = v.scene.solver, ss = v.stencil as unknown as StencilState;
+  solverKeys.forEach((k, i) => { if (s[k] !== v.identities.solver[i] || sha(bytes(s[k])) !== v.solverHashes[i]) throw Error('Solver identity/bytes changed:' + v.name + '.' + k); });
+  if (s.time !== v.time || v.scene.whitewaterStrength !== v.identities.strength || sha(bytes(v.scene.whitewaterStrength)) !== v.strengthSha) throw Error('Clock/source strength changed');
+  if (v.foam.windowX !== v.windowX[0] || v.air.windowX !== v.windowX[1]) throw Error('Held field window changed');
+  foamKeys.forEach((k, i) => { if (v.scene.foam[k] !== v.identities.foam[i]) throw Error('Public foam identity changed:' + k); });
+  airKeys.forEach((k, i) => { if ((v.scene.aeration as unknown as Record<string, ArrayBufferView>)[k] !== v.identities.air[i]) throw Error('Air public/private identity changed:' + k); });
+  if (v.foam.nextDense !== v.identities.nextFoam[0] || v.foam.nextResidual !== v.identities.nextFoam[1]) throw Error('Private foam identity changed');
+  if (ss.ready || ss.solver !== s || ss.xCenters !== s.xCenters || ss.zCenters !== s.zCenters || ss.dt !== plan.dt || ss.time !== s.time
+    || ss.xMin !== s.xCenters[0] || ss.zMin !== s.zCenters[0] || ss.dx !== s.dx || ss.nx !== s.nx || ss.nz !== s.nz) throw Error('Consumed shared-stencil descriptor differs');
+}
+function compare() {
+  const [a, b] = variants;
+  foamKeys.forEach(k => exact(a.scene.foam[k], b.scene.foam[k], 'foam.' + k));
+  if (a.scene.foam.sourceCount !== b.scene.foam.sourceCount || a.scene.foam.breakingCount !== b.scene.foam.breakingCount) throw Error('Counts differ');
+  airKeys.forEach(k => exact((a.scene.aeration as unknown as Record<string, ArrayBufferView>)[k], (b.scene.aeration as unknown as Record<string, ArrayBufferView>)[k], 'air.' + k));
+  if (!Object.is(a.air.stirDt, b.air.stirDt) || !Object.is(a.air.stirGain, b.air.stirGain)) throw Error('Air stir cache differs');
+  a.outputs.forEach((array, i) => exact(array, b.outputs[i], 'snapshot.' + i));
+  exact(a.stencil.indices, b.stencil.indices, 'stencil.indices'); exact(a.stencil.values, b.stencil.values, 'stencil.values');
+  exact(candidate.foam.nextDense, candidate.scene.foam.dense, 'numeric private final dense');
+  exact(candidate.foam.nextResidual, candidate.scene.foam.residual, 'numeric private final residual');
+  variants.forEach(stable);
+}
+for (const v of variants) { reset(v); run(v); } compare(); bounds();
+const stencilRefs = variants.map(v => [v.stencil.indices, v.stencil.values]);
+const stencilHashes = variants.map(v => [sha(bytes(v.stencil.indices)), sha(bytes(v.stencil.values))]);
+function departureStable() {
+  variants.forEach((v, i) => {
+    if (v.stencil.indices !== stencilRefs[i][0] || v.stencil.values !== stencilRefs[i][1]
+      || sha(bytes(v.stencil.indices)) !== stencilHashes[i][0] || sha(bytes(v.stencil.values)) !== stencilHashes[i][1]) throw Error('Held shared departures changed');
+  });
+}
+for (let r = 0; r < plan.warmPairs; r += 1) {
+  for (const index of r % 2 ? [1, 0] : [0, 1]) { bounds(); reset(variants[index]); run(variants[index]); }
+  compare(); departureStable();
+}
+const rows: { pair: number; order: string[]; original: number[]; candidate: number[]; pairedSaving: number[] }[] = [];
+for (let r = 0; r < plan.measuredPairs; r += 1) {
+  const times: number[][] = [], order = r % 2 ? [1, 0] : [0, 1];
+  for (const index of order) { bounds(); reset(variants[index]); times[index] = run(variants[index]); }
+  compare(); departureStable();
+  rows.push({ pair: r, order: order.map(i => variants[i].name), original: times[0], candidate: times[1], pairedSaving: times[0].map((ms, i) => ms - times[1][i]) });
+}
+bounds(); if (Object.getOwnPropertyDescriptor(Math, 'exp')?.value !== nativeExp) throw Error('Math.exp data authority changed');
+const stats = (values: number[]) => { const sorted = [...values].sort((a, b) => a - b); return { median: (sorted[(sorted.length - 1) >> 1] + sorted[sorted.length >> 1]) / 2,
+  mean: values.reduce((a, b) => a + b, 0) / values.length, p95: sorted[Math.ceil(sorted.length * .95) - 1], min: sorted[0], max: sorted.at(-1) }; };
+const stages = ['foam', 'airSources', 'air', 'snapshot', 'complete'] as const;
+const metrics = Object.fromEntries(stages.map((name, i) => [name, { originalMs: stats(rows.map(r => r.original[i])), candidateMs: stats(rows.map(r => r.candidate[i])), pairedSavingMs: stats(rows.map(r => r.pairedSaving[i])) }]));
+const report = { valid: true, kind: 'ONE bounded CPU complete-chain paired trial, not historical replay or FPS', plan, intake: input.authority,
+  observed: { nx: variants[0].scene.solver.nx, nz: variants[0].scene.solver.nz, cells: variants[0].scene.solver.h.length, solverTime: variants[0].time,
+    renderGrid: input.grid, strengthsSha256: variants[0].strengthSha, breakingCount: variants[0].scene.foam.breakingCount, sourceCount: variants[0].scene.foam.sourceCount },
+  parity: { everyPreflightWarmupMeasuredPairFullBytes: true, fullIndexDissipationTails: true, publicAndPrivateIdentities: true,
+    numericPrivateScratchFinalContract: true, sharedStencilIdentityBytesDescriptorsAndConsumed: true, solverIdentityBytesClockUnchanged: true,
+    nativeNumericEligibilityInsideTimedCall: true, sharedAirAndActualSourceFunction: true },
+  reset: 'Independent same captured foam/air and zero imported turbulence/source/index/dissipation states, reset scratch untimed; cached same-dt stir factors and snapshot caches persist equally after warmup.',
+  solverArraySha256: Object.fromEntries(solverKeys.map((k, i) => [k, variants[0].solverHashes[i]])), stencilSha256: stencilHashes,
+  metrics, rows, elapsedCpuMs: performance.now() - started, fpsOrAdoptionClaim: false,
+  source: { inputAuthoritySha256: sha(readFileSync(WORK + '/input-authority.json')), candidatePatchSha256: sha(readFileSync(WORK + '/candidate.patch')),
+    costSourceSha256: sha(readFileSync(WORK + '/cost.ts')), intakeSourceSha256: sha(readFileSync(WORK + '/intake.ts')) } };
+writeFileSync(out, JSON.stringify(report, null, 2) + '\n');
+console.log(JSON.stringify({ path: out, valid: report.valid, complete: metrics.complete, foam: metrics.foam, elapsedCpuMs: report.elapsedCpuMs }));

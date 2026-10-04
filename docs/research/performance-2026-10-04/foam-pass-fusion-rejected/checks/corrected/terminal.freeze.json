@@ -1,0 +1,74 @@
+{
+  "status": "CORRECTED36/36 FOCUSED TESTS PASS AND STRICT PASS; cost preparation is source only",
+  "firstAttemptPreserved": true,
+  "correctedFocused": {
+    "exitCode": 0,
+    "testsPassed": 36,
+    "suiteDurationMs": 671
+  },
+  "correctedStrict": {
+    "session": 18549,
+    "exitCode": 0,
+    "emptyLog": true
+  },
+  "files": [
+    {
+      "path": "checks/first/ready.json",
+      "bytes": 3571,
+      "sha256": "11c82f24bd766731091ccaa2a3c8ce45c90f548a1acd2bcd3d51fb3560a330c7"
+    },
+    {
+      "path": "checks/first/tests--parity.test.ts.txt",
+      "bytes": 20593,
+      "sha256": "584929c1c7a8aaca61d1cd6278bbcbc7087f8bb0c728f007c9e987568d3bac11"
+    },
+    {
+      "path": "checks/first/focused-tests.log",
+      "bytes": 1460,
+      "sha256": "e153de02ff39167564d6713bb9fe375e6756f9adf852b8c76670bd0320c837c2"
+    },
+    {
+      "path": "checks/first/strict.log",
+      "bytes": 664,
+      "sha256": "099a28be9422c42f1b5222cc7ff2b8af322cb295df2c10ff51bf4c7fc4ec8225"
+    },
+    {
+      "path": "checks/corrected/ready.json",
+      "bytes": 2212,
+      "sha256": "969d8bec8fd6ad66f575e58675462564e7ea59658468556cec34ddf3c2e15644"
+    },
+    {
+      "path": "checks/corrected/fixture.delta.patch",
+      "bytes": 1090,
+      "sha256": "71f0b4e82f1147f25ec9788ee49c2f92b323267b9abd7748632498e2ed0e758f"
+    },
+    {
+      "path": "checks/corrected/focused-tests.log",
+      "bytes": 190,
+      "sha256": "a79b8ef780dafc41c79325708694290e261792cc6fdf55cbd322becd4639e870"
+    },
+    {
+      "path": "checks/corrected/strict.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "tests/parity.test.ts",
+      "bytes": 20768,
+      "sha256": "82c305b07a548af6ab78d8d7c3bb188ad2ee4fe86164267c20e8d662235ba7e6"
+    },
+    {
+      "path": "src/wave/FoamField.ts",
+      "bytes": 16665,
+      "sha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c"
+    },
+    {
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "bytes": 65368,
+      "sha256": "850c425c81824adf227265ecc19d08c1d305527139a25145392651c61abe0dd3"
+    }
+  ],
+  "runtimeChangedAfterRootReviewedPatch": false,
+  "productionChanged": false,
+  "costExecuted": false
+}

@@ -1,0 +1,569 @@
+{
+  "schema": 1,
+  "decision": "REJECTED/no adoption/repeat/FPS claim",
+  "sourceRef": "e58e398555d8b4d4f7ada4b664d4a923d383f06a",
+  "archiveScope": "Only exact candidate owner sources/patch, first+corrected parity/strict history, harness compatibility/source/build authority, one raw CPU trial and plans. No full src/assets/fixture/1MB bundle duplication. Live test evidence renamed .txt.",
+  "origin": "/private/tmp/foam-pass-fusion-20261004",
+  "entries": [
+    {
+      "path": "candidate/candidate.patch",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/candidate.patch",
+      "originalBytes": 10916,
+      "originalSha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60",
+      "storedBytes": 10916,
+      "storedSha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60",
+      "encoding": "identity",
+      "expandedBytes": 10916,
+      "expandedSha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60"
+    },
+    {
+      "path": "candidate/FoamField.ts.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/src/wave/FoamField.ts",
+      "originalBytes": 16665,
+      "originalSha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c",
+      "storedBytes": 16665,
+      "storedSha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c",
+      "encoding": "identity",
+      "expandedBytes": 16665,
+      "expandedSha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c"
+    },
+    {
+      "path": "oracle/FoamField.ts.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/oracle/src/wave/FoamField.ts",
+      "originalBytes": 8686,
+      "originalSha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "storedBytes": 8686,
+      "storedSha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "encoding": "identity",
+      "expandedBytes": 8686,
+      "expandedSha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d"
+    },
+    {
+      "path": "candidate/SurfZoneSimulation.ts.gz",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/src/wave/SurfZoneSimulation.ts",
+      "originalBytes": 65368,
+      "originalSha256": "850c425c81824adf227265ecc19d08c1d305527139a25145392651c61abe0dd3",
+      "storedBytes": 20205,
+      "storedSha256": "96981d5fbe7627dd09857f28b034554b73eb0bb583fdfb4e96d81145f54aaf15",
+      "encoding": "gzip-mtime0-no-filename",
+      "expandedBytes": 65368,
+      "expandedSha256": "850c425c81824adf227265ecc19d08c1d305527139a25145392651c61abe0dd3"
+    },
+    {
+      "path": "oracle/SurfZoneSimulation.ts.gz",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/oracle/src/wave/SurfZoneSimulation.ts",
+      "originalBytes": 65364,
+      "originalSha256": "dd70cd939132f1ef313a607b3fcac951639f9332d2cece9526a996225bcfdf31",
+      "storedBytes": 20201,
+      "storedSha256": "a5cf59636727ed14f520a13b4fc1cd203efe691d89d6ccea7eed781325fc9336",
+      "encoding": "gzip-mtime0-no-filename",
+      "expandedBytes": 65364,
+      "expandedSha256": "dd70cd939132f1ef313a607b3fcac951639f9332d2cece9526a996225bcfdf31"
+    },
+    {
+      "path": "authority/input-authority.json.gz",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/input-authority.json",
+      "originalBytes": 120841,
+      "originalSha256": "31ac6f6aa3901bd49e6030dbade1ff9d232818b00b3a3cf2fedd1ea2c859b46b",
+      "storedBytes": 30560,
+      "storedSha256": "482390050d047a2e0e8b09594c086fdf00f6a2c10ea5f6d1cd1d177b4fb00b82",
+      "encoding": "gzip-mtime0-no-filename",
+      "expandedBytes": 120841,
+      "expandedSha256": "31ac6f6aa3901bd49e6030dbade1ff9d232818b00b3a3cf2fedd1ea2c859b46b"
+    },
+    {
+      "path": "preparation/source-feasibility.md",
+      "originalPath": "/private/tmp/foam-pass-fusion-feasibility-20261004.md",
+      "originalBytes": 12279,
+      "originalSha256": "817660a9b277d46c8859ef0fc8436ac1818e53fa1b4b4dc154226332895b9c5f",
+      "storedBytes": 12279,
+      "storedSha256": "817660a9b277d46c8859ef0fc8436ac1818e53fa1b4b4dc154226332895b9c5f",
+      "encoding": "identity",
+      "expandedBytes": 12279,
+      "expandedSha256": "817660a9b277d46c8859ef0fc8436ac1818e53fa1b4b4dc154226332895b9c5f"
+    },
+    {
+      "path": "preparation/prepare.py.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/prepare.py",
+      "originalBytes": 10185,
+      "originalSha256": "92c63ebfdcdecbc73f26595c244a726b9c9010b55f995b0b3dba0ac4ecc3f603",
+      "storedBytes": 10185,
+      "storedSha256": "92c63ebfdcdecbc73f26595c244a726b9c9010b55f995b0b3dba0ac4ecc3f603",
+      "encoding": "identity",
+      "expandedBytes": 10185,
+      "expandedSha256": "92c63ebfdcdecbc73f26595c244a726b9c9010b55f995b0b3dba0ac4ecc3f603"
+    },
+    {
+      "path": "preparation/README-first.md",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/README.md",
+      "originalBytes": 5632,
+      "originalSha256": "73af0adc891cacf06be6a5bfa3e38f1e64538fb1939f9adf24bec045e3d00683",
+      "storedBytes": 5632,
+      "storedSha256": "73af0adc891cacf06be6a5bfa3e38f1e64538fb1939f9adf24bec045e3d00683",
+      "encoding": "identity",
+      "expandedBytes": 5632,
+      "expandedSha256": "73af0adc891cacf06be6a5bfa3e38f1e64538fb1939f9adf24bec045e3d00683"
+    },
+    {
+      "path": "preparation/ready-first.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/ready.json",
+      "originalBytes": 3571,
+      "originalSha256": "11c82f24bd766731091ccaa2a3c8ce45c90f548a1acd2bcd3d51fb3560a330c7",
+      "storedBytes": 3571,
+      "storedSha256": "11c82f24bd766731091ccaa2a3c8ce45c90f548a1acd2bcd3d51fb3560a330c7",
+      "encoding": "identity",
+      "expandedBytes": 3571,
+      "expandedSha256": "11c82f24bd766731091ccaa2a3c8ce45c90f548a1acd2bcd3d51fb3560a330c7"
+    },
+    {
+      "path": "checks/first/terminal.freeze.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/first-verification.freeze.json",
+      "originalBytes": 2120,
+      "originalSha256": "b716df1319703380e8d4c39b86a3e942bb2a0c7dc1a9a6fa1b0d3eb94731e012",
+      "storedBytes": 2120,
+      "storedSha256": "b716df1319703380e8d4c39b86a3e942bb2a0c7dc1a9a6fa1b0d3eb94731e012",
+      "encoding": "identity",
+      "expandedBytes": 2120,
+      "expandedSha256": "b716df1319703380e8d4c39b86a3e942bb2a0c7dc1a9a6fa1b0d3eb94731e012"
+    },
+    {
+      "path": "checks/first/parity.test.ts.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/first/tests--parity.test.ts.txt",
+      "originalBytes": 20593,
+      "originalSha256": "584929c1c7a8aaca61d1cd6278bbcbc7087f8bb0c728f007c9e987568d3bac11",
+      "storedBytes": 20593,
+      "storedSha256": "584929c1c7a8aaca61d1cd6278bbcbc7087f8bb0c728f007c9e987568d3bac11",
+      "encoding": "identity",
+      "expandedBytes": 20593,
+      "expandedSha256": "584929c1c7a8aaca61d1cd6278bbcbc7087f8bb0c728f007c9e987568d3bac11"
+    },
+    {
+      "path": "checks/first/focused-tests.log",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/focused-tests.log",
+      "originalBytes": 1460,
+      "originalSha256": "e153de02ff39167564d6713bb9fe375e6756f9adf852b8c76670bd0320c837c2",
+      "storedBytes": 1460,
+      "storedSha256": "e153de02ff39167564d6713bb9fe375e6756f9adf852b8c76670bd0320c837c2",
+      "encoding": "identity",
+      "expandedBytes": 1460,
+      "expandedSha256": "e153de02ff39167564d6713bb9fe375e6756f9adf852b8c76670bd0320c837c2"
+    },
+    {
+      "path": "checks/first/strict.log",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/strict.log",
+      "originalBytes": 664,
+      "originalSha256": "099a28be9422c42f1b5222cc7ff2b8af322cb295df2c10ff51bf4c7fc4ec8225",
+      "storedBytes": 664,
+      "storedSha256": "099a28be9422c42f1b5222cc7ff2b8af322cb295df2c10ff51bf4c7fc4ec8225",
+      "encoding": "identity",
+      "expandedBytes": 664,
+      "expandedSha256": "099a28be9422c42f1b5222cc7ff2b8af322cb295df2c10ff51bf4c7fc4ec8225"
+    },
+    {
+      "path": "checks/corrected/parity.test.ts.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/tests/parity.test.ts",
+      "originalBytes": 20768,
+      "originalSha256": "82c305b07a548af6ab78d8d7c3bb188ad2ee4fe86164267c20e8d662235ba7e6",
+      "storedBytes": 20768,
+      "storedSha256": "82c305b07a548af6ab78d8d7c3bb188ad2ee4fe86164267c20e8d662235ba7e6",
+      "encoding": "identity",
+      "expandedBytes": 20768,
+      "expandedSha256": "82c305b07a548af6ab78d8d7c3bb188ad2ee4fe86164267c20e8d662235ba7e6"
+    },
+    {
+      "path": "checks/corrected/fixture.delta.patch",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/corrected/fixture.delta.patch",
+      "originalBytes": 1090,
+      "originalSha256": "71f0b4e82f1147f25ec9788ee49c2f92b323267b9abd7748632498e2ed0e758f",
+      "storedBytes": 1090,
+      "storedSha256": "71f0b4e82f1147f25ec9788ee49c2f92b323267b9abd7748632498e2ed0e758f",
+      "encoding": "identity",
+      "expandedBytes": 1090,
+      "expandedSha256": "71f0b4e82f1147f25ec9788ee49c2f92b323267b9abd7748632498e2ed0e758f"
+    },
+    {
+      "path": "checks/corrected/ready.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/corrected/ready.json",
+      "originalBytes": 2212,
+      "originalSha256": "969d8bec8fd6ad66f575e58675462564e7ea59658468556cec34ddf3c2e15644",
+      "storedBytes": 2212,
+      "storedSha256": "969d8bec8fd6ad66f575e58675462564e7ea59658468556cec34ddf3c2e15644",
+      "encoding": "identity",
+      "expandedBytes": 2212,
+      "expandedSha256": "969d8bec8fd6ad66f575e58675462564e7ea59658468556cec34ddf3c2e15644"
+    },
+    {
+      "path": "checks/corrected/focused-tests.log",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/corrected/focused-tests.log",
+      "originalBytes": 190,
+      "originalSha256": "a79b8ef780dafc41c79325708694290e261792cc6fdf55cbd322becd4639e870",
+      "storedBytes": 190,
+      "storedSha256": "a79b8ef780dafc41c79325708694290e261792cc6fdf55cbd322becd4639e870",
+      "encoding": "identity",
+      "expandedBytes": 190,
+      "expandedSha256": "a79b8ef780dafc41c79325708694290e261792cc6fdf55cbd322becd4639e870"
+    },
+    {
+      "path": "checks/corrected/strict.log",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/corrected/strict.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "identity",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks/corrected/terminal.freeze.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/corrected/terminal.freeze.json",
+      "originalBytes": 2236,
+      "originalSha256": "365a64fb20be41db57675b71a3ab616c9749e0b475dd3c9a86d36e8b62411880",
+      "storedBytes": 2236,
+      "storedSha256": "365a64fb20be41db57675b71a3ab616c9749e0b475dd3c9a86d36e8b62411880",
+      "encoding": "identity",
+      "expandedBytes": 2236,
+      "expandedSha256": "365a64fb20be41db57675b71a3ab616c9749e0b475dd3c9a86d36e8b62411880"
+    },
+    {
+      "path": "cost/cost.ts.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost.ts",
+      "originalBytes": 13900,
+      "originalSha256": "384e401c73e3c8e6699389b3dd8b54e662752bf00598d7132f2358c23a379428",
+      "storedBytes": 13900,
+      "storedSha256": "384e401c73e3c8e6699389b3dd8b54e662752bf00598d7132f2358c23a379428",
+      "encoding": "identity",
+      "expandedBytes": 13900,
+      "expandedSha256": "384e401c73e3c8e6699389b3dd8b54e662752bf00598d7132f2358c23a379428"
+    },
+    {
+      "path": "cost/first-esnext-source.ts.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/cost-compatibility/cost.ts.txt",
+      "originalBytes": 13899,
+      "originalSha256": "c56e26fbfe77278647a7bbb952faf510cc7a3f536796e9cfb161d32b25ce08eb",
+      "storedBytes": 13899,
+      "storedSha256": "c56e26fbfe77278647a7bbb952faf510cc7a3f536796e9cfb161d32b25ce08eb",
+      "encoding": "identity",
+      "expandedBytes": 13899,
+      "expandedSha256": "c56e26fbfe77278647a7bbb952faf510cc7a3f536796e9cfb161d32b25ce08eb"
+    },
+    {
+      "path": "cost/intake.ts.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/intake.ts",
+      "originalBytes": 4778,
+      "originalSha256": "befea0ef86b7bd19ecacbc45959fc8fb8b6a6e47d5685bed5f5ea2624f063af5",
+      "storedBytes": 4778,
+      "storedSha256": "befea0ef86b7bd19ecacbc45959fc8fb8b6a6e47d5685bed5f5ea2624f063af5",
+      "encoding": "identity",
+      "expandedBytes": 4778,
+      "expandedSha256": "befea0ef86b7bd19ecacbc45959fc8fb8b6a6e47d5685bed5f5ea2624f063af5"
+    },
+    {
+      "path": "cost/plan.md",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-plan.md",
+      "originalBytes": 6858,
+      "originalSha256": "ac4f4140c5e3579302e73ebcfeb84361bfc50b0d8fda785f228beb54f34bb078",
+      "storedBytes": 6858,
+      "storedSha256": "ac4f4140c5e3579302e73ebcfeb84361bfc50b0d8fda785f228beb54f34bb078",
+      "encoding": "identity",
+      "expandedBytes": 6858,
+      "expandedSha256": "ac4f4140c5e3579302e73ebcfeb84361bfc50b0d8fda785f228beb54f34bb078"
+    },
+    {
+      "path": "cost/ready-first.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-ready.json",
+      "originalBytes": 1514,
+      "originalSha256": "cc07bd683968c5131d9419f9ac0159f5f437fcab916d6eeecd6a37eda8776648",
+      "storedBytes": 1514,
+      "storedSha256": "cc07bd683968c5131d9419f9ac0159f5f437fcab916d6eeecd6a37eda8776648",
+      "encoding": "identity",
+      "expandedBytes": 1514,
+      "expandedSha256": "cc07bd683968c5131d9419f9ac0159f5f437fcab916d6eeecd6a37eda8776648"
+    },
+    {
+      "path": "cost/ready-es2022.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-ready-es2022.json",
+      "originalBytes": 1793,
+      "originalSha256": "1c65884caad3780306fe51977506fb3844b23841d30103cf8ce4a365c4d083a3",
+      "storedBytes": 1793,
+      "storedSha256": "1c65884caad3780306fe51977506fb3844b23841d30103cf8ce4a365c4d083a3",
+      "encoding": "identity",
+      "expandedBytes": 1793,
+      "expandedSha256": "1c65884caad3780306fe51977506fb3844b23841d30103cf8ce4a365c4d083a3"
+    },
+    {
+      "path": "cost/compiled-ready.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-compiled-ready.json",
+      "originalBytes": 4079,
+      "originalSha256": "c4e323e8b8ef0efcd45813421e64aa00777bb9b667d67de468ec41495b13dd42",
+      "storedBytes": 4079,
+      "storedSha256": "c4e323e8b8ef0efcd45813421e64aa00777bb9b667d67de468ec41495b13dd42",
+      "encoding": "identity",
+      "expandedBytes": 4079,
+      "expandedSha256": "c4e323e8b8ef0efcd45813421e64aa00777bb9b667d67de468ec41495b13dd42"
+    },
+    {
+      "path": "cost/strict.log",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/cost-compatibility/strict.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "identity",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cost/bundle.log",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/cost-compatibility/bundle.log",
+      "originalBytes": 87,
+      "originalSha256": "65f447872a79f4e09024d15698bdcc577933e08e21770c00b2e0e57f1af40ad9",
+      "storedBytes": 87,
+      "storedSha256": "65f447872a79f4e09024d15698bdcc577933e08e21770c00b2e0e57f1af40ad9",
+      "encoding": "identity",
+      "expandedBytes": 87,
+      "expandedSha256": "65f447872a79f4e09024d15698bdcc577933e08e21770c00b2e0e57f1af40ad9"
+    },
+    {
+      "path": "cost/report.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-report.json",
+      "originalBytes": 26249,
+      "originalSha256": "6201fd99054969fd8358fbf624f12fe016360c0dbbdb617840bed841bab8d40d",
+      "storedBytes": 26249,
+      "storedSha256": "6201fd99054969fd8358fbf624f12fe016360c0dbbdb617840bed841bab8d40d",
+      "encoding": "identity",
+      "expandedBytes": 26249,
+      "expandedSha256": "6201fd99054969fd8358fbf624f12fe016360c0dbbdb617840bed841bab8d40d"
+    },
+    {
+      "path": "cost/stdout.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-stdout.txt",
+      "originalBytes": 994,
+      "originalSha256": "9a6e77e9e52c27b879078d741eb3a7157cd9356331700a7926b7d9b38c570d28",
+      "storedBytes": 994,
+      "storedSha256": "9a6e77e9e52c27b879078d741eb3a7157cd9356331700a7926b7d9b38c570d28",
+      "encoding": "identity",
+      "expandedBytes": 994,
+      "expandedSha256": "9a6e77e9e52c27b879078d741eb3a7157cd9356331700a7926b7d9b38c570d28"
+    },
+    {
+      "path": "cost/stderr.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-stderr.txt",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "identity",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cost/process-terminal.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-run-terminal.json",
+      "originalBytes": 371,
+      "originalSha256": "f3cfb31ca54980684ea369e66ba30e88499a6c92e636d567e73a915676c0c1de",
+      "storedBytes": 371,
+      "storedSha256": "f3cfb31ca54980684ea369e66ba30e88499a6c92e636d567e73a915676c0c1de",
+      "encoding": "identity",
+      "expandedBytes": 371,
+      "expandedSha256": "f3cfb31ca54980684ea369e66ba30e88499a6c92e636d567e73a915676c0c1de"
+    },
+    {
+      "path": "cost/terminal.freeze.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-terminal.freeze.json",
+      "originalBytes": 2842,
+      "originalSha256": "ada78e14baacc4ca3e08be92523e8dd536f5a18103f7e3d61585399fac4a061f",
+      "storedBytes": 2842,
+      "storedSha256": "ada78e14baacc4ca3e08be92523e8dd536f5a18103f7e3d61585399fac4a061f",
+      "encoding": "identity",
+      "expandedBytes": 2842,
+      "expandedSha256": "ada78e14baacc4ca3e08be92523e8dd536f5a18103f7e3d61585399fac4a061f"
+    },
+    {
+      "path": "cost/interpretation.md",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost-interpretation.md",
+      "originalBytes": 2688,
+      "originalSha256": "d01001196e330510380d0c8a914ca19d29de4bc3eeb3b62dbd6b867b8940add2",
+      "storedBytes": 2688,
+      "storedSha256": "d01001196e330510380d0c8a914ca19d29de4bc3eeb3b62dbd6b867b8940add2",
+      "encoding": "identity",
+      "expandedBytes": 2688,
+      "expandedSha256": "d01001196e330510380d0c8a914ca19d29de4bc3eeb3b62dbd6b867b8940add2"
+    },
+    {
+      "path": "config/package.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/package.json",
+      "originalBytes": 4917,
+      "originalSha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "storedBytes": 4917,
+      "storedSha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "encoding": "identity",
+      "expandedBytes": 4917,
+      "expandedSha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "path": "config/tsconfig.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/tsconfig.json",
+      "originalBytes": 550,
+      "originalSha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f",
+      "storedBytes": 550,
+      "storedSha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f",
+      "encoding": "identity",
+      "expandedBytes": 550,
+      "expandedSha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+    },
+    {
+      "path": "config/tsconfig.qa.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/tsconfig.qa.json",
+      "originalBytes": 80,
+      "originalSha256": "1098a6ad75265a35df8c7146c8fe04446cf85ddf5cde57833c96c1f8dc3541fd",
+      "storedBytes": 80,
+      "storedSha256": "1098a6ad75265a35df8c7146c8fe04446cf85ddf5cde57833c96c1f8dc3541fd",
+      "encoding": "identity",
+      "expandedBytes": 80,
+      "expandedSha256": "1098a6ad75265a35df8c7146c8fe04446cf85ddf5cde57833c96c1f8dc3541fd"
+    },
+    {
+      "path": "config/tsconfig.cost.json",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/tsconfig.cost.json",
+      "originalBytes": 95,
+      "originalSha256": "a0abe8c36d7ccaf385d784ebe800e4932b82561a27d8605294c2c6fd6a2908c3",
+      "storedBytes": 95,
+      "storedSha256": "a0abe8c36d7ccaf385d784ebe800e4932b82561a27d8605294c2c6fd6a2908c3",
+      "encoding": "identity",
+      "expandedBytes": 95,
+      "expandedSha256": "a0abe8c36d7ccaf385d784ebe800e4932b82561a27d8605294c2c6fd6a2908c3"
+    },
+    {
+      "path": "config/vitest.config.ts.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/vitest.config.ts",
+      "originalBytes": 378,
+      "originalSha256": "2f314b8658980cef78efaef82c4bd23ae5b050402a616c06f2b725b947800a48",
+      "storedBytes": 378,
+      "storedSha256": "2f314b8658980cef78efaef82c4bd23ae5b050402a616c06f2b725b947800a48",
+      "encoding": "identity",
+      "expandedBytes": 378,
+      "expandedSha256": "2f314b8658980cef78efaef82c4bd23ae5b050402a616c06f2b725b947800a48"
+    },
+    {
+      "path": "archive.py.txt",
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/archive.py",
+      "originalBytes": 14918,
+      "originalSha256": "cf656ddbac6711e84a0b9273f16e40404fd23847d622d16f745caabaaf8e83ab",
+      "storedBytes": 14918,
+      "storedSha256": "cf656ddbac6711e84a0b9273f16e40404fd23847d622d16f745caabaaf8e83ab",
+      "encoding": "identity",
+      "expandedBytes": 14918,
+      "expandedSha256": "cf656ddbac6711e84a0b9273f16e40404fd23847d622d16f745caabaaf8e83ab"
+    }
+  ],
+  "byteExactAliases": [
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/first/ready.json",
+      "originalBytes": 3571,
+      "originalSha256": "11c82f24bd766731091ccaa2a3c8ce45c90f548a1acd2bcd3d51fb3560a330c7",
+      "archiveAliasOf": "preparation/ready-first.json",
+      "byteExactAliasVerified": true
+    },
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/first/src--wave--FoamField.ts.txt",
+      "originalBytes": 16665,
+      "originalSha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c",
+      "archiveAliasOf": "candidate/FoamField.ts.txt",
+      "byteExactAliasVerified": true
+    },
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/first/src--wave--SurfZoneSimulation.ts.txt",
+      "originalBytes": 65368,
+      "originalSha256": "850c425c81824adf227265ecc19d08c1d305527139a25145392651c61abe0dd3",
+      "archiveAliasOf": "candidate/SurfZoneSimulation.ts.gz",
+      "byteExactAliasVerified": true
+    },
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/first/candidate.patch",
+      "originalBytes": 10916,
+      "originalSha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60",
+      "archiveAliasOf": "candidate/candidate.patch",
+      "byteExactAliasVerified": true
+    },
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/first/tsconfig.qa.json",
+      "originalBytes": 80,
+      "originalSha256": "1098a6ad75265a35df8c7146c8fe04446cf85ddf5cde57833c96c1f8dc3541fd",
+      "archiveAliasOf": "config/tsconfig.qa.json",
+      "byteExactAliasVerified": true
+    },
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/first/first-verification.freeze.json",
+      "originalBytes": 2120,
+      "originalSha256": "b716df1319703380e8d4c39b86a3e942bb2a0c7dc1a9a6fa1b0d3eb94731e012",
+      "archiveAliasOf": "checks/first/terminal.freeze.json",
+      "byteExactAliasVerified": true
+    },
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/first/focused-tests.log",
+      "originalBytes": 1460,
+      "originalSha256": "e153de02ff39167564d6713bb9fe375e6756f9adf852b8c76670bd0320c837c2",
+      "archiveAliasOf": "checks/first/focused-tests.log",
+      "byteExactAliasVerified": true
+    },
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/first/strict.log",
+      "originalBytes": 664,
+      "originalSha256": "099a28be9422c42f1b5222cc7ff2b8af322cb295df2c10ff51bf4c7fc4ec8225",
+      "archiveAliasOf": "checks/first/strict.log",
+      "byteExactAliasVerified": true
+    },
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/checks/cost-compatibility/cost-ready.json",
+      "originalBytes": 1514,
+      "originalSha256": "cc07bd683968c5131d9419f9ac0159f5f437fcab916d6eeecd6a37eda8776648",
+      "archiveAliasOf": "cost/ready-first.json",
+      "byteExactAliasVerified": true
+    }
+  ],
+  "intentionallyNotDuplicated": [
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/cost.mjs",
+      "bytes": 1036015,
+      "sha256": "2cbe4d0cb8c41d3ca0addc6814c6bfd7de7081ea2d84c358c34501f2180fa959",
+      "disposition": "Not duplicated per root archive preference. Exact compiled fingerprint/compilation log/readiness/sources are durable; original compiled bytes remain unchanged in TMP. No lossless durable compiled-copy claim."
+    },
+    {
+      "originalPath": "/private/tmp/foam-pass-fusion-20261004/input-source.tar",
+      "bytes": 5283840,
+      "sha256": "be91a41110a1ee539278da726e2507951c8d758ba685e64e99e5dba9f387968d",
+      "disposition": "No full source-tree/tar duplicate. Exact commit ref plus543-file expanded source hashes are preserved; selected original/candidate owner sources and patch are durable."
+    },
+    {
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz",
+      "sha256": "95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584",
+      "disposition": "Already committed15MB full-state fixture referenced, never copied or modified."
+    }
+  ],
+  "originalReferenceAuthority": {
+    "sourceFiles": 543,
+    "oracleExpandedBytes": 4796545,
+    "fixtureRawSet1Sha256": "38b63fbe297eeb143c6449902855be39802455d4f14d540a07d152ead7ec32e0",
+    "decodedRawWordsChecked": 1392480
+  },
+  "totals": {
+    "storedPayloadBytes": 291223,
+    "expandedPayloadBytes": 471830,
+    "originalCopiedOrAliasedBytes": 574188
+  },
+  "actualUtc": {
+    "start": "2026-10-04T01:07:02.634353+00:00",
+    "terminal": "2026-10-04T01:07:04.806243+00:00"
+  },
+  "checksNotRerunForArchive": true,
+  "productionChanged": false,
+  "sourceOriginalsModified": false,
+  "generatedControls": [
+    "README.md",
+    "manifest.json",
+    "SHA256SUMS",
+    "root-review-ready.json"
+  ],
+  "archivePreparationNote": "Filesystem-only README checksum-link finalization order corrected; first helper bytes remain in TMP. No source/results/log bytes or runtime checks changed."
+}

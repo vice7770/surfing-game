@@ -1,0 +1,98 @@
+{
+  "scope": "QA browser build only; no preview/hardware/FPS/adoption",
+  "buildId": "43641bf33-qa-contact-normal",
+  "runtimeSourceBaseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "inlineBuildOverrides": {
+    "copyPublicDir": false,
+    "emptyOutDir": false,
+    "outDir": "/private/tmp/contact-normal-demand-build-20261004/dist"
+  },
+  "integration": {
+    "files": 3,
+    "testsPassed": 74,
+    "exitCode": 0,
+    "durationSeconds": 69.86
+  },
+  "buildFirstFailure": "missing unchanged index.html in deliberately minimal prototype extraction; log retained",
+  "buildRepair": "only exact baseline index.html copied, authority retained; no runtime change",
+  "correctedBuildExitCode": 0,
+  "buildRecords": [
+    {
+      "path": "assets/WorkerSurfZone-QCJ_gTvS.js",
+      "bytes": 850688,
+      "sha256": "bf8b7dad9cc2c4c889be63b74c2f8c612684037bd91bba86c6f0503f56c1ba4d"
+    },
+    {
+      "path": "assets/devStepping-nYC50lpQ.js",
+      "bytes": 320,
+      "sha256": "c46e11b9942cf45a8323f42e9b527efb5e6d5f925e2c94444d860550abc029b3"
+    },
+    {
+      "path": "assets/index-C8HqjkHD.js",
+      "bytes": 582443,
+      "sha256": "9c08061fd126f174ac7c084bfbe1d4870838c10e848e5eb8e46e0782bcaa03ac"
+    },
+    {
+      "path": "assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "path": "assets/jevRecorder-BBQdhlZi.js",
+      "bytes": 15917,
+      "sha256": "9da0057409008b22aedd529d8b07579eeeb8c2f99453bcd4385d100438304f17"
+    },
+    {
+      "path": "assets/particleBench-C0n78i45.js",
+      "bytes": 10708,
+      "sha256": "00aba482d9ba2544f28c77f2d2771405c8f2659f1da48ab693198f34c8309330"
+    },
+    {
+      "path": "assets/rideRecorder-D820X0Vc.js",
+      "bytes": 41108,
+      "sha256": "6debd522b71f67abe00fabec837bf0db3757ddbf310ef17620e69fa698ac0700"
+    },
+    {
+      "path": "assets/surfZoneWorker-CZHy5YLl.js",
+      "bytes": 439388,
+      "sha256": "b5fc88d0b108912b9a08736d0d3857c259445bd8d864f15f387327e09a15760f"
+    },
+    {
+      "path": "assets/waterSheet-DBTKh5am.js",
+      "bytes": 11689,
+      "sha256": "655191773d72fdab08d9165caf4132279838e0d1370e80895ebc9553ebc29384"
+    },
+    {
+      "path": "build.json",
+      "bytes": 39,
+      "sha256": "e453fa98f167fe02879ad4d5db013906aca0d95c7b10d19c7c2589dd347eebb0"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1626,
+      "sha256": "962bd6a7d6db8835ebb170de0bff742cf04dba3fffbb20280c41e586d8665d96"
+    }
+  ],
+  "evidenceRecords": [
+    {
+      "path": "/private/tmp/contact-normal-demand-integration-20261004.log",
+      "bytes": 204,
+      "sha256": "18466fa033ae853f7ee94efcca2828860c84195ac77348dd86bd8d8264e09766"
+    },
+    {
+      "path": "/private/tmp/contact-normal-demand-build-20261004.log",
+      "bytes": 1118,
+      "sha256": "9aee048afe412e8195a8a9b4c1bfcbdfb055716915e2ef48ba4b0d0235bbad8b"
+    },
+    {
+      "path": "/private/tmp/contact-normal-demand-build-corrected-20261004.log",
+      "bytes": 1716,
+      "sha256": "40e8ad2e56f8807f51bbf64ebaa06ecc3dd3337b9f82e7b07d7acafff52f2aae"
+    },
+    {
+      "path": "/private/tmp/contact-normal-demand-build-entry-20261004.json",
+      "bytes": 348,
+      "sha256": "b1ea7aea4b85043791fd044d15e0c45cba39efd38cad5fbd24a179481a53d9ad"
+    }
+  ]
+}

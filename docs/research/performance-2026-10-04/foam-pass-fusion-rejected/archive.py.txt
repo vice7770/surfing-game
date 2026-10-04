@@ -1,0 +1,133 @@
+from pathlib import Path
+import hashlib, json, gzip, io, re, shutil
+SOURCE=Path('/private/tmp/foam-pass-fusion-20261004')
+OUT=Path('/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/foam-pass-fusion-rejected')
+SHA=lambda b:hashlib.sha256(b).hexdigest()
+if OUT.exists(): raise SystemExit('Refuse preexisting archive directory')
+OUT.mkdir(parents=True)
+entries=[];aliases=[]
+def save(source,target,compress=False):
+ original=Path(source);original=original if original.is_absolute() else SOURCE/original
+ raw=original.read_bytes();target=OUT/target;target.parent.mkdir(parents=True,exist_ok=True)
+ if compress:
+  f=io.BytesIO()
+  with gzip.GzipFile(filename='',mode='wb',fileobj=f,compresslevel=9,mtime=0) as gz:gz.write(raw)
+  stored=f.getvalue()
+  if gzip.decompress(stored)!=raw:raise RuntimeError('Gzip byte restoration failed')
+ else:stored=raw
+ target.write_bytes(stored)
+ entry={'path':str(target.relative_to(OUT)),'originalPath':str(original),'originalBytes':len(raw),'originalSha256':SHA(raw),'storedBytes':len(stored),'storedSha256':SHA(stored),'encoding':'gzip-mtime0-no-filename' if compress else 'identity','expandedBytes':len(raw),'expandedSha256':SHA(raw)}
+ entries.append(entry);return entry
+
+def alias(source,target):
+ original=SOURCE/source;raw=original.read_bytes();e=next(e for e in entries if e['path']==target)
+ if SHA(raw)!=e['expandedSha256']:raise RuntimeError('Alias is not byte-identical')
+ aliases.append({'originalPath':str(original),'originalBytes':len(raw),'originalSha256':SHA(raw),'archiveAliasOf':target,'byteExactAliasVerified':True})
+
+mapping=[
+ ('candidate.patch','candidate/candidate.patch',False),
+ ('src/wave/FoamField.ts','candidate/FoamField.ts.txt',False),
+ ('oracle/src/wave/FoamField.ts','oracle/FoamField.ts.txt',False),
+ ('src/wave/SurfZoneSimulation.ts','candidate/SurfZoneSimulation.ts.gz',True),
+ ('oracle/src/wave/SurfZoneSimulation.ts','oracle/SurfZoneSimulation.ts.gz',True),
+ ('input-authority.json','authority/input-authority.json.gz',True),
+ ('/private/tmp/foam-pass-fusion-feasibility-20261004.md','preparation/source-feasibility.md',False),
+ ('prepare.py','preparation/prepare.py.txt',False),
+ ('README.md','preparation/README-first.md',False),
+ ('ready.json','preparation/ready-first.json',False),
+ ('first-verification.freeze.json','checks/first/terminal.freeze.json',False),
+ ('checks/first/tests--parity.test.ts.txt','checks/first/parity.test.ts.txt',False),
+ ('focused-tests.log','checks/first/focused-tests.log',False),
+ ('strict.log','checks/first/strict.log',False),
+ ('tests/parity.test.ts','checks/corrected/parity.test.ts.txt',False),
+ ('checks/corrected/fixture.delta.patch','checks/corrected/fixture.delta.patch',False),
+ ('checks/corrected/ready.json','checks/corrected/ready.json',False),
+ ('checks/corrected/focused-tests.log','checks/corrected/focused-tests.log',False),
+ ('checks/corrected/strict.log','checks/corrected/strict.log',False),
+ ('checks/corrected/terminal.freeze.json','checks/corrected/terminal.freeze.json',False),
+ ('cost.ts','cost/cost.ts.txt',False),
+ ('checks/cost-compatibility/cost.ts.txt','cost/first-esnext-source.ts.txt',False),
+ ('intake.ts','cost/intake.ts.txt',False),
+ ('cost-plan.md','cost/plan.md',False),
+ ('cost-ready.json','cost/ready-first.json',False),
+ ('cost-ready-es2022.json','cost/ready-es2022.json',False),
+ ('cost-compiled-ready.json','cost/compiled-ready.json',False),
+ ('checks/cost-compatibility/strict.log','cost/strict.log',False),
+ ('checks/cost-compatibility/bundle.log','cost/bundle.log',False),
+ ('cost-report.json','cost/report.json',False),
+ ('cost-stdout.txt','cost/stdout.txt',False),
+ ('cost-stderr.txt','cost/stderr.txt',False),
+ ('cost-run-terminal.json','cost/process-terminal.json',False),
+ ('cost-terminal.freeze.json','cost/terminal.freeze.json',False),
+ ('cost-interpretation.md','cost/interpretation.md',False),
+ ('package.json','config/package.json',False),
+ ('tsconfig.json','config/tsconfig.json',False),
+ ('tsconfig.qa.json','config/tsconfig.qa.json',False),
+ ('tsconfig.cost.json','config/tsconfig.cost.json',False),
+ ('vitest.config.ts','config/vitest.config.ts.txt',False),
+ ('archive.py','archive.py.txt',False),
+]
+for source,target,compress in mapping:save(source,target,compress)
+for source,target in [
+ ('checks/first/ready.json','preparation/ready-first.json'),
+ ('checks/first/src--wave--FoamField.ts.txt','candidate/FoamField.ts.txt'),
+ ('checks/first/src--wave--SurfZoneSimulation.ts.txt','candidate/SurfZoneSimulation.ts.gz'),
+ ('checks/first/candidate.patch','candidate/candidate.patch'),
+ ('checks/first/tsconfig.qa.json','config/tsconfig.qa.json'),
+ ('checks/first/first-verification.freeze.json','checks/first/terminal.freeze.json'),
+ ('checks/first/focused-tests.log','checks/first/focused-tests.log'),
+ ('checks/first/strict.log','checks/first/strict.log'),
+ ('checks/cost-compatibility/cost-ready.json','cost/ready-first.json'),
+]:alias(source,target)
+
+report=json.loads((SOURCE/'cost-report.json').read_text())
+terminal=json.loads((SOURCE/'cost-run-terminal.json').read_text())
+bundle=(SOURCE/'cost.mjs').read_bytes();tar=(SOURCE/'input-source.tar').read_bytes()
+notCopied=[{'originalPath':str(SOURCE/'cost.mjs'),'bytes':len(bundle),'sha256':SHA(bundle),'disposition':'Not duplicated per root archive preference. Exact compiled fingerprint/compilation log/readiness/sources are durable; original compiled bytes remain unchanged in TMP. No lossless durable compiled-copy claim.'},
+ {'originalPath':str(SOURCE/'input-source.tar'),'bytes':len(tar),'sha256':SHA(tar),'disposition':'No full source-tree/tar duplicate. Exact commit ref plus543-file expanded source hashes are preserved; selected original/candidate owner sources and patch are durable.'},
+ {'originalPath':report['intake']['fixture'],'sha256':report['intake']['gzipSha256'],'disposition':'Already committed15MB full-state fixture referenced, never copied or modified.'}]
+manifest={'schema':1,'decision':'REJECTED/no adoption/repeat/FPS claim','sourceRef':'e58e398555d8b4d4f7ada4b664d4a923d383f06a','archiveScope':'Only exact candidate owner sources/patch, first+corrected parity/strict history, harness compatibility/source/build authority, one raw CPU trial and plans. No full src/assets/fixture/1MB bundle duplication. Live test evidence renamed .txt.','origin':str(SOURCE),'entries':entries,'byteExactAliases':aliases,'intentionallyNotDuplicated':notCopied,'originalReferenceAuthority':{'sourceFiles':543,'oracleExpandedBytes':4796545,'fixtureRawSet1Sha256':report['intake']['set1Sha256'],'decodedRawWordsChecked':1392480},'totals':{'storedPayloadBytes':sum(e['storedBytes'] for e in entries),'expandedPayloadBytes':sum(e['expandedBytes'] for e in entries),'originalCopiedOrAliasedBytes':sum(e['originalBytes'] for e in entries)+sum(e['originalBytes'] for e in aliases)},'actualUtc':{'start':terminal['startedAtUtc'],'terminal':terminal['terminalAtUtc']},'checksNotRerunForArchive':True,'productionChanged':False,'sourceOriginalsModified':False}
+(OUT/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
+(OUT/'README.md').write_text('''# Rejected: numeric Foam pass fusion
+
+The complete Foam→bore sources→Air→snapshot path showed **no useful gain**: paired median saving **−0.0241885ms**, mean **−0.0478181ms**, only14/30 positive pairs. Foam alone paired median saving was −0.008584ms. Reject the candidate; production remains unchanged. No repeat, GPU/FPS run or adoption followed.
+
+| CPU path | Original median | Candidate median | Paired median saving | Paired mean saving |
+| --- | ---: | ---: | ---: | ---: |
+| Complete chain |4.7282495ms|4.7169795ms|−0.0241885ms|−0.0478181ms|
+| Foam entry, including guard |1.543458ms|1.557688ms|−0.008584ms|−0.0255153ms|
+
+Independent medians are not the paired saving, and stage quantiles must not be summed. Full-chain means were4.8503013→4.8981194ms; p955.7500→6.696792ms. The one trial used30 adjacent alternating AB/BA pairs after12 warmup pairs under a20s whole-operation bound, elapsed2093.622625ms. Actual local process UTC2026-10-04T01:07:02.634353Z→01:07:04.806243Z; exit0/PID32926/session63379. [Raw rows](cost/report.json), [stdout](cost/stdout.txt), [stderr](cost/stderr.txt), [process authority](cost/process-terminal.json) and [terminal freeze](cost/terminal.freeze.json) preserve the exact attempt.
+
+The reviewed [candidate patch](candidate/candidate.patch) added only an internal numeric Foam entry and changed the actual simulation call. Generic update remained verbatim; native/alias/standard-method checks were inside the measured call, with complete before-mutation fallback for callback inputs. Candidate private next buffers held final values; public Foam/Air/stencil identities and all output/source/index/dissipation bytes—including inactive tails—matched. Air remained after the unchanged aerateBores injections. [Source feasibility](preparation/source-feasibility.md), [candidate Foam source](candidate/FoamField.ts.txt), [independent oracle source](oracle/FoamField.ts.txt) and [interpretation](cost/interpretation.md) retain scope and arithmetic constraints.
+
+First verification retained34/36 passing tests with two invalid fixture shifts: the real solver rejects abs(shift)>=nx. [Original suite/log](checks/first/parity.test.ts.txt), [failure log](checks/first/focused-tests.log) and [failed strict log](checks/first/strict.log) remain exact. Strict initially lacked readonly oracle public/package paths; these were fixture-layout omissions, not runtime changes. Root approved only net±9 via valid real ±5 then±4 shifts and pinned readonly oracle assets/package links; all assertions remained. The corrected [36-test source](checks/corrected/parity.test.ts.txt), [36-pass log](checks/corrected/focused-tests.log), [strict log](checks/corrected/strict.log), [delta](checks/corrected/fixture.delta.patch) and [freeze](checks/corrected/terminal.freeze.json) preserve that correction. Archived .test.ts evidence has a .txt suffix and is not a live repository suite.
+
+The cost source had one prospective ES2022 compatibility fix, values.toSorted→[...values].sort. [Original source](cost/first-esnext-source.ts.txt), [corrected source](cost/cost.ts.txt), [strict/bundle authority](cost/compiled-ready.json), [strict log](cost/strict.log) and [bundle log](cost/bundle.log) retain bytes and chronology. Runtime patch remained unchanged. Compiled cost.mjs SHA2cbe4d0cb8c41d3ca0addc6814c6bfd7de7081ea2d84c358c34501f2180fa959 (1,036,015B) is deliberately not duplicated; the exact TMP path/fingerprint and source/compilation authority are in the manifest. Source restoration requires the exact supplied commit plus owner patch and dependencies; no claim that this archive contains a standalone executable bundle is made.
+
+The [existing full-state fixture](../../performance-2026-10-03/render-scale/baseline-held-source.json.gz) is preserved at gzipSHA95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584. [Intake source](cost/intake.ts.txt) pins its JSON and SET1raw hashes and independently checked1,392,480 decoded32bit words/counts/raw offsets through an owning plain Uint8Array. Valid unconsumed Infinity history sentinels were allowed. Actual state:160×725=116,000 cells, solverTime125.34999999999492, dt1/60, C64/seed8761/Hs3.8/T18/defaultdx2/fine1; generated render grid161×633 at2m/xMin−160 matched retention.
+
+This is a **controlled subsequent update from saved F32 poststate**, not historical pre-update truth or a moving gameplay replay. SweptCrash-gated whitewater was not exported: both paths used captured Boussinesq breakingStrength through unchanged BreakingModel.update(0), explicitly a common proxy (2,519 breaking cells/2,018 positive sources). Same-config constructors regenerated bed/centers/dz; importState zeroed unexported turbulence equally. No ProfileLibrary, front/crash/water replay, particles, worker latency, GPU solver time or live publication cadence was measured. These limits apply despite exact array parity. [Cost plan](cost/plan.md) and historical readiness preserve the predeclared guards/bounds.
+
+[Manifest](manifest.json) maps every copied/compressed entry to original path, raw/expanded/stored bytes and SHA, with verified byte-identical aliases and explicit exclusions. Only input authority and the two larger simulation-owner sources use deterministic mtime0/no-filename gzip; each restores original bytes exactly. No full source tree, public assets or large existing fixture was copied. [SHA256SUMS](SHA256SUMS) covers every archive payload and manifest; [archive source](archive.py.txt) preserves the copying/compression method. Hash/alias/link checks for archival are filesystem checks, not re-executed numerical tests or timings.
+''')
+# Verify only copied bytes/compression/aliases and local Markdown links; never execute source/tests/solver.
+for e in entries:
+ stored=(OUT/e['path']).read_bytes();expanded=gzip.decompress(stored) if e['encoding'].startswith('gzip') else stored
+ if SHA(stored)!=e['storedSha256'] or SHA(expanded)!=e['originalSha256'] or expanded!=Path(e['originalPath']).read_bytes():raise RuntimeError('Archive bytes changed')
+links=[]
+for match in re.finditer(r'\]\(([^)]+)\)',(OUT/'README.md').read_text()):
+ target=match.group(1)
+ if '://' not in target and not target.startswith('#'):
+  if target != 'SHA256SUMS' and not (OUT/target).resolve().exists():raise RuntimeError('Unresolved README link '+target)
+  links.append(target)
+lines=[]
+for p in sorted(OUT.rglob('*')):
+ if p.is_file() and p.name not in ['SHA256SUMS','root-review-ready.json']:
+  lines.append(SHA(p.read_bytes())+'  '+str(p.relative_to(OUT)))
+(OUT/'SHA256SUMS').write_text('\n'.join(lines)+'\n')
+if not (OUT/'SHA256SUMS').exists():raise RuntimeError('Checksum control not finalized')
+ready={'status':'ARCHIVE ONLY ready for root review; rejected/no new runtime work','manifestSha256':SHA((OUT/'manifest.json').read_bytes()),'sumsSha256':SHA((OUT/'SHA256SUMS').read_bytes()),'reportOriginalSha256':SHA((SOURCE/'cost-report.json').read_bytes()),'payloadEntries':len(entries),'byteExactAliases':len(aliases),'readmeLocalLinksResolved':len(links),'everyCopyExpandedAndOriginalByteParity':True,'compiledFingerprintOnlyNotDuplicated':True,'payloadStoredBytes':manifest['totals']['storedPayloadBytes'],'payloadExpandedBytes':manifest['totals']['expandedPayloadBytes'],'checksTestsBuildBenchGpuGitProductionNotPerformedForArchive':True}
+(OUT/'root-review-ready.json').write_text(json.dumps(ready,indent=2)+'\n')
+allFiles=[p for p in OUT.rglob('*') if p.is_file()]
+print(json.dumps({'out':str(OUT),'files':len(allFiles),'allStoredBytes':sum(p.stat().st_size for p in allFiles),'payload':manifest['totals'],'manifestSha256':ready['manifestSha256'],'sumsSha256':ready['sumsSha256'],'rootReviewReadySha256':SHA((OUT/'root-review-ready.json').read_bytes()),'localLinks':len(links),'aliases':len(aliases)},indent=2))

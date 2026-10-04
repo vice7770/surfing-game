@@ -1,0 +1,35 @@
+{
+  "strictTsExit": 0,
+  "focusedExit": 0,
+  "testsPassed": 111,
+  "testsTotal": 111,
+  "filesPassed": 4,
+  "scope": "Ten-test synthetic/actual-API parity suite plus existing contact, loft and PhysicalSurfWater suites; strict TS before F64 source addition",
+  "records": [
+    {
+      "path": "checks/strict-tsc-second.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks/focused-second.log",
+      "bytes": 205,
+      "sha256": "c72f7894d05c48decbd5e0220f80a316286aeb262b052cd0552fd16253ff0df9"
+    },
+    {
+      "path": "checks/second-check-results.json",
+      "bytes": 631,
+      "sha256": "5737f7d28583fa67989c13fb6b04a8c41a538d4c47fcd3316025d6b9ad1f68cb"
+    },
+    {
+      "path": "checks/second-run.test-source.ts",
+      "bytes": 22675,
+      "sha256": "d86f16727c6fdb43bd0ba07e4641da0ae5bd88161e1096e6a60c0ac29da90449"
+    },
+    {
+      "path": "checks/second-candidate.patch",
+      "bytes": 39185,
+      "sha256": "14b5e0a0c1d27a67dbef424c9788ae5685899e4e207cd16eddd6db5409256f45"
+    }
+  ]
+}

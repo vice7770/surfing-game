@@ -1,0 +1,347 @@
+/** TMP-only prospective parity suite. The oracle tree is byte-exact ef60d3cee and shares no new normal helper. */
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Buffer } from 'node:buffer';
+import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
+import { createWaterSample } from '../../physics/SurfWater';
+import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
+import { SurfZoneRunner } from '../SurfZoneRunner';
+import { SurfZoneWorkerCore, type SurfZoneReply } from '../../game/SurfZoneWorkerCore';
+import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+import { ProfileLibrary } from './ProfileLibrary';
+import { encodeCase } from './profileFormat';
+import { SweptContact, createContactHit, type ContactHit } from './sweptContact';
+import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+import { tubeCase } from './toyCase';
+import { PhysicalSurfWater as OriginalWater } from '../../../oracle/src/physics/PhysicalSurfWater';
+import { ShallowWaterSolver as OriginalSolver, uniformEdges as originalEdges } from '../../../oracle/src/wave/ShallowWaterSolver';
+import { ProfileLibrary as OriginalLibrary } from '../../../oracle/src/wave/barrel/ProfileLibrary';
+import { tubeCase as originalTube } from '../../../oracle/src/wave/barrel/toyCase';
+import { SweptContact as OriginalContact, createContactHit as originalHit } from '../../../oracle/src/wave/barrel/sweptContact';
+import { SweptLoft as OriginalLoft } from '../../../oracle/src/wave/barrel/sweptLoft';
+
+const STILL = 0.5;
+function records(n: number, tau: number, front = 1, xOffset = 0, bend = false): Float32Array {
+  const a = new Float32Array(n * FRONT_STRIDE);
+  for (let k = 0; k < n; k++) {
+    const o = k * FRONT_STRIDE;
+    a[o + FRONT_FIELD.x] = k + 0.5 + xOffset;
+    a[o + FRONT_FIELD.z] = -100 + (bend ? 0.3 * Math.sin(k * 0.24) : 0);
+    a[o + FRONT_FIELD.front] = front;
+    a[o + FRONT_FIELD.sigma] = k;
+    a[o + FRONT_FIELD.tau] = tau + (bend ? 0.01 * Math.cos(k * 0.15) : 0);
+    a[o + FRONT_FIELD.footHeight] = 2.1;
+    a[o + FRONT_FIELD.footDepth] = 7;
+    a[o + FRONT_FIELD.throwZ] = tau >= 0 ? a[o + FRONT_FIELD.z] : Number.NaN;
+  }
+  return a;
+}
+function bytes(a: ArrayBufferView): Buffer {
+  return Buffer.from(a.buffer, a.byteOffset, a.byteLength);
+}
+function exactFields(a: Record<string, unknown>, b: Record<string, unknown>): void {
+  expect(Object.keys(a).sort()).toEqual(Object.keys(b).sort());
+  for (const key of Object.keys(a)) expect(Object.is(a[key], b[key]), key).toBe(true);
+}
+function geometry(a: LoftResult, b: LoftResult): void {
+  expect(Object.keys(a).sort()).toEqual(Object.keys(b).sort());
+  for (const key of Object.keys(a) as (keyof LoftResult)[]) {
+    if (key === 'normals') continue; // Private backend has no unused-normal buffer contract.
+    const av = a[key], bv = b[key];
+    if (ArrayBuffer.isView(av) && ArrayBuffer.isView(bv)) expect(Buffer.compare(bytes(av), bytes(bv)), key).toBe(0);
+    else expect(Object.is(av, bv), key).toBe(true);
+  }
+}
+function initialHit(): ContactHit {
+  return { ...createContactHit(), surfaceY: 123, normalX: -0, normalY: -4, normalZ: 9, tangentX: -7, tangentZ: -8, life: 99 };
+}
+type PrivateLoft = {
+  result: LoftResult; normalReady: Uint8Array; normalFirst: Int32Array; normalLast: Int32Array;
+  prepareNormal(v: number): void;
+};
+type PrivateContact = {
+  at: Int32Array; weights: Float64Array; count: number; found: number; cellStrips: Int32Array;
+};
+
+/** Instrumentation observes private source state only in this scratch test; production facades expose none of it. */
+function pair(flat = false) {
+  const cSolver = new ShallowWaterSolver({ nx: 56, xMin: -12, dx: 1, zEdges: uniformEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
+  const oSolver = new OriginalSolver({ nx: 56, xMin: -12, dx: 1, zEdges: originalEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
+  for (let i = 0; i < cSolver.h.length; i++) {
+    const depth = 7 + STILL + (flat ? 0 : 0.03 * Math.sin(i * 0.17));
+    cSolver.h[i] = depth; oSolver.h[i] = depth;
+  }
+  let backend!: SweptContact, loft!: PrivateLoft;
+  const computed: number[] = [];
+  const originalUpdate = SweptContact.prototype.update;
+  vi.spyOn(SweptContact.prototype, 'update').mockImplementation(function (this: SweptContact, ...args) {
+    backend = this;
+    return originalUpdate.apply(this, args);
+  });
+  const originalBuild = SweptLoft.prototype.build;
+  vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) {
+    const result = originalBuild.apply(this, args);
+    loft = this as unknown as PrivateLoft;
+    return result;
+  });
+  const proto = SweptLoft.prototype as unknown as PrivateLoft;
+  const originalPrepare = proto.prepareNormal;
+  vi.spyOn(proto, 'prepareNormal').mockImplementation(function (this: PrivateLoft, vertex: number) {
+    if (this.normalReady[vertex] !== 1) computed.push(vertex);
+    return originalPrepare.call(this, vertex);
+  });
+  const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary([tubeCase(0.3)]), 0.05);
+  const eager = new OriginalContact(new OriginalLibrary([originalTube(0.3)]), 0.05);
+  const water = new PhysicalSurfWater(cSolver, { peakPeriod: 18, nodeSpacing: 2, swept: owner.queries });
+  const oldWater = new OriginalWater(oSolver, { peakPeriod: 18, nodeSpacing: 2, swept: eager });
+  const reads: [number, number, number][] = [], oldReads: [number, number, number][] = [];
+  const plain = water.plainSurfaceAt.bind(water), oldPlain = oldWater.plainSurfaceAt.bind(oldWater);
+  vi.spyOn(water, 'plainSurfaceAt').mockImplementation((x, z) => {
+    const value = plain(x, z); reads.push([x, z, value]); return value;
+  });
+  vi.spyOn(oldWater, 'plainSurfaceAt').mockImplementation((x, z) => {
+    const value = oldPlain(x, z); oldReads.push([x, z, value]); return value;
+  });
+  const a = initialHit(), b = { ...originalHit(), ...a };
+  return {
+    owner, eager, water, oldWater, cSolver, oSolver, computed,
+    backend: () => backend, loft: () => loft,
+    update(data: Float32Array) {
+      reads.length = 0; oldReads.length = 0; computed.length = 0;
+      owner.updateFromPlainSurface(data, data.length / FRONT_STRIDE, STILL, water);
+      oldWater.withSurfaceNodeCache(() => eager.update(data, data.length / FRONT_STRIDE, STILL, (x, z) => oldWater.plainSurfaceAt(x, z)));
+      expect(reads.length).toBe(oldReads.length);
+      for (let k = 0; k < reads.length; k++) for (let j = 0; j < 3; j++) expect(Object.is(reads[k][j], oldReads[k][j])).toBe(true);
+      geometry(backend.last!, eager.last!);
+      expect(computed).toEqual([]);
+    },
+    query(x: number, y: number, z: number): boolean {
+      const ok = owner.queries.query(x, y, z, a), oldOk = eager.query(x, y, z, b);
+      expect(ok).toBe(oldOk);
+      exactFields(a as unknown as Record<string, unknown>, b as unknown as Record<string, unknown>);
+      expect(backend.stats).toEqual(eager.stats);
+      if (ok) {
+        const state = backend as unknown as PrivateContact;
+        const ys = (backend as unknown as { ys: Float64Array }).ys;
+        let above = 0;
+        for (let k = 0; k < state.count; k++) if (ys[k] > y) above++;
+        const below = state.count - above;
+        const selected = a.inWater ? below : below - 1;
+        expect(Object.is(ys[selected], a.surfaceY)).toBe(true);
+        for (let m = 0; m < 3; m++) {
+          const v = state.at[3 * selected + m];
+          expect(loft.normalReady[v]).toBe(1);
+          expect(Buffer.compare(bytes(backend.last!.normals.subarray(3 * v, 3 * v + 3)), bytes(eager.last!.normals.subarray(3 * v, 3 * v + 3)))).toBe(0);
+        }
+      }
+      return ok;
+    },
+    floor(x: number, z: number): number {
+      const floor = owner.queries.floorAt(x, z);
+      expect(Object.is(floor, eager.floorAt(x, z))).toBe(true);
+      expect(backend.stats).toEqual(eager.stats);
+      return floor;
+    },
+    callbackCounts: () => [reads.length, oldReads.length],
+  };
+}
+
+afterEach(() => vi.restoreAllMocks());
+
+describe('private ordinary normal demand, against untouched ef60d3cee', () => {
+  it('matches real eager geometry, callback ordering and every layered answer across changed, shrinking and empty epochs', () => {
+    const p = pair();
+    let successes = 0;
+    for (const [n, tau] of [[21, -0.3], [21, 0.1], [31, 0.25], [13, 0.4], [0, 0.1], [21, 0.1]]) {
+      p.update(records(n, tau, 1, 0, true));
+      for (const x of [-20, 0.5, 5.2, 10.3, 15.7, 26.3, 50]) for (const z of [-106, -100, -96.2, -93, -90, -80]) {
+        p.floor(x, z);
+        for (const y of [-Infinity, -0, 0.5, 2.5, 4.3, 9, Infinity, NaN]) successes += p.query(x, y, z) ? 1 : 0;
+      }
+      expect(new Set(p.computed).size).toBe(p.computed.length);
+    }
+    expect(successes).toBeGreaterThan(100);
+  });
+
+  it('does zero normal preparation for a floor-only epoch and leaves reused hit fields exact on true then outside false queries', () => {
+    const p = pair(true); p.update(records(21, 0.1));
+    for (let x = -10; x < 31; x += 0.7) for (const z of [-110, -100, -96, -93, -90, -80]) p.floor(x, z);
+    expect(p.computed).toEqual([]);
+    expect(p.query(10.3, 2.5, -93)).toBe(true);
+    const before = p.computed.length;
+    expect(p.query(999, -Infinity, 999)).toBe(false);
+    expect(p.query(10.3, 3, -999)).toBe(false);
+    expect(p.computed.length).toBe(before);
+  });
+
+  it('reuses only selected vertices, including exact shared-edge/fold ties and both sides of surfaces', () => {
+    const p = pair(true); p.update(records(21, 0.1));
+    expect(p.query(10.3, 2.5, -93)).toBe(true);
+    const once = p.computed.length;
+    expect(once).toBe(3);
+    expect(p.query(10.3, 2.5, -93)).toBe(true);
+    expect(p.computed.length).toBe(once);
+    const r = p.eager.last!, s = Math.floor(r.sliceCount / 2);
+    for (const j of [LOFT.extensionSamples + 100, LOFT.extensionSamples + 64]) {
+      const v = s * LOFT_SAMPLES + j, next = v + LOFT_SAMPLES;
+      const mid = (k: number) => (r.positions[3 * v + k] + r.positions[3 * next + k]) / 2;
+      for (const offset of [-1, -1e-4, 0, 1e-4, 0.5]) p.query(mid(0), mid(1) + offset, mid(2));
+    }
+    expect(new Set(p.computed).size).toBe(p.computed.length);
+  });
+
+  it('preserves original final-run clamping at cut seals and retains first-front overlap answers', () => {
+    const p = pair();
+    const a = records(21, 0.1), b = records(21, 0.2, 2, 9.5);
+    const both = new Float32Array(a.length + b.length); both.set(a); both.set(b, a.length);
+    p.update(both);
+    expect(p.eager.last!.overlaps).toBeGreaterThan(0);
+    const r = p.eager.last!;
+    let checked = 0;
+    for (let t = 0; t < r.indexCount; t += 3) {
+      const vertices = [r.indices[t], r.indices[t + 1], r.indices[t + 2]];
+      const row = Math.floor(vertices[0] / LOFT_SAMPLES), j = vertices[0] % LOFT_SAMPLES;
+      const end = p.loft().normalFirst[row] === row || p.loft().normalLast[row] === row || p.loft().normalLast[row] === row + 1;
+      if (!end && j !== 1 && j !== LOFT_SAMPLES - 2 && t % 117 !== 0) continue;
+      const xyz = [0, 1, 2].map(c => vertices.reduce((sum, v) => sum + r.positions[3 * v + c], 0) / 3);
+      checked += p.query(xyz[0], Infinity, xyz[2]) ? 1 : 0;
+    }
+    expect(checked).toBeGreaterThan(20);
+    for (const x of [8.3, 15.3, 26.3]) for (const y of [-0.5, 2.5, 5, 9]) p.query(x, y, -93);
+  });
+
+  it('uses captured positions after the height scope closes and resets caches even on a same-time rebuild', () => {
+    const p = pair(); const data = records(21, 0.1); p.update(data);
+    const callbacks = p.callbackCounts();
+    p.cSolver.h.fill(0.2); p.oSolver.h.fill(0.2);
+    p.cSolver.bed.fill(-9); p.oSolver.bed.fill(-9);
+    p.cSolver.qx.fill(1.25); p.oSolver.qx.fill(1.25);
+    data.fill(0); // Input records were fully consumed by the prior eager build.
+    expect(p.query(10.3, 2.5, -93)).toBe(true);
+    expect(p.callbackCounts()).toEqual(callbacks);
+    expect(p.computed.length).toBe(3);
+    p.update(records(21, 0.1)); // Same clocks; genuinely different physical height inputs.
+    p.query(10.3, 2.5, -93);
+    expect(new Set(p.computed).size).toBe(p.computed.length);
+    p.update(new Float32Array(0));
+    expect(p.query(10.3, 2.5, -93)).toBe(false);
+    expect(p.computed).toEqual([]);
+  });
+
+  it('keeps full PhysicalSurfWater body samples exact, rather than checking ContactHit alone', () => {
+    const p = pair(); p.update(records(21, 0.1, 1, 0, true));
+    const a = createWaterSample(), b = createWaterSample();
+    for (const x of [5.2, 10.3, 15.7]) for (const y of [0, 2.5, 4.4, 9]) {
+      p.water.sampleAt(x, y, -93, a); p.oldWater.sampleAt(x, y, -93, b);
+      exactFields(a as unknown as Record<string, unknown>, b as unknown as Record<string, unknown>);
+      expect(p.backend().stats).toEqual(p.eager.stats);
+    }
+    expect(p.computed.length).toBeGreaterThan(0);
+  });
+
+  it('retains every public eager buffer and held-alias mutation behavior across growth, shrink and empty builds', () => {
+    const contact = new SweptContact(new ProfileLibrary([tubeCase(0.3)]), 0.05);
+    const eager = new OriginalContact(new OriginalLibrary([originalTube(0.3)]), 0.05);
+    const heightCalls: [number, number][] = [], oldCalls: [number, number][] = [];
+    const read = (x: number, z: number) => { heightCalls.push([x, z]); return STILL + 0.01 * Math.sin(x + z); };
+    const oldRead = (x: number, z: number) => { oldCalls.push([x, z]); return STILL + 0.01 * Math.sin(x + z); };
+    let held: LoftResult | undefined;
+    for (const n of [31, 13, 0, 21]) {
+      const data = records(n, 0.1, 1, 0, true);
+      contact.update(data, n, STILL, read); eager.update(data, n, STILL, oldRead);
+      expect(heightCalls).toEqual(oldCalls);
+      if (held) expect(contact.last).toBe(held);
+      held = contact.last!;
+      geometry(contact.last!, eager.last!);
+      expect(Buffer.compare(bytes(contact.last!.normals), bytes(eager.last!.normals))).toBe(0);
+    }
+    for (const r of [contact.last!, eager.last!]) {
+      for (let v = 0; v < r.vertexCount; v++) { r.positions[3 * v + 1] += 0.125; r.positions[3 * v + 2] += 0.037; }
+      r.sliceJoined.fill(0); r.sliceCount = 0;
+    }
+    const a = initialHit(), b = { ...originalHit(), ...a };
+    for (const y of [0.1, 2.5, 4.4, 9]) {
+      expect(contact.query(10.3, y, -93 + 0.037, a)).toBe(eager.query(10.3, y, -93 + 0.037, b));
+      exactFields(a as unknown as Record<string, unknown>, b as unknown as Record<string, unknown>);
+    }
+  });
+
+  it('stores original Float32 normal bits including numerical fallbacks without sharing an oracle helper', () => {
+    const deferred = SweptLoft.forContactQueries(new ProfileLibrary([tubeCase(0.3)]), 0.05);
+    const original = new OriginalLoft(new OriginalLibrary([originalTube(0.3)]), 0.05, { contact: true });
+    const data = records(5, 0.1);
+    const candidate = deferred.build(data, 5, STILL, () => STILL);
+    const expected = original.build(data, 5, STILL, () => STILL);
+    const proto = original as unknown as { normals(first: number, last: number): void };
+    for (const scale of [0, 1e-8, 1e-6, 1, NaN]) {
+      const internal = deferred as unknown as Record<string, unknown>;
+      expect(Object.keys(internal).sort()).toEqual(['build', 'prepareNormal']);
+      // Refresh the query-only epoch then alter only the numeric unit fixture, not real contact metadata.
+      deferred.build(data, 5, STILL, () => STILL);
+      for (let s = 0; s < candidate.sliceCount; s++) for (let j = 0; j < LOFT_SAMPLES; j++) {
+        const o = 3 * (s * LOFT_SAMPLES + j);
+        for (const p of [candidate.positions, expected.positions]) { p[o] = s * scale; p[o + 1] = -0; p[o + 2] = j * scale; }
+      }
+      // Derive final runs from unchanged real topology; isolated rows are never selected by contact.
+      const runs: [number, number][] = [];
+      for (let first = 0; first + 1 < expected.sliceCount;) {
+        if (expected.sliceJoined[first] !== 1) { first++; continue; }
+        let last = first + 1;
+        while (last + 1 < expected.sliceCount && expected.sliceJoined[last] === 1) last++;
+        runs.push([first, last]);
+        first = last + 1;
+      }
+      expect(runs.length).toBeGreaterThan(0);
+      for (const [first, last] of runs) {
+        proto.normals(first, last);
+        for (const row of [first, Math.floor((first + last) / 2), last]) for (const j of [0, 1, 64, LOFT_SAMPLES - 1]) {
+          const v = row * LOFT_SAMPLES + j; deferred.prepareNormal(v);
+          expect(Buffer.compare(bytes(candidate.normals.subarray(3 * v, 3 * v + 3)), bytes(expected.normals.subarray(3 * v, 3 * v + 3)))).toBe(0);
+        }
+      }
+    }
+  });
+
+  it('keeps the worker owner opaque and frozen while default/direct runners remain eager', async () => {
+    const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary([tubeCase(0.3)]), 0.05);
+    expect(Object.isFrozen(owner)).toBe(true); expect(Object.isFrozen(owner.queries)).toBe(true);
+    expect(Object.keys(owner).sort()).toEqual(['queries', 'updateFromPlainSurface']);
+    expect(Object.keys(owner.queries).sort()).toEqual(['floorAt', 'query']);
+    expect(owner.queries).not.toBeInstanceOf(SweptContact);
+    const config = { spot: 'padang' as const, seed: 1, significantHeight: 1.2, peakPeriod: 16, directionDegrees: 0, spreading: 150, tide: 0,
+      alongShore: 40, dx: 2, fineSpacing: 4, coarseSpacing: 8, componentCount: 4, spinUpPeriods: 0 };
+    const options = { contact: true, barrelCases: [encodeCase(tubeCase(0.3))] };
+    const direct = new SurfZoneRunner(config, options, 'warm');
+    expect(direct.contact).toBeInstanceOf(SweptContact);
+    (direct as unknown as { updateContact(): void }).updateContact();
+    expect(direct.contact!.last).toBeDefined();
+    const ordinary = vi.spyOn(SweptContact, 'forOrdinaryWorker');
+    const replies: SurfZoneReply[] = [];
+    const post = (reply: SurfZoneReply) => replies.push(reply);
+    const plainCore = new SurfZoneWorkerCore(post);
+    await plainCore.handle({ type: 'start', config: { ...config, compute: 'cpu' }, options });
+    const warmCore = new SurfZoneWorkerCore(post, async () => undefined); // Actual warm branch, no GPU object.
+    await warmCore.handle({ type: 'start', config, options });
+    expect(ordinary).toHaveBeenCalledTimes(2);
+    await plainCore.handle({ type: 'exportState', id: 7 });
+    expect(replies.filter(r => r.type === 'ready')).toHaveLength(2);
+    expect(replies.some(r => r.type === 'state')).toBe(true);
+    // The internal worker entry still declines private ownership unless the real ordinary eligibility holds.
+    for (const [otherConfig, otherOptions] of [
+      [config, { contact: true }], // No library.
+      [config, { barrelCases: options.barrelCases }], // No rider/board/contact request.
+      [{ ...config, spot: 'reef' as const, sweptBarrel: true }, options], // Other eligible swept spot remains eager.
+    ] as const) {
+      const other = SurfZoneRunner.forWorker(otherConfig, otherOptions, 'warm');
+      expect((other as unknown as { ordinaryContactOwner?: unknown }).ordinaryContactOwner).toBeUndefined();
+      if (other.contact) expect(other.contact).toBeInstanceOf(SweptContact);
+    }
+    expect(ordinary).toHaveBeenCalledTimes(2);
+    const forbidden = new Set(['contact', 'contactQueries', 'ordinaryContactOwner', 'last', 'normals', 'positions']);
+    function inspect(value: unknown): void {
+      if (!value || typeof value !== 'object' || ArrayBuffer.isView(value) || value instanceof ArrayBuffer) return;
+      expect(value).not.toBeInstanceOf(SweptContact);
+      for (const [key, child] of Object.entries(value)) { expect(forbidden.has(key), key).toBe(false); inspect(child); }
+    }
+    replies.forEach(inspect);
+  });
+});

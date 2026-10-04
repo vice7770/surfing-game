@@ -1,0 +1,38 @@
+{
+  "baseline": "ef60d3cee",
+  "strictTsExit": 0,
+  "focusedExit": 1,
+  "tests": {
+    "passed": 109,
+    "failed": 1,
+    "total": 110
+  },
+  "failure": "Escape assertion rejected the existing numeric ready.snapshot.status.pipelineMs.contact field; no runtime failure established.",
+  "records": [
+    {
+      "path": "checks/strict-tsc-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks/focused-first.log",
+      "bytes": 1694,
+      "sha256": "cd714f9f8be69acd522fba5b7e1ee6d5f67234934bd02e1f3b92be6a85e07a63"
+    },
+    {
+      "path": "checks/first-check-results.json",
+      "bytes": 629,
+      "sha256": "4e7d89009ec8ea07ff8ee1b92db8c8cbd65ea2f7af19809e06f52276acb154ed"
+    },
+    {
+      "path": "checks/first-run.test-source.ts",
+      "bytes": 19693,
+      "sha256": "87a0653d2c3ce0a339f244b6926166ddbd7bb6e446fc6a4fbe88c13bcfb6b987"
+    },
+    {
+      "path": "checks/first-candidate.patch",
+      "bytes": 36154,
+      "sha256": "e4f854ba824222f9d2f26032ccb954347898026f51c3c996628b7bf3507058b8"
+    }
+  ]
+}

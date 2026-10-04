@@ -1,0 +1,5 @@
+oracle/src/game/SurfConditions.test.ts(3,25): error TS2307: Cannot find module '../../public/assets/skies/skies.json' or its corresponding type declarations.
+oracle/src/game/SurferChoice.test.ts(2,28): error TS2307: Cannot find module '../../public/assets/surfers/surfers.json' or its corresponding type declarations.
+oracle/src/game/SurferChoice.test.ts(15,101): error TS7031: Binding element 'id' implicitly has an 'any' type.
+oracle/src/game/SurferChoice.test.ts(15,105): error TS7031: Binding element 'sex' implicitly has an 'any' type.
+oracle/src/ui/App.ts(23,25): error TS2307: Cannot find module '../../package.json' or its corresponding type declarations.

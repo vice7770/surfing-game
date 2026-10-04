@@ -1,0 +1,9 @@
+
+ RUN  v5.0.1 /private/tmp/foam-pass-fusion-20261004
+
+
+ Test Files  1 passed (1)
+      Tests  36 passed (36)
+   Start at  01:57:14
+   Duration  671ms (transform 70%, import 16%, tests 14%)
+

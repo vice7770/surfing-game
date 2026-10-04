@@ -1,0 +1,65 @@
+{
+  "status": "FIRST AUTHORIZED VERIFICATION TERMINAL; retained unchanged, no repair/retry",
+  "focused": {
+    "exitCode": 1,
+    "tests": 36,
+    "passed": 34,
+    "failed": 2,
+    "reason": "Invalid fixture shiftAlongShore(\u00b19) in nx8; solver rejects abs(shift)>=nx before full-window Foam checks"
+  },
+  "strict": {
+    "session": 99745,
+    "exitCode": 2,
+    "reason": "Isolated oracle lacks readonly public/package path aliases; 5 related module/derived type errors"
+  },
+  "files": [
+    {
+      "path": "ready.json",
+      "bytes": 3571,
+      "sha256": "11c82f24bd766731091ccaa2a3c8ce45c90f548a1acd2bcd3d51fb3560a330c7"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 10916,
+      "sha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60"
+    },
+    {
+      "path": "tests/parity.test.ts",
+      "bytes": 20593,
+      "sha256": "584929c1c7a8aaca61d1cd6278bbcbc7087f8bb0c728f007c9e987568d3bac11"
+    },
+    {
+      "path": "tsconfig.qa.json",
+      "bytes": 80,
+      "sha256": "1098a6ad75265a35df8c7146c8fe04446cf85ddf5cde57833c96c1f8dc3541fd"
+    },
+    {
+      "path": "focused-tests.log",
+      "bytes": 1460,
+      "sha256": "e153de02ff39167564d6713bb9fe375e6756f9adf852b8c76670bd0320c837c2"
+    },
+    {
+      "path": "strict.log",
+      "bytes": 664,
+      "sha256": "099a28be9422c42f1b5222cc7ff2b8af322cb295df2c10ff51bf4c7fc4ec8225"
+    },
+    {
+      "path": "src/wave/FoamField.ts",
+      "bytes": 16665,
+      "sha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c"
+    },
+    {
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "bytes": 65368,
+      "sha256": "850c425c81824adf227265ecc19d08c1d305527139a25145392651c61abe0dd3"
+    },
+    {
+      "path": "input-authority.json",
+      "bytes": 120841,
+      "sha256": "31ac6f6aa3901bd49e6030dbade1ff9d232818b00b3a3cf2fedd1ea2c859b46b"
+    }
+  ],
+  "runtimeChanged": false,
+  "benchmarkExecuted": false,
+  "nextCorrectionRootApproved": "Test fixture real \u00b15 then\u00b14 per intended net\u00b19; separate version/logs. Oracle path shims still awaiting explicit source-layout review."
+}

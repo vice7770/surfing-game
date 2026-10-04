@@ -1,0 +1,23 @@
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 249 modules transformed.
+rendering chunks...
+computing gzip size...
+../contact-normal-demand-build-20261004/dist/build.json                           0.03 kB │ gzip:   0.05 kB
+../contact-normal-demand-build-20261004/dist/index.html                           1.62 kB │ gzip:   0.62 kB
+../contact-normal-demand-build-20261004/dist/assets/surfZoneWorker-CZHy5YLl.js  439.38 kB
+../contact-normal-demand-build-20261004/dist/assets/index-DA8NEfOT.css           33.21 kB │ gzip:   7.32 kB
+../contact-normal-demand-build-20261004/dist/assets/devStepping-nYC50lpQ.js       0.32 kB │ gzip:   0.25 kB
+../contact-normal-demand-build-20261004/dist/assets/particleBench-C0n78i45.js    10.70 kB │ gzip:   4.44 kB
+../contact-normal-demand-build-20261004/dist/assets/waterSheet-DBTKh5am.js       11.68 kB │ gzip:   5.35 kB
+../contact-normal-demand-build-20261004/dist/assets/jevRecorder-BBQdhlZi.js      15.91 kB │ gzip:   6.65 kB
+../contact-normal-demand-build-20261004/dist/assets/rideRecorder-D820X0Vc.js     41.10 kB │ gzip:  13.40 kB
+../contact-normal-demand-build-20261004/dist/assets/index-C8HqjkHD.js           582.44 kB │ gzip: 160.71 kB
+../contact-normal-demand-build-20261004/dist/assets/WorkerSurfZone-QCJ_gTvS.js  850.68 kB │ gzip: 263.51 kB
+
+✓ built in 312ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.

@@ -1,0 +1,101 @@
+{
+  "status": "SOURCE ONLY prepared, UNEXECUTED; no syntax/type/test/build/benchmark/browser/GPU/replay",
+  "sourceRef": "e58e398555d8b4d4f7ada4b664d4a923d383f06a",
+  "extraction": "authorized read-only git archive; no Git mutations",
+  "inputAuthoritySha256": "31ac6f6aa3901bd49e6030dbade1ff9d232818b00b3a3cf2fedd1ea2c859b46b",
+  "oracleFiles": 543,
+  "oracleBytes": 4796545,
+  "oracleByteIntegritySourceReadPassed": true,
+  "genericUpdateVerbatimSourceReadPassed": true,
+  "genericUpdateBodySha256": "38fb9ac0e50c33a1bbc648788ef9beeb61e0936295a707a898ddaddf522dc840",
+  "candidateChanges": [
+    {
+      "path": "src/wave/FoamField.ts",
+      "originalSha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "candidateSha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c",
+      "originalBytes": 8686,
+      "candidateBytes": 16665
+    },
+    {
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "originalSha256": "dd70cd939132f1ef313a607b3fcac951639f9332d2cece9526a996225bcfdf31",
+      "candidateSha256": "850c425c81824adf227265ecc19d08c1d305527139a25145392651c61abe0dd3",
+      "originalBytes": 65364,
+      "candidateBytes": 65368
+    }
+  ],
+  "files": [
+    {
+      "path": "input-source.tar",
+      "bytes": 5283840,
+      "sha256": "be91a41110a1ee539278da726e2507951c8d758ba685e64e99e5dba9f387968d"
+    },
+    {
+      "path": "input-authority.json",
+      "bytes": 120841,
+      "sha256": "31ac6f6aa3901bd49e6030dbade1ff9d232818b00b3a3cf2fedd1ea2c859b46b"
+    },
+    {
+      "path": "prepare.py",
+      "bytes": 10185,
+      "sha256": "92c63ebfdcdecbc73f26595c244a726b9c9010b55f995b0b3dba0ac4ecc3f603"
+    },
+    {
+      "path": "src/wave/FoamField.ts",
+      "bytes": 16665,
+      "sha256": "f826910a7765fa553f778f88689c2a6a36939e8d426bdd78ce9970c38ac2202c"
+    },
+    {
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "bytes": 65368,
+      "sha256": "850c425c81824adf227265ecc19d08c1d305527139a25145392651c61abe0dd3"
+    },
+    {
+      "path": "oracle/src/wave/FoamField.ts",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d"
+    },
+    {
+      "path": "oracle/src/wave/SurfZoneSimulation.ts",
+      "bytes": 65364,
+      "sha256": "dd70cd939132f1ef313a607b3fcac951639f9332d2cece9526a996225bcfdf31"
+    },
+    {
+      "path": "src/wave/AerationField.ts",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+    },
+    {
+      "path": "src/wave/AdvectionStencil.ts",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54"
+    },
+    {
+      "path": "tests/parity.test.ts",
+      "bytes": 20593,
+      "sha256": "584929c1c7a8aaca61d1cd6278bbcbc7087f8bb0c728f007c9e987568d3bac11"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 10916,
+      "sha256": "deece86f45165def48c490db408b0084422bda517508783639beb284cf9daf60"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5632,
+      "sha256": "73af0adc891cacf06be6a5bfa3e38f1e64538fb1939f9adf24bec045e3d00683"
+    },
+    {
+      "path": "tsconfig.qa.json",
+      "bytes": 80,
+      "sha256": "1098a6ad75265a35df8c7146c8fe04446cf85ddf5cde57833c96c1f8dc3541fd"
+    }
+  ],
+  "productionChanged": false,
+  "fiveOwnerQaUntouched": true,
+  "nextGate": "Root review before focused parity and strict checks; cost/hardware not authorized",
+  "commandsNotExecuted": [
+    "node_modules/.bin/vitest run tests/parity.test.ts --maxWorkers=1",
+    "node_modules/.bin/tsc -p tsconfig.qa.json"
+  ]
+}
