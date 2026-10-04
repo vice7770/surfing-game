@@ -130,25 +130,48 @@ varying vec3 vSweptWallNormal;`;
 export const WALL_POINT = LANDMARK.throat + 8;
 
 /**
+ * Rich's two-interface approximation: enter on the fragment normal, leave on the slice's mean outer-lip normal.
+ * Both normals point toward the incident medium for GLSL refract; orient the far normal into the sheet, toward the
+ * entry side. No ray is marched to an exit point, so the mean normal cannot resolve local thickness or curvature.
+ * A ray heading away from that interface, or totally internally reflected there, carries no environment radiance.
+ */
+export const RICH_SHEET_TRANSMISSION = /* glsl */ `
+    vec3 sweptOuterN = normalize( vec3( vSweptRay.z * vSweptRay.x, vSweptRay.w, vSweptRay.z * vSweptRay.y ) );
+    vec3 sweptFarInwardN = dot( waterN, sweptOuterN ) >= 0.0 ? sweptOuterN : -sweptOuterN;
+    vec3 sweptInside = refract( -waterV, waterN, ${(1 / WATER_IOR).toFixed(6)} );
+    vec3 sweptOutgoing = refract( sweptInside, sweptFarInwardN, ${WATER_IOR.toFixed(6)} );
+    sweptSkyTransmission = dot( sweptInside, sweptFarInwardN ) < 0.0 && length( sweptOutgoing ) > 0.0 ? 1.0 : 0.0;
+    // Never sample the environment with refract's zero vector on total internal reflection.
+    sweptSkyRay = sweptSkyTransmission > 0.0 ? sweptOutgoing : -waterV;`;
+
+/**
  * The lip as a thin sheet lit from behind, in both looks (docs/research/water-physics/tube-colour-fix.md, step 2; the
  * advisor's rulings, 2026-10-01), not a column of water over the reef: the view ray crosses the sheet's thickness,
  * lengthened by its refracted angle (at least 0.2), t. The sheet's own backscatter builds up with that path (two-flux:
  * R∞ (1 − e^{−2ct})) and is lit from the front as the body is, in the albedo; the light behind it comes through
  * attenuated by Beer–Lambert on the water's own absorption and scattering, e^{−ct}, as emitted radiance, with no body
- * gain. Behind it: E_back = F · E_sky(−n) + (1 − F) · E_wall, F the far side's view of the sky through the tube's
- * opening (`sheetAcross`), E_sky the sky's irradiance over the hemisphere behind the sheet (the ambient, and the
- * environment at −n) [provisional: the build's choice], and E_wall the back wall as drawn: its column body (the body's
+ * gain. Behind it: E_back = F · π L_sky(exit ray) + (1 − F) · E_wall, F the far side's view of the sky through the tube's
+ * opening (`sheetAcross`), L_sky the environment's directional radiance, filtered by the material's roughness. Rich refracts through the
+ * fragment's normal and the slice's mean outer-lip normal; it suppresses that radiance if the ray cannot exit. This
+ * approximation traces the exit point or its offset. Classic retains the diffuse environment background. Ambient
+ * irradiance retains the painted-sky fallback. E_wall is
+ * the back wall as drawn: its column body (the body's
  * gain on the reflectance at its depth over the bed) under the sky and sun on its own normal (`WALL_POINT`; the
  * advisor, 2026-10-01) [provisional]. And the sun's crest light where it is behind, over its own path through the
  * sheet, t / |n·L| (at least 0.2). The height field's march is never run on the curl.
  */
-export const SWEPT_SHEET_BODY = /* glsl */ `
+function sweptSheetBody(transmission = ''): string {
+  const ray = transmission ? `\n    vec3 sweptSkyRay = -waterV;\n    float sweptSkyTransmission = 1.0;${transmission}` : '';
+  const sky = transmission
+    ? 'sweptSkyTransmission * PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity'
+    : 'getIBLIrradiance( -normal )';
+  return /* glsl */ `
     float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );
     vec3 sweptReach = exp( -waterAttenuation * sweptPath );
-    waterBody = mix( waterBody, waterDeepReflectance * ( 1.0 - sweptReach * sweptReach ), vSweptSheetWeight );
+    waterBody = mix( waterBody, waterDeepReflectance * ( 1.0 - sweptReach * sweptReach ), vSweptSheetWeight );${ray}
     vec3 sweptSky = getAmbientLightIrradiance( ambientLightColor );
     #if defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
-      sweptSky += getIBLIrradiance( -normal );
+      sweptSky += ${sky};
     #endif
     vec3 sweptWallN = normalize( vSweptWallNormal );
     float sweptWallSun = max( 0.0, dot( sweptWallN, waterSunDirection ) );
@@ -162,6 +185,9 @@ export const SWEPT_SHEET_BODY = /* glsl */ `
     float sweptSunBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * (
       sweptReach * sweptBack * RECIPROCAL_PI + ${CREST_SCATTER.toFixed(6)} * sweptSunBehind * waterSunRadiance * exp( -waterAttenuation * sweptSunPath ) );`;
+}
+export const SWEPT_SHEET_BODY = sweptSheetBody();
+export const RICH_SHEET_BODY = sweptSheetBody(RICH_SHEET_TRANSMISSION);
 /**
  * The lip glow's path lengthening for multiple scattering (the spec's item 16: exp(−σ·k·d), k ≈ 5–20; the advisor's
  * start, 8, 2026-10-01): a thin, aerated lip scatters far more than clear water [provisional: to tune by eye against
@@ -317,7 +343,7 @@ export class SweptBarrelMesh {
         .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>\n${SWEPT_BARREL_DISCARD}`)
         .replace('#include <normal_fragment_begin>', rich ? richFarNormal : waterChopNormal)
         .replace('#include <color_fragment>', '')
-        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, SWEPT_SHEET_BODY + RICH_LIP_GLOW) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
+        .replace('#include <emissivemap_fragment>', rich ? waterBodyFragment(false, true, RICH_FAR_FOAM, RICH_SHEET_BODY + RICH_LIP_GLOW) : waterBodyFragment(false, true, CLASSIC_FOAM, SWEPT_SHEET_BODY))
         .replace('#include <lights_fragment_maps>', rich ? RICH_REFLECTION + RICH_THROAT : '#include <lights_fragment_maps>');
       const view = this.currentView;
       if (!view) return;

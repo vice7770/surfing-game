@@ -6,8 +6,8 @@ import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from '../../wave/barre
 import { tubeCase } from '../../wave/barrel/toyCase';
 import { WaterSurface, type SurfaceSource } from '../WaterSurface';
 import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
-import { WATER_ABSORPTION } from '../waterOptics';
-import { RICH_LIP_GLOW, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
+import { WATER_ABSORPTION, WATER_IOR } from '../waterOptics';
+import { RICH_LIP_GLOW, RICH_SHEET_BODY, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
 
 const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
 const source: SurfaceSource = { grid, time: 0, bedRevision: 0, write: () => {}, writeBed: () => {} };
@@ -82,7 +82,8 @@ describe('the swept barrel’s mesh', () => {
       expect(vertex).toContain('vSweptSheet = sweptSheet;');
       expect(vertex).toContain('vSweptSheetWeight = sweptSheetWeight;');
       expect(fragment).toContain('varying float vSweptSheetWeight;');
-      expect(fragment).toContain(SWEPT_SHEET_BODY);
+      const sheetBody = look === 'rich' ? RICH_SHEET_BODY : SWEPT_SHEET_BODY;
+      expect(fragment).toContain(sheetBody);
       // Two-flux over the view's path through the sheet, and the light behind it through the same path.
       expect(fragment).toContain('waterBody = mix( waterBody, waterDeepReflectance * ( 1.0 - sweptReach * sweptReach ), vSweptSheetWeight );');
       expect(fragment).toContain('float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );');
@@ -92,16 +93,38 @@ describe('the swept barrel’s mesh', () => {
       // Behind the sheet, the sky as far as its far side sees it through the opening, else the cavity's wall; the sun
       // over its own path through the sheet.
       expect(vertex).toContain('vSweptSheetBack = sweptSheetBack;');
+      expect(fragment).toContain('vec3 sweptSky = getAmbientLightIrradiance( ambientLightColor );');
+      if (look === 'rich') {
+        // Directional radiance replaces diffuse transmission; PI cancels RECIPROCAL_PI once.
+        expect(fragment).toContain('sweptSkyTransmission * PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity');
+        expect(fragment).not.toContain('getIBLIrradiance( -normal )');
+        // Rich reuses the existing mean lip normal, transforms it into world axes and refracts air→water→air.
+        expect(fragment).toContain(RICH_SHEET_TRANSMISSION);
+        expect(fragment).toContain('vec3 sweptOuterN = normalize( vec3( vSweptRay.z * vSweptRay.x, vSweptRay.w, vSweptRay.z * vSweptRay.y ) );');
+        expect(fragment).toContain('vec3 sweptFarInwardN = dot( waterN, sweptOuterN ) >= 0.0 ? sweptOuterN : -sweptOuterN;');
+        expect(fragment).toContain(`refract( -waterV, waterN, ${(1 / WATER_IOR).toFixed(6)} )`);
+        expect(fragment).toContain(`refract( sweptInside, sweptFarInwardN, ${WATER_IOR.toFixed(6)} )`);
+        expect(fragment).toContain('dot( sweptInside, sweptFarInwardN ) < 0.0 && length( sweptOutgoing ) > 0.0 ? 1.0 : 0.0');
+        expect(fragment).toContain('sweptSkyRay = sweptSkyTransmission > 0.0 ? sweptOutgoing : -waterV;');
+        expect(fragment.indexOf('sweptSkyRay = sweptSkyTransmission')).toBeLessThan(fragment.indexOf('textureCubeUV( envMap, envMapRotation * sweptSkyRay'));
+      } else {
+        // Classic keeps its existing diffuse background and needs no Rich varying.
+        expect(fragment).not.toContain(RICH_SHEET_TRANSMISSION);
+        expect(fragment).not.toContain('sweptFarInwardN');
+        expect(fragment).toContain('getIBLIrradiance( -normal )');
+        expect(fragment).not.toContain('vec3 sweptSkyRay');
+      }
       // Behind the far side that sees no opening, the back wall as drawn: its column body at its depth, under its own light.
       expect(vertex).toContain('vSweptWallDepth = max( 0.0, sweptWall.y - waterBedAt( sweptWall.xz ) );');
+      expect(fragment).toContain('sweptWallLight += getIBLIrradiance( ( viewMatrix * vec4( sweptWallN, 0.0 ) ).xyz );');
       expect(fragment).toContain('vec3 sweptWall = waterBodyGain * waterBodyReflectance( vSweptWallDepth, max( 0.05, dot( sweptWallN, waterV ) ), sweptWallSun ) * sweptWallLight;');
       expect(fragment).toContain('vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;');
       expect(fragment).toContain('float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );');
       // The height field's crest-light march never runs on the curl.
       expect(fragment).not.toContain('waterCrestThickness( vWaterWorld');
       // The sheet's own lines come after the column's body, inside its lit branch, before the foam.
-      expect(fragment.indexOf(SWEPT_SHEET_BODY)).toBeGreaterThan(fragment.indexOf('waterBody = waterBodyReflectanceLit('));
-      expect(fragment.indexOf(SWEPT_SHEET_BODY)).toBeLessThan(fragment.indexOf('float waterCover'));
+      expect(fragment.indexOf(sheetBody)).toBeGreaterThan(fragment.indexOf('waterBody = waterBodyReflectanceLit('));
+      expect(fragment.indexOf(sheetBody)).toBeLessThan(fragment.indexOf('float waterCover'));
     }
   });
 
@@ -157,7 +180,7 @@ describe('the swept barrel’s mesh', () => {
     expect(fragment).toContain(RICH_LIP_GLOW);
     expect(RICH_LIP_GLOW).toContain('max( 0.0, -dot( waterN, waterSunDirection ) ) * waterSunRadiance');
     expect(RICH_LIP_GLOW).toContain(`exp( -vec3( ${WATER_ABSORPTION.map((c) => c.toFixed(6)).join(', ')} ) * 8.0 * vSweptSheet )`);
-    expect(fragment.indexOf(RICH_LIP_GLOW)).toBeGreaterThan(fragment.indexOf(SWEPT_SHEET_BODY));
+    expect(fragment.indexOf(RICH_LIP_GLOW)).toBeGreaterThan(fragment.indexOf(RICH_SHEET_BODY));
     expect(fragment.indexOf(RICH_LIP_GLOW)).toBeLessThan(fragment.indexOf('float waterCover'));
     // The throat: once the sky's light and reflections are gathered (and the reflection scaled), before they light it;
     // the sun through the lip where its direction doesn't leave the tube, red first, and no glint.
