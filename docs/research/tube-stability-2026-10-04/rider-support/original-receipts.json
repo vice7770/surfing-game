@@ -1,0 +1,205 @@
+[
+  {
+    "archive": "native/report.json.gz",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/native-first/report.json",
+    "bytes": 4238080,
+    "sha256": "248830e70a15e42745d87d21e22f1e6dfccb31171b3f8821240e93edf2529e65",
+    "gzip": true
+  },
+  {
+    "archive": "native/steps.ndjson.gz",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/native-first/steps.ndjson",
+    "bytes": 4175806,
+    "sha256": "adf3318238eb5838a528d116e6d3558b7ef2ed2709d9a6c47b53548a413353a1",
+    "gzip": true
+  },
+  {
+    "archive": "native/launcher.json.gz",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/native-first/launcher.json",
+    "bytes": 10830,
+    "sha256": "df4270e9e9c0b6d48afd1d9cee5c4085900f54d4890ce22bfac2921e7c768974",
+    "gzip": true
+  },
+  {
+    "archive": "native/owner.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/native-first-owner.json",
+    "bytes": 5260,
+    "sha256": "1b2b9f47fd360a869d61ad4bb37389ffc6b807ae04bd7df21b0a288923617e31",
+    "gzip": false
+  },
+  {
+    "archive": "analysis/analyze.py.gz",
+    "original": "/private/tmp/tube-rider-support-analysis-20261004/analyze.py",
+    "bytes": 12544,
+    "sha256": "47485f192fbdca9b6fa7e7280959a04674c8fa427a1d8f12aebd8dd5d091a4a7",
+    "gzip": true
+  },
+  {
+    "archive": "analysis/analysis.json.gz",
+    "original": "/private/tmp/tube-rider-support-analysis-20261004/analysis.json",
+    "bytes": 1452545,
+    "sha256": "e2c67f93b098f727380f4d295334ed3816cd9fc01539fab8c0b95106dfed8025",
+    "gzip": true
+  },
+  {
+    "archive": "analysis/summary.json.gz",
+    "original": "/private/tmp/tube-rider-support-analysis-20261004/summary.json",
+    "bytes": 22689,
+    "sha256": "d0c3b1cd449616ee0d6c50442b09ffc826d0bc66cd680c0e07756c2cacb838be",
+    "gzip": true
+  },
+  {
+    "archive": "analysis/causal-conclusion.json",
+    "original": "/private/tmp/tube-rider-support-analysis-20261004/causal-conclusion.json",
+    "bytes": 28146,
+    "sha256": "f22f6a5daed28b4177cd7a50debc0f49aef1fa926b44dd466dce230ab92cf424",
+    "gzip": false
+  },
+  {
+    "archive": "analysis/completed-analysis-receipt.json",
+    "original": "/private/tmp/tube-rider-support-analysis-20261004/completed-analysis-receipt.json",
+    "bytes": 3757,
+    "sha256": "64aca3c419e64fdb6bfd2ba25b313a8e60068672012a7d256be7b0261401b078",
+    "gzip": false
+  },
+  {
+    "archive": "line-fallback/comparison.json",
+    "original": "/private/tmp/tube-line-fallback-analysis-20261004/comparison.json",
+    "bytes": 99487,
+    "sha256": "e31b0f4ecacf6b9ab3f495f389b73f9ad2f1a8e672a17e105f962dd6dada8052",
+    "gzip": false
+  },
+  {
+    "archive": "line-fallback/completed-analysis-receipt.json",
+    "original": "/private/tmp/tube-line-fallback-analysis-20261004/completed-analysis-receipt.json",
+    "bytes": 5371,
+    "sha256": "96c0440b60d846da6a61bd34ced5ea43dfe2e1706025ea7933f8c090287b6f9c",
+    "gzip": false
+  },
+  {
+    "archive": "source/support-diagnostics.patch",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/support-diagnostics.patch",
+    "bytes": 23232,
+    "sha256": "500ade637ef4b7b976747afbc59d1ad86230419ece0ffe35b2fbc17f2cc366af",
+    "gzip": false
+  },
+  {
+    "archive": "source/support-patch-receipt.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/support-patch-receipt.json",
+    "bytes": 2346,
+    "sha256": "ca7addd79e14d782933eefec11d2402ee34d59ccd303fc73dac07a12a2668e21",
+    "gzip": false
+  },
+  {
+    "archive": "source/source-freeze-receipt.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/source-freeze-receipt.json",
+    "bytes": 4372,
+    "sha256": "cdd24d82ceba209d03e3e6cd1a060ecdcc99a12568220615e8155f47cb22fab8",
+    "gzip": false
+  },
+  {
+    "archive": "source/source-checks.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/source-checks.json",
+    "bytes": 2446,
+    "sha256": "3843689daa8d49b226083f6c1a360a4e8e06042474e41dc89e31d86bf80ea1c5",
+    "gzip": false
+  },
+  {
+    "archive": "source/support-tests.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/support-tests.json",
+    "bytes": 3744,
+    "sha256": "00e0c63cd4c0d497f5e1d52b0fdf0bae710e18a45261cf7032714774a5b7786f",
+    "gzip": false
+  },
+  {
+    "archive": "source/typecheck-result.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/typecheck-result.json",
+    "bytes": 260,
+    "sha256": "5f17638b9d7ade89e05872700f7c9ba70d658081fb25ab5740abf90700f757c8",
+    "gzip": false
+  },
+  {
+    "archive": "source/preparation.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/preparation.json",
+    "bytes": 20096,
+    "sha256": "5faeb9c58ae8108336424d29d9d7aa5dc28cef17a057a5f0f1216eb92835a4aa",
+    "gzip": false
+  },
+  {
+    "archive": "source/policy.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/policy.json",
+    "bytes": 4800,
+    "sha256": "12736321eabc28dea176f95491cf40dfcf43ec00f3d146b49a2d23ddfd2b6a36",
+    "gzip": false
+  },
+  {
+    "archive": "source/root-build-result.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/root-build-result.json",
+    "bytes": 2085,
+    "sha256": "4084c705b949cf317fb6c6918c699fa21c609d9cd981224d8d49f6bc49200187",
+    "gzip": false
+  },
+  {
+    "archive": "source/root-build-seal.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/root-build-seal.json",
+    "bytes": 793,
+    "sha256": "e9dcdcfce62468ef4236d87ded3f1625e8340728a7f83b7411ff6e443c2ed328",
+    "gzip": false
+  },
+  {
+    "archive": "source/dry-plan.json",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/dry-plan.json",
+    "bytes": 1116,
+    "sha256": "861de70927096ccd6b83d39ee56c57782aa00fc3ff12cab29a7df3f58e1da26f",
+    "gzip": false
+  },
+  {
+    "archive": "source/README.txt",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/README.txt",
+    "bytes": 5204,
+    "sha256": "3cd3b2d8b8ef89e2134fb16ae5339dc17b6c6c60ebc0d1705793847691d37ce9",
+    "gzip": false
+  },
+  {
+    "archive": "source/candidate-source-frozen.json.gz",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/candidate-source-frozen.json",
+    "bytes": 78128,
+    "sha256": "f16f257c3d3bf213fecf79de51c42b2fa0c6787b906fe7aa03d000a3fdf66f88",
+    "gzip": true
+  },
+  {
+    "archive": "source/run.py.gz",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/run.py",
+    "bytes": 33623,
+    "sha256": "cdd17d9d5474bed1b6d870fb5c29c4eb5f3e66d22411e3c06810a2b03a7519d3",
+    "gzip": true
+  },
+  {
+    "archive": "source/native.mjs.gz",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/native.mjs",
+    "bytes": 34135,
+    "sha256": "f0c2ec79ffe2d74e3f1769b5b8aabfe1d1280a47fa9d15d24f9a1658fb953ff8",
+    "gzip": true
+  },
+  {
+    "archive": "source/src/physics/AttachedRider.ts.gz",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/AttachedRider.ts",
+    "bytes": 141045,
+    "sha256": "53fc4f5d069334aacdc41f7eb1b26f2dda9b50eb39c2f223d23680d6c02b9920",
+    "gzip": true
+  },
+  {
+    "archive": "source/src/wave/SurfZoneRunner.ts.gz",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/wave/SurfZoneRunner.ts",
+    "bytes": 42620,
+    "sha256": "8bf1a90fe2cc805ed7e74b744d4f2c75ee73ee0e58d1c35291f508a2fe0eb5e7",
+    "gzip": true
+  },
+  {
+    "archive": "source/src/physics/AttachedRider.supportDiagnostics.test.ts.gz",
+    "original": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/AttachedRider.supportDiagnostics.test.ts",
+    "bytes": 9988,
+    "sha256": "59c75fbc54b8a2d6cc373630fbb935720c0d3c3d6f96c532fa546d3bd5eea4b7",
+    "gzip": true
+  }
+]

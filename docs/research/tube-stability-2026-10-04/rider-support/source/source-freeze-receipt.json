@@ -1,0 +1,106 @@
+{
+  "schema": "rider-support-source-preparation-freeze/v1",
+  "sourceFrozen": true,
+  "buildPending": true,
+  "launchReady": false,
+  "resourcesStarted": false,
+  "portProbePerformed": false,
+  "preparation": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/preparation.json",
+    "bytes": 19938,
+    "sha256": "9260d2c3baf3afcbee24a8ad95dc628e99f64b10689155ec0cb3b831e4088a8a"
+  },
+  "readme": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/README.txt",
+    "bytes": 5204,
+    "sha256": "3cd3b2d8b8ef89e2134fb16ae5339dc17b6c6c60ebc0d1705793847691d37ce9"
+  },
+  "sourcePatch": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/support-diagnostics.patch",
+    "bytes": 23232,
+    "sha256": "500ade637ef4b7b976747afbc59d1ad86230419ece0ffe35b2fbc17f2cc366af"
+  },
+  "patchReceipt": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/support-patch-receipt.json",
+    "bytes": 2346,
+    "sha256": "ca7addd79e14d782933eefec11d2402ee34d59ccd303fc73dac07a12a2668e21"
+  },
+  "diagnosticSources": {
+    "native.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/native.mjs",
+      "bytes": 34135,
+      "sha256": "f0c2ec79ffe2d74e3f1769b5b8aabfe1d1280a47fa9d15d24f9a1658fb953ff8"
+    },
+    "run.py": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/run.py",
+      "bytes": 33623,
+      "sha256": "cdd17d9d5474bed1b6d870fb5c29c4eb5f3e66d22411e3c06810a2b03a7519d3"
+    },
+    "native-owned.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    "body-witnesses.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/body-witnesses.mjs",
+      "bytes": 11626,
+      "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+    },
+    "tube-target.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/tube-target.mjs",
+      "bytes": 8503,
+      "sha256": "20cc5f415c38961886f678cf9a678cbe15d8d7e1401857f397c994ef219f8090"
+    },
+    "front-evidence.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/front-evidence.mjs",
+      "bytes": 4473,
+      "sha256": "859598b6e48ad78cba6beba60b5ab9582effb8b544c32508bc5ed11d280e2ff3"
+    },
+    "policy.json": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/policy.json",
+      "bytes": 4800,
+      "sha256": "12736321eabc28dea176f95491cf40dfcf43ec00f3d146b49a2d23ddfd2b6a36"
+    },
+    "helper-fixtures.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/helper-fixtures.mjs",
+      "bytes": 5801,
+      "sha256": "1dd21596a34dc33e69d75608ef943fa6621fa3c9eafdbde06f3c0941dced7821"
+    },
+    "installed-driver-fixtures.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/installed-driver-fixtures.mjs",
+      "bytes": 6695,
+      "sha256": "34b98aece896e0a3833920020248d038a43941d595a662a0e348c869d0354cd1"
+    },
+    "front-evidence-fixtures.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/front-evidence-fixtures.mjs",
+      "bytes": 4407,
+      "sha256": "12714591970a93e70efca78f170413a390b082ddf587dbfe66f2ebd93b5d12dc"
+    },
+    "owner-source-check.py": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/owner-source-check.py",
+      "bytes": 4404,
+      "sha256": "15d572eb53ca12d448000078dc41bd3d95cdc0ed8d8ef2223739c077d03b6d11"
+    },
+    "source-freeze-check.py": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/source-freeze-check.py",
+      "bytes": 5541,
+      "sha256": "9f1e910a46449c94e7ef012f978c30e46df4fd68158d815c15a2a07a25236691"
+    },
+    "seal-root-build.py": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/seal-root-build.py",
+      "bytes": 4132,
+      "sha256": "e048385ce7ddb5dfc401f71bd67d817aa4ba2eed48b8bf84930a4884307c76ad"
+    }
+  },
+  "cpuTests": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/support-tests.json",
+    "bytes": 3744,
+    "sha256": "00e0c63cd4c0d497f5e1d52b0fdf0bae710e18a45261cf7032714774a5b7786f"
+  },
+  "sourceChecks": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/source-checks.json",
+    "bytes": 2446,
+    "sha256": "3843689daa8d49b226083f6c1a360a4e8e06042474e41dc89e31d86bf80ea1c5"
+  },
+  "baselineOriginalsUnchanged": true
+}

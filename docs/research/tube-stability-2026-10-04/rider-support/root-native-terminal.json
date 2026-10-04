@@ -1,0 +1,13 @@
+{
+  "session": 4034,
+  "command": "python3 /private/tmp/tube-rider-support-trace-20261004/run.py --run --arm candidate --out /private/tmp/tube-rider-support-trace-20261004/native-first",
+  "terminal": true,
+  "exitCode": 0,
+  "output": {
+    "complete": true,
+    "firstFailure": null,
+    "independentClosureValid": true,
+    "elapsedSeconds": 44.11388675001217,
+    "owner": "/private/tmp/tube-rider-support-trace-20261004/native-first-owner.json"
+  }
+}

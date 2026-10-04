@@ -1,0 +1,387 @@
+--- a/src/physics/AttachedRider.ts
++++ b/src/physics/AttachedRider.ts
+@@ -641,6 +641,35 @@
+ /** Which limit last bound the contact impulse. */
+ type ContactLimit = 'none' | 'flight' | 'tip' | 'slip' | 'impact';
+ 
++/** Diagnostic copy only: values already held by the last ordinary substep. No queries or updates. */
++export interface RiderSupportState {
++  phase: RiderPhase; attached: boolean; finishSubsteps: number; lastSubstepSeconds: number;
++  postureError: number; sway: V3; swayRate: V3; flightTime: number;
++  lastContactLimit: ContactLimit; limitTime: Record<Exclude<ContactLimit, 'none'>, number>;
++  inContact: boolean; upright: boolean; planing: boolean; banked: boolean; banking: boolean;
++  feasible: boolean; contactFeasible: boolean; loaded: boolean;
++  planingSample: { speedThroughWater: number; flowX: number; flowZ: number; outsideDomain: boolean } | null;
++  leg: { extension: number; rate: number; rest: number; force: number; height: number; load: number; rateAfter: number; length: number; restRate: number; extending: boolean };
++  balanceMargin: number; rawMargin: number; balance: V3; balanceRate: V3;
++  bank: { angle: number; rate: number; speed: number; speedAfter: number; reference: number; ankleRest: number; ankleTorque: number };
++  cop: { desired: { x: number; z: number }; smoothed: { x: number; z: number }; target: { x: number; z: number }; free: { x: number; z: number } | null; actual: V3; support: SupportRegion; frontShare: number; stepLoad: number };
++  position: V3; velocity: V3; angularVelocity: V3; target: V3; up: V3;
++  contactForce: V3; projectedImpulse: V3; externalForce: V3;
++}
++
++export interface RiderSupportSeparation {
++  branch: 'flight-time' | 'sway' | 'posture-error'; cause: RiderSeparation;
++  dominantLimit: Exclude<ContactLimit, 'none'> | null;
++  thresholds: { maximumFlightSeconds: number; recoverableErrorMetres: number };
++  /** Immediately before the existing separate() call; still attached. */
++  state: RiderSupportState;
++}
++
++export interface RiderSupportDiagnostics {
++  current: RiderSupportState;
++  lastSeparation: RiderSupportSeparation | null;
++}
++
+ /** How far back, s, the contact's recent limits count toward a separation's cause. */
+ const CAUSE_MEMORY = 0.2;
+ 
+@@ -696,6 +725,12 @@
+  * rather than receiving grip that does not exist. Knee flex absorbs a landing.
+  */
+ export class AttachedRider {
++  // Diagnostic records are never read by physics, contact, steering or phase gates.
++  private supportFinishSubsteps = 0;
++  private supportLastSubstepSeconds = 0;
++  private supportPlaningSample: RiderSupportState['planingSample'] = null;
++  private supportFreeCop: { x: number; z: number } | null = null;
++  private supportLastSeparation: RiderSupportSeparation | null = null;
+   readonly mass: number;
+   /** Regular or Goofy; changed only between rides (a retry, a placement, or off the board), never mid-ride. */
+   stance: StanceName;
+@@ -968,6 +1003,36 @@
+     return this.upright && this.phase === 'standing' && this.banked;
+   }
+ 
++  /** Fresh plain-data copies only. Reading this getter cannot advance or resample the simulation. */
++  get supportDiagnostics(): RiderSupportDiagnostics {
++    return { current: this.readSupportState(), lastSeparation: this.supportLastSeparation && structuredClone(this.supportLastSeparation) };
++  }
++
++  private readSupportState(): RiderSupportState {
++    const vec = (v: V3): V3 => ({ x: v.x, y: v.y, z: v.z });
++    return {
++      phase: this.phase, attached: this.attached, finishSubsteps: this.supportFinishSubsteps, lastSubstepSeconds: this.supportLastSubstepSeconds,
++      postureError: this.postureError, sway: vec(this.sway), swayRate: vec(this.swayRate), flightTime: this.flightTime,
++      lastContactLimit: this.limit, limitTime: { ...this.limitTime }, inContact: this.inContact, upright: this.upright,
++      planing: this.planing, banked: this.banked, banking: this.banking, feasible: this.feasible,
++      contactFeasible: this.contact.feasible, loaded: this.loaded,
++      planingSample: this.supportPlaningSample && { ...this.supportPlaningSample },
++      leg: { ...this.leg, load: this.legLoad, rateAfter: this.legRateAfter, length: this.legLength, restRate: this.restRate, extending: this.extending },
++      balanceMargin: this.balanceMargin, rawMargin: this.rawMargin, balance: vec(this.balance), balanceRate: vec(this.balanceRate),
++      bank: { ...this.bank, speed: this.bankSpeed, speedAfter: this.bankSpeedAfter, reference: this.bankReference, ankleRest: this.ankleRest, ankleTorque: this.ankleTorque },
++      cop: { desired: { ...this.desiredCop }, smoothed: { ...this.smoothedCop }, target: { ...this.copTarget },
++        free: this.supportFreeCop && { ...this.supportFreeCop }, actual: vec(this.contact.centreOfPressure), support: { ...this.support }, frontShare: this.contact.frontShare, stepLoad: this.contact.load },
++      position: vec(this.position), velocity: vec(this.velocity), angularVelocity: vec(this.angularVelocity), target: vec(this.target), up: vec(this.up),
++      contactForce: vec(this.contact.force), projectedImpulse: vec(this.projected), externalForce: vec(this.external),
++    };
++  }
++
++  /** Called only inside an already-triggered ordinary release branch. */
++  private recordSupportSeparation(branch: RiderSupportSeparation['branch'], cause: RiderSeparation, dominantLimit: RiderSupportSeparation['dominantLimit'] = null): void {
++    this.supportLastSeparation = { branch, cause, dominantLimit,
++      thresholds: { maximumFlightSeconds: MAX_FLIGHT, recoverableErrorMetres: RECOVERABLE_ERROR }, state: this.readSupportState() };
++  }
++
+   get stanceSign(): number {
+     return this.stance === 'regular' ? 1 : -1;
+   }
+@@ -1090,6 +1155,11 @@
+ 
+   /** Put the rider in its posture on the board, moving with it. */
+   mount(board: BoardBody): void {
++    this.supportFinishSubsteps = 0;
++    this.supportLastSubstepSeconds = 0;
++    this.supportPlaningSample = null;
++    this.supportFreeCop = null;
++    this.supportLastSeparation = null;
+     this.duck.press = 0;
+     this.duck.knee = 0;
+     this.duck.held = 0;
+@@ -1506,6 +1576,7 @@
+     const flowX = under.outsideDomain ? 0 : under.flowX;
+     const flowZ = under.outsideDomain ? 0 : under.flowZ;
+     const speed = Math.hypot(board.velocity.x - flowX, board.velocity.z - flowZ);
++    this.supportPlaningSample = { speedThroughWater: speed, flowX, flowZ, outsideDomain: under.outsideDomain };
+     if (this.planing ? speed < PLANING_DROP : speed > PLANING_SPEED) this.planing = !this.planing;
+     if (this.planing) this.banked = true;
+     else if (Math.abs(this.bank.angle) < UPRIGHT_BANK && Math.abs(this.bank.rate) < UPRIGHT_RATE) this.banked = false;
+@@ -2044,6 +2115,8 @@
+ 
+   /** After the board has moved: the rider's own motion and ledgers. */
+   finish(h: number, board: BoardBody): void {
++    this.supportFinishSubsteps += 1;
++    this.supportLastSubstepSeconds = h;
+     const before = this.scratch.copy(this.velocity);
+     // Power of the contact on the board is the same at any point of its line; use the centre of mass.
+     const boardBefore = cross(this.boardSpin, this.arm, this.localScratch).add(this.boardVelocity);
+@@ -2121,9 +2194,17 @@
+       this.limitTime[limit] = this.limitTime[limit] * decay + (this.limit === limit ? h : 0);
+     }
+     // Pushed too far off the posture, swayed past recovery, or airborne too long: the rider lets go of the board.
+-    if (this.flightTime > MAX_FLIGHT) this.separate('lost board');
+-    else if (this.upright && Math.hypot(this.sway.x, this.sway.z) > RECOVERABLE_ERROR) this.separate('balance');
+-    else if (this.postureError > RECOVERABLE_ERROR && this.limit !== 'none') this.separate(SEPARATION[this.dominantLimit()]);
++    if (this.flightTime > MAX_FLIGHT) {
++      this.recordSupportSeparation('flight-time', 'lost board');
++      this.separate('lost board');
++    } else if (this.upright && Math.hypot(this.sway.x, this.sway.z) > RECOVERABLE_ERROR) {
++      this.recordSupportSeparation('sway', 'balance');
++      this.separate('balance');
++    } else if (this.postureError > RECOVERABLE_ERROR && this.limit !== 'none') {
++      const dominantLimit = this.dominantLimit();
++      this.recordSupportSeparation('posture-error', SEPARATION[dominantLimit], dominantLimit);
++      this.separate(SEPARATION[dominantLimit]);
++    }
+   }
+ 
+   /** The limit that bound the contact most in the recent past. */
+@@ -2213,6 +2294,7 @@
+    * the friction cone and the load cap.
+    */
+   private project(impulse: Vector3, h: number, board: BoardBody, out: Vector3): Vector3 {
++    this.supportFreeCop = null;
+     const local = board.toLocal(this.position, this.localScratch);
+     const q = board.orientation;
+     const j = this.scratch.copy(impulse).applyQuaternion(this.spin.copy(q).invert());
+@@ -2232,6 +2314,7 @@
+     const support = this.support;
+     const freeX = local.x - (height * j.x) / j.y;
+     const freeZ = local.z - (height * j.z) / j.y;
++    this.supportFreeCop = { x: freeX, z: freeZ };
+     this.loaded = j.y > BALANCE_LOAD * this.mass * WATER.gravity * h;
+     if (this.loaded) {
+       this.desiredCop.x = freeX;
+--- a/src/wave/SurfZoneRunner.ts
++++ b/src/wave/SurfZoneRunner.ts
+@@ -2,7 +2,7 @@
+ import { Vector3 } from 'three';
+ import { withPocketReflex } from '../game/pocketReflex';
+ import { RideAnalyzer, type Maneuver, type RideReport } from '../game/rideAnalysis';
+-import type { PopUpReport, RiderSeparation } from '../physics/AttachedRider';
++import type { PopUpReport, RiderSeparation, RiderSupportDiagnostics } from '../physics/AttachedRider';
+ import { BoardBody } from '../physics/BoardBody';
+ import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
+ import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
+@@ -224,6 +224,16 @@
+     balance: number;
+     /** Standing, the body's bank on its ankles, rad, toward the board's +x (its left); 0 otherwise (the dev autopilot's flow). */
+     bank?: number;
++    /** Isolated support-trace build only: copies of existing substep state and public board ledgers. */
++    supportDiagnostics?: RiderSupportDiagnostics & {
++      board: {
++        position: { x: number; y: number; z: number }; centerOfMass: { x: number; y: number; z: number };
++        velocity: { x: number; y: number; z: number }; angularVelocity: { x: number; y: number; z: number };
++        quaternion: { x: number; y: number; z: number; w: number };
++        forces: Record<'buoyancy' | 'pressure' | 'addedMass' | 'radiation' | 'friction' | 'bed' | 'fins' | 'rails', { x: number; y: number; z: number }>;
++        wettedArea: number; submergedVolume: number; outsidePatches: number; substepsTaken: number;
++      };
++    };
+     /** The leash (the wipeout spec): snapped, its tension (N) and the ends' distance (m), and whether it is being reeled in. */
+     leash: { snapped: boolean; tension: number; distance: number; reeling: boolean };
+     /** The duck-dive's press, 0–1. */
+@@ -809,6 +819,22 @@
+         report: this.rideReport && { ...this.rideReport, maneuvers: this.rideReport.maneuvers.map((maneuver) => ({ ...maneuver })) },
+         balance: this.session.phase === 'fallen' ? 0 : this.session.rider.balanceReserve,
+         bank: this.session.rider.attached ? this.session.rider.bank.angle : 0,
++        supportDiagnostics: {
++          ...this.session.rider.supportDiagnostics,
++          board: {
++            position: { ...this.session.board.position }, centerOfMass: { ...this.session.board.centerOfMass },
++            velocity: { ...this.session.board.velocity }, angularVelocity: { ...this.session.board.angularVelocity },
++            quaternion: { x: this.session.board.orientation.x, y: this.session.board.orientation.y, z: this.session.board.orientation.z, w: this.session.board.orientation.w },
++            forces: {
++              buoyancy: { ...this.session.board.forces.buoyancy }, pressure: { ...this.session.board.forces.pressure },
++              addedMass: { ...this.session.board.forces.addedMass }, radiation: { ...this.session.board.forces.radiation },
++              friction: { ...this.session.board.forces.friction }, bed: { ...this.session.board.forces.bed },
++              fins: { ...this.session.board.forces.fins }, rails: { ...this.session.board.forces.rails },
++            },
++            wettedArea: this.session.board.wettedArea, submergedVolume: this.session.board.submergedVolume,
++            outsidePatches: this.session.board.outsidePatches, substepsTaken: this.session.board.substepsTaken,
++          },
++        },
+         leash: { snapped: this.session.leash.snapped, tension: this.session.leash.tension, distance: this.session.leash.distance, reeling: this.session.leash.reeling },
+         duck: this.session.rider.attached ? this.session.rider.duck.press : 0,
+         boardInReach: this.session.surfer.active && this.session.recovery.state === 'free' && this.session.recovery.inReach(this.session.board),
+--- /dev/null
++++ b/src/physics/AttachedRider.supportDiagnostics.test.ts
+@@ -0,0 +1,179 @@
++import { Vector3 } from 'three';
++import { writeFileSync } from 'node:fs';
++import { afterAll, describe, expect, it } from 'vitest';
++import { AttachedRider, MAX_FLIGHT, RECOVERABLE_ERROR } from './AttachedRider';
++import { BoardBody } from './BoardBody';
++import { PlaneWater } from './PlaneWater';
++import { AttachedRider as BaselineRider } from '../../../baseline/src/physics/AttachedRider';
++import { BoardBody as BaselineBoard } from '../../../baseline/src/physics/BoardBody';
++import { SurfZoneRunner } from '../wave/SurfZoneRunner';
++import { SurfZoneRunner as BaselineRunner } from '../../../baseline/src/wave/SurfZoneRunner';
++
++const DT = 1 / 60;
++const ownerFixtures: unknown[] = [];
++afterAll(() => writeFileSync('/private/tmp/tube-rider-support-trace-20261004/support-fixtures.json', JSON.stringify({
++  scope: 'Actual CPU getter/status fixture data only; no native trajectory', rows: ownerFixtures,
++}, null, 2) + '\n'));
++
++function ownerRow(board: BoardBody, rider: AttachedRider) {
++  const vec = (v: { x: number; y: number; z: number }) => ({ x: v.x, y: v.y, z: v.z });
++  const q = board.orientation;
++  return { boardPose: [...board.position.toArray(), ...q.toArray(), 1], ride: { supportDiagnostics: {
++    ...rider.supportDiagnostics, board: {
++      position: vec(board.position), centerOfMass: vec(board.centerOfMass), velocity: vec(board.velocity), angularVelocity: vec(board.angularVelocity),
++      quaternion: { x: q.x, y: q.y, z: q.z, w: q.w },
++      forces: Object.fromEntries(Object.entries(board.forces).map(([key, value]) => [key, vec(value)])),
++      wettedArea: board.wettedArea, submergedVolume: board.submergedVolume, outsidePatches: board.outsidePatches, substepsTaken: board.substepsTaken,
++    },
++  } } };
++}
++
++// All enumerable public/private state, including work ledgers, solver scratch,
++// parts and contact. Only the isolated diagnostic records are excluded for the
++// baseline comparison. Getter-purity comparisons exclude nothing.
++function data(value: unknown, omitDiagnostics = false): string {
++  return JSON.stringify(value, (key, item) => {
++    if (omitDiagnostics && /^support[A-Z]/.test(key)) return undefined;
++    if (item instanceof Set) return [...item];
++    if (ArrayBuffer.isView(item)) return Array.from(item as unknown as ArrayLike<number>);
++    return item;
++  });
++}
++
++function mounted(phase: 'prone' | 'standing' = 'standing', baseline = false) {
++  // The independently imported baseline has distinct TS private-field identities;
++  // only this comparison fixture bridges them. Runtime objects remain original.
++  const board = (baseline ? new BaselineBoard() : new BoardBody()) as unknown as BoardBody;
++  board.place(new Vector3(0, board.shape.centerOfMass.y, 0));
++  const rider = (baseline ? new BaselineRider(board.shape, { phase }) : new AttachedRider(board.shape, { phase })) as unknown as AttachedRider;
++  board.attach(rider);
++  return { board, rider };
++}
++
++function countedWater() {
++  const water = new PlaneWater();
++  let queries = 0;
++  const sample = water.sampleAt.bind(water);
++  water.sampleAt = (...args) => { queries += 1; return sample(...args); };
++  return { water, queries: () => queries };
++}
++
++describe('isolated support diagnostics', () => {
++  it('is a pure getter with independent current and last-separation copies', () => {
++    const { board, rider } = mounted();
++    const r = rider as AttachedRider;
++    const { water, queries } = countedWater();
++    for (let i = 0; i < 360 && rider.attached; i++) board.step(DT, water);
++    expect(rider.attached).toBe(false);
++    const before = data({ board, rider });
++    const count = queries();
++    const first = r.supportDiagnostics;
++    expect(first.lastSeparation).not.toBeNull();
++    expect(first.lastSeparation!.state.attached).toBe(true);
++    const second = r.supportDiagnostics;
++    first.current.sway.x = 999;
++    first.current.leg.extension = 999;
++    first.current.cop.support.xMin = 999;
++    first.current.limitTime.tip = 999;
++    first.lastSeparation!.state.position.x = 999;
++    first.lastSeparation!.thresholds.recoverableErrorMetres = 999;
++    expect(r.supportDiagnostics).toEqual(second);
++    expect(data({ board, rider })).toBe(before);
++    expect(queries()).toBe(count);
++    rider.mount(board);
++    expect(r.supportDiagnostics.lastSeparation).toBeNull();
++    expect(r.supportDiagnostics.current.finishSubsteps).toBe(0);
++  });
++
++  it.each(['prone-popup', 'standing-crouch-towed', 'standing-unpowered'] as const)(
++    'keeps every ordinary physical state and water-query count byte equal to accepted source: %s', (mode) => {
++      const a = mounted(mode === 'prone-popup' ? 'prone' : 'standing');
++      const b = mounted(mode === 'prone-popup' ? 'prone' : 'standing', true);
++      const aw = countedWater(); const bw = countedWater();
++      let sawStanding = false; let sawSeparation = false;
++      for (let step = 1; step <= 360; step++) {
++        for (const { board, rider } of [a, b]) {
++          rider.paddle = true;
++          rider.steer = 0; rider.trim = 0; rider.compress = 0;
++          if (mode === 'prone-popup' && step === 11) rider.popUp();
++          if (rider.phase === 'standing') rider.crouch = 1;
++          if (mode === 'standing-crouch-towed' && step <= 240) { board.velocity.z = 6; rider.velocity.z = 6; }
++        }
++        const before = data(a);
++        (a.rider as AttachedRider).supportDiagnostics;
++        expect(data(a)).toBe(before);
++        a.board.step(DT, aw.water); b.board.step(DT, bw.water);
++        (a.rider as AttachedRider).supportDiagnostics;
++        expect(data(a, true), `physical state at ${mode} step ${step}`).toBe(data(b, true));
++        expect(aw.queries()).toBe(bw.queries());
++        sawStanding ||= a.rider.phase === 'standing';
++        sawSeparation ||= !a.rider.attached;
++      }
++      expect(sawStanding).toBe(true);
++      if (mode === 'standing-unpowered') expect(sawSeparation).toBe(true);
++    });
++
++  it('copies status telemetry without adding a water/contact query or changing existing status fields', () => {
++    const a = mounted(); const b = mounted('standing', true);
++    const water = new PlaneWater();
++    a.board.velocity.z = b.board.velocity.z = 6;
++    a.rider.velocity.z = b.rider.velocity.z = 6;
++    a.board.step(DT, water); b.board.step(DT, water);
++    // Mock only the runner's already-populated scalar/status dependencies. Do
++    // not construct a sea, advance physics, create a GPU, or call its gauge.
++    const fields = (pair: typeof a) => ({
++      simulation: { seaTime: 1, timeToSet: 2, lastStepMs: 0, device: null, solver: { nx: 1, nz: 1, time: 1 },
++        breakingFraction: () => 0, surf: { reading: () => null }, peelEstimate: () => null,
++        lipLaunches: 0, lipVolume: 0, lipJets: 0, lipRollers: 0, lip: { airborneVolume: () => 0 }, breaking: { onsetScale: 1 }, stepCosts: {} },
++      focus: { x: 0, z: 0 }, breaker: {}, breakDepth: 1, spray: { count: 0 }, board: pair.board,
++      session: { board: pair.board, rider: pair.rider, phase: pair.rider.phase, separation: undefined,
++        leash: { snapped: false, tension: 0, distance: 0, reeling: false }, surfer: { active: false },
++        recovery: { state: 'free' }, breath: { level: 1 } },
++      wave: { valid: false }, rideResets: 0, rescues: 0, snapshotKnock: 0,
++      boardMs: 0, contactMs: 0, bubbleMs: 0, sprayMs: 0, soundMs: 0, pipelineStepMs: 0,
++      snapshotFieldsMs: 0, fillMs: 0, batchMs: 0, batchSteps: 0,
++    });
++    const runner = Object.assign(Object.create(SurfZoneRunner.prototype), fields(a)) as SurfZoneRunner;
++    const baseline = Object.assign(Object.create(BaselineRunner.prototype), fields(b)) as BaselineRunner;
++    Object.defineProperty(runner, 'cue', { value: false });
++    Object.defineProperty(baseline, 'cue', { value: false });
++    const before = data(a);
++    const result = runner.status();
++    expect(data(a)).toBe(before);
++    const diagnostic = result.ride!.supportDiagnostics!;
++    ownerFixtures.push({ boardPose: [...a.board.position.toArray(), ...a.board.orientation.toArray(), 1], ride: { supportDiagnostics: diagnostic } });
++    expect(diagnostic.current).toEqual((a.rider as AttachedRider).supportDiagnostics.current);
++    expect(diagnostic.board.submergedVolume).toBe(a.board.submergedVolume);
++    expect(diagnostic.board.forces.pressure).toEqual({ x: a.board.forces.pressure.x, y: a.board.forces.pressure.y, z: a.board.forces.pressure.z });
++    const old = baseline.status();
++    delete result.ride!.supportDiagnostics;
++    delete result.pipelineMs; delete old.pipelineMs;
++    expect(result).toEqual(old);
++  });
++
++  it.each(['flight-time', 'sway', 'posture-error'] as const)('records the exact existing %s release branch before detach', (branch) => {
++    const { board, rider } = mounted();
++    const r = rider as AttachedRider;
++    // This fixture isolates only finish()'s existing branch precedence. It
++    // deliberately prepares private state; the actual native trial never does.
++    const internal = r as unknown as { feasible: boolean; sway: Vector3; limit: string; limitTime: { tip: number }; frame: () => void; target: Vector3 };
++    internal.feasible = false;
++    internal.frame = () => {};
++    internal.target.copy(r.position);
++    r.velocity.set(0, 0, 0); board.velocity.set(0, 0, 0);
++    r.leg.extension = 1;
++    if (branch === 'flight-time') r.flightTime = MAX_FLIGHT + 0.01;
++    if (branch === 'sway') internal.sway.x = RECOVERABLE_ERROR + 0.01;
++    if (branch === 'posture-error') { r.position.x += RECOVERABLE_ERROR + 0.01; internal.limit = 'tip'; internal.limitTime.tip = 0.2; }
++    r.finish(DT, board);
++    const last = r.supportDiagnostics.lastSeparation!;
++    expect(r.attached).toBe(false);
++    expect(last.branch).toBe(branch);
++    expect(last.state.attached).toBe(true);
++    expect(last.state.finishSubsteps).toBe(1);
++    expect(last.state.lastSubstepSeconds).toBe(DT);
++    expect(last.cause).toBe(branch === 'flight-time' ? 'lost board' : 'balance');
++    expect(last.dominantLimit).toBe(branch === 'posture-error' ? 'tip' : null);
++    ownerFixtures.push(ownerRow(board, r));
++  });
++});

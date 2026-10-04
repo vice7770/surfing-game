@@ -1,0 +1,104 @@
+{
+  "complete": true,
+  "resourcesStarted": false,
+  "newTrialPrepared": false,
+  "artifacts": {
+    "compare.py": {
+      "path": "/private/tmp/tube-line-fallback-analysis-20261004/compare.py",
+      "bytes": 12763,
+      "sha256": "19dee0d6ce8f0693b64d3721bd6c50ea6d9aac1a08dc3155dd4a7355890ee22a"
+    },
+    "comparison.json": {
+      "path": "/private/tmp/tube-line-fallback-analysis-20261004/comparison.json",
+      "bytes": 99487,
+      "sha256": "e31b0f4ecacf6b9ab3f495f389b73f9ad2f1a8e672a17e105f962dd6dada8052"
+    }
+  },
+  "inputReceipts": {
+    "/private/tmp/tube-coherent-warmup-native-20261004/native-first/report.json": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/native-first/report.json",
+      "bytes": 2522068,
+      "sha256": "b09d8328894f6c827319c385979774bd85beb2461eceb7f06db3f714b75a0998"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/native-first/steps.ndjson": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/native-first/steps.ndjson",
+      "bytes": 2425713,
+      "sha256": "cccd4da097da15cf5ca9c9836aab586c3cc7a3ac8a5a5437daf4cc41dedb2520"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/native-first-owner.json": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/native-first-owner.json",
+      "bytes": 4811,
+      "sha256": "ee77a321b1ec28a176f19332e25fcf4187a22337a8a38da0f318ba48dc1983ff"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/native.mjs": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/native.mjs",
+      "bytes": 32205,
+      "sha256": "f139537019d13bc038d229977386ece40b307bf1fd63a0d3e7e1a79dcaea34ea"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/run.py": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/run.py",
+      "bytes": 25890,
+      "sha256": "65f9d981e7bbc0fbe5cf2df1eb7f28833a7511657fa64a81c389b849f6abf63a"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/preparation.json": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/preparation.json",
+      "bytes": 22424,
+      "sha256": "e3f55c09b434dcbb08c82905eabb3c9d06dffe87a676269ca7eff745593c3961"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/candidate-source-frozen.json": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/candidate-source-frozen.json",
+      "bytes": 76820,
+      "sha256": "2c37cb662d15f381b4c260a6539a4d0c2f8d8265936301f2fab7da2ef710137a"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/body-witnesses.mjs": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/native-first/report.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/native-first/report.json",
+      "bytes": 4238080,
+      "sha256": "248830e70a15e42745d87d21e22f1e6dfccb31171b3f8821240e93edf2529e65"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/candidate-source-frozen.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/candidate-source-frozen.json",
+      "bytes": 78128,
+      "sha256": "f16f257c3d3bf213fecf79de51c42b2fa0c6787b906fe7aa03d000a3fdf66f88"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/policy.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/policy.json",
+      "bytes": 4800,
+      "sha256": "12736321eabc28dea176f95491cf40dfcf43ec00f3d146b49a2d23ddfd2b6a36"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/native.mjs": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/native.mjs",
+      "bytes": 34135,
+      "sha256": "f0c2ec79ffe2d74e3f1769b5b8aabfe1d1280a47fa9d15d24f9a1658fb953ff8"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/RideSession.ts": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/RideSession.ts",
+      "bytes": 13831,
+      "sha256": "57818ef317fd0616d53a07d631304dff303a8904f488d7ddd96693859ca1bd2e"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/AttachedRider.ts": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/AttachedRider.ts",
+      "bytes": 141045,
+      "sha256": "53fc4f5d069334aacdc41f7eb1b26f2dda9b50eb39c2f223d23680d6c02b9920"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/candidate/src/wave/SurfZoneRunner.ts": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/wave/SurfZoneRunner.ts",
+      "bytes": 42620,
+      "sha256": "8bf1a90fe2cc805ed7e74b744d4f2c75ee73ee0e58d1c35291f508a2fe0eb5e7"
+    },
+    "/private/tmp/tube-rider-support-analysis-20261004/completed-analysis-receipt.json": {
+      "path": "/private/tmp/tube-rider-support-analysis-20261004/completed-analysis-receipt.json",
+      "bytes": 3757,
+      "sha256": "64aca3c419e64fdb6bfd2ba25b313a8e60068672012a7d256be7b0261401b078"
+    },
+    "/private/tmp/tube-rider-support-analysis-20261004/causal-conclusion.json": {
+      "path": "/private/tmp/tube-rider-support-analysis-20261004/causal-conclusion.json",
+      "bytes": 28146,
+      "sha256": "f22f6a5daed28b4177cd7a50debc0f49aef1fa926b44dd466dce230ab92cf424"
+    }
+  }
+}

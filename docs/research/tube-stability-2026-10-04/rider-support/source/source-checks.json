@@ -1,0 +1,72 @@
+{
+  "complete": true,
+  "sourceFrozen": true,
+  "buildPending": true,
+  "resourcesStarted": false,
+  "portProbePerformed": false,
+  "productionInputs": 327,
+  "changedProductionFiles": [
+    "src/physics/AttachedRider.ts",
+    "src/wave/SurfZoneRunner.ts"
+  ],
+  "testFilesAdded": 1,
+  "copiedStaleBaselineAssets": 50,
+  "copiedAssetsUnchanged": true,
+  "ordinaryPolicyExactExceptOwnedPorts": true,
+  "ordinaryDriverExactExceptTelemetryDuplicateRemoval": true,
+  "startupAndVideoHandshakeByteExact": true,
+  "getterNoQueriesOrPhysicsUpdates": true,
+  "cpuTests": 8,
+  "cpuOrdinaryExactStateComparisonSteps": 1080,
+  "helperMockPassed": 36,
+  "checks": {
+    "helper-fixtures.json": {
+      "passed": 10,
+      "receipt": {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/helper-fixtures.json",
+        "bytes": 1209,
+        "sha256": "ea561cddff7d752baf6071e7097126b53d22fa4bb1ba20ed51e3de4eadaf69b2"
+      }
+    },
+    "installed-driver-fixtures.json": {
+      "passed": 9,
+      "receipt": {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/installed-driver-fixtures.json",
+        "bytes": 143944,
+        "sha256": "e0e20fbf6d8308f33c7865235e3219349730659d7ca8e29eff6304a0caa4cd75"
+      }
+    },
+    "front-evidence-fixtures.json": {
+      "passed": 6,
+      "receipt": {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/front-evidence-fixtures.json",
+        "bytes": 707,
+        "sha256": "96b7d524569e3540d893ef5152c20f7d354fad57c1c3d2dfa2d82aa38c3162bf"
+      }
+    },
+    "owner-source-checks.json": {
+      "passed": 11,
+      "receipt": {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/owner-source-checks.json",
+        "bytes": 1414,
+        "sha256": "96b88d6b1d9aebb9b0fb1c60272e6a87320e089ce01f8c5c980d00bddc4f10cd"
+      }
+    }
+  },
+  "typecheck": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/typecheck-result.json",
+    "bytes": 260,
+    "sha256": "5f17638b9d7ade89e05872700f7c9ba70d658081fb25ab5740abf90700f757c8"
+  },
+  "cpuResult": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/support-tests.json",
+    "bytes": 3744,
+    "sha256": "00e0c63cd4c0d497f5e1d52b0fdf0bae710e18a45261cf7032714774a5b7786f"
+  },
+  "dryPlan": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/dry-plan.json",
+    "bytes": 1116,
+    "sha256": "861de70927096ccd6b83d39ee56c57782aa00fc3ff12cab29a7df3f58e1da26f"
+  },
+  "launchReady": false
+}

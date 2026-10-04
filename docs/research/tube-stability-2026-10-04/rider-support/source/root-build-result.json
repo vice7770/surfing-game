@@ -1,0 +1,23 @@
+{
+  "terminal": true,
+  "exitCode": 0,
+  "buildId": "tube-rider-support-trace-20261004-c9fb6a59",
+  "supportPatchSha256": "500ade637ef4b7b976747afbc59d1ad86230419ece0ffe35b2fbc17f2cc366af",
+  "command": "BUILD_ID=tube-rider-support-trace-20261004-c9fb6a59 npm run build -- --configLoader runner",
+  "cwd": "/private/tmp/tube-rider-support-trace-20261004/candidate",
+  "rootToolSession": 49631,
+  "initial": {
+    "chunk_id": "daa8a1",
+    "wall_time_seconds": 1.0021755,
+    "session_id": 49631,
+    "original_token_count": 19,
+    "output": "\n> surfing-game@0.1.0 build\n> tsc -b && vite build --configLoader runner\n\n"
+  },
+  "completion": {
+    "chunk_id": "959db3",
+    "wall_time_seconds": 0.000010917,
+    "exit_code": 0,
+    "original_token_count": 319,
+    "output": "vite v8.3.1 building client environment for production...\ntransforming...\n✓ 252 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/build.json                           0.05 kB │ gzip:   0.07 kB\ndist/index.html                           1.62 kB │ gzip:   0.62 kB\ndist/assets/surfZoneWorker-B7Baq7h9.js  452.04 kB\ndist/assets/index-DA8NEfOT.css           33.21 kB │ gzip:   7.32 kB\ndist/assets/devStepping-noqUmEOC.js       0.32 kB │ gzip:   0.25 kB\ndist/assets/particleBench-DWlvUcWg.js    10.70 kB │ gzip:   4.44 kB\ndist/assets/waterSheet-NpOVlLZ6.js       11.68 kB │ gzip:   5.35 kB\ndist/assets/jevRecorder-BWz_ixvq.js      15.91 kB │ gzip:   6.65 kB\ndist/assets/rideRecorder-DJQ3LfLA.js     41.10 kB │ gzip:  13.39 kB\ndist/assets/index-CWsekv67.js           582.40 kB │ gzip: 160.75 kB\ndist/assets/WorkerSurfZone-DQT-ocZc.js  872.17 kB │ gzip: 269.96 kB\n\n✓ built in 320ms\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n"
+  }
+}

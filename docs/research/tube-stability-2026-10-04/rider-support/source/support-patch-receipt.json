@@ -1,0 +1,60 @@
+{
+  "schema": "rider-support-diagnostics-source-patch/v1",
+  "frozen": true,
+  "resourcesStarted": false,
+  "baselineAcceptedSourceRevision": "c9fb6a59de44a102edc3d2efa7d97f35ee058a63",
+  "baselineProductionInputs": {
+    "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/candidate-source-frozen.json",
+    "bytes": 79436,
+    "sha256": "294e28b902c26ca0275978c88717e06d3d02b274974f2d0579ef3700a9e09e0f"
+  },
+  "patch": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/support-diagnostics.patch",
+    "bytes": 23232,
+    "sha256": "500ade637ef4b7b976747afbc59d1ad86230419ece0ffe35b2fbc17f2cc366af"
+  },
+  "changedFiles": [
+    {
+      "path": "src/physics/AttachedRider.ts",
+      "base": {
+        "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/candidate/src/physics/AttachedRider.ts",
+        "bytes": 135460,
+        "sha256": "3fc5c9c86a7e2c148dabd2c22bbd6c4ebde6416bdc2dad82661a15c43596ac0d"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/AttachedRider.ts",
+        "bytes": 141045,
+        "sha256": "53fc4f5d069334aacdc41f7eb1b26f2dda9b50eb39c2f223d23680d6c02b9920"
+      }
+    },
+    {
+      "path": "src/wave/SurfZoneRunner.ts",
+      "base": {
+        "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/candidate/src/wave/SurfZoneRunner.ts",
+        "bytes": 40621,
+        "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/wave/SurfZoneRunner.ts",
+        "bytes": 42620,
+        "sha256": "8bf1a90fe2cc805ed7e74b744d4f2c75ee73ee0e58d1c35291f508a2fe0eb5e7"
+      }
+    },
+    {
+      "path": "src/physics/AttachedRider.supportDiagnostics.test.ts",
+      "base": null,
+      "candidate": {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/AttachedRider.supportDiagnostics.test.ts",
+        "bytes": 9988,
+        "sha256": "59c75fbc54b8a2d6cc373630fbb935720c0d3c3d6f96c532fa546d3bd5eea4b7"
+      }
+    }
+  ],
+  "productionFilesChanged": 2,
+  "testFilesAdded": 1,
+  "rootRepositoryEdited": false,
+  "physicsConditionsChanged": false,
+  "noNewWaterOrContactQueries": true,
+  "getterNeverUpdatesPhysicalState": true,
+  "cpuExactComparisonSteps": 1080
+}

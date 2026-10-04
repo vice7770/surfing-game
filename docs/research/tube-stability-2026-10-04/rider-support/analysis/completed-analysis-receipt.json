@@ -1,0 +1,79 @@
+{
+  "complete": true,
+  "resourcesStarted": false,
+  "originalsModified": false,
+  "nativeOriginals": {
+    "/private/tmp/tube-rider-support-trace-20261004/native-first/report.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/native-first/report.json",
+      "bytes": 4238080,
+      "sha256": "248830e70a15e42745d87d21e22f1e6dfccb31171b3f8821240e93edf2529e65"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/native-first/steps.ndjson": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/native-first/steps.ndjson",
+      "bytes": 4175806,
+      "sha256": "adf3318238eb5838a528d116e6d3558b7ef2ed2709d9a6c47b53548a413353a1"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/native-first-owner.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/native-first-owner.json",
+      "bytes": 5260,
+      "sha256": "1b2b9f47fd360a869d61ad4bb37389ffc6b807ae04bd7df21b0a288923617e31"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/native-first/launcher.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/native-first/launcher.json",
+      "bytes": 10830,
+      "sha256": "df4270e9e9c0b6d48afd1d9cee5c4085900f54d4890ce22bfac2921e7c768974"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/preparation.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/preparation.json",
+      "bytes": 20096,
+      "sha256": "5faeb9c58ae8108336424d29d9d7aa5dc28cef17a057a5f0f1216eb92835a4aa"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/policy.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/policy.json",
+      "bytes": 4800,
+      "sha256": "12736321eabc28dea176f95491cf40dfcf43ec00f3d146b49a2d23ddfd2b6a36"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/run.py": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/run.py",
+      "bytes": 33623,
+      "sha256": "cdd17d9d5474bed1b6d870fb5c29c4eb5f3e66d22411e3c06810a2b03a7519d3"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/root-build-seal.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/root-build-seal.json",
+      "bytes": 793,
+      "sha256": "e9dcdcfce62468ef4236d87ded3f1625e8340728a7f83b7411ff6e443c2ed328"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/support-patch-receipt.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/support-patch-receipt.json",
+      "bytes": 2346,
+      "sha256": "ca7addd79e14d782933eefec11d2402ee34d59ccd303fc73dac07a12a2668e21"
+    },
+    "/private/tmp/tube-prepared-ordinary-entry-20261004/native-first/report.json": {
+      "path": "/private/tmp/tube-prepared-ordinary-entry-20261004/native-first/report.json",
+      "bytes": 3144089,
+      "sha256": "e16cc68d06dcf69160ebeb677b4ac983491ade75f45b68a5924ccb3b436b866d"
+    }
+  },
+  "artifacts": {
+    "analyze.py": {
+      "path": "/private/tmp/tube-rider-support-analysis-20261004/analyze.py",
+      "bytes": 12544,
+      "sha256": "47485f192fbdca9b6fa7e7280959a04674c8fa427a1d8f12aebd8dd5d091a4a7"
+    },
+    "analysis.json": {
+      "path": "/private/tmp/tube-rider-support-analysis-20261004/analysis.json",
+      "bytes": 1452545,
+      "sha256": "e2c67f93b098f727380f4d295334ed3816cd9fc01539fab8c0b95106dfed8025"
+    },
+    "summary.json": {
+      "path": "/private/tmp/tube-rider-support-analysis-20261004/summary.json",
+      "bytes": 22689,
+      "sha256": "d0c3b1cd449616ee0d6c50442b09ffc826d0bc66cd680c0e07756c2cacb838be"
+    },
+    "causal-conclusion.json": {
+      "path": "/private/tmp/tube-rider-support-analysis-20261004/causal-conclusion.json",
+      "bytes": 28146,
+      "sha256": "f22f6a5daed28b4177cd7a50debc0f49aef1fa926b44dd466dce230ab92cf424"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "complete": true,
+  "resourcesStarted": false,
+  "builtByThisScript": false,
+  "launchReady": true,
+  "productionAssets": 49,
+  "diagnosticAssets": 1,
+  "sourcePatch": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/support-diagnostics.patch",
+    "bytes": 23232,
+    "sha256": "500ade637ef4b7b976747afbc59d1ad86230419ece0ffe35b2fbc17f2cc366af"
+  },
+  "rootBuildReceipt": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/root-build-result.json",
+    "bytes": 2085,
+    "sha256": "4084c705b949cf317fb6c6918c699fa21c609d9cd981224d8d49f6bc49200187"
+  },
+  "sealedPreparation": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/preparation.json",
+    "bytes": 20096,
+    "sha256": "5faeb9c58ae8108336424d29d9d7aa5dc28cef17a057a5f0f1216eb92835a4aa"
+  }
+}

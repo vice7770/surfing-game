@@ -1,0 +1,7 @@
+{
+  "complete": true,
+  "exitCode": 0,
+  "noEmit": true,
+  "gameBuilt": false,
+  "command": "node /Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc --noEmit -p /private/tmp/tube-rider-support-trace-20261004/candidate/tsconfig.json"
+}

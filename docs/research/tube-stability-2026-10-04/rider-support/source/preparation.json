@@ -1,0 +1,503 @@
+{
+  "schema": "tube-rider-support-trace-preparation/v1",
+  "complete": true,
+  "frozen": true,
+  "launchReady": true,
+  "sourceReady": true,
+  "resourcesStarted": false,
+  "preparedAt": "2026-10-04T20:44:28.091558+00:00",
+  "candidateLabel": "accepted startup + diagnostic rider support trace",
+  "acceptedSourceRevision": "c9fb6a59de44a102edc3d2efa7d97f35ee058a63",
+  "dist": "/private/tmp/tube-rider-support-trace-20261004/dist",
+  "buildId": "tube-rider-support-trace-20261004-c9fb6a59",
+  "requiredBuildId": "tube-rider-support-trace-20261004-c9fb6a59",
+  "builtByThisWorker": false,
+  "assets": {
+    "assets/WorkerSurfZone-DQT-ocZc.js": {
+      "bytes": 872170,
+      "sha256": "e7c5c65dcab73f5338d11ac57c58b9625f5e6aa511d46a7bc31b4b02b7bf21df"
+    },
+    "assets/audio/bubbles-1.m4a": {
+      "bytes": 256855,
+      "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+    },
+    "assets/audio/bubbles-2.m4a": {
+      "bytes": 198252,
+      "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+    },
+    "assets/audio/distant-1.m4a": {
+      "bytes": 883404,
+      "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+    },
+    "assets/audio/distant-2.m4a": {
+      "bytes": 912023,
+      "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+    },
+    "assets/audio/lipJet-1.m4a": {
+      "bytes": 62354,
+      "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+    },
+    "assets/audio/lipJet-2.m4a": {
+      "bytes": 47086,
+      "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+    },
+    "assets/audio/lipRoller-1.m4a": {
+      "bytes": 36688,
+      "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+    },
+    "assets/audio/lipRoller-2.m4a": {
+      "bytes": 27855,
+      "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+    },
+    "assets/audio/paddle-1.m4a": {
+      "bytes": 14645,
+      "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+    },
+    "assets/audio/paddle-2.m4a": {
+      "bytes": 13593,
+      "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+    },
+    "assets/audio/plunge-1.m4a": {
+      "bytes": 24612,
+      "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+    },
+    "assets/audio/plunge-2.m4a": {
+      "bytes": 22031,
+      "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+    },
+    "assets/audio/roar-1.m4a": {
+      "bytes": 419823,
+      "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+    },
+    "assets/audio/roar-2.m4a": {
+      "bytes": 387857,
+      "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+    },
+    "assets/audio/sounds.json": {
+      "bytes": 3499,
+      "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+    },
+    "assets/devStepping-noqUmEOC.js": {
+      "bytes": 320,
+      "sha256": "6f563a53e97f8408f785bbb71a8d2fc996d7e7b2d31012faba125d9bd47ab5bd"
+    },
+    "assets/index-CWsekv67.js": {
+      "bytes": 582408,
+      "sha256": "af048699e08e7cdfba6130ea26d552f345e6448c76ebb65cb744b0fc46044e39"
+    },
+    "assets/index-DA8NEfOT.css": {
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    "assets/jevRecorder-BWz_ixvq.js": {
+      "bytes": 15917,
+      "sha256": "3d92308ecda3e99fcb0f983d5d459d470d0b3d39d6586e502171fd90be04b562"
+    },
+    "assets/particleBench-DWlvUcWg.js": {
+      "bytes": 10708,
+      "sha256": "cfc50f62a1302ef1ff5d4ecb95ba4b1d8f6304deb24a9da0d8bd39012d6235d3"
+    },
+    "assets/rideRecorder-DJQ3LfLA.js": {
+      "bytes": 41108,
+      "sha256": "0a6e5e2e2792086cfba9b350a9ad66e71e14207840dafb0a94c3c07082594db0"
+    },
+    "assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg": {
+      "bytes": 681062,
+      "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+    },
+    "assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+    },
+    "assets/skies/qwantani_sunrise_puresky.jpg": {
+      "bytes": 357301,
+      "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+    },
+    "assets/skies/qwantani_sunrise_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+    },
+    "assets/skies/qwantani_sunset_puresky.jpg": {
+      "bytes": 372349,
+      "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+    },
+    "assets/skies/qwantani_sunset_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+    },
+    "assets/skies/skies.json": {
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    "assets/surfZoneWorker-B7Baq7h9.js": {
+      "bytes": 452043,
+      "sha256": "d5ac1c9b362e5d0962c375eea1352ea4deb98aa75354cb11391255afd15a9abb"
+    },
+    "assets/surfers/surfer1.glb": {
+      "bytes": 1007368,
+      "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+    },
+    "assets/surfers/surfer2.glb": {
+      "bytes": 1595524,
+      "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+    },
+    "assets/surfers/surfer3.glb": {
+      "bytes": 1545008,
+      "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+    },
+    "assets/surfers/surfer4.glb": {
+      "bytes": 1229872,
+      "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+    },
+    "assets/surfers/surfers.json": {
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    },
+    "assets/waterSheet-NpOVlLZ6.js": {
+      "bytes": 11689,
+      "sha256": "bb1c1da8196a83dff7c894363cea15d94d84cf67819da40ab224cb720a18e94d"
+    },
+    "barrels/pad19-a20-l12.bin": {
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    "barrels/pad19-a30-l12.bin": {
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    "barrels/pad19-a45-l12.bin": {
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    "barrels/periodic-padang19s-l12.bin": {
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    "barrels/periodic-point21-a15-l12.bin": {
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    "barrels/periodic-point21-a23-l12.bin": {
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    "barrels/periodic-point21-a30-l12.bin": {
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    "barrels/periodic-reef42-l12.bin": {
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    "build.json": {
+      "bytes": 54,
+      "sha256": "413ba6a4ef49bfa2998fc25cce5de3c224481d2d9eeca7129cd0e5943c6f2902"
+    },
+    "index.html": {
+      "bytes": 1626,
+      "sha256": "0d4e258c5cb4988963eb9e3f88f55e3d5b0d18eb94092095381ab4758c07363a"
+    },
+    "lessons/pool-s2-caught.sea": {
+      "bytes": 2180693,
+      "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+    },
+    "lessons/pool-s2-pocket.sea": {
+      "bytes": 2176894,
+      "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+    },
+    "lessons/pool-s2-waiting.sea": {
+      "bytes": 2232988,
+      "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+    }
+  },
+  "diagnosticAssets": {
+    "diagnostic-autopilot.mjs": {
+      "bytes": 347555,
+      "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2",
+      "reusedFrom": "/private/tmp/tube-prepared-ordinary-entry-20261004/dist/diagnostic-autopilot.mjs",
+      "compiledFromNewEntry": false
+    }
+  },
+  "assetsState": "50 copied baseline assets are byte exact but stale: they do not yet carry the new support telemetry. Root full build and sealing are mandatory.",
+  "diagnosticSources": {
+    "native.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/native.mjs",
+      "bytes": 34135,
+      "sha256": "f0c2ec79ffe2d74e3f1769b5b8aabfe1d1280a47fa9d15d24f9a1658fb953ff8"
+    },
+    "run.py": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/run.py",
+      "bytes": 33623,
+      "sha256": "cdd17d9d5474bed1b6d870fb5c29c4eb5f3e66d22411e3c06810a2b03a7519d3"
+    },
+    "native-owned.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    "body-witnesses.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/body-witnesses.mjs",
+      "bytes": 11626,
+      "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+    },
+    "tube-target.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/tube-target.mjs",
+      "bytes": 8503,
+      "sha256": "20cc5f415c38961886f678cf9a678cbe15d8d7e1401857f397c994ef219f8090"
+    },
+    "front-evidence.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/front-evidence.mjs",
+      "bytes": 4473,
+      "sha256": "859598b6e48ad78cba6beba60b5ab9582effb8b544c32508bc5ed11d280e2ff3"
+    },
+    "policy.json": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/policy.json",
+      "bytes": 4800,
+      "sha256": "12736321eabc28dea176f95491cf40dfcf43ec00f3d146b49a2d23ddfd2b6a36"
+    },
+    "helper-fixtures.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/helper-fixtures.mjs",
+      "bytes": 5801,
+      "sha256": "1dd21596a34dc33e69d75608ef943fa6621fa3c9eafdbde06f3c0941dced7821"
+    },
+    "installed-driver-fixtures.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/installed-driver-fixtures.mjs",
+      "bytes": 6695,
+      "sha256": "34b98aece896e0a3833920020248d038a43941d595a662a0e348c869d0354cd1"
+    },
+    "front-evidence-fixtures.mjs": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/front-evidence-fixtures.mjs",
+      "bytes": 4407,
+      "sha256": "12714591970a93e70efca78f170413a390b082ddf587dbfe66f2ebd93b5d12dc"
+    },
+    "owner-source-check.py": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/owner-source-check.py",
+      "bytes": 4404,
+      "sha256": "15d572eb53ca12d448000078dc41bd3d95cdc0ed8d8ef2223739c077d03b6d11"
+    },
+    "source-freeze-check.py": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/source-freeze-check.py",
+      "bytes": 5541,
+      "sha256": "9f1e910a46449c94e7ef012f978c30e46df4fd68158d815c15a2a07a25236691"
+    },
+    "seal-root-build.py": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/seal-root-build.py",
+      "bytes": 4132,
+      "sha256": "e048385ce7ddb5dfc401f71bd67d817aa4ba2eed48b8bf84930a4884307c76ad"
+    }
+  },
+  "sourcePatch": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/support-diagnostics.patch",
+    "bytes": 23232,
+    "sha256": "500ade637ef4b7b976747afbc59d1ad86230419ece0ffe35b2fbc17f2cc366af"
+  },
+  "patchReceipt": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/support-patch-receipt.json",
+    "bytes": 2346,
+    "sha256": "ca7addd79e14d782933eefec11d2402ee34d59ccd303fc73dac07a12a2668e21"
+  },
+  "productionInputs": {
+    "count": 327,
+    "candidateRoot": "/private/tmp/tube-rider-support-trace-20261004/candidate",
+    "frozen": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/candidate-source-frozen.json",
+      "bytes": 78128,
+      "sha256": "f16f257c3d3bf213fecf79de51c42b2fa0c6787b906fe7aa03d000a3fdf66f88"
+    },
+    "sourcePin": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/source-pin.json",
+      "bytes": 1081,
+      "sha256": "203fa011a62fafc7cc06bf8cb7deab1ab356b5f8a30902e34f13fd8c4f653be1"
+    },
+    "candidatePatch": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/support-diagnostics.patch",
+      "bytes": 23232,
+      "sha256": "500ade637ef4b7b976747afbc59d1ad86230419ece0ffe35b2fbc17f2cc366af"
+    },
+    "extraCandidateChangedFiles": [
+      {
+        "path": "src/wave/SurfZoneSimulation.ts",
+        "baseSha256": "18e7928601d7208d5f7ff1a15a34995f7e63ebeec497dbe7bf7527b06d15948a",
+        "candidateSha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+      },
+      {
+        "path": "src/wave/SurfZoneSimulation.test.ts",
+        "baseSha256": "6b49a17db4d32c87ac4d7dfd49af7121233888f2afc5332c48113cfcd2d34d34",
+        "candidateSha256": "58d44cfc1f7db444b5d51239fb4901e8fe5eefb7fb0d83e91e30fef85ec3a690"
+      },
+      {
+        "path": "src/wave/barrel/BreakingFront.test.ts",
+        "baseSha256": "a2e2f9517cb47b31d396dda7e6a61d5d4237843d53c828d57aaf07e5b143bb3f",
+        "candidateSha256": "e3c815d4e4cadca59826e7b42a99ab7cb71282211a35d13eda9d82aa5307905a"
+      },
+      {
+        "path": "src/physics/AttachedRider.supportDiagnostics.test.ts",
+        "baseSha256": null,
+        "candidateSha256": "59c75fbc54b8a2d6cc373630fbb935720c0d3c3d6f96c532fa546d3bd5eea4b7"
+      }
+    ],
+    "sourceUsesLiveExperimentalCheckout": false
+  },
+  "baseline": {
+    "preparedTrialSource": {
+      "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/preparation.json",
+      "bytes": 26933,
+      "sha256": "3c9d7a57170b3d54f3ad0fdddaee99c4f11d0414876fc557e4fec665e26f8651"
+    },
+    "productionFrozen": {
+      "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/candidate-source-frozen.json",
+      "bytes": 79436,
+      "sha256": "294e28b902c26ca0275978c88717e06d3d02b274974f2d0579ef3700a9e09e0f"
+    },
+    "baselineCopyReceipt": {
+      "file": "/private/tmp/tube-rider-support-trace-20261004/baseline-copy-receipt.json",
+      "bytes": 1690,
+      "sha256": "bbb3c0897128a5de606dc5393692d22a709fb6d2f62e29e03fba2aa317c51d14"
+    },
+    "onlyProductionDifferences": [
+      "src/physics/AttachedRider.ts",
+      "src/wave/SurfZoneRunner.ts"
+    ],
+    "testsAdded": [
+      "src/physics/AttachedRider.supportDiagnostics.test.ts"
+    ]
+  },
+  "diagnosticBundleProvenance": {
+    "reuse": "Byte-exact prior compiled ordinary Autopilot, posture and part-volume bundle; no new compilation or policy changes. Extra status fields are ignored by pilot physics decisions.",
+    "receipt": {
+      "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/dist/diagnostic-autopilot.mjs",
+      "bytes": 347555,
+      "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2"
+    },
+    "unchangedInputSources": [
+      {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/dev/Autopilot.ts",
+        "bytes": 32175,
+        "sha256": "0cdfb3daf9d09ae432b4654f25d4cc16f1289e44a3dd44abda33b96527c75a0a"
+      },
+      {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/riderPosture.ts",
+        "bytes": 9003,
+        "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734"
+      },
+      {
+        "file": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/boardReference.ts",
+        "bytes": 1317,
+        "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032"
+      }
+    ]
+  },
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0
+  },
+  "overrides": null,
+  "expectedActualConfig": {
+    "seed": 1,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1,
+    "spreading": 150
+  },
+  "policy": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/policy.json",
+    "bytes": 4800,
+    "sha256": "12736321eabc28dea176f95491cf40dfcf43ec00f3d146b49a2d23ddfd2b6a36"
+  },
+  "ports": [
+    4296,
+    9706
+  ],
+  "userPorts": [
+    4310,
+    4311,
+    4312
+  ],
+  "artifactCaps": {
+    "sourceOnlyPlan": true,
+    "arm": "candidate",
+    "dist": "/private/tmp/tube-rider-support-trace-20261004/dist",
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7,
+    "maximumSteps": 1800,
+    "maximumPhysicalSeconds": 30,
+    "maximumPngs": 4,
+    "maximumUniqueArtifacts": 6,
+    "initialCheckpoint": "fresh prone after install+ready; no driver physics advance",
+    "maximumPngBytesEach": 12582912,
+    "maximumPngBytesTotal": 50331648,
+    "maximumReportBytes": 33554432,
+    "maximumNdjsonBytes": 25165824,
+    "optionalMovieMaximumAdvances": 240,
+    "optionalMovieMaximumRequests": 241,
+    "optionalMovieMaximumBytes": 16777216,
+    "optionalMovieTrigger": "First post-step standing row with positive drawn loft indices and qualified actual candidate air column within15m or partial/contained witness",
+    "standingInputPhase": "inputView.ride.phase",
+    "maximumAllPhaseSteer": 0.2,
+    "allPhaseSteerSlewPerSecond": 0.4,
+    "captureCompletionIsEntryPass": false,
+    "ports": [
+      4296,
+      9706
+    ],
+    "userPorts": [
+      4310,
+      4311,
+      4312
+    ],
+    "userPortsMustStayOpen": true,
+    "resourcesStarted": false
+  },
+  "sourceOnlyChecks": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/source-checks.json",
+    "bytes": 2446,
+    "sha256": "3843689daa8d49b226083f6c1a360a4e8e06042474e41dc89e31d86bf80ea1c5"
+  },
+  "cpuTests": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/support-tests.json",
+    "bytes": 3744,
+    "sha256": "00e0c63cd4c0d497f5e1d52b0fdf0bae710e18a45261cf7032714774a5b7786f"
+  },
+  "typecheck": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/typecheck-result.json",
+    "bytes": 260,
+    "sha256": "5f17638b9d7ade89e05872700f7c9ba70d658081fb25ab5740abf90700f757c8"
+  },
+  "ownerMockChecks": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/owner-source-checks.json",
+    "bytes": 1414,
+    "sha256": "96b88d6b1d9aebb9b0fb1c60272e6a87320e089ce01f8c5c980d00bddc4f10cd"
+  },
+  "buildCommand": {
+    "cwd": "/private/tmp/tube-rider-support-trace-20261004/candidate",
+    "command": "BUILD_ID=tube-rider-support-trace-20261004-c9fb6a59 npm run build -- --configLoader runner",
+    "environment": {
+      "BUILD_ID": "tube-rider-support-trace-20261004-c9fb6a59"
+    },
+    "dependencyLinksReadOnly": true,
+    "output": "/private/tmp/tube-rider-support-trace-20261004/candidate/dist"
+  },
+  "rootReviewBeforeSoleLaunch": true,
+  "requiredBeforeLaunch": "Root review this sealed manifest, source patch and finite dry plan; root alone launches once.",
+  "finiteRootCommand": "python3 /private/tmp/tube-rider-support-trace-20261004/run.py --run --arm candidate --out /private/tmp/tube-rider-support-trace-20261004/native-first",
+  "noBuildByPreparation": true,
+  "portProbePerformedByPreparation": false,
+  "goalComplete": false,
+  "adoption": false,
+  "scope": "Diagnostic-only support observation with exactly the prior independent popup/unchanged spawn, target gates, front lock and earliest standing crouch inputs. No forces, placement, resets, tuning or additional water/contact queries. Post-step current diagnostics plus exact pre-detach last branch; no hydraulic/roof cause inferred from public status. Public board wettedArea and submergedVolume are retained; BoardBody exposes no submerged-area scalar, so none is invented.",
+  "rootBuildReceipt": {
+    "file": "/private/tmp/tube-rider-support-trace-20261004/root-build-result.json",
+    "bytes": 2085,
+    "sha256": "4084c705b949cf317fb6c6918c699fa21c609d9cd981224d8d49f6bc49200187"
+  }
+}

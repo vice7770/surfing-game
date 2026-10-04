@@ -1,0 +1,3925 @@
+{
+  "schema": "line-fallback-read-only-comparison/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "physicsReplayPerformed": false,
+  "newTrialPrepared": false,
+  "originalsModified": false,
+  "inputReceipts": {
+    "/private/tmp/tube-coherent-warmup-native-20261004/native-first/report.json": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/native-first/report.json",
+      "bytes": 2522068,
+      "sha256": "b09d8328894f6c827319c385979774bd85beb2461eceb7f06db3f714b75a0998"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/native-first/steps.ndjson": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/native-first/steps.ndjson",
+      "bytes": 2425713,
+      "sha256": "cccd4da097da15cf5ca9c9836aab586c3cc7a3ac8a5a5437daf4cc41dedb2520"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/native-first-owner.json": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/native-first-owner.json",
+      "bytes": 4811,
+      "sha256": "ee77a321b1ec28a176f19332e25fcf4187a22337a8a38da0f318ba48dc1983ff"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/native.mjs": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/native.mjs",
+      "bytes": 32205,
+      "sha256": "f139537019d13bc038d229977386ece40b307bf1fd63a0d3e7e1a79dcaea34ea"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/run.py": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/run.py",
+      "bytes": 25890,
+      "sha256": "65f9d981e7bbc0fbe5cf2df1eb7f28833a7511657fa64a81c389b849f6abf63a"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/preparation.json": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/preparation.json",
+      "bytes": 22424,
+      "sha256": "e3f55c09b434dcbb08c82905eabb3c9d06dffe87a676269ca7eff745593c3961"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/candidate-source-frozen.json": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/candidate-source-frozen.json",
+      "bytes": 76820,
+      "sha256": "2c37cb662d15f381b4c260a6539a4d0c2f8d8265936301f2fab7da2ef710137a"
+    },
+    "/private/tmp/tube-coherent-warmup-native-20261004/body-witnesses.mjs": {
+      "path": "/private/tmp/tube-coherent-warmup-native-20261004/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/native-first/report.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/native-first/report.json",
+      "bytes": 4238080,
+      "sha256": "248830e70a15e42745d87d21e22f1e6dfccb31171b3f8821240e93edf2529e65"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/candidate-source-frozen.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/candidate-source-frozen.json",
+      "bytes": 78128,
+      "sha256": "f16f257c3d3bf213fecf79de51c42b2fa0c6787b906fe7aa03d000a3fdf66f88"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/policy.json": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/policy.json",
+      "bytes": 4800,
+      "sha256": "12736321eabc28dea176f95491cf40dfcf43ec00f3d146b49a2d23ddfd2b6a36"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/native.mjs": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/native.mjs",
+      "bytes": 34135,
+      "sha256": "f0c2ec79ffe2d74e3f1769b5b8aabfe1d1280a47fa9d15d24f9a1658fb953ff8"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/RideSession.ts": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/RideSession.ts",
+      "bytes": 13831,
+      "sha256": "57818ef317fd0616d53a07d631304dff303a8904f488d7ddd96693859ca1bd2e"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/AttachedRider.ts": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/physics/AttachedRider.ts",
+      "bytes": 141045,
+      "sha256": "53fc4f5d069334aacdc41f7eb1b26f2dda9b50eb39c2f223d23680d6c02b9920"
+    },
+    "/private/tmp/tube-rider-support-trace-20261004/candidate/src/wave/SurfZoneRunner.ts": {
+      "path": "/private/tmp/tube-rider-support-trace-20261004/candidate/src/wave/SurfZoneRunner.ts",
+      "bytes": 42620,
+      "sha256": "8bf1a90fe2cc805ed7e74b744d4f2c75ee73ee0e58d1c35291f508a2fe0eb5e7"
+    },
+    "/private/tmp/tube-rider-support-analysis-20261004/completed-analysis-receipt.json": {
+      "path": "/private/tmp/tube-rider-support-analysis-20261004/completed-analysis-receipt.json",
+      "bytes": 3757,
+      "sha256": "64aca3c419e64fdb6bfd2ba25b313a8e60068672012a7d256be7b0261401b078"
+    },
+    "/private/tmp/tube-rider-support-analysis-20261004/causal-conclusion.json": {
+      "path": "/private/tmp/tube-rider-support-analysis-20261004/causal-conclusion.json",
+      "bytes": 28146,
+      "sha256": "f22f6a5daed28b4177cd7a50debc0f49aef1fa926b44dd466dce230ab92cf424"
+    }
+  },
+  "priorOwnerValidated": true,
+  "priorNDJSONEqualsReport": true,
+  "sourceDifferences": [
+    "src/physics/AttachedRider.ts",
+    "src/wave/SurfZoneRunner.ts"
+  ],
+  "sourceDifferenceScope": "Only diagnostic rider/state fields; paired CPU equivalence and exact314 native geometry were established in frozen support analysis.",
+  "witnessDifference": "Existing body measure/topology/crossing code is byte equal after normalizing the return wrapper; the new helper additionally exposes a pure exact-column method for the target selector.",
+  "sameProductionPilotPolicy": {
+    "style": true,
+    "waitOutside": true,
+    "rise": true,
+    "lineDegrees": true,
+    "giveUp": true,
+    "stall": true
+  },
+  "sameSettings": true,
+  "sameInitialBodyBoardGeometry": true,
+  "steeringPolicyComparison": {
+    "old": "Production line requests unchanged except first ordinary standing input0, then cap\u00b10.2 and slew0.4/s; prior nonstanding production requests unchanged.",
+    "proposed": "Until first qualified exact column, use production line requests under cap\u00b10.2 and slew0.4/s from initial0 across all phases; then geometric steering with existing first-front lock and identical bounds.",
+    "proposedRuleReplayedOnRecordedRequests": true,
+    "all385Rows": [
+      {
+        "step": 1,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 2,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 3,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 4,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 5,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 6,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 7,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 8,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 9,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 10,
+        "inputPhase": "prone",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0,
+        "proposed": 0,
+        "oldActual": 0
+      },
+      {
+        "step": 11,
+        "inputPhase": "prone",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0,
+        "proposed": 0.006666666666666667,
+        "oldActual": 1
+      },
+      {
+        "step": 12,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.006666666666666667,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 13,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 14,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 15,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 16,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 17,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 18,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 19,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 20,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 21,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 22,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 23,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 24,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 25,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 26,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 27,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 28,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 29,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 30,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 31,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 32,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 33,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 34,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 35,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 36,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 37,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 38,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 39,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 40,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 41,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 42,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 43,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 44,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 45,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 46,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 47,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 48,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 49,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 50,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 51,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 52,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 53,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 54,
+        "inputPhase": "push",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 55,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 56,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 57,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 58,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 59,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 60,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 61,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 62,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 63,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 64,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 65,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 66,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 67,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 68,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 69,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 70,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 71,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 72,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 73,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 74,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 75,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 76,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 77,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 78,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 79,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 80,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 81,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 82,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 83,
+        "inputPhase": "landing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 84,
+        "inputPhase": "standing",
+        "requested": 0,
+        "limited": 0,
+        "previous": 0.0,
+        "proposed": 0.0,
+        "oldActual": 0
+      },
+      {
+        "step": 85,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.0,
+        "proposed": 0.006666666666666667,
+        "oldActual": 0.006666666666666667
+      },
+      {
+        "step": 86,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.006666666666666667,
+        "proposed": 0.013333333333333334,
+        "oldActual": 0.013333333333333334
+      },
+      {
+        "step": 87,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.013333333333333334,
+        "proposed": 0.02,
+        "oldActual": 0.02
+      },
+      {
+        "step": 88,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.02,
+        "proposed": 0.02666666666666667,
+        "oldActual": 0.02666666666666667
+      },
+      {
+        "step": 89,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.02666666666666667,
+        "proposed": 0.03333333333333333,
+        "oldActual": 0.03333333333333333
+      },
+      {
+        "step": 90,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.03333333333333333,
+        "proposed": 0.04,
+        "oldActual": 0.04
+      },
+      {
+        "step": 91,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.04,
+        "proposed": 0.04666666666666667,
+        "oldActual": 0.04666666666666667
+      },
+      {
+        "step": 92,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.04666666666666667,
+        "proposed": 0.05333333333333334,
+        "oldActual": 0.05333333333333334
+      },
+      {
+        "step": 93,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.05333333333333334,
+        "proposed": 0.060000000000000005,
+        "oldActual": 0.060000000000000005
+      },
+      {
+        "step": 94,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.060000000000000005,
+        "proposed": 0.06666666666666667,
+        "oldActual": 0.06666666666666667
+      },
+      {
+        "step": 95,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.06666666666666667,
+        "proposed": 0.07333333333333333,
+        "oldActual": 0.07333333333333333
+      },
+      {
+        "step": 96,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.07333333333333333,
+        "proposed": 0.08,
+        "oldActual": 0.08
+      },
+      {
+        "step": 97,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.08,
+        "proposed": 0.08666666666666667,
+        "oldActual": 0.08666666666666667
+      },
+      {
+        "step": 98,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.08666666666666667,
+        "proposed": 0.09333333333333334,
+        "oldActual": 0.09333333333333334
+      },
+      {
+        "step": 99,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.09333333333333334,
+        "proposed": 0.1,
+        "oldActual": 0.1
+      },
+      {
+        "step": 100,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.1,
+        "proposed": 0.10666666666666667,
+        "oldActual": 0.10666666666666667
+      },
+      {
+        "step": 101,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.10666666666666667,
+        "proposed": 0.11333333333333334,
+        "oldActual": 0.11333333333333334
+      },
+      {
+        "step": 102,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.11333333333333334,
+        "proposed": 0.12000000000000001,
+        "oldActual": 0.12000000000000001
+      },
+      {
+        "step": 103,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.12000000000000001,
+        "proposed": 0.12666666666666668,
+        "oldActual": 0.12666666666666668
+      },
+      {
+        "step": 104,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.12666666666666668,
+        "proposed": 0.13333333333333333,
+        "oldActual": 0.13333333333333333
+      },
+      {
+        "step": 105,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.13333333333333333,
+        "proposed": 0.13999999999999999,
+        "oldActual": 0.13999999999999999
+      },
+      {
+        "step": 106,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.13999999999999999,
+        "proposed": 0.14666666666666664,
+        "oldActual": 0.14666666666666664
+      },
+      {
+        "step": 107,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.14666666666666664,
+        "proposed": 0.1533333333333333,
+        "oldActual": 0.1533333333333333
+      },
+      {
+        "step": 108,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.1533333333333333,
+        "proposed": 0.15999999999999995,
+        "oldActual": 0.15999999999999995
+      },
+      {
+        "step": 109,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.15999999999999995,
+        "proposed": 0.1666666666666666,
+        "oldActual": 0.1666666666666666
+      },
+      {
+        "step": 110,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.1666666666666666,
+        "proposed": 0.17333333333333326,
+        "oldActual": 0.17333333333333326
+      },
+      {
+        "step": 111,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.17333333333333326,
+        "proposed": 0.1799999999999999,
+        "oldActual": 0.1799999999999999
+      },
+      {
+        "step": 112,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.1799999999999999,
+        "proposed": 0.18666666666666656,
+        "oldActual": 0.18666666666666656
+      },
+      {
+        "step": 113,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.18666666666666656,
+        "proposed": 0.19333333333333322,
+        "oldActual": 0.19333333333333322
+      },
+      {
+        "step": 114,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.19333333333333322,
+        "proposed": 0.19999999999999987,
+        "oldActual": 0.19999999999999987
+      },
+      {
+        "step": 115,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.19999999999999987,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 116,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 117,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 118,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 119,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 120,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 121,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 122,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 123,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 124,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 125,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 126,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 127,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 128,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 129,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 130,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 131,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 132,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 133,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 134,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 135,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 136,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 137,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 138,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 139,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 140,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 141,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 142,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 143,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 144,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 145,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 146,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 147,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 148,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 149,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 150,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 151,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 152,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 153,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 154,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 155,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 156,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 157,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 158,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 159,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 160,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 161,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 162,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 163,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 164,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 165,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 166,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 167,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 168,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 169,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 170,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 171,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 172,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 173,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 174,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 175,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 176,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 177,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 178,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 179,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 180,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 181,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 182,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 183,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 184,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 185,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 186,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 187,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 188,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 189,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 190,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 191,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 192,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 193,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 194,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 195,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 196,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 197,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 198,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 199,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 200,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 201,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 202,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 203,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 204,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 205,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 206,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 207,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 208,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 209,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 210,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 211,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 212,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 213,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 214,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 215,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 216,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 217,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 218,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 219,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 220,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 221,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 222,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 223,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 224,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 225,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 226,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 227,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 228,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 229,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 230,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 231,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 232,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 233,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 234,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 235,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 236,
+        "inputPhase": "standing",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 237,
+        "inputPhase": "standing",
+        "requested": 0.9821851860220385,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 238,
+        "inputPhase": "standing",
+        "requested": 0.9560237097036371,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 239,
+        "inputPhase": "standing",
+        "requested": 0.9319004201767266,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 240,
+        "inputPhase": "standing",
+        "requested": 0.9100313925419611,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 241,
+        "inputPhase": "standing",
+        "requested": 0.8914201438251058,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 242,
+        "inputPhase": "standing",
+        "requested": 0.8766622019902419,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 243,
+        "inputPhase": "standing",
+        "requested": 0.8664692703073589,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 244,
+        "inputPhase": "standing",
+        "requested": 0.8581915947323054,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 245,
+        "inputPhase": "standing",
+        "requested": 0.8512151671363435,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 246,
+        "inputPhase": "standing",
+        "requested": 0.8450167134727111,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 247,
+        "inputPhase": "standing",
+        "requested": 0.8396333992842849,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 248,
+        "inputPhase": "standing",
+        "requested": 0.8349299545240029,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 249,
+        "inputPhase": "standing",
+        "requested": 0.8295573104877771,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 250,
+        "inputPhase": "standing",
+        "requested": 0.8239443232795284,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 251,
+        "inputPhase": "standing",
+        "requested": 0.8197891219832847,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 252,
+        "inputPhase": "standing",
+        "requested": 0.8190136820233911,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 253,
+        "inputPhase": "standing",
+        "requested": 0.796803991415964,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 254,
+        "inputPhase": "standing",
+        "requested": 0.7664711858466772,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 255,
+        "inputPhase": "standing",
+        "requested": 0.7272749163814666,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 256,
+        "inputPhase": "standing",
+        "requested": 0.6833667792681634,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 257,
+        "inputPhase": "standing",
+        "requested": 0.6364112494456229,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 258,
+        "inputPhase": "standing",
+        "requested": 0.5883160072289877,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 259,
+        "inputPhase": "standing",
+        "requested": 0.542152117275057,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 260,
+        "inputPhase": "standing",
+        "requested": 0.49906711483955013,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 261,
+        "inputPhase": "standing",
+        "requested": 0.4590078569149839,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 262,
+        "inputPhase": "standing",
+        "requested": 0.42107407219880566,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 263,
+        "inputPhase": "standing",
+        "requested": 0.3806535467457802,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 264,
+        "inputPhase": "standing",
+        "requested": 0.3399408030315906,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 265,
+        "inputPhase": "standing",
+        "requested": 0.3011453456532086,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 266,
+        "inputPhase": "standing",
+        "requested": 0.2649396330085508,
+        "limited": 0.2,
+        "previous": 0.2,
+        "proposed": 0.2,
+        "oldActual": 0.2
+      },
+      {
+        "step": 267,
+        "inputPhase": "standing",
+        "requested": 0.17489189633514923,
+        "limited": 0.17489189633514923,
+        "previous": 0.2,
+        "proposed": 0.19333333333333336,
+        "oldActual": 0.19333333333333336
+      },
+      {
+        "step": 268,
+        "inputPhase": "standing",
+        "requested": 0.09295148266841707,
+        "limited": 0.09295148266841707,
+        "previous": 0.19333333333333336,
+        "proposed": 0.1866666666666667,
+        "oldActual": 0.1866666666666667
+      },
+      {
+        "step": 269,
+        "inputPhase": "standing",
+        "requested": 0.019348159246057206,
+        "limited": 0.019348159246057206,
+        "previous": 0.1866666666666667,
+        "proposed": 0.18000000000000005,
+        "oldActual": 0.18000000000000005
+      },
+      {
+        "step": 270,
+        "inputPhase": "standing",
+        "requested": -0.046612372570685956,
+        "limited": -0.046612372570685956,
+        "previous": 0.18000000000000005,
+        "proposed": 0.1733333333333334,
+        "oldActual": 0.1733333333333334
+      },
+      {
+        "step": 271,
+        "inputPhase": "standing",
+        "requested": -0.10588404253061653,
+        "limited": -0.10588404253061653,
+        "previous": 0.1733333333333334,
+        "proposed": 0.16666666666666674,
+        "oldActual": 0.16666666666666674
+      },
+      {
+        "step": 272,
+        "inputPhase": "standing",
+        "requested": -0.1601063421544068,
+        "limited": -0.1601063421544068,
+        "previous": 0.16666666666666674,
+        "proposed": 0.1600000000000001,
+        "oldActual": 0.1600000000000001
+      },
+      {
+        "step": 273,
+        "inputPhase": "standing",
+        "requested": -0.21139899746591648,
+        "limited": -0.2,
+        "previous": 0.1600000000000001,
+        "proposed": 0.15333333333333343,
+        "oldActual": 0.15333333333333343
+      },
+      {
+        "step": 274,
+        "inputPhase": "standing",
+        "requested": -0.25921764133676733,
+        "limited": -0.2,
+        "previous": 0.15333333333333343,
+        "proposed": 0.14666666666666678,
+        "oldActual": 0.14666666666666678
+      },
+      {
+        "step": 275,
+        "inputPhase": "standing",
+        "requested": -0.3030969431422067,
+        "limited": -0.2,
+        "previous": 0.14666666666666678,
+        "proposed": 0.14000000000000012,
+        "oldActual": 0.14000000000000012
+      },
+      {
+        "step": 276,
+        "inputPhase": "standing",
+        "requested": -0.3432054468989477,
+        "limited": -0.2,
+        "previous": 0.14000000000000012,
+        "proposed": 0.13333333333333347,
+        "oldActual": 0.13333333333333347
+      },
+      {
+        "step": 277,
+        "inputPhase": "standing",
+        "requested": -0.3799692014292266,
+        "limited": -0.2,
+        "previous": 0.13333333333333347,
+        "proposed": 0.12666666666666682,
+        "oldActual": 0.12666666666666682
+      },
+      {
+        "step": 278,
+        "inputPhase": "standing",
+        "requested": -0.41343653615209336,
+        "limited": -0.2,
+        "previous": 0.12666666666666682,
+        "proposed": 0.12000000000000015,
+        "oldActual": 0.12000000000000015
+      },
+      {
+        "step": 279,
+        "inputPhase": "standing",
+        "requested": -0.4434778643861122,
+        "limited": -0.2,
+        "previous": 0.12000000000000015,
+        "proposed": 0.11333333333333348,
+        "oldActual": 0.11333333333333348
+      },
+      {
+        "step": 280,
+        "inputPhase": "standing",
+        "requested": -0.47072437701202063,
+        "limited": -0.2,
+        "previous": 0.11333333333333348,
+        "proposed": 0.10666666666666681,
+        "oldActual": 0.10666666666666681
+      },
+      {
+        "step": 281,
+        "inputPhase": "standing",
+        "requested": -0.4959539504815849,
+        "limited": -0.2,
+        "previous": 0.10666666666666681,
+        "proposed": 0.10000000000000014,
+        "oldActual": 0.10000000000000014
+      },
+      {
+        "step": 282,
+        "inputPhase": "standing",
+        "requested": -0.5195726787518677,
+        "limited": -0.2,
+        "previous": 0.10000000000000014,
+        "proposed": 0.09333333333333348,
+        "oldActual": 0.09333333333333348
+      },
+      {
+        "step": 283,
+        "inputPhase": "standing",
+        "requested": -0.5414229687174754,
+        "limited": -0.2,
+        "previous": 0.09333333333333348,
+        "proposed": 0.08666666666666681,
+        "oldActual": 0.08666666666666681
+      },
+      {
+        "step": 284,
+        "inputPhase": "standing",
+        "requested": -0.561356574964235,
+        "limited": -0.2,
+        "previous": 0.08666666666666681,
+        "proposed": 0.08000000000000014,
+        "oldActual": 0.08000000000000014
+      },
+      {
+        "step": 285,
+        "inputPhase": "standing",
+        "requested": -0.5798755618572237,
+        "limited": -0.2,
+        "previous": 0.08000000000000014,
+        "proposed": 0.07333333333333347,
+        "oldActual": 0.07333333333333347
+      },
+      {
+        "step": 286,
+        "inputPhase": "standing",
+        "requested": -0.5975065956754035,
+        "limited": -0.2,
+        "previous": 0.07333333333333347,
+        "proposed": 0.0666666666666668,
+        "oldActual": 0.0666666666666668
+      },
+      {
+        "step": 287,
+        "inputPhase": "standing",
+        "requested": -0.614286054153772,
+        "limited": -0.2,
+        "previous": 0.0666666666666668,
+        "proposed": 0.06000000000000014,
+        "oldActual": 0.06000000000000014
+      },
+      {
+        "step": 288,
+        "inputPhase": "standing",
+        "requested": -0.6297742608408903,
+        "limited": -0.2,
+        "previous": 0.06000000000000014,
+        "proposed": 0.05333333333333347,
+        "oldActual": 0.05333333333333347
+      },
+      {
+        "step": 289,
+        "inputPhase": "standing",
+        "requested": -0.6439532830991818,
+        "limited": -0.2,
+        "previous": 0.05333333333333347,
+        "proposed": 0.0466666666666668,
+        "oldActual": 0.0466666666666668
+      },
+      {
+        "step": 290,
+        "inputPhase": "standing",
+        "requested": -0.6571148793954446,
+        "limited": -0.2,
+        "previous": 0.0466666666666668,
+        "proposed": 0.04000000000000013,
+        "oldActual": 0.04000000000000013
+      },
+      {
+        "step": 291,
+        "inputPhase": "standing",
+        "requested": -0.6695651183558425,
+        "limited": -0.2,
+        "previous": 0.04000000000000013,
+        "proposed": 0.033333333333333465,
+        "oldActual": 0.033333333333333465
+      },
+      {
+        "step": 292,
+        "inputPhase": "standing",
+        "requested": -0.6812449104479255,
+        "limited": -0.2,
+        "previous": 0.033333333333333465,
+        "proposed": 0.026666666666666797,
+        "oldActual": 0.026666666666666797
+      },
+      {
+        "step": 293,
+        "inputPhase": "standing",
+        "requested": -0.6920639579826598,
+        "limited": -0.2,
+        "previous": 0.026666666666666797,
+        "proposed": 0.02000000000000013,
+        "oldActual": 0.02000000000000013
+      },
+      {
+        "step": 294,
+        "inputPhase": "standing",
+        "requested": -0.7021830294102303,
+        "limited": -0.2,
+        "previous": 0.02000000000000013,
+        "proposed": 0.01333333333333346,
+        "oldActual": 0.01333333333333346
+      },
+      {
+        "step": 295,
+        "inputPhase": "standing",
+        "requested": -0.7119679621198692,
+        "limited": -0.2,
+        "previous": 0.01333333333333346,
+        "proposed": 0.006666666666666794,
+        "oldActual": 0.006666666666666794
+      },
+      {
+        "step": 296,
+        "inputPhase": "standing",
+        "requested": -0.7216560294239643,
+        "limited": -0.2,
+        "previous": 0.006666666666666794,
+        "proposed": 1.2663481374630692e-16,
+        "oldActual": 1.2663481374630692e-16
+      },
+      {
+        "step": 297,
+        "inputPhase": "standing",
+        "requested": -0.7312846203314153,
+        "limited": -0.2,
+        "previous": 1.2663481374630692e-16,
+        "proposed": -0.0066666666666665405,
+        "oldActual": -0.0066666666666665405
+      },
+      {
+        "step": 298,
+        "inputPhase": "standing",
+        "requested": -0.7406644666906448,
+        "limited": -0.2,
+        "previous": -0.0066666666666665405,
+        "proposed": -0.013333333333333208,
+        "oldActual": -0.013333333333333208
+      },
+      {
+        "step": 299,
+        "inputPhase": "standing",
+        "requested": -0.7497805215631529,
+        "limited": -0.2,
+        "previous": -0.013333333333333208,
+        "proposed": -0.019999999999999876,
+        "oldActual": -0.019999999999999876
+      },
+      {
+        "step": 300,
+        "inputPhase": "standing",
+        "requested": -0.7587979238557285,
+        "limited": -0.2,
+        "previous": -0.019999999999999876,
+        "proposed": -0.026666666666666543,
+        "oldActual": -0.026666666666666543
+      },
+      {
+        "step": 301,
+        "inputPhase": "standing",
+        "requested": -0.7678941110564969,
+        "limited": -0.2,
+        "previous": -0.026666666666666543,
+        "proposed": -0.03333333333333321,
+        "oldActual": -0.03333333333333321
+      },
+      {
+        "step": 302,
+        "inputPhase": "standing",
+        "requested": -0.7769574680888838,
+        "limited": -0.2,
+        "previous": -0.03333333333333321,
+        "proposed": -0.039999999999999876,
+        "oldActual": -0.039999999999999876
+      },
+      {
+        "step": 303,
+        "inputPhase": "standing",
+        "requested": -0.7860604863230435,
+        "limited": -0.2,
+        "previous": -0.039999999999999876,
+        "proposed": -0.046666666666666544,
+        "oldActual": -0.046666666666666544
+      },
+      {
+        "step": 304,
+        "inputPhase": "standing",
+        "requested": -0.7953232170833466,
+        "limited": -0.2,
+        "previous": -0.046666666666666544,
+        "proposed": -0.05333333333333321,
+        "oldActual": -0.05333333333333321
+      },
+      {
+        "step": 305,
+        "inputPhase": "standing",
+        "requested": -0.8043316939727063,
+        "limited": -0.2,
+        "previous": -0.05333333333333321,
+        "proposed": -0.05999999999999988,
+        "oldActual": -0.05999999999999988
+      },
+      {
+        "step": 306,
+        "inputPhase": "standing",
+        "requested": -0.8133550495270131,
+        "limited": -0.2,
+        "previous": -0.05999999999999988,
+        "proposed": -0.06666666666666654,
+        "oldActual": -0.06666666666666654
+      },
+      {
+        "step": 307,
+        "inputPhase": "standing",
+        "requested": -0.8230426107945393,
+        "limited": -0.2,
+        "previous": -0.06666666666666654,
+        "proposed": -0.07333333333333321,
+        "oldActual": -0.07333333333333321
+      },
+      {
+        "step": 308,
+        "inputPhase": "standing",
+        "requested": -0.8349478701423743,
+        "limited": -0.2,
+        "previous": -0.07333333333333321,
+        "proposed": -0.07999999999999988,
+        "oldActual": -0.07999999999999988
+      },
+      {
+        "step": 309,
+        "inputPhase": "standing",
+        "requested": -0.8491014667228002,
+        "limited": -0.2,
+        "previous": -0.07999999999999988,
+        "proposed": -0.08666666666666654,
+        "oldActual": -0.08666666666666654
+      },
+      {
+        "step": 310,
+        "inputPhase": "standing",
+        "requested": -0.86523502670211,
+        "limited": -0.2,
+        "previous": -0.08666666666666654,
+        "proposed": -0.09333333333333321,
+        "oldActual": -0.09333333333333321
+      },
+      {
+        "step": 311,
+        "inputPhase": "standing",
+        "requested": -0.8832812872941692,
+        "limited": -0.2,
+        "previous": -0.09333333333333321,
+        "proposed": -0.09999999999999988,
+        "oldActual": -0.09999999999999988
+      },
+      {
+        "step": 312,
+        "inputPhase": "standing",
+        "requested": -0.9021349192764166,
+        "limited": -0.2,
+        "previous": -0.09999999999999988,
+        "proposed": -0.10666666666666655,
+        "oldActual": -0.10666666666666655
+      },
+      {
+        "step": 313,
+        "inputPhase": "standing",
+        "requested": -0.9212591110358296,
+        "limited": -0.2,
+        "previous": -0.10666666666666655,
+        "proposed": -0.11333333333333322,
+        "oldActual": -0.11333333333333322
+      },
+      {
+        "step": 314,
+        "inputPhase": "standing",
+        "requested": -0.9403608591402238,
+        "limited": -0.2,
+        "previous": -0.11333333333333322,
+        "proposed": -0.11999999999999988,
+        "oldActual": -0.11999999999999988
+      },
+      {
+        "step": 315,
+        "inputPhase": "standing",
+        "requested": -0.9595797300262519,
+        "limited": -0.2,
+        "previous": -0.11999999999999988,
+        "proposed": -0.12666666666666654,
+        "oldActual": -0.12666666666666654
+      },
+      {
+        "step": 316,
+        "inputPhase": "standing",
+        "requested": -0.9797939127844122,
+        "limited": -0.2,
+        "previous": -0.12666666666666654,
+        "proposed": -0.1333333333333332,
+        "oldActual": -0.1333333333333332
+      },
+      {
+        "step": 317,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.1333333333333332,
+        "proposed": -0.13999999999999985,
+        "oldActual": -0.13999999999999985
+      },
+      {
+        "step": 318,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.13999999999999985,
+        "proposed": -0.1466666666666665,
+        "oldActual": -0.1466666666666665
+      },
+      {
+        "step": 319,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.1466666666666665,
+        "proposed": -0.15333333333333315,
+        "oldActual": -0.15333333333333315
+      },
+      {
+        "step": 320,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.15333333333333315,
+        "proposed": -0.1599999999999998,
+        "oldActual": -0.1599999999999998
+      },
+      {
+        "step": 321,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.1599999999999998,
+        "proposed": -0.16666666666666646,
+        "oldActual": -0.16666666666666646
+      },
+      {
+        "step": 322,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.16666666666666646,
+        "proposed": -0.17333333333333312,
+        "oldActual": -0.17333333333333312
+      },
+      {
+        "step": 323,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.17333333333333312,
+        "proposed": -0.17999999999999977,
+        "oldActual": -0.17999999999999977
+      },
+      {
+        "step": 324,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.17999999999999977,
+        "proposed": -0.18666666666666643,
+        "oldActual": -0.18666666666666643
+      },
+      {
+        "step": 325,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.18666666666666643,
+        "proposed": -0.19333333333333308,
+        "oldActual": -0.19333333333333308
+      },
+      {
+        "step": 326,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.19333333333333308,
+        "proposed": -0.19999999999999973,
+        "oldActual": -0.19999999999999973
+      },
+      {
+        "step": 327,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.19999999999999973,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 328,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 329,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 330,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 331,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 332,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 333,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 334,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 335,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 336,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 337,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 338,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 339,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 340,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 341,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 342,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 343,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 344,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 345,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 346,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 347,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 348,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 349,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 350,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 351,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 352,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 353,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 354,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 355,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 356,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 357,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 358,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 359,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 360,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 361,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 362,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 363,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 364,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 365,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 366,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 367,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 368,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 369,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 370,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 371,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 372,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 373,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 374,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 375,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 376,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 377,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 378,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 379,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 380,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 381,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 382,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 383,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 384,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      },
+      {
+        "step": 385,
+        "inputPhase": "standing",
+        "requested": -1,
+        "limited": -0.2,
+        "previous": -0.2,
+        "proposed": -0.2,
+        "oldActual": -0.2
+      }
+    ],
+    "differences": [
+      {
+        "step": 11,
+        "inputPhase": "prone",
+        "requested": 1,
+        "limited": 0.2,
+        "previous": 0,
+        "proposed": 0.006666666666666667,
+        "oldActual": 1
+      }
+    ],
+    "physicalEffectOfOnlyDifference": "Step11 immediately invokes normal popUp and starts push before ordinary physics. Existing rider stroke steering is prone-only; push has no upright steering lean. Observed oldsteer1 versus currentsteer0 trials have exactly identical geometry through84. The proposed intermediate0.0066667 has no active steering force/pose path in that step.",
+    "observedOldVersusZeroTargetPrefix": {
+      "onlyInputDifferenceBefore85": [
+        {
+          "step": 11,
+          "old": {
+            "paddle": true,
+            "popUp": true,
+            "steer": 1,
+            "trim": 0,
+            "pocketReflex": false
+          },
+          "zeroTarget": {
+            "paddle": true,
+            "popUp": true,
+            "steer": 0,
+            "trim": 0,
+            "pocketReflex": false
+          }
+        }
+      ],
+      "boardAndBodyExactlyEqualThroughStep": 84,
+      "firstActualGeometryDifferenceStep": 85
+    },
+    "conditionalTrajectoryReuse": "If no exact qualified column activates, the proposed fallback reproduces the established385-step trajectory. No separate fallback-only game run is needed.",
+    "potentialNovelControl": "An exact qualified air column may exist away from the body and switch the new target-aware policy before385; old data did not execute that selector, so this conditional is unresolved."
+  },
+  "retainedTrajectory": {
+    "steps": 385,
+    "physicalSeconds": 6.416666666666667,
+    "popupStep": 11,
+    "firstStanding": {
+      "step": 83,
+      "seaTime": 363.19004276701423,
+      "physicalSeconds": 1.3833333333333333
+    },
+    "earliestCrouchInputStep": 84,
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 385,
+      "phase": "fallen",
+      "separation": "balance",
+      "resets": 0
+    },
+    "standingRows": 302,
+    "firstBehindGaugeCrestStep": 260,
+    "zeroTargetFirstBehindStep": 271,
+    "maximumBodyBankDegrees": 10.851730371562446,
+    "shorewardBoardAdvance": 43.22473373569483,
+    "zeroTargetShorewardAdvance": 41.366138924467094,
+    "noCrestBreakingRows": true,
+    "lastStandingWaveAhead": -11.601889746974138,
+    "witnessCounts": {
+      "outside": 302
+    },
+    "bodyColumnCandidates": {
+      "count": 115,
+      "firstStep": 353,
+      "lastStep": 384,
+      "allOneCrossing": true,
+      "allExteriorFront109": true,
+      "airBands": 0,
+      "unambiguousBodyCavities": 0
+    },
+    "entry": {
+      "observedStandingOutside": true,
+      "firstPartial": null,
+      "firstConnectedWitnessEntry": null,
+      "containmentWithoutObservedOutside": null,
+      "firstConnectedWitnessExit": null,
+      "maximumConsecutiveContainedSteps": 0,
+      "residenceIntervals": [],
+      "fullBodyClearancePass": false
+    },
+    "oldMovieTrigger": {
+      "triggered": true,
+      "step": 240,
+      "seaTime": 365.80670943368074,
+      "physicalSeconds": 4,
+      "loftIndexCount": 88578,
+      "curlDistance": 15,
+      "curlDistanceFinite": true,
+      "finiteCurlNear": true,
+      "witnessClassification": "outside",
+      "witnessQualifies": false
+    },
+    "oldMovieTriggerScope": "Finite curlDistance proxy only; it is not an actual qualified air-column or entry witness.",
+    "checkpoints": [
+      {
+        "step": 0,
+        "labels": [
+          "initial-prone-after-install-ready"
+        ],
+        "rawCount": 74,
+        "drawn": {
+          "sliceCount": 129,
+          "vertexCount": 17286,
+          "indexCount": 90972,
+          "groups": [
+            {
+              "front": 6,
+              "sliceCount": 8,
+              "positiveWeightCount": 3,
+              "formedCount": 3,
+              "joinedToNextCount": 7,
+              "sigmaMin": -1.5,
+              "sigmaMax": 0.8800309300422668,
+              "tauMin": -0.5902241468429565,
+              "tauMax": 1.074326515197754
+            },
+            {
+              "front": 26,
+              "sliceCount": 6,
+              "positiveWeightCount": 1,
+              "formedCount": 2,
+              "joinedToNextCount": 5,
+              "sigmaMin": -1.5,
+              "sigmaMax": 0.8948929309844971,
+              "tauMin": 0.9346407651901245,
+              "tauMax": 1.0264137983322144
+            },
+            {
+              "front": 56,
+              "sliceCount": 61,
+              "positiveWeightCount": 53,
+              "formedCount": 0,
+              "joinedToNextCount": 60,
+              "sigmaMin": -1.5,
+              "sigmaMax": 28.20820426940918,
+              "tauMin": -0.39073672890663147,
+              "tauMax": -0.13692337274551392
+            },
+            {
+              "front": 79,
+              "sliceCount": 26,
+              "positiveWeightCount": 18,
+              "formedCount": 17,
+              "joinedToNextCount": 25,
+              "sigmaMin": -1.5,
+              "sigmaMax": 8.302278518676758,
+              "tauMin": -0.02327122539281845,
+              "tauMax": 0.8364329934120178
+            },
+            {
+              "front": 85,
+              "sliceCount": 28,
+              "positiveWeightCount": 19,
+              "formedCount": 4,
+              "joinedToNextCount": 17,
+              "sigmaMin": -1.5,
+              "sigmaMax": 11.768956184387207,
+              "tauMin": -0.16162407398223877,
+              "tauMax": 0.1847069412469864
+            }
+          ]
+        }
+      },
+      {
+        "step": 83,
+        "labels": [
+          "first-standing"
+        ],
+        "rawCount": 80,
+        "drawn": {
+          "sliceCount": 171,
+          "vertexCount": 22914,
+          "indexCount": 127680,
+          "groups": [
+            {
+              "front": 6,
+              "sliceCount": 6,
+              "positiveWeightCount": 1,
+              "formedCount": 2,
+              "joinedToNextCount": 5,
+              "sigmaMin": -1.5,
+              "sigmaMax": 0.5,
+              "tauMin": -0.5902241468429565,
+              "tauMax": 0.8129721879959106
+            },
+            {
+              "front": 56,
+              "sliceCount": 84,
+              "positiveWeightCount": 74,
+              "formedCount": 37,
+              "joinedToNextCount": 82,
+              "sigmaMin": -1.5,
+              "sigmaMax": 39.000892639160156,
+              "tauMin": -0.39073672890663147,
+              "tauMax": 1.0665743350982666
+            },
+            {
+              "front": 85,
+              "sliceCount": 16,
+              "positiveWeightCount": 8,
+              "formedCount": 8,
+              "joinedToNextCount": 15,
+              "sigmaMin": -1.5,
+              "sigmaMax": 5.828060150146484,
+              "tauMin": 1.279981255531311,
+              "tauMax": 1.5680402517318726
+            },
+            {
+              "front": 87,
+              "sliceCount": 29,
+              "positiveWeightCount": 21,
+              "formedCount": 17,
+              "joinedToNextCount": 26,
+              "sigmaMin": -1.5,
+              "sigmaMax": 7.966341972351074,
+              "tauMin": -0.14817382395267487,
+              "tauMax": 0.7378655672073364
+            },
+            {
+              "front": 91,
+              "sliceCount": 36,
+              "positiveWeightCount": 28,
+              "formedCount": 0,
+              "joinedToNextCount": 32,
+              "sigmaMin": -1.5,
+              "sigmaMax": 15.736067771911621,
+              "tauMin": -0.4100426435470581,
+              "tauMax": -0.06372015178203583
+            }
+          ]
+        }
+      },
+      {
+        "step": 385,
+        "labels": [
+          "final"
+        ],
+        "rawCount": 115,
+        "drawn": {
+          "sliceCount": 203,
+          "vertexCount": 27202,
+          "indexCount": 158004,
+          "groups": [
+            {
+              "front": 56,
+              "sliceCount": 7,
+              "positiveWeightCount": 2,
+              "formedCount": 3,
+              "joinedToNextCount": 6,
+              "sigmaMin": -1.5,
+              "sigmaMax": 0.7335863709449768,
+              "tauMin": -0.39073672890663147,
+              "tauMax": 0.8147667646408081
+            },
+            {
+              "front": 109,
+              "sliceCount": 32,
+              "positiveWeightCount": 24,
+              "formedCount": 0,
+              "joinedToNextCount": 31,
+              "sigmaMin": -1.5,
+              "sigmaMax": 13.972135543823242,
+              "tauMin": -1.0972529649734497,
+              "tauMax": -0.6580266356468201
+            },
+            {
+              "front": 117,
+              "sliceCount": 12,
+              "positiveWeightCount": 4,
+              "formedCount": 4,
+              "joinedToNextCount": 11,
+              "sigmaMin": -1.5,
+              "sigmaMax": 3.5467641353607178,
+              "tauMin": 1.0011087656021118,
+              "tauMax": 1.2574597597122192
+            },
+            {
+              "front": 122,
+              "sliceCount": 40,
+              "positiveWeightCount": 32,
+              "formedCount": 6,
+              "joinedToNextCount": 39,
+              "sigmaMin": -1.5,
+              "sigmaMax": 13.94945240020752,
+              "tauMin": -0.466314435005188,
+              "tauMax": 0.31546756625175476
+            },
+            {
+              "front": 124,
+              "sliceCount": 112,
+              "positiveWeightCount": 104,
+              "formedCount": 7,
+              "joinedToNextCount": 111,
+              "sigmaMin": -1.5,
+              "sigmaMax": 44.14741134643555,
+              "tauMin": -0.9832779765129089,
+              "tauMax": 0.19708354771137238
+            }
+          ]
+        }
+      }
+    ],
+    "drawnIncoming109AtFall": {
+      "front": 109,
+      "sliceCount": 32,
+      "positiveWeightCount": 24,
+      "formedCount": 0,
+      "joinedToNextCount": 31,
+      "sigmaMin": -1.5,
+      "sigmaMax": 13.972135543823242,
+      "tauMin": -1.0972529649734497,
+      "tauMax": -0.6580266356468201
+    }
+  },
+  "newObservationRequired": {
+    "question": "Along the already-known production line trajectory, is there any near, forward, connected three-crossing exact column with declared1.23m nominal vertical demand before the wave is lost, and does it belong to the incoming local front rather than a distant older front?",
+    "missingOldData": [
+      "Actual full loft positions/indices/rays/row phase and weight/life/formed per ordinary step, needed for exact target selection",
+      "Raw front x/z/footHeight/footDepth per step, needed for local incoming-front versus old-global-front navigation",
+      "Support flags/through-water speed/exact release cause for the385 trajectory"
+    ],
+    "alreadyKnown": [
+      "Fallback line steering alone produces no body air-band witness and still loses the wave",
+      "Longer standing does not demonstrate a tube opening, support quality or successful entry",
+      "115 late body candidates are ordinary exterior water columns, not tube air"
+    ],
+    "novelTrialOnlyIfAuthorized": "An instrumented target-aware fallback could resolve off-body qualified-column availability and actual switch/lock, while retaining near-front/support observations. It must not be described as a new test of fallback-only survival or as an already-proven successful onramp."
+  },
+  "recommendation": "Reuse385-step fallback-only survival and body-witness evidence; do not rerun the same approach merely to confirm it stands longer. No rider physics/spawn fix is justified by this comparison. A further trial needs the explicitly novel exact-column/local-front observation and target-switch question, not another steering-only replay.",
+  "correctionToEarlierFrozenSupportProse": "SurfZoneRunner.board and rider buffers are Float64Array (src/wave/SurfZoneRunner.ts274\u2013275,694\u2013695), not Float32Array. Exact native geometry equality is unchanged. Raw front and loft arrays remain their separately documented types.",
+  "limits": [
+    "Replaying a steering limiter on saved requests does not replay physics or evaluate an absent exact selector. Conditional trajectory equivalence uses the source phase gate and observed84-step equality.",
+    "Old checkpoints retain front IDs/sigma/tau and formed counts, but no full positions/indices. Body exterior columns do not prove absence of a nearby air column away from the body.",
+    "The old owner protected the two user ports then present4310/4311; it predates4312. The later support owner preserved all three. No live port probe is made here."
+  ],
+  "originalInputReceiptsUnchangedAfterComparison": true
+}

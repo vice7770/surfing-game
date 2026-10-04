@@ -1,5 +1,7 @@
 # Active goal: good tubes
 
+The completed [ordinary rider support trace](rider-support/README.md) reproduces the prior 314-step trajectory exactly and records release as `posture-error → tip → balance`, before any tube entry. Contact recovers briefly after the off-planing handoff, then fails persistently as board roll and tip demand grow. No rider-physics fix is established. A separate comparison shows that restoring bounded production line steering would largely repeat the existing 385-step trial, whose late body columns remain exterior and whose nearby front is unformed. The recorded branch narrows the investigation; neither result establishes a usable tube approach or passage.
+
 The user's current goal is to make the game produce good tubes. Performance tuning is paused: the latest ordinary High Padang Big 90-second sample draws 60 FPS, although physics progress falls to 51.08 steps per wall second in its final predeclared 80–90-second window. [Retained FPS evidence](../performance-2026-10-04/zero-mask-fps/README.md).
 
 **Tubes exist, but the tube goal is unfinished.** The game produces swept barrel geometry and observed opening, touchdown and retirement events. These facts do not establish a clean hollow opening, a coherent moving lip, safe rider passage, or the appearance requested from YouTube 2:00–2:30. The severe jagged fins and tears in the user's recording remain unresolved.
