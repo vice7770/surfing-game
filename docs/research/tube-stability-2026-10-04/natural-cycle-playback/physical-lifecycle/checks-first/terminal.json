@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "readySha256": "4e0bb9152cbc50dbd0335e1b16834ae6e262483dabe463c11e0e2f1e2e4d12ee",
+  "started": "2026-10-04T04:08:15.170Z",
+  "status": "passed",
+  "commands": [
+    {
+      "name": "strict",
+      "executable": "./node_modules/.bin/tsc",
+      "args": [
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "tsconfig.lifecycle.json"
+      ],
+      "timeout": 60000,
+      "pid": 94628,
+      "started": "2026-10-04T04:08:15.171Z",
+      "ended": "2026-10-04T04:08:17.116Z",
+      "code": 0,
+      "signal": null,
+      "timedOut": false
+    },
+    {
+      "name": "lifecycle",
+      "executable": "./node_modules/.bin/vitest",
+      "args": [
+        "run",
+        "--config",
+        "vitest.lifecycle.config.ts",
+        "--maxWorkers",
+        "1",
+        "lifecycle.test.ts"
+      ],
+      "timeout": 125000,
+      "pid": 94662,
+      "started": "2026-10-04T04:08:17.116Z",
+      "ended": "2026-10-04T04:08:42.794Z",
+      "code": 0,
+      "signal": null,
+      "timedOut": false
+    }
+  ],
+  "ended": "2026-10-04T04:08:42.809Z"
+}

@@ -1,0 +1,112 @@
+[
+  {
+    "phase": 1,
+    "argv": [
+      "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "cwd": "/private/tmp/surf-tube-natural-playback-20261004",
+    "env": {
+      "NATURAL_TUBE_READY_SHA256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436"
+    },
+    "pid": 2552,
+    "startedAt": "2026-10-04T04:32:54.662316+00:00",
+    "endedAt": "2026-10-04T04:32:57.323243+00:00",
+    "exit": 0,
+    "stdout": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/01-stdout.log",
+    "stderr": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/01-stderr.log"
+  },
+  {
+    "phase": 2,
+    "argv": [
+      "node",
+      "build.mjs"
+    ],
+    "cwd": "/private/tmp/surf-tube-natural-playback-20261004",
+    "env": {
+      "NATURAL_TUBE_READY_SHA256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436"
+    },
+    "pid": 2582,
+    "startedAt": "2026-10-04T04:32:57.323796+00:00",
+    "endedAt": "2026-10-04T04:32:57.747631+00:00",
+    "exit": 0,
+    "stdout": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/02-stdout.log",
+    "stderr": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/02-stderr.log"
+  },
+  {
+    "phase": 3,
+    "argv": [
+      "node",
+      "--check",
+      "authority.mjs"
+    ],
+    "cwd": "/private/tmp/surf-tube-natural-playback-20261004",
+    "env": {
+      "NATURAL_TUBE_READY_SHA256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436"
+    },
+    "pid": 2585,
+    "startedAt": "2026-10-04T04:32:57.748280+00:00",
+    "endedAt": "2026-10-04T04:32:57.795568+00:00",
+    "exit": 0,
+    "stdout": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/03-stdout.log",
+    "stderr": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/03-stderr.log"
+  },
+  {
+    "phase": 4,
+    "argv": [
+      "node",
+      "--check",
+      "build.mjs"
+    ],
+    "cwd": "/private/tmp/surf-tube-natural-playback-20261004",
+    "env": {
+      "NATURAL_TUBE_READY_SHA256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436"
+    },
+    "pid": 2586,
+    "startedAt": "2026-10-04T04:32:57.796311+00:00",
+    "endedAt": "2026-10-04T04:32:57.832255+00:00",
+    "exit": 0,
+    "stdout": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/04-stdout.log",
+    "stderr": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/04-stderr.log"
+  },
+  {
+    "phase": 5,
+    "argv": [
+      "node",
+      "--check",
+      "device-gate.mjs"
+    ],
+    "cwd": "/private/tmp/surf-tube-natural-playback-20261004",
+    "env": {
+      "NATURAL_TUBE_READY_SHA256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436"
+    },
+    "pid": 2587,
+    "startedAt": "2026-10-04T04:32:57.832725+00:00",
+    "endedAt": "2026-10-04T04:32:57.873853+00:00",
+    "exit": 0,
+    "stdout": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/05-stdout.log",
+    "stderr": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/05-stderr.log"
+  },
+  {
+    "phase": 6,
+    "argv": [
+      "node",
+      "device-gate.mjs",
+      "--run=false"
+    ],
+    "cwd": "/private/tmp/surf-tube-natural-playback-20261004",
+    "env": {
+      "NATURAL_TUBE_READY_SHA256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436"
+    },
+    "pid": 2588,
+    "startedAt": "2026-10-04T04:32:57.874344+00:00",
+    "endedAt": "2026-10-04T04:32:58.006069+00:00",
+    "exit": 0,
+    "stdout": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/06-stdout.log",
+    "stderr": "/private/tmp/surf-tube-natural-playback-20261004/checks-baseline-authority/06-stderr.log"
+  }
+]

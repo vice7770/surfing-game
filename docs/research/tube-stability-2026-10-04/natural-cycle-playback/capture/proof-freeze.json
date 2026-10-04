@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "status": "PASS_CORRECTED_STRICT_AND_ONE_ACTUAL_CAPTURE_ALL21WITNESSES",
+  "records": [
+    {
+      "path": "ready.json",
+      "bytes": 2717,
+      "sha256": "64d901973358620c61e9d13e05689300a781783bac93c52c31ed05bcf1996fbf"
+    },
+    {
+      "path": "capture.test.ts",
+      "bytes": 11716,
+      "sha256": "20088093e6a6f48fbd1ff214840f0de8a343b4646607925414bc74bc5b1c476b"
+    },
+    {
+      "path": "type-only-correction.patch",
+      "bytes": 1376,
+      "sha256": "3e173a6ad059d7aa82503aa53703b068bc4131c154822119ec96df2441561614"
+    },
+    {
+      "path": "run-corrected.mjs",
+      "bytes": 3849,
+      "sha256": "6b475ffe2a10b1573f44a86182bb9690fc014a40d05352a2a515931564e26375"
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 24956,
+      "sha256": "357b6621aad73061a90808c82d890ef2a318a2082476c41d171d8d06a24a8042"
+    },
+    {
+      "path": "reference.json",
+      "bytes": 278,
+      "sha256": "66ce6588cb4fdfb3667ea97a34953ba39155e631608bb3a97129a7e97d23f6ff"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 824,
+      "sha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928"
+    },
+    {
+      "path": "proposal.json",
+      "bytes": 5305,
+      "sha256": "7368e1787f30d32a96cd4097bcd38414c97dabc8984e120a0fb2c8de79de43bd"
+    },
+    {
+      "path": "tsconfig.capture.json",
+      "bytes": 600,
+      "sha256": "89f4432ad029da5b9bc3c364e347144a788d85f91014ed2868c5672663e6849b"
+    },
+    {
+      "path": "vitest.capture.config.ts",
+      "bytes": 244,
+      "sha256": "ebbb2384c9a8fc2eee56e8ebe419a06b6c280111b42d9876272230abf69fa074"
+    },
+    {
+      "path": "capture-first/manifest.json",
+      "bytes": 136008,
+      "sha256": "8fdef05796e919cd241d303e10cc88fea031bdb21418bacc3bbdcb9a59e48b67"
+    },
+    {
+      "path": "capture-first/frames.bin.gz",
+      "bytes": 33425811,
+      "sha256": "5b9f2e4a081472d3cf88461f5129e529b90639e01a522fc08c0a7edd9b7c8c9d"
+    },
+    {
+      "path": "slice-verification.json",
+      "bytes": 35123,
+      "sha256": "cd326c1955e2749e03fb1c5e47f6422d41517d52d7c333cba900934a5afa3636"
+    },
+    {
+      "path": "corrected-console.log",
+      "bytes": 1307,
+      "sha256": "c9fa5172231b33097440c876bcaec1f23355f14094a53ac470f9ec3871ced96b"
+    },
+    {
+      "path": "checks-capture-corrected/before.json",
+      "bytes": 18528,
+      "sha256": "4d9b0682afc4565909ae1ec301eb9289f34ed9a5c1b7423a37013d113c5db09f"
+    },
+    {
+      "path": "checks-capture-corrected/after.json",
+      "bytes": 18528,
+      "sha256": "4d9b0682afc4565909ae1ec301eb9289f34ed9a5c1b7423a37013d113c5db09f"
+    },
+    {
+      "path": "checks-capture-corrected/terminal.json",
+      "bytes": 1080,
+      "sha256": "d56a2d59883cb2b2c514bb49dc69fceee8d4af56874b29aa2887d2a1d8c390b7"
+    },
+    {
+      "path": "checks-capture-corrected/strict.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-capture-corrected/strict.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-capture-corrected/capture.stdout.log",
+      "bytes": 193,
+      "sha256": "2982779eb38dd34e5f9e898aa791581fd32e2bf6a6b3b32fa152d5468c0e455a"
+    },
+    {
+      "path": "checks-capture-corrected/capture.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-capture-first/first-failure-freeze.json",
+      "bytes": 3213,
+      "sha256": "1418bad0ec2cc8f1b4fc9f4de289f4d8e20310a0300e9200ae1b46c343e96528"
+    },
+    {
+      "path": "ready-first.json",
+      "bytes": 1851,
+      "sha256": "70f3f582a55e444ff24753235891288e73ab06cd6abd198323046a1227a5217a"
+    }
+  ],
+  "binaryExpanded": {
+    "bytes": 61541540,
+    "sha256": "21585d0aadb5f9ff9f7901d6151b28036f63f3fc0b026ec245d25876f2b8393f"
+  },
+  "firstFailureAuthority": "checks-capture-first/first-failure-freeze.json preservesTS7022attempt+alloriginalsource; onlytypeimport/twoannotationsapproved3-linecorrection. No firstphysicalcaptureranuntilcorrectedstrictPASS.",
+  "beforeAfterByteIdentical": true,
+  "checkedFields": 132,
+  "checkedFrames": 21,
+  "limits": [
+    "Natural repeat of exact fixed originalCPUfixture; compare all21 materialpoint/strip/clock witnesses to originalproof.",
+    "No selected ID retarget, no clocks or geometry prescribed, no solver/front/lip/callback mutations.",
+    "Full F32published render fields+F64h provenance retained; qx/qz sourcearrays not required by WaterSurface and not duplicated.",
+    "Snapshot playback is an offline naturally evolved component stream, not live worker/GPU timing or nativevisual acceptance.",
+    "Shading/displayflow every-other-frame cadence remains actual WaterSurface behavior; each frame supplies original current.",
+    "No farfield/sky/camera/particle/rider inputs captured; bounded tube+water inspection only."
+  ],
+  "terminal": "04:15:02UTC, bothcommands0. Verificationdecompress/hash/slicesonly; no simulationretry/otherchecks/build/GPU/Git/production."
+}

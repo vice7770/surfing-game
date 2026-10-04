@@ -1,0 +1,11 @@
+--- parent-camera-instruction/entry.ts
++++ actual-production-api/entry.ts
+@@ -133,7 +133,7 @@
+       Object.assign(host.snapshot, { front: current.front, frontCount: frame.frontCount, surface: current.surface, flow: current.flow,
+         aeration: current.aeration, tubes: current.tubes, tubeCount: frame.actualTubeCount,
+         status: { seaTime: frame.seaTime, naturalFrame: index, view } });
+-      water.update(camera); PhysicalMode.prototype.drawBarrel.call(mode);
++      water.update(); PhysicalMode.prototype.drawBarrel.call(mode);
+       const below = PhysicalMode.prototype.cameraBelowSurface.call(mode);
+       scene.fog = below ? new FogExp2('#1e7a87', .12) : null; environment.group.position.copy(camera.position);
+       camera.getWorldDirection(ahead); caustics.render(renderer, camera.position.x + ahead.x * CAUSTIC_WINDOW / 3, camera.position.z + ahead.z * CAUSTIC_WINDOW / 3);

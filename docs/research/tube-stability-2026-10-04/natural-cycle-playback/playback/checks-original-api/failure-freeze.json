@@ -1,0 +1,119 @@
+{
+  "schema": "natural-playback-original-api-build-failure-freeze/v1",
+  "status": "strict-pass-build-failed-stopped",
+  "sourceReadySha256": "a48fa015c25bef9532304396e2ca841662f63705e9b1a48df13187e0a4bdf835",
+  "error": "Missing canonical baseline aliases for reviewed owned overlays in authority set; resolver retained strict pin guard.",
+  "runtimeChanged": false,
+  "hardwareStarted": false,
+  "sourceBeforeAfterIdentical": true,
+  "partialOutput": {
+    "root": "dist",
+    "directories": [
+      "dist/baseline"
+    ],
+    "files": [],
+    "preserved": true
+  },
+  "records": [
+    {
+      "path": "checks-original-api/failed-source/source-repair.json",
+      "bytes": 695,
+      "sha256": "60481aa169b750e320a0c307a4d7da1ff5f64647a8b8ba906e7532184d7b06db"
+    },
+    {
+      "path": "checks-original-api/failed-source/camera-update.patch",
+      "bytes": 880,
+      "sha256": "5a0b91c4efc6bfe8bb7fb5875985893ac9c94c447c2ad6b86d10fdb36885d830"
+    },
+    {
+      "path": "checks-original-api/failed-source/original-api-repair.json",
+      "bytes": 959,
+      "sha256": "9fc7d5ac2f8e43bf7227adf198ee579dc7ce5eaa7feea92e6a6b765dd27a8adb"
+    },
+    {
+      "path": "checks-original-api/failed-source/entry.ts",
+      "bytes": 16246,
+      "sha256": "884e82c40c9b2ff3d8442a0246aae4e5eff1741dab89a0729fd8fe0a20c8d4b4"
+    },
+    {
+      "path": "checks-original-api/failed-source/device-gate.mjs",
+      "bytes": 11686,
+      "sha256": "141b147255cf9fc717a82e6fbe853df57341fb8ead35b9bbe54b659c35dccfff"
+    },
+    {
+      "path": "checks-original-api/failed-source/original-api.patch",
+      "bytes": 897,
+      "sha256": "7496e4fec4b43df8e054a4bf09ca210c48823e3015d461fcb26a8c04b0110ded"
+    },
+    {
+      "path": "checks-original-api/failed-source/build.mjs",
+      "bytes": 2188,
+      "sha256": "61bf8096dbcd62a0477721c5112ba3f8cf6977cde27fbfc98ce27df7e4279d0b"
+    },
+    {
+      "path": "checks-original-api/failed-source/PLAN.md",
+      "bytes": 6410,
+      "sha256": "40831bf896e0e495a58e7b6b6cd55a5b12d08d39ed42c3ba16713bc59bba09a3"
+    },
+    {
+      "path": "checks-original-api/failed-source/tsconfig.json",
+      "bytes": 816,
+      "sha256": "01eb51421b892aef12b827d099ad6924f9ec1217f71faccb1460addd94c72536"
+    },
+    {
+      "path": "checks-original-api/failed-source/cameras.json",
+      "bytes": 986,
+      "sha256": "255b2e85030f1fe2974c6faa13c5e343f2e6eae735ac5b0533aaa804df6d0fed"
+    },
+    {
+      "path": "checks-original-api/failed-source/ready.json",
+      "bytes": 7874,
+      "sha256": "a48fa015c25bef9532304396e2ca841662f63705e9b1a48df13187e0a4bdf835"
+    },
+    {
+      "path": "checks-original-api/failed-source/authority.mjs",
+      "bytes": 4302,
+      "sha256": "280c7bed9b20aaf2d06d5539178415794b58cca764744f78818eede1363c2774"
+    },
+    {
+      "path": "checks-original-api/01-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-original-api/01-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-original-api/02-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-original-api/02-stderr.log",
+      "bytes": 2841,
+      "sha256": "7c367931b106d6aceaf2fb7b66f1a5a853c53ca1cda499cf2ce32adbaed28a03"
+    },
+    {
+      "path": "checks-original-api/commands.json",
+      "bytes": 1332,
+      "sha256": "10f8e6bc405cd10f55f029acb070ec2d75296ba08c477af45e592e2e49d2a409"
+    },
+    {
+      "path": "checks-original-api/terminal.json",
+      "bytes": 1896,
+      "sha256": "fe8d298c7bbc47c54473a043d38e6da08cf6d0b27a147440eb631f8ec5089ade"
+    },
+    {
+      "path": "checks-original-api/before.json",
+      "bytes": 60132,
+      "sha256": "71ed27fb4e77d917ec2a51faf7a7ff9a4572e6a0e19a4beb192968a2d1d6b8e1"
+    },
+    {
+      "path": "checks-original-api/after.json",
+      "bytes": 60132,
+      "sha256": "71ed27fb4e77d917ec2a51faf7a7ff9a4572e6a0e19a4beb192968a2d1d6b8e1"
+    }
+  ]
+}

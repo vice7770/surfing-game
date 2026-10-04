@@ -1,0 +1,225 @@
+import assert from 'node:assert/strict';
+import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { it } from 'vitest';
+import { PADANG } from './source/src/wave/Bathymetry';
+import { SurfZoneSimulation, type SurfZoneConfig } from './source/src/wave/SurfZoneSimulation';
+import { PhysicalSurfWater } from './source/src/physics/PhysicalSurfWater';
+import { libraryFromBytes } from './source/src/wave/barrel/barrelLibrary';
+import type { FrontPoint } from './source/src/wave/barrel/BreakingFront';
+import { FRONT_FIELD, FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './source/src/wave/barrel/frontRecords';
+import { BARREL_SLOPE, LOFT, SweptLoft, collapseFade, type LoftResult } from './source/src/wave/barrel/sweptLoft';
+
+const ROOT = fileURLToPath(new URL('.', import.meta.url));
+const DT = 1 / 30;
+const SEARCH_STEPS = 900;
+const FOLLOW_STEPS = 240;
+const WALL_MS = 110_000;
+const REQUIRED = ['launch', 'drawnOpen', 'touchdown', 'stripClosed', 'pointFadeComplete', 'publicationFadeComplete', 'drawnRetired', 'stripRetired'] as const;
+const FIXTURE: SurfZoneConfig = {
+  spot: 'padang', seed: 3, significantHeight: 1.2, peakPeriod: 16, directionDegrees: 0, spreading: 150,
+  tide: 0, componentCount: 12, alongShore: PADANG.alongShore,
+  dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
+};
+interface CasePin { path: string; bytes: number; sha256: string }
+interface Selection {
+  pointId: number; jetStrip: number; step: number; time: number; seaTime: number;
+  column: number; front: number; x: number; z: number; tau: number; jetAt: number;
+}
+interface Bracket {
+  row: number; sigma0: number; sigma1: number; phase0: number; phase1: number;
+  fade0: number; fade1: number; weight0: number; weight1: number;
+  overturned0: number; overturned1: number;
+}
+interface Event { step: number; time: number }
+
+function packedBracket(loft: LoftResult, front: number, sigma: number): Bracket | null {
+  for (let row = 0; row + 1 < loft.sliceCount; row += 1) {
+    if (!loft.sliceJoined[row] || loft.sliceFront[row] !== front || loft.sliceFront[row + 1] !== front) continue;
+    const sigma0 = loft.sliceSigma[row];
+    const sigma1 = loft.sliceSigma[row + 1];
+    if (!(sigma >= sigma0 && sigma < sigma1)) continue;
+    return {
+      row, sigma0, sigma1, phase0: loft.slicePhase[row], phase1: loft.slicePhase[row + 1],
+      fade0: loft.sliceFade[row], fade1: loft.sliceFade[row + 1],
+      weight0: loft.sliceWeight[row], weight1: loft.sliceWeight[row + 1],
+      overturned0: loft.sliceOverturned[row], overturned1: loft.sliceOverturned[row + 1],
+    };
+  }
+  return null;
+}
+function drawnOpen(bracket: Bracket | null): boolean {
+  return bracket !== null && ((bracket.phase0 === 1 && bracket.overturned0 === 1 && bracket.weight0 > 0)
+    || (bracket.phase1 === 1 && bracket.overturned1 === 1 && bracket.weight1 > 0));
+}
+function drawnPositive(bracket: Bracket | null): boolean {
+  return bracket !== null && (bracket.weight0 > 0 || bracket.weight1 > 0);
+}
+function interior(points: readonly FrontPoint[], k: number): boolean {
+  const p = points[k];
+  let start = k;
+  let end = k;
+  while (start > 0 && points[start - 1].front === p.front) start -= 1;
+  while (end + 1 < points.length && points[end + 1].front === p.front) end += 1;
+  return Math.min(p.sigma - points[start].sigma, points[end].sigma - p.sigma) >= LOFT.endBlend;
+}
+
+it('observes one actual Padang material jet from new launch through drawn opening, touchdown, fade and strip retirement', () => {
+  const started = performance.now();
+  const traces: unknown[] = [];
+  const events: Record<string, Event | null> = {
+    launch: null, drawnOpen: null, touchdown: null, stripClosed: null,
+    pointFadeComplete: null, publicationFadeComplete: null, drawnRetired: null,
+    firstPointAbsent: null, stripRetired: null,
+  };
+  let selection: Selection | null = null;
+  let steps = 0;
+  let searchSteps = 0;
+  let followSteps = 0;
+  let status = 'failed';
+  let failure: unknown = null;
+  let final: unknown = null;
+  try {
+    // Separate actual libraries: observer scratch never touches the simulation's library scratch.
+    const casePins = JSON.parse(readFileSync(join(ROOT, 'cases.json'), 'utf8')) as CasePin[];
+    assert.equal(casePins.length, 4);
+    const bytes = casePins.map(pin => new Uint8Array(readFileSync(pin.path)));
+    const library = libraryFromBytes(bytes);
+    const observedLibrary = libraryFromBytes(bytes);
+    const simulation = new SurfZoneSimulation(FIXTURE, 'spun-up', library);
+    const front = simulation.front;
+    const crash = simulation.crash;
+    assert(front && crash, 'Actual swept front and crash must be enabled');
+    assert.equal(simulation.device, undefined, 'CPU fixture must not acquire a GPU');
+    assert.equal(simulation.solver.nx, 160);
+    const slope = BARREL_SLOPE.padang;
+    assert(slope !== undefined);
+    const drawing = new SweptLoft(observedLibrary, slope);
+    const water = new PhysicalSurfWater(simulation.solver, { peakPeriod: FIXTURE.peakPeriod, nodeSpacing: 1 });
+    const heightAt = water.plainSurfaceAt.bind(water);
+    const records = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
+    let chosenEverSeen = false;
+    const mark = (name: keyof typeof events) => { if (events[name] === null) events[name] = { step: steps, time: simulation.solver.time }; };
+    const step = () => {
+      assert(performance.now() - started < WALL_MS, 'Predeclared wall bound reached; no extension or retarget');
+      simulation.step(DT);
+      steps += 1;
+    };
+    const draw = (): LoftResult => {
+      assert(front.points.length <= FRONT_CAPACITY, 'No truncated source publication is permitted');
+      const count = writeFrontRecords(front.points, records);
+      assert.equal(count, front.points.length);
+      return water.withSurfaceNodeCache(() => drawing.build(records, count, simulation.solver.restLevel, heightAt));
+    };
+    const observe = (loft: LoftResult) => {
+      assert(selection);
+      const chosen = selection;
+      const k = front.points.findIndex(p => p.id === chosen.pointId);
+      const p = k >= 0 ? front.points[k] : undefined;
+      const lip = simulation.lip.exportState();
+      const strip = lip.strips.find(([id]) => id === chosen.jetStrip)?.[1];
+      let bracket: Bracket | null = null;
+      let pointFade: number | null = null;
+      let packedFade: number | null = null;
+      let packed: number[] | null = null;
+      if (p) {
+        assert.equal(p.jetStrip, chosen.jetStrip, 'Chosen material point must retain its original jet; never retarget');
+        assert.equal(p.id, chosen.pointId);
+        chosenEverSeen = true;
+        packed = Array.from(records.subarray(k * FRONT_STRIDE, (k + 1) * FRONT_STRIDE));
+        bracket = packedBracket(loft, packed[FRONT_FIELD.front], packed[FRONT_FIELD.sigma]);
+        const query = { slope, footHeight: p.footHeight, footDepth: p.footDepth };
+        const times = observedLibrary.profileTimes(query);
+        pointFade = collapseFade(p.tau, times.touchdownSeconds, times.collapseSeconds);
+        const packedTimes = observedLibrary.profileTimes({ slope,
+          footHeight: packed[FRONT_FIELD.footHeight], footDepth: packed[FRONT_FIELD.footDepth] });
+        packedFade = collapseFade(packed[FRONT_FIELD.tau], packedTimes.touchdownSeconds, packedTimes.collapseSeconds);
+        if (drawnOpen(bracket)) mark('drawnOpen');
+        if (p.crashedAt !== undefined) {
+          mark('touchdown');
+          assert(p.crashedAt >= chosen.time, 'Touchdown must follow selected launch');
+        }
+        if (pointFade === 0) mark('pointFadeComplete');
+        if (packedFade === 0) mark('publicationFadeComplete');
+        // Absence alone is insufficient. Require the same present ID's published clock to have completed its actual fade.
+        if (packedFade === 0 && bracket === null) mark('drawnRetired');
+      } else {
+        assert(chosenEverSeen);
+        mark('firstPointAbsent');
+      }
+      if (strip) {
+        assert.equal(strip.swept, true);
+        assert.equal(strip.tube?.id, chosen.jetStrip);
+        if (strip.tube?.closedAt !== null && strip.tube?.closedAt !== undefined) mark('stripClosed');
+      } else {
+        assert(events.stripClosed, 'Chosen strip vanished without observing its actual closure');
+        mark('stripRetired');
+      }
+      traces.push({ step: steps, time: simulation.solver.time, seaTime: simulation.seaTime,
+        point: p ? { ...p } : null, packed, sourceOrdinal: k, bracket, pointFade, packedFade,
+        strip: strip ? { ...strip, parcels: [...strip.parcels] } : null,
+        selectedParcelIds: lip.fields.id.filter((_id, i) => lip.fields.strip[i] === chosen.jetStrip),
+        lipTime: lip.time, lipLandings: lip.landings,
+        frontCount: front.points.length, drawnSlices: loft.sliceCount, drawnVertices: loft.vertexCount,
+        crashCounts: { ...crash.counts },
+        selectedExited: crash.exited.some(p => p.id === chosen.pointId),
+        selectedFadeExited: crash.fadeExited.some(p => p.id === chosen.pointId),
+      });
+    };
+    while (searchSteps < SEARCH_STEPS && selection === null) {
+      step(); searchSteps += 1;
+      const lip = simulation.lip.exportState();
+      const eligible = front.points.map((p, k) => ({ p, k })).filter(({ p, k }) => {
+        if (p.jetStrip === undefined || p.jetStrip < 0 || p.jetAt !== simulation.solver.time || p.crashedAt !== undefined || !interior(front.points, k)) return false;
+        const times = observedLibrary.profileTimes({ slope, footHeight: p.footHeight, footDepth: p.footDepth });
+        const strip = lip.strips.find(([id]) => id === p.jetStrip)?.[1];
+        return p.tau >= 0 && p.tau < times.touchdownSeconds && times.collapseSeconds > 0
+          && strip?.swept === true && strip.held === true && strip.tube?.closedAt === null;
+      }).sort((a, b) => a.p.id - b.p.id);
+      if (eligible.length === 0) continue;
+      const loft = draw();
+      // First eligible frame, lowest actual ID with positive current drawn lift. Opening is a separate later event gate.
+      for (const { p, k } of eligible) {
+        const offset = k * FRONT_STRIDE;
+        if (!drawnPositive(packedBracket(loft, records[offset + FRONT_FIELD.front], records[offset + FRONT_FIELD.sigma]))) continue;
+        assert(p.jetStrip !== undefined && p.jetAt !== undefined);
+        selection = { pointId: p.id, jetStrip: p.jetStrip, step: steps, time: simulation.solver.time,
+          seaTime: simulation.seaTime, column: p.column, front: p.front, x: p.x, z: p.z, tau: p.tau, jetAt: p.jetAt };
+        mark('launch');
+        observe(loft);
+        break;
+      }
+    }
+    assert(selection, 'No new interior actual held jet with positive drawn lift within900 fixed steps; coverage fails without retarget or extension');
+    while (followSteps < FOLLOW_STEPS) {
+      if (REQUIRED.every(name => events[name] !== null)) break;
+      step(); followSteps += 1;
+      observe(draw());
+    }
+    final = { time: simulation.solver.time, seaTime: simulation.seaTime, grid: { nx: simulation.solver.nx, nz: simulation.solver.nz },
+      chosenStillActive: front.points.some(p => p.id === selection!.pointId),
+      chosenStripPresent: simulation.lip.exportState().strips.some(([id]) => id === selection!.jetStrip),
+      crashCounts: { ...crash.counts }, lipLandings: simulation.lip.landings };
+    for (const name of REQUIRED) {
+      assert(events[name], `Selected material lifecycle coverage missing ${name}; no repair/retarget/longer run`);
+    }
+    assert(events.touchdown!.step >= events.launch!.step);
+    assert(events.drawnRetired!.step >= events.touchdown!.step);
+    assert(events.stripRetired!.step >= events.stripClosed!.step);
+    status = 'passed';
+  } catch (error) {
+    failure = error instanceof Error ? { name: error.name, message: error.message, stack: error.stack } : String(error);
+    throw error;
+  } finally {
+    const out = join(ROOT, 'run'); mkdirSync(out, { recursive: true });
+    writeFileSync(join(out, 'result.json'), JSON.stringify({ schema: 1, status, scope: 'one fresh F64 CPU Padang material lifecycle, observer-only',
+      fixture: FIXTURE, constructor: 'spun-up; actual adaptive CPU water-only16s then breaking.update(0)',
+      dt: DT, bounds: { searchSteps: SEARCH_STEPS, followSteps: FOLLOW_STEPS, wallMs: WALL_MS },
+      steps, searchSteps, followSteps, selection, events, final, failure, traces,
+      limits: ['no native/GPU or renderer acceptance', 'point removal is reported, not required; a faded point can match normally',
+        'strip retirement is actual ID absence after observed closure, not packed-record absence',
+        'new constructed trajectory; no handover, captured historical state, body controls or FPS claim'],
+    }, null, 2) + '\n');
+  }
+}, 120_000);

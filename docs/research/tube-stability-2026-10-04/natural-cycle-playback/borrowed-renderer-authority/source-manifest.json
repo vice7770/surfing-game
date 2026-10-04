@@ -1,0 +1,224 @@
+{
+  "schema": "tube-late-fallback-current-source/v1",
+  "status": "SOURCE_AND_TEST_WRITING_ONLY_UNEXECUTED",
+  "rootSource": "Accepted e3e630bc45339e0f7564e59cfdd556275c06de92, including exact five prefetch runtime paths; all eight original renderer/test base paths remain byte-identical to retained fallback base.",
+  "productionModified": false,
+  "fullUnownedClosureClaim": false,
+  "ownedPaths": [
+    {
+      "path": "src/main.ts",
+      "baseBytes": 56808,
+      "baseSha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490",
+      "candidateBytes": 56932,
+      "candidateSha256": "862f790007b4ab6d8596b331e37b871d7349ca6178494bcf40b1287d5943edde",
+      "retainedCandidateSha256": "862f790007b4ab6d8596b331e37b871d7349ca6178494bcf40b1287d5943edde",
+      "retainedCandidateUnchanged": true
+    },
+    {
+      "path": "src/scene/WaterSurface.ts",
+      "baseBytes": 34094,
+      "baseSha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+      "candidateBytes": 38177,
+      "candidateSha256": "04d62102784270589eb78126ed4a4f31025c3e8b286532f64f91f3b01d2c1868",
+      "retainedCandidateSha256": "04d62102784270589eb78126ed4a4f31025c3e8b286532f64f91f3b01d2c1868",
+      "retainedCandidateUnchanged": true
+    },
+    {
+      "path": "src/scene/WaterSurface.test.ts",
+      "baseBytes": 11489,
+      "baseSha256": "539ad0199962bac31bfb043d78a01359a067819064e02353282bdf6087ee0b8f",
+      "candidateBytes": 20735,
+      "candidateSha256": "2bf9d749b88d0c13249e60b79c05bb30de8822937c62748065fd139d89c54fe2",
+      "retainedCandidateSha256": "2bf9d749b88d0c13249e60b79c05bb30de8822937c62748065fd139d89c54fe2",
+      "retainedCandidateUnchanged": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.ts",
+      "baseBytes": 28027,
+      "baseSha256": "cc52d17fb7cbf90621ec51a50b0236a055bd44b8794459361e41277000a88186",
+      "candidateBytes": 28551,
+      "candidateSha256": "01780b06d8bb01a992c4b9368be903d626cf5d5d915b917bf8898e73007e1479",
+      "retainedCandidateSha256": "01780b06d8bb01a992c4b9368be903d626cf5d5d915b917bf8898e73007e1479",
+      "retainedCandidateUnchanged": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.test.ts",
+      "baseBytes": 19338,
+      "baseSha256": "462cec51884ef8c351bf982decd5fafb35fa099c63f3427ea7e76c1c5deb7595",
+      "candidateBytes": 22513,
+      "candidateSha256": "79475b9469ac5d3ad80c395afeb60243bbb861236952f5145980519d0c1c5275",
+      "retainedCandidateSha256": "79475b9469ac5d3ad80c395afeb60243bbb861236952f5145980519d0c1c5275",
+      "retainedCandidateUnchanged": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrel.ts",
+      "baseBytes": 5620,
+      "baseSha256": "f52314fb81f295a7b389b5c74133a4c538c4060563e0c30ce5d89c311c724697",
+      "candidateBytes": 5667,
+      "candidateSha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383",
+      "retainedCandidateSha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383",
+      "retainedCandidateUnchanged": true
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrel.test.ts",
+      "baseBytes": 7770,
+      "baseSha256": "11996a0efc5f6095a9a975d80197f6bb6b4079d31fa624bde717c950e2adefe5",
+      "candidateBytes": 16986,
+      "candidateSha256": "8ae7b3f10c62fb5d0244b6169fc45cfc7b4f838faabd087b5d13576bfb76e3a1",
+      "retainedCandidateSha256": "110b39c7f192e814c944decff41e5304434a8a3d8432902e61c75c30333c3928",
+      "retainedCandidateUnchanged": false
+    },
+    {
+      "path": "src/scene/barrel/barrelMaskGlsl.ts",
+      "baseBytes": 1877,
+      "baseSha256": "d18790112d5c9b06903fffcce66f320e31974cec27e402c74b0030e608a1e589",
+      "candidateBytes": 2142,
+      "candidateSha256": "82a029625f3b9c48680166ccd16cb75028f1cc269a3e4690cf3a168b2f47f44b",
+      "retainedCandidateSha256": "82a029625f3b9c48680166ccd16cb75028f1cc269a3e4690cf3a168b2f47f44b",
+      "retainedCandidateUnchanged": true
+    },
+    {
+      "path": "src/scene/barrel/barrelFallback.ts",
+      "baseBytes": null,
+      "baseSha256": null,
+      "candidateBytes": 1174,
+      "candidateSha256": "cf2c4981ef25869fe7dcffdaba0fa9c91b3c1161a18db203673b059093c293ba",
+      "retainedCandidateSha256": "cf2c4981ef25869fe7dcffdaba0fa9c91b3c1161a18db203673b059093c293ba",
+      "retainedCandidateUnchanged": true
+    }
+  ],
+  "borrowedReferences": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/WorkerSurfZone.ts",
+      "bytes": 8319,
+      "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/SurfZoneWorkerCore.ts",
+      "bytes": 9863,
+      "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneRunner.ts",
+      "bytes": 40621,
+      "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.ts",
+      "bytes": 68993,
+      "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts",
+      "bytes": 23863,
+      "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/PhysicalMode.ts",
+      "bytes": 41672,
+      "sha256": "588f59b12a5aec7a1d51af16fed5949bcfadf61eb42503ed54391c31a19cf63f",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richPatch.ts",
+      "bytes": 4670,
+      "sha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/FftChop.ts",
+      "bytes": 7491,
+      "sha256": "6939107ec1ddb046e08b5e0ab2659a7eb15a43cd81e7c174411afb5b149858fd",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/toyCase.ts",
+      "bytes": 5444,
+      "sha256": "42031fd435cbd1decbcb67a6c3df48858482dbc2ddb380476eabb1ffbc6f885d",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-03/late-water-fallback/fallback.patch",
+      "bytes": 30224,
+      "sha256": "3607afff67f84979f432e9605dd292b8a8dbf5af09749323675b61620c498d8f",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-03/late-water-fallback/fallback-manifest.json",
+      "bytes": 7469,
+      "sha256": "9b8d3ed916921bc1113c82ecf11ca351acb33858b1e72d491e3948c5466263f6",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-03/late-water-fallback/pixel-air-controls.json",
+      "bytes": 13057,
+      "sha256": "b23878a2701c8a4bd90a5fc28b511fad749ebf627396d039b86371a1e00e195e",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-03/moving-mature-incomplete/offline-analysis.json",
+      "bytes": 30206,
+      "sha256": "ecdd17e4d792ffa8d307779afcca31609d7c80a792b2afff540e7ece3a586aa1",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "copied": false
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "copied": false
+    }
+  ],
+  "patchSha256": "77c8251d9ff6d90ccee80a0cf94b20900e443b132561db2e1d9e5e5d76fcc22c",
+  "sourceDifferenceFromRetainedFallback": "All eight non-lifecycle-test candidate paths byte-exact retained fallback; only SweptBarrel.test.ts has new imports plus two actual drawBarrel protocol/visibility tests. The speculative extra cached water sync was removed before source readiness because the real pipeline already calls water.update.",
+  "geometryPhysicsOrFogChanges": false,
+  "checksExecuted": false,
+  "nextGate": "Root source review before any dependency/config preparation or checks/build/hardware",
+  "baseGitRef": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+}

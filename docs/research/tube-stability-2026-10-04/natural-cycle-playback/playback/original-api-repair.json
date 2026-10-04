@@ -1,0 +1,11 @@
+{
+  "schema": "natural-playback-original-api-repair/v1",
+  "sourceReadyBefore": "17a5be2394ba3d40b5e85d508fdebb8a4b1014fd1dce64fe331816e97fafe0f6",
+  "previousEntrySha256": "d546cb5061de7dbfdef7871c14fe330e85262826471e0ef9fefae380b44289b5",
+  "newEntrySha256": "884e82c40c9b2ff3d8442a0246aae4e5eff1741dab89a0729fd8fe0a20c8d4b4",
+  "exactReplacement": {
+    "before": "water.update(camera); PhysicalMode.prototype.drawBarrel.call(mode);",
+    "after": "water.update(); PhysicalMode.prototype.drawBarrel.call(mode);"
+  },
+  "history": "The parent instructed camera argument before first checks. Strict TS2554 established zero-argument WaterSurface.update; parent acknowledged instruction error and authorized this single revert. Actual mesh/patch onBeforeRender callbacks already use the drawing camera. Original61c4 source restored byte-exact; first failed17a5 source/readiness/logs preserved immutable. No runtime/geometry/profile/camera/fog/mask changes."
+}

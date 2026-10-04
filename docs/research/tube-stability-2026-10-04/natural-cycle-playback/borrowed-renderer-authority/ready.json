@@ -1,0 +1,124 @@
+{
+  "schema": "tube-late-fallback-current-ready/v1",
+  "status": "SOURCE_ONLY_UNEXECUTED",
+  "baseGitRef": "e3e630bc45339e0f7564e59cfdd556275c06de92",
+  "root": "/private/tmp/surf-tube-fallback-current-20261004",
+  "records": [
+    {
+      "path": "baseline/src/main.ts",
+      "bytes": 56808,
+      "sha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490"
+    },
+    {
+      "path": "baseline/src/scene/WaterSurface.test.ts",
+      "bytes": 11489,
+      "sha256": "539ad0199962bac31bfb043d78a01359a067819064e02353282bdf6087ee0b8f"
+    },
+    {
+      "path": "baseline/src/scene/WaterSurface.ts",
+      "bytes": 34094,
+      "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000"
+    },
+    {
+      "path": "baseline/src/scene/barrel/SweptBarrel.test.ts",
+      "bytes": 7770,
+      "sha256": "11996a0efc5f6095a9a975d80197f6bb6b4079d31fa624bde717c950e2adefe5"
+    },
+    {
+      "path": "baseline/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5620,
+      "sha256": "f52314fb81f295a7b389b5c74133a4c538c4060563e0c30ce5d89c311c724697"
+    },
+    {
+      "path": "baseline/src/scene/barrel/SweptBarrelMesh.test.ts",
+      "bytes": 19338,
+      "sha256": "462cec51884ef8c351bf982decd5fafb35fa099c63f3427ea7e76c1c5deb7595"
+    },
+    {
+      "path": "baseline/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 28027,
+      "sha256": "cc52d17fb7cbf90621ec51a50b0236a055bd44b8794459361e41277000a88186"
+    },
+    {
+      "path": "baseline/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 1877,
+      "sha256": "d18790112d5c9b06903fffcce66f320e31974cec27e402c74b0030e608a1e589"
+    },
+    {
+      "path": "candidate/src/main.ts",
+      "bytes": 56932,
+      "sha256": "862f790007b4ab6d8596b331e37b871d7349ca6178494bcf40b1287d5943edde"
+    },
+    {
+      "path": "candidate/src/scene/WaterSurface.test.ts",
+      "bytes": 20735,
+      "sha256": "2bf9d749b88d0c13249e60b79c05bb30de8822937c62748065fd139d89c54fe2"
+    },
+    {
+      "path": "candidate/src/scene/WaterSurface.ts",
+      "bytes": 38177,
+      "sha256": "04d62102784270589eb78126ed4a4f31025c3e8b286532f64f91f3b01d2c1868"
+    },
+    {
+      "path": "candidate/src/scene/barrel/SweptBarrel.test.ts",
+      "bytes": 16986,
+      "sha256": "8ae7b3f10c62fb5d0244b6169fc45cfc7b4f838faabd087b5d13576bfb76e3a1"
+    },
+    {
+      "path": "candidate/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5667,
+      "sha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383"
+    },
+    {
+      "path": "candidate/src/scene/barrel/SweptBarrelMesh.test.ts",
+      "bytes": 22513,
+      "sha256": "79475b9469ac5d3ad80c395afeb60243bbb861236952f5145980519d0c1c5275"
+    },
+    {
+      "path": "candidate/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 28551,
+      "sha256": "01780b06d8bb01a992c4b9368be903d626cf5d5d915b917bf8898e73007e1479"
+    },
+    {
+      "path": "candidate/src/scene/barrel/barrelFallback.ts",
+      "bytes": 1174,
+      "sha256": "cf2c4981ef25869fe7dcffdaba0fa9c91b3c1161a18db203673b059093c293ba"
+    },
+    {
+      "path": "candidate/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 2142,
+      "sha256": "82a029625f3b9c48680166ccd16cb75028f1cc269a3e4690cf3a168b2f47f44b"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 38761,
+      "sha256": "77c8251d9ff6d90ccee80a0cf94b20900e443b132561db2e1d9e5e5d76fcc22c"
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 10085,
+      "sha256": "384a56fc80b15361d1d28359a24836c077b99746e9964ee8ef683cc14389ec65"
+    },
+    {
+      "path": "proposal.md",
+      "bytes": 7632,
+      "sha256": "9542edc7be7712cd20991184bdadccec23ce75234e0d8980f507068eff138069"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4896,
+      "sha256": "a58f4fae03e620eb90a5ed4a4019d2408a279c8ea22addefac9e9e3be5d472c9"
+    }
+  ],
+  "runtimePathsChanged": 6,
+  "testPathsChanged": 3,
+  "newProtocolTests": 2,
+  "runtimeAllByteExactRetainedFallback": true,
+  "productionModified": false,
+  "geometryPhysicsFogOrPrefetchModified": false,
+  "fullClosurePrepared": false,
+  "checksExecuted": false,
+  "hardwareExecuted": false,
+  "scope": "Read-only canonical sources and owned source/test/proposal files only; actual physical moving lifecycle remains unproved",
+  "nextGate": "Root source review. No checks/build/native hardware authorized."
+}

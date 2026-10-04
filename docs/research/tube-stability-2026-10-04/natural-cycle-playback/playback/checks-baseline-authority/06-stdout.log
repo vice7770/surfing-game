@@ -1,0 +1,24 @@
+{
+  "schema": "natural-tube-playback-native-plan/v1",
+  "readySha256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436",
+  "compiledSha256": "660379ebb4c1768c598b04f115d05dd776aab6ea9eebf61b69ead183ef49b812",
+  "run": false,
+  "serverPort": 4224,
+  "cdpPort": 9634,
+  "offPort": 4200,
+  "untouchedPort": 5173,
+  "boundMs": 60000,
+  "totalFramesPerArm": 42,
+  "cameras": 2,
+  "framesPerCamera": 21,
+  "checkpoints": [
+    0,
+    14,
+    15,
+    20
+  ],
+  "pointId": 3,
+  "jetStrip": 2,
+  "solverSteps": 0,
+  "scope": "Offline naturally evolved F64 CPU fixture inputs through original renderer methods, not live worker/GPU physics, ordinary FPS, or visual acceptance."
+}

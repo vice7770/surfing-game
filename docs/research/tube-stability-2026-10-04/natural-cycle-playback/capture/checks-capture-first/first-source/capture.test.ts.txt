@@ -1,0 +1,170 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
+import { it } from 'vitest';
+import { SurfZoneSimulation, type SurfZoneConfig } from './source/src/wave/SurfZoneSimulation';
+import { libraryFromBytes } from './source/src/wave/barrel/barrelLibrary';
+import { FRONT_STRIDE, FRONT_CAPACITY, writeFrontRecords } from './source/src/wave/barrel/frontRecords';
+import { TUBE_CAPACITY, TUBE_STRIDE } from './source/src/wave/tubeTable';
+
+const ROOT = fileURLToPath(new URL('.', import.meta.url));
+const FIRST = 664;
+const LAST = 684;
+const POINT_ID = 3;
+const STRIP_ID = 2;
+const DT = 1 / 30;
+const MAX_BINARY = 96 * 1024 * 1024;
+const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+interface CasePin { path: string; bytes: number; sha256: string }
+interface Field { name: string; type: 'F32' | 'F64'; offset: number; bytes: number; length: number; sha256: string }
+interface ReferenceTrace {
+  step: number; time: number; seaTime: number;
+  point: Record<string, unknown>; packed: (number | null)[]; sourceOrdinal: number;
+  strip: unknown; crashCounts: unknown; selectedExited: boolean; selectedFadeExited: boolean;
+}
+interface Reference {
+  fixture: SurfZoneConfig; selection: { pointId: number; jetStrip: number; step: number; jetAt: number };
+  events: Record<string, unknown>; traces: ReferenceTrace[];
+}
+
+it('captures all21 consecutive naturally evolved published render frames of the already observed id3/strip2 cycle', () => {
+  const started = performance.now();
+  const output = join(ROOT, 'capture-first');
+  mkdirSync(output); // First attempt only, never replace evidence.
+  const referencePath = JSON.parse(readFileSync(join(ROOT, 'reference.json'), 'utf8')).path as string;
+  const reference = JSON.parse(readFileSync(referencePath, 'utf8')) as Reference;
+  const parts: Buffer[] = [];
+  const shared: Field[] = [];
+  const frames: unknown[] = [];
+  let offset = 0;
+  let status = 'failed';
+  let failure: unknown = null;
+  let meta: unknown = null;
+  const append = (name: string, array: Float32Array | Float64Array): Field => {
+    const bytes = Buffer.from(new Uint8Array(array.buffer, array.byteOffset, array.byteLength));
+    assert(offset + bytes.length <= MAX_BINARY, 'Predeclared96MiB full-input binary bound; no cropping or downsampling');
+    const field: Field = { name, type: array instanceof Float32Array ? 'F32' : 'F64', offset,
+      bytes: bytes.length, length: array.length, sha256: sha(bytes) };
+    parts.push(bytes); offset += bytes.length;
+    return field;
+  };
+  try {
+    assert.equal(new Uint8Array(new Uint16Array([1]).buffer)[0], 1, 'Capture schema declares little endian');
+    assert.equal(reference.selection.pointId, POINT_ID);
+    assert.equal(reference.selection.jetStrip, STRIP_ID);
+    assert.equal(reference.selection.step, FIRST);
+    assert.equal(reference.traces.length, LAST - FIRST + 1);
+    const cases = JSON.parse(readFileSync(join(ROOT, 'cases.json'), 'utf8')) as CasePin[];
+    assert.equal(cases.length, 4);
+    const library = libraryFromBytes(cases.map(c => new Uint8Array(readFileSync(c.path))));
+    const simulation = new SurfZoneSimulation(reference.fixture, 'spun-up', library);
+    assert(simulation.front && simulation.crash);
+    assert.equal(simulation.device, undefined);
+    assert.equal(simulation.solver.nx, 160);
+    const solver = simulation.solver;
+    // EXACT existing Runner default render-spacing selection for this Padang fixture (no requested override).
+    const requested = simulation.renderGrid(1);
+    const spacing = requested.nx * requested.nz >= 200_000 ? 2 : 1;
+    const grid = spacing === 1 ? requested : simulation.renderGrid(spacing);
+    const cells = grid.nx * grid.nz;
+    const surface = new Float32Array(2 * cells);
+    const flow = new Float32Array(2 * cells);
+    const aeration = new Float32Array(2 * cells);
+    const bed = new Float32Array(cells);
+    const front = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
+    const tubes = new Float32Array(TUBE_CAPACITY * TUBE_STRIDE);
+    // Read-only capture of original solver boundaries; no reconstructed z-edge arithmetic or forcing function.
+    const originalBoundary = solver as unknown as { readonly zEdges: Float64Array; readonly xBoundary: number };
+    shared.push(append('solverBed', solver.bed), append('solverXCenters', solver.xCenters),
+      append('solverZCenters', solver.zCenters), append('solverDz', solver.dz), append('solverZEdges', originalBoundary.zEdges));
+    const immutableBed = parts[0];
+    assert(immutableBed);
+    simulation.writeUniformBed(bed, grid);
+    shared.push(append('renderBed', bed));
+    const immutableRenderBed = Buffer.from(new Uint8Array(bed.buffer));
+    const initialWindowXMin = simulation.windowXMin;
+    meta = {
+      fixture: reference.fixture, constructor: 'actual fresh spun-up16s adaptive CPU water-only startup, then breaking.update(0)',
+      solverGrid: { nx: solver.nx, nz: solver.nz, dx: solver.dx, restLevel: solver.restLevel,
+        xBoundaryCode: originalBoundary.xBoundary, openAlongShore: solver.openAlongShore,
+        periodicAlongShore: solver.periodicAlongShore },
+      tank: simulation.tank, renderGrid: { ...grid }, byteOrder: 'little-endian',
+      renderSpacingAuthority: 'SurfZoneRunner.ts352-359 accepted default Padang rule, no renderSpacing override',
+      sourceAdapter: { cubic: true, sweptBarrel: true, tubeColumnWidth: solver.dx,
+        sourceTime: 'frame.seaTime', revision: 'fresh unique frame revision object, recreated by playback',
+        bedRevision: 'frame.windowXMin', write: 'copy frame.surface (raw F32height+foam), ignore carve in swept mode',
+        writeFlow: 'copy frame.flow', writeAeration: 'copy frame.aeration', writeBed: 'copy shared.renderBed',
+        writeTubes: 'return0, matching SnapshotSurfZone({sweptBarrel:true}); provenance actualTubeTable also retained',
+        draw: 'WaterSurface.update before PhysicalMode.drawBarrel/swept.draw for each frame; stillLevel=fixture.tide' },
+      limits: ['Natural repeat of exact fixed originalCPUfixture; compare all21 materialpoint/strip/clock witnesses to originalproof.',
+        'No selected ID retarget, no clocks or geometry prescribed, no solver/front/lip/callback mutations.',
+        'Full F32published render fields+F64h provenance retained; qx/qz sourcearrays not required by WaterSurface and not duplicated.',
+        'Snapshot playback is an offline naturally evolved component stream, not live worker/GPU timing or nativevisual acceptance.',
+        'Shading/displayflow every-other-frame cadence remains actual WaterSurface behavior; each frame supplies original current.',
+        'No farfield/sky/camera/particle/rider inputs captured; bounded tube+water inspection only.'],
+    };
+    for (let step = 1; step <= LAST; step += 1) {
+      assert(performance.now() - started < 110_000, 'Original110s internal bound; no extension');
+      simulation.step(DT);
+      if (step < FIRST) continue;
+      const expected = reference.traces[step - FIRST];
+      assert.equal(step, expected.step);
+      assert.equal(solver.time, expected.time);
+      assert.equal(simulation.seaTime, expected.seaTime);
+      const points = simulation.front.points;
+      const sourceOrdinal = points.findIndex(p => p.id === POINT_ID);
+      assert(sourceOrdinal >= 0, 'Fixed original material point is required in this already proved21-frame window; no retarget');
+      const point = points[sourceOrdinal];
+      assert.equal(JSON.stringify(point), JSON.stringify(expected.point), 'Exact original full materialpoint witness; no tolerance');
+      assert.equal(point.jetStrip, STRIP_ID);
+      assert.equal(point.jetAt, reference.selection.jetAt);
+      assert(points.length <= FRONT_CAPACITY, 'No truncatedfront publication');
+      const count = writeFrontRecords(points, front);
+      assert.equal(count, points.length);
+      assert.equal(sourceOrdinal, expected.sourceOrdinal);
+      assert.equal(JSON.stringify(Array.from(front.subarray(sourceOrdinal * FRONT_STRIDE, (sourceOrdinal + 1) * FRONT_STRIDE))),
+        JSON.stringify(expected.packed), 'Original chosen packed numeric witness (JSONNaNpace representednull)');
+      const lip = simulation.lip.exportState();
+      const strip = lip.strips.find(([id]) => id === STRIP_ID)?.[1] ?? null;
+      assert.equal(JSON.stringify(strip), JSON.stringify(expected.strip), 'Exact chosen original physicalstrip witness');
+      assert.equal(JSON.stringify(simulation.crash.counts), JSON.stringify(expected.crashCounts), 'Exact cumulative originalcrash counters');
+      assert.equal(simulation.crash.exited.some(p => p.id === POINT_ID), expected.selectedExited);
+      assert.equal(simulation.crash.fadeExited.some(p => p.id === POINT_ID), expected.selectedFadeExited);
+      assert.equal(simulation.windowXMin, initialWindowXMin, 'Static immutablebed/window fixture, no reconstruction/cropping');
+      assert(Buffer.from(solver.bed.buffer, solver.bed.byteOffset, solver.bed.byteLength).equals(immutableBed), 'Immutable actualsolverbed changed');
+      grid.xMin = simulation.windowXMin;
+      simulation.writeUniformSnapshot(surface, flow, aeration, grid); // Actual shared worker publication writer.
+      simulation.writeUniformBed(bed, grid);
+      assert(Buffer.from(bed.buffer, bed.byteOffset, bed.byteLength).equals(immutableRenderBed), 'Immutable actualrenderbed changed');
+      const tubeCount = simulation.writeTubes(tubes);
+      const fields = [append('frontControls', front.subarray(0, count * FRONT_STRIDE)),
+        append('h', solver.h), append('surface', surface), append('flow', flow), append('aeration', aeration),
+        append('actualTubeTable', tubes.subarray(0, tubeCount * TUBE_STRIDE))];
+      frames.push({ index: frames.length, step, time: solver.time, seaTime: simulation.seaTime,
+        grid: { ...grid }, windowXMin: simulation.windowXMin, bedRevision: simulation.windowXMin,
+        sourceRevisionOrdinal: frames.length, frontCount: count, actualTubeCount: tubeCount,
+        selected: { pointId: POINT_ID, jetStrip: STRIP_ID, sourceOrdinal, point: { ...point }, strip },
+        materialSidecar: points.map((p, packedOrdinal) => ({ packedOrdinal, id: p.id, jetStrip: p.jetStrip ?? null, jetAt: p.jetAt ?? null })),
+        lipTime: lip.time, lipLandings: lip.landings, crashCounts: { ...simulation.crash.counts }, fields });
+    }
+    assert.equal(frames.length, 21);
+    status = 'passed';
+  } catch (error) {
+    failure = error instanceof Error ? { name: error.name, message: error.message, stack: error.stack } : String(error);
+    throw error;
+  } finally {
+    // Preserve complete or partial first-attempt data even on assertion failure. Deterministicgzipheader mtime0.
+    const raw = Buffer.concat(parts);
+    const gzip = gzipSync(raw, { level: 6 });
+    assert.equal(gzip.readUInt32LE(4), 0);
+    writeFileSync(join(output, 'frames.bin.gz'), gzip);
+    writeFileSync(join(output, 'manifest.json'), JSON.stringify({ schema: 1, status, fixedSelection: { pointId: POINT_ID, jetStrip: STRIP_ID },
+      firstStep: FIRST, lastStep: LAST, dt: DT, referenceEvents: reference.events, meta, shared, frames, failure,
+      binary: { path: 'frames.bin.gz', storedBytes: gzip.length, storedSha256: sha(gzip), expandedBytes: raw.length, expandedSha256: sha(raw),
+        gzipMtime: 0, byteOrder: 'little-endian', maximumExpandedBytes: MAX_BINARY },
+    }, null, 2) + '\n');
+  }
+}, 120_000);

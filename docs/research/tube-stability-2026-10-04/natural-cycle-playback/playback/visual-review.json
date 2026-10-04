@@ -1,0 +1,221 @@
+{
+  "schema": "natural-playback-independent-readonly-review/v1",
+  "scope": "Saved metadata and original PNG visual inspection only; no new render, solver, capture, build, or test.",
+  "report": {
+    "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/report.json",
+    "bytes": 274084,
+    "sha256": "1c7de6887101a9069673cbde98782b6352e4e55f43d1abd7d918d589d6e1dd02"
+  },
+  "valid": true,
+  "all42MixedCameraFrameMetadataEqual": true,
+  "all21ActualTubeCounts": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "closeCamera": {
+    "world": [
+      -31.90008493528543,
+      0.9189809322357178,
+      -159.0299284327788
+    ],
+    "launchRawHostHeight": 0.9436585972430667,
+    "cameraMinusHeight": -0.024677665007348915,
+    "fogPredicateMargin": 0.1,
+    "belowSurface": false,
+    "launchRelativeToStrip": {
+      "alongRay": 1,
+      "alongTangent": -4.8,
+      "abovePhysicalTubeY": 0.35
+    },
+    "touchdownReferenceProjection": [
+      0.331948571827429,
+      0.010118806124245285,
+      0.9821989652840158
+    ],
+    "referenceProjectionLimit": "Uses selected x/z at fixed diagnostic y=.6, not the actual curl primitive or interior envelope."
+  },
+  "checkpointImageRecords": [
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/baseline-view0-step664.png",
+      "bytes": 1963135,
+      "sha256": "bf2f3fade9f25b9891cc5e4e2e6b259d36747472ed56068cca125d9fa2b71365",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/baseline-view0-step678.png",
+      "bytes": 1649866,
+      "sha256": "3a520a42d4b718d8e8af01f685d409cedc0a20eceff54e934939ca64dd50de48",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/baseline-view0-step679.png",
+      "bytes": 1630659,
+      "sha256": "3cd2c64b2f55304887bea97ff902c44c6c209b17080b9e8876d75b31ec01cc7c",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/baseline-view0-step684.png",
+      "bytes": 1496565,
+      "sha256": "eb86443a923a95d7298f4a05abca26ecf627ecd588303458a2d8b16653e7196e",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/baseline-view1-step664.png",
+      "bytes": 577311,
+      "sha256": "4be599ed692e32829c23492beccf140814174e6355005affd07b06b8b9fd794e",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/baseline-view1-step678.png",
+      "bytes": 360159,
+      "sha256": "14d2f9ecd0bcad27cf4f77fbee458b049a6aa062bc90680c6d23409c79c5e35a",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/baseline-view1-step679.png",
+      "bytes": 392708,
+      "sha256": "537f9cbd975e5556a4f53470a64d5154a7f141ea95b458df4e459d0bc0ab91e5",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/baseline-view1-step684.png",
+      "bytes": 430311,
+      "sha256": "87217f5e17a92ba982189430df6e33b9a232b2ef9fcb56d462de50cb888d4102",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/candidate-view0-step664.png",
+      "bytes": 1961877,
+      "sha256": "019b5264b336968ee518e0cce5700aa97a280b8f633180a8ae0e18f2bd168fec",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/candidate-view0-step678.png",
+      "bytes": 1641904,
+      "sha256": "daf2012e167f7eda76c398152393c720908a013391417548de2b2e2b871dae36",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/candidate-view0-step679.png",
+      "bytes": 1624717,
+      "sha256": "664e6a7a16b0af8b2987d3830aae7e1a59e058abbbf846cef0fd437520ecd64a",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/candidate-view0-step684.png",
+      "bytes": 1490574,
+      "sha256": "43a60020463b5ba9de1f88e947d40f7b1cb775866ea6dbaa7bb008a79277561c",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/candidate-view1-step664.png",
+      "bytes": 575649,
+      "sha256": "997c527c6956dfcab3363fca1866d1eabe28966ea5fce1dd4c26cfae2eec1977",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/candidate-view1-step678.png",
+      "bytes": 360155,
+      "sha256": "4b56921673929d05f382d98711830a14437a9c0b642c92195e9dfeeba47c1e21",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/candidate-view1-step679.png",
+      "bytes": 392379,
+      "sha256": "13e1c3bb44f8e47c158e4614d42a43047b04017ae3aa5ec7eeb66e23e1b40d51",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    },
+    {
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/root-native-authority-fixed/candidate-view1-step684.png",
+      "bytes": 430311,
+      "sha256": "87217f5e17a92ba982189430df6e33b9a232b2ef9fcb56d462de50cb888d4102",
+      "pngPixels": [
+        1920,
+        1080
+      ],
+      "checkpoint": true
+    }
+  ],
+  "checkpointTotalBytes": 16978280,
+  "retirementCloseImagesByteIdentical": true,
+  "physicalScope": "Fresh small Hs1.2/T16 CPU fixture, point3/strip2. Not live BigPadang, native GPU physics, ordinary FPS, contact or visual acceptance."
+}

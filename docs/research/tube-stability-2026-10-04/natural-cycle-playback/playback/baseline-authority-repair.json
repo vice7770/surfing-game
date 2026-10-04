@@ -1,0 +1,40 @@
+{
+  "schema": "natural-playback-baseline-alias-repair/v1",
+  "sourceReadyBefore": "a48fa015c25bef9532304396e2ca841662f63705e9b1a48df13187e0a4bdf835",
+  "canonicalAliases": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/main.ts",
+      "bytes": 56808,
+      "sha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490",
+      "aliasAuthority": "Already reviewed source-manifest accepted e3 baseline baseBytes/baseSha256; canonical content verified equal"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/WaterSurface.ts",
+      "bytes": 34094,
+      "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+      "aliasAuthority": "Already reviewed source-manifest accepted e3 baseline baseBytes/baseSha256; canonical content verified equal"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 28027,
+      "sha256": "cc52d17fb7cbf90621ec51a50b0236a055bd44b8794459361e41277000a88186",
+      "aliasAuthority": "Already reviewed source-manifest accepted e3 baseline baseBytes/baseSha256; canonical content verified equal"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5620,
+      "sha256": "f52314fb81f295a7b389b5c74133a4c538c4060563e0c30ce5d89c311c724697",
+      "aliasAuthority": "Already reviewed source-manifest accepted e3 baseline baseBytes/baseSha256; canonical content verified equal"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 1877,
+      "sha256": "d18790112d5c9b06903fffcce66f320e31974cec27e402c74b0030e608a1e589",
+      "aliasAuthority": "Already reviewed source-manifest accepted e3 baseline baseBytes/baseSha256; canonical content verified equal"
+    }
+  ],
+  "onlySourceChange": "Fresh output root dist\u2192dist-authority-fixed; resolver/source pin guard unchanged. Five existing canonical baseline aliases added to readiness only.",
+  "originalEmptyOutputPreserved": "dist/baseline",
+  "failureFreezeSha256": "5547424b59d2304adc4beb7342298ee98f66a8ebfdb2e76664090efb43b4333d",
+  "runtimeControlsGeometryFogCameraMaskChanged": false
+}

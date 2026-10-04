@@ -1,0 +1,12 @@
+{"phase":"strict","pid":96571,"started":"2026-10-04T04:14:31.198Z","argv":["./node_modules/.bin/tsc","--noEmit","--incremental","false","-p","tsconfig.capture.json"]}
+{"phase":"capture","pid":96574,"started":"2026-10-04T04:14:33.175Z","argv":["./node_modules/.bin/vitest","run","--config","vitest.capture.config.ts","--maxWorkers","1","capture.test.ts"]}
+
+ RUN  v5.0.1 /private/tmp/surf-tube-material-visual-capture-20261004
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  05:14:33
+   Duration  29.46s (tests 99%, transform 1%)
+
+{"schema":1,"readySha256":"64d901973358620c61e9d13e05689300a781783bac93c52c31ed05bcf1996fbf","started":"2026-10-04T04:14:31.196Z","status":"passed","commands":[{"name":"strict","executable":"./node_modules/.bin/tsc","args":["--noEmit","--incremental","false","-p","tsconfig.capture.json"],"timeout":60000,"pid":96571,"started":"2026-10-04T04:14:31.198Z","ended":"2026-10-04T04:14:33.175Z","code":0,"signal":null,"timedOut":false},{"name":"capture","executable":"./node_modules/.bin/vitest","args":["run","--config","vitest.capture.config.ts","--maxWorkers","1","capture.test.ts"],"timeout":125000,"pid":96574,"started":"2026-10-04T04:14:33.175Z","ended":"2026-10-04T04:15:02.892Z","code":0,"signal":null,"timedOut":false}],"ended":"2026-10-04T04:15:02.907Z"}

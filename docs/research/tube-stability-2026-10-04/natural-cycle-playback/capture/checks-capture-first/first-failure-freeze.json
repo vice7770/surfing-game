@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "status": "FIRST_STRICT_FAILURE_NO_PHYSICAL_EXECUTION",
+  "readySha256": "70f3f582a55e444ff24753235891288e73ab06cd6abd198323046a1227a5217a",
+  "records": [
+    {
+      "path": "checks-capture-first/after.json",
+      "bytes": 17699,
+      "sha256": "43e796afa70c586ecfb07100514cdd64868e8c93905850f4a78487149494961e"
+    },
+    {
+      "path": "checks-capture-first/before.json",
+      "bytes": 17699,
+      "sha256": "43e796afa70c586ecfb07100514cdd64868e8c93905850f4a78487149494961e"
+    },
+    {
+      "path": "checks-capture-first/first-source/capture.test.ts",
+      "bytes": 11616,
+      "sha256": "71dbab529e10580dbc2897b545f730497f6571efdb2c9a0c625030de6888203c"
+    },
+    {
+      "path": "checks-capture-first/first-source/cases.json",
+      "bytes": 824,
+      "sha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928"
+    },
+    {
+      "path": "checks-capture-first/first-source/package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "path": "checks-capture-first/first-source/proposal.json",
+      "bytes": 5305,
+      "sha256": "7368e1787f30d32a96cd4097bcd38414c97dabc8984e120a0fb2c8de79de43bd"
+    },
+    {
+      "path": "checks-capture-first/first-source/ready.json",
+      "bytes": 1851,
+      "sha256": "70f3f582a55e444ff24753235891288e73ab06cd6abd198323046a1227a5217a"
+    },
+    {
+      "path": "checks-capture-first/first-source/reference.json",
+      "bytes": 278,
+      "sha256": "66ce6588cb4fdfb3667ea97a34953ba39155e631608bb3a97129a7e97d23f6ff"
+    },
+    {
+      "path": "checks-capture-first/first-source/run-selected.mjs",
+      "bytes": 3845,
+      "sha256": "fec4cd1d6f9f5bea31e2b7864a2c7a459c19f71cd03807601fdea6b39767600f"
+    },
+    {
+      "path": "checks-capture-first/first-source/source-manifest.json",
+      "bytes": 24956,
+      "sha256": "357b6621aad73061a90808c82d890ef2a318a2082476c41d171d8d06a24a8042"
+    },
+    {
+      "path": "checks-capture-first/first-source/tsconfig.capture.json",
+      "bytes": 600,
+      "sha256": "89f4432ad029da5b9bc3c364e347144a788d85f91014ed2868c5672663e6849b"
+    },
+    {
+      "path": "checks-capture-first/first-source/vitest.capture.config.ts",
+      "bytes": 244,
+      "sha256": "ebbb2384c9a8fc2eee56e8ebe419a06b6c280111b42d9876272230abf69fa074"
+    },
+    {
+      "path": "checks-capture-first/strict.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-capture-first/strict.stdout.log",
+      "bytes": 624,
+      "sha256": "4d64c5c81ea99cd345a029e7bdc780a1af229030f1d0ad23ee7452046b5e853e"
+    },
+    {
+      "path": "checks-capture-first/terminal.json",
+      "bytes": 1020,
+      "sha256": "be87ab88661514e54c3c51ce654a0703c9250ac03c5dca0266c08e8a1846407f"
+    },
+    {
+      "path": "first-console.log",
+      "bytes": 1616,
+      "sha256": "cd47646a613d3194ffd65b042d6d1a17ec11fa49f931e85c44f073bab1b99235"
+    }
+  ],
+  "beforeAfterByteIdentical": true,
+  "failure": "TS7022 points117/point120, consequentTS7006 callbacks118/150; source-onlyexplicitFrontPointannotationsproposed, no repair applied/no retry."
+}

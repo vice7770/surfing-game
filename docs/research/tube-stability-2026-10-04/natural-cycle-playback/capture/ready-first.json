@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNEXECUTED",
+  "records": [
+    {
+      "path": "capture.test.ts",
+      "bytes": 11616,
+      "sha256": "71dbab529e10580dbc2897b545f730497f6571efdb2c9a0c625030de6888203c"
+    },
+    {
+      "path": "tsconfig.capture.json",
+      "bytes": 600,
+      "sha256": "89f4432ad029da5b9bc3c364e347144a788d85f91014ed2868c5672663e6849b"
+    },
+    {
+      "path": "vitest.capture.config.ts",
+      "bytes": 244,
+      "sha256": "ebbb2384c9a8fc2eee56e8ebe419a06b6c280111b42d9876272230abf69fa074"
+    },
+    {
+      "path": "run-selected.mjs",
+      "bytes": 3845,
+      "sha256": "fec4cd1d6f9f5bea31e2b7864a2c7a459c19f71cd03807601fdea6b39767600f"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 824,
+      "sha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928"
+    },
+    {
+      "path": "reference.json",
+      "bytes": 278,
+      "sha256": "66ce6588cb4fdfb3667ea97a34953ba39155e631608bb3a97129a7e97d23f6ff"
+    },
+    {
+      "path": "package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 24956,
+      "sha256": "357b6621aad73061a90808c82d890ef2a318a2082476c41d171d8d06a24a8042"
+    },
+    {
+      "path": "proposal.json",
+      "bytes": 5305,
+      "sha256": "7368e1787f30d32a96cd4097bcd38414c97dabc8984e120a0fb2c8de79de43bd"
+    }
+  ],
+  "borrowedUnchangedSourceFiles": 56,
+  "borrowedRuntimeSourceAuthority": "/private/tmp/surf-tube-material-lifecycle-20261004/source-manifest.json",
+  "referenceResultSha256": "387a896eeb9157d92bf630f939756761f40ffb1171342c152c3724eea17d916f",
+  "fourCaseBytes": 663388,
+  "dependencyPackages": 7,
+  "noExecution": "No imports/type/syntax/tests/simulation/build/browser/GPU/Git executed. Sourcewrite/read/hash only."
+}

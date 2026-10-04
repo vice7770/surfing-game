@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNEXECUTED",
+  "revisionClaim": "One actual CPU F64 material tube lifecycle using accepted e3e630 Simulation/Boussinesq/BreakingFront/SweptCrash/PlungingLip and all4 authored Padang cases; passive separate-library SweptLoft observations. No native rendering or GPU/FPS acceptance.",
+  "records": [
+    {
+      "path": "lifecycle.test.ts",
+      "bytes": 12823,
+      "sha256": "e157578e4e85c05df423330f25ec080ee5e77d488470c7a6cf7ad2ac1f6d1137"
+    },
+    {
+      "path": "vitest.lifecycle.config.ts",
+      "bytes": 241,
+      "sha256": "68b6c4e2dce622c7b741614ad9ff3a69a2ab8d687c6b475a0ba175d68f7ee91a"
+    },
+    {
+      "path": "tsconfig.lifecycle.json",
+      "bytes": 604,
+      "sha256": "9734090b03ef8186288f4c65b3d0a78f724cb86f6d58c7392c523da619a8bb73"
+    },
+    {
+      "path": "run-selected.mjs",
+      "bytes": 3840,
+      "sha256": "81668a9fd6f9225b12fc508b6d7c5807fc2120cc37ee65f30672a6e2cc5b9d95"
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 40350,
+      "sha256": "0366bab8d8a2eb4842034a558228b40bf0ded2a35fbd260dcff2732c778247d5"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 824,
+      "sha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928"
+    },
+    {
+      "path": "package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "path": "proposal.json",
+      "bytes": 5861,
+      "sha256": "d27b2b3a72f6dbc87d2eb4d7dd84821a659ca1216dfb06788a606f851d79d794"
+    }
+  ],
+  "sourceFiles": 56,
+  "closureEdges": 166,
+  "authoredCases": 4,
+  "dependencyPackages": 7,
+  "commands": "No runtime imports/typechecks/tests/syntax/builds/browser/GPU/Git performed. Copy/hash/write only. Explicit parent review needed before execution."
+}

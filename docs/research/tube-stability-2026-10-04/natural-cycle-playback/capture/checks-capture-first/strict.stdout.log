@@ -1,0 +1,5 @@
+capture.test.ts(117,13): error TS7022: 'points' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+capture.test.ts(118,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+capture.test.ts(120,13): error TS7022: 'point' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+capture.test.ts(150,38): error TS7006: Parameter 'p' implicitly has an 'any' type.
+capture.test.ts(150,41): error TS7006: Parameter 'packedOrdinal' implicitly has an 'any' type.

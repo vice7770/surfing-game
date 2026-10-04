@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNEXECUTED",
+  "scope": "One fixed21-frame capture from naturally evolved actualCPUsolver/front/lip/crash. Exactsame seeded320mPadang fixture and four authored cases as passedmaterialobserver; no clocks/pacing/control streams prescribed.",
+  "fixtureReference": "/private/tmp/surf-tube-material-lifecycle-20261004/run/result.json",
+  "fixedSelection": {
+    "pointId": 3,
+    "jetStrip": 2,
+    "firstStep": 664,
+    "lastStep": 684,
+    "dt": 0.03333333333333333,
+    "noRetarget": true
+  },
+  "simulation": "Fresh actual constructor spun-up16s CPUwater-onlythenbreaking.update(0), exactly684actualfullsteps. Onlystep664..684captured. No Simulation/solver/front/lip/controller/callback modifications. Actualnewtrajectory repeat, no handover or F32 reset.",
+  "guards": [
+    "Exactoriginal21fullpoint/strip/crashcount/solverclock/seaclock witnesses, selectedcurrentpackednumericvalues and sourceordinal; no tolerances/retarget.",
+    "Actualwindowstatic/solverbedunchanged/renderbedunchanged nativebytecomparison; hardfailureifchanges, no crop/reconstruct.",
+    "Actualsameall4authoredcases/56runtime/dependencypins beforeafter; fixedactualmaterialIDs in separate QA sidecar, no FRONT_STRIDE/snapshot changes."
+  ],
+  "renderInputs": {
+    "shared": [
+      "actualF64solverbed",
+      "actualF64xCenters",
+      "actualF64zCenters",
+      "actualF64dz",
+      "actualF64zEdges",
+      "actualF32uniformrenderbed"
+    ],
+    "perFrame": [
+      "actualF32allcurrentfrontControls",
+      "actualF64hprovenance",
+      "actualF32rawheight+foam viaSimulation.writeUniformSnapshot",
+      "actualF32flow viaSimulation.writeUniformSnapshot",
+      "actualF32aeration viaSimulation.writeUniformSnapshot",
+      "actualF32tubeTable/provenance",
+      "fullgrid/window/rest/boundary/tank/seaTime/revisionmetadata",
+      "actualallpointID/jetStrip/jetAt sidecar",
+      "originalselectedpoint/strip/events/counters/clocks"
+    ],
+    "actualSurfaceSourceContract": "WaterSurface.ts192-214,385-450; PhysicalSurfaceSource.ts26-72; SnapshotSurfZone.ts165-193; sweptBarrel disablescarve/tubes irrespectivelook; cubic=true; source.time=seaTime; bedRevision=windowXMin; currentframeflowfollowsactualWaterSurface displaycadence.",
+    "spacing": "ExactacceptedRunner defaultPadang requested1m then2m ifnodeproduct>=200000 rule352-359; currentfixture nativeselect. No offlinevisualcapturemode spacing override.",
+    "playback": "Later companion should copycapturedpublishedF32planes into a sourcefacade, assignfreshrevisionobject/seaTime/grid, keep sharedbed, writeTubes0 for swept mode, water.update thenactualPhysicalMode.drawBarrel. Capturedstream naturallyevolved, but playback is offline, not liveworker/GPUtrajectory/FPS.",
+    "notRequired": "qx/qzrawarrays (current already retained as actualpublishedflow); allBoussGPUprivatefields; bodies/particles/audio; sky/camera/farfield assets. Those omittedinputs are notneeded by actualWaterSurface.update/SweptBarrel.draw boundedwater/tubevisualinspection."
+  },
+  "binarySchema": {
+    "path": "capture-first/frames.bin.gz",
+    "byteOrder": "little-endian",
+    "gzip": "NodegzipSync level6 with verifiedmtime0; onechunkstream, perfield offset/type/count/bytehash; sharedimmutablefieldsonce.",
+    "maximumExpandedBytes": 100663296,
+    "publicationPadding": "OnlyvalidfrontCount*9/tubeCount*12 prefixesstored. Fullrenderplanes/hstored, no truncation/downsampling.",
+    "captureManifest": "capture-first/manifest.json includesall21frames andsharedfields, materialwitnesses/sourceadaptermetadata plus stored/expandedSHA/bytes.",
+    "firstFailure": "Completeorpartialbinary/manifest retained in finally; neveroverwritefirstattempt."
+  },
+  "bounds": {
+    "fullSteps": 684,
+    "capturedFrames": 21,
+    "internalWallBeforeEachStepMs": 110000,
+    "vitestTimeoutMs": 120000,
+    "driverHardCaptureKillMs": 125000,
+    "driverStrictKillMs": 60000,
+    "oneAttempt": true,
+    "expectedCPUCost": "Samephysicalfixtureprior25.68s process plus21snapshotwrites/compression; bounded expectation, no cost/FPSclaim."
+  },
+  "commands": [
+    {
+      "cwd": "/private/tmp/surf-tube-material-visual-capture-20261004",
+      "executable": "./node_modules/.bin/tsc",
+      "args": [
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "tsconfig.capture.json"
+      ]
+    },
+    {
+      "onlyIfStrict0": true,
+      "cwd": "/private/tmp/surf-tube-material-visual-capture-20261004",
+      "executable": "./node_modules/.bin/vitest",
+      "args": [
+        "run",
+        "--config",
+        "vitest.capture.config.ts",
+        "--maxWorkers",
+        "1",
+        "capture.test.ts"
+      ]
+    }
+  ],
+  "proposedDriver": "TUBE_VISUAL_CAPTURE_READY_SHA256=<reviewedreadySHA> node run-selected.mjs; exactstrict->onlyifPASSonefile, immutableinputpins/beforeafter/stdlogs/terminal/hardbounds. Separaterootlease required; noimports/checks/build/GPUrun duringpreparation.",
+  "limits": [
+    "NaturalCPUmaterialcycle only, notnativeGPU/workerperformance or seamvisualacceptance.",
+    "No new renderer/runtimeimplementation, assets/bundles/fullsource duplication or productioncode/schema changes.",
+    "Visualinspectionlater separate rootapprovedsource/bundle/solehardwarelease afterrenderer seamgate."
+  ]
+}

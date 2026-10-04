@@ -1,0 +1,14 @@
+[
+  {
+    "name": "elevated-exterior",
+    "position": [-35.25627596196189, 4.5, -152.50490109241756],
+    "target": [-27.33946051403918, 0.65, -157.22973264111273],
+    "authority": "Fixed from launch point id3 (-27,-159.20071375705683), actual strip2 horizontal ray (-0.1697302570195913,0.9854905579720504), and its tangent. Position=launch-7*tangent+8*ray; target=launch+2*ray, near the midpoint of the unchanged 4.46m material trajectory. No retarget."
+  },
+  {
+    "name": "close-mouth",
+    "position": [-31.90008493528543, 0.9189809322357178, -159.0299284327788],
+    "target": [-27.271568411231345, 0.62, -157.62392886430155],
+    "authority": "Fixed from the same actual launch point/ray/tangent. Position=launch-4.8*tangent+1*ray, y=actual strip tube.y+0.35; target=launch+1.6*ray. Actual source remains interior sigma4.001199247378897 at launch. This close view can leave the moving material later; all21 frames remain mandatory and cameraBelowSurface remains actual."
+  }
+]

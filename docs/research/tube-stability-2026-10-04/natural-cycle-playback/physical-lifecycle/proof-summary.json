@@ -1,0 +1,446 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "readinessSha256": "4e0bb9152cbc50dbd0335e1b16834ae6e262483dabe463c11e0e2f1e2e4d12ee",
+  "selection": {
+    "pointId": 3,
+    "jetStrip": 2,
+    "step": 664,
+    "time": 38.13333333333378,
+    "seaTime": 180.30628930109648,
+    "column": 66,
+    "front": 1,
+    "x": -27,
+    "z": -159.20071375705683,
+    "tau": 0.0053214047790959285,
+    "jetAt": 38.13333333333378
+  },
+  "events": {
+    "launch": {
+      "step": 664,
+      "time": 38.13333333333378
+    },
+    "drawnOpen": {
+      "step": 664,
+      "time": 38.13333333333378
+    },
+    "touchdown": {
+      "step": 679,
+      "time": 38.63333333333375
+    },
+    "stripClosed": {
+      "step": 679,
+      "time": 38.63333333333375
+    },
+    "pointFadeComplete": {
+      "step": 684,
+      "time": 38.80000000000041
+    },
+    "publicationFadeComplete": {
+      "step": 684,
+      "time": 38.80000000000041
+    },
+    "selectedSigmaNoBracketAfterFade": {
+      "step": 684,
+      "time": 38.80000000000041
+    },
+    "neighboringBracketAfterFade": null,
+    "firstPointAbsent": null,
+    "pointJetAssociationEnded": null,
+    "stripRetired": {
+      "step": 684,
+      "time": 38.80000000000041
+    }
+  },
+  "steps": 684,
+  "searchSteps": 664,
+  "followSteps": 20,
+  "traceCount": 21,
+  "selectedStripLiveSequence": [
+    {
+      "step": 664,
+      "time": 38.13333333333378,
+      "lipTime": 22.133333333333592,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 665,
+      "time": 38.16666666666711,
+      "lipTime": 22.166666666666927,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 666,
+      "time": 38.20000000000044,
+      "lipTime": 22.200000000000262,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 667,
+      "time": 38.233333333333775,
+      "lipTime": 22.233333333333597,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 668,
+      "time": 38.266666666667106,
+      "lipTime": 22.266666666666932,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 669,
+      "time": 38.30000000000044,
+      "lipTime": 22.300000000000267,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 670,
+      "time": 38.33333333333377,
+      "lipTime": 22.333333333333602,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 671,
+      "time": 38.3666666666671,
+      "lipTime": 22.366666666666937,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 672,
+      "time": 38.40000000000043,
+      "lipTime": 22.400000000000272,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 673,
+      "time": 38.43333333333376,
+      "lipTime": 22.433333333333607,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 674,
+      "time": 38.466666666667095,
+      "lipTime": 22.466666666666942,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 675,
+      "time": 38.500000000000426,
+      "lipTime": 22.500000000000277,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 676,
+      "time": 38.53333333333376,
+      "lipTime": 22.533333333333612,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 677,
+      "time": 38.56666666666709,
+      "lipTime": 22.566666666666947,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 678,
+      "time": 38.60000000000042,
+      "lipTime": 22.600000000000282,
+      "live": 8,
+      "closedAt": null,
+      "held": true,
+      "remainingSelectedParcelIDs": [
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 679,
+      "time": 38.63333333333375,
+      "lipTime": 22.633333333333617,
+      "live": 6,
+      "closedAt": 22.600000000000282,
+      "held": false,
+      "remainingSelectedParcelIDs": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 680,
+      "time": 38.66666666666708,
+      "lipTime": 22.666666666666952,
+      "live": 5,
+      "closedAt": 22.600000000000282,
+      "held": false,
+      "remainingSelectedParcelIDs": [
+        12,
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 681,
+      "time": 38.700000000000415,
+      "lipTime": 22.700000000000287,
+      "live": 4,
+      "closedAt": 22.600000000000282,
+      "held": false,
+      "remainingSelectedParcelIDs": [
+        13,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 682,
+      "time": 38.733333333333746,
+      "lipTime": 22.733333333333622,
+      "live": 3,
+      "closedAt": 22.600000000000282,
+      "held": false,
+      "remainingSelectedParcelIDs": [
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "step": 683,
+      "time": 38.76666666666708,
+      "lipTime": 22.766666666666957,
+      "live": 1,
+      "closedAt": 22.600000000000282,
+      "held": false,
+      "remainingSelectedParcelIDs": [
+        16
+      ]
+    },
+    {
+      "step": 684,
+      "time": 38.80000000000041,
+      "lipTime": 22.800000000000292,
+      "live": null,
+      "closedAt": null,
+      "held": null,
+      "remainingSelectedParcelIDs": []
+    }
+  ],
+  "sourceIdentityWitness": {
+    "pointId": 3,
+    "jetStrip": 2,
+    "initialPackedKey": {
+      "front": 1,
+      "x": -27,
+      "sigma": 4.001199247378897,
+      "ordinal": 2
+    },
+    "finalPackedKey": {
+      "front": 1,
+      "x": -27,
+      "sigma": 4.016420587766489,
+      "ordinal": 2
+    },
+    "pointStillActiveAfterStripRetired": true,
+    "stripStillPresent": false,
+    "semanticConclusion": "Same point.id3 and same current(front1,X\u221227) survive own profilefade and actual strip2 retirement. Worldcoordinate/chain/presence is not a tube-lifecycle identity."
+  },
+  "physicalClassification": {
+    "foreseenFallbacks": 0,
+    "lostHeldJets": 0,
+    "stallExits": 0,
+    "fadeExits": 0,
+    "observerOnly": "Own separate profile/drawing libraries, plain physical surface, export/read observations; no solver/front/lip/controller/callback mutation. Actual full CPU simulation steps only."
+  },
+  "limits": [
+    "no native/GPU or renderer acceptance",
+    "point removal is reported, not required; a faded point can match normally",
+    "joined geometry at selected sigma may come from neighboring live controls; presence/absence after own fade is optional context",
+    "changed point jet association is reported without retarget; no later events are attributed through replaced metadata",
+    "strip retirement is actual ID absence after observed closure, not packed-record absence",
+    "new constructed trajectory; no handover, captured historical state, body controls or FPS claim",
+    "JSON maps packed NaN pace to null; this is event evidence, not raw floating-point bit parity.",
+    "Chosen strip live/ID retirement attribution uses actual lip exported IDs; total27landings are aggregate, not attributed toselectedstrip by coordinates.",
+    "No actual native renderer or GPU trajectory was exercised; no seam visual/FPSacceptance."
+  ]
+}

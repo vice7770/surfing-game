@@ -1,0 +1,52 @@
+{
+  "schema": "natural-playback-original-api-cpu-checks/v1",
+  "status": "failed",
+  "readySha256": "a48fa015c25bef9532304396e2ca841662f63705e9b1a48df13187e0a4bdf835",
+  "controllerPid": 2040,
+  "commands": [
+    {
+      "phase": 1,
+      "argv": [
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "tsconfig.json"
+      ],
+      "cwd": "/private/tmp/surf-tube-natural-playback-20261004",
+      "env": {
+        "NATURAL_TUBE_READY_SHA256": "a48fa015c25bef9532304396e2ca841662f63705e9b1a48df13187e0a4bdf835"
+      },
+      "pid": 2041,
+      "startedAt": "2026-10-04T04:31:05.436519+00:00",
+      "endedAt": "2026-10-04T04:31:07.822814+00:00",
+      "exit": 0,
+      "stdout": "/private/tmp/surf-tube-natural-playback-20261004/checks-original-api/01-stdout.log",
+      "stderr": "/private/tmp/surf-tube-natural-playback-20261004/checks-original-api/01-stderr.log"
+    },
+    {
+      "phase": 2,
+      "argv": [
+        "node",
+        "build.mjs"
+      ],
+      "cwd": "/private/tmp/surf-tube-natural-playback-20261004",
+      "env": {
+        "NATURAL_TUBE_READY_SHA256": "a48fa015c25bef9532304396e2ca841662f63705e9b1a48df13187e0a4bdf835"
+      },
+      "pid": 2073,
+      "startedAt": "2026-10-04T04:31:07.823463+00:00",
+      "endedAt": "2026-10-04T04:31:08.020704+00:00",
+      "exit": 1,
+      "stdout": "/private/tmp/surf-tube-natural-playback-20261004/checks-original-api/02-stdout.log",
+      "stderr": "/private/tmp/surf-tube-natural-playback-20261004/checks-original-api/02-stderr.log"
+    }
+  ],
+  "sourceRecords": 306,
+  "beforeSha256": "71ed27fb4e77d917ec2a51faf7a7ff9a4572e6a0e19a4beb192968a2d1d6b8e1",
+  "afterSha256": "71ed27fb4e77d917ec2a51faf7a7ff9a4572e6a0e19a4beb192968a2d1d6b8e1",
+  "sourceUnchanged": true,
+  "seconds": 2.6178688750369474,
+  "nativeRun": false
+}

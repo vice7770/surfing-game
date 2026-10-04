@@ -1,0 +1,11 @@
+{
+  "schema": "natural-playback-camera-only-repair/v1",
+  "sourceReadyBefore": "61c4cab0038bd9c2aa6f5a7027c94d856630077cc78f22da351cb6b590239224",
+  "previousEntrySha256": "884e82c40c9b2ff3d8442a0246aae4e5eff1741dab89a0729fd8fe0a20c8d4b4",
+  "newEntrySha256": "d546cb5061de7dbfdef7871c14fe330e85262826471e0ef9fefae380b44289b5",
+  "exactReplacement": {
+    "before": "water.update(); PhysicalMode.prototype.drawBarrel.call(mode);",
+    "after": "water.update(camera); PhysicalMode.prototype.drawBarrel.call(mode);"
+  },
+  "limits": "Only actual water.update camera argument; no runtime/control/mask/camera/lighting/tolerance change. Original seven source files and ready preserved unexecuted."
+}

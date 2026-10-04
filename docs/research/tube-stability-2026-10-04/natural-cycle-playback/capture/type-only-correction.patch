@@ -1,0 +1,23 @@
+--- checks-capture-first/first-source/capture.test.ts
++++ capture.test.ts
+@@ -7,6 +7,7 @@
+ import { it } from 'vitest';
+ import { SurfZoneSimulation, type SurfZoneConfig } from './source/src/wave/SurfZoneSimulation';
+ import { libraryFromBytes } from './source/src/wave/barrel/barrelLibrary';
++import type { FrontPoint } from './source/src/wave/barrel/BreakingFront';
+ import { FRONT_STRIDE, FRONT_CAPACITY, writeFrontRecords } from './source/src/wave/barrel/frontRecords';
+ import { TUBE_CAPACITY, TUBE_STRIDE } from './source/src/wave/tubeTable';
+ 
+@@ -114,10 +115,10 @@
+       assert.equal(step, expected.step);
+       assert.equal(solver.time, expected.time);
+       assert.equal(simulation.seaTime, expected.seaTime);
+-      const points = simulation.front.points;
++      const points: FrontPoint[] = simulation.front.points;
+       const sourceOrdinal = points.findIndex(p => p.id === POINT_ID);
+       assert(sourceOrdinal >= 0, 'Fixed original material point is required in this already proved21-frame window; no retarget');
+-      const point = points[sourceOrdinal];
++      const point: FrontPoint = points[sourceOrdinal];
+       assert.equal(JSON.stringify(point), JSON.stringify(expected.point), 'Exact original full materialpoint witness; no tolerance');
+       assert.equal(point.jetStrip, STRIP_ID);
+       assert.equal(point.jetAt, reference.selection.jetAt);

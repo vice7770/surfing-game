@@ -1,0 +1,5 @@
+{"stage":"baseline","status":"start","at":"2026-10-04T04:35:51.900Z"}
+{"stage":"baseline","status":"completed","at":"2026-10-04T04:35:56.049Z"}
+{"stage":"candidate","status":"start","at":"2026-10-04T04:35:56.049Z"}
+{"stage":"candidate","status":"completed","at":"2026-10-04T04:36:05.721Z"}
+{"stage":"terminal","valid":true,"failures":[],"closure":{"4200":{"closed":true,"reason":"ECONNREFUSED"},"4224":{"closed":true,"reason":"ECONNREFUSED"},"9634":{"closed":true,"reason":"ECONNREFUSED"}},"endedAt":"2026-10-04T04:36:05.980Z"}

@@ -1,0 +1,32 @@
+file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/error-C7pxws0W.mjs:48
+	const wrapper = new Error(summary);
+	                ^
+
+Error: Build failed with 3 errors:
+
+[plugin natural-playback-canonical-arm]
+Error: Unpinned module: /Users/regina/Desktop/Projects/surfing-game/src/scene/WaterSurface.ts
+    at LoadPluginContextImpl.load (file:///private/tmp/surf-tube-natural-playback-20261004/authority.mjs:57:129)
+    at plugin (file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/bindingify-input-options-XrReX_BJ.mjs:1572:30)
+    at file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/bindingify-input-options-XrReX_BJ.mjs:1932:21
+    at plugin.<computed> (file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/bindingify-input-options-XrReX_BJ.mjs:2130:18)
+[plugin natural-playback-canonical-arm]
+Error: Unpinned module: /Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.ts
+    at LoadPluginContextImpl.load (file:///private/tmp/surf-tube-natural-playback-20261004/authority.mjs:57:129)
+    at plugin (file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/bindingify-input-options-XrReX_BJ.mjs:1572:30)
+    at file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/bindingify-input-options-XrReX_BJ.mjs:1932:21
+    at plugin.<computed> (file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/bindingify-input-options-XrReX_BJ.mjs:2130:18)
+[plugin natural-playback-canonical-arm]
+Error: Unpinned module: /Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts
+    at LoadPluginContextImpl.load (file:///private/tmp/surf-tube-natural-playback-20261004/authority.mjs:57:129)
+    at plugin (file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/bindingify-input-options-XrReX_BJ.mjs:1572:30)
+    at file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/bindingify-input-options-XrReX_BJ.mjs:1932:21
+    at plugin.<computed> (file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/bindingify-input-options-XrReX_BJ.mjs:2130:18)
+    at aggregateBindingErrorsIntoJsError (file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/error-C7pxws0W.mjs:48:18)
+    at unwrapBindingResult (file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/error-C7pxws0W.mjs:18:128)
+    at #build (file:///Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/rolldown-CgWItHdG.mjs:133:34)
+    at async file:///private/tmp/surf-tube-natural-playback-20261004/build.mjs:12:3 {
+  errors: [Getter/Setter]
+}
+
+Node.js v23.10.0

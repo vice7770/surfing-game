@@ -1,0 +1,13 @@
+{
+  "path": "/private/tmp/surf-tube-material-lifecycle-20261004/run/result.json",
+  "bytes": 77752,
+  "sha256": "387a896eeb9157d92bf630f939756761f40ffb1171342c152c3724eea17d916f",
+  "selection": {
+    "pointId": 3,
+    "jetStrip": 2
+  },
+  "stepRange": [
+    664,
+    684
+  ]
+}

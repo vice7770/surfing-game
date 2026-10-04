@@ -1,0 +1,154 @@
+{
+  "schema": "natural-tube-playback-source-ready/v1",
+  "status": "source-only-unexecuted",
+  "productionChanged": false,
+  "baseGitRef": "e3e630bc45339e0f7564e59cfdd556275c06de92",
+  "ownedRecords": [
+    {
+      "path": "entry.ts",
+      "bytes": 16246,
+      "sha256": "884e82c40c9b2ff3d8442a0246aae4e5eff1741dab89a0729fd8fe0a20c8d4b4"
+    },
+    {
+      "path": "cameras.json",
+      "bytes": 986,
+      "sha256": "255b2e85030f1fe2974c6faa13c5e343f2e6eae735ac5b0533aaa804df6d0fed"
+    },
+    {
+      "path": "authority.mjs",
+      "bytes": 4302,
+      "sha256": "280c7bed9b20aaf2d06d5539178415794b58cca764744f78818eede1363c2774"
+    },
+    {
+      "path": "build.mjs",
+      "bytes": 2188,
+      "sha256": "61bf8096dbcd62a0477721c5112ba3f8cf6977cde27fbfc98ce27df7e4279d0b"
+    },
+    {
+      "path": "device-gate.mjs",
+      "bytes": 11686,
+      "sha256": "141b147255cf9fc717a82e6fbe853df57341fb8ead35b9bbe54b659c35dccfff"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 816,
+      "sha256": "01eb51421b892aef12b827d099ad6924f9ec1217f71faccb1460addd94c72536"
+    },
+    {
+      "path": "PLAN.md",
+      "bytes": 6410,
+      "sha256": "40831bf896e0e495a58e7b6b6cd55a5b12d08d39ed42c3ba16713bc59bba09a3"
+    }
+  ],
+  "borrowedRecords": [
+    {
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/check-inputs.json",
+      "bytes": 176662,
+      "sha256": "afb511ca8e9ce379986594f70e76986e60749b0345744adb2dbdad797cbb57b8"
+    },
+    {
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/source-manifest.json",
+      "bytes": 10085,
+      "sha256": "384a56fc80b15361d1d28359a24836c077b99746e9964ee8ef683cc14389ec65"
+    },
+    {
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/ready.json",
+      "bytes": 4325,
+      "sha256": "42f71514012eaf27cd72f9c9061e200e8b0c14a08860c1e05da383c4b547e122"
+    },
+    {
+      "path": "/private/tmp/surf-tube-material-visual-capture-20261004/capture-first/manifest.json",
+      "bytes": 136008,
+      "sha256": "8fdef05796e919cd241d303e10cc88fea031bdb21418bacc3bbdcb9a59e48b67"
+    },
+    {
+      "path": "/private/tmp/surf-tube-material-visual-capture-20261004/slice-verification.json",
+      "bytes": 35123,
+      "sha256": "cd326c1955e2749e03fb1c5e47f6422d41517d52d7c333cba900934a5afa3636"
+    },
+    {
+      "path": "/private/tmp/surf-tube-material-visual-capture-20261004/proof-freeze.json",
+      "bytes": 5144,
+      "sha256": "8bd86689981399fa17601484b7a032e9d9f642b8287702cff82b94a582ea9fd6"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    }
+  ],
+  "assets": [
+    {
+      "url": "/barrels/pad19-a20-l12.bin",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "pinOrigin": "Prior reviewed source/capture authority; no asset rehash or copy in source prep"
+    },
+    {
+      "url": "/barrels/pad19-a30-l12.bin",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "pinOrigin": "Prior reviewed source/capture authority; no asset rehash or copy in source prep"
+    },
+    {
+      "url": "/barrels/pad19-a45-l12.bin",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "pinOrigin": "Prior reviewed source/capture authority; no asset rehash or copy in source prep"
+    },
+    {
+      "url": "/barrels/periodic-padang19s-l12.bin",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "pinOrigin": "Prior reviewed source/capture authority; no asset rehash or copy in source prep"
+    }
+  ],
+  "captureServe": [
+    {
+      "path": "/private/tmp/surf-tube-material-visual-capture-20261004/capture-first/manifest.json",
+      "bytes": 136008,
+      "sha256": "8fdef05796e919cd241d303e10cc88fea031bdb21418bacc3bbdcb9a59e48b67",
+      "url": "/capture/manifest.json"
+    },
+    {
+      "url": "/capture/frames.bin.gz",
+      "path": "/private/tmp/surf-tube-material-visual-capture-20261004/capture-first/frames.bin.gz",
+      "bytes": 33425811,
+      "sha256": "5b9f2e4a081472d3cf88461f5129e529b90639e01a522fc08c0a7edd9b7c8c9d",
+      "expandedBytes": 61541540,
+      "expandedSha256": "21585d0aadb5f9ff9f7901d6151b28036f63f3fc0b026ec245d25876f2b8393f",
+      "pinOrigin": "Parent verified capture/proof freeze; NOT reread/hashed/decompressed during shared FPS lease"
+    }
+  ],
+  "links": [
+    {
+      "path": "node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules",
+      "scope": "Read-only package resolution; no dependency mutations"
+    }
+  ],
+  "borrowedSourceAuthority": {
+    "checkInputSha256": "afb511ca8e9ce379986594f70e76986e60749b0345744adb2dbdad797cbb57b8",
+    "sourceManifestSha256": "384a56fc80b15361d1d28359a24836c077b99746e9964ee8ef683cc14389ec65",
+    "originalReadySha256": "42f71514012eaf27cd72f9c9061e200e8b0c14a08860c1e05da383c4b547e122",
+    "expectedSourceLinks": 247,
+    "overlayRuntimeCount": 6,
+    "scope": "Borrowed exact reviewed closure/package identities. No new runtime copies; future authorized authority verifies byte/alias pins."
+  },
+  "execution": {
+    "cpuChecks": false,
+    "build": false,
+    "binaryDecoded": false,
+    "simulation": false,
+    "hardware": false
+  },
+  "limits": [
+    "Source-only two fixed camera/all21frame native playback,60s proposed hardware gate pending separate parent approval.",
+    "Normal production shaders with actual painted-sky fallback context; no IDs/world debug or fog override.",
+    "Natural captured fresh-F64CPU trajectory only, not live GPU/BigPadang/FPS/visual acceptance."
+  ]
+}

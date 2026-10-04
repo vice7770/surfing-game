@@ -1,0 +1,23 @@
+[
+  {
+    "phase": 1,
+    "argv": [
+      "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    "cwd": "/private/tmp/surf-tube-natural-playback-20261004",
+    "env": {
+      "NATURAL_TUBE_READY_SHA256": "17a5be2394ba3d40b5e85d508fdebb8a4b1014fd1dce64fe331816e97fafe0f6"
+    },
+    "pid": 1354,
+    "startedAt": "2026-10-04T04:29:31.090297+00:00",
+    "endedAt": "2026-10-04T04:29:33.875466+00:00",
+    "exit": 2,
+    "stdout": "/private/tmp/surf-tube-natural-playback-20261004/checks-camera/01-stdout.log",
+    "stderr": "/private/tmp/surf-tube-natural-playback-20261004/checks-camera/01-stderr.log"
+  }
+]

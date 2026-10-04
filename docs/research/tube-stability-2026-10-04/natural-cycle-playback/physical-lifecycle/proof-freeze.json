@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "status": "PASSED_STRICT_AND_ONE_BOUNDED_CPU_PHYSICAL_OBSERVER",
+  "records": [
+    {
+      "path": "ready.json",
+      "bytes": 3436,
+      "sha256": "4e0bb9152cbc50dbd0335e1b16834ae6e262483dabe463c11e0e2f1e2e4d12ee"
+    },
+    {
+      "path": "lifecycle.test.ts",
+      "bytes": 13518,
+      "sha256": "34736d1cb792266a0a3c47c0b513ae1afeb927100478029b28c8a6626c26ce80"
+    },
+    {
+      "path": "proposal.json",
+      "bytes": 6900,
+      "sha256": "88bd5b4d097c2857897a4674ea0f526ec4d71145647df0c7eb4749fcd0fb2883"
+    },
+    {
+      "path": "observer-semantics-v2.patch",
+      "bytes": 6344,
+      "sha256": "2434e7ee246d8f8d637e5fb292e1335d3b2bc7f33597d7547dd1ab080b6dffb2"
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 40350,
+      "sha256": "0366bab8d8a2eb4842034a558228b40bf0ded2a35fbd260dcff2732c778247d5"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 824,
+      "sha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928"
+    },
+    {
+      "path": "vitest.lifecycle.config.ts",
+      "bytes": 241,
+      "sha256": "68b6c4e2dce622c7b741614ad9ff3a69a2ab8d687c6b475a0ba175d68f7ee91a"
+    },
+    {
+      "path": "tsconfig.lifecycle.json",
+      "bytes": 604,
+      "sha256": "9734090b03ef8186288f4c65b3d0a78f724cb86f6d58c7392c523da619a8bb73"
+    },
+    {
+      "path": "run-selected.mjs",
+      "bytes": 3840,
+      "sha256": "81668a9fd6f9225b12fc508b6d7c5807fc2120cc37ee65f30672a6e2cc5b9d95"
+    },
+    {
+      "path": "run/result.json",
+      "bytes": 77752,
+      "sha256": "387a896eeb9157d92bf630f939756761f40ffb1171342c152c3724eea17d916f"
+    },
+    {
+      "path": "proof-summary.json",
+      "bytes": 9284,
+      "sha256": "323572b3dccf272b186fbc4f240d8ade891a32a3dbc613e90e48931fe6f1f56b"
+    },
+    {
+      "path": "first-console.log",
+      "bytes": 1318,
+      "sha256": "517637ee490826e2994654f5020c257432a783360fe63af7d87241b4ff010edb"
+    },
+    {
+      "path": "checks-first/before.json",
+      "bytes": 17587,
+      "sha256": "6b403a728a3378877839cd9ba204234b3752f9cddd8120800a8fcf06b40c2c49"
+    },
+    {
+      "path": "checks-first/after.json",
+      "bytes": 17587,
+      "sha256": "6b403a728a3378877839cd9ba204234b3752f9cddd8120800a8fcf06b40c2c49"
+    },
+    {
+      "path": "checks-first/terminal.json",
+      "bytes": 1088,
+      "sha256": "205e9179f9f4716eb5fa15b3b3c0864b515f43975e28b5c489a1536f28640397"
+    },
+    {
+      "path": "checks-first/strict.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-first/strict.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-first/lifecycle.stdout.log",
+      "bytes": 188,
+      "sha256": "1f01a481659a124b3262b2de0d313fb9b850e0ba75e4973c2a6bd8dc7fb8836c"
+    },
+    {
+      "path": "checks-first/lifecycle.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "beforeAfterByteIdentical": true,
+  "unexecutedV1": "unexecuted-v1/ exact9records retained throughreadyv2pins",
+  "sourceAuthority": "source-manifest.json56copiedfiles/166literalimportedges/currentaccepted e3e630 authority; no production edits/Gitcommands",
+  "noFurtherExecution": "Terminal04:08:42UTC; no retry/build/browser/GPU/nativeFPS/productionchange."
+}

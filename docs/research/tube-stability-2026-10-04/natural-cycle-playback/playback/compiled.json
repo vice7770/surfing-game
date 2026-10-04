@@ -1,0 +1,49 @@
+{
+  "schema": "natural-tube-playback-compiled/v1",
+  "status": "passed",
+  "readySha256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436",
+  "buildId": "e3e630bc4-qa-natural-tube",
+  "arms": [
+    {
+      "arm": "baseline",
+      "outputRoot": "/private/tmp/surf-tube-natural-playback-20261004/dist-authority-fixed/baseline",
+      "componentOnly": true,
+      "productionMainImported": false
+    },
+    {
+      "arm": "candidate",
+      "outputRoot": "/private/tmp/surf-tube-natural-playback-20261004/dist-authority-fixed/candidate",
+      "componentOnly": true,
+      "productionMainImported": false
+    }
+  ],
+  "records": [
+    {
+      "url": "/baseline/entry.js",
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/dist-authority-fixed/baseline/entry.js",
+      "bytes": 2761144,
+      "sha256": "bff36e3878e2c4ef6e9ac515df9f75eef23497b0accd123c86bea6c00244b82b"
+    },
+    {
+      "url": "/baseline/index.html",
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/dist-authority-fixed/baseline/index.html",
+      "bytes": 242,
+      "sha256": "3866fe70309cb9fa2fbcf6a9618766459b71c46c574ca2ec0e2af59aaf3b90a5"
+    },
+    {
+      "url": "/candidate/entry.js",
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/dist-authority-fixed/candidate/entry.js",
+      "bytes": 2766411,
+      "sha256": "c488397509e849528abb3881abe78510e7658783ba86c9340f088dcc4d35f818"
+    },
+    {
+      "url": "/candidate/index.html",
+      "path": "/private/tmp/surf-tube-natural-playback-20261004/dist-authority-fixed/candidate/index.html",
+      "bytes": 242,
+      "sha256": "3866fe70309cb9fa2fbcf6a9618766459b71c46c574ca2ec0e2af59aaf3b90a5"
+    }
+  ],
+  "noWorkerEmitted": true,
+  "sourceCaptureReadonly": true,
+  "productionChanged": false
+}

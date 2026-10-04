@@ -1,0 +1,92 @@
+{
+  "schema": "natural-playback-first-camera-check-failure-freeze/v1",
+  "status": "strict-failed-stopped",
+  "sourceReadySha256": "17a5be2394ba3d40b5e85d508fdebb8a4b1014fd1dce64fe331816e97fafe0f6",
+  "error": "TS2554: WaterSurface.update() accepts zero arguments; patch follows actual camera via onBeforeRender.",
+  "runtimeChanged": false,
+  "buildStarted": false,
+  "hardwareStarted": false,
+  "sourceBeforeAfterIdentical": true,
+  "records": [
+    {
+      "path": "checks-camera/failed-source/source-repair.json",
+      "bytes": 695,
+      "sha256": "60481aa169b750e320a0c307a4d7da1ff5f64647a8b8ba906e7532184d7b06db"
+    },
+    {
+      "path": "checks-camera/failed-source/camera-update.patch",
+      "bytes": 880,
+      "sha256": "5a0b91c4efc6bfe8bb7fb5875985893ac9c94c447c2ad6b86d10fdb36885d830"
+    },
+    {
+      "path": "checks-camera/failed-source/entry.ts",
+      "bytes": 16252,
+      "sha256": "d546cb5061de7dbfdef7871c14fe330e85262826471e0ef9fefae380b44289b5"
+    },
+    {
+      "path": "checks-camera/failed-source/device-gate.mjs",
+      "bytes": 11686,
+      "sha256": "141b147255cf9fc717a82e6fbe853df57341fb8ead35b9bbe54b659c35dccfff"
+    },
+    {
+      "path": "checks-camera/failed-source/build.mjs",
+      "bytes": 2188,
+      "sha256": "61bf8096dbcd62a0477721c5112ba3f8cf6977cde27fbfc98ce27df7e4279d0b"
+    },
+    {
+      "path": "checks-camera/failed-source/PLAN.md",
+      "bytes": 6410,
+      "sha256": "40831bf896e0e495a58e7b6b6cd55a5b12d08d39ed42c3ba16713bc59bba09a3"
+    },
+    {
+      "path": "checks-camera/failed-source/tsconfig.json",
+      "bytes": 816,
+      "sha256": "01eb51421b892aef12b827d099ad6924f9ec1217f71faccb1460addd94c72536"
+    },
+    {
+      "path": "checks-camera/failed-source/cameras.json",
+      "bytes": 986,
+      "sha256": "255b2e85030f1fe2974c6faa13c5e343f2e6eae735ac5b0533aaa804df6d0fed"
+    },
+    {
+      "path": "checks-camera/failed-source/ready.json",
+      "bytes": 6692,
+      "sha256": "17a5be2394ba3d40b5e85d508fdebb8a4b1014fd1dce64fe331816e97fafe0f6"
+    },
+    {
+      "path": "checks-camera/failed-source/authority.mjs",
+      "bytes": 4302,
+      "sha256": "280c7bed9b20aaf2d06d5539178415794b58cca764744f78818eede1363c2774"
+    },
+    {
+      "path": "checks-camera/01-stdout.log",
+      "bytes": 65,
+      "sha256": "f4b43f448107a41bb54dbf16ca5f1bd754fcaac5f51b88eb338709c0dc3673d6"
+    },
+    {
+      "path": "checks-camera/01-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-camera/commands.json",
+      "bytes": 722,
+      "sha256": "27e012e6845b0209b97e08a7279b63bb3172eba746b81ffd8306f2b656e0e409"
+    },
+    {
+      "path": "checks-camera/terminal.json",
+      "bytes": 1245,
+      "sha256": "c2017a865cb9991e4273d3bba351da54fed12b4b82043f83cc8f036dc2763afb"
+    },
+    {
+      "path": "checks-camera/before.json",
+      "bytes": 59744,
+      "sha256": "a6f689b62e2a7ac9ce4c057cca2c4b4d178c63e81d99b0f8a25d55e14c42bd04"
+    },
+    {
+      "path": "checks-camera/after.json",
+      "bytes": 59744,
+      "sha256": "a6f689b62e2a7ac9ce4c057cca2c4b4d178c63e81d99b0f8a25d55e14c42bd04"
+    }
+  ]
+}

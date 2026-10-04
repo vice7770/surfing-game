@@ -1,0 +1,11 @@
+--- first-empty-dist/build.mjs
++++ fresh-authority-fixed/build.mjs
+@@ -3,7 +3,7 @@
+ import { pathToFileURL } from 'node:url';
+ import { authority, resolver, sha256, WORK, ROOT } from './authority.mjs';
+ const pin = authority(), { rolldown } = await import(pathToFileURL(resolve(ROOT, 'node_modules/rolldown/dist/index.mjs')).href);
+-const out = resolve(WORK, 'dist'); mkdirSync(out);
++const out = resolve(WORK, 'dist-authority-fixed'); mkdirSync(out);
+ const records = [], arms = [];
+ for (const arm of ['baseline', 'candidate']) {
+   const dir = resolve(out, arm); mkdirSync(dir);

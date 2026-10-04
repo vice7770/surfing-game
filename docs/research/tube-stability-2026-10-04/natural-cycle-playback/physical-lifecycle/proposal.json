@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNEXECUTED",
+  "scope": "One actual CPU F64 material tube lifecycle using accepted e3e630 Simulation/Boussinesq/BreakingFront/SweptCrash/PlungingLip and all4 authored Padang cases; passive separate-library SweptLoft observations. No native rendering or GPU/FPS acceptance.",
+  "fixture": {
+    "spot": "padang",
+    "seed": 3,
+    "significantHeight": 1.2,
+    "peakPeriod": 16,
+    "directionDegrees": 0,
+    "spreading": 150,
+    "tide": 0,
+    "componentCount": 12,
+    "alongShore": 320,
+    "dx": 2,
+    "fineSpacing": 2,
+    "coarseSpacing": 4,
+    "spinUpPeriods": 1,
+    "stage": "actual default2",
+    "constructor": "spun-up",
+    "dt": 0.03333333333333333,
+    "authority": "Exact existing small-swell configuration in SurfZoneSimulation.test.ts31-35,933-936,1058;320m width retained, not alongShore40 shortcut. Constructor performs16s adaptive actual CPU water-only spin-up and breaking.update(0), then actual fullstep. No F32 handover/reset or historical trajectory claim."
+  },
+  "selection": {
+    "searchSteps": 900,
+    "searchSimulatedSeconds": 30,
+    "rule": "First step with an actual newly generated held swept strip, jetAt===solver.time, no crashedAt, nonnegative tau before actual library touchdown and positive collapse, point at least LOFT.endBlend2.5m from both current front ends, and current drawing has joined bracket with positive lift. Lowest FrontPoint.id among those candidates in that first frame. Capture actual point.id+generated jetStrip once; no retarget. Opening is separately required, not assumed at launch.",
+    "afterSelection": "Follow at most240 actual1/30 steps/8simulatedseconds; stop early only when all7 material lifecycle witnesses observed. Never force tau,metadata,state,controls,solver fields or callbacks."
+  },
+  "observation": {
+    "calls": "Actual front.points reads; lip.exportState (nonmutating); writeFrontRecords; separate-library ProfileLibrary.profileTimes and actual collapseFade; full SweptLoft build in separate read-only PhysicalSurfWater plain-surface cache. No front.exportState because it reconciles matching order. No mutation of Simulation callbacks/library scratch.",
+    "ID": "Resolve actual selected point.id every step, then associate its CURRENT packed record ordinal only for current front/sigma bracket. Old(front,X), oldsigma and oldrow never treated as materialidentity. Strip keyed only by fixed actual jetStrip/tube.id.",
+    "required": [
+      "newactualheldlaunch",
+      "actualpositive-weightoverturnedphase1drawing",
+      "point.crashedAtobservedwhilepointstillassociatedwithselectedjet",
+      "selectedstrip.closedAtobserved",
+      "presentassociatedpointF64fade0viaactuallibrary",
+      "presentassociatedpublishedF32recordfade0viaactuallibrary",
+      "actualselectedstripIDabsentAFTERobservedstripclosure"
+    ],
+    "optional": "Record first chosen ID absent, changed jet association, and chosen current sigma with/without a joined loft bracket AFTER own published fade0. None is a material retirement gate. Nearby live controls can cover the same sigma. If point metadata changes, retain fixed chosen strip and never attribute later point clock/crash events to it.",
+    "touchdownLimit": "crashedAt plus stripclosure records actual subsystem transition, which can include foreseen fallback. Counts/selected exited/fadeExited are reported so this is not automatically a successful normal drawn crash.",
+    "stripRetirementAuthority": "PlungingLip.ts1180-1181 removes a strip only when live===0 and voidcollapsecomplete; report actual stored strip/live/closure and remaining selected parcel IDs. No onLand callback attribution claim based on coordinates, no callback replacement.",
+    "sourceValidity": {
+      "launch": "SurfZoneSimulation.ts825-829 advances solver time then afterWater;896advancesclocks;SweptCrash.ts392 setsjetAt=solver.time withinthatstep. Equality is valid.",
+      "jetFields": "Current BreakingFront.ts303-325,412 spreads jetfields across match/coast;699-710only writes thrown/throwZ. No reset found, but permanentjetStrip equality is not a needed observer contract.",
+      "neighborGeometry": "sweptLoft.ts496-511interpolates neighbouring clocks;547 drops sampledrows; a joinedbracket maycoverselectedsigma aftertheexactselectedcontrolfade0. V1 bracketabsence gate unsupported, so bracketcontext optional; actualselectedstripIDretirement remainsrequired."
+    }
+  },
+  "bounds": {
+    "maxPostSpinupSteps": 1140,
+    "maxPostSpinupSimulatedSeconds": 38,
+    "wallBeforeEachFullstepMs": 110000,
+    "vitestTimeoutMs": 120000,
+    "hardVitestChildKillMs": 125000,
+    "strictChildKillMs": 60000,
+    "oneTestFile": true,
+    "oneAttempt": true,
+    "firstFailure": "Stop exactfirst terminalfailure/sourcepin mismatch/coveragebound without repair,retry,retarget,longer simulation or parameter tuning. Preserve run/result traces/logs/terminal/source inventories even failed."
+  },
+  "outputs": [
+    "run/result.json",
+    "checks-first/before.json",
+    "checks-first/after.json",
+    "checks-first/strict.stdout.log",
+    "checks-first/strict.stderr.log",
+    "checks-first/lifecycle.stdout.log",
+    "checks-first/lifecycle.stderr.log",
+    "checks-first/terminal.json"
+  ],
+  "proposedCommands": [
+    {
+      "cwd": "/private/tmp/surf-tube-material-lifecycle-20261004",
+      "executable": "./node_modules/.bin/tsc",
+      "args": [
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "tsconfig.lifecycle.json"
+      ]
+    },
+    {
+      "onlyIfStrict0": true,
+      "cwd": "/private/tmp/surf-tube-material-lifecycle-20261004",
+      "executable": "./node_modules/.bin/vitest",
+      "args": [
+        "run",
+        "--config",
+        "vitest.lifecycle.config.ts",
+        "--maxWorkers",
+        "1",
+        "lifecycle.test.ts"
+      ]
+    }
+  ],
+  "proposedDriver": "TUBE_LIFECYCLE_READY_SHA256=<reviewedreadySHA> node run-selected.mjs; verifiesready/source/cases/dependencypins, runs exactly strict->onlyifPASSonefile, hardkills timeout, savesfirstattempt, beforeafter. No test/build/hardware execution authorized by this source-ready plan.",
+  "limits": [
+    "Existing fixture proves aggregate throws/crashes/heldhandover, not success of this fixed selected ID. This source-only experiment can fail to cover that ID naturally and must report failure without tuning.",
+    "Drawing observer reproduces current loft from current real water; no WebGL/seam visual pass. It adds observer cost, not suitable forFPSmeasurement.",
+    "NoGPU/nativeworker/formulaemulation/full-framebatching/bodycontroltuning/model/schema/productionchange. NativeGPUtrajectory later would require separate exactfixture/readiness/lease.",
+    "No claim that the complete local loft disappears when the selected control fades; renderer geometry retirement is the separate prescribed persistent-control gate."
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "schema": "natural-playback-cpu-pass-freeze/v1",
+  "status": "strict-dualbuild-syntax-unarmed-passed",
+  "readySha256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436",
+  "compiledSha256": "660379ebb4c1768c598b04f115d05dd776aab6ea9eebf61b69ead183ef49b812",
+  "sourceInputRecords": 313,
+  "beforeAfterIdentical": true,
+  "commandsExitedZero": 6,
+  "compiledFiles": 4,
+  "hardwareStarted": false,
+  "visualAccepted": false,
+  "firstFailuresPreserved": [
+    {
+      "path": "checks-camera/failure-freeze.json",
+      "sha256": "629dabbc2fe7eebc097457cae2f4ed41f0545255f7c4d7a67db3702ba66f7188"
+    },
+    {
+      "path": "checks-original-api/failure-freeze.json",
+      "sha256": "5547424b59d2304adc4beb7342298ee98f66a8ebfdb2e76664090efb43b4333d"
+    }
+  ],
+  "records": [
+    {
+      "path": "ready.json",
+      "bytes": 10530,
+      "sha256": "e210f5cc92e45afe82fda2a67c777017d6b3d42f6c8f47fcb826b8f49ee56436"
+    },
+    {
+      "path": "entry.ts",
+      "bytes": 16246,
+      "sha256": "884e82c40c9b2ff3d8442a0246aae4e5eff1741dab89a0729fd8fe0a20c8d4b4"
+    },
+    {
+      "path": "cameras.json",
+      "bytes": 986,
+      "sha256": "255b2e85030f1fe2974c6faa13c5e343f2e6eae735ac5b0533aaa804df6d0fed"
+    },
+    {
+      "path": "authority.mjs",
+      "bytes": 4302,
+      "sha256": "280c7bed9b20aaf2d06d5539178415794b58cca764744f78818eede1363c2774"
+    },
+    {
+      "path": "build.mjs",
+      "bytes": 2204,
+      "sha256": "833f3c29f2e5eb8a725dc856cfdeeba1ef1bf7185a6f867260cd6c0a0b90f781"
+    },
+    {
+      "path": "device-gate.mjs",
+      "bytes": 11686,
+      "sha256": "141b147255cf9fc717a82e6fbe853df57341fb8ead35b9bbe54b659c35dccfff"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 816,
+      "sha256": "01eb51421b892aef12b827d099ad6924f9ec1217f71faccb1460addd94c72536"
+    },
+    {
+      "path": "PLAN.md",
+      "bytes": 6410,
+      "sha256": "40831bf896e0e495a58e7b6b6cd55a5b12d08d39ed42c3ba16713bc59bba09a3"
+    },
+    {
+      "path": "camera-update.patch",
+      "bytes": 880,
+      "sha256": "5a0b91c4efc6bfe8bb7fb5875985893ac9c94c447c2ad6b86d10fdb36885d830"
+    },
+    {
+      "path": "source-repair.json",
+      "bytes": 695,
+      "sha256": "60481aa169b750e320a0c307a4d7da1ff5f64647a8b8ba906e7532184d7b06db"
+    },
+    {
+      "path": "original-api.patch",
+      "bytes": 897,
+      "sha256": "7496e4fec4b43df8e054a4bf09ca210c48823e3015d461fcb26a8c04b0110ded"
+    },
+    {
+      "path": "original-api-repair.json",
+      "bytes": 959,
+      "sha256": "9fc7d5ac2f8e43bf7227adf198ee579dc7ce5eaa7feea92e6a6b765dd27a8adb"
+    },
+    {
+      "path": "baseline-authority.patch",
+      "bytes": 582,
+      "sha256": "2ec23febdc41499e44abaee14ada8a9fd2008653f3d73631690debf4429a1589"
+    },
+    {
+      "path": "baseline-authority-repair.json",
+      "bytes": 2271,
+      "sha256": "63e38f3d72af1027e046ce809a77553a9eb1cd6af1d86e270f8e9132ae799e1f"
+    },
+    {
+      "path": "compiled.json",
+      "bytes": 1786,
+      "sha256": "660379ebb4c1768c598b04f115d05dd776aab6ea9eebf61b69ead183ef49b812"
+    },
+    {
+      "path": "dist-authority-fixed/baseline/entry.js",
+      "bytes": 2761144,
+      "sha256": "bff36e3878e2c4ef6e9ac515df9f75eef23497b0accd123c86bea6c00244b82b"
+    },
+    {
+      "path": "dist-authority-fixed/baseline/index.html",
+      "bytes": 242,
+      "sha256": "3866fe70309cb9fa2fbcf6a9618766459b71c46c574ca2ec0e2af59aaf3b90a5"
+    },
+    {
+      "path": "dist-authority-fixed/candidate/entry.js",
+      "bytes": 2766411,
+      "sha256": "c488397509e849528abb3881abe78510e7658783ba86c9340f088dcc4d35f818"
+    },
+    {
+      "path": "dist-authority-fixed/candidate/index.html",
+      "bytes": 242,
+      "sha256": "3866fe70309cb9fa2fbcf6a9618766459b71c46c574ca2ec0e2af59aaf3b90a5"
+    },
+    {
+      "path": "checks-baseline-authority/terminal.json",
+      "bytes": 4598,
+      "sha256": "d877294799c3b066f6e9b15714e3daf69feb623a5dec25469729d2c39b85627b"
+    },
+    {
+      "path": "checks-baseline-authority/commands.json",
+      "bytes": 3884,
+      "sha256": "660af9306688da3a7badd1b33ee2bc03ad8c0fcd595e3cabec7fc4a3705463cc"
+    },
+    {
+      "path": "checks-baseline-authority/before.json",
+      "bytes": 61518,
+      "sha256": "a54f1747f5d81447575f05a9973378b2509058b44a14a1181452b552e49df8d5"
+    },
+    {
+      "path": "checks-baseline-authority/after.json",
+      "bytes": 61518,
+      "sha256": "a54f1747f5d81447575f05a9973378b2509058b44a14a1181452b552e49df8d5"
+    },
+    {
+      "path": "checks-baseline-authority/01-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-baseline-authority/02-stdout.log",
+      "bytes": 1249,
+      "sha256": "b0621c90c57044104be7e37ace1604954292febe5fe1f359c2d7263f63297827"
+    },
+    {
+      "path": "checks-baseline-authority/03-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-baseline-authority/04-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-baseline-authority/05-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-baseline-authority/06-stdout.log",
+      "bytes": 687,
+      "sha256": "295f2089242d9551d3178f0a49d83a92f2ab1a25bd79d5805f54671ca7392d55"
+    },
+    {
+      "path": "checks-baseline-authority/01-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-baseline-authority/02-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-baseline-authority/03-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-baseline-authority/04-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-baseline-authority/05-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "checks-baseline-authority/06-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

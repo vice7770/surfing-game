@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNEXECUTED_V2",
+  "revisionClaim": "e3e630bc45339e0f7564e59cfdd556275c06de92 actualCPUphysicalfixture, observersemanticsrepairedonly",
+  "records": [
+    {
+      "path": "lifecycle.test.ts",
+      "bytes": 13518,
+      "sha256": "34736d1cb792266a0a3c47c0b513ae1afeb927100478029b28c8a6626c26ce80"
+    },
+    {
+      "path": "vitest.lifecycle.config.ts",
+      "bytes": 241,
+      "sha256": "68b6c4e2dce622c7b741614ad9ff3a69a2ab8d687c6b475a0ba175d68f7ee91a"
+    },
+    {
+      "path": "tsconfig.lifecycle.json",
+      "bytes": 604,
+      "sha256": "9734090b03ef8186288f4c65b3d0a78f724cb86f6d58c7392c523da619a8bb73"
+    },
+    {
+      "path": "run-selected.mjs",
+      "bytes": 3840,
+      "sha256": "81668a9fd6f9225b12fc508b6d7c5807fc2120cc37ee65f30672a6e2cc5b9d95"
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 40350,
+      "sha256": "0366bab8d8a2eb4842034a558228b40bf0ded2a35fbd260dcff2732c778247d5"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 824,
+      "sha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928"
+    },
+    {
+      "path": "package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "path": "proposal.json",
+      "bytes": 6900,
+      "sha256": "88bd5b4d097c2857897a4674ea0f526ec4d71145647df0c7eb4749fcd0fb2883"
+    },
+    {
+      "path": "observer-semantics-v2.patch",
+      "bytes": 6344,
+      "sha256": "2434e7ee246d8f8d637e5fb292e1335d3b2bc7f33597d7547dd1ab080b6dffb2"
+    },
+    {
+      "path": "unexecuted-v1/cases.json",
+      "bytes": 824,
+      "sha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928"
+    },
+    {
+      "path": "unexecuted-v1/lifecycle.test.ts",
+      "bytes": 12823,
+      "sha256": "e157578e4e85c05df423330f25ec080ee5e77d488470c7a6cf7ad2ac1f6d1137"
+    },
+    {
+      "path": "unexecuted-v1/package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "path": "unexecuted-v1/proposal.json",
+      "bytes": 5861,
+      "sha256": "d27b2b3a72f6dbc87d2eb4d7dd84821a659ca1216dfb06788a606f851d79d794"
+    },
+    {
+      "path": "unexecuted-v1/ready.json",
+      "bytes": 1818,
+      "sha256": "12ad2d394556ec505e5675ec1a478d24d4b7731e1222c693b39ef6b5d11ba259"
+    },
+    {
+      "path": "unexecuted-v1/run-selected.mjs",
+      "bytes": 3840,
+      "sha256": "81668a9fd6f9225b12fc508b6d7c5807fc2120cc37ee65f30672a6e2cc5b9d95"
+    },
+    {
+      "path": "unexecuted-v1/source-manifest.json",
+      "bytes": 40350,
+      "sha256": "0366bab8d8a2eb4842034a558228b40bf0ded2a35fbd260dcff2732c778247d5"
+    },
+    {
+      "path": "unexecuted-v1/tsconfig.lifecycle.json",
+      "bytes": 604,
+      "sha256": "9734090b03ef8186288f4c65b3d0a78f724cb86f6d58c7392c523da619a8bb73"
+    },
+    {
+      "path": "unexecuted-v1/vitest.lifecycle.config.ts",
+      "bytes": 241,
+      "sha256": "68b6c4e2dce622c7b741614ad9ff3a69a2ab8d687c6b475a0ba175d68f7ee91a"
+    }
+  ],
+  "sourceFiles": 56,
+  "closureEdges": 166,
+  "authoredCases": 4,
+  "dependencyPackages": 7,
+  "unexecutedV1": "Preserved all8preparedrecords+ready exactbytes; no priorchecksorphysicalexecution",
+  "commands": "No imports/typechecks/tests/syntax/builds/browser/GPU/Git performed; explicit root strict+onephysicaltest authorization now applies after sourcevalidity report."
+}
