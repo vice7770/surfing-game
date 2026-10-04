@@ -1,0 +1,17 @@
+{
+  "command": [
+    "node",
+    "node_modules/typescript/bin/tsc",
+    "--noEmit",
+    "--strict",
+    "--pretty",
+    "false"
+  ],
+  "cwd": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source",
+  "exitCode": 0,
+  "elapsedSeconds": 9.799706042045727,
+  "actualCapturedStdoutAndStderr": "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-ts.log",
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "buildPerformed": false
+}

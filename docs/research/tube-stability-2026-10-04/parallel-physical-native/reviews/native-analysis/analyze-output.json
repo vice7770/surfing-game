@@ -1,0 +1,151 @@
+{
+  "allChecksPassed": true,
+  "failedChecks": [],
+  "checkCount": 38,
+  "pins": {
+    "source": {
+      "count": 579,
+      "allMatched": true,
+      "failures": []
+    },
+    "helpers": {
+      "count": 36,
+      "allMatched": true,
+      "failures": []
+    },
+    "assets": {
+      "count": 49,
+      "allMatched": true,
+      "failures": []
+    },
+    "buildSource": {
+      "count": 579,
+      "allMatched": true,
+      "failures": []
+    },
+    "builtAssets": {
+      "count": 21,
+      "allMatched": true,
+      "failures": []
+    },
+    "frozenAssets": {
+      "count": 49,
+      "allMatched": true,
+      "failures": []
+    },
+    "buildReferences": {
+      "count": 4,
+      "allMatched": true,
+      "failures": []
+    },
+    "sealedPriorReferences": {
+      "count": 16,
+      "allMatched": true,
+      "failures": []
+    },
+    "staticCopies": {
+      "count": 60,
+      "allMatched": true,
+      "failures": []
+    },
+    "servedAssets": {
+      "count": 15,
+      "allMatched": true,
+      "failures": []
+    },
+    "captureArtifacts": {
+      "count": 5,
+      "allMatched": true,
+      "failures": []
+    },
+    "preservedPartialAssets": {
+      "count": 21,
+      "allMatched": true,
+      "failures": []
+    }
+  },
+  "geometry": {
+    "firstPhase2": {
+      "step": 48,
+      "movingStep": 48,
+      "seaTime": 362.6067094336809
+    },
+    "maxAllValidPose": {
+      "crestDistance": {
+        "step": 64,
+        "crestDistance": 1.0848014886538084,
+        "crestZDelta": 1.084367597164288,
+        "eyeDistance": 1.0849575037502148,
+        "tangentAngle": 63.29503077959433,
+        "airRemains": false
+      },
+      "eyeDistance": {
+        "step": 64,
+        "crestDistance": 1.0848014886538084,
+        "crestZDelta": 1.084367597164288,
+        "eyeDistance": 1.0849575037502148,
+        "tangentAngle": 63.29503077959433,
+        "airRemains": false
+      },
+      "tangentAngle": {
+        "step": 64,
+        "crestDistance": 1.0848014886538084,
+        "crestZDelta": 1.084367597164288,
+        "eyeDistance": 1.0849575037502148,
+        "tangentAngle": 63.29503077959433,
+        "airRemains": false
+      }
+    },
+    "stationBeforeFinalFirstRow": 0.1596975326538086,
+    "landmark63to64": {
+      "crest": {
+        "delta": [
+          0.0,
+          0.03067872236040836,
+          1.084367597164288
+        ],
+        "distance": 1.0848014886538084
+      },
+      "cap": {
+        "delta": [
+          0.0,
+          -0.052039576282508326,
+          1.0843704892455435
+        ],
+        "distance": 1.0856184760063188
+      },
+      "toe": {
+        "delta": [
+          0.0,
+          -0.10222448852572419,
+          1.084370417592183
+        ],
+        "distance": 1.0891781528305602
+      }
+    }
+  },
+  "mouthSummary": {
+    "epochs": 56,
+    "totalDiscreteColumnQueries": 1344,
+    "allInternalSegmentsClear": true,
+    "allExteriorSegmentsObstructed": true,
+    "allShorewardSegmentsObstructed": true,
+    "qualifiedSampleRange": [
+      8,
+      20
+    ],
+    "eyeCandidateDistanceRange": [
+      1.9663044361625264,
+      12.727068211391218
+    ],
+    "fullIntervalRowLengthRange": [
+      11.7926616038515,
+      31.870027934780836
+    ],
+    "candidateProgressRowsRange": [
+      3.90625,
+      25.823744212658497
+    ],
+    "initialContourWidth": 23.93731689453125
+  }
+}

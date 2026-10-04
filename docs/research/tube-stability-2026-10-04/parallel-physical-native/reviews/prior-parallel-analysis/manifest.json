@@ -1,0 +1,26 @@
+{
+  "schema": "bounded-C-parallel-native-independent-notes/v1",
+  "frozenOwnerAccepted": false,
+  "notes": [
+    {
+      "file": "/private/tmp/tube-parallel-native-analysis-20261004/analyze.py",
+      "bytes": 16411,
+      "sha256": "04c3f6e20112eb2a0156be8cf0911fb40b3fb3b14b6f3a18bfaaba3e42f6ecb4"
+    },
+    {
+      "file": "/private/tmp/tube-parallel-native-analysis-20261004/analysis.json",
+      "bytes": 78483,
+      "sha256": "f7879bebc8683c26fbe00ec02f709fdfd0e7cdef02474e1e5beb4ee97c70e8bf"
+    },
+    {
+      "file": "/private/tmp/tube-parallel-native-analysis-20261004/report.md",
+      "bytes": 7093,
+      "sha256": "77171df3978d3d973af3b9dd9e298697aa7094e4b210a3ec6769afef88f53831"
+    },
+    {
+      "file": "/private/tmp/tube-parallel-native-analysis-20261004/analyze-output.json",
+      "bytes": 4154,
+      "sha256": "851f07b5ca8cf9c41ad7d4e2231ae1407e8cc18a310ef1199d3dcb495dfb4d6d"
+    }
+  ]
+}

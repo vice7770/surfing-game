@@ -1,0 +1,96 @@
+{
+  "schema": "bounded-C-parallel-new-built-source-contract/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/root-complete-build-result.json",
+    "bytes": 177530,
+    "sha256": "cd3dcdf529834e3de79bc92e95a51face5a543a3f00627e4fa184f8ea1d8023e"
+  },
+  "contractPins": [
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/main.ts",
+      "bytes": 56712,
+      "sha256": "e88b0f82571f74ffcf8ad1d902ba21a5f0bf62293077617f316994b1c4c82ce5"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/PhysicalMode.ts",
+      "bytes": 41940,
+      "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/scene/WaterSurface.ts",
+      "bytes": 39192,
+      "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/SurfZoneHost.ts",
+      "bytes": 8020,
+      "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/scene/PhysicalSurfaceSource.ts",
+      "bytes": 3054,
+      "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/WorkerSurfZone.ts",
+      "bytes": 8319,
+      "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/SurfZoneWorkerCore.ts",
+      "bytes": 9863,
+      "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/surfZoneState.ts",
+      "bytes": 3955,
+      "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/SurfZoneSimulation.ts",
+      "bytes": 70902,
+      "sha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/BreakingFront.ts",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/crestRays.ts",
+      "bytes": 15787,
+      "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 63917,
+      "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/SurfZoneWaterPrefetch.test.ts",
+      "bytes": 17570,
+      "sha256": "df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e"
+    }
+  ],
+  "supportedDrawPair": true,
+  "publicWaterAndHostEpoch": true,
+  "publicHostWorkerExportWaitsWithoutAdvanceOrGpuReadback": true,
+  "publicSET1HeaderHasStableCommittedPointIDs": true,
+  "exportRetainsActiveOrderOnly": true,
+  "componentRefitAgesMonotoneWithoutDTEquality": true,
+  "sourceModified": false,
+  "geometryEqualityClaim": false
+}

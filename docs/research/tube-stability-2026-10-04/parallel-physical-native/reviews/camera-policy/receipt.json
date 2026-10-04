@@ -1,0 +1,88 @@
+{
+  "schema": "physical-mouth-read-only-camera-review/v1",
+  "reviewedAtUtc": "2026-10-04T22:51:58.040017+00:00",
+  "scope": "frozen helpers and pin metadata; note-only writes",
+  "concreteBlockerFound": false,
+  "visualAcceptanceClaim": false,
+  "nativeOrTestResourcesStarted": false,
+  "sourcePinsChecked": 579,
+  "allCurrentSourcePinsMatch": true,
+  "helperAndMetadataChecks": [
+    {
+      "file": "mouth-tools.mjs",
+      "matches": true
+    },
+    {
+      "file": "moving-shape.mjs",
+      "matches": true
+    },
+    {
+      "file": "native.mjs",
+      "matches": true
+    },
+    {
+      "file": "native-owned.mjs",
+      "matches": true
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/helper-pins.json",
+      "matches": true
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/root-complete-build-result.json",
+      "matches": true
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json",
+      "matches": true
+    }
+  ],
+  "inputPins": [
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-tools.mjs",
+      "bytes": 5316,
+      "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/moving-shape.mjs",
+      "bytes": 29668,
+      "sha256": "15db7127b8b8b5a7fb1e0047c3bbfa52c18f2b9c9d16cd9b2602d40030fa4cb9"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native.mjs",
+      "bytes": 10355,
+      "sha256": "6e5a3825f16d203c310b4ddf2a22c0dad4e4313e77b6658988971ee0f9b54b5a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/readiness.json",
+      "bytes": 15562,
+      "sha256": "3f8831e7a3650c3a653755556201422ab73196cda24976b3d4c7adf1b1896b0e"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/helper-pins.json",
+      "bytes": 7159,
+      "sha256": "87527006b139747ec10eabe4fe992d1672fe406ebe1b514bf4e81156c16544b0"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/root-complete-build-result.json",
+      "bytes": 182066,
+      "sha256": "a84ac3fd098b8ee2d58377a516243d02f909be57177fb02bf47c5018b1f64ba3"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json",
+      "bytes": 103658,
+      "sha256": "f973340740f7173b8e7a6624d953b503b6b7320fcc5d7c84e873512367307d67"
+    }
+  ],
+  "note": {
+    "file": "/private/tmp/tube-physical-mouth-policy-review-20261004/README.md",
+    "bytes": 9711,
+    "sha256": "a746acfa681b36fa152fe42118870b5af9cbe744537faabb91ebb59117657e20"
+  },
+  "movieEvidenceLimit": "first explicit requested frame inner pose; encoded first-frame contents not established by source review"
+}

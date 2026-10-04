@@ -1,0 +1,28 @@
+{
+  "schema": "bounded-C/shoreward-parallel-rays-v1",
+  "frozenBeforeImplementation": true,
+  "parentSource": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source",
+  "scope": "bounded-C prepareBound and rayAt only; exact [0,1]. RAW code path unchanged.",
+  "axisEvidence": {
+    "tank": "SurfZoneSimulation.ts184 offshore\u2212330 shore30",
+    "columnFace": "crestOnset.ts70 increasingZ",
+    "padang": "Bathymetry.ts155 seaward=(crestZ\u2212z)cos(angle)",
+    "reef": "Bathymetry.ts78 same convention",
+    "point": "Bathymetry.ts206 offshore=shoreline\u2212z"
+  },
+  "bound": "minimum of captured \u0394X/\u0394sigma and endpoint \u0394X/hypot(\u0394X,\u0394Z), minus 2F32-ULP(max|capturedX|+extension)/minSpacing. This guards final X upload. Own profile offsets multiply exact rayX=0 and cancel.",
+  "validationScope": [
+    "saved22\u219223 split, remote end removal, translation/sigma rebase, object/records",
+    "RAW parent exact ray/diagnostic comparisons",
+    "F32 stored advances including shoulders/refinement and unsafe largeorigin",
+    "actual provider6447 +capstencils12894/library5616 inherited equivalence, skipping inherited CPU microtiming",
+    "existing16 focusedprovider/consumerfiles +strictTS",
+    "saved24 observations all component/sigma/phase samples world-contour departure vs parent, no runtime native"
+  ],
+  "limits": [
+    "orientation and geometry/flow/contact change",
+    "not a physical crest-normal ray on oblique fronts",
+    "no general vertical/body/corridor/motion continuity proof",
+    "no build/native/ports/Git/adoption"
+  ]
+}

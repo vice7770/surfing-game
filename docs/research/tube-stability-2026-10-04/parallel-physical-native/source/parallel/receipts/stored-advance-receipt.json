@@ -1,0 +1,12 @@
+{
+  "minimumStoredDeltaX": 0.15227937698364258,
+  "intervalsChecked": 18376,
+  "nominalRefinedMinimumSpacing": 0.21428571428571427,
+  "varyingIndependentOffsets": [
+    -100,
+    0,
+    100
+  ],
+  "halfPlaneAdvanceEqualsStoredDeltaX": true,
+  "shouldersIncluded": true
+}

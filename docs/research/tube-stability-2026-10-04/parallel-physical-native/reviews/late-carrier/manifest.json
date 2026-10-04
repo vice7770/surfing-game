@@ -1,0 +1,27 @@
+{
+  "schema": "bounded-C-parallel-carrier-handoff-audit-notes/v1",
+  "readOnly": true,
+  "frozenOwnerAccepted": false,
+  "notes": [
+    {
+      "file": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analyze.py",
+      "bytes": 6469,
+      "sha256": "d5f35b5cccc81a8899ef4a0a3251f9468be8cb2a1ecd2d3d4a72956454c71ba2"
+    },
+    {
+      "file": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analysis.json",
+      "bytes": 26136,
+      "sha256": "74f682ed494bd6347c6f4e4aae1779625381cfa04c0212374d966b7690a5a7e7"
+    },
+    {
+      "file": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/report.md",
+      "bytes": 7020,
+      "sha256": "640f7c0847f3a5692c9d0ba16a7aee61c01eeef9bbad89a39fc0015083123a73"
+    },
+    {
+      "file": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analyze-output.json",
+      "bytes": 1851,
+      "sha256": "fb4146ee1a9fee51ac64f6ea62a48b8b839c43e76f5baefdfe3016c7241fcda9"
+    }
+  ]
+}

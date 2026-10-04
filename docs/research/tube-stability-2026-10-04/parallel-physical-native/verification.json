@@ -1,0 +1,23 @@
+{
+  "schema": "parallel-physical-native-archive-verification/v1",
+  "passed": true,
+  "manifestSha256": "6d111e2b6957da819504a7014f91011dcc1deac32d3aa9f2dab6468dfcc685ba",
+  "payloadFiles": 136,
+  "externalReferences": 4,
+  "payloadTransportBytes": 9810955,
+  "payloadDecodedBytes": 17988060,
+  "exactPatchSets": 4,
+  "exactPatchedFileChecks": 9,
+  "preparationSourcePins": 580,
+  "rootBuildSourcePins": 579,
+  "newBuildAssets": 21,
+  "staticAssetsAdded": 28,
+  "completeAssetPins": 49,
+  "captureMediaPins": 5,
+  "originalPathsRehashed": 152,
+  "originalSourceBuildHelperPinChecks": 1893,
+  "nativeBuildOrModelTestsRun": false,
+  "futureFullSourceOrBuildReconstructionClaim": false,
+  "tubeQualityAcceptance": false,
+  "mouthBodyFPSProductionAcceptance": false
+}

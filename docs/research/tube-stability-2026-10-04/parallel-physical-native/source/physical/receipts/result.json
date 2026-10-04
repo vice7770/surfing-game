@@ -1,0 +1,279 @@
+{
+  "schema": "bounded-C/parallel-physical-coupling-result/v1",
+  "implementationComplete": true,
+  "readyForRootSourceReview": true,
+  "adoptionReady": false,
+  "parentReadiness": {
+    "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/readiness.json",
+    "bytes": 98118,
+    "sha256": "6092b23b1d3cafb4bad9ca5cdb5db50076330611bc2d8c7fc33bcc662bc1149f"
+  },
+  "review": {
+    "file": "/private/tmp/tube-parallel-physical-coupling-review-20261004/review.md",
+    "bytes": 7196,
+    "sha256": "34a6f52b6805f1160d1b873379a5f1ecdc18c8cf74ab434551b1a15fb7564729"
+  },
+  "runtimeChangedFiles": [
+    "src/wave/barrel/SweptCrash.ts",
+    "src/wave/barrel/crashCurve.ts"
+  ],
+  "sourceManifest": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source-pins.json",
+    "bytes": 95306,
+    "sha256": "8b4e34f044420371de7d83b8a9ec70ed5853baa08e16660e8751079b0b6f867c"
+  },
+  "physicalCoupling": {
+    "drawingContactThrowRay": [
+      0,
+      1
+    ],
+    "onceOnlyColumnPaceFormula": "clampedHistoricalNormalSpeed / max(0.5, physicalNormalZ)",
+    "physicalDirectionAuthority": "crestMotion at original source cell before bulk new-throw finalization",
+    "unmeasuredDirectionFallback": "immediate local pre-new-throw physical crest tangent normal; geometric approximation",
+    "retainedDirectionStateAdded": false,
+    "normalSpeedSmoothingOrClampChanged": false,
+    "sourceCellAndFinalizationOrderChecked": true,
+    "alreadyPacedPointsRepaced": false
+  },
+  "projectedWidth": {
+    "C": "half-neighbor delta-X sum",
+    "RAW": "original half-neighbor delta-sigma sum",
+    "sigmaClocksAndEndFadesChanged": false,
+    "negativeOrReversedInputsHiddenByAbsFloorClamp": false,
+    "uniformUntaperedLocalExtrusionInvariantTestPassed": true,
+    "varyingSectionWholeVolumeIntegralClaim": false
+  },
+  "validation": {
+    "focusedFilesPassed": 4,
+    "focusedTestsPassed": 52,
+    "focusedTestsFailed": 0,
+    "focusedCommand": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/wave/barrel/parallelPhysicalCoupling.test.ts",
+        "src/wave/barrel/SweptCrash.test.ts",
+        "src/wave/barrel/crashCurve.test.ts",
+        "src/wave/barrel/boundedCSweptCrash.test.ts",
+        "--configLoader",
+        "runner"
+      ],
+      "cwd": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source",
+      "exitCode": 0,
+      "elapsedSeconds": 2.2537382089649327,
+      "actualCapturedStdoutAndStderr": "/private/tmp/tube-bounded-c-parallel-physics-20261004/focused-byte-final.log",
+      "resourcesStarted": false,
+      "portsProbed": false,
+      "buildPerformed": false
+    },
+    "strictTSExitCode": 0,
+    "strictTSCommand": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--strict",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source",
+      "exitCode": 0,
+      "elapsedSeconds": 11.493853166990448,
+      "actualCapturedStdoutAndStderr": "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-byte-final.log",
+      "resourcesStarted": false,
+      "portsProbed": false,
+      "buildPerformed": false
+    },
+    "RAWBufferBytesAndFrontPacketWordsExactAgainstParentAcrossAges": [
+      0,
+      0.05,
+      0.1,
+      0.25,
+      0.4,
+      0.7,
+      1.5
+    ],
+    "patchReconstruction": {
+      "schema": "bounded-C/parallel-physical-coupling-verification/v1",
+      "passed": true,
+      "parentPinnedFilesStillExact": 579,
+      "newSourcePinnedFiles": 580,
+      "unchangedParentFiles": 577,
+      "runtimeChangedFiles": [
+        "src/wave/barrel/SweptCrash.ts",
+        "src/wave/barrel/crashCurve.ts"
+      ],
+      "newTestFiles": [
+        "src/wave/barrel/parallelPhysicalCoupling.test.ts"
+      ],
+      "runtimeAndTestPatchReconstructionByteExact": true,
+      "patchCommands": {
+        "runtime.patch": {
+          "exitCode": 0,
+          "actualStdoutAndStderr": "patching file 'src/wave/barrel/SweptCrash.ts'\npatching file 'src/wave/barrel/crashCurve.ts'\n"
+        },
+        "tests.patch": {
+          "exitCode": 0,
+          "actualStdoutAndStderr": "patching file 'src/wave/barrel/parallelPhysicalCoupling.test.ts'\n"
+        }
+      },
+      "dependenciesSymlink": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/node_modules",
+      "dependencyBytesPinned": false,
+      "buildPerformed": false,
+      "nativeResourcesStarted": false,
+      "browserUsed": false,
+      "portsProbedOrChanged": false,
+      "gitUsed": false
+    }
+  },
+  "actualExampleMetrics": {
+    "planar": [
+      {
+        "expectedNormalZ": 1,
+        "normalXSign": -1,
+        "centerPace": 4,
+        "measuredPhysicalZ": 1,
+        "drawRayZ": 1,
+        "source": "solver-face"
+      },
+      {
+        "expectedNormalZ": 1,
+        "normalXSign": 1,
+        "centerPace": 4,
+        "measuredPhysicalZ": 1,
+        "drawRayZ": 1,
+        "source": "solver-face"
+      },
+      {
+        "expectedNormalZ": 0.8,
+        "normalXSign": -1,
+        "centerPace": 4.99999999999992,
+        "measuredPhysicalZ": 0.8000000000000128,
+        "drawRayZ": 1,
+        "source": "solver-face"
+      },
+      {
+        "expectedNormalZ": 0.8,
+        "normalXSign": 1,
+        "centerPace": 4.99999999999992,
+        "measuredPhysicalZ": 0.8000000000000128,
+        "drawRayZ": 1,
+        "source": "solver-face"
+      },
+      {
+        "expectedNormalZ": 0.7071067811865476,
+        "normalXSign": -1,
+        "centerPace": 5.656854249492381,
+        "measuredPhysicalZ": 0.7071067811865475,
+        "drawRayZ": 1,
+        "source": "solver-face"
+      },
+      {
+        "expectedNormalZ": 0.7071067811865476,
+        "normalXSign": 1,
+        "centerPace": 5.656854249492381,
+        "measuredPhysicalZ": 0.7071067811865475,
+        "drawRayZ": 1,
+        "source": "solver-face"
+      },
+      {
+        "expectedNormalZ": 0.3,
+        "normalXSign": -1,
+        "centerPace": 8,
+        "measuredPhysicalZ": 0.3000000000000069,
+        "drawRayZ": 1,
+        "source": "solver-face"
+      },
+      {
+        "expectedNormalZ": 0.3,
+        "normalXSign": 1,
+        "centerPace": 8,
+        "measuredPhysicalZ": 0.3000000000000069,
+        "drawRayZ": 1,
+        "source": "solver-face"
+      }
+    ],
+    "lifecycle": [
+      {
+        "slope": 0,
+        "asked": 0.26973664125914276,
+        "funded": 0.26973664125914276,
+        "starved": 0,
+        "openMaximum": 1.6550635376993097,
+        "trappedOnce": 1.5813157963881461,
+        "expectedProjectedDose": 1.5813157963881461,
+        "emitted": 1.5813157963881461,
+        "heldAir": 0,
+        "crashes": 7,
+        "fundingSourceShareFixture": 1,
+        "exactVaryingSectionIntegralClaim": false
+      },
+      {
+        "slope": 0.75,
+        "asked": 0.29447231578509037,
+        "funded": 0.29447231578509037,
+        "starved": 0,
+        "openMaximum": 1.8068378911410448,
+        "trappedOnce": 1.7263272574338164,
+        "expectedProjectedDose": 1.7263272574338164,
+        "emitted": 1.7263272574338164,
+        "heldAir": 0,
+        "crashes": 7,
+        "fundingSourceShareFixture": 1,
+        "exactVaryingSectionIntegralClaim": false
+      },
+      {
+        "slope": -0.75,
+        "asked": 0.29447231578509037,
+        "funded": 0.29447231578509037,
+        "starved": 0,
+        "openMaximum": 1.8068378911410448,
+        "trappedOnce": 1.7263272574338164,
+        "expectedProjectedDose": 1.7263272574338164,
+        "emitted": 1.7263272574338164,
+        "heldAir": 0,
+        "crashes": 7,
+        "fundingSourceShareFixture": 1,
+        "exactVaryingSectionIntegralClaim": false
+      }
+    ],
+    "projectedWidth": [
+      {
+        "one": {
+          "span": 1,
+          "asked": 0.04907871929751506,
+          "currentVolume": 0.3005938319855126,
+          "prospectiveArea": 0.04907871929751506,
+          "currentArea": 0.3005938319855126
+        },
+        "two": {
+          "span": 2,
+          "asked": 0.09815743859503012,
+          "currentVolume": 0.6011876639710252,
+          "prospectiveArea": 0.04907871929751506,
+          "currentArea": 0.3005938319855126
+        },
+        "varyingSectionVolumeIntegralClaim": false
+      }
+    ]
+  },
+  "limits": [
+    "Fresh direction at throw and historically smoothed scalar speed can represent different observations; missing direction uses an explicit local geometric approximation, without retained direction history.",
+    "Column pace is assigned once. Existing component/clock refits, end fades and lifecycle policies are unchanged; fixing physical projection does not prove global shape continuity.",
+    "Projected X width repairs the constant-X orientation Jacobian. Existing local area-times-width quadrature and centered end footprints remain approximations for varying sections, ages, end fades and live water; no exact whole-mesh volume integral claim.",
+    "Lifecycle tests use synthetic water with sourceShare=1 for sufficient funding; production sourceShare and budgets are unchanged. They establish bounded ledger and formula checks, not arbitrary live-scene conservation or ordinary body passage.",
+    "No fresh build, native/GPU visual evaluation, browser use, ports, FPS, connected-air/mouth corridor, rider entry/passage, or adoption evidence for this corrected candidate.",
+    "Inherited provider/full-sheet envelope and sampling-switch limits remain. The 6447 provider domain, 12894 cap-stencil and 5616 library-query comparisons were not rerun; parent source evidence is referenced only.",
+    "The RAW regression imports the immutable parent source by absolute path. Dependencies are an external node_modules symlink and are not separately byte-pinned."
+  ],
+  "preservation": {
+    "parent579PinnedSourceFilesUnchanged": true,
+    "candidate580SourceFilesPinned": true,
+    "copiedParentFilesUnchangedExceptRuntimeFiles": 577,
+    "oldHelpersBuildsCapturesNotWritten": true,
+    "livePlayPortTouched": false,
+    "GitTouched": false
+  },
+  "status": "Isolated tested source experiment; root owns integration, fresh build and native evaluation."
+}

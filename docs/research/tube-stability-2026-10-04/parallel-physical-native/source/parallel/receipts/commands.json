@@ -1,0 +1,46 @@
+[
+  {
+    "argv": [
+      "./node_modules/.bin/vitest",
+      "run",
+      "src/wave/barrel/crestRays.test.ts",
+      "src/wave/barrel/parallelCrestRays.test.ts",
+      "src/wave/barrel/lipSheet.test.ts",
+      "src/wave/barrel/sweptLoft.test.ts",
+      "src/wave/barrel/sweptLoftClearRoof.test.ts",
+      "src/wave/barrel/sweptContact.test.ts",
+      "src/wave/barrel/crashCurve.test.ts",
+      "src/wave/barrel/SweptCrash.test.ts",
+      "src/wave/barrel/boundedCSweptCrash.test.ts",
+      "src/wave/barrel/boundedCConsumers.test.ts",
+      "src/wave/barrel/sharedUpperRoot.test.ts",
+      "src/wave/barrel/boundedCProfile.test.ts",
+      "src/wave/barrel/ProfileLibrary.test.ts",
+      "src/wave/barrel/barrelLibrary.test.ts",
+      "src/wave/barrel/boundedCDemand.test.ts",
+      "src/wave/PlungingLip.test.ts",
+      "src/wave/PlungingLipSweptVoid.test.ts",
+      "--testNamePattern=^(?!.*bounded CPU evidence).*",
+      "--reporter=verbose"
+    ],
+    "cwd": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source",
+    "exitCode": 0,
+    "passed": 246,
+    "failed": 0,
+    "skipped": 1,
+    "suites": 17,
+    "durationSeconds": 11.24,
+    "log": "first-focused.log",
+    "toolSession": 19288
+  },
+  {
+    "argv": [
+      "./node_modules/.bin/tsc",
+      "--noEmit"
+    ],
+    "cwd": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source",
+    "exitCode": 0,
+    "log": "first-strict-ts.log",
+    "toolSession": 11517
+  }
+]

@@ -1,0 +1,9 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-parallel-physics-20261004/source
+
+
+ Test Files  4 passed (4)
+      Tests  52 passed (52)
+   Start at  23:31:46
+   Duration  1.90s (tests 56%, transform 34%, import 9%)
+

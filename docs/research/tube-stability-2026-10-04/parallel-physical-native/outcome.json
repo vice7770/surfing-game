@@ -1,0 +1,91 @@
+{
+  "schema": "parallel-physical-native-archive-outcome/v1",
+  "finiteExperimentSucceeded": true,
+  "adoptionRejected": true,
+  "successfulOwner": {
+    "complete": true,
+    "exitCode": 0,
+    "independentClosureValid": true,
+    "protectedPortsPreserved": true
+  },
+  "physicalAdvances": 67,
+  "physicalSeconds": 1.1166666666666174,
+  "firstPhase2MovingStep": 48,
+  "firstAirLossMovingStep": 56,
+  "joinLossMovingStep": 67,
+  "innerMouthEpochs": 56,
+  "candidateColumnQueries": 1344,
+  "insideSegmentsClear": 56,
+  "exteriorSegmentsObstructed": 56,
+  "shorewardContinuationSegmentsObstructed": 56,
+  "lateFixedStationLandmarkDeltaZ63to64": {
+    "crest": 1.084367597164288,
+    "cap": 1.0843704892455435,
+    "toe": 1.084370417592183
+  },
+  "latePositiveJoinedRows": [
+    94,
+    95
+  ],
+  "finalRawBracketStillPresent": true,
+  "finalCameraHeldAtMovingStep": 66,
+  "stopReason": "loft-join-absent",
+  "physicalDeathClaim": false,
+  "stablePointIDs": [
+    158,
+    159
+  ],
+  "componentRenameSteps": [
+    22,
+    24
+  ],
+  "preparedSourceFiles": 580,
+  "builtSourceInputs": 579,
+  "sourceOmittedFromRootBuildManifest": "docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json",
+  "sharedSourceHashesIdentical": true,
+  "builtAssets": 21,
+  "addedFrozenStaticAssets": 28,
+  "completeFrozenAssets": 49,
+  "rootVideoReview": {
+    "communicatedBy": "Root independent video review; not newly viewed by this archiver",
+    "encodedFrameCount": 68,
+    "actuallyInspectedDecodedFrameIndices": [
+      0,
+      17,
+      34,
+      51,
+      67
+    ],
+    "frame0InsideSceneConfirmed": true,
+    "interiorRoofWallCreaseVisibleFromInspectedFrame17": true,
+    "heldUnderwaterLossSceneAtFrame67": true,
+    "decodedPNGsArchived": false,
+    "movieArchived": true,
+    "physicalPlaybackRateClaim": false
+  },
+  "priorFailures": {
+    "parallel": {
+      "ownerComplete": false,
+      "nativeExitCode": 0,
+      "ownerFirstFailure": "'materialPointIdentityClaim'",
+      "terminalNativeReportComplete": true,
+      "retroactivelyAccepted": false
+    },
+    "mouth": {
+      "ownerComplete": false,
+      "nativeExitCode": 1,
+      "ownerFirstFailure": "Native first invocation failed; preserve output",
+      "cause": "No strict-air candidate in the old three-cell boundary window; exterior pose unavailable and capture stopped at initial state. This did not prove absence of an entrance.",
+      "retroactivelyAccepted": false
+    }
+  },
+  "acceptance": {
+    "mouth": false,
+    "airCorridor": false,
+    "bodyPassage": false,
+    "FPS": false,
+    "productionAdoption": false
+  },
+  "preservationPolicy": "Original bytes or deterministic lossless gzip; original absolute paths remain source metadata; archive-local payload mapping and four relative shared-sheet references support review.",
+  "reconstructionScope": "Exact archived patch preimage/postimage checks only. Full 579/580-file source trees, runtime dependencies and all 49 asset bytes are not retained here; future source/build/test reconstruction is not claimed."
+}

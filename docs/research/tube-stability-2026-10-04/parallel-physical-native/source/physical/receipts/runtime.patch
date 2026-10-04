@@ -1,0 +1,95 @@
+diff --git a/src/wave/barrel/SweptCrash.ts b/src/wave/barrel/SweptCrash.ts
+--- a/src/wave/barrel/SweptCrash.ts
++++ b/src/wave/barrel/SweptCrash.ts
+@@ -1,4 +1,4 @@
+-import { waveHeightAt } from '../CrestKinematics';
++import { crestMotion, waveHeightAt } from '../CrestKinematics';
+ import { GRAVITY } from '../dispersion';
+ import { SOURCE_REACH, STRIP_PARCELS, type PlungingLip } from '../PlungingLip';
+ import type { ShallowWaterSolver } from '../ShallowWaterSolver';
+@@ -86,6 +86,10 @@
+   point: FrontPoint;
+   crestZ: number;
+   rayZ: number;
++  /** C-only once-at-throw physical projection diagnostic; no retained transport/smoothing state. */
++  physicalDirectionSource?: 'solver-face' | 'local-front-tangent';
++  sourceCell?: number;
++  drawRayZ?: number;
+ }
+ 
+ /**
+@@ -133,6 +137,7 @@
+   /** The crash's own time, ms, summed over its updates (a diagnostic). */
+   updateMs = 0;
+   private readonly geometry: CrashCurve;
++  private readonly columnSections: boolean;
+   private readonly foreseen = createCrashSlice();
+   private readonly motion: JetMotion = { tipAlong: 0, tipUp: 0, crestSpeed: 0 };
+   private readonly pool: CrashPoint[] = [];
+@@ -163,6 +168,7 @@
+ 
+   constructor(library: ProfileLibrary, slope: number) {
+     this.geometry = new CrashCurve(library, slope);
++    this.columnSections = library.options.geometry === 'bounded-C';
+   }
+ 
+   /**
+@@ -373,6 +379,31 @@
+     const motion = this.geometry.jetMotion(p, this.motion);
+     const cell = sea.solver.cellIndex(p.x, p.z);
+     const waveHeight = waveHeightAt(sea.solver, cell, 0.5 * Math.max(0, motion.crestSpeed) * sea.period);
++    if (this.columnSections) {
++      // A constant-X drawing section does not rotate the solver crest. c_n remains the historically smoothed
++      // normal speed; its intersection with a fixed column travels at c_n / physical n_z.
++      const measured = crestMotion(sea.solver, cell);
++      const fresh = measured !== undefined && Number.isFinite(measured.direction.z) && measured.direction.z > 0;
++      let physicalZ: number;
++      if (fresh) physicalZ = measured.direction.z;
++      else {
++        // With no current rising/sloping face, approximate the physical normal from the immediate local tangent
++        // before ANY new throws finalize. This is geometry, not a retained motion measurement or drawing ray.
++        const left = points[Math.max(start, k - 1)];
++        const right = points[Math.min(end - 1, k + 1)];
++        const dx = right.x - left.x;
++        const dz = right.z - left.z;
++        const length = Math.sqrt(dx * dx + dz * dz);
++        physicalZ = length > 0 ? dx / length : 0;
++      }
++      this.pace(p, times, physicalZ, sea, cell, waveHeight);
++      this.throwing[k] = 1;
++      this.throwCell[k] = cell;
++      this.throwHeight[k] = waveHeight;
++      this.paced.push({ point: p, crestZ: p.z, rayZ: physicalZ,
++        physicalDirectionSource: fresh ? 'solver-face' : 'local-front-tangent', sourceCell: cell, drawRayZ: 1 });
++      return;
++    }
+     const rayZ = this.geometry.ray(points, start, end, k, this.ray, rays).z;
+     this.pace(p, times, rayZ, sea, cell, waveHeight);
+     this.throwing[k] = 1;
+@@ -384,7 +415,7 @@
+   /**
+    * A point's pace from its throw, jet or not (the advisor, 2026-10-01 and 2026-10-03): its crest's over the last few
+    * frames (crestMotion's, along the crest's own normal), held to PACE × the long-wave speed there, then along its column:
+-   * c_n / n_z, n_z its ray's at the throw (`rayZ`, the loft's). It runs on it from where its crest crossed its throw depth
++   * c_n / n_z: RAW uses its draw ray; C uses the solver's physical normal (local tangent approximation if unmeasured). It runs on it from where its crest crossed its throw depth
+    * (`throwZ`; with none, from its z now less its pace since τ = 0) until its slice has faded, at touchdown + collapse,
+    * and claims its column's crest over the throw's own window meanwhile (BreakingFront).
+    */
+diff --git a/src/wave/barrel/crashCurve.ts b/src/wave/barrel/crashCurve.ts
+--- a/src/wave/barrel/crashCurve.ts
++++ b/src/wave/barrel/crashCurve.ts
+@@ -157,7 +157,13 @@
+     const { x: nx, z: nz } = this.ray(points, start, end, k, this.normal, rays);
+     into.rayX = nx;
+     into.rayZ = nz;
+-    into.width = ((k > start ? p.sigma - points[k - 1].sigma : 0) + (k + 1 < end ? points[k + 1].sigma - p.sigma : 0)) / 2;
++    if (this.library.options.geometry === 'bounded-C') {
++      // Constant-X cross-sections extrude over projected X width, not arc length. This is the existing local
++      // slice quadrature; varying cross-sections/end fades are not an exact whole-mesh volume integral.
++      into.width = ((k > start ? p.x - points[k - 1].x : 0) + (k + 1 < end ? points[k + 1].x - p.x : 0)) / 2;
++    } else {
++      into.width = ((k > start ? p.sigma - points[k - 1].sigma : 0) + (k + 1 < end ? points[k + 1].sigma - p.sigma : 0)) / 2;
++    }
+     const d = Math.min(p.sigma - first, last - p.sigma);
+     const r = Math.min(1, d / LOFT.endBlend);
+     into.endWeight = d <= 0 ? 0 : r * r * (3 - 2 * r);

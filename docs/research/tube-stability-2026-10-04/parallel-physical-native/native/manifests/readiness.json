@@ -1,0 +1,360 @@
+{
+  "schema": "bounded-C-parallel-physics-mouth-native-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "buildPerformed": false,
+  "sourceModified": false,
+  "newPhysicalCandidateNotCameraOnlyEquality": true,
+  "rootOwnsBuildCompositionSealAndNative": true,
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/root-complete-build-result.json",
+    "bytes": 182066,
+    "sha256": "a84ac3fd098b8ee2d58377a516243d02f909be57177fb02bf47c5018b1f64ba3"
+  },
+  "sourcePins": 579,
+  "assets": 49,
+  "helperPins": [
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/run.py",
+      "bytes": 16823,
+      "sha256": "0da3b1d109f1097ee47d68801d7ab794c896623322880683ec24ec0e6b06c63c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native.mjs",
+      "bytes": 10355,
+      "sha256": "6e5a3825f16d203c310b4ddf2a22c0dad4e4313e77b6658988971ee0f9b54b5a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/moving-shape.mjs",
+      "bytes": 29668,
+      "sha256": "15db7127b8b8b5a7fb1e0047c3bbfa52c18f2b9c9d16cd9b2602d40030fa4cb9"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/station-tools.mjs",
+      "bytes": 14480,
+      "sha256": "6bab70e985b48f18ffd247d2ef7128b12cfbe091d94f6fbc4a5d1a12713239c7"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-tools.mjs",
+      "bytes": 5316,
+      "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-tools.test.mjs",
+      "bytes": 7489,
+      "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-integration-checks.mjs",
+      "bytes": 13417,
+      "sha256": "623264328ada86f513d5e0ee3dc27d8ab74490507f1d38266ca57dace004c2a2"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-event-checks.py",
+      "bytes": 2190,
+      "sha256": "68428569e19ddb36b0854f7215e5a3e0d326f68b45c70226e7d2fdaba2c1d63d"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mock-checks.mjs",
+      "bytes": 17402,
+      "sha256": "edccd540df43085afa00e2810350709d71f0f6a5d7bdb1c4e4574d1a6fd1444c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/identity-checks.mjs",
+      "bytes": 8366,
+      "sha256": "26be79dd89860d79940ff0869ca7cc265b9228a256ff80c13125fb49c5634193"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-mock-checks.py",
+      "bytes": 4739,
+      "sha256": "4a11e3c362786d004cac6a99bfc3c004ac16fc6ba9a7b0138057f2c24aca56d2"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/helper-types.d.ts",
+      "bytes": 87,
+      "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/README.md",
+      "bytes": 4206,
+      "sha256": "92b551cdf8e2ab8047591826c0f843f59b879ccd9798b9fa604f0d021b650432"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/blueprint.txt",
+      "bytes": 2275,
+      "sha256": "16de81eded4d60595a93fb659555c926b2a36127984420fc4063904bbd72b99d"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/provenance.json",
+      "bytes": 7414,
+      "sha256": "b10368cc6c28360a5ace8ad9850f9ed128f3b0842c99119027c7d8febd360c74"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/new-source-contract-checks.json",
+      "bytes": 10116,
+      "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/check-source.py",
+      "bytes": 1618,
+      "sha256": "ea6529d947643a601f48b04402e8f151ca06c020b7336295c6b455c0cd17f17d"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation-runner.py",
+      "bytes": 1925,
+      "sha256": "130d80971a1cf172304dff3c4fe8b5b381701bca17b8fdcca674d6d8598e3460"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation.json",
+      "bytes": 10522,
+      "sha256": "de605a789a906fed115e76bac6a5cd7d298e0a4b79359eef283c010c7e9e028a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation.log",
+      "bytes": 7017,
+      "sha256": "2eb3bfef780f415219542929ce4b24450dd016a017d45604fc66c499b343f8dd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-integration-checks.json",
+      "bytes": 556,
+      "sha256": "1008333e973515eb56738a0965443095fb1870e703f1d8fad2a6238870f65bce"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-event-checks.json",
+      "bytes": 504,
+      "sha256": "cba5db03a044a25d31b6025ed923a22c7e12ece603c47d56d7b9e860343dad03"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mock-checks.json",
+      "bytes": 1983,
+      "sha256": "fff00ca02013d1841260fa1491ad945602bd7f58f7493dd5e870846f84e9ff44"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/identity-checks.json",
+      "bytes": 3278,
+      "sha256": "0d3bfeb8473bc289210dde5b3cfc5b49f0b16b3d3977ba1434b626bf94d6dd02"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-mock-checks.json",
+      "bytes": 1424,
+      "sha256": "c6bcc1324888614a8440b6f7389723739685eabaa9a657768db76fcd29d23804"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/syntax-dry-owner-checks.json",
+      "bytes": 638,
+      "sha256": "eb073c3b0c8f63b723bbff04bc10ce512288d26aceae36ad33c4798ae6312fb2"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/first-owner-fixture-failure.json",
+      "bytes": 426,
+      "sha256": "20a20065a459f9ec7dd569a9743c68889656957b530fcafada1c8cef7326b018"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-fixture/first-missing-mouth-helper-seal.json",
+      "bytes": 127486,
+      "sha256": "d9c81a092f5208f15d362e88975209ea176f71304e65b3a20c86b1ac0c1e08ad"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/freeze.py",
+      "bytes": 5851,
+      "sha256": "eed125a73069ddeb3e8792fff6e4cb838cf9e14353b25f7c561ff4169564e20e"
+    },
+    {
+      "file": "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs",
+      "bytes": 11626,
+      "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json",
+      "bytes": 1314,
+      "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/new-source-contract-checks.json",
+      "bytes": 4054,
+      "sha256": "6a71c0d1cf7c248c0753d96323b28fb24c2d665fc53b3ca6d25305bd077dea42"
+    }
+  ],
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/helper-pins.json",
+    "bytes": 7159,
+    "sha256": "87527006b139747ec10eabe4fe992d1672fe406ebe1b514bf4e81156c16544b0"
+  },
+  "priorAirSeal": {
+    "file": "/private/tmp/tube-bounded-c-air-native-20261004/seal.json",
+    "bytes": 239171,
+    "sha256": "da83687daa6eb63a187c8cd28754751bbdfc556f841eb7f569f9fc654fc84058"
+  },
+  "priorFullsheetSeal": {
+    "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/seal.json",
+    "bytes": 160645,
+    "sha256": "d56f253f68021a2660ba05c2877f5a607eae7c2830976509ab35ef79dd1a92a9"
+  },
+  "priorParallelSeal": {
+    "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/seal.json",
+    "bytes": 159598,
+    "sha256": "59e70b5fbe5e0cf15ee319c14a7320c4a7c48c29919e19d565960d98d0c03eae"
+  },
+  "priorMouthSeal": {
+    "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/seal.json",
+    "bytes": 159781,
+    "sha256": "6f30f65162c54b981ba107f9d678cc818d4070a110dbba88c085f77390f5663e"
+  },
+  "priorFailedParallel": {
+    "readiness.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/readiness.json",
+      "bytes": 9755,
+      "sha256": "a3bcc8a13e9bd26e6d45956caaf21f4cad3f0872c8862d609c37c45a29c8529d"
+    },
+    "seal.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/seal.json",
+      "bytes": 159598,
+      "sha256": "59e70b5fbe5e0cf15ee319c14a7320c4a7c48c29919e19d565960d98d0c03eae"
+    },
+    "candidate-first-owner.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first-owner.json",
+      "bytes": 3266,
+      "sha256": "3974cccfa213d65336b2b135a21f5e45ebc544d8bfc0a555cda835030aa46af1"
+    },
+    "candidate-first/report.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json",
+      "bytes": 7810380,
+      "sha256": "fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3"
+    }
+  },
+  "priorFailedMouth": {
+    "readiness.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/readiness.json",
+      "bytes": 7880,
+      "sha256": "035803cecc6066d3c5dcb85c4f0980fe033441400d8d6f04b2c5d2c6d7c9efd7"
+    },
+    "helper-pins.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/helper-pins.json",
+      "bytes": 3996,
+      "sha256": "3f76fbc1aff59ce7fc8bde69515ed55b453139cccc39873b22eb7f1d4f65f0f6"
+    },
+    "seal.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/seal.json",
+      "bytes": 159781,
+      "sha256": "6f30f65162c54b981ba107f9d678cc818d4070a110dbba88c085f77390f5663e"
+    },
+    "candidate-first-owner.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.json",
+      "bytes": 3304,
+      "sha256": "eb1ec10a3b5daaabbec752f15c25ed681bb0e08061b9180f9cce6607671b348c"
+    },
+    "candidate-first-owner.log": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.log",
+      "bytes": 1406,
+      "sha256": "41debde6c013ad8e6a30506542d6d4a37456fc013d0d7b3632b47ab2d17a68b2"
+    },
+    "candidate-first/report.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/report.json",
+      "bytes": 446667,
+      "sha256": "90d3904392032044286a521778c272b4714ab62c1e44ffe9409b8a0b6592c890"
+    },
+    "candidate-first/0-initial.png": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/0-initial.png",
+      "bytes": 1014733,
+      "sha256": "b3a0c32a54494741a2cd5b62ab23d5cc9a0e243d1b2fd127d50ef98ac9725e29"
+    }
+  },
+  "priorFailedAgeGate": {
+    "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-first/report.json",
+    "bytes": 2800493,
+    "sha256": "4fe7b581ef01089fd00e025abd4a6757f71ffb76a73c3eaf41499738ba74a399"
+  },
+  "physicalSourceReadiness": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json",
+    "bytes": 103658,
+    "sha256": "f973340740f7173b8e7a6624d953b503b6b7320fcc5d7c84e873512367307d67"
+  },
+  "componentLineagePolicy": {
+    "station": "fixed-Eulerian-solver-column-crest-X",
+    "originalSelectionImmutable": true,
+    "currentIDFirst": true,
+    "attemptOnlyIfCurrentRawRangeExcludesStationOrAbsent": true,
+    "publicExportAtInitialAndProspectiveRenameOnly": true,
+    "publicExportOncePerProspectiveCurrentSnapshotEpoch": true,
+    "sameOrderedTwoInternalPointIDs": true,
+    "sameInternalColumnsExactXFootHeightDepthThrowPaceBaseAtUntil": true,
+    "F32RawRecordParityAtExport": true,
+    "finiteNonnegativeMonotoneAges": true,
+    "DTEqualityRequired": false,
+    "observedRefitAndCrestResidualsDescriptiveOnly": true,
+    "uniqueCandidateWithActualJoinedCrestX": true,
+    "allTestedGatesAndInventoriesRetained": true,
+    "pointIDsVerifiedOnlyAtPublicExportEpochs": true,
+    "solverArraysDecodedOrRetained": false,
+    "materialPointIdentityClaim": false,
+    "physicalDeathClaim": false,
+    "actualEventTrajectoryClaimKey": "materialTrajectoryClaim"
+  },
+  "cameraPolicy": "whole-directed-interval-full-sightline-and-declared-exterior-fallback",
+  "boundarySampling": "24 uniform interior stations over ENTIRE current eye-to-directed first-unformed/run-end interval; boundary-nearest first, strictly youngerward, original along, exact current eye component; furthest sampled strict air; no retry after blocked segment",
+  "exteriorAnchorPolicy": {
+    "candidateExists": "current strict-air mouth candidate, including when inner sightline blocked",
+    "candidateAbsent": "CURRENT selected strict-air eye and current canonical ray/tangent",
+    "width": "initial full 128-point contour W",
+    "singlePose": "2W youngerward + W shoreward; existing one water-height clamp",
+    "belowSurfaceOrOccluded": "capture and explicitly retain diagnostic failure",
+    "poseRetries": 0,
+    "innerMovieCameraRestored": true
+  },
+  "protectedStatesRequiredInitiallyAndFinally": {
+    "4310": "closed",
+    "4311": "closed",
+    "4312": "open"
+  },
+  "checks": {
+    "actualIndexedMouthGeometryTests": 11,
+    "wholeIntervalGapOverThreeCellsBothDirections": true,
+    "newCameraTransportIntegrationIncludingNoneBlockedBelowSurface": true,
+    "inheritedControlDrawExportFixturesRerun": 23,
+    "identityFixturesRerun": 32,
+    "ownerFixtures": 18,
+    "actualRetainedLineageTransitions": 4,
+    "schemaAndIdentityMutationsRejected": 5,
+    "protectedStateFixtures": 3,
+    "publicDrawingExportControlSourceByteEqualityPairs": 16,
+    "sourceFaithfulGpuExportEvidenceInheritedNotRerun": true,
+    "checkJsNoEmit": true,
+    "PythonAST": true,
+    "JSsyntax": true,
+    "dryOwnerNoResources": true
+  },
+  "maximumNeutralSelectionSteps": 300,
+  "maximumMovingSteps": 240,
+  "maximumCandidateColumnQueriesPerMouthObservation": 24,
+  "detectorMilliseconds": 20000,
+  "maximumPNGCount": 4,
+  "movieBytes": 16777216,
+  "pngBytes": 50331648,
+  "reportBytes": 33554432,
+  "wholeSeconds": 180,
+  "commandSeconds": 168,
+  "cleanupSeconds": 7,
+  "oldFailuresBytePinnedNotRetroaccepted": true,
+  "priorMouthFailureDoesNotEstablishNoEntrance": true,
+  "acceptance": {
+    "nativeShape": false,
+    "mouthVisibility": false,
+    "exteriorEntrance": false,
+    "airCorridor": false,
+    "bodyPassage": false,
+    "FPS": false,
+    "productionAdoption": false
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "reviewOnly": true,
+  "sourceRoot": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source",
+  "pins": [
+    {
+      "path": "src/wave/CrestKinematics.ts",
+      "bytes": 5019,
+      "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d"
+    },
+    {
+      "path": "src/wave/barrel/crestOnset.ts",
+      "bytes": 4651,
+      "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3"
+    },
+    {
+      "path": "src/wave/barrel/BreakingFront.ts",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+    },
+    {
+      "path": "src/wave/barrel/SweptCrash.ts",
+      "bytes": 30645,
+      "sha256": "f32bbb4e4b25e0df80734912d62058fc45e4824555d930819f942bf6c42ebff4"
+    },
+    {
+      "path": "src/wave/barrel/crashCurve.ts",
+      "bytes": 17043,
+      "sha256": "dd56577045075b1b040434f3477df964f8ba7f80886dc4429b25d76f7196f1e8"
+    },
+    {
+      "path": "src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "bytes": 63917,
+      "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+    },
+    {
+      "path": "src/wave/barrel/SweptCrash.test.ts",
+      "bytes": 28044,
+      "sha256": "1b887fb4082f819884d7112439ec34fdf9cdd4555638e6d03f16ef01a58d4d63"
+    },
+    {
+      "path": "src/wave/barrel/boundedCSweptCrash.test.ts",
+      "bytes": 4478,
+      "sha256": "560e2575240dda8aba52e8a9910cb7ab1f051d062365c1ebfff85c9058773fe8"
+    }
+  ],
+  "testsOrGameRerun": false
+}

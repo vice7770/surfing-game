@@ -1,0 +1,32 @@
+{
+  "schema": "bounded-C/parallel-physical-coupling-verification/v1",
+  "passed": true,
+  "parentPinnedFilesStillExact": 579,
+  "newSourcePinnedFiles": 580,
+  "unchangedParentFiles": 577,
+  "runtimeChangedFiles": [
+    "src/wave/barrel/SweptCrash.ts",
+    "src/wave/barrel/crashCurve.ts"
+  ],
+  "newTestFiles": [
+    "src/wave/barrel/parallelPhysicalCoupling.test.ts"
+  ],
+  "runtimeAndTestPatchReconstructionByteExact": true,
+  "patchCommands": {
+    "runtime.patch": {
+      "exitCode": 0,
+      "actualStdoutAndStderr": "patching file 'src/wave/barrel/SweptCrash.ts'\npatching file 'src/wave/barrel/crashCurve.ts'\n"
+    },
+    "tests.patch": {
+      "exitCode": 0,
+      "actualStdoutAndStderr": "patching file 'src/wave/barrel/parallelPhysicalCoupling.test.ts'\n"
+    }
+  },
+  "dependenciesSymlink": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/node_modules",
+  "dependencyBytesPinned": false,
+  "buildPerformed": false,
+  "nativeResourcesStarted": false,
+  "browserUsed": false,
+  "portsProbedOrChanged": false,
+  "gitUsed": false
+}

@@ -1,0 +1,30 @@
+{
+  "profiles": 2022,
+  "maxParentAngularDepartureDegrees": 29.910021116259394,
+  "maxSkewFromLocalCrestNormalDegrees": 45,
+  "maxMetricProfileHorizontalProjectionDisplacement": 7.199508429319012,
+  "phaseRange": [
+    0,
+    2
+  ],
+  "split": [
+    {
+      "step": 22,
+      "parentDegrees": -9.919423996343193,
+      "parallelDegrees": 0,
+      "metricCapHorizontalDisplacement": 0.3701780455882423
+    },
+    {
+      "step": 23,
+      "parentDegrees": -15.270635420751479,
+      "parallelDegrees": 0,
+      "metricCapHorizontalDisplacement": 0.568845990260877
+    }
+  ],
+  "parentSplitDegrees": -5.351211424408286,
+  "parallelSplitDegrees": 0,
+  "fullProviderContourAndLookupExact": true,
+  "finalLiveWaterVerticalProjectionEqualityClaim": false,
+  "nativeShapeOrBodyContinuityClaim": false,
+  "scope": "all24 saved raw-front observations,128-point metric provider projections; not actual saved water/final native geometry"
+}

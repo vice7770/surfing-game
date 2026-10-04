@@ -1,0 +1,177 @@
+{
+  "passed": true,
+  "failedChecks": [],
+  "pinGroups": {
+    "sealedHelpers": {
+      "count": 23,
+      "allMatched": true,
+      "failures": []
+    },
+    "sealedSource": {
+      "count": 578,
+      "allMatched": true,
+      "failures": []
+    },
+    "sealedCompleteAssets": {
+      "count": 49,
+      "allMatched": true,
+      "failures": []
+    },
+    "buildSource": {
+      "count": 578,
+      "allMatched": true,
+      "failures": []
+    },
+    "builtAssets": {
+      "count": 21,
+      "allMatched": true,
+      "failures": []
+    },
+    "frozenBuildAssets": {
+      "count": 49,
+      "allMatched": true,
+      "failures": []
+    },
+    "buildReferences": {
+      "count": 6,
+      "allMatched": true,
+      "failures": []
+    },
+    "staticComposition": {
+      "count": 60,
+      "allMatched": true,
+      "failures": []
+    },
+    "servedAssets": {
+      "count": 15,
+      "allMatched": true,
+      "failures": []
+    },
+    "captureArtifacts": {
+      "count": 5,
+      "allMatched": true,
+      "failures": []
+    },
+    "preservedPartialAssets": {
+      "count": 21,
+      "allMatched": true,
+      "failures": []
+    }
+  },
+  "geometrySummary": {
+    "publicExportEpochs": [
+      0,
+      23,
+      25,
+      52,
+      54
+    ],
+    "firstPhase2": {
+      "step": 48,
+      "movingStep": 48,
+      "seaTime": 362.6067094336809
+    },
+    "lostAirSteps": [
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66
+    ],
+    "indexedSegmentOcclusionSteps": [
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63
+    ],
+    "rayMinAdvanceRange": [
+      0.15992355346679688,
+      0.24964141845703125
+    ],
+    "allValidExtrema": {
+      "crestDistance": {
+        "step": 64,
+        "crestDistance": 1.0273065344185357,
+        "crestZDelta": 1.0272407657163285,
+        "eyeDistance": 1.0274162834429175,
+        "eyeYDelta": -0.018990227333780307,
+        "tangentAngleDegrees": 66.12128277797524,
+        "openingBefore": false,
+        "openingAfter": false,
+        "frontRename": false
+      },
+      "eyeDistance": {
+        "step": 64,
+        "crestDistance": 1.0273065344185357,
+        "crestZDelta": 1.0272407657163285,
+        "eyeDistance": 1.0274162834429175,
+        "eyeYDelta": -0.018990227333780307,
+        "tangentAngleDegrees": 66.12128277797524,
+        "openingBefore": false,
+        "openingAfter": false,
+        "frontRename": false
+      },
+      "tangentAngleDegrees": {
+        "step": 64,
+        "crestDistance": 1.0273065344185357,
+        "crestZDelta": 1.0272407657163285,
+        "eyeDistance": 1.0274162834429175,
+        "eyeYDelta": -0.018990227333780307,
+        "tangentAngleDegrees": 66.12128277797524,
+        "openingBefore": false,
+        "openingAfter": false,
+        "frontRename": false
+      }
+    },
+    "whileAirRemainsExtrema": {
+      "crestDistance": {
+        "step": 52,
+        "crestDistance": 0.1303998419227596,
+        "crestZDelta": 0.10896442300540343,
+        "eyeDistance": 0.10954174113159858,
+        "eyeYDelta": 0.01123154349328992,
+        "tangentAngleDegrees": 0.009861710783239115,
+        "openingBefore": true,
+        "openingAfter": true,
+        "frontRename": true
+      },
+      "eyeDistance": {
+        "step": 55,
+        "crestDistance": 0.13032695188788182,
+        "crestZDelta": 0.10947966534374132,
+        "eyeDistance": 0.11070771374824537,
+        "eyeYDelta": -0.016443866929218398,
+        "tangentAngleDegrees": 0.05969858699112107,
+        "openingBefore": true,
+        "openingAfter": true,
+        "frontRename": false
+      },
+      "tangentAngleDegrees": {
+        "step": 45,
+        "crestDistance": 0.10572496228179641,
+        "crestZDelta": 0.10572496228147088,
+        "eyeDistance": 0.10572657339825921,
+        "eyeYDelta": -0.0005836720989131905,
+        "tangentAngleDegrees": 0.22289854952881247,
+        "openingBefore": true,
+        "openingAfter": true,
+        "frontRename": false
+      }
+    },
+    "finalJoinedFrontRange": [
+      16.333675384521484,
+      48.5
+    ],
+    "finalStationBeforeFirstRetainedRow": 0.054718017578125
+  }
+}

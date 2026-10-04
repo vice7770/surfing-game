@@ -1,0 +1,28 @@
+{
+  "schema": "bounded-C-parallel-physical-mouth-independent-analysis-notes/v1",
+  "readOnly": true,
+  "successfulOwnerUnmodified": true,
+  "priorRejectedOwnersUnmodified": true,
+  "notes": [
+    {
+      "file": "/private/tmp/tube-physical-mouth-native-analysis-20261004/analyze.py",
+      "bytes": 18311,
+      "sha256": "6a2a958c0db936e232f25521ab03a1c3b766904f9b53703f9ac09a9ea189baec"
+    },
+    {
+      "file": "/private/tmp/tube-physical-mouth-native-analysis-20261004/analysis.json",
+      "bytes": 144689,
+      "sha256": "e9b0af70b5086d8fcaa84d5a4210a3666f32f9a625e8093a7cebe50acca3872c"
+    },
+    {
+      "file": "/private/tmp/tube-physical-mouth-native-analysis-20261004/report.md",
+      "bytes": 6901,
+      "sha256": "d515f12a8a118b69d2e4b9d12ac73b62c872821f1463f2ff66c43e08830edc22"
+    },
+    {
+      "file": "/private/tmp/tube-physical-mouth-native-analysis-20261004/analyze-output.json",
+      "bytes": 3320,
+      "sha256": "08fd115adae266db3493d5d2620fcd86baced9446349cc980b3981f5ff3adf8f"
+    }
+  ]
+}

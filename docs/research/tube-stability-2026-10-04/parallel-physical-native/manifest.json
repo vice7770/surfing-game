@@ -1,0 +1,2687 @@
+{
+  "schema": "parallel-physical-native-durable-archive/v1",
+  "scope": "Exact source preparation and selected patch snapshots; finite native finality/media; read-only analyses; no runtime adoption",
+  "frozenForRootReview": true,
+  "files": [
+    {
+      "originalPath": null,
+      "path": "README.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6712,
+        "sha256": "503ff668fde001d3645c15f15433440e9d561a4707650ff0a0614f73071c9a7e"
+      },
+      "decoded": {
+        "bytes": 6712,
+        "sha256": "503ff668fde001d3645c15f15433440e9d561a4707650ff0a0614f73071c9a7e"
+      },
+      "generatedForArchive": true
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.json",
+      "path": "history/failed-mouth/candidate-first-owner.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3304,
+        "sha256": "eb1ec10a3b5daaabbec752f15c25ed681bb0e08061b9180f9cce6607671b348c"
+      },
+      "decoded": {
+        "bytes": 3304,
+        "sha256": "eb1ec10a3b5daaabbec752f15c25ed681bb0e08061b9180f9cce6607671b348c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.log",
+      "path": "history/failed-mouth/candidate-first-owner.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1406,
+        "sha256": "41debde6c013ad8e6a30506542d6d4a37456fc013d0d7b3632b47ab2d17a68b2"
+      },
+      "decoded": {
+        "bytes": 1406,
+        "sha256": "41debde6c013ad8e6a30506542d6d4a37456fc013d0d7b3632b47ab2d17a68b2"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/helper-pins.json",
+      "path": "history/failed-mouth/helper-pins.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3996,
+        "sha256": "3f76fbc1aff59ce7fc8bde69515ed55b453139cccc39873b22eb7f1d4f65f0f6"
+      },
+      "decoded": {
+        "bytes": 3996,
+        "sha256": "3f76fbc1aff59ce7fc8bde69515ed55b453139cccc39873b22eb7f1d4f65f0f6"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/readiness.json",
+      "path": "history/failed-mouth/readiness.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7880,
+        "sha256": "035803cecc6066d3c5dcb85c4f0980fe033441400d8d6f04b2c5d2c6d7c9efd7"
+      },
+      "decoded": {
+        "bytes": 7880,
+        "sha256": "035803cecc6066d3c5dcb85c4f0980fe033441400d8d6f04b2c5d2c6d7c9efd7"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/seal.json",
+      "path": "history/failed-mouth/seal.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 35718,
+        "sha256": "fb4b7a5cf36a9bf235e1b4a6d33fef311067f4f350576cfc305dbdfb579aa1fb"
+      },
+      "decoded": {
+        "bytes": 159781,
+        "sha256": "6f30f65162c54b981ba107f9d678cc818d4070a110dbba88c085f77390f5663e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first-owner.json",
+      "path": "history/failed-parallel/candidate-first-owner.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3266,
+        "sha256": "3974cccfa213d65336b2b135a21f5e45ebc544d8bfc0a555cda835030aa46af1"
+      },
+      "decoded": {
+        "bytes": 3266,
+        "sha256": "3974cccfa213d65336b2b135a21f5e45ebc544d8bfc0a555cda835030aa46af1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first-owner.log",
+      "path": "history/failed-parallel/candidate-first-owner.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1406,
+        "sha256": "93a0839c697651cb8ee0612a144def89f0247a722fcb62431b201ef9222a6d95"
+      },
+      "decoded": {
+        "bytes": 1406,
+        "sha256": "93a0839c697651cb8ee0612a144def89f0247a722fcb62431b201ef9222a6d95"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/helper-pins.json",
+      "path": "history/failed-parallel/helper-pins.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4101,
+        "sha256": "20255a2d8b237013de307f5ab7a305b3524359cae098e8abb83decbc987d3cbe"
+      },
+      "decoded": {
+        "bytes": 4101,
+        "sha256": "20255a2d8b237013de307f5ab7a305b3524359cae098e8abb83decbc987d3cbe"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/readiness.json",
+      "path": "history/failed-parallel/readiness.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 9755,
+        "sha256": "a3bcc8a13e9bd26e6d45956caaf21f4cad3f0872c8862d609c37c45a29c8529d"
+      },
+      "decoded": {
+        "bytes": 9755,
+        "sha256": "a3bcc8a13e9bd26e6d45956caaf21f4cad3f0872c8862d609c37c45a29c8529d"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/seal.json",
+      "path": "history/failed-parallel/seal.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 35739,
+        "sha256": "b11ef017c3944a5329a89fa7eadb19a4280c8029c085e08b359d95cc40b044ca"
+      },
+      "decoded": {
+        "bytes": 159598,
+        "sha256": "59e70b5fbe5e0cf15ee319c14a7320c4a7c48c29919e19d565960d98d0c03eae"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first-owner.json",
+      "path": "native/candidate-first-owner.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3333,
+        "sha256": "2b072cc578ec15746ef21585af30856d5e90323a1c3e3be4dc5cc62d0a47e385"
+      },
+      "decoded": {
+        "bytes": 3333,
+        "sha256": "2b072cc578ec15746ef21585af30856d5e90323a1c3e3be4dc5cc62d0a47e385"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first-owner.log",
+      "path": "native/candidate-first-owner.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1406,
+        "sha256": "64d9ed0aa9c90cf2aa8f5861876613c63bdd3211433993fd5a3e7cd39e54e955"
+      },
+      "decoded": {
+        "bytes": 1406,
+        "sha256": "64d9ed0aa9c90cf2aa8f5861876613c63bdd3211433993fd5a3e7cd39e54e955"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/0-initial.png",
+      "path": "native/capture/0-initial.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 953828,
+        "sha256": "2894497eb55c61f4a8f361b9985c60d22c3bef4269f82520a2891b28a1307dbd"
+      },
+      "decoded": {
+        "bytes": 953828,
+        "sha256": "2894497eb55c61f4a8f361b9985c60d22c3bef4269f82520a2891b28a1307dbd"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/1-initial-exterior.png",
+      "path": "native/capture/1-initial-exterior.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2424578,
+        "sha256": "025a442348d857151e568ba235e2acb376ac0c4d081b89bfb37d249c87b6383a"
+      },
+      "decoded": {
+        "bytes": 2424578,
+        "sha256": "025a442348d857151e568ba235e2acb376ac0c4d081b89bfb37d249c87b6383a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/2-first-phase2.png",
+      "path": "native/capture/2-first-phase2.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1105795,
+        "sha256": "ca8b5bd1f3bb4f728b5d8f78c545581afc035e5f9133cf3e5c70231cb2df6764"
+      },
+      "decoded": {
+        "bytes": 1105795,
+        "sha256": "ca8b5bd1f3bb4f728b5d8f78c545581afc035e5f9133cf3e5c70231cb2df6764"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/3-terminal.png",
+      "path": "native/capture/3-terminal.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1324486,
+        "sha256": "f7e4cf06866eca9e188b1fe19c2a331e65e6b82e92dc06985ae77fc1bb5ce6d0"
+      },
+      "decoded": {
+        "bytes": 1324486,
+        "sha256": "f7e4cf06866eca9e188b1fe19c2a331e65e6b82e92dc06985ae77fc1bb5ce6d0"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/launcher.json",
+      "path": "native/capture/launcher.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 11442,
+        "sha256": "7733b0748a4fcd45f56c8077cdc61bc23f3c1e7dde65985e4d0ce9fcfdf82175"
+      },
+      "decoded": {
+        "bytes": 11442,
+        "sha256": "7733b0748a4fcd45f56c8077cdc61bc23f3c1e7dde65985e4d0ce9fcfdf82175"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/moving-C.webm",
+      "path": "native/capture/moving-C.webm",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 818895,
+        "sha256": "861c18b433625f9ed7ea9c778c1fab3119d605442539502bbf820733e4d52600"
+      },
+      "decoded": {
+        "bytes": 818895,
+        "sha256": "861c18b433625f9ed7ea9c778c1fab3119d605442539502bbf820733e4d52600"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/report.json",
+      "path": "native/capture/report.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 1986858,
+        "sha256": "18244b974744e61320e4da1b3ca64c693b78e9a9c0c8110a3543ae2f5b39d6fd"
+      },
+      "decoded": {
+        "bytes": 8769787,
+        "sha256": "a17654bd706fbd3c6518b94ad9deb31f096bc7a98e114795a0a3b6a6801bfd4d"
+      }
+    },
+    {
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "path": "native/dependencies/browser/cdp.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "decoded": {
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-fixture/first-missing-mouth-helper-seal.json",
+      "path": "native/dependencies/owner-fixture/first-missing-mouth-helper-seal.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 34008,
+        "sha256": "1d174b8472571ed953c6939a10b98d6190a4d71b6c5ae043572d8e0bd18d9470"
+      },
+      "decoded": {
+        "bytes": 127486,
+        "sha256": "d9c81a092f5208f15d362e88975209ea176f71304e65b3a20c86b1ac0c1e08ad"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json",
+      "path": "native/dependencies/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1314,
+        "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+      },
+      "decoded": {
+        "bytes": 1314,
+        "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/new-source-contract-checks.json",
+      "path": "native/dependencies/tube-bounded-c-parallel-mouth-native-20261004/new-source-contract-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4054,
+        "sha256": "6a71c0d1cf7c248c0753d96323b28fb24c2d665fc53b3ca6d25305bd077dea42"
+      },
+      "decoded": {
+        "bytes": 4054,
+        "sha256": "6a71c0d1cf7c248c0753d96323b28fb24c2d665fc53b3ca6d25305bd077dea42"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs",
+      "path": "native/dependencies/tube-directed-entry-20261004/body-witnesses.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 11626,
+        "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+      },
+      "decoded": {
+        "bytes": 11626,
+        "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/check-source.py",
+      "path": "native/helpers/check-source.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1618,
+        "sha256": "ea6529d947643a601f48b04402e8f151ca06c020b7336295c6b455c0cd17f17d"
+      },
+      "decoded": {
+        "bytes": 1618,
+        "sha256": "ea6529d947643a601f48b04402e8f151ca06c020b7336295c6b455c0cd17f17d"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation-runner.py",
+      "path": "native/helpers/cpu-validation-runner.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1925,
+        "sha256": "130d80971a1cf172304dff3c4fe8b5b381701bca17b8fdcca674d6d8598e3460"
+      },
+      "decoded": {
+        "bytes": 1925,
+        "sha256": "130d80971a1cf172304dff3c4fe8b5b381701bca17b8fdcca674d6d8598e3460"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/freeze.py",
+      "path": "native/helpers/freeze.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5851,
+        "sha256": "eed125a73069ddeb3e8792fff6e4cb838cf9e14353b25f7c561ff4169564e20e"
+      },
+      "decoded": {
+        "bytes": 5851,
+        "sha256": "eed125a73069ddeb3e8792fff6e4cb838cf9e14353b25f7c561ff4169564e20e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/helper-types.d.ts",
+      "path": "native/helpers/helper-types.d.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 87,
+        "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+      },
+      "decoded": {
+        "bytes": 87,
+        "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/identity-checks.mjs",
+      "path": "native/helpers/identity-checks.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 8366,
+        "sha256": "26be79dd89860d79940ff0869ca7cc265b9228a256ff80c13125fb49c5634193"
+      },
+      "decoded": {
+        "bytes": 8366,
+        "sha256": "26be79dd89860d79940ff0869ca7cc265b9228a256ff80c13125fb49c5634193"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mock-checks.mjs",
+      "path": "native/helpers/mock-checks.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 17402,
+        "sha256": "edccd540df43085afa00e2810350709d71f0f6a5d7bdb1c4e4574d1a6fd1444c"
+      },
+      "decoded": {
+        "bytes": 17402,
+        "sha256": "edccd540df43085afa00e2810350709d71f0f6a5d7bdb1c4e4574d1a6fd1444c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-integration-checks.mjs",
+      "path": "native/helpers/mouth-integration-checks.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 13417,
+        "sha256": "623264328ada86f513d5e0ee3dc27d8ab74490507f1d38266ca57dace004c2a2"
+      },
+      "decoded": {
+        "bytes": 13417,
+        "sha256": "623264328ada86f513d5e0ee3dc27d8ab74490507f1d38266ca57dace004c2a2"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-tools.mjs",
+      "path": "native/helpers/mouth-tools.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5316,
+        "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+      },
+      "decoded": {
+        "bytes": 5316,
+        "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-tools.test.mjs",
+      "path": "native/helpers/mouth-tools.test.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7489,
+        "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+      },
+      "decoded": {
+        "bytes": 7489,
+        "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/moving-shape.mjs",
+      "path": "native/helpers/moving-shape.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 29668,
+        "sha256": "15db7127b8b8b5a7fb1e0047c3bbfa52c18f2b9c9d16cd9b2602d40030fa4cb9"
+      },
+      "decoded": {
+        "bytes": 29668,
+        "sha256": "15db7127b8b8b5a7fb1e0047c3bbfa52c18f2b9c9d16cd9b2602d40030fa4cb9"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native-owned.mjs",
+      "path": "native/helpers/native-owned.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6532,
+        "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+      },
+      "decoded": {
+        "bytes": 6532,
+        "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native.mjs",
+      "path": "native/helpers/native.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 10355,
+        "sha256": "6e5a3825f16d203c310b4ddf2a22c0dad4e4313e77b6658988971ee0f9b54b5a"
+      },
+      "decoded": {
+        "bytes": 10355,
+        "sha256": "6e5a3825f16d203c310b4ddf2a22c0dad4e4313e77b6658988971ee0f9b54b5a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-event-checks.py",
+      "path": "native/helpers/owner-event-checks.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2190,
+        "sha256": "68428569e19ddb36b0854f7215e5a3e0d326f68b45c70226e7d2fdaba2c1d63d"
+      },
+      "decoded": {
+        "bytes": 2190,
+        "sha256": "68428569e19ddb36b0854f7215e5a3e0d326f68b45c70226e7d2fdaba2c1d63d"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-mock-checks.py",
+      "path": "native/helpers/owner-mock-checks.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4739,
+        "sha256": "4a11e3c362786d004cac6a99bfc3c004ac16fc6ba9a7b0138057f2c24aca56d2"
+      },
+      "decoded": {
+        "bytes": 4739,
+        "sha256": "4a11e3c362786d004cac6a99bfc3c004ac16fc6ba9a7b0138057f2c24aca56d2"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/run.py",
+      "path": "native/helpers/run.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 16823,
+        "sha256": "0da3b1d109f1097ee47d68801d7ab794c896623322880683ec24ec0e6b06c63c"
+      },
+      "decoded": {
+        "bytes": 16823,
+        "sha256": "0da3b1d109f1097ee47d68801d7ab794c896623322880683ec24ec0e6b06c63c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/station-tools.mjs",
+      "path": "native/helpers/station-tools.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 14480,
+        "sha256": "6bab70e985b48f18ffd247d2ef7128b12cfbe091d94f6fbc4a5d1a12713239c7"
+      },
+      "decoded": {
+        "bytes": 14480,
+        "sha256": "6bab70e985b48f18ffd247d2ef7128b12cfbe091d94f6fbc4a5d1a12713239c7"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/helper-pins.json",
+      "path": "native/manifests/helper-pins.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7159,
+        "sha256": "87527006b139747ec10eabe4fe992d1672fe406ebe1b514bf4e81156c16544b0"
+      },
+      "decoded": {
+        "bytes": 7159,
+        "sha256": "87527006b139747ec10eabe4fe992d1672fe406ebe1b514bf4e81156c16544b0"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/readiness.json",
+      "path": "native/manifests/readiness.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 15562,
+        "sha256": "3f8831e7a3650c3a653755556201422ab73196cda24976b3d4c7adf1b1896b0e"
+      },
+      "decoded": {
+        "bytes": 15562,
+        "sha256": "3f8831e7a3650c3a653755556201422ab73196cda24976b3d4c7adf1b1896b0e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/root-build-result.json",
+      "path": "native/manifests/root-build-result.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 33139,
+        "sha256": "22b36eb5132109616762f4b0cf35079bdb1d5349c8d41693589cc2e19b109f4a"
+      },
+      "decoded": {
+        "bytes": 142639,
+        "sha256": "9ee3e6f824411d71edbaeccd9099e142f46ecbb302b3fe33294ee0337437493c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/root-complete-build-result.json",
+      "path": "native/manifests/root-complete-build-result.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 35940,
+        "sha256": "d10df0d5a85933322f85d4c73f5797a3b0d6ef2d0f18d4f731b81d3c5941d86a"
+      },
+      "decoded": {
+        "bytes": 182066,
+        "sha256": "a84ac3fd098b8ee2d58377a516243d02f909be57177fb02bf47c5018b1f64ba3"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/seal.json",
+      "path": "native/manifests/seal.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 37559,
+        "sha256": "5357bc1aa60bf44f9a571b26b479a4460973f41d105fb6f149e9f00db5c474a6"
+      },
+      "decoded": {
+        "bytes": 169360,
+        "sha256": "f150be697ffba17a19bab8b8b76915c8a1087b199bfc3f9ab4384699fab54fb1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/README.md",
+      "path": "native/preparation/README-original.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4206,
+        "sha256": "92b551cdf8e2ab8047591826c0f843f59b879ccd9798b9fa604f0d021b650432"
+      },
+      "decoded": {
+        "bytes": 4206,
+        "sha256": "92b551cdf8e2ab8047591826c0f843f59b879ccd9798b9fa604f0d021b650432"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/blueprint.txt",
+      "path": "native/preparation/blueprint.txt",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2275,
+        "sha256": "16de81eded4d60595a93fb659555c926b2a36127984420fc4063904bbd72b99d"
+      },
+      "decoded": {
+        "bytes": 2275,
+        "sha256": "16de81eded4d60595a93fb659555c926b2a36127984420fc4063904bbd72b99d"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation.json",
+      "path": "native/preparation/cpu-validation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 10522,
+        "sha256": "de605a789a906fed115e76bac6a5cd7d298e0a4b79359eef283c010c7e9e028a"
+      },
+      "decoded": {
+        "bytes": 10522,
+        "sha256": "de605a789a906fed115e76bac6a5cd7d298e0a4b79359eef283c010c7e9e028a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation.log",
+      "path": "native/preparation/cpu-validation.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7017,
+        "sha256": "2eb3bfef780f415219542929ce4b24450dd016a017d45604fc66c499b343f8dd"
+      },
+      "decoded": {
+        "bytes": 7017,
+        "sha256": "2eb3bfef780f415219542929ce4b24450dd016a017d45604fc66c499b343f8dd"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/first-owner-fixture-failure.json",
+      "path": "native/preparation/first-owner-fixture-failure.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 426,
+        "sha256": "20a20065a459f9ec7dd569a9743c68889656957b530fcafada1c8cef7326b018"
+      },
+      "decoded": {
+        "bytes": 426,
+        "sha256": "20a20065a459f9ec7dd569a9743c68889656957b530fcafada1c8cef7326b018"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/identity-checks.json",
+      "path": "native/preparation/identity-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3278,
+        "sha256": "0d3bfeb8473bc289210dde5b3cfc5b49f0b16b3d3977ba1434b626bf94d6dd02"
+      },
+      "decoded": {
+        "bytes": 3278,
+        "sha256": "0d3bfeb8473bc289210dde5b3cfc5b49f0b16b3d3977ba1434b626bf94d6dd02"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mock-checks.json",
+      "path": "native/preparation/mock-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1983,
+        "sha256": "fff00ca02013d1841260fa1491ad945602bd7f58f7493dd5e870846f84e9ff44"
+      },
+      "decoded": {
+        "bytes": 1983,
+        "sha256": "fff00ca02013d1841260fa1491ad945602bd7f58f7493dd5e870846f84e9ff44"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-integration-checks.json",
+      "path": "native/preparation/mouth-integration-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 556,
+        "sha256": "1008333e973515eb56738a0965443095fb1870e703f1d8fad2a6238870f65bce"
+      },
+      "decoded": {
+        "bytes": 556,
+        "sha256": "1008333e973515eb56738a0965443095fb1870e703f1d8fad2a6238870f65bce"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/new-source-contract-checks.json",
+      "path": "native/preparation/new-source-contract-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 10116,
+        "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+      },
+      "decoded": {
+        "bytes": 10116,
+        "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-event-checks.json",
+      "path": "native/preparation/owner-event-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 504,
+        "sha256": "cba5db03a044a25d31b6025ed923a22c7e12ece603c47d56d7b9e860343dad03"
+      },
+      "decoded": {
+        "bytes": 504,
+        "sha256": "cba5db03a044a25d31b6025ed923a22c7e12ece603c47d56d7b9e860343dad03"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-mock-checks.json",
+      "path": "native/preparation/owner-mock-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1424,
+        "sha256": "c6bcc1324888614a8440b6f7389723739685eabaa9a657768db76fcd29d23804"
+      },
+      "decoded": {
+        "bytes": 1424,
+        "sha256": "c6bcc1324888614a8440b6f7389723739685eabaa9a657768db76fcd29d23804"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/provenance.json",
+      "path": "native/preparation/provenance.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7414,
+        "sha256": "b10368cc6c28360a5ace8ad9850f9ed128f3b0842c99119027c7d8febd360c74"
+      },
+      "decoded": {
+        "bytes": 7414,
+        "sha256": "b10368cc6c28360a5ace8ad9850f9ed128f3b0842c99119027c7d8febd360c74"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/syntax-dry-owner-checks.json",
+      "path": "native/preparation/syntax-dry-owner-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 638,
+        "sha256": "eb073c3b0c8f63b723bbff04bc10ce512288d26aceae36ad33c4798ae6312fb2"
+      },
+      "decoded": {
+        "bytes": 638,
+        "sha256": "eb073c3b0c8f63b723bbff04bc10ce512288d26aceae36ad33c4798ae6312fb2"
+      }
+    },
+    {
+      "originalPath": null,
+      "path": "outcome.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3057,
+        "sha256": "a94f0cee1deb95116efc0b13a7b0b37645d19e8dfe10b81fca39d011b1ad72cc"
+      },
+      "decoded": {
+        "bytes": 3057,
+        "sha256": "a94f0cee1deb95116efc0b13a7b0b37645d19e8dfe10b81fca39d011b1ad72cc"
+      },
+      "generatedForArchive": true
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-policy-review-20261004/README.md",
+      "path": "reviews/camera-policy/README.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 9711,
+        "sha256": "a746acfa681b36fa152fe42118870b5af9cbe744537faabb91ebb59117657e20"
+      },
+      "decoded": {
+        "bytes": 9711,
+        "sha256": "a746acfa681b36fa152fe42118870b5af9cbe744537faabb91ebb59117657e20"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-policy-review-20261004/receipt.json",
+      "path": "reviews/camera-policy/receipt.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3157,
+        "sha256": "b83d228288b7fa8d0db4ad86e2722323f638cb05cc9deed485ce4576b1d1b385"
+      },
+      "decoded": {
+        "bytes": 3157,
+        "sha256": "b83d228288b7fa8d0db4ad86e2722323f638cb05cc9deed485ce4576b1d1b385"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analysis.json",
+      "path": "reviews/late-carrier/analysis.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 6056,
+        "sha256": "fb8f6ae6721c810dc62ee2b6c5c5b8e35ba4e403642bb1dbb30253373325863e"
+      },
+      "decoded": {
+        "bytes": 26136,
+        "sha256": "74f682ed494bd6347c6f4e4aae1779625381cfa04c0212374d966b7690a5a7e7"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analyze-output.json",
+      "path": "reviews/late-carrier/analyze-output.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1851,
+        "sha256": "fb4146ee1a9fee51ac64f6ea62a48b8b839c43e76f5baefdfe3016c7241fcda9"
+      },
+      "decoded": {
+        "bytes": 1851,
+        "sha256": "fb4146ee1a9fee51ac64f6ea62a48b8b839c43e76f5baefdfe3016c7241fcda9"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analyze.py",
+      "path": "reviews/late-carrier/analyze.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6469,
+        "sha256": "d5f35b5cccc81a8899ef4a0a3251f9468be8cb2a1ecd2d3d4a72956454c71ba2"
+      },
+      "decoded": {
+        "bytes": 6469,
+        "sha256": "d5f35b5cccc81a8899ef4a0a3251f9468be8cb2a1ecd2d3d4a72956454c71ba2"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/manifest.json",
+      "path": "reviews/late-carrier/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 961,
+        "sha256": "4133a2fdbba1cba453c1a27ceeb8a06f91072441f111369c85dd1de0414abd9a"
+      },
+      "decoded": {
+        "bytes": 961,
+        "sha256": "4133a2fdbba1cba453c1a27ceeb8a06f91072441f111369c85dd1de0414abd9a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/report.md",
+      "path": "reviews/late-carrier/report.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7020,
+        "sha256": "640f7c0847f3a5692c9d0ba16a7aee61c01eeef9bbad89a39fc0015083123a73"
+      },
+      "decoded": {
+        "bytes": 7020,
+        "sha256": "640f7c0847f3a5692c9d0ba16a7aee61c01eeef9bbad89a39fc0015083123a73"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-native-analysis-20261004/analysis.json",
+      "path": "reviews/native-analysis/analysis.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 20674,
+        "sha256": "2380166ff57ea10060a64e2e91831a91169099b9e6f8a3321a8583c3110ff64b"
+      },
+      "decoded": {
+        "bytes": 144689,
+        "sha256": "e9b0af70b5086d8fcaa84d5a4210a3666f32f9a625e8093a7cebe50acca3872c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-native-analysis-20261004/analyze-output.json",
+      "path": "reviews/native-analysis/analyze-output.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3320,
+        "sha256": "08fd115adae266db3493d5d2620fcd86baced9446349cc980b3981f5ff3adf8f"
+      },
+      "decoded": {
+        "bytes": 3320,
+        "sha256": "08fd115adae266db3493d5d2620fcd86baced9446349cc980b3981f5ff3adf8f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-native-analysis-20261004/analyze.py",
+      "path": "reviews/native-analysis/analyze.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 18311,
+        "sha256": "6a2a958c0db936e232f25521ab03a1c3b766904f9b53703f9ac09a9ea189baec"
+      },
+      "decoded": {
+        "bytes": 18311,
+        "sha256": "6a2a958c0db936e232f25521ab03a1c3b766904f9b53703f9ac09a9ea189baec"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-native-analysis-20261004/manifest.json",
+      "path": "reviews/native-analysis/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1023,
+        "sha256": "58f0a630358282f8e6e669e9371307178a174d357d98e8544095b1f8c5a5b726"
+      },
+      "decoded": {
+        "bytes": 1023,
+        "sha256": "58f0a630358282f8e6e669e9371307178a174d357d98e8544095b1f8c5a5b726"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-native-analysis-20261004/report.md",
+      "path": "reviews/native-analysis/report.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6901,
+        "sha256": "d515f12a8a118b69d2e4b9d12ac73b62c872821f1463f2ff66c43e08830edc22"
+      },
+      "decoded": {
+        "bytes": 6901,
+        "sha256": "d515f12a8a118b69d2e4b9d12ac73b62c872821f1463f2ff66c43e08830edc22"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-physical-coupling-review-20261004/review.md",
+      "path": "reviews/physical-source/review.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7196,
+        "sha256": "34a6f52b6805f1160d1b873379a5f1ecdc18c8cf74ab434551b1a15fb7564729"
+      },
+      "decoded": {
+        "bytes": 7196,
+        "sha256": "34a6f52b6805f1160d1b873379a5f1ecdc18c8cf74ab434551b1a15fb7564729"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-physical-coupling-review-20261004/source-pins.json",
+      "path": "reviews/physical-source/source-pins.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1648,
+        "sha256": "6222887eb0433f22bf83638886c9e9e84de2dbbffddb05befbcb160e9f7cc926"
+      },
+      "decoded": {
+        "bytes": 1648,
+        "sha256": "6222887eb0433f22bf83638886c9e9e84de2dbbffddb05befbcb160e9f7cc926"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-native-analysis-20261004/analysis.json",
+      "path": "reviews/prior-parallel-analysis/analysis.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 13285,
+        "sha256": "f782b382331e37e7419fe975d8b5c597e9f62840db8b2e8bc923f7911c1407c2"
+      },
+      "decoded": {
+        "bytes": 78483,
+        "sha256": "f7879bebc8683c26fbe00ec02f709fdfd0e7cdef02474e1e5beb4ee97c70e8bf"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-native-analysis-20261004/analyze-output.json",
+      "path": "reviews/prior-parallel-analysis/analyze-output.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4154,
+        "sha256": "851f07b5ca8cf9c41ad7d4e2231ae1407e8cc18a310ef1199d3dcb495dfb4d6d"
+      },
+      "decoded": {
+        "bytes": 4154,
+        "sha256": "851f07b5ca8cf9c41ad7d4e2231ae1407e8cc18a310ef1199d3dcb495dfb4d6d"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-native-analysis-20261004/analyze.py",
+      "path": "reviews/prior-parallel-analysis/analyze.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 16411,
+        "sha256": "04c3f6e20112eb2a0156be8cf0911fb40b3fb3b14b6f3a18bfaaba3e42f6ecb4"
+      },
+      "decoded": {
+        "bytes": 16411,
+        "sha256": "04c3f6e20112eb2a0156be8cf0911fb40b3fb3b14b6f3a18bfaaba3e42f6ecb4"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-native-analysis-20261004/manifest.json",
+      "path": "reviews/prior-parallel-analysis/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 915,
+        "sha256": "fbf067d5941bee9258e1496c9a17725fcc4c62a4ac4e8c14996b75402d2a7672"
+      },
+      "decoded": {
+        "bytes": 915,
+        "sha256": "fbf067d5941bee9258e1496c9a17725fcc4c62a4ac4e8c14996b75402d2a7672"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-parallel-native-analysis-20261004/report.md",
+      "path": "reviews/prior-parallel-analysis/report.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7093,
+        "sha256": "77171df3978d3d973af3b9dd9e298697aa7094e4b210a3ec6769afef88f53831"
+      },
+      "decoded": {
+        "bytes": 7093,
+        "sha256": "77171df3978d3d973af3b9dd9e298697aa7094e4b210a3ec6769afef88f53831"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-video-review-20261004/ffprobe.json",
+      "path": "reviews/video/ffprobe.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 315,
+        "sha256": "b162d275839e87dab1287f0c2a739ca41a47d5ff735e3d0ee313cf772058f7df"
+      },
+      "decoded": {
+        "bytes": 315,
+        "sha256": "b162d275839e87dab1287f0c2a739ca41a47d5ff735e3d0ee313cf772058f7df"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-video-review-20261004/receipt.json",
+      "path": "reviews/video/receipt.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2241,
+        "sha256": "e5d248ebbd8f18da46bafb3e3b4f99c98eb0d5e3336a3668eff18d0bf4a730f9"
+      },
+      "decoded": {
+        "bytes": 2241,
+        "sha256": "e5d248ebbd8f18da46bafb3e3b4f99c98eb0d5e3336a3668eff18d0bf4a730f9"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/boundedCConsumers.test.ts",
+      "path": "source/parallel-experiment/after/src/wave/barrel/boundedCConsumers.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 15022,
+        "sha256": "4d88d2d22d8842e1c188f481d7005d1749ea184c82921b6d3cd49201bec34969"
+      },
+      "decoded": {
+        "bytes": 15022,
+        "sha256": "4d88d2d22d8842e1c188f481d7005d1749ea184c82921b6d3cd49201bec34969"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/boundedCDemand.test.ts",
+      "path": "source/parallel-experiment/after/src/wave/barrel/boundedCDemand.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 12492,
+        "sha256": "aab93fe4aea1b8facf736adbe8348b0bc1e7d3e48d736bbdfbda0e13c384aa7a"
+      },
+      "decoded": {
+        "bytes": 12492,
+        "sha256": "aab93fe4aea1b8facf736adbe8348b0bc1e7d3e48d736bbdfbda0e13c384aa7a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/crestRays.ts",
+      "path": "source/parallel-experiment/after/src/wave/barrel/crestRays.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 15787,
+        "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+      },
+      "decoded": {
+        "bytes": 15787,
+        "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/parallelCrestRays.test.ts",
+      "path": "source/parallel-experiment/after/src/wave/barrel/parallelCrestRays.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 11010,
+        "sha256": "7e688a29274bc5494db3822cd0032804cf48fc3ffedb8dd79e6570b659c0a0d5"
+      },
+      "decoded": {
+        "bytes": 11010,
+        "sha256": "7e688a29274bc5494db3822cd0032804cf48fc3ffedb8dd79e6570b659c0a0d5"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/sharedUpperRoot.test.ts",
+      "path": "source/parallel-experiment/after/src/wave/barrel/sharedUpperRoot.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 18370,
+        "sha256": "cd5f7a77c91d39b28d577a94253b3ce109577502bd40f9aee5ef0477d4654757"
+      },
+      "decoded": {
+        "bytes": 18370,
+        "sha256": "cd5f7a77c91d39b28d577a94253b3ce109577502bd40f9aee5ef0477d4654757"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/crestRays.ts",
+      "path": "source/parallel-experiment/before/src/wave/barrel/crestRays.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 14382,
+        "sha256": "499b17168bddda89f8b9fe4087edf91c327fe9b1ad73e56df1d214e15633ea61"
+      },
+      "decoded": {
+        "bytes": 14382,
+        "sha256": "499b17168bddda89f8b9fe4087edf91c327fe9b1ad73e56df1d214e15633ea61"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/crestRays.ts",
+      "path": "source/parallel-runtime/after/src/wave/barrel/crestRays.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 15787,
+        "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+      },
+      "decoded": {
+        "bytes": 15787,
+        "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/crestRays.ts",
+      "path": "source/parallel-runtime/before/src/wave/barrel/crestRays.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 14382,
+        "sha256": "499b17168bddda89f8b9fe4087edf91c327fe9b1ad73e56df1d214e15633ea61"
+      },
+      "decoded": {
+        "bytes": 14382,
+        "sha256": "499b17168bddda89f8b9fe4087edf91c327fe9b1ad73e56df1d214e15633ea61"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/README.md",
+      "path": "source/parallel/receipts/README-original.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5741,
+        "sha256": "0b5cf9f98f2c085ff9b7ea570668fab76db72558807ab8721953839c2140fefc"
+      },
+      "decoded": {
+        "bytes": 5741,
+        "sha256": "0b5cf9f98f2c085ff9b7ea570668fab76db72558807ab8721953839c2140fefc"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/commands.json",
+      "path": "source/parallel/receipts/commands.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1440,
+        "sha256": "50f24c0a434e5cd8256ae718ae73bbbf7be0c760c9850c6e618f159eeb58365f"
+      },
+      "decoded": {
+        "bytes": 1440,
+        "sha256": "50f24c0a434e5cd8256ae718ae73bbbf7be0c760c9850c6e618f159eeb58365f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/consumer-mesh-receipt.json",
+      "path": "source/parallel/receipts/consumer-mesh-receipt.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 109,
+        "sha256": "06e7e03977d1ba07ff9a2bd77976afcd1667473a29ad25a2b550f4fc559c5359"
+      },
+      "decoded": {
+        "bytes": 109,
+        "sha256": "06e7e03977d1ba07ff9a2bd77976afcd1667473a29ad25a2b550f4fc559c5359"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/experiment.patch",
+      "path": "source/parallel/receipts/experiment.patch",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 17667,
+        "sha256": "83f2e8365b18804fc7a7dd114c94da6d6f118479a63cfa2ee63884b94fbbf457"
+      },
+      "decoded": {
+        "bytes": 17667,
+        "sha256": "83f2e8365b18804fc7a7dd114c94da6d6f118479a63cfa2ee63884b94fbbf457"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/first-focused.log",
+      "path": "source/parallel/receipts/first-focused.log.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 10725,
+        "sha256": "5cf8f90c67bc99a4d1295387828f2fe01f87536cc5073c7815f35a18f077a4e4"
+      },
+      "decoded": {
+        "bytes": 46761,
+        "sha256": "5e815c03fc4b5776e90c6812cb125f3808eec6fcfd75e28d9fde2838b7192861"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/first-strict-ts.log",
+      "path": "source/parallel/receipts/first-strict-ts.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-exact-receipt.json",
+      "path": "source/parallel/receipts/fullsheet-exact-receipt.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1535,
+        "sha256": "ddf8e228bfbd89e07381049c091a088c85de7cdfa33368823b7e618bee920c2f"
+      },
+      "decoded": {
+        "bytes": 1535,
+        "sha256": "ddf8e228bfbd89e07381049c091a088c85de7cdfa33368823b7e618bee920c2f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-query-receipt.json",
+      "path": "source/parallel/receipts/fullsheet-query-receipt.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2817,
+        "sha256": "5c522e9a71e80295d42e3ed483650c55ef745e314e5f99532010fcf254c93a8e"
+      },
+      "decoded": {
+        "bytes": 2817,
+        "sha256": "5c522e9a71e80295d42e3ed483650c55ef745e314e5f99532010fcf254c93a8e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-switch-receipt.json",
+      "path": "source/parallel/receipts/fullsheet-switch-receipt.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 4406,
+        "sha256": "7d398bf00c4a4412c434d10c4832afd0cf61f84ef4ddd3ac5a8cc7813e84fce5"
+      },
+      "decoded": {
+        "bytes": 28747,
+        "sha256": "5c6a3e1bc8f7cbc3627a67309bd69284d22a6f0f1f640d38eee72cf1e8b16093"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/harness-adaptation.json",
+      "path": "source/parallel/receipts/harness-adaptation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1179,
+        "sha256": "3221933cdc139c310f6b140a7c34378551a18b292b28c990be97caca7500bdbe"
+      },
+      "decoded": {
+        "bytes": 1179,
+        "sha256": "3221933cdc139c310f6b140a7c34378551a18b292b28c990be97caca7500bdbe"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/library-blend-precision-equivalence.json",
+      "path": "source/parallel/receipts/library-blend-precision-equivalence.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 130,
+        "sha256": "29153142a0a99fa57a2b3bdcdd7f158fff898772b100c71f7d900775bc632c79"
+      },
+      "decoded": {
+        "bytes": 130,
+        "sha256": "29153142a0a99fa57a2b3bdcdd7f158fff898772b100c71f7d900775bc632c79"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/library-equivalence.json",
+      "path": "source/parallel/receipts/library-equivalence.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 171,
+        "sha256": "f648bfe3083ed47571bafbd8e99deb2719f297c34eadb0b38e26ddc0733a92d7"
+      },
+      "decoded": {
+        "bytes": 171,
+        "sha256": "f648bfe3083ed47571bafbd8e99deb2719f297c34eadb0b38e26ddc0733a92d7"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/manifest.json",
+      "path": "source/parallel/receipts/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3649,
+        "sha256": "d16320470b8f94a202862a2a7945032239035c2265a023894514e5e43d5fc990"
+      },
+      "decoded": {
+        "bytes": 3649,
+        "sha256": "d16320470b8f94a202862a2a7945032239035c2265a023894514e5e43d5fc990"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/orientation-receipt.json",
+      "path": "source/parallel/receipts/orientation-receipt.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 929,
+        "sha256": "39fc78b156bc077f577c2e4bcb4011ec40b2f58724eb6fbe2a4187037f443f13"
+      },
+      "decoded": {
+        "bytes": 929,
+        "sha256": "39fc78b156bc077f577c2e4bcb4011ec40b2f58724eb6fbe2a4187037f443f13"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/parent-pins.json",
+      "path": "source/parallel/receipts/parent-pins.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 30225,
+        "sha256": "e5c1bf8fa44719a5e8c698b6e1ee924e4a85b834195a0b2ff1987326a9ffd398"
+      },
+      "decoded": {
+        "bytes": 94678,
+        "sha256": "c5a9f2fdbf2245731db3dfc89a01e3ad6640011980b12b1e714ec85ebbcc1d39"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/pre-validation-freeze.json",
+      "path": "source/parallel/receipts/pre-validation-freeze.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 30284,
+        "sha256": "72844ba741d86032e157e0a9ac6a7adc093fb4e674d35240c6a2839fba8af9f7"
+      },
+      "decoded": {
+        "bytes": 94879,
+        "sha256": "ac50d34002c483b5b4711660e9edca83ef8d387d2fb83654b4e4a0aa8a58e8fc"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/provider-equivalence.json",
+      "path": "source/parallel/receipts/provider-equivalence.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 602,
+        "sha256": "5249da2a1631e979a82a7094e9e04136fe65b37857649856371c73a4a708bcfc"
+      },
+      "decoded": {
+        "bytes": 602,
+        "sha256": "5249da2a1631e979a82a7094e9e04136fe65b37857649856371c73a4a708bcfc"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/readiness.json",
+      "path": "source/parallel/receipts/readiness.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 31889,
+        "sha256": "c12ac38e9faae6ef9f8d6f0948fba52a0d0e2ea2c5ada6ef4b808b2abb7ed559"
+      },
+      "decoded": {
+        "bytes": 98118,
+        "sha256": "6092b23b1d3cafb4bad9ca5cdb5db50076330611bc2d8c7fc33bcc662bc1149f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/recipe.json",
+      "path": "source/parallel/receipts/recipe.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1585,
+        "sha256": "2142e6b1aecbc14bb691cf7af3e0c90b0c11e0c0611407d246f16c31d3578c97"
+      },
+      "decoded": {
+        "bytes": 1585,
+        "sha256": "2142e6b1aecbc14bb691cf7af3e0c90b0c11e0c0611407d246f16c31d3578c97"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/runtime.patch",
+      "path": "source/parallel/receipts/runtime.patch",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1917,
+        "sha256": "df5f2973e355ef5e88e57b83639361043fd386f00d4fb97b7c44cc814652a303"
+      },
+      "decoded": {
+        "bytes": 1917,
+        "sha256": "df5f2973e355ef5e88e57b83639361043fd386f00d4fb97b7c44cc814652a303"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/stored-advance-receipt.json",
+      "path": "source/parallel/receipts/stored-advance-receipt.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 271,
+        "sha256": "5104b46f32fd5940d5006a76344872149fa4afef2dae4b61dc18570d216f2a03"
+      },
+      "decoded": {
+        "bytes": 271,
+        "sha256": "5104b46f32fd5940d5006a76344872149fa4afef2dae4b61dc18570d216f2a03"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/verify.py",
+      "path": "source/parallel/receipts/verify.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1974,
+        "sha256": "33078526e0ceab4ad85edd30aeec46c5c2bf8f3754ae9d2df49ceff400dec27e"
+      },
+      "decoded": {
+        "bytes": 1974,
+        "sha256": "33078526e0ceab4ad85edd30aeec46c5c2bf8f3754ae9d2df49ceff400dec27e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/SweptCrash.ts",
+      "path": "source/physical-runtime/after/src/wave/barrel/SweptCrash.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 32406,
+        "sha256": "fb95dab980cbbcb532b875a328da21d4f36f4b152e090a20add77b1d58210b24"
+      },
+      "decoded": {
+        "bytes": 32406,
+        "sha256": "fb95dab980cbbcb532b875a328da21d4f36f4b152e090a20add77b1d58210b24"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/crashCurve.ts",
+      "path": "source/physical-runtime/after/src/wave/barrel/crashCurve.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 17446,
+        "sha256": "11fcdad4fdaa8f214a9682edcd3a3e2705955be463d482df91713c097e100793"
+      },
+      "decoded": {
+        "bytes": 17446,
+        "sha256": "11fcdad4fdaa8f214a9682edcd3a3e2705955be463d482df91713c097e100793"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/SweptCrash.ts",
+      "path": "source/physical-runtime/before/src/wave/barrel/SweptCrash.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 30645,
+        "sha256": "f32bbb4e4b25e0df80734912d62058fc45e4824555d930819f942bf6c42ebff4"
+      },
+      "decoded": {
+        "bytes": 30645,
+        "sha256": "f32bbb4e4b25e0df80734912d62058fc45e4824555d930819f942bf6c42ebff4"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/crashCurve.ts",
+      "path": "source/physical-runtime/before/src/wave/barrel/crashCurve.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 17043,
+        "sha256": "dd56577045075b1b040434f3477df964f8ba7f80886dc4429b25d76f7196f1e8"
+      },
+      "decoded": {
+        "bytes": 17043,
+        "sha256": "dd56577045075b1b040434f3477df964f8ba7f80886dc4429b25d76f7196f1e8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/parallelPhysicalCoupling.test.ts",
+      "path": "source/physical-tests/after/src/wave/barrel/parallelPhysicalCoupling.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 21085,
+        "sha256": "31747285b71e31102910187462baa24dcbb65381d121953e4c742b8f3a2ee193"
+      },
+      "decoded": {
+        "bytes": 21085,
+        "sha256": "31747285b71e31102910187462baa24dcbb65381d121953e4c742b8f3a2ee193"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/README.md",
+      "path": "source/physical/receipts/README-original.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3772,
+        "sha256": "f296de2c3a3ed91083586f7f3907ff852ab1bca081aeb0fb49b3026ed43a99d8"
+      },
+      "decoded": {
+        "bytes": 3772,
+        "sha256": "f296de2c3a3ed91083586f7f3907ff852ab1bca081aeb0fb49b3026ed43a99d8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/focused-byte-final-command.json",
+      "path": "source/physical/receipts/focused-byte-final-command.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 634,
+        "sha256": "86f31d51059197a2cb6a22e01ceb05170f756d342579854917ff26769423b953"
+      },
+      "decoded": {
+        "bytes": 634,
+        "sha256": "86f31d51059197a2cb6a22e01ceb05170f756d342579854917ff26769423b953"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/focused-byte-final.log",
+      "path": "source/physical/receipts/focused-byte-final.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 211,
+        "sha256": "0252a38b7af8c023ef78f19db15e259be04a764e1cc9132cc35ac119e915fc53"
+      },
+      "decoded": {
+        "bytes": 211,
+        "sha256": "0252a38b7af8c023ef78f19db15e259be04a764e1cc9132cc35ac119e915fc53"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/focused-final-command.json",
+      "path": "source/physical/receipts/focused-final-command.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 628,
+        "sha256": "c2d97e8aea532e1f02ffca2c300190024f00ca92f8c51d63783ce8354398d9e1"
+      },
+      "decoded": {
+        "bytes": 628,
+        "sha256": "c2d97e8aea532e1f02ffca2c300190024f00ca92f8c51d63783ce8354398d9e1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/focused-final.log",
+      "path": "source/physical/receipts/focused-final.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 211,
+        "sha256": "f714204e3841d92a1f2cc86fc5871cee60e607eb5e595d567ab41382d337dcc0"
+      },
+      "decoded": {
+        "bytes": 211,
+        "sha256": "f714204e3841d92a1f2cc86fc5871cee60e607eb5e595d567ab41382d337dcc0"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/parent-copy.json",
+      "path": "source/physical/receipts/parent-copy.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 30426,
+        "sha256": "cef3ee00e4cd0630df4528a877ef5e7ac51160605a3f31455a0c149e5d1953c6"
+      },
+      "decoded": {
+        "bytes": 95221,
+        "sha256": "7a0a3c97f3f5b58a92769aca0f12c9362b84f28ef2c132f82e719e9bcf325401"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json",
+      "path": "source/physical/receipts/readiness.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 32927,
+        "sha256": "035d3d79b47a88eaeaed17906539a61d0e352a846a5eb381f04a3e839a7f1b8e"
+      },
+      "decoded": {
+        "bytes": 103658,
+        "sha256": "f973340740f7173b8e7a6624d953b503b6b7320fcc5d7c84e873512367307d67"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/recipe.md",
+      "path": "source/physical/receipts/recipe.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1348,
+        "sha256": "25a9908bf424ce3841907e54d46a9118c72f5e236f883766fc882b66a3227b54"
+      },
+      "decoded": {
+        "bytes": 1348,
+        "sha256": "25a9908bf424ce3841907e54d46a9118c72f5e236f883766fc882b66a3227b54"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/result.json",
+      "path": "source/physical/receipts/result.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 10152,
+        "sha256": "72cf81af611d91802ba88d8085c29a6b73883bd39bae2dd6250cd6098e68718a"
+      },
+      "decoded": {
+        "bytes": 10152,
+        "sha256": "72cf81af611d91802ba88d8085c29a6b73883bd39bae2dd6250cd6098e68718a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/runtime.patch",
+      "path": "source/physical/receipts/runtime.patch",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5069,
+        "sha256": "2c0de89a78966ff5f3f98731f26e87b5175d63e2267b2df6dde59f5d51557fb6"
+      },
+      "decoded": {
+        "bytes": 5069,
+        "sha256": "2c0de89a78966ff5f3f98731f26e87b5175d63e2267b2df6dde59f5d51557fb6"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source-pins.json",
+      "path": "source/physical/receipts/source-pins.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 30430,
+        "sha256": "f42e3cdea7e89e18eb9e7fd39330156ceeebafdf01411cd7bd21f2c0cb0f56a5"
+      },
+      "decoded": {
+        "bytes": 95306,
+        "sha256": "8b4e34f044420371de7d83b8a9ec70ed5853baa08e16660e8751079b0b6f867c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-byte-final-command.json",
+      "path": "source/physical/receipts/strict-byte-final-command.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 458,
+        "sha256": "66536359862d8843c8532bdca7e8e6816a1780472836b434bbd52ab388c50153"
+      },
+      "decoded": {
+        "bytes": 458,
+        "sha256": "66536359862d8843c8532bdca7e8e6816a1780472836b434bbd52ab388c50153"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-byte-final.log",
+      "path": "source/physical/receipts/strict-byte-final.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-ts-command.json",
+      "path": "source/physical/receipts/strict-ts-command.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 449,
+        "sha256": "54f88cd3c1dcd82e8d0cb25fa2c9750bed09c307ad1300769b85c304dc6d3933"
+      },
+      "decoded": {
+        "bytes": 449,
+        "sha256": "54f88cd3c1dcd82e8d0cb25fa2c9750bed09c307ad1300769b85c304dc6d3933"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-ts.log",
+      "path": "source/physical/receipts/strict-ts.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/test-example-metrics.json",
+      "path": "source/physical/receipts/test-example-metrics.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      },
+      "decoded": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/tests.patch",
+      "path": "source/physical/receipts/tests.patch",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 21539,
+        "sha256": "a9516f792ea2c148669718325fa499e7ac1f5f287d0c9dadc410c8a46cfdc7ce"
+      },
+      "decoded": {
+        "bytes": 21539,
+        "sha256": "a9516f792ea2c148669718325fa499e7ac1f5f287d0c9dadc410c8a46cfdc7ce"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/verification.json",
+      "path": "source/physical/receipts/verification.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1053,
+        "sha256": "8e81f1f0935bace3fbdae738afbfc671a7ae56ec7072379582889f53d0f7f1f0"
+      },
+      "decoded": {
+        "bytes": 1053,
+        "sha256": "8e81f1f0935bace3fbdae738afbfc671a7ae56ec7072379582889f53d0f7f1f0"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/verify.py",
+      "path": "source/physical/receipts/verify.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3469,
+        "sha256": "8bcf38f856becb8be13e6766d44e0aedcb0bccea421dd9331ed26a6a69d5a0b4"
+      },
+      "decoded": {
+        "bytes": 3469,
+        "sha256": "8bcf38f856becb8be13e6766d44e0aedcb0bccea421dd9331ed26a6a69d5a0b4"
+      }
+    },
+    {
+      "originalPath": null,
+      "path": "verify.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 9971,
+        "sha256": "332749b8f5ea8e3ee3f6eccb532e2f34ed30285d7d1cfbbdf2551ed875c7e527"
+      },
+      "decoded": {
+        "bytes": 9971,
+        "sha256": "332749b8f5ea8e3ee3f6eccb532e2f34ed30285d7d1cfbbdf2551ed875c7e527"
+      },
+      "generatedForArchive": true
+    }
+  ],
+  "externalFiles": [
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/boundedCConsumers.test.ts",
+      "path": "../shared-sheet/demand/source/src/wave/barrel/boundedCConsumers.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 15025,
+        "sha256": "14f22e1ad85b7998f0b5cb4821ce1fe276653451c324fefea033cb4c9cf6a648"
+      },
+      "decoded": {
+        "bytes": 15025,
+        "sha256": "14f22e1ad85b7998f0b5cb4821ce1fe276653451c324fefea033cb4c9cf6a648"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/boundedCDemand.test.ts",
+      "path": "../shared-sheet/demand/source/src/wave/barrel/boundedCDemand.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 12495,
+        "sha256": "646c8a1b344f7f148f454636299618830bef72935632dcb0780674ddbad9f905"
+      },
+      "decoded": {
+        "bytes": 12495,
+        "sha256": "646c8a1b344f7f148f454636299618830bef72935632dcb0780674ddbad9f905"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/sharedUpperRoot.test.ts",
+      "path": "../shared-sheet/demand/source/src/wave/barrel/sharedUpperRoot.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 18379,
+        "sha256": "75b0d413182f0dd8970d7ca97be1b0b7f81d6c381b8aa806f10b5152b6284fb0"
+      },
+      "decoded": {
+        "bytes": 18379,
+        "sha256": "75b0d413182f0dd8970d7ca97be1b0b7f81d6c381b8aa806f10b5152b6284fb0"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-native-20261004/seal.json",
+      "path": "../shared-sheet/build/prior-static-assets-seal.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 54087,
+        "sha256": "b7279da4e240fd79e449957d8a74c0764d4b6684c075962a5e91384abecd0166"
+      },
+      "decoded": {
+        "bytes": 236441,
+        "sha256": "feb525ecde3b4292ac5141e32fdb58211821b42dc085a6b470fe721432082798"
+      }
+    }
+  ],
+  "omittedOriginals": [
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/captured-fronts.json",
+      "bytes": 2918823,
+      "sha256": "31fe6a578359384ceb3d8783fb38dc48364ede9f8a4884d9ca28760cbf74fb4b",
+      "reason": "Parent validation input hash retained; no validation rerun or full input-set portability claim."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-rays-20261004/validation-domain.json",
+      "bytes": 426688,
+      "sha256": "e2b649d516c6f6adeea234bcf5baef08de7146a7c6e8d7f8eb2a9911de818bbe",
+      "reason": "Parent validation input hash retained; no validation rerun or full input-set portability claim."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/0-initial.png",
+      "bytes": 1014733,
+      "sha256": "b3a0c32a54494741a2cd5b62ab23d5cc9a0e243d1b2fd127d50ef98ac9725e29",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/1-half-second.png",
+      "bytes": 1103275,
+      "sha256": "9795fefa411a3491f3b58a6b3bd9662a9c3219e5329f3878575a14b4e5ce0ed0",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/2-first-phase2.png",
+      "bytes": 1128287,
+      "sha256": "4c663e0b197ce7a001a24c0ff82d8a6a8cd550dc2aa1cf1deed85ce8a6fc5132",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/3-terminal.png",
+      "bytes": 1376396,
+      "sha256": "8bf9f775724bd8cae2804cb101424dfd4420efb4911f123d67f2bd63008439e0",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/launcher.json",
+      "bytes": 9936,
+      "sha256": "834123aa55352d4a7c6f95dd5452a37ea3b4ed2f76da719b7693810a0555f51e",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/moving-C.webm",
+      "bytes": 836744,
+      "sha256": "07a3e125db42a938e1f0481d16656e96bfa11e2db1b56396f7da3a5032e2ca21",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json",
+      "bytes": 7810380,
+      "sha256": "fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/0-initial.png",
+      "bytes": 1014733,
+      "sha256": "b3a0c32a54494741a2cd5b62ab23d5cc9a0e243d1b2fd127d50ef98ac9725e29",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/launcher.json",
+      "bytes": 11400,
+      "sha256": "de13d4b238b4874c31b8130dee5069c9ba3927648ea6cf518093e577b35137ba",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/report.json",
+      "bytes": 446667,
+      "sha256": "90d3904392032044286a521778c272b4714ab62c1e44ffe9409b8a0b6592c890",
+      "reason": "Prior failed-owner capture retained at original path and hash; final owner is not retroactively accepted."
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-03.png",
+      "bytes": 544465,
+      "sha256": "e8a5301a1b8ee76dafa2fe9b5232122397e0e0f7ea15f7bbdedb1f12e651acf9",
+      "reason": "Root inspected decoded indices 0,17,34,51,67; movie retained, decoded PNGs omitted for compactness."
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-02.png",
+      "bytes": 554863,
+      "sha256": "cf76b049a2d40c4ab4600c8ad30ed83161d0a4fd9ce0e068f5c75488429e1b7c",
+      "reason": "Root inspected decoded indices 0,17,34,51,67; movie retained, decoded PNGs omitted for compactness."
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-01.png",
+      "bytes": 306681,
+      "sha256": "721615a444c1c9cd95bc8cf26c064aeb6ce272246e7149aa9e37c7a9136010dc",
+      "reason": "Root inspected decoded indices 0,17,34,51,67; movie retained, decoded PNGs omitted for compactness."
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-05.png",
+      "bytes": 517013,
+      "sha256": "98cdefef1b18b57e92d4d0cb5d1d33fe93b62ebed3731e12cac997c1099a88bd",
+      "reason": "Root inspected decoded indices 0,17,34,51,67; movie retained, decoded PNGs omitted for compactness."
+    },
+    {
+      "originalPath": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-04.png",
+      "bytes": 555694,
+      "sha256": "3dde0a26d17e3231be4e9a5293816c0bcf5ebe808b7535cec945c0db5fc818d1",
+      "reason": "Root inspected decoded indices 0,17,34,51,67; movie retained, decoded PNGs omitted for compactness."
+    }
+  ],
+  "originalIntegrityInputs": {
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/README.md": {
+      "bytes": 5741,
+      "sha256": "0b5cf9f98f2c085ff9b7ea570668fab76db72558807ab8721953839c2140fefc"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/captured-fronts.json": {
+      "bytes": 2918823,
+      "sha256": "31fe6a578359384ceb3d8783fb38dc48364ede9f8a4884d9ca28760cbf74fb4b"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/commands.json": {
+      "bytes": 1440,
+      "sha256": "50f24c0a434e5cd8256ae718ae73bbbf7be0c760c9850c6e618f159eeb58365f"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/consumer-mesh-receipt.json": {
+      "bytes": 109,
+      "sha256": "06e7e03977d1ba07ff9a2bd77976afcd1667473a29ad25a2b550f4fc559c5359"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/experiment.patch": {
+      "bytes": 17667,
+      "sha256": "83f2e8365b18804fc7a7dd114c94da6d6f118479a63cfa2ee63884b94fbbf457"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/first-focused.log": {
+      "bytes": 46761,
+      "sha256": "5e815c03fc4b5776e90c6812cb125f3808eec6fcfd75e28d9fde2838b7192861"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/first-strict-ts.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-exact-receipt.json": {
+      "bytes": 1535,
+      "sha256": "ddf8e228bfbd89e07381049c091a088c85de7cdfa33368823b7e618bee920c2f"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-query-receipt.json": {
+      "bytes": 2817,
+      "sha256": "5c522e9a71e80295d42e3ed483650c55ef745e314e5f99532010fcf254c93a8e"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-switch-receipt.json": {
+      "bytes": 28747,
+      "sha256": "5c6a3e1bc8f7cbc3627a67309bd69284d22a6f0f1f640d38eee72cf1e8b16093"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/harness-adaptation.json": {
+      "bytes": 1179,
+      "sha256": "3221933cdc139c310f6b140a7c34378551a18b292b28c990be97caca7500bdbe"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/library-blend-precision-equivalence.json": {
+      "bytes": 130,
+      "sha256": "29153142a0a99fa57a2b3bdcdd7f158fff898772b100c71f7d900775bc632c79"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/library-equivalence.json": {
+      "bytes": 171,
+      "sha256": "f648bfe3083ed47571bafbd8e99deb2719f297c34eadb0b38e26ddc0733a92d7"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/manifest.json": {
+      "bytes": 3649,
+      "sha256": "d16320470b8f94a202862a2a7945032239035c2265a023894514e5e43d5fc990"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/orientation-receipt.json": {
+      "bytes": 929,
+      "sha256": "39fc78b156bc077f577c2e4bcb4011ec40b2f58724eb6fbe2a4187037f443f13"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/parent-pins.json": {
+      "bytes": 94678,
+      "sha256": "c5a9f2fdbf2245731db3dfc89a01e3ad6640011980b12b1e714ec85ebbcc1d39"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/pre-validation-freeze.json": {
+      "bytes": 94879,
+      "sha256": "ac50d34002c483b5b4711660e9edca83ef8d387d2fb83654b4e4a0aa8a58e8fc"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/provider-equivalence.json": {
+      "bytes": 602,
+      "sha256": "5249da2a1631e979a82a7094e9e04136fe65b37857649856371c73a4a708bcfc"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/readiness.json": {
+      "bytes": 98118,
+      "sha256": "6092b23b1d3cafb4bad9ca5cdb5db50076330611bc2d8c7fc33bcc662bc1149f"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/recipe.json": {
+      "bytes": 1585,
+      "sha256": "2142e6b1aecbc14bb691cf7af3e0c90b0c11e0c0611407d246f16c31d3578c97"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/runtime.patch": {
+      "bytes": 1917,
+      "sha256": "df5f2973e355ef5e88e57b83639361043fd386f00d4fb97b7c44cc814652a303"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/stored-advance-receipt.json": {
+      "bytes": 271,
+      "sha256": "5104b46f32fd5940d5006a76344872149fa4afef2dae4b61dc18570d216f2a03"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/validation-domain.json": {
+      "bytes": 426688,
+      "sha256": "e2b649d516c6f6adeea234bcf5baef08de7146a7c6e8d7f8eb2a9911de818bbe"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/verify.py": {
+      "bytes": 1974,
+      "sha256": "33078526e0ceab4ad85edd30aeec46c5c2bf8f3754ae9d2df49ceff400dec27e"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/README.md": {
+      "bytes": 3772,
+      "sha256": "f296de2c3a3ed91083586f7f3907ff852ab1bca081aeb0fb49b3026ed43a99d8"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/focused-byte-final-command.json": {
+      "bytes": 634,
+      "sha256": "86f31d51059197a2cb6a22e01ceb05170f756d342579854917ff26769423b953"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/focused-byte-final.log": {
+      "bytes": 211,
+      "sha256": "0252a38b7af8c023ef78f19db15e259be04a764e1cc9132cc35ac119e915fc53"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/focused-final-command.json": {
+      "bytes": 628,
+      "sha256": "c2d97e8aea532e1f02ffca2c300190024f00ca92f8c51d63783ce8354398d9e1"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/focused-final.log": {
+      "bytes": 211,
+      "sha256": "f714204e3841d92a1f2cc86fc5871cee60e607eb5e595d567ab41382d337dcc0"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/parent-copy.json": {
+      "bytes": 95221,
+      "sha256": "7a0a3c97f3f5b58a92769aca0f12c9362b84f28ef2c132f82e719e9bcf325401"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json": {
+      "bytes": 103658,
+      "sha256": "f973340740f7173b8e7a6624d953b503b6b7320fcc5d7c84e873512367307d67"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/recipe.md": {
+      "bytes": 1348,
+      "sha256": "25a9908bf424ce3841907e54d46a9118c72f5e236f883766fc882b66a3227b54"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/result.json": {
+      "bytes": 10152,
+      "sha256": "72cf81af611d91802ba88d8085c29a6b73883bd39bae2dd6250cd6098e68718a"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/runtime.patch": {
+      "bytes": 5069,
+      "sha256": "2c0de89a78966ff5f3f98731f26e87b5175d63e2267b2df6dde59f5d51557fb6"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source-pins.json": {
+      "bytes": 95306,
+      "sha256": "8b4e34f044420371de7d83b8a9ec70ed5853baa08e16660e8751079b0b6f867c"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-byte-final-command.json": {
+      "bytes": 458,
+      "sha256": "66536359862d8843c8532bdca7e8e6816a1780472836b434bbd52ab388c50153"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-byte-final.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-ts-command.json": {
+      "bytes": 449,
+      "sha256": "54f88cd3c1dcd82e8d0cb25fa2c9750bed09c307ad1300769b85c304dc6d3933"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/strict-ts.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/test-example-metrics.json": {
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/tests.patch": {
+      "bytes": 21539,
+      "sha256": "a9516f792ea2c148669718325fa499e7ac1f5f287d0c9dadc410c8a46cfdc7ce"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/verification.json": {
+      "bytes": 1053,
+      "sha256": "8e81f1f0935bace3fbdae738afbfc671a7ae56ec7072379582889f53d0f7f1f0"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/verify.py": {
+      "bytes": 3469,
+      "sha256": "8bcf38f856becb8be13e6766d44e0aedcb0bccea421dd9331ed26a6a69d5a0b4"
+    },
+    "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/crestRays.ts": {
+      "bytes": 14382,
+      "sha256": "499b17168bddda89f8b9fe4087edf91c327fe9b1ad73e56df1d214e15633ea61"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/crestRays.ts": {
+      "bytes": 15787,
+      "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+    },
+    "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/boundedCConsumers.test.ts": {
+      "bytes": 15025,
+      "sha256": "14f22e1ad85b7998f0b5cb4821ce1fe276653451c324fefea033cb4c9cf6a648"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/boundedCConsumers.test.ts": {
+      "bytes": 15022,
+      "sha256": "4d88d2d22d8842e1c188f481d7005d1749ea184c82921b6d3cd49201bec34969"
+    },
+    "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/boundedCDemand.test.ts": {
+      "bytes": 12495,
+      "sha256": "646c8a1b344f7f148f454636299618830bef72935632dcb0780674ddbad9f905"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/boundedCDemand.test.ts": {
+      "bytes": 12492,
+      "sha256": "aab93fe4aea1b8facf736adbe8348b0bc1e7d3e48d736bbdfbda0e13c384aa7a"
+    },
+    "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/sharedUpperRoot.test.ts": {
+      "bytes": 18379,
+      "sha256": "75b0d413182f0dd8970d7ca97be1b0b7f81d6c381b8aa806f10b5152b6284fb0"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/sharedUpperRoot.test.ts": {
+      "bytes": 18370,
+      "sha256": "cd5f7a77c91d39b28d577a94253b3ce109577502bd40f9aee5ef0477d4654757"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/parallelCrestRays.test.ts": {
+      "bytes": 11010,
+      "sha256": "7e688a29274bc5494db3822cd0032804cf48fc3ffedb8dd79e6570b659c0a0d5"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/SweptCrash.ts": {
+      "bytes": 30645,
+      "sha256": "f32bbb4e4b25e0df80734912d62058fc45e4824555d930819f942bf6c42ebff4"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/SweptCrash.ts": {
+      "bytes": 32406,
+      "sha256": "fb95dab980cbbcb532b875a328da21d4f36f4b152e090a20add77b1d58210b24"
+    },
+    "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/crashCurve.ts": {
+      "bytes": 17043,
+      "sha256": "dd56577045075b1b040434f3477df964f8ba7f80886dc4429b25d76f7196f1e8"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/crashCurve.ts": {
+      "bytes": 17446,
+      "sha256": "11fcdad4fdaa8f214a9682edcd3a3e2705955be463d482df91713c097e100793"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/parallelPhysicalCoupling.test.ts": {
+      "bytes": 21085,
+      "sha256": "31747285b71e31102910187462baa24dcbb65381d121953e4c742b8f3a2ee193"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/README.md": {
+      "bytes": 4206,
+      "sha256": "92b551cdf8e2ab8047591826c0f843f59b879ccd9798b9fa604f0d021b650432"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/blueprint.txt": {
+      "bytes": 2275,
+      "sha256": "16de81eded4d60595a93fb659555c926b2a36127984420fc4063904bbd72b99d"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first-owner.json": {
+      "bytes": 3333,
+      "sha256": "2b072cc578ec15746ef21585af30856d5e90323a1c3e3be4dc5cc62d0a47e385"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first-owner.log": {
+      "bytes": 1406,
+      "sha256": "64d9ed0aa9c90cf2aa8f5861876613c63bdd3211433993fd5a3e7cd39e54e955"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/check-source.py": {
+      "bytes": 1618,
+      "sha256": "ea6529d947643a601f48b04402e8f151ca06c020b7336295c6b455c0cd17f17d"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation-runner.py": {
+      "bytes": 1925,
+      "sha256": "130d80971a1cf172304dff3c4fe8b5b381701bca17b8fdcca674d6d8598e3460"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation.json": {
+      "bytes": 10522,
+      "sha256": "de605a789a906fed115e76bac6a5cd7d298e0a4b79359eef283c010c7e9e028a"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation.log": {
+      "bytes": 7017,
+      "sha256": "2eb3bfef780f415219542929ce4b24450dd016a017d45604fc66c499b343f8dd"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/first-owner-fixture-failure.json": {
+      "bytes": 426,
+      "sha256": "20a20065a459f9ec7dd569a9743c68889656957b530fcafada1c8cef7326b018"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/freeze.py": {
+      "bytes": 5851,
+      "sha256": "eed125a73069ddeb3e8792fff6e4cb838cf9e14353b25f7c561ff4169564e20e"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/helper-pins.json": {
+      "bytes": 7159,
+      "sha256": "87527006b139747ec10eabe4fe992d1672fe406ebe1b514bf4e81156c16544b0"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/helper-types.d.ts": {
+      "bytes": 87,
+      "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/identity-checks.json": {
+      "bytes": 3278,
+      "sha256": "0d3bfeb8473bc289210dde5b3cfc5b49f0b16b3d3977ba1434b626bf94d6dd02"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/identity-checks.mjs": {
+      "bytes": 8366,
+      "sha256": "26be79dd89860d79940ff0869ca7cc265b9228a256ff80c13125fb49c5634193"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mock-checks.json": {
+      "bytes": 1983,
+      "sha256": "fff00ca02013d1841260fa1491ad945602bd7f58f7493dd5e870846f84e9ff44"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mock-checks.mjs": {
+      "bytes": 17402,
+      "sha256": "edccd540df43085afa00e2810350709d71f0f6a5d7bdb1c4e4574d1a6fd1444c"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-integration-checks.json": {
+      "bytes": 556,
+      "sha256": "1008333e973515eb56738a0965443095fb1870e703f1d8fad2a6238870f65bce"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-integration-checks.mjs": {
+      "bytes": 13417,
+      "sha256": "623264328ada86f513d5e0ee3dc27d8ab74490507f1d38266ca57dace004c2a2"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-tools.mjs": {
+      "bytes": 5316,
+      "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-tools.test.mjs": {
+      "bytes": 7489,
+      "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/moving-shape.mjs": {
+      "bytes": 29668,
+      "sha256": "15db7127b8b8b5a7fb1e0047c3bbfa52c18f2b9c9d16cd9b2602d40030fa4cb9"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native-owned.mjs": {
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native.mjs": {
+      "bytes": 10355,
+      "sha256": "6e5a3825f16d203c310b4ddf2a22c0dad4e4313e77b6658988971ee0f9b54b5a"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/new-source-contract-checks.json": {
+      "bytes": 10116,
+      "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-event-checks.json": {
+      "bytes": 504,
+      "sha256": "cba5db03a044a25d31b6025ed923a22c7e12ece603c47d56d7b9e860343dad03"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-event-checks.py": {
+      "bytes": 2190,
+      "sha256": "68428569e19ddb36b0854f7215e5a3e0d326f68b45c70226e7d2fdaba2c1d63d"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-mock-checks.json": {
+      "bytes": 1424,
+      "sha256": "c6bcc1324888614a8440b6f7389723739685eabaa9a657768db76fcd29d23804"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-mock-checks.py": {
+      "bytes": 4739,
+      "sha256": "4a11e3c362786d004cac6a99bfc3c004ac16fc6ba9a7b0138057f2c24aca56d2"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/provenance.json": {
+      "bytes": 7414,
+      "sha256": "b10368cc6c28360a5ace8ad9850f9ed128f3b0842c99119027c7d8febd360c74"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/readiness.json": {
+      "bytes": 15562,
+      "sha256": "3f8831e7a3650c3a653755556201422ab73196cda24976b3d4c7adf1b1896b0e"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/root-build-result.json": {
+      "bytes": 142639,
+      "sha256": "9ee3e6f824411d71edbaeccd9099e142f46ecbb302b3fe33294ee0337437493c"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/root-complete-build-result.json": {
+      "bytes": 182066,
+      "sha256": "a84ac3fd098b8ee2d58377a516243d02f909be57177fb02bf47c5018b1f64ba3"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/run.py": {
+      "bytes": 16823,
+      "sha256": "0da3b1d109f1097ee47d68801d7ab794c896623322880683ec24ec0e6b06c63c"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/seal.json": {
+      "bytes": 169360,
+      "sha256": "f150be697ffba17a19bab8b8b76915c8a1087b199bfc3f9ab4384699fab54fb1"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/station-tools.mjs": {
+      "bytes": 14480,
+      "sha256": "6bab70e985b48f18ffd247d2ef7128b12cfbe091d94f6fbc4a5d1a12713239c7"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/syntax-dry-owner-checks.json": {
+      "bytes": 638,
+      "sha256": "eb073c3b0c8f63b723bbff04bc10ce512288d26aceae36ad33c4798ae6312fb2"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-fixture/first-missing-mouth-helper-seal.json": {
+      "bytes": 127486,
+      "sha256": "d9c81a092f5208f15d362e88975209ea176f71304e65b3a20c86b1ac0c1e08ad"
+    },
+    "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs": {
+      "bytes": 11626,
+      "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+    },
+    "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs": {
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json": {
+      "bytes": 1314,
+      "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/new-source-contract-checks.json": {
+      "bytes": 4054,
+      "sha256": "6a71c0d1cf7c248c0753d96323b28fb24c2d665fc53b3ca6d25305bd077dea42"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/0-initial.png": {
+      "bytes": 953828,
+      "sha256": "2894497eb55c61f4a8f361b9985c60d22c3bef4269f82520a2891b28a1307dbd"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/1-initial-exterior.png": {
+      "bytes": 2424578,
+      "sha256": "025a442348d857151e568ba235e2acb376ac0c4d081b89bfb37d249c87b6383a"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/2-first-phase2.png": {
+      "bytes": 1105795,
+      "sha256": "ca8b5bd1f3bb4f728b5d8f78c545581afc035e5f9133cf3e5c70231cb2df6764"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/3-terminal.png": {
+      "bytes": 1324486,
+      "sha256": "f7e4cf06866eca9e188b1fe19c2a331e65e6b82e92dc06985ae77fc1bb5ce6d0"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/launcher.json": {
+      "bytes": 11442,
+      "sha256": "7733b0748a4fcd45f56c8077cdc61bc23f3c1e7dde65985e4d0ce9fcfdf82175"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/moving-C.webm": {
+      "bytes": 818895,
+      "sha256": "861c18b433625f9ed7ea9c778c1fab3119d605442539502bbf820733e4d52600"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/report.json": {
+      "bytes": 8769787,
+      "sha256": "a17654bd706fbd3c6518b94ad9deb31f096bc7a98e114795a0a3b6a6801bfd4d"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first-owner.json": {
+      "bytes": 3266,
+      "sha256": "3974cccfa213d65336b2b135a21f5e45ebc544d8bfc0a555cda835030aa46af1"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first-owner.log": {
+      "bytes": 1406,
+      "sha256": "93a0839c697651cb8ee0612a144def89f0247a722fcb62431b201ef9222a6d95"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/readiness.json": {
+      "bytes": 9755,
+      "sha256": "a3bcc8a13e9bd26e6d45956caaf21f4cad3f0872c8862d609c37c45a29c8529d"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/seal.json": {
+      "bytes": 159598,
+      "sha256": "59e70b5fbe5e0cf15ee319c14a7320c4a7c48c29919e19d565960d98d0c03eae"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/helper-pins.json": {
+      "bytes": 4101,
+      "sha256": "20255a2d8b237013de307f5ab7a305b3524359cae098e8abb83decbc987d3cbe"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/0-initial.png": {
+      "bytes": 1014733,
+      "sha256": "b3a0c32a54494741a2cd5b62ab23d5cc9a0e243d1b2fd127d50ef98ac9725e29"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/1-half-second.png": {
+      "bytes": 1103275,
+      "sha256": "9795fefa411a3491f3b58a6b3bd9662a9c3219e5329f3878575a14b4e5ce0ed0"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/2-first-phase2.png": {
+      "bytes": 1128287,
+      "sha256": "4c663e0b197ce7a001a24c0ff82d8a6a8cd550dc2aa1cf1deed85ce8a6fc5132"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/3-terminal.png": {
+      "bytes": 1376396,
+      "sha256": "8bf9f775724bd8cae2804cb101424dfd4420efb4911f123d67f2bd63008439e0"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/launcher.json": {
+      "bytes": 9936,
+      "sha256": "834123aa55352d4a7c6f95dd5452a37ea3b4ed2f76da719b7693810a0555f51e"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/moving-C.webm": {
+      "bytes": 836744,
+      "sha256": "07a3e125db42a938e1f0481d16656e96bfa11e2db1b56396f7da3a5032e2ca21"
+    },
+    "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json": {
+      "bytes": 7810380,
+      "sha256": "fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.json": {
+      "bytes": 3304,
+      "sha256": "eb1ec10a3b5daaabbec752f15c25ed681bb0e08061b9180f9cce6607671b348c"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.log": {
+      "bytes": 1406,
+      "sha256": "41debde6c013ad8e6a30506542d6d4a37456fc013d0d7b3632b47ab2d17a68b2"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/readiness.json": {
+      "bytes": 7880,
+      "sha256": "035803cecc6066d3c5dcb85c4f0980fe033441400d8d6f04b2c5d2c6d7c9efd7"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/seal.json": {
+      "bytes": 159781,
+      "sha256": "6f30f65162c54b981ba107f9d678cc818d4070a110dbba88c085f77390f5663e"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/helper-pins.json": {
+      "bytes": 3996,
+      "sha256": "3f76fbc1aff59ce7fc8bde69515ed55b453139cccc39873b22eb7f1d4f65f0f6"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/0-initial.png": {
+      "bytes": 1014733,
+      "sha256": "b3a0c32a54494741a2cd5b62ab23d5cc9a0e243d1b2fd127d50ef98ac9725e29"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/launcher.json": {
+      "bytes": 11400,
+      "sha256": "de13d4b238b4874c31b8130dee5069c9ba3927648ea6cf518093e577b35137ba"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/report.json": {
+      "bytes": 446667,
+      "sha256": "90d3904392032044286a521778c272b4714ab62c1e44ffe9409b8a0b6592c890"
+    },
+    "/private/tmp/tube-physical-mouth-policy-review-20261004/README.md": {
+      "bytes": 9711,
+      "sha256": "a746acfa681b36fa152fe42118870b5af9cbe744537faabb91ebb59117657e20"
+    },
+    "/private/tmp/tube-physical-mouth-policy-review-20261004/receipt.json": {
+      "bytes": 3157,
+      "sha256": "b83d228288b7fa8d0db4ad86e2722323f638cb05cc9deed485ce4576b1d1b385"
+    },
+    "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analysis.json": {
+      "bytes": 26136,
+      "sha256": "74f682ed494bd6347c6f4e4aae1779625381cfa04c0212374d966b7690a5a7e7"
+    },
+    "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analyze-output.json": {
+      "bytes": 1851,
+      "sha256": "fb4146ee1a9fee51ac64f6ea62a48b8b839c43e76f5baefdfe3016c7241fcda9"
+    },
+    "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analyze.py": {
+      "bytes": 6469,
+      "sha256": "d5f35b5cccc81a8899ef4a0a3251f9468be8cb2a1ecd2d3d4a72956454c71ba2"
+    },
+    "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/manifest.json": {
+      "bytes": 961,
+      "sha256": "4133a2fdbba1cba453c1a27ceeb8a06f91072441f111369c85dd1de0414abd9a"
+    },
+    "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/report.md": {
+      "bytes": 7020,
+      "sha256": "640f7c0847f3a5692c9d0ba16a7aee61c01eeef9bbad89a39fc0015083123a73"
+    },
+    "/private/tmp/tube-parallel-physical-coupling-review-20261004/review.md": {
+      "bytes": 7196,
+      "sha256": "34a6f52b6805f1160d1b873379a5f1ecdc18c8cf74ab434551b1a15fb7564729"
+    },
+    "/private/tmp/tube-parallel-physical-coupling-review-20261004/source-pins.json": {
+      "bytes": 1648,
+      "sha256": "6222887eb0433f22bf83638886c9e9e84de2dbbffddb05befbcb160e9f7cc926"
+    },
+    "/private/tmp/tube-parallel-native-analysis-20261004/analysis.json": {
+      "bytes": 78483,
+      "sha256": "f7879bebc8683c26fbe00ec02f709fdfd0e7cdef02474e1e5beb4ee97c70e8bf"
+    },
+    "/private/tmp/tube-parallel-native-analysis-20261004/analyze-output.json": {
+      "bytes": 4154,
+      "sha256": "851f07b5ca8cf9c41ad7d4e2231ae1407e8cc18a310ef1199d3dcb495dfb4d6d"
+    },
+    "/private/tmp/tube-parallel-native-analysis-20261004/analyze.py": {
+      "bytes": 16411,
+      "sha256": "04c3f6e20112eb2a0156be8cf0911fb40b3fb3b14b6f3a18bfaaba3e42f6ecb4"
+    },
+    "/private/tmp/tube-parallel-native-analysis-20261004/manifest.json": {
+      "bytes": 915,
+      "sha256": "fbf067d5941bee9258e1496c9a17725fcc4c62a4ac4e8c14996b75402d2a7672"
+    },
+    "/private/tmp/tube-parallel-native-analysis-20261004/report.md": {
+      "bytes": 7093,
+      "sha256": "77171df3978d3d973af3b9dd9e298697aa7094e4b210a3ec6769afef88f53831"
+    },
+    "/private/tmp/tube-physical-mouth-video-review-20261004/receipt.json": {
+      "bytes": 2241,
+      "sha256": "e5d248ebbd8f18da46bafb3e3b4f99c98eb0d5e3336a3668eff18d0bf4a730f9"
+    },
+    "/private/tmp/tube-physical-mouth-video-review-20261004/ffprobe.json": {
+      "bytes": 315,
+      "sha256": "b162d275839e87dab1287f0c2a739ca41a47d5ff735e3d0ee313cf772058f7df"
+    },
+    "/private/tmp/tube-physical-mouth-video-review-20261004/frame-03.png": {
+      "bytes": 544465,
+      "sha256": "e8a5301a1b8ee76dafa2fe9b5232122397e0e0f7ea15f7bbdedb1f12e651acf9"
+    },
+    "/private/tmp/tube-physical-mouth-video-review-20261004/frame-02.png": {
+      "bytes": 554863,
+      "sha256": "cf76b049a2d40c4ab4600c8ad30ed83161d0a4fd9ce0e068f5c75488429e1b7c"
+    },
+    "/private/tmp/tube-physical-mouth-video-review-20261004/frame-01.png": {
+      "bytes": 306681,
+      "sha256": "721615a444c1c9cd95bc8cf26c064aeb6ce272246e7149aa9e37c7a9136010dc"
+    },
+    "/private/tmp/tube-physical-mouth-video-review-20261004/frame-05.png": {
+      "bytes": 517013,
+      "sha256": "98cdefef1b18b57e92d4d0cb5d1d33fe93b62ebed3731e12cac997c1099a88bd"
+    },
+    "/private/tmp/tube-physical-mouth-video-review-20261004/frame-04.png": {
+      "bytes": 555694,
+      "sha256": "3dde0a26d17e3231be4e9a5293816c0bcf5ebe808b7535cec945c0db5fc818d1"
+    },
+    "/private/tmp/tube-bounded-c-native-20261004/seal.json": {
+      "bytes": 236441,
+      "sha256": "feb525ecde3b4292ac5141e32fdb58211821b42dc085a6b470fe721432082798"
+    },
+    "/private/tmp/tube-physical-mouth-native-analysis-20261004/analysis.json": {
+      "bytes": 144689,
+      "sha256": "e9b0af70b5086d8fcaa84d5a4210a3666f32f9a625e8093a7cebe50acca3872c"
+    },
+    "/private/tmp/tube-physical-mouth-native-analysis-20261004/analyze-output.json": {
+      "bytes": 3320,
+      "sha256": "08fd115adae266db3493d5d2620fcd86baced9446349cc980b3981f5ff3adf8f"
+    },
+    "/private/tmp/tube-physical-mouth-native-analysis-20261004/analyze.py": {
+      "bytes": 18311,
+      "sha256": "6a2a958c0db936e232f25521ab03a1c3b766904f9b53703f9ac09a9ea189baec"
+    },
+    "/private/tmp/tube-physical-mouth-native-analysis-20261004/manifest.json": {
+      "bytes": 1023,
+      "sha256": "58f0a630358282f8e6e669e9371307178a174d357d98e8544095b1f8c5a5b726"
+    },
+    "/private/tmp/tube-physical-mouth-native-analysis-20261004/report.md": {
+      "bytes": 6901,
+      "sha256": "d515f12a8a118b69d2e4b9d12ac73b62c872821f1463f2ff66c43e08830edc22"
+    }
+  },
+  "patches": [
+    {
+      "name": "parallel-runtime",
+      "patch": "source/parallel/receipts/runtime.patch",
+      "files": [
+        {
+          "path": "src/wave/barrel/crestRays.ts",
+          "before": {
+            "kind": "payload",
+            "path": "source/parallel-runtime/before/src/wave/barrel/crestRays.ts"
+          },
+          "after": {
+            "kind": "payload",
+            "path": "source/parallel-runtime/after/src/wave/barrel/crestRays.ts"
+          }
+        }
+      ]
+    },
+    {
+      "name": "parallel-experiment",
+      "patch": "source/parallel/receipts/experiment.patch",
+      "files": [
+        {
+          "path": "src/wave/barrel/boundedCConsumers.test.ts",
+          "before": {
+            "kind": "external",
+            "path": "../shared-sheet/demand/source/src/wave/barrel/boundedCConsumers.test.ts"
+          },
+          "after": {
+            "kind": "payload",
+            "path": "source/parallel-experiment/after/src/wave/barrel/boundedCConsumers.test.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/boundedCDemand.test.ts",
+          "before": {
+            "kind": "external",
+            "path": "../shared-sheet/demand/source/src/wave/barrel/boundedCDemand.test.ts"
+          },
+          "after": {
+            "kind": "payload",
+            "path": "source/parallel-experiment/after/src/wave/barrel/boundedCDemand.test.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/crestRays.ts",
+          "before": {
+            "kind": "payload",
+            "path": "source/parallel-experiment/before/src/wave/barrel/crestRays.ts"
+          },
+          "after": {
+            "kind": "payload",
+            "path": "source/parallel-experiment/after/src/wave/barrel/crestRays.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/sharedUpperRoot.test.ts",
+          "before": {
+            "kind": "external",
+            "path": "../shared-sheet/demand/source/src/wave/barrel/sharedUpperRoot.test.ts"
+          },
+          "after": {
+            "kind": "payload",
+            "path": "source/parallel-experiment/after/src/wave/barrel/sharedUpperRoot.test.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/parallelCrestRays.test.ts",
+          "before": null,
+          "after": {
+            "kind": "payload",
+            "path": "source/parallel-experiment/after/src/wave/barrel/parallelCrestRays.test.ts"
+          }
+        }
+      ]
+    },
+    {
+      "name": "physical-runtime",
+      "patch": "source/physical/receipts/runtime.patch",
+      "files": [
+        {
+          "path": "src/wave/barrel/SweptCrash.ts",
+          "before": {
+            "kind": "payload",
+            "path": "source/physical-runtime/before/src/wave/barrel/SweptCrash.ts"
+          },
+          "after": {
+            "kind": "payload",
+            "path": "source/physical-runtime/after/src/wave/barrel/SweptCrash.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/crashCurve.ts",
+          "before": {
+            "kind": "payload",
+            "path": "source/physical-runtime/before/src/wave/barrel/crashCurve.ts"
+          },
+          "after": {
+            "kind": "payload",
+            "path": "source/physical-runtime/after/src/wave/barrel/crashCurve.ts"
+          }
+        }
+      ]
+    },
+    {
+      "name": "physical-tests",
+      "patch": "source/physical/receipts/tests.patch",
+      "files": [
+        {
+          "path": "src/wave/barrel/parallelPhysicalCoupling.test.ts",
+          "before": null,
+          "after": {
+            "kind": "payload",
+            "path": "source/physical-tests/after/src/wave/barrel/parallelPhysicalCoupling.test.ts"
+          }
+        }
+      ]
+    }
+  ],
+  "acceptance": {
+    "mouth": false,
+    "airCorridor": false,
+    "bodyPassage": false,
+    "FPS": false,
+    "productionAdoption": false
+  },
+  "reconstructionScope": "Exact archived patch preimage/postimage checks only. Full 579/580-file source trees, runtime dependencies and all 49 asset bytes are not retained here; future source/build/test reconstruction is not claimed.",
+  "excludedSelfReceipts": [
+    "manifest.json",
+    "verification.json"
+  ],
+  "nativeBuildOrModelTestsRerunForArchiving": false,
+  "decodedPNGsOmittedButInspectedIndices": [
+    0,
+    17,
+    34,
+    51,
+    67
+  ],
+  "payloadTransportBytes": 9810955,
+  "payloadDecodedBytes": 17988060
+}

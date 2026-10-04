@@ -1,0 +1,61 @@
+["node", "--test", "mouth-tools.test.mjs"]
+✔ uses actual indexed air at directed young boundary; checks complete rising sightline (12.904084ms)
+✔ immutable negative younger direction selects same run opposite boundary (6.493791ms)
+✔ local air endpoints do not hide intervening raised floor obstruction (3.4725ms)
+✔ joined run boundary and foreign front prevent a viewpoint search (3.310083ms)
+✔ single exterior pose and width are finite, with no extra height or pose retries (3.47ms)
+✔ short interval beside run end stays strictly youngerward of fractional eye (2.214791ms)
+✔ same front label cannot substitute for the eye sheet component (1.330584ms)
+✔ whole interval finds actual same-component air more than three cells from boundary, younger sign=1 (8.298709ms)
+✔ whole interval finds actual same-component air more than three cells from boundary, younger sign=-1 (8.183709ms)
+✔ absent mouth candidate retains a single declared exterior anchored at current selected air eye (2.078167ms)
+✔ blocked full sightline retains failure while the single exterior remains a diagnostic pose (3.100167ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 115.016667
+
+["node", "mouth-integration-checks.mjs"]
+{"complete":true,"mouthPolicyIntegration":true,"initialDirectedSameComponentCandidate":true,"fullSightlineAndWaterClassifications":true,"absentCandidateExteriorFallbackRecordedEvenBelowSurface":true,"blockedSightlineFailureAndLocalHeadingRetained":true,"exteriorCloneRestoredInAllThreePolicies":true,"originalFollowAndControlsUntouched":true,"loftWordsAndDrawEpochUnchanged":true,"initialMovieFrameUsesInnerCameraPositionAndQuaternion":true,"mockOnly":true,"resourcesStarted":false,"portsProbed":false}
+
+["node", "mock-checks.mjs"]
+{"complete":true,"resourcesStarted":false,"portsProbed":false,"mockOnly":true,"groups":["fixed-X mapping follows rebased sigma and moving raw Z","raw exact internal/end ties are deterministic and never extrapolate","front absence is distinct from bounds and one-point join loss","duplicate/nonmonotone X or sigma is an invariant failure","loft join bracket tracks mapped sigma and fails honestly when cut","actual crest-X bracket is independent of raw sigma and deterministic at joins","full row metadata includes all slice arrays and actual crest/cap/toe","rich cubic height reproduces constant and interior affine nodes","exact indexed segment hit is double-sided and excludes out-of-segment hits","eye exactly inside witnessed air; target toward younger side; no visibility claim","initial frame request precedes recorder onstart","source-faithful stale loft refreshes before observe; epoch and exact capture words agree","sigma rebase survives; air loss/post observed without stop; join loss retains all rows/raw and blocks more steps","exact neutral inputs/clock, clone-only camera and mesh state, movie bounds/closure","capture rejects changed indexed geometry words after measurement","stale public water epoch is rejected before measurement","public stable IDs allow refit ages beyond DT; fixed station persists; changed point IDs stop with all inventory","public export rejects changed solver snapshot words","public export rejects changed normal actor pose","public export rejects changed drawn surface words","public export rejects changed exact indexed loft words","public export rejects changed public draw-generation count","public export clean snapshot/draw/surface/actor words pass positive identity gate"],"groupCount":23,"noNativeAppearanceOrBodyClaim":true,"publicExportCalls":11,"publicExportMockOnly":true}
+
+["node", "identity-checks.mjs"]
+{"complete":true,"groups":32,"noDTEqualityGate":true,"resourcesStarted":false}
+
+["python3", "owner-event-checks.py"]
+{"complete": true, "actualRecordedTransitionsPassed": 4, "schemaOrIdentityMutationsRejected": 5, "actualFrozenBuildProvenanceChecked": true, "protectedStateFixtures": 3, "inputCapture": {"file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json", "bytes": 7810380, "sha256": "fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3"}, "oldOwnerRewrittenOrRetroaccepted": false, "resourcesStarted": false, "portsProbed": false}
+
+["python3", "owner-mock-checks.py"]
+{"schema": "bounded-C-parallel-physics-mouth-owner-CPU-fixtures/v1", "complete": true, "resourcesStarted": false, "portsProbed": false, "actualOwnerCalled": false, "actualRootCompleteBuildVerifiedReadOnly": true, "sourcePins": 579, "assets": 49, "groupCount": 18, "groups": ["actual new source/49 asset/21 build+28 static provenance accepted read-only; no old-arm equality", "changed prior air provenance seal rejected", "old candidate dist rejected", "partial new candidate dist rejected", "missing station helper rejected", "changed new helper rejected", "asset pins disagree with complete composition rejected", "source pins disagree with root build manifest rejected", "old root build manifest rejected", "wrong candidate build id rejected", "changed original partial-build receipt rejected", "changed sealed old static-source provenance rejected", "current closed4310/4311 and open4312 states accepted/preserved without TCP probe", "closed user play4312 rejected by exact protected-state policy", "reopened old4310 rejected by exact protected-state policy", "unknown transient protected state rejected by exact protected-state policy", "missing protected port rejected by exact protected-state policy", "initial closed4312 cannot launch new finite arm"], "fixtureSealRemoved": true, "nativeLaunchStillPending": true}
+
+["python3", "check-source.py"]
+{"complete": true, "publicContractPairsExact": 16, "newRootSourcePins": 579, "assets": 49, "failedProvenanceUnchanged": true, "resourcesStarted": false, "portsProbed": false, "buildPerformed": false}
+
+["python3", "run.py", "--arm", "candidate"]
+{"sourceOnly": true, "resourcesStarted": false, "portsProbed": false, "arm": "candidate", "sealRequired": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/seal.json", "ports": [4299, 9709], "protectedPorts": [4310, 4311, 4312], "maximumNeutralSteps": 300, "maximumMovingSteps": 240, "maximumMovieBytes": 16777216, "wholeSeconds": 180, "commandSeconds": 168, "cleanupSeconds": 7}
+
+["node", "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/node_modules/typescript/bin/tsc", "--allowJs", "--checkJs", "--noEmit", "--module", "nodenext", "--target", "es2022", "--moduleResolution", "nodenext", "--lib", "es2022,dom", "--skipLibCheck", "helper-types.d.ts", "moving-shape.mjs", "station-tools.mjs", "mouth-tools.mjs"]
+
+["node", "--check", "identity-checks.mjs"]
+
+["node", "--check", "mock-checks.mjs"]
+
+["node", "--check", "mouth-integration-checks.mjs"]
+
+["node", "--check", "mouth-tools.mjs"]
+
+["node", "--check", "mouth-tools.test.mjs"]
+
+["node", "--check", "moving-shape.mjs"]
+
+["node", "--check", "native-owned.mjs"]
+
+["node", "--check", "native.mjs"]
+
+["node", "--check", "station-tools.mjs"]

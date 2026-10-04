@@ -1,0 +1,9 @@
+{
+  "observedToolTerminalExit": 1,
+  "exception": "AssertionError: Complete source helper seal required",
+  "cause": "new owner requires mouth-tools.mjs but copied CPU fixture omitted it",
+  "failedFixtureSealPreserved": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-fixture/first-missing-mouth-helper-seal.json",
+  "nativeOwnerCalled": false,
+  "resourcesStarted": false,
+  "portsProbed": false
+}

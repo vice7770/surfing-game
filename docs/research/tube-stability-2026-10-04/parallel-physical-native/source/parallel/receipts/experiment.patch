@@ -1,0 +1,248 @@
+--- a/src/wave/barrel/boundedCConsumers.test.ts
++++ b/src/wave/barrel/boundedCConsumers.test.ts
+@@ -146,7 +146,7 @@
+       }
+     }
+     }
+-    writeFileSync('/private/tmp/tube-bounded-c-fullsheet-demand-20261004/consumer-mesh-receipt.json', JSON.stringify({ failures, firstVertices, checkedAir, zeroWeightRowsArePureWaterAndNotClaimedLiftedContours: true }, null, 2) + '\n');
++    writeFileSync('/private/tmp/tube-bounded-c-parallel-rays-20261004/consumer-mesh-receipt.json', JSON.stringify({ failures, firstVertices, checkedAir, zeroWeightRowsArePureWaterAndNotClaimedLiftedContours: true }, null, 2) + '\n');
+     expect({ count: failures.length, first: failures[0], maxPenetration: Math.max(0, ...failures.map(f => f.penetration)) }).toEqual({ count: 0, first: undefined, maxPenetration: 0 });
+     expect(checkedAir).toBeGreaterThan(100);
+   }, 30000);
+--- a/src/wave/barrel/boundedCDemand.test.ts
++++ b/src/wave/barrel/boundedCDemand.test.ts
+@@ -12,7 +12,7 @@
+ 
+ type P = provider.BoundedCParameters;
+ type Z = { A:number[]; T:number[]; ct:number[]; tt:number[]; TD:number; tau:number };
+-const W='/private/tmp/tube-bounded-c-fullsheet-demand-20261004';
++const W='/private/tmp/tube-bounded-c-parallel-rays-20261004';
+ const frozen='/private/tmp/tube-bounded-c-precision-v4-fixed-20261004';
+ const cases=readBarrelCases().map(decodeCase);
+ const report=JSON.parse(readFileSync(W+'/validation-domain.json','utf8')) as {
+--- a/src/wave/barrel/crestRays.ts
++++ b/src/wave/barrel/crestRays.ts
+@@ -114,6 +114,30 @@
+   }
+ 
+   private prepareBound(): void {
++    if (this.library.options.geometry === 'bounded-C') {
++      // The tracker advances X-column crests shoreward in +Z. Parallel rays leave
++      // every profile offset out of X, so BOTH endpoint half-plane advances are
++      // exactly the crest's positive delta-X, even after a remote component split.
++      const last = this.count - 1;
++      let progress = Infinity;
++      let maximumX = 0;
++      for (let k = 0; k <= last; k += 1) {
++        maximumX = Math.max(maximumX, Math.abs(this.x[k]));
++        if (k === last) continue;
++        const dx = this.x[k + 1] - this.x[k];
++        const dz = this.z[k + 1] - this.z[k];
++        progress = Math.min(progress, dx / (this.sigma[k + 1] - this.sigma[k]));
++        if (k === 0 || k + 1 === last) progress = Math.min(progress, dx / Math.hypot(dx, dz));
++      }
++      // Two float32 ULPs conservatively cover both final X upload errors. The
++      // shoulders extend X by at most extension; reach in Z cannot affect this.
++      const ulp = 2 ** (Math.floor(Math.log2(Math.max(1, maximumX + this.extension))) - 23);
++      const stored = progress - 2 * ulp / this.minSpacing;
++      this.diagnostics.blend = 1;
++      if (!(stored > 0)) { this.diagnostics.invalidIntervals += 1; return; }
++      this.diagnostics.minimumAdvancePerSigma = stored;
++      return;
++    }
+     const last = this.count - 1;
+     let lowSlope = -Infinity;
+     let highSlope = Infinity;
+@@ -266,6 +290,7 @@
+   }
+ 
+   rayAt(sigma: number, into: Float64Array): Float64Array {
++    if (this.library.options.geometry === 'bounded-C') { into[0] = 0; into[1] = 1; return into; }
+     if (this.count < 2) { into[0] = 0; into[1] = 1; return into; }
+     this.rawVector(sigma, into);
+     const length = Math.sqrt(into[0] * into[0] + into[1] * into[1]);
+--- a/src/wave/barrel/sharedUpperRoot.test.ts
++++ b/src/wave/barrel/sharedUpperRoot.test.ts
+@@ -140,7 +140,7 @@
+     for (const r of golden.precision522) check(new Float32Array(golden.rawBlocks[r.block]), r.params, 'precision522', [r.block, r.sample]);
+     const receipt = { partialCaptureLimitation: 'Five captures contain only32..112: upstream0..31 and113..127 unobserved, excluded from bulk guards/crossing/preservation checks; buffer placeholders are not evidence. Full asset/provider queries use all128 points.', groups, failures, maximumRoofEnvelopeChange, maximumMaterialDisplacement, maximumRootRadiusReduction, limitedRoots, coalescedStations,
+       originalV4CoefficientsUnchanged: true, geometryPhysicallyEquivalent: false, fixedProfilePoints: 128, rowVertices: LOFT_SAMPLES, vertexBudget: LOFT.budget };
+-    writeFileSync('/private/tmp/tube-bounded-c-fullsheet-demand-20261004/fullsheet-query-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
++    writeFileSync('/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-query-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
+     expect(Object.values(groups).reduce((n, g) => n + g.attempted, 0)).toBe(6447);
+     expect({ count: failures.length, first: failures[0] }).toEqual({ count: 0, first: undefined });
+   }, 30000);
+@@ -157,7 +157,7 @@
+     const top = hits.filter(h => h.segment >= 32 && h.segment < 64), under = hits.filter(h => h.segment >= 64 && h.segment < 88);
+     expect(top.length).toBeGreaterThan(0); expect(under.length).toBeGreaterThan(0);
+     const signedGap = Math.min(...top.map(h => h.y)) - Math.max(...under.map(h => h.y));
+-    writeFileSync('/private/tmp/tube-bounded-c-fullsheet-demand-20261004/fullsheet-exact-receipt.json', JSON.stringify({ originalPenetration: failure.penetration,
++    writeFileSync('/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-exact-receipt.json', JSON.stringify({ originalPenetration: failure.penetration,
+       fixedInputRecords: Array.from(input), x: failure.x, z: failure.z, strip: failure.strip, hits, signedGap }, null, 2) + '\n');
+     expect(signedGap).toBeGreaterThanOrEqual(0);
+   });
+@@ -202,7 +202,7 @@
+       maximumSampledPairedSwitch: Math.max(...rows.map(r => r.sampledPairedSwitch)), maximumNormalizedSampledPairedSwitch: Math.max(...rows.map(r => r.normalizedSampledPairedSwitch)),
+       fixedOriginalGateAndControls: true, sameSamplingInBothStates: true,
+       limitation: 'Roof metric is exact vertical polygon difference on common domain at union breakpoints; whole-contour metric samples vertices/midpoints, not continuous Hausdorff proof.' };
+-    writeFileSync('/private/tmp/tube-bounded-c-fullsheet-demand-20261004/fullsheet-switch-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
++    writeFileSync('/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-switch-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
+     expect(rows.length).toBe(40);
+     expect(rows.every(r => Number.isFinite(r.pairedRoofSwitch) && Number.isFinite(r.sampledPairedSwitch))).toBe(true);
+   }, 30000);
+--- /dev/null
++++ b/src/wave/barrel/parallelCrestRays.test.ts
+@@ -0,0 +1,153 @@
++import { readFileSync, writeFileSync } from 'node:fs';
++import { describe, expect, it } from 'vitest';
++import { CrestRayPlan, minimumCrestRaySpacing, type FrontRayControl } from './crestRays';
++import { CrestRayPlan as ParentRayPlan } from '/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/crestRays';
++import { ProfileLibrary as ParentLibrary } from '/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/ProfileLibrary';
++import { ProfileLibrary, PROFILE_POINTS, LANDMARK } from './ProfileLibrary';
++import { readBarrelCases } from './nodeBarrelCases';
++import { decodeCase } from './profileFormat';
++
++const W = '/private/tmp/tube-bounded-c-parallel-rays-20261004';
++type Row = FrontRayControl & { front: number; tau: number; throwZ: number | null; pace: number | null };
++const saved = JSON.parse(readFileSync(W + '/captured-fronts.json', 'utf8')) as {
++  locked: { stationX: number }; observations: { step: number; rawFrontRecords: Row[] }[];
++};
++const cases = readBarrelCases().map(decodeCase);
++const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
++const parent = new ParentLibrary(cases, { geometry: 'bounded-C' });
++const slope = 1 / 19;
++const recordsOf = (rows: Row[]) => Float32Array.from(rows.flatMap(row =>
++  ['x', 'z', 'front', 'sigma', 'tau', 'footHeight', 'footDepth', 'throwZ', 'pace'].map(key => row[key as keyof Row] ?? NaN)));
++function anchorAt(rows: FrontRayControl[], sigma: number): number[] {
++  const last = rows.length - 1;
++  if (sigma <= rows[0].sigma || sigma >= rows[last].sigma) {
++    const k = sigma <= rows[0].sigma ? 0 : last, n = k === 0 ? 1 : last - 1;
++    const dx = rows[k].x - rows[n].x, dz = rows[k].z - rows[n].z, length = Math.hypot(dx, dz);
++    const beyond = k === 0 ? rows[0].sigma - sigma : sigma - rows[last].sigma;
++    return [rows[k].x + beyond * dx / length, rows[k].z + beyond * dz / length];
++  }
++  let k = 0;
++  while (rows[k + 1].sigma < sigma) k += 1;
++  const t = (sigma - rows[k].sigma) / (rows[k + 1].sigma - rows[k].sigma);
++  return [rows[k].x + t * (rows[k + 1].x - rows[k].x), rows[k].z + t * (rows[k + 1].z - rows[k].z)];
++}
++function intervals(rows: FrontRayControl[]) {
++  const first = rows[0].sigma - 1.5, span = rows.at(-1)!.sigma - rows[0].sigma + 3;
++  const n = Math.ceil(span / 0.5), step = span / n;
++  return Array.from({ length: 2 * n + 1 }, (_, k) => first + 0.5 * k * step);
++}
++function storedAdvance(rows: FrontRayControl[], plan: CrestRayPlan) {
++  const samples = intervals(rows); let minimum = Infinity;
++  for (let i = 0; i + 1 < samples.length; i += 1) {
++    const a = anchorAt(rows, samples[i]), b = anchorAt(rows, samples[i + 1]);
++    const ra = plan.rayAt(samples[i], new Float64Array(2)), rb = plan.rayAt(samples[i + 1], new Float64Array(2));
++    for (const u of [-100, 0, 100]) for (const v of [-100, 0, 100]) {
++      const dx = Math.fround(b[0] + v * rb[0]) - Math.fround(a[0] + u * ra[0]);
++      const dz = Math.fround(b[1] + v * rb[1]) - Math.fround(a[1] + u * ra[1]);
++      minimum = Math.min(minimum, dx * ra[1] - dz * ra[0], dx * rb[1] - dz * rb[0]);
++      expect(dx).toBeGreaterThanOrEqual(plan.diagnostics.minimumAdvancePerSigma * (samples[i + 1] - samples[i]));
++    }
++  }
++  return minimum;
++}
++const groups = (rows: Row[]) => [...new Set(rows.map(r => r.front))].map(front => rows.filter(r => r.front === front)).filter(r => r.length >= 2);
++const stationSigma = (rows: Row[], x: number) => {
++  const k = rows.findIndex((r, i) => i + 1 < rows.length && r.x <= x && rows[i + 1].x >= x);
++  if (k < 0) throw new Error('fixed station outside retained group');
++  const t = (x - rows[k].x) / (rows[k + 1].x - rows[k].x);
++  return rows[k].sigma + t * (rows[k + 1].sigma - rows[k].sigma);
++};
++
++describe('bounded-C X-column shoreward parallel authority', () => {
++  it('keeps fixed local rays across the actual69→71 split, remote end removal, translation and sigma rebase', () => {
++    const rows22 = saved.observations.find(o => o.step === 22)!.rawFrontRecords.filter(r => r.front === 69);
++    const rows23 = saved.observations.find(o => o.step === 23)!.rawFrontRecords.filter(r => r.front === 71);
++    const unchangedLocal = rows22.filter(r => r.x >= 7).map(r => ({ ...r, sigma: r.sigma - rows22.find(r => r.x === 7)!.sigma }));
++    const moved = unchangedLocal.map(r => ({ ...r, x: r.x + 4096, z: r.z - 8192, sigma: r.sigma + 32 }));
++    for (const rows of [rows22, rows23, unchangedLocal, moved]) {
++      const plan = new CrestRayPlan(library, slope); plan.prepare(rows);
++      const recordPlan = new CrestRayPlan(library, slope); recordPlan.prepareRecords(recordsOf(rows), 0, rows.length);
++      expect(plan.diagnostics.invalidIntervals).toBe(0);
++      expect(recordPlan.diagnostics).toEqual(plan.diagnostics);
++      for (const at of intervals(rows)) {
++        expect(Array.from(plan.rayAt(at, new Float64Array(2)))).toEqual([0, 1]);
++        expect(recordPlan.rayAt(at, new Float64Array(2))).toEqual(plan.rayAt(at, new Float64Array(2)));
++      }
++    }
++  });
++
++  it('retains positive stored endpoint halfplanes through every captured refined interval and shoulder', () => {
++    let minimum = Infinity, intervalsChecked = 0;
++    for (const observation of saved.observations) for (const rows of groups(observation.rawFrontRecords)) {
++      const plan = new CrestRayPlan(library, slope); plan.prepare(rows);
++      expect(plan.diagnostics.invalidIntervals).toBe(0);
++      minimum = Math.min(minimum, storedAdvance(rows, plan)); intervalsChecked += intervals(rows).length - 1;
++    }
++    expect(minimum).toBeGreaterThan(0); expect(intervalsChecked).toBeGreaterThan(1000);
++    writeFileSync(W + '/stored-advance-receipt.json', JSON.stringify({ minimumStoredDeltaX: minimum, intervalsChecked,
++      nominalRefinedMinimumSpacing: minimumCrestRaySpacing(1.5, 0.5), varyingIndependentOffsets: [-100, 0, 100],
++      halfPlaneAdvanceEqualsStoredDeltaX: true, shouldersIncluded: true }, null, 2) + '\n');
++  });
++
++  it('diagnoses collapsed/reversed controls and unresolved upload spacing without moving a vertex', () => {
++    const valid = [{ x: 0, z: 0, sigma: 0, footHeight: 2, footDepth: 7 }, { x: 1, z: 1, sigma: 1, footHeight: 2, footDepth: 7 }];
++    const plan = new CrestRayPlan(library, slope); plan.prepare(valid);
++    expect(plan.diagnostics.minimumAdvancePerSigma).toBeGreaterThan(0.7);
++    for (const xs of [[0, 0], [1, 0], [10_000_000, 10_000_001]]) {
++      const c = valid.map((r, k) => ({ ...r, x: xs[k] })), before = structuredClone(c);
++      plan.prepare(c); expect(plan.diagnostics.invalidIntervals).toBeGreaterThan(0); expect(c).toEqual(before);
++    }
++    expect(() => plan.prepare([{ ...valid[0], z: NaN }, valid[1]])).toThrow('Non-finite');
++  });
++
++  it('leaves every captured RAW ray and diagnostic exactly equal to the parent implementation', () => {
++    const raw = new ProfileLibrary(cases), old = new ParentLibrary(cases);
++    let checked = 0;
++    for (const observation of saved.observations) for (const rows of groups(observation.rawFrontRecords)) {
++      const a = new CrestRayPlan(raw, slope), b = new ParentRayPlan(old, slope); a.prepare(rows); b.prepare(rows);
++      expect(a.diagnostics).toEqual(b.diagnostics);
++      for (const at of intervals(rows)) { expect(a.rayAt(at, new Float64Array(2))).toEqual(b.rayAt(at, new Float64Array(2))); checked += 1; }
++    }
++    expect(checked).toBeGreaterThan(1000);
++  });
++
++  it('records actual metric-profile orientation departure across captured phases without asserting native appearance', () => {
++    let maxDegrees = 0, maxSkewDegrees = 0, maxDisplacement = 0, minPhase = Infinity, maxPhase = -Infinity, profiles = 0;
++    const split: { step: number; parentDegrees: number; parallelDegrees: number; metricCapHorizontalDisplacement: number }[] = [];
++    for (const observation of saved.observations) for (const rows of groups(observation.rawFrontRecords)) {
++      const old = new ParentRayPlan(parent, slope); old.prepare(rows);
++      for (let k = 0; k < rows.length; k += 1) {
++        const r = rows[k], ray = old.rayAt(r.sigma, new Float64Array(2));
++        maxDegrees = Math.max(maxDegrees, Math.abs(Math.atan2(ray[0], ray[1]) * 180 / Math.PI));
++        const left = rows[Math.max(0, k - 1)], right = rows[Math.min(rows.length - 1, k + 1)];
++        maxSkewDegrees = Math.max(maxSkewDegrees, Math.abs(Math.atan2(-(right.z - left.z), right.x - left.x) * 180 / Math.PI));
++        const profile = new Float32Array(2 * PROFILE_POINTS);
++        const query = { slope, footHeight: r.footHeight, footDepth: r.footDepth, seconds: r.tau, hold: 'drawing' as const };
++        const lookup = library.profileAt(query, profile), original = new Float32Array(2 * PROFILE_POINTS);
++        const prior = parent.profileAt(query, original);
++        expect(profile).toEqual(original); expect(lookup).toEqual(prior);
++        const distance = Math.hypot(ray[0], ray[1] - 1), crest = profile[2 * LANDMARK.crest];
++        for (let i = 0; i < PROFILE_POINTS; i += 1) maxDisplacement = Math.max(maxDisplacement, Math.abs(profile[2 * i] - crest) * distance);
++        minPhase = Math.min(minPhase, lookup.phase === 'pre' ? 0 : lookup.phase === 'open' ? 1 : 2);
++        maxPhase = Math.max(maxPhase, lookup.phase === 'pre' ? 0 : lookup.phase === 'open' ? 1 : 2); profiles += 1;
++      }
++      if (observation.step === 22 && rows[0].front === 69 || observation.step === 23 && rows[0].front === 71) {
++        const at = stationSigma(rows, saved.locked.stationX), ray = old.rayAt(at, new Float64Array(2));
++        const a = rows.find(r => r.x === 15)!, b = rows.find(r => r.x === 17)!, t = (saved.locked.stationX - 15) / 2;
++        const p = new Float32Array(2 * PROFILE_POINTS);
++        library.profileAt({ slope, footHeight: a.footHeight + t * (b.footHeight - a.footHeight), footDepth: 7,
++          seconds: a.tau + t * (b.tau - a.tau), hold: 'drawing' }, p);
++        split.push({ step: observation.step, parentDegrees: Math.atan2(ray[0], ray[1]) * 180 / Math.PI, parallelDegrees: 0,
++          metricCapHorizontalDisplacement: Math.abs(p[2 * LANDMARK.lip] - p[2 * LANDMARK.crest]) * Math.hypot(ray[0], ray[1] - 1) });
++      }
++    }
++    expect(profiles).toBeGreaterThan(500); expect(split).toHaveLength(2);
++    const splitAngle = split[1].parentDegrees - split[0].parentDegrees;
++    expect(Math.abs(splitAngle)).toBeGreaterThan(5); expect(split.map(s => s.parallelDegrees)).toEqual([0, 0]);
++    writeFileSync(W + '/orientation-receipt.json', JSON.stringify({ profiles, maxParentAngularDepartureDegrees: maxDegrees,
++      maxSkewFromLocalCrestNormalDegrees: maxSkewDegrees, maxMetricProfileHorizontalProjectionDisplacement: maxDisplacement,
++      phaseRange: [minPhase, maxPhase], split, parentSplitDegrees: splitAngle, parallelSplitDegrees: 0,
++      fullProviderContourAndLookupExact: true, finalLiveWaterVerticalProjectionEqualityClaim: false,
++      nativeShapeOrBodyContinuityClaim: false, scope: 'all24 saved raw-front observations,128-point metric provider projections; not actual saved water/final native geometry' }, null, 2) + '\n');
++  }, 30000);
++});

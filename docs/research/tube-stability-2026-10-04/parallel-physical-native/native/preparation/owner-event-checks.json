@@ -1,0 +1,15 @@
+{
+  "complete": true,
+  "actualRecordedTransitionsPassed": 4,
+  "schemaOrIdentityMutationsRejected": 5,
+  "actualFrozenBuildProvenanceChecked": true,
+  "protectedStateFixtures": 3,
+  "inputCapture": {
+    "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json",
+    "bytes": 7810380,
+    "sha256": "fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3"
+  },
+  "oldOwnerRewrittenOrRetroaccepted": false,
+  "resourcesStarted": false,
+  "portsProbed": false
+}

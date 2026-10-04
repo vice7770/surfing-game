@@ -1,0 +1,72 @@
+{
+  "complete": true,
+  "input": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/moving-C.webm",
+    "bytes": 818895,
+    "sha256": "861c18b433625f9ed7ea9c778c1fab3119d605442539502bbf820733e4d52600"
+  },
+  "sourceVideoUnchanged": true,
+  "probeCommand": [
+    "ffprobe",
+    "-v",
+    "error",
+    "-select_streams",
+    "v:0",
+    "-count_frames",
+    "-show_entries",
+    "stream=width,height,r_frame_rate,avg_frame_rate,nb_read_frames,duration:format=duration,size",
+    "-of",
+    "json",
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/moving-C.webm"
+  ],
+  "probeExitCode": 0,
+  "extractCommand": [
+    "ffmpeg",
+    "-v",
+    "error",
+    "-i",
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/moving-C.webm",
+    "-vf",
+    "select=eq(n\\,0)+eq(n\\,17)+eq(n\\,34)+eq(n\\,51)+eq(n\\,67)",
+    "-fps_mode",
+    "vfr",
+    "/private/tmp/tube-physical-mouth-video-review-20261004/frame-%02d.png"
+  ],
+  "extractExitCode": 0,
+  "selectedDecodedFrameIndices": [
+    0,
+    17,
+    34,
+    51,
+    67
+  ],
+  "decodedFrameCount": 68,
+  "physicalPlaybackRateClaim": false,
+  "outputs": [
+    {
+      "file": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-01.png",
+      "bytes": 306681,
+      "sha256": "721615a444c1c9cd95bc8cf26c064aeb6ce272246e7149aa9e37c7a9136010dc"
+    },
+    {
+      "file": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-02.png",
+      "bytes": 554863,
+      "sha256": "cf76b049a2d40c4ab4600c8ad30ed83161d0a4fd9ce0e068f5c75488429e1b7c"
+    },
+    {
+      "file": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-03.png",
+      "bytes": 544465,
+      "sha256": "e8a5301a1b8ee76dafa2fe9b5232122397e0e0f7ea15f7bbdedb1f12e651acf9"
+    },
+    {
+      "file": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-04.png",
+      "bytes": 555694,
+      "sha256": "3dde0a26d17e3231be4e9a5293816c0bcf5ebe808b7535cec945c0db5fc818d1"
+    },
+    {
+      "file": "/private/tmp/tube-physical-mouth-video-review-20261004/frame-05.png",
+      "bytes": 517013,
+      "sha256": "98cdefef1b18b57e92d4d0cb5d1d33fe93b62ebed3731e12cac997c1099a88bd"
+    }
+  ]
+}

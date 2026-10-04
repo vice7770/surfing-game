@@ -1,0 +1,240 @@
+{
+  "schema": "bounded-C-parallel-physics-mouth-source-contract/v1",
+  "complete": true,
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/root-complete-build-result.json",
+    "bytes": 182066,
+    "sha256": "a84ac3fd098b8ee2d58377a516243d02f909be57177fb02bf47c5018b1f64ba3"
+  },
+  "sourcePins": 579,
+  "assetPins": 49,
+  "unchangedPublicDrawingExportControlSourcePairs": [
+    {
+      "relative": "src/main.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/main.ts",
+        "bytes": 56712,
+        "sha256": "e88b0f82571f74ffcf8ad1d902ba21a5f0bf62293077617f316994b1c4c82ce5"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/main.ts",
+        "bytes": 56712,
+        "sha256": "e88b0f82571f74ffcf8ad1d902ba21a5f0bf62293077617f316994b1c4c82ce5"
+      }
+    },
+    {
+      "relative": "src/game/PhysicalMode.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/PhysicalMode.ts",
+        "bytes": 41940,
+        "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/PhysicalMode.ts",
+        "bytes": 41940,
+        "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+      }
+    },
+    {
+      "relative": "src/scene/WaterSurface.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/scene/WaterSurface.ts",
+        "bytes": 39192,
+        "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/scene/WaterSurface.ts",
+        "bytes": 39192,
+        "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+      }
+    },
+    {
+      "relative": "src/game/SurfZoneHost.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/SurfZoneHost.ts",
+        "bytes": 8020,
+        "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/SurfZoneHost.ts",
+        "bytes": 8020,
+        "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424"
+      }
+    },
+    {
+      "relative": "src/scene/PhysicalSurfaceSource.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/scene/PhysicalSurfaceSource.ts",
+        "bytes": 3054,
+        "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/scene/PhysicalSurfaceSource.ts",
+        "bytes": 3054,
+        "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003"
+      }
+    },
+    {
+      "relative": "src/game/WorkerSurfZone.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/WorkerSurfZone.ts",
+        "bytes": 8319,
+        "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/WorkerSurfZone.ts",
+        "bytes": 8319,
+        "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+      }
+    },
+    {
+      "relative": "src/game/SurfZoneWorkerCore.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/SurfZoneWorkerCore.ts",
+        "bytes": 9863,
+        "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/SurfZoneWorkerCore.ts",
+        "bytes": 9863,
+        "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+      }
+    },
+    {
+      "relative": "src/wave/surfZoneState.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/surfZoneState.ts",
+        "bytes": 3955,
+        "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/surfZoneState.ts",
+        "bytes": 3955,
+        "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+      }
+    },
+    {
+      "relative": "src/wave/SurfZoneSimulation.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/SurfZoneSimulation.ts",
+        "bytes": 70902,
+        "sha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/SurfZoneSimulation.ts",
+        "bytes": 70902,
+        "sha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/BreakingFront.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/BreakingFront.ts",
+        "bytes": 39920,
+        "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/BreakingFront.ts",
+        "bytes": 39920,
+        "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sliceClock.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/sliceClock.ts",
+        "bytes": 12756,
+        "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/sliceClock.ts",
+        "bytes": 12756,
+        "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/frontRecords.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/frontRecords.ts",
+        "bytes": 1776,
+        "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/frontRecords.ts",
+        "bytes": 1776,
+        "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/crestRays.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/crestRays.ts",
+        "bytes": 15787,
+        "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/crestRays.ts",
+        "bytes": 15787,
+        "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sweptLoft.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 63917,
+        "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 63917,
+        "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+      }
+    },
+    {
+      "relative": "src/game/SurfZoneWaterPrefetch.test.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/SurfZoneWaterPrefetch.test.ts",
+        "bytes": 17570,
+        "sha256": "df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/SurfZoneWaterPrefetch.test.ts",
+        "bytes": 17570,
+        "sha256": "df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e"
+      }
+    },
+    {
+      "relative": "src/wave/gpu/GpuBoussinesq.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/wave/gpu/GpuBoussinesq.ts",
+        "bytes": 23863,
+        "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/gpu/GpuBoussinesq.ts",
+        "bytes": 23863,
+        "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+      }
+    }
+  ],
+  "priorSourceContract": {
+    "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/new-source-contract-checks.json",
+    "bytes": 4054,
+    "sha256": "6a71c0d1cf7c248c0753d96323b28fb24c2d665fc53b3ca6d25305bd077dea42"
+  },
+  "inheritedGpuExportTest": {
+    "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json",
+    "bytes": 1314,
+    "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+  },
+  "gpuTestEvidenceInheritedNotRerun": true,
+  "sourceFaithfulGpuControlAndExportSourceBytesStillExact": true,
+  "publicExportUsesCommittedStablePointIDsAndDoesNotAdvancePhysics": true,
+  "physicalRuntimeIsNewCandidateNotEqualityToOldPhysics": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "buildPerformedByHelper": false,
+  "sourceModified": false,
+  "nativeAppearanceOrBodyClaim": false
+}

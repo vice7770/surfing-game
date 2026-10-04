@@ -1,0 +1,41 @@
+--- a/src/wave/barrel/crestRays.ts
++++ b/src/wave/barrel/crestRays.ts
+@@ -114,6 +114,30 @@
+   }
+ 
+   private prepareBound(): void {
++    if (this.library.options.geometry === 'bounded-C') {
++      // The tracker advances X-column crests shoreward in +Z. Parallel rays leave
++      // every profile offset out of X, so BOTH endpoint half-plane advances are
++      // exactly the crest's positive delta-X, even after a remote component split.
++      const last = this.count - 1;
++      let progress = Infinity;
++      let maximumX = 0;
++      for (let k = 0; k <= last; k += 1) {
++        maximumX = Math.max(maximumX, Math.abs(this.x[k]));
++        if (k === last) continue;
++        const dx = this.x[k + 1] - this.x[k];
++        const dz = this.z[k + 1] - this.z[k];
++        progress = Math.min(progress, dx / (this.sigma[k + 1] - this.sigma[k]));
++        if (k === 0 || k + 1 === last) progress = Math.min(progress, dx / Math.hypot(dx, dz));
++      }
++      // Two float32 ULPs conservatively cover both final X upload errors. The
++      // shoulders extend X by at most extension; reach in Z cannot affect this.
++      const ulp = 2 ** (Math.floor(Math.log2(Math.max(1, maximumX + this.extension))) - 23);
++      const stored = progress - 2 * ulp / this.minSpacing;
++      this.diagnostics.blend = 1;
++      if (!(stored > 0)) { this.diagnostics.invalidIntervals += 1; return; }
++      this.diagnostics.minimumAdvancePerSigma = stored;
++      return;
++    }
+     const last = this.count - 1;
+     let lowSlope = -Infinity;
+     let highSlope = Infinity;
+@@ -266,6 +290,7 @@
+   }
+ 
+   rayAt(sigma: number, into: Float64Array): Float64Array {
++    if (this.library.options.geometry === 'bounded-C') { into[0] = 0; into[1] = 1; return into; }
+     if (this.count < 2) { into[0] = 0; into[1] = 1; return into; }
+     this.rawVector(sigma, into);
+     const length = Math.sqrt(into[0] * into[0] + into[1] * into[1]);

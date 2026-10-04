@@ -1,0 +1,35 @@
+{
+  "schema": "bounded-C-parallel-public-export-GPU-source-test/v1",
+  "complete": true,
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "src/game/SurfZoneWaterPrefetch.test.ts",
+    "-t",
+    "publishes current state with latest controls",
+    "--configLoader",
+    "runner"
+  ],
+  "cwd": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source",
+  "sourceTest": {
+    "file": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/src/game/SurfZoneWaterPrefetch.test.ts",
+    "bytes": 17570,
+    "sha256": "df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e"
+  },
+  "unifiedExecSession": 52738,
+  "terminal": true,
+  "exitCode": 0,
+  "testFilesPassed": 1,
+  "durationSeconds": 1.61,
+  "sourceFaithfulGpuDeviceFixture": true,
+  "heldFutureExportExactCurrentStateAndNoFutureCommitVerified": true,
+  "actualGPUOrNativeBrowserLaunched": false,
+  "stdoutFileExisted": false,
+  "stdoutNotReconstructed": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "scope": "Actual frozen-source test uses FakeWaterDevice through SurfZoneWorkerCore; exports same complete current sea after awaited stepping, does not commit prepared future water. Separate CPU identity mocks test exported point IDs and draw/actor words.",
+  "testsPassed": 1,
+  "testsSkipped": 3
+}

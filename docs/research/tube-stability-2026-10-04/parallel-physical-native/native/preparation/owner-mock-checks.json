@@ -1,0 +1,33 @@
+{
+  "schema": "bounded-C-parallel-physics-mouth-owner-CPU-fixtures/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "actualOwnerCalled": false,
+  "actualRootCompleteBuildVerifiedReadOnly": true,
+  "sourcePins": 579,
+  "assets": 49,
+  "groupCount": 18,
+  "groups": [
+    "actual new source/49 asset/21 build+28 static provenance accepted read-only; no old-arm equality",
+    "changed prior air provenance seal rejected",
+    "old candidate dist rejected",
+    "partial new candidate dist rejected",
+    "missing station helper rejected",
+    "changed new helper rejected",
+    "asset pins disagree with complete composition rejected",
+    "source pins disagree with root build manifest rejected",
+    "old root build manifest rejected",
+    "wrong candidate build id rejected",
+    "changed original partial-build receipt rejected",
+    "changed sealed old static-source provenance rejected",
+    "current closed4310/4311 and open4312 states accepted/preserved without TCP probe",
+    "closed user play4312 rejected by exact protected-state policy",
+    "reopened old4310 rejected by exact protected-state policy",
+    "unknown transient protected state rejected by exact protected-state policy",
+    "missing protected port rejected by exact protected-state policy",
+    "initial closed4312 cannot launch new finite arm"
+  ],
+  "fixtureSealRemoved": true,
+  "nativeLaunchStillPending": true
+}
