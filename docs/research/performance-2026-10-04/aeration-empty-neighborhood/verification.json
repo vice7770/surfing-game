@@ -1,0 +1,13 @@
+{
+  "schema": "aeration-empty-archive-verification/v1",
+  "status": "passed",
+  "scope": "Archival stored/gzipmtime0/expanded/exact original aliases/external hashes/links/report contract and README links only; no numerical/test/build/hardware rerun",
+  "uniquePayloads": 62,
+  "originalAliasesVerified": 88,
+  "externalReferencesVerified": 429,
+  "readOnlyLinksVerified": 7,
+  "storedPayloadBytes": 247317,
+  "expandedUniqueBytes": 1003478,
+  "primaryReportExpandedSha256": "4c3569adaa0c6b7544c205409f39891761bf3df5780f571982f8387de724b997",
+  "independentVerificationCommand": "python3 verify.py"
+}

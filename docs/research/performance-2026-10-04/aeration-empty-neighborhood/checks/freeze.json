@@ -1,0 +1,70 @@
+{
+  "schema": "aeration-empty-first-strict-failure/v1",
+  "status": "failed-and-stopped",
+  "toolSession": 39670,
+  "toolExitCode": 1,
+  "strictExitCode": 2,
+  "startedAt": "2026-10-04T04:54:36.305682+00:00",
+  "finishedAt": "2026-10-04T04:54:39.695815+00:00",
+  "vitestDidNotRun": true,
+  "sourceInputsUnchanged": true,
+  "error": "tests/parity.test.ts(255,63): TS2554 Expected2arguments but got1; FreshFoam(water) misses required decay fixture argument",
+  "records": [
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/ready.json",
+      "bytes": 6521,
+      "sha256": "0a67ee7ed4e2eb130ad5c9716cb653f188b5a0c8aafa63771ae1a3107d63f7cf"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate.patch",
+      "bytes": 17970,
+      "sha256": "2df6872b49efb5859ed6e33709cc7e0a1ea371e7a83e139d0bdb98569ed3532b"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/source-authority.json",
+      "bytes": 113930,
+      "sha256": "0e57711a0193309d084a2d8c385010f8101c58804a56a3b64907add21438e6be"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/tests/parity.test.ts",
+      "bytes": 22267,
+      "sha256": "b1003304092675c2a71432862046bb19081eff788d5c09f6f121ac33379f163c"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-driver.py",
+      "bytes": 5302,
+      "sha256": "1cdfff7bfe0e252e9fa5462fd836837c34f8b931e2ea4e9e140f87bffece0349"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/vitest.config.ts",
+      "bytes": 228,
+      "sha256": "397038c6bd2fb0696b90c9563690acba98536e6aa69332c0575ef038bcd13e28"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/strict.stdout",
+      "bytes": 77,
+      "sha256": "64c47e460c3d443eee0c9061dc915f615921a0132926b22edc503c9df8d16a1b"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/strict.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/terminal.json",
+      "bytes": 2210,
+      "sha256": "a543092b0e133eb1698e478b52eedf8fd33f21baf300767e7c4270e1e6644164"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/source-before.json",
+      "bytes": 97473,
+      "sha256": "19b4b271bd097a6cc05f2b7db44780f939435300ab55569bfcfdf65369522efe"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/source-after.json",
+      "bytes": 97473,
+      "sha256": "19b4b271bd097a6cc05f2b7db44780f939435300ab55569bfcfdf65369522efe"
+    }
+  ],
+  "noRepairRetryCostBuildHardwareOrProductionChanges": true
+}

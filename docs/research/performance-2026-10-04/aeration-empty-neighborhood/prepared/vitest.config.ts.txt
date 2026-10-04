@@ -1,0 +1,5 @@
+import { defineConfig } from 'vitest/config';
+export default defineConfig({
+  cacheDir: '/private/tmp/surf-aeration-empty-neighborhood-20261004/.cache/vite',
+  test: { include: ['tests/parity.test.ts'], testTimeout: 5000 },
+});

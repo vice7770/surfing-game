@@ -1,0 +1,3698 @@
+{
+  "schema": "aeration-empty-neighborhood-archive/v1",
+  "status": "REJECTED_NO_ADOPTION_OR_REPEAT",
+  "baselineCommit": "e3e630bc45339e0f7564e59cfdd556275c06de92",
+  "runtimePatchSha256": "2df6872b49efb5859ed6e33709cc7e0a1ea371e7a83e139d0bdb98569ed3532b",
+  "capturedFixtureAuthority": "1bcc F32 post-state controlled handover, not historical pre-degas/gated live phase",
+  "primaryReportOriginal": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/cost-report.json",
+    "bytes": 60678,
+    "sha256": "4c3569adaa0c6b7544c205409f39891761bf3df5780f571982f8387de724b997"
+  },
+  "actualOperationTerminal": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/terminal.json",
+    "bytes": 1318,
+    "sha256": "e87191f6706a59a8bfb5283b5ffb1dfd514d60fec68ceeeeb63062a8986563e2"
+  },
+  "payloads": [
+    {
+      "archivePath": "prepared/candidate.patch.gz",
+      "encoding": "gzip",
+      "storedBytes": 5829,
+      "storedSha256": "fd43a15d38c39554fa5dbb0678dbe64e3541e27dd729cd777b7127bcc06894de",
+      "expandedBytes": 17970,
+      "expandedSha256": "2df6872b49efb5859ed6e33709cc7e0a1ea371e7a83e139d0bdb98569ed3532b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate.patch",
+          "bytes": 17970,
+          "sha256": "2df6872b49efb5859ed6e33709cc7e0a1ea371e7a83e139d0bdb98569ed3532b"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/candidate.patch",
+          "bytes": 17970,
+          "sha256": "2df6872b49efb5859ed6e33709cc7e0a1ea371e7a83e139d0bdb98569ed3532b"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/candidate.patch",
+          "bytes": 17970,
+          "sha256": "2df6872b49efb5859ed6e33709cc7e0a1ea371e7a83e139d0bdb98569ed3532b"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/source-authority.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 10976,
+      "storedSha256": "33aa1715f18e11de30a62d47b91267d0134e6763312050ffe08394d933b01e26",
+      "expandedBytes": 113930,
+      "expandedSha256": "0e57711a0193309d084a2d8c385010f8101c58804a56a3b64907add21438e6be",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/source-authority.json",
+          "bytes": 113930,
+          "sha256": "0e57711a0193309d084a2d8c385010f8101c58804a56a3b64907add21438e6be"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/source-authority.json",
+          "bytes": 113930,
+          "sha256": "0e57711a0193309d084a2d8c385010f8101c58804a56a3b64907add21438e6be"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/source-authority.json",
+          "bytes": 113930,
+          "sha256": "0e57711a0193309d084a2d8c385010f8101c58804a56a3b64907add21438e6be"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/tests/parity.test.ts.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 6075,
+      "storedSha256": "5e0e242c66d8457009614b163b00d08a979da9de228883c3fbf3e0439f3ccbb8",
+      "expandedBytes": 22336,
+      "expandedSha256": "b83408944f419a7322e772dfa8bb9ed6e80d1949f7c5013c37e84fc10631b354",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/tests/parity.test.ts",
+          "bytes": 22336,
+          "sha256": "b83408944f419a7322e772dfa8bb9ed6e80d1949f7c5013c37e84fc10631b354"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/tsconfig.base.json",
+      "encoding": "raw",
+      "storedBytes": 550,
+      "storedSha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f",
+      "expandedBytes": 550,
+      "expandedSha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/tsconfig.base.json",
+          "bytes": 550,
+          "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/tsconfig.base.json",
+          "bytes": 550,
+          "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/tsconfig.base.json",
+          "bytes": 550,
+          "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/tsconfig.qa.json",
+      "encoding": "raw",
+      "storedBytes": 97,
+      "storedSha256": "a3345de72efcd312e849fed5b29582ef0f07a1e4d29125ec142ff5d1db7fdb8e",
+      "expandedBytes": 97,
+      "expandedSha256": "a3345de72efcd312e849fed5b29582ef0f07a1e4d29125ec142ff5d1db7fdb8e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/tsconfig.qa.json",
+          "bytes": 97,
+          "sha256": "a3345de72efcd312e849fed5b29582ef0f07a1e4d29125ec142ff5d1db7fdb8e"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/tsconfig.qa.json",
+          "bytes": 97,
+          "sha256": "a3345de72efcd312e849fed5b29582ef0f07a1e4d29125ec142ff5d1db7fdb8e"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/tsconfig.qa.json",
+          "bytes": 97,
+          "sha256": "a3345de72efcd312e849fed5b29582ef0f07a1e4d29125ec142ff5d1db7fdb8e"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/vitest.config.ts.txt",
+      "encoding": "raw",
+      "storedBytes": 228,
+      "storedSha256": "397038c6bd2fb0696b90c9563690acba98536e6aa69332c0575ef038bcd13e28",
+      "expandedBytes": 228,
+      "expandedSha256": "397038c6bd2fb0696b90c9563690acba98536e6aa69332c0575ef038bcd13e28",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/vitest.config.ts",
+          "bytes": 228,
+          "sha256": "397038c6bd2fb0696b90c9563690acba98536e6aa69332c0575ef038bcd13e28"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/vitest.config.ts",
+          "bytes": 228,
+          "sha256": "397038c6bd2fb0696b90c9563690acba98536e6aa69332c0575ef038bcd13e28"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/vitest.config.ts",
+          "bytes": 228,
+          "sha256": "397038c6bd2fb0696b90c9563690acba98536e6aa69332c0575ef038bcd13e28"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/README.md.gz",
+      "encoding": "gzip",
+      "storedBytes": 2314,
+      "storedSha256": "120968d6b75b14811ccf14cb60f032da00675b413af2f94eabe91347e8b6759e",
+      "expandedBytes": 4581,
+      "expandedSha256": "348984b753ea4eb562500e6f505a4d4c11db841f06f6657df07c9dc3f9e2966a",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/README.md",
+          "bytes": 4581,
+          "sha256": "348984b753ea4eb562500e6f505a4d4c11db841f06f6657df07c9dc3f9e2966a"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/mutation-ledger.md",
+      "encoding": "raw",
+      "storedBytes": 3601,
+      "storedSha256": "777a0c799c6d10edb8bd855d00f52845c8090feeefcceb73fc62117b971a096d",
+      "expandedBytes": 3601,
+      "expandedSha256": "777a0c799c6d10edb8bd855d00f52845c8090feeefcceb73fc62117b971a096d",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/mutation-ledger.md",
+          "bytes": 3601,
+          "sha256": "777a0c799c6d10edb8bd855d00f52845c8090feeefcceb73fc62117b971a096d"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/proposal.md.gz",
+      "encoding": "gzip",
+      "storedBytes": 3653,
+      "storedSha256": "79c420a91a6be179b2388d96bf1b0d4a388965f3e1ea44ed62f57a6c2797c3f0",
+      "expandedBytes": 7203,
+      "expandedSha256": "719b36560d2450cbe53350d8c3581f2c94418cb5c11aa3217face0884d9e0014",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/proposal.md",
+          "bytes": 7203,
+          "sha256": "719b36560d2450cbe53350d8c3581f2c94418cb5c11aa3217face0884d9e0014"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/prepare.py.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 5062,
+      "storedSha256": "81b5b1146238e9e79459cae70af4dec6eeec0983a5dd4745bb6b48bd90945066",
+      "expandedBytes": 15582,
+      "expandedSha256": "cb8c4fa202a70b31d03fe5a3fd4f40d847c7a48c695dc4b65e09d726284482d3",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/prepare.py",
+          "bytes": 15582,
+          "sha256": "cb8c4fa202a70b31d03fe5a3fd4f40d847c7a48c695dc4b65e09d726284482d3"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/ready.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 3382,
+      "storedSha256": "b8a5793fefa8af00ef34e4fb79268989996b6510bf58e2734074a27d56656b9b",
+      "expandedBytes": 16538,
+      "expandedSha256": "4fd7c2c0688b102d94fa4128e1778e21c34f25194bde34fb1b71b0ee42178d05",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/ready.json",
+          "bytes": 16538,
+          "sha256": "4fd7c2c0688b102d94fa4128e1778e21c34f25194bde34fb1b71b0ee42178d05"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/checks-driver.py.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 2097,
+      "storedSha256": "95c5c2b2e8ae358459134a761dc602de74461840d8d92a3b34c25f6e8f122a15",
+      "expandedBytes": 5302,
+      "expandedSha256": "1cdfff7bfe0e252e9fa5462fd836837c34f8b931e2ea4e9e140f87bffece0349",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-driver.py",
+          "bytes": 5302,
+          "sha256": "1cdfff7bfe0e252e9fa5462fd836837c34f8b931e2ea4e9e140f87bffece0349"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/checks-driver.py",
+          "bytes": 5302,
+          "sha256": "1cdfff7bfe0e252e9fa5462fd836837c34f8b931e2ea4e9e140f87bffece0349"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/checks-driver-v2.py.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 2100,
+      "storedSha256": "28d1a54af22f66ea3f4c6cbe6432316d44b49dfc69213bd3556fb0a0298fb7c2",
+      "expandedBytes": 5308,
+      "expandedSha256": "884939ac59d8f1c7239734bbdf430febb359110ef74efeb4a6a056f06fc6e14b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-driver-v2.py",
+          "bytes": 5308,
+          "sha256": "884939ac59d8f1c7239734bbdf430febb359110ef74efeb4a6a056f06fc6e14b"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/checks-driver-v2.py",
+          "bytes": 5308,
+          "sha256": "884939ac59d8f1c7239734bbdf430febb359110ef74efeb4a6a056f06fc6e14b"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/checks-driver-v3.py.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 2101,
+      "storedSha256": "ca025071c5156f5a2765c0b1e73a360587f9d2cc3a7c8e37ceda17ef5a35c1e4",
+      "expandedBytes": 5308,
+      "expandedSha256": "d19c809c408dc7e36335896d7d0e38e63661562881f80e231b594ba45b389b29",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-driver-v3.py",
+          "bytes": 5308,
+          "sha256": "d19c809c408dc7e36335896d7d0e38e63661562881f80e231b594ba45b389b29"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/fixture-repair.patch",
+      "encoding": "raw",
+      "storedBytes": 999,
+      "storedSha256": "fe5910e50724b216cd90e0649ba5fe050eb9ce9dd6e4b7222f24182f76712a46",
+      "expandedBytes": 999,
+      "expandedSha256": "fe5910e50724b216cd90e0649ba5fe050eb9ce9dd6e4b7222f24182f76712a46",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/fixture-repair.patch",
+          "bytes": 999,
+          "sha256": "fe5910e50724b216cd90e0649ba5fe050eb9ce9dd6e4b7222f24182f76712a46"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/fixture-repair.json",
+      "encoding": "raw",
+      "storedBytes": 1833,
+      "storedSha256": "45aa7845c89622824ef732d6ef1c7d330e018e7e073d23518c48930edbde1378",
+      "expandedBytes": 1833,
+      "expandedSha256": "45aa7845c89622824ef732d6ef1c7d330e018e7e073d23518c48930edbde1378",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/fixture-repair.json",
+          "bytes": 1833,
+          "sha256": "45aa7845c89622824ef732d6ef1c7d330e018e7e073d23518c48930edbde1378"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/extractor-repair.patch",
+      "encoding": "raw",
+      "storedBytes": 654,
+      "storedSha256": "2344686d3ed8480e85095f1196be3e4fcc4ecd787863e5479227ce1ccc8f2ce1",
+      "expandedBytes": 654,
+      "expandedSha256": "2344686d3ed8480e85095f1196be3e4fcc4ecd787863e5479227ce1ccc8f2ce1",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/extractor-repair.patch",
+          "bytes": 654,
+          "sha256": "2344686d3ed8480e85095f1196be3e4fcc4ecd787863e5479227ce1ccc8f2ce1"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/extractor-repair.json",
+      "encoding": "raw",
+      "storedBytes": 1885,
+      "storedSha256": "fb4cccb69a0abd4c3747ff607858647dd9c2738e90dc8c3e56075be41782a6aa",
+      "expandedBytes": 1885,
+      "expandedSha256": "fb4cccb69a0abd4c3747ff607858647dd9c2738e90dc8c3e56075be41782a6aa",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/extractor-repair.json",
+          "bytes": 1885,
+          "sha256": "fb4cccb69a0abd4c3747ff607858647dd9c2738e90dc8c3e56075be41782a6aa"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/intake.ts.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 2077,
+      "storedSha256": "ed2d889bab265c086daba9696fc6d74cdde362715ea649cefab836cfd137896d",
+      "expandedBytes": 4782,
+      "expandedSha256": "b76bfdd0f4cdb06e793bfa7f7b77ebedbb6ebd0a7576d91b5e791d55dd905d47",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/intake.ts",
+          "bytes": 4782,
+          "sha256": "b76bfdd0f4cdb06e793bfa7f7b77ebedbb6ebd0a7576d91b5e791d55dd905d47"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/cost.ts.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 6152,
+      "storedSha256": "6caade6fefe4a808f833e7683fbb10315ea87c4d799d623eda1b2e5c3bdd2567",
+      "expandedBytes": 18258,
+      "expandedSha256": "7c14f8bc48fd913ea7604afc27fc46bf00ba2d8c9c7472a978e5ef27395ccb67",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost.ts",
+          "bytes": 18258,
+          "sha256": "7c14f8bc48fd913ea7604afc27fc46bf00ba2d8c9c7472a978e5ef27395ccb67"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/tsconfig.cost.json",
+      "encoding": "raw",
+      "storedBytes": 112,
+      "storedSha256": "55b2d8ffa7bb028c75ef705c63e20d774fe25d940c0846b8e74752e3174af192",
+      "expandedBytes": 112,
+      "expandedSha256": "55b2d8ffa7bb028c75ef705c63e20d774fe25d940c0846b8e74752e3174af192",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/tsconfig.cost.json",
+          "bytes": 112,
+          "sha256": "55b2d8ffa7bb028c75ef705c63e20d774fe25d940c0846b8e74752e3174af192"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/cost-plan.md.gz",
+      "encoding": "gzip",
+      "storedBytes": 2515,
+      "storedSha256": "a4a4ff84e143018657c77624669fe83464661e3e32b1789abf39cd1ad047937d",
+      "expandedBytes": 4776,
+      "expandedSha256": "6988581a2a98718edcf49f25d64f61d03680acef853d70d6a5e7b3b13a890e1b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-plan.md",
+          "bytes": 4776,
+          "sha256": "6988581a2a98718edcf49f25d64f61d03680acef853d70d6a5e7b3b13a890e1b"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/cost-ready.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 1660,
+      "storedSha256": "db053d2c7429de46cf9ebdeb7e267375e47a3234471c850a8d1308b19178f120",
+      "expandedBytes": 6232,
+      "expandedSha256": "3e3c524f4c79939de6b9342a83b870daf4ff10a8b2924d00a9640266510083cf",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-ready.json",
+          "bytes": 6232,
+          "sha256": "3e3c524f4c79939de6b9342a83b870daf4ff10a8b2924d00a9640266510083cf"
+        }
+      ]
+    },
+    {
+      "archivePath": "prepared/cost-build-driver.py.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 2125,
+      "storedSha256": "ef111b8ba55bcfd5f2446b0f9293b027664b5a6af279cb881ecfd235bd3e22c2",
+      "expandedBytes": 5395,
+      "expandedSha256": "37468a51ae7123c2459930e27c49886c70322762c34112017828b75360ade0de",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-build-driver.py",
+          "bytes": 5395,
+          "sha256": "37468a51ae7123c2459930e27c49886c70322762c34112017828b75360ade0de"
+        }
+      ]
+    },
+    {
+      "archivePath": "unexecuted-outer/cost-runner.py.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 2416,
+      "storedSha256": "c1a0ab3f57b0168a46e1be5b1fe68188800676ebc5fcaa545e6326f613135fb7",
+      "expandedBytes": 6312,
+      "expandedSha256": "71e5174c712dd81d4e89c74b737596bad686ecc5ff6c7d28a347b0bd7eea5220",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-runner.py",
+          "bytes": 6312,
+          "sha256": "71e5174c712dd81d4e89c74b737596bad686ecc5ff6c7d28a347b0bd7eea5220"
+        }
+      ]
+    },
+    {
+      "archivePath": "unexecuted-outer/cost-operation-proposal.md",
+      "encoding": "raw",
+      "storedBytes": 1906,
+      "storedSha256": "ab0577783084689a248dd530396377a19c7ef9fb8076ac011812401e83e3e01f",
+      "expandedBytes": 1906,
+      "expandedSha256": "ab0577783084689a248dd530396377a19c7ef9fb8076ac011812401e83e3e01f",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-operation-proposal.md",
+          "bytes": 1906,
+          "sha256": "ab0577783084689a248dd530396377a19c7ef9fb8076ac011812401e83e3e01f"
+        }
+      ]
+    },
+    {
+      "archivePath": "unexecuted-outer/cost-operation-ready.json",
+      "encoding": "raw",
+      "storedBytes": 3344,
+      "storedSha256": "6e5ce84f23de561c298592b610be9b69f01a2248679dbcb323bfabfef21711a2",
+      "expandedBytes": 3344,
+      "expandedSha256": "6e5ce84f23de561c298592b610be9b69f01a2248679dbcb323bfabfef21711a2",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-operation-ready.json",
+          "bytes": 3344,
+          "sha256": "6e5ce84f23de561c298592b610be9b69f01a2248679dbcb323bfabfef21711a2"
+        }
+      ]
+    },
+    {
+      "archivePath": "root-cost-first/cost-report.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 9312,
+      "storedSha256": "28a9892d9c1ba202b114da7afe3d0de09acbbf2d9978affdc6a48582ef8c346b",
+      "expandedBytes": 60678,
+      "expandedSha256": "4c3569adaa0c6b7544c205409f39891761bf3df5780f571982f8387de724b997",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/cost-report.json",
+          "bytes": 60678,
+          "sha256": "4c3569adaa0c6b7544c205409f39891761bf3df5780f571982f8387de724b997"
+        }
+      ]
+    },
+    {
+      "archivePath": "root-cost-first/source-after.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 17665,
+      "storedSha256": "17594c92fa4807e6685ad38067010db0e24ce060202629ba99ebe836f0b7b554",
+      "expandedBytes": 97626,
+      "expandedSha256": "4a7d8bbea4b0d42600e6bce8251797da476bc15ec08bd28d4d3dd9b01c2a6dce",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/source-after.json",
+          "bytes": 97626,
+          "sha256": "4a7d8bbea4b0d42600e6bce8251797da476bc15ec08bd28d4d3dd9b01c2a6dce"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/source-before.json",
+          "bytes": 97626,
+          "sha256": "4a7d8bbea4b0d42600e6bce8251797da476bc15ec08bd28d4d3dd9b01c2a6dce"
+        }
+      ]
+    },
+    {
+      "archivePath": "root-cost-first/stderr.log",
+      "encoding": "raw",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-checks/cost-bundle.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-checks/cost-strict.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-checks/cost-strict.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/strict.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/strict.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/strict.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/portable26.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/strict.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/strict.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "archivePath": "root-cost-first/stdout.log",
+      "encoding": "raw",
+      "storedBytes": 753,
+      "storedSha256": "7d4ce5d70b28ceee96a4742378250159494c6b60b4d3af470145405612be6f76",
+      "expandedBytes": 753,
+      "expandedSha256": "7d4ce5d70b28ceee96a4742378250159494c6b60b4d3af470145405612be6f76",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/stdout.log",
+          "bytes": 753,
+          "sha256": "7d4ce5d70b28ceee96a4742378250159494c6b60b4d3af470145405612be6f76"
+        }
+      ]
+    },
+    {
+      "archivePath": "root-cost-first/terminal.json",
+      "encoding": "raw",
+      "storedBytes": 1318,
+      "storedSha256": "e87191f6706a59a8bfb5283b5ffb1dfd514d60fec68ceeeeb63062a8986563e2",
+      "expandedBytes": 1318,
+      "expandedSha256": "e87191f6706a59a8bfb5283b5ffb1dfd514d60fec68ceeeeb63062a8986563e2",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/terminal.json",
+          "bytes": 1318,
+          "sha256": "e87191f6706a59a8bfb5283b5ffb1dfd514d60fec68ceeeeb63062a8986563e2"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost-checks/cost-bundle.stdout",
+      "encoding": "raw",
+      "storedBytes": 87,
+      "storedSha256": "4315299e91239656f6b6e03a3b981fcac23c36cebdbc4f2114911d2e84bd8518",
+      "expandedBytes": 87,
+      "expandedSha256": "4315299e91239656f6b6e03a3b981fcac23c36cebdbc4f2114911d2e84bd8518",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-checks/cost-bundle.stdout",
+          "bytes": 87,
+          "sha256": "4315299e91239656f6b6e03a3b981fcac23c36cebdbc4f2114911d2e84bd8518"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost-checks/source-after.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 17623,
+      "storedSha256": "c8fcdff844225731344e6c5980d266d020ca442cbb0002b872ab7dc3796d349c",
+      "expandedBytes": 97452,
+      "expandedSha256": "0bb7dd00aadb2e356847433d826742cee5c5d3d939983c4156b94f70d7648bc4",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-checks/source-after.json",
+          "bytes": 97452,
+          "sha256": "0bb7dd00aadb2e356847433d826742cee5c5d3d939983c4156b94f70d7648bc4"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-checks/source-before.json",
+          "bytes": 97452,
+          "sha256": "0bb7dd00aadb2e356847433d826742cee5c5d3d939983c4156b94f70d7648bc4"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost-checks/terminal.json",
+      "encoding": "raw",
+      "storedBytes": 3433,
+      "storedSha256": "0ae61b8a8892fbede3cc6518c26aa68086eaeb4e45b6621403958f09bb0f3613",
+      "expandedBytes": 3433,
+      "expandedSha256": "0ae61b8a8892fbede3cc6518c26aa68086eaeb4e45b6621403958f09bb0f3613",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost-checks/terminal.json",
+          "bytes": 3433,
+          "sha256": "0ae61b8a8892fbede3cc6518c26aa68086eaeb4e45b6621403958f09bb0f3613"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/first-inputs/README.md",
+      "encoding": "raw",
+      "storedBytes": 3943,
+      "storedSha256": "42df2824551067827d1b70ce97e45f5be4bc7b9d076c6dfbe42d6eb4d58de462",
+      "expandedBytes": 3943,
+      "expandedSha256": "42df2824551067827d1b70ce97e45f5be4bc7b9d076c6dfbe42d6eb4d58de462",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/README.md",
+          "bytes": 3943,
+          "sha256": "42df2824551067827d1b70ce97e45f5be4bc7b9d076c6dfbe42d6eb4d58de462"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/first-inputs/proposal.md.gz",
+      "encoding": "gzip",
+      "storedBytes": 3224,
+      "storedSha256": "8e33c896222b4518e55d53e19bb4c026d4ffeabc1246697212adc11b8787f21a",
+      "expandedBytes": 6078,
+      "expandedSha256": "b5bf3c0eb23b371636602ce1ff3dfab94bc6c9a2e6346502fc12a7b280116ea9",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/proposal.md",
+          "bytes": 6078,
+          "sha256": "b5bf3c0eb23b371636602ce1ff3dfab94bc6c9a2e6346502fc12a7b280116ea9"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/first-inputs/ready.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 1859,
+      "storedSha256": "0ac05eab6ee0aa28a7a1ac8a3c045e1dcc8d26922817e99c6a86601b9e819444",
+      "expandedBytes": 6521,
+      "expandedSha256": "0a67ee7ed4e2eb130ad5c9716cb653f188b5a0c8aafa63771ae1a3107d63f7cf",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/ready.json",
+          "bytes": 6521,
+          "sha256": "0a67ee7ed4e2eb130ad5c9716cb653f188b5a0c8aafa63771ae1a3107d63f7cf"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/first-inputs/tests/parity.test.ts.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 6062,
+      "storedSha256": "abef444c9d24aac23376308b5c94e0d4e88b2c2ad5b41e034ec11ea49a4dc395",
+      "expandedBytes": 22267,
+      "expandedSha256": "b1003304092675c2a71432862046bb19081eff788d5c09f6f121ac33379f163c",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/first-inputs/tests/parity.test.ts",
+          "bytes": 22267,
+          "sha256": "b1003304092675c2a71432862046bb19081eff788d5c09f6f121ac33379f163c"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/freeze.json",
+      "encoding": "raw",
+      "storedBytes": 2835,
+      "storedSha256": "7221fd10d594de1171bfa03ce7953c41d7260a5c294e1a6f6b376021c0dbd0a7",
+      "expandedBytes": 2835,
+      "expandedSha256": "7221fd10d594de1171bfa03ce7953c41d7260a5c294e1a6f6b376021c0dbd0a7",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/freeze.json",
+          "bytes": 2835,
+          "sha256": "7221fd10d594de1171bfa03ce7953c41d7260a5c294e1a6f6b376021c0dbd0a7"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/source-after.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 12399,
+      "storedSha256": "ae963e58f4a3be4525e8a35a3cf836a1ab149e6d4ea819aca5292bb0206dbc6d",
+      "expandedBytes": 97473,
+      "expandedSha256": "19b4b271bd097a6cc05f2b7db44780f939435300ab55569bfcfdf65369522efe",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/source-after.json",
+          "bytes": 97473,
+          "sha256": "19b4b271bd097a6cc05f2b7db44780f939435300ab55569bfcfdf65369522efe"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/source-before.json",
+          "bytes": 97473,
+          "sha256": "19b4b271bd097a6cc05f2b7db44780f939435300ab55569bfcfdf65369522efe"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/strict.stdout",
+      "encoding": "raw",
+      "storedBytes": 77,
+      "storedSha256": "64c47e460c3d443eee0c9061dc915f615921a0132926b22edc503c9df8d16a1b",
+      "expandedBytes": 77,
+      "expandedSha256": "64c47e460c3d443eee0c9061dc915f615921a0132926b22edc503c9df8d16a1b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/strict.stdout",
+          "bytes": 77,
+          "sha256": "64c47e460c3d443eee0c9061dc915f615921a0132926b22edc503c9df8d16a1b"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/terminal.json",
+      "encoding": "raw",
+      "storedBytes": 2210,
+      "storedSha256": "a543092b0e133eb1698e478b52eedf8fd33f21baf300767e7c4270e1e6644164",
+      "expandedBytes": 2210,
+      "expandedSha256": "a543092b0e133eb1698e478b52eedf8fd33f21baf300767e7c4270e1e6644164",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/terminal.json",
+          "bytes": 2210,
+          "sha256": "a543092b0e133eb1698e478b52eedf8fd33f21baf300767e7c4270e1e6644164"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v2/first-inputs/README.md.gz",
+      "encoding": "gzip",
+      "storedBytes": 2167,
+      "storedSha256": "d72745d124928dc39f5b95eac1631df9da80b4cb7261e99a46b78a91b738dd16",
+      "expandedBytes": 4234,
+      "expandedSha256": "4f4957ed5b07a80683c7763e207283d9315f40044112476398ba7a8ff0eeede8",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/README.md",
+          "bytes": 4234,
+          "sha256": "4f4957ed5b07a80683c7763e207283d9315f40044112476398ba7a8ff0eeede8"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v2/first-inputs/proposal.md.gz",
+      "encoding": "gzip",
+      "storedBytes": 3463,
+      "storedSha256": "42397001667bc4b5efaec2460bdf43501ecbff8b985e2b9203a6cc9ace4b6bcd",
+      "expandedBytes": 6652,
+      "expandedSha256": "2171aed53bf892b1d707208fde0105d8e620cc14e298d40d2398b7e1665aa760",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/proposal.md",
+          "bytes": 6652,
+          "sha256": "2171aed53bf892b1d707208fde0105d8e620cc14e298d40d2398b7e1665aa760"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v2/first-inputs/ready.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 2675,
+      "storedSha256": "bd55b06a61a8a314f4480c3179092b3c32691ad864db968b4ee4bd90e2bc9dde",
+      "expandedBytes": 11453,
+      "expandedSha256": "6710625b6dc1e1fba8eb8dc51c1c24e9fe88942ef7570479ccba4bb08032a395",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/ready.json",
+          "bytes": 11453,
+          "sha256": "6710625b6dc1e1fba8eb8dc51c1c24e9fe88942ef7570479ccba4bb08032a395"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v2/first-inputs/tests/parity.test.ts.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 6060,
+      "storedSha256": "2a2cacdfc92308db2c1c0e54382a29322da10891457325abd6571a7e7710c91b",
+      "expandedBytes": 22295,
+      "expandedSha256": "5f87906219cdb1a06fcc4ce03fd70c67b657d04cd81804adeba96b68a7efeb30",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/tests/parity.test.ts",
+          "bytes": 22295,
+          "sha256": "5f87906219cdb1a06fcc4ce03fd70c67b657d04cd81804adeba96b68a7efeb30"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v2/freeze.json",
+      "encoding": "raw",
+      "storedBytes": 3553,
+      "storedSha256": "262a56f40a2e0b94030452a94a7a95af804fa45b0a26ea32e4e4e6cfcffc102e",
+      "expandedBytes": 3553,
+      "expandedSha256": "262a56f40a2e0b94030452a94a7a95af804fa45b0a26ea32e4e4e6cfcffc102e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/freeze.json",
+          "bytes": 3553,
+          "sha256": "262a56f40a2e0b94030452a94a7a95af804fa45b0a26ea32e4e4e6cfcffc102e"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v2/portable26.stderr.gz",
+      "encoding": "gzip",
+      "storedBytes": 2572,
+      "storedSha256": "5d59cc4afc1b3fc240b6728939debc6662f5d94f98c927714171a3d318088e5c",
+      "expandedBytes": 6817,
+      "expandedSha256": "a1edf2f2ebf56975877caf61704303ecd03161ce281c353119d5adabcc887b05",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/portable26.stderr",
+          "bytes": 6817,
+          "sha256": "a1edf2f2ebf56975877caf61704303ecd03161ce281c353119d5adabcc887b05"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v2/portable26.stdout",
+      "encoding": "raw",
+      "storedBytes": 420,
+      "storedSha256": "79e43d89881fdafc64aeba8c12136f33a04a3fc2d5d3ce2f15d1c2b103a20492",
+      "expandedBytes": 420,
+      "expandedSha256": "79e43d89881fdafc64aeba8c12136f33a04a3fc2d5d3ce2f15d1c2b103a20492",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/portable26.stdout",
+          "bytes": 420,
+          "sha256": "79e43d89881fdafc64aeba8c12136f33a04a3fc2d5d3ce2f15d1c2b103a20492"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v2/source-after.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 18660,
+      "storedSha256": "a02e8785e580af28af07ee2be09fd097e09d558467d6595c8a6d1c4537cfaf96",
+      "expandedBytes": 101617,
+      "expandedSha256": "65f94576c6d77348bfb43316ebb6a1ecad84d919073bbefb458a3ad30369d98d",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/source-after.json",
+          "bytes": 101617,
+          "sha256": "65f94576c6d77348bfb43316ebb6a1ecad84d919073bbefb458a3ad30369d98d"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/source-before.json",
+          "bytes": 101617,
+          "sha256": "65f94576c6d77348bfb43316ebb6a1ecad84d919073bbefb458a3ad30369d98d"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v2/terminal.json",
+      "encoding": "raw",
+      "storedBytes": 3183,
+      "storedSha256": "89b923e0227e9ee9cc8059a75f06213114e05df13496429273a8028fd77698a5",
+      "expandedBytes": 3183,
+      "expandedSha256": "89b923e0227e9ee9cc8059a75f06213114e05df13496429273a8028fd77698a5",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/terminal.json",
+          "bytes": 3183,
+          "sha256": "89b923e0227e9ee9cc8059a75f06213114e05df13496429273a8028fd77698a5"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v3/freeze.json",
+      "encoding": "raw",
+      "storedBytes": 3174,
+      "storedSha256": "1df5893c0e93983958f81fa442af1e636abc5400ee07c6996a50244ea9d04f58",
+      "expandedBytes": 3174,
+      "expandedSha256": "1df5893c0e93983958f81fa442af1e636abc5400ee07c6996a50244ea9d04f58",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/freeze.json",
+          "bytes": 3174,
+          "sha256": "1df5893c0e93983958f81fa442af1e636abc5400ee07c6996a50244ea9d04f58"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v3/portable26.stdout",
+      "encoding": "raw",
+      "storedBytes": 206,
+      "storedSha256": "cb97b204a4ab89fab101e7f025f1f2b577707438518174f8900f4ace322a68f4",
+      "expandedBytes": 206,
+      "expandedSha256": "cb97b204a4ab89fab101e7f025f1f2b577707438518174f8900f4ace322a68f4",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/portable26.stdout",
+          "bytes": 206,
+          "sha256": "cb97b204a4ab89fab101e7f025f1f2b577707438518174f8900f4ace322a68f4"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v3/source-after.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 19338,
+      "storedSha256": "2e6ab57b61154fb889c5f8efd984e7da7aa5f6ad398b8a737fcc10184c6437e1",
+      "expandedBytes": 106250,
+      "expandedSha256": "abfba1c5b69771373ee36bbed7ae85ecbd223fc6bf7aa2c3887eceb069a59a5c",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/source-after.json",
+          "bytes": 106250,
+          "sha256": "abfba1c5b69771373ee36bbed7ae85ecbd223fc6bf7aa2c3887eceb069a59a5c"
+        },
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/source-before.json",
+          "bytes": 106250,
+          "sha256": "abfba1c5b69771373ee36bbed7ae85ecbd223fc6bf7aa2c3887eceb069a59a5c"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks-v3/terminal.json",
+      "encoding": "raw",
+      "storedBytes": 3174,
+      "storedSha256": "6d97600b9f300cfed469960b96164c9ed409aa130ed82b7a9815e87c6962f002",
+      "expandedBytes": 3174,
+      "expandedSha256": "6d97600b9f300cfed469960b96164c9ed409aa130ed82b7a9815e87c6962f002",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/terminal.json",
+          "bytes": 3174,
+          "sha256": "6d97600b9f300cfed469960b96164c9ed409aa130ed82b7a9815e87c6962f002"
+        }
+      ]
+    },
+    {
+      "archivePath": "strict-first-preparation/README.md",
+      "encoding": "raw",
+      "storedBytes": 3934,
+      "storedSha256": "966b24f4793296386c1b5ab0d9d500c20d0cdf669b8e333f3c223e31c6f497ed",
+      "expandedBytes": 3934,
+      "expandedSha256": "966b24f4793296386c1b5ab0d9d500c20d0cdf669b8e333f3c223e31c6f497ed",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/strict-first-preparation/README.md",
+          "bytes": 3934,
+          "sha256": "966b24f4793296386c1b5ab0d9d500c20d0cdf669b8e333f3c223e31c6f497ed"
+        }
+      ]
+    },
+    {
+      "archivePath": "strict-first-preparation/proposal.md.gz",
+      "encoding": "gzip",
+      "storedBytes": 3033,
+      "storedSha256": "a6f4b139c1164c91a06da4e84c09185b146e0d8a110d8586812692e9703c96fa",
+      "expandedBytes": 5700,
+      "expandedSha256": "45cdba6f929adc753870860d1f62bacea05323380f7e59f34e791ca8c5297237",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/strict-first-preparation/proposal.md",
+          "bytes": 5700,
+          "sha256": "45cdba6f929adc753870860d1f62bacea05323380f7e59f34e791ca8c5297237"
+        }
+      ]
+    },
+    {
+      "archivePath": "strict-first-preparation/ready.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 1466,
+      "storedSha256": "8598d762b02b13ac3847ab5c218940ad126bb893f92ade955a6a9128ff6758c4",
+      "expandedBytes": 4682,
+      "expandedSha256": "9cb30b80064807938b779a2e28b16147123b3d7d4fd6141536b85fc4a2430e07",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/strict-first-preparation/ready.json",
+          "bytes": 4682,
+          "sha256": "9cb30b80064807938b779a2e28b16147123b3d7d4fd6141536b85fc4a2430e07"
+        }
+      ]
+    },
+    {
+      "archivePath": "strict-first-preparation/vitest.config.ts.txt",
+      "encoding": "raw",
+      "storedBytes": 143,
+      "storedSha256": "5d49362b8428085421825b33ebae209d2dcca09fb0c611dce44aef7c998fa1f9",
+      "expandedBytes": 143,
+      "expandedSha256": "5d49362b8428085421825b33ebae209d2dcca09fb0c611dce44aef7c998fa1f9",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/strict-first-preparation/vitest.config.ts",
+          "bytes": 143,
+          "sha256": "5d49362b8428085421825b33ebae209d2dcca09fb0c611dce44aef7c998fa1f9"
+        }
+      ]
+    },
+    {
+      "archivePath": "draft-review/AerationField.ts.txt.gz",
+      "encoding": "gzip",
+      "storedBytes": 6014,
+      "storedSha256": "a90643e28828e92da137560a7e67886308be0a18adcc0420a50ef09498e4225a",
+      "expandedBytes": 21420,
+      "expandedSha256": "fc325a2e09d69257e2a8960632821bc3d90c1917ffb96244cef0aa99a6a371dd",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/draft-review/AerationField.ts",
+          "bytes": 21420,
+          "sha256": "fc325a2e09d69257e2a8960632821bc3d90c1917ffb96244cef0aa99a6a371dd"
+        }
+      ]
+    },
+    {
+      "archivePath": "draft-review/candidate.patch.gz",
+      "encoding": "gzip",
+      "storedBytes": 5539,
+      "storedSha256": "885c9f0970328e6f3321c12376431459594bbb066fd414a7a5dda0226c3c6415",
+      "expandedBytes": 16798,
+      "expandedSha256": "77dc64ac4b3588137431ef50e61ecaa0be3c67c9c826d3e30100c026ca3de9c9",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/draft-review/candidate.patch",
+          "bytes": 16798,
+          "sha256": "77dc64ac4b3588137431ef50e61ecaa0be3c67c9c826d3e30100c026ca3de9c9"
+        }
+      ]
+    }
+  ],
+  "externalReferences": [
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/devTools.ts",
+      "bytes": 852,
+      "sha256": "e56a647be24485b22d073874f2aec11ab3c1f400552d9146a4092bc9f91e0915",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/devTools.ts",
+      "bytes": 852,
+      "sha256": "e56a647be24485b22d073874f2aec11ab3c1f400552d9146a4092bc9f91e0915",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/devTools.ts",
+      "bytes": 852,
+      "sha256": "e56a647be24485b22d073874f2aec11ab3c1f400552d9146a4092bc9f91e0915",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/Bindings.ts",
+      "bytes": 9283,
+      "sha256": "05f7086ceb824aefcdcd7d199645364f4d5435ab18951e2ec172e930f8354cdd",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/Bindings.ts",
+      "bytes": 9283,
+      "sha256": "05f7086ceb824aefcdcd7d199645364f4d5435ab18951e2ec172e930f8354cdd",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Bindings.ts",
+      "bytes": 9283,
+      "sha256": "05f7086ceb824aefcdcd7d199645364f4d5435ab18951e2ec172e930f8354cdd",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/Graphics.ts",
+      "bytes": 8753,
+      "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/Graphics.ts",
+      "bytes": 8753,
+      "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Graphics.ts",
+      "bytes": 8753,
+      "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/PhysicalMode.ts",
+      "bytes": 41672,
+      "sha256": "588f59b12a5aec7a1d51af16fed5949bcfadf61eb42503ed54391c31a19cf63f",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/PhysicalMode.ts",
+      "bytes": 41672,
+      "sha256": "588f59b12a5aec7a1d51af16fed5949bcfadf61eb42503ed54391c31a19cf63f",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/PhysicalMode.ts",
+      "bytes": 41672,
+      "sha256": "588f59b12a5aec7a1d51af16fed5949bcfadf61eb42503ed54391c31a19cf63f",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/Settings.ts",
+      "bytes": 19014,
+      "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/Settings.ts",
+      "bytes": 19014,
+      "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Settings.ts",
+      "bytes": 19014,
+      "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/Sticks.ts",
+      "bytes": 3737,
+      "sha256": "d80370fe5507f4b9d3192915201f6ceea5610560ef7698fe6196b8631e9e7ee3",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/Sticks.ts",
+      "bytes": 3737,
+      "sha256": "d80370fe5507f4b9d3192915201f6ceea5610560ef7698fe6196b8631e9e7ee3",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Sticks.ts",
+      "bytes": 3737,
+      "sha256": "d80370fe5507f4b9d3192915201f6ceea5610560ef7698fe6196b8631e9e7ee3",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/SurfConditions.ts",
+      "bytes": 10444,
+      "sha256": "f69da1da985f0caf1f519568d6cc1cea8c4a7629d5dcca1b0ae47d984d92b6f9",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/SurfConditions.ts",
+      "bytes": 10444,
+      "sha256": "f69da1da985f0caf1f519568d6cc1cea8c4a7629d5dcca1b0ae47d984d92b6f9",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/SurfConditions.ts",
+      "bytes": 10444,
+      "sha256": "f69da1da985f0caf1f519568d6cc1cea8c4a7629d5dcca1b0ae47d984d92b6f9",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/SurfZoneHost.ts",
+      "bytes": 8020,
+      "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/SurfZoneHost.ts",
+      "bytes": 8020,
+      "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/SurfZoneHost.ts",
+      "bytes": 8020,
+      "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/SurferChoice.ts",
+      "bytes": 3888,
+      "sha256": "87fbdc397b32fd6e88051ab21f2138027527833363d5844b85ec8fb70cc6ee74",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/SurferChoice.ts",
+      "bytes": 3888,
+      "sha256": "87fbdc397b32fd6e88051ab21f2138027527833363d5844b85ec8fb70cc6ee74",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/SurferChoice.ts",
+      "bytes": 3888,
+      "sha256": "87fbdc397b32fd6e88051ab21f2138027527833363d5844b85ec8fb70cc6ee74",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/pocketReflex.ts",
+      "bytes": 3295,
+      "sha256": "2e6bd57cac901031b091e71a0edd0742d607609165fd47b666b0b54ef5f28c64",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/pocketReflex.ts",
+      "bytes": 3295,
+      "sha256": "2e6bd57cac901031b091e71a0edd0742d607609165fd47b666b0b54ef5f28c64",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/pocketReflex.ts",
+      "bytes": 3295,
+      "sha256": "2e6bd57cac901031b091e71a0edd0742d607609165fd47b666b0b54ef5f28c64",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/rideAnalysis.ts",
+      "bytes": 12746,
+      "sha256": "d6be2ce5f0ad37af8505b410500ce2f73eafff641260c3a6cd1bccbd1c58284a",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/rideAnalysis.ts",
+      "bytes": 12746,
+      "sha256": "d6be2ce5f0ad37af8505b410500ce2f73eafff641260c3a6cd1bccbd1c58284a",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/rideAnalysis.ts",
+      "bytes": 12746,
+      "sha256": "d6be2ce5f0ad37af8505b410500ce2f73eafff641260c3a6cd1bccbd1c58284a",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/game/snapshotTrack.ts",
+      "bytes": 5730,
+      "sha256": "b2becaa523808f2c4d63b759ce2f17889e379f36455902b474989dffa87f8aca",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/game/snapshotTrack.ts",
+      "bytes": 5730,
+      "sha256": "b2becaa523808f2c4d63b759ce2f17889e379f36455902b474989dffa87f8aca",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/snapshotTrack.ts",
+      "bytes": 5730,
+      "sha256": "b2becaa523808f2c4d63b759ce2f17889e379f36455902b474989dffa87f8aca",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/net/protocol.ts",
+      "bytes": 9427,
+      "sha256": "275427bbf5918a9ac431b26a3a8dc10b0103ba0ec72d129050ced5a8514b819c",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/net/protocol.ts",
+      "bytes": 9427,
+      "sha256": "275427bbf5918a9ac431b26a3a8dc10b0103ba0ec72d129050ced5a8514b819c",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/protocol.ts",
+      "bytes": 9427,
+      "sha256": "275427bbf5918a9ac431b26a3a8dc10b0103ba0ec72d129050ced5a8514b819c",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/net/roomCode.ts",
+      "bytes": 1573,
+      "sha256": "05ca9a5e1960f137ef19e07b49854f21818b05367da146c162ffd20e65ea9ca6",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/net/roomCode.ts",
+      "bytes": 1573,
+      "sha256": "05ca9a5e1960f137ef19e07b49854f21818b05367da146c162ffd20e65ea9ca6",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/roomCode.ts",
+      "bytes": 1573,
+      "sha256": "05ca9a5e1960f137ef19e07b49854f21818b05367da146c162ffd20e65ea9ca6",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/AttachedRider.ts",
+      "bytes": 134070,
+      "sha256": "9a4781251cb3def1f43d1f598e9cb8149ad09257233ca0fe6ee2790d6e189362",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/AttachedRider.ts",
+      "bytes": 134070,
+      "sha256": "9a4781251cb3def1f43d1f598e9cb8149ad09257233ca0fe6ee2790d6e189362",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.ts",
+      "bytes": 134070,
+      "sha256": "9a4781251cb3def1f43d1f598e9cb8149ad09257233ca0fe6ee2790d6e189362",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/BoardRecovery.ts",
+      "bytes": 13882,
+      "sha256": "9b5161d0528f384e11b7968144734c858ca1eba481259b82b291d7640f003d2f",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/BoardRecovery.ts",
+      "bytes": 13882,
+      "sha256": "9b5161d0528f384e11b7968144734c858ca1eba481259b82b291d7640f003d2f",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardRecovery.ts",
+      "bytes": 13882,
+      "sha256": "9b5161d0528f384e11b7968144734c858ca1eba481259b82b291d7640f003d2f",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/Breath.ts",
+      "bytes": 1341,
+      "sha256": "eb953c2bf7607305e211ec768acc4e2ee644bb185ef924255364dbcaac8e26ed",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/Breath.ts",
+      "bytes": 1341,
+      "sha256": "eb953c2bf7607305e211ec768acc4e2ee644bb185ef924255364dbcaac8e26ed",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/Breath.ts",
+      "bytes": 1341,
+      "sha256": "eb953c2bf7607305e211ec768acc4e2ee644bb185ef924255364dbcaac8e26ed",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/DetachedSurfer.ts",
+      "bytes": 30945,
+      "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/DetachedSurfer.ts",
+      "bytes": 30945,
+      "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/DetachedSurfer.ts",
+      "bytes": 30945,
+      "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/Leash.ts",
+      "bytes": 4335,
+      "sha256": "a98744574a47996440838bd89a44ccc3cdbe782a10a4b371ca5c38f9c3cbc21b",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/Leash.ts",
+      "bytes": 4335,
+      "sha256": "a98744574a47996440838bd89a44ccc3cdbe782a10a4b371ca5c38f9c3cbc21b",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/Leash.ts",
+      "bytes": 4335,
+      "sha256": "a98744574a47996440838bd89a44ccc3cdbe782a10a4b371ca5c38f9c3cbc21b",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/MinimumJerkTrack.ts",
+      "bytes": 2659,
+      "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/MinimumJerkTrack.ts",
+      "bytes": 2659,
+      "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/MinimumJerkTrack.ts",
+      "bytes": 2659,
+      "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/RideSession.ts",
+      "bytes": 13837,
+      "sha256": "c0417c9d0f4dbfab2ee077ea4ab00a7ecc418e8cb5944e8d1a03497cbbe337e7",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/RideSession.ts",
+      "bytes": 13837,
+      "sha256": "c0417c9d0f4dbfab2ee077ea4ab00a7ecc418e8cb5944e8d1a03497cbbe337e7",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/RideSession.ts",
+      "bytes": 13837,
+      "sha256": "c0417c9d0f4dbfab2ee077ea4ab00a7ecc418e8cb5944e8d1a03497cbbe337e7",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/SurfWaterBodyField.ts",
+      "bytes": 1744,
+      "sha256": "e418d2ccd7d6106a0bf6dd0bc8ac24d12347ae27b40c5ce4cd4de63fcb2d55f9",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/SurfWaterBodyField.ts",
+      "bytes": 1744,
+      "sha256": "e418d2ccd7d6106a0bf6dd0bc8ac24d12347ae27b40c5ce4cd4de63fcb2d55f9",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/SurfWaterBodyField.ts",
+      "bytes": 1744,
+      "sha256": "e418d2ccd7d6106a0bf6dd0bc8ac24d12347ae27b40c5ce4cd4de63fcb2d55f9",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/boardReference.ts",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/boardReference.ts",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardReference.ts",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/boardShape.ts",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/boardShape.ts",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardShape.ts",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/eddies.ts",
+      "bytes": 2907,
+      "sha256": "f2a9033f2fa19a31c67f5b6197bbc7f922a2a0a43f194fd09eadcf81d97cd57f",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/eddies.ts",
+      "bytes": 2907,
+      "sha256": "f2a9033f2fa19a31c67f5b6197bbc7f922a2a0a43f194fd09eadcf81d97cd57f",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/eddies.ts",
+      "bytes": 2907,
+      "sha256": "f2a9033f2fa19a31c67f5b6197bbc7f922a2a0a43f194fd09eadcf81d97cd57f",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/finForces.ts",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/finForces.ts",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/finForces.ts",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/hullForces.ts",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/hullForces.ts",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/hullForces.ts",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/legSpring.ts",
+      "bytes": 5593,
+      "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/legSpring.ts",
+      "bytes": 5593,
+      "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/legSpring.ts",
+      "bytes": 5593,
+      "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/riderPosture.ts",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/riderPosture.ts",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/riderPosture.ts",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/takeOffCue.ts",
+      "bytes": 2242,
+      "sha256": "2ca345e82f21464c74f7f8889520af25f912752cf8f6f8fb4554c3efe95cf293",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/takeOffCue.ts",
+      "bytes": 2242,
+      "sha256": "2ca345e82f21464c74f7f8889520af25f912752cf8f6f8fb4554c3efe95cf293",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/takeOffCue.ts",
+      "bytes": 2242,
+      "sha256": "2ca345e82f21464c74f7f8889520af25f912752cf8f6f8fb4554c3efe95cf293",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/physics/waveFrame.ts",
+      "bytes": 10744,
+      "sha256": "d800f6bac7f4790e0bef33469246a847272dc2b617438a18a8f03c684e212079",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/physics/waveFrame.ts",
+      "bytes": 10744,
+      "sha256": "d800f6bac7f4790e0bef33469246a847272dc2b617438a18a8f03c684e212079",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/waveFrame.ts",
+      "bytes": 10744,
+      "sha256": "d800f6bac7f4790e0bef33469246a847272dc2b617438a18a8f03c684e212079",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/BoardMesh.ts",
+      "bytes": 9992,
+      "sha256": "711433cea5b63eae199df9936e6bdd7524257f07b42f588c614e1447c49bb328",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/BoardMesh.ts",
+      "bytes": 9992,
+      "sha256": "711433cea5b63eae199df9936e6bdd7524257f07b42f588c614e1447c49bb328",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/BoardMesh.ts",
+      "bytes": 9992,
+      "sha256": "711433cea5b63eae199df9936e6bdd7524257f07b42f588c614e1447c49bb328",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/BubblePoints.ts",
+      "bytes": 1442,
+      "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/BubblePoints.ts",
+      "bytes": 1442,
+      "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/BubblePoints.ts",
+      "bytes": 1442,
+      "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/CausticMap.ts",
+      "bytes": 8575,
+      "sha256": "289df2375c532a4ec9b72ffbe7396ddc977e6473277ccc5bb6abec3fde891380",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/CausticMap.ts",
+      "bytes": 8575,
+      "sha256": "289df2375c532a4ec9b72ffbe7396ddc977e6473277ccc5bb6abec3fde891380",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/CausticMap.ts",
+      "bytes": 8575,
+      "sha256": "289df2375c532a4ec9b72ffbe7396ddc977e6473277ccc5bb6abec3fde891380",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/FarFieldOcean.ts",
+      "bytes": 12090,
+      "sha256": "33874ac524e8b86c5a585a81a258bc08d0972ac102d9faccbcbc8f898435f19b",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/FarFieldOcean.ts",
+      "bytes": 12090,
+      "sha256": "33874ac524e8b86c5a585a81a258bc08d0972ac102d9faccbcbc8f898435f19b",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/FarFieldOcean.ts",
+      "bytes": 12090,
+      "sha256": "33874ac524e8b86c5a585a81a258bc08d0972ac102d9faccbcbc8f898435f19b",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/LipSheetMesh.ts",
+      "bytes": 11711,
+      "sha256": "690908f042039936935d8aa298b317185d76764498c0bfb688c3f9bed9c93ac1",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/LipSheetMesh.ts",
+      "bytes": 11711,
+      "sha256": "690908f042039936935d8aa298b317185d76764498c0bfb688c3f9bed9c93ac1",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/LipSheetMesh.ts",
+      "bytes": 11711,
+      "sha256": "690908f042039936935d8aa298b317185d76764498c0bfb688c3f9bed9c93ac1",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/PhysicalSurfaceSource.ts",
+      "bytes": 3054,
+      "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/PhysicalSurfaceSource.ts",
+      "bytes": 3054,
+      "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/PhysicalSurfaceSource.ts",
+      "bytes": 3054,
+      "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/PoolScenery.ts",
+      "bytes": 5271,
+      "sha256": "63e800c1c22a345d782a825078ea60b7b476dd6140c628b9a24663fe91015a59",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/PoolScenery.ts",
+      "bytes": 5271,
+      "sha256": "63e800c1c22a345d782a825078ea60b7b476dd6140c628b9a24663fe91015a59",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/PoolScenery.ts",
+      "bytes": 5271,
+      "sha256": "63e800c1c22a345d782a825078ea60b7b476dd6140c628b9a24663fe91015a59",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/ShadowRig.ts",
+      "bytes": 9235,
+      "sha256": "5fb6e8b3eacef2247f035a8dea0d45e315148afcdc626b99317a12ba6e7207fb",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/ShadowRig.ts",
+      "bytes": 9235,
+      "sha256": "5fb6e8b3eacef2247f035a8dea0d45e315148afcdc626b99317a12ba6e7207fb",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/ShadowRig.ts",
+      "bytes": 9235,
+      "sha256": "5fb6e8b3eacef2247f035a8dea0d45e315148afcdc626b99317a12ba6e7207fb",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/SpectatorCamera.ts",
+      "bytes": 8677,
+      "sha256": "ab2a5c2fa98db396c4f17740af7932afffe7d1e5a5f84d660c88f4b532b9f42d",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/SpectatorCamera.ts",
+      "bytes": 8677,
+      "sha256": "ab2a5c2fa98db396c4f17740af7932afffe7d1e5a5f84d660c88f4b532b9f42d",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/SpectatorCamera.ts",
+      "bytes": 8677,
+      "sha256": "ab2a5c2fa98db396c4f17740af7932afffe7d1e5a5f84d660c88f4b532b9f42d",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/SpotSeabed.ts",
+      "bytes": 4309,
+      "sha256": "11a745e51cf33cb1ef30319b28336e7e563f041bffa3230bdea4ccff7e0a7f8a",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/SpotSeabed.ts",
+      "bytes": 4309,
+      "sha256": "11a745e51cf33cb1ef30319b28336e7e563f041bffa3230bdea4ccff7e0a7f8a",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/SpotSeabed.ts",
+      "bytes": 4309,
+      "sha256": "11a745e51cf33cb1ef30319b28336e7e563f041bffa3230bdea4ccff7e0a7f8a",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/SprayPoints.ts",
+      "bytes": 6534,
+      "sha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/SprayPoints.ts",
+      "bytes": 6534,
+      "sha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/SprayPoints.ts",
+      "bytes": 6534,
+      "sha256": "23e722c6880c86c2e4ec81af681ad72732923bdd418695bd41593726db250439",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/SurfboardGeometry.ts",
+      "bytes": 2993,
+      "sha256": "fe55ed0267da5b8a2a5316433437c739d025ce49fb5b7f877ed3263422a62b4a",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/SurfboardGeometry.ts",
+      "bytes": 2993,
+      "sha256": "fe55ed0267da5b8a2a5316433437c739d025ce49fb5b7f877ed3263422a62b4a",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/SurfboardGeometry.ts",
+      "bytes": 2993,
+      "sha256": "fe55ed0267da5b8a2a5316433437c739d025ce49fb5b7f877ed3263422a62b4a",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/Surfer.ts",
+      "bytes": 9357,
+      "sha256": "84a2ccda09bb01217015f0daf3465123ff8cbb076e96527ff39e5f17c3effd0c",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/Surfer.ts",
+      "bytes": 9357,
+      "sha256": "84a2ccda09bb01217015f0daf3465123ff8cbb076e96527ff39e5f17c3effd0c",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/Surfer.ts",
+      "bytes": 9357,
+      "sha256": "84a2ccda09bb01217015f0daf3465123ff8cbb076e96527ff39e5f17c3effd0c",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/WaterSurface.ts",
+      "bytes": 34094,
+      "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/WaterSurface.ts",
+      "bytes": 34094,
+      "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/WaterSurface.ts",
+      "bytes": 34094,
+      "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5620,
+      "sha256": "f52314fb81f295a7b389b5c74133a4c538c4060563e0c30ce5d89c311c724697",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5620,
+      "sha256": "f52314fb81f295a7b389b5c74133a4c538c4060563e0c30ce5d89c311c724697",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5620,
+      "sha256": "f52314fb81f295a7b389b5c74133a4c538c4060563e0c30ce5d89c311c724697",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 28027,
+      "sha256": "cc52d17fb7cbf90621ec51a50b0236a055bd44b8794459361e41277000a88186",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 28027,
+      "sha256": "cc52d17fb7cbf90621ec51a50b0236a055bd44b8794459361e41277000a88186",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 28027,
+      "sha256": "cc52d17fb7cbf90621ec51a50b0236a055bd44b8794459361e41277000a88186",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/barrel/barrelMask.ts",
+      "bytes": 2329,
+      "sha256": "628393be4f679e41b4cf2254c419de487122a728de44d7ee14934082e5a9a025",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/barrel/barrelMask.ts",
+      "bytes": 2329,
+      "sha256": "628393be4f679e41b4cf2254c419de487122a728de44d7ee14934082e5a9a025",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMask.ts",
+      "bytes": 2329,
+      "sha256": "628393be4f679e41b4cf2254c419de487122a728de44d7ee14934082e5a9a025",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 1877,
+      "sha256": "d18790112d5c9b06903fffcce66f320e31974cec27e402c74b0030e608a1e589",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 1877,
+      "sha256": "d18790112d5c9b06903fffcce66f320e31974cec27e402c74b0030e608a1e589",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 1877,
+      "sha256": "d18790112d5c9b06903fffcce66f320e31974cec27e402c74b0030e608a1e589",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/board/LeashCord.ts",
+      "bytes": 3781,
+      "sha256": "162c7965237c5ebf68ed3e6d0cd1ab91fe2e61f6624e3ffb396f036b63cfc1f5",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/board/LeashCord.ts",
+      "bytes": 3781,
+      "sha256": "162c7965237c5ebf68ed3e6d0cd1ab91fe2e61f6624e3ffb396f036b63cfc1f5",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/board/LeashCord.ts",
+      "bytes": 3781,
+      "sha256": "162c7965237c5ebf68ed3e6d0cd1ab91fe2e61f6624e3ffb396f036b63cfc1f5",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/board/boardDesigns.ts",
+      "bytes": 4506,
+      "sha256": "2e6401b2b3a7961ce06ca81cfff8fb771645cc2ef0ac95938776f3c9fea7159a",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/board/boardDesigns.ts",
+      "bytes": 4506,
+      "sha256": "2e6401b2b3a7961ce06ca81cfff8fb771645cc2ef0ac95938776f3c9fea7159a",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/board/boardDesigns.ts",
+      "bytes": 4506,
+      "sha256": "2e6401b2b3a7961ce06ca81cfff8fb771645cc2ef0ac95938776f3c9fea7159a",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/board/finGeometry.ts",
+      "bytes": 1082,
+      "sha256": "6accebf5cb9700e1896a1ca2726e5a5b1f1a162e828df71ad1f4c46be225a1fe",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/board/finGeometry.ts",
+      "bytes": 1082,
+      "sha256": "6accebf5cb9700e1896a1ca2726e5a5b1f1a162e828df71ad1f4c46be225a1fe",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/board/finGeometry.ts",
+      "bytes": 1082,
+      "sha256": "6accebf5cb9700e1896a1ca2726e5a5b1f1a162e828df71ad1f4c46be225a1fe",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/character/SkinnedSurfer.ts",
+      "bytes": 7264,
+      "sha256": "c306fc9966ccfef1567224125598fe03e3ec985f9e4ecc8b6419bb0f9b71fee6",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/character/SkinnedSurfer.ts",
+      "bytes": 7264,
+      "sha256": "c306fc9966ccfef1567224125598fe03e3ec985f9e4ecc8b6419bb0f9b71fee6",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/SkinnedSurfer.ts",
+      "bytes": 7264,
+      "sha256": "c306fc9966ccfef1567224125598fe03e3ec985f9e4ecc8b6419bb0f9b71fee6",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/character/SurferView.ts",
+      "bytes": 3604,
+      "sha256": "7c6d6dd97b97e573c2d3376b03d3651cc28bbed314f2be9424373cf9a2dea081",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/character/SurferView.ts",
+      "bytes": 3604,
+      "sha256": "7c6d6dd97b97e573c2d3376b03d3651cc28bbed314f2be9424373cf9a2dea081",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/SurferView.ts",
+      "bytes": 3604,
+      "sha256": "7c6d6dd97b97e573c2d3376b03d3651cc28bbed314f2be9424373cf9a2dea081",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/character/outfits.ts",
+      "bytes": 7128,
+      "sha256": "d320111e5c1d95697457799005f7931f66da25b530a122469836aa076ea4f986",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/character/outfits.ts",
+      "bytes": 7128,
+      "sha256": "d320111e5c1d95697457799005f7931f66da25b530a122469836aa076ea4f986",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/outfits.ts",
+      "bytes": 7128,
+      "sha256": "d320111e5c1d95697457799005f7931f66da25b530a122469836aa076ea4f986",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/character/surferMaterial.ts",
+      "bytes": 3853,
+      "sha256": "192e67d4a3eb2a0cd324b4d7e008de2f1d2e9673afaec0de83d05a314322da2e",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/character/surferMaterial.ts",
+      "bytes": 3853,
+      "sha256": "192e67d4a3eb2a0cd324b4d7e008de2f1d2e9673afaec0de83d05a314322da2e",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/surferMaterial.ts",
+      "bytes": 3853,
+      "sha256": "192e67d4a3eb2a0cd324b4d7e008de2f1d2e9673afaec0de83d05a314322da2e",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/foamPattern.ts",
+      "bytes": 10598,
+      "sha256": "02550a3b3e9b6f22fded53fbee8efd975aaf216deabe78ef4b74983c703ce9ce",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/foamPattern.ts",
+      "bytes": 10598,
+      "sha256": "02550a3b3e9b6f22fded53fbee8efd975aaf216deabe78ef4b74983c703ce9ce",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/foamPattern.ts",
+      "bytes": 10598,
+      "sha256": "02550a3b3e9b6f22fded53fbee8efd975aaf216deabe78ef4b74983c703ce9ce",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/gridGeometry.ts",
+      "bytes": 2444,
+      "sha256": "b1e8967460722e7d5390a97d59469fbb46a102b0e1f416c8227761efa8a81b2c",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/gridGeometry.ts",
+      "bytes": 2444,
+      "sha256": "b1e8967460722e7d5390a97d59469fbb46a102b0e1f416c8227761efa8a81b2c",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/gridGeometry.ts",
+      "bytes": 2444,
+      "sha256": "b1e8967460722e7d5390a97d59469fbb46a102b0e1f416c8227761efa8a81b2c",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/HumanoidRig.ts",
+      "bytes": 70831,
+      "sha256": "b6282cf4854959a4779a58540dc0a4b85b59422e9e65deac1818237f766fb5fa",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/HumanoidRig.ts",
+      "bytes": 70831,
+      "sha256": "b6282cf4854959a4779a58540dc0a4b85b59422e9e65deac1818237f766fb5fa",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/HumanoidRig.ts",
+      "bytes": 70831,
+      "sha256": "b6282cf4854959a4779a58540dc0a4b85b59422e9e65deac1818237f766fb5fa",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/armSwing.ts",
+      "bytes": 7187,
+      "sha256": "c66519a9084ecd95c59f0fe780d09ab084a38506d23927d7dd8a12c2bf792a2d",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/armSwing.ts",
+      "bytes": 7187,
+      "sha256": "c66519a9084ecd95c59f0fe780d09ab084a38506d23927d7dd8a12c2bf792a2d",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/armSwing.ts",
+      "bytes": 7187,
+      "sha256": "c66519a9084ecd95c59f0fe780d09ab084a38506d23927d7dd8a12c2bf792a2d",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/bodyInertia.ts",
+      "bytes": 16289,
+      "sha256": "bef14ba00c00a92d9f11d5cd91094dd3e51945b514e4b0cf7555df0aef3283ee",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/bodyInertia.ts",
+      "bytes": 16289,
+      "sha256": "bef14ba00c00a92d9f11d5cd91094dd3e51945b514e4b0cf7555df0aef3283ee",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/bodyInertia.ts",
+      "bytes": 16289,
+      "sha256": "bef14ba00c00a92d9f11d5cd91094dd3e51945b514e4b0cf7555df0aef3283ee",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/breathing.ts",
+      "bytes": 3918,
+      "sha256": "d59498ce39ceeb3ebed4c827c5829f330a2b057390af2c3801b9239b83fc6af1",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/breathing.ts",
+      "bytes": 3918,
+      "sha256": "d59498ce39ceeb3ebed4c827c5829f330a2b057390af2c3801b9239b83fc6af1",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/breathing.ts",
+      "bytes": 3918,
+      "sha256": "d59498ce39ceeb3ebed4c827c5829f330a2b057390af2c3801b9239b83fc6af1",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/humanoidBones.ts",
+      "bytes": 1629,
+      "sha256": "1003b861e5f0b22f59caa1f43a2a8c261e0b2d68e96e57b07af8f282d0b7eae1",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/humanoidBones.ts",
+      "bytes": 1629,
+      "sha256": "1003b861e5f0b22f59caa1f43a2a8c261e0b2d68e96e57b07af8f282d0b7eae1",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/humanoidBones.ts",
+      "bytes": 1629,
+      "sha256": "1003b861e5f0b22f59caa1f43a2a8c261e0b2d68e96e57b07af8f282d0b7eae1",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/orientBone.ts",
+      "bytes": 1848,
+      "sha256": "d0c4457f95b02b011171d7c373a23395f05f6a212774dac849dd08301768de61",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/orientBone.ts",
+      "bytes": 1848,
+      "sha256": "d0c4457f95b02b011171d7c373a23395f05f6a212774dac849dd08301768de61",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/orientBone.ts",
+      "bytes": 1848,
+      "sha256": "d0c4457f95b02b011171d7c373a23395f05f6a212774dac849dd08301768de61",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/pointInertia.ts",
+      "bytes": 8260,
+      "sha256": "6f618025a9a36ef86aacf0988296a0d6eab5616fde65efdb8b9a01eaa435bbc2",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/pointInertia.ts",
+      "bytes": 8260,
+      "sha256": "6f618025a9a36ef86aacf0988296a0d6eab5616fde65efdb8b9a01eaa435bbc2",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/pointInertia.ts",
+      "bytes": 8260,
+      "sha256": "6f618025a9a36ef86aacf0988296a0d6eab5616fde65efdb8b9a01eaa435bbc2",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/posedBody.ts",
+      "bytes": 1808,
+      "sha256": "f97ed577bc6f722057496e5a303dab8bf3405276a9df66fe06e5cd4f36a1f44a",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/posedBody.ts",
+      "bytes": 1808,
+      "sha256": "f97ed577bc6f722057496e5a303dab8bf3405276a9df66fe06e5cd4f36a1f44a",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/posedBody.ts",
+      "bytes": 1808,
+      "sha256": "f97ed577bc6f722057496e5a303dab8bf3405276a9df66fe06e5cd4f36a1f44a",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/posturePoints.ts",
+      "bytes": 4071,
+      "sha256": "6090aa6ec5459177f3b651a6c45426e6a413bd25c3600c491814f85c6f798006",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/posturePoints.ts",
+      "bytes": 4071,
+      "sha256": "6090aa6ec5459177f3b651a6c45426e6a413bd25c3600c491814f85c6f798006",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/posturePoints.ts",
+      "bytes": 4071,
+      "sha256": "6090aa6ec5459177f3b651a6c45426e6a413bd25c3600c491814f85c6f798006",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/riderMotion.ts",
+      "bytes": 4760,
+      "sha256": "14b11c70e4ad365ad29cc8c14e10251e060351a96050bf5912d34f9208f9f286",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/riderMotion.ts",
+      "bytes": 4760,
+      "sha256": "14b11c70e4ad365ad29cc8c14e10251e060351a96050bf5912d34f9208f9f286",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/riderMotion.ts",
+      "bytes": 4760,
+      "sha256": "14b11c70e4ad365ad29cc8c14e10251e060351a96050bf5912d34f9208f9f286",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/riderVisualState.ts",
+      "bytes": 4069,
+      "sha256": "0d9f9337315f6a73b3d0e7ac7c2a69315794947e62a6a006b89a955e38a3a960",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/riderVisualState.ts",
+      "bytes": 4069,
+      "sha256": "0d9f9337315f6a73b3d0e7ac7c2a69315794947e62a6a006b89a955e38a3a960",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/riderVisualState.ts",
+      "bytes": 4069,
+      "sha256": "0d9f9337315f6a73b3d0e7ac7c2a69315794947e62a6a006b89a955e38a3a960",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/stanceBlend.ts",
+      "bytes": 3016,
+      "sha256": "cf130b85a20a120e59d7bd8d036b5810d578a15ecb12a2be35779f8578dfbca3",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/stanceBlend.ts",
+      "bytes": 3016,
+      "sha256": "cf130b85a20a120e59d7bd8d036b5810d578a15ecb12a2be35779f8578dfbca3",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/stanceBlend.ts",
+      "bytes": 3016,
+      "sha256": "cf130b85a20a120e59d7bd8d036b5810d578a15ecb12a2be35779f8578dfbca3",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/rig/twoBoneIk.ts",
+      "bytes": 1690,
+      "sha256": "962a0ef644ceea761ed5406201be39ed885e5cc97f76b54251bd75d66da48d28",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/rig/twoBoneIk.ts",
+      "bytes": 1690,
+      "sha256": "962a0ef644ceea761ed5406201be39ed885e5cc97f76b54251bd75d66da48d28",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/twoBoneIk.ts",
+      "bytes": 1690,
+      "sha256": "962a0ef644ceea761ed5406201be39ed885e5cc97f76b54251bd75d66da48d28",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/churnTexture.ts",
+      "bytes": 4462,
+      "sha256": "0a3206ce7654aaae06919916ec109bddb2104acff14b8d2e7a80fd6992aa2045",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/churnTexture.ts",
+      "bytes": 4462,
+      "sha256": "0a3206ce7654aaae06919916ec109bddb2104acff14b8d2e7a80fd6992aa2045",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/churnTexture.ts",
+      "bytes": 4462,
+      "sha256": "0a3206ce7654aaae06919916ec109bddb2104acff14b8d2e7a80fd6992aa2045",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/cubicSurface.ts",
+      "bytes": 2927,
+      "sha256": "c396930d9ff5def978e9a1657931a5c3c49e7cee1c41c577d6cdfbb2c2caee18",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/cubicSurface.ts",
+      "bytes": 2927,
+      "sha256": "c396930d9ff5def978e9a1657931a5c3c49e7cee1c41c577d6cdfbb2c2caee18",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/cubicSurface.ts",
+      "bytes": 2927,
+      "sha256": "c396930d9ff5def978e9a1657931a5c3c49e7cee1c41c577d6cdfbb2c2caee18",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/mist.ts",
+      "bytes": 876,
+      "sha256": "eb40707acfb34e514f9c4394bef0bcfe9204293a758652a99ccd80ceee34d418",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/mist.ts",
+      "bytes": 876,
+      "sha256": "eb40707acfb34e514f9c4394bef0bcfe9204293a758652a99ccd80ceee34d418",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/mist.ts",
+      "bytes": 876,
+      "sha256": "eb40707acfb34e514f9c4394bef0bcfe9204293a758652a99ccd80ceee34d418",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/richLip.ts",
+      "bytes": 17301,
+      "sha256": "29741392cc5faedbfdcddb7c6fd794c57b27c897e595023ba74ccb62b5f262c3",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/richLip.ts",
+      "bytes": 17301,
+      "sha256": "29741392cc5faedbfdcddb7c6fd794c57b27c897e595023ba74ccb62b5f262c3",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richLip.ts",
+      "bytes": 17301,
+      "sha256": "29741392cc5faedbfdcddb7c6fd794c57b27c897e595023ba74ccb62b5f262c3",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/richPatch.ts",
+      "bytes": 4670,
+      "sha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/richPatch.ts",
+      "bytes": 4670,
+      "sha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richPatch.ts",
+      "bytes": 4670,
+      "sha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/richSpray.ts",
+      "bytes": 3595,
+      "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/richSpray.ts",
+      "bytes": 3595,
+      "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richSpray.ts",
+      "bytes": 3595,
+      "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/richWaterGlsl.ts",
+      "bytes": 8059,
+      "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/richWaterGlsl.ts",
+      "bytes": 8059,
+      "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richWaterGlsl.ts",
+      "bytes": 8059,
+      "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/rippleTexture.ts",
+      "bytes": 7451,
+      "sha256": "ab9f8deb2f901165f267e35d4928270320ebfb04846026b7a565a7391de80667",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/rippleTexture.ts",
+      "bytes": 7451,
+      "sha256": "ab9f8deb2f901165f267e35d4928270320ebfb04846026b7a565a7391de80667",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/rippleTexture.ts",
+      "bytes": 7451,
+      "sha256": "ab9f8deb2f901165f267e35d4928270320ebfb04846026b7a565a7391de80667",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/specular.ts",
+      "bytes": 1368,
+      "sha256": "324a52352633b8b3834f27c3113045fc6a356f48933ea4f36d937238602dc5e6",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/specular.ts",
+      "bytes": 1368,
+      "sha256": "324a52352633b8b3834f27c3113045fc6a356f48933ea4f36d937238602dc5e6",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/specular.ts",
+      "bytes": 1368,
+      "sha256": "324a52352633b8b3834f27c3113045fc6a356f48933ea4f36d937238602dc5e6",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/streaks.ts",
+      "bytes": 4931,
+      "sha256": "f156b6c35aad7d240a6a9d1bbf330016257db253757e7470e74723a815208262",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/streaks.ts",
+      "bytes": 4931,
+      "sha256": "f156b6c35aad7d240a6a9d1bbf330016257db253757e7470e74723a815208262",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/streaks.ts",
+      "bytes": 4931,
+      "sha256": "f156b6c35aad7d240a6a9d1bbf330016257db253757e7470e74723a815208262",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/tubeCarve.ts",
+      "bytes": 7767,
+      "sha256": "5b8ccfed406bee44877e9791f78223931234a4d52a03c1c4cf30cc9461639ce4",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/tubeCarve.ts",
+      "bytes": 7767,
+      "sha256": "5b8ccfed406bee44877e9791f78223931234a4d52a03c1c4cf30cc9461639ce4",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/tubeCarve.ts",
+      "bytes": 7767,
+      "sha256": "5b8ccfed406bee44877e9791f78223931234a4d52a03c1c4cf30cc9461639ce4",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/water/waterLook.ts",
+      "bytes": 109,
+      "sha256": "26c6766f0b6818381db4bd016a9c077f1ea13a7483964f97ec541795c48b8529",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/water/waterLook.ts",
+      "bytes": 109,
+      "sha256": "26c6766f0b6818381db4bd016a9c077f1ea13a7483964f97ec541795c48b8529",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/waterLook.ts",
+      "bytes": 109,
+      "sha256": "26c6766f0b6818381db4bd016a9c077f1ea13a7483964f97ec541795c48b8529",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/waterChop.ts",
+      "bytes": 2208,
+      "sha256": "4a486370db15aead8214a01d7d48975e7bd6d13a20d0cd4c15525ee5a6860fad",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/waterChop.ts",
+      "bytes": 2208,
+      "sha256": "4a486370db15aead8214a01d7d48975e7bd6d13a20d0cd4c15525ee5a6860fad",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/waterChop.ts",
+      "bytes": 2208,
+      "sha256": "4a486370db15aead8214a01d7d48975e7bd6d13a20d0cd4c15525ee5a6860fad",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/scene/waterOptics.ts",
+      "bytes": 13592,
+      "sha256": "3b235ece7102e835f467126158f961c45cdaaff5dbb32ce2b28544a26159ad07",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/scene/waterOptics.ts",
+      "bytes": 13592,
+      "sha256": "3b235ece7102e835f467126158f961c45cdaaff5dbb32ce2b28544a26159ad07",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/waterOptics.ts",
+      "bytes": 13592,
+      "sha256": "3b235ece7102e835f467126158f961c45cdaaff5dbb32ce2b28544a26159ad07",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/ui/strings.ts",
+      "bytes": 25504,
+      "sha256": "52a264b509f229871384639499306df5fea50777ed2c1400efbb1ac6090863b6",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/ui/strings.ts",
+      "bytes": 25504,
+      "sha256": "52a264b509f229871384639499306df5fea50777ed2c1400efbb1ac6090863b6",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/strings.ts",
+      "bytes": 25504,
+      "sha256": "52a264b509f229871384639499306df5fea50777ed2c1400efbb1ac6090863b6",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/ui/surfHeight.ts",
+      "bytes": 3159,
+      "sha256": "e5e475b14f1cd3660253e844722c52a0ca84c32249006e195f07f04ccb73e596",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/ui/surfHeight.ts",
+      "bytes": 3159,
+      "sha256": "e5e475b14f1cd3660253e844722c52a0ca84c32249006e195f07f04ccb73e596",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/surfHeight.ts",
+      "bytes": 3159,
+      "sha256": "e5e475b14f1cd3660253e844722c52a0ca84c32249006e195f07f04ccb73e596",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/ui/units.ts",
+      "bytes": 1267,
+      "sha256": "b7b3393a63e25e562aa50e513aadd2bb55a64e58c6403b1378194517fb8428f0",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/ui/units.ts",
+      "bytes": 1267,
+      "sha256": "b7b3393a63e25e562aa50e513aadd2bb55a64e58c6403b1378194517fb8428f0",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/units.ts",
+      "bytes": 1267,
+      "sha256": "b7b3393a63e25e562aa50e513aadd2bb55a64e58c6403b1378194517fb8428f0",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/AdvectionStencil.ts",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/AdvectionStencil.ts",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AdvectionStencil.ts",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/AerationField.ts",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/AerationField.ts",
+      "bytes": 22511,
+      "sha256": "23b96af5511399913ef56d1923d07bc31bb66a2142c64a8558d4b20e4cc0426e",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AerationField.ts",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/BoussinesqSolver.ts",
+      "bytes": 38556,
+      "sha256": "66cdbb3eb83f7d03ade33c11a429889b217d3b81cd6246b6dd5006a40b0e5d79",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/BoussinesqSolver.ts",
+      "bytes": 38556,
+      "sha256": "66cdbb3eb83f7d03ade33c11a429889b217d3b81cd6246b6dd5006a40b0e5d79",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver.ts",
+      "bytes": 38556,
+      "sha256": "66cdbb3eb83f7d03ade33c11a429889b217d3b81cd6246b6dd5006a40b0e5d79",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/Breaking.ts",
+      "bytes": 12851,
+      "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/Breaking.ts",
+      "bytes": 12851,
+      "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Breaking.ts",
+      "bytes": 12851,
+      "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/BubbleCloud.ts",
+      "bytes": 5786,
+      "sha256": "d8660d57adbe0215ea3602af7a1278637a8619d182fd28d6179a4fbd3010a502",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/BubbleCloud.ts",
+      "bytes": 5786,
+      "sha256": "d8660d57adbe0215ea3602af7a1278637a8619d182fd28d6179a4fbd3010a502",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/BubbleCloud.ts",
+      "bytes": 5786,
+      "sha256": "d8660d57adbe0215ea3602af7a1278637a8619d182fd28d6179a4fbd3010a502",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/CrestKinematics.ts",
+      "bytes": 5019,
+      "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/CrestKinematics.ts",
+      "bytes": 5019,
+      "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/CrestKinematics.ts",
+      "bytes": 5019,
+      "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/FarFieldProfile.ts",
+      "bytes": 7291,
+      "sha256": "526b8972ed5aec1e300daf4b927bbb927e0c9a9df8b5442ed6217065f1c18c4d",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/FarFieldProfile.ts",
+      "bytes": 7291,
+      "sha256": "526b8972ed5aec1e300daf4b927bbb927e0c9a9df8b5442ed6217065f1c18c4d",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/FarFieldProfile.ts",
+      "bytes": 7291,
+      "sha256": "526b8972ed5aec1e300daf4b927bbb927e0c9a9df8b5442ed6217065f1c18c4d",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/FoamField.ts",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/FoamField.ts",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/FoamField.ts",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/Overturn.ts",
+      "bytes": 10648,
+      "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/Overturn.ts",
+      "bytes": 10648,
+      "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Overturn.ts",
+      "bytes": 10648,
+      "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/PlungingLip.ts",
+      "bytes": 66165,
+      "sha256": "901f08ec0c4e24167df9321b06c29b221dd86689d9c602d7ae4cd194046ac13b",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/PlungingLip.ts",
+      "bytes": 66165,
+      "sha256": "901f08ec0c4e24167df9321b06c29b221dd86689d9c602d7ae4cd194046ac13b",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/PlungingLip.ts",
+      "bytes": 66165,
+      "sha256": "901f08ec0c4e24167df9321b06c29b221dd86689d9c602d7ae4cd194046ac13b",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/Refraction.ts",
+      "bytes": 5965,
+      "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/Refraction.ts",
+      "bytes": 5965,
+      "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Refraction.ts",
+      "bytes": 5965,
+      "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/SeaStateBoundary.ts",
+      "bytes": 5460,
+      "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/SeaStateBoundary.ts",
+      "bytes": 5460,
+      "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary.ts",
+      "bytes": 5460,
+      "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/ShallowWaterSolver.ts",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/ShallowWaterSolver.ts",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver.ts",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/SideFeed.ts",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/SideFeed.ts",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/SprayCloud.ts",
+      "bytes": 25478,
+      "sha256": "43fb50e67f430eeefe062bd5125a6b2e35725a806c68b0c6ea7a5ae8dd530f74",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/SprayCloud.ts",
+      "bytes": 25478,
+      "sha256": "43fb50e67f430eeefe062bd5125a6b2e35725a806c68b0c6ea7a5ae8dd530f74",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SprayCloud.ts",
+      "bytes": 25478,
+      "sha256": "43fb50e67f430eeefe062bd5125a6b2e35725a806c68b0c6ea7a5ae8dd530f74",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/StormSwell.ts",
+      "bytes": 5863,
+      "sha256": "f13b70386b369aa11f11c990dcacd4caeb467f9f1a699ad57a26dd3eeb3b46eb",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/StormSwell.ts",
+      "bytes": 5863,
+      "sha256": "f13b70386b369aa11f11c990dcacd4caeb467f9f1a699ad57a26dd3eeb3b46eb",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/StormSwell.ts",
+      "bytes": 5863,
+      "sha256": "f13b70386b369aa11f11c990dcacd4caeb467f9f1a699ad57a26dd3eeb3b46eb",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/SurfMeter.ts",
+      "bytes": 3170,
+      "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/SurfMeter.ts",
+      "bytes": 3170,
+      "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfMeter.ts",
+      "bytes": 3170,
+      "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/SurfZoneRunner.ts",
+      "bytes": 40621,
+      "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/SurfZoneRunner.ts",
+      "bytes": 40754,
+      "sha256": "4fa00df83db6e88de07c5bbae3e508b29cc57217dc20b363d1514adffe5a25a8",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneRunner.ts",
+      "bytes": 40621,
+      "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/SurfZoneSimulation.ts",
+      "bytes": 68993,
+      "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/SurfZoneSimulation.ts",
+      "bytes": 70011,
+      "sha256": "d4387c6b501ca13d4631cf0612395009ec1be4b9adac4b6319654d86d288981e",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.ts",
+      "bytes": 68993,
+      "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/SwellReadout.ts",
+      "bytes": 2110,
+      "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/SwellReadout.ts",
+      "bytes": 2110,
+      "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SwellReadout.ts",
+      "bytes": 2110,
+      "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/BreakingFront.ts",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/BreakingFront.ts",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/BreakingFront.ts",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/SweptCrash.ts",
+      "bytes": 28953,
+      "sha256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/SweptCrash.ts",
+      "bytes": 28953,
+      "sha256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/SweptCrash.ts",
+      "bytes": 28953,
+      "sha256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2036,
+      "sha256": "b58c4038afae8f3994cbf9e58a90a9806ac61d717a0cb51940ff7c5cd059d974",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2036,
+      "sha256": "b58c4038afae8f3994cbf9e58a90a9806ac61d717a0cb51940ff7c5cd059d974",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2036,
+      "sha256": "b58c4038afae8f3994cbf9e58a90a9806ac61d717a0cb51940ff7c5cd059d974",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/crashCurve.ts",
+      "bytes": 14166,
+      "sha256": "361183fa14ead52594e1bad25a6a47fd274bc294e8f8c6d5199814e01e4778a9",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/crashCurve.ts",
+      "bytes": 14166,
+      "sha256": "361183fa14ead52594e1bad25a6a47fd274bc294e8f8c6d5199814e01e4778a9",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crashCurve.ts",
+      "bytes": 14166,
+      "sha256": "361183fa14ead52594e1bad25a6a47fd274bc294e8f8c6d5199814e01e4778a9",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/crestOnset.ts",
+      "bytes": 4651,
+      "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/crestOnset.ts",
+      "bytes": 4651,
+      "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestOnset.ts",
+      "bytes": 4651,
+      "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/heldOverturn.ts",
+      "bytes": 4886,
+      "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/heldOverturn.ts",
+      "bytes": 4886,
+      "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/heldOverturn.ts",
+      "bytes": 4886,
+      "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/breakingAge.ts",
+      "bytes": 2861,
+      "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/breakingAge.ts",
+      "bytes": 2861,
+      "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/breakingAge.ts",
+      "bytes": 2861,
+      "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/gpu/webgpu-env.d.ts",
+      "bytes": 40,
+      "sha256": "039706dee4c12a5f855fe20b669865a5af1da6e9add02e461a188821aa7a36d1",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/gpu/webgpu-env.d.ts",
+      "bytes": 40,
+      "sha256": "039706dee4c12a5f855fe20b669865a5af1da6e9add02e461a188821aa7a36d1",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/webgpu-env.d.ts",
+      "bytes": 40,
+      "sha256": "039706dee4c12a5f855fe20b669865a5af1da6e9add02e461a188821aa7a36d1",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/particleBudget.ts",
+      "bytes": 2109,
+      "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/particleBudget.ts",
+      "bytes": 2109,
+      "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/particleBudget.ts",
+      "bytes": 2109,
+      "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/particleSources.ts",
+      "bytes": 788,
+      "sha256": "76e2b38a5329a8f5b36d9373513d52cb42a92361b996287ac74d4e5458c96cb0",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/particleSources.ts",
+      "bytes": 788,
+      "sha256": "76e2b38a5329a8f5b36d9373513d52cb42a92361b996287ac74d4e5458c96cb0",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/particleSources.ts",
+      "bytes": 788,
+      "sha256": "76e2b38a5329a8f5b36d9373513d52cb42a92361b996287ac74d4e5458c96cb0",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/surfForecast.ts",
+      "bytes": 3914,
+      "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/surfForecast.ts",
+      "bytes": 3914,
+      "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfForecast.ts",
+      "bytes": 3914,
+      "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/surfZoneState.ts",
+      "bytes": 3955,
+      "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/surfZoneState.ts",
+      "bytes": 3955,
+      "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfZoneState.ts",
+      "bytes": 3955,
+      "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/tubeTable.ts",
+      "bytes": 6876,
+      "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/tubeTable.ts",
+      "bytes": 6876,
+      "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/tubeTable.ts",
+      "bytes": 6876,
+      "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/src/wave/warmStart.ts",
+      "bytes": 6238,
+      "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d",
+      "reason": "Independent e3 reference source, hash-only dependency authority; no full source tree copied"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/src/wave/warmStart.ts",
+      "bytes": 6238,
+      "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d",
+      "reason": "Frozen candidate source; only three changed files reconstructed by archived exact candidate.patch"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/warmStart.ts",
+      "bytes": 6238,
+      "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d",
+      "reason": "Tracked immutable base dependency authority at e3 commit"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost.mjs",
+      "bytes": 1046198,
+      "sha256": "34104461bdd23b63d33da30857dedb73d69ae7f3668a05df9953b3dbf3ec2242",
+      "reason": "Reviewed generated1046198B NodeESM bundle, hash reference only; reproducible archived cost/intake/source patch and external base source"
+    },
+    {
+      "path": "/private/tmp/surf-tube-fallback-fps-20261004/source-manifest.json",
+      "bytes": 368315,
+      "sha256": "77548eb89455a1b1b6153a3ca81622b6ea435fba184fb04ea79a45a0553a715b",
+      "reason": "Borrowed552-file accepted baseline source authority"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/render-scale/baseline-held-source.json.gz",
+      "bytes": 15308604,
+      "sha256": "95f3937160eff73a9c751fcbdc2246a811978b49be7dbbda0e56ed9dea69e584",
+      "reason": "Existing lossless fixture archive; no second large copy"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "reason": "Unchanged dependency/package identity; no asset/dependency copy"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/package.json",
+      "bytes": 3620,
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+      "reason": "Unchanged dependency/package identity; no asset/dependency copy"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/package.json",
+      "bytes": 5445,
+      "sha256": "bb27a3b3f172321701a7b1f1d90a59e5c9596673176f553a91c1e93b9667abfa",
+      "reason": "Unchanged dependency/package identity; no asset/dependency copy"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/package.json",
+      "bytes": 6219,
+      "sha256": "4ac9bd4b57a1470fa4515e479cea7ca78875802b661b87dfc896e216d4cf6869",
+      "reason": "Unchanged dependency/package identity; no asset/dependency copy"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/package.json",
+      "bytes": 3672,
+      "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de",
+      "reason": "Unchanged dependency/package identity; no asset/dependency copy"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@webgpu/types/package.json",
+      "bytes": 740,
+      "sha256": "c58597e365f42b61a165210e49e90a864730ee4716473de67d36dfa42519ec99",
+      "reason": "Unchanged dependency/package identity; no asset/dependency copy"
+    }
+  ],
+  "readOnlyUseLinks": [
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/public",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/public"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/original/package.json",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/package.json"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/public",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/public"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate/package.json",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/package.json"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules"
+    }
+  ],
+  "archivedOriginalCount": 88,
+  "uniquePayloadCount": 62,
+  "duplicateOriginalAliases": 26,
+  "totalStoredPayloadBytes": 247317,
+  "totalExpandedUniqueBytes": 1003478,
+  "excluded": [
+    "full unchanged src tree",
+    "public/assets",
+    "node_modules",
+    "generated cost.mjs bundle bytes"
+  ],
+  "unexecutedOptionalOuter": "prepared source proposal only; root used a separate inline wrapper reflected in actual terminal/argv/PID records",
+  "noIndexRuntimeGitTestBuildNumericalHardwareChanges": true
+}

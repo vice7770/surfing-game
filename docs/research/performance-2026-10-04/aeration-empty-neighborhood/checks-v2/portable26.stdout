@@ -1,0 +1,12 @@
+
+ RUN  v5.0.1 /private/tmp/surf-aeration-empty-neighborhood-20261004
+
+ ❯ tests/parity.test.ts (26 tests | 1 failed) 317ms
+   ❯ isolated exact aeration empty-neighborhood prototype (23)
+     × preserves the generic update arithmetic independently of the new owner 53ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 25 passed (26)
+   Start at  05:56:40
+   Duration  971ms (transform 51%, tests 36%, import 12%)
+

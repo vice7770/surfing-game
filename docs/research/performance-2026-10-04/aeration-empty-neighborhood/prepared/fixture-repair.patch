@@ -1,0 +1,11 @@
+--- a/tests/parity.test.ts
++++ b/tests/parity.test.ts
+@@ -252,7 +252,7 @@
+         import('../candidate/src/wave/AerationField'), import('../candidate/src/wave/ShallowWaterSolver'), import('../candidate/src/wave/FoamField'), import('../candidate/src/wave/AdvectionStencil'),
+       ]);
+       const water = new FreshSolver({ nx: 8, xMin: -4, dx: 1, zEdges: edges(-8, 8, 8), xBoundary: 'open' }, () => 2);
+-      const owner = FreshAir.forOrdinaryWorker(water), foam = new FreshFoam(water), stencil = new FreshStencil();
++      const owner = FreshAir.forOrdinaryWorker(water), foam = new FreshFoam(water, { dense: 3, residual: 20 }), stencil = new FreshStencil();
+       owner.field.addAir(0, 0, .01, .5); foam.update(1 / 60, new Float64Array(water.h.length), stencil); owner.update(1 / 60, stencil);
+       expect((owner.field as unknown as PrivateAir).clearTags).toBeUndefined(); expect(owner.work.skipped).toBe(0);
+     } finally { Object.defineProperty(Math, 'exp', before); vi.resetModules(); }

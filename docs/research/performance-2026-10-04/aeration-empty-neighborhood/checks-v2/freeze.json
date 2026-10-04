@@ -1,0 +1,85 @@
+{
+  "schema": "aeration-empty-source-oracle-failure/v1",
+  "status": "failed-and-stopped",
+  "toolSession": 46241,
+  "toolExitCode": 1,
+  "strictExitCode": 0,
+  "vitestExitCode": 1,
+  "testsPassed": 25,
+  "testsFailed": 1,
+  "totalTests": 26,
+  "startedAt": "2026-10-04T04:56:36.875539+00:00",
+  "finishedAt": "2026-10-04T04:56:41.549483+00:00",
+  "sourceInputsUnchanged": true,
+  "failedCase": "preserves the generic update arithmetic independently of the new owner",
+  "sourceHelperDefect": "genericBody finds first update(dt: in new OrdinaryAerationOwner interface rather than class body. Actual source text assertion remains failed; no full26PASS or cost/adoption claim.",
+  "noNumericalParityFailuresReported": true,
+  "records": [
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/ready.json",
+      "bytes": 11453,
+      "sha256": "6710625b6dc1e1fba8eb8dc51c1c24e9fe88942ef7570479ccba4bb08032a395"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate.patch",
+      "bytes": 17970,
+      "sha256": "2df6872b49efb5859ed6e33709cc7e0a1ea371e7a83e139d0bdb98569ed3532b"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/source-authority.json",
+      "bytes": 113930,
+      "sha256": "0e57711a0193309d084a2d8c385010f8101c58804a56a3b64907add21438e6be"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/tests/parity.test.ts",
+      "bytes": 22295,
+      "sha256": "5f87906219cdb1a06fcc4ce03fd70c67b657d04cd81804adeba96b68a7efeb30"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-driver-v2.py",
+      "bytes": 5308,
+      "sha256": "884939ac59d8f1c7239734bbdf430febb359110ef74efeb4a6a056f06fc6e14b"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/vitest.config.ts",
+      "bytes": 228,
+      "sha256": "397038c6bd2fb0696b90c9563690acba98536e6aa69332c0575ef038bcd13e28"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/strict.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/strict.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/portable26.stdout",
+      "bytes": 420,
+      "sha256": "79e43d89881fdafc64aeba8c12136f33a04a3fc2d5d3ce2f15d1c2b103a20492"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/portable26.stderr",
+      "bytes": 6817,
+      "sha256": "a1edf2f2ebf56975877caf61704303ecd03161ce281c353119d5adabcc887b05"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/terminal.json",
+      "bytes": 3183,
+      "sha256": "89b923e0227e9ee9cc8059a75f06213114e05df13496429273a8028fd77698a5"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/source-before.json",
+      "bytes": 101617,
+      "sha256": "65f94576c6d77348bfb43316ebb6a1ecad84d919073bbefb458a3ad30369d98d"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/source-after.json",
+      "bytes": 101617,
+      "sha256": "65f94576c6d77348bfb43316ebb6a1ecad84d919073bbefb458a3ad30369d98d"
+    }
+  ],
+  "noRepairRetryCostBuildHardwareOrProductionChanges": true
+}

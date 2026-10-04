@@ -1,0 +1,37 @@
+{
+  "startedAt": "2026-10-04T05:09:47.288361+00:00",
+  "boundSeconds": 20,
+  "cleanupBoundSeconds": 5,
+  "status": "passed",
+  "compiled": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/cost.mjs",
+    "bytes": 1046198,
+    "sha256": "34104461bdd23b63d33da30857dedb73d69ae7f3668a05df9953b3dbf3ec2242"
+  },
+  "argv": [
+    "node",
+    "cost.mjs",
+    "--run=true",
+    "--out=/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/cost-report.json"
+  ],
+  "pid": 13136,
+  "exitCode": 0,
+  "sourceInputsUnchanged": true,
+  "finishedAt": "2026-10-04T05:09:52.428797+00:00",
+  "elapsedSeconds": 5.140234916994814,
+  "stdout.log": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/stdout.log",
+    "bytes": 753,
+    "sha256": "7d4ce5d70b28ceee96a4742378250159494c6b60b4d3af470145405612be6f76"
+  },
+  "stderr.log": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "cost-report.json": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/root-cost-first/cost-report.json",
+    "bytes": 60678,
+    "sha256": "4c3569adaa0c6b7544c205409f39891761bf3df5780f571982f8387de724b997"
+  }
+}

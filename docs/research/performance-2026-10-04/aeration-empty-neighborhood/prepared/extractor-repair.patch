@@ -1,0 +1,11 @@
+--- a/tests/parity.test.ts
++++ b/tests/parity.test.ts
+@@ -112,7 +112,7 @@
+     a.air.stir(i, breaking[i], dt);
+   }
+ }
+-const genericBody = (file: string) => readFileSync(new URL(file, import.meta.url), 'utf8').split('  update(dt:')[1].split('\n  private ')[0]
++const genericBody = (file: string) => readFileSync(new URL(file, import.meta.url), 'utf8').split('export class AerationField {')[1].split('  update(dt:')[1].split('\n  private ')[0]
+   .replace('    this.tagsReady = false; // Generic calls/direct-array callers never use the private-worker shortcut.\n', '').trim();
+ 
+ describe('isolated exact aeration empty-neighborhood prototype', () => {

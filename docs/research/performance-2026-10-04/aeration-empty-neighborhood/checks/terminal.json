@@ -1,0 +1,61 @@
+{
+  "schema": "aeration-empty-portable-checks/v1",
+  "status": "failed",
+  "startedAt": "2026-10-04T04:54:36.305682+00:00",
+  "driver": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-driver.py",
+    "bytes": 5302,
+    "sha256": "1cdfff7bfe0e252e9fa5462fd836837c34f8b931e2ea4e9e140f87bffece0349"
+  },
+  "commands": [
+    {
+      "name": "strict",
+      "argv": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.qa.json",
+        "--noEmit"
+      ],
+      "cwd": "/private/tmp/surf-aeration-empty-neighborhood-20261004",
+      "startedAt": "2026-10-04T04:54:36.328182+00:00",
+      "status": "failed",
+      "pid": 8782,
+      "exitCode": 2,
+      "finishedAt": "2026-10-04T04:54:39.672898+00:00",
+      "stdout": {
+        "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/strict.stdout",
+        "bytes": 77,
+        "sha256": "64c47e460c3d443eee0c9061dc915f615921a0132926b22edc503c9df8d16a1b"
+      },
+      "stderr": {
+        "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/strict.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "firstFailure": "strict",
+  "commandBudgetSeconds": 120,
+  "ownedChildCleanupBoundSeconds": 5,
+  "cacheDir": "/private/tmp/surf-aeration-empty-neighborhood-20261004/.cache/vite",
+  "ready": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/ready.json",
+    "bytes": 6521,
+    "sha256": "0a67ee7ed4e2eb130ad5c9716cb653f188b5a0c8aafa63771ae1a3107d63f7cf"
+  },
+  "pinCount": 439,
+  "sourceInputsUnchanged": true,
+  "finishedAt": "2026-10-04T04:54:39.695815+00:00",
+  "elapsedSeconds": 3.3901238330290653,
+  "source-before": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/source-before.json",
+    "bytes": 97473,
+    "sha256": "19b4b271bd097a6cc05f2b7db44780f939435300ab55569bfcfdf65369522efe"
+  },
+  "source-after": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks/source-after.json",
+    "bytes": 97473,
+    "sha256": "19b4b271bd097a6cc05f2b7db44780f939435300ab55569bfcfdf65369522efe"
+  }
+}

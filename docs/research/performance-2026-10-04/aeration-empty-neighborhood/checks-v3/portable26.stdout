@@ -1,0 +1,9 @@
+
+ RUN  v5.0.1 /private/tmp/surf-aeration-empty-neighborhood-20261004
+
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  05:58:47
+   Duration  882ms (transform 54%, tests 33%, import 13%)
+

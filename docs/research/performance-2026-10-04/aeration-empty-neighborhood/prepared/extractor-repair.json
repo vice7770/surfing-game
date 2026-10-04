@@ -1,0 +1,42 @@
+{
+  "schema": "aeration-empty-extractor-repair/v1",
+  "previousReady": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/ready.json",
+    "bytes": 11453,
+    "sha256": "6710625b6dc1e1fba8eb8dc51c1c24e9fe88942ef7570479ccba4bb08032a395"
+  },
+  "previousFailureFreeze": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/freeze.json",
+    "bytes": 3553,
+    "sha256": "262a56f40a2e0b94030452a94a7a95af804fa45b0a26ea32e4e4e6cfcffc102e"
+  },
+  "repairPatch": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/extractor-repair.patch",
+    "bytes": 654,
+    "sha256": "2344686d3ed8480e85095f1196be3e4fcc4ecd787863e5479227ce1ccc8f2ce1"
+  },
+  "oldTest": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v2/first-inputs/tests/parity.test.ts",
+    "bytes": 22295,
+    "sha256": "5f87906219cdb1a06fcc4ce03fd70c67b657d04cd81804adeba96b68a7efeb30"
+  },
+  "newTest": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/tests/parity.test.ts",
+    "bytes": 22336,
+    "sha256": "b83408944f419a7322e772dfa8bb9ed6e80d1949f7c5013c37e84fc10631b354"
+  },
+  "runtimeAndNumericalTestsAndExactEqualityAssertionUnchanged": true,
+  "testCountUnchanged": 26,
+  "previousDriver": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-driver-v2.py",
+    "bytes": 5308,
+    "sha256": "884939ac59d8f1c7239734bbdf430febb359110ef74efeb4a6a056f06fc6e14b"
+  },
+  "retryDriver": {
+    "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-driver-v3.py",
+    "bytes": 5308,
+    "sha256": "d19c809c408dc7e36335896d7d0e38e63661562881f80e231b594ba45b389b29"
+  },
+  "retryDriverChanges": "fresh checks-v3 output path, own filename and v3 terminal schema only; same120s strict-first then tests bound",
+  "status": "SOURCE_ONLY_RETRY_NOT_EXECUTED"
+}

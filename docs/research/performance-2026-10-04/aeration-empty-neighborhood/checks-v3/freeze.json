@@ -1,0 +1,82 @@
+{
+  "schema": "aeration-empty-portable-pass/v1",
+  "status": "passed",
+  "toolSession": 12501,
+  "toolExitCode": 0,
+  "strictExitCode": 0,
+  "vitestExitCode": 0,
+  "testsPassed": 26,
+  "testsFailed": 0,
+  "startedAt": "2026-10-04T04:58:43.830300+00:00",
+  "finishedAt": "2026-10-04T04:58:48.220099+00:00",
+  "sourceInputsUnchanged": true,
+  "pinCount": 479,
+  "records": [
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/ready.json",
+      "bytes": 16538,
+      "sha256": "4fd7c2c0688b102d94fa4128e1778e21c34f25194bde34fb1b71b0ee42178d05"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/candidate.patch",
+      "bytes": 17970,
+      "sha256": "2df6872b49efb5859ed6e33709cc7e0a1ea371e7a83e139d0bdb98569ed3532b"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/source-authority.json",
+      "bytes": 113930,
+      "sha256": "0e57711a0193309d084a2d8c385010f8101c58804a56a3b64907add21438e6be"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/tests/parity.test.ts",
+      "bytes": 22336,
+      "sha256": "b83408944f419a7322e772dfa8bb9ed6e80d1949f7c5013c37e84fc10631b354"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-driver-v3.py",
+      "bytes": 5308,
+      "sha256": "d19c809c408dc7e36335896d7d0e38e63661562881f80e231b594ba45b389b29"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/vitest.config.ts",
+      "bytes": 228,
+      "sha256": "397038c6bd2fb0696b90c9563690acba98536e6aa69332c0575ef038bcd13e28"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/strict.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/strict.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/portable26.stdout",
+      "bytes": 206,
+      "sha256": "cb97b204a4ab89fab101e7f025f1f2b577707438518174f8900f4ace322a68f4"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/portable26.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/terminal.json",
+      "bytes": 3174,
+      "sha256": "6d97600b9f300cfed469960b96164c9ed409aa130ed82b7a9815e87c6962f002"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/source-before.json",
+      "bytes": 106250,
+      "sha256": "abfba1c5b69771373ee36bbed7ae85ecbd223fc6bf7aa2c3887eceb069a59a5c"
+    },
+    {
+      "path": "/private/tmp/surf-aeration-empty-neighborhood-20261004/checks-v3/source-after.json",
+      "bytes": 106250,
+      "sha256": "abfba1c5b69771373ee36bbed7ae85ecbd223fc6bf7aa2c3887eceb069a59a5c"
+    }
+  ],
+  "costBuildHardwareOrProductionChanges": false
+}
