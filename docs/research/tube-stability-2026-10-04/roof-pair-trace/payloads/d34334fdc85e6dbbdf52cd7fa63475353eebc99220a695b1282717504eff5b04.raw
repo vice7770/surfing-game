@@ -1,0 +1,90 @@
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import time
+
+ROOT = Path('/private/tmp/surf-tube-roof-pair-trace-root-20261004')
+WORK = Path('/private/tmp/surf-tube-roof-pair-trace-20261004')
+CAPTURE = Path('/private/tmp/surf-wavelab-passive-original-20261004')
+NODE = '/opt/homebrew/bin/node'
+OUT = ROOT / 'first'
+started = time.monotonic()
+assert not OUT.exists()
+OUT.mkdir()
+receipt = {'startedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+           'sourceReviewed': True, 'independentSourceReview': 'Receiver/decoder/F32 arithmetic cleared; verbose output reduced before execution',
+           'commands': [], 'valid': False, 'nativeJobs': False, 'tubeQualityPass': False}
+
+def pin(path):
+    raw = path.read_bytes()
+    return {'path': str(path), 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()}
+
+def save():
+    receipt['elapsedSeconds'] = time.monotonic() - started
+    (OUT / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
+
+receipt['helpers'] = [pin(WORK / name) for name in ['trace.mjs', 'README.md', 'plan.json']]
+receipt['authorityMetadata'] = [pin(path) for path in [
+    CAPTURE / 'native-first/report.json', CAPTURE / 'ready.json', CAPTURE / 'bindings.json',
+    CAPTURE / 'native-first.native-driver.json', CAPTURE / 'native-first.native-driver.log',
+    Path('/private/tmp/surf-passive-first-six-metrics-20261004/report.json')]]
+save()
+
+def run(label, command, env):
+    begin = time.monotonic()
+    proc = subprocess.Popen(command, cwd=WORK, env=env, stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, start_new_session=True)
+    row = {'label': label, 'command': command, 'pid': proc.pid,
+           'startedAt': datetime.datetime.now(datetime.timezone.utc).isoformat()}
+    receipt['commands'].append(row)
+    try:
+        log, _ = proc.communicate(timeout=max(.1, 29 - (time.monotonic() - started)))
+        row['exitCode'] = proc.returncode
+    except subprocess.TimeoutExpired:
+        row['timeout'] = True
+        os.killpg(proc.pid, signal.SIGKILL)
+        log, _ = proc.communicate(timeout=1)
+        row['exitCode'] = proc.returncode
+    finally:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    assert len(log) <= 1024 * 1024
+    (OUT / (label + '.log')).write_bytes(log)
+    row['log'] = pin(OUT / (label + '.log'))
+    row['elapsedSeconds'] = time.monotonic() - begin
+    row['endedAt'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    closure_deadline = min(started + 30, time.monotonic() + .5)
+    row['processGroupClosed'] = False
+    while time.monotonic() < closure_deadline:
+        try:
+            os.killpg(proc.pid, 0)
+        except ProcessLookupError:
+            row['processGroupClosed'] = True
+            break
+        time.sleep(.01)
+    save()
+    assert row['exitCode'] == 0 and row['processGroupClosed'], row
+
+try:
+    run('syntax-stable-source-first', [NODE, '--check', str(WORK / 'trace.mjs')], dict(os.environ))
+    env = dict(os.environ, ROOT_TUBE_PAIR_TRACE_OFFLINE_LEASE='true')
+    run('trace-first', [NODE, str(WORK / 'trace.mjs'), '--source-sha256=' + receipt['helpers'][0]['sha256']], env)
+    report = json.loads((WORK / 'offline-first/report.json').read_text())
+    assert report['traceCompleted'] and report['inputsUnchangedAfter'] and report['arraysUnchangedAfter']
+    receipt['report'] = pin(WORK / 'offline-first/report.json')
+    assert receipt['helpers'] == [pin(Path(p['path'])) for p in receipt['helpers']]
+    assert receipt['authorityMetadata'] == [pin(Path(p['path'])) for p in receipt['authorityMetadata']]
+    assert time.monotonic() - started < 30
+    receipt['valid'] = True
+except Exception as error:
+    receipt['firstFailure'] = repr(error)
+finally:
+    save()
+    print(json.dumps(receipt))
+assert receipt['valid'], receipt.get('firstFailure')

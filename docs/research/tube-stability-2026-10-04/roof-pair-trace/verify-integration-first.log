@@ -1,0 +1,40 @@
+{
+  "schema": "roof-pair-trace-archive-verification/v2",
+  "valid": true,
+  "checks": [
+    {
+      "check": "retained-byte-aliases-nine-original-sources-and-both-first-trace-terminals",
+      "valid": true,
+      "payloads": 46,
+      "aliases": 57,
+      "originalSources": 9,
+      "firstV1Failure": "Error: Cannot find module 'esbuild'\nRequire stack:\n- /Users/regina/Desktop/Projects/surfing-game/package.json",
+      "firstV2ElapsedSeconds": 0.2930724160396494
+    },
+    {
+      "check": "original-native-failure-selected-cases-148-F32-schedule-words-and-57-mapped-full-lift-raw-pair-deltas",
+      "valid": true,
+      "scheduleRows": 148,
+      "rawCorePairDeltas": 57,
+      "reportedCoreChecksPerRow": 57,
+      "profileStride": 134,
+      "profilePointToLoftSampleOffset": 3,
+      "actualFullLiftVerticesChecked": 114,
+      "tide": 0,
+      "selectedTypedPathBytes": 1226096,
+      "reportedMatchScope": "Original reconstruction assertions preserved; not rerun"
+    }
+  ],
+  "scope": "Verify retained local/shared bytes, first failures/root terminals, F32 schedule words, mapped full-lift zero-tide raw pair deltaY and stored arithmetic decompositions only. Core reconstruction match is an original report assertion tied to retained source/run receipt, not independently rerun. No game/helper/compiler import, simulation, native/raster/video quality or adoption pass.",
+  "retainedSelectedEvidenceIntegrity": true,
+  "priorArchiveVerifierFirstFailurePreserved": true,
+  "priorVerifierCorrection": "V1 incorrectly treated a profile point as a raw loft sample, omitting three prefix extension vertices. V2 uses the original source map and requires actual full lift, fade/weight1, and zero tide for all57 raw profile/world pair delta comparisons.",
+  "localArchiveBytesAtVerification": 1087967,
+  "nativeCaptureComplete": false,
+  "nineStateQuality": false,
+  "tubeQuality": false,
+  "adoption": false,
+  "finCauseProved": false,
+  "sourcePrototypeImplemented": false,
+  "elapsedSeconds": 0.018507958040572703
+}

@@ -1,0 +1,1233 @@
+{
+  "schema": "roof-pair-trace-archive/v1",
+  "createdAt": "2026-10-04T13:59:47.064602+00:00",
+  "payloads": [
+    {
+      "id": "d75689c73374c3c4d08e06fd82a7cec303eb423a3b359289739e87d74d5e3e48",
+      "bytes": 14312,
+      "sha256": "d75689c73374c3c4d08e06fd82a7cec303eb423a3b359289739e87d74d5e3e48",
+      "storage": "local",
+      "storedPath": "payloads/d75689c73374c3c4d08e06fd82a7cec303eb423a3b359289739e87d74d5e3e48.raw",
+      "encoding": "identity",
+      "storedBytes": 14312,
+      "storedSha256": "d75689c73374c3c4d08e06fd82a7cec303eb423a3b359289739e87d74d5e3e48"
+    },
+    {
+      "id": "7c05e4ed03f7e4c8a19b780de2497d4475406627b4974a5c7d06452ce817706d",
+      "bytes": 55472,
+      "sha256": "7c05e4ed03f7e4c8a19b780de2497d4475406627b4974a5c7d06452ce817706d",
+      "storage": "local",
+      "storedPath": "payloads/7c05e4ed03f7e4c8a19b780de2497d4475406627b4974a5c7d06452ce817706d.gz",
+      "encoding": "gzip",
+      "storedBytes": 17751,
+      "storedSha256": "740ad244d2c7ee1e86706f9056c26cfefdbcb3c8c5a88438ea220c5865c9c4b3"
+    },
+    {
+      "id": "7e709ed2087c9e2e41b888f76233e1a6015ef7e79525cc8182ffbeaea88aa9b9",
+      "bytes": 2293,
+      "sha256": "7e709ed2087c9e2e41b888f76233e1a6015ef7e79525cc8182ffbeaea88aa9b9",
+      "storage": "local",
+      "storedPath": "payloads/7e709ed2087c9e2e41b888f76233e1a6015ef7e79525cc8182ffbeaea88aa9b9.raw",
+      "encoding": "identity",
+      "storedBytes": 2293,
+      "storedSha256": "7e709ed2087c9e2e41b888f76233e1a6015ef7e79525cc8182ffbeaea88aa9b9"
+    },
+    {
+      "id": "2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60",
+      "bytes": 25378,
+      "sha256": "2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60",
+      "storage": "local",
+      "storedPath": "payloads/2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60.raw",
+      "encoding": "identity",
+      "storedBytes": 25378,
+      "storedSha256": "2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60"
+    },
+    {
+      "id": "76dd98e0083d8297c646fb893db73448d6524cf28c6fc8cbcf1597e376ff606f",
+      "bytes": 5539,
+      "sha256": "76dd98e0083d8297c646fb893db73448d6524cf28c6fc8cbcf1597e376ff606f",
+      "storage": "local",
+      "storedPath": "payloads/76dd98e0083d8297c646fb893db73448d6524cf28c6fc8cbcf1597e376ff606f.raw",
+      "encoding": "identity",
+      "storedBytes": 5539,
+      "storedSha256": "76dd98e0083d8297c646fb893db73448d6524cf28c6fc8cbcf1597e376ff606f"
+    },
+    {
+      "id": "f8f21d828f7c282f54c296abdb1bd2b374dcbe52ed404e6d08c6ef135b2341df",
+      "bytes": 1032,
+      "sha256": "f8f21d828f7c282f54c296abdb1bd2b374dcbe52ed404e6d08c6ef135b2341df",
+      "storage": "local",
+      "storedPath": "payloads/f8f21d828f7c282f54c296abdb1bd2b374dcbe52ed404e6d08c6ef135b2341df.raw",
+      "encoding": "identity",
+      "storedBytes": 1032,
+      "storedSha256": "f8f21d828f7c282f54c296abdb1bd2b374dcbe52ed404e6d08c6ef135b2341df"
+    },
+    {
+      "id": "d34334fdc85e6dbbdf52cd7fa63475353eebc99220a695b1282717504eff5b04",
+      "bytes": 3947,
+      "sha256": "d34334fdc85e6dbbdf52cd7fa63475353eebc99220a695b1282717504eff5b04",
+      "storage": "local",
+      "storedPath": "payloads/d34334fdc85e6dbbdf52cd7fa63475353eebc99220a695b1282717504eff5b04.raw",
+      "encoding": "identity",
+      "storedBytes": 3947,
+      "storedSha256": "d34334fdc85e6dbbdf52cd7fa63475353eebc99220a695b1282717504eff5b04"
+    },
+    {
+      "id": "aea02040d2704916bffeb94f81bacbc87bc6266c184bfbe7cb763b3ef46109c1",
+      "bytes": 4209,
+      "sha256": "aea02040d2704916bffeb94f81bacbc87bc6266c184bfbe7cb763b3ef46109c1",
+      "storage": "local",
+      "storedPath": "payloads/aea02040d2704916bffeb94f81bacbc87bc6266c184bfbe7cb763b3ef46109c1.raw",
+      "encoding": "identity",
+      "storedBytes": 4209,
+      "storedSha256": "aea02040d2704916bffeb94f81bacbc87bc6266c184bfbe7cb763b3ef46109c1"
+    },
+    {
+      "id": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storage": "shared-durable",
+      "storedPath": "docs/research/performance-2026-10-04/zero-mask/lineage/v2/root-checks-first/command-3.log",
+      "encoding": "identity",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568",
+      "bytes": 385,
+      "sha256": "0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568",
+      "storage": "local",
+      "storedPath": "payloads/0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568.raw",
+      "encoding": "identity",
+      "storedBytes": 385,
+      "storedSha256": "0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568"
+    },
+    {
+      "id": "24c25303025ef8c98b32aeabe1595fbee5458f60fa241bb349ce44cf5ecc27ef",
+      "bytes": 28262,
+      "sha256": "24c25303025ef8c98b32aeabe1595fbee5458f60fa241bb349ce44cf5ecc27ef",
+      "storage": "local",
+      "storedPath": "payloads/24c25303025ef8c98b32aeabe1595fbee5458f60fa241bb349ce44cf5ecc27ef.raw",
+      "encoding": "identity",
+      "storedBytes": 28262,
+      "storedSha256": "24c25303025ef8c98b32aeabe1595fbee5458f60fa241bb349ce44cf5ecc27ef"
+    },
+    {
+      "id": "c8ae50a0f6f8e7dbf70cfc4cfe900ecab540373292d79188979ff732b885e5d9",
+      "bytes": 6701,
+      "sha256": "c8ae50a0f6f8e7dbf70cfc4cfe900ecab540373292d79188979ff732b885e5d9",
+      "storage": "local",
+      "storedPath": "payloads/c8ae50a0f6f8e7dbf70cfc4cfe900ecab540373292d79188979ff732b885e5d9.raw",
+      "encoding": "identity",
+      "storedBytes": 6701,
+      "storedSha256": "c8ae50a0f6f8e7dbf70cfc4cfe900ecab540373292d79188979ff732b885e5d9"
+    },
+    {
+      "id": "e1d6f565aba6982516c3be1d0f31bc8169b552e0fd70df417ce0f5ed09470796",
+      "bytes": 1035,
+      "sha256": "e1d6f565aba6982516c3be1d0f31bc8169b552e0fd70df417ce0f5ed09470796",
+      "storage": "local",
+      "storedPath": "payloads/e1d6f565aba6982516c3be1d0f31bc8169b552e0fd70df417ce0f5ed09470796.raw",
+      "encoding": "identity",
+      "storedBytes": 1035,
+      "storedSha256": "e1d6f565aba6982516c3be1d0f31bc8169b552e0fd70df417ce0f5ed09470796"
+    },
+    {
+      "id": "9adaa1f57dcb67365149c2c36722c9ac117de38c702cf9de5909445738a50cb1",
+      "bytes": 3974,
+      "sha256": "9adaa1f57dcb67365149c2c36722c9ac117de38c702cf9de5909445738a50cb1",
+      "storage": "local",
+      "storedPath": "payloads/9adaa1f57dcb67365149c2c36722c9ac117de38c702cf9de5909445738a50cb1.raw",
+      "encoding": "identity",
+      "storedBytes": 3974,
+      "storedSha256": "9adaa1f57dcb67365149c2c36722c9ac117de38c702cf9de5909445738a50cb1"
+    },
+    {
+      "id": "bd82545dba80e988addcd843dc4685af2452c0168dfcb2e5d3ec645305d26fd8",
+      "bytes": 3837,
+      "sha256": "bd82545dba80e988addcd843dc4685af2452c0168dfcb2e5d3ec645305d26fd8",
+      "storage": "local",
+      "storedPath": "payloads/bd82545dba80e988addcd843dc4685af2452c0168dfcb2e5d3ec645305d26fd8.raw",
+      "encoding": "identity",
+      "storedBytes": 3837,
+      "storedSha256": "bd82545dba80e988addcd843dc4685af2452c0168dfcb2e5d3ec645305d26fd8"
+    },
+    {
+      "id": "47dd1fa70e9c2455f4ab9870b0ea8a88b9eeb6e5c5f17b640da7e20a33ce4858",
+      "bytes": 278,
+      "sha256": "47dd1fa70e9c2455f4ab9870b0ea8a88b9eeb6e5c5f17b640da7e20a33ce4858",
+      "storage": "local",
+      "storedPath": "payloads/47dd1fa70e9c2455f4ab9870b0ea8a88b9eeb6e5c5f17b640da7e20a33ce4858.raw",
+      "encoding": "identity",
+      "storedBytes": 278,
+      "storedSha256": "47dd1fa70e9c2455f4ab9870b0ea8a88b9eeb6e5c5f17b640da7e20a33ce4858"
+    },
+    {
+      "id": "5c55b04c660555562cff95f9700b666a35ae7397ed4489264deb3ee10b0e65d3",
+      "bytes": 719568,
+      "sha256": "5c55b04c660555562cff95f9700b666a35ae7397ed4489264deb3ee10b0e65d3",
+      "storage": "shared-durable",
+      "storedPath": "docs/research/performance-2026-10-04/zero-mask/lineage/v1/native-first/report.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 77286,
+      "storedSha256": "a903a1a987c460ac724a50f4965a1e3dc4be5cafdc5a7d6998de96a862e100bc"
+    },
+    {
+      "id": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0",
+      "bytes": 125142,
+      "sha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0",
+      "storage": "shared-durable",
+      "storedPath": "docs/research/performance-2026-10-04/zero-mask/lineage/v1/ready.json",
+      "encoding": "identity",
+      "storedBytes": 125142,
+      "storedSha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0"
+    },
+    {
+      "id": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96",
+      "bytes": 14456,
+      "sha256": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96",
+      "storage": "shared-durable",
+      "storedPath": "docs/research/performance-2026-10-04/zero-mask/lineage/v1/bindings.json",
+      "encoding": "identity",
+      "storedBytes": 14456,
+      "storedSha256": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96"
+    },
+    {
+      "id": "d2a4d3dce157b2b653e7cecb795745552914f832959e23220267d0fd4b419d75",
+      "bytes": 2374,
+      "sha256": "d2a4d3dce157b2b653e7cecb795745552914f832959e23220267d0fd4b419d75",
+      "storage": "shared-durable",
+      "storedPath": "docs/research/performance-2026-10-04/zero-mask/lineage/v1/native-first.native-driver.json",
+      "encoding": "identity",
+      "storedBytes": 2374,
+      "storedSha256": "d2a4d3dce157b2b653e7cecb795745552914f832959e23220267d0fd4b419d75"
+    },
+    {
+      "id": "ac67dc6be0936fc1e6f1bd0f70381bed63f87730a82e3f76bdecc5dbe0112940",
+      "bytes": 288,
+      "sha256": "ac67dc6be0936fc1e6f1bd0f70381bed63f87730a82e3f76bdecc5dbe0112940",
+      "storage": "shared-durable",
+      "storedPath": "docs/research/performance-2026-10-04/zero-mask/lineage/v1/native-first.native-driver.log",
+      "encoding": "identity",
+      "storedBytes": 288,
+      "storedSha256": "ac67dc6be0936fc1e6f1bd0f70381bed63f87730a82e3f76bdecc5dbe0112940"
+    },
+    {
+      "id": "e5ce050cd09787b485348720bf62be26a09a0903331812f28c1834b40fbe230e",
+      "bytes": 102894,
+      "sha256": "e5ce050cd09787b485348720bf62be26a09a0903331812f28c1834b40fbe230e",
+      "storage": "local",
+      "storedPath": "payloads/e5ce050cd09787b485348720bf62be26a09a0903331812f28c1834b40fbe230e.gz",
+      "encoding": "gzip",
+      "storedBytes": 17543,
+      "storedSha256": "895940d7d13fb14fd5ab0659104598185475e71cc55aa11af56df6ac65dfc30c"
+    },
+    {
+      "id": "d6045128e18d251a2fa75efabaadea8bef9b3a1fbbd84c1a6290efa32ae378da",
+      "bytes": 3564,
+      "sha256": "d6045128e18d251a2fa75efabaadea8bef9b3a1fbbd84c1a6290efa32ae378da",
+      "storage": "local",
+      "storedPath": "payloads/d6045128e18d251a2fa75efabaadea8bef9b3a1fbbd84c1a6290efa32ae378da.raw",
+      "encoding": "identity",
+      "storedBytes": 3564,
+      "storedSha256": "d6045128e18d251a2fa75efabaadea8bef9b3a1fbbd84c1a6290efa32ae378da"
+    },
+    {
+      "id": "43bf0e69407a85df4d295f4b4a640660ac51bbeb8f1b2ef758af121e7eebbe62",
+      "bytes": 237984,
+      "sha256": "43bf0e69407a85df4d295f4b4a640660ac51bbeb8f1b2ef758af121e7eebbe62",
+      "storage": "local",
+      "storedPath": "payloads/43bf0e69407a85df4d295f4b4a640660ac51bbeb8f1b2ef758af121e7eebbe62.gz",
+      "encoding": "gzip",
+      "storedBytes": 201066,
+      "storedSha256": "ec4b8e420c3870fde935eea914d615fd6181ef32f47cdef9e9dd4f1f0d4ef5c5"
+    },
+    {
+      "id": "f8e23257eadc5a947f5a77b02349304c56e4a7f0a33d12a7e0c1a0272a11a1b2",
+      "bytes": 79328,
+      "sha256": "f8e23257eadc5a947f5a77b02349304c56e4a7f0a33d12a7e0c1a0272a11a1b2",
+      "storage": "local",
+      "storedPath": "payloads/f8e23257eadc5a947f5a77b02349304c56e4a7f0a33d12a7e0c1a0272a11a1b2.gz",
+      "encoding": "gzip",
+      "storedBytes": 3580,
+      "storedSha256": "a4974b9aec8eda036bff4957f2bf08a00c5bb391ecb246d7e66f9176ef0df47b"
+    },
+    {
+      "id": "e2415750d5f847cf632cff2af36edc23b79dd89bbe75182abbbe53de13474d78",
+      "bytes": 592,
+      "sha256": "e2415750d5f847cf632cff2af36edc23b79dd89bbe75182abbbe53de13474d78",
+      "storage": "local",
+      "storedPath": "payloads/e2415750d5f847cf632cff2af36edc23b79dd89bbe75182abbbe53de13474d78.raw",
+      "encoding": "identity",
+      "storedBytes": 592,
+      "storedSha256": "e2415750d5f847cf632cff2af36edc23b79dd89bbe75182abbbe53de13474d78"
+    },
+    {
+      "id": "02090a87ced02bb130ea90ebe86150e96e2531a7b7a400dc4b63b84ec860c4d1",
+      "bytes": 592,
+      "sha256": "02090a87ced02bb130ea90ebe86150e96e2531a7b7a400dc4b63b84ec860c4d1",
+      "storage": "local",
+      "storedPath": "payloads/02090a87ced02bb130ea90ebe86150e96e2531a7b7a400dc4b63b84ec860c4d1.raw",
+      "encoding": "identity",
+      "storedBytes": 592,
+      "storedSha256": "02090a87ced02bb130ea90ebe86150e96e2531a7b7a400dc4b63b84ec860c4d1"
+    },
+    {
+      "id": "1fcae83dd05ec74d9741548056f5c08a58756ece7b19fcbded2b4b4bc612dcdd",
+      "bytes": 592,
+      "sha256": "1fcae83dd05ec74d9741548056f5c08a58756ece7b19fcbded2b4b4bc612dcdd",
+      "storage": "local",
+      "storedPath": "payloads/1fcae83dd05ec74d9741548056f5c08a58756ece7b19fcbded2b4b4bc612dcdd.raw",
+      "encoding": "identity",
+      "storedBytes": 592,
+      "storedSha256": "1fcae83dd05ec74d9741548056f5c08a58756ece7b19fcbded2b4b4bc612dcdd"
+    },
+    {
+      "id": "8db08cf26bea3e348ae0f05da065f993423afc68d5f4a20b000354b6dfd9715e",
+      "bytes": 148,
+      "sha256": "8db08cf26bea3e348ae0f05da065f993423afc68d5f4a20b000354b6dfd9715e",
+      "storage": "local",
+      "storedPath": "payloads/8db08cf26bea3e348ae0f05da065f993423afc68d5f4a20b000354b6dfd9715e.raw",
+      "encoding": "identity",
+      "storedBytes": 148,
+      "storedSha256": "8db08cf26bea3e348ae0f05da065f993423afc68d5f4a20b000354b6dfd9715e"
+    },
+    {
+      "id": "44036446bde5a50fc384811cb62b735f4b41e087d0482be1e38a810632f8227e",
+      "bytes": 592,
+      "sha256": "44036446bde5a50fc384811cb62b735f4b41e087d0482be1e38a810632f8227e",
+      "storage": "local",
+      "storedPath": "payloads/44036446bde5a50fc384811cb62b735f4b41e087d0482be1e38a810632f8227e.raw",
+      "encoding": "identity",
+      "storedBytes": 592,
+      "storedSha256": "44036446bde5a50fc384811cb62b735f4b41e087d0482be1e38a810632f8227e"
+    },
+    {
+      "id": "bd89396eae13b4f70584d21ac68720c0a8cffcd891ff88b186c3a72413a50e81",
+      "bytes": 592,
+      "sha256": "bd89396eae13b4f70584d21ac68720c0a8cffcd891ff88b186c3a72413a50e81",
+      "storage": "local",
+      "storedPath": "payloads/bd89396eae13b4f70584d21ac68720c0a8cffcd891ff88b186c3a72413a50e81.raw",
+      "encoding": "identity",
+      "storedBytes": 592,
+      "storedSha256": "bd89396eae13b4f70584d21ac68720c0a8cffcd891ff88b186c3a72413a50e81"
+    },
+    {
+      "id": "5a770f8da45a799aea283497ad599c33c7fb2a6c491e5ae9bf39b9bc4020376e",
+      "bytes": 592,
+      "sha256": "5a770f8da45a799aea283497ad599c33c7fb2a6c491e5ae9bf39b9bc4020376e",
+      "storage": "local",
+      "storedPath": "payloads/5a770f8da45a799aea283497ad599c33c7fb2a6c491e5ae9bf39b9bc4020376e.raw",
+      "encoding": "identity",
+      "storedBytes": 592,
+      "storedSha256": "5a770f8da45a799aea283497ad599c33c7fb2a6c491e5ae9bf39b9bc4020376e"
+    },
+    {
+      "id": "ae657d29455c7eee9d04e3bf603a78374e3c003e607d58ccbcca4d49dd13c697",
+      "bytes": 148,
+      "sha256": "ae657d29455c7eee9d04e3bf603a78374e3c003e607d58ccbcca4d49dd13c697",
+      "storage": "local",
+      "storedPath": "payloads/ae657d29455c7eee9d04e3bf603a78374e3c003e607d58ccbcca4d49dd13c697.raw",
+      "encoding": "identity",
+      "storedBytes": 148,
+      "storedSha256": "ae657d29455c7eee9d04e3bf603a78374e3c003e607d58ccbcca4d49dd13c697"
+    },
+    {
+      "id": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "storage": "local",
+      "storedPath": "payloads/75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929.raw",
+      "encoding": "identity",
+      "storedBytes": 17189,
+      "storedSha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+    },
+    {
+      "id": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "storage": "local",
+      "storedPath": "payloads/7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e.raw",
+      "encoding": "identity",
+      "storedBytes": 2251,
+      "storedSha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+    },
+    {
+      "id": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "storage": "local",
+      "storedPath": "payloads/2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131.raw",
+      "encoding": "identity",
+      "storedBytes": 3285,
+      "storedSha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "id": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "storage": "local",
+      "storedPath": "payloads/dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf.raw",
+      "encoding": "identity",
+      "storedBytes": 15981,
+      "storedSha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+    },
+    {
+      "id": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "storage": "local",
+      "storedPath": "payloads/b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e.raw",
+      "encoding": "identity",
+      "storedBytes": 60183,
+      "storedSha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+    },
+    {
+      "id": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "storage": "local",
+      "storedPath": "payloads/6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7.raw",
+      "encoding": "identity",
+      "storedBytes": 1776,
+      "storedSha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+    },
+    {
+      "id": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "storage": "local",
+      "storedPath": "payloads/b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99.raw",
+      "encoding": "identity",
+      "storedBytes": 9578,
+      "storedSha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+    },
+    {
+      "id": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "storage": "local",
+      "storedPath": "payloads/47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2.raw",
+      "encoding": "identity",
+      "storedBytes": 14454,
+      "storedSha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+    },
+    {
+      "id": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383",
+      "bytes": 5667,
+      "sha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383",
+      "storage": "shared-durable",
+      "storedPath": "docs/research/performance-2026-10-04/zero-mask/lineage/v2/source/src/scene/barrel/SweptBarrel.ts",
+      "encoding": "identity",
+      "storedBytes": 5667,
+      "storedSha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383"
+    },
+    {
+      "id": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "storage": "local",
+      "storedPath": "payloads/a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37.gz",
+      "encoding": "gzip",
+      "storedBytes": 108891,
+      "storedSha256": "fe678d5bec76163246340318ca2b8aa75ad0879f781b0a680b4754476811a11b"
+    },
+    {
+      "id": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "storage": "local",
+      "storedPath": "payloads/7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041.gz",
+      "encoding": "gzip",
+      "storedBytes": 122982,
+      "storedSha256": "7fc31df84bc21074b5a7482e3f93d1373ac6dd4f46a2e992e27b992834b4773a"
+    },
+    {
+      "id": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "storage": "local",
+      "storedPath": "payloads/4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af.gz",
+      "encoding": "gzip",
+      "storedBytes": 129589,
+      "storedSha256": "da8d013e5d4f0bfa88f1d1483f15feed7cfbbcd6537476d81ebcea6368a58547"
+    },
+    {
+      "id": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "storage": "local",
+      "storedPath": "payloads/8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab.gz",
+      "encoding": "gzip",
+      "storedBytes": 131040,
+      "storedSha256": "7258f15cae135a9af978944fc131f07472bd7eb767bc581288320ee74e25f3dd"
+    }
+  ],
+  "aliases": [
+    {
+      "label": "trace-v1/report.json",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-20261004/offline-first/report.json",
+      "bytes": 14312,
+      "sha256": "d75689c73374c3c4d08e06fd82a7cec303eb423a3b359289739e87d74d5e3e48",
+      "payload": "d75689c73374c3c4d08e06fd82a7cec303eb423a3b359289739e87d74d5e3e48"
+    },
+    {
+      "label": "trace-v2/report.json",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-v2-20261004/offline-first/report.json",
+      "bytes": 55472,
+      "sha256": "7c05e4ed03f7e4c8a19b780de2497d4475406627b4974a5c7d06452ce817706d",
+      "payload": "7c05e4ed03f7e4c8a19b780de2497d4475406627b4974a5c7d06452ce817706d"
+    },
+    {
+      "label": "root-v2/current-source-observation.json",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-root-v2-20261004/current-source-observation.json",
+      "bytes": 2293,
+      "sha256": "7e709ed2087c9e2e41b888f76233e1a6015ef7e79525cc8182ffbeaea88aa9b9",
+      "payload": "7e709ed2087c9e2e41b888f76233e1a6015ef7e79525cc8182ffbeaea88aa9b9"
+    },
+    {
+      "label": "trace-v1/trace.mjs",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-20261004/trace.mjs",
+      "bytes": 25378,
+      "sha256": "2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60",
+      "payload": "2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60"
+    },
+    {
+      "label": "trace-v1/README.md",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-20261004/README.md",
+      "bytes": 5539,
+      "sha256": "76dd98e0083d8297c646fb893db73448d6524cf28c6fc8cbcf1597e376ff606f",
+      "payload": "76dd98e0083d8297c646fb893db73448d6524cf28c6fc8cbcf1597e376ff606f"
+    },
+    {
+      "label": "trace-v1/plan.json",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-20261004/plan.json",
+      "bytes": 1032,
+      "sha256": "f8f21d828f7c282f54c296abdb1bd2b374dcbe52ed404e6d08c6ef135b2341df",
+      "payload": "f8f21d828f7c282f54c296abdb1bd2b374dcbe52ed404e6d08c6ef135b2341df"
+    },
+    {
+      "label": "root-v1/first.py",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first.py",
+      "bytes": 3947,
+      "sha256": "d34334fdc85e6dbbdf52cd7fa63475353eebc99220a695b1282717504eff5b04",
+      "payload": "d34334fdc85e6dbbdf52cd7fa63475353eebc99220a695b1282717504eff5b04"
+    },
+    {
+      "label": "root-v1/receipt.json",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/receipt.json",
+      "bytes": 4209,
+      "sha256": "aea02040d2704916bffeb94f81bacbc87bc6266c184bfbe7cb763b3ef46109c1",
+      "payload": "aea02040d2704916bffeb94f81bacbc87bc6266c184bfbe7cb763b3ef46109c1"
+    },
+    {
+      "label": "root-v1/syntax-stable-source-first.log",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/syntax-stable-source-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "payload": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "root-v1/trace-first.log",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/trace-first.log",
+      "bytes": 385,
+      "sha256": "0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568",
+      "payload": "0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568"
+    },
+    {
+      "label": "trace-v2/trace.mjs",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-v2-20261004/trace.mjs",
+      "bytes": 28262,
+      "sha256": "24c25303025ef8c98b32aeabe1595fbee5458f60fa241bb349ce44cf5ecc27ef",
+      "payload": "24c25303025ef8c98b32aeabe1595fbee5458f60fa241bb349ce44cf5ecc27ef"
+    },
+    {
+      "label": "trace-v2/README.md",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-v2-20261004/README.md",
+      "bytes": 6701,
+      "sha256": "c8ae50a0f6f8e7dbf70cfc4cfe900ecab540373292d79188979ff732b885e5d9",
+      "payload": "c8ae50a0f6f8e7dbf70cfc4cfe900ecab540373292d79188979ff732b885e5d9"
+    },
+    {
+      "label": "trace-v2/plan.json",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-v2-20261004/plan.json",
+      "bytes": 1035,
+      "sha256": "e1d6f565aba6982516c3be1d0f31bc8169b552e0fd70df417ce0f5ed09470796",
+      "payload": "e1d6f565aba6982516c3be1d0f31bc8169b552e0fd70df417ce0f5ed09470796"
+    },
+    {
+      "label": "root-v2/first.py",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-root-v2-20261004/first.py",
+      "bytes": 3974,
+      "sha256": "9adaa1f57dcb67365149c2c36722c9ac117de38c702cf9de5909445738a50cb1",
+      "payload": "9adaa1f57dcb67365149c2c36722c9ac117de38c702cf9de5909445738a50cb1"
+    },
+    {
+      "label": "root-v2/receipt.json",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-root-v2-20261004/first/receipt.json",
+      "bytes": 3837,
+      "sha256": "bd82545dba80e988addcd843dc4685af2452c0168dfcb2e5d3ec645305d26fd8",
+      "payload": "bd82545dba80e988addcd843dc4685af2452c0168dfcb2e5d3ec645305d26fd8"
+    },
+    {
+      "label": "root-v2/syntax-stable-source-first.log",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-root-v2-20261004/first/syntax-stable-source-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "payload": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "root-v2/trace-first.log",
+      "originalPath": "/private/tmp/surf-tube-roof-pair-trace-root-v2-20261004/first/trace-first.log",
+      "bytes": 278,
+      "sha256": "47dd1fa70e9c2455f4ab9870b0ea8a88b9eeb6e5c5f17b640da7e20a33ce4858",
+      "payload": "47dd1fa70e9c2455f4ab9870b0ea8a88b9eeb6e5c5f17b640da7e20a33ce4858"
+    },
+    {
+      "label": "input/17/report.json",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/report.json",
+      "bytes": 719568,
+      "sha256": "5c55b04c660555562cff95f9700b666a35ae7397ed4489264deb3ee10b0e65d3",
+      "payload": "5c55b04c660555562cff95f9700b666a35ae7397ed4489264deb3ee10b0e65d3"
+    },
+    {
+      "label": "input/18/ready.json",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/ready.json",
+      "bytes": 125142,
+      "sha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0",
+      "payload": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0"
+    },
+    {
+      "label": "input/19/bindings.json",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/bindings.json",
+      "bytes": 14456,
+      "sha256": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96",
+      "payload": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96"
+    },
+    {
+      "label": "input/20/native-first.native-driver.json",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first.native-driver.json",
+      "bytes": 2374,
+      "sha256": "d2a4d3dce157b2b653e7cecb795745552914f832959e23220267d0fd4b419d75",
+      "payload": "d2a4d3dce157b2b653e7cecb795745552914f832959e23220267d0fd4b419d75"
+    },
+    {
+      "label": "input/21/native-first.native-driver.log",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first.native-driver.log",
+      "bytes": 288,
+      "sha256": "ac67dc6be0936fc1e6f1bd0f70381bed63f87730a82e3f76bdecc5dbe0112940",
+      "payload": "ac67dc6be0936fc1e6f1bd0f70381bed63f87730a82e3f76bdecc5dbe0112940"
+    },
+    {
+      "label": "input/22/report.json",
+      "originalPath": "/private/tmp/surf-passive-first-six-metrics-20261004/report.json",
+      "bytes": 102894,
+      "sha256": "e5ce050cd09787b485348720bf62be26a09a0903331812f28c1834b40fbe230e",
+      "payload": "e5ce050cd09787b485348720bf62be26a09a0903331812f28c1834b40fbe230e"
+    },
+    {
+      "label": "input/23/state-5-front.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-front.bin",
+      "bytes": 3564,
+      "sha256": "d6045128e18d251a2fa75efabaadea8bef9b3a1fbbd84c1a6290efa32ae378da",
+      "payload": "d6045128e18d251a2fa75efabaadea8bef9b3a1fbbd84c1a6290efa32ae378da"
+    },
+    {
+      "label": "input/24/state-5-loft-positions.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-positions.bin",
+      "bytes": 237984,
+      "sha256": "43bf0e69407a85df4d295f4b4a640660ac51bbeb8f1b2ef758af121e7eebbe62",
+      "payload": "43bf0e69407a85df4d295f4b4a640660ac51bbeb8f1b2ef758af121e7eebbe62"
+    },
+    {
+      "label": "input/25/state-5-mesh-position.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-mesh-position.bin",
+      "bytes": 237984,
+      "sha256": "43bf0e69407a85df4d295f4b4a640660ac51bbeb8f1b2ef758af121e7eebbe62",
+      "payload": "43bf0e69407a85df4d295f4b4a640660ac51bbeb8f1b2ef758af121e7eebbe62"
+    },
+    {
+      "label": "input/26/state-5-mesh-sweptLift.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-mesh-sweptLift.bin",
+      "bytes": 79328,
+      "sha256": "f8e23257eadc5a947f5a77b02349304c56e4a7f0a33d12a7e0c1a0272a11a1b2",
+      "payload": "f8e23257eadc5a947f5a77b02349304c56e4a7f0a33d12a7e0c1a0272a11a1b2"
+    },
+    {
+      "label": "input/27/state-5-loft-sliceFront.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceFront.bin",
+      "bytes": 592,
+      "sha256": "e2415750d5f847cf632cff2af36edc23b79dd89bbe75182abbbe53de13474d78",
+      "payload": "e2415750d5f847cf632cff2af36edc23b79dd89bbe75182abbbe53de13474d78"
+    },
+    {
+      "label": "input/28/state-5-loft-sliceSigma.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceSigma.bin",
+      "bytes": 592,
+      "sha256": "02090a87ced02bb130ea90ebe86150e96e2531a7b7a400dc4b63b84ec860c4d1",
+      "payload": "02090a87ced02bb130ea90ebe86150e96e2531a7b7a400dc4b63b84ec860c4d1"
+    },
+    {
+      "label": "input/29/state-5-loft-sliceTau.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceTau.bin",
+      "bytes": 592,
+      "sha256": "1fcae83dd05ec74d9741548056f5c08a58756ece7b19fcbded2b4b4bc612dcdd",
+      "payload": "1fcae83dd05ec74d9741548056f5c08a58756ece7b19fcbded2b4b4bc612dcdd"
+    },
+    {
+      "label": "input/30/state-5-loft-slicePhase.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-slicePhase.bin",
+      "bytes": 148,
+      "sha256": "8db08cf26bea3e348ae0f05da065f993423afc68d5f4a20b000354b6dfd9715e",
+      "payload": "8db08cf26bea3e348ae0f05da065f993423afc68d5f4a20b000354b6dfd9715e"
+    },
+    {
+      "label": "input/31/state-5-loft-sliceFormed.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceFormed.bin",
+      "bytes": 592,
+      "sha256": "44036446bde5a50fc384811cb62b735f4b41e087d0482be1e38a810632f8227e",
+      "payload": "44036446bde5a50fc384811cb62b735f4b41e087d0482be1e38a810632f8227e"
+    },
+    {
+      "label": "input/32/state-5-loft-sliceWeight.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceWeight.bin",
+      "bytes": 592,
+      "sha256": "bd89396eae13b4f70584d21ac68720c0a8cffcd891ff88b186c3a72413a50e81",
+      "payload": "bd89396eae13b4f70584d21ac68720c0a8cffcd891ff88b186c3a72413a50e81"
+    },
+    {
+      "label": "input/33/state-5-loft-sliceFade.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceFade.bin",
+      "bytes": 592,
+      "sha256": "5a770f8da45a799aea283497ad599c33c7fb2a6c491e5ae9bf39b9bc4020376e",
+      "payload": "5a770f8da45a799aea283497ad599c33c7fb2a6c491e5ae9bf39b9bc4020376e"
+    },
+    {
+      "label": "input/34/state-5-loft-sliceJoined.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceJoined.bin",
+      "bytes": 148,
+      "sha256": "ae657d29455c7eee9d04e3bf603a78374e3c003e607d58ccbcca4d49dd13c697",
+      "payload": "ae657d29455c7eee9d04e3bf603a78374e3c003e607d58ccbcca4d49dd13c697"
+    },
+    {
+      "label": "input/35/ProfileLibrary.ts",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "payload": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+    },
+    {
+      "label": "input/36/profileFormat.ts",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "payload": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+    },
+    {
+      "label": "input/37/dispersion.ts",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "payload": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "label": "input/38/lipSheet.ts",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "payload": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+    },
+    {
+      "label": "input/39/sweptLoft.ts",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "payload": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+    },
+    {
+      "label": "input/40/frontRecords.ts",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "payload": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+    },
+    {
+      "label": "input/41/barrelSpots.ts",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "payload": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+    },
+    {
+      "label": "input/42/crestRays.ts",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "payload": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+    },
+    {
+      "label": "input/43/SweptBarrel.ts",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5667,
+      "sha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383",
+      "payload": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383"
+    },
+    {
+      "label": "input/44/start-case-0.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/start-case-0.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "payload": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "label": "input/45/start-case-1.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/start-case-1.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "payload": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "label": "input/46/start-case-2.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/start-case-2.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "payload": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "label": "input/47/start-case-3.bin",
+      "originalPath": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/start-case-3.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "payload": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "label": "historical-source/0",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "payload": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "scope": "Historical original path provenance; bytes supplied by immutable copy. Current repository path is not read or asserted unchanged."
+    },
+    {
+      "label": "historical-source/1",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "payload": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "scope": "Historical original path provenance; bytes supplied by immutable copy. Current repository path is not read or asserted unchanged."
+    },
+    {
+      "label": "historical-source/2",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "payload": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "scope": "Historical original path provenance; bytes supplied by immutable copy. Current repository path is not read or asserted unchanged."
+    },
+    {
+      "label": "historical-source/3",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "payload": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "scope": "Historical original path provenance; bytes supplied by immutable copy. Current repository path is not read or asserted unchanged."
+    },
+    {
+      "label": "historical-source/4",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "payload": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "scope": "Historical original path provenance; bytes supplied by immutable copy. Current repository path is not read or asserted unchanged."
+    },
+    {
+      "label": "historical-source/5",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "payload": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "scope": "Historical original path provenance; bytes supplied by immutable copy. Current repository path is not read or asserted unchanged."
+    },
+    {
+      "label": "historical-source/6",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "payload": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "scope": "Historical original path provenance; bytes supplied by immutable copy. Current repository path is not read or asserted unchanged."
+    },
+    {
+      "label": "historical-source/7",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "payload": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "scope": "Historical original path provenance; bytes supplied by immutable copy. Current repository path is not read or asserted unchanged."
+    },
+    {
+      "label": "historical-source/8",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5667,
+      "sha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383",
+      "payload": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383",
+      "scope": "Historical original path provenance; bytes supplied by immutable copy. Current repository path is not read or asserted unchanged."
+    }
+  ],
+  "plainSources": [
+    {
+      "path": "archive-first.py",
+      "bytes": 9009,
+      "sha256": "0ec9ff3804f73e78cc6286ff3ad5c68cdb247cd3b06d7078c086e80d5335cd1f"
+    },
+    {
+      "path": "first-pass.py",
+      "bytes": 4419,
+      "sha256": "ee7a57cb1de599c13c4a56df3fa0e7cef2bf840425c9f11ff3558d57ac4cc62e"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 12057,
+      "sha256": "b72d9d21824818e38fd3692cfc4272d8ec4b726760f3cd525815c82189224264"
+    }
+  ],
+  "traceV2ReportSha256": "7c05e4ed03f7e4c8a19b780de2497d4475406627b4974a5c7d06452ce817706d",
+  "additionalCurrentSourceObservation": "Parent read-only tool613d46; archived root-v2/current-source-observation.json. Point-in-time equality receipt only; no current-source assertion by default verifier or indefinite runtime equivalence.",
+  "selectedImmutableOriginalSources": [
+    {
+      "originalPin": {
+        "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 17189,
+        "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+      },
+      "immutableCopy": {
+        "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 17189,
+        "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+      }
+    },
+    {
+      "originalPin": {
+        "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+        "bytes": 2251,
+        "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+      },
+      "immutableCopy": {
+        "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/profileFormat.ts",
+        "bytes": 2251,
+        "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+      }
+    },
+    {
+      "originalPin": {
+        "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+        "bytes": 3285,
+        "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+      },
+      "immutableCopy": {
+        "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/dispersion.ts",
+        "bytes": 3285,
+        "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+      }
+    },
+    {
+      "originalPin": {
+        "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+        "bytes": 15981,
+        "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+      },
+      "immutableCopy": {
+        "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/lipSheet.ts",
+        "bytes": 15981,
+        "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+      }
+    },
+    {
+      "originalPin": {
+        "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+        "bytes": 60183,
+        "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+      },
+      "immutableCopy": {
+        "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 60183,
+        "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+      }
+    },
+    {
+      "originalPin": {
+        "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+        "bytes": 1776,
+        "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+      },
+      "immutableCopy": {
+        "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/frontRecords.ts",
+        "bytes": 1776,
+        "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+      }
+    },
+    {
+      "originalPin": {
+        "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+        "bytes": 9578,
+        "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+      },
+      "immutableCopy": {
+        "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/barrelSpots.ts",
+        "bytes": 9578,
+        "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+      }
+    },
+    {
+      "originalPin": {
+        "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+        "bytes": 14454,
+        "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+      },
+      "immutableCopy": {
+        "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/crestRays.ts",
+        "bytes": 14454,
+        "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+      }
+    },
+    {
+      "originalPin": {
+        "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.ts",
+        "bytes": 5667,
+        "sha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383"
+      },
+      "immutableCopy": {
+        "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/scene/barrel/SweptBarrel.ts",
+        "bytes": 5667,
+        "sha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383"
+      }
+    }
+  ],
+  "selectedInputPins": [
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-v2-20261004/trace.mjs",
+      "bytes": 28262,
+      "sha256": "24c25303025ef8c98b32aeabe1595fbee5458f60fa241bb349ce44cf5ecc27ef"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-v2-20261004/README.md",
+      "bytes": 6701,
+      "sha256": "c8ae50a0f6f8e7dbf70cfc4cfe900ecab540373292d79188979ff732b885e5d9"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-v2-20261004/plan.json",
+      "bytes": 1035,
+      "sha256": "e1d6f565aba6982516c3be1d0f31bc8169b552e0fd70df417ce0f5ed09470796"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-20261004/offline-first/report.json",
+      "bytes": 14312,
+      "sha256": "d75689c73374c3c4d08e06fd82a7cec303eb423a3b359289739e87d74d5e3e48"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-20261004/trace.mjs",
+      "bytes": 25378,
+      "sha256": "2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-20261004/README.md",
+      "bytes": 5539,
+      "sha256": "76dd98e0083d8297c646fb893db73448d6524cf28c6fc8cbcf1597e376ff606f"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-20261004/plan.json",
+      "bytes": 1032,
+      "sha256": "f8f21d828f7c282f54c296abdb1bd2b374dcbe52ed404e6d08c6ef135b2341df"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/receipt.json",
+      "bytes": 4209,
+      "sha256": "aea02040d2704916bffeb94f81bacbc87bc6266c184bfbe7cb763b3ef46109c1"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/trace-first.log",
+      "bytes": 385,
+      "sha256": "0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/syntax-stable-source-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/report.json",
+      "bytes": 719568,
+      "sha256": "5c55b04c660555562cff95f9700b666a35ae7397ed4489264deb3ee10b0e65d3"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/ready.json",
+      "bytes": 125142,
+      "sha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/bindings.json",
+      "bytes": 14456,
+      "sha256": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first.native-driver.json",
+      "bytes": 2374,
+      "sha256": "d2a4d3dce157b2b653e7cecb795745552914f832959e23220267d0fd4b419d75"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first.native-driver.log",
+      "bytes": 288,
+      "sha256": "ac67dc6be0936fc1e6f1bd0f70381bed63f87730a82e3f76bdecc5dbe0112940"
+    },
+    {
+      "path": "/private/tmp/surf-passive-first-six-metrics-20261004/report.json",
+      "bytes": 102894,
+      "sha256": "e5ce050cd09787b485348720bf62be26a09a0903331812f28c1834b40fbe230e"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-front.bin",
+      "bytes": 3564,
+      "sha256": "d6045128e18d251a2fa75efabaadea8bef9b3a1fbbd84c1a6290efa32ae378da"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-positions.bin",
+      "bytes": 237984,
+      "sha256": "43bf0e69407a85df4d295f4b4a640660ac51bbeb8f1b2ef758af121e7eebbe62"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-mesh-position.bin",
+      "bytes": 237984,
+      "sha256": "43bf0e69407a85df4d295f4b4a640660ac51bbeb8f1b2ef758af121e7eebbe62"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-mesh-sweptLift.bin",
+      "bytes": 79328,
+      "sha256": "f8e23257eadc5a947f5a77b02349304c56e4a7f0a33d12a7e0c1a0272a11a1b2"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceFront.bin",
+      "bytes": 592,
+      "sha256": "e2415750d5f847cf632cff2af36edc23b79dd89bbe75182abbbe53de13474d78"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceSigma.bin",
+      "bytes": 592,
+      "sha256": "02090a87ced02bb130ea90ebe86150e96e2531a7b7a400dc4b63b84ec860c4d1"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceTau.bin",
+      "bytes": 592,
+      "sha256": "1fcae83dd05ec74d9741548056f5c08a58756ece7b19fcbded2b4b4bc612dcdd"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-slicePhase.bin",
+      "bytes": 148,
+      "sha256": "8db08cf26bea3e348ae0f05da065f993423afc68d5f4a20b000354b6dfd9715e"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceFormed.bin",
+      "bytes": 592,
+      "sha256": "44036446bde5a50fc384811cb62b735f4b41e087d0482be1e38a810632f8227e"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceWeight.bin",
+      "bytes": 592,
+      "sha256": "bd89396eae13b4f70584d21ac68720c0a8cffcd891ff88b186c3a72413a50e81"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceFade.bin",
+      "bytes": 592,
+      "sha256": "5a770f8da45a799aea283497ad599c33c7fb2a6c491e5ae9bf39b9bc4020376e"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/state-5-loft-sliceJoined.bin",
+      "bytes": 148,
+      "sha256": "ae657d29455c7eee9d04e3bf603a78374e3c003e607d58ccbcca4d49dd13c697"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/source/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5667,
+      "sha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/start-case-0.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/start-case-1.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/start-case-2.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/fields/start-case-3.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    }
+  ],
+  "omissions": [
+    "All unused production source/dependency/compiler/runtime bodies and all unselected dist/typed payloads are omitted. Original authority metadata/paths/hashes in unchanged reports are references only.",
+    "All PNG payloads are omitted. Original camera/PNG byte hash reference is metadata-only; no raster/image read, replay, video reproduction or visual-quality proof."
+  ],
+  "fullRuntimeReplayClosure": false,
+  "allNativePayloadsRetained": false,
+  "pngPayloadsRetained": false,
+  "counts": {
+    "payloads": 46,
+    "localPayloads": 39,
+    "sharedDurablePayloads": 7,
+    "aliases": 57,
+    "selectedOriginalSources": 9,
+    "selectedTypedPaths": 16
+  },
+  "firstCreation": {
+    "pinsVerified": 133,
+    "uniquePathsReadOnce": 59,
+    "uniqueBytesRead": 2823806
+  },
+  "scope": "Durable selected input identity and reports/source versions only. Default verifier reads retained local/shared archive bodies and checks raw F32 schedule/pair words; never imports, compiles or reruns trace/game/solver/native code."
+}

@@ -1,0 +1,60 @@
+{
+  "schema": "roof-pair-trace-first-archive-pass/v1",
+  "valid": false,
+  "startedAt": "2026-10-04T13:59:46.968149+00:00",
+  "wholeSeconds": 30,
+  "archiveCapBytes": 16777216,
+  "logCapBytes": 1048576,
+  "resultCapBytes": 131072,
+  "commands": [
+    {
+      "name": "archive-first",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/archive-first.py"
+      ],
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace",
+      "startedAt": "2026-10-04T13:59:46.968646+00:00",
+      "pid": 72556,
+      "freshProcessGroup": 72556,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T13:59:47.072743+00:00",
+      "elapsedSeconds": 0.10411591699812561,
+      "childClosed": true,
+      "log": {
+        "path": "archive-first.log",
+        "bytes": 744,
+        "sha256": "920ca013251bdc996d7761b2bb64c91d5aea2d4efc96687ada31eff401acc75d"
+      }
+    },
+    {
+      "name": "verify-first",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/verify.py",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/verify-first.result.json"
+      ],
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace",
+      "startedAt": "2026-10-04T13:59:47.074015+00:00",
+      "pid": 72557,
+      "freshProcessGroup": 72557,
+      "exitCode": 1,
+      "endedAt": "2026-10-04T13:59:47.140214+00:00",
+      "elapsedSeconds": 0.06620162504259497,
+      "childClosed": true,
+      "log": {
+        "path": "verify-first.log",
+        "bytes": 1663,
+        "sha256": "a214d9366f918230a48401cde4bb641ae30dc32765f30a88a5e17686dd061fc0"
+      }
+    }
+  ],
+  "heavyJobsClosed": true,
+  "scope": "First-only selected archive production and retained-byte default verifier. No trace/library/compiler/simulation/native/raster execution; no retries.",
+  "firstFailure": "RuntimeError: verify-first first failure preserved without retry",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/first-pass.py\", line 38, in <module>\n    if rec['exitCode']!=0 or rec.get('firstFailure'):raise RuntimeError(name+' first failure preserved without retry')\n                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: verify-first first failure preserved without retry\n",
+  "endedAt": "2026-10-04T13:59:47.141369+00:00",
+  "elapsedSeconds": 0.17322920903097838,
+  "firstLogsBytes": 2407,
+  "archiveBytesBeforeReceipt": 1062438
+}

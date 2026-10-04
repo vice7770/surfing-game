@@ -1,0 +1,21 @@
+{
+  "schema": "roof-pair-trace-first-archive-production/v1",
+  "valid": true,
+  "scope": "Selected exact byte inputs/source versions/first reports only. No trace, library, compiler, geometry simulation, native job or raster decoding.",
+  "counts": {
+    "payloads": 46,
+    "localPayloads": 39,
+    "sharedDurablePayloads": 7,
+    "aliases": 57,
+    "selectedOriginalSources": 9,
+    "selectedTypedPaths": 16
+  },
+  "firstCreation": {
+    "pinsVerified": 133,
+    "uniquePathsReadOnce": 59,
+    "uniqueBytesRead": 2823806
+  },
+  "manifestSha256": "b1ac6b4fbc2f9c182ec51c6a954b1cb5f37007220d8589b947fa32b38cd56702",
+  "outcomeSha256": "9a9b9a5981ad46e754b0c6205129e44b0eab45e6ff621b02ad79b0c560b78d9b",
+  "elapsedSeconds": 0.05460441700415686
+}

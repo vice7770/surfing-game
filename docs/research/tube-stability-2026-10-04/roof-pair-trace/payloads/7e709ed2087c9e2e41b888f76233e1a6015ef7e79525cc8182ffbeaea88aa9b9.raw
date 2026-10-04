@@ -1,0 +1,61 @@
+{
+  "valid": true,
+  "files": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "equalsFrozenOriginal": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "equalsFrozenOriginal": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "equalsFrozenOriginal": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "equalsFrozenOriginal": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "equalsFrozenOriginal": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "equalsFrozenOriginal": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "equalsFrozenOriginal": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "equalsFrozenOriginal": true
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5667,
+      "sha256": "d04f5e5cd4de41b5bdba9fd2bb7a146a8f7170a926a37320390895b156f13383",
+      "equalsFrozenOriginal": true
+    }
+  ],
+  "runtimeChanges": false,
+  "tubeQualityPass": false
+}

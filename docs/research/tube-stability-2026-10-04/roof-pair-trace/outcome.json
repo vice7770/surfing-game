@@ -1,0 +1,157 @@
+{
+  "schema": "roof-pair-trace-retained-outcome/v1",
+  "traceCompleted": true,
+  "rows": [
+    126,
+    127
+  ],
+  "originalNativeFailure": {
+    "report": {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/report.json",
+      "bytes": 719568,
+      "sha256": "5c55b04c660555562cff95f9700b666a35ae7397ed4489264deb3ee10b0e65d3"
+    },
+    "firstFailure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'incomplete'\n- 'complete'\n",
+    "captureFailure": "Error: 96MiB retained numerical/typed payload exceeded",
+    "ready": {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/ready.json",
+      "bytes": 125142,
+      "sha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0"
+    },
+    "bindings": {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/bindings.json",
+      "bytes": 14456,
+      "sha256": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96"
+    },
+    "driver": {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first.native-driver.json",
+      "bytes": 2374,
+      "sha256": "d2a4d3dce157b2b653e7cecb795745552914f832959e23220267d0fd4b419d75"
+    },
+    "driverValid": false,
+    "independentClosureValid": true,
+    "driverExitCode": 1
+  },
+  "firstTraceFailure": {
+    "report": {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-20261004/offline-first/report.json",
+      "bytes": 14312,
+      "sha256": "d75689c73374c3c4d08e06fd82a7cec303eb423a3b359289739e87d74d5e3e48"
+    },
+    "firstFailure": "Error: Cannot find module 'esbuild'\nRequire stack:\n- /Users/regina/Desktop/Projects/surfing-game/package.json",
+    "rowsCalculated": 0,
+    "inputsUnchangedAfter": true,
+    "arraysUnchangedAfter": true,
+    "rootReceipt": {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/receipt.json",
+      "bytes": 4209,
+      "sha256": "aea02040d2704916bffeb94f81bacbc87bc6266c184bfbe7cb763b3ef46109c1"
+    },
+    "rootLog": {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/trace-first.log",
+      "bytes": 385,
+      "sha256": "0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568"
+    },
+    "rootSyntaxLog": {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/syntax-stable-source-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "originalSourcesPreserved": true,
+    "repair": "Installed TypeScript transpileModule; closed in-memory require for only the four original pure module sources. No diagnostic-data or arithmetic change."
+  },
+  "rowQueries": [
+    {
+      "slope": 0.05263157894736842,
+      "footHeight": 2.132902355075316,
+      "footDepth": 7,
+      "seconds": 0.9530038807609096,
+      "hold": "drawing"
+    },
+    {
+      "slope": 0.05263157894736842,
+      "footHeight": 2.1626204601763757,
+      "footDepth": 7,
+      "seconds": 0.9868426724008363,
+      "hold": "drawing"
+    }
+  ],
+  "corePointsCheckedPerRow": [
+    57,
+    57
+  ],
+  "reportedAllCoreYWordsMatch": [
+    true,
+    true
+  ],
+  "reportedScheduleWordsMatch": true,
+  "emittedRows": 148,
+  "selectedScalarDecompositions": [
+    {
+      "point": 83,
+      "actualDeltaXY": [
+        1.525221824645996,
+        -1.3689085245132446
+      ],
+      "phaseThenSize": {
+        "phaseDeltaXY": [
+          1.5177526473999023,
+          -1.4392004311084747
+        ],
+        "sizeDeltaXY": [
+          0.00746917724609375,
+          0.0702919065952301
+        ]
+      },
+      "sizeThenPhase": {
+        "sizeDeltaXY": [
+          0.04255199432373047,
+          0.028895020484924316
+        ],
+        "phaseDeltaXY": [
+          1.4826698303222656,
+          -1.397803544998169
+        ]
+      }
+    },
+    {
+      "point": 86,
+      "actualDeltaXY": [
+        1.8419132232666016,
+        -1.2472639083862305
+      ],
+      "phaseThenSize": {
+        "phaseDeltaXY": [
+          1.8441991806030273,
+          -1.310286670923233
+        ],
+        "sizeDeltaXY": [
+          -0.0022859573364257812,
+          0.06302276253700256
+        ]
+      },
+      "sizeThenPhase": {
+        "sizeDeltaXY": [
+          0.04291725158691406,
+          0.025733590126037598
+        ],
+        "phaseDeltaXY": [
+          1.7989959716796875,
+          -1.272997498512268
+        ]
+      }
+    }
+  ],
+  "sourcePrototypeImplemented": false,
+  "nativeCaptureComplete": false,
+  "nineStateQuality": false,
+  "tubeQuality": false,
+  "fpsGate": false,
+  "adoption": false,
+  "geometryRepaired": false,
+  "visibleArtifactReproduced": false,
+  "exactFragmentCauseAttributed": false,
+  "finCauseProved": false,
+  "directOriginalF64QueryObservation": false,
+  "scope": "Original-source deterministic reconstruction from retained F32 input records; F64 queries were reconstructed, not directly observed. Scalar phase/size decomposition uses both hypothetical orders and is not a physical/visual pass, causal percentage, implemented smoothing prototype or runtime adoption."
+}

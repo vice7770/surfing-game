@@ -1,0 +1,21 @@
+{
+  "name": "verify-integration-first",
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/verify.py",
+    "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/verify-integration-first.result.json"
+  ],
+  "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace",
+  "startedAt": "2026-10-04T14:04:30.327261+00:00",
+  "pid": 74172,
+  "freshProcessGroup": 74172,
+  "exitCode": 0,
+  "endedAt": "2026-10-04T14:04:30.400905+00:00",
+  "elapsedSeconds": 0.07343849999597296,
+  "childClosed": true,
+  "log": {
+    "path": "verify-integration-first.log",
+    "bytes": 2024,
+    "sha256": "0aebb82a76d02a7995f10eb828d83dea75b9c0bc1a07be1f4eeaab6c44bce079"
+  }
+}

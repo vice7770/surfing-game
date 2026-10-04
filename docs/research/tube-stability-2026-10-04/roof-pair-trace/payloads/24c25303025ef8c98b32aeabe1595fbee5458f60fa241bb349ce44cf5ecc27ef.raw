@@ -1,0 +1,327 @@
+// SOURCE PREPARATION ONLY. Root reviews/freezes and performs the first future gates.
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join, resolve } from 'node:path';
+
+const WORK = '/private/tmp/surf-tube-roof-pair-trace-v2-20261004';
+const PREVIOUS = '/private/tmp/surf-tube-roof-pair-trace-20261004';
+const PREVIOUS_ROOT = '/private/tmp/surf-tube-roof-pair-trace-root-20261004/first';
+const CAPTURE = '/private/tmp/surf-wavelab-passive-original-20261004';
+const REPO = '/Users/regina/Desktop/Projects/surfing-game';
+const METRICS = '/private/tmp/surf-passive-first-six-metrics-20261004/report.json';
+const OUT = join(WORK, 'offline-first'), START = Date.now();
+const pins = new Map(), arrays = [], cached = new Map(); let typedBytes = 0;
+const hash = b => createHash('sha256').update(b).digest('hex');
+const deadline = () => assert(Date.now() - START <= 27000, 'Secondary27s offline deadline');
+const sentinel = (_, v) => typeof v === 'number' && (!Number.isFinite(v) || Object.is(v, -0))
+  ? { numericSentinel: Object.is(v, -0) ? '-0' : Number.isNaN(v) ? 'NaN' : v > 0 ? '+Infinity' : '-Infinity' } : v;
+const result = { schema: 'tube-roof-pair-trace-first/v1', traceCompleted: false, phase: 'armed-input',
+  nativeCaptureComplete: false, nineStateQuality: false, adoption: false, tubeQuality: false, fpsGate: false,
+  geometryRepaired: false, visibleArtifactReproduced: false, exactFragmentCauseAttributed: false, finCauseProved: false,
+  directOriginalF64QueryObservation: false, queryAuthority: 'Original-source deterministic reconstruction from original retained F32 records and exact original sigma schedule; not directly retained F64 queries',
+  rows: [], firstFailure: null, inputsUnchangedBefore: false, inputsUnchangedAfter: false, arraysUnchangedAfter: false };
+
+function read(path, cap = 8 * 1024 * 1024, expected) {
+  deadline(); const p = resolve(path), s = lstatSync(p);
+  assert(s.isFile() && !s.isSymbolicLink() && realpathSync(p) === p, 'Regular original input required');
+  assert(s.size <= cap, 'Input byte cap ' + p); const b = readFileSync(p);
+  const pin = { path: p, bytes: b.length, sha256: hash(b) };
+  if (expected) { assert.equal(pin.bytes, expected.bytes); assert.equal(pin.sha256, expected.sha256); }
+  if (pins.has(p)) assert.deepEqual(pin, pins.get(p)); pins.set(p, pin); return b;
+}
+const json = (path, expected) => JSON.parse(read(path, 8 * 1024 * 1024, expected));
+function words(a) { return Buffer.from(a.buffer, a.byteOffset, a.byteLength); }
+function hex(v) { const b = Buffer.allocUnsafe(4); b.writeFloatLE(v); return b.readUInt32LE().toString(16).padStart(8, '0'); }
+function save() {
+  deadline(); result.elapsedSeconds = (Date.now() - START) / 1000; result.typedUniqueBytes = typedBytes;
+  result.inputPins = [...pins.values()]; const b = Buffer.from(JSON.stringify(result, sentinel) + '\n');
+  assert(b.length <= 128 * 1024, '128KiB original summary cap'); writeFileSync(join(OUT, 'report.json'), b);
+}
+function extractedMethod(source, name) {
+  const marker = '\n  ' + (name === 'build' ? '' : 'private ') + name + '(';
+  const start = source.indexOf(marker); assert(start >= 0 && source.indexOf(marker, start + 1) < 0, 'One original method ' + name);
+  const end = source.indexOf('\n  }\n', start); assert(end > start, 'Original method boundary ' + name);
+  const text = source.slice(start + 1, end + 4);
+  assert(text.endsWith('\n  }')); return text;
+}
+function originalSlice(source, startMarker, endMarker) {
+  const start = source.indexOf(startMarker); assert(start >= 0 && source.indexOf(startMarker, start + 1) < 0);
+  const end = source.indexOf(endMarker, start); assert(end > start); return source.slice(start, end + endMarker.length);
+}
+
+assert.equal(process.env.ROOT_TUBE_PAIR_TRACE_OFFLINE_LEASE, 'true', 'Root offline lease required');
+assert.equal(process.argv.length, 3); assert(/^--source-sha256=[0-9a-f]{64}$/.test(process.argv[2]));
+assert(!existsSync(OUT), 'First outcome only; no retry'); mkdirSync(OUT);
+try {
+  const self = read(join(WORK, 'trace.mjs'), 128 * 1024); assert.equal(hash(self), process.argv[2].slice('--source-sha256='.length));
+  read(join(WORK, 'README.md'), 128 * 1024); const plan = json(join(WORK, 'plan.json'));
+  assert.equal(plan.schema, 'tube-roof-pair-trace-plan/v1'); assert.equal(plan.work, WORK);
+  assert.equal(plan.capture, CAPTURE); assert.equal(plan.metrics, METRICS); assert.deepEqual(plan.rows, [126, 127]);
+  assert.equal(plan.state, 5); assert.equal(plan.front, 48); assert.equal(plan.targetSeconds, 25);
+  assert.deepEqual(plan.profilePointsInclusive, [32, 88]); assert.deepEqual(plan.exceptionalPoints, [83, 86]);
+  assert.deepEqual(plan.detailedContributionPoints, [83, 86]);
+  for (const [key, value] of Object.entries({ commandSeconds: 30, cooperativeSeconds: 27, metadataFileBytes: 8388608,
+    typedUniqueBytes: 2097152, sourceFileBytes: 131072, summaryBytes: 131072, logBytes: 1048576 })) assert.equal(plan[key], value);
+  const previous = json(join(PREVIOUS, 'offline-first/report.json'));
+  assert.equal(previous.traceCompleted, false); assert.equal(previous.phase, 'pure-original-library');
+  assert(previous.firstFailure.startsWith("Error: Cannot find module 'esbuild'")); assert.deepEqual(previous.rows, []);
+  for (const name of ['trace.mjs', 'README.md', 'plan.json']) read(join(PREVIOUS, name), 128 * 1024);
+  json(join(PREVIOUS_ROOT, 'receipt.json'));
+  read(join(PREVIOUS_ROOT, 'trace-first.log'), 1024 * 1024);
+  read(join(PREVIOUS_ROOT, 'syntax-stable-source-first.log'), 1024 * 1024);
+  result.priorTraceFirstFailure = { report: pins.get(join(PREVIOUS, 'offline-first/report.json')), firstFailure: previous.firstFailure,
+    rowsCalculated: 0, inputsUnchangedAfter: previous.inputsUnchangedAfter, arraysUnchangedAfter: previous.arraysUnchangedAfter,
+    rootReceipt: pins.get(join(PREVIOUS_ROOT, 'receipt.json')), rootLog: pins.get(join(PREVIOUS_ROOT, 'trace-first.log')),
+    rootSyntaxLog: pins.get(join(PREVIOUS_ROOT, 'syntax-stable-source-first.log')), originalSourcesPreserved: true,
+    repair: 'Installed TypeScript transpileModule; closed in-memory require for only the four original pure module sources. No diagnostic-data or arithmetic change.' };
+  const original = json(join(CAPTURE, 'native-first/report.json'));
+  assert.equal(original.schema, 'wavelab-passive-original-native/v1'); assert.equal(original.valid, false); assert.equal(original.incomplete, true);
+  assert.equal(original.capture.state, 'incomplete'); assert.equal(original.capture.failure, 'Error: 96MiB retained numerical/typed payload exceeded');
+  assert.deepEqual(original.capture.frames.map(f => f.targetSeconds), [0, 5, 10, 15, 20, 25]);
+  const ready = json(original.ready.path, original.ready); read(original.binding.path, 8 * 1024 * 1024, original.binding);
+  assert.equal(ready.sourceTree, join(CAPTURE, 'source'));
+  const driverPath = join(CAPTURE, 'native-first.native-driver.json'), driver = json(driverPath);
+  read(join(CAPTURE, 'native-first.native-driver.log'), 1024 * 1024);
+  assert.equal(driver.valid, false); assert.equal(driver.independentClosureValid, true); assert.equal(driver.exitCode, 1);
+  const metrics = json(METRICS); assert.equal(metrics.diagnosisCompleted, true); assert.equal(metrics.captureIncomplete, true);
+  assert.equal(metrics.qualityPass, false); assert.equal(metrics.adoption, false);
+  const frame = original.capture.frames[5], metric = metrics.frames[5];
+  assert.equal(frame.index, 5); assert.equal(frame.targetSeconds, 25); assert.equal(frame.config.spot, 'padang');
+  assert.equal(frame.config.tide, 0); assert.equal(frame.loft.overlaps, 0); assert.equal(frame.loft.clamps, 0);
+  assert.equal(frame.loft.sliceCount, 148); assert.equal(frame.frontCount, 99);
+  assert.equal(metric.index, 5); assert.equal(metric.originalSourceIndexTemplateMatches, true); assert.equal(metric.positionWordsMatch, true);
+  result.originalFailure = { report: pins.get(join(CAPTURE, 'native-first/report.json')), firstFailure: original.firstFailure,
+    captureFailure: original.capture.failure, ready: original.ready, bindings: original.binding, driver: pins.get(driverPath),
+    driverValid: driver.valid, independentClosureValid: driver.independentClosureValid, driverExitCode: driver.exitCode };
+  result.context = { index: 5, targetSeconds: 25, actualWallSeconds: frame.relativeWallSeconds, seaTime: frame.status.seaTime,
+    config: frame.config, camera: frame.camera, originalPNGReference: metric.originalPNG,
+    pixelsReadOrModified: false, originalMetricEdges: metric.exceptionalRoofEdges,
+    qualification: 'Original camera retained mainly foam and did not reproduce severe user-video fins; this fixed mesh pair is descriptive geometry only' };
+  assert.deepEqual(metric.exceptionalRoofEdges.map(e => e.profilePoint), [83, 86]);
+  assert(metric.exceptionalRoofEdges.every(e => e.slice === 126 && e.slices.every(s => s.sliceFront === 48)));
+
+  const fields = new Map(original.capture.fields.map(f => [f.label, f])); assert.equal(fields.size, original.capture.fields.length);
+  function field(label) {
+    const f = fields.get(label); assert(f?.file && f.kind === 'typed', 'Canonical typed alias ' + label);
+    if (label.startsWith('state-5/')) { const local = frame.fields.find(p => p.label === label); assert(local); for (const k of ['label', 'kind', 'type', 'elements', 'bytes']) assert.equal(local[k], f[k]); }
+    let raw = cached.get(f.file.path);
+    if (!raw) { typedBytes += f.bytes; assert(typedBytes <= 2 * 1024 * 1024); raw = read(f.file.path, 2 * 1024 * 1024, f.file); cached.set(f.file.path, raw); }
+    assert.equal(raw.length, f.bytes); const C = { Float32Array, Int32Array, Uint8Array }[f.type]; assert(C);
+    assert.equal(f.elements * C.BYTES_PER_ELEMENT, f.bytes);
+    const a = new C(Uint8Array.from(raw).buffer); arrays.push({ a, sha256: hash(words(a)), label }); return a;
+  }
+  const records = field('state-5/front'), position = field('state-5/loft-positions'), mesh = field('state-5/mesh-position'), lift = field('state-5/mesh-sweptLift');
+  assert(words(position).equals(words(mesh))); assert.equal(records.length, frame.frontCount * 9);
+  assert.equal(position.length, frame.loft.vertexCount * 3); assert.equal(lift.length, frame.loft.vertexCount);
+  const attrs = Object.fromEntries(['Front', 'Sigma', 'Tau', 'Phase', 'Formed', 'Weight', 'Fade', 'Joined'].map(k => [k, field('state-5/loft-slice' + k)]));
+  for (const a of Object.values(attrs)) assert.equal(a.length, frame.loft.sliceCount);
+
+  const sources = {}, sourceAuthorities = [];
+  const needed = ['src/wave/barrel/ProfileLibrary.ts', 'src/wave/barrel/profileFormat.ts', 'src/wave/dispersion.ts',
+    'src/wave/barrel/lipSheet.ts', 'src/wave/barrel/sweptLoft.ts', 'src/wave/barrel/frontRecords.ts',
+    'src/wave/barrel/barrelSpots.ts', 'src/wave/barrel/crestRays.ts', 'src/scene/barrel/SweptBarrel.ts'];
+  for (const name of needed) {
+    const authority = ready.sourceFiles.find(p => p.path === join(REPO, name)); assert(authority, 'Original ready source pin ' + name);
+    const path = join(ready.sourceTree, name); sources[name] = read(path, 128 * 1024, authority).toString('utf8');
+    sourceAuthorities.push({ originalPin: authority, immutableCopy: pins.get(path) });
+  }
+  result.sourceAuthorities = sourceAuthorities;
+  assert(sources['src/wave/barrel/barrelSpots.ts'].includes('padang: { slope: 1 / 19,'));
+  assert(sources['src/wave/barrel/frontRecords.ts'].includes('FRONT_STRIDE = 9'));
+  assert(sources['src/wave/barrel/frontRecords.ts'].includes('footHeight: 5, footDepth: 6'));
+  assert(sources['src/scene/barrel/SweptBarrel.ts'].includes('this.loft.build(front, count, stillLevel, heightAt)'));
+  const ray = sources['src/wave/barrel/crestRays.ts'];
+  assert(ray.includes('this.load(end - start, (i, key) => records[(start + i) * FRONT_STRIDE + FRONT_FIELD[key]])'));
+  assert(!ray.includes('records[') || !/records\[[^\n]*\]\s*=/.test(ray), 'Original ray source must not mutate records');
+  result.inputsUnchangedBefore = true; result.phase = 'pure-original-library'; save();
+
+  // Future TypeScript erasure only; closed require cannot load a game, solver or another module.
+  const ts = createRequire(join(REPO, 'package.json'))('typescript');
+  result.compiler = { name: 'typescript', version: ts.version, module: 'CommonJS', target: 'ESNext',
+    bundleWritten: false, sourceEdits: false, diagnostics: [] };
+  function transpile(text, fileName) {
+    deadline(); const erased = ts.transpileModule(text, { fileName, reportDiagnostics: true,
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ESNext } });
+    const diagnostics = (erased.diagnostics ?? []).map(d => ({ file: d.file?.fileName ?? fileName,
+      category: ts.DiagnosticCategory[d.category], code: d.code, start: d.start, length: d.length,
+      message: ts.flattenDiagnosticMessageText(d.messageText, '\n') }));
+    result.compiler.diagnostics.push({ file: fileName, diagnostics });
+    assert(!diagnostics.some(d => d.category === 'Error'), 'TypeScript transpile diagnostics: ' + fileName);
+    deadline(); return erased.outputText;
+  }
+  const pureNames = needed.slice(0, 4), allowed = new Set(pureNames.map(n => join(ready.sourceTree, n)));
+  const modules = new Map(), graph = new Set(); result.pureImportClosure = []; result.pureRequireGraph = [];
+  function loadOriginal(path) {
+    assert(allowed.has(path), 'Closed pure module graph: ' + path);
+    if (modules.has(path)) return modules.get(path).exports;
+    const name = pureNames.find(n => join(ready.sourceTree, n) === path); assert(name);
+    const receiver = { exports: {} }; modules.set(path, receiver);
+    const body = transpile(sources[name], path);
+    const closedRequire = specifier => {
+      assert(typeof specifier === 'string' && /^\.\.?\//.test(specifier), 'Only original relative requires');
+      const base = resolve(dirname(path), specifier), target = base.endsWith('.ts') ? base : base + '.ts';
+      assert(allowed.has(target), 'Require outside four original pure modules: ' + specifier);
+      graph.add(path + ' -> ' + target); result.pureRequireGraph = [...graph].sort();
+      return loadOriginal(target);
+    };
+    new Function('module', 'exports', 'require', body)(receiver, receiver.exports, closedRequire);
+    result.pureImportClosure = [...modules.keys()].sort(); return receiver.exports;
+  }
+  const { ProfileLibrary, PROFILE_POINTS, LANDMARK } = loadOriginal(join(ready.sourceTree, pureNames[0]));
+  const { decodeCase } = loadOriginal(join(ready.sourceTree, pureNames[1]));
+  const { GRAVITY } = loadOriginal(join(ready.sourceTree, pureNames[2]));
+  const { sheetTablesLookup } = loadOriginal(join(ready.sourceTree, pureNames[3]));
+  assert.deepEqual([...modules.keys()].sort(), [...allowed].sort(), 'Exact four-source pure import closure');
+  assert.deepEqual([...graph].sort(), [
+    join(ready.sourceTree, pureNames[0]) + ' -> ' + join(ready.sourceTree, pureNames[2]),
+    join(ready.sourceTree, pureNames[1]) + ' -> ' + join(ready.sourceTree, pureNames[0]),
+    join(ready.sourceTree, pureNames[3]) + ' -> ' + join(ready.sourceTree, pureNames[0]),
+  ].sort(), 'Exact original relative require graph');
+  assert.equal(PROFILE_POINTS, 128); assert.equal(LANDMARK.crest, 32); assert.equal(LANDMARK.throat, 88); assert.equal(GRAVITY, 9.81);
+  const caseSpecs = original.plan.caseAssets.map((asset, i) => ({ asset, field: fields.get('start/case-' + i) }));
+  assert.equal(caseSpecs.length, 4); assert(caseSpecs.every(p => p.field));
+  const cases = caseSpecs.map(p => decodeCase(field(p.field.label)));
+  for (let i = 0; i < cases.length; i++) {
+    const c = cases[i]; assert.equal(c.frames.length % 256, 0); assert(c.frames.every(Number.isFinite));
+    assert(c.tauStep > 0 && Number.isFinite(c.tauStart) && c.touchdown > 0 && c.slope > 0 && c.nonlinearity > 0);
+    arrays.push({ a: c.frames, sha256: hash(words(c.frames)), label: 'decoded-case-frames-' + c.id });
+    if (c.tipVelocity) arrays.push({ a: c.tipVelocity, sha256: hash(words(c.tipVelocity)), label: 'decoded-case-tip-' + c.id });
+  }
+  result.libraryCases = cases.map((c, i) => ({ id: c.id, asset: caseSpecs[i].asset, input: caseSpecs[i].field.file,
+    slope: c.slope, nonlinearity: c.nonlinearity, flatDepth: c.flatDepth, tauStart: c.tauStart, tauStep: c.tauStep,
+    touchdown: c.touchdown, frames: c.frames.length / 256 }));
+  const library = new ProfileLibrary(cases), source = sources['src/wave/barrel/sweptLoft.ts'];
+  const names = ['build', 'fronts', 'baseSlices', 'survey', 'refinements', 'at', 'planRays'];
+  const methods = names.map(name => ({ name, source: extractedMethod(source, name) }));
+  const constants = originalSlice(source, 'export const LOFT = {', '} as const;');
+  const fade = originalSlice(source, 'export function collapseFade(', '\n}\n');
+  // Original methods are exact source slices. Only the receiver and geometry/ray sinks are diagnostic substitutes.
+  const constructor = `constructor(library, slope) {
+    this.library=library; this.slope=slope; this.normalDemand=false; this.output=[];
+    this.base=new Float64Array(2*MAX_SLICES+8); this.sigmas=new Float64Array(2*MAX_SLICES+8);
+    this.sample={}; this.probe={}; this.planned=new Float64Array(0); this.plannedLive=new Uint8Array(0);
+    this.plannedRayX=new Float64Array(0); this.plannedRayZ=new Float64Array(0); this.plannedRay=new Float64Array(2);
+    this.result={sliceCount:0};
+    this.rayPlan={diagnostics:{blend:0,invalidIntervals:0},prepareRecords(){},rayAt(sigma,out){out[0]=0;out[1]=0;}};
+  }`;
+  const captureMethod = `loftFront(records,f,n,budgeted,stillLevel,heightAt) {
+    const plannedCount=this.planRays(records,f,n,budgeted);
+    for(let k=0;k<plannedCount;k++) {
+      if(this.plannedLive[k]!==1)continue;
+      const sigma=this.sigmas[k],p=6*k,raw=this.at(records,f,sigma,{});
+      const query={slope:this.slope,footHeight:this.planned[p+3],footDepth:this.planned[p+4],seconds:this.planned[p+2],hold:'drawing'};
+      const profile=new Float32Array(2*PROFILE_POINTS),lookup=this.library.profileAt(query,profile);
+      if(collapseFade(query.seconds,lookup.touchdownSeconds,lookup.collapseSeconds)===0)continue;
+      if(this.result.sliceCount>=MAX_SLICES)break;
+      this.output.push({row:this.result.sliceCount,front:f.id,sigma,query,rawTau:raw.tau,plannedXZ:[this.planned[p],this.planned[p+1]],
+        frontRecords:[f.start,f.end],frontEnds:[f.first,f.last],scheduleIndex:k,scheduleCount:n,budgeted});
+      this.result.sliceCount++;
+    }
+  }
+  measureRayAdvance(){} dropOverlaps(){} sealRuns(){} triangulate(){}`;
+  const code = constants + '\n' + fade + '\nconst LOFT_SAMPLES=PROFILE_POINTS+2*LOFT.extensionSamples;\n'
+    + 'const MAX_SLICES=Math.floor(LOFT.budget/LOFT_SAMPLES);\nclass QuerySchedule {\n' + constructor + '\n'
+    + methods.map(m => m.source).join('\n') + '\n' + captureMethod + '\n}\nmodule.exports={QuerySchedule,LOFT,LOFT_SAMPLES,MAX_SLICES};';
+  result.extraction = { methods: methods.map(m => ({ name: m.name, bytes: Buffer.byteLength(m.source), sha256: hash(Buffer.from(m.source)) })),
+    constantsSha256: hash(Buffer.from(constants)), fadeSha256: hash(Buffer.from(fade)),
+    raySink: 'No ray computation; original unchanged planRays query stores precede rayAt and have no dependency on ray outputs',
+    geometrySink: 'Narrow original profile/fade/output-count enumeration; no position, normal, mask or contact generation' };
+  const erased = transpile(code, 'source-extracted-query-schedule.ts');
+  const receiver = { exports: {} }, FRONT_FIELD = { x: 0, z: 1, front: 2, sigma: 3, tau: 4, footHeight: 5, footDepth: 6, throwZ: 7, pace: 8 };
+  new Function('module', 'exports', 'PROFILE_POINTS', 'FRONT_FIELD', 'FRONT_STRIDE', erased)(receiver, receiver.exports, PROFILE_POINTS, FRONT_FIELD, 9);
+  const { QuerySchedule, LOFT_SAMPLES, MAX_SLICES } = receiver.exports;
+  assert.equal(LOFT_SAMPLES, 134); const schedule = new QuerySchedule(library, 1 / 19);
+  schedule.build(records, frame.frontCount, frame.config.tide, () => { throw new Error('No water-height/simulation call permitted'); });
+  assert.equal(schedule.output.length, frame.loft.sliceCount); assert.equal(schedule.result.clamps, frame.loft.clamps);
+  assert(schedule.output.length < MAX_SLICES); const sequence = [];
+  for (const row of schedule.output) {
+    assert.equal(row.front, attrs.Front[row.row]); assert.equal(hex(row.sigma), hex(attrs.Sigma[row.row]));
+    assert.equal(hex(row.query.seconds), hex(attrs.Tau[row.row]));
+    sequence.push([row.row, row.front, row.sigma, row.query.seconds]);
+  }
+  result.schedule = { exactSigmaMethod: 'Original F64 base/refinement schedule and original planned query arithmetic; retained F32 sigma not used as input',
+    emittedRows: sequence.length, allFrontSigmaTauF32WordsMatch: true, originalClamps: frame.loft.clamps,
+    reconstructedClamps: schedule.result.clamps, originalOverlaps: frame.loft.overlaps,
+    emittedF64Sequence: sequence, exactOriginalF64ObservationUnavailable: true };
+  result.phase = 'target-profiles'; save();
+
+  const traceRows = [126, 127].map(i => schedule.output[i]); assert(traceRows.every(r => r.front === 48));
+  function frameInfo(c, time) { const position = library.framePosition(c, time), f = Math.floor(position);
+    return { id: c.id, time, position, frame: f, next: Math.min(c.frames.length / 256 - 1, f + 1), share: position - f }; }
+  function caseXY(c, f, point) {
+    const a = [c.frames[f.frame * 256 + 2 * point], c.frames[f.frame * 256 + 2 * point + 1]],
+      b = [c.frames[f.next * 256 + 2 * point], c.frames[f.next * 256 + 2 * point + 1]],
+      lerp64 = a.map((v, k) => v + f.share * (b[k] - v));
+    return { a, b, lerp64, lerp32: lerp64.map(Math.fround) };
+  }
+  const profiles = [];
+  for (const row of traceRows) {
+    deadline(); const q = row.query, b = library.bracket(q), normalizedTau = q.seconds / b.unit;
+    const times = Array.from(library.caseTimes(b, normalizedTau, q.hold));
+    const lower = frameInfo(b.lower, times[0]), upper = frameInfo(b.upper, times[1]);
+    const profile = new Float32Array(256), lookup = library.profileAt(q, profile); profiles.push(profile);
+    const blend = library.frameBlend(q, {}), formed = sheetTablesLookup(blend, { across: new Float32Array(128), back: new Float32Array(128) });
+    assert.equal(hex(formed), hex(attrs.Formed[row.row])); assert.equal(attrs.Phase[row.row], 1);
+    assert.equal(attrs.Weight[row.row], 1); assert.equal(attrs.Fade[row.row], 1); assert.equal(attrs.Joined[row.row], 1);
+    const traced = { ...row, normalizedTau, libraryCaseWeight: b.weight, scale: b.scale, timeUnitSeconds: b.unit,
+      nonlinearity: q.footHeight / q.footDepth, clamped: b.clamped, actualLower: lower, actualUpper: upper,
+      normalizedTouchdown: b.touchdown, heldLower: b.heldLower, heldUpper: b.heldUpper, lookup,
+      retained: Object.fromEntries(Object.entries(attrs).map(([k, a]) => [k, a[row.row]])), formedReproduced: formed,
+      wholeCoreProfileYWordsMatch: false, corePointsChecked: 0, detailedContributionPoints: [83, 86], sourceContributions: [] };
+    result.rows.push(traced);
+    for (let point = 32; point <= 88; point++) {
+      const l = caseXY(b.lower, lower, point), u = caseXY(b.upper, upper, point);
+      const blend64 = b.upper === b.lower ? l.lerp32.slice() : l.lerp32.map((v, k) => v + b.weight * (u.lerp32[k] - v)),
+        blend32 = blend64.map(Math.fround), scaled64 = blend32.map(v => v * b.scale), final32 = scaled64.map(Math.fround);
+      assert.deepEqual(final32, Array.from(profile.subarray(2 * point, 2 * point + 2)), 'Original staged F32 arithmetic');
+      const vertex = row.row * 134 + 3 + point, actualXYZ = Array.from(position.subarray(3 * vertex, 3 * vertex + 3));
+      assert.equal(lift[vertex], 1); assert.equal(hex(frame.config.tide + final32[1]), hex(actualXYZ[1]), 'Original full-lift Y word');
+      traced.corePointsChecked++;
+      if (point === 83 || point === 86) traced.sourceContributions.push({ point, lower: l, upper: u, blend64, blend32, scaled64, profileXY: final32,
+        profileWords: final32.map(hex), originalXYZ: actualXYZ, originalWords: actualXYZ.map(hex), originalLift: lift[vertex] });
+    }
+    assert.equal(traced.corePointsChecked, 57); assert.deepEqual(traced.sourceContributions.map(p => p.point), [83, 86]);
+    traced.wholeCoreProfileYWordsMatch = true;
+  }
+  const q0 = traceRows[0].query, q1 = traceRows[1].query, b0 = library.bracket(q0), b1 = library.bracket(q1);
+  const normalized0 = q0.seconds / b0.unit, normalized1 = q1.seconds / b1.unit;
+  const phaseFirstQuery = { ...q0, seconds: normalized1 * b0.unit }, sizeFirstQuery = { ...q1, seconds: normalized0 * b1.unit };
+  const phaseFirst = new Float32Array(256), sizeFirst = new Float32Array(256);
+  const phaseFirstLookup = library.profileAt(phaseFirstQuery, phaseFirst), sizeFirstLookup = library.profileAt(sizeFirstQuery, sizeFirst);
+  result.comparison = { queryDifferences: { footHeight: q1.footHeight - q0.footHeight, footDepth: q1.footDepth - q0.footDepth,
+    rawSeconds: q1.seconds - q0.seconds, normalizedTau: normalized1 - normalized0, caseWeight: b1.weight - b0.weight, scale: b1.scale - b0.scale },
+    phaseFirst: { query: phaseFirstQuery, lookup: phaseFirstLookup }, sizeFirst: { query: sizeFirstQuery, lookup: sizeFirstLookup },
+    qualification: 'Hypothetical original-library queries holding normalized phase or size; both orders retained. F64 recomposed seconds and original F32 stores. No causal percentage or physical/visual pass.', points: [] };
+  for (let point = 32; point <= 88; point++) {
+    const a = Array.from(profiles[0].subarray(2 * point, 2 * point + 2)), z = Array.from(profiles[1].subarray(2 * point, 2 * point + 2)),
+      p = Array.from(phaseFirst.subarray(2 * point, 2 * point + 2)), s = Array.from(sizeFirst.subarray(2 * point, 2 * point + 2));
+    result.comparison.points.push({ point, actualDeltaXY: z.map((v, k) => v - a[k]),
+      phaseThenSize: { phaseDeltaXY: p.map((v, k) => v - a[k]), sizeDeltaXY: z.map((v, k) => v - p[k]) },
+      sizeThenPhase: { sizeDeltaXY: s.map((v, k) => v - a[k]), phaseDeltaXY: z.map((v, k) => v - s[k]) } });
+  }
+  result.traceCompleted = true; result.phase = 'input-closure';
+} catch (error) { result.firstFailure ??= String(error); result.traceCompleted = false; process.exitCode = 1; }
+finally {
+  try {
+    for (const pin of pins.values()) read(pin.path, Math.max(8 * 1024 * 1024, pin.bytes), pin);
+    result.inputsUnchangedAfter = true;
+    for (const item of arrays) assert.equal(hash(words(item.a)), item.sha256, 'Original array words changed ' + item.label);
+    result.arraysUnchangedAfter = true;
+  } catch (error) { result.inputClosureFailure = String(error); result.traceCompleted = false; process.exitCode = 1; }
+  result.traceCompleted &&= result.inputsUnchangedBefore && result.inputsUnchangedAfter && result.arraysUnchangedAfter;
+  try { save(); } catch (error) {
+    result.firstFailure ??= String(error); result.traceCompleted = false; process.exitCode = 1;
+    const receipt = { schema: result.schema, traceCompleted: false, firstFailure: String(result.firstFailure).slice(0, 4096),
+      reportSaveFailure: String(error).slice(0, 4096), inputClosureFailure: result.inputClosureFailure,
+      previousReportPreserved: existsSync(join(OUT, 'report.json')), lastPhase: result.phase,
+      inputsUnchangedBefore: result.inputsUnchangedBefore, inputsUnchangedAfter: result.inputsUnchangedAfter,
+      arraysUnchangedAfter: result.arraysUnchangedAfter, nativeCaptureComplete: false, nineStateQuality: false,
+      adoption: false, tubeQuality: false, fpsGate: false, geometryRepaired: false, finCauseProved: false };
+    writeFileSync(join(OUT, 'first-failure.json'), JSON.stringify(receipt, sentinel) + '\n', { flag: 'wx' });
+  }
+  console.log(JSON.stringify({ report: join(OUT, 'report.json'), traceCompleted: result.traceCompleted,
+    firstFailure: result.firstFailure, inputsUnchangedAfter: result.inputsUnchangedAfter, arraysUnchangedAfter: result.arraysUnchangedAfter,
+    nativeCaptureComplete: false, tubeQuality: false, adoption: false, finCauseProved: false }));
+}

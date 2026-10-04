@@ -1,0 +1,19 @@
+{
+  "schema": "roof-pair-trace-archive-verification/v1",
+  "valid": false,
+  "checks": [
+    {
+      "check": "retained-byte-aliases-nine-original-sources-and-both-first-trace-terminals",
+      "valid": true,
+      "payloads": 46,
+      "aliases": 57,
+      "originalSources": 9,
+      "firstV1Failure": "Error: Cannot find module 'esbuild'\nRequire stack:\n- /Users/regina/Desktop/Projects/surfing-game/package.json",
+      "firstV2ElapsedSeconds": 0.2930724160396494
+    }
+  ],
+  "scope": "Verify retained local/shared bytes, first failures/root terminals, F32 schedule words, raw pair deltaY and stored arithmetic decompositions only. Core reconstruction match is an original report assertion tied to retained source/run receipt, not independently rerun. No game/helper/compiler import, simulation, native/raster/video quality or adoption pass.",
+  "firstFailure": "AssertionError: Actual raw core pair deltaY differs",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/verify.py\", line 82, in <module>\n    need(near(y(127,p['point'])-y(126,p['point']),p['actualDeltaXY'][1]),'Actual raw core pair deltaY differs')\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/verify.py\", line 7, in need\n    if not v:raise AssertionError(msg)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Actual raw core pair deltaY differs\n",
+  "elapsedSeconds": 0.015481000009458512
+}

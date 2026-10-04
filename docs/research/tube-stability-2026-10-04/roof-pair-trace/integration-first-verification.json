@@ -1,0 +1,128 @@
+{
+  "schema": "roof-pair-trace-corrected-verifier-integration/v1",
+  "valid": true,
+  "startedAt": "2026-10-04T14:04:30.325991+00:00",
+  "wholeSeconds": 30,
+  "archiveCapBytes": 16777216,
+  "logCapBytes": 1048576,
+  "resultCapBytes": 131072,
+  "command": {
+    "name": "verify-integration-first",
+    "argv": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/verify.py",
+      "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace/verify-integration-first.result.json"
+    ],
+    "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/roof-pair-trace",
+    "startedAt": "2026-10-04T14:04:30.327261+00:00",
+    "pid": 74172,
+    "freshProcessGroup": 74172,
+    "exitCode": 0,
+    "endedAt": "2026-10-04T14:04:30.400905+00:00",
+    "elapsedSeconds": 0.07343849999597296,
+    "childClosed": true,
+    "log": {
+      "path": "verify-integration-first.log",
+      "bytes": 2024,
+      "sha256": "0aebb82a76d02a7995f10eb828d83dea75b9c0bc1a07be1f4eeaab6c44bce079"
+    }
+  },
+  "heavyJobsClosed": true,
+  "scope": "One separately authorized corrected retained-byte verifier, no archive rewrite, trace/compiler/helper/game imports, reconstruction, simulation, native or raster execution. First failed verifier and original reports/outcome/receipts preserved.",
+  "firstEvidencePins": [
+    {
+      "path": "manifest.json",
+      "bytes": 58685,
+      "sha256": "b1ac6b4fbc2f9c182ec51c6a954b1cb5f37007220d8589b947fa32b38cd56702"
+    },
+    {
+      "path": "outcome.json",
+      "bytes": 5084,
+      "sha256": "9a9b9a5981ad46e754b0c6205129e44b0eab45e6ff621b02ad79b0c560b78d9b"
+    },
+    {
+      "path": "verify-first.result.json",
+      "bytes": 1663,
+      "sha256": "a214d9366f918230a48401cde4bb641ae30dc32765f30a88a5e17686dd061fc0"
+    },
+    {
+      "path": "first-verification.json",
+      "bytes": 2901,
+      "sha256": "b935769dea458fca323d9fe124f2f298af0466e2498c2eca90f6647451124fed"
+    },
+    {
+      "path": "verify-v1.py",
+      "bytes": 12057,
+      "sha256": "b72d9d21824818e38fd3692cfc4272d8ec4b726760f3cd525815c82189224264"
+    },
+    {
+      "path": "archive-first.py",
+      "bytes": 9009,
+      "sha256": "0ec9ff3804f73e78cc6286ff3ad5c68cdb247cd3b06d7078c086e80d5335cd1f"
+    },
+    {
+      "path": "first-pass.py",
+      "bytes": 4419,
+      "sha256": "ee7a57cb1de599c13c4a56df3fa0e7cef2bf840425c9f11ff3558d57ac4cc62e"
+    },
+    {
+      "path": "archive-first.log",
+      "bytes": 744,
+      "sha256": "920ca013251bdc996d7761b2bb64c91d5aea2d4efc96687ada31eff401acc75d"
+    },
+    {
+      "path": "archive-first.terminal.json",
+      "bytes": 709,
+      "sha256": "960e1746c9bc7b13e7a2a21150ad8c8ea381133fb122ac97738141ea639579ca"
+    },
+    {
+      "path": "verify-first.log",
+      "bytes": 1663,
+      "sha256": "a214d9366f918230a48401cde4bb641ae30dc32765f30a88a5e17686dd061fc0"
+    },
+    {
+      "path": "verify-first.terminal.json",
+      "bytes": 833,
+      "sha256": "3a7266198876d347efa9d27c14212d07ec21d028992c7872584ff4a606c0262f"
+    }
+  ],
+  "integrationSources": [
+    {
+      "path": "verify.py",
+      "bytes": 15256,
+      "sha256": "9cfbe9ebafd81c2858c611483aff766fe02b92ede35ad9c1e605523b2ae97eb5"
+    },
+    {
+      "path": "integration-pass.py",
+      "bytes": 6299,
+      "sha256": "7069806f84074d37d749e5052a745cbc46ba9d1e91ce3e05307433a9f0bc61e8"
+    }
+  ],
+  "firstEvidenceUnchanged": true,
+  "correctedVerifierValid": true,
+  "priorArchiveVerifierFirstFailurePreserved": true,
+  "nativeCaptureComplete": false,
+  "nineStateQuality": false,
+  "tubeQuality": false,
+  "adoption": false,
+  "finCauseProved": false,
+  "sourcePrototypeImplemented": false,
+  "endedAt": "2026-10-04T14:04:30.402020+00:00",
+  "elapsedSeconds": 0.07602666702587157,
+  "verify-integration-first.result.json": {
+    "path": "verify-integration-first.result.json",
+    "bytes": 2024,
+    "sha256": "0aebb82a76d02a7995f10eb828d83dea75b9c0bc1a07be1f4eeaab6c44bce079"
+  },
+  "verify-integration-first.log": {
+    "path": "verify-integration-first.log",
+    "bytes": 2024,
+    "sha256": "0aebb82a76d02a7995f10eb828d83dea75b9c0bc1a07be1f4eeaab6c44bce079"
+  },
+  "verify-integration-first.terminal.json": {
+    "path": "verify-integration-first.terminal.json",
+    "bytes": 869,
+    "sha256": "64730b79b3bdee5dff2e70a65c90651c56b08cd5ccf5991766db46de75a7869b"
+  },
+  "archiveBytesBeforeIntegrationReceipt": 1092884
+}

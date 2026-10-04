@@ -1,0 +1,99 @@
+{
+  "startedAt": "2026-10-04T13:50:32.995890+00:00",
+  "sourceReviewed": true,
+  "independentSourceReview": "Receiver/decoder/F32 arithmetic cleared; verbose output reduced before execution",
+  "commands": [
+    {
+      "label": "syntax-stable-source-first",
+      "command": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/surf-tube-roof-pair-trace-20261004/trace.mjs"
+      ],
+      "pid": 70024,
+      "startedAt": "2026-10-04T13:50:33.000705+00:00",
+      "exitCode": 0,
+      "log": {
+        "path": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/syntax-stable-source-first.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "elapsedSeconds": 0.026797291997354478,
+      "endedAt": "2026-10-04T13:50:33.025473+00:00",
+      "processGroupClosed": true
+    },
+    {
+      "label": "trace-first",
+      "command": [
+        "/opt/homebrew/bin/node",
+        "/private/tmp/surf-tube-roof-pair-trace-20261004/trace.mjs",
+        "--source-sha256=2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60"
+      ],
+      "pid": 70025,
+      "startedAt": "2026-10-04T13:50:33.027171+00:00",
+      "exitCode": 1,
+      "log": {
+        "path": "/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/trace-first.log",
+        "bytes": 385,
+        "sha256": "0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568"
+      },
+      "elapsedSeconds": 0.0632535420008935,
+      "endedAt": "2026-10-04T13:50:33.089133+00:00",
+      "processGroupClosed": true
+    }
+  ],
+  "valid": false,
+  "nativeJobs": false,
+  "tubeQualityPass": false,
+  "helpers": [
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-20261004/trace.mjs",
+      "bytes": 25378,
+      "sha256": "2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-20261004/README.md",
+      "bytes": 5539,
+      "sha256": "76dd98e0083d8297c646fb893db73448d6524cf28c6fc8cbcf1597e376ff606f"
+    },
+    {
+      "path": "/private/tmp/surf-tube-roof-pair-trace-20261004/plan.json",
+      "bytes": 1032,
+      "sha256": "f8f21d828f7c282f54c296abdb1bd2b374dcbe52ed404e6d08c6ef135b2341df"
+    }
+  ],
+  "authorityMetadata": [
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/report.json",
+      "bytes": 719568,
+      "sha256": "5c55b04c660555562cff95f9700b666a35ae7397ed4489264deb3ee10b0e65d3"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/ready.json",
+      "bytes": 125142,
+      "sha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/bindings.json",
+      "bytes": 14456,
+      "sha256": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first.native-driver.json",
+      "bytes": 2374,
+      "sha256": "d2a4d3dce157b2b653e7cecb795745552914f832959e23220267d0fd4b419d75"
+    },
+    {
+      "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first.native-driver.log",
+      "bytes": 288,
+      "sha256": "ac67dc6be0936fc1e6f1bd0f70381bed63f87730a82e3f76bdecc5dbe0112940"
+    },
+    {
+      "path": "/private/tmp/surf-passive-first-six-metrics-20261004/report.json",
+      "bytes": 102894,
+      "sha256": "e5ce050cd09787b485348720bf62be26a09a0903331812f28c1834b40fbe230e"
+    }
+  ],
+  "elapsedSeconds": 0.09364962496329099,
+  "firstFailure": "AssertionError({'label': 'trace-first', 'command': ['/opt/homebrew/bin/node', '/private/tmp/surf-tube-roof-pair-trace-20261004/trace.mjs', '--source-sha256=2c6d6154e62acb3e78eb96f6ca5c5fb585bfc87b0cf12f3bb82adaa0ad9f9c60'], 'pid': 70025, 'startedAt': '2026-10-04T13:50:33.027171+00:00', 'exitCode': 1, 'log': {'path': '/private/tmp/surf-tube-roof-pair-trace-root-20261004/first/trace-first.log', 'bytes': 385, 'sha256': '0602dc1768c165b7705fec12c31cc1b746221cbe5e3f001f6efe6cf440fa7568'}, 'elapsedSeconds': 0.0632535420008935, 'endedAt': '2026-10-04T13:50:33.089133+00:00', 'processGroupClosed': True})"
+}
