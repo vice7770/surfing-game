@@ -1,0 +1,81 @@
+{
+  "schema": "contact-height-three-arm-cost-ready/v1",
+  "stage": "Source ready for precise root review; not compiled/executed; approved authority absent",
+  "ownership": "New cost source/driver/config/plan only; no runtime/candidate/oracle edits or source-tree copies",
+  "directory": "/private/tmp/contact-height-demand-cost-20261004",
+  "artifacts": [
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/cost.ts",
+      "bytes": 32664,
+      "sha256": "e3dd2e064a0a05b197ebcd7cf28bd16f73e6c3e5d24c8dcc306ad8f9a180cd6e"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/cost.test.ts",
+      "bytes": 268,
+      "sha256": "82a30ff50c0a27ddcba2bc98d98722f8831b928ed683184cdf29c1af50b525d2"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/vitest.cost.config.ts",
+      "bytes": 466,
+      "sha256": "fabb10ffd94190d90f654cda2cfacbe9b20dadc85cdfd8ff1a560c4dd60ab446"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/tsconfig.cost.json",
+      "bytes": 254,
+      "sha256": "64fc4ce85ed86da5be1939ffb39d08fc09b5a7f103f25d2053e045dcd0e71c80"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/package.json",
+      "bytes": 38,
+      "sha256": "ad91c9ac9136396f5249a45e093bab863e9a23646620d911af827986f6180283"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/plan.md",
+      "bytes": 9321,
+      "sha256": "dd65ca6e82a6fb5929100b461cd5ed751968006bd9d9c9b5f968a40193a6e564"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/authority.template.json",
+      "bytes": 1528,
+      "sha256": "413b3a4eabdd6b12592fb07dac3be3ef47694fd2edeb6820dd1aa65c34fdfc24"
+    }
+  ],
+  "schedule": {
+    "arms": 3,
+    "warmupsPerArm": 18,
+    "blocks": 60,
+    "measuredTrialsPerArm": 120,
+    "measuredTrialsTotal": 360,
+    "fullWorkloadsIncludingPreflightWarmup": 417,
+    "emptySetups": 3,
+    "blockOrders": [
+      "ABCCBA",
+      "ACBBCA",
+      "BACCAB",
+      "BCAACB",
+      "CABBAC",
+      "CBAABC"
+    ]
+  },
+  "independentSetupRecords": true,
+  "mandatoryTimedHeightFieldCopyBytes": 1857280,
+  "prototypeMethodPinsDeclared": 35,
+  "state": "Independent fixed captured numeric receivers using actual imported solver methods; source state and records must remain exact",
+  "checksExecuted": false,
+  "costExecuted": false,
+  "productionChanges": false,
+  "gitMutations": false,
+  "executionBlockedUntil": [
+    "Passed height parity and exact height runtime freeze",
+    "Root full cost source/plan review",
+    "Root approved-authority.json plus exact supplied SHA-256",
+    "Explicit quiet CPU execution lease"
+  ],
+  "symlinks": [
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules",
+      "use": "Existing dependencies, read-only use; no installation or dependency edits"
+    }
+  ]
+}

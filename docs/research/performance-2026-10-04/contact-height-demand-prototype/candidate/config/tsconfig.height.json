@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node", "vitest/globals"] },
+  "include": [
+    "src/physics/PhysicalSurfWater.ts",
+    "src/physics/PhysicalSurfWater.test.ts",
+    "src/physics/ownedPlainSurface.prototype.test.ts",
+    "src/wave/barrel/sweptLoft.ts",
+    "src/wave/barrel/sweptContact.ts",
+    "src/wave/barrel/contactHeightDemand.prototype.test.ts",
+    "src/wave/barrel/contactHeightDemand.f64-replay.test.ts"
+  ]
+}

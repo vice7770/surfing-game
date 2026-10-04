@@ -1,0 +1,102 @@
+{
+  "schema": "height-pre-review-preservation/v1",
+  "stage": "initial reviewed source-only boundary; no checks were executed",
+  "files": [
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/src/physics/PhysicalSurfWater.ts",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26301,
+      "sha256": "84625fae42e14164e339871463cba88d7f0865880e68947f7d4bffb54575ef2e"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/barrel/sweptLoft.ts",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/barrel/sweptContact.ts",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/src/physics/ownedPlainSurface.prototype.test.ts",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/physics/ownedPlainSurface.prototype.test.ts",
+      "bytes": 4187,
+      "sha256": "b512f5267211abfe66170ec6c3b20628637138be456a9c8be84c4f0ed7025939"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/barrel/contactHeightDemand.prototype.test.ts",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/barrel/contactHeightDemand.prototype.test.ts",
+      "bytes": 13024,
+      "sha256": "64cddc06bedc1212a21a8d5458b5f5306ddb71eaf66b9bda1c92d1c5755ae139"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/barrel/contactHeightDemand.f64-replay.test.ts",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/barrel/contactHeightDemand.f64-replay.test.ts",
+      "bytes": 12798,
+      "sha256": "1d99331051fdf109900eff5ee6ed59636d1e57b11356bb628538ee820799664e"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/vitest.height.config.ts",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/vitest.height.config.ts",
+      "bytes": 506,
+      "sha256": "3671d39c57f086ad93a882df6affba76fdbc3958d7f92f467191c71c9f78e73f"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/tsconfig.height.json",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/tsconfig.height.json",
+      "bytes": 454,
+      "sha256": "e85acaa2f750e78319c25077809f2d204b0cd460305f4dd7e4fd86bb67871f23"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/SurfZoneRunner.ts",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/SurfZoneRunner.ts",
+      "bytes": 39955,
+      "sha256": "48892eea1be50a39708376662908511900ad02ef8d24f3fc361e69260372130f"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/src/game/SurfZoneWorkerCore.ts",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/game/SurfZoneWorkerCore.ts",
+      "bytes": 7117,
+      "sha256": "284675cc587b9f12c70ae518d1a8c4f128396482883f549989fc69b327437a69"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/README.md",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/README.md",
+      "bytes": 5322,
+      "sha256": "9461394f8c6700c59f9ebade16336c0d2c110bec314f02da4312b7a89f333fbd"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/intent.md",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/intent.md",
+      "bytes": 1697,
+      "sha256": "7958f6d58e1ff9b23ac5e6da8981a19296f892b4fe3f4cda120bd6de91d03a7b"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/start-manifest.json",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/start-manifest.json",
+      "bytes": 25479,
+      "sha256": "60cb987a388e7363ad20c877ab1962b0a049e6417b04aa549d9accc6b504241d"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/candidate.patch",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/candidate.patch",
+      "bytes": 55984,
+      "sha256": "ed63173e8c33b44beef2aa6549ee713fd53c36f48ce4969c6c2f5fa65ebd8f00"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/candidate-manifest.json",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/candidate-manifest.json",
+      "bytes": 62317,
+      "sha256": "4f614af338a8834499dd69401632793477534674d7cf73c5173992c82e1e780a"
+    },
+    {
+      "original": "/private/tmp/contact-height-demand-prototype-20261004/ready.json",
+      "stored": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/ready.json",
+      "bytes": 1639,
+      "sha256": "17030e88c4ac7a1acb2aaa9af70c4511ef185cde59b6c1b847cb76457fcd1748"
+    }
+  ]
+}

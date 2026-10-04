@@ -1,0 +1,27 @@
+[
+  {
+    "log": "/private/tmp/contact-height-demand-cost-20261004/checks/strict-tsc-first.log",
+    "command": [
+      "./node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.cost.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "log": "/private/tmp/contact-height-demand-cost-20261004/checks/cost-first.log",
+    "command": [
+      "./node_modules/.bin/vitest",
+      "run",
+      "--config",
+      "vitest.cost.config.ts",
+      "--maxWorkers",
+      "1",
+      "cost.test.ts"
+    ],
+    "exitCode": 0
+  }
+]

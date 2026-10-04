@@ -1,0 +1,1022 @@
+--- a/src/physics/PhysicalSurfWater.ts
++++ b/src/physics/PhysicalSurfWater.ts
+@@ -76,6 +76,168 @@
+   swept?: SweptSurfaceQueries;
+ }
+ 
++/** Only numeric state read by the existing plain-height sampler; no complete solver facade. */
++type PlainHeightState = Pick<ShallowWaterSolver,
++  'nx' | 'nz' | 'dx' | 'restLevel' | 'h' | 'bed' | 'xCenters' | 'zCenters' | 'dz' | 'sampleCentered' | 'rowBelow'>;
++
++/** The private contact owns these two functions, not mutable height arrays or a partial loft. */
++export interface OwnedPlainSurface {
++  capture(): void;
++  heightAt(x: number, z: number): number;
++}
++
++/** One literal stencil/cache implementation shared by live and privately owned plain-height state. */
++class PlainHeightSurface {
++  protected readonly nodes = new Float64Array(16);
++  private surfaceCacheActive = false;
++  private surfaceCacheEpoch = 0;
++  private surfaceCacheHeights = new Float64Array(0);
++  private surfaceCacheStamps = new Uint32Array(0);
++  private surfaceCacheXMin = Number.NaN;
++  private surfaceCacheZMin = Number.NaN;
++  private surfaceCacheLastX = -1;
++  private surfaceCacheLastZ = -1;
++
++  constructor(private readonly heightState: PlainHeightState, protected readonly spacing: number,
++    private readonly heightOptions: Pick<PhysicalSurfWaterOptions, 'carve'> = {}, owned = false) {
++    this.surfaceCacheActive = owned;
++  }
++
++  /**
++   * Reuse exact render-node heights during a synchronous read-only build. The water, bed and carve must stay fixed;
++   * a caller that changes them inside the scope must call `invalidateSurfaceNodeCache`. Every scope starts and ends
++   * with invalidation, so ordinary samples and later builds never reuse untracked mutable water.
++   */
++  withSurfaceNodeCache<T>(read: () => T): T {
++    const active = this.surfaceCacheActive;
++    this.invalidateSurfaceNodeCache();
++    this.surfaceCacheActive = true;
++    try {
++      return read();
++    } finally {
++      this.surfaceCacheActive = active;
++      this.invalidateSurfaceNodeCache();
++    }
++  }
++
++  /** Explicitly discard node heights after a water, bed or grid change within a scoped build. */
++  invalidateSurfaceNodeCache(): void {
++    this.surfaceCacheEpoch = (this.surfaceCacheEpoch + 1) >>> 0;
++    if (this.surfaceCacheEpoch === 0) {
++      this.surfaceCacheStamps.fill(0);
++      this.surfaceCacheEpoch = 1;
++    }
++  }
++
++  /** The render nodes' surface, never the swept contact's: what the contact lofts over. */
++  plainSurfaceAt(x: number, z: number): number {
++    if (this.outside(x, z)) return this.heightState.restLevel;
++    const { nodes } = this;
++    const { gx, gz } = this.gatherNodes(x, z);
++    const wx = catmullRomWeights(gx - Math.floor(gx));
++    const wz = catmullRomWeights(gz - Math.floor(gz));
++    let value = 0;
++    for (let j = 0; j < 4; j += 1) for (let i = 0; i < 4; i += 1) value += wz[j] * wx[i] * nodes[j * 4 + i];
++    return value;
++  }
++
++  /** Height at a render node (the renderer's `writeUniformSurface` convention: dry nodes 5 cm under the bed). */
++  private nodeHeight(x: number, z: number): number {
++    const { heightState: solver } = this;
++    const depth = solver.sampleCentered(solver.h, x, z);
++    const bottom = solver.sampleCentered(solver.bed, x, z);
++    const height = depth > WET ? depth + bottom : bottom - 0.05;
++    return this.heightOptions.carve ? this.heightOptions.carve(x, z, height) : height;
++  }
++
++  /** Fill the 4 × 4 node stencil around (x, z); returns the node-space coordinates. */
++  protected gatherNodes(x: number, z: number): { gx: number; gz: number } {
++    const { heightState: solver, spacing } = this;
++    const xMin = solver.xCenters[0] - solver.dx / 2;
++    const zMin = solver.zCenters[0] - solver.dz[0] / 2;
++    const zSpan = solver.zCenters[solver.nz - 1] + solver.dz[solver.nz - 1] / 2 - zMin;
++    const lastX = Math.round((solver.nx * solver.dx) / spacing);
++    const lastZ = Math.round(zSpan / spacing);
++    const gx = (x - xMin) / spacing;
++    const gz = (z - zMin) / spacing;
++    const i0 = Math.floor(gx);
++    const j0 = Math.floor(gz);
++    if (this.surfaceCacheActive) {
++      // A moved window or different grid cannot reuse the old integer node addresses, even within a scope.
++      if (this.surfaceCacheXMin !== xMin || this.surfaceCacheZMin !== zMin
++        || this.surfaceCacheLastX !== lastX || this.surfaceCacheLastZ !== lastZ) {
++        this.invalidateSurfaceNodeCache();
++        this.surfaceCacheXMin = xMin;
++        this.surfaceCacheZMin = zMin;
++        this.surfaceCacheLastX = lastX;
++        this.surfaceCacheLastZ = lastZ;
++      }
++      const size = (lastX + 1) * (lastZ + 1);
++      if (this.surfaceCacheHeights.length < size) {
++        this.surfaceCacheHeights = new Float64Array(size);
++        this.surfaceCacheStamps = new Uint32Array(size);
++      }
++    }
++    for (let j = 0; j < 4; j += 1) {
++      const nz = Math.min(lastZ, Math.max(0, j0 + j - 1));
++      for (let i = 0; i < 4; i += 1) {
++        const nx = Math.min(lastX, Math.max(0, i0 + i - 1));
++        if (this.surfaceCacheActive) {
++          const at = nz * (lastX + 1) + nx;
++          if (this.surfaceCacheStamps[at] !== this.surfaceCacheEpoch) {
++            this.surfaceCacheHeights[at] = this.nodeHeight(xMin + nx * spacing, zMin + nz * spacing);
++            this.surfaceCacheStamps[at] = this.surfaceCacheEpoch;
++          }
++          this.nodes[j * 4 + i] = this.surfaceCacheHeights[at];
++        } else {
++          this.nodes[j * 4 + i] = this.nodeHeight(xMin + nx * spacing, zMin + nz * spacing);
++        }
++      }
++    }
++    return { gx, gz };
++  }
++
++  protected outside(x: number, z: number): boolean {
++    const { heightState: solver } = this;
++    const xMin = solver.xCenters[0] - solver.dx / 2;
++    const zMin = solver.zCenters[0] - solver.dz[0] / 2;
++    const zMax = solver.zCenters[solver.nz - 1] + solver.dz[solver.nz - 1] / 2;
++    return x < xMin || x > xMin + solver.nx * solver.dx || z < zMin || z > zMax;
++  }
++
++}
++
++/**
++ * Fixed ordinary grid, owned fields. The actual bilinear and binary-search methods run with this numeric receiver;
++ * neither is bound to the live solver. Public/custom physical water never selects this private contact factory.
++ */
++class OwnedHeightState implements PlainHeightState {
++  readonly nx: number;
++  readonly nz: number;
++  readonly dx: number;
++  restLevel: number;
++  readonly h: Float64Array;
++  readonly bed: Float64Array;
++  readonly xCenters: Float64Array;
++  readonly zCenters: Float64Array;
++  readonly dz: Float64Array;
++  readonly sampleCentered: PlainHeightState['sampleCentered'];
++  readonly rowBelow: PlainHeightState['rowBelow'];
++
++  constructor(source: PlainHeightState) {
++    this.nx = source.nx; this.nz = source.nz; this.dx = source.dx; this.restLevel = source.restLevel;
++    this.h = new Float64Array(source.h.length); this.bed = new Float64Array(source.bed.length);
++    this.xCenters = new Float64Array(source.xCenters.length);
++    this.zCenters = source.zCenters.slice(); this.dz = source.dz.slice();
++    this.sampleCentered = source.sampleCentered; this.rowBelow = source.rowBelow;
++  }
++
++  capture(source: PlainHeightState): void {
++    this.h.set(source.h); this.bed.set(source.bed); this.xCenters.set(source.xCenters);
++    this.restLevel = source.restLevel;
++  }
++}
++
+ /**
+  * The physical surf zone through the SurfWater seam (board plan B0, wave plan
+  * P4b, Q10), for bodies stepped with the solver in its worker.
+@@ -93,28 +255,19 @@
+  *   Δq = −J/(ρA), conserving momentum. The vertical part cannot enter a
+  *   depth-averaged solver; it is only tallied.
+  */
+-export class PhysicalSurfWater implements SurfWater {
++export class PhysicalSurfWater extends PlainHeightSurface implements SurfWater {
+   /** Vertical impulse handed over but not representable in the depth-averaged water, N·s. */
+   unappliedVerticalImpulse = 0;
+   /** This water's own horizontal reactions since the last `drainReaction`: weight Σ|J|, Σ|J|·x, Σ|J|·z, ΣJx, ΣJz. */
+   private readonly tally = { weight: 0, x: 0, z: 0, jx: 0, jz: 0 };
+-  private readonly spacing: number;
+   private readonly omega: number;
+-  private readonly nodes = new Float64Array(16);
+   private readonly cells = new Int32Array(4);
+   private readonly weights = new Float64Array(4);
+   private readonly hit = createContactHit();
+-  private surfaceCacheActive = false;
+-  private surfaceCacheEpoch = 0;
+-  private surfaceCacheHeights = new Float64Array(0);
+-  private surfaceCacheStamps = new Uint32Array(0);
+-  private surfaceCacheXMin = Number.NaN;
+-  private surfaceCacheZMin = Number.NaN;
+-  private surfaceCacheLastX = -1;
+-  private surfaceCacheLastZ = -1;
++
+ 
+   constructor(private readonly solver: ShallowWaterSolver, private readonly options: PhysicalSurfWaterOptions) {
+-    this.spacing = options.nodeSpacing ?? 1;
++    super(solver, options.nodeSpacing ?? 1, options);
+     this.omega = (2 * Math.PI) / options.peakPeriod;
+   }
+ 
+@@ -128,30 +281,15 @@
+     });
+   }
+ 
+-  /**
+-   * Reuse exact render-node heights during a synchronous read-only build. The water, bed and carve must stay fixed;
+-   * a caller that changes them inside the scope must call `invalidateSurfaceNodeCache`. Every scope starts and ends
+-   * with invalidation, so ordinary samples and later builds never reuse untracked mutable water.
+-   */
+-  withSurfaceNodeCache<T>(read: () => T): T {
+-    const active = this.surfaceCacheActive;
+-    this.invalidateSurfaceNodeCache();
+-    this.surfaceCacheActive = true;
+-    try {
+-      return read();
+-    } finally {
+-      this.surfaceCacheActive = active;
+-      this.invalidateSurfaceNodeCache();
+-    }
+-  }
+-
+-  /** Explicitly discard node heights after a water, bed or grid change within a scoped build. */
+-  invalidateSurfaceNodeCache(): void {
+-    this.surfaceCacheEpoch = (this.surfaceCacheEpoch + 1) >>> 0;
+-    if (this.surfaceCacheEpoch === 0) {
+-      this.surfaceCacheStamps.fill(0);
+-      this.surfaceCacheEpoch = 1;
+-    }
++  /** Internal ordinary swept owner only: copy fresh fields before building, retain them through later demand. */
++  createOwnedPlainSurface(): OwnedPlainSurface {
++    const state = new OwnedHeightState(this.solver);
++    const surface = new PlainHeightSurface(state, this.spacing);
++    return Object.freeze({
++      capture: () => { state.capture(this.solver); surface.invalidateSurfaceNodeCache(); },
++      // The cache stays active for this owned generation. It never reads live flow, carve or height fields.
++      heightAt: surface.plainSurfaceAt.bind(surface),
++    });
+   }
+ 
+   sampleAt(x: number, y: number, z: number, out: WaterSample): WaterSample {
+@@ -236,18 +374,6 @@
+     return this.plainSurfaceAt(x, z);
+   }
+ 
+-  /** The render nodes' surface, never the swept contact's: what the contact lofts over. */
+-  plainSurfaceAt(x: number, z: number): number {
+-    if (this.outside(x, z)) return this.solver.restLevel;
+-    const { nodes } = this;
+-    const { gx, gz } = this.gatherNodes(x, z);
+-    const wx = catmullRomWeights(gx - Math.floor(gx));
+-    const wz = catmullRomWeights(gz - Math.floor(gz));
+-    let value = 0;
+-    for (let j = 0; j < 4; j += 1) for (let i = 0; i < 4; i += 1) value += wz[j] * wx[i] * nodes[j * 4 + i];
+-    return value;
+-  }
+-
+   addReaction(x: number, z: number, impulseX: number, impulseY: number, impulseZ: number): void {
+     this.unappliedVerticalImpulse += impulseY;
+     const weight = Math.hypot(impulseX, impulseZ);
+@@ -296,62 +422,6 @@
+       solver.qx[i] -= (impulseX * share) / mass;
+       solver.qz[i] -= (impulseZ * share) / mass;
+     }
+-  }
+-
+-  /** Height at a render node (the renderer's `writeUniformSurface` convention: dry nodes 5 cm under the bed). */
+-  private nodeHeight(x: number, z: number): number {
+-    const { solver } = this;
+-    const depth = solver.sampleCentered(solver.h, x, z);
+-    const bottom = solver.sampleCentered(solver.bed, x, z);
+-    const height = depth > WET ? depth + bottom : bottom - 0.05;
+-    return this.options.carve ? this.options.carve(x, z, height) : height;
+-  }
+-
+-  /** Fill the 4 × 4 node stencil around (x, z); returns the node-space coordinates. */
+-  private gatherNodes(x: number, z: number): { gx: number; gz: number } {
+-    const { solver, spacing } = this;
+-    const xMin = solver.xCenters[0] - solver.dx / 2;
+-    const zMin = solver.zCenters[0] - solver.dz[0] / 2;
+-    const zSpan = solver.zCenters[solver.nz - 1] + solver.dz[solver.nz - 1] / 2 - zMin;
+-    const lastX = Math.round((solver.nx * solver.dx) / spacing);
+-    const lastZ = Math.round(zSpan / spacing);
+-    const gx = (x - xMin) / spacing;
+-    const gz = (z - zMin) / spacing;
+-    const i0 = Math.floor(gx);
+-    const j0 = Math.floor(gz);
+-    if (this.surfaceCacheActive) {
+-      // A moved window or different grid cannot reuse the old integer node addresses, even within a scope.
+-      if (this.surfaceCacheXMin !== xMin || this.surfaceCacheZMin !== zMin
+-        || this.surfaceCacheLastX !== lastX || this.surfaceCacheLastZ !== lastZ) {
+-        this.invalidateSurfaceNodeCache();
+-        this.surfaceCacheXMin = xMin;
+-        this.surfaceCacheZMin = zMin;
+-        this.surfaceCacheLastX = lastX;
+-        this.surfaceCacheLastZ = lastZ;
+-      }
+-      const size = (lastX + 1) * (lastZ + 1);
+-      if (this.surfaceCacheHeights.length < size) {
+-        this.surfaceCacheHeights = new Float64Array(size);
+-        this.surfaceCacheStamps = new Uint32Array(size);
+-      }
+-    }
+-    for (let j = 0; j < 4; j += 1) {
+-      const nz = Math.min(lastZ, Math.max(0, j0 + j - 1));
+-      for (let i = 0; i < 4; i += 1) {
+-        const nx = Math.min(lastX, Math.max(0, i0 + i - 1));
+-        if (this.surfaceCacheActive) {
+-          const at = nz * (lastX + 1) + nx;
+-          if (this.surfaceCacheStamps[at] !== this.surfaceCacheEpoch) {
+-            this.surfaceCacheHeights[at] = this.nodeHeight(xMin + nx * spacing, zMin + nz * spacing);
+-            this.surfaceCacheStamps[at] = this.surfaceCacheEpoch;
+-          }
+-          this.nodes[j * 4 + i] = this.surfaceCacheHeights[at];
+-        } else {
+-          this.nodes[j * 4 + i] = this.nodeHeight(xMin + nx * spacing, zMin + nz * spacing);
+-        }
+-      }
+-    }
+-    return { gx, gz };
+   }
+ 
+   private surface(x: number, z: number, out: WaterSample): void {
+@@ -470,14 +540,6 @@
+     }
+     const step = solver.dz[solver.rowBelow(z)] / 2;
+     return (solver.sampleCentered(values, x, z + step) - solver.sampleCentered(values, x, z - step)) / (2 * step);
+-  }
+-
+-  private outside(x: number, z: number): boolean {
+-    const { solver } = this;
+-    const xMin = solver.xCenters[0] - solver.dx / 2;
+-    const zMin = solver.zCenters[0] - solver.dz[0] / 2;
+-    const zMax = solver.zCenters[solver.nz - 1] + solver.dz[solver.nz - 1] / 2;
+-    return x < xMin || x > xMin + solver.nx * solver.dx || z < zMin || z > zMax;
+   }
+ 
+   /**
+--- a/src/wave/barrel/sweptLoft.ts
++++ b/src/wave/barrel/sweptLoft.ts
+@@ -231,6 +231,15 @@
+ export class SweptLoft {
+   private readonly result: LoftResult;
+   private normalDemand = false;
++  /** Exact double initial recipes; only the private ordinary query backend defers Y. */
++  private initialX = new Float64Array(0);
++  private initialZ = new Float64Array(0);
++  private targetY = new Float64Array(0);
++  private initialBlend = new Float64Array(0);
++  private sealBlend = new Float64Array(0);
++  private sealApplies = new Uint8Array(0);
++  private heightReady = new Uint8Array(0);
++  private rowHeightAt?: (x: number, z: number) => number;
+   private normalReady = new Uint8Array(0);
+   private normalFirst = new Int32Array(0);
+   private normalLast = new Int32Array(0);
+@@ -302,15 +311,24 @@
+ 
+   /** Internal query backend only: no mutable LoftResult escapes the worker owner. */
+   static forContactQueries(library: ProfileLibrary, slope: number): {
+-    build: SweptLoft['build']; prepareNormal(vertex: number): void;
++    build: SweptLoft['build']; prepareRow(row: number): void; prepareNormal(vertex: number): void;
+   } {
+     const loft = new SweptLoft(library, slope, { contact: true });
+     loft.normalDemand = true;
++    const vertices = loft.result.positions.length / 3;
++    loft.initialX = new Float64Array(vertices);
++    loft.initialZ = new Float64Array(vertices);
++    loft.targetY = new Float64Array(vertices);
++    loft.initialBlend = new Float64Array(vertices);
++    loft.sealBlend = new Float64Array(MAX_SLICES + 1);
++    loft.sealApplies = new Uint8Array(vertices);
++    loft.heightReady = new Uint8Array(MAX_SLICES + 1);
+     loft.normalReady = new Uint8Array(loft.result.positions.length / 3);
+     loft.normalFirst = new Int32Array(MAX_SLICES + 1);
+     loft.normalLast = new Int32Array(MAX_SLICES + 1);
+     return {
+       build: loft.build.bind(loft),
++      prepareRow: loft.prepareRow.bind(loft),
+       prepareNormal: loft.prepareNormal.bind(loft),
+     };
+   }
+@@ -319,6 +337,10 @@
+   build(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): LoftResult {
+     const r = this.result;
+     if (this.normalDemand) {
++      this.heightReady.fill(0);
++      this.sealBlend.fill(1);
++      this.sealApplies.fill(0);
++      this.rowHeightAt = count > 0 ? heightAt : undefined;
+       this.normalReady.fill(0);
+       this.normalFirst.fill(-1);
+       this.normalLast.fill(-1);
+@@ -769,7 +791,12 @@
+         const pz = az + along * nz;
+         const e = w * (1 - pin);
+         r.positions[3 * v] = px;
+-        if (e === 1) {
++        if (this.normalDemand) {
++          this.initialX[v] = px;
++          this.initialZ[v] = pz;
++          this.targetY[v] = stillLevel + above;
++          this.initialBlend[v] = e;
++        } else if (e === 1) {
+           r.positions[3 * v + 1] = stillLevel + above;
+         } else {
+           const h = heightAt(px, pz);
+@@ -788,7 +815,7 @@
+       }
+       const tip = 3 * (slice * LOFT_SAMPLES + E + LANDMARK.lip);
+       r.sliceTipX[slice] = r.positions[tip];
+-      r.sliceTipY[slice] = r.positions[tip + 1];
++      r.sliceTipY[slice] = this.normalDemand ? Number.NaN : r.positions[tip + 1];
+       r.sliceTipZ[slice] = r.positions[tip + 2];
+       r.sliceCount += 1;
+     }
+@@ -913,18 +940,22 @@
+           const weight = u * u * (3 - 2 * u);
+           const mask = Math.min(1, Math.max(0, distance / LOFT.band));
+           r.sliceWeight[s] *= weight;
++          if (this.normalDemand) this.sealBlend[s] = weight;
+           for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+             const v = s * LOFT_SAMPLES + j;
+             if (weight < 1 && r.lift[v] > 0) {
+-              const water = heightAt(r.positions[3 * v], r.positions[3 * v + 2]);
+-              r.positions[3 * v + 1] = water + weight * (r.positions[3 * v + 1] - water);
++              if (this.normalDemand) this.sealApplies[v] = 1;
++              else {
++                const water = heightAt(r.positions[3 * v], r.positions[3 * v + 2]);
++                r.positions[3 * v + 1] = water + weight * (r.positions[3 * v + 1] - water);
++              }
+               r.lift[v] *= weight;
+               r.sheetWeight[v] *= weight;
+               r.throat[4 * v + 3] *= weight;
+             }
+             r.mask[v] *= mask;
+           }
+-          r.sliceTipY[s] = r.positions[3 * (s * LOFT_SAMPLES + E + LANDMARK.lip) + 1];
++          if (!this.normalDemand) r.sliceTipY[s] = r.positions[3 * (s * LOFT_SAMPLES + E + LANDMARK.lip) + 1];
+         }
+       }
+       this.finishRun(first, last);
+@@ -1103,6 +1134,31 @@
+     return true;
+   }
+ 
++  /** Materialize the original initial F32 Y store, then its separate cut-seal F32 store, once for this row. */
++  private prepareRow(row: number): void {
++    if (this.heightReady[row] === 1) return;
++    const r = this.result;
++    const heightAt = this.rowHeightAt;
++    if (!(row >= 0 && row < r.sliceCount) || !heightAt) throw new Error('Contact height row is outside its captured generation');
++    const weight = this.sealBlend[row];
++    for (let j = 0; j < LOFT_SAMPLES; j += 1) {
++      const v = row * LOFT_SAMPLES + j;
++      const o = 3 * v;
++      const e = this.initialBlend[v];
++      if (e === 1) r.positions[o + 1] = this.targetY[v];
++      else {
++        const h = heightAt(this.initialX[v], this.initialZ[v]);
++        r.positions[o + 1] = e === 0 ? h : h + e * (this.targetY[v] - h);
++      }
++      if (this.sealApplies[v] === 1) {
++        const water = heightAt(r.positions[o], r.positions[o + 2]);
++        r.positions[o + 1] = water + weight * (r.positions[o + 1] - water);
++      }
++    }
++    r.sliceTipY[row] = r.positions[3 * (row * LOFT_SAMPLES + E + LANDMARK.lip) + 1];
++    this.heightReady[row] = 1;
++  }
++
+   /** Each vertex's normal: across the profile × along the front, by central differences (one-sided at the edges). */
+   private prepareNormal(vertex: number): void {
+     if (this.normalReady[vertex] === 1) return;
+@@ -1116,6 +1172,9 @@
+     const { positions: p, normals } = this.result;
+     const sBack = Math.max(firstSlice, s - 1);
+     const sAhead = Math.min(lastSlice, s + 1);
++    this.prepareRow(s);
++    this.prepareRow(sBack);
++    this.prepareRow(sAhead);
+     const jBack = Math.max(0, j - 1);
+     const jAhead = Math.min(LOFT_SAMPLES - 1, j + 1);
+     const a0 = 3 * (s * LOFT_SAMPLES + jBack);
+--- a/src/wave/barrel/sweptContact.ts
++++ b/src/wave/barrel/sweptContact.ts
+@@ -1,6 +1,6 @@
+ import { LANDMARK, type ProfileLibrary } from './ProfileLibrary';
+ import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+-import type { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
++import type { OwnedPlainSurface, PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
+ 
+ /** The physical water needs answers, not mutable contact geometry. */
+ export type SweptSurfaceQueries = Pick<SweptContact, 'query' | 'floorAt'>;
+@@ -116,6 +116,7 @@
+   readonly stats = { queries: 0, hits: 0, anomalies: 0, quads: 0, overlaps: 0 };
+   last: LoftResult | undefined;
+   private readonly loft: Pick<SweptLoft, 'build'>;
++  private readonly prepareRow?: (row: number) => void;
+   private readonly prepareNormal?: (vertex: number) => void;
+   private readonly bucket: number;
+   /** Per vertex, its along-ray coordinate on its own slice's ray, and (a joined slice's next) on the previous slice's. */
+@@ -163,6 +164,7 @@
+     if (internal === ORDINARY_QUERY_NORMALS) {
+       const queryLoft = SweptLoft.forContactQueries(library, slope);
+       this.loft = queryLoft;
++      this.prepareRow = queryLoft.prepareRow;
+       this.prepareNormal = queryLoft.prepareNormal;
+     } else this.loft = new SweptLoft(library, slope, { contact: true });
+     this.bucket = options.bucket ?? CONTACT.bucket;
+@@ -175,10 +177,19 @@
+       query: contact.query.bind(contact),
+       floorAt: contact.floorAt.bind(contact),
+     });
++    let owned: OwnedPlainSurface | undefined;
++    let source: PhysicalSurfWater | undefined;
+     return Object.freeze({
+       queries,
+       updateFromPlainSurface(records: Float32Array, count: number, stillLevel: number, water: PhysicalSurfWater): void {
+-        water.withSurfaceNodeCache(() => contact.update(records, count, stillLevel, (x, z) => water.plainSurfaceAt(x, z)));
++        if (count === 0) {
++          contact.update(records, count, stillLevel, () => stillLevel);
++          return;
++        }
++        if (source !== water) { source = water; owned = water.createOwnedPlainSurface(); }
++        // Full h/bed/x copies and owned node-cache invalidation are part of each live preparation's work.
++        owned!.capture();
++        contact.update(records, count, stillLevel, owned!.heightAt);
+       },
+     });
+   }
+@@ -378,6 +389,9 @@
+     // quad holding q is always in q's bucket).
+     const b = Math.floor((q - this.stripLow[s]) / this.bucket);
+     if (!(b >= 0 && b < this.stripBuckets[s])) return 0;
++    // XZ-only misses and holding tests need no height. Every triangle below can read these two final Y rows.
++    this.prepareRow?.(s);
++    this.prepareRow?.(s + 1);
+     const k = this.stripFirst[s] + b;
+     const end = this.bucketStart[k + 1];
+     this.stats.quads += end - this.bucketStart[k];
+--- /dev/null
++++ b/src/physics/ownedPlainSurface.prototype.test.ts
+@@ -0,0 +1,71 @@
++/** Scratch-only independent provider tests, written for review and not yet executed. */
++import { afterEach, describe, expect, it, vi } from 'vitest';
++import { PhysicalSurfWater } from './PhysicalSurfWater';
++import { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
++import { PhysicalSurfWater as EagerWater } from '../../oracle/src/physics/PhysicalSurfWater';
++import { ShallowWaterSolver as EagerSolver } from '../../oracle/src/wave/ShallowWaterSolver';
++
++function pair() {
++  const grid = { nx: 7, xMin: 1_000_000.125, dx: 0.7, zEdges: new Float64Array([-7, -6.8, -5.4, -2, 0.1, 4, 11]) };
++  const a = new ShallowWaterSolver(grid, () => 3, { waterLevel: 0.375 });
++  const b = new EagerSolver({ ...grid, zEdges: grid.zEdges.slice() }, () => 3, { waterLevel: 0.375 });
++  for (let i = 0; i < a.h.length; i++) {
++    a.h[i] = [0, 0.01, 0.01000000001, 0.1, 2.345678901][i % 5];
++    a.bed[i] = -3.125 + 0.031 * Math.sin(i * 0.49);
++  }
++  b.h.set(a.h); b.bed.set(a.bed);
++  const water = new PhysicalSurfWater(a, { peakPeriod: 18, nodeSpacing: 0.9 });
++  const eager = new EagerWater(b, { peakPeriod: 18, nodeSpacing: 0.9 });
++  return { a, b, water, eager };
++}
++afterEach(() => vi.restoreAllMocks());
++
++describe('owned numeric plain-height provider', () => {
++  it('uses literal eager boundaries, wet/dry nodes, stretched rows and ordered cubic arithmetic', () => {
++    const p = pair(); const owned = p.water.createOwnedPlainSurface(); owned.capture();
++    expect(Object.keys(owned).sort()).toEqual(['capture', 'heightAt']);
++    const xMin = p.a.xCenters[0] - p.a.dx / 2;
++    const xMax = xMin + p.a.nx * p.a.dx;
++    const zMin = p.a.zCenters[0] - p.a.dz[0] / 2;
++    const zMax = p.a.zCenters[p.a.nz - 1] + p.a.dz[p.a.nz - 1] / 2;
++    for (const x of [xMin - 1e-6, xMin, xMin + 0.001, xMin + 0.9, xMin + 2.381, xMax, xMax + 1e-6]) {
++      for (const z of [zMin - 1e-9, zMin, -6.7, -3.9, 0, 6.6, zMax, zMax + 1e-9]) {
++        expect(Object.is(owned.heightAt(x, z), p.eager.plainSurfaceAt(x, z)), `${x},${z}`).toBe(true);
++        expect(Object.is(p.water.plainSurfaceAt(x, z), p.eager.plainSurfaceAt(x, z))).toBe(true);
++      }
++    }
++  });
++
++  it('owns h, bed and shifted x coordinates before the first deferred sample, then replaces the generation', () => {
++    const p = pair(); const owned = p.water.createOwnedPlainSurface(); owned.capture();
++    const x = p.b.xCenters[0] + 2.01, z = -3.125;
++    const old = p.eager.plainSurfaceAt(x, z);
++    p.a.h.fill(13.125); p.a.bed.fill(-8.375);
++    for (let i = 0; i < p.a.xCenters.length; i++) p.a.xCenters[i] += 1.4;
++    // No owned sample occurred before live mutation: borrowing nodes or binding the sampling method fails here.
++    expect(Object.is(owned.heightAt(x, z), old)).toBe(true);
++    expect(Object.is(owned.heightAt(x, z), old)).toBe(true);
++    expect(Object.is(p.water.plainSurfaceAt(x, z), old)).toBe(false);
++    p.b.h.set(p.a.h); p.b.bed.set(p.a.bed); p.b.xCenters.set(p.a.xCenters);
++    owned.capture();
++    expect(Object.is(owned.heightAt(x, z), p.eager.plainSurfaceAt(x, z))).toBe(true);
++  });
++
++  it('preserves the default live node cache and stateful carve callback sequence', () => {
++    const p = pair(); let c = 0, e = 0;
++    const calls: number[][] = [], oldCalls: number[][] = [];
++    const water = new PhysicalSurfWater(p.a, { peakPeriod: 18, nodeSpacing: 0.9,
++      carve: (x, z, h) => { calls.push([x, z, h]); return h + ++c * 1e-9; } });
++    const eager = new EagerWater(p.b, { peakPeriod: 18, nodeSpacing: 0.9,
++      carve: (x, z, h) => { oldCalls.push([x, z, h]); return h + ++e * 1e-9; } });
++    const points = [[p.a.xCenters[0] + 0.7, -3.1], [p.a.xCenters[0] + 0.71, -3.09], [p.a.xCenters[0] + 0.7, -3.1]];
++    for (const cached of [false, true, false]) {
++      const values = () => points.map(([x, z]) => water.plainSurfaceAt(x, z));
++      const oldValues = () => points.map(([x, z]) => eager.plainSurfaceAt(x, z));
++      const actual = cached ? water.withSurfaceNodeCache(values) : values();
++      const expected = cached ? eager.withSurfaceNodeCache(oldValues) : oldValues();
++      actual.forEach((value, i) => expect(Object.is(value, expected[i])).toBe(true));
++      expect(calls).toEqual(oldCalls);
++    }
++  });
++});
+--- /dev/null
++++ b/src/wave/barrel/contactHeightDemand.prototype.test.ts
+@@ -0,0 +1,193 @@
++/** Scratch-only prospective parity tests. Oracle source is independently archived ef60, not this implementation. */
++import { afterEach, describe, expect, it, vi } from 'vitest';
++import { Buffer } from 'node:buffer';
++import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
++import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
++import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
++import { ProfileLibrary } from './ProfileLibrary';
++import { SweptContact, createContactHit, type ContactHit } from './sweptContact';
++import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++import { tubeCase } from './toyCase';
++import { PhysicalSurfWater as EagerWater } from '../../../oracle/src/physics/PhysicalSurfWater';
++import { ShallowWaterSolver as EagerSolver, uniformEdges as eagerEdges } from '../../../oracle/src/wave/ShallowWaterSolver';
++import { ProfileLibrary as EagerLibrary } from '../../../oracle/src/wave/barrel/ProfileLibrary';
++import { SweptContact as EagerContact } from '../../../oracle/src/wave/barrel/sweptContact';
++import { SweptLoft as EagerLoft } from '../../../oracle/src/wave/barrel/sweptLoft';
++import { tubeCase as eagerTube } from '../../../oracle/src/wave/barrel/toyCase';
++
++const STILL = 0.5;
++type PrivateLoft = {
++  result: LoftResult; heightReady: Uint8Array; normalReady: Uint8Array; normalFirst: Int32Array; normalLast: Int32Array;
++  initialX: Float64Array; initialZ: Float64Array; targetY: Float64Array; initialBlend: Float64Array;
++  sealBlend: Float64Array; sealApplies: Uint8Array;
++  prepareRow(s: number): void; prepareNormal(v: number): void;
++};
++const bytes = (a: ArrayBufferView) => Buffer.from(a.buffer, a.byteOffset, a.byteLength);
++function records(n: number, tau: number, front = 1, xOffset = 0, bend = false): Float32Array {
++  const a = new Float32Array(n * FRONT_STRIDE);
++  for (let k = 0; k < n; k++) {
++    const o = k * FRONT_STRIDE;
++    a[o + FRONT_FIELD.x] = k + 0.5 + xOffset; a[o + FRONT_FIELD.z] = -100 + (bend ? 0.15 * Math.sin(k * 0.24) : 0);
++    a[o + FRONT_FIELD.front] = front; a[o + FRONT_FIELD.sigma] = k;
++    a[o + FRONT_FIELD.tau] = tau + (bend ? 0.025 * Math.cos(k * 0.15) : 0);
++    a[o + FRONT_FIELD.footHeight] = 2.1; a[o + FRONT_FIELD.footDepth] = 7;
++    a[o + FRONT_FIELD.throwZ] = tau >= 0 ? a[o + FRONT_FIELD.z] : Number.NaN;
++  }
++  return a;
++}
++function exactFields(a: ContactHit, b: ContactHit): void {
++  expect(Object.keys(a).sort()).toEqual(Object.keys(b).sort());
++  for (const key of Object.keys(a) as (keyof ContactHit)[]) expect(Object.is(a[key], b[key]), key).toBe(true);
++}
++function exactActive(a: LoftResult, b: LoftResult): void {
++  for (const key of ['sliceCount', 'vertexCount', 'indexCount', 'overlaps', 'clamps', 'restSamples'] as const) expect(a[key]).toBe(b[key]);
++  for (const key of ['positions', 'lift', 'mask', 'sliceWeight', 'sliceJoined', 'sliceSigma', 'sliceTipY'] as const) {
++    const count = key === 'positions' ? 3 * a.vertexCount : key === 'lift' || key === 'mask' ? a.vertexCount : a.sliceCount;
++    expect(Buffer.compare(bytes(a[key].subarray(0, count)), bytes(b[key].subarray(0, count))), key).toBe(0);
++  }
++}
++function pair() {
++  const cSolver = new ShallowWaterSolver({ nx: 72, xMin: -12, dx: 1, zEdges: uniformEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
++  const eSolver = new EagerSolver({ nx: 72, xMin: -12, dx: 1, zEdges: eagerEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
++  for (let i = 0; i < cSolver.h.length; i++) cSolver.h[i] = 7 + STILL + 0.03 * Math.sin(i * 0.17);
++  eSolver.h.set(cSolver.h);
++  let backend!: SweptContact, loft!: PrivateLoft;
++  const build = SweptLoft.prototype.build, update = SweptContact.prototype.update;
++  vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) { loft = this as unknown as PrivateLoft; return build.apply(this, args); });
++  vi.spyOn(SweptContact.prototype, 'update').mockImplementation(function (this: SweptContact, ...args) { backend = this; return update.apply(this, args); });
++  const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary([tubeCase(0.3)]), 0.05);
++  const eager = new EagerContact(new EagerLibrary([eagerTube(0.3)]), 0.05);
++  const water = new PhysicalSurfWater(cSolver, { peakPeriod: 18, nodeSpacing: 2, swept: owner.queries });
++  const oldWater = new EagerWater(eSolver, { peakPeriod: 18, nodeSpacing: 2, swept: eager });
++  return { owner, eager, water, oldWater, cSolver, eSolver, backend: () => backend, loft: () => loft,
++    update(data: Float32Array) {
++      owner.updateFromPlainSurface(data, data.length / FRONT_STRIDE, STILL, water);
++      oldWater.withSurfaceNodeCache(() => eager.update(data, data.length / FRONT_STRIDE, STILL, (x, z) => oldWater.plainSurfaceAt(x, z)));
++      expect(loft.heightReady.some(Boolean)).toBe(false); expect(loft.normalReady.some(Boolean)).toBe(false);
++    },
++    query(x: number, y: number, z: number) {
++      const a = { ...createContactHit(), normalX: -0, life: 123 }, b = { ...a };
++      expect(owner.queries.query(x, y, z, a)).toBe(eager.query(x, y, z, b)); exactFields(a, b);
++      expect(backend.stats).toEqual(eager.stats);
++    },
++    forceActive() { for (let row = 0; row < backend.last!.sliceCount; row++) loft.prepareRow(row); exactActive(backend.last!, eager.last!); },
++  };
++}
++afterEach(() => vi.restoreAllMocks());
++
++describe('private demanded vertex height', () => {
++  it('matches actual eager queries across refinement, shrinking/faded and empty generations without stale readiness', () => {
++    const p = pair();
++    for (const [n, tau] of [[21, -0.3], [21, 0.1], [31, 0.25], [13, 0.4], [0, 0.1], [21, 0.1]]) {
++      p.update(records(n, tau, 1, 0, true));
++      for (const x of [-20, 0.5, 5.2, 10.3, 15.7, 26.3, 80]) for (const z of [-106, -100, -96.2, -93, -90, -80]) {
++        expect(Object.is(p.owner.queries.floorAt(x, z), p.eager.floorAt(x, z))).toBe(true);
++        for (const y of [-Infinity, -0, 0.5, 2.5, 4.3, 9, Infinity, NaN]) p.query(x, y, z);
++      }
++      p.forceActive();
++    }
++  });
++
++  it('retains global refinement and budget decisions while only preparing queried height', () => {
++    const p = pair(); p.update(records(21, 0)); const coarse = p.backend().last!.sliceCount;
++    const steep = records(21, 0);
++    for (let k = 0; k < 21; k++) steep[k * FRONT_STRIDE + FRONT_FIELD.tau] = k < 10 ? -1 : 0.4;
++    p.update(steep); expect(p.backend().last!.sliceCount).toBeGreaterThan(coarse); p.forceActive();
++    p.update(records(400, 0.1)); expect(p.backend().last!.vertexCount).toBeLessThanOrEqual(LOFT.budget);
++    p.query(10.3, 2.5, -93); p.forceActive();
++  });
++
++  it('does no height work for outside misses, and floor preparation performs no normal work', () => {
++    const p = pair(); p.update(records(21, 0.1));
++    p.query(999, 0, 999); expect(p.loft().heightReady.some(Boolean)).toBe(false);
++    for (const x of [3.2, 10.3, 15.7]) for (const z of [-100, -96.2, -93, -90]) {
++      expect(Object.is(p.owner.queries.floorAt(x, z), p.eager.floorAt(x, z))).toBe(true);
++    }
++    expect(p.loft().heightReady.some(Boolean)).toBe(true); expect(p.loft().normalReady.some(Boolean)).toBe(false);
++  });
++
++  it('keeps ordered holding tests XZ-only and invalidates demand after an empty update', () => {
++    const p = pair(); p.update(records(21, 0.1)); const r = p.backend().last!;
++    const strip = r.sliceJoined.subarray(0, r.sliceCount).findIndex(Boolean); expect(strip).toBeGreaterThanOrEqual(0);
++    const offset = 3 * strip * LOFT_SAMPLES, x = r.positions[offset] + 0.1, z = r.positions[offset + 2] + 2;
++    type Held = { heldByAnother(loft: LoftResult, s: number, x: number, z: number): boolean };
++    const current = p.backend() as unknown as Held, original = p.eager as unknown as Held;
++    expect(current.heldByAnother(r, strip, x, z)).toBe(original.heldByAnother(p.eager.last!, strip, x, z));
++    expect(p.loft().heightReady.some(Boolean)).toBe(false);
++    p.update(new Float32Array(0)); p.query(x, 1, z);
++    expect(Number.isNaN(p.owner.queries.floorAt(x, z))).toBe(true);
++    expect(() => p.loft().prepareRow(0)).toThrow('captured generation');
++    expect(p.loft().heightReady.some(Boolean)).toBe(false);
++  });
++
++  it('keeps old unprepared contact after live h/bed/window mutation and uses fresh fields at the next preparation', () => {
++    const p = pair(); const data = records(21, 0.1); p.update(data);
++    p.cSolver.h.fill(9.375); p.cSolver.bed.fill(-6.875);
++    for (let i = 0; i < p.cSolver.xCenters.length; i++) p.cSolver.xCenters[i] += 3;
++    // This is the first demand on the captured contact, after the live source changed.
++    p.query(10.3, 2.5, -93); p.forceActive();
++    p.eSolver.h.set(p.cSolver.h); p.eSolver.bed.set(p.cSolver.bed); p.eSolver.xCenters.set(p.cSolver.xCenters);
++    p.update(data); p.query(10.3, 2.5, -93); p.forceActive();
++  });
++
++  it('clamps selected normal height halos to final runs and caches rows and normals', () => {
++    const p = pair(); p.update(records(21, 0.1)); const r = p.backend().last!, state = p.loft();
++    for (let row = 0; row < r.sliceCount; row++) {
++      if (state.normalFirst[row] < 0 || (row !== state.normalFirst[row] && row !== state.normalLast[row])) continue;
++      for (const j of [0, 66, LOFT_SAMPLES - 1]) {
++        state.heightReady.fill(0); state.normalReady.fill(0);
++        const v = row * LOFT_SAMPLES + j;
++        state.prepareNormal(v);
++        const expected = new Set([row, Math.max(state.normalFirst[row], row - 1), Math.min(state.normalLast[row], row + 1)]);
++        expect(Array.from(state.heightReady.subarray(0, r.sliceCount)).flatMap((ready, s) => ready ? [s] : [])).toEqual([...expected].sort((a, b) => a - b));
++        expect(Buffer.compare(bytes(r.normals.subarray(3 * v, 3 * v + 3)), bytes(p.eager.last!.normals.subarray(3 * v, 3 * v + 3)))).toBe(0);
++        const before = r.normals.slice(3 * v, 3 * v + 3); state.prepareNormal(v);
++        expect(Buffer.compare(bytes(before), bytes(r.normals.subarray(3 * v, 3 * v + 3)))).toBe(0);
++      }
++    }
++  });
++
++  it('captures real overlap seals and preserves double-first-XZ and separate F32 initial/seal stores', () => {
++    const data = new Float32Array(42 * FRONT_STRIDE);
++    data.set(records(21, 0.1)); data.set(records(21, 0.2, 2, 9.5), 21 * FRONT_STRIDE);
++    const eager = new EagerLoft(new EagerLibrary([eagerTube(0.3)]), 0.05, { contact: true });
++    const water = (x: number, z: number) => 0.5 + 0.002 * x - 0.003 * z + 0.015 * Math.sin(37.1 * z + 0.913 * x);
++    let state!: PrivateLoft;
++    const build = SweptLoft.prototype.build;
++    vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) { state = this as unknown as PrivateLoft; return build.apply(this, args); });
++    const c = SweptLoft.forContactQueries(new ProfileLibrary([tubeCase(0.3)]), 0.05);
++    const r = c.build(data, 42, STILL, water), old = eager.build(data, 42, STILL, water);
++    c.prepareRow(0);
++    expect(r.overlaps).toBeGreaterThan(0); expect(state.sealApplies.subarray(0, r.vertexCount).some(Boolean)).toBe(true);
++    let doubleCoordinateWitnesses = 0, separateStoreWitnesses = 0;
++    for (let row = 0; row < r.sliceCount; row++) c.prepareRow(row);
++    exactActive(r, old);
++    for (let v = 0; v < r.vertexCount; v++) {
++      const o = 3 * v, row = Math.floor(v / LOFT_SAMPLES), e = state.initialBlend[v];
++      const h = water(state.initialX[v], state.initialZ[v]);
++      const initial = e === 1 ? state.targetY[v] : e === 0 ? h : h + e * (state.targetY[v] - h);
++      const wrongH = water(r.positions[o], r.positions[o + 2]);
++      const wrongInitial = e === 1 ? state.targetY[v] : e === 0 ? wrongH : wrongH + e * (state.targetY[v] - wrongH);
++      if (!Object.is(Math.fround(initial), Math.fround(wrongInitial))) doubleCoordinateWitnesses++;
++      if (state.sealApplies[v] !== 1) continue;
++      const sealWater = water(r.positions[o], r.positions[o + 2]), w = state.sealBlend[row];
++      const right = Math.fround(sealWater + w * (Math.fround(initial) - sealWater));
++      const collapsed = Math.fround(sealWater + w * (initial - sealWater));
++      expect(Object.is(r.positions[o + 1], right)).toBe(true);
++      if (!Object.is(right, collapsed)) separateStoreWitnesses++;
++    }
++    expect(doubleCoordinateWitnesses).toBeGreaterThan(0);
++    expect(separateStoreWitnesses).toBeGreaterThan(0);
++  });
++
++  it('leaves public eager build and stateful height callback stream byte-identical', () => {
++    const data = records(21, 0.1, 1, 0, true), a: number[][] = [], b: number[][] = [];
++    let ac = 0, bc = 0;
++    const current = new SweptLoft(new ProfileLibrary([tubeCase(0.3)]), 0.05, { contact: true });
++    const old = new EagerLoft(new EagerLibrary([eagerTube(0.3)]), 0.05, { contact: true });
++    const r = current.build(data, 21, STILL, (x, z) => { a.push([x, z]); return 0.5 + ++ac * 1e-9; });
++    const o = old.build(data, 21, STILL, (x, z) => { b.push([x, z]); return 0.5 + ++bc * 1e-9; });
++    expect(a).toEqual(b); exactActive(r, o);
++    expect(Buffer.compare(bytes(r.normals), bytes(o.normals))).toBe(0);
++  });
++});
+--- /dev/null
++++ b/src/wave/barrel/contactHeightDemand.f64-replay.test.ts
+@@ -0,0 +1,172 @@
++/** One exact captured F64 epoch. Written only; no stepping, body replay, GPU, timing or later-epoch authority. */
++import { afterEach, describe, it, vi } from 'vitest';
++import assert from 'node:assert/strict';
++import { Buffer } from 'node:buffer';
++import { createHash } from 'node:crypto';
++import { readFileSync } from 'node:fs';
++import { gunzipSync } from 'node:zlib';
++import type { SpotName } from '../Bathymetry';
++import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
++import { ShallowWaterSolver } from '../ShallowWaterSolver';
++import { FRONT_STRIDE } from './frontRecords';
++import { ProfileLibrary } from './ProfileLibrary';
++import { decodeCase } from './profileFormat';
++import { createContactHit, SweptContact, type ContactHit } from './sweptContact';
++import { BARREL_SLOPE, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++import { PhysicalSurfWater as EagerWater } from '../../../oracle/src/physics/PhysicalSurfWater';
++import { ShallowWaterSolver as EagerSolver } from '../../../oracle/src/wave/ShallowWaterSolver';
++import { ProfileLibrary as EagerLibrary } from '../../../oracle/src/wave/barrel/ProfileLibrary';
++import { decodeCase as eagerDecode } from '../../../oracle/src/wave/barrel/profileFormat';
++import { SweptContact as EagerContact } from '../../../oracle/src/wave/barrel/sweptContact';
++import { SweptLoft as EagerLoft } from '../../../oracle/src/wave/barrel/sweptLoft';
++
++const FIXTURE = '/private/tmp/contact-lazy-height-20261004-v3/run/capture.json.gz';
++type NumericState = {
++  nx: number; nz: number; dx: number; restLevel: number;
++  h: Float64Array; bed: Float64Array; xCenters: Float64Array; zCenters: Float64Array; dz: Float64Array;
++};
++type Query = {
++  ordinal: number; method: 'query' | 'floorAt'; input: number[]; initial?: ContactHit; output?: ContactHit;
++  result: boolean | number; error?: string; candidates: { strip: number }[]; normalVertices: number[];
++};
++type Capture = {
++  status: { complete: boolean; ordinaryArraysIdentical: boolean };
++  epochs: { queries: Query[]; runs: [number, number][]; hitNormalVertices: number[] }[];
++  firstFixture: {
++    byteOrder: string; seaTime: number; config: { spot: SpotName; peakPeriod: number }; options: { barrelCases: Uint8Array[] };
++    restLevel: number; nodeSpacing: number; solver: NumericState; records: Float32Array; recordCount: number;
++    stillLevel: number; loft: LoftResult;
++  };
++};
++type PrivateLoft = {
++  heightReady: Uint8Array; normalReady: Uint8Array; normalFirst: Int32Array; normalLast: Int32Array;
++  prepareRow(row: number): void;
++};
++const bytes = (a: ArrayBufferView) => Buffer.from(a.buffer, a.byteOffset, a.byteLength);
++const sha = (a: ArrayBufferView) => createHash('sha256').update(bytes(a)).digest('hex');
++function same(a: unknown, b: unknown, label: string) { assert(Object.is(a, b), `${label}: ${String(a)} != ${String(b)}`); }
++function sameBytes(a: ArrayBufferView, b: ArrayBufferView, label: string) { assert.equal(Buffer.compare(bytes(a), bytes(b)), 0, label); }
++function sameHit(a: ContactHit, b: ContactHit, label: string) {
++  assert.deepEqual(Object.keys(a).sort(), Object.keys(b).sort(), label);
++  for (const key of Object.keys(a) as (keyof ContactHit)[]) same(a[key], b[key], `${label}.${key}`);
++}
++function unpack(value: unknown): unknown {
++  if (Array.isArray(value)) return value.map(unpack);
++  if (!value || typeof value !== 'object') return value;
++  const item = value as Record<string, unknown>;
++  if (Object.keys(item).length === 1 && item.undefined === true) return undefined;
++  if (Object.keys(item).length === 1 && typeof item.number === 'string') {
++    if (item.number === '-0') return -0;
++    if (item.number === 'NaN') return NaN;
++    if (item.number === 'Infinity') return Infinity;
++    if (item.number === '-Infinity') return -Infinity;
++    assert.fail(`Unknown numeric tag ${item.number}`);
++  }
++  if (typeof item.type === 'string' && typeof item.base64 === 'string') {
++    const owned = new Uint8Array(Buffer.from(item.base64, 'base64'));
++    assert.equal(owned.byteLength, item.byteLength); assert.equal(owned.byteOffset, 0);
++    if (item.type === 'Uint8Array') return owned;
++    if (item.type === 'Float64Array') return new Float64Array(owned.buffer);
++    if (item.type === 'Float32Array') return new Float32Array(owned.buffer);
++    if (item.type === 'Uint32Array') return new Uint32Array(owned.buffer);
++    if (item.type === 'Int32Array') return new Int32Array(owned.buffer);
++    assert.fail(`Unknown typed tag ${item.type}`);
++  }
++  return Object.fromEntries(Object.entries(item).map(([key, entry]) => [key, unpack(entry)]));
++}
++/** Replay-only numeric receiver: actual archived solver methods, no interpolation helper shared with the candidate. */
++function fixtureState<T extends object>(prototype: T, f: Capture['firstFixture']): T & NumericState {
++  return Object.assign(Object.create(prototype) as T, {
++    nx: f.solver.nx, nz: f.solver.nz, dx: f.solver.dx, restLevel: f.restLevel,
++    h: f.solver.h.slice(), bed: f.solver.bed.slice(), xCenters: f.solver.xCenters.slice(),
++    zCenters: f.solver.zCenters.slice(), dz: f.solver.dz.slice(),
++  });
++}
++afterEach(() => vi.restoreAllMocks());
++
++describe('native first-epoch demanded height against independent eager source and recorded answers', () => {
++  it('retains all 627 calls, selected normals, global rest reads and active forced geometry with owned F64 input', () => {
++    const packed = readFileSync(FIXTURE), expanded = gunzipSync(packed);
++    assert.equal(packed.byteLength, 2_451_650); assert.equal(sha(packed), 'e7bbbb85cf03450f97fe8807414f749dbada7a5b5fa814e490f578f26f965e2f');
++    assert.equal(expanded.byteLength, 13_547_682); assert.equal(sha(expanded), 'a9c1e4d0b759aac2a9123e9d02cef97a957e959415d65ad098f53b3f99287648');
++    const capture = unpack(JSON.parse(expanded.toString('utf8'))) as Capture, f = capture.firstFixture, epoch = capture.epochs[0];
++    assert.equal(capture.status.complete, true); assert.equal(capture.status.ordinaryArraysIdentical, true); assert.equal(capture.epochs.length, 15);
++    assert.equal(f.byteOrder, 'little'); assert.equal(new Uint8Array(new Uint32Array([0x01020304]).buffer)[0], 4);
++    assert.equal(f.recordCount, 125); assert.equal(f.records.byteLength, 125 * FRONT_STRIDE * 4);
++    assert(f.solver.h instanceof Float64Array && f.solver.bed instanceof Float64Array);
++    assert(f.solver.h.every(Number.isFinite) && f.solver.bed.every(Number.isFinite));
++    assert.equal(f.solver.nx * f.solver.nz, 116_000); assert.equal(f.nodeSpacing, 2); assert.equal(f.options.barrelCases.length, 4);
++    const aState = fixtureState(ShallowWaterSolver.prototype, f), bState = fixtureState(EagerSolver.prototype, f);
++    const slope = BARREL_SLOPE[f.config.spot]; assert.notEqual(slope, undefined);
++    let backend!: SweptContact, loft!: PrivateLoft;
++    const update = SweptContact.prototype.update, build = SweptLoft.prototype.build;
++    vi.spyOn(SweptContact.prototype, 'update').mockImplementation(function (this: SweptContact, ...args) { backend = this; return update.apply(this, args); });
++    vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) { loft = this as unknown as PrivateLoft; return build.apply(this, args); });
++    const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary(f.options.barrelCases.map(raw => decodeCase(new Uint8Array(raw)))), slope!);
++    const eager = new EagerContact(new EagerLibrary(f.options.barrelCases.map(raw => eagerDecode(new Uint8Array(raw)))), slope!);
++    const water = new PhysicalSurfWater(aState, { peakPeriod: f.config.peakPeriod, nodeSpacing: f.nodeSpacing, swept: owner.queries });
++    const oldWater = new EagerWater(bState, { peakPeriod: f.config.peakPeriod, nodeSpacing: f.nodeSpacing, swept: eager });
++    const heightReads: number[][] = [], eagerRestReads: number[][] = []; let eagerHeightReads = 0, inRest = false;
++    const createOwned = water.createOwnedPlainSurface.bind(water);
++    vi.spyOn(water, 'createOwnedPlainSurface').mockImplementation(() => {
++      const provider = createOwned();
++      return Object.freeze({ capture: provider.capture, heightAt: (x: number, z: number) => {
++        const h = provider.heightAt(x, z); heightReads.push([x, z, h]); return h;
++      } });
++    });
++    const restProto = EagerLoft.prototype as unknown as { forwardRest(...args: unknown[]): unknown }, forwardRest = restProto.forwardRest;
++    vi.spyOn(restProto, 'forwardRest').mockImplementation(function (this: typeof restProto, ...args) {
++      const before = inRest; inRest = true; try { return forwardRest.apply(this, args); } finally { inRest = before; }
++    });
++    const oldPlain = oldWater.plainSurfaceAt.bind(oldWater);
++    vi.spyOn(oldWater, 'plainSurfaceAt').mockImplementation((x, z) => {
++      const h = oldPlain(x, z); eagerHeightReads++; if (inRest) eagerRestReads.push([x, z, h]); return h;
++    });
++    owner.updateFromPlainSurface(f.records.slice(), f.recordCount, f.stillLevel, water);
++    oldWater.withSurfaceNodeCache(() => eager.update(f.records.slice(), f.recordCount, f.stillLevel, (x, z) => oldWater.plainSurfaceAt(x, z)));
++    assert.equal(eagerHeightReads, 20_117); assert.equal(eagerRestReads.length, 1_389); assert.deepEqual(heightReads, eagerRestReads);
++    assert.equal(loft.heightReady.some(Boolean), false); assert.equal(loft.normalReady.some(Boolean), false);
++    assert.equal(backend.last!.sliceCount, 187); assert.equal(backend.last!.vertexCount, 25_058);
++    assert.equal(epoch.queries.length, 627);
++    const expectedRows = new Set<number>(); const selected = new Set<number>(); let floors = 0, hits = 0;
++    for (const q of epoch.queries) {
++      assert.equal(q.error, undefined);
++      for (const c of q.candidates) { expectedRows.add(c.strip); expectedRows.add(c.strip + 1); }
++      for (const v of q.normalVertices) {
++        selected.add(v); const row = Math.floor(v / LOFT_SAMPLES), run = epoch.runs.find(([first, last]) => row >= first && row <= last);
++        assert(run); expectedRows.add(row); expectedRows.add(Math.max(run[0], row - 1)); expectedRows.add(Math.min(run[1], row + 1));
++      }
++      const [x, y, z] = q.input; let result: number | boolean;
++      if (q.method === 'floorAt') {
++        floors++; result = owner.queries.floorAt(x, y); same(result, eager.floorAt(x, y), `eager floor ${q.ordinal}`);
++      } else {
++        assert(q.initial && q.output); const a = { ...createContactHit(), ...q.initial }, b = { ...a };
++        result = owner.queries.query(x, y, z, a); same(result, eager.query(x, y, z, b), `eager query ${q.ordinal}`);
++        sameHit(a, q.output, `recorded hit ${q.ordinal}`); sameHit(a, b, `eager hit ${q.ordinal}`); if (result) hits++;
++      }
++      same(result, q.result, `recorded result ${q.ordinal}`); assert.deepEqual(backend.stats, eager.stats, `stats ${q.ordinal}`);
++      for (const v of q.normalVertices) {
++        assert.equal(loft.normalReady[v], 1);
++        sameBytes(backend.last!.normals.subarray(3 * v, 3 * v + 3), eager.last!.normals.subarray(3 * v, 3 * v + 3), `eager normal ${v}`);
++        sameBytes(backend.last!.normals.subarray(3 * v, 3 * v + 3), f.loft.normals.subarray(3 * v, 3 * v + 3), `recorded normal ${v}`);
++      }
++    }
++    assert.equal(floors, 186); assert.equal(hits, 28); assert.equal(selected.size, 65);
++    assert.deepEqual([...selected].sort((a, b) => a - b), epoch.hitNormalVertices);
++    assert.equal(expectedRows.size, 15);
++    for (let row = 0; row < backend.last!.sliceCount; row++) if (loft.heightReady[row]) assert(expectedRows.has(row), `unexpected demanded row ${row}`);
++    assert(heightReads.length < eagerHeightReads, 'candidate must actually omit the unused initial height callbacks');
++    // Inspect only current active geometry after actual query replay, never force a runtime/public drain or unused normals.
++    for (let row = 0; row < backend.last!.sliceCount; row++) loft.prepareRow(row);
++    const r = backend.last!, old = eager.last!;
++    for (const key of ['sliceCount', 'vertexCount', 'indexCount', 'restSamples', 'clamps', 'overlaps'] as const) same(r[key], old[key], key);
++    sameBytes(r.positions.subarray(0, 3 * r.vertexCount), old.positions.subarray(0, 3 * r.vertexCount), 'eager forced active positions');
++    sameBytes(r.positions.subarray(0, f.loft.positions.length), f.loft.positions, 'recorded forced active positions');
++    for (const key of ['sliceTipY', 'sliceWeight', 'sliceJoined', 'sliceSigma', 'sliceLife', 'sliceRayX', 'sliceRayZ'] as const) {
++      sameBytes(r[key].subarray(0, r.sliceCount), old[key].subarray(0, old.sliceCount), `eager active ${key}`);
++    }
++    for (const key of ['h', 'bed', 'xCenters', 'zCenters', 'dz'] as const) {
++      sameBytes(aState[key], f.solver[key], `unchanged candidate input ${key}`); sameBytes(bState[key], f.solver[key], `unchanged oracle input ${key}`);
++    }
++  });
++});
+--- /dev/null
++++ b/vitest.height.config.ts
+@@ -0,0 +1,15 @@
++import { defineConfig } from 'vitest/config';
++
++// Scratch only. Do not discover independent oracle tests or unreviewed normal prototype helpers.
++export default defineConfig({
++  cacheDir: '.cache/vite-height',
++  test: {
++    include: [
++      'src/physics/PhysicalSurfWater.test.ts',
++      'src/physics/ownedPlainSurface.prototype.test.ts',
++      'src/wave/barrel/contactHeightDemand.prototype.test.ts',
++      'src/wave/barrel/contactHeightDemand.f64-replay.test.ts',
++    ],
++    testTimeout: 60_000,
++  },
++});
+--- /dev/null
++++ b/tsconfig.height.json
+@@ -0,0 +1,13 @@
++{
++  "extends": "./tsconfig.json",
++  "compilerOptions": { "types": ["node", "vitest/globals"] },
++  "include": [
++    "src/physics/PhysicalSurfWater.ts",
++    "src/physics/PhysicalSurfWater.test.ts",
++    "src/physics/ownedPlainSurface.prototype.test.ts",
++    "src/wave/barrel/sweptLoft.ts",
++    "src/wave/barrel/sweptContact.ts",
++    "src/wave/barrel/contactHeightDemand.prototype.test.ts",
++    "src/wave/barrel/contactHeightDemand.f64-replay.test.ts"
++  ]
++}

@@ -1,0 +1,5 @@
+{
+  "extends": "/private/tmp/contact-normal-demand-prototype-20261004/tsconfig.json",
+  "compilerOptions": { "types": ["node", "vitest/globals"], "noEmit": true, "incremental": false },
+  "include": ["cost.ts", "cost.test.ts", "vitest.cost.config.ts"]
+}

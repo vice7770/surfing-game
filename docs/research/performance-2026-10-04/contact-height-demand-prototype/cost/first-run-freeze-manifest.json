@@ -1,0 +1,102 @@
+{
+  "scope": "First approved strict plus only the bounded three-arm cost driver if strict passed; no repair/retry",
+  "sourcePreparationSha256": "bdc48bc90ebc9cd040261d62b98f1800e4d2fc3e87b76a64b2cd3846bc071aaa",
+  "approvedAuthoritySha256": "c0d436f017c58dcf599637d18a32cb4b0aa948768811f1577fcf3d7f0c1aea1f",
+  "checkResults": [
+    {
+      "log": "/private/tmp/contact-height-demand-cost-20261004/checks/strict-tsc-first.log",
+      "command": [
+        "./node_modules/.bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "tsconfig.cost.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "log": "/private/tmp/contact-height-demand-cost-20261004/checks/cost-first.log",
+      "command": [
+        "./node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "vitest.cost.config.ts",
+        "--maxWorkers",
+        "1",
+        "cost.test.ts"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "records": [
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/approved-authority.json",
+      "bytes": 158223,
+      "sha256": "c0d436f017c58dcf599637d18a32cb4b0aa948768811f1577fcf3d7f0c1aea1f"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/authority.template.json",
+      "bytes": 1528,
+      "sha256": "413b3a4eabdd6b12592fb07dac3be3ef47694fd2edeb6820dd1aa65c34fdfc24"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/cost-first-report.json",
+      "bytes": 63959,
+      "sha256": "0f5af69e4af343fae2a84e3684b854ab55ca240bd51f5dfded98e7e0fbb1c6a6"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/cost-first.log",
+      "bytes": 197,
+      "sha256": "4a5a1e54f15acc10775f435e84c9abeb8748725784a4edf943a26e218326547e"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/cost.test.ts",
+      "bytes": 268,
+      "sha256": "82a30ff50c0a27ddcba2bc98d98722f8831b928ed683184cdf29c1af50b525d2"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/cost.ts",
+      "bytes": 32664,
+      "sha256": "e3dd2e064a0a05b197ebcd7cf28bd16f73e6c3e5d24c8dcc306ad8f9a180cd6e"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/first-check-results.json",
+      "bytes": 561,
+      "sha256": "fa4587d25aab4d5f03ab9ca57c56630a883513aad1935834b3e933fa320c775d"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/package.json",
+      "bytes": 38,
+      "sha256": "ad91c9ac9136396f5249a45e093bab863e9a23646620d911af827986f6180283"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/plan.md",
+      "bytes": 9321,
+      "sha256": "dd65ca6e82a6fb5929100b461cd5ed751968006bd9d9c9b5f968a40193a6e564"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/ready.json",
+      "bytes": 2968,
+      "sha256": "bdc48bc90ebc9cd040261d62b98f1800e4d2fc3e87b76a64b2cd3846bc071aaa"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/strict-tsc-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/tsconfig.cost.json",
+      "bytes": 254,
+      "sha256": "64fc4ce85ed86da5be1939ffb39d08fc09b5a7f103f25d2053e045dcd0e71c80"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/vitest.cost.config.ts",
+      "bytes": 466,
+      "sha256": "fabb10ffd94190d90f654cda2cfacbe9b20dadc85cdfd8ff1a560c4dd60ab446"
+    }
+  ],
+  "runtimeEdits": false,
+  "extraTrials": false,
+  "buildGpuBrowserProductionGit": false
+}

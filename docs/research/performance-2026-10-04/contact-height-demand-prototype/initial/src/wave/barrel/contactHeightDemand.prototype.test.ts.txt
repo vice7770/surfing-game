@@ -1,0 +1,193 @@
+/** Scratch-only prospective parity tests. Oracle source is independently archived ef60, not this implementation. */
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Buffer } from 'node:buffer';
+import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
+import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
+import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+import { ProfileLibrary } from './ProfileLibrary';
+import { SweptContact, createContactHit, type ContactHit } from './sweptContact';
+import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+import { tubeCase } from './toyCase';
+import { PhysicalSurfWater as EagerWater } from '../../../oracle/src/physics/PhysicalSurfWater';
+import { ShallowWaterSolver as EagerSolver, uniformEdges as eagerEdges } from '../../../oracle/src/wave/ShallowWaterSolver';
+import { ProfileLibrary as EagerLibrary } from '../../../oracle/src/wave/barrel/ProfileLibrary';
+import { SweptContact as EagerContact } from '../../../oracle/src/wave/barrel/sweptContact';
+import { SweptLoft as EagerLoft } from '../../../oracle/src/wave/barrel/sweptLoft';
+import { tubeCase as eagerTube } from '../../../oracle/src/wave/barrel/toyCase';
+
+const STILL = 0.5;
+type PrivateLoft = {
+  result: LoftResult; heightReady: Uint8Array; normalReady: Uint8Array; normalFirst: Int32Array; normalLast: Int32Array;
+  initialX: Float64Array; initialZ: Float64Array; targetY: Float64Array; initialBlend: Float64Array;
+  sealBlend: Float64Array; sealApplies: Uint8Array;
+  prepareRow(s: number): void; prepareNormal(v: number): void;
+};
+const bytes = (a: ArrayBufferView) => Buffer.from(a.buffer, a.byteOffset, a.byteLength);
+function records(n: number, tau: number, front = 1, xOffset = 0, bend = false): Float32Array {
+  const a = new Float32Array(n * FRONT_STRIDE);
+  for (let k = 0; k < n; k++) {
+    const o = k * FRONT_STRIDE;
+    a[o + FRONT_FIELD.x] = k + 0.5 + xOffset; a[o + FRONT_FIELD.z] = -100 + (bend ? 0.15 * Math.sin(k * 0.24) : 0);
+    a[o + FRONT_FIELD.front] = front; a[o + FRONT_FIELD.sigma] = k;
+    a[o + FRONT_FIELD.tau] = tau + (bend ? 0.025 * Math.cos(k * 0.15) : 0);
+    a[o + FRONT_FIELD.footHeight] = 2.1; a[o + FRONT_FIELD.footDepth] = 7;
+    a[o + FRONT_FIELD.throwZ] = tau >= 0 ? a[o + FRONT_FIELD.z] : Number.NaN;
+  }
+  return a;
+}
+function exactFields(a: ContactHit, b: ContactHit): void {
+  expect(Object.keys(a).sort()).toEqual(Object.keys(b).sort());
+  for (const key of Object.keys(a) as (keyof ContactHit)[]) expect(Object.is(a[key], b[key]), key).toBe(true);
+}
+function exactActive(a: LoftResult, b: LoftResult): void {
+  for (const key of ['sliceCount', 'vertexCount', 'indexCount', 'overlaps', 'clamps', 'restSamples'] as const) expect(a[key]).toBe(b[key]);
+  for (const key of ['positions', 'lift', 'mask', 'sliceWeight', 'sliceJoined', 'sliceSigma', 'sliceTipY'] as const) {
+    const count = key === 'positions' ? 3 * a.vertexCount : key === 'lift' || key === 'mask' ? a.vertexCount : a.sliceCount;
+    expect(Buffer.compare(bytes(a[key].subarray(0, count)), bytes(b[key].subarray(0, count))), key).toBe(0);
+  }
+}
+function pair() {
+  const cSolver = new ShallowWaterSolver({ nx: 72, xMin: -12, dx: 1, zEdges: uniformEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
+  const eSolver = new EagerSolver({ nx: 72, xMin: -12, dx: 1, zEdges: eagerEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
+  for (let i = 0; i < cSolver.h.length; i++) cSolver.h[i] = 7 + STILL + 0.03 * Math.sin(i * 0.17);
+  eSolver.h.set(cSolver.h);
+  let backend!: SweptContact, loft!: PrivateLoft;
+  const build = SweptLoft.prototype.build, update = SweptContact.prototype.update;
+  vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) { loft = this as unknown as PrivateLoft; return build.apply(this, args); });
+  vi.spyOn(SweptContact.prototype, 'update').mockImplementation(function (this: SweptContact, ...args) { backend = this; return update.apply(this, args); });
+  const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary([tubeCase(0.3)]), 0.05);
+  const eager = new EagerContact(new EagerLibrary([eagerTube(0.3)]), 0.05);
+  const water = new PhysicalSurfWater(cSolver, { peakPeriod: 18, nodeSpacing: 2, swept: owner.queries });
+  const oldWater = new EagerWater(eSolver, { peakPeriod: 18, nodeSpacing: 2, swept: eager });
+  return { owner, eager, water, oldWater, cSolver, eSolver, backend: () => backend, loft: () => loft,
+    update(data: Float32Array) {
+      owner.updateFromPlainSurface(data, data.length / FRONT_STRIDE, STILL, water);
+      oldWater.withSurfaceNodeCache(() => eager.update(data, data.length / FRONT_STRIDE, STILL, (x, z) => oldWater.plainSurfaceAt(x, z)));
+      expect(loft.heightReady.some(Boolean)).toBe(false); expect(loft.normalReady.some(Boolean)).toBe(false);
+    },
+    query(x: number, y: number, z: number) {
+      const a = { ...createContactHit(), normalX: -0, life: 123 }, b = { ...a };
+      expect(owner.queries.query(x, y, z, a)).toBe(eager.query(x, y, z, b)); exactFields(a, b);
+      expect(backend.stats).toEqual(eager.stats);
+    },
+    forceActive() { for (let row = 0; row < backend.last!.sliceCount; row++) loft.prepareRow(row); exactActive(backend.last!, eager.last!); },
+  };
+}
+afterEach(() => vi.restoreAllMocks());
+
+describe('private demanded vertex height', () => {
+  it('matches actual eager queries across refinement, shrinking/faded and empty generations without stale readiness', () => {
+    const p = pair();
+    for (const [n, tau] of [[21, -0.3], [21, 0.1], [31, 0.25], [13, 0.4], [0, 0.1], [21, 0.1]]) {
+      p.update(records(n, tau, 1, 0, true));
+      for (const x of [-20, 0.5, 5.2, 10.3, 15.7, 26.3, 80]) for (const z of [-106, -100, -96.2, -93, -90, -80]) {
+        expect(Object.is(p.owner.queries.floorAt(x, z), p.eager.floorAt(x, z))).toBe(true);
+        for (const y of [-Infinity, -0, 0.5, 2.5, 4.3, 9, Infinity, NaN]) p.query(x, y, z);
+      }
+      p.forceActive();
+    }
+  });
+
+  it('retains global refinement and budget decisions while only preparing queried height', () => {
+    const p = pair(); p.update(records(21, 0)); const coarse = p.backend().last!.sliceCount;
+    const steep = records(21, 0);
+    for (let k = 0; k < 21; k++) steep[k * FRONT_STRIDE + FRONT_FIELD.tau] = k < 10 ? -1 : 0.4;
+    p.update(steep); expect(p.backend().last!.sliceCount).toBeGreaterThan(coarse); p.forceActive();
+    p.update(records(400, 0.1)); expect(p.backend().last!.vertexCount).toBeLessThanOrEqual(LOFT.budget);
+    p.query(10.3, 2.5, -93); p.forceActive();
+  });
+
+  it('does no height work for outside misses, and floor preparation performs no normal work', () => {
+    const p = pair(); p.update(records(21, 0.1));
+    p.query(999, 0, 999); expect(p.loft().heightReady.some(Boolean)).toBe(false);
+    for (const x of [3.2, 10.3, 15.7]) for (const z of [-100, -96.2, -93, -90]) {
+      expect(Object.is(p.owner.queries.floorAt(x, z), p.eager.floorAt(x, z))).toBe(true);
+    }
+    expect(p.loft().heightReady.some(Boolean)).toBe(true); expect(p.loft().normalReady.some(Boolean)).toBe(false);
+  });
+
+  it('keeps ordered holding tests XZ-only and invalidates demand after an empty update', () => {
+    const p = pair(); p.update(records(21, 0.1)); const r = p.backend().last!;
+    const strip = r.sliceJoined.subarray(0, r.sliceCount).findIndex(Boolean); expect(strip).toBeGreaterThanOrEqual(0);
+    const offset = 3 * strip * LOFT_SAMPLES, x = r.positions[offset] + 0.1, z = r.positions[offset + 2] + 2;
+    type Held = { heldByAnother(loft: LoftResult, s: number, x: number, z: number): boolean };
+    const current = p.backend() as unknown as Held, original = p.eager as unknown as Held;
+    expect(current.heldByAnother(r, strip, x, z)).toBe(original.heldByAnother(p.eager.last!, strip, x, z));
+    expect(p.loft().heightReady.some(Boolean)).toBe(false);
+    p.update(new Float32Array(0)); p.query(x, 1, z);
+    expect(Number.isNaN(p.owner.queries.floorAt(x, z))).toBe(true);
+    expect(() => p.loft().prepareRow(0)).toThrow('captured generation');
+    expect(p.loft().heightReady.some(Boolean)).toBe(false);
+  });
+
+  it('keeps old unprepared contact after live h/bed/window mutation and uses fresh fields at the next preparation', () => {
+    const p = pair(); const data = records(21, 0.1); p.update(data);
+    p.cSolver.h.fill(9.375); p.cSolver.bed.fill(-6.875);
+    for (let i = 0; i < p.cSolver.xCenters.length; i++) p.cSolver.xCenters[i] += 3;
+    // This is the first demand on the captured contact, after the live source changed.
+    p.query(10.3, 2.5, -93); p.forceActive();
+    p.eSolver.h.set(p.cSolver.h); p.eSolver.bed.set(p.cSolver.bed); p.eSolver.xCenters.set(p.cSolver.xCenters);
+    p.update(data); p.query(10.3, 2.5, -93); p.forceActive();
+  });
+
+  it('clamps selected normal height halos to final runs and caches rows and normals', () => {
+    const p = pair(); p.update(records(21, 0.1)); const r = p.backend().last!, state = p.loft();
+    for (let row = 0; row < r.sliceCount; row++) {
+      if (state.normalFirst[row] < 0 || (row !== state.normalFirst[row] && row !== state.normalLast[row])) continue;
+      for (const j of [0, 66, LOFT_SAMPLES - 1]) {
+        state.heightReady.fill(0); state.normalReady.fill(0);
+        const v = row * LOFT_SAMPLES + j;
+        state.prepareNormal(v);
+        const expected = new Set([row, Math.max(state.normalFirst[row], row - 1), Math.min(state.normalLast[row], row + 1)]);
+        expect(Array.from(state.heightReady.subarray(0, r.sliceCount)).flatMap((ready, s) => ready ? [s] : [])).toEqual([...expected].sort((a, b) => a - b));
+        expect(Buffer.compare(bytes(r.normals.subarray(3 * v, 3 * v + 3)), bytes(p.eager.last!.normals.subarray(3 * v, 3 * v + 3)))).toBe(0);
+        const before = r.normals.slice(3 * v, 3 * v + 3); state.prepareNormal(v);
+        expect(Buffer.compare(bytes(before), bytes(r.normals.subarray(3 * v, 3 * v + 3)))).toBe(0);
+      }
+    }
+  });
+
+  it('captures real overlap seals and preserves double-first-XZ and separate F32 initial/seal stores', () => {
+    const data = new Float32Array(42 * FRONT_STRIDE);
+    data.set(records(21, 0.1)); data.set(records(21, 0.2, 2, 9.5), 21 * FRONT_STRIDE);
+    const eager = new EagerLoft(new EagerLibrary([eagerTube(0.3)]), 0.05, { contact: true });
+    const water = (x: number, z: number) => 0.5 + 0.002 * x - 0.003 * z + 0.015 * Math.sin(37.1 * z + 0.913 * x);
+    let state!: PrivateLoft;
+    const build = SweptLoft.prototype.build;
+    vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) { state = this as unknown as PrivateLoft; return build.apply(this, args); });
+    const c = SweptLoft.forContactQueries(new ProfileLibrary([tubeCase(0.3)]), 0.05);
+    const r = c.build(data, 42, STILL, water), old = eager.build(data, 42, STILL, water);
+    c.prepareRow(0);
+    expect(r.overlaps).toBeGreaterThan(0); expect(state.sealApplies.subarray(0, r.vertexCount).some(Boolean)).toBe(true);
+    let doubleCoordinateWitnesses = 0, separateStoreWitnesses = 0;
+    for (let row = 0; row < r.sliceCount; row++) c.prepareRow(row);
+    exactActive(r, old);
+    for (let v = 0; v < r.vertexCount; v++) {
+      const o = 3 * v, row = Math.floor(v / LOFT_SAMPLES), e = state.initialBlend[v];
+      const h = water(state.initialX[v], state.initialZ[v]);
+      const initial = e === 1 ? state.targetY[v] : e === 0 ? h : h + e * (state.targetY[v] - h);
+      const wrongH = water(r.positions[o], r.positions[o + 2]);
+      const wrongInitial = e === 1 ? state.targetY[v] : e === 0 ? wrongH : wrongH + e * (state.targetY[v] - wrongH);
+      if (!Object.is(Math.fround(initial), Math.fround(wrongInitial))) doubleCoordinateWitnesses++;
+      if (state.sealApplies[v] !== 1) continue;
+      const sealWater = water(r.positions[o], r.positions[o + 2]), w = state.sealBlend[row];
+      const right = Math.fround(sealWater + w * (Math.fround(initial) - sealWater));
+      const collapsed = Math.fround(sealWater + w * (initial - sealWater));
+      expect(Object.is(r.positions[o + 1], right)).toBe(true);
+      if (!Object.is(right, collapsed)) separateStoreWitnesses++;
+    }
+    expect(doubleCoordinateWitnesses).toBeGreaterThan(0);
+    expect(separateStoreWitnesses).toBeGreaterThan(0);
+  });
+
+  it('leaves public eager build and stateful height callback stream byte-identical', () => {
+    const data = records(21, 0.1, 1, 0, true), a: number[][] = [], b: number[][] = [];
+    let ac = 0, bc = 0;
+    const current = new SweptLoft(new ProfileLibrary([tubeCase(0.3)]), 0.05, { contact: true });
+    const old = new EagerLoft(new EagerLibrary([eagerTube(0.3)]), 0.05, { contact: true });
+    const r = current.build(data, 21, STILL, (x, z) => { a.push([x, z]); return 0.5 + ++ac * 1e-9; });
+    const o = old.build(data, 21, STILL, (x, z) => { b.push([x, z]); return 0.5 + ++bc * 1e-9; });
+    expect(a).toEqual(b); exactActive(r, o);
+    expect(Buffer.compare(bytes(r.normals), bytes(o.normals))).toBe(0);
+  });
+});

@@ -1,0 +1,934 @@
+{
+  "schema": "contact-height-demand-durable-archive/v1",
+  "archive": "docs/research/performance-2026-10-04/contact-height-demand-prototype",
+  "baseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "verdict": "isolated first-F64 complete-path saving; integration/live FPS/visual approval pending",
+  "productionAcceptance": false,
+  "replayedEpochs": 1,
+  "functionalChecks": {
+    "strictHeight": "passed once",
+    "selectedFiles": 4,
+    "selectedTests": 38,
+    "newTestsIncludingOneActualReplay": 14,
+    "existingPhysicalWaterTests": 24,
+    "strictCost": "passed once",
+    "costDriverTests": 1
+  },
+  "boundedCost": {
+    "fullWorkloads": 417,
+    "emptySetups": 3,
+    "warmupsPerArm": 18,
+    "measuredPerArm": 120,
+    "measuredTrials": 360,
+    "balancedBlocks": 60,
+    "callsPerWorkload": {
+      "query": 441,
+      "floor": 186
+    },
+    "pairedSaving": {
+      "eagerToNormal": {
+        "blocks": 60,
+        "medianMs": 0.07622924999998304,
+        "meanMs": 0.062220774999984955,
+        "positive": 36,
+        "negative": 24,
+        "zero": 0
+      },
+      "eagerToHeight": {
+        "blocks": 60,
+        "medianMs": 1.2576247500000477,
+        "meanMs": 1.3096566666666538,
+        "positive": 60,
+        "negative": 0,
+        "zero": 0
+      },
+      "normalToHeight": {
+        "blocks": 60,
+        "medianMs": 1.2479479999999512,
+        "meanMs": 1.2474358916666688,
+        "positive": 59,
+        "negative": 1,
+        "zero": 0
+      }
+    },
+    "heightSnapshotBytesPerNonemptyUpdate": 1857280,
+    "selectedNormalVerticesPerPrivateArm": 65
+  },
+  "historicalPreparationMetadata": "Initial/revised source readiness and prepared READMEs/plans remain exact unexecuted snapshots; later terminal evidence gives actual passing outcomes. Review repair occurred before execution.",
+  "sourceScope": {
+    "eagerClosureFiles": 147,
+    "eagerClosureBytes": 1748211,
+    "heightRuntimeFilesChanged": 3,
+    "normalSelectionFilesUnchanged": 2,
+    "approvedCostSourceRecords": 708,
+    "guardedPrototypeMethods": 35
+  },
+  "payloadRecords": 48,
+  "originalAliases": 68,
+  "totalFilesIncludingManifest": 49,
+  "storedBytesExcludingManifest": 588271,
+  "records": [
+    {
+      "archivePath": "candidate/PhysicalSurfWater.ts",
+      "encoding": "identity",
+      "storedBytes": 26311,
+      "storedSha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb",
+      "expandedBytes": 26311,
+      "expandedSha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/src/physics/PhysicalSurfWater.ts",
+          "bytes": 26311,
+          "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/sweptLoft.ts",
+      "encoding": "identity",
+      "storedBytes": 60183,
+      "storedSha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "expandedBytes": 60183,
+      "expandedSha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/barrel/sweptLoft.ts",
+          "bytes": 60183,
+          "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/barrel/sweptLoft.ts",
+          "bytes": 60183,
+          "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/sweptContact.ts",
+      "encoding": "identity",
+      "storedBytes": 29165,
+      "storedSha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba",
+      "expandedBytes": 29165,
+      "expandedSha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/barrel/sweptContact.ts",
+          "bytes": 29165,
+          "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/barrel/sweptContact.ts",
+          "bytes": 29165,
+          "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/tests/ownedPlainSurface.prototype.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 5259,
+      "storedSha256": "6b03ba1901fbdb99dc5cc5941e8008bc2c572f551382132dd9e271e88a59304b",
+      "expandedBytes": 5259,
+      "expandedSha256": "6b03ba1901fbdb99dc5cc5941e8008bc2c572f551382132dd9e271e88a59304b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/src/physics/ownedPlainSurface.prototype.test.ts",
+          "bytes": 5259,
+          "sha256": "6b03ba1901fbdb99dc5cc5941e8008bc2c572f551382132dd9e271e88a59304b"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/tests/contactHeightDemand.prototype.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 16636,
+      "storedSha256": "1a22b66a2b6714e97b7b717fd468db0fa1a7fec6b00299d43610a97b536b5a38",
+      "expandedBytes": 16636,
+      "expandedSha256": "1a22b66a2b6714e97b7b717fd468db0fa1a7fec6b00299d43610a97b536b5a38",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/barrel/contactHeightDemand.prototype.test.ts",
+          "bytes": 16636,
+          "sha256": "1a22b66a2b6714e97b7b717fd468db0fa1a7fec6b00299d43610a97b536b5a38"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/tests/contactHeightDemand.f64-replay.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 12998,
+      "storedSha256": "b94a28c26f2c8b44ec7ff11240814e0b2a3c3777fbcf2e2e46838e5fb28b1e2b",
+      "expandedBytes": 12998,
+      "expandedSha256": "b94a28c26f2c8b44ec7ff11240814e0b2a3c3777fbcf2e2e46838e5fb28b1e2b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/barrel/contactHeightDemand.f64-replay.test.ts",
+          "bytes": 12998,
+          "sha256": "b94a28c26f2c8b44ec7ff11240814e0b2a3c3777fbcf2e2e46838e5fb28b1e2b"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/config/package.json",
+      "encoding": "identity",
+      "storedBytes": 4917,
+      "storedSha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "expandedBytes": 4917,
+      "expandedSha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/package.json",
+          "bytes": 4917,
+          "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/config/tsconfig.json",
+      "encoding": "identity",
+      "storedBytes": 550,
+      "storedSha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f",
+      "expandedBytes": 550,
+      "expandedSha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/tsconfig.json",
+          "bytes": 550,
+          "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/config/tsconfig.height.json",
+      "encoding": "identity",
+      "storedBytes": 454,
+      "storedSha256": "e85acaa2f750e78319c25077809f2d204b0cd460305f4dd7e4fd86bb67871f23",
+      "expandedBytes": 454,
+      "expandedSha256": "e85acaa2f750e78319c25077809f2d204b0cd460305f4dd7e4fd86bb67871f23",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/tsconfig.height.json",
+          "bytes": 454,
+          "sha256": "e85acaa2f750e78319c25077809f2d204b0cd460305f4dd7e4fd86bb67871f23"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/tsconfig.height.json",
+          "bytes": 454,
+          "sha256": "e85acaa2f750e78319c25077809f2d204b0cd460305f4dd7e4fd86bb67871f23"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/config/vitest.height.config.ts",
+      "encoding": "identity",
+      "storedBytes": 506,
+      "storedSha256": "3671d39c57f086ad93a882df6affba76fdbc3958d7f92f467191c71c9f78e73f",
+      "expandedBytes": 506,
+      "expandedSha256": "3671d39c57f086ad93a882df6affba76fdbc3958d7f92f467191c71c9f78e73f",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/vitest.height.config.ts",
+          "bytes": 506,
+          "sha256": "3671d39c57f086ad93a882df6affba76fdbc3958d7f92f467191c71c9f78e73f"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/vitest.height.config.ts",
+          "bytes": 506,
+          "sha256": "3671d39c57f086ad93a882df6affba76fdbc3958d7f92f467191c71c9f78e73f"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/intent.md",
+      "encoding": "identity",
+      "storedBytes": 1697,
+      "storedSha256": "7958f6d58e1ff9b23ac5e6da8981a19296f892b4fe3f4cda120bd6de91d03a7b",
+      "expandedBytes": 1697,
+      "expandedSha256": "7958f6d58e1ff9b23ac5e6da8981a19296f892b4fe3f4cda120bd6de91d03a7b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/intent.md",
+          "bytes": 1697,
+          "sha256": "7958f6d58e1ff9b23ac5e6da8981a19296f892b4fe3f4cda120bd6de91d03a7b"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/intent.md",
+          "bytes": 1697,
+          "sha256": "7958f6d58e1ff9b23ac5e6da8981a19296f892b4fe3f4cda120bd6de91d03a7b"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/README.prepared.md",
+      "encoding": "identity",
+      "storedBytes": 6789,
+      "storedSha256": "4f1fbde78cac96167764ec325283176ea46062bff7bb17ec4eedb7503f8ccfbe",
+      "expandedBytes": 6789,
+      "expandedSha256": "4f1fbde78cac96167764ec325283176ea46062bff7bb17ec4eedb7503f8ccfbe",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/README.md",
+          "bytes": 6789,
+          "sha256": "4f1fbde78cac96167764ec325283176ea46062bff7bb17ec4eedb7503f8ccfbe"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/ready.json",
+      "encoding": "identity",
+      "storedBytes": 2651,
+      "storedSha256": "3d8eb0e103fa0620b0e2c78b442fb997bd05add991c30feca8f506e046ead311",
+      "expandedBytes": 2651,
+      "expandedSha256": "3d8eb0e103fa0620b0e2c78b442fb997bd05add991c30feca8f506e046ead311",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/ready.json",
+          "bytes": 2651,
+          "sha256": "3d8eb0e103fa0620b0e2c78b442fb997bd05add991c30feca8f506e046ead311"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/candidate.patch",
+      "encoding": "identity",
+      "storedBytes": 60955,
+      "storedSha256": "9d3531bc83b25d88f568d8f1e3c02f3efaaa58bc96a8a465981d8eba33bde561",
+      "expandedBytes": 60955,
+      "expandedSha256": "9d3531bc83b25d88f568d8f1e3c02f3efaaa58bc96a8a465981d8eba33bde561",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/candidate.patch",
+          "bytes": 60955,
+          "sha256": "9d3531bc83b25d88f568d8f1e3c02f3efaaa58bc96a8a465981d8eba33bde561"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/review-repair.patch",
+      "encoding": "identity",
+      "storedBytes": 17401,
+      "storedSha256": "6a056cd6d733e0c31a8ab060417d0b6187181fd6c279967520954debd03a2224",
+      "expandedBytes": 17401,
+      "expandedSha256": "6a056cd6d733e0c31a8ab060417d0b6187181fd6c279967520954debd03a2224",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/review-repair.patch",
+          "bytes": 17401,
+          "sha256": "6a056cd6d733e0c31a8ab060417d0b6187181fd6c279967520954debd03a2224"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/candidate-manifest.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 12917,
+      "storedSha256": "ff8c4f8ae45fb4b4b932d0fc2761682ace72d5193da859c8dd0b0fb140bdcd60",
+      "expandedBytes": 65169,
+      "expandedSha256": "1cfa8ddb3c82fea2d2cfbc551328523dc20c89f9c71bcd264cb7ab3260163e2c",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/candidate-manifest.json",
+          "bytes": 65169,
+          "sha256": "1cfa8ddb3c82fea2d2cfbc551328523dc20c89f9c71bcd264cb7ab3260163e2c"
+        }
+      ]
+    },
+    {
+      "archivePath": "candidate/start-manifest.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 8677,
+      "storedSha256": "0538a08181efda6740d94f8a0246815c00bb0abe46af92d929f491b25a75ae25",
+      "expandedBytes": 25479,
+      "expandedSha256": "60cb987a388e7363ad20c877ab1962b0a049e6417b04aa549d9accc6b504241d",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/start-manifest.json",
+          "bytes": 25479,
+          "sha256": "60cb987a388e7363ad20c877ab1962b0a049e6417b04aa549d9accc6b504241d"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/start-manifest.json",
+          "bytes": 25479,
+          "sha256": "60cb987a388e7363ad20c877ab1962b0a049e6417b04aa549d9accc6b504241d"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/verification-proof.json",
+      "encoding": "identity",
+      "storedBytes": 5796,
+      "storedSha256": "b03ef09e8b3d5a915d8c014f11683bec03a8bde20257079adc188e7117f0efa9",
+      "expandedBytes": 5796,
+      "expandedSha256": "b03ef09e8b3d5a915d8c014f11683bec03a8bde20257079adc188e7117f0efa9",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/verification-proof.json",
+          "bytes": 5796,
+          "sha256": "b03ef09e8b3d5a915d8c014f11683bec03a8bde20257079adc188e7117f0efa9"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/verification-intent.json",
+      "encoding": "identity",
+      "storedBytes": 2311,
+      "storedSha256": "ae56d86d2686fa454fd1f99b85ecbc7c04e5ead6578162cb022fcc478667a652",
+      "expandedBytes": 2311,
+      "expandedSha256": "ae56d86d2686fa454fd1f99b85ecbc7c04e5ead6578162cb022fcc478667a652",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/verification-intent.json",
+          "bytes": 2311,
+          "sha256": "ae56d86d2686fa454fd1f99b85ecbc7c04e5ead6578162cb022fcc478667a652"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/terminal.json",
+      "encoding": "identity",
+      "storedBytes": 925,
+      "storedSha256": "4f2c1d652225d132fa46f876faa72aa4cc9f9058b267dac156554276b78df38c",
+      "expandedBytes": 925,
+      "expandedSha256": "4f2c1d652225d132fa46f876faa72aa4cc9f9058b267dac156554276b78df38c",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/terminal.json",
+          "bytes": 925,
+          "sha256": "4f2c1d652225d132fa46f876faa72aa4cc9f9058b267dac156554276b78df38c"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/focused.log",
+      "encoding": "identity",
+      "storedBytes": 203,
+      "storedSha256": "99e8610a1bc7bb46f3a9d155e8f83d2d93905569121bd1373969027645b37ae9",
+      "expandedBytes": 203,
+      "expandedSha256": "99e8610a1bc7bb46f3a9d155e8f83d2d93905569121bd1373969027645b37ae9",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/focused.log",
+          "bytes": 203,
+          "sha256": "99e8610a1bc7bb46f3a9d155e8f83d2d93905569121bd1373969027645b37ae9"
+        }
+      ]
+    },
+    {
+      "archivePath": "checks/strict.log",
+      "encoding": "identity",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/strict.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/checks/strict-tsc-first.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/strict-tsc-first.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "archivePath": "initial/src/physics/PhysicalSurfWater.ts",
+      "encoding": "identity",
+      "storedBytes": 26301,
+      "storedSha256": "84625fae42e14164e339871463cba88d7f0865880e68947f7d4bffb54575ef2e",
+      "expandedBytes": 26301,
+      "expandedSha256": "84625fae42e14164e339871463cba88d7f0865880e68947f7d4bffb54575ef2e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/physics/PhysicalSurfWater.ts",
+          "bytes": 26301,
+          "sha256": "84625fae42e14164e339871463cba88d7f0865880e68947f7d4bffb54575ef2e"
+        }
+      ]
+    },
+    {
+      "archivePath": "initial/src/physics/ownedPlainSurface.prototype.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 4187,
+      "storedSha256": "b512f5267211abfe66170ec6c3b20628637138be456a9c8be84c4f0ed7025939",
+      "expandedBytes": 4187,
+      "expandedSha256": "b512f5267211abfe66170ec6c3b20628637138be456a9c8be84c4f0ed7025939",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/physics/ownedPlainSurface.prototype.test.ts",
+          "bytes": 4187,
+          "sha256": "b512f5267211abfe66170ec6c3b20628637138be456a9c8be84c4f0ed7025939"
+        }
+      ]
+    },
+    {
+      "archivePath": "initial/src/wave/barrel/contactHeightDemand.prototype.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 13024,
+      "storedSha256": "64cddc06bedc1212a21a8d5458b5f5306ddb71eaf66b9bda1c92d1c5755ae139",
+      "expandedBytes": 13024,
+      "expandedSha256": "64cddc06bedc1212a21a8d5458b5f5306ddb71eaf66b9bda1c92d1c5755ae139",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/barrel/contactHeightDemand.prototype.test.ts",
+          "bytes": 13024,
+          "sha256": "64cddc06bedc1212a21a8d5458b5f5306ddb71eaf66b9bda1c92d1c5755ae139"
+        }
+      ]
+    },
+    {
+      "archivePath": "initial/src/wave/barrel/contactHeightDemand.f64-replay.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 12798,
+      "storedSha256": "1d99331051fdf109900eff5ee6ed59636d1e57b11356bb628538ee820799664e",
+      "expandedBytes": 12798,
+      "expandedSha256": "1d99331051fdf109900eff5ee6ed59636d1e57b11356bb628538ee820799664e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/barrel/contactHeightDemand.f64-replay.test.ts",
+          "bytes": 12798,
+          "sha256": "1d99331051fdf109900eff5ee6ed59636d1e57b11356bb628538ee820799664e"
+        }
+      ]
+    },
+    {
+      "archivePath": "selection/SurfZoneRunner.ts",
+      "encoding": "identity",
+      "storedBytes": 39955,
+      "storedSha256": "48892eea1be50a39708376662908511900ad02ef8d24f3fc361e69260372130f",
+      "expandedBytes": 39955,
+      "expandedSha256": "48892eea1be50a39708376662908511900ad02ef8d24f3fc361e69260372130f",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/wave/SurfZoneRunner.ts",
+          "bytes": 39955,
+          "sha256": "48892eea1be50a39708376662908511900ad02ef8d24f3fc361e69260372130f"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/src/wave/SurfZoneRunner.ts",
+          "bytes": 39955,
+          "sha256": "48892eea1be50a39708376662908511900ad02ef8d24f3fc361e69260372130f"
+        }
+      ]
+    },
+    {
+      "archivePath": "selection/SurfZoneWorkerCore.ts",
+      "encoding": "identity",
+      "storedBytes": 7117,
+      "storedSha256": "284675cc587b9f12c70ae518d1a8c4f128396482883f549989fc69b327437a69",
+      "expandedBytes": 7117,
+      "expandedSha256": "284675cc587b9f12c70ae518d1a8c4f128396482883f549989fc69b327437a69",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 7117,
+          "sha256": "284675cc587b9f12c70ae518d1a8c4f128396482883f549989fc69b327437a69"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 7117,
+          "sha256": "284675cc587b9f12c70ae518d1a8c4f128396482883f549989fc69b327437a69"
+        }
+      ]
+    },
+    {
+      "archivePath": "initial/README.prepared.md",
+      "encoding": "identity",
+      "storedBytes": 5322,
+      "storedSha256": "9461394f8c6700c59f9ebade16336c0d2c110bec314f02da4312b7a89f333fbd",
+      "expandedBytes": 5322,
+      "expandedSha256": "9461394f8c6700c59f9ebade16336c0d2c110bec314f02da4312b7a89f333fbd",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/README.md",
+          "bytes": 5322,
+          "sha256": "9461394f8c6700c59f9ebade16336c0d2c110bec314f02da4312b7a89f333fbd"
+        }
+      ]
+    },
+    {
+      "archivePath": "initial/candidate.patch",
+      "encoding": "identity",
+      "storedBytes": 55984,
+      "storedSha256": "ed63173e8c33b44beef2aa6549ee713fd53c36f48ce4969c6c2f5fa65ebd8f00",
+      "expandedBytes": 55984,
+      "expandedSha256": "ed63173e8c33b44beef2aa6549ee713fd53c36f48ce4969c6c2f5fa65ebd8f00",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/candidate.patch",
+          "bytes": 55984,
+          "sha256": "ed63173e8c33b44beef2aa6549ee713fd53c36f48ce4969c6c2f5fa65ebd8f00"
+        }
+      ]
+    },
+    {
+      "archivePath": "initial/candidate-manifest.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 11846,
+      "storedSha256": "eaa8085b2f23733259db06f067e86b82b748b82d9ced9475c0634be1d07e4722",
+      "expandedBytes": 62317,
+      "expandedSha256": "4f614af338a8834499dd69401632793477534674d7cf73c5173992c82e1e780a",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/candidate-manifest.json",
+          "bytes": 62317,
+          "sha256": "4f614af338a8834499dd69401632793477534674d7cf73c5173992c82e1e780a"
+        }
+      ]
+    },
+    {
+      "archivePath": "initial/ready.json",
+      "encoding": "identity",
+      "storedBytes": 1639,
+      "storedSha256": "17030e88c4ac7a1acb2aaa9af70c4511ef185cde59b6c1b847cb76457fcd1748",
+      "expandedBytes": 1639,
+      "expandedSha256": "17030e88c4ac7a1acb2aaa9af70c4511ef185cde59b6c1b847cb76457fcd1748",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/ready.json",
+          "bytes": 1639,
+          "sha256": "17030e88c4ac7a1acb2aaa9af70c4511ef185cde59b6c1b847cb76457fcd1748"
+        }
+      ]
+    },
+    {
+      "archivePath": "initial/preservation-manifest.json",
+      "encoding": "identity",
+      "storedBytes": 5571,
+      "storedSha256": "430b2b131dd7017c17b422781212f55754b96cc974a2681cbfa8de9f26c824fe",
+      "expandedBytes": 5571,
+      "expandedSha256": "430b2b131dd7017c17b422781212f55754b96cc974a2681cbfa8de9f26c824fe",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/preservation-manifest.json",
+          "bytes": 5571,
+          "sha256": "430b2b131dd7017c17b422781212f55754b96cc974a2681cbfa8de9f26c824fe"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/cost.ts",
+      "encoding": "identity",
+      "storedBytes": 32664,
+      "storedSha256": "e3dd2e064a0a05b197ebcd7cf28bd16f73e6c3e5d24c8dcc306ad8f9a180cd6e",
+      "expandedBytes": 32664,
+      "expandedSha256": "e3dd2e064a0a05b197ebcd7cf28bd16f73e6c3e5d24c8dcc306ad8f9a180cd6e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/cost.ts",
+          "bytes": 32664,
+          "sha256": "e3dd2e064a0a05b197ebcd7cf28bd16f73e6c3e5d24c8dcc306ad8f9a180cd6e"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/cost.ts",
+          "bytes": 32664,
+          "sha256": "e3dd2e064a0a05b197ebcd7cf28bd16f73e6c3e5d24c8dcc306ad8f9a180cd6e"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/cost.test.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 268,
+      "storedSha256": "82a30ff50c0a27ddcba2bc98d98722f8831b928ed683184cdf29c1af50b525d2",
+      "expandedBytes": 268,
+      "expandedSha256": "82a30ff50c0a27ddcba2bc98d98722f8831b928ed683184cdf29c1af50b525d2",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/cost.test.ts",
+          "bytes": 268,
+          "sha256": "82a30ff50c0a27ddcba2bc98d98722f8831b928ed683184cdf29c1af50b525d2"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/cost.test.ts",
+          "bytes": 268,
+          "sha256": "82a30ff50c0a27ddcba2bc98d98722f8831b928ed683184cdf29c1af50b525d2"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/vitest.cost.config.ts",
+      "encoding": "identity",
+      "storedBytes": 466,
+      "storedSha256": "fabb10ffd94190d90f654cda2cfacbe9b20dadc85cdfd8ff1a560c4dd60ab446",
+      "expandedBytes": 466,
+      "expandedSha256": "fabb10ffd94190d90f654cda2cfacbe9b20dadc85cdfd8ff1a560c4dd60ab446",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/vitest.cost.config.ts",
+          "bytes": 466,
+          "sha256": "fabb10ffd94190d90f654cda2cfacbe9b20dadc85cdfd8ff1a560c4dd60ab446"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/vitest.cost.config.ts",
+          "bytes": 466,
+          "sha256": "fabb10ffd94190d90f654cda2cfacbe9b20dadc85cdfd8ff1a560c4dd60ab446"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/tsconfig.cost.json",
+      "encoding": "identity",
+      "storedBytes": 254,
+      "storedSha256": "64fc4ce85ed86da5be1939ffb39d08fc09b5a7f103f25d2053e045dcd0e71c80",
+      "expandedBytes": 254,
+      "expandedSha256": "64fc4ce85ed86da5be1939ffb39d08fc09b5a7f103f25d2053e045dcd0e71c80",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/tsconfig.cost.json",
+          "bytes": 254,
+          "sha256": "64fc4ce85ed86da5be1939ffb39d08fc09b5a7f103f25d2053e045dcd0e71c80"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/tsconfig.cost.json",
+          "bytes": 254,
+          "sha256": "64fc4ce85ed86da5be1939ffb39d08fc09b5a7f103f25d2053e045dcd0e71c80"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/package.json",
+      "encoding": "identity",
+      "storedBytes": 38,
+      "storedSha256": "ad91c9ac9136396f5249a45e093bab863e9a23646620d911af827986f6180283",
+      "expandedBytes": 38,
+      "expandedSha256": "ad91c9ac9136396f5249a45e093bab863e9a23646620d911af827986f6180283",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/package.json",
+          "bytes": 38,
+          "sha256": "ad91c9ac9136396f5249a45e093bab863e9a23646620d911af827986f6180283"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/package.json",
+          "bytes": 38,
+          "sha256": "ad91c9ac9136396f5249a45e093bab863e9a23646620d911af827986f6180283"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/plan.md",
+      "encoding": "identity",
+      "storedBytes": 9321,
+      "storedSha256": "dd65ca6e82a6fb5929100b461cd5ed751968006bd9d9c9b5f968a40193a6e564",
+      "expandedBytes": 9321,
+      "expandedSha256": "dd65ca6e82a6fb5929100b461cd5ed751968006bd9d9c9b5f968a40193a6e564",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/plan.md",
+          "bytes": 9321,
+          "sha256": "dd65ca6e82a6fb5929100b461cd5ed751968006bd9d9c9b5f968a40193a6e564"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/plan.md",
+          "bytes": 9321,
+          "sha256": "dd65ca6e82a6fb5929100b461cd5ed751968006bd9d9c9b5f968a40193a6e564"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/authority.template.json",
+      "encoding": "identity",
+      "storedBytes": 1528,
+      "storedSha256": "413b3a4eabdd6b12592fb07dac3be3ef47694fd2edeb6820dd1aa65c34fdfc24",
+      "expandedBytes": 1528,
+      "expandedSha256": "413b3a4eabdd6b12592fb07dac3be3ef47694fd2edeb6820dd1aa65c34fdfc24",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/authority.template.json",
+          "bytes": 1528,
+          "sha256": "413b3a4eabdd6b12592fb07dac3be3ef47694fd2edeb6820dd1aa65c34fdfc24"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/authority.template.json",
+          "bytes": 1528,
+          "sha256": "413b3a4eabdd6b12592fb07dac3be3ef47694fd2edeb6820dd1aa65c34fdfc24"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/ready.json",
+      "encoding": "identity",
+      "storedBytes": 2968,
+      "storedSha256": "bdc48bc90ebc9cd040261d62b98f1800e4d2fc3e87b76a64b2cd3846bc071aaa",
+      "expandedBytes": 2968,
+      "expandedSha256": "bdc48bc90ebc9cd040261d62b98f1800e4d2fc3e87b76a64b2cd3846bc071aaa",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/ready.json",
+          "bytes": 2968,
+          "sha256": "bdc48bc90ebc9cd040261d62b98f1800e4d2fc3e87b76a64b2cd3846bc071aaa"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/ready.json",
+          "bytes": 2968,
+          "sha256": "bdc48bc90ebc9cd040261d62b98f1800e4d2fc3e87b76a64b2cd3846bc071aaa"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/approved-authority.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 39924,
+      "storedSha256": "add8312982127505769bf7a35e918db646d1d41ae896060041648f003ca88f01",
+      "expandedBytes": 158223,
+      "expandedSha256": "c0d436f017c58dcf599637d18a32cb4b0aa948768811f1577fcf3d7f0c1aea1f",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/approved-authority.json",
+          "bytes": 158223,
+          "sha256": "c0d436f017c58dcf599637d18a32cb4b0aa948768811f1577fcf3d7f0c1aea1f"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/approved-authority.json",
+          "bytes": 158223,
+          "sha256": "c0d436f017c58dcf599637d18a32cb4b0aa948768811f1577fcf3d7f0c1aea1f"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/cost-first-report.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 9831,
+      "storedSha256": "065279704a7de56fc207dd5f65a692f9945eb2f1fd6883567ed057c937abe87e",
+      "expandedBytes": 63959,
+      "expandedSha256": "0f5af69e4af343fae2a84e3684b854ab55ca240bd51f5dfded98e7e0fbb1c6a6",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/cost-first-report.json",
+          "bytes": 63959,
+          "sha256": "0f5af69e4af343fae2a84e3684b854ab55ca240bd51f5dfded98e7e0fbb1c6a6"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/cost-first-report.json",
+          "bytes": 63959,
+          "sha256": "0f5af69e4af343fae2a84e3684b854ab55ca240bd51f5dfded98e7e0fbb1c6a6"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/cost-first.log",
+      "encoding": "identity",
+      "storedBytes": 197,
+      "storedSha256": "4a5a1e54f15acc10775f435e84c9abeb8748725784a4edf943a26e218326547e",
+      "expandedBytes": 197,
+      "expandedSha256": "4a5a1e54f15acc10775f435e84c9abeb8748725784a4edf943a26e218326547e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/checks/cost-first.log",
+          "bytes": 197,
+          "sha256": "4a5a1e54f15acc10775f435e84c9abeb8748725784a4edf943a26e218326547e"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/cost-first.log",
+          "bytes": 197,
+          "sha256": "4a5a1e54f15acc10775f435e84c9abeb8748725784a4edf943a26e218326547e"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/first-check-results.json",
+      "encoding": "identity",
+      "storedBytes": 561,
+      "storedSha256": "fa4587d25aab4d5f03ab9ca57c56630a883513aad1935834b3e933fa320c775d",
+      "expandedBytes": 561,
+      "expandedSha256": "fa4587d25aab4d5f03ab9ca57c56630a883513aad1935834b3e933fa320c775d",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/checks/first-check-results.json",
+          "bytes": 561,
+          "sha256": "fa4587d25aab4d5f03ab9ca57c56630a883513aad1935834b3e933fa320c775d"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/first-run-freeze/first-check-results.json",
+          "bytes": 561,
+          "sha256": "fa4587d25aab4d5f03ab9ca57c56630a883513aad1935834b3e933fa320c775d"
+        }
+      ]
+    },
+    {
+      "archivePath": "cost/first-run-freeze-manifest.json",
+      "encoding": "identity",
+      "storedBytes": 3872,
+      "storedSha256": "4471e93bd2c217151cfb87a333d68f4c87100650c8c9cae226087b8f9803513e",
+      "expandedBytes": 3872,
+      "expandedSha256": "4471e93bd2c217151cfb87a333d68f4c87100650c8c9cae226087b8f9803513e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/contact-height-demand-cost-20261004/checks/first-run-freeze-manifest.json",
+          "bytes": 3872,
+          "sha256": "4471e93bd2c217151cfb87a333d68f4c87100650c8c9cae226087b8f9803513e"
+        }
+      ]
+    },
+    {
+      "archivePath": "README.md",
+      "encoding": "identity",
+      "storedBytes": 10186,
+      "storedSha256": "6b345b1576243f2b24fb10d48e3f43a7c1da2c08edf71c554ac6091807a73e6f",
+      "expandedBytes": 10186,
+      "expandedSha256": "6b345b1576243f2b24fb10d48e3f43a7c1da2c08edf71c554ac6091807a73e6f",
+      "originalAliases": [],
+      "generated": true
+    },
+    {
+      "archivePath": "verification.json",
+      "encoding": "identity",
+      "storedBytes": 15148,
+      "storedSha256": "2561a2cfedb2759f9147a60f830ebcbd0125ba62afae5414978a3f362e99bfb4",
+      "expandedBytes": 15148,
+      "expandedSha256": "2561a2cfedb2759f9147a60f830ebcbd0125ba62afae5414978a3f362e99bfb4",
+      "originalAliases": [],
+      "generated": true
+    }
+  ],
+  "externalReferences": [
+    {
+      "relativeReference": "../contact-demand/manifest.json",
+      "bytes": 19682,
+      "sha256": "2cbffff5e09db367ad7c34b79717566e4b5da6485f49510d07942d529d242ab9"
+    },
+    {
+      "relativeReference": "../contact-demand/run/capture.json.gz",
+      "bytes": 2451650,
+      "sha256": "e7bbbb85cf03450f97fe8807414f749dbada7a5b5fa814e490f578f26f965e2f",
+      "encoding": "gzip",
+      "expandedBytes": 13547682,
+      "expandedSha256": "a9c1e4d0b759aac2a9123e9d02cef97a957e959415d65ad098f53b3f99287648",
+      "originalAlias": "/private/tmp/contact-lazy-height-20261004-v3/run/capture.json.gz",
+      "expandedIdentityAuthority": "Existing capture manifest and root verification; not expanded or duplicated during archival bookkeeping."
+    },
+    {
+      "relativeReference": "../contact-normal-demand-prototype/manifest.json",
+      "bytes": 38526,
+      "sha256": "826bf399bde7c040871ee81dca608ad79cf19a5a99aa3912aa35a4a85a3279b7"
+    },
+    {
+      "relativeReference": "../contact-normal-demand-prototype/prototype/candidate.patch",
+      "bytes": 82788,
+      "sha256": "907d5463489ccec1967bf4fab525b13a8c3f608062506c3a32dfe7427dd541cb"
+    },
+    {
+      "relativeReference": "../contact-normal-demand-prototype/prototype/runtime-hashes.json",
+      "bytes": 2387,
+      "sha256": "8a8aebc6518ef51f9da524a6c91994d81ab3ef4a8d3bca0a6e3bb7acf8f17c3c"
+    },
+    {
+      "relativeReference": "../contact-normal-demand-prototype/checks/f64-proof.json.gz",
+      "bytes": 7067,
+      "sha256": "9b65da6891602a0db82892a787d490cbd45e0f9377bc94acf1b53dfe756658b3",
+      "encoding": "gzip",
+      "expandedBytes": 235928,
+      "expandedSha256": "2694b938529bc35f366804e35de42870144c3d9cf49202640dffc6656e121f31"
+    }
+  ],
+  "testFilenameRule": "Every copied *.test.ts source is stored as *.test.ts.txt; bytes/original aliases and patch paths are unchanged.",
+  "reconstruction": "Use independent ef60 source/147-file closure, existing normal archive and final height patch; restore original scratch paths/test names only for an explicitly configured environment. No full source/dependencies/assets/capture/bundles are duplicated."
+}

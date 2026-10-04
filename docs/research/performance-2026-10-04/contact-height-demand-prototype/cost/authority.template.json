@@ -1,0 +1,44 @@
+{
+  "schema": "contact-height-three-arm-cost/v1",
+  "status": "UNEXECUTED-DO-NOT-RUN",
+  "baseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "schedule": {
+    "warmupsPerArm": 18,
+    "blocks": 60,
+    "trialsPerArm": 120,
+    "permutations": ["ABC", "ACB", "BAC", "BCA", "CAB", "CBA"],
+    "blockConstruction": "permutation followed by its reverse"
+  },
+  "sourceRoots": [
+    "/private/tmp/contact-normal-demand-prototype-20261004/oracle/src",
+    "/private/tmp/contact-normal-demand-prototype-20261004/src",
+    "/private/tmp/contact-height-demand-prototype-20261004/src"
+  ],
+  "sourceFiles": [],
+  "sourcePreparation": {
+    "path": "/private/tmp/contact-height-demand-cost-20261004/ready.json",
+    "sha256": "ROOT-TO-PIN-AFTER-SOURCE-REVIEW"
+  },
+  "heightParity": {
+    "status": "ROOT-TO-CONFIRM-PASSED",
+    "exitCode": null,
+    "replayEpochs": 1,
+    "publicCalls": 627,
+    "queryCalls": 441,
+    "floorCalls": 186,
+    "selectedNormalVertices": 65,
+    "evidenceFiles": [],
+    "heightRuntimeFiles": []
+  },
+  "normalParity": {
+    "path": "/private/tmp/contact-normal-demand-prototype-20261004/checks/f64-replay-corrected-proof.json",
+    "bytes": 235928,
+    "sha256": "2694b938529bc35f366804e35de42870144c3d9cf49202640dffc6656e121f31"
+  },
+  "capture": {
+    "compressedBytes": 2451650,
+    "compressedSha256": "e7bbbb85cf03450f97fe8807414f749dbada7a5b5fa814e490f578f26f965e2f",
+    "expandedBytes": 13547682,
+    "expandedSha256": "a9c1e4d0b759aac2a9123e9d02cef97a957e959415d65ad098f53b3f99287648"
+  }
+}

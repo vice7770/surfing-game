@@ -1,0 +1,40 @@
+{
+  "schema": "contact-height-demand-ready/v1",
+  "stage": "ready for root source/test review; not authorized to execute",
+  "directory": "/private/tmp/contact-height-demand-prototype-20261004",
+  "artifacts": [
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/intent.md",
+      "bytes": 1697,
+      "sha256": "7958f6d58e1ff9b23ac5e6da8981a19296f892b4fe3f4cda120bd6de91d03a7b"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/README.md",
+      "bytes": 5322,
+      "sha256": "9461394f8c6700c59f9ebade16336c0d2c110bec314f02da4312b7a89f333fbd"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/start-manifest.json",
+      "bytes": 25479,
+      "sha256": "60cb987a388e7363ad20c877ab1962b0a049e6417b04aa549d9accc6b504241d"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/candidate.patch",
+      "bytes": 55984,
+      "sha256": "ed63173e8c33b44beef2aa6549ee713fd53c36f48ce4969c6c2f5fa65ebd8f00"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/candidate-manifest.json",
+      "bytes": 62317,
+      "sha256": "4f614af338a8834499dd69401632793477534674d7cf73c5173992c82e1e780a"
+    }
+  ],
+  "sourceBlockers": [],
+  "unexecutedGates": [
+    "existing eager PhysicalSurfWater tests and strict TS",
+    "owned-provider exact boundary/lifetime parity",
+    "actual nonempty-seal double-coordinate and two-store witnesses",
+    "actual first-fixture 627-call replay/selected normals/current active geometry",
+    "complete path cost with all copies/recipes/cache/query work after parity"
+  ]
+}

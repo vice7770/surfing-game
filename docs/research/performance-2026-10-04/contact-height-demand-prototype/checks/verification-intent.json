@@ -1,0 +1,78 @@
+{
+  "stage": "root authorized ONE strict command then ONE selected test command only if strict passes",
+  "commands": [
+    [
+      "./node_modules/.bin/tsc",
+      "-p",
+      "tsconfig.height.json",
+      "--pretty",
+      "false"
+    ],
+    [
+      "./node_modules/.bin/vitest",
+      "run",
+      "--config",
+      "vitest.height.config.ts",
+      "--maxWorkers=1"
+    ]
+  ],
+  "sourceInputFiles": [
+    {
+      "path": "ready.json",
+      "bytes": 2651,
+      "sha256": "3d8eb0e103fa0620b0e2c78b442fb997bd05add991c30feca8f506e046ead311"
+    },
+    {
+      "path": "candidate-manifest.json",
+      "bytes": 65169,
+      "sha256": "1cfa8ddb3c82fea2d2cfbc551328523dc20c89f9c71bcd264cb7ab3260163e2c"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 60955,
+      "sha256": "9d3531bc83b25d88f568d8f1e3c02f3efaaa58bc96a8a465981d8eba33bde561"
+    },
+    {
+      "path": "src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+    },
+    {
+      "path": "src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba"
+    },
+    {
+      "path": "src/physics/ownedPlainSurface.prototype.test.ts",
+      "bytes": 5259,
+      "sha256": "6b03ba1901fbdb99dc5cc5941e8008bc2c572f551382132dd9e271e88a59304b"
+    },
+    {
+      "path": "src/wave/barrel/contactHeightDemand.prototype.test.ts",
+      "bytes": 16636,
+      "sha256": "1a22b66a2b6714e97b7b717fd468db0fa1a7fec6b00299d43610a97b536b5a38"
+    },
+    {
+      "path": "src/wave/barrel/contactHeightDemand.f64-replay.test.ts",
+      "bytes": 12998,
+      "sha256": "b94a28c26f2c8b44ec7ff11240814e0b2a3c3777fbcf2e2e46838e5fb28b1e2b"
+    },
+    {
+      "path": "vitest.height.config.ts",
+      "bytes": 506,
+      "sha256": "3671d39c57f086ad93a882df6affba76fdbc3958d7f92f467191c71c9f78e73f"
+    },
+    {
+      "path": "tsconfig.height.json",
+      "bytes": 454,
+      "sha256": "e85acaa2f750e78319c25077809f2d204b0cd460305f4dd7e4fd86bb67871f23"
+    }
+  ],
+  "sourceRepairOrRetryAllowed": false,
+  "costBuildHardwareAllowed": false
+}

@@ -1,0 +1,5 @@
+import { it } from 'vitest';
+import { runContactHeightCost } from './cost';
+
+// Explicit separate cost driver; never included by the height prototype's parity config.
+it('root-approved fixed first-epoch three-arm complete contact cost', () => runContactHeightCost());

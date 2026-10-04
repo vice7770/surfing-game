@@ -1,0 +1,69 @@
+{
+  "schema": "contact-height-demand-ready/v2",
+  "stage": "revised source/test boundary ready for root review; execution unauthorized",
+  "directory": "/private/tmp/contact-height-demand-prototype-20261004",
+  "artifacts": [
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/intent.md",
+      "bytes": 1697,
+      "sha256": "7958f6d58e1ff9b23ac5e6da8981a19296f892b4fe3f4cda120bd6de91d03a7b"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/README.md",
+      "bytes": 6789,
+      "sha256": "4f1fbde78cac96167764ec325283176ea46062bff7bb17ec4eedb7503f8ccfbe"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/start-manifest.json",
+      "bytes": 25479,
+      "sha256": "60cb987a388e7363ad20c877ab1962b0a049e6417b04aa549d9accc6b504241d"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/candidate.patch",
+      "bytes": 60955,
+      "sha256": "9d3531bc83b25d88f568d8f1e3c02f3efaaa58bc96a8a465981d8eba33bde561"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/review-repair.patch",
+      "bytes": 17401,
+      "sha256": "6a056cd6d733e0c31a8ab060417d0b6187181fd6c279967520954debd03a2224"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/candidate-manifest.json",
+      "bytes": 65169,
+      "sha256": "1cfa8ddb3c82fea2d2cfbc551328523dc20c89f9c71bcd264cb7ab3260163e2c"
+    }
+  ],
+  "initialReady": {
+    "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/ready.json",
+    "bytes": 1639,
+    "sha256": "17030e88c4ac7a1acb2aaa9af70c4511ef185cde59b6c1b847cb76457fcd1748"
+  },
+  "preservationManifest": {
+    "path": "/private/tmp/contact-height-demand-prototype-20261004/pre-review-repair/preservation-manifest.json",
+    "bytes": 5571,
+    "sha256": "430b2b131dd7017c17b422781212f55754b96cc974a2681cbfa8de9f26c824fe"
+  },
+  "writtenNewTests": 14,
+  "sourceScopeBlockers": [],
+  "checks": {
+    "syntax": "NOT_RUN",
+    "typecheck": "NOT_RUN",
+    "tests": "NOT_RUN",
+    "replay": "NOT_RUN",
+    "build": "NOT_RUN",
+    "cost": "NOT_RUN",
+    "browser": "NOT_RUN",
+    "server": "NOT_RUN",
+    "GPU": "NOT_RUN"
+  },
+  "requiredUnexecutedGates": [
+    "eager PhysicalSurfWater regressions",
+    "owned exact provider cache/boundary/lifetime",
+    "later-front held XZ-only demand",
+    "two-crossing partial anomaly/reused hits",
+    "nonempty cut-seal double-coordinate/two-store witnesses",
+    "627 recorded calls, actual65 ready normals and active forced geometry",
+    "complete cost incl copies/recipes/cache/demand after parity"
+  ]
+}

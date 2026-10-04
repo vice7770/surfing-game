@@ -1,0 +1,174 @@
+/** One exact captured F64 epoch. Written only; no stepping, body replay, GPU, timing or later-epoch authority. */
+import { afterEach, describe, it, vi } from 'vitest';
+import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
+import type { SpotName } from '../Bathymetry';
+import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
+import { ShallowWaterSolver } from '../ShallowWaterSolver';
+import { FRONT_STRIDE } from './frontRecords';
+import { ProfileLibrary } from './ProfileLibrary';
+import { decodeCase } from './profileFormat';
+import { createContactHit, SweptContact, type ContactHit } from './sweptContact';
+import { BARREL_SLOPE, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+import { PhysicalSurfWater as EagerWater } from '../../../oracle/src/physics/PhysicalSurfWater';
+import { ShallowWaterSolver as EagerSolver } from '../../../oracle/src/wave/ShallowWaterSolver';
+import { ProfileLibrary as EagerLibrary } from '../../../oracle/src/wave/barrel/ProfileLibrary';
+import { decodeCase as eagerDecode } from '../../../oracle/src/wave/barrel/profileFormat';
+import { SweptContact as EagerContact } from '../../../oracle/src/wave/barrel/sweptContact';
+import { SweptLoft as EagerLoft } from '../../../oracle/src/wave/barrel/sweptLoft';
+
+const FIXTURE = '/private/tmp/contact-lazy-height-20261004-v3/run/capture.json.gz';
+type NumericState = {
+  nx: number; nz: number; dx: number; restLevel: number;
+  h: Float64Array; bed: Float64Array; xCenters: Float64Array; zCenters: Float64Array; dz: Float64Array;
+};
+type Query = {
+  ordinal: number; method: 'query' | 'floorAt'; input: number[]; initial?: ContactHit; output?: ContactHit;
+  result: boolean | number; error?: string; candidates: { strip: number }[]; normalVertices: number[];
+};
+type Capture = {
+  status: { complete: boolean; ordinaryArraysIdentical: boolean };
+  epochs: { queries: Query[]; runs: [number, number][]; hitNormalVertices: number[] }[];
+  firstFixture: {
+    byteOrder: string; seaTime: number; config: { spot: SpotName; peakPeriod: number }; options: { barrelCases: Uint8Array[] };
+    restLevel: number; nodeSpacing: number; solver: NumericState; records: Float32Array; recordCount: number;
+    stillLevel: number; loft: LoftResult;
+  };
+};
+type PrivateLoft = {
+  heightReady: Uint8Array; normalReady: Uint8Array; normalFirst: Int32Array; normalLast: Int32Array;
+  prepareRow(row: number): void;
+};
+const bytes = (a: ArrayBufferView) => Buffer.from(a.buffer, a.byteOffset, a.byteLength);
+const sha = (a: ArrayBufferView) => createHash('sha256').update(bytes(a)).digest('hex');
+function same(a: unknown, b: unknown, label: string) { assert(Object.is(a, b), `${label}: ${String(a)} != ${String(b)}`); }
+function sameBytes(a: ArrayBufferView, b: ArrayBufferView, label: string) { assert.equal(Buffer.compare(bytes(a), bytes(b)), 0, label); }
+function sameHit(a: ContactHit, b: ContactHit, label: string) {
+  assert.deepEqual(Object.keys(a).sort(), Object.keys(b).sort(), label);
+  for (const key of Object.keys(a) as (keyof ContactHit)[]) same(a[key], b[key], `${label}.${key}`);
+}
+function unpack(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(unpack);
+  if (!value || typeof value !== 'object') return value;
+  const item = value as Record<string, unknown>;
+  if (Object.keys(item).length === 1 && item.undefined === true) return undefined;
+  if (Object.keys(item).length === 1 && typeof item.number === 'string') {
+    if (item.number === '-0') return -0;
+    if (item.number === 'NaN') return NaN;
+    if (item.number === 'Infinity') return Infinity;
+    if (item.number === '-Infinity') return -Infinity;
+    assert.fail(`Unknown numeric tag ${item.number}`);
+  }
+  if (typeof item.type === 'string' && typeof item.base64 === 'string') {
+    const owned = new Uint8Array(Buffer.from(item.base64, 'base64'));
+    assert.equal(owned.byteLength, item.byteLength); assert.equal(owned.byteOffset, 0);
+    if (item.type === 'Uint8Array') return owned;
+    if (item.type === 'Float64Array') return new Float64Array(owned.buffer);
+    if (item.type === 'Float32Array') return new Float32Array(owned.buffer);
+    if (item.type === 'Uint32Array') return new Uint32Array(owned.buffer);
+    if (item.type === 'Int32Array') return new Int32Array(owned.buffer);
+    assert.fail(`Unknown typed tag ${item.type}`);
+  }
+  return Object.fromEntries(Object.entries(item).map(([key, entry]) => [key, unpack(entry)]));
+}
+/** Replay-only numeric receiver: actual archived solver methods, no interpolation helper shared with the candidate. */
+function fixtureState<T extends object>(prototype: T, f: Capture['firstFixture']): T & NumericState {
+  return Object.assign(Object.create(prototype) as T, {
+    nx: f.solver.nx, nz: f.solver.nz, dx: f.solver.dx, restLevel: f.restLevel,
+    h: f.solver.h.slice(), bed: f.solver.bed.slice(), xCenters: f.solver.xCenters.slice(),
+    zCenters: f.solver.zCenters.slice(), dz: f.solver.dz.slice(),
+  });
+}
+afterEach(() => vi.restoreAllMocks());
+
+describe('native first-epoch demanded height against independent eager source and recorded answers', () => {
+  it('retains all 627 calls, selected normals, global rest reads and active forced geometry with owned F64 input', () => {
+    const packed = readFileSync(FIXTURE), expanded = gunzipSync(packed);
+    assert.equal(packed.byteLength, 2_451_650); assert.equal(sha(packed), 'e7bbbb85cf03450f97fe8807414f749dbada7a5b5fa814e490f578f26f965e2f');
+    assert.equal(expanded.byteLength, 13_547_682); assert.equal(sha(expanded), 'a9c1e4d0b759aac2a9123e9d02cef97a957e959415d65ad098f53b3f99287648');
+    const capture = unpack(JSON.parse(expanded.toString('utf8'))) as Capture, f = capture.firstFixture, epoch = capture.epochs[0];
+    assert.equal(capture.status.complete, true); assert.equal(capture.status.ordinaryArraysIdentical, true); assert.equal(capture.epochs.length, 15);
+    assert.equal(f.byteOrder, 'little'); assert.equal(new Uint8Array(new Uint32Array([0x01020304]).buffer)[0], 4);
+    assert.equal(f.recordCount, 125); assert.equal(f.records.byteLength, 125 * FRONT_STRIDE * 4);
+    assert(f.solver.h instanceof Float64Array && f.solver.bed instanceof Float64Array);
+    assert(f.solver.h.every(Number.isFinite) && f.solver.bed.every(Number.isFinite));
+    assert.equal(f.solver.nx * f.solver.nz, 116_000); assert.equal(f.nodeSpacing, 2); assert.equal(f.options.barrelCases.length, 4);
+    const aState = fixtureState(ShallowWaterSolver.prototype, f), bState = fixtureState(EagerSolver.prototype, f);
+    const slope = BARREL_SLOPE[f.config.spot]; assert.notEqual(slope, undefined);
+    let backend!: SweptContact, loft!: PrivateLoft;
+    const update = SweptContact.prototype.update, build = SweptLoft.prototype.build;
+    vi.spyOn(SweptContact.prototype, 'update').mockImplementation(function (this: SweptContact, ...args) { backend = this; return update.apply(this, args); });
+    vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) { loft = this as unknown as PrivateLoft; return build.apply(this, args); });
+    const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary(f.options.barrelCases.map(raw => decodeCase(new Uint8Array(raw)))), slope!);
+    const eager = new EagerContact(new EagerLibrary(f.options.barrelCases.map(raw => eagerDecode(new Uint8Array(raw)))), slope!);
+    const water = new PhysicalSurfWater(aState, { peakPeriod: f.config.peakPeriod, nodeSpacing: f.nodeSpacing, swept: owner.queries });
+    const oldWater = new EagerWater(bState, { peakPeriod: f.config.peakPeriod, nodeSpacing: f.nodeSpacing, swept: eager });
+    const heightReads: number[][] = [], eagerRestReads: number[][] = []; let eagerHeightReads = 0, inRest = false;
+    const createOwned = water.createOwnedPlainSurface.bind(water);
+    vi.spyOn(water, 'createOwnedPlainSurface').mockImplementation(() => {
+      const provider = createOwned();
+      return Object.freeze({ capture: provider.capture, heightAt: (x: number, z: number) => {
+        const h = provider.heightAt(x, z); heightReads.push([x, z, h]); return h;
+      } });
+    });
+    const restProto = EagerLoft.prototype as unknown as { forwardRest(...args: unknown[]): unknown }, forwardRest = restProto.forwardRest;
+    vi.spyOn(restProto, 'forwardRest').mockImplementation(function (this: typeof restProto, ...args) {
+      const before = inRest; inRest = true; try { return forwardRest.apply(this, args); } finally { inRest = before; }
+    });
+    const oldPlain = oldWater.plainSurfaceAt.bind(oldWater);
+    vi.spyOn(oldWater, 'plainSurfaceAt').mockImplementation((x, z) => {
+      const h = oldPlain(x, z); eagerHeightReads++; if (inRest) eagerRestReads.push([x, z, h]); return h;
+    });
+    owner.updateFromPlainSurface(f.records.slice(), f.recordCount, f.stillLevel, water);
+    oldWater.withSurfaceNodeCache(() => eager.update(f.records.slice(), f.recordCount, f.stillLevel, (x, z) => oldWater.plainSurfaceAt(x, z)));
+    assert.equal(eagerHeightReads, 20_117); assert.equal(eagerRestReads.length, 1_389); assert.deepEqual(heightReads, eagerRestReads);
+    assert.equal(loft.heightReady.some(Boolean), false); assert.equal(loft.normalReady.some(Boolean), false);
+    assert.equal(backend.last!.sliceCount, 187); assert.equal(backend.last!.vertexCount, 25_058);
+    assert.equal(epoch.queries.length, 627);
+    const expectedRows = new Set<number>(); const selected = new Set<number>(); let floors = 0, hits = 0;
+    for (const q of epoch.queries) {
+      assert.equal(q.error, undefined);
+      for (const c of q.candidates) { expectedRows.add(c.strip); expectedRows.add(c.strip + 1); }
+      for (const v of q.normalVertices) {
+        selected.add(v); const row = Math.floor(v / LOFT_SAMPLES), run = epoch.runs.find(([first, last]) => row >= first && row <= last);
+        assert(run); expectedRows.add(row); expectedRows.add(Math.max(run[0], row - 1)); expectedRows.add(Math.min(run[1], row + 1));
+      }
+      const [x, y, z] = q.input; let result: number | boolean;
+      if (q.method === 'floorAt') {
+        floors++; result = owner.queries.floorAt(x, y); same(result, eager.floorAt(x, y), `eager floor ${q.ordinal}`);
+      } else {
+        assert(q.initial && q.output); const a = { ...createContactHit(), ...q.initial }, b = { ...a };
+        result = owner.queries.query(x, y, z, a); same(result, eager.query(x, y, z, b), `eager query ${q.ordinal}`);
+        sameHit(a, q.output, `recorded hit ${q.ordinal}`); sameHit(a, b, `eager hit ${q.ordinal}`); if (result) hits++;
+      }
+      same(result, q.result, `recorded result ${q.ordinal}`); assert.deepEqual(backend.stats, eager.stats, `stats ${q.ordinal}`);
+      for (const v of q.normalVertices) {
+        assert.equal(loft.normalReady[v], 1);
+        sameBytes(backend.last!.normals.subarray(3 * v, 3 * v + 3), eager.last!.normals.subarray(3 * v, 3 * v + 3), `eager normal ${v}`);
+        sameBytes(backend.last!.normals.subarray(3 * v, 3 * v + 3), f.loft.normals.subarray(3 * v, 3 * v + 3), `recorded normal ${v}`);
+      }
+    }
+    assert.equal(floors, 186); assert.equal(hits, 28); assert.equal(selected.size, 65);
+    assert.equal(loft.normalReady.subarray(0, backend.last!.vertexCount).filter(Boolean).length, 65,
+      'exactly the 65 actual selected normal vertices must have been prepared before inspection');
+    assert.deepEqual([...selected].sort((a, b) => a - b), epoch.hitNormalVertices);
+    assert.equal(expectedRows.size, 15);
+    for (let row = 0; row < backend.last!.sliceCount; row++) if (loft.heightReady[row]) assert(expectedRows.has(row), `unexpected demanded row ${row}`);
+    assert(heightReads.length < eagerHeightReads, 'candidate must actually omit the unused initial height callbacks');
+    // Inspect only current active geometry after actual query replay, never force a runtime/public drain or unused normals.
+    for (let row = 0; row < backend.last!.sliceCount; row++) loft.prepareRow(row);
+    const r = backend.last!, old = eager.last!;
+    for (const key of ['sliceCount', 'vertexCount', 'indexCount', 'restSamples', 'clamps', 'overlaps'] as const) same(r[key], old[key], key);
+    sameBytes(r.positions.subarray(0, 3 * r.vertexCount), old.positions.subarray(0, 3 * r.vertexCount), 'eager forced active positions');
+    sameBytes(r.positions.subarray(0, f.loft.positions.length), f.loft.positions, 'recorded forced active positions');
+    for (const key of ['sliceTipY', 'sliceWeight', 'sliceJoined', 'sliceSigma', 'sliceLife', 'sliceRayX', 'sliceRayZ'] as const) {
+      sameBytes(r[key].subarray(0, r.sliceCount), old[key].subarray(0, old.sliceCount), `eager active ${key}`);
+    }
+    for (const key of ['h', 'bed', 'xCenters', 'zCenters', 'dz'] as const) {
+      sameBytes(aState[key], f.solver[key], `unchanged candidate input ${key}`); sameBytes(bState[key], f.solver[key], `unchanged oracle input ${key}`);
+    }
+  });
+});

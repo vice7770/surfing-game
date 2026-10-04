@@ -1,0 +1,209 @@
+--- a/src/physics/PhysicalSurfWater.ts
++++ b/src/physics/PhysicalSurfWater.ts
+@@ -284,7 +284,7 @@
+   /** Internal ordinary swept owner only: copy fresh fields before building, retain them through later demand. */
+   createOwnedPlainSurface(): OwnedPlainSurface {
+     const state = new OwnedHeightState(this.solver);
+-    const surface = new PlainHeightSurface(state, this.spacing);
++    const surface = new PlainHeightSurface(state, this.spacing, {}, true);
+     return Object.freeze({
+       capture: () => { state.capture(this.solver); surface.invalidateSurfaceNodeCache(); },
+       // The cache stays active for this owned generation. It never reads live flow, carve or height fields.
+--- a/src/physics/ownedPlainSurface.prototype.test.ts
++++ b/src/physics/ownedPlainSurface.prototype.test.ts
+@@ -51,6 +51,25 @@
+     expect(Object.is(owned.heightAt(x, z), p.eager.plainSurfaceAt(x, z))).toBe(true);
+   });
+ 
++  it('reuses owned nodes within one generation and invalidates them on each new capture', () => {
++    const p = pair(); const reads = vi.spyOn(p.a, 'sampleCentered');
++    const owned = p.water.createOwnedPlainSurface(); owned.capture();
++    const x = p.a.xCenters[0] + 0.7, z = -3.1;
++    const original = owned.heightAt(x, z), first = reads.mock.calls.length;
++    expect(first).toBeGreaterThan(0);
++    expect(Object.is(owned.heightAt(x, z), original)).toBe(true);
++    owned.heightAt(x + 0.001, z + 0.001); // Same four-by-four node address set, different cubic weights.
++    expect(reads.mock.calls.length).toBe(first);
++    p.a.h.fill(8.125); p.b.h.set(p.a.h);
++    owned.capture(); const changed = owned.heightAt(x, z);
++    expect(reads.mock.calls.length).toBeGreaterThan(first);
++    expect(Object.is(changed, original)).toBe(false);
++    expect(Object.is(changed, p.eager.plainSurfaceAt(x, z))).toBe(true);
++    const second = reads.mock.calls.length;
++    expect(Object.is(owned.heightAt(x, z), changed)).toBe(true);
++    expect(reads.mock.calls.length).toBe(second);
++  });
++
+   it('preserves the default live node cache and stateful carve callback sequence', () => {
+     const p = pair(); let c = 0, e = 0;
+     const calls: number[][] = [], oldCalls: number[][] = [];
+--- a/src/wave/barrel/contactHeightDemand.prototype.test.ts
++++ b/src/wave/barrel/contactHeightDemand.prototype.test.ts
+@@ -4,7 +4,7 @@
+ import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
+ import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
+ import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
+-import { ProfileLibrary } from './ProfileLibrary';
++import { LANDMARK, PROFILE_POINTS, ProfileLibrary, type BarrelCase } from './ProfileLibrary';
+ import { SweptContact, createContactHit, type ContactHit } from './sweptContact';
+ import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+ import { tubeCase } from './toyCase';
+@@ -46,29 +46,43 @@
+     expect(Buffer.compare(bytes(a[key].subarray(0, count)), bytes(b[key].subarray(0, count))), key).toBe(0);
+   }
+ }
+-function pair() {
++function pair(flat = false, frontEnd?: number) {
+   const cSolver = new ShallowWaterSolver({ nx: 72, xMin: -12, dx: 1, zEdges: uniformEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
+   const eSolver = new EagerSolver({ nx: 72, xMin: -12, dx: 1, zEdges: eagerEdges(-145, -45, 100) }, () => 7, { waterLevel: STILL });
+-  for (let i = 0; i < cSolver.h.length; i++) cSolver.h[i] = 7 + STILL + 0.03 * Math.sin(i * 0.17);
++  for (let i = 0; i < cSolver.h.length; i++) cSolver.h[i] = 7 + STILL + (flat ? 0 : 0.03 * Math.sin(i * 0.17));
+   eSolver.h.set(cSolver.h);
+   let backend!: SweptContact, loft!: PrivateLoft;
+   const build = SweptLoft.prototype.build, update = SweptContact.prototype.update;
+   vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) { loft = this as unknown as PrivateLoft; return build.apply(this, args); });
+   vi.spyOn(SweptContact.prototype, 'update').mockImplementation(function (this: SweptContact, ...args) { backend = this; return update.apply(this, args); });
+-  const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary([tubeCase(0.3)]), 0.05);
+-  const eager = new EagerContact(new EagerLibrary([eagerTube(0.3)]), 0.05);
++  // Input-only open-column fixture from the proved normal prototype: no fabricated crossing/contact state.
++  const cCase = tubeCase(0.3), eCase = eagerTube(0.3);
++  if (frontEnd !== undefined) {
++    const end = frontEnd;
++    const setFront = (c: Pick<BarrelCase, 'frames'>) => {
++      for (let f = 0; f < c.frames.length / (2 * PROFILE_POINTS); f++) for (let j = LANDMARK.toe + 1; j <= LANDMARK.front; j++) {
++        const t = (j - LANDMARK.toe) / (LANDMARK.front - LANDMARK.toe);
++        c.frames[2 * (f * PROFILE_POINTS + j)] = 0.8 + t * (end - 0.8);
++      }
++    };
++    setFront(cCase); setFront(eCase);
++  }
++  const owner = SweptContact.forOrdinaryWorker(new ProfileLibrary([cCase]), 0.05);
++  const eager = new EagerContact(new EagerLibrary([eCase]), 0.05);
+   const water = new PhysicalSurfWater(cSolver, { peakPeriod: 18, nodeSpacing: 2, swept: owner.queries });
+   const oldWater = new EagerWater(eSolver, { peakPeriod: 18, nodeSpacing: 2, swept: eager });
+-  return { owner, eager, water, oldWater, cSolver, eSolver, backend: () => backend, loft: () => loft,
++  const a = { ...createContactHit(), surfaceY: 123, normalX: -0, normalY: -4, normalZ: 9, tangentX: -7, tangentZ: -8, life: 99 };
++  const b = { ...a };
++  return { owner, eager, water, oldWater, cSolver, eSolver, backend: () => backend, loft: () => loft, hit: () => ({ ...a }),
+     update(data: Float32Array) {
+       owner.updateFromPlainSurface(data, data.length / FRONT_STRIDE, STILL, water);
+       oldWater.withSurfaceNodeCache(() => eager.update(data, data.length / FRONT_STRIDE, STILL, (x, z) => oldWater.plainSurfaceAt(x, z)));
+       expect(loft.heightReady.some(Boolean)).toBe(false); expect(loft.normalReady.some(Boolean)).toBe(false);
+     },
+     query(x: number, y: number, z: number) {
+-      const a = { ...createContactHit(), normalX: -0, life: 123 }, b = { ...a };
+-      expect(owner.queries.query(x, y, z, a)).toBe(eager.query(x, y, z, b)); exactFields(a, b);
+-      expect(backend.stats).toEqual(eager.stats);
++      const result = owner.queries.query(x, y, z, a);
++      expect(result).toBe(eager.query(x, y, z, b)); exactFields(a, b);
++      expect(backend.stats).toEqual(eager.stats); return result;
+     },
+     forceActive() { for (let row = 0; row < backend.last!.sliceCount; row++) loft.prepareRow(row); exactActive(backend.last!, eager.last!); },
+   };
+@@ -106,18 +120,60 @@
+     expect(p.loft().heightReady.some(Boolean)).toBe(true); expect(p.loft().normalReady.some(Boolean)).toBe(false);
+   });
+ 
+-  it('keeps ordered holding tests XZ-only and invalidates demand after an empty update', () => {
+-    const p = pair(); p.update(records(21, 0.1)); const r = p.backend().last!;
+-    const strip = r.sliceJoined.subarray(0, r.sliceCount).findIndex(Boolean); expect(strip).toBeGreaterThanOrEqual(0);
+-    const offset = 3 * strip * LOFT_SAMPLES, x = r.positions[offset] + 0.1, z = r.positions[offset + 2] + 2;
+-    type Held = { heldByAnother(loft: LoftResult, s: number, x: number, z: number): boolean };
++  it('executes later-front holding buckets and triangle meets without preparing their height, then invalidates empty demand', () => {
++    const p = pair(true), data = new Float32Array(42 * FRONT_STRIDE);
++    data.set(records(21, 0.1));
++    const later = records(21, 0.2, 2);
++    for (let k = 0; k < 21; k++) {
++      later[k * FRONT_STRIDE + FRONT_FIELD.z] += 15;
++      later[k * FRONT_STRIDE + FRONT_FIELD.throwZ] += 15;
++    }
++    data.set(later, 21 * FRONT_STRIDE); p.update(data);
++    const r = p.backend().last!, x = 10.3, z = -93;
++    expect(Object.is(p.owner.queries.floorAt(x, z), p.eager.floorAt(x, z))).toBe(true);
++    type Held = {
++      found: number; cellStrips: Int32Array;
++      heldByAnother(loft: LoftResult, s: number, x: number, z: number): boolean;
++      ensureBucket(s: number): void; meets(p: Float32Array, a: number, b: number, c: number, x: number, z: number): boolean;
++    };
+     const current = p.backend() as unknown as Held, original = p.eager as unknown as Held;
+-    expect(current.heldByAnother(r, strip, x, z)).toBe(original.heldByAnother(p.eager.last!, strip, x, z));
+-    expect(p.loft().heightReady.some(Boolean)).toBe(false);
++    const strip = current.cellStrips[current.found]; expect(r.sliceFront[strip]).toBe(1);
++    for (let row = 0; row < r.sliceCount; row++) if (r.sliceFront[row] === 2) expect(p.loft().heightReady[row]).toBe(0);
++    const ready = p.loft().heightReady.slice();
++    const buckets = vi.spyOn(current, 'ensureBucket'), meets = vi.spyOn(current, 'meets');
++    const held = current.heldByAnother(r, strip, x, z);
++    expect(held).toBe(true);
++    expect(held).toBe(original.heldByAnother(p.eager.last!, strip, x, z));
++    expect(buckets.mock.calls.some(([s]) => r.sliceFront[s] === 2)).toBe(true);
++    expect(meets.mock.calls.length).toBeGreaterThan(0);
++    expect(Buffer.compare(bytes(ready), bytes(p.loft().heightReady))).toBe(0);
+     p.update(new Float32Array(0)); p.query(x, 1, z);
+     expect(Number.isNaN(p.owner.queries.floorAt(x, z))).toBe(true);
+     expect(() => p.loft().prepareRow(0)).toThrow('captured generation');
+     expect(p.loft().heightReady.some(Boolean)).toBe(false);
++  });
++
++  it('keeps two-crossing partial anomalies and reused successful-hit fields exact with no extra normal work', () => {
++    const p = pair(true, 0.5); p.update(records(21, 0.1)); const untouched = p.hit();
++    expect(p.query(10.3, -Infinity, -93)).toBe(false);
++    expect(p.backend().stats.anomalies).toBe(1);
++    expect((p.backend() as unknown as { count: number }).count).toBe(2);
++    expect(p.loft().normalReady.some(Boolean)).toBe(false);
++    const retained = ['surfaceY', 'normalX', 'normalY', 'normalZ', 'tangentX', 'tangentZ', 'life'] as const;
++    const reset = (hit: ContactHit) => {
++      expect(hit.inWater).toBe(false); expect(Number.isFinite(hit.floorY)).toBe(true);
++      for (const key of ['waterFloorY', 'ceilingY', 'ceilingTopY'] as const) expect(Number.isNaN(hit[key]), key).toBe(true);
++      for (const key of ['lipShare', 'lipVX', 'lipVY', 'lipVZ', 'lipWeight'] as const) expect(Object.is(hit[key], 0), key).toBe(true);
++    };
++    const first = p.hit(); for (const key of retained) expect(Object.is(first[key], untouched[key]), key).toBe(true); reset(first);
++    expect(p.query(10.3, 4.3, -93)).toBe(true);
++    const previous = p.hit(); expect(previous.inWater).toBe(true); expect(previous.lipWeight).toBeGreaterThan(0);
++    expect(p.loft().normalReady.subarray(0, p.backend().last!.vertexCount).filter(Boolean).length).toBe(3);
++    const normals = p.loft().normalReady.slice(), heights = p.loft().heightReady.slice();
++    expect(p.query(10.3, -Infinity, -93)).toBe(false); expect(p.backend().stats.anomalies).toBe(2);
++    expect(Buffer.compare(bytes(normals), bytes(p.loft().normalReady))).toBe(0);
++    expect(Buffer.compare(bytes(heights), bytes(p.loft().heightReady))).toBe(0);
++    const again = p.hit(); for (const key of retained) expect(Object.is(again[key], previous[key]), key).toBe(true); reset(again);
+   });
+ 
+   it('keeps old unprepared contact after live h/bed/window mutation and uses fresh fields at the next preparation', () => {
+--- a/src/wave/barrel/contactHeightDemand.f64-replay.test.ts
++++ b/src/wave/barrel/contactHeightDemand.f64-replay.test.ts
+@@ -152,6 +152,8 @@
+       }
+     }
+     assert.equal(floors, 186); assert.equal(hits, 28); assert.equal(selected.size, 65);
++    assert.equal(loft.normalReady.subarray(0, backend.last!.vertexCount).filter(Boolean).length, 65,
++      'exactly the 65 actual selected normal vertices must have been prepared before inspection');
+     assert.deepEqual([...selected].sort((a, b) => a - b), epoch.hitNormalVertices);
+     assert.equal(expectedRows.size, 15);
+     for (let row = 0; row < backend.last!.sliceCount; row++) if (loft.heightReady[row]) assert(expectedRows.has(row), `unexpected demanded row ${row}`);
+--- a/README.md
++++ b/README.md
+@@ -16,11 +16,11 @@
+ 
+ ## Written gates, not results
+ 
+-Twelve new independent tests plus the untouched existing `PhysicalSurfWater.test.ts` are selected by `vitest.height.config.ts`:
++Fourteen new independent tests plus the untouched existing `PhysicalSurfWater.test.ts` are selected by `vitest.height.config.ts`:
+ 
+-- Provider tests: actual shifted-origin/boundary arithmetic, mixed wet/dry and stretched rows, mutation before first deferred sample, capture replacement, and unchanged live/stateful-carve cache sequence.
+-- Synthetic contact tests: eager query/floor parity across epochs, explicit refinement and budget, outside and floor-only work, XZ-only holding, empty readiness, live field/window mutation before first demand, final-run normal halos including both profile edges, actual nonempty overlap seals with wrong DOUBLE/F32 and collapsed-store witnesses, and public eager stateful callback order.
+-- One original/native first-F64-fixture test: all 627 recorded initial/input/result calls, 28 hits, 65 selected normal vertices, unchanged ordered global rest reads, permitted row halo union, omitted initial callbacks, current active forced geometry and unchanged input arrays against the independent eager archive. It does not replay body trajectory or the other 14 count-only epochs.
++- Provider tests: actual shifted-origin/boundary arithmetic, mixed wet/dry and stretched rows, mutation before first deferred sample, capture replacement, actual sampleCentered-call reuse/invalidation within the owned cache, and unchanged live/stateful-carve cache sequence.
++- Synthetic contact tests: eager query/floor parity across epochs, explicit refinement and budget, outside and floor-only work, real later-front XZ holding with bucket/triangle work and no later-row Y, empty readiness, guaranteed two-crossing partial anomalies and successful-hit reuse with no additional normals, live field/window mutation before first demand, final-run normal halos including both profile edges, actual nonempty overlap seals with wrong DOUBLE/F32 and collapsed-store witnesses, and public eager stateful callback order.
++- One original/native first-F64-fixture test: all 627 recorded initial/input/result calls, 28 hits, 65 captured selected vertices plus exactly 65 actually ready active normals before inspection, unchanged ordered global rest reads, permitted row halo union, omitted initial callbacks, current active forced geometry and unchanged input arrays against the independent eager archive. It does not replay body trajectory or the other 14 count-only epochs.
+ 
+ After root source review, proposed commands are `npx tsc -p tsconfig.height.json --pretty false` and `npx vitest run --config vitest.height.config.ts`. They have **not** been executed. No checks are represented as passing. Any first failure must be retained before correction; the crafted chronology gates must not be loosened into an approximate comparison.
+ 
+@@ -29,3 +29,9 @@
+ Copy both F64 fields and full xCenters inside every nonempty preparation. At the retained layout this is 1,857,280 bytes/update (1,856,000 field bytes plus 1,280 x-coordinate bytes); recipe writes, owned cache invalidation, all eager global preparation, demanded heights/seals/normals and the ordered query/floor stream also belong in the total. Count reduction alone is not a saving or FPS verdict. Compare the complete path against the reviewed normals-only owner and eager source only after parity; reject if the extra copies/recipes fail to produce a material saving. No hardware/visual adoption is implied.
+ 
+ Source-only limitations: the same-file sampler relocation needs existing physical-water regressions and independent exact F64 replay before acceptance. The nonempty seal and double-store witnesses are authored tests, not yet demonstrated outcomes. Empty skip is part of the written candidate and requires its explicit gate. Any unexpected global Y dependency or provider/layout incompatibility is a stop condition rather than a new broad fallback framework.
++
++## Preserved first review and authorized repair
++
++`pre-review-repair/` retains 16 initial files byte-for-byte: initial runtime/test/config sources, both unchanged selection modules, README/intent, patch, both manifests and ready authority. Its preservation manifest lists exact original and stored paths and hashes. No original tests had been run, so this is a source-review repair, not an altered passing/failing execution record.
++
++Root's provider review correctly found that the initial factory omitted the `owned=true` constructor flag. That would leave owned nodes uncached despite the comment; numeric outcomes were not measured. The only subsequent runtime repair is supplying `{}, true` to this internal sampler. The new independent cache gate counts actual original sampleCentered calls, requiring same-stencil reuse and new-capture invalidation. The held test now exercises another front's ensureBucket/meets path rather than same-front skips. F64 replay checks actual active normalReady population; the proved normal-prototype open-column input is ported to exact owned-height partial-hit/reused-hit gates. All repairs remain source/test writing only and unexecuted.

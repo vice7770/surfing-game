@@ -1,0 +1,28 @@
+{
+  "schema": "contact-height-demand-terminal/v1",
+  "strictExitCode": 0,
+  "vitestExitCode": 0,
+  "attemptsEach": 1,
+  "testFilesPassed": 4,
+  "testsPassed": 38,
+  "proof": {
+    "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/verification-proof.json",
+    "bytes": 5796,
+    "sha256": "b03ef09e8b3d5a915d8c014f11683bec03a8bde20257079adc188e7117f0efa9"
+  },
+  "logs": [
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/strict.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/focused.log",
+      "bytes": 203,
+      "sha256": "99e8610a1bc7bb46f3a9d155e8f83d2d93905569121bd1373969027645b37ae9"
+    }
+  ],
+  "allOwnedExecutionSessionsTerminal": true,
+  "sourceModifiedDuringVerification": false,
+  "hardwareStarted": false
+}

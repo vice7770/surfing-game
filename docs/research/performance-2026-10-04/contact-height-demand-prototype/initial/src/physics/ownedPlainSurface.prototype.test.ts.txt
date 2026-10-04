@@ -1,0 +1,71 @@
+/** Scratch-only independent provider tests, written for review and not yet executed. */
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { PhysicalSurfWater } from './PhysicalSurfWater';
+import { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
+import { PhysicalSurfWater as EagerWater } from '../../oracle/src/physics/PhysicalSurfWater';
+import { ShallowWaterSolver as EagerSolver } from '../../oracle/src/wave/ShallowWaterSolver';
+
+function pair() {
+  const grid = { nx: 7, xMin: 1_000_000.125, dx: 0.7, zEdges: new Float64Array([-7, -6.8, -5.4, -2, 0.1, 4, 11]) };
+  const a = new ShallowWaterSolver(grid, () => 3, { waterLevel: 0.375 });
+  const b = new EagerSolver({ ...grid, zEdges: grid.zEdges.slice() }, () => 3, { waterLevel: 0.375 });
+  for (let i = 0; i < a.h.length; i++) {
+    a.h[i] = [0, 0.01, 0.01000000001, 0.1, 2.345678901][i % 5];
+    a.bed[i] = -3.125 + 0.031 * Math.sin(i * 0.49);
+  }
+  b.h.set(a.h); b.bed.set(a.bed);
+  const water = new PhysicalSurfWater(a, { peakPeriod: 18, nodeSpacing: 0.9 });
+  const eager = new EagerWater(b, { peakPeriod: 18, nodeSpacing: 0.9 });
+  return { a, b, water, eager };
+}
+afterEach(() => vi.restoreAllMocks());
+
+describe('owned numeric plain-height provider', () => {
+  it('uses literal eager boundaries, wet/dry nodes, stretched rows and ordered cubic arithmetic', () => {
+    const p = pair(); const owned = p.water.createOwnedPlainSurface(); owned.capture();
+    expect(Object.keys(owned).sort()).toEqual(['capture', 'heightAt']);
+    const xMin = p.a.xCenters[0] - p.a.dx / 2;
+    const xMax = xMin + p.a.nx * p.a.dx;
+    const zMin = p.a.zCenters[0] - p.a.dz[0] / 2;
+    const zMax = p.a.zCenters[p.a.nz - 1] + p.a.dz[p.a.nz - 1] / 2;
+    for (const x of [xMin - 1e-6, xMin, xMin + 0.001, xMin + 0.9, xMin + 2.381, xMax, xMax + 1e-6]) {
+      for (const z of [zMin - 1e-9, zMin, -6.7, -3.9, 0, 6.6, zMax, zMax + 1e-9]) {
+        expect(Object.is(owned.heightAt(x, z), p.eager.plainSurfaceAt(x, z)), `${x},${z}`).toBe(true);
+        expect(Object.is(p.water.plainSurfaceAt(x, z), p.eager.plainSurfaceAt(x, z))).toBe(true);
+      }
+    }
+  });
+
+  it('owns h, bed and shifted x coordinates before the first deferred sample, then replaces the generation', () => {
+    const p = pair(); const owned = p.water.createOwnedPlainSurface(); owned.capture();
+    const x = p.b.xCenters[0] + 2.01, z = -3.125;
+    const old = p.eager.plainSurfaceAt(x, z);
+    p.a.h.fill(13.125); p.a.bed.fill(-8.375);
+    for (let i = 0; i < p.a.xCenters.length; i++) p.a.xCenters[i] += 1.4;
+    // No owned sample occurred before live mutation: borrowing nodes or binding the sampling method fails here.
+    expect(Object.is(owned.heightAt(x, z), old)).toBe(true);
+    expect(Object.is(owned.heightAt(x, z), old)).toBe(true);
+    expect(Object.is(p.water.plainSurfaceAt(x, z), old)).toBe(false);
+    p.b.h.set(p.a.h); p.b.bed.set(p.a.bed); p.b.xCenters.set(p.a.xCenters);
+    owned.capture();
+    expect(Object.is(owned.heightAt(x, z), p.eager.plainSurfaceAt(x, z))).toBe(true);
+  });
+
+  it('preserves the default live node cache and stateful carve callback sequence', () => {
+    const p = pair(); let c = 0, e = 0;
+    const calls: number[][] = [], oldCalls: number[][] = [];
+    const water = new PhysicalSurfWater(p.a, { peakPeriod: 18, nodeSpacing: 0.9,
+      carve: (x, z, h) => { calls.push([x, z, h]); return h + ++c * 1e-9; } });
+    const eager = new EagerWater(p.b, { peakPeriod: 18, nodeSpacing: 0.9,
+      carve: (x, z, h) => { oldCalls.push([x, z, h]); return h + ++e * 1e-9; } });
+    const points = [[p.a.xCenters[0] + 0.7, -3.1], [p.a.xCenters[0] + 0.71, -3.09], [p.a.xCenters[0] + 0.7, -3.1]];
+    for (const cached of [false, true, false]) {
+      const values = () => points.map(([x, z]) => water.plainSurfaceAt(x, z));
+      const oldValues = () => points.map(([x, z]) => eager.plainSurfaceAt(x, z));
+      const actual = cached ? water.withSurfaceNodeCache(values) : values();
+      const expected = cached ? eager.withSurfaceNodeCache(oldValues) : oldValues();
+      actual.forEach((value, i) => expect(Object.is(value, expected[i])).toBe(true));
+      expect(calls).toEqual(oldCalls);
+    }
+  });
+});
