@@ -1,0 +1,82 @@
+{
+  "schema": "coherent-startup-input-references/v1",
+  "acceptedBase": "0ab379ba1cdb64b44e8023833399a428990afa60",
+  "candidateSourcePins": "candidate/source-manifest.json",
+  "candidatePatch": "candidate/candidate.patch.gz",
+  "candidateFullBaseInventory": "candidate/base-archive-manifest.json.gz",
+  "productionInputSnapshot": "native/candidate-source-frozen.json.gz",
+  "productionInputCount": 327,
+  "successfulBuildAssets": "native/build-result.json",
+  "originalDist": "/private/tmp/tube-coherent-warmup-native-20261004/dist",
+  "gameAssets": 49,
+  "diagnosticAssets": 1,
+  "distFilesDuplicated": false,
+  "priorArchivedReferences": {
+    "../descending-curl-experiment/menu-big/diagnostic-autopilot.mjs.gz": {
+      "transportReceipt": {
+        "bytes": 80582,
+        "sha256": "d1c0ea0cbace9be8efc7252654dc8a808ded1ad0fcca1cb3e1e851de6563b85b"
+      },
+      "decodedReceipt": {
+        "bytes": 347555,
+        "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2"
+      },
+      "encoding": "gzip"
+    },
+    "../gentle-ordinary-entry/source/browser-cdp.mjs.gz": {
+      "transportReceipt": {
+        "bytes": 2704,
+        "sha256": "68b77a48cba18b5616f427239749ca70a9fb1109ea19eab5d52f9aa2fc33a77e"
+      },
+      "decodedReceipt": {
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "encoding": "gzip"
+    }
+  },
+  "diagnosticBundleProvenance": {
+    "reuse": "Prior unchanged compiled accepted-gauge Autopilot module; not compiled from the repointed entry",
+    "compiledFromRepointedEntry": false,
+    "expectedUnchangedBundleReceipt": {
+      "bytes": 347555,
+      "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2"
+    },
+    "repointedEntryForSeparatelyAuthorizedFutureRebuild": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/autopilot-entry.ts",
+      "bytes": 346,
+      "sha256": "9d54eb797807c61849fd832af769d48df5b6ab173695b446a22c134351152b49"
+    },
+    "semanticInputFiles": [
+      {
+        "file": "/private/tmp/tube-coherent-warmup-20261004/candidate/src/dev/Autopilot.ts",
+        "bytes": 32175,
+        "sha256": "0cdfb3daf9d09ae432b4654f25d4cc16f1289e44a3dd44abda33b96527c75a0a",
+        "candidateRelative": "src/dev/Autopilot.ts",
+        "sameShaAsPriorDiagnosticInput": true
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-20261004/candidate/src/physics/riderPosture.ts",
+        "bytes": 9003,
+        "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734",
+        "candidateRelative": "src/physics/riderPosture.ts",
+        "sameShaAsPriorDiagnosticInput": true
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-20261004/candidate/src/physics/boardReference.ts",
+        "bytes": 1317,
+        "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032",
+        "candidateRelative": "src/physics/boardReference.ts",
+        "sameShaAsPriorDiagnosticInput": true
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-20261004/candidate/src/wave/SurfZoneRunner.ts",
+        "bytes": 40621,
+        "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8",
+        "candidateRelative": "src/wave/SurfZoneRunner.ts",
+        "sameShaAsPriorDiagnosticInput": true
+      }
+    ]
+  },
+  "scope": "Exact build/source/capture receipts and byte references; no rebuild, simulation, native rerun or acceptance pass."
+}

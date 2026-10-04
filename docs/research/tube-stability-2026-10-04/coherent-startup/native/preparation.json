@@ -1,0 +1,576 @@
+{
+  "schema": "coherent-warmup-native-preparation/v1",
+  "complete": true,
+  "frozen": true,
+  "launchReady": true,
+  "resourcesStarted": false,
+  "sourceOnlyComplete": true,
+  "preparedAt": "2026-10-04T19:29:38.623946+00:00",
+  "candidateLabel": "accepted raw/held roof + coherent startup",
+  "acceptedBaseRevision": "0ab379ba1cdb64b44e8023833399a428990afa60",
+  "buildId": "tube-coherent-warmup-20261004-0ab379ba1",
+  "dist": "/private/tmp/tube-coherent-warmup-native-20261004/dist",
+  "assets": {
+    "assets/WorkerSurfZone--BH511sE.js": {
+      "bytes": 868653,
+      "sha256": "911aadd8da39edc3e8482c67860a8a3e2418b711fcfcc14f979cddae43ef466c"
+    },
+    "assets/audio/bubbles-1.m4a": {
+      "bytes": 256855,
+      "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+    },
+    "assets/audio/bubbles-2.m4a": {
+      "bytes": 198252,
+      "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+    },
+    "assets/audio/distant-1.m4a": {
+      "bytes": 883404,
+      "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+    },
+    "assets/audio/distant-2.m4a": {
+      "bytes": 912023,
+      "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+    },
+    "assets/audio/lipJet-1.m4a": {
+      "bytes": 62354,
+      "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+    },
+    "assets/audio/lipJet-2.m4a": {
+      "bytes": 47086,
+      "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+    },
+    "assets/audio/lipRoller-1.m4a": {
+      "bytes": 36688,
+      "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+    },
+    "assets/audio/lipRoller-2.m4a": {
+      "bytes": 27855,
+      "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+    },
+    "assets/audio/paddle-1.m4a": {
+      "bytes": 14645,
+      "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+    },
+    "assets/audio/paddle-2.m4a": {
+      "bytes": 13593,
+      "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+    },
+    "assets/audio/plunge-1.m4a": {
+      "bytes": 24612,
+      "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+    },
+    "assets/audio/plunge-2.m4a": {
+      "bytes": 22031,
+      "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+    },
+    "assets/audio/roar-1.m4a": {
+      "bytes": 419823,
+      "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+    },
+    "assets/audio/roar-2.m4a": {
+      "bytes": 387857,
+      "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+    },
+    "assets/audio/sounds.json": {
+      "bytes": 3499,
+      "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+    },
+    "assets/devStepping-_gDfqPIQ.js": {
+      "bytes": 320,
+      "sha256": "92d84e41bee98e2b73ebf362ec24b3e1fe791f1ccdbef4aa5357864717498aff"
+    },
+    "assets/index-DA8NEfOT.css": {
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    "assets/index-W__l9UCc.js": {
+      "bytes": 582405,
+      "sha256": "b36fbfc69a2cb54d8a2d58bc853dc1bf7aa44ab97703177028ac9de7b1470a2b"
+    },
+    "assets/jevRecorder-Cmnq9-m8.js": {
+      "bytes": 15917,
+      "sha256": "e8dd0dc1d8cde8e37355bdc0788600d5c07f061de73671e8f853cd1d4b17d28d"
+    },
+    "assets/particleBench-DvNvvFej.js": {
+      "bytes": 10708,
+      "sha256": "192edbedfb5a711dbe566003efc52c0233d1bffd2b786800bc245760f8a3ceb0"
+    },
+    "assets/rideRecorder-DLL9VuH7.js": {
+      "bytes": 41108,
+      "sha256": "f9fa20f8e254541695deb0e067a37ed0dd00815837ad24e3e92aa98f653e7be9"
+    },
+    "assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg": {
+      "bytes": 681062,
+      "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+    },
+    "assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+    },
+    "assets/skies/qwantani_sunrise_puresky.jpg": {
+      "bytes": 357301,
+      "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+    },
+    "assets/skies/qwantani_sunrise_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+    },
+    "assets/skies/qwantani_sunset_puresky.jpg": {
+      "bytes": 372349,
+      "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+    },
+    "assets/skies/qwantani_sunset_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+    },
+    "assets/skies/skies.json": {
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    "assets/surfZoneWorker-B7Pmc3Uy.js": {
+      "bytes": 448526,
+      "sha256": "16f4ec17a710330bfc60231a8a16cf84a38f5d027dab0649e2123595beeef321"
+    },
+    "assets/surfers/surfer1.glb": {
+      "bytes": 1007368,
+      "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+    },
+    "assets/surfers/surfer2.glb": {
+      "bytes": 1595524,
+      "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+    },
+    "assets/surfers/surfer3.glb": {
+      "bytes": 1545008,
+      "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+    },
+    "assets/surfers/surfer4.glb": {
+      "bytes": 1229872,
+      "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+    },
+    "assets/surfers/surfers.json": {
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    },
+    "assets/waterSheet-CPX3nbuc.js": {
+      "bytes": 11689,
+      "sha256": "0f112b805a6f1ff86cc603e1d3ee8a1e777790fb6e7f7995832674d1479db57e"
+    },
+    "barrels/pad19-a20-l12.bin": {
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    "barrels/pad19-a30-l12.bin": {
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    "barrels/pad19-a45-l12.bin": {
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    "barrels/periodic-padang19s-l12.bin": {
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    "barrels/periodic-point21-a15-l12.bin": {
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    "barrels/periodic-point21-a23-l12.bin": {
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    "barrels/periodic-point21-a30-l12.bin": {
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    "barrels/periodic-reef42-l12.bin": {
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    "build.json": {
+      "bytes": 51,
+      "sha256": "5e5b25db8f6a8c277933a77286c7751ba3a8331ce95eb3feddaf59e965f5f6c6"
+    },
+    "index.html": {
+      "bytes": 1626,
+      "sha256": "65d401a3fa33a5fca16b143c7abafac7569e6361fd2e3b75e96b446b3f30ef7e"
+    },
+    "lessons/pool-s2-caught.sea": {
+      "bytes": 2180693,
+      "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+    },
+    "lessons/pool-s2-pocket.sea": {
+      "bytes": 2176894,
+      "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+    },
+    "lessons/pool-s2-waiting.sea": {
+      "bytes": 2232988,
+      "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+    }
+  },
+  "diagnosticAssets": {
+    "diagnostic-autopilot.mjs": {
+      "bytes": 347555,
+      "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2",
+      "reusedFrom": "/private/tmp/tube-menu-big-gentle-entry-20261004/dist/diagnostic-autopilot.mjs",
+      "compiledFromNewEntry": false
+    }
+  },
+  "assetsPendingRootTerminalSignal": false,
+  "diagnosticSources": {
+    "native.mjs": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/native.mjs",
+      "bytes": 32205,
+      "sha256": "f139537019d13bc038d229977386ece40b307bf1fd63a0d3e7e1a79dcaea34ea"
+    },
+    "run.py": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/run.py",
+      "bytes": 25890,
+      "sha256": "65f9d981e7bbc0fbe5cf2df1eb7f28833a7511657fa64a81c389b849f6abf63a"
+    },
+    "native-owned.mjs": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    "body-witnesses.mjs": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    "autopilot-entry.ts": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/autopilot-entry.ts",
+      "bytes": 346,
+      "sha256": "9d54eb797807c61849fd832af769d48df5b6ab173695b446a22c134351152b49"
+    },
+    "gentle-input-source-check.mjs": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/gentle-input-source-check.mjs",
+      "bytes": 3573,
+      "sha256": "16c6aa665320bc1c16a703c1e385358fc9edaf2960c80e40dd4cd609e2ae3c7e"
+    },
+    "startup-evidence-source-check.mjs": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/startup-evidence-source-check.mjs",
+      "bytes": 5032,
+      "sha256": "259d47a82f22d26e78472574400fd8559929d8ac95dd293e7d5f9e39a7d8955b"
+    },
+    "owner-evidence-source-check.py": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/owner-evidence-source-check.py",
+      "bytes": 2375,
+      "sha256": "1648df8b49cd4dba771c9db09330eb68345b8f612ace91862779ae4a4a981d82"
+    },
+    "README.md": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/README.md",
+      "bytes": 5938,
+      "sha256": "1395f62d96d4ad08c89ce97e3ab6b01c09f8434871eff53a68d894545fb539e5"
+    },
+    "baseline-byte-receipt.json": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/baseline-byte-receipt.json",
+      "bytes": 1546,
+      "sha256": "cff1e2f1e3314a9bf40309f6bb4c5e056a07b58d8a2e70a4075b1a8e6e1b71f5"
+    },
+    "source-checks.json": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/source-checks.json",
+      "bytes": 3692,
+      "sha256": "8c00a5f87388c33f728dac9cc06f5689d8519b644dfcfb2fcd93f18993bb6e1a"
+    },
+    "gentle-input-source-checks.json": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/gentle-input-source-checks.json",
+      "bytes": 784,
+      "sha256": "ba954e183d03e1bcd5211d3bba0bbfa70876ee90153d9682104a48431d20c107"
+    },
+    "startup-evidence-source-checks.json": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/startup-evidence-source-checks.json",
+      "bytes": 1308,
+      "sha256": "1835eecb32e20e45b832a7e94e7ef596b79f517ad4fdbe9a6bb9d0fa4ca72976"
+    },
+    "owner-evidence-source-checks.json": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/owner-evidence-source-checks.json",
+      "bytes": 706,
+      "sha256": "603f8da7d4ba6fd060d54a5d2c0d0ac47a35610a9f6641eb852545cb56e379f0"
+    },
+    "browser-cdp": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    }
+  },
+  "productionInputs": {
+    "count": 327,
+    "candidateRoot": "/private/tmp/tube-coherent-warmup-20261004/candidate",
+    "frozen": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/candidate-source-frozen.json",
+      "bytes": 76820,
+      "sha256": "2c37cb662d15f381b4c260a6539a4d0c2f8d8265936301f2fab7da2ef710137a"
+    },
+    "sourcePin": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/candidate-source-manifest.json",
+      "bytes": 984,
+      "sha256": "f4c058b32190d65fca4f604e2796b8bf0d572ca47b53d0a0afd2612d8184ff9c"
+    },
+    "candidatePatch": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/candidate.patch",
+      "bytes": 11059,
+      "sha256": "435b40857c1e7426426e9568016239785f5151e5ef2af4adcf7d45b1a449ff8d"
+    },
+    "extraCandidateChangedFiles": [
+      {
+        "path": "src/wave/SurfZoneSimulation.ts",
+        "baseSha256": "18e7928601d7208d5f7ff1a15a34995f7e63ebeec497dbe7bf7527b06d15948a",
+        "candidateSha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+      },
+      {
+        "path": "src/wave/SurfZoneSimulation.test.ts",
+        "baseSha256": "6b49a17db4d32c87ac4d7dfd49af7121233888f2afc5332c48113cfcd2d34d34",
+        "candidateSha256": "58d44cfc1f7db444b5d51239fb4901e8fe5eefb7fb0d83e91e30fef85ec3a690"
+      },
+      {
+        "path": "src/wave/barrel/BreakingFront.test.ts",
+        "baseSha256": "a2e2f9517cb47b31d396dda7e6a61d5d4237843d53c828d57aaf07e5b143bb3f",
+        "candidateSha256": "e3c815d4e4cadca59826e7b42a99ab7cb71282211a35d13eda9d82aa5307905a"
+      }
+    ],
+    "sourceUsesLiveExperimentalCheckout": false
+  },
+  "diagnosticBundleProvenance": {
+    "reuse": "Prior unchanged compiled accepted-gauge Autopilot module; not compiled from the repointed entry",
+    "compiledFromRepointedEntry": false,
+    "expectedUnchangedBundleReceipt": {
+      "bytes": 347555,
+      "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2"
+    },
+    "repointedEntryForSeparatelyAuthorizedFutureRebuild": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/autopilot-entry.ts",
+      "bytes": 346,
+      "sha256": "9d54eb797807c61849fd832af769d48df5b6ab173695b446a22c134351152b49"
+    },
+    "semanticInputFiles": [
+      {
+        "file": "/private/tmp/tube-coherent-warmup-20261004/candidate/src/dev/Autopilot.ts",
+        "bytes": 32175,
+        "sha256": "0cdfb3daf9d09ae432b4654f25d4cc16f1289e44a3dd44abda33b96527c75a0a",
+        "candidateRelative": "src/dev/Autopilot.ts",
+        "sameShaAsPriorDiagnosticInput": true
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-20261004/candidate/src/physics/riderPosture.ts",
+        "bytes": 9003,
+        "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734",
+        "candidateRelative": "src/physics/riderPosture.ts",
+        "sameShaAsPriorDiagnosticInput": true
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-20261004/candidate/src/physics/boardReference.ts",
+        "bytes": 1317,
+        "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032",
+        "candidateRelative": "src/physics/boardReference.ts",
+        "sameShaAsPriorDiagnosticInput": true
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-20261004/candidate/src/wave/SurfZoneRunner.ts",
+        "bytes": 40621,
+        "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8",
+        "candidateRelative": "src/wave/SurfZoneRunner.ts",
+        "sameShaAsPriorDiagnosticInput": true
+      }
+    ]
+  },
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0
+  },
+  "overrides": null,
+  "expectedActualConfig": {
+    "seed": 1,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1,
+    "spreading": 150
+  },
+  "policy": {
+    "style": "line",
+    "waitOutside": 5,
+    "rise": 1,
+    "lineDegrees": 60,
+    "giveUp": 30,
+    "stall": false,
+    "oneOrdinaryPopup": true,
+    "standingSteering": {
+      "maximumAbsolute": 0.2,
+      "slewRatePerSecond": 0.4,
+      "initialInput": 0
+    },
+    "crouch": 1,
+    "compress": 0,
+    "trim": 0,
+    "pocketReflex": false,
+    "noResetOrForcedState": true
+  },
+  "ports": [
+    4292,
+    9702
+  ],
+  "userPorts": [
+    4310,
+    4311
+  ],
+  "maxSteps": 1800,
+  "maxPhysicalSeconds": 30,
+  "checkpointPriority": [
+    "initial-prone-after-install-ready",
+    "first-standing",
+    "connected-entry or staged first-partial if no entry",
+    "final"
+  ],
+  "artifactCaps": {
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7,
+    "maximumSteps": 1800,
+    "maximumPhysicalSeconds": 30,
+    "maximumPngs": 4,
+    "maximumUniqueArtifacts": 6,
+    "maximumPngBytesEach": 12582912,
+    "maximumPngBytesTotal": 50331648,
+    "maximumReportBytes": 33554432,
+    "maximumNdjsonBytes": 25165824,
+    "optionalMovieMaximumAdvances": 240,
+    "optionalMovieMaximumRequests": 241,
+    "optionalMovieMaximumBytes": 16777216,
+    "ports": [
+      4292,
+      9702
+    ],
+    "userPorts": [
+      4310,
+      4311
+    ],
+    "resourcesStarted": false
+  },
+  "sourceOnlyChecks": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/source-checks.json",
+    "bytes": 3692,
+    "sha256": "8c00a5f87388c33f728dac9cc06f5689d8519b644dfcfb2fcd93f18993bb6e1a"
+  },
+  "requiredBeforeLaunch": [
+    "Satisfied: inspected terminal143 and closed owned test group; exact partial/cancellation receipt references attached.",
+    "Root authorizes one finite native invocation; helpers/native/owner/policy remain frozen.",
+    "Finite owner rechecks frozen50 assets, diagnostic sources and isolated327 inputs and source/test pins before/after; user4310/4311 only probed"
+  ],
+  "finiteRootCommand": [
+    "python3",
+    "/private/tmp/tube-coherent-warmup-native-20261004/run.py",
+    "--run",
+    "--arm",
+    "candidate",
+    "--out",
+    "/private/tmp/tube-coherent-warmup-native-20261004/native-first"
+  ],
+  "goalComplete": false,
+  "adoption": false,
+  "scope": "Frozen source/assets and read-only TCP preflight complete; root-owned native launch pending final broader-process terminal receipt, no actual trajectory or causal/adoption proof.",
+  "rootBuild": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/build-result.json",
+    "bytes": 9034,
+    "sha256": "fc54f77fdbe56a52a33f69728112c1a68404ed60ea7385b1fb62171637a0524b"
+  },
+  "firstBuildFailureAndRestoration": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/build-input-preparation.json",
+    "bytes": 517,
+    "sha256": "d5597e7af673d44dbd2b5c66765a93688927826e1a7aac772141dc3f8d00a585"
+  },
+  "readOnlyTcpProof": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/read-only-tcp-proof.json",
+    "bytes": 529,
+    "sha256": "89bd9e7fb5dea601926127d7ba1e7790aaabaa5fe00137149ed7d39ae645ec94"
+  },
+  "rootSourceFreezeProof": {
+    "authority": "Root confirmed candidate worker three files frozen through native closure and source review approved",
+    "sourceManifest": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/candidate-source-manifest.json",
+      "bytes": 984,
+      "sha256": "f4c058b32190d65fca4f604e2796b8bf0d572ca47b53d0a0afd2612d8184ff9c"
+    },
+    "patch": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/candidate.patch",
+      "bytes": 11059,
+      "sha256": "435b40857c1e7426426e9568016239785f5151e5ef2af4adcf7d45b1a449ff8d"
+    },
+    "candidateRoot": "/private/tmp/tube-coherent-warmup-20261004/candidate",
+    "files": [
+      {
+        "path": "src/wave/SurfZoneSimulation.ts",
+        "baseSha256": "18e7928601d7208d5f7ff1a15a34995f7e63ebeec497dbe7bf7527b06d15948a",
+        "candidateSha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+      },
+      {
+        "path": "src/wave/SurfZoneSimulation.test.ts",
+        "baseSha256": "6b49a17db4d32c87ac4d7dfd49af7121233888f2afc5332c48113cfcd2d34d34",
+        "candidateSha256": "58d44cfc1f7db444b5d51239fb4901e8fe5eefb7fb0d83e91e30fef85ec3a690"
+      },
+      {
+        "path": "src/wave/barrel/BreakingFront.test.ts",
+        "baseSha256": "a2e2f9517cb47b31d396dda7e6a61d5d4237843d53c828d57aaf07e5b143bb3f",
+        "candidateSha256": "e3c815d4e4cadca59826e7b42a99ab7cb71282211a35d13eda9d82aa5307905a"
+      }
+    ],
+    "preBuild": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/production-source-before-build.json",
+      "bytes": 76820,
+      "sha256": "2c37cb662d15f381b4c260a6539a4d0c2f8d8265936301f2fab7da2ef710137a"
+    },
+    "postBuild": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/production-source-after-build.json",
+      "bytes": 76820,
+      "sha256": "2c37cb662d15f381b4c260a6539a4d0c2f8d8265936301f2fab7da2ef710137a"
+    },
+    "productionPrePostIdentical": true
+  },
+  "validation": {
+    "rootStatus": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/root-validation-status.json",
+      "bytes": 2029,
+      "sha256": "0aa525655a2a90000fcc7917bf017ac665d4d06077776c3a2b8ce94629fb1450"
+    },
+    "focusedFrontPassed": 37,
+    "startupPassed": 5,
+    "strictTypeScriptPassed": true,
+    "broaderReportedPassedAtCancellation": 124,
+    "broaderIntentionallyCancelled": true,
+    "broaderOwnedProcessTerminalReceiptPending": false,
+    "finalBroaderReceiptReferences": [
+      {
+        "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-final-receipt.json",
+        "bytes": 35092,
+        "sha256": "389169b6d8310cda9c38500a5ce265a9756fa4c942d39f95aeb3f0df64edbdf9"
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-cancellation.json",
+        "bytes": 1436,
+        "sha256": "f3cd1f8857ff0ee2b5650cc8096b548b07ebd1bfa71f08babf6905bc6c28cd64"
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-partial-results.json",
+        "bytes": 29149,
+        "sha256": "48ba8a5805dd6513b7fb38a1818989f4c3367fad3e03504a7f79c88ba5487dcb"
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-broader.log",
+        "bytes": 19250,
+        "sha256": "da0034d007caf28b95a122beb5e35617f0d0af4511c79c224ae55415fd9eac5f"
+      }
+    ],
+    "noFullFiveSuitesOrLongBigPassClaim": true,
+    "broaderTerminalSession": 75817,
+    "broaderTerminalExitCode": 143,
+    "broaderOwnedProcessGroupClosed": true
+  }
+}

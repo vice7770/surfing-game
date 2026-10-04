@@ -1,0 +1,25 @@
+{
+  "schema": "coherent-warmup-read-only-tcp-proof/v1",
+  "checkedAt": "2026-10-04T19:29:38.622445+00:00",
+  "readOnly": true,
+  "resourcesStarted": false,
+  "escalatedAfterDefaultSandboxEPERM": true,
+  "ports": {
+    "4292": {
+      "closed": true,
+      "reason": "Connection refused"
+    },
+    "9702": {
+      "closed": true,
+      "reason": "Connection refused"
+    },
+    "4310": {
+      "closed": false,
+      "reason": "TCP accepted"
+    },
+    "4311": {
+      "closed": false,
+      "reason": "TCP accepted"
+    }
+  }
+}

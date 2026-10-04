@@ -1,0 +1,31 @@
+{
+  "decision": "Intentional scope cancellation authorized by root; long full-CPU Padang Big fixtures unfinished. No full five-suite green claim.",
+  "timeUtc": "2026-10-04T19:27:24.962942+00:00",
+  "ownerPid": 12552,
+  "testPid": 12563,
+  "ownedProcessGroup": 12552,
+  "before": [
+    {
+      "pid": 12552,
+      "parentPid": 20111,
+      "pgid": 12552,
+      "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -"
+    },
+    {
+      "pid": 12563,
+      "parentPid": 12552,
+      "pgid": 12552,
+      "command": "node ./node_modules/.bin/vitest run src/wave/SurfZoneSimulation.test.ts src/wave/SurfZoneRunner.test.ts src/wave/surfZoneState.test.ts src/game/SurfZoneWaterPrefetch.test.ts src/game/WorkerSurfZone.test.ts --reporter=verbose --reporter=json --outputFile.json=/private/tmp/tube-coherent-warmup-20261004/broader-results.json"
+    },
+    {
+      "pid": 12567,
+      "parentPid": 12563,
+      "pgid": 12552,
+      "command": "/opt/homebrew/Cellar/node/23.10.0_1/bin/node --experimental-import-meta-resolve --require /Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/suppress-warnings.cjs --conditions node --conditions development /Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/dist/workers/forks.js"
+    }
+  ],
+  "signal": "SIGTERM",
+  "afterSigterm": [],
+  "finalGroupProcesses": [],
+  "groupClosed": true
+}

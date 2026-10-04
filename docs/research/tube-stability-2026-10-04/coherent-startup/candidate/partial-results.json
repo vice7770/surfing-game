@@ -1,0 +1,662 @@
+{
+  "status": "intentionally canceled; incomplete five-suite run",
+  "reason": "Root narrowed this iteration to focused startup/front and completed consumer/Reef checks; expensive full-CPU Padang Big fixtures deferred to the separate finite native GPU menu test.",
+  "command": [
+    "./node_modules/.bin/vitest",
+    "run",
+    "src/wave/SurfZoneSimulation.test.ts",
+    "src/wave/SurfZoneRunner.test.ts",
+    "src/wave/surfZoneState.test.ts",
+    "src/game/SurfZoneWaterPrefetch.test.ts",
+    "src/game/WorkerSurfZone.test.ts",
+    "--reporter=verbose",
+    "--reporter=json",
+    "--outputFile.json=/private/tmp/tube-coherent-warmup-20261004/broader-results.json"
+  ],
+  "terminalSession": 75817,
+  "terminalExitCode": 143,
+  "ownedGroupClosed": true,
+  "recordedPasses": 124,
+  "recordedFailures": 0,
+  "recordedSkips": 0,
+  "passesByFile": {
+    "src/game/SurfZoneWaterPrefetch.test.ts": 4,
+    "src/game/WorkerSurfZone.test.ts": 23,
+    "src/wave/SurfZoneSimulation.test.ts": 49,
+    "src/wave/SurfZoneRunner.test.ts": 43,
+    "src/wave/surfZoneState.test.ts": 5
+  },
+  "passed": [
+    {
+      "file": "src/game/SurfZoneWaterPrefetch.test.ts",
+      "name": "ordinary solo water prefetch lifecycle > selects the private capability only for the default ordinary Padang host",
+      "durationMilliseconds": 2
+    },
+    {
+      "file": "src/game/SurfZoneWaterPrefetch.test.ts",
+      "name": "ordinary solo water prefetch lifecycle > publishes current state with latest controls and invalidates future water for remote, zero, multi and restore requests",
+      "durationMilliseconds": 270
+    },
+    {
+      "file": "src/game/SurfZoneWaterPrefetch.test.ts",
+      "name": "ordinary solo water prefetch lifecycle > falls back only on the next requested positive step after private preparation fails",
+      "durationMilliseconds": 44
+    },
+    {
+      "file": "src/game/SurfZoneWaterPrefetch.test.ts",
+      "name": "ordinary solo water prefetch lifecycle > retires a pending result across superseding starts without publishing future time or an intermediate sea",
+      "durationMilliseconds": 30
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "SurfZoneWorkerCore > replies with the same start data and snapshots as the in-page surf zone, transferring the buffers",
+      "durationMilliseconds": 517
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "SurfZoneWorkerCore > spins the sea up on its device before it reports ready",
+      "durationMilliseconds": 208
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > writes the worker snapshot fields together with the same data as separate surface, air and current writers",
+      "durationMilliseconds": 513
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > preserves dynamic void fraction receivers, replacement and preprocessing before snapshot output",
+      "durationMilliseconds": 76
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > preserves snapshot bits and store order with overlapping outputs and output input aliases",
+      "durationMilliseconds": 121
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "SurfZoneWorkerCore > steps the water on a device when given one, replying once it is done",
+      "durationMilliseconds": 433
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > allocates snapshot scratch for every source cell and reuses it across repeated render layouts",
+      "durationMilliseconds": 49
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > feeds Padang Padang's sides with the incoming sea, on the clock of a handed-over sea (wave sizes)",
+      "durationMilliseconds": 237
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "SurfZoneWorkerCore > keeps two cpu fixed steps equivalent to two single advances, retaining both steps' events",
+      "durationMilliseconds": 248
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > forwards optional device stage diagnostics and reports zero for a CPU host",
+      "durationMilliseconds": 22
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > steps on the CPU when the GPU device never arrives, instead of waiting forever (wave sizes)",
+      "durationMilliseconds": 62
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > reports the measured surf, measuring until waves have broken (wave sizes)",
+      "durationMilliseconds": 1687
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "SurfZoneWorkerCore > keeps two device fixed steps equivalent to two single advances, retaining both steps' events",
+      "durationMilliseconds": 235
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "SurfZoneWorkerCore restore (L2) > restores after the step under way, so the next advance starts from the restored sea",
+      "durationMilliseconds": 167
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > explicit two-step batching drains a lone step then a held backlog without replaying presses or reactions",
+      "durationMilliseconds": 94
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > retains exactly six queued steps in addition to 1 in flight, then drains every retained step",
+      "durationMilliseconds": 82
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > retains exactly six queued steps in addition to 2 in flight, then drains every retained step",
+      "durationMilliseconds": 84
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > preserves explicit host batching { maxBatchSteps: 1 }",
+      "durationMilliseconds": 86
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > preserves explicit host batching { maxBatchSteps: 3 }",
+      "durationMilliseconds": 87
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > preserves explicit host batching { maxQueuedSteps: 90 }",
+      "durationMilliseconds": 83
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > preserves explicit host batching { maxQueuedSteps: 90, maxBatchSteps: 1 }",
+      "durationMilliseconds": 82
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > starts in the worker, keeps one advance in flight and shows the latest snapshot",
+      "durationMilliseconds": 196
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > tells the worker\u2019s spray the water look, before or after the sea is ready (G9: Classic keeps its spray)",
+      "durationMilliseconds": 152
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > tells the worker\u2019s spray and bubbles the Particles level, before or after the sea is ready",
+      "durationMilliseconds": 157
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > steps the surf zone exactly like the simulation it wraps, at a fixed 1/60 s",
+      "durationMilliseconds": 1853
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > steps the same sea, lip and rider at every Particles level; only the particles differ",
+      "durationMilliseconds": 539
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > carries a placement into the next advance once",
+      "durationMilliseconds": 99
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > caps the steps it queues while the worker is busy",
+      "durationMilliseconds": 83
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > counts the steps asked for but not yet shown, and passes remote pushes on (spec N1)",
+      "durationMilliseconds": 99
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > queues as many steps as its options allow",
+      "durationMilliseconds": 149
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > hands its sea over, and a surf zone started from it shows the same water (spec N1)",
+      "durationMilliseconds": 353
+    },
+    {
+      "file": "src/game/WorkerSurfZone.test.ts",
+      "name": "WorkerSurfZone > fails its start when the worker reports an error",
+      "durationMilliseconds": 89
+    },
+    {
+      "file": "src/wave/surfZoneState.test.ts",
+      "name": "surf zone state (spec N1: the sea handover) > restores a running sea exactly: the copy steps on as the original does, lip in the air included",
+      "durationMilliseconds": 4941
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > builds warm and spins up later, seating the board and rider on the spun-up sea",
+      "durationMilliseconds": 1495
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > reports how many breaks threw a jet and how many spilled",
+      "durationMilliseconds": 543
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > renders on a finer grid when asked, for close shots, leaving the physics as it is",
+      "durationMilliseconds": 1058
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > reduces large Padang snapshots while honoring explicit spacing and retaining the physics grid",
+      "durationMilliseconds": 644
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > samples body contact on the same render nodes at either coarse or fine render spacing",
+      "durationMilliseconds": 26
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > carries the air breaking drives into the water: a landing lip aerates where it falls, and the snapshot holds it per node",
+      "durationMilliseconds": 1085
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > fills a snapshot with the render surface, the current, the lip and the bubbles",
+      "durationMilliseconds": 914
+    },
+    {
+      "file": "src/wave/surfZoneState.test.ts",
+      "name": "surf zone state (spec N1: the sea handover) > hands over a sea spun up but not yet stepped: the copy throws as the original does",
+      "durationMilliseconds": 4793
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > reports the readout values the simulation would give",
+      "durationMilliseconds": 708
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > builds the same sea on either side of the worker boundary",
+      "durationMilliseconds": 545
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > splashes spray where lip water lands, and hands it over in the snapshot",
+      "durationMilliseconds": 889
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > breaks a closing tube\u2019s air into the aeration field, and blows its spits, eruptions and foam balls into the spray (G9)",
+      "durationMilliseconds": 1396
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > hands the spray each landing\u2019s whole water and kind, and the look it is drawn in",
+      "durationMilliseconds": 527
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner > carries a bubble cloud in the runner, not in the renderer",
+      "durationMilliseconds": 523
+    },
+    {
+      "file": "src/wave/surfZoneState.test.ts",
+      "name": "surf zone state (spec N1: the sea handover) > survives 32-bit encoding closely enough to break where the donor breaks",
+      "durationMilliseconds": 5418
+    },
+    {
+      "file": "src/wave/surfZoneState.test.ts",
+      "name": "surf zone state (spec N1: the sea handover) > carries a breaking front through its bytes exactly, and hands over none where the spot runs none",
+      "durationMilliseconds": 842
+    },
+    {
+      "file": "src/wave/surfZoneState.test.ts",
+      "name": "surf zone state (spec N1: the sea handover) > refuses a state from a different tank",
+      "durationMilliseconds": 2061
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a board > floats a riderless board in the lineup on every spot\u2019s calm water, at its draft",
+      "durationMilliseconds": 6019
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a board > lets passing waves move the board on the Beach, and keeps it finite",
+      "durationMilliseconds": 3747
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a board > puts a board that left the window back in the lineup, counting it",
+      "durationMilliseconds": 481
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > feeds no other spot's sides",
+      "durationMilliseconds": 31
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > takes the Reef's buoy swell in deep water, shoaled to its 30 m edge, and the Canyon's at its edge",
+      "durationMilliseconds": 0
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > keeps the water finite on the biggest swells the Reef and today's Point tank can be given (wave sizes review)",
+      "durationMilliseconds": 23189
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > takes a buoy height in deep water and shoals it to the tank's edge (wave sizes)",
+      "durationMilliseconds": 1
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > warm-starts so the spun-up sea sits at a chosen sea time (a room's clock)",
+      "durationMilliseconds": 100
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > builds a finite, wave-filled surf zone for every spot and hands over before the set",
+      "durationMilliseconds": 764
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > runs Padang Padang on stage 2 whatever the config asks, forcing the solver\u2019s own waves at its boundary",
+      "durationMilliseconds": 413
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > follows Padang Padang\u2019s crests from the relaxation zone\u2019s edge, deeper than its foot all along the window, at every swell and tide",
+      "durationMilliseconds": 7
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > builds Padang Padang\u2019s front to follow its crests\u2019 jumps within 10 m, with no join past the throw depth",
+      "durationMilliseconds": 228
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a board > snapshots the board\u2019s pose as stepped, and nothing without one",
+      "durationMilliseconds": 2448
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > cues the pop-up in the take-off window, lying down only",
+      "durationMilliseconds": 456
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > rides the stance it starts with, changing it only for the next ride",
+      "durationMilliseconds": 919
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > lies a rider prone on the board in the lineup, and snapshots its render points and phase",
+      "durationMilliseconds": 668
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > snapshots the leash, the duck-dive and the swimmer",
+      "durationMilliseconds": 1078
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > rescues a fallen rider whose breath runs out, back to the lineup with a full breath",
+      "durationMilliseconds": 492
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > starts the rider just outside the break line, where catches happen",
+      "durationMilliseconds": 447
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > gives Padang Padang a tank beyond its forereef whose fine zone reaches past its sets\u2019 first break at every tide",
+      "durationMilliseconds": 13
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > injects Padang Padang\u2019s sea where first-order generation holds: Sch\u00e4ffer\u2019s S at the edge is at most 1.2 for every swell",
+      "durationMilliseconds": 1
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > finds Padang Padang\u2019s break on its wedge inside the fine surf zone, and it plunges",
+      "durationMilliseconds": 6068
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > paddles toward the beach when asked",
+      "durationMilliseconds": 1765
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > puts board and rider back in the lineup on retry, without restarting the wave",
+      "durationMilliseconds": 874
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > places the rider where a lesson asks, standing, as a restart",
+      "durationMilliseconds": 472
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > spawns the rider where asked, relative to the take-off (spec N1)",
+      "durationMilliseconds": 451
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > respawns at a given spot on retry, and there again on the next",
+      "durationMilliseconds": 591
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > reports the board's push on the water in each snapshot, once",
+      "durationMilliseconds": 667
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > seats Padang Padang\u2019s take-off within 15 m of where each swell\u2019s sets broke in the size report",
+      "durationMilliseconds": 2
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > takes off at Padang Padang\u2019s peak, where every swell breaks at every tide, never on the dry flat or in the channel",
+      "durationMilliseconds": 9
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > measures Padang Padang\u2019s peel on its reef only",
+      "durationMilliseconds": 3353
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > runs the Reef on stage 2 whatever the config asks, forcing the solver\u2019s own waves at its boundary",
+      "durationMilliseconds": 199
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > applies remote boards' pushes before its next step, without reporting them as its own",
+      "durationMilliseconds": 447
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner with a rider > reads each ride from its trace, and reports the finished ride as plain data",
+      "durationMilliseconds": 496
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner rider in waves > measures the rider against the wave it rides, and reports its speed over ground",
+      "durationMilliseconds": 4106
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner rider in waves > holds on lying down while paddling through passing waves",
+      "durationMilliseconds": 3373
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner sound events > reports no roar on a calm sea, and roar where breaking water moves",
+      "durationMilliseconds": 1119
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner sound events > reports each lip landing once, and merges a burst beyond its capacity without losing water",
+      "durationMilliseconds": 459
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "SurfZoneRunner sound events > reports a paddler\u2019s strokes with the work each hand did",
+      "durationMilliseconds": 686
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "the swept contact in the surf zone > rides the swept surface at Padang Padang with the cases, and the lip parcels strike no one",
+      "durationMilliseconds": 726
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "the swept contact in the surf zone > runs the crash with the cases at Padang Padang, with or without a rider, and hears only the barrel\u2019s landings (PR 5)",
+      "durationMilliseconds": 1529
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.test.ts",
+      "name": "the swept contact in the surf zone > rides the carved water, struck by parcels, without the cases or away from a swept spot",
+      "durationMilliseconds": 482
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > spins up the menu's first Reef on the GPU tier's sea without blowing up",
+      "durationMilliseconds": 13462
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > warms the complete swept sea to the same state as ordinary requested steps, including device feedback and fallback",
+      "durationMilliseconds": 9650
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > does not step a zero-duration startup or consume a staged future-water interval",
+      "durationMilliseconds": 83
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > builds warm, then spins up to the same sea as a build that spins up at once",
+      "durationMilliseconds": 232
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > spins up on its device, one stable substep a call",
+      "durationMilliseconds": 160
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > finishes the spin-up on the CPU when its device fails partway",
+      "durationMilliseconds": 161
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > drops a failing device and steps that frame on the CPU",
+      "durationMilliseconds": 121
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > replays a seed exactly and changes with another",
+      "durationMilliseconds": 364
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > renders the surface it samples, with dry land tucked under the bed",
+      "durationMilliseconds": 69
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > finds the break line at the shoaled breaker depth",
+      "durationMilliseconds": 65
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > breaks waves in the surf zone, measures the peel and paints whitewater",
+      "durationMilliseconds": 585
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > keeps measuring peel while earlier bores are still crossing the surf zone",
+      "durationMilliseconds": 2661
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > throws a lip from plunging point waves, once per wave, but not from a spilling beach",
+      "durationMilliseconds": 4692
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > throws each jet ahead of its crest, 1.15-1.8 times its speed, as measured jets leave (P7)",
+      "durationMilliseconds": 2489
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > carves the void under a flying lip into the water the rider feels and the renderer draws (P7)",
+      "durationMilliseconds": 2340
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > builds the Reef on a 30 m tank that stays deep up to its forereef, with every break in the fine surf zone",
+      "durationMilliseconds": 8
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > seats the Canyon take-off where its bed gathers the swell, from either side",
+      "durationMilliseconds": 601
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > takes off straight out from the window centre at the other spots",
+      "durationMilliseconds": 0
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > measures the Reef\u2019s peel on its ledge only, and every other spot everywhere",
+      "durationMilliseconds": 373
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > takes off at the Reef\u2019s peak, where every Reef swell breaks, never on dry reef or in the pass",
+      "durationMilliseconds": 0
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > finds the Reef\u2019s break on its ledge inside the fine surf zone, and it plunges",
+      "durationMilliseconds": 1424
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > the steep Reef holds > stays finite and bounded under the Big swell, and plunges",
+      "durationMilliseconds": 14876
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > the steep Reef holds > stays finite over the drying reef flat at low tide",
+      "durationMilliseconds": 14419
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > the steep Reef holds > stays finite with oblique swells across the open \u2212x edge",
+      "durationMilliseconds": 49822
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > the steep Reef holds > stays finite over the lagoon at low tide",
+      "durationMilliseconds": 23766
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > the steep Reef holds > stays finite where the window's open edge cuts the ledge",
+      "durationMilliseconds": 14323
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > the Reef's Big swell at high tide holds by its open edges > stays finite through its sets",
+      "durationMilliseconds": 105151
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "name": "SurfZoneSimulation > the Reef's Big swell at high tide holds by its open edges > stays finite through a trough drawn down at the \u2212x edge",
+      "durationMilliseconds": 79769
+    }
+  ],
+  "failed": [],
+  "skipped": [],
+  "partialLogSha256": "da0034d007caf28b95a122beb5e35617f0d0af4511c79c224ae55415fd9eac5f",
+  "jsonReporterOutputExists": false,
+  "fullFiveSuiteGreen": false,
+  "unfinishedChecks": [
+    "Full-CPU Padang Big 320 m / 1 m-grid stability/low-tide/high-tide/oblique cases",
+    "Later SurfZoneSimulation assertions, including held-jet conservation and handover checks, were not reached in this broader run."
+  ],
+  "baselineComparisons": "None: no failure was recorded before intentional cancellation.",
+  "frozenSourcesVerified": true
+}

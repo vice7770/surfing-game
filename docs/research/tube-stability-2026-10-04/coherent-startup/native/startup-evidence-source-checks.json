@@ -1,0 +1,39 @@
+{
+  "schema": "coherent-startup-extracted-evidence-checks/v1",
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "checks": {
+    "publishedCounterFields": {
+      "passed": true,
+      "functionSha256": "543c43e150165c4e429c8129e3b4e94f21c0b7452a4400a81fde88173dfd8397",
+      "rawRecordCountAuthority": "snap.frontCount",
+      "statusFields": [
+        "lipLaunches",
+        "lipVolume",
+        "lipJets",
+        "lipRollers",
+        "lipAirborne"
+      ],
+      "missingOrInvalidRejected": true,
+      "snapshotUnmodified": true
+    },
+    "initialCheckpoint": {
+      "passed": true,
+      "functionSha256": "dccd6519e1523d46789f33d1d6b445707ce343411cc52c099d4939a432f725eb",
+      "step": 0,
+      "afterFreshProneInstallReady": true,
+      "beforeOrdinaryStepper": true,
+      "rawInventoryCounterAgreement": true
+    },
+    "pngCaps": {
+      "passed": true,
+      "functionSha256": "761bc6edbc03b67b32353f217a7ec165ce666689869e78d885af2aa763ffc0b0",
+      "maximumCount": 4,
+      "maximumEachBytes": 12582912,
+      "maximumTotalBytes": 50331648,
+      "fifthAndTotalOverflowRejectedBeforeWrite": true
+    }
+  },
+  "scope": "Extracted source mock checks only; no warmed sea, real counter/front, body trajectory, pixels, movie, startup causality or acceptance evidence."
+}

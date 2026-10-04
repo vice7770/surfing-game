@@ -1,0 +1,23 @@
+{
+  "schema": "coherent-startup-owner-extracted-checks/v1",
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "checks": {
+    "uniqueArtifactCap": 6,
+    "maximumPngs": 4,
+    "maximumPngBytesTotal": 50331648,
+    "invalidCapsRejected": true,
+    "publishedCountersReadOnly": true,
+    "invalidCountersRejected": true
+  },
+  "extractedFunctions": [
+    "artifact_names_check",
+    "finite_number",
+    "integer",
+    "png_caps_check",
+    "sea_counters_check"
+  ],
+  "sourceSha256": "65f9d981e7bbc0fbe5cf2df1eb7f28833a7511657fa64a81c389b849f6abf63a",
+  "scope": "Pure owner cap/counter checks only; no owner launch, TCP probe, warmed snapshot, trajectory or cleanup verification."
+}

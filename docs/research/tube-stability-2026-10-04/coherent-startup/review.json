@@ -1,0 +1,218 @@
+{
+  "schema": "coherent-startup-archive-review/v1",
+  "scope": "Read-only summary of stored source and native receipts; no numerical/native rerun or causal proof of prior failure.",
+  "productionCandidateAdopted": true,
+  "physicalLifecycleActivityObserved": true,
+  "visualTubeSuccessClaim": false,
+  "entrySuccessClaim": false,
+  "clearancePass": false,
+  "base": "0ab379ba1cdb64b44e8023833399a428990afa60",
+  "buildId": "tube-coherent-warmup-20261004-0ab379ba1",
+  "initial": {
+    "rawFrontRecords": 74,
+    "drawnLoft": {
+      "slices": 129,
+      "vertices": 17286,
+      "indices": 90972
+    },
+    "publishedSeaCounters": {
+      "rawFrontCount": 74,
+      "lipLaunches": 77,
+      "lipVolume": 120.56341347278098,
+      "lipJets": 77,
+      "lipRollers": 0,
+      "lipAirborne": 12.44601656482835
+    }
+  },
+  "trajectory": {
+    "ordinarySteps": 385,
+    "physicalSeconds": 6.416666666666667,
+    "firstStanding": {
+      "step": 83,
+      "seaTime": 363.19004276701423,
+      "physicalSeconds": 1.3833333333333333
+    },
+    "standingPostStepRows": 302,
+    "standingPostStepFirst": 83,
+    "standingPostStepLast": 384,
+    "firstStandingToFallSeconds": 5.033333333333333,
+    "allRawFrontPositive": true,
+    "allDrawnLoftPositive": true,
+    "standingWitnessClassifications": [
+      "outside"
+    ],
+    "closestAbsoluteFiniteStandingCurlDistance": 12.5,
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 385,
+      "phase": "fallen",
+      "separation": "balance",
+      "resets": 0
+    },
+    "entry": {
+      "observedStandingOutside": true,
+      "firstPartial": null,
+      "firstConnectedWitnessEntry": null,
+      "containmentWithoutObservedOutside": null,
+      "firstConnectedWitnessExit": null,
+      "maximumConsecutiveContainedSteps": 0,
+      "residenceIntervals": [],
+      "fullBodyClearancePass": false
+    }
+  },
+  "movie": {
+    "complete": true,
+    "bytes": 1825733,
+    "mimeType": "video/webm;codecs=vp9",
+    "requestCount": 146,
+    "requestFrameCount": 146,
+    "startStep": 240,
+    "endStep": 385,
+    "physicsAdvances": 145,
+    "physicalSeconds": 2.416666666666515,
+    "startSeaTime": 365.80670943368074,
+    "endSeaTime": 368.22337610034725,
+    "wallMilliseconds": 5979.5,
+    "tracksStopped": true,
+    "physicalPlaybackRateClaim": false,
+    "encodedFrameCountClaim": false,
+    "file": "standing-motion.webm",
+    "sha256": "24b1c641757d0dc608f350f49b9e342dd5ad7ea8bede9a96f12e3ee1f47c1b2c"
+  },
+  "movieTrigger": {
+    "triggered": true,
+    "step": 240,
+    "seaTime": 365.80670943368074,
+    "physicalSeconds": 4,
+    "loftIndexCount": 88578,
+    "curlDistance": 15,
+    "curlDistanceFinite": true,
+    "finiteCurlNear": true,
+    "witnessClassification": "outside",
+    "witnessQualifies": false
+  },
+  "checkpoints": [
+    {
+      "step": 0,
+      "file": "00-initial-prone-after-install-ready.png",
+      "seaCounters": {
+        "rawFrontCount": 74,
+        "lipLaunches": 77,
+        "lipVolume": 120.56341347278098,
+        "lipJets": 77,
+        "lipRollers": 0,
+        "lipAirborne": 12.44601656482835
+      },
+      "rawFrontRecords": 74,
+      "drawnLoftSlices": 129,
+      "drawnLoftIndices": 90972
+    },
+    {
+      "step": 83,
+      "file": "01-first-standing.png",
+      "seaCounters": {
+        "rawFrontCount": 80,
+        "lipLaunches": 87,
+        "lipVolume": 136.19088725675593,
+        "lipJets": 87,
+        "lipRollers": 0,
+        "lipAirborne": 14.085866890529223
+      },
+      "rawFrontRecords": 80,
+      "drawnLoftSlices": 171,
+      "drawnLoftIndices": 127680
+    },
+    {
+      "step": 385,
+      "file": "02-final.png",
+      "seaCounters": {
+        "rawFrontCount": 115,
+        "lipLaunches": 114,
+        "lipVolume": 189.47098844201656,
+        "lipJets": 114,
+        "lipRollers": 0,
+        "lipAirborne": 16.806160924797993
+      },
+      "rawFrontRecords": 115,
+      "drawnLoftSlices": 203,
+      "drawnLoftIndices": 158004
+    }
+  ],
+  "ownerClosure": {
+    "complete": true,
+    "exitCode": 0,
+    "firstFailure": null,
+    "remainingOwnedPids": [],
+    "closedPorts": {
+      "4292": true,
+      "9702": true
+    },
+    "userServersStayedOpen": true,
+    "copiedDistUnchanged": true,
+    "diagnosticSourcesUnchanged": true,
+    "candidateProductionInputsUnchanged": true,
+    "independentClosureValid": true,
+    "cleanupElapsedSeconds": 0.5816429579863325,
+    "elapsedSeconds": 53.5802803330007
+  },
+  "sourceValidation": {
+    "rootStatus": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/root-validation-status.json",
+      "bytes": 2029,
+      "sha256": "0aa525655a2a90000fcc7917bf017ac665d4d06077776c3a2b8ce94629fb1450"
+    },
+    "focusedFrontPassed": 37,
+    "startupPassed": 5,
+    "strictTypeScriptPassed": true,
+    "broaderReportedPassedAtCancellation": 124,
+    "broaderIntentionallyCancelled": true,
+    "broaderOwnedProcessTerminalReceiptPending": false,
+    "finalBroaderReceiptReferences": [
+      {
+        "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-final-receipt.json",
+        "bytes": 35092,
+        "sha256": "389169b6d8310cda9c38500a5ce265a9756fa4c942d39f95aeb3f0df64edbdf9"
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-cancellation.json",
+        "bytes": 1436,
+        "sha256": "f3cd1f8857ff0ee2b5650cc8096b548b07ebd1bfa71f08babf6905bc6c28cd64"
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-partial-results.json",
+        "bytes": 29149,
+        "sha256": "48ba8a5805dd6513b7fb38a1818989f4c3367fad3e03504a7f79c88ba5487dcb"
+      },
+      {
+        "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-broader.log",
+        "bytes": 19250,
+        "sha256": "da0034d007caf28b95a122beb5e35617f0d0af4511c79c224ae55415fd9eac5f"
+      }
+    ],
+    "noFullFiveSuitesOrLongBigPassClaim": true,
+    "broaderTerminalSession": 75817,
+    "broaderTerminalExitCode": 143,
+    "broaderOwnedProcessGroupClosed": true,
+    "rootIntegration": {
+      "frontPassed": 37,
+      "correctedStartupPassed": 5,
+      "correctedStartupSkipped": 81,
+      "initialWrongFilterPassed": 0,
+      "initialWrongFilterSkipped": 86,
+      "strictTypeScriptPassed": true,
+      "diffCheckPassed": true,
+      "noFullSuiteGreenClaim": true
+    }
+  },
+  "visualReviewAuthority": "Root inspected original native evidence; activity is not visual tube or entry success.",
+  "limits": [
+    "Measured standing witnesses stayed outside; no partial, entry, contained or full body clearance.",
+    "Requested movie frames are not encoded/decoded frame counts; no FPS or fixed physical playback claim.",
+    "Incomplete broader run:124 passes,0 failures observed, intentionally canceled terminal143 with owned group closed; no full five-suite or long full-CPU Big completion.",
+    "Earlier source-only/freeze receipts retain historical pending flags; final root preparation and cancellation receipt are authoritative for launch chronology."
+  ],
+  "rootAdoptionReceipt": "native/root-adoption.json",
+  "rootIntegrationValidationReceipt": "native/root-integration-validation.json",
+  "adoptionScope": "Startup source adopted byte-equal to captured candidate; tube appearance and entry remain unaccepted. Original candidate/build/preparation receipts retain their pre-adoption state.",
+  "rootIntegrationCommandCorrectionReceipt": "native/root-integration-command-correction.json"
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "coherent-warmup-driver-base/v1",
+  "original": "/private/tmp/tube-menu-big-gentle-entry-20261004",
+  "files": {
+    "native.mjs": {
+      "file": "/private/tmp/tube-menu-big-gentle-entry-20261004/native.mjs",
+      "bytes": 31419,
+      "sha256": "f0d4461ecdedf9ede7bf80b6cf7a265fb7e3a6051fced144505da2a845e8ddba"
+    },
+    "run.py": {
+      "file": "/private/tmp/tube-menu-big-gentle-entry-20261004/run.py",
+      "bytes": 22395,
+      "sha256": "52271eed08442d6cde1675eb37700f8a76e28aeb1f9a1013cd6052ecc4317e80"
+    },
+    "native-owned.mjs": {
+      "file": "/private/tmp/tube-menu-big-gentle-entry-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    "body-witnesses.mjs": {
+      "file": "/private/tmp/tube-menu-big-gentle-entry-20261004/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    "autopilot-entry.ts": {
+      "file": "/private/tmp/tube-menu-big-gentle-entry-20261004/autopilot-entry.ts",
+      "bytes": 296,
+      "sha256": "daa2e72a04e87ed97e2814ea1b7115440e796b2ec62f650caf20609ee6e2ebb1"
+    },
+    "gentle-input-source-check.mjs": {
+      "file": "/private/tmp/tube-menu-big-gentle-entry-20261004/gentle-input-source-check.mjs",
+      "bytes": 3572,
+      "sha256": "e1c5700593a908d1e1f1f0ceadc613c36dfb0f7f8176f2cfd3f4eee869802cb3"
+    }
+  },
+  "scope": "Copied source/policy base only; previous run and all assets left unchanged."
+}

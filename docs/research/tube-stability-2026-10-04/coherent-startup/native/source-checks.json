@@ -1,0 +1,91 @@
+{
+  "schema": "coherent-warmup-source-checks/v1",
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "assetsInspected": true,
+  "frozen": true,
+  "launchReady": false,
+  "checkedAt": "2026-10-04T19:29:38.623363+00:00",
+  "checks": {
+    "nativeAndHelpersNodeSyntax": true,
+    "ownerAndExtractedPythonAstSyntax": true,
+    "singleOrdinaryStepperAndPopupPolicy": true,
+    "initialProneCheckpointBeforeLoop": true,
+    "initialRecorderRequestBeforeAwaitOnstart": true,
+    "noExperimental25GeometryReportClaim": true,
+    "ownerDryPlanNoResources": true,
+    "originalBaseSourcesUnchanged": true,
+    "isolated327CandidateInputsUnchanged": true,
+    "all50DistFilesByteVerified": true,
+    "gameAssetCount49DiagnosticCount1": true,
+    "buildIdMatchesRootSuccessfulBuild": true,
+    "isolated327ProductionPrePostBuildExactlyUnchanged": true,
+    "threeSourceTestPinsAndPatchExactlyUnchanged": true,
+    "readonlyOwnedPortsClosedUserPortsOpen": true,
+    "nativeF139Owner65f9Unchanged": true
+  },
+  "extractedChecks": {
+    "gentle-input-source-checks.json": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/gentle-input-source-checks.json",
+      "bytes": 784,
+      "sha256": "ba954e183d03e1bcd5211d3bba0bbfa70876ee90153d9682104a48431d20c107"
+    },
+    "startup-evidence-source-checks.json": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/startup-evidence-source-checks.json",
+      "bytes": 1308,
+      "sha256": "1835eecb32e20e45b832a7e94e7ef596b79f517ad4fdbe9a6bb9d0fa4ca72976"
+    },
+    "owner-evidence-source-checks.json": {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/owner-evidence-source-checks.json",
+      "bytes": 706,
+      "sha256": "603f8da7d4ba6fd060d54a5d2c0d0ac47a35610a9f6641eb852545cb56e379f0"
+    }
+  },
+  "dryOwnerPlan": {
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7,
+    "maximumSteps": 1800,
+    "maximumPhysicalSeconds": 30,
+    "maximumPngs": 4,
+    "maximumUniqueArtifacts": 6,
+    "maximumPngBytesEach": 12582912,
+    "maximumPngBytesTotal": 50331648,
+    "maximumReportBytes": 33554432,
+    "maximumNdjsonBytes": 25165824,
+    "optionalMovieMaximumAdvances": 240,
+    "optionalMovieMaximumRequests": 241,
+    "optionalMovieMaximumBytes": 16777216,
+    "ports": [
+      4292,
+      9702
+    ],
+    "userPorts": [
+      4310,
+      4311
+    ],
+    "resourcesStarted": false
+  },
+  "limitations": "Syntax, read-only extracted mock logic, frozen source/asset/byte and TCP consistency only. No native/browser/server launched; no warmed snapshot, actual front/counters, trajectory/media/cleanup, causal proof or adoption pass. Focused37+5+strict TS passed; broader124 passes then intentional cancellation, terminal receipt pending; no full five suites/long Big pass.",
+  "rootBuild": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/build-result.json",
+    "bytes": 9034,
+    "sha256": "fc54f77fdbe56a52a33f69728112c1a68404ed60ea7385b1fb62171637a0524b"
+  },
+  "firstBuildFailureAndRestoration": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/build-input-preparation.json",
+    "bytes": 517,
+    "sha256": "d5597e7af673d44dbd2b5c66765a93688927826e1a7aac772141dc3f8d00a585"
+  },
+  "readOnlyTcpProof": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/read-only-tcp-proof.json",
+    "bytes": 529,
+    "sha256": "89bd9e7fb5dea601926127d7ba1e7790aaabaa5fe00137149ed7d39ae645ec94"
+  },
+  "rootValidationStatus": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/root-validation-status.json",
+    "bytes": 927,
+    "sha256": "50f3c42c25c810baf9a2a84bbe2ede6aba01b40c32d08720aa72470be63c3375"
+  }
+}

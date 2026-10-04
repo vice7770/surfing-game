@@ -1,0 +1,11 @@
+{
+  "corrects": "root-integration-validation.json",
+  "originalSha256": "da379ea88dd0010e5f148294dd0307ce0d9b268fda5c4040944446adf7892a93",
+  "field": "checks[0].command",
+  "recordedCommandTypo": "./node_modules/.bin/vitest run src/wave/SurfZoneSimulation.test.ts -t deferred-spin-up --reporter=dot",
+  "actualCommand": "./node_modules/.bin/vitest run src/wave/SurfZoneSimulation.test.ts -t 'deferred spin-up' --reporter=dot",
+  "exitCode": 0,
+  "passed": 0,
+  "skipped": 86,
+  "claim": "Incorrect filter; no validation. Later correctly filtered 5 startup tests passed; no result changes."
+}

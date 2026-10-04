@@ -1,0 +1,36 @@
+{
+  "schema": "coherent-warmup-final-freeze-readonly/v1",
+  "resourcesStarted": false,
+  "rootOwnsNativeLaunch": true,
+  "readOnlyOwnerPreflightFunctions": {
+    "verify_copy": true,
+    "verify_production_inputs": true,
+    "verify_sources": true
+  },
+  "assets": 50,
+  "gameAssets": 49,
+  "reusedDiagnosticBundleBytes": 347555,
+  "candidateInputs": 327,
+  "native": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/native.mjs",
+    "bytes": 32205,
+    "sha256": "f139537019d13bc038d229977386ece40b307bf1fd63a0d3e7e1a79dcaea34ea"
+  },
+  "owner": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/run.py",
+    "bytes": 25890,
+    "sha256": "65f9d981e7bbc0fbe5cf2df1eb7f28833a7511657fa64a81c389b849f6abf63a"
+  },
+  "preparation": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/preparation.json",
+    "bytes": 21389,
+    "sha256": "51a419f48c3d91afd7607175d4e38ff6d4a176e41444e7fd58d5af021b643190"
+  },
+  "sourceChecks": {
+    "file": "/private/tmp/tube-coherent-warmup-native-20261004/source-checks.json",
+    "bytes": 3692,
+    "sha256": "8c00a5f87388c33f728dac9cc06f5689d8519b644dfcfb2fcd93f18993bb6e1a"
+  },
+  "pendingBroaderTerminalReceipt": true,
+  "scope": "Read-only byte/source/TCP closure eligibility only; no native/numerical rerun or adoption claim."
+}

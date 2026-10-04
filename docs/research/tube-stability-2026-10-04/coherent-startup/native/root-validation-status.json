@@ -1,0 +1,47 @@
+{
+  "schema": "coherent-warmup-root-validation-status/v1",
+  "authority": "Root inspected final worker receipt and explicit cancellation/closure proof; source/test candidate remains frozen.",
+  "focusedValidation": {
+    "frontTestsPassed": 37,
+    "startupTestsPassed": 5,
+    "strictTypeScriptPassed": true
+  },
+  "broaderValidation": {
+    "reportedPassedTestsAtCancellation": 124,
+    "intentionallyCancelled": true,
+    "reason": "Intentional exclusion of expensive full-CPU Padang fixtures after focused startup/front and completed consumer/Reef checks; full five-suite run is incomplete.",
+    "ownedProcessTerminalReceiptPending": false,
+    "fullFiveSuitesGreenClaim": false,
+    "longBigFixtureCompleteClaim": false,
+    "terminalSession": 75817,
+    "terminalExitCode": 143,
+    "ownedProcessGroupClosed": true,
+    "recordedFailures": 0
+  },
+  "rootSourceReviewApproved": true,
+  "candidateFilesFrozenThroughNativeClosure": true,
+  "nativeLaunchAuthorizedByThisReceipt": true,
+  "requiredBeforeRootLaunch": "Satisfied: one finite native invocation, with frozen asset/source verification and exclusive owned-port checks.",
+  "finalBroaderReceiptReferences": [
+    {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-final-receipt.json",
+      "bytes": 35092,
+      "sha256": "389169b6d8310cda9c38500a5ce265a9756fa4c942d39f95aeb3f0df64edbdf9"
+    },
+    {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-cancellation.json",
+      "bytes": 1436,
+      "sha256": "f3cd1f8857ff0ee2b5650cc8096b548b07ebd1bfa71f08babf6905bc6c28cd64"
+    },
+    {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-partial-results.json",
+      "bytes": 29149,
+      "sha256": "48ba8a5805dd6513b7fb38a1818989f4c3367fad3e03504a7f79c88ba5487dcb"
+    },
+    {
+      "file": "/private/tmp/tube-coherent-warmup-native-20261004/validation-broader.log",
+      "bytes": 19250,
+      "sha256": "da0034d007caf28b95a122beb5e35617f0d0af4511c79c224ae55415fd9eac5f"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "readOnly": true,
+  "resourcesStarted": false,
+  "ports": {
+    "4292": {
+      "closed": null,
+      "reason": "[Errno 1] Operation not permitted",
+      "errno": 1
+    },
+    "9702": {
+      "closed": null,
+      "reason": "[Errno 1] Operation not permitted",
+      "errno": 1
+    },
+    "4310": {
+      "closed": null,
+      "reason": "[Errno 1] Operation not permitted",
+      "errno": 1
+    },
+    "4311": {
+      "closed": null,
+      "reason": "[Errno 1] Operation not permitted",
+      "errno": 1
+    }
+  }
+}

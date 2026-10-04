@@ -1,0 +1,83 @@
+{
+  "scope": "Source-only startup candidate based on accepted 0ab379ba1; production source, user builds and live servers untouched.",
+  "productionRecipe": [
+    "CPU constructor runs the ordinary simulation step at every existing CFL-sized startup interval.",
+    "Async startup discards any future-water staging then runs ordinary stepAsync at each existing startup interval, including the ordinary CPU fallback.",
+    "No final breaking-only update: breaking/front/crash/lip/foam/air are advanced once per actual water interval.",
+    "Warm field first-pass onset suppression, foot thresholds, case library, configuration, exact spinup duration and rider seating policy remain as authored."
+  ],
+  "focusedTests": {
+    "startup": {
+      "passed": 5,
+      "skipped": 81,
+      "durationSeconds": 11.73
+    },
+    "BreakingFront": {
+      "passed": 37,
+      "durationSeconds": 0.578
+    },
+    "strictTypeScript": {
+      "command": "./node_modules/.bin/tsc --noEmit --incremental false",
+      "exitCode": 0
+    }
+  },
+  "reducedCpuBigProbe": {
+    "config": {
+      "spot": "padang",
+      "seed": 1,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "componentCount": 12,
+      "alongShore": 40,
+      "dx": 2,
+      "fineSpacing": 2,
+      "coarseSpacing": 4,
+      "spinUpPeriods": 2
+    },
+    "solverTime": 36,
+    "frontPoints": 19,
+    "tracks": 27,
+    "unsized": 49,
+    "sweptThrows": 22,
+    "sweptCrashes": 22,
+    "foamDenseMax": 1,
+    "aerationAirMax": 0.19450498306071834,
+    "wallMilliseconds": 2505.786,
+    "claim": "One reduced CPU diagnostic fixture. Wall time is observational, not a performance benchmark or actual menu native sea."
+  },
+  "expectedChanges": [
+    "Initial water h/q and plunge mask may change because early throws remove water/momentum and landings return it before the rider joins.",
+    "Initial front track/point IDs, slice clocks, lip counts, foam, aeration, peel and measured surf history may be nonempty and include startup events.",
+    "Startup wall time increases by the front/crash/lip/foam/aeration lifecycle; native GPU readback/update latency remains unmeasured.",
+    "Substep timing is the existing CFL startup sequence, recomputed after complete feedback, and remains different from gameplay fixed 1/60 s requests."
+  ],
+  "remainingUnknowns": [
+    "Native actual menu Big GPU startup stability and latency, and resulting opening quality.",
+    "Whether the repaired initial history helps the naturally seated rider reach and sustain a connected tube.",
+    "The failed native 395-step trial had no saved tracking history; this source repair does not prove the cause of that failed trial."
+  ],
+  "broaderTests": {
+    "status": "intentionally canceled; incomplete five-suite run",
+    "terminalExitCode": 143,
+    "ownedGroupClosed": true,
+    "recordedPasses": 124,
+    "recordedFailures": 0,
+    "passesByFile": {
+      "src/game/SurfZoneWaterPrefetch.test.ts": 4,
+      "src/game/WorkerSurfZone.test.ts": 23,
+      "src/wave/SurfZoneSimulation.test.ts": 49,
+      "src/wave/SurfZoneRunner.test.ts": 43,
+      "src/wave/surfZoneState.test.ts": 5
+    },
+    "fullFiveSuiteGreen": false,
+    "unfinishedChecks": [
+      "Full-CPU Padang Big 320 m / 1 m-grid stability/low-tide/high-tide/oblique cases",
+      "Later SurfZoneSimulation assertions, including held-jet conservation and handover checks, were not reached in this broader run."
+    ],
+    "baselineComparisons": "None: no failure was recorded before intentional cancellation."
+  },
+  "sourceFilesRemainFrozenThroughRootNativeClosure": true
+}
