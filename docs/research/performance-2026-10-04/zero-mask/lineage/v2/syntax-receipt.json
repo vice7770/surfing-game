@@ -1,0 +1,111 @@
+{
+  "valid": true,
+  "helperSyntaxFresh": true,
+  "readySha256": "3e5a7b8b06c12f6b26e6df2dd57349e8831d91bb62b772f164441f89b1772c50",
+  "readyUnchanged": true,
+  "command": "python3 /private/tmp/surf-wavelab-passive-original-v2-20261004/root-checks-first.py",
+  "commands": [
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/surf-wavelab-passive-original-v2-20261004/freeze.mjs"
+      ],
+      "startedAt": "2026-10-04T12:53:07.020723+00:00",
+      "endedAt": "2026-10-04T12:53:07.049909+00:00",
+      "elapsedSeconds": 0.029194917005952448,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-checks-first/command-0.log",
+      "logBytes": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/surf-wavelab-passive-original-v2-20261004/native-owned.mjs"
+      ],
+      "startedAt": "2026-10-04T12:53:07.050016+00:00",
+      "endedAt": "2026-10-04T12:53:07.078143+00:00",
+      "elapsedSeconds": 0.028147417004220188,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-checks-first/command-1.log",
+      "logBytes": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/surf-wavelab-passive-original-v2-20261004/page-prelude.js"
+      ],
+      "startedAt": "2026-10-04T12:53:07.078276+00:00",
+      "endedAt": "2026-10-04T12:53:07.110606+00:00",
+      "elapsedSeconds": 0.03233575000194833,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-checks-first/command-2.log",
+      "logBytes": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/surf-wavelab-passive-original-v2-20261004/capture.mjs"
+      ],
+      "startedAt": "2026-10-04T12:53:07.110675+00:00",
+      "endedAt": "2026-10-04T12:53:07.140808+00:00",
+      "elapsedSeconds": 0.030142417002934963,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-checks-first/command-3.log",
+      "logBytes": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "python3",
+        "-c",
+        "import ast,pathlib; ast.parse(pathlib.Path('/private/tmp/surf-wavelab-passive-original-v2-20261004/native-driver.py').read_text()); print(\"AST parse passed; no driver import\")"
+      ],
+      "startedAt": "2026-10-04T12:53:07.140915+00:00",
+      "endedAt": "2026-10-04T12:53:07.178034+00:00",
+      "elapsedSeconds": 0.03713008394697681,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-checks-first/command-4.log",
+      "logBytes": 35,
+      "logSha256": "e939d13761b0db468df4b335a15fc68a4301da810c0daa5f87f4de3d044a9ba0"
+    },
+    {
+      "argv": [
+        "node",
+        "/private/tmp/surf-wavelab-passive-original-v2-20261004/capture.mjs",
+        "--run=false"
+      ],
+      "startedAt": "2026-10-04T12:53:07.178115+00:00",
+      "endedAt": "2026-10-04T12:53:07.241695+00:00",
+      "elapsedSeconds": 0.06359866599086672,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-checks-first/command-5.log",
+      "logBytes": 7562,
+      "logSha256": "c7235c148acf44cd7a8b00349a40c77a7895aa9f75719470f28b6fcc3968823a"
+    },
+    {
+      "argv": [
+        "python3",
+        "/private/tmp/surf-wavelab-passive-original-v2-20261004/native-driver.py",
+        "--run=false"
+      ],
+      "startedAt": "2026-10-04T12:53:07.241805+00:00",
+      "endedAt": "2026-10-04T12:53:07.316102+00:00",
+      "elapsedSeconds": 0.07430483400821686,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-checks-first/command-6.log",
+      "logBytes": 139,
+      "logSha256": "de62bc92f23c1968467d5ff99a30f947f662cc5c81e2729005c0eb290fd97c04"
+    }
+  ],
+  "startedAt": "2026-10-04T12:53:07.018227+00:00",
+  "endedAt": "2026-10-04T12:53:07.316551+00:00",
+  "elapsedSeconds": 0.29782412498025224,
+  "scope": "Fresh V2 helper syntax and unarmed guards only; no original strict/build repeat, native process, browser or solver"
+}

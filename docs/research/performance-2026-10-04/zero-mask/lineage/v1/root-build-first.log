@@ -1,0 +1,27 @@
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 251 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/build.json                           0.02 kB │ gzip:   0.04 kB
+../dist/index.html                           1.62 kB │ gzip:   0.62 kB
+../dist/assets/surfZoneWorker-CYx0WJfP.js  448.11 kB
+../dist/assets/index-DA8NEfOT.css           33.21 kB │ gzip:   7.32 kB
+../dist/assets/devStepping-BIbJSYUN.js       0.32 kB │ gzip:   0.25 kB
+../dist/assets/particleBench-Cs_hA2qK.js    10.70 kB │ gzip:   4.44 kB
+../dist/assets/waterSheet-Dq85C2oI.js       11.68 kB │ gzip:   5.35 kB
+../dist/assets/jevRecorder-B8xKAppk.js      15.91 kB │ gzip:   6.65 kB
+../dist/assets/rideRecorder-DzB8SUFK.js     41.10 kB │ gzip:  13.39 kB
+../dist/assets/index-CmEb-tnf.js           582.53 kB │ gzip: 160.75 kB
+../dist/assets/WorkerSurfZone-CTHvANa1.js  864.25 kB │ gzip: 267.41 kB
+
+✓ built in 508ms
+
+(!) outDir /private/tmp/surf-wavelab-passive-original-20261004/dist is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.

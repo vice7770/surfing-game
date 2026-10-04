@@ -1,0 +1,80 @@
+{
+  "schema": "root-passive-original-native-driver/v1",
+  "valid": false,
+  "commandSeconds": 175,
+  "cleanupSeconds": 5,
+  "wholeSeconds": 180,
+  "readySha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0",
+  "bindingsSha256": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96",
+  "startedAt": "2026-10-04T12:33:01.272053+00:00",
+  "signals": [],
+  "prePorts": {
+    "4259": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "9669": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "4200": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "5173": {
+      "closed": false,
+      "reason": "TCP accepted"
+    }
+  },
+  "command": [
+    "node",
+    "/private/tmp/surf-wavelab-passive-original-20261004/capture.mjs",
+    "--run=true",
+    "--out=/private/tmp/surf-wavelab-passive-original-20261004/native-first"
+  ],
+  "pid": 49158,
+  "processGroup": 49158,
+  "processGroupCreatedByThisDriver": true,
+  "membersAtCleanup": [],
+  "membersAfterCleanup": [],
+  "cleanupElapsedSeconds": 0.1242565419524908,
+  "exitCode": 1,
+  "postPorts": {
+    "4259": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "9669": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "4200": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "5173": {
+      "closed": false,
+      "reason": "TCP accepted"
+    }
+  },
+  "independentClosureValid": true,
+  "untouchedPortScope": "4200/5173 are read-only TCP witnesses; no signal, stop, or interaction",
+  "log": {
+    "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first.native-driver.log",
+    "bytes": 288,
+    "sha256": "ac67dc6be0936fc1e6f1bd0f70381bed63f87730a82e3f76bdecc5dbe0112940"
+  },
+  "nativeReport": {
+    "path": "/private/tmp/surf-wavelab-passive-original-20261004/native-first/report.json",
+    "bytes": 719568,
+    "sha256": "5c55b04c660555562cff95f9700b666a35ae7397ed4489264deb3ee10b0e65d3"
+  },
+  "nativeValid": false,
+  "nativeIncomplete": true,
+  "nativeFirstFailure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'incomplete'\n- 'complete'\n",
+  "nativeOutputBytes": 140687458,
+  "totalLogBytes": 12816,
+  "endedAt": "2026-10-04T12:34:03.693768+00:00",
+  "elapsedSeconds": 62.421644082991406,
+  "wholeOutputBytes": 140690120
+}

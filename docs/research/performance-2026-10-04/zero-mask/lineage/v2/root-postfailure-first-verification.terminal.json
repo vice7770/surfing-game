@@ -1,0 +1,39 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-postfailure-first-verification.py"
+  ],
+  "cwd": "/private/tmp/surf-wavelab-passive-original-v2-20261004",
+  "deadlineSeconds": 30,
+  "childInternalDeadlineSeconds": 25,
+  "outputCapBytes": 131072,
+  "startedAt": "2026-10-04T13:02:53.383027+00:00",
+  "verifierSource": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-postfailure-first-verification.py",
+    "bytes": 29158,
+    "sha256": "c0c9ace22cec336723e781106f5d2f30c89e0bce5b655c0c1ce0f35e98612375"
+  },
+  "scope": "One offline builtin-only input-integrity verification; no retries. The native capture remains failed.",
+  "pid": 56970,
+  "freshProcessGroup": 56970,
+  "exitCode": 0,
+  "valid": true,
+  "firstFailure": null,
+  "endedAt": "2026-10-04T13:02:54.269613+00:00",
+  "elapsedSeconds": 0.8868535000365227,
+  "childClosed": true,
+  "log": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-postfailure-first-verification.log",
+    "bytes": 4285,
+    "sha256": "fa4bef4f31237b9ae49266e278fd42bf8722d419a8274c7e38befd2f5154160c"
+  },
+  "nineStateQuality": false,
+  "adoption": false,
+  "fpsPass": false,
+  "result": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-postfailure-first-verification.result.json",
+    "bytes": 4285,
+    "sha256": "fa4bef4f31237b9ae49266e278fd42bf8722d419a8274c7e38befd2f5154160c"
+  },
+  "inputIntegrityValid": true
+}

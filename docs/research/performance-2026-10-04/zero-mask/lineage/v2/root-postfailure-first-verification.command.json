@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-postfailure-first-verification.py"
+  ],
+  "cwd": "/private/tmp/surf-wavelab-passive-original-v2-20261004",
+  "deadlineSeconds": 30,
+  "childInternalDeadlineSeconds": 25,
+  "outputCapBytes": 131072,
+  "startedAt": "2026-10-04T13:02:53.383027+00:00",
+  "verifierSource": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/root-postfailure-first-verification.py",
+    "bytes": 29158,
+    "sha256": "c0c9ace22cec336723e781106f5d2f30c89e0bce5b655c0c1ce0f35e98612375"
+  },
+  "scope": "One offline builtin-only input-integrity verification; no retries. The native capture remains failed."
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "root-passive-original-first-postfailure-verification/v1",
+  "valid": true,
+  "startedAt": "2026-10-04T12:40:20.924899+00:00",
+  "endedAt": "2026-10-04T12:40:21.330707+00:00",
+  "elapsedSeconds": 0.4057239579851739,
+  "readySha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0",
+  "bindingsSha256": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96",
+  "authorityPinsVerified": 653,
+  "copiedSourcePinsVerified": 592,
+  "actualTransportFieldsVerified": 466,
+  "retainedTypedBytes": 99971565,
+  "retainedPNGBytes": 39983797,
+  "completeTargets": [
+    0,
+    5,
+    10,
+    15,
+    20,
+    25
+  ],
+  "incompleteNativeCapture": true,
+  "scope": "First postfailure identities and preserved raw/case/closure evidence only; six completed original draws plus partial next-target fields. No render/game/helper/solver/FPS replay, nine-state completion, geometry repair, quality or adoption acceptance."
+}

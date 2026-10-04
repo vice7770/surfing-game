@@ -41,22 +41,4 @@ describe('the barrel mask', () => {
     expect(out[9 * 10 + 8]).toBe(255);
     expect(out.length).toBe(100);
   });
-
-  it('preserves positive support under overlapping zero-mask triangles in either order', () => {
-    const base = quad();
-    const positions = new Float32Array([...base.positions, ...base.positions]);
-    const mask = new Float32Array([0, 0, 0, 0, ...base.mask]);
-    const zero = [0, 1, 2, 1, 3, 2];
-    const positive = [4, 5, 6, 5, 7, 6];
-    const expected = new Uint8Array(100);
-    expect(rasterizeBarrelMask(base, grid, expected)).toBe(20);
-
-    for (const indices of [[...zero, ...positive], [...positive, ...zero]]) {
-      const loft = { ...base, positions, mask, indices: new Uint32Array(indices), vertexCount: 8, indexCount: 12 };
-      const out = new Uint8Array(100).fill(255);
-      expect(rasterizeBarrelMask(loft, grid, out)).toBe(20);
-      expect(out).toEqual(expected);
-      expect(Array.from(loft.indices)).toEqual(indices);
-    }
-  });
 });

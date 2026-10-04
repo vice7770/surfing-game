@@ -1,0 +1,7 @@
+# Source rationale, awaiting root review and actual byte parity
+
+The guard requires all three original vertex mask words to compare exactly equal to zero. JavaScript equality includes signed negative zero. It does not select rows by formed, lift, phase or weight.
+
+The unchanged original function clears a `Uint8Array` to zero before processing triangles. Its only per-node update is `if (value > out[node]) out[node] = Math.min(255, value)`, so each current output node remains a nonnegative byte. For finite barycentric weights and zero mask words, `Math.round(255 * (wa * mask[a] + wb * mask[b] + wc * mask[c]))` is zero or signed zero, which cannot satisfy that strict comparison. Nonfinite barycentric arithmetic multiplied by zero produces NaN, which also cannot satisfy the comparison. A zero-area triangle already continues before that computation. Skipping such a triangle therefore omits no possible byte increase; it leaves contributions from every other triangle intact in either overlap order. The final scan sees exactly the same bytes and returns the same count.
+
+This conclusion depends on the exact frozen original raster body, Uint8 output semantics and the exact one-guard delta. The harness checks these source contracts and the finite retained geometry/mask input domain before actual replay. It preserves all mixed/positive triangles, renderer indices, geometry/contact data and source fields. It does not prove physics or visual smoothness and is not a measured FPS result.

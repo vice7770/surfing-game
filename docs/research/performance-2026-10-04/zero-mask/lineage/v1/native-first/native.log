@@ -1,0 +1,71 @@
+
+DevTools listening on ws://127.0.0.1:9669/devtools/browser/02b709d2-c41e-4e42-afba-c7bda0619068
+Trying to load the allocator multiple times. This is *not* supported.
+[49165:13072796:1004/133302.627931:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:376] SharedImageManager::ProduceOverlay: Trying to Produce a Overlay representation from a non-existent mailbox.
+[49165:13072796:1004/133302.628512:ERROR:components/viz/service/display_embedder/skia_output_device_buffer_queue.cc:258] Invalid mailbox.
+[49165:13072796:1004/133302.628521:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:376] SharedImageManager::ProduceOverlay: Trying to Produce a Overlay representation from a non-existent mailbox.
+[49165:13072796:1004/133302.628525:ERROR:components/viz/service/display_embedder/skia_output_device_buffer_queue.cc:258] Invalid mailbox.
+[49165:13072796:1004/133302.637550:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:376] SharedImageManager::ProduceOverlay: Trying to Produce a Overlay representation from a non-existent mailbox.
+[49165:13072796:1004/133302.637570:ERROR:components/viz/service/display_embedder/skia_output_device_buffer_queue.cc:258] Invalid mailbox.
+[49165:13072796:1004/133302.637572:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:376] SharedImageManager::ProduceOverlay: Trying to Produce a Overlay representation from a non-existent mailbox.
+[49165:13072796:1004/133302.637574:ERROR:components/viz/service/display_embedder/skia_output_device_buffer_queue.cc:258] Invalid mailbox.
+[49165:13072796:1004/133302.637576:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:376] SharedImageManager::ProduceOverlay: Trying to Produce a Overlay representation from a non-existent mailbox.
+[49165:13072796:1004/133302.637578:ERROR:components/viz/service/display_embedder/skia_output_device_buffer_queue.cc:258] Invalid mailbox.
+[49165:13072796:1004/133302.644896:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:376] SharedImageManager::ProduceOverlay: Trying to Produce a Overlay representation from a non-existent mailbox.
+[49165:13072796:1004/133302.644919:ERROR:components/viz/service/display_embedder/skia_output_device_buffer_queue.cc:258] Invalid mailbox.
+[49165:13072796:1004/133302.644923:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:376] SharedImageManager::ProduceOverlay: Trying to Produce a Overlay representation from a non-existent mailbox.
+[49165:13072796:1004/133302.644926:ERROR:components/viz/service/display_embedder/skia_output_device_buffer_queue.cc:258] Invalid mailbox.
+[49165:13072796:1004/133302.644928:ERROR:gpu/command_buffer/service/shared_image/shared_image_manager.cc:376] SharedImageManager::ProduceOverlay: Trying to Produce a Overlay representation from a non-existent mailbox.
+[49165:13072796:1004/133302.644930:ERROR:components/viz/service/display_embedder/skia_output_device_buffer_queue.cc:258] Invalid mailbox.
+[49159:13072777:1004/133306.847408:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+[49159:13072777:1004/133306.931954:ERROR:google_apis/gcm/engine/mcs_client.cc:702]   Error code: 401  Error message: Authentication Failed: wrong_secret
+[49159:13072777:1004/133306.931978:ERROR:google_apis/gcm/engine/mcs_client.cc:704] Failed to log in to GCM, resetting connection.
+Created TensorFlow Lite XNNPACK delegate for CPU.
+[49330:13074698:1004/133321.163543:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake-all --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2
+[49330:13074698:1004/133321.164656:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 308743, parent pid: 49159
+[49330:13074698:1004/133321.167677:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 5077917696B (4.729GiB) / 994610155520B (926.303GiB)
+[49330:13074698:1004/133321.167732:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 5077917696B (4.729GiB) / 994610155520B (926.303GiB)
+[49330:13074698:1004/133321.167819:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log
+[49332:13074702:1004/133321.180934:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --crash-handler --database=/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/Crashpad --url=https://clients2.google.com/cr/report --annotation=prod=Update4 --annotation=ver=156.0.8067.0 --handshake-fd=6 --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2
+[49332:13074702:1004/133321.181694:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 308743, parent pid: 1
+[49332:13074702:1004/133321.184157:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 5077909504B (4.729GiB) / 994610155520B (926.303GiB)
+[49332:13074702:1004/133321.184205:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 5077909504B (4.729GiB) / 994610155520B (926.303GiB)
+[49332:13074702:1004/133321.184277:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log
+[49330:13074698:1004/133321.184905:VERBOSE1:chrome/updater/crash_reporter.cc:123] Crash handler launched and ready.
+[49330:13074698:1004/133321.185895:VERBOSE1:chrome/updater/crash_client.cc:108] Found 0 completed crash reports
+[49330:13074698:1004/133321.185977:VERBOSE1:chrome/updater/crash_client.cc:132] Found 0 pending crash reports
+[49330:13074698:1004/133321.186167:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/RLZ/Crashpad/settings.dat: No such file or directory (2)
+[49330:13074698:1004/133321.186271:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/ChromeForTesting/Crashpad/settings.dat: No such file or directory (2)
+[49330:13074698:1004/133321.186287:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/Chrome-headless/Crashpad/settings.dat: No such file or directory (2)
+[49330:13074698:1004/133321.186299:VERBOSE1:chrome/updater/updater.cc:105] Crash reporting initialized.
+[49330:13074710:1004/133321.186793:VERBOSE1:chrome/updater/app/app_wakeall.cc:58] Launching `/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake`
+[49333:13074714:1004/133321.198370:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2
+[49333:13074714:1004/133321.198970:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 308743, parent pid: 49330
+[49333:13074714:1004/133321.201442:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 5077901312B (4.729GiB) / 994610155520B (926.303GiB)
+[49333:13074714:1004/133321.201507:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 5077901312B (4.729GiB) / 994610155520B (926.303GiB)
+[49333:13074714:1004/133321.201604:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log
+[49335:13074718:1004/133321.214875:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --crash-handler --database=/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/Crashpad --url=https://clients2.google.com/cr/report --annotation=prod=Update4 --annotation=ver=156.0.8067.0 --handshake-fd=6 --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2
+[49335:13074718:1004/133321.215540:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 308743, parent pid: 1
+[49335:13074718:1004/133321.217956:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 5077884928B (4.729GiB) / 994610155520B (926.303GiB)
+[49335:13074718:1004/133321.218014:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 5077884928B (4.729GiB) / 994610155520B (926.303GiB)
+[49335:13074718:1004/133321.218105:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log
+[49333:13074714:1004/133321.218713:VERBOSE1:chrome/updater/crash_reporter.cc:123] Crash handler launched and ready.
+[49333:13074714:1004/133321.219663:VERBOSE1:chrome/updater/crash_client.cc:108] Found 0 completed crash reports
+[49333:13074714:1004/133321.219802:VERBOSE1:chrome/updater/crash_client.cc:132] Found 0 pending crash reports
+[49333:13074714:1004/133321.220039:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/RLZ/Crashpad/settings.dat: No such file or directory (2)
+[49333:13074714:1004/133321.220142:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/ChromeForTesting/Crashpad/settings.dat: No such file or directory (2)
+[49333:13074714:1004/133321.220158:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/Chrome-headless/Crashpad/settings.dat: No such file or directory (2)
+[49333:13074714:1004/133321.220180:VERBOSE1:chrome/updater/updater.cc:105] Crash reporting initialized.
+[49333:13074714:1004/133321.220455:VERBOSE1:chrome/updater/ipc/update_service_internal_proxy_mojo.cc:61] Run
+[49159:13072777:1004/133329.882987:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+[49333:13074714:1004/133336.836707:VERBOSE1:chrome/updater/app/app.cc:52] Shutdown: 0
+[49333:13074714:1004/133336.837169:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log
+[49333:13074714:1004/133336.837197:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--wake) returned 0.
+[49330:13074710:1004/133336.909311:VERBOSE1:chrome/updater/app/app_wakeall.cc:68] `/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake` exited 0
+[49330:13074698:1004/133336.909550:VERBOSE1:chrome/updater/app/app.cc:52] Shutdown: 0
+[49330:13074698:1004/133336.909846:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log
+[49330:13074698:1004/133336.909860:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--wake-all) returned 0.
+[49335:13074718:1004/133346.847581:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log
+[49335:13074718:1004/133346.847626:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--crash-handler) returned 0.
+[49332:13074702:1004/133346.849888:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log
+[49332:13074702:1004/133346.849958:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--crash-handler) returned 0.

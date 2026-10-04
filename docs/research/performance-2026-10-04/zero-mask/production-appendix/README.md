@@ -1,0 +1,5 @@
+# Later production receipts and source references
+
+These small file copies were appended at root's explicit request after the first bounded byte-archive command closed. They are separate from its immutable first manifest and outcome: no archive or harness was retried. Root records the production guard/overlap test,12 targeted tests, strict typecheck and first Vite build as passing; fresh ordinary Padang FPS remains pending. The exact tool-observation receipts are `root-type-first.json` and `root-build-first.json`; the production source references are `barrelMask.ts` and `barrelMask.test.ts`. They do not overwrite the frozen original two-test regression input or the passed candidate source.
+
+Copy sources: `/private/tmp/surf-zero-mask-fps-20261004/root-type-first.json`, `/private/tmp/surf-zero-mask-fps-20261004/root-build-first.json`, `/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMask.ts` and `/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMask.test.ts`. Root can pin these later additions when integrating documentation. This appendix supplies no FPS, nine-state capture or moving-tube-quality pass.

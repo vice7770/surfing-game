@@ -1,0 +1,23 @@
+{
+  "schema": "root-passive-original-first-build/v1",
+  "valid": true,
+  "readySha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0",
+  "command": "BUILD_ID=1099ddaa1 node /Users/regina/Desktop/Projects/surfing-game/node_modules/vite/bin/vite.js build --outDir /private/tmp/surf-wavelab-passive-original-20261004/dist",
+  "argv": [
+    "node",
+    "/Users/regina/Desktop/Projects/surfing-game/node_modules/vite/bin/vite.js",
+    "build",
+    "--outDir",
+    "/private/tmp/surf-wavelab-passive-original-20261004/dist"
+  ],
+  "cwd": "/private/tmp/surf-wavelab-passive-original-20261004/source",
+  "buildId": "1099ddaa1",
+  "startedAt": "2026-10-04T12:32:24.901524+00:00",
+  "endedAt": "2026-10-04T12:32:25.595101+00:00",
+  "elapsedSeconds": 0.693601209030021,
+  "exitCode": 0,
+  "log": "/private/tmp/surf-wavelab-passive-original-20261004/root-build-first.log",
+  "logBytes": 1462,
+  "readyUnchanged": true,
+  "scope": "First unchanged original Vite production build in frozen copied source, original vite.config.ts, no virtual worker/candidate/source substitution"
+}

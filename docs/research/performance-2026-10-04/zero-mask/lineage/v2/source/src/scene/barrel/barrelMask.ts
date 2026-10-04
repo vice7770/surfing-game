@@ -18,7 +18,6 @@ export function rasterizeBarrelMask(loft: LoftResult, grid: SurfaceGrid, out: Ui
     const a = indices[t];
     const b = indices[t + 1];
     const c = indices[t + 2];
-    if (mask[a] === 0 && mask[b] === 0 && mask[c] === 0) continue;
     const ax = p[3 * a];
     const az = p[3 * a + 2];
     const bx = p[3 * b];

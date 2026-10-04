@@ -1,0 +1,30 @@
+{
+  "recordedAt": "2026-10-04T13:05:32.324Z",
+  "scope": "First production zero-mask guard targeted tests and strict typecheck tool observations",
+  "commands": [
+    "node node_modules/vitest/vitest.mjs run src/scene/barrel/barrelMask.test.ts src/scene/barrel/SweptBarrel.test.ts",
+    "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit"
+  ],
+  "results": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "57a4fa",
+        "wall_time_seconds": 1.663878417,
+        "exit_code": 0,
+        "original_token_count": 49,
+        "output": "\n RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game\n\n\n Test Files  2 passed (2)\n      Tests  12 passed (12)\n   Start at  14:04:22\n   Duration  1.45s (transform 51%, tests 30%, import 19%)\n\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "0c192b",
+        "wall_time_seconds": 4.951827833,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ]
+}

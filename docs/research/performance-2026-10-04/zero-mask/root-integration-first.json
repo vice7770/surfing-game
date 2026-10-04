@@ -1,0 +1,39 @@
+{
+  "valid": true,
+  "manifestSha256": "7084448fb928a5896bbce416b15fa4c4ca18ccc9641d374ea4a30f987f7519a7",
+  "entriesVerified": 121,
+  "storedBytesVerified": 3329064,
+  "originalBytesVerified": 12303104,
+  "productionAppendix": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask/production-appendix/README.md",
+      "bytes": 1155,
+      "sha256": "4fc3fa22a4312c9a47d378a98370741ec9fe05b45fc6791aae17e526feb2bf56"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask/production-appendix/barrelMask.test.ts",
+      "bytes": 3719,
+      "sha256": "4af5bd284064c72d49a5191965f18363b5a42ee15a2c872ac30bd162fa5680ae"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask/production-appendix/barrelMask.ts",
+      "bytes": 2396,
+      "sha256": "7e779278be9cad38d3fad90d484c64603c0500f1280ba8bafe05feb35c588c45"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask/production-appendix/root-build-first.json",
+      "bytes": 2717,
+      "sha256": "957ad1e6c1715b88a01b68f70732446e528a6dd5010bb1dac199976171d89d13"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask/production-appendix/root-type-first.json",
+      "bytes": 523,
+      "sha256": "32d23a6ac0971490af6925c87556c20504ebce8c7c6c2b69d63931204a2e1c2e"
+    }
+  ],
+  "localStates": 8,
+  "activePairs": 48,
+  "activePairedMedianSavingMs": 0.032604500000033454,
+  "elapsedSeconds": 0.032199749955907464,
+  "scope": "First durable byte-integrity integration check and current production appendix pinning. No raster, game, build, native or timing rerun; failed capture and missing ninth state remain unchanged."
+}

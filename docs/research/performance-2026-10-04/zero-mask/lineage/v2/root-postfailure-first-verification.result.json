@@ -1,0 +1,113 @@
+{
+  "schema": "root-postfailure-first-input-integrity/v1",
+  "valid": true,
+  "inputIntegrityValid": true,
+  "nineStateQuality": false,
+  "adoption": false,
+  "fpsPass": false,
+  "scope": "Offline input integrity of a failed partial capture only. No game/helper import, replay, solver, native/browser/build/FPS execution or quality assessment. Canonical file bytes and alias metadata/file identities are verified; separately omitted original duplicate buffers cannot be independently compared again.",
+  "startedAt": "2026-10-04T13:02:53.435198+00:00",
+  "checks": [
+    {
+      "check": "frozen-authorities-source-copies-dist-gates-borrowed-and-V1-lineage",
+      "valid": true,
+      "helpers": 7,
+      "currentSources": 592,
+      "copiedSources": 592,
+      "compiledFiles": 49
+    },
+    {
+      "check": "all-canonical-transport-files-and-descriptor-alias-identities",
+      "valid": true,
+      "physicalBytes": 100485939,
+      "logicalOwnedFieldBytes": 167414868,
+      "logicalBufferAliasBytes": 34899231,
+      "logicalBytes": 202314099,
+      "canonicalPayloads": 507,
+      "payloadAliasFields": 181,
+      "withinStateAliases": 76,
+      "pngBytes": 54740412,
+      "originalPNGs": 8,
+      "artifactFiles": 515,
+      "descriptorInstances": 1796,
+      "originalWorkerAuditDescriptorsResolvedByLabel": 4
+    },
+    {
+      "check": "eight-complete-targets-and-raw-cap-failed-ninth-snapshot",
+      "valid": true,
+      "completeTargetsSeconds": [
+        0,
+        5,
+        10,
+        15,
+        20,
+        25,
+        30,
+        35
+      ],
+      "completeFrames": 8,
+      "partialNinthTypedDescriptors": 67,
+      "partialNinthWithinStateAliases": 1,
+      "rawCapFailure": "Error: 96MiB retained numerical/typed payload exceeded",
+      "typedHeadroomBytes": 177357,
+      "nineStateQuality": false
+    },
+    {
+      "check": "actual-completed-original-GETs-and-four-case-start-bodies",
+      "valid": true,
+      "completedGETs": 24,
+      "servedBodyBytes": 11000574,
+      "originalCases": 4,
+      "directCaseFullByteComparisons": 4
+    },
+    {
+      "check": "independent-driver-original-report-logs-closure-time-and-exact-budgets",
+      "valid": true,
+      "driverElapsedSeconds": 80.87502849998418,
+      "cleanupElapsedSeconds": 0.09495879197493196,
+      "independentClosureValid": true,
+      "nativeOutputBytes": 157389044,
+      "wholeOutputBytes": 157391721,
+      "combinedLogBytes": 9838,
+      "unrelated5173": "TCP accepted before and after; read-only witness"
+    }
+  ],
+  "failedPartialCapturePreserved": true,
+  "ready": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/ready.json",
+    "bytes": 561587,
+    "sha256": "3e5a7b8b06c12f6b26e6df2dd57349e8831d91bb62b772f164441f89b1772c50"
+  },
+  "bindings": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/bindings.json",
+    "bytes": 303678,
+    "sha256": "c5a1690c4e1ceffd097f1b568f5b1b1974686290dd2af40e90a4585f583695a4"
+  },
+  "nativeReport": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/native-first/report.json",
+    "bytes": 2153146,
+    "sha256": "9e21bc521219231616712b003fa014c805776a61a741738711a35d3fb050bcca"
+  },
+  "independentDriver": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/native-first.native-driver.json",
+    "bytes": 2386,
+    "sha256": "d3120c24c4685646201cabd90e7a4206f2bab2e9b217b5a3d182377162757579"
+  },
+  "nativeLog": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/native-first/native.log",
+    "bytes": 9547,
+    "sha256": "02d293bbf1dad43ae1fe684f7057bd5a8021c01fc1032636008bcff9c0871140"
+  },
+  "driverLog": {
+    "path": "/private/tmp/surf-wavelab-passive-original-v2-20261004/native-first.native-driver.log",
+    "bytes": 291,
+    "sha256": "eeb9efd4ad8924987b22c686e0646e61faab4a83186570b5907f58f18989fc65"
+  },
+  "originalFirstFailure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'incomplete'\n- 'complete'\n",
+  "captureFailure": "Error: 96MiB retained numerical/typed payload exceeded",
+  "pinOccurrencesVerified": 7044,
+  "uniquePathsReadOnce": 2438,
+  "uniqueFileBytesRead": 299537012,
+  "endedAt": "2026-10-04T13:02:54.252907+00:00",
+  "elapsedSeconds": 0.8177185829845257
+}

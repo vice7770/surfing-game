@@ -1,0 +1,20 @@
+{
+  "valid": true,
+  "readySha256": "3e5a7b8b06c12f6b26e6df2dd57349e8831d91bb62b772f164441f89b1772c50",
+  "readyUnchanged": true,
+  "command": "python3 /private/tmp/surf-wavelab-passive-original-v2-20261004/root-checks-first.py exact byte identity / original successful gate inheritance",
+  "startedAt": "2026-10-04T12:53:07.316982+00:00",
+  "endedAt": "2026-10-04T12:53:07.387102+00:00",
+  "elapsedSeconds": 0.07012137497076765,
+  "inherited": true,
+  "originalReadySha256": "8fe5b72b044f718bd6575a3e448d696a7f849d2dd817ce165ccd8191885460c0",
+  "originalBindingsSha256": "97c1b9ec0e71a8573689dd203d236118f7d660ec15d09b53b3583ba65b641c96",
+  "sourceByteIdentityVerified": true,
+  "compiledByteIdentityVerified": true,
+  "originalStrictTypecheckInherited": true,
+  "sourceFiles": 592,
+  "compiledFiles": 49,
+  "originalStrictReceipt": "/private/tmp/surf-wavelab-passive-original-20261004/syntax-receipt.json",
+  "originalBuildReceipt": "/private/tmp/surf-wavelab-passive-original-20261004/build-receipt.json",
+  "scope": "No new original typecheck/build execution. Identical source/dist bytes retain original successful strict/build evidence; V1 native capture remains failed."
+}

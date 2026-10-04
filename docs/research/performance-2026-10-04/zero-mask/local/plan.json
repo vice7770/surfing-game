@@ -1,0 +1,21 @@
+{
+  "schema": "zero-mask-partial-eight-plan/v1",
+  "work": "/private/tmp/surf-zero-mask-triangle-20261004/partial-eight",
+  "captureWork": "/private/tmp/surf-wavelab-passive-original-v2-20261004",
+  "targetsSeconds": [0, 5, 10, 15, 20, 25, 30, 35],
+  "originalCaptureTargetsSeconds": [0, 5, 10, 15, 20, 25, 30, 35, 40],
+  "nativeCaptureComplete": false,
+  "nineStateQuality": false,
+  "metadataFileBytes": 8388608,
+  "rawUniqueBytes": 100663296,
+  "gridNodes": 1048576,
+  "summaryBytes": 131072,
+  "logBytes": 1048576,
+  "commandSeconds": 30,
+  "cleanupSeconds": 1,
+  "wholeSeconds": 31,
+  "warmupCallsPerFunctionPerState": 1,
+  "pairedCallsPerState": 8,
+  "failurePolicy": "One fresh partial-eight offline-first result; zero retries. Require all actual eight completed states, never a selected subset. Exact original/candidate full output/count parity and regressions precede any cost measurement. Missing inputs stop as incomplete.",
+  "scope": "Local CPU mask equivalence/cost on an independently closed FAILED native V2 capture. No nine-state quality, capture acceptance, physics/renderer change, FPS pass, adoption or video reproduction. The complete nine-state harness remains separate and unexecuted."
+}

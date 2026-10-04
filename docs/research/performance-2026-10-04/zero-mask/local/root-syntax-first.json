@@ -1,0 +1,67 @@
+{
+  "scope": "First fresh helper syntax and unarmed guard tool observations; no parity, FPS or adoption result",
+  "readySha256": "de501c5c282d95ca2b65d99ba2bfa1280b19ed50db516cc970386bd25887da17",
+  "valid": true,
+  "results": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "178eb4",
+        "wall_time_seconds": 0.000009958,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "6892a8",
+        "wall_time_seconds": 0.0000045,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "a80bd5",
+        "wall_time_seconds": 0.000006542,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "555bbc",
+        "wall_time_seconds": 0.000007208,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "28164c",
+        "wall_time_seconds": 0.000006,
+        "exit_code": 0,
+        "original_token_count": 5,
+        "output": "AST parse passed\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "564a25",
+        "wall_time_seconds": 0.000007583,
+        "exit_code": 0,
+        "original_token_count": 27,
+        "output": "{\"planOnly\": true, \"commandSeconds\": 30, \"cleanupSeconds\": 1, \"wholeSeconds\": 31, \"nativeResources\": false}\n"
+      }
+    }
+  ]
+}
