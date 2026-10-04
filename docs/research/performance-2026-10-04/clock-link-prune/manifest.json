@@ -1,0 +1,433 @@
+{
+  "schemaVersion": 1,
+  "archiveKind": "ClockLink actual-API watchdog lifecycle regression and root adoption validation",
+  "originalScratchRoot": "/private/tmp/clock-link-prune-repro-20261004",
+  "baselineRuntimeCommit": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "scope": {
+    "syntheticActualApiFixture": true,
+    "clockLinkEnabled": true,
+    "ordinaryPadangClockLinkOff": true,
+    "noFpsClaim": true,
+    "noOldGpuCauseClaim": true,
+    "historicalPreparationFlagsNotCurrentStatus": true,
+    "productionCandidateAppliedByRoot": true,
+    "archiveOnlyDocumentationEdits": true
+  },
+  "validation": {
+    "originalFinalExitCode": 1,
+    "originalFinalFailures": 3,
+    "candidateFocusedExitCode": 0,
+    "candidatePassedTests": 65,
+    "candidatePassedFiles": 4,
+    "rootFocusedExitCode": 0,
+    "rootPassedTests": 65,
+    "rootPassedFiles": 4,
+    "rootBuildExitCode": 0,
+    "rootBuildCompletionUtc": "2026-10-04 00:12 UTC",
+    "rootReportedLiteralBuildId": "743bc69c3",
+    "buildIdContext": "Precommit docs-only HEAD with ClockLink candidate present in the source working tree",
+    "rootBuildViteMilliseconds": 530,
+    "rootBuildWorker": "surfZoneWorker-C17EHetv.js",
+    "rootBuildWorkerReportedKB": 437.21,
+    "rawProofJsonCount": 11,
+    "rawProofJsonValidAndNewlineTerminated": true,
+    "initialHelperEvidenceIsHistorical": true,
+    "finalSourceSharedOriginalCandidateRoot": true,
+    "switchOffHistoricalFingerprintsRetained": true
+  },
+  "deterministicGzip": {
+    "filename": "",
+    "mtime": 0,
+    "compresslevel": 9
+  },
+  "generatedReadme": {
+    "path": "README.md",
+    "bytes": 4951,
+    "sha256": "8ca00f64274309833039c779f6936d6280574dd839880a8dca8466c57383c4c5"
+  },
+  "files": [
+    {
+      "path": "preparation/README.md",
+      "bytes": 4276,
+      "sha256": "2689ad4065b347476fcf5f2ad7c9acf08facc0a77b5ef9c5a17d74e86391c175",
+      "encoding": "identity",
+      "role": "Historical scratch README before root adoption; current-scope flags are not current production status",
+      "originalAliases": [
+        {
+          "path": "README.md",
+          "bytes": 4276,
+          "sha256": "2689ad4065b347476fcf5f2ad7c9acf08facc0a77b5ef9c5a17d74e86391c175"
+        }
+      ]
+    },
+    {
+      "path": "preparation/manifest.json",
+      "bytes": 6032,
+      "sha256": "c1bb6105483e4aa4b3e410da55b9ffe0d47c16410ac7ccb34b36b84b1ec65188",
+      "encoding": "identity",
+      "role": "Historical preparation manifest before root applied the patch",
+      "originalAliases": [
+        {
+          "path": "manifest.json",
+          "bytes": 6032,
+          "sha256": "c1bb6105483e4aa4b3e410da55b9ffe0d47c16410ac7ccb34b36b84b1ec65188"
+        }
+      ]
+    },
+    {
+      "path": "preparation/source-manifest.json.gz",
+      "bytes": 28242,
+      "sha256": "d0531479cb5b30189ef98fecfec012f17f23b4428792907527ed5aa8ae8e895a",
+      "encoding": "gzip",
+      "role": "Pre-adoption hashes for the 542 copied source files, not a runtime source bundle",
+      "originalAliases": [
+        {
+          "path": "original-source-manifest.json",
+          "bytes": 88552,
+          "sha256": "b8bb696508c9bb44ff45ad14a414e7132a92fe748e2f8e459c530e6d1f321762"
+        }
+      ]
+    },
+    {
+      "path": "original/BreakingFront.ts.txt",
+      "bytes": 39400,
+      "sha256": "4a5256f9a6501a2320e275c2fddaa786b1b00147eca36aba696ec7ca4c543052",
+      "encoding": "identity",
+      "role": "Original runtime source for the failing regression",
+      "originalAliases": [
+        {
+          "path": "original-BreakingFront.ts",
+          "bytes": 39400,
+          "sha256": "4a5256f9a6501a2320e275c2fddaa786b1b00147eca36aba696ec7ca4c543052"
+        }
+      ]
+    },
+    {
+      "path": "candidate/candidate.patch",
+      "bytes": 8072,
+      "sha256": "3fdf77b5fa3e6efb5c53bff40dd29b4e5027db72a3af2398fd047c3e3a64682f",
+      "encoding": "identity",
+      "role": "Exact reviewed patch: BreakingFront runtime change plus regression",
+      "originalAliases": [
+        {
+          "path": "candidate.patch",
+          "bytes": 8072,
+          "sha256": "3fdf77b5fa3e6efb5c53bff40dd29b4e5027db72a3af2398fd047c3e3a64682f"
+        }
+      ]
+    },
+    {
+      "path": "candidate/BreakingFront.ts.txt",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c",
+      "encoding": "identity",
+      "role": "Reviewed candidate runtime source, exact to root adopted working tree at archive intake",
+      "originalAliases": [
+        {
+          "path": "src/wave/barrel/BreakingFront.ts",
+          "bytes": 39920,
+          "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+        }
+      ]
+    },
+    {
+      "path": "candidate/ClockLinkPrune.test.ts.txt",
+      "bytes": 6728,
+      "sha256": "7c705f44f3f24bc0619d1e3ac12bad5dc4e088f79a9f7e21adbe96f2739c1a75",
+      "encoding": "identity",
+      "role": "Final regression source shared by final original, scratch candidate, and root focused run",
+      "originalAliases": [
+        {
+          "path": "src/wave/barrel/ClockLinkPrune.test.ts",
+          "bytes": 6728,
+          "sha256": "7c705f44f3f24bc0619d1e3ac12bad5dc4e088f79a9f7e21adbe96f2739c1a75"
+        }
+      ]
+    },
+    {
+      "path": "validation/original-first-helper.log",
+      "bytes": 11454,
+      "sha256": "4bde16fbaec1750bd6066a10c60521ec91a9e1d42fc02dc80902e06f0588ab35",
+      "encoding": "identity",
+      "role": "Initial three-failure run with the earlier helper; retained but not final regression authority",
+      "originalAliases": [
+        {
+          "path": "original-regression-first-helper.log",
+          "bytes": 11454,
+          "sha256": "4bde16fbaec1750bd6066a10c60521ec91a9e1d42fc02dc80902e06f0588ab35"
+        },
+        {
+          "path": "original-regression.log",
+          "bytes": 11454,
+          "sha256": "4bde16fbaec1750bd6066a10c60521ec91a9e1d42fc02dc80902e06f0588ab35"
+        }
+      ]
+    },
+    {
+      "path": "validation/original-final.log",
+      "bytes": 11506,
+      "sha256": "4433b5520d3b6bd3667d50a5ca957c077cd878002e32472ed01a4e07464a3168",
+      "encoding": "identity",
+      "role": "Final original run: three failures after helper correction",
+      "originalAliases": [
+        {
+          "path": "original-regression-final.log",
+          "bytes": 11506,
+          "sha256": "4433b5520d3b6bd3667d50a5ca957c077cd878002e32472ed01a4e07464a3168"
+        }
+      ]
+    },
+    {
+      "path": "validation/candidate-focused.log",
+      "bytes": 11568,
+      "sha256": "2fc1e10af7175bff2ff3c3e505b8acbcf277648538ea81e4b68e535935cc119a",
+      "encoding": "identity",
+      "role": "Scratch candidate run: 65 tests in four files passed",
+      "originalAliases": [
+        {
+          "path": "candidate-focused.log",
+          "bytes": 11568,
+          "sha256": "2fc1e10af7175bff2ff3c3e505b8acbcf277648538ea81e4b68e535935cc119a"
+        }
+      ]
+    },
+    {
+      "path": "validation/root-focused.log",
+      "bytes": 11567,
+      "sha256": "64a2283aa03b42830ead5b10cca8b89aecb6d19a6e092c09dbea85484fd0eb3b",
+      "encoding": "identity",
+      "role": "Root production focused validation: 65 tests in four files passed",
+      "originalAliases": [
+        {
+          "path": "root-focused.log",
+          "bytes": 11567,
+          "sha256": "64a2283aa03b42830ead5b10cca8b89aecb6d19a6e092c09dbea85484fd0eb3b"
+        }
+      ]
+    },
+    {
+      "path": "validation/root-build.log",
+      "bytes": 1328,
+      "sha256": "63b0d3584280207732fb5ce6d1b9b1df79c381327b3258dfceb70edc09a44a28",
+      "encoding": "identity",
+      "role": "Root strict TypeScript and Vite build completed successfully; finalized log",
+      "originalAliases": [
+        {
+          "path": "root-build.log",
+          "bytes": 1328,
+          "sha256": "63b0d3584280207732fb5ce6d1b9b1df79c381327b3258dfceb70edc09a44a28"
+        }
+      ]
+    },
+    {
+      "path": "proof-summary.json",
+      "bytes": 1540,
+      "sha256": "4071052ed4d2c9c13eab496ca2f37c85e728942586090f0aabb0984872304eeb",
+      "encoding": "identity",
+      "role": "Historical preparation proof summary; unchanged-source flags refer to preparation time",
+      "originalAliases": [
+        {
+          "path": "proof-summary.json",
+          "bytes": 1540,
+          "sha256": "4071052ed4d2c9c13eab496ca2f37c85e728942586090f0aabb0984872304eeb"
+        }
+      ]
+    },
+    {
+      "path": "original-first-proof/continuation.json",
+      "bytes": 19062,
+      "sha256": "a718015052bf75d347f81b5bee49bc58aedbfe425f7b71c157b309f5e3a36a4d",
+      "encoding": "identity",
+      "role": "Initial helper evidence, not final regression authority",
+      "originalAliases": [
+        {
+          "path": "original-proof/continuation.json",
+          "bytes": 19062,
+          "sha256": "a718015052bf75d347f81b5bee49bc58aedbfe425f7b71c157b309f5e3a36a4d"
+        }
+      ]
+    },
+    {
+      "path": "original-first-proof/export-import.json",
+      "bytes": 19062,
+      "sha256": "a718015052bf75d347f81b5bee49bc58aedbfe425f7b71c157b309f5e3a36a4d",
+      "encoding": "identity",
+      "role": "Initial helper evidence, not final regression authority",
+      "originalAliases": [
+        {
+          "path": "original-proof/export-import.json",
+          "bytes": 19062,
+          "sha256": "a718015052bf75d347f81b5bee49bc58aedbfe425f7b71c157b309f5e3a36a4d"
+        }
+      ]
+    },
+    {
+      "path": "original-first-proof/no-resurrection.json",
+      "bytes": 19062,
+      "sha256": "a718015052bf75d347f81b5bee49bc58aedbfe425f7b71c157b309f5e3a36a4d",
+      "encoding": "identity",
+      "role": "Initial helper evidence, not final regression authority",
+      "originalAliases": [
+        {
+          "path": "original-proof/no-resurrection.json",
+          "bytes": 19062,
+          "sha256": "a718015052bf75d347f81b5bee49bc58aedbfe425f7b71c157b309f5e3a36a4d"
+        }
+      ]
+    },
+    {
+      "path": "original-final-proof/after-update.json",
+      "bytes": 7569,
+      "sha256": "bd23e8cd0a1054f4772be143f7dff84a4d72809c129347bda344881aad2326dc",
+      "encoding": "identity",
+      "role": "Final original regression evidence",
+      "originalAliases": [
+        {
+          "path": "original-proof-final/after-update.json",
+          "bytes": 7569,
+          "sha256": "bd23e8cd0a1054f4772be143f7dff84a4d72809c129347bda344881aad2326dc"
+        }
+      ]
+    },
+    {
+      "path": "original-final-proof/continuation.json",
+      "bytes": 19173,
+      "sha256": "ccd8d6f1865e708aa973b968b1304f63849009346af2c21a425131ccfb92e16c",
+      "encoding": "identity",
+      "role": "Final original regression evidence",
+      "originalAliases": [
+        {
+          "path": "original-proof-final/continuation.json",
+          "bytes": 19173,
+          "sha256": "ccd8d6f1865e708aa973b968b1304f63849009346af2c21a425131ccfb92e16c"
+        }
+      ]
+    },
+    {
+      "path": "original-final-proof/export-import.json",
+      "bytes": 19173,
+      "sha256": "ccd8d6f1865e708aa973b968b1304f63849009346af2c21a425131ccfb92e16c",
+      "encoding": "identity",
+      "role": "Final original regression evidence",
+      "originalAliases": [
+        {
+          "path": "original-proof-final/export-import.json",
+          "bytes": 19173,
+          "sha256": "ccd8d6f1865e708aa973b968b1304f63849009346af2c21a425131ccfb92e16c"
+        }
+      ]
+    },
+    {
+      "path": "original-final-proof/no-resurrection.json",
+      "bytes": 13876,
+      "sha256": "039f555a01053685f110d21e8ff379f3b524b292c0514e420e38e2328d8c8019",
+      "encoding": "identity",
+      "role": "Final original regression evidence",
+      "originalAliases": [
+        {
+          "path": "original-proof-final/no-resurrection.json",
+          "bytes": 13876,
+          "sha256": "039f555a01053685f110d21e8ff379f3b524b292c0514e420e38e2328d8c8019"
+        }
+      ]
+    },
+    {
+      "path": "candidate-proof/after-update.json",
+      "bytes": 83,
+      "sha256": "919e95b0c71a14caa994f3723b0167632bfb76d8361ba8440a8efd79b970fbe2",
+      "encoding": "identity",
+      "role": "Final candidate regression evidence",
+      "originalAliases": [
+        {
+          "path": "candidate-proof/after-update.json",
+          "bytes": 83,
+          "sha256": "919e95b0c71a14caa994f3723b0167632bfb76d8361ba8440a8efd79b970fbe2"
+        }
+      ]
+    },
+    {
+      "path": "candidate-proof/continuation.json",
+      "bytes": 19083,
+      "sha256": "dbf68581d41bc9b5c3d99b4cd2f4c5f8cf45095e91510258b66f19a720f392cb",
+      "encoding": "identity",
+      "role": "Final candidate regression evidence",
+      "originalAliases": [
+        {
+          "path": "candidate-proof/continuation.json",
+          "bytes": 19083,
+          "sha256": "dbf68581d41bc9b5c3d99b4cd2f4c5f8cf45095e91510258b66f19a720f392cb"
+        }
+      ]
+    },
+    {
+      "path": "candidate-proof/export-import.json",
+      "bytes": 19083,
+      "sha256": "dbf68581d41bc9b5c3d99b4cd2f4c5f8cf45095e91510258b66f19a720f392cb",
+      "encoding": "identity",
+      "role": "Final candidate regression evidence",
+      "originalAliases": [
+        {
+          "path": "candidate-proof/export-import.json",
+          "bytes": 19083,
+          "sha256": "dbf68581d41bc9b5c3d99b4cd2f4c5f8cf45095e91510258b66f19a720f392cb"
+        }
+      ]
+    },
+    {
+      "path": "candidate-proof/no-resurrection.json",
+      "bytes": 13876,
+      "sha256": "039f555a01053685f110d21e8ff379f3b524b292c0514e420e38e2328d8c8019",
+      "encoding": "identity",
+      "role": "Final candidate regression evidence",
+      "originalAliases": [
+        {
+          "path": "candidate-proof/no-resurrection.json",
+          "bytes": 13876,
+          "sha256": "039f555a01053685f110d21e8ff379f3b524b292c0514e420e38e2328d8c8019"
+        }
+      ]
+    },
+    {
+      "path": "preparation/config/package.json.txt",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "encoding": "identity",
+      "role": "Scratch validation configuration; inert text to avoid discovery or workspace installation",
+      "originalAliases": [
+        {
+          "path": "package.json",
+          "bytes": 4917,
+          "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+        }
+      ]
+    },
+    {
+      "path": "preparation/config/tsconfig.json.txt",
+      "bytes": 550,
+      "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f",
+      "encoding": "identity",
+      "role": "Scratch validation configuration; inert text to avoid discovery or workspace installation",
+      "originalAliases": [
+        {
+          "path": "tsconfig.json",
+          "bytes": 550,
+          "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+        }
+      ]
+    },
+    {
+      "path": "preparation/config/vitest.config.ts.txt",
+      "bytes": 175,
+      "sha256": "afc029d0a14046bb716d9ee7c76cd3010812cd79259df90a52d2e9a6970ca27d",
+      "encoding": "identity",
+      "role": "Scratch validation configuration; inert text to avoid discovery or workspace installation",
+      "originalAliases": [
+        {
+          "path": "vitest.config.ts",
+          "bytes": 175,
+          "sha256": "afc029d0a14046bb716d9ee7c76cd3010812cd79259df90a52d2e9a6970ca27d"
+        }
+      ]
+    }
+  ]
+}

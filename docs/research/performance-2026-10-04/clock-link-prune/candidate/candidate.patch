@@ -1,0 +1,155 @@
+--- a/src/wave/barrel/BreakingFront.ts
++++ b/src/wave/barrel/BreakingFront.ts
+@@ -280,6 +280,7 @@
+   }
+ 
+   update(samples: readonly CrestSample[], count: number, time: number): void {
++    this.retainActiveOrder();
+     const previous = [...(this.order ?? this.points), ...this.held];
+     const pointsOf = byColumn(previous);
+     const tracksOf = byColumn(this.tracks);
+@@ -619,7 +620,22 @@
+     }
+   }
+ 
++  /** Keep matching order after SweptCrash removes points in place; surviving refs retain their original tie order. */
++  private retainActiveOrder(): void {
++    const { order } = this;
++    if (!order || order.length === this.points.length) return;
++    const active = new Set(this.points);
++    let kept = 0;
++    for (const point of order) {
++      if (!active.has(point)) continue;
++      order[kept] = point;
++      kept += 1;
++    }
++    order.length = kept;
++  }
++
+   exportState(): FrontState {
++    this.retainActiveOrder();
+     return {
+       nextId: this.nextId, nextFront: this.nextFront, points: this.points.map((p) => ({ ...p })), held: this.held.map((p) => ({ ...p })),
+       tracks: this.tracks.map((t) => ({ ...t })),
+--- /dev/null
++++ b/src/wave/barrel/ClockLinkPrune.test.ts
+@@ -0,0 +1,119 @@
++import { mkdirSync, writeFileSync } from 'node:fs';
++import { describe, expect, it } from 'vitest';
++import { PlungingLip } from '../PlungingLip';
++import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
++import { BreakingFront, type FrontOptions } from './BreakingFront';
++import type { CrestSample } from './crestOnset';
++import { ProfileLibrary } from './ProfileLibrary';
++import { advanceClocks, onsetTiming } from './sliceClock';
++import { SweptCrash, type CrashSea } from './SweptCrash';
++import { tubeCase } from './toyCase';
++
++const TIMING = onsetTiming(7, 16);
++const HEIGHT = 1.6;
++const JOIN = TIMING.joinDepth(HEIGHT);
++const LINKED: FrontOptions = { jumpReach: 10, clockLink: true };
++const sample = (column: number, z: number, depth: number, strength: number): CrestSample => ({
++  column, row: Math.floor(z), x: column + 0.5, z, eta: HEIGHT, wave: HEIGHT,
++  strength, rise: 0.5, depth, b: 0.3, speed: 5,
++});
++
++/** Real tracking/link, real throw pacing, then real solver-time stall pruning. No point metadata is assigned by the test. */
++function linkedCrashExit(label: string) {
++  const front = new BreakingFront(1, TIMING, LINKED);
++  for (const time of [0.75, 1, 1.25]) {
++    const samples = Array.from({ length: 20 }, (_, column) => {
++      const joined = time >= (column < 10 ? 1 : 1.25);
++      return sample(column, column < 10 ? 10 : 16, joined ? JOIN : TIMING.h0, joined ? 0.5 : 0);
++    });
++    front.update(samples, samples.length, time);
++  }
++  expect(front.clockLinks).toBe(1);
++  expect(new Set(front.points.map(p => p.front)).size).toBe(1);
++  const linkedState = front.exportState();
++  expect(linkedState.order).toHaveLength(20);
++
++  // The six-metre gap exceeds the smoothing radius: left crosses its own throw; right stays before its throw.
++  const crossing = Array.from({ length: 20 }, (_, column) => sample(column, column < 10 ? 10.1 : 16,
++    column < 10 ? TIMING.throwDepth(HEIGHT) - 0.1 : JOIN, 0.5));
++  front.update(crossing, crossing.length, 1.5);
++  advanceClocks(front.points, 1.5, TIMING);
++  expect(front.points.filter(p => p.column < 10).every(p => p.tau >= 0 && p.thrown !== null)).toBe(true);
++  expect(front.points.filter(p => p.column >= 10).every(p => p.tau < 0 && p.thrown === null)).toBe(true);
++  expect(front.exportState().order).toHaveLength(20);
++
++  const solver = new ShallowWaterSolver({ nx: 24, xMin: 0, dx: 1, zEdges: uniformEdges(0, 40, 40), xBoundary: 'wall' },
++    () => 2, { manning: 0 });
++  for (let z = 9; z < 19; z += 1) for (let x = 0; x < solver.nx; x += 1) solver.h[z * solver.nx + x] += HEIGHT;
++  solver.time = 1.5;
++  const library = new ProfileLibrary([tubeCase(0.2), tubeCase(0.4)]);
++  const lip = new PlungingLip(solver);
++  const crash = new SweptCrash(library, 0.05);
++  const sea: CrashSea = { solver, lip, stillLevel: 0, period: 16,
++    strength: new Float64Array(solver.h.length), whitewater: new Float64Array(solver.h.length) };
++  crash.update(front.points, sea);
++  const paced = front.points.filter(p => p.column < 10);
++  expect(paced).toHaveLength(10);
++  expect(paced.every(p => p.jetAt === 1.5 && p.jetPace !== undefined && p.jetUntil !== undefined)).toBe(true);
++  expect(front.points.filter(p => p.column >= 10).every(p => p.jetAt === undefined)).toBe(true);
++  const beforePrune = front.exportState();
++  const removedIds = paced.map(p => p.id);
++  const touchdown = library.profileTimes({ slope: 0.05, footHeight: paced[0].footHeight, footDepth: paced[0].footDepth }).touchdownSeconds;
++
++  // Hold only the tracker clocks by omitting advanceClocks; actual solver and lip clocks continue through the watchdog.
++  let pruneTime = Number.NaN;
++  for (let step = 0; step < 200; step += 1) {
++    solver.step(0.01);
++    crash.update(front.points, sea);
++    lip.step(0.01);
++    if (crash.exited.length) { pruneTime = solver.time; break; }
++  }
++  expect(crash.exited.map(p => p.id)).toEqual(removedIds);
++  expect(crash.counts.exits).toBe(10);
++  expect(pruneTime - 1.5).toBeGreaterThanOrEqual(2 * touchdown);
++  expect(pruneTime - 1.5).toBeLessThan(2 * touchdown + 0.01 + 1e-9);
++  expect(front.points).toHaveLength(10);
++  expect(front.points.every(p => p.column >= 10)).toBe(true);
++  expect(front.points.some(p => removedIds.includes(p.id))).toBe(false);
++  const result = { front, removedIds, beforePrune, pruneTime, touchdown, exited: crash.exited.map(p => p.id),
++    counts: { ...crash.counts }, afterPrune: label === 'no-resurrection' ? undefined : front.exportState(),
++    afterPruneActiveIds: front.points.map(p => p.id) };
++  const out = process.env.CLOCK_LINK_REPORT_DIR;
++  if (out) { mkdirSync(out, { recursive: true }); writeFileSync(`${out}/${label}.json`, JSON.stringify(result, (key, value) => key === 'front' ? undefined : value, 2) + '\n'); }
++  return result;
++}
++
++describe('clock-linked matching order after actual crash pruning', () => {
++  it('exports an importable state containing every surviving ID once after an actual stall exit', () => {
++    const { front, beforePrune, removedIds } = linkedCrashExit('export-import');
++    const state = front.exportState();
++    const copy = new BreakingFront(1, TIMING, LINKED);
++    expect(() => copy.importState(state)).not.toThrow();
++    expect(state.order).toEqual(beforePrune.order!.filter(id => !removedIds.includes(id)));
++    expect(copy.exportState()).toEqual(state);
++  });
++
++  it('does not coast actual crash-exited IDs back into the next tracker update without an export', () => {
++    const { front, removedIds, pruneTime } = linkedCrashExit('no-resurrection');
++    // There has been no export or handover since the actual crash prune.
++    front.update([], 0, pruneTime + 0.01);
++    const out = process.env.CLOCK_LINK_REPORT_DIR;
++    if (out) writeFileSync(`${out}/after-update.json`, JSON.stringify(front.exportState(), null, 2) + '\n');
++    expect(front.points.filter(p => removedIds.includes(p.id))).toEqual([]);
++    expect(front.exportState().held.filter(p => removedIds.includes(p.id))).toEqual([]);
++  });
++
++  it('preserves surviving tie-order and follows the same continuation after handover', () => {
++    const { front, beforePrune, removedIds, pruneTime } = linkedCrashExit('continuation');
++    const state = front.exportState();
++    const expectedOrder = beforePrune.order!.filter(id => !removedIds.includes(id));
++    expect(state.order).toEqual(expectedOrder);
++    const copy = new BreakingFront(1, TIMING, LINKED);
++    copy.importState(state);
++    const samples = Array.from({ length: 10 }, (_, k) => sample(k + 10, 16.1, JOIN, 0.5));
++    front.update(samples, samples.length, pruneTime + 0.01);
++    copy.update(samples, samples.length, pruneTime + 0.01);
++    expect(copy.exportState()).toEqual(front.exportState());
++    expect(front.points.some(p => removedIds.includes(p.id))).toBe(false);
++  });
++});

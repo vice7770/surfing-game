@@ -280,7 +280,6 @@ export class BreakingFront {
   }
 
   update(samples: readonly CrestSample[], count: number, time: number): void {
-    this.retainActiveOrder();
     const previous = [...(this.order ?? this.points), ...this.held];
     const pointsOf = byColumn(previous);
     const tracksOf = byColumn(this.tracks);
@@ -620,22 +619,7 @@ export class BreakingFront {
     }
   }
 
-  /** Keep matching order after SweptCrash removes points in place; surviving refs retain their original tie order. */
-  private retainActiveOrder(): void {
-    const { order } = this;
-    if (!order || order.length === this.points.length) return;
-    const active = new Set(this.points);
-    let kept = 0;
-    for (const point of order) {
-      if (!active.has(point)) continue;
-      order[kept] = point;
-      kept += 1;
-    }
-    order.length = kept;
-  }
-
   exportState(): FrontState {
-    this.retainActiveOrder();
     return {
       nextId: this.nextId, nextFront: this.nextFront, points: this.points.map((p) => ({ ...p })), held: this.held.map((p) => ({ ...p })),
       tracks: this.tracks.map((t) => ({ ...t })),

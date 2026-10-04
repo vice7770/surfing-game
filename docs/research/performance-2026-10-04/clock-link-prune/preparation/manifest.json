@@ -1,0 +1,227 @@
+{
+  "baselineRuntimeCommit": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "candidateProductionApplied": false,
+  "sourceChanges": [
+    "src/wave/barrel/BreakingFront.ts"
+  ],
+  "newRegression": "src/wave/barrel/ClockLinkPrune.test.ts",
+  "originalFinalRegressionExitCode": 1,
+  "candidateFocusedExitCode": 0,
+  "originalFailures": 3,
+  "candidatePassedTests": 65,
+  "candidatePassedFiles": 4,
+  "productionSourceUnchanged": true,
+  "noGpuBrowserBuildFullsuiteGit": true,
+  "proof": {
+    "actualClockLink": true,
+    "pointsLinked": 20,
+    "leftPacedIDs": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "survivorIDs": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "pruneTime": 2.349999999999993,
+    "jetAt": 1.5,
+    "touchdownSeconds": 0.4223616916493313,
+    "actualSolverAndLipStepSeconds": 0.01,
+    "pointMetadataAssignedByTest": false,
+    "clockAdvancementPausedForActualWatchdog": true,
+    "originalImportError": "A front state whose order names point 0, which it does not hold",
+    "originalExportOrder": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "candidateExportOrder": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "originalNoSampleNextActiveIDs": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "candidateNoSampleNextActiveIDs": [],
+    "originalAndCandidateBeforePruneStateExact": true,
+    "originalAndCandidatePrunedPointsExact": true,
+    "originalAndCandidatePruneTimeCountsExact": true,
+    "removedIDsCannotReturnAsActiveOrHeld": true,
+    "originalRegressionFinalFailures": 3,
+    "candidateFocusedTestsPassed": 65,
+    "candidateFocusedFilesPassed": 4,
+    "switchOffHistoricalFingerprintsUnchanged": true,
+    "productionSourceManifestUnchanged": true,
+    "scratchOriginalSourceChanges": [
+      "src/wave/barrel/BreakingFront.ts"
+    ],
+    "notOldGpuCaptureAttribution": true
+  },
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 4276,
+      "sha256": "2689ad4065b347476fcf5f2ad7c9acf08facc0a77b5ef9c5a17d74e86391c175"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 8072,
+      "sha256": "3fdf77b5fa3e6efb5c53bff40dd29b4e5027db72a3af2398fd047c3e3a64682f"
+    },
+    {
+      "path": "proof-summary.json",
+      "bytes": 1540,
+      "sha256": "4071052ed4d2c9c13eab496ca2f37c85e728942586090f0aabb0984872304eeb"
+    },
+    {
+      "path": "original-source-manifest.json",
+      "bytes": 88552,
+      "sha256": "b8bb696508c9bb44ff45ad14a414e7132a92fe748e2f8e459c530e6d1f321762"
+    },
+    {
+      "path": "original-BreakingFront.ts",
+      "bytes": 39400,
+      "sha256": "4a5256f9a6501a2320e275c2fddaa786b1b00147eca36aba696ec7ca4c543052"
+    },
+    {
+      "path": "src/wave/barrel/BreakingFront.ts",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+    },
+    {
+      "path": "src/wave/barrel/ClockLinkPrune.test.ts",
+      "bytes": 6728,
+      "sha256": "7c705f44f3f24bc0619d1e3ac12bad5dc4e088f79a9f7e21adbe96f2739c1a75"
+    },
+    {
+      "path": "original-regression.log",
+      "bytes": 11454,
+      "sha256": "4bde16fbaec1750bd6066a10c60521ec91a9e1d42fc02dc80902e06f0588ab35"
+    },
+    {
+      "path": "original-regression-first-helper.log",
+      "bytes": 11454,
+      "sha256": "4bde16fbaec1750bd6066a10c60521ec91a9e1d42fc02dc80902e06f0588ab35"
+    },
+    {
+      "path": "original-regression-final.log",
+      "bytes": 11506,
+      "sha256": "4433b5520d3b6bd3667d50a5ca957c077cd878002e32472ed01a4e07464a3168"
+    },
+    {
+      "path": "candidate-focused.log",
+      "bytes": 11568,
+      "sha256": "2fc1e10af7175bff2ff3c3e505b8acbcf277648538ea81e4b68e535935cc119a"
+    },
+    {
+      "path": "vitest.config.ts",
+      "bytes": 175,
+      "sha256": "afc029d0a14046bb716d9ee7c76cd3010812cd79259df90a52d2e9a6970ca27d"
+    },
+    {
+      "path": "original-proof/continuation.json",
+      "bytes": 19062,
+      "sha256": "a718015052bf75d347f81b5bee49bc58aedbfe425f7b71c157b309f5e3a36a4d"
+    },
+    {
+      "path": "original-proof/export-import.json",
+      "bytes": 19062,
+      "sha256": "a718015052bf75d347f81b5bee49bc58aedbfe425f7b71c157b309f5e3a36a4d"
+    },
+    {
+      "path": "original-proof/no-resurrection.json",
+      "bytes": 19062,
+      "sha256": "a718015052bf75d347f81b5bee49bc58aedbfe425f7b71c157b309f5e3a36a4d"
+    },
+    {
+      "path": "original-proof-final/after-update.json",
+      "bytes": 7569,
+      "sha256": "bd23e8cd0a1054f4772be143f7dff84a4d72809c129347bda344881aad2326dc"
+    },
+    {
+      "path": "original-proof-final/continuation.json",
+      "bytes": 19173,
+      "sha256": "ccd8d6f1865e708aa973b968b1304f63849009346af2c21a425131ccfb92e16c"
+    },
+    {
+      "path": "original-proof-final/export-import.json",
+      "bytes": 19173,
+      "sha256": "ccd8d6f1865e708aa973b968b1304f63849009346af2c21a425131ccfb92e16c"
+    },
+    {
+      "path": "original-proof-final/no-resurrection.json",
+      "bytes": 13876,
+      "sha256": "039f555a01053685f110d21e8ff379f3b524b292c0514e420e38e2328d8c8019"
+    },
+    {
+      "path": "candidate-proof/after-update.json",
+      "bytes": 83,
+      "sha256": "919e95b0c71a14caa994f3723b0167632bfb76d8361ba8440a8efd79b970fbe2"
+    },
+    {
+      "path": "candidate-proof/continuation.json",
+      "bytes": 19083,
+      "sha256": "dbf68581d41bc9b5c3d99b4cd2f4c5f8cf45095e91510258b66f19a720f392cb"
+    },
+    {
+      "path": "candidate-proof/export-import.json",
+      "bytes": 19083,
+      "sha256": "dbf68581d41bc9b5c3d99b4cd2f4c5f8cf45095e91510258b66f19a720f392cb"
+    },
+    {
+      "path": "candidate-proof/no-resurrection.json",
+      "bytes": 13876,
+      "sha256": "039f555a01053685f110d21e8ff379f3b524b292c0514e420e38e2328d8c8019"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+
+ RUN  v5.0.1 /private/tmp/clock-link-prune-repro-20261004
+
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > throws a point’s lip where its crest crosses its throw depth, foreseen from its pace till then 2ms
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > never throws before the solver breaks the crest, with no lag 0ms
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > reads no earlier than the library’s first frame 0ms
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > reads a steady 10 m/s peel exactly, to its leading edge, without pausing 2ms
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > turns grouped onsets into a ramp at their mean gradient 2ms
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > never turns a clock back when a later neighbour breaks, and counts the pauses 13ms
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > uses a lone point’s own throw, and bunched points’ mean 0ms
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > clocks each front on its own 1ms
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > joins and throws by the measured tables, interpolated and never extrapolated 1ms
+ ✓ src/wave/barrel/sliceClock.test.ts > the slice clock > takes a transect’s own tables, scaled from its own foot 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > joins a crest where it reaches its breaking depth, sized by its height nearer the break 2ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > sizes a crest by its highest over the band of 6 to 5 m, not one reading 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > joins at the crossing when the solver breaks it before its throw, and never after 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > throws no deeper than it joins 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > never joins a crest first seen past the foot, unsized 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > links an oblique straight crest into one front, σ its arc length from the −x end 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > keeps every point’s ID, join and clock while its crest breaks on into shallower water, and drops it when it stops 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > makes two fronts of two crests 15 m apart in the same columns 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > splits a front at five empty columns, each side keeping its IDs 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > splits a front where neighbours joined too far apart to be one wave, and counts the splits 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > holds a point missing for a moment, and drops it after half a second 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > runs a point past its throw on its own pace, jet or not, crashed or not, claiming its crest over the throw’s window, at most 10 m (PR 5) 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > gives a paced point the crest nearest its own z, ahead of the others, and the ordinary match once its slice has faded (PR 5) 2ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > holds a point on its pace through its slice’s fade, claiming a crest or coasting, then lets it go to the ordinary match (PR 5; the advisor, 2026-10-03) 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > records the own crossing on the first paced read after an early neighbor-fitted throw, retaining its clock and pace 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > interpolates a paced crossing from actual crest positions while its paced point follows a different position 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > does not invent an own crossing while coasting and records only the observed crossing after reacquisition 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > records the current observation for an imported paced point without a previous real crest 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > never rewrites an already recorded own throw in either matching path 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > keeps each point’s crest speed as the mean of its crest’s over the last few frames (PR 5) 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > follows a crest across a whole row on a coarser grid 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > with a jump reach, follows a sized crest whose highest cell jumps ahead, and joins it there 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > with a jump reach, leaves the crest a jet-holding point keeps to the point, and follows a sized crest on the others (PR 5 with #105) 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > with its own onset, joins a jumped crest only when its own segment rises fresh, timed at that step 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > with a join reach past the throw depth, joins a crest the solver breaks within it, throwing as it joins 0ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the breaking front as lines > carries its state through export and import, crests on their way in included 2ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > links two fronts end to end whose joins agree, though their ends stand more than 3 rows apart in z 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > links them while their joins differ by at most 0.166 s per metre between them, and no more 3ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > links ends up to 10 m apart, measured straight between them, and none farther 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > bridges a one-column gap only when the clock link passes, and no wider gap 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > continues for each head in turn the nearest end left, as the 3-row link does, and an end only once 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > leaves the 1 s/m split alone: a true split stays two fronts with the link on 4ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > refuses a handed-over order that names a point the state does not hold, or misses or repeats one, taking none of it 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > only ever adds links when on, each from one front's last point to the next one's first: three lines 52ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > only ever adds links when on, each from one front's last point to the next one's first: crowded rows 42ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > throws each point’s jet at its throw, crashes it at its touchdown, and pours it from where its lip lands 45ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > paces a point at its throw step before its slice is taken, its jet launched from the paced crest, its water from the solver’s crest under it (the advisor, 2026-10-03) 7ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > prepares current arcs before pacing and after new throws, then uses the final shared ray for jets, foresight and pours 7ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > foresees the landing at the throw where the crash lands it, its point on its pace and its clock at real time (the advisor, 2026-10-03) 7ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > balances the water: what the crests gave is what landed 23ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > throws and pours at once for a point first seen past its touchdown, and nothing for one past its collapse 3ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > pours a lost point’s jet where it was foreseen, from when its point leaves the front (the advisor, 2026-10-03) 9ms
+ ✓ src/wave/barrel/ClockLinkPrune.test.ts > clock-linked matching order after actual crash pruning > exports an importable state containing every surviving ID once after an actual stall exit 59ms
+ ✓ src/wave/barrel/ClockLinkPrune.test.ts > clock-linked matching order after actual crash pruning > does not coast actual crash-exited IDs back into the next tracker update without an export 33ms
+ ✓ src/wave/barrel/ClockLinkPrune.test.ts > clock-linked matching order after actual crash pruning > preserves surviving tie-order and follows the same continuation after handover 26ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > lets a point whose clock stalls leave the front 2 T after its throw, its jet crashing where it was foreseen (the advisor, 2026-10-03) 13ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > lets a point still on its pace 2 (T + collapse) after its throw leave the front, its clock stalled in its slice’s fade (the advisor, 2026-10-03) 21ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > retains the observed crest at first pacing before resetting the point to its throw anchor 1ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > paces a thrown point, jet or not, along its column, c_n / n_z after the clamp, with no blend through its slice’s fade (the advisor) 6ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > crashes as foreseen the jet of a point left alone on its front at its touchdown 3ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > moves no water for a front of one point 4ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > withholds the breaking from the whitewater over a curl before its touchdown, and gives it back at touchdown 2ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > throws nothing under an earlier front’s barrel, as the drawing shows that one (first wins) 2ms
+ ✓ src/wave/barrel/SweptCrash.test.ts > the swept barrel’s jets (the Padang Padang spec, Part B, PR 5) > uses only + − × ÷ and √ (online determinism) 1ms
+ ✓ src/wave/barrel/BreakingFront.test.ts > the clock link > is the front from before the clock link, step for step, with the switch off 265ms
+
+ Test Files  4 passed (4)
+      Tests  65 passed (65)
+   Start at  01:09:38
+   Duration  587ms (tests 50%, transform 38%, import 11%, worker 1%)
+
