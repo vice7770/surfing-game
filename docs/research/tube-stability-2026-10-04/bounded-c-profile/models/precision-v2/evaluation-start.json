@@ -1,0 +1,18 @@
+{
+  "recipe": {
+    "file": "/private/tmp/tube-bounded-c-precision-v2-20261004/recipe.md",
+    "bytes": 6568,
+    "sha256": "39d3bfbfcf41981eac710903736dc16603ac2a6e583a84bca700419c6883a2c2"
+  },
+  "prototype": {
+    "file": "/private/tmp/tube-bounded-c-precision-v2-20261004/prototype.py",
+    "bytes": 14745,
+    "sha256": "897838dc74c0567cfc31ff63effb34d617de53a2cfcf520739331f8e41ac6dd9"
+  },
+  "evaluator": {
+    "file": "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate.py",
+    "bytes": 9444,
+    "sha256": "f42bc9d7da51e897a06e6feaf64cf8a9405bdea741b4170c7a18e167fa4bb8cd"
+  },
+  "declaredBeforeEvaluation": true
+}

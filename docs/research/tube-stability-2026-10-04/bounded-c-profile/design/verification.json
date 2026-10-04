@@ -1,0 +1,17 @@
+{
+  "inputAndOutputHashVerification": true,
+  "canonicalOwnedSourceUnchanged": true,
+  "canonicalOwnedFiles": [
+    "src/wave/barrel/crestRays.ts",
+    "src/wave/barrel/lipSheet.ts",
+    "src/wave/barrel/sweptLoft.ts",
+    "src/wave/barrel/sweptContact.ts",
+    "src/wave/barrel/crashCurve.ts",
+    "src/wave/barrel/SweptCrash.ts",
+    "src/wave/PlungingLip.ts",
+    "src/wave/barrel/boundedCConsumers.test.ts",
+    "src/wave/barrel/boundedCSweptCrash.test.ts",
+    "src/wave/PlungingLipSweptVoid.test.ts"
+  ],
+  "numericalOrNativeRerun": false
+}

@@ -1,0 +1,22 @@
+{
+  "frozenNumericalRecipeUnchanged": true,
+  "ownedFilesFinal": true,
+  "ownedSources": {
+    "src/wave/barrel/boundedCProfile.ts": "332d552fe301e89de2a07efa90a92c2be65c584734b77d7251c168b909850f43",
+    "src/wave/barrel/boundedCProfile.test.ts": "691b8e8aa96d5f64bcb7c3f4d439f8fae6aea8ca8f4f5b9ada2b1038af4dce4d",
+    "src/wave/barrel/ProfileLibrary.ts": "b459f074885891aaa9e40fb11414e3382e0a4837fc5088f7ed00519ecd8c93a6",
+    "src/wave/barrel/barrelLibrary.ts": "064d825cd17e00b58e4dda789b7f28dcc81a68b12ebd99b3b28690261eeb30eb"
+  },
+  "tests": {
+    "files": 3,
+    "passed": 27,
+    "log": "provider-tests.log",
+    "fullFrames": 1224,
+    "F32Adjacent": 3648,
+    "PythonGoldenProfiles": 39,
+    "FactoryCaseQueries": 120
+  },
+  "strictTsc": "provider-tsc.log last clean before final docs/event optimization; combined run pendingconsumer completion",
+  "noProductionOrBuildOrBrowserOrPortOrGitChanges": true,
+  "nativeOrBodyAcceptance": false
+}

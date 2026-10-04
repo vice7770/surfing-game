@@ -1,0 +1,9 @@
+{
+  "declaredBeforeAnyGeometryEvaluation": true,
+  "files": {
+    "recipe.md": "8f2ec98b2db8dc5e47d2774e4df9448c57751b90ab531a9bbe8dc3462d447034",
+    "prototype.py": "040754b077c133208aa8e1cd0b7af939bb135d6e5129b418855d6712eed198e8",
+    "evaluate.py": "270c00c49b50a3bae3c3b5526365092297d395af13a437f91caae8153919146b",
+    "provider-interface.json": "abc269bd2c2933d0c9ad6d0eb6b80bf05bc348f992577560a6c73e75e2f94dcd"
+  }
+}

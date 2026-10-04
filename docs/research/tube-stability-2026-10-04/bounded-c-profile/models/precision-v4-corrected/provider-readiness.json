@@ -1,0 +1,255 @@
+{
+  "schema": "bounded-C-provider-readiness/v4",
+  "source": "/private/tmp/tube-bounded-c-profile-20261004/source",
+  "ownedSourcesFinal": true,
+  "noFurtherOwnedSourceWrites": true,
+  "ownedSources": [
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 15484,
+      "sha256": "66ad61ea02ea53e2306e3c5611744b42e2ed20eaa8b02adff45055e0219e8e93"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/boundedCProfile.test.ts",
+      "bytes": 10917,
+      "sha256": "82448f329efa0fef4817c38dc8e5a6dbd201dd065f6a0c10a202499df53b3ae1"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 25085,
+      "sha256": "eda47508fd5de1429fbfc13b46161a53cfa9fa35be854921134888a4b1d02e05"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2301,
+      "sha256": "064d825cd17e00b58e4dda789b7f28dcc81a68b12ebd99b3b28690261eeb30eb"
+    }
+  ],
+  "prePortSnapshot": "/private/tmp/tube-bounded-c-precision-v2-20261004/pre-port-source.json",
+  "frozenPrototype": {
+    "recipeVersion": 4,
+    "implementationRepair": true,
+    "declaredBeforeEvaluation": true,
+    "files": [
+      {
+        "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/recipe.md",
+        "bytes": 1308,
+        "sha256": "c24c1b68bd730079f75a795f4be37f90f592e04f3f4fe902be590b01c142f83c"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/prototype.py",
+        "bytes": 15013,
+        "sha256": "8d6da66457962d71b09050b7dcc35b2424fa720222ed9039a9291905fb98a1fd"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/evaluate.py",
+        "bytes": 9580,
+        "sha256": "f451cf17c2de5caeac554f6a9a318949f50716e6ae8cc92aab72b4f55664d539"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/evaluate-precision.py",
+        "bytes": 6730,
+        "sha256": "097f17cd068aed55efacf0ec65158003244b32ee1d46c30c2b5f40391a0059f6"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-interface.json",
+        "bytes": 1029,
+        "sha256": "c2ad00149e0dd297f3570aef4c82c1f7e0b356ce95d0dd5f50bd20ac4af578d4"
+      }
+    ],
+    "originalV4Unchanged": true,
+    "sameDeclaredQueries": true
+  },
+  "numericOutcome": {
+    "captured": {
+      "attempted": 5,
+      "valid": 5,
+      "invalid": 0,
+      "failures": {},
+      "finite": true,
+      "anchorsOutsideExact": true,
+      "beforeCrossed": 0,
+      "afterCrossed": 0,
+      "cleanToCrossed": 0,
+      "pairIncrease": 0,
+      "newPairs": 0,
+      "maximumTurn": 22.90776910635385,
+      "capFloorPenetrations": 0,
+      "capFloorRange": [
+        0.21738940477371216,
+        0.22319306433200836
+      ],
+      "phases": {
+        "open": 4,
+        "sealing": 1
+      }
+    },
+    "all1224Frames": {
+      "attempted": 1224,
+      "valid": 1224,
+      "invalid": 0,
+      "failures": {},
+      "finite": true,
+      "anchorsOutsideExact": true,
+      "beforeCrossed": 23,
+      "afterCrossed": 2,
+      "cleanToCrossed": 0,
+      "pairIncrease": 0,
+      "newPairs": 0,
+      "maximumTurn": 47.72631099390627,
+      "capFloorPenetrations": 0,
+      "capFloorRange": [
+        0.0001435842778947649,
+        0.04713251144825451
+      ],
+      "phases": {
+        "ordinary": 872,
+        "forming": 138,
+        "open": 210,
+        "sealing": 4
+      }
+    },
+    "all3648AdjacentF32": {
+      "attempted": 3648,
+      "valid": 3648,
+      "invalid": 0,
+      "failures": {},
+      "finite": true,
+      "anchorsOutsideExact": true,
+      "beforeCrossed": 64,
+      "afterCrossed": 4,
+      "cleanToCrossed": 0,
+      "pairIncrease": 0,
+      "newPairs": 0,
+      "maximumTurn": 50.02265606516273,
+      "capFloorPenetrations": 0,
+      "capFloorRange": [
+        0.0001445859670639038,
+        0.047093722969293594
+      ],
+      "phases": {
+        "ordinary": 2604,
+        "forming": 418,
+        "open": 626
+      }
+    },
+    "continuousPhaseGrid": {
+      "attempted": 376,
+      "valid": 376,
+      "invalid": 0,
+      "failures": {},
+      "finite": true,
+      "anchorsOutsideExact": true,
+      "beforeCrossed": 0,
+      "afterCrossed": 0,
+      "cleanToCrossed": 0,
+      "pairIncrease": 0,
+      "newPairs": 0,
+      "maximumTurn": 42.53346163721884,
+      "capFloorPenetrations": 0,
+      "capFloorRange": [
+        0.0,
+        0.04404365457594395
+      ],
+      "phases": {
+        "ordinary": 24,
+        "forming": 56,
+        "open": 104,
+        "sealing": 26,
+        "retiring": 71,
+        "retired": 95
+      }
+    },
+    "parameterCrossCaseGrid": {
+      "attempted": 672,
+      "valid": 672,
+      "invalid": 0,
+      "failures": {},
+      "finite": true,
+      "anchorsOutsideExact": true,
+      "beforeCrossed": 0,
+      "afterCrossed": 0,
+      "cleanToCrossed": 0,
+      "pairIncrease": 0,
+      "newPairs": 0,
+      "maximumTurn": 36.59710975941648,
+      "capFloorPenetrations": 0,
+      "capFloorRange": [
+        0.0,
+        0.04266459122300148
+      ],
+      "phases": {
+        "ordinary": 84,
+        "forming": 168,
+        "open": 252,
+        "retiring": 65,
+        "retired": 84,
+        "sealing": 19
+      }
+    },
+    "captured113Width125Pass": true,
+    "captured160Width125Pass": true,
+    "consumerReady": false,
+    "nativeAdopted": false
+  },
+  "precisionOutcome": {
+    "attempted": 522,
+    "valid": 522,
+    "invalid": 0,
+    "failures": {},
+    "finite": true,
+    "anchorsOutsideExact": true,
+    "beforeCrossed": 0,
+    "afterCrossed": 0,
+    "cleanToCrossed": 0,
+    "pairIncrease": 0,
+    "newPairs": 0,
+    "maximumTurn": 112.87366519062671,
+    "capFloorPenetrations": 0,
+    "capFloorRange": [
+      0.0,
+      0.0009431000798940659
+    ],
+    "phases": {
+      "retired": 48,
+      "retiring": 257,
+      "forming": 190,
+      "sealing": 27
+    },
+    "allCollapsedEnvelopeBoundsWithinUnchangedBudget": true,
+    "maximumCollapsedControlBound": 2.9829468456833987e-06,
+    "maximumBoundOverBudgetFraction": 0.006038354246633655,
+    "allCollapsedOwnedMonotoneX": true,
+    "switchPairs": 40,
+    "switchValid": true,
+    "maximumSwitchPerIndexDisplacement": 0.008808134790197953,
+    "maximumSampledContourSwitchDistance": 0.000732392210425426
+  },
+  "tests": {
+    "passed": 30,
+    "files": 3,
+    "log": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-tests.log",
+    "durationSeconds": 3.37,
+    "PythonGoldens": {
+      "oldDeclaredQueries": 39,
+      "precisionQueries": 522,
+      "reference": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/port-reference.json"
+    }
+  },
+  "strictTsc": {
+    "exitCode": 0,
+    "log": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-tsc.log",
+    "currentConsumerSourceIncluded": true
+  },
+  "consumerFocusedRetestPending": true,
+  "knownLimits": [
+    "Inherited Reef preserved bulk proper crossings.",
+    "Known remaining3D Reef roof43/root81 sloped-water inversion.",
+    "Thin resolved F32 cap turns and collapsed connector corners remain, material indices are not all continuous.",
+    "Native moving curl/seal/water join and bodyentry not proven.",
+    "Offline reference test fixture is scratch-local, not runtime or shipping asset."
+  ],
+  "nativeHelpersFrozen": true,
+  "productionGitBuildPortsBrowserChanged": false,
+  "nativeAdopted": false
+}

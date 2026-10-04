@@ -1,0 +1,317 @@
+{
+  "schema": "bounded-C-input-references/v1",
+  "priorArchivedInputsAndHelpers": [
+    {
+      "archiveRelative": "../rejected-roof-thinning/inputs/captured-polylines.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 11188,
+        "sha256": "9209ec5559e879955756db49ed66cf54c82fab3b076bcca3c649f950729ecf94"
+      },
+      "decoded": {
+        "bytes": 24838,
+        "sha256": "4393da0633def6a9c79000c4cf87cf20eeba582bb9d81e60e81cf7a2aa78263b"
+      }
+    },
+    {
+      "archiveRelative": "../rejected-roof-thinning/inputs/case-frame-index.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 23816,
+        "sha256": "47e1302e19fceaa701146e5f2033d0d40c5d7190dce24a7a98477190cef7afa1"
+      },
+      "decoded": {
+        "bytes": 75642,
+        "sha256": "793b238187b0c16c87069c0df6360758fd73d4c085902d3b7ce9fe73b4cc54d4"
+      }
+    },
+    {
+      "archiveRelative": "../rejected-roof-thinning/source/load-cases.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3293,
+        "sha256": "bace19e675790042084918c6eaf76a54c4a5af16b3f3959a8f6fb5c8f7399a4b"
+      },
+      "decoded": {
+        "bytes": 3293,
+        "sha256": "bace19e675790042084918c6eaf76a54c4a5af16b3f3959a8f6fb5c8f7399a4b"
+      }
+    },
+    {
+      "archiveRelative": "../rejected-roof-thinning/source/load-cases.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6960,
+        "sha256": "060b199b4ea75b8ddd9437da0230dc9f8a73f307c768ac2d95918e86f2f877f0"
+      },
+      "decoded": {
+        "bytes": 6960,
+        "sha256": "060b199b4ea75b8ddd9437da0230dc9f8a73f307c768ac2d95918e86f2f877f0"
+      }
+    },
+    {
+      "archiveRelative": "../rejected-roof-thinning/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5057,
+        "sha256": "d3b5dd3800e9150e0e4a51acdfaeb630ea590de686c3ea05485148eaf3666929"
+      },
+      "decoded": {
+        "bytes": 5057,
+        "sha256": "d3b5dd3800e9150e0e4a51acdfaeb630ea590de686c3ea05485148eaf3666929"
+      }
+    },
+    {
+      "archiveRelative": "../rejected-monotone-return/input-references.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5042,
+        "sha256": "b43f5c506119aebf6391206b8b1b2f9ebbf3d0c8a6ce5fbf3872c8791d901afe"
+      },
+      "decoded": {
+        "bytes": 5042,
+        "sha256": "b43f5c506119aebf6391206b8b1b2f9ebbf3d0c8a6ce5fbf3872c8791d901afe"
+      }
+    },
+    {
+      "archiveRelative": "../rejected-descending-facet/prototype.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 11815,
+        "sha256": "f75b758185b37f97ed5583176273ce62d83fb991e83681e5cf049c9354c5ac96"
+      },
+      "decoded": {
+        "bytes": 11815,
+        "sha256": "f75b758185b37f97ed5583176273ce62d83fb991e83681e5cf049c9354c5ac96"
+      },
+      "originalPath": "/private/tmp/tube-descending-facet-profile-20261004/prototype.py"
+    },
+    {
+      "archiveRelative": "../rejected-descending-facet/input-references.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 8261,
+        "sha256": "0ac4f39f197d2b805d6706c9e4245c7081144b7de413e09157d5775bb77b60f4"
+      },
+      "decoded": {
+        "bytes": 8261,
+        "sha256": "0ac4f39f197d2b805d6706c9e4245c7081144b7de413e09157d5775bb77b60f4"
+      }
+    },
+    {
+      "archiveRelative": "../rejected-descending-facet/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 14929,
+        "sha256": "0c13fd458bde307ebcf46639db7c7d3254202b32ca1db59345427ba96b02c197"
+      },
+      "decoded": {
+        "bytes": 14929,
+        "sha256": "0c13fd458bde307ebcf46639db7c7d3254202b32ca1db59345427ba96b02c197"
+      }
+    },
+    {
+      "archiveRelative": "../descending-curl-experiment/geometry/prototype.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 17532,
+        "sha256": "10334352cb76aaca66279a88747ada626b474bb49cd74ebc9d10da142a6797dd"
+      },
+      "decoded": {
+        "bytes": 17532,
+        "sha256": "10334352cb76aaca66279a88747ada626b474bb49cd74ebc9d10da142a6797dd"
+      },
+      "originalPath": "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/prototype.py"
+    },
+    {
+      "archiveRelative": "../descending-curl-experiment/geometry/measurement_functions.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2654,
+        "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+      },
+      "decoded": {
+        "bytes": 2654,
+        "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+      },
+      "originalPath": "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/measurement_functions.py"
+    },
+    {
+      "archiveRelative": "../descending-curl-experiment/geometry/air_metrics.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3250,
+        "sha256": "f22fa4f178be309d11d908a8e11b773784e90732f8cb467685f9f340d798031d"
+      },
+      "decoded": {
+        "bytes": 3250,
+        "sha256": "f22fa4f178be309d11d908a8e11b773784e90732f8cb467685f9f340d798031d"
+      },
+      "originalPath": "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/air_metrics.py"
+    },
+    {
+      "archiveRelative": "../directed-entry-selection/source/body-witnesses.mjs.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 4362,
+        "sha256": "c0559d96d8b1b9a6b3fa75337efe771d2013b373cb27076b92d34b8fa648eb79"
+      },
+      "decoded": {
+        "bytes": 11626,
+        "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+      },
+      "originalPath": "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs"
+    },
+    {
+      "archiveRelative": "../directed-entry-selection/source/tube-target.mjs.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 3179,
+        "sha256": "9bacc609bd846b443d18d8447447eb99c3b2094d3220f75e7bb02ddd170b1b63"
+      },
+      "decoded": {
+        "bytes": 8503,
+        "sha256": "20cc5f415c38961886f678cf9a678cbe15d8d7e1401857f397c994ef219f8090"
+      },
+      "originalPath": "/private/tmp/tube-directed-entry-20261004/tube-target.mjs"
+    },
+    {
+      "archiveRelative": "../opening-inventory/source/inventory.mjs.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 2213,
+        "sha256": "409f17e21a50fe3bfdb849d1e43a5a284b8164fb349a3f3fa3858f40e2d24b82"
+      },
+      "decoded": {
+        "bytes": 5037,
+        "sha256": "bf72e101bd151132681ef74de7b8b09f26d9654de4e19aaed2bc56c4b95060ce"
+      },
+      "originalPath": "/private/tmp/tube-opening-inventory-20261004/inventory.mjs"
+    },
+    {
+      "archiveRelative": "../../../../public/barrels/pad19-a20-l12.bin",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 149848,
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      },
+      "decoded": {
+        "bytes": 149848,
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      },
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+      "role": "unchanged BRL2 input; no repeated binary copy"
+    },
+    {
+      "archiveRelative": "../../../../public/barrels/pad19-a30-l12.bin",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      "decoded": {
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+      "role": "unchanged BRL2 input; no repeated binary copy"
+    },
+    {
+      "archiveRelative": "../../../../public/barrels/pad19-a45-l12.bin",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      "decoded": {
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+      "role": "unchanged BRL2 input; no repeated binary copy"
+    },
+    {
+      "archiveRelative": "../../../../public/barrels/periodic-padang19s-l12.bin",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 181852,
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      },
+      "decoded": {
+        "bytes": 181852,
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      },
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+      "role": "unchanged BRL2 input; no repeated binary copy"
+    },
+    {
+      "archiveRelative": "../../../../public/barrels/periodic-point21-a15-l12.bin",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 106500,
+        "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+      },
+      "decoded": {
+        "bytes": 106500,
+        "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+      },
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a15-l12.bin",
+      "role": "unchanged BRL2 input; no repeated binary copy"
+    },
+    {
+      "archiveRelative": "../../../../public/barrels/periodic-point21-a23-l12.bin",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 128172,
+        "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+      },
+      "decoded": {
+        "bytes": 128172,
+        "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+      },
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a23-l12.bin",
+      "role": "unchanged BRL2 input; no repeated binary copy"
+    },
+    {
+      "archiveRelative": "../../../../public/barrels/periodic-point21-a30-l12.bin",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 173576,
+        "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+      },
+      "decoded": {
+        "bytes": 173576,
+        "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+      },
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a30-l12.bin",
+      "role": "unchanged BRL2 input; no repeated binary copy"
+    },
+    {
+      "archiveRelative": "../../../../public/barrels/periodic-reef42-l12.bin",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 193180,
+        "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+      },
+      "decoded": {
+        "bytes": 193180,
+        "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+      },
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-reef42-l12.bin",
+      "role": "unchanged BRL2 input; no repeated binary copy"
+    }
+  ],
+  "decodedCaseDumpNotDuplicated": {
+    "originalPath": "/private/tmp/tube-monotone-inner-profile-20261004/eligible-cases.json",
+    "bytes": 1505981,
+    "sha256": "ecee538fc85d492507e8609a996285fa377d8cb1cd8f08b4f7a88d09eb4cb6dc",
+    "reconstruction": "Eight pinned BRL2 assets plus prior load-cases source/module and frame index; raw dump is checked only in original-scratch mode."
+  },
+  "baselineSnapshotOriginal": {
+    "root": "/private/tmp/tube-bounded-c-profile-20261004/baseline-src",
+    "hashMapArchive": "models/v1/source-baseline.json.gz",
+    "files": 554,
+    "note": "Changed-file baseline copies retained in source/accepted-baseline; all remaining baseline files are hash references."
+  },
+  "noGameImportNumericalRerunNativeOrSourceAdoption": true
+}

@@ -1,0 +1,105 @@
+{
+  "sourceState": "frozen; isolated candidate only; no source edits during final rerun",
+  "focusedResult": {
+    "files": 3,
+    "assertions": 9,
+    "passed": 8,
+    "failed": 1,
+    "durationSecondsFromVitest": 6.95,
+    "knownFailureUnchanged": true,
+    "failureBytesEqualToPriorCanonicalReceipt": true
+  },
+  "failure": {
+    "case": "periodic-reef42-l12",
+    "center": 1.7687453093075154,
+    "waterIndex": 1,
+    "strip": 17,
+    "sigma": [
+      7,
+      7.5
+    ],
+    "ages": [
+      1.786745309829712,
+      1.7897453308105469
+    ],
+    "weights": [
+      0.19581395387649536,
+      0.05709647387266159
+    ],
+    "x": 7.6855,
+    "z": -95.61014556884766,
+    "layers": [
+      {
+        "y": 0.9741497501374469,
+        "layer": 2,
+        "segment": 95,
+        "vertices": [
+          2376,
+          2510,
+          2377
+        ]
+      },
+      {
+        "y": 1.2110173619235172,
+        "layer": 0,
+        "segment": 43,
+        "vertices": [
+          2325,
+          2458,
+          2459
+        ]
+      },
+      {
+        "y": 1.211328819076668,
+        "layer": 1,
+        "segment": 81,
+        "vertices": [
+          2362,
+          2497,
+          2363
+        ]
+      }
+    ],
+    "penetration": 0.0003114571531508403
+  },
+  "remainingOrderedAirColumns": 75710,
+  "retainedArtifactsVerified": [
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-first-20261004.log",
+      "bytes": 1161127,
+      "sha256": "3660cf0b7ff93280b9efa4b9470c68b8cde333cafc8d4e79fe913bc68779b6db",
+      "unchanged": true
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-final-mesh-failure-receipt-20261004.json",
+      "bytes": 22293,
+      "sha256": "0708d57b0eaa457a73754bcd826e0d739f3f62b80e010d8312894efe584f2c9e",
+      "unchanged": true
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-final-mesh-paired-receipt-20261004.json",
+      "bytes": 22293,
+      "sha256": "fde01290c3d6bfd69fc73e5c355893dc63455b350bf089b6b5c6999800a2930e",
+      "unchanged": true
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-final-mesh-roof-pairs-receipt-20261004.json",
+      "bytes": 130117,
+      "sha256": "3bba35d019ba834a499797991bffa018e77835ae18d17c0ce4924a86e26d18eb",
+      "unchanged": true
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-final-mesh-canonical-receipt-20261004.json",
+      "bytes": 22325,
+      "sha256": "2b79dead008cbdf5cfa8dff164712bc5ffa1790302ff4b84c01ae9ec1cafeac2",
+      "unchanged": true
+    }
+  ],
+  "validationReceipt": {
+    "path": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-focused-validation.json",
+    "bytes": 3148,
+    "sha256": "081bf700a79b704e528d19194b1d542583cad50d05fa25304fa11cb54160a16f"
+  },
+  "adoptionLimitation": "Real upper-roof/upper-root mesh inversion on periodic-reef42-l12 under sloped water with neighboring ages and weights remains; no tolerance/assertion filtering or geometric fixes were applied. This readiness is for root-controlled visual experiment, not adoption or complete geometry success.",
+  "strictTS": "Provider worker reports current combined-source strict TS exit 0 in provider-readiness.json; parent also owns full-build check."
+}

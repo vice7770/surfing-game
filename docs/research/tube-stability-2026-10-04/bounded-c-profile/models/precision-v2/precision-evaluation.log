@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision.py", line 59, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision.py", line 54, in main
+    q=switch_pair(block['raw'],z,tau,label);q['block']=block['label'];switches.append(q)
+  File "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision.py", line 29, in switch_pair
+    r.update({'maximumPerIndexDisplacement':max(p.norm(p.sub(p.xy(x),p.xy(y))) for x,y in zip(na,nb)),'maximumRetainedOuterDisplacement':max(p.norm(p.sub(p.xy(x),p.xy(y))) for x,y in zip(na,nb) if 32<=x['point']<=60),'maximumRetainedTailDisplacement':max(p.norm(p.sub(p.xy(x),p.xy(y))) for x,y in zip(na,nb) if 106<=x['point']<=112),'sampledSymmetricContourDistance':contour_distance(na,nb),'leftAir':e.air(na,0),'rightAir':e.air(nb,0),'leftCrossings':p.segment_intersections(na),'rightCrossings':p.segment_intersections(nb)})
+                                                                                                                                                                                                                                                                                                                                                                               ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision.py", line 25, in contour_distance
+    return max(one(A,B),one(B,A))
+               ~~~^^^^^
+  File "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision.py", line 24, in one
+    return max(min(p.point_segment_distance(x,u,v) for u,v in zip(B,B[1:])) for x in probes)
+  File "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision.py", line 24, in <genexpr>
+    return max(min(p.point_segment_distance(x,u,v) for u,v in zip(B,B[1:])) for x in probes)
+               ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision.py", line 24, in <genexpr>
+    return max(min(p.point_segment_distance(x,u,v) for u,v in zip(B,B[1:])) for x in probes)
+                   ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/prototype.py", line 80, in point_segment_distance
+    vx,vy=b['q']-a['q'],b['y']-a['y'];den=vx*vx+vy*vy
+          ~^^^^^
+TypeError: list indices must be integers or slices, not str

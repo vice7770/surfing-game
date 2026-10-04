@@ -1,0 +1,18 @@
+{
+  "recipe": {
+    "file": "/private/tmp/tube-bounded-c-profile-20261004/recipe.md",
+    "bytes": 7621,
+    "sha256": "8f2ec98b2db8dc5e47d2774e4df9448c57751b90ab531a9bbe8dc3462d447034"
+  },
+  "prototype": {
+    "file": "/private/tmp/tube-bounded-c-profile-20261004/prototype.py",
+    "bytes": 13830,
+    "sha256": "040754b077c133208aa8e1cd0b7af939bb135d6e5129b418855d6712eed198e8"
+  },
+  "evaluator": {
+    "file": "/private/tmp/tube-bounded-c-profile-20261004/evaluate.py",
+    "bytes": 9439,
+    "sha256": "270c00c49b50a3bae3c3b5526365092297d395af13a437f91caae8153919146b"
+  },
+  "declaredBeforeEvaluation": true
+}

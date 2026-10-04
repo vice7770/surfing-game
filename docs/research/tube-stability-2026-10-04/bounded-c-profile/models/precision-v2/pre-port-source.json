@@ -1,0 +1,42 @@
+{
+  "source": "/private/tmp/tube-bounded-c-profile-20261004/source",
+  "ownedSources": [
+    {
+      "file": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/boundedCProfile.ts",
+      "preserved": "/private/tmp/tube-bounded-c-precision-v2-20261004/pre-port-source/boundedCProfile.ts",
+      "bytes": 14244,
+      "sha256": "332d552fe301e89de2a07efa90a92c2be65c584734b77d7251c168b909850f43"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/boundedCProfile.test.ts",
+      "preserved": "/private/tmp/tube-bounded-c-precision-v2-20261004/pre-port-source/boundedCProfile.test.ts",
+      "bytes": 9318,
+      "sha256": "2d7dabbd8780aea4bf6935ac3e094a555b68d9fa8f9d332adc0d877d0c14879c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+      "preserved": "/private/tmp/tube-bounded-c-precision-v2-20261004/pre-port-source/ProfileLibrary.ts",
+      "bytes": 25085,
+      "sha256": "eda47508fd5de1429fbfc13b46161a53cfa9fa35be854921134888a4b1d02e05"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/barrelLibrary.ts",
+      "preserved": "/private/tmp/tube-bounded-c-precision-v2-20261004/pre-port-source/barrelLibrary.ts",
+      "bytes": 2301,
+      "sha256": "064d825cd17e00b58e4dda789b7f28dcc81a68b12ebd99b3b28690261eeb30eb"
+    }
+  ],
+  "v1Freeze": {
+    "declaredBeforeAnyGeometryEvaluation": true,
+    "files": {
+      "recipe.md": "8f2ec98b2db8dc5e47d2774e4df9448c57751b90ab531a9bbe8dc3462d447034",
+      "prototype.py": "040754b077c133208aa8e1cd0b7af939bb135d6e5129b418855d6712eed198e8",
+      "evaluate.py": "270c00c49b50a3bae3c3b5526365092297d395af13a437f91caae8153919146b",
+      "provider-interface.json": "abc269bd2c2933d0c9ad6d0eb6b80bf05bc348f992577560a6c73e75e2f94dcd"
+    }
+  },
+  "strictTscExit": 0,
+  "prior29OwnTestsPassed": true,
+  "fullV1RetirementFailureReceipt": "/private/tmp/tube-bounded-c-profile-20261004/retirement-band-analysis.json",
+  "consumerFinalMeshIndependentBlocker": true
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "shared-sheet-readonly-design/v1",
+  "implementationPerformed": false,
+  "numericalOrNativeRunsPerformed": false,
+  "inputs": [
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 62544,
+      "sha256": "0c5d8a314d5f2aad6f2c75ccfe30d3c746618bd44182f44a23e5a646a49c2df3"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/sweptContact.ts",
+      "bytes": 29546,
+      "sha256": "9d17bdbbbcfdebbab1bc46bc31b5ffae5935010d6e7b347b190b841a6ecc7c46"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 30437,
+      "sha256": "3f232ce4e085ee62570daad821b777702394fbe5b772c3feda0c046f4b7489d8"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/scene/barrel/barrelWater.ts",
+      "bytes": 5755,
+      "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 6980,
+      "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/SurfZoneRunner.ts",
+      "bytes": 40621,
+      "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source/src/game/SurfZoneWorkerCore.ts",
+      "bytes": 9863,
+      "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+    },
+    {
+      "path": "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs",
+      "bytes": 11626,
+      "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+    },
+    {
+      "path": "/private/tmp/tube-directed-entry-20261004/tube-target.mjs",
+      "bytes": 8503,
+      "sha256": "20cc5f415c38961886f678cf9a678cbe15d8d7e1401857f397c994ef219f8090"
+    },
+    {
+      "path": "/private/tmp/tube-opening-inventory-20261004/inventory.mjs",
+      "bytes": 5037,
+      "sha256": "bf72e101bd151132681ef74de7b8b09f26d9654de4e19aaed2bc56c4b95060ce"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-final-mesh-canonical-receipt-20261004.json",
+      "bytes": 22325,
+      "sha256": "2b79dead008cbdf5cfa8dff164712bc5ffa1790302ff4b84c01ae9ec1cafeac2"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/consumer-canonical-source.json",
+      "bytes": 3714,
+      "sha256": "ea4c903f4e4e6dd58c7bbd8cebcbd42b227f1c2797993bcccf64bf83a2818d76"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "/private/tmp/tube-bounded-c-shared-sheet-design-20261004/design.md",
+      "bytes": 12351,
+      "sha256": "1606721e95914318d3d5206e37d325bbe051b4826a62b2d83c67930be5537319"
+    }
+  ]
+}

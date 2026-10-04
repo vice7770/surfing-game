@@ -1,0 +1,9 @@
+{
+  "originalFrozenEvaluatorUnchanged": true,
+  "firstFailureLog": "/private/tmp/tube-bounded-c-precision-v2-20261004/precision-first-measurement-error.log",
+  "mechanicalFix": "point_segment_distance expects q/y dictionaries; adapter supplied tuples. Convert vectors to expected dictionaries only. No recipe, geometry, grid or tolerance change.",
+  "replacementEvaluator": "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision-fixed.py",
+  "sha256": "1125999da78c98a22f72d2611e645d690b16ed48fc0a0cc657265d9db59ad742",
+  "sameDeclaredQueries": true,
+  "firstEvaluationAbortedBeforeReport": true
+}

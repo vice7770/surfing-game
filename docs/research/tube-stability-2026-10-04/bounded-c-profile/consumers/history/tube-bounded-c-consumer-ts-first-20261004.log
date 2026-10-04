@@ -1,0 +1,8 @@
+src/wave/barrel/boundedCSweptCrash.test.ts(8,43): error TS1149: File name '/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/sweptCrash.ts' differs from already included file name '/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/SweptCrash.ts' only in casing.
+  The file is in the program because:
+    Imported via './barrel/SweptCrash' from file '/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/SurfZoneSimulation.ts'
+    Imported via './SweptCrash' from file '/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/ClockLinkPrune.test.ts'
+    Imported via './SweptCrash' from file '/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/SweptCrash.test.ts'
+    Matched by include pattern 'src' in '/private/tmp/tube-bounded-c-profile-20261004/source/tsconfig.json'
+    Imported via './sweptCrash' from file '/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/boundedCSweptCrash.test.ts'
+    Imported via '../barrel/SweptCrash' from file '/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/probes/padangCrash.probe.test.ts'

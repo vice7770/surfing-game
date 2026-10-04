@@ -1,0 +1,144 @@
+{
+  "schema": "bounded-C-retirement-precision-obstruction/v1",
+  "frozenRecipeUnchanged": true,
+  "causalAnalysisOnly": true,
+  "newGridOrCoefficientSearch": false,
+  "derivation": "For small positive h, min(hW,h\u00b2H)=h\u00b2H.64ULP collapse occurs h<=sqrt(64ULP/H). Spatial-bound max(hW,hH) exceeds .001max(W,H) iff h>.001. Therefore a nonempty shipped-domain failure band exists whenever sqrt(64ULP/H)>.001.",
+  "portOrNativeAdoptionBlockedForFullQueries": true,
+  "sourceContextFailure": "consumer allcases2log: pad20 center.7487345402771224 firstAge.7247345447540283, preservedcrest32 \u00b14frame velocity stencil. Fastpath correctly avoids unrelatedloop forpreservedanchor only.",
+  "cases": [
+    {
+      "query": {
+        "slope": 0.0526316,
+        "footHeight": 1.4000000000000001,
+        "footDepth": 7,
+        "seconds": 0.8498481232858845
+      },
+      "lower": "periodic-padang19s-l12",
+      "upper": "pad19-a20-l12",
+      "weight": 1.0,
+      "NDparams": {
+        "A": [
+          0.5494200587272644,
+          0.28060999512672424
+        ],
+        "T": [
+          0.8658224940299988,
+          0.027310000732541084
+        ],
+        "ct": [
+          0.06240841746330261,
+          0.003259986639022827
+        ],
+        "tt": [
+          0.06668853759765625,
+          -0.008590001612901688
+        ],
+        "TD": 0.6985294140598448,
+        "tau": 0.6985294140598448,
+        "captureMissingIncoming": false,
+        "captureMissingOutgoing": false
+      },
+      "lengthScale": 7,
+      "timeScale": 0.8447233832986626,
+      "W": 0.3164024353027344,
+      "H": 0.25329999439418316,
+      "ulp": 5.960464477539063e-08,
+      "collapseResolution": 3.814697265625e-06,
+      "remainingFailureBand": {
+        "lowerExclusive": 0.001,
+        "upperInclusive": 0.003880721251786154
+      },
+      "tauFailureBand": {
+        "lowerInclusive": 1.0044716024097804,
+        "upperExclusive": 1.0082521830863997
+      },
+      "secondsFailureBand": {
+        "lowerInclusive": 0.8485006504150188,
+        "upperExclusive": 0.8516941953150062
+      },
+      "durationSeconds": 0.003193544899987444,
+      "impactSeconds": 0.6779268446797306,
+      "retiredSeconds": 0.8549460836732099,
+      "singleInteriorReproduction": {
+        "remaining": 0.002440360625893077,
+        "tau": 1.0060667670488885,
+        "seconds": 0.8498481232858845,
+        "geometryReturned": false,
+        "failure": [
+          "precision_collapse_exceeds_declared_spatial_budget"
+        ],
+        "intendedLoopScale": 1.5084926506662904e-06,
+        "collapseGeometryBound": 0.0007721360450494963,
+        "declaredSpatialBudget": 0.00031640243530273437
+      }
+    },
+    {
+      "query": {
+        "slope": 0.0526316,
+        "footHeight": 1.399999976158142,
+        "footDepth": 7,
+        "seconds": 0.8498481438477785
+      },
+      "lower": "periodic-padang19s-l12",
+      "upper": "pad19-a20-l12",
+      "weight": 0.9999999418774792,
+      "NDparams": {
+        "A": [
+          0.5494200587272644,
+          0.28060999512672424
+        ],
+        "T": [
+          0.8658224940299988,
+          0.027309995144605637
+        ],
+        "ct": [
+          0.06240841746330261,
+          0.003259986871853471
+        ],
+        "tt": [
+          0.06668853759765625,
+          -0.008590001612901688
+        ],
+        "TD": 0.6985294301290121,
+        "tau": 0.6985294301290121,
+        "captureMissingIncoming": false,
+        "captureMissingOutgoing": false
+      },
+      "lengthScale": 7,
+      "timeScale": 0.8447233832986626,
+      "W": 0.3164024353027344,
+      "H": 0.2532999999821186,
+      "ulp": 5.960464477539063e-08,
+      "collapseResolution": 3.814697265625e-06,
+      "remainingFailureBand": {
+        "lowerExclusive": 0.001,
+        "upperInclusive": 0.0038807212089807456
+      },
+      "tauFailureBand": {
+        "lowerInclusive": 1.0044716267305411,
+        "upperExclusive": 1.008252207451518
+      },
+      "secondsFailureBand": {
+        "lowerInclusive": 0.848500670959334,
+        "upperExclusive": 0.8516942158967912
+      },
+      "durationSeconds": 0.0031935449374571826,
+      "impactSeconds": 0.6779268612641227,
+      "retiredSeconds": 0.8549461043298024,
+      "singleInteriorReproduction": {
+        "remaining": 0.0024403606044903726,
+        "tau": 1.0060667913904593,
+        "seconds": 0.8498481438477785,
+        "geometryReturned": false,
+        "failure": [
+          "precision_collapse_exceeds_declared_spatial_budget"
+        ],
+        "intendedLoopScale": 1.5084926574843626e-06,
+        "collapseGeometryBound": 0.0007721360382775731,
+        "declaredSpatialBudget": 0.00031640243530273437
+      }
+    }
+  ],
+  "structuralNextOption": "Separate new precision-state formulation should preserve the exact zero-limit geometry while collapsing on the actual representability scale with a consistent spatial bound, or distribute an exact continuous zero state. No RAW fallback, no phase exceptions, no coefficient retuning in this frozen trial."
+}

@@ -1,0 +1,11 @@
+{
+  "focusedRerunComplete": true,
+  "passed": 8,
+  "attempted": 9,
+  "soleFailureKnownAndUnchanged": true,
+  "failure": "Reef roof43/upperRoot81 final3D loft inversion .311457153mm",
+  "consumerResult": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-focused-result.json",
+  "sha256": "996e117b26c67a4da3dda17876ef7d8debac70c1712fb14c5e4b3c453e5a98c6",
+  "providerReadinessAndSourceHashesUnchanged": true,
+  "nativeAdoption": false
+}

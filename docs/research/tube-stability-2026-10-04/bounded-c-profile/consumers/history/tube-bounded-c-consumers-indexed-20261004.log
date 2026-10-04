@@ -1,0 +1,14 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-profile-20261004/source
+
+ ✓ src/wave/PlungingLipSweptVoid.test.ts (2 tests) 22ms
+ ✓ src/wave/barrel/boundedCConsumers.test.ts (4 tests) 866ms
+   ✓ bounded-C derived consumers (4)
+     ✓ keeps final core contours clear across formation, sealing and retirement with live water and end weights 407ms
+     ✓ uses identical final drawing/contact geometry and ordered air columns with neighboring different ages 435ms
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  21:42:55
+   Duration  1.11s (tests 75%, transform 19%, import 5%)
+

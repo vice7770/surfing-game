@@ -1,0 +1,27 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-profile-20261004/source
+
+ ✓ src/wave/barrel/crestRays.test.ts (12 tests) 24ms
+ ✓ src/wave/barrel/lipSheet.test.ts (2 tests) 22ms
+ ✓ src/wave/PlungingLipSweptVoid.test.ts (2 tests) 30ms
+stdout | src/wave/barrel/sweptLoftClearRoof.test.ts > the clear-profile drawing hold > retains the real Padang pair and measures the held-profile change without a visual acceptance threshold
+clear-roof exact query pair {"rows":[126,127],"point":83,"originalDeltaY":-1.3689085245132446,"heldDeltaY":0.02395474910736084,"originalMaxAbsDeltaY32to88":1.3689085245132446,"heldMaxAbsDeltaY32to88":0.030141592025756836}
+
+ ✓ src/wave/barrel/crashCurve.test.ts (11 tests) 81ms
+ ✓ src/wave/PlungingLip.test.ts (71 tests) 191ms
+ ✓ src/wave/barrel/SweptCrash.test.ts (16 tests) 162ms
+ ✓ src/wave/barrel/boundedCSweptCrash.test.ts (2 tests) 240ms
+ ✓ src/wave/barrel/sweptContact.test.ts (19 tests) 294ms
+ ✓ src/wave/barrel/sweptLoftClearRoof.test.ts (6 tests) 398ms
+ ✓ src/wave/barrel/sweptLoft.test.ts (58 tests) 3106ms
+   ✓ the loft’s slices, for the contact (16)
+     ✓ on the library’s cases (5)
+       ✓ keeps the layers apart along vertical lines through blended held slices (the advisor, 2026-09-30) 342ms
+       ✓ the lip’s stored velocity against the drawn tip’s motion (the advisor, 2026-09-30 and 2026-10-03) (3)
+         ✓ agrees within 0.5 m/s from the throw until a case holds, along and across the columns, on straight and slanted fronts, with and without a throw point (the advisor, 2026-10-03) 1880ms
+
+ Test Files  10 passed (10)
+      Tests  199 passed (199)
+   Start at  21:45:33
+   Duration  3.44s (tests 66%, transform 28%, import 5%)
+

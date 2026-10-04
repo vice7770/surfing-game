@@ -1,0 +1,87 @@
+{
+  "scope": "exact three current focused files, all 9 assertions; known Reef inversion retained; no source mutation or broadened numerical search",
+  "cwd": "/private/tmp/tube-bounded-c-profile-20261004/source",
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "src/wave/barrel/boundedCConsumers.test.ts",
+    "src/wave/PlungingLipSweptVoid.test.ts",
+    "src/wave/barrel/boundedCSweptCrash.test.ts",
+    "--reporter=verbose"
+  ],
+  "failureReceiptEnvironment": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-mesh-failure.json",
+  "exitCode": 1,
+  "elapsedWallSeconds": 7.21972008299781,
+  "consumerSourceUnchanged": true,
+  "consumerFiles": [
+    {
+      "path": "src/wave/barrel/crestRays.ts",
+      "bytes": 14382,
+      "sha256": "499b17168bddda89f8b9fe4087edf91c327fe9b1ad73e56df1d214e15633ea61"
+    },
+    {
+      "path": "src/wave/barrel/lipSheet.ts",
+      "bytes": 16305,
+      "sha256": "b932aadcaa5fa6e1d1eb067bece4bb658e35e3dfa52c56d688634b8408fd453e"
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "bytes": 62544,
+      "sha256": "0c5d8a314d5f2aad6f2c75ccfe30d3c746618bd44182f44a23e5a646a49c2df3"
+    },
+    {
+      "path": "src/wave/barrel/sweptContact.ts",
+      "bytes": 29546,
+      "sha256": "9d17bdbbbcfdebbab1bc46bc31b5ffae5935010d6e7b347b190b841a6ecc7c46"
+    },
+    {
+      "path": "src/wave/barrel/crashCurve.ts",
+      "bytes": 17043,
+      "sha256": "dd56577045075b1b040434f3477df964f8ba7f80886dc4429b25d76f7196f1e8"
+    },
+    {
+      "path": "src/wave/barrel/SweptCrash.ts",
+      "bytes": 30645,
+      "sha256": "f32bbb4e4b25e0df80734912d62058fc45e4824555d930819f942bf6c42ebff4"
+    },
+    {
+      "path": "src/wave/PlungingLip.ts",
+      "bytes": 67993,
+      "sha256": "4030ccd00423d5fc12a9903412239068b1da5f25adbf3d8165d1baabdd7e0b4b"
+    },
+    {
+      "path": "src/wave/barrel/boundedCConsumers.test.ts",
+      "bytes": 15023,
+      "sha256": "aaa99f7ddcdaeeb85e2d279f4babcf40b23418065b51c9d9f9f636e94f012f0c"
+    },
+    {
+      "path": "src/wave/barrel/boundedCSweptCrash.test.ts",
+      "bytes": 4478,
+      "sha256": "560e2575240dda8aba52e8a9910cb7ab1f051d062365c1ebfff85c9058773fe8"
+    },
+    {
+      "path": "src/wave/PlungingLipSweptVoid.test.ts",
+      "bytes": 4068,
+      "sha256": "c85478ca2fd5bcde663380abb237e73a6c22ebbcedf097f7a2bdb536946541e8"
+    }
+  ],
+  "providerReadiness": {
+    "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-readiness.json",
+    "bytes": 7552,
+    "sha256": "9c1afa199fc267e77398843975adb813e19fa69e9101118e12a85a21c243a9ca"
+  },
+  "artifacts": [
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-focused.log",
+      "bytes": 3720,
+      "sha256": "0cb4fc1d7e68cd42418238d9b499d0591cdcde69aed9b61efa8619f9b72ccaf7"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-mesh-failure.json",
+      "bytes": 22325,
+      "sha256": "2b79dead008cbdf5cfa8dff164712bc5ffa1790302ff4b84c01ae9ec1cafeac2"
+    }
+  ],
+  "strictTS": "covered by geometry worker current combined-source readiness and root full-build ownership; not repeated here"
+}

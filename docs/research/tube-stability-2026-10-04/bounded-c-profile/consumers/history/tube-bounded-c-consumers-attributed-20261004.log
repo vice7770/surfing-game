@@ -1,0 +1,73 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-profile-20261004/source
+
+ ❯ src/wave/barrel/boundedCConsumers.test.ts (5 tests | 1 failed) 5445ms
+   ❯ bounded-C derived consumers (5)
+     ✓ measures each actual parameter-first sheet and discards stale values in zero-loop states 11ms
+     ✓ keeps final core contours clear across formation, sealing and retirement with live water and end weights 411ms
+     × uses identical final drawing/contact geometry and ordered air columns with neighboring different ages 3094ms
+     ✓ preserves the floor plateau allocation and exact cap edge through the real and deferred final meshes 1920ms
+     ✓ separates zero-loop launch air, prospective water, actual cap-floor contact and continuing fluid flow 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > uses identical final drawing/contact geometry and ordered air columns with neighboring different ages
+AssertionError: expected { count: 105, first: { …(11) }, …(1) } to deeply equal { count: +0, first: undefined, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "count": 0,
+-   "first": undefined,
+-   "maxPenetration": 0,
++   "count": 105,
++   "first": {
++     "ages": [
++       0.45725616812705994,
++       0.4602561593055725,
++     ],
++     "case": "periodic-reef42-l12",
++     "center": 0.4392561593153046,
++     "layers": [
++       {
++         "layer": 2,
++         "y": 0.533667127132483,
++       },
++       {
++         "layer": 0,
++         "y": 1.1055146616382732,
++       },
++       {
++         "layer": 1,
++         "y": 1.1059896566915584,
++       },
++     ],
++     "penetration": 0.00047499505328518765,
++     "sigma": [
++       7,
++       7.5,
++     ],
++     "strip": 17,
++     "waterIndex": 1,
++     "weights": [
++       0.35199999809265137,
++       0.10400000214576721,
++     ],
++     "x": 7.6855,
++     "z": -99.70569610595703,
++   },
++   "maxPenetration": 0.0069194469262876535,
+  }
+
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:149:126
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  21:46:50
+   Duration  5.65s (tests 97%, transform 2%)
+

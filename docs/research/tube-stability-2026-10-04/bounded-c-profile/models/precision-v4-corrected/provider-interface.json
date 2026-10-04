@@ -1,0 +1,36 @@
+{
+  "model": "bounded-analytic-C/v4",
+  "ownedIndices": [
+    33,
+    111
+  ],
+  "sameParameterFirstInterfaceAsV1": true,
+  "precisionState": {
+    "sheetExists": false,
+    "roofCurrentPhaseRetained": true,
+    "capInnerRootIndices": [
+      61,
+      106
+    ],
+    "capBoundaryIsCurrentK": true,
+    "tailUsesSameCommonHandleLawAndCurrentRoofEndpointTangent": false,
+    "sheetResolution": "requestedThickness>=8ULP plus64ULP loop guard",
+    "capRange": [
+      61,
+      68
+    ],
+    "connectorRange": [
+      69,
+      106
+    ],
+    "tailAnchor": "C=(K.x,currentYc)",
+    "tailTangent": "currentFloorPlaneTangent",
+    "tailUsesSameCommonHandleLawAndCurrentFloorPlaneTangent": true
+  },
+  "coveredAndVoidActive": false,
+  "rawFallback": false,
+  "immutableV1": "/private/tmp/tube-bounded-c-profile-20261004",
+  "futurePort": "/private/tmp/tube-bounded-c-profile-20261004/source",
+  "immutableV2": "/private/tmp/tube-bounded-c-precision-v2-20261004",
+  "immutableV3": "/private/tmp/tube-bounded-c-precision-v3-20261004"
+}

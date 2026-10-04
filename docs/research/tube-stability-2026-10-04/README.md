@@ -1,5 +1,7 @@
 # Active goal: good tubes
 
+The [bounded C model and consumer evidence](bounded-c-profile/README.md) preserves the corrected whole-curl candidate, its rejected revisions and exact final source. The final numeric model passes 6,447 declared queries and 30 provider tests; the consumer run remains 8/9 because a 0.311457 mm Reef roof/root inversion survives. The model is experimental. Native mouth visibility, moving closure and ordinary rider passage still require verification; no production geometry is adopted from this archive.
+
 The completed [ordinary rider support trace](rider-support/README.md) reproduces the prior 314-step trajectory exactly and records release as `posture-error → tip → balance`, before any tube entry. Contact recovers briefly after the off-planing handoff, then fails persistently as board roll and tip demand grow. No rider-physics fix is established. A separate comparison shows that restoring bounded production line steering would largely repeat the existing 385-step trial, whose late body columns remain exterior and whose nearby front is unformed. The recorded branch narrows the investigation; neither result establishes a usable tube approach or passage.
 
 The user's current goal is to make the game produce good tubes. Performance tuning is paused: the latest ordinary High Padang Big 90-second sample draws 60 FPS, although physics progress falls to 51.08 steps per wall second in its final predeclared 80–90-second window. [Retained FPS evidence](../performance-2026-10-04/zero-mask-fps/README.md).

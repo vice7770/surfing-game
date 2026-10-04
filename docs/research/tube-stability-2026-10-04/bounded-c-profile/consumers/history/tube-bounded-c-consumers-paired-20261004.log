@@ -1,0 +1,72 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-profile-20261004/source
+
+ ✓ src/wave/PlungingLipSweptVoid.test.ts (2 tests) 26ms
+ ❯ src/wave/barrel/boundedCConsumers.test.ts (4 tests | 1 failed) 986ms
+   ❯ bounded-C derived consumers (4)
+     ✓ measures each actual parameter-first sheet and discards stale values in zero-loop states 14ms
+     ✓ keeps final core contours clear across formation, sealing and retirement with live water and end weights 423ms
+     × uses identical final drawing/contact geometry and ordered air columns with neighboring different ages 531ms
+     ✓ separates zero-loop launch air, prospective water, actual cap-floor contact and continuing fluid flow 17ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > uses identical final drawing/contact geometry and ordered air columns with neighboring different ages
+AssertionError: expected { count: 1, first: { …(10) }, …(1) } to deeply equal { count: +0, first: undefined, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "count": 0,
+-   "first": undefined,
+-   "maxPenetration": 0,
++   "count": 1,
++   "first": {
++     "ages": [
++       1.2481203079223633,
++       1.2511203289031982,
++     ],
++     "center": 1.2691203860001856,
++     "layers": [
++       {
++         "layer": 1,
++         "y": 0.6531471597552299,
++       },
++       {
++         "layer": 2,
++         "y": 0.6532008106801791,
++       },
++       {
++         "layer": 0,
++         "y": 0.6749481735739853,
++       },
++     ],
++     "penetration": 0.000053650924949244505,
++     "sigma": [
++       0.5,
++       1,
++     ],
++     "strip": 4,
++     "waterIndex": 1,
++     "weights": [
++       0.06967984884977341,
++       0.23231959342956543,
++     ],
++     "x": 1.1855,
++     "z": -97.87680435180664,
++   },
++   "maxPenetration": 0.000053650924949244505,
+  }
+
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:144:126
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 5 passed (6)
+   Start at  21:38:31
+   Duration  1.24s (tests 77%, transform 18%, import 4%)
+

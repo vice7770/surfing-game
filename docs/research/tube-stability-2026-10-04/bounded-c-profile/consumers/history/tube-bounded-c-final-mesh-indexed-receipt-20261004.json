@@ -1,0 +1,18 @@
+{
+  "query": {
+    "slope": 0.05263157894736842,
+    "footHeight": 2.1,
+    "footDepth": 7
+  },
+  "times": {
+    "scale": 7,
+    "clamped": false,
+    "touchdownSeconds": 1.149118200135951,
+    "frameSeconds": 0.021118084582465363,
+    "clearSeconds": 0.400007286214115,
+    "collapseSeconds": 0.30000546466058625
+  },
+  "failures": [],
+  "checkedAir": 9402,
+  "zeroWeightRowsArePureWaterAndNotClaimedLiftedContours": true
+}

@@ -1,0 +1,66 @@
+{
+  "allInheritedV1": true,
+  "failureCount": 39,
+  "depthOverThicknessRange": [
+    -0.0867191357540773,
+    1.0369199095886277
+  ],
+  "inflationFactorRange": [
+    16739.261195822677,
+    200282.03790613703
+  ],
+  "examples": [
+    {
+      "block": "pad19-a20-l12",
+      "sample": "g3.011999486812939e-05",
+      "tau": 0.0008862804759199103,
+      "g": 3.0119994868129394e-05,
+      "requestedThickness": 1.3787839447691068e-11,
+      "8ULPThicknessFloor": 4.76837158203125e-07,
+      "inflationFactor": 34583.89256795247,
+      "nominalLipToFloorFormationDepth": 9.155273437500001e-07,
+      "nominalDepthOverStoredThickness": 1.9200000000000002,
+      "actualAvailableRootDepth": 4.549352100904323e-07,
+      "actualRootDepthOverStoredThickness": 0.9540682857115703,
+      "rootRadiusBounds": {
+        "desired": 1.9073486328125e-06,
+        "floor": 1.469439766175228e-07,
+        "roof": 2.226882188851451e-06,
+        "bulk": 0.25
+      },
+      "minimumRadiusRequired": 2.384185791015625e-07,
+      "selectedRadius": 1.469439766175228e-07,
+      "rootFloorCoefficient": -3.095977259922488,
+      "sameV1Failures": [
+        "bounded_root_no_radius_above_half_sheet_thickness"
+      ],
+      "v1AlsoFails": true
+    },
+    {
+      "block": "pad19-a20-l12",
+      "sample": "pre-switch-f32-0",
+      "tau": 0.0006265004049055278,
+      "g": 1.5059998023052636e-05,
+      "requestedThickness": 3.446960131540054e-12,
+      "8ULPThicknessFloor": 4.76837158203125e-07,
+      "inflationFactor": 138335.55945135947,
+      "nominalLipToFloorFormationDepth": 4.5776368977787703e-07,
+      "nominalDepthOverStoredThickness": 0.9600000375450544,
+      "actualAvailableRootDepth": -8.000056553205645e-10,
+      "actualRootDepthOverStoredThickness": -0.0016777334600668325,
+      "rootRadiusBounds": {
+        "desired": 1.9073486328125e-06,
+        "floor": -2.583976662253971e-10,
+        "roof": 9.94461728922641e-07,
+        "bulk": 0.3099349338239971
+      },
+      "minimumRadiusRequired": 2.384185791015625e-07,
+      "selectedRadius": -2.583976662253971e-10,
+      "rootFloorCoefficient": -3.0960250802835407,
+      "sameV1Failures": [
+        "bounded_root_nonpositive_available_depth"
+      ],
+      "v1AlsoFails": true
+    }
+  ]
+}

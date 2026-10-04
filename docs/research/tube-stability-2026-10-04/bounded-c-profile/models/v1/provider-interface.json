@@ -1,0 +1,10 @@
+{
+ "model":"bounded-analytic-C/v1",
+ "ownedIndices":[33,111],"preservedEndpoints":[32,112],
+ "parameters":["crestXY","toeXY","incomingTangentVector","outgoingTangentVector","TD","tau"],
+ "blendOrder":"parameters then one geometry construction",
+ "obstacles":"query preserved contour 0..32; owned actual F32 roof facets",
+ "outputs":["authoritativeContour128","partRanges","actualCapMinimum","impactTau","retiredTau","sheetThickness","discretePairFeasibility","rootRadiusBounds","floorControls","precisionCollapsedTopology","localVoidIntervals","boundaryEnvelopeDerivative","separateApproximateFluidFlow"],
+ "consumerRules":["profileAt and pointAt share final query","sheet/void/sky/contact derive from same contour","CrashCurve uses actual cap impact and boundary motion, not authored material tip","CrestRayPlan scans provider extent, not authored raw reach","geometry hold never implies stationary fluid","coverage is local contact/void test, not global sheet flag"],
+ "productionReady":false,"nativeValidated":false
+}

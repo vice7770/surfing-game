@@ -1,0 +1,574 @@
+{
+  "/private/tmp/tube-bounded-c-profile-20261004": [
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/README.md",
+      "bytes": 6710,
+      "sha256": "1b13301adcb1b68a7525d0af3af96a96940ba6e2a9ad62258075169ddcf4cb00"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/captured-profile-comparison.png",
+      "bytes": 142653,
+      "sha256": "86a99289407c540a0d4a6a85eb4a76f09605fb6a0d3ace00b0aff0f2e51a123c"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/discrete-diagnostics.json",
+      "bytes": 35171,
+      "sha256": "022f6ce720d853bff04a87641761ee85a182a3c2b6fd8f8ec2a0278826fa6f72"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/evaluate.py",
+      "bytes": 9439,
+      "sha256": "270c00c49b50a3bae3c3b5526365092297d395af13a437f91caae8153919146b"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/evaluation-start.json",
+      "bytes": 618,
+      "sha256": "f32e0adf43b9d5844c34d41bc46feac00f81b26e074c353641ca10de82383941"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/evaluation.log",
+      "bytes": 9995,
+      "sha256": "fb9f7ea383a8a9fbc697a06dcae12a3499336480deb9586002af8d659caee58d"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/freeze.json",
+      "bytes": 426,
+      "sha256": "5b6ffd538e2a06e3c6c304612d61b91378f328b49ab323acd8d2100f9c67843a"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/make-port-reference.py",
+      "bytes": 1441,
+      "sha256": "07cae159a8fccb80727ff0d54583ea44609074363654ae22a2e4f7c3de12e613"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/pad19-a30-l12-phase-grid.png",
+      "bytes": 133277,
+      "sha256": "59aef4f47745156124a6a77b046bfe9d42771bd71774abaf28c8e43b611edff9"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/periodic-reef42-l12-phase-grid.png",
+      "bytes": 132059,
+      "sha256": "c1384613221c3273b99413e74fa0109c9540612abd41d690fd07252a19b43c69"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/plot.py",
+      "bytes": 4675,
+      "sha256": "af5d68c71711383f1b6e98d676042c2e8aea893783dad513cbfd9faf6cda8b03"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/port-reference.json",
+      "bytes": 407281,
+      "sha256": "c0f1a5c44af17afa128da8e852b6b77581e287ba3b3be698687cde17d3c3ed5e"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/prototype.py",
+      "bytes": 13830,
+      "sha256": "040754b077c133208aa8e1cd0b7af939bb135d6e5129b418855d6712eed198e8"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/provider-interface.json",
+      "bytes": 1021,
+      "sha256": "abc269bd2c2933d0c9ad6d0eb6b80bf05bc348f992577560a6c73e75e2f94dcd"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/provider-readiness.json",
+      "bytes": 951,
+      "sha256": "2adfea3dec33159718cdb16ed647febe007d5c4b128258420a99bf727bba4652"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/provider-tests.log",
+      "bytes": 201,
+      "sha256": "65ff91c5e5ba2b85f089b6fd6d60b80911ce56aeb7fbfe75e864ec620362d55c"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/provider-tsc.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/recipe.md",
+      "bytes": 7621,
+      "sha256": "8f2ec98b2db8dc5e47d2774e4df9448c57751b90ab531a9bbe8dc3462d447034"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/report.json",
+      "bytes": 17130974,
+      "sha256": "36530b9ea8d53d9b8f3b468e134ad5a4b73157e13c7236d2881eb6853122de4f"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/report.json.gz",
+      "bytes": 1085538,
+      "sha256": "241652231d22dbe3de53d1dcfd943db3a5b426fc99b9e183a91e77157b72bb0e"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/retirement-band-analysis.json",
+      "bytes": 5005,
+      "sha256": "49faea37227a50c192a71f28163ba8cbdce9245f18e3cd2eb06463ef199e6812"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/retirement-band-analysis.py",
+      "bytes": 4487,
+      "sha256": "b651dadca2553f4e0bf3e7506d0fa73dd65bab15ed4fc09ec5db8aea877784d4"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/source-baseline.json",
+      "bytes": 57841,
+      "sha256": "6cfd98b91922362bc569a6da555e9e75571cee0dd9bf6251cb93c5257ac0f23b"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-profile-20261004/summary.json",
+      "bytes": 70390,
+      "sha256": "b34debfb87ebb1b3fbd5f80005569ac25032438665ca6e9bedf774275461ba0b"
+    }
+  ],
+  "/private/tmp/tube-bounded-c-precision-v2-20261004": [
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/README.md",
+      "bytes": 4612,
+      "sha256": "79dca9fc548e12f8f64f4382574673af17dd1621351c2f8d103fe17dadbb1f09"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/causal-formation-analysis.json",
+      "bytes": 40667,
+      "sha256": "2b48e32fcdd43cb74d3562328b4dbb75ad378417573c01a9b8905b6843b2b456"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/causal-formation-analysis.log",
+      "bytes": 2240,
+      "sha256": "fff5454ed80f77219e7aec7ff10718309c6fc7160b258c6903575720979cce95"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/causal-formation-analysis.py",
+      "bytes": 4706,
+      "sha256": "caf4db1bce11a3a3c49ae170a7bf1b2d099d043ba82f4b98e97800f0266cc3cf"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision-fixed.py",
+      "bytes": 6138,
+      "sha256": "1125999da78c98a22f72d2611e645d690b16ed48fc0a0cc657265d9db59ad742"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate-precision.py",
+      "bytes": 6084,
+      "sha256": "3219b2694502242eeb853a8a8d8c02e748d63459f136161cbece1ab7bf35b795"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluate.py",
+      "bytes": 9444,
+      "sha256": "f42bc9d7da51e897a06e6feaf64cf8a9405bdea741b4170c7a18e167fa4bb8cd"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluation-start.json",
+      "bytes": 633,
+      "sha256": "225bf32e75a12acddd6ae94a6c673017e8d8341c07b44c7252f670452e248b17"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/evaluation.log",
+      "bytes": 9995,
+      "sha256": "fb9f7ea383a8a9fbc697a06dcae12a3499336480deb9586002af8d659caee58d"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/freeze.json",
+      "bytes": 1137,
+      "sha256": "0ea123ed767ff50592cd761e8988c88e1e94e49ffb0d598adfe10ea8cc570870"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/measurement-repair.json",
+      "bytes": 613,
+      "sha256": "acd671199058d8c8b1c82c89e9ffdf00152556843e74f53ec58a2d8dee1f8634"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/pre-port-source.json",
+      "bytes": 2085,
+      "sha256": "b0f0b8e5bad0da08ca0c7c5cdd6f75bff0b11b07dda55377de836d2ff27afb2f"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/pre-port-source.patch",
+      "bytes": 36692,
+      "sha256": "b869e65d1d2ea3527e95f90ca26bac1dc882924854ebb1aea820984ec6ba719d"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/precision-evaluation-fixed.log",
+      "bytes": 820,
+      "sha256": "d037a9932e71b7cb191b7fb632feb69fa67c9e311daa25f4bce82d2b4b5991d5"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/precision-evaluation.log",
+      "bytes": 2551,
+      "sha256": "fbd3733d4c183c0d8c63f6b39a64e9cdfa2b2822d1fc71dcb4ff7ec559cbed86"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/precision-failure-summary.json",
+      "bytes": 85089,
+      "sha256": "fde4f615f49e17231f5f385fa9fb4b9397154fd24765223e4bc14ec11438fb29"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/precision-first-measurement-error.log",
+      "bytes": 2551,
+      "sha256": "fbd3733d4c183c0d8c63f6b39a64e9cdfa2b2822d1fc71dcb4ff7ec559cbed86"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/precision-report.json",
+      "bytes": 2884829,
+      "sha256": "d3096ab9b4d95049d16f48b0c1d3c64c0d78a4e75e167415bb2d5de2aaf0842d"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/precision-summary.json",
+      "bytes": 910,
+      "sha256": "0a306ae518225a1eaceea8db955e4fa4fa363a5282b1e3814f3c88970d771b18"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/prototype.py",
+      "bytes": 14745,
+      "sha256": "897838dc74c0567cfc31ff63effb34d617de53a2cfcf520739331f8e41ac6dd9"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/provider-interface.json",
+      "bytes": 567,
+      "sha256": "1c0128fa7c36d018e24e025114c2a492c9f8060bc2b43e8cf8f9e715a5804b52"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/recipe.md",
+      "bytes": 6568,
+      "sha256": "39d3bfbfcf41981eac710903736dc16603ac2a6e583a84bca700419c6883a2c2"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/report.json",
+      "bytes": 17631461,
+      "sha256": "04a201b4a8b911b164a4b3c08aeef23df5053988bee26dd195892cbb65cf9322"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v2-20261004/summary.json",
+      "bytes": 70390,
+      "sha256": "81e1e8f0048132374bf9b74a8229b9739a4c6e52e94c3b5050e26c8fd5639e38"
+    }
+  ],
+  "/private/tmp/tube-bounded-c-precision-v3-20261004": [
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/README.md",
+      "bytes": 4684,
+      "sha256": "d2e25f16f59bdef79bbb8a64fcfd2e01d1afcf35f198b0f0f67b8858d5798afa"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/evaluate-precision.py",
+      "bytes": 6596,
+      "sha256": "d5f255c7eaf5f935c1187d7807257f55605245a58150c64400bd94d34225ee21"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/evaluate.py",
+      "bytes": 9444,
+      "sha256": "bf55002698a79be7318924e6ab85184ad36c9c8a75d081750c5f69a00f489302"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/evaluation-start.json",
+      "bytes": 633,
+      "sha256": "33712344c087c2fa62c23f832f261062fca6a1d2bd4eca655087a6925e7a8091"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/evaluation.log",
+      "bytes": 10174,
+      "sha256": "0bfb09d4d404b6ff270b239e0dd35fad35739e8e2a0d15ffa581d7e0a4c3751f"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/failure-summary.json",
+      "bytes": 199391,
+      "sha256": "8a75d503c53119641c8c77547a6ef464a05ed8f5f85c07eff256df04f73d2ca7"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/freeze.json",
+      "bytes": 1139,
+      "sha256": "fe16c093449a4544b11d123159587d2f427d80278759dce7afd158316c0ecadb"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/precision-evaluation.log",
+      "bytes": 771,
+      "sha256": "e8fb5b37517dd311e0576a7e3b9cb3411debde240cde664cd3898237f99e1e40"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/precision-report.json",
+      "bytes": 4549177,
+      "sha256": "00812b8e72a957d3aa86b0248779cee3d892f08501a2b60eaadfcf3405034654"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/precision-summary.json",
+      "bytes": 857,
+      "sha256": "74006bf4df972907fcc0918ae13959b5fb7e093b8f01b186d66cec28c88fb1b2"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/prototype.py",
+      "bytes": 14748,
+      "sha256": "67cba511c4c6b7ff77adf9623609a4937a75aad8f053b3fc746da3fd0dccd2ab"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/provider-interface.json",
+      "bytes": 709,
+      "sha256": "93dca286ce09f624955d0286802c139cb477b48a71907101291089ba7696f413"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/recipe.md",
+      "bytes": 3035,
+      "sha256": "adeca1b1e8ba1ac33f76ef683b29cd67a5c2cd57bd4f5fbd936a494a5541bf8d"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/report.json",
+      "bytes": 17554733,
+      "sha256": "e0d44c28730cd347249ef9a704575352074282963a45405b5308db40e0c9b506"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v3-20261004/summary.json",
+      "bytes": 70532,
+      "sha256": "f109d6cfeb311c99c6e99b022370a4c60419be4156b8d2df2dd855cb33cca595"
+    }
+  ],
+  "/private/tmp/tube-bounded-c-precision-v4-20261004": [
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/evaluate-precision.py",
+      "bytes": 6724,
+      "sha256": "54b6f87fc7378d945e678b926ed0a8f8058babf22a83a01fa990ce7333978aa1"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/evaluate.py",
+      "bytes": 9574,
+      "sha256": "4437a18f06cc3feedb5e2ce96499639976e317ed7643233afe975f82aad8b50b"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/evaluation-start.json",
+      "bytes": 633,
+      "sha256": "da86b94d426f8f845048a702812f819d6969713b38d56ff21a6d84501b8db5b7"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/evaluation.log",
+      "bytes": 9911,
+      "sha256": "509afe97da5dca2e6ce38acb4dbea6004a60bf0f6ed07eb5dbca9f024bd3496c"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/freeze.json",
+      "bytes": 1152,
+      "sha256": "53858670a3e85aa47078e8409b47b54ad6d33006308dd49159748f0bf6d16f1a"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/monotonicity-failure.json",
+      "bytes": 1327,
+      "sha256": "458703e2288b17a886ea8fdb5c929acc860aed5d1f9fcf67af402b1b3d5e74f4"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/precision-evaluation.log",
+      "bytes": 739,
+      "sha256": "23fe6a65f287f5f60bfc038a99f39aecb9b3a3404fd666dc6bf869d820eff190"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/precision-report.json",
+      "bytes": 4781341,
+      "sha256": "c8b8f8e5195d053207eea952fc77098fe41d272cbe1198030eee222b0d983238"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/precision-summary.json",
+      "bytes": 819,
+      "sha256": "2df035ebd3d23617d9a37ef9866269088cff2a5e7d2c5bcc45e4ef5b63139b6b"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/prototype.py",
+      "bytes": 14998,
+      "sha256": "0c6ef76825597965541d0dc7424aef744c83cdb8e20e5d9ff0148fd1f632f87d"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/provider-interface.json",
+      "bytes": 1029,
+      "sha256": "c2ad00149e0dd297f3570aef4c82c1f7e0b356ce95d0dd5f50bd20ac4af578d4"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/recipe.md",
+      "bytes": 4130,
+      "sha256": "aaca5b63fdf377d0d24f18a5b0ac01e8ef7415201d93d927de8574a9f2a123e6"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/report.json",
+      "bytes": 19177497,
+      "sha256": "67b908d3dafb0587b9f53e464a28172f1d7da98ed1f212256c1f8e66a5151182"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-20261004/summary.json",
+      "bytes": 70342,
+      "sha256": "07cacc9629d5bdaa4f72cae2f77f32aef9c2c3d1b3f9b773a694cd9d155f9124"
+    }
+  ],
+  "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004": [
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/README.md",
+      "bytes": 4148,
+      "sha256": "fd65b8e8bfc9ad2ec11265baa6cb8ec31162e93e5e05aab9d115660b20b870f5"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/consumer-completion.json",
+      "bytes": 443,
+      "sha256": "2291786928e8154e6eb9def3c3e75753eb3200223424496265270e78a2a83df1"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/diagnostics.py",
+      "bytes": 2692,
+      "sha256": "df94aec06a82cc3e92592bf88a6e12d000c2c8eb41d86117a976893a1385aadc"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/discrete-diagnostics.json",
+      "bytes": 14474,
+      "sha256": "c698398fb6be69d3e43c0b634dcb02b65471119aefcd21b51010bf48a3e83cdb"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/evaluate-precision.py",
+      "bytes": 6730,
+      "sha256": "097f17cd068aed55efacf0ec65158003244b32ee1d46c30c2b5f40391a0059f6"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/evaluate.py",
+      "bytes": 9580,
+      "sha256": "f451cf17c2de5caeac554f6a9a318949f50716e6ae8cc92aab72b4f55664d539"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/evaluation-start.json",
+      "bytes": 651,
+      "sha256": "e816995f5f822652b04679d4094787eafeb31120c617e37ff0eed3a55d5e1818"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/evaluation.log",
+      "bytes": 10008,
+      "sha256": "d7626687e6ac704a6667e814144ddaf52d9a535b7795d3c1902e05ec9bd49b2c"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/freeze.json",
+      "bytes": 1204,
+      "sha256": "25c08ba6d31720218b4db69d447897417e4d560dc2c2a02695ce34a99585a3b3"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/make-port-reference.py",
+      "bytes": 1886,
+      "sha256": "c8c2b244780a31e485d79510cb5bf557dbfa76f9d907e551e08c71af2d9f4d55"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/port-reference.json",
+      "bytes": 3354876,
+      "sha256": "d576b82c2f257974f56f9773510e50838505eeaf246aeb004488152f6a0dbb55"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/port-reference.json.gz",
+      "bytes": 401762,
+      "sha256": "bc8df1fa21a0edb6cdfebd57efb1e803b32e7599f3335c24b8f6adc66a9bcb25"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/precision-evaluation.log",
+      "bytes": 751,
+      "sha256": "ddf7316e37c109fcd763b7c273824354800f251cd30ef5acbfde08b6280a4220"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/precision-report.json",
+      "bytes": 4779569,
+      "sha256": "d6a9819366e2f1d56d33cd1736cc4a13eeaf5dbac19ca5a796e2f66ed21e64ae"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/precision-report.json.gz",
+      "bytes": 241669,
+      "sha256": "b7bf0f61354430882d326952206a40a92e6c71405baefadf1686f0c56ba9b239"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/precision-summary.json",
+      "bytes": 831,
+      "sha256": "d84d09aaf29ea0a8afef3cdce5d4eb86d69186763deb31f6fa0e6496a7eef6fa"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/prototype.py",
+      "bytes": 15013,
+      "sha256": "8d6da66457962d71b09050b7dcc35b2424fa720222ed9039a9291905fb98a1fd"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-final.patch",
+      "bytes": 39553,
+      "sha256": "d3e89b4f2264ab04a24aad5c7bc4ffbaabdf4d4e1702af4a8956f83b429d4875"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-interface.json",
+      "bytes": 1029,
+      "sha256": "c2ad00149e0dd297f3570aef4c82c1f7e0b356ce95d0dd5f50bd20ac4af578d4"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-readiness.json",
+      "bytes": 7552,
+      "sha256": "9c1afa199fc267e77398843975adb813e19fa69e9101118e12a85a21c243a9ca"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-tests.log",
+      "bytes": 201,
+      "sha256": "51798d3435c3ff23777d971a09d78b1ec97dbc625b06ef6bc4371c8d44f13ee7"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-tsc.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/recipe.md",
+      "bytes": 1308,
+      "sha256": "c24c1b68bd730079f75a795f4be37f90f592e04f3f4fe902be590b01c142f83c"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/report.json",
+      "bytes": 18415219,
+      "sha256": "359d48b4062e5cba82e923604e363e93d6c346f889bdde9934ff050e85b982d9"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/report.json.gz",
+      "bytes": 1168694,
+      "sha256": "4fa861015a448c17d9c36cd96cc401a82afc89a592d612b597b2560fd1da3222"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/summary.json",
+      "bytes": 70390,
+      "sha256": "bd73ed6a76027780bc39c5b977a7c05934918731a2c62b74973801b9a63dc2f4"
+    }
+  ],
+  "/private/tmp/tube-bounded-c-consumers-20261004": [
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/consumer-canonical-source.json",
+      "bytes": 3714,
+      "sha256": "ea4c903f4e4e6dd58c7bbd8cebcbd42b227f1c2797993bcccf64bf83a2818d76"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/consumer-canonical.patch",
+      "bytes": 49238,
+      "sha256": "c0a2926ff09afae193c6b20d052bb633526a0cadacb7cdc3573f1a5f9b8f3c08"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/consumer-status-canonical.json",
+      "bytes": 3564,
+      "sha256": "e64c09ef45f5befe1e2130d41e186f89945e9e8256d90056927afdb44894d963"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/failure-and-test-artifacts.json",
+      "bytes": 4315,
+      "sha256": "60f8f290b93bab0f4f6658bb79a3613ca9f3fdf5f07b702a20bef2df62c4c948"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/retained-failure-verification.json",
+      "bytes": 1030,
+      "sha256": "a9d971a9340d77a004edc3d3d20b6a375235049f55fc1488d399d35cf7ddfb59"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-focused-result.json",
+      "bytes": 3161,
+      "sha256": "996e117b26c67a4da3dda17876ef7d8debac70c1712fb14c5e4b3c453e5a98c6"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-focused-validation.json",
+      "bytes": 3148,
+      "sha256": "081bf700a79b704e528d19194b1d542583cad50d05fa25304fa11cb54160a16f"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-focused.log",
+      "bytes": 3720,
+      "sha256": "0cb4fc1d7e68cd42418238d9b499d0591cdcde69aed9b61efa8619f9b72ccaf7"
+    },
+    {
+      "path": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-mesh-failure.json",
+      "bytes": 22325,
+      "sha256": "2b79dead008cbdf5cfa8dff164712bc5ffa1790302ff4b84c01ae9ec1cafeac2"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "schema": "bounded-C-archive-packaging-verification/v1",
+  "archiveOnly": true,
+  "originalsLeftUnchanged": true,
+  "nativeEvidenceIncluded": false,
+  "noSourceOrNumericalOrTestOrNativeExecution": true,
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "verify.py"
+      ],
+      "exitCode": 0,
+      "result": {
+        "verified": true,
+        "mode": "portable",
+        "checks": {
+          "payloads": 175,
+          "gzipPayloads": 32,
+          "priorReferences": 23,
+          "originalPayloads": 0,
+          "originalTransports": 0,
+          "originalBaselines": 0
+        },
+        "manifest": {
+          "bytes": 87220,
+          "sha256": "f4af8c4104a1aaabaf54d9a6544d0b3c3a762d5e8a465843ea6e7372b5f69c33"
+        },
+        "recordedFinalFocused": "8 passed / 1 known failure",
+        "retainedPenetrationMeters": 0.0003114571531508403,
+        "nativeOrNumericalRerun": false,
+        "sourceAdoptionOrEntryPass": false
+      }
+    },
+    {
+      "command": [
+        "python3",
+        "verify.py",
+        "--original-scratch"
+      ],
+      "exitCode": 0,
+      "result": {
+        "verified": true,
+        "mode": "original-scratch",
+        "checks": {
+          "payloads": 175,
+          "gzipPayloads": 32,
+          "priorReferences": 23,
+          "originalPayloads": 186,
+          "originalTransports": 4,
+          "originalBaselines": 554
+        },
+        "manifest": {
+          "bytes": 87220,
+          "sha256": "f4af8c4104a1aaabaf54d9a6544d0b3c3a762d5e8a465843ea6e7372b5f69c33"
+        },
+        "recordedFinalFocused": "8 passed / 1 known failure",
+        "retainedPenetrationMeters": 0.0003114571531508403,
+        "nativeOrNumericalRerun": false,
+        "sourceAdoptionOrEntryPass": false
+      }
+    }
+  ],
+  "manifest": {
+    "bytes": 87220,
+    "sha256": "f4af8c4104a1aaabaf54d9a6544d0b3c3a762d5e8a465843ea6e7372b5f69c33"
+  },
+  "selfNotIncludedInManifest": true
+}

@@ -1,0 +1,397 @@
+{
+  "schema": "bounded-C-v4/discrete-diagnostics",
+  "samePreviouslyDeclaredQueriesOnly": true,
+  "maximumPrecisionTurn": {
+    "block": "pad19-a30-l12",
+    "sample": "h0.009392222366917774",
+    "turn": {
+      "indices": [
+        64,
+        65
+      ],
+      "absoluteTurnDegrees": 112.87366519062671
+    },
+    "sheetExists": true,
+    "formation": 1,
+    "remaining": 0.009392222366917724,
+    "thickness": 1.8310546874999805e-06,
+    "minimumRepresentableThickness": 9.5367431640625e-07,
+    "triplet": [
+      {
+        "position": {
+          "point": 63,
+          "q": 1.4140218496322632,
+          "y": 0.020380251109600067
+        },
+        "indices": [
+          63
+        ]
+      },
+      {
+        "position": {
+          "point": 64,
+          "q": 1.4140212535858154,
+          "y": 0.02037999965250492
+        },
+        "indices": [
+          64,
+          65
+        ]
+      },
+      {
+        "position": {
+          "point": 66,
+          "q": 1.4140212535858154,
+          "y": 0.02038000151515007
+        },
+        "indices": [
+          66
+        ]
+      }
+    ],
+    "edgeLengthsND": [
+      6.469173351977861e-07,
+      1.862645149230957e-09
+    ],
+    "edgeLengthsMetersAt7m": [
+      4.528421346384503e-06,
+      1.30385160446167e-08
+    ]
+  },
+  "maximumCollapsedConnector": {
+    "block": "pad19-a45-l12",
+    "sample": "sheet-g0.00802187615006682",
+    "lengthND": 0.0004755367939198729,
+    "lengthMetersAt7m": 0.0033287575574391104,
+    "formation": 0.008021876150066819,
+    "remaining": 1
+  },
+  "switches": [
+    {
+      "block": "pad19-a20-l12",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 2.2351741790771484e-08,
+      "maximumRetainedOuterDisplacementND": 2.2351741790771484e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 1.485774864033707e-08
+    },
+    {
+      "block": "pad19-a20-l12",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "pad19-a20-l12",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.0010340019542549794,
+      "maximumRetainedOuterDisplacementND": 4.842447527734718e-07,
+      "maximumRetainedTailDisplacementND": 2.384185791015625e-07,
+      "sampledSymmetricContourDistanceND": 9.344064103929834e-05
+    },
+    {
+      "block": "pad19-a20-l12",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.0006834147037199107,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 6.006850114687196e-07,
+      "sampledSymmetricContourDistanceND": 0.00011446648027652009
+    },
+    {
+      "block": "pad19-a30-l12",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedOuterDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 1.5753158299598246e-08
+    },
+    {
+      "block": "pad19-a30-l12",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "pad19-a30-l12",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.0013829645600970308,
+      "maximumRetainedOuterDisplacementND": 9.518554114296597e-07,
+      "maximumRetainedTailDisplacementND": 4.76837158203125e-07,
+      "sampledSymmetricContourDistanceND": 0.00013823256180973866
+    },
+    {
+      "block": "pad19-a30-l12",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.0010782670890055798,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 1.4093221743286399e-06,
+      "sampledSymmetricContourDistanceND": 0.00017147659098286542
+    },
+    {
+      "block": "pad19-a45-l12",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedOuterDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 2.3683437149253192e-08
+    },
+    {
+      "block": "pad19-a45-l12",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "pad19-a45-l12",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.0021893837608278686,
+      "maximumRetainedOuterDisplacementND": 1.9054932707193378e-06,
+      "maximumRetainedTailDisplacementND": 1.0728836059570312e-06,
+      "sampledSymmetricContourDistanceND": 0.00022866292460849822
+    },
+    {
+      "block": "pad19-a45-l12",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.0017985584101909689,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 2.93110045098412e-06,
+      "sampledSymmetricContourDistanceND": 0.0002837113747496396
+    },
+    {
+      "block": "periodic-padang19s-l12",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 1.4901161193847656e-08,
+      "maximumRetainedOuterDisplacementND": 1.4901161193847656e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 9.424103230777649e-09
+    },
+    {
+      "block": "periodic-padang19s-l12",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "periodic-padang19s-l12",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.0009703906859026481,
+      "maximumRetainedOuterDisplacementND": 4.805480091749757e-07,
+      "maximumRetainedTailDisplacementND": 2.384185791015625e-07,
+      "sampledSymmetricContourDistanceND": 9.253786245782368e-05
+    },
+    {
+      "block": "periodic-padang19s-l12",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.0007076688111655966,
+      "maximumRetainedOuterDisplacementND": 1.4901161193847656e-08,
+      "maximumRetainedTailDisplacementND": 6.627667309792664e-07,
+      "sampledSymmetricContourDistanceND": 0.00011522022506349911
+    },
+    {
+      "block": "periodic-point21-a15-l12",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedOuterDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 1.7582794195203365e-08
+    },
+    {
+      "block": "periodic-point21-a15-l12",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "periodic-point21-a15-l12",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.001917858593035652,
+      "maximumRetainedOuterDisplacementND": 9.555351461101412e-07,
+      "maximumRetainedTailDisplacementND": 5.364418029785156e-07,
+      "sampledSymmetricContourDistanceND": 0.0001694487704600759
+    },
+    {
+      "block": "periodic-point21-a15-l12",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.0011375112936349628,
+      "maximumRetainedOuterDisplacementND": 1.4901161193847656e-08,
+      "maximumRetainedTailDisplacementND": 1.0929775727327018e-06,
+      "sampledSymmetricContourDistanceND": 0.00019759001457355133
+    },
+    {
+      "block": "periodic-point21-a23-l12",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedOuterDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 2.286220321167209e-08
+    },
+    {
+      "block": "periodic-point21-a23-l12",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "periodic-point21-a23-l12",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.002119219790889197,
+      "maximumRetainedOuterDisplacementND": 9.57399606704712e-07,
+      "maximumRetainedTailDisplacementND": 4.76837158203125e-07,
+      "sampledSymmetricContourDistanceND": 0.000187886343847003
+    },
+    {
+      "block": "periodic-point21-a23-l12",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.0012965391516406774,
+      "maximumRetainedOuterDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedTailDisplacementND": 1.119869603398796e-06,
+      "sampledSymmetricContourDistanceND": 0.00022239104731720108
+    },
+    {
+      "block": "periodic-point21-a30-l12",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedOuterDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 2.4787687405911085e-08
+    },
+    {
+      "block": "periodic-point21-a30-l12",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "periodic-point21-a30-l12",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.0015866949347758193,
+      "maximumRetainedOuterDisplacementND": 9.57399606704712e-07,
+      "maximumRetainedTailDisplacementND": 4.76837158203125e-07,
+      "sampledSymmetricContourDistanceND": 0.00015544568826181493
+    },
+    {
+      "block": "periodic-point21-a30-l12",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.001203419320623833,
+      "maximumRetainedOuterDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedTailDisplacementND": 1.381314334292088e-06,
+      "sampledSymmetricContourDistanceND": 0.00019456221266456333
+    },
+    {
+      "block": "periodic-reef42-l12",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedOuterDisplacementND": 2.9802322387695312e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 2.8134067741561543e-08
+    },
+    {
+      "block": "periodic-reef42-l12",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "periodic-reef42-l12",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.008808134790197953,
+      "maximumRetainedOuterDisplacementND": 9.721865760496817e-07,
+      "maximumRetainedTailDisplacementND": 4.76837158203125e-07,
+      "sampledSymmetricContourDistanceND": 0.000732392210425426
+    },
+    {
+      "block": "periodic-reef42-l12",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.003237340437495862,
+      "maximumRetainedOuterDisplacementND": 5.960464477539063e-08,
+      "maximumRetainedTailDisplacementND": 6.143906154658885e-07,
+      "sampledSymmetricContourDistanceND": 0.00042855977578315106
+    },
+    {
+      "block": "exact-factory-1.4000000000000001",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 2.2351741790771484e-08,
+      "maximumRetainedOuterDisplacementND": 2.2351741790771484e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 1.485774864033707e-08
+    },
+    {
+      "block": "exact-factory-1.4000000000000001",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "exact-factory-1.4000000000000001",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.0010340019542549794,
+      "maximumRetainedOuterDisplacementND": 4.842447527734718e-07,
+      "maximumRetainedTailDisplacementND": 2.384185791015625e-07,
+      "sampledSymmetricContourDistanceND": 9.344064103929834e-05
+    },
+    {
+      "block": "exact-factory-1.4000000000000001",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.0006834147037199107,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 6.006850114687196e-07,
+      "sampledSymmetricContourDistanceND": 0.00011446648027652009
+    },
+    {
+      "block": "exact-factory-1.399999976158142",
+      "label": "post",
+      "maximumPerIndexDisplacementND": 2.2351741790771484e-08,
+      "maximumRetainedOuterDisplacementND": 2.2351741790771484e-08,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 1.5312998857289506e-08
+    },
+    {
+      "block": "exact-factory-1.399999976158142",
+      "label": "pre",
+      "maximumPerIndexDisplacementND": 0.0,
+      "maximumRetainedOuterDisplacementND": 0.0,
+      "maximumRetainedTailDisplacementND": 0.0,
+      "sampledSymmetricContourDistanceND": 0.0
+    },
+    {
+      "block": "exact-factory-1.399999976158142",
+      "label": "sheet-post",
+      "maximumPerIndexDisplacementND": 0.0010340371306416225,
+      "maximumRetainedOuterDisplacementND": 4.823963260726441e-07,
+      "maximumRetainedTailDisplacementND": 2.384185791015625e-07,
+      "sampledSymmetricContourDistanceND": 9.344080280079954e-05
+    },
+    {
+      "block": "exact-factory-1.399999976158142",
+      "label": "sheet-pre",
+      "maximumPerIndexDisplacementND": 0.0006834147037199107,
+      "maximumRetainedOuterDisplacementND": 1.4901161193847656e-08,
+      "maximumRetainedTailDisplacementND": 6.006850114687196e-07,
+      "sampledSymmetricContourDistanceND": 0.00011446648027652009
+    }
+  ],
+  "limits": [
+    "No all-material-index continuity claim.",
+    "Sampled contour distance is not an analytic Hausdorff bound.",
+    "Thin resolved cap normals have quantized turns; no numerical tolerance was relaxed.",
+    "3D loft/contact and native appearance need independent evidence."
+  ]
+}

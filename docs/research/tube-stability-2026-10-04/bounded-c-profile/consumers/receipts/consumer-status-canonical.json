@@ -1,0 +1,99 @@
+{
+  "status": "unadopted consumer construction; one remaining roof/upper-root inversion; precision-v2 provider pending",
+  "scope": "shared isolated source only; root production, Git, servers and native/browser untouched",
+  "checks": [
+    {
+      "files": 10,
+      "passedTests": 199,
+      "failedTests": 0,
+      "log": "/private/tmp/tube-bounded-c-consumers-legacy-first-20261004.log",
+      "notes": "before canonical diagonal; legacy raw behavior bypasses analytic-only triangulation"
+    },
+    {
+      "files": 11,
+      "passedTests": 203,
+      "failedTests": 1,
+      "log": "/private/tmp/tube-bounded-c-consumers-final-20261004.log",
+      "notes": "all8 attribution expands and finds105 roof/under inversions with onlycap-floorpaired diagonals"
+    },
+    {
+      "files": 1,
+      "passedTests": 4,
+      "failedTests": 1,
+      "log": "/private/tmp/tube-bounded-c-consumers-canonical-20261004.log",
+      "notes": "canonical physical diagonals remove104of105 inversions; novertexlift/thickness/fade/tolerancemodification"
+    },
+    {
+      "type": "strict TypeScript --noEmit",
+      "exitCode": 0,
+      "log": "/private/tmp/tube-bounded-c-consumer-ts-canonical-20261004.log"
+    }
+  ],
+  "latestOrderedAirColumns": 75710,
+  "remainingMeshFailures": [
+    {
+      "case": "periodic-reef42-l12",
+      "center": 1.7687453093075154,
+      "waterIndex": 1,
+      "strip": 17,
+      "sigma": [
+        7,
+        7.5
+      ],
+      "ages": [
+        1.786745309829712,
+        1.7897453308105469
+      ],
+      "weights": [
+        0.19581395387649536,
+        0.05709647387266159
+      ],
+      "x": 7.6855,
+      "z": -95.61014556884766,
+      "layers": [
+        {
+          "y": 0.9741497501374469,
+          "layer": 2,
+          "segment": 95,
+          "vertices": [
+            2376,
+            2510,
+            2377
+          ]
+        },
+        {
+          "y": 1.2110173619235172,
+          "layer": 0,
+          "segment": 43,
+          "vertices": [
+            2325,
+            2458,
+            2459
+          ]
+        },
+        {
+          "y": 1.211328819076668,
+          "layer": 1,
+          "segment": 81,
+          "vertices": [
+            2362,
+            2497,
+            2363
+          ]
+        }
+      ],
+      "penetration": 0.0003114571531508403
+    }
+  ],
+  "rowTests": "all8cases \u00d79phaseages \u00d73waters propernon-adjacentcontourcrosschecks pass; per-neighborrowchecks also pass",
+  "pairedConstruction": "existingcollinear103..105floor104resampled atcap64XZ whenlocalYscoincide; allocatedinsidebounds; actualcap-flooredgeexactincludingdeferredheightconstruction; canonicaldiagonalbasedactualalongrayprogress",
+  "airLedger": "currentvoid startszeroandgrowsatmospherically; prospectiveimpactshape reserveswateronly; closurecapturecurrentaironce; releaseonlylostremainingfraction, finalzero/disappearanceflushonce; publicPlungingLip2tests+actualSweptCrash2testsconservewaterandair",
+  "limits": [
+    "notnumericalmodelacceptance",
+    "notnativevisualacceptance",
+    "notrideableentryproof",
+    "notFPSbenchmark",
+    "oldv1fullqueryprecisionretirementdomainfailureindependentlyreportedbyproviderworker"
+  ],
+  "proposedNextStructuralScope": "No remesh implemented. Analytic-onlycommon-projectionstationremesh ofroof32..60 andreturn68..88 needsauxiliaryexactedgesubdivision, triangleindexcontactbins, deferredprovenance andexplicitvertexbudget. Fixed134primaryslotscannotretainalloriginalpolylinecornersandaddallmatchingstations. Curved-rayF32noncollinearitymustbevalidated, notsilentlyprojected."
+}

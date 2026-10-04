@@ -1,0 +1,19 @@
+{
+  "schema": "archive-packaging-checker-repair/v1",
+  "scope": "archive metadata verifier only; no numerical/test/native rerun or trial/source edits",
+  "firstChecks": [
+    "python3 verify.py",
+    "python3 verify.py --original-scratch"
+  ],
+  "firstExitCodes": [
+    1,
+    1
+  ],
+  "firstVerifierReceipt": {
+    "bytes": 6229,
+    "sha256": "6c5c23cce10eb6c79f24ef991bc803560aa04e0394014e21890a4be918b641a4"
+  },
+  "failure": "TypeError: list indices must be integers or slices, not str at the v1 summary receipt check",
+  "cause": "summary.json has outcome statistics under outcome; captured at top level is the list of individual captures",
+  "repair": "Read the recorded v1 summary outcome key before checking original passed-grid counts. No evidence bytes or thresholds changed."
+}

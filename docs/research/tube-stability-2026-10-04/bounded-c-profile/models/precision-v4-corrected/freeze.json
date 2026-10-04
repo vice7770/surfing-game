@@ -1,0 +1,34 @@
+{
+  "recipeVersion": 4,
+  "implementationRepair": true,
+  "declaredBeforeEvaluation": true,
+  "files": [
+    {
+      "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/recipe.md",
+      "bytes": 1308,
+      "sha256": "c24c1b68bd730079f75a795f4be37f90f592e04f3f4fe902be590b01c142f83c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/prototype.py",
+      "bytes": 15013,
+      "sha256": "8d6da66457962d71b09050b7dcc35b2424fa720222ed9039a9291905fb98a1fd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/evaluate.py",
+      "bytes": 9580,
+      "sha256": "f451cf17c2de5caeac554f6a9a318949f50716e6ae8cc92aab72b4f55664d539"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/evaluate-precision.py",
+      "bytes": 6730,
+      "sha256": "097f17cd068aed55efacf0ec65158003244b32ee1d46c30c2b5f40391a0059f6"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/provider-interface.json",
+      "bytes": 1029,
+      "sha256": "c2ad00149e0dd297f3570aef4c82c1f7e0b356ce95d0dd5f50bd20ac4af578d4"
+    }
+  ],
+  "originalV4Unchanged": true,
+  "sameDeclaredQueries": true
+}

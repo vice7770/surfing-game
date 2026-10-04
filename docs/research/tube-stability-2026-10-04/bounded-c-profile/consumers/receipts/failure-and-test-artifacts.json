@@ -1,0 +1,117 @@
+[
+  {
+    "path": "/private/tmp/tube-bounded-c-consumer-ts-canonical-20261004.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumer-ts-final-20261004.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumer-ts-first-20261004.log",
+    "bytes": 1129,
+    "sha256": "6215b20643cc76c532d7743f907bfef7099ff1f55b260fb4d3ab9e2f97c7ed8f"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-allcases-20261004.log",
+    "bytes": 2915,
+    "sha256": "96c346c310d9a667d578f7b538782eb23b02859fd9189c04c6f1561b036c6075"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-allcases2-20261004.log",
+    "bytes": 2822,
+    "sha256": "869fe424525e1a0345360a572198616f32a29648336c0ac1e517950dfb53c05e"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-attributed-20261004.log",
+    "bytes": 2263,
+    "sha256": "5251662c7aca31f11ba8786431143c89c33e9046bfe93e911d39b7c78d2bc787"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-canonical-20261004.log",
+    "bytes": 2604,
+    "sha256": "13993a2ec19a2a9b8706ce11ba5d9a8b3a45c9bcbaae80b760b70ae1420904c3"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-classified-20261004.log",
+    "bytes": 3890,
+    "sha256": "11898cbe1518a96dd60754d839b3f390e229b5b477bdedc7bc6c2b857f1adda9"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-diagonal-20261004.log",
+    "bytes": 1781,
+    "sha256": "0658189911cf72deaa045ec77bbe17019915eae56cefb63900f9dd8979687f86"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-final-20261004.log",
+    "bytes": 3759,
+    "sha256": "9f229680b0070b1951895b9c4094c79c9200e9196422b797dd99212e210a479d"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-first-20261004.log",
+    "bytes": 1161127,
+    "sha256": "3660cf0b7ff93280b9efa4b9470c68b8cde333cafc8d4e79fe913bc68779b6db"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-indexed-20261004.log",
+    "bytes": 597,
+    "sha256": "27f4eb5db42ae718ebc53abda9c05ce58d255686b9bd0da0bc261b2f81160792"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-legacy-first-20261004.log",
+    "bytes": 1709,
+    "sha256": "5a9b3e1a9a4455d10d63936181d0108a5594bba9fb4fe4eac54b0c3f4a221747"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-paired-20261004.log",
+    "bytes": 2187,
+    "sha256": "5ee9b3b26b393d99a7cc1417149d97920a14eeafbbe6c2cdf4392c9b9dfb7f14"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-roof-pairs-20261004.log",
+    "bytes": 2611,
+    "sha256": "c470815b38f0fc9e502f47dd2085acfb52a770475948025d720b23cae6ac48f8"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-allcase-attributed-receipt-20261004.json",
+    "bytes": 93846,
+    "sha256": "c15edc02f8f56ca820e955f7c81cb55029ca76ed6469e61831eb8bb786f9daaf"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-canonical-receipt-20261004.json",
+    "bytes": 22325,
+    "sha256": "2b79dead008cbdf5cfa8dff164712bc5ffa1790302ff4b84c01ae9ec1cafeac2"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-failure-receipt-20261004.json",
+    "bytes": 22293,
+    "sha256": "0708d57b0eaa457a73754bcd826e0d739f3f62b80e010d8312894efe584f2c9e"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-final-receipt-20261004.json",
+    "bytes": 89961,
+    "sha256": "b11e049f4f7d4aeca6ac483aadb34efaaa86f0a29c82146861678a31ff10a26f"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-indexed-receipt-20261004.json",
+    "bytes": 425,
+    "sha256": "9d3eb8c16b95424185c4384c70fdf92a85f9b9520822006eb1c6248811e78964"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-paired-receipt-20261004.json",
+    "bytes": 22293,
+    "sha256": "fde01290c3d6bfd69fc73e5c355893dc63455b350bf089b6b5c6999800a2930e"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-roof-pairs-receipt-20261004.json",
+    "bytes": 130117,
+    "sha256": "3bba35d019ba834a499797991bffa018e77835ae18d17c0ce4924a86e26d18eb"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-swept-crash-first-20261004.log",
+    "bytes": 276,
+    "sha256": "7f3b173ba48e970a605a9b2583b369f70a802d54f9159e26987d1d097dfe9867"
+  }
+]

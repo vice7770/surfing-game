@@ -1,0 +1,22 @@
+{
+  "model": "bounded-analytic-C/v2",
+  "ownedIndices": [
+    33,
+    111
+  ],
+  "sameParameterFirstInterfaceAsV1": true,
+  "precisionState": {
+    "sheetExists": false,
+    "roofCurrentPhaseRetained": true,
+    "capInnerRootIndices": [
+      61,
+      106
+    ],
+    "capBoundaryIsCurrentK": true,
+    "tailUsesSameCommonHandleLawAndCurrentRoofEndpointTangent": true
+  },
+  "coveredAndVoidActive": false,
+  "rawFallback": false,
+  "immutableV1": "/private/tmp/tube-bounded-c-profile-20261004",
+  "futurePort": "/private/tmp/tube-bounded-c-profile-20261004/source"
+}

@@ -1,0 +1,9 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-profile-20261004/source
+
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  21:48:18
+   Duration  2.61s (tests 92%, transform 6%, import 2%)
+

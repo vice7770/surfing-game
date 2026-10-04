@@ -1,0 +1,55 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-profile-20261004/source
+
+ ✓ src/wave/PlungingLipSweptVoid.test.ts (2 tests) 22ms
+ ❯ src/wave/barrel/boundedCConsumers.test.ts (5 tests | 2 failed) 814ms
+   ❯ bounded-C derived consumers (5)
+     ✓ measures each actual parameter-first sheet and discards stale values in zero-loop states 11ms
+     ✓ keeps final core contours clear across formation, sealing and retirement with live water and end weights 414ms
+     × uses identical final drawing/contact geometry and ordered air columns with neighboring different ages 375ms
+     × preserves the floor plateau allocation and exact cap edge through the real and deferred final meshes 3ms
+     ✓ separates zero-loop launch air, prospective water, actual cap-floor contact and continuing fluid flow 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > uses identical final drawing/contact geometry and ordered air columns with neighboring different ages
+Error: precision collapse spatial budget
+ ❯ sampleBoundedC src/wave/barrel/boundedCProfile.ts:112:131
+
+ ❯ ProfileLibrary.analyticShape src/wave/barrel/ProfileLibrary.ts:385:18
+ ❯ ProfileLibrary.analyticAt src/wave/barrel/ProfileLibrary.ts:403:23
+ ❯ ProfileLibrary.pointAt src/wave/barrel/ProfileLibrary.ts:236:12
+ ❯ SweptLoft.landmarkVelocity src/wave/barrel/sweptLoft.ts:1006:18
+ ❯ SweptLoft.crestPointVelocity src/wave/barrel/sweptLoft.ts:990:22
+ ❯ SweptLoft.loftFront src/wave/barrel/sweptLoft.ts:667:31
+ ❯ SweptLoft.build src/wave/barrel/sweptLoft.ts:389:12
+ ❯ SweptContact.update src/wave/barrel/sweptContact.ts:201:28
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:116:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > preserves the floor plateau allocation and exact cap edge through the real and deferred final meshes
+AssertionError: expected 0.19117003679275513 to be 0.19116996228694916 // Object.is equality
+
+- Expected
++ Received
+
+- 0.19116996228694916
++ 0.19117003679275513
+
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:162:47
+    160|         const lookup = library.profileAt({ ...query, seconds: age }, p…
+    161|         if (!lookup.analytic!.sheetExists) continue;
+    162|         expect(profile[2 * LANDMARK.lip + 1]).toBe(profile[2 * 104 + 1…
+       |                                               ^
+    163|         expect(profile[2 * LANDMARK.lip]).toBeGreaterThanOrEqual(profi…
+    164|         expect(profile[2 * LANDMARK.lip]).toBeLessThanOrEqual(profile[…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 5 passed (7)
+   Start at  21:43:24
+   Duration  1.06s (tests 74%, transform 21%, import 5%)
+

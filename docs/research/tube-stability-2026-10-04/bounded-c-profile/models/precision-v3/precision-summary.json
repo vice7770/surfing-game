@@ -1,0 +1,34 @@
+{
+  "attempted": 522,
+  "valid": 483,
+  "invalid": 39,
+  "failures": {
+    "precision_collapse_exceeds_declared_spatial_budget": 39
+  },
+  "finite": true,
+  "anchorsOutsideExact": true,
+  "beforeCrossed": 0,
+  "afterCrossed": 0,
+  "cleanToCrossed": 0,
+  "pairIncrease": 0,
+  "newPairs": 0,
+  "maximumTurn": 112.87366519062671,
+  "capFloorPenetrations": 0,
+  "capFloorRange": [
+    0.0,
+    0.0009431000798940659
+  ],
+  "phases": {
+    "retired": 48,
+    "retiring": 257,
+    "forming": 190,
+    "sealing": 27
+  },
+  "allCollapsedEnvelopeBoundsWithinUnchangedBudget": true,
+  "maximumCollapsedControlBound": 0.00035256793885290896,
+  "maximumBoundOverBudgetFraction": 0.7137003174830612,
+  "switchPairs": 40,
+  "switchValid": false,
+  "maximumSwitchPerIndexDisplacement": 0.008808134790197953,
+  "maximumSampledContourSwitchDistance": 0.000732392210425426
+}

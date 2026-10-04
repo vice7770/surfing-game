@@ -1,0 +1,29 @@
+[
+  {
+    "path": "/private/tmp/tube-bounded-c-consumers-first-20261004.log",
+    "bytes": 1161127,
+    "sha256": "3660cf0b7ff93280b9efa4b9470c68b8cde333cafc8d4e79fe913bc68779b6db",
+    "originalUnchanged": true
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-failure-receipt-20261004.json",
+    "bytes": 22293,
+    "sha256": "0708d57b0eaa457a73754bcd826e0d739f3f62b80e010d8312894efe584f2c9e",
+    "originalUnchanged": true
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-paired-receipt-20261004.json",
+    "bytes": 22293,
+    "sha256": "fde01290c3d6bfd69fc73e5c355893dc63455b350bf089b6b5c6999800a2930e"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-roof-pairs-receipt-20261004.json",
+    "bytes": 130117,
+    "sha256": "3bba35d019ba834a499797991bffa018e77835ae18d17c0ce4924a86e26d18eb"
+  },
+  {
+    "path": "/private/tmp/tube-bounded-c-final-mesh-canonical-receipt-20261004.json",
+    "bytes": 22325,
+    "sha256": "2b79dead008cbdf5cfa8dff164712bc5ffa1790302ff4b84c01ae9ec1cafeac2"
+  }
+]

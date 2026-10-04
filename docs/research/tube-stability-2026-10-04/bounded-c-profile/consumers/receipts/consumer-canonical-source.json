@@ -1,0 +1,85 @@
+{
+  "scope": "isolated source only; unadopted; canonical diagonal still has one measured upper-root inversion",
+  "files": [
+    {
+      "path": "src/wave/barrel/crestRays.ts",
+      "sourceBytes": 14382,
+      "sourceSHA256": "499b17168bddda89f8b9fe4087edf91c327fe9b1ad73e56df1d214e15633ea61",
+      "baselinePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "baselineBytes": 14454,
+      "baselineSHA256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+    },
+    {
+      "path": "src/wave/barrel/lipSheet.ts",
+      "sourceBytes": 16305,
+      "sourceSHA256": "b932aadcaa5fa6e1d1eb067bece4bb658e35e3dfa52c56d688634b8408fd453e",
+      "baselinePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "baselineBytes": 15981,
+      "baselineSHA256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "sourceBytes": 62544,
+      "sourceSHA256": "0c5d8a314d5f2aad6f2c75ccfe30d3c746618bd44182f44a23e5a646a49c2df3",
+      "baselinePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "baselineBytes": 60602,
+      "baselineSHA256": "b281a97c08f6b233d8861c43cf8e7a2b6efc56ff716816241043c964c17fef86"
+    },
+    {
+      "path": "src/wave/barrel/sweptContact.ts",
+      "sourceBytes": 29546,
+      "sourceSHA256": "9d17bdbbbcfdebbab1bc46bc31b5ffae5935010d6e7b347b190b841a6ecc7c46",
+      "baselinePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+      "baselineBytes": 29165,
+      "baselineSHA256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba"
+    },
+    {
+      "path": "src/wave/barrel/crashCurve.ts",
+      "sourceBytes": 17043,
+      "sourceSHA256": "dd56577045075b1b040434f3477df964f8ba7f80886dc4429b25d76f7196f1e8",
+      "baselinePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crashCurve.ts",
+      "baselineBytes": 14166,
+      "baselineSHA256": "361183fa14ead52594e1bad25a6a47fd274bc294e8f8c6d5199814e01e4778a9"
+    },
+    {
+      "path": "src/wave/barrel/SweptCrash.ts",
+      "sourceBytes": 30645,
+      "sourceSHA256": "f32bbb4e4b25e0df80734912d62058fc45e4824555d930819f942bf6c42ebff4",
+      "baselinePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/SweptCrash.ts",
+      "baselineBytes": 28953,
+      "baselineSHA256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da"
+    },
+    {
+      "path": "src/wave/PlungingLip.ts",
+      "sourceBytes": 67993,
+      "sourceSHA256": "4030ccd00423d5fc12a9903412239068b1da5f25adbf3d8165d1baabdd7e0b4b",
+      "baselinePath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/PlungingLip.ts",
+      "baselineBytes": 66195,
+      "baselineSHA256": "222aec07a816290880138d270e3960b34e4925b1fb2010ca047382820ce89b0c"
+    },
+    {
+      "path": "src/wave/barrel/boundedCConsumers.test.ts",
+      "sourceBytes": 15023,
+      "sourceSHA256": "aaa99f7ddcdaeeb85e2d279f4babcf40b23418065b51c9d9f9f636e94f012f0c",
+      "baselinePath": null,
+      "baselineBytes": 0,
+      "baselineSHA256": null
+    },
+    {
+      "path": "src/wave/barrel/boundedCSweptCrash.test.ts",
+      "sourceBytes": 4478,
+      "sourceSHA256": "560e2575240dda8aba52e8a9910cb7ab1f051d062365c1ebfff85c9058773fe8",
+      "baselinePath": null,
+      "baselineBytes": 0,
+      "baselineSHA256": null
+    },
+    {
+      "path": "src/wave/PlungingLipSweptVoid.test.ts",
+      "sourceBytes": 4068,
+      "sourceSHA256": "c85478ca2fd5bcde663380abb237e73a6c22ebbcedf097f7a2bdb536946541e8",
+      "baselinePath": null,
+      "baselineBytes": 0,
+      "baselineSHA256": null
+    }
+  ]
+}

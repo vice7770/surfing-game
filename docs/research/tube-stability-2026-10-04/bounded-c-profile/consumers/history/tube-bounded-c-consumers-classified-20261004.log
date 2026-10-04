@@ -1,0 +1,157 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-profile-20261004/source
+
+ ✓ src/wave/PlungingLipSweptVoid.test.ts (2 tests) 24ms
+ ❯ src/wave/barrel/boundedCConsumers.test.ts (4 tests | 2 failed) 970ms
+   ❯ bounded-C derived consumers (4)
+     ✓ measures each actual parameter-first sheet and discards stale values in zero-loop states 12ms
+     × keeps final core contours clear across formation, sealing and retirement with live water and end weights 464ms
+     × uses identical final drawing/contact geometry and ordered air columns with neighboring different ages 484ms
+     ✓ separates zero-loop launch air, prospective water, actual cap-floor contact and continuing fluid flow 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > keeps final core contours clear across formation, sealing and retirement with live water and end weights
+AssertionError: expected [ …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "age": 1.149118200135951,
++     "case": "pad19-a30-l12",
++     "count": 10,
++     "first": {
++       "row": 4,
++       "segments": [
++         63,
++         104,
++       ],
++     },
++     "waterIndex": 1,
++   },
++   {
++     "age": 1.3286461332606616,
++     "case": "pad19-a45-l12",
++     "count": 14,
++     "first": {
++       "row": 4,
++       "segments": [
++         63,
++         104,
++       ],
++     },
++     "waterIndex": 1,
++   },
++   {
++     "age": 0.946350342508566,
++     "case": "periodic-padang19s-l12",
++     "count": 9,
++     "first": {
++       "row": 5,
++       "segments": [
++         63,
++         104,
++       ],
++     },
++     "waterIndex": 1,
++   },
++   {
++     "age": 0.7762894109033166,
++     "case": "periodic-point21-a15-l12",
++     "count": 9,
++     "first": {
++       "row": 4,
++       "segments": [
++         63,
++         104,
++       ],
++     },
++     "waterIndex": 2,
++   },
++   {
++     "age": 1.1405163190211147,
++     "case": "periodic-point21-a30-l12",
++     "count": 14,
++     "first": {
++       "row": 4,
++       "segments": [
++         63,
++         104,
++       ],
++     },
++     "waterIndex": 1,
++   },
++ ]
+
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:99:22
+     97|       }
+     98|     }
+     99|     expect(failures).toEqual([]);
+       |                      ^
+    100|   }, 30000);
+    101|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > uses identical final drawing/contact geometry and ordered air columns with neighboring different ages
+AssertionError: expected { count: 1, first: { …(10) }, …(1) } to deeply equal { count: +0, first: undefined, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "count": 0,
+-   "first": undefined,
+-   "maxPenetration": 0,
++   "count": 1,
++   "first": {
++     "ages": [
++       1.2481203079223633,
++       1.2511203289031982,
++     ],
++     "center": 1.2691203860001856,
++     "layers": [
++       {
++         "layer": 1,
++         "y": 0.6529899779208123,
++       },
++       {
++         "layer": 2,
++         "y": 0.6530156456258367,
++       },
++       {
++         "layer": 0,
++         "y": 0.6750330226333161,
++       },
++     ],
++     "penetration": 0.000025667705024434717,
++     "sigma": [
++       0.5,
++       1,
++     ],
++     "strip": 4,
++     "waterIndex": 1,
++     "weights": [
++       0.06967984884977341,
++       0.23231959342956543,
++     ],
++     "x": 1.1855,
++     "z": -97.87839126586914,
++   },
++   "maxPenetration": 0.000025667705024434717,
+  }
+
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:144:126
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 4 passed (6)
+   Start at  21:35:47
+   Duration  1.25s (tests 76%, transform 19%, import 5%)
+

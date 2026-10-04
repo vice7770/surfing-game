@@ -1,0 +1,90 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-profile-20261004/source
+
+ ✓ src/wave/barrel/crestRays.test.ts (12 tests) 19ms
+ ✓ src/wave/barrel/lipSheet.test.ts (2 tests) 24ms
+stdout | src/wave/barrel/sweptLoftClearRoof.test.ts > the clear-profile drawing hold > retains the real Padang pair and measures the held-profile change without a visual acceptance threshold
+clear-roof exact query pair {"rows":[126,127],"point":83,"originalDeltaY":-1.3689085245132446,"heldDeltaY":0.02395474910736084,"originalMaxAbsDeltaY32to88":1.3689085245132446,"heldMaxAbsDeltaY32to88":0.030141592025756836}
+
+ ✓ src/wave/PlungingLipSweptVoid.test.ts (2 tests) 32ms
+ ✓ src/wave/barrel/crashCurve.test.ts (11 tests) 74ms
+ ✓ src/wave/PlungingLip.test.ts (71 tests) 190ms
+ ✓ src/wave/barrel/SweptCrash.test.ts (16 tests) 170ms
+ ✓ src/wave/barrel/sweptContact.test.ts (19 tests) 273ms
+ ✓ src/wave/barrel/boundedCSweptCrash.test.ts (2 tests) 219ms
+ ✓ src/wave/barrel/sweptLoftClearRoof.test.ts (6 tests) 376ms
+ ✓ src/wave/barrel/sweptLoft.test.ts (58 tests) 2901ms
+   ✓ the loft’s slices, for the contact (16)
+     ✓ on the library’s cases (5)
+       ✓ keeps the layers apart along vertical lines through blended held slices (the advisor, 2026-09-30) 350ms
+       ✓ the lip’s stored velocity against the drawn tip’s motion (the advisor, 2026-09-30 and 2026-10-03) (3)
+         ✓ agrees within 0.5 m/s from the throw until a case holds, along and across the columns, on straight and slanted fronts, with and without a throw point (the advisor, 2026-10-03) 1713ms
+ ❯ src/wave/barrel/boundedCConsumers.test.ts (5 tests | 1 failed) 5562ms
+   ❯ bounded-C derived consumers (5)
+     ✓ measures each actual parameter-first sheet and discards stale values in zero-loop states 18ms
+     ✓ keeps final core contours clear across formation, sealing and retirement with live water and end weights 479ms
+     × uses identical final drawing/contact geometry and ordered air columns with neighboring different ages 3168ms
+     ✓ preserves the floor plateau allocation and exact cap edge through the real and deferred final meshes 1885ms
+     ✓ separates zero-loop launch air, prospective water, actual cap-floor contact and continuing fluid flow 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > uses identical final drawing/contact geometry and ordered air columns with neighboring different ages
+AssertionError: expected { count: 105, first: { …(10) }, …(1) } to deeply equal { count: +0, first: undefined, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "count": 0,
+-   "first": undefined,
+-   "maxPenetration": 0,
++   "count": 105,
++   "first": {
++     "ages": [
++       0.45725616812705994,
++       0.4602561593055725,
++     ],
++     "center": 0.4392561593153046,
++     "layers": [
++       {
++         "layer": 2,
++         "y": 0.533667127132483,
++       },
++       {
++         "layer": 0,
++         "y": 1.1055146616382732,
++       },
++       {
++         "layer": 1,
++         "y": 1.1059896566915584,
++       },
++     ],
++     "penetration": 0.00047499505328518765,
++     "sigma": [
++       7,
++       7.5,
++     ],
++     "strip": 17,
++     "waterIndex": 1,
++     "weights": [
++       0.35199999809265137,
++       0.10400000214576721,
++     ],
++     "x": 7.6855,
++     "z": -99.70569610595703,
++   },
++   "maxPenetration": 0.0069194469262876535,
+  }
+
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:149:126
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  1 failed | 203 passed (204)
+   Start at  21:46:26
+   Duration  5.86s (tests 81%, transform 16%, import 3%)
+
