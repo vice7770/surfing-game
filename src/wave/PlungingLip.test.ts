@@ -1053,6 +1053,71 @@ describe('a swept barrel’s held jet (Padang Padang, Part B, PR 5)', () => {
     expect(jets.at(-1)!.z).toBeGreaterThan(16);
   });
 
+  it.each([false, true])('releases the final trapped air when the last jet parcel lands at complete collapse (held mouth: %s)', (withMouth) => {
+    const solver = basin();
+    flowingCrest(solver);
+    const lip = new PlungingLip(solver, 64);
+    const initialWater = water(solver);
+    const closing = lip.holdJet(jet(solver, { voidHeight: 0.44, pourSpacing: 1 / 24, pourVY: -3 })).strip;
+    const mouth = withMouth ? lip.holdJet(jet(solver, { cell: 11 * solver.nx + 4, launchX: 4.5, pourX: 4.5 })).strip : undefined;
+    const lastSlot = lip.exportState().strips.find(([id]) => id === closing)![1].parcels[STRIP_PARCELS - 1];
+    let bubbles = 0, spit = 0, erupted = 0, reportedWater = 0, jetLandings = 0;
+    let finalLanding: ReturnType<PlungingLip['exportState']> | undefined;
+    lip.onAir = (_x, _z, volume) => { bubbles += volume; };
+    lip.onLand = (_x, _z, volume, _vx, _vy, _vz, flight) => {
+      reportedWater += volume;
+      if (flight!.kind === 0 && ++jetLandings === STRIP_PARCELS) finalLanding = lip.exportState();
+    };
+    expect(lip.crashJet(closing, { x: 3.5, y: 0.01, z: 15, spacing: 1 / 24, vy: -3 }, { x: 3.5, y: 0.8, z: 13 })).toBe(true);
+    let witnessed = false;
+    for (let step = 0; step < 240; step += 1) {
+      const previous = lip.exportState().strips.find(([id]) => id === closing)?.[1].tube;
+      const beforeOutput = bubbles + spit + erupted;
+      lip.step(1 / 60);
+      for (const output of lip.spits) spit += output.airRate / 60;
+      for (const output of lip.eruptions) erupted += output.airRate / 60;
+      expect(bubbles + spit + erupted + lip.heldAir).toBeCloseTo(lip.trappedAir, 9);
+      expect(water(solver) + lip.airborneVolume() + lip.escapedVolume).toBeCloseTo(initialWater, 9);
+      if (!witnessed && finalLanding) {
+        witnessed = true;
+        const residual = previous!.air * (1 - previous!.released);
+        expect(residual).toBeGreaterThan(1e-7);
+        expect(bubbles + spit + erupted - beforeOutput).toBeCloseTo(residual, 9);
+        const retained = finalLanding.strips.find(([id]) => id === closing)![1];
+        expect(retained.live).toBe(0);
+        expect(retained.tube!.released).toBeLessThan(1);
+        const k = finalLanding.slots.indexOf(lastSlot);
+        expect(k).toBeGreaterThanOrEqual(0);
+        expect(finalLanding.fields.kind[k]).toBe(1);
+        expect(finalLanding.fields.age[k]).toBe(0);
+        expect(finalLanding.fields.strip[k]).toBe(retained.splash);
+        expect(finalLanding.fields.strip[k]).not.toBe(closing);
+        const after = lip.exportState().strips.find(([id]) => id === closing)![1];
+        expect(after.tube!.released).toBe(1);
+        expect(bubbles).toBeCloseTo(0.3 * (1 - TUBE_AIR.escape), 9);
+        expect(spit + erupted).toBeCloseTo(0.3 * TUBE_AIR.escape, 9);
+        expect(withMouth ? spit : erupted).toBeGreaterThan(0);
+        expect(withMouth ? erupted : spit).toBe(0);
+        expect(lip.tubeCount).toBe(0);
+        const frozen = lip.exportState();
+        lip.step(0);
+        lip.step(-1 / 60);
+        expect(lip.exportState()).toEqual(frozen);
+      } else if (witnessed && previous) {
+        expect(lip.exportState().strips.some(([id]) => id === closing)).toBe(false);
+        expect(bubbles + spit + erupted).toBeCloseTo(beforeOutput, 9);
+        expect(lip.rollers).toHaveLength(0);
+        if (mouth !== undefined) expect(lip.closeJet(mouth)).toBe(true);
+      }
+    }
+    expect(witnessed).toBe(true);
+    expect(lip.heldAir).toBe(0);
+    expect(lip.airborneVolume()).toBe(0);
+    expect(lip.exportState().strips).toHaveLength(0);
+    expect(bubbles + spit + erupted).toBeCloseTo(lip.trappedAir, 9);
+    expect(reportedWater).toBeCloseTo(withMouth ? 0.6 : 0.3, 9);
+  });
+
   it('spits its air toward the barrel’s open end: a neighbour still held', () => {
     const solver = basin();
     const lip = new PlungingLip(solver);

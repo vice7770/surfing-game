@@ -1177,8 +1177,8 @@ export class PlungingLip implements LipParcelSource {
         tube.air = (tube.area ?? LH82_AREA * tube.geometry.length * tube.geometry.width) * (tube.span ?? solver.dx);
         this.trappedAir += tube.air;
       }
-      // A strip stays while its water flies or its void is still collapsing.
-      if (strip.live === 0 && (!tube || collapsed(tube, this.time) >= 1)) this.removeStrip(stripId, strip);
+      // Keep the final air dose until releaseAir runs after the last parcel lands.
+      if (strip.live === 0 && (!tube || (collapsed(tube, this.time) >= 1 && tube.released >= 1))) this.removeStrip(stripId, strip);
     }
     // Each drop is told of once: the splash-up's share when it comes down itself, unless it could not fly.
     const flies = splash > 0 && this.throwSplash(strip, x, y, z, splash, vx, vy, vz);
