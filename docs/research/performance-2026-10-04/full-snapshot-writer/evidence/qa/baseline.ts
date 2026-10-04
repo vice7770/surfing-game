@@ -1,33 +1,33 @@
-import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
-import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
-import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
-import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
-import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
-import { AERATION, AerationField } from './AerationField';
-import { AdvectionStencil } from './AdvectionStencil';
-import { FoamField, type FoamDecay } from './FoamField';
-import { PlungingLip, lipThrow } from './PlungingLip';
-import { TUBE_CAPACITY, carveGrid } from './tubeTable';
-import { focusX } from './Refraction';
-import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from './CrestKinematics';
-import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from './Overturn';
-import { SeaState } from './SeaState';
-import { POOL, poolBreakDepth, poolRiddenAt, poolSea, poolTankLayout } from './pool';
-import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from './SurfMeter';
-import { SeaStateBoundary } from './SeaStateBoundary';
-import { SideFeed } from './SideFeed';
-import type { SurfZoneState } from './surfZoneState';
-import type { LipImpact } from './SprayCloud';
-import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from './ShallowWaterSolver';
-import { BREAKER_INDEX, describeSwell, type BreakerType } from './SwellReadout';
-import { planSetRun, warmStart, type SetRunPlan } from './warmStart';
-import { BreakingFront, type FrontOptions } from './barrel/BreakingFront';
-import { BARREL_SPOTS } from './barrel/barrelSpots';
-import { columnCrests, type CrestSample } from './barrel/crestOnset';
-import type { ProfileLibrary } from './barrel/ProfileLibrary';
-import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
-import { SweptCrash } from './barrel/SweptCrash';
-import { BARREL_SLOPE } from './barrel/sweptLoft';
+import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts';
+import { BoussinesqSolver, madsenSorensenWaveNumber } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver.ts';
+import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/Breaking.ts';
+import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts';
+import { SETS_OVER_TYPICAL, komarGaughan } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/surfForecast.ts';
+import { AERATION, AerationField } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/AerationField.ts';
+import { AdvectionStencil } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/AdvectionStencil.ts';
+import { FoamField, type FoamDecay } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/FoamField.ts';
+import { PlungingLip, lipThrow } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/PlungingLip.ts';
+import { TUBE_CAPACITY, carveGrid } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/tubeTable.ts';
+import { focusX } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/Refraction.ts';
+import { breakerForm, crestMotion, submergedCrest, waveHeightAt, type CrestMotion } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/CrestKinematics.ts';
+import { jetFlightTime, orthogonalGradient, reefOverturn, tubeGeometry, type TubeGeometry } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/Overturn.ts';
+import { SeaState } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts';
+import { POOL, poolBreakDepth, poolRiddenAt, poolSea, poolTankLayout } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts';
+import { SurfMeter, TAKE_OFF_BAND, type BreakingWave } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfMeter.ts';
+import { SeaStateBoundary } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary.ts';
+import { SideFeed } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts';
+import type { SurfZoneState } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/surfZoneState.ts';
+import type { LipImpact } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SprayCloud.ts';
+import { OPEN_EDGE_REACH, ShallowWaterSolver, stretchedEdges } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver.ts';
+import { BREAKER_INDEX, describeSwell, type BreakerType } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SwellReadout.ts';
+import { planSetRun, warmStart, type SetRunPlan } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/warmStart.ts';
+import { BreakingFront, type FrontOptions } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/BreakingFront.ts';
+import { BARREL_SPOTS } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts';
+import { columnCrests, type CrestSample } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestOnset.ts';
+import type { ProfileLibrary } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts';
+import { advanceClocks, onsetTiming, type OnsetTiming } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts';
+import { SweptCrash } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/SweptCrash.ts';
+import { BARREL_SLOPE } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts';
 
 /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
 const WATER_DENSITY = 1025;
@@ -1185,46 +1185,7 @@ export class SurfZoneSimulation {
 
   /** The worker's three visual fields share the same interpolation and one pass over the render nodes. */
   writeUniformSnapshot(surface: Float32Array, flow: Float32Array, aeration: Float32Array, grid: RenderGrid): void {
-    const { columns, columnWeights, rows, rowWeights } = this.mappingFor(grid);
-    const { h, bed, qx, qz, nx } = this.solver;
-    const { dense, residual } = this.foam;
-    const plume = this.aeration.depth;
-    if (!this.velocityX || this.velocityX.length !== h.length) {
-      this.velocityX = new Float64Array(h.length);
-      this.velocityZ = new Float64Array(h.length);
-    }
-    if (!this.voidFractions || this.voidFractions.length !== h.length) this.voidFractions = new Float64Array(h.length);
-    const u = this.velocityX;
-    const w = this.velocityZ;
-    const fraction = this.voidFractions;
-    for (let i = 0; i < h.length; i += 1) {
-      const wet = h[i] > WET;
-      u![i] = wet ? qx[i] / h[i] : 0;
-      w![i] = wet ? qz[i] / h[i] : 0;
-      fraction![i] = this.aeration.voidFraction(i);
-    }
-    for (let r = 0; r < grid.nz; r += 1) {
-      const row = rows[r] * nx;
-      const tz = rowWeights[r];
-      for (let c = 0; c < grid.nx; c += 1) {
-        const i = row + columns[c];
-        const tx = columnWeights[c];
-        const w00 = (1 - tx) * (1 - tz);
-        const w10 = tx * (1 - tz);
-        const w01 = (1 - tx) * tz;
-        const w11 = tx * tz;
-        const o = (r * grid.nx + c) * 2;
-        const depth = h[i] * w00 + h[i + 1] * w10 + h[i + nx] * w01 + h[i + nx + 1] * w11;
-        const bottom = bed[i] * w00 + bed[i + 1] * w10 + bed[i + nx] * w01 + bed[i + nx + 1] * w11;
-        surface[o] = depth > WET ? depth + bottom : bottom - 0.05;
-        surface[o + 1] = depth > WET ? (dense[i] + residual[i]) * w00 + (dense[i + 1] + residual[i + 1]) * w10
-          + (dense[i + nx] + residual[i + nx]) * w01 + (dense[i + nx + 1] + residual[i + nx + 1]) * w11 : 0;
-        flow[o] = depth > WET ? u![i] * w00 + u![i + 1] * w10 + u![i + nx] * w01 + u![i + nx + 1] * w11 : 0;
-        flow[o + 1] = depth > WET ? w![i] * w00 + w![i + 1] * w10 + w![i + nx] * w01 + w![i + nx + 1] * w11 : 0;
-        aeration[o] = w00 * fraction![i] + w10 * fraction![i + 1] + w01 * fraction![i + nx] + w11 * fraction![i + nx + 1];
-        aeration[o + 1] = w00 * plume[i] + w10 * plume[i + 1] + w01 * plume[i + nx] + w11 * plume[i + nx + 1];
-      }
-    }
+    this.writeUniformFields(grid, surface, flow, aeration);
   }
 
   /** G9: every breaking bore drives air in by its dissipation, spilling shallower than a plunge. */

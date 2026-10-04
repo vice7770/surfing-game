@@ -1,0 +1,13 @@
+{
+  "schema": "profile-phase-archive-ready/v1",
+  "createdUtc": "2026-10-04T06:04:16.688420+00:00",
+  "manifestSha256": "c03ea6dde4eac8065a84ae417be10db6216389fd751705bd19531d2d2972e2e9",
+  "storedPayloads": 34,
+  "originalAliases": 44,
+  "sampleCount": 120,
+  "contributionSections": 86,
+  "geometryMetricTestsPassed": 8,
+  "numericalReruns": 0,
+  "productionCandidate": "none",
+  "rootCommitPending": true
+}

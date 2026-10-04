@@ -11111,7 +11111,8 @@
         "/private/tmp/surf-rowband-adoption-20261004/root-final/before-source.json",
         "/private/tmp/surf-rowband-adoption-20261004/root-final/after-source.json"
       ],
-      "verificationPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.ts"
+      "verificationPath": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/full-snapshot-writer/evidence/baseline/src/wave/SurfZoneSimulation.ts",
+      "writerAdoptionEpochRemap": "Exact archived original; originalPath/bytes/SHA/origins remain unchanged"
     },
     {
       "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SwellReadout.ts",
@@ -22273,7 +22274,8 @@
         "/private/tmp/surf-tube-rowband-fps-20261004/checks/source-after.json",
         "/private/tmp/surf-tube-rowband-fps-20261004/checks/source-before.json"
       ],
-      "verificationPath": "/private/tmp/surf-tube-rowband-fps-20261004/baseline/src/wave/SurfZoneSimulation.test.ts"
+      "verificationPath": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/full-snapshot-writer/evidence/historical-originals/src/wave/SurfZoneSimulation.test.ts.txt",
+      "writerAdoptionEpochRemap": "Exact archived original; originalPath/bytes/SHA/origins remain unchanged"
     },
     {
       "originalPath": "/private/tmp/surf-tube-rowband-fps-20261004/baseline/src/wave/SurfZoneSimulation.ts",
@@ -22283,7 +22285,8 @@
         "/private/tmp/surf-tube-rowband-fps-20261004/checks/source-after.json",
         "/private/tmp/surf-tube-rowband-fps-20261004/checks/source-before.json"
       ],
-      "verificationPath": "/private/tmp/surf-tube-rowband-fps-20261004/baseline/src/wave/SurfZoneSimulation.ts"
+      "verificationPath": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/full-snapshot-writer/evidence/baseline/src/wave/SurfZoneSimulation.ts",
+      "writerAdoptionEpochRemap": "Exact archived original; originalPath/bytes/SHA/origins remain unchanged"
     },
     {
       "originalPath": "/private/tmp/surf-tube-rowband-fps-20261004/baseline/src/wave/SwellReadout.test.ts",
@@ -27817,7 +27820,8 @@
         "/private/tmp/surf-tube-rowband-fps-20261004/checks/source-after.json",
         "/private/tmp/surf-tube-rowband-fps-20261004/checks/source-before.json"
       ],
-      "verificationPath": "/private/tmp/surf-tube-rowband-fps-20261004/candidate/src/wave/SurfZoneSimulation.test.ts"
+      "verificationPath": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/full-snapshot-writer/evidence/historical-originals/src/wave/SurfZoneSimulation.test.ts.txt",
+      "writerAdoptionEpochRemap": "Exact archived original; originalPath/bytes/SHA/origins remain unchanged"
     },
     {
       "originalPath": "/private/tmp/surf-tube-rowband-fps-20261004/candidate/src/wave/SurfZoneSimulation.ts",
@@ -27827,7 +27831,8 @@
         "/private/tmp/surf-tube-rowband-fps-20261004/checks/source-after.json",
         "/private/tmp/surf-tube-rowband-fps-20261004/checks/source-before.json"
       ],
-      "verificationPath": "/private/tmp/surf-tube-rowband-fps-20261004/candidate/src/wave/SurfZoneSimulation.ts"
+      "verificationPath": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/full-snapshot-writer/evidence/baseline/src/wave/SurfZoneSimulation.ts",
+      "writerAdoptionEpochRemap": "Exact archived original; originalPath/bytes/SHA/origins remain unchanged"
     },
     {
       "originalPath": "/private/tmp/surf-tube-rowband-fps-20261004/candidate/src/wave/SwellReadout.test.ts",
@@ -31850,7 +31855,8 @@
         "/private/tmp/surf-rowband-adoption-20261004/root-final/before-source.json",
         "/private/tmp/surf-rowband-adoption-20261004/root-final/after-source.json"
       ],
-      "verificationPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.test.ts"
+      "verificationPath": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/full-snapshot-writer/evidence/historical-originals/src/wave/SurfZoneSimulation.test.ts.txt",
+      "writerAdoptionEpochRemap": "Exact archived original; originalPath/bytes/SHA/origins remain unchanged"
     },
     {
       "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SwellReadout.test.ts",
@@ -32871,13 +32877,22 @@
   "generatedFiles": [
     {
       "path": "README.md",
-      "bytes": 9451,
-      "sha256": "c3a6722d7f31fc56a4e715a4de2c725bafa25254cbd33def873cfbabf505aa7f"
+      "bytes": 10040,
+      "sha256": "17a88beeee743f11f7d75ab587f38d36baf43ffb93b98fc3984039e9e31e07b5"
     },
     {
       "path": "verify.py",
       "bytes": 5934,
       "sha256": "51c9d5ca933b3c9a10c21d47886325ae6eb79589d6f9f925cc6b8eab251e1314"
     }
-  ]
+  ],
+  "writerAdoptionEpochRemap": {
+    "scope": "Only old Simulation5b511 and Simulation.test638ea27b SHA identities; stored/raw payloads and authorities unchanged",
+    "referencesChanged": 6,
+    "targetArchive": "docs/research/performance-2026-10-04/full-snapshot-writer/",
+    "targets": {
+      "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/full-snapshot-writer/evidence/baseline/src/wave/SurfZoneSimulation.ts",
+      "638ea27b64593e4c3932f224b720804e4006c67a63b065c5903e6b44430b38ce": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/full-snapshot-writer/evidence/historical-originals/src/wave/SurfZoneSimulation.test.ts.txt"
+    }
+  }
 }

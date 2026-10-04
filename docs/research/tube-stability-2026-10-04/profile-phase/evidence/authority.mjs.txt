@@ -1,0 +1,14 @@
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+export const WORK = '/private/tmp/surf-profile-phase-probe-20261004';
+export const sha = raw => createHash('sha256').update(raw).digest('hex');
+export function assertReady() {
+  const raw = readFileSync(WORK + '/ready.json');
+  const ready = JSON.parse(raw);
+  if (ready.schema !== 'profile-phase-source-ready/v1' || ready.executed) throw Error('Wrong ready authority');
+  for (const row of ready.inputs) {
+    const bytes = readFileSync(row.path);
+    if (bytes.length !== row.bytes || sha(bytes) !== row.sha256) throw Error('Changed input: ' + row.path);
+  }
+  return { ready, sha256: sha(raw) };
+}

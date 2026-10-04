@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Unexecuted, root-reviewed CPU-only gate; no retries or hardware commands."""
+from pathlib import Path
+from datetime import datetime, timezone
+import hashlib, json, os, signal, subprocess, sys, time
+
+W = Path('/private/tmp/surf-full-writer-fps-20261004')
+READY_SHA = os.environ.get('FULL_WRITER_FPS_READY_SHA256')
+WORKER_SHA = 'e08444a9b72f73d62126a2e4b503092bc6e3cc7536d714a2e49743ed1293f480'
+COMMANDS = [
+    ['node', 'candidate/node_modules/typescript/bin/tsc', '--project', 'candidate/tsconfig.json', '--noEmit', '--incremental', 'false'],
+    ['node', 'build-only.mjs'], ['python3', 'bind-launch.py'],
+    ['node', '--check', 'native-owned.mjs'], ['node', '--check', 'passive-guard.mjs'],
+    ['node', '--check', 'survey.mjs'], ['node', '--check', 'pair.mjs'],
+    ['node', 'pair.mjs', '--run=false'],
+]
+def utc(): return datetime.now(timezone.utc).isoformat()
+def read(p): return json.loads(Path(p).read_text())
+def rec(p):
+    p = Path(p); b = p.read_bytes()
+    return {'path': str(p), 'bytes': len(b), 'sha256': hashlib.sha256(b).hexdigest()}
+def save(p, value): p.write_text(json.dumps(value, indent=2) + '\n')
+def verify(pin):
+    actual = rec(pin['path'])
+    assert (actual['bytes'], actual['sha256']) == (pin['bytes'], pin['sha256']), pin['path']
+    return actual
+
+if sys.argv[1:] != ['--run=true']:
+    raise SystemExit('Unarmed: the only operation is --run=true after root grants a CPU lease.')
+O = W / 'checks'; O.mkdir(exist_ok=False)
+terminal = {'schema': 'full-writer-cpu-checks-terminal/v1', 'startedAt': utc(),
+            'commandBudgetSeconds': 120, 'ownedTimeoutCleanupSeconds': 5,
+            'commands': [], 'status': 'running', 'firstFailure': None, 'hardwareStarted': False}
+pins = {}; link_pins = []; source_before = None
+try:
+    reviewed = rec(W / 'ready.json'); assert reviewed['sha256'] == READY_SHA
+    assert os.environ.get('FULL_WRITER_FPS_READY_SHA256') == READY_SHA, 'Reviewed source-ready env required'
+    own_ready = rec(W / 'checks-driver-ready.json')
+    assert os.environ.get('FULL_WRITER_CHECKS_DRIVER_READY_SHA256') == own_ready['sha256'], 'Reviewed driver-ready env required'
+    meta = read(own_ready['path']); verify(meta['driver']); assert meta['commands'] == COMMANDS
+    assert meta['sourceReady'] == reviewed and meta['executed'] is False
+    ready = read(reviewed['path']); source = read(W / 'source-manifest.json')
+    assets = read(W / 'public-assets.json'); dependency = read(W / 'dependency-authority.json')
+    reuse = read(W / 'baseline-reuse.json')
+    def add(pin):
+        key = str(Path(pin['path']))
+        entry = {'path': key, 'bytes': pin['bytes'], 'sha256': pin['sha256']}
+        assert key not in pins or pins[key] == entry, key
+        pins[key] = entry
+    for pin in [reviewed, own_ready, meta['driver'], *ready['artifacts'], *ready['borrowedSourceAuthorities']]: add(pin)
+    for arm in source['arms']:
+        assert len(arm['files']) == arm['fileCount']
+        for pin in arm['files']: add({**pin, 'path': str(Path(arm['root']) / pin['path'])})
+    for pin in assets['files']: add({**pin, 'path': str(Path(assets['root']) / pin['path'])})
+    for pin in [*dependency['packageRecords'], dependency['cdpHelper'], *dependency['lockFiles']]: add(pin)
+    for pin in reuse['outputRecords']: add({**pin, 'path': str(Path(reuse['outputRoot']) / pin['path'])})
+    link_pins = meta['readOnlyUseLinks']
+    def capture():
+        rows = [verify(pins[k]) for k in sorted(pins)]
+        for link in link_pins: assert os.readlink(link['path']) == link['target'], link['path']
+        return {'records': rows, 'readOnlyUseLinks': link_pins}
+    source_before = capture(); save(O / 'source-before.json', source_before)
+    for p in ['build-terminal.json', 'bindings.json', 'candidate/dist', 'baseline/build-manifest.json', 'candidate/build-manifest.json']:
+        assert not (W / p).exists(), 'Fresh gate output required: ' + p
+    env = {**os.environ, 'BUILD_ID': '306258296', 'FULL_WRITER_FPS_READY_SHA256': READY_SHA}
+    terminal['environmentOverrides'] = {k: env[k] for k in ['BUILD_ID', 'FULL_WRITER_FPS_READY_SHA256']}
+    deadline = time.monotonic() + 120
+    for index, argv in enumerate(COMMANDS, 1):
+        remaining = deadline - time.monotonic(); assert remaining > 0, '120s command budget expired'
+        row = {'index': index, 'argv': argv, 'startedAt': utc(), 'stdout': str(O / f'{index:02d}.stdout'), 'stderr': str(O / f'{index:02d}.stderr')}
+        terminal['commands'].append(row); save(O / 'terminal.json', terminal)
+        with open(row['stdout'], 'wb') as stdout, open(row['stderr'], 'wb') as stderr:
+            child = subprocess.Popen(argv, cwd=W, env=env, stdout=stdout, stderr=stderr, start_new_session=True)
+            row['pid'] = child.pid; save(O / 'terminal.json', terminal)
+            print(json.dumps({'stage': 'START', **row}), flush=True)
+            try: row['exitCode'] = child.wait(timeout=max(0.001, deadline - time.monotonic()))
+            except subprocess.TimeoutExpired:
+                row['timedOut'] = True
+                try: os.killpg(child.pid, signal.SIGKILL)
+                except ProcessLookupError: pass
+                row['exitCode'] = child.wait(timeout=5)
+            row['endedAt'] = utc()
+        row['logs'] = [rec(row['stdout']), rec(row['stderr'])]; save(O / 'terminal.json', terminal)
+        print(json.dumps({'stage': 'TERMINAL', **row}), flush=True)
+        assert row['exitCode'] == 0 and not row.get('timedOut'), f'Command {index} failed; no later commands started'
+    terminal['compiled'] = []
+    for arm in ['baseline', 'candidate']:
+        manifest = read(W / arm / 'build-manifest.json')
+        outputs = [verify({**pin, 'path': str(Path(manifest['outputRoot']) / pin['path'])}) for pin in manifest['outputRecords']]
+        worker = [pin for pin in outputs if Path(pin['path']).name.startswith('surfZoneWorker-')]
+        assert len(worker) == 1 and worker[0]['bytes'] > 0
+        assert (worker[0]['sha256'] == WORKER_SHA) if arm == 'baseline' else (worker[0]['sha256'] != WORKER_SHA)
+        terminal['compiled'].append({'arm': arm, 'manifest': rec(W / arm / 'build-manifest.json'), 'outputs': outputs, 'baselineWorkerByteExact': arm == 'baseline', 'candidateWorkerIntentionallyChanged': arm == 'candidate'})
+    terminal['bindings'] = rec(W / 'bindings.json'); terminal['status'] = 'passed'
+except Exception as error:
+    terminal['status'] = 'failed'; terminal['firstFailure'] = {'type': type(error).__name__, 'message': str(error)}
+finally:
+    try:
+        if source_before is not None:
+            after = capture(); save(O / 'source-after.json', after)
+            assert after == source_before, 'Immutable input closure changed'
+            terminal['sourceUnchanged'] = True; terminal['sourcePinCount'] = len(pins); terminal['linkCount'] = len(link_pins)
+    except Exception as error:
+        terminal['sourceUnchanged'] = False; terminal['afterFailure'] = str(error); terminal['status'] = 'failed'
+    terminal['endedAt'] = utc(); save(O / 'terminal.json', terminal)
+    print(json.dumps(terminal), flush=True)
+raise SystemExit(0 if terminal['status'] == 'passed' else 1)

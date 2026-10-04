@@ -1,0 +1,596 @@
+{
+  "schema": "profile-phase-archive/v1",
+  "createdUtc": "2026-10-04T06:02:49.800055+00:00",
+  "records": [
+    {
+      "storedPath": "evidence/canonical-inputs/node_modules/rolldown/package.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1827,
+      "storedSha256": "4cfa53627b524f895cb90ff518dd2dc5be2db76e5ace8b9c27c424da2c69a9f5",
+      "expandedBytes": 6219,
+      "expandedSha256": "4ac9bd4b57a1470fa4515e479cea7ca78875802b661b87dfc896e216d4cf6869",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/package.json",
+          "bytes": 6219,
+          "sha256": "4ac9bd4b57a1470fa4515e479cea7ca78875802b661b87dfc896e216d4cf6869"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/node_modules/typescript/package.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1262,
+      "storedSha256": "b4c694c06ac995f419365bec20d197616f9d038ad4c74efabd40b3facbd4ae7a",
+      "expandedBytes": 3620,
+      "expandedSha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/package.json",
+          "bytes": 3620,
+          "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/node_modules/vitest/package.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1568,
+      "storedSha256": "4f21870f97f36bd8e30b1422f7f0293f99ae4e18fcd02ae9f6c269465065f329",
+      "expandedBytes": 5445,
+      "expandedSha256": "bb27a3b3f172321701a7b1f1d90a59e5c9596673176f553a91c1e93b9667abfa",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/package.json",
+          "bytes": 5445,
+          "sha256": "bb27a3b3f172321701a7b1f1d90a59e5c9596673176f553a91c1e93b9667abfa"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/package-lock.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 9778,
+      "storedSha256": "8a1df9576e01f91bc22ed6a129f91eac6aa16e7e43c8960132ecc9350442f6bb",
+      "expandedBytes": 42710,
+      "expandedSha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/package-lock.json",
+          "bytes": 42710,
+          "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/package.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1107,
+      "storedSha256": "0ca03402b631ff12dd02c3e4bb6afe7264dd690d304bcc58d6be63d251d66ad1",
+      "expandedBytes": 4917,
+      "expandedSha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/package.json",
+          "bytes": 4917,
+          "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/public/barrels/pad19-a20-l12.bin.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 108891,
+      "storedSha256": "fe678d5bec76163246340318ca2b8aa75ad0879f781b0a680b4754476811a11b",
+      "expandedBytes": 149848,
+      "expandedSha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+          "bytes": 149848,
+          "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/public/barrels/pad19-a20-l12.bin",
+          "bytes": 149848,
+          "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/public/barrels/pad19-a30-l12.bin.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 122982,
+      "storedSha256": "7fc31df84bc21074b5a7482e3f93d1373ac6dd4f46a2e992e27b992834b4773a",
+      "expandedBytes": 163264,
+      "expandedSha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+          "bytes": 163264,
+          "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/public/barrels/pad19-a30-l12.bin",
+          "bytes": 163264,
+          "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/public/barrels/pad19-a45-l12.bin.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 129589,
+      "storedSha256": "da8d013e5d4f0bfa88f1d1483f15feed7cfbbcd6537476d81ebcea6368a58547",
+      "expandedBytes": 168424,
+      "expandedSha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+          "bytes": 168424,
+          "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/public/barrels/pad19-a45-l12.bin",
+          "bytes": 168424,
+          "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/public/barrels/periodic-padang19s-l12.bin.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 131040,
+      "storedSha256": "7258f15cae135a9af978944fc131f07472bd7eb767bc581288320ee74e25f3dd",
+      "expandedBytes": 181852,
+      "expandedSha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+          "bytes": 181852,
+          "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/public/barrels/periodic-padang19s-l12.bin",
+          "bytes": 181852,
+          "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/src/wave/barrel/ProfileLibrary.ts.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 5218,
+      "storedSha256": "0230a18df1d4d04e5b977b61a0e5279336ecc37129fe20a1b925043b47cd3134",
+      "expandedBytes": 17189,
+      "expandedSha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+          "bytes": 17189,
+          "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/src/wave/barrel/ProfileLibrary.ts",
+          "bytes": 17189,
+          "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/src/wave/barrel/barrelLibraryIndex.ts.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 400,
+      "storedSha256": "7a878f16af9d38b5e1a7f295ce1462647589137d75908a197b2a673823ee9b21",
+      "expandedBytes": 1662,
+      "expandedSha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibraryIndex.ts",
+          "bytes": 1662,
+          "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/src/wave/barrel/barrelLibraryIndex.ts",
+          "bytes": 1662,
+          "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/src/wave/barrel/profileFormat.ts.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 966,
+      "storedSha256": "ab1c1e1ca423ea09975e97dd2fbe27277cb28bc571c2b440142ba5fc2930a7ad",
+      "expandedBytes": 2251,
+      "expandedSha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+          "bytes": 2251,
+          "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/src/wave/barrel/profileFormat.ts",
+          "bytes": 2251,
+          "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/canonical-inputs/src/wave/dispersion.ts.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1302,
+      "storedSha256": "aa845fa2f88ce187915a2685ab8f2d1af4f1f2b9f3a3b20d128cadc01d4bfd3d",
+      "expandedBytes": 3285,
+      "expandedSha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+          "bytes": 3285,
+          "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/src/wave/dispersion.ts",
+          "bytes": 3285,
+          "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/authority.mjs.txt",
+      "storage": "raw",
+      "storedBytes": 683,
+      "storedSha256": "3d5f1c9a57d5e46ce5530a61e5c9bd7256aeafa9c78c0f520dced3e57f997e05",
+      "expandedBytes": 683,
+      "expandedSha256": "3d5f1c9a57d5e46ce5530a61e5c9bd7256aeafa9c78c0f520dced3e57f997e05",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/authority.mjs",
+          "bytes": 683,
+          "sha256": "3d5f1c9a57d5e46ce5530a61e5c9bd7256aeafa9c78c0f520dced3e57f997e05"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/baseline-inputs.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 782,
+      "storedSha256": "c11ed5435dfe9bf789145f522d620dd2003413bc6b8da1b2e725574bdc3b51c2",
+      "expandedBytes": 3270,
+      "expandedSha256": "82c94c4961d772a3a0cc8b417d7e0d567b2a403692bab850850ce9384e15e42c",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline-inputs.json",
+          "bytes": 3270,
+          "sha256": "82c94c4961d772a3a0cc8b417d7e0d567b2a403692bab850850ce9384e15e42c"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/build-probe.mjs.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 744,
+      "storedSha256": "d598f47be30ddf601e3d87a32f51218419d297fe582805e27833102a75026843",
+      "expandedBytes": 1544,
+      "expandedSha256": "2c408acefdab34ae130ab930d77e7714cb9c58c9936d26eb65c842230b6030c8",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/build-probe.mjs",
+          "bytes": 1544,
+          "sha256": "2c408acefdab34ae130ab930d77e7714cb9c58c9936d26eb65c842230b6030c8"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks/after.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1497,
+      "storedSha256": "8629c5ce6b39225f0eaa7e74db3a90b3231dc55a229663aaf3e11fc96fb50355",
+      "expandedBytes": 6173,
+      "expandedSha256": "318f52ac7bf4f56114949da56af2ce6e5a9d419828207f404e2f1079e0c81f5b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/checks/after.json",
+          "bytes": 6173,
+          "sha256": "318f52ac7bf4f56114949da56af2ce6e5a9d419828207f404e2f1079e0c81f5b"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/checks/before.json",
+          "bytes": 6173,
+          "sha256": "318f52ac7bf4f56114949da56af2ce6e5a9d419828207f404e2f1079e0c81f5b"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks/command-1.log",
+      "storage": "raw",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/checks/command-1.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/checks/command-3.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks/command-2.log",
+      "storage": "raw",
+      "storedBytes": 89,
+      "storedSha256": "0a817c86c4f56e6dd4f4bae314cd16691b25b83fc76a02091c7514dfb890a2d7",
+      "expandedBytes": 89,
+      "expandedSha256": "0a817c86c4f56e6dd4f4bae314cd16691b25b83fc76a02091c7514dfb890a2d7",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/checks/command-2.log",
+          "bytes": 89,
+          "sha256": "0a817c86c4f56e6dd4f4bae314cd16691b25b83fc76a02091c7514dfb890a2d7"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks/command-4.log",
+      "storage": "raw",
+      "storedBytes": 168,
+      "storedSha256": "7174c28bdc4ffc9e4ce915f0e4cb7c0db7a515994e4ad6c84c6d81f496a8c86c",
+      "expandedBytes": 168,
+      "expandedSha256": "7174c28bdc4ffc9e4ce915f0e4cb7c0db7a515994e4ad6c84c6d81f496a8c86c",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/checks/command-4.log",
+          "bytes": 168,
+          "sha256": "7174c28bdc4ffc9e4ce915f0e4cb7c0db7a515994e4ad6c84c6d81f496a8c86c"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks/terminal.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 477,
+      "storedSha256": "b42697f1b27d2b322d772d18967da2d2691ae8984203f1c5e61cd0d9794aa7b1",
+      "expandedBytes": 1466,
+      "expandedSha256": "acd5e212f7d9003dd1d7abe98d3fd91af1e37a090c1f7cb9438d262e1ba710af",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/checks/terminal.json",
+          "bytes": 1466,
+          "sha256": "acd5e212f7d9003dd1d7abe98d3fd91af1e37a090c1f7cb9438d262e1ba710af"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks/vitest.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 805,
+      "storedSha256": "cc148e8caf8f9950746f60ba7b00ebb538f4cacb20980698f069243d53f79b6f",
+      "expandedBytes": 3391,
+      "expandedSha256": "5e3a1411e4a5c8dc83eff1f1b60490d5c75d46b3fc8248455704e88ec095822a",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/checks/vitest.json",
+          "bytes": 3391,
+          "sha256": "5e3a1411e4a5c8dc83eff1f1b60490d5c75d46b3fc8248455704e88ec095822a"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/compiled.json",
+      "storage": "raw",
+      "storedBytes": 330,
+      "storedSha256": "ee04ff26cedc9a34d2ccc3f9b168a6354648934d828b2dbabb93b3a847016380",
+      "expandedBytes": 330,
+      "expandedSha256": "ee04ff26cedc9a34d2ccc3f9b168a6354648934d828b2dbabb93b3a847016380",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/compiled.json",
+          "bytes": 330,
+          "sha256": "ee04ff26cedc9a34d2ccc3f9b168a6354648934d828b2dbabb93b3a847016380"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/compiled/probe.mjs.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 8088,
+      "storedSha256": "b0877abef5684ee797ce93b8de2e8a7789dff257c5a2b00f2ee79c50f007d655",
+      "expandedBytes": 26257,
+      "expandedSha256": "1bac2fb50507083516eb42cb0729fd0e283464b9ccc1e9ba62cb741a7d85db03",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/compiled/probe.mjs",
+          "bytes": 26257,
+          "sha256": "1bac2fb50507083516eb42cb0729fd0e283464b9ccc1e9ba62cb741a7d85db03"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/geometry.test.ts.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 991,
+      "storedSha256": "0adf21dd1eb7788810c6cf277146eff8a4c7c1e406ac322957cf9df79c6da711",
+      "expandedBytes": 2873,
+      "expandedSha256": "78485e27912ac28c10f8ec0a6ef8db82651b8cade29b3a992f05b5c7bfee4e26",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/geometry.test.ts",
+          "bytes": 2873,
+          "sha256": "78485e27912ac28c10f8ec0a6ef8db82651b8cade29b3a992f05b5c7bfee4e26"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/geometry.ts.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 2031,
+      "storedSha256": "025c50f266544aa33761589fe28cd4ebe21bf5033e67dda858bceba7ecac3381",
+      "expandedBytes": 6908,
+      "expandedSha256": "1ecb16fd7365fdec68a72144dee7212cb902cc166a5b0c71c4bcc53de706d0a4",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/geometry.ts",
+          "bytes": 6908,
+          "sha256": "1ecb16fd7365fdec68a72144dee7212cb902cc166a5b0c71c4bcc53de706d0a4"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/package.json",
+      "storage": "raw",
+      "storedBytes": 33,
+      "storedSha256": "89c47db7851f89caec72da4f215ebc21cf1e294aeef3b45d2583562d846ab035",
+      "expandedBytes": 33,
+      "expandedSha256": "89c47db7851f89caec72da4f215ebc21cf1e294aeef3b45d2583562d846ab035",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/package.json",
+          "bytes": 33,
+          "sha256": "89c47db7851f89caec72da4f215ebc21cf1e294aeef3b45d2583562d846ab035"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/probe.ts.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 3583,
+      "storedSha256": "75a63027d3349e8fcd80c752728488cd0b49522b956f4094a414e8e69e0e5d66",
+      "expandedBytes": 9885,
+      "expandedSha256": "08f3f09222b2f63279cb06cfbec0aafc1021b45fa1eba257dd318638f600bb79",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/probe.ts",
+          "bytes": 9885,
+          "sha256": "08f3f09222b2f63279cb06cfbec0aafc1021b45fa1eba257dd318638f600bb79"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/proposal.md.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1985,
+      "storedSha256": "4719f405f003624c5776d89b85aa35d04463c97ac4294ea399fba24134d92a3b",
+      "expandedBytes": 4108,
+      "expandedSha256": "b1441655036a43a54a1682427485d45d8a0b962b810d35be6135acf9d1289e25",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/proposal.md",
+          "bytes": 4108,
+          "sha256": "b1441655036a43a54a1682427485d45d8a0b962b810d35be6135acf9d1289e25"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/ready.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1851,
+      "storedSha256": "f065f7103a893d444bdb2c04d61ccada87b09338c5b16c7369df80f5444f9e9f",
+      "expandedBytes": 7223,
+      "expandedSha256": "e61d1332cbcf47e347cfaa704e1a23574da2ae22b026b6abc3f3cdd76eb15d3d",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/ready.json",
+          "bytes": 7223,
+          "sha256": "e61d1332cbcf47e347cfaa704e1a23574da2ae22b026b6abc3f3cdd76eb15d3d"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/run-first/report.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 2373487,
+      "storedSha256": "0e9f07d36e058927922d1a9916f5c7114b507e46e8b0b3551d29bdd041ba7fc4",
+      "expandedBytes": 19516379,
+      "expandedSha256": "ea30fda388c10a86f6ff374db74f768c04d57a6e38706fa4a24aa83a22ab6b25",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/run-first/report.json",
+          "bytes": 19516379,
+          "sha256": "ea30fda388c10a86f6ff374db74f768c04d57a6e38706fa4a24aa83a22ab6b25"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/run-first/terminal.json",
+      "storage": "raw",
+      "storedBytes": 372,
+      "storedSha256": "bf8c564a7fb7e8a184c3cdcad3058675674dd5bc71c217b1cdd0a9bba2a44c37",
+      "expandedBytes": 372,
+      "expandedSha256": "bf8c564a7fb7e8a184c3cdcad3058675674dd5bc71c217b1cdd0a9bba2a44c37",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/run-first/terminal.json",
+          "bytes": 372,
+          "sha256": "bf8c564a7fb7e8a184c3cdcad3058675674dd5bc71c217b1cdd0a9bba2a44c37"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/tsconfig.qa.json",
+      "storage": "raw",
+      "storedBytes": 564,
+      "storedSha256": "d3b2ae662395863ac97a17150abbdc5a2245c0d557646262a4c5ee1baaef82f6",
+      "expandedBytes": 564,
+      "expandedSha256": "d3b2ae662395863ac97a17150abbdc5a2245c0d557646262a4c5ee1baaef82f6",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/tsconfig.qa.json",
+          "bytes": 564,
+          "sha256": "d3b2ae662395863ac97a17150abbdc5a2245c0d557646262a4c5ee1baaef82f6"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/vitest.config.ts.txt",
+      "storage": "raw",
+      "storedBytes": 230,
+      "storedSha256": "adf52320d154db383c9650098d41acc0b73bf358f1692047c48135de885e03b6",
+      "expandedBytes": 230,
+      "expandedSha256": "adf52320d154db383c9650098d41acc0b73bf358f1692047c48135de885e03b6",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/vitest.config.ts",
+          "bytes": 230,
+          "sha256": "adf52320d154db383c9650098d41acc0b73bf358f1692047c48135de885e03b6"
+        }
+      ]
+    }
+  ],
+  "artifactPaths": {
+    "sourceReady": "evidence/ready.json.gz",
+    "compiled": "evidence/compiled.json",
+    "compiledBundle": "evidence/compiled/probe.mjs.txt.gz",
+    "checksTerminal": "evidence/checks/terminal.json.gz",
+    "checksBefore": "evidence/checks/after.json.gz",
+    "checksAfter": "evidence/checks/after.json.gz",
+    "vitest": "evidence/checks/vitest.json.gz",
+    "report": "evidence/run-first/report.json.gz",
+    "runTerminal": "evidence/run-first/terminal.json"
+  },
+  "generatedFiles": [
+    {
+      "path": "README.md",
+      "bytes": 4584,
+      "sha256": "3d84687280b9e6cb96b35b60b698f807469f0650a91fd1217312b7f85bf1e802"
+    },
+    {
+      "path": "results-summary.json",
+      "bytes": 8556,
+      "sha256": "9033d04aab7f05e33d3579755ecebdb5e917b52668335a5d9f38d2f5bd2bb9d7"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 10005,
+      "sha256": "c4c37f54c89e3b17765f20d9b7c51520d92a478a2b62dd40e0a4ceb1e6193c74"
+    }
+  ],
+  "externalReferences": [],
+  "scope": "Baseline section diagnosis only; no candidate and no loft/Big incidence/physics/FPS acceptance"
+}

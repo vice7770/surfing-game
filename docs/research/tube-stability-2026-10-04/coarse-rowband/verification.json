@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "manifestSha256": "b46757c98a1f2564759e47acbc9d6b129851ec28487174b7e7892a2d07d749fe",
+  "manifestSha256": "a44972f11556b4086d0cbaf979d67b6e9d6ceaa49e1c9c09da703966c584abd6",
   "storedPayloads": 189,
   "originalAliases": 308,
   "derivedRGBA": 25,
@@ -8,26 +8,27 @@
   "externalChecked": 2102,
   "liveTestFiles": 0,
   "operation": "archive byte/hash verification only",
-  "verifiedAtUTC": "2026-10-04T05:43:14.594715+00:00",
-  "localReadmeReferences": 18,
-  "unlistedEvidenceFiles": 0,
-  "failureHistories": 3,
-  "productionTestsPassed": 46,
+  "verifiedAtUTC": "2026-10-04T06:02:48.427569+00:00",
+  "localReadmeReferences": 19,
+  "gameCommandsExecutedByArchive": 0,
   "generatedAuthorities": [
     {
       "path": "README.md",
-      "bytes": 9451,
-      "sha256": "c3a6722d7f31fc56a4e715a4de2c725bafa25254cbd33def873cfbabf505aa7f"
+      "bytes": 10040,
+      "sha256": "17a88beeee743f11f7d75ab587f38d36baf43ffb93b98fc3984039e9e31e07b5"
     },
     {
       "path": "manifest.json",
-      "bytes": 1920139,
-      "sha256": "b46757c98a1f2564759e47acbc9d6b129851ec28487174b7e7892a2d07d749fe"
+      "bytes": 1922044,
+      "sha256": "a44972f11556b4086d0cbaf979d67b6e9d6ceaa49e1c9c09da703966c584abd6"
     },
     {
       "path": "verify.py",
       "bytes": 5934,
       "sha256": "51c9d5ca933b3c9a10c21d47886325ae6eb79589d6f9f925cc6b8eab251e1314"
     }
-  ]
+  ],
+  "storedRawPayloadsUnchangedFromPreWriterFreeze": true,
+  "generatedExternalMappingsChanged": 6,
+  "changedShaIdentities": 2
 }

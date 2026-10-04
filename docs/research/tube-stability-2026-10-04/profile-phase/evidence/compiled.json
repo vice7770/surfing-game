@@ -1,0 +1,9 @@
+{
+  "schema": "profile-phase-compiled/v1",
+  "readySha256": "e61d1332cbcf47e347cfaa704e1a23574da2ae22b026b6abc3f3cdd76eb15d3d",
+  "output": {
+    "path": "/private/tmp/surf-profile-phase-probe-20261004/compiled/probe.mjs",
+    "bytes": 26257,
+    "sha256": "1bac2fb50507083516eb42cb0729fd0e283464b9ccc1e9ba62cb741a7d85db03"
+  }
+}

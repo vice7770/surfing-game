@@ -9,7 +9,7 @@ import {
   FOAM_DECAY, LIP_JET, OFFSHORE_DEPTH, SET_FINE_MARGIN, SIDE_FEED_SPOTS, SWEPT_BARREL, SurfZoneSimulation, TAKE_OFF_EDGE_MARGIN, TAKE_OFF_INDEX, TANK, ZONE_WAVELENGTHS, edgeHeight,
   solverStage, barrelFrontFrom, surfZoneSea, takeOffPoint,
   tankDepth, tankLayout,
-  windOnsetScale, type RenderGrid, type SurfZoneConfig,
+  windOnsetScale, type SurfZoneConfig,
 } from './SurfZoneSimulation';
 import { BoussinesqSolver } from './BoussinesqSolver';
 import { PSI_RANGE, REEF_OVERTURN, overturn, overturnParameter, reefOverturn } from './Overturn';
@@ -33,47 +33,6 @@ const small: Omit<SurfZoneConfig, 'spot'> = {
   seed: 3, significantHeight: 1.4, peakPeriod: 9, directionDegrees: 10, spreading: 12, tide: 0,
   componentCount: 12, alongShore: 40, dx: 2, fineSpacing: 2, coarseSpacing: 4, spinUpPeriods: 1,
 };
-
-type SnapshotOutputs = [Float32Array, Float32Array, Float32Array];
-interface SnapshotInternals {
-  writeUniformFields(grid: RenderGrid, surface?: Float32Array, flow?: Float32Array, aeration?: Float32Array): void;
-  velocityX?: Float64Array;
-  velocityZ?: Float64Array;
-  voidFractions?: Float64Array;
-}
-const snapshotInternals = (scene: SurfZoneSimulation): SnapshotInternals => scene as unknown as SnapshotInternals;
-const snapshotOutputs = (grid: RenderGrid): SnapshotOutputs => [
-  new Float32Array(grid.nx * grid.nz * 2), new Float32Array(grid.nx * grid.nz * 2), new Float32Array(grid.nx * grid.nz * 2),
-];
-function snapshotScene(): SurfZoneSimulation {
-  const scene = new SurfZoneSimulation({ ...small, spot: 'padang' }, 'warm');
-  const heights = [0, 0.00999999999999, 0.01, 0.01000000000001, 0.3, 1.2, -0, 2.7];
-  for (let i = 0; i < scene.solver.h.length; i += 1) {
-    scene.solver.h[i] = heights[i % heights.length];
-    scene.solver.bed[i] = -0.5 - (i % 23) / 7;
-    scene.solver.qx[i] = i % 11 === 0 ? -0 : ((i % 19) - 9) / 3;
-    scene.solver.qz[i] = i % 13 === 0 ? 0 : ((i % 17) - 8) / 5;
-    scene.foam.dense[i] = (i % 7) / 10;
-    scene.foam.residual[i] = (i % 3) / 20;
-    scene.aeration.depth[i] = (i % 5) / 10;
-    scene.aeration.air[i] = scene.aeration.depth[i] * (i % 13) / 10;
-  }
-  return scene;
-}
-function expectSnapshotBits(a: ArrayBufferView, b: ArrayBufferView): void {
-  expect(Buffer.from(a.buffer, a.byteOffset, a.byteLength).equals(Buffer.from(b.buffer, b.byteOffset, b.byteLength))).toBe(true);
-}
-function expectSnapshotPair(a: SurfZoneSimulation, b: SurfZoneSimulation, aa: SnapshotOutputs, bb: SnapshotOutputs): void {
-  for (let i = 0; i < aa.length; i += 1) expectSnapshotBits(aa[i], bb[i]);
-  for (const key of ['h', 'bed', 'qx', 'qz'] as const) expectSnapshotBits(a.solver[key], b.solver[key]);
-  for (const key of ['dense', 'residual'] as const) expectSnapshotBits(a.foam[key], b.foam[key]);
-  for (const key of ['air', 'depth', 'turbulence'] as const) expectSnapshotBits(a.aeration[key], b.aeration[key]);
-  for (const key of ['velocityX', 'velocityZ', 'voidFractions'] as const) {
-    expect(snapshotInternals(a)[key]).toBeInstanceOf(Float64Array);
-    expect(snapshotInternals(b)[key]).toBeInstanceOf(Float64Array);
-    expectSnapshotBits(snapshotInternals(a)[key]!, snapshotInternals(b)[key]!);
-  }
-}
 
 describe('SurfZoneSimulation', () => {
   it('writes the worker snapshot fields together with the same data as separate surface, air and current writers', () => {
@@ -100,94 +59,6 @@ describe('SurfZoneSimulation', () => {
       simulation.writeUniformSnapshot(together[0], together[1], together[2], grid);
       expect(together).toEqual([surface, flow, air]);
       expect(together.every((field) => field.every(Number.isFinite))).toBe(true);
-    }
-  });
-
-  it('preserves dynamic void fraction receivers, replacement and preprocessing before snapshot output', () => {
-    const prepare = () => {
-      const scene = snapshotScene();
-      const grid = { ...scene.renderGrid(2), nx: 8, nz: 4 };
-      const out = snapshotOutputs(grid);
-      for (const field of out) field.fill(123.25);
-      const calls: Array<[number, string, boolean, number[], number | undefined]> = [];
-      const original = scene.aeration.voidFraction;
-      function later(this: typeof scene.aeration, cell: number): number {
-        calls.push([cell, 'later', this === scene.aeration, out.map(field => field[0]), snapshotInternals(scene).velocityX?.[cell]]);
-        scene.solver.bed[cell] -= 0.0125;
-        this.depth[cell] += 0.001;
-        return original.call(this, cell);
-      }
-      scene.aeration.voidFraction = function(this: typeof scene.aeration, cell: number): number {
-        calls.push([cell, 'first', this === scene.aeration, out.map(field => field[0]), snapshotInternals(scene).velocityX?.[cell]]);
-        scene.solver.bed[cell] -= 0.025;
-        if (cell + 1 < scene.solver.qx.length) scene.solver.qx[cell + 1] += 0.125;
-        if (cell === 2) this.voidFraction = later;
-        return original.call(this, cell);
-      };
-      return { scene, grid, out, calls };
-    };
-    const a = prepare(); const b = prepare();
-    snapshotInternals(a.scene).writeUniformFields(a.grid, ...a.out);
-    b.scene.writeUniformSnapshot(...b.out, b.grid);
-    expect(b.calls).toEqual(a.calls);
-    expect(b.calls).toHaveLength(b.scene.solver.h.length);
-    expect(b.calls.every((row, index) => row[0] === index && row[2] && row[3].every(value => value === 123.25))).toBe(true);
-    expect(b.calls.every(row => typeof row[4] === 'number')).toBe(true);
-    expect(b.calls.slice(0, 4).map(row => row[1])).toEqual(['first', 'first', 'first', 'later']);
-    expectSnapshotPair(a.scene, b.scene, a.out, b.out);
-  });
-
-  it('preserves snapshot bits and store order with overlapping outputs and output input aliases', () => {
-    for (const kind of ['same', 'overlap', 'input'] as const) {
-      const a = snapshotScene(); const b = snapshotScene();
-      const grid = { ...a.renderGrid(2), nx: 3, nz: 4, xMin: a.solver.xCenters[0], zMin: a.solver.zCenters[0] };
-      const n = grid.nx * grid.nz * 2;
-      const prepare = (scene: SurfZoneSimulation): { views: SnapshotOutputs; backing: Uint8Array } => {
-        if (kind === 'input') return {
-          views: [new Float32Array(scene.solver.h.buffer, scene.solver.h.byteOffset, n),
-            new Float32Array(scene.solver.bed.buffer, scene.solver.bed.byteOffset, n),
-            new Float32Array(scene.aeration.depth.buffer, scene.aeration.depth.byteOffset, n)],
-          backing: new Uint8Array(scene.solver.h.buffer, scene.solver.h.byteOffset, scene.solver.h.byteLength),
-        };
-        const backing = new ArrayBuffer((n + 4) * 4);
-        if (kind === 'same') {
-          const view = new Float32Array(backing, 0, n);
-          return { views: [view, view, view], backing: new Uint8Array(backing) };
-        }
-        return { views: [new Float32Array(backing, 0, n), new Float32Array(backing, 8, n), new Float32Array(backing, 16, n)],
-          backing: new Uint8Array(backing) };
-      };
-      const aa = prepare(a); const bb = prepare(b);
-      snapshotInternals(a).writeUniformFields(grid, ...aa.views);
-      b.writeUniformSnapshot(...bb.views, grid);
-      expectSnapshotBits(aa.backing, bb.backing);
-      expectSnapshotPair(a, b, aa.views, bb.views);
-    }
-  });
-
-  it('allocates snapshot scratch for every source cell and reuses it across repeated render layouts', () => {
-    const a = snapshotScene(); const b = snapshotScene();
-    for (const scene of [a, b]) for (const key of ['velocityX', 'velocityZ', 'voidFractions'] as const) {
-      expect(snapshotInternals(scene)[key]).toBeUndefined();
-    }
-    const grid = { ...a.renderGrid(2), nx: 8, nz: 4 };
-    let aa = snapshotOutputs(grid); let bb = snapshotOutputs(grid);
-    snapshotInternals(a).writeUniformFields(grid, ...aa);
-    b.writeUniformSnapshot(...bb, grid);
-    expectSnapshotPair(a, b, aa, bb);
-    const identities = [a, b].map(scene => ({ ...snapshotInternals(scene) }));
-    for (const scene of [a, b]) for (const key of ['velocityX', 'velocityZ', 'voidFractions'] as const) {
-      expect(snapshotInternals(scene)[key]!.length).toBe(scene.solver.h.length);
-    }
-    for (const spacing of [1, 2, 3]) {
-      const changed = { ...a.renderGrid(spacing), nx: 5, nz: 7 };
-      aa = snapshotOutputs(changed); bb = snapshotOutputs(changed);
-      snapshotInternals(a).writeUniformFields(changed, ...aa);
-      b.writeUniformSnapshot(...bb, changed);
-      expectSnapshotPair(a, b, aa, bb);
-      for (const [index, scene] of [a, b].entries()) for (const key of ['velocityX', 'velocityZ', 'voidFractions'] as const) {
-        expect(snapshotInternals(scene)[key]).toBe(identities[index][key]);
-      }
     }
   });
 

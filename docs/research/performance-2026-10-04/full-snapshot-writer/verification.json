@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "manifestSha256": "63f2e69ba467e8537449e31d2c123b2820ac17c5ba7db3f17bce971553a5289d",
+  "storedPayloads": 91,
+  "originalAliases": 114,
+  "externalChecked": 1289,
+  "externalLinksChecked": 2,
+  "liveTestFiles": 0,
+  "unlistedEvidenceFiles": 0,
+  "operation": "archive byte/hash bookkeeping only",
+  "verifiedAtUTC": "2026-10-04T06:02:48.040592+00:00",
+  "localReadmeReferences": 21,
+  "gameCommandsExecutedByArchive": 0,
+  "generatedAuthorities": [
+    {
+      "path": "README.md",
+      "bytes": 12783,
+      "sha256": "1ff2692d633aae7531925b787b176e5b42b6c970596f25e6ccc8f47eed175da6"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 848546,
+      "sha256": "63f2e69ba467e8537449e31d2c123b2820ac17c5ba7db3f17bce971553a5289d"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 3626,
+      "sha256": "9d9c8c84d5ee3383d524972c6a37f8f63925e448084667f686e9bf4941d7c9ff"
+    }
+  ],
+  "productionGate": "passed: strict, four targeted tests total, exact eleven-output alternate build"
+}

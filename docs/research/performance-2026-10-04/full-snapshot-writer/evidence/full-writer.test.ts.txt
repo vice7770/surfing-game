@@ -1,0 +1,113 @@
+import { describe, expect, it } from 'vitest';
+import { intake } from './intake';
+import { Baseline, Candidate, fresh, outputs, exact, exactOutputs, exactInputs, scratch, type Scene, type Outputs } from './test-helpers';
+
+describe('dedicated full snapshot writer', () => {
+  it('matches original bits over mixed wet/dry fields, clamped edges and changed render layouts', () => {
+    const a = fresh(Baseline), b = fresh(Candidate);
+    for (const spacing of [1, 2, 3, 0.7]) {
+      const grid = a.renderGrid(spacing);
+      for (const shift of [0, -spacing * 4.25, spacing * 3.5]) {
+        const moved = { ...grid, xMin: grid.xMin + shift, zMin: grid.zMin - spacing * 1.75 };
+        const aa = outputs(moved), bb = outputs(moved);
+        a.writeUniformSnapshot(...aa, moved); b.writeUniformSnapshot(...bb, moved);
+        exactOutputs(aa, bb); exactInputs(a, b);
+      }
+    }
+  });
+
+  it('preserves nonfinite input and signed-zero arithmetic instead of silently sanitizing it', () => {
+    const a = fresh(Baseline), b = fresh(Candidate);
+    for (const scene of [a, b]) {
+      scene.solver.h[4] = NaN;
+      scene.solver.bed[5] = Infinity;
+      scene.solver.qx[6] = -Infinity;
+      scene.foam.dense[7] = NaN;
+      scene.aeration.air[8] = Infinity;
+      scene.aeration.depth[9] = NaN;
+    }
+    const grid = { ...a.renderGrid(2), nx: 8, nz: 4, zMin: a.solver.zCenters[0], xMin: a.solver.xCenters[0] };
+    const aa = outputs(grid), bb = outputs(grid);
+    a.writeUniformSnapshot(...aa, grid); b.writeUniformSnapshot(...bb, grid);
+    exactOutputs(aa, bb); exactInputs(a, b);
+  });
+
+  it('retains every dynamic void method call and preprocessing/output chronology', () => {
+    const prepare = (scene: Scene) => {
+      const grid = { ...scene.renderGrid(2), nx: 8, nz: 4 };
+      const out = outputs(grid);
+      for (const array of out) array.fill(123.25);
+      const calls: Array<[number, string, boolean, number, number | undefined]> = [];
+      const original = scene.aeration.voidFraction;
+      function later(this: typeof scene.aeration, cell: number): number {
+        calls.push([cell, 'later', this === scene.aeration, out[0][0], scratch(scene).velocityX?.[cell]]);
+        scene.solver.bed[cell] -= 0.0125;
+        this.depth[cell] += 0.001;
+        return original.call(this, cell);
+      }
+      scene.aeration.voidFraction = function(this: typeof scene.aeration, cell: number): number {
+        calls.push([cell, 'first', this === scene.aeration, out[0][0], scratch(scene).velocityX?.[cell]]);
+        scene.solver.bed[cell] -= 0.025;
+        if (cell + 1 < scene.solver.qx.length) scene.solver.qx[cell + 1] += 0.125;
+        if (cell === 2) this.voidFraction = later;
+        return original.call(this, cell);
+      };
+      return { scene, grid, out, calls };
+    };
+    const a = prepare(fresh(Baseline)), b = prepare(fresh(Candidate));
+    a.scene.writeUniformSnapshot(...a.out, a.grid); b.scene.writeUniformSnapshot(...b.out, b.grid);
+    expect(a.calls).toEqual(b.calls);
+    expect(a.calls).toHaveLength(a.scene.solver.h.length);
+    expect(a.calls.every((row, index) => row[0] === index && row[2] && row[3] === 123.25)).toBe(true);
+    expect(a.calls.every(row => typeof row[4] === 'number')).toBe(true);
+    expect(a.calls.slice(0, 4).map(row => row[1])).toEqual(['first', 'first', 'first', 'later']);
+    exactOutputs(a.out, b.out); exactInputs(a.scene, b.scene);
+  });
+
+  it('preserves overlapping output and output/input alias store order', () => {
+    for (const kind of ['same', 'overlap', 'input'] as const) {
+      const a = fresh(Baseline), b = fresh(Candidate);
+      const grid = { ...a.renderGrid(2), nx: 3, nz: 4, xMin: a.solver.xCenters[0], zMin: a.solver.zCenters[0] };
+      const n = grid.nx * grid.nz * 2;
+      const prepare = (scene: Scene): { views: Outputs; backing: ArrayBuffer } => {
+        if (kind === 'input') return { views: [new Float32Array(scene.solver.h.buffer, 0, n), new Float32Array(scene.solver.bed.buffer, 0, n), new Float32Array(scene.aeration.depth.buffer, 0, n)], backing: scene.solver.h.buffer as ArrayBuffer };
+        const backing = new ArrayBuffer((n + 4) * 4);
+        if (kind === 'same') {
+          const view = new Float32Array(backing, 0, n);
+          return { views: [view, view, view], backing };
+        }
+        return { views: [new Float32Array(backing, 0, n), new Float32Array(backing, 8, n), new Float32Array(backing, 16, n)], backing };
+      };
+      const aa = prepare(a), bb = prepare(b);
+      a.writeUniformSnapshot(...aa.views, grid); b.writeUniformSnapshot(...bb.views, grid);
+      exactOutputs(aa.views, bb.views);
+      exact(new Uint8Array(aa.backing), new Uint8Array(bb.backing), kind + ' backing');
+      exactInputs(a, b);
+    }
+  });
+
+  it('matches full retained F32 poststate outputs and reuses original scratch across repeat publications', () => {
+    const input = intake();
+    const a = new Baseline(input.config, 'warm'), b = new Candidate(input.config, 'warm');
+    a.importState(input.state); b.importState(input.state);
+    const grid = a.renderGrid(2);
+    for (const key of ['nx', 'nz', 'spacing', 'xMin', 'zMin'] as const) expect(grid[key]).toBe(input.grid[key]);
+    expect(a.solver.h.length).toBe(116000);
+    expect(grid.nx * grid.nz).toBe(101913);
+    const aa = outputs(grid), bb = outputs(grid);
+    for (const scene of [a, b]) for (const key of ['velocityX', 'velocityZ', 'voidFractions'] as const) expect(scratch(scene)[key]).toBeUndefined();
+    a.writeUniformSnapshot(...aa, grid); b.writeUniformSnapshot(...bb, grid);
+    exactOutputs(aa, bb); exactInputs(a, b);
+    for (const scene of [a, b]) for (const key of ['velocityX', 'velocityZ', 'voidFractions'] as const) {
+      expect(scratch(scene)[key]).toBeInstanceOf(Float64Array);
+      expect(scratch(scene)[key]?.length).toBe(scene.solver.h.length);
+    }
+    const identities = [a, b].map(scene => ({ ...scratch(scene) }));
+    for (let repeat = 0; repeat < 3; repeat++) {
+      a.writeUniformSnapshot(...aa, grid); b.writeUniformSnapshot(...bb, grid);
+      exactOutputs(aa, bb); exactInputs(a, b);
+      for (const [index, scene] of [a, b].entries()) for (const key of ['velocityX', 'velocityZ', 'voidFractions'] as const) expect(scratch(scene)[key]).toBe(identities[index][key]);
+    }
+    expect(aa.every(array => array.every(Number.isFinite))).toBe(true);
+  });
+});

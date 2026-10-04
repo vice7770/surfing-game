@@ -1,0 +1,299 @@
+{
+  "schema": "profile-phase-results-summary/v1",
+  "sampleCount": 120,
+  "contributionSections": 86,
+  "parentTotals": {
+    "properIntersectionCount": 0,
+    "collinearOverlapCount": 0,
+    "raysWithUndersideBelowFace": 0,
+    "nonAdjacentEndpointTouchCount": 6,
+    "duplicatePointCount": 1800,
+    "zeroLengthSegmentCount": 144
+  },
+  "placeholderSamples": [
+    {
+      "a0": 0.3,
+      "tau": 0,
+      "hold": "drawing",
+      "duplicatePointPairs": 300,
+      "zeroLengthSegments": 24,
+      "endpointTouches": 1
+    },
+    {
+      "a0": 0.3,
+      "tau": 0,
+      "hold": "contact",
+      "duplicatePointPairs": 300,
+      "zeroLengthSegments": 24,
+      "endpointTouches": 1
+    },
+    {
+      "a0": 0.375,
+      "tau": 0,
+      "hold": "drawing",
+      "duplicatePointPairs": 300,
+      "zeroLengthSegments": 24,
+      "endpointTouches": 1
+    },
+    {
+      "a0": 0.375,
+      "tau": 0,
+      "hold": "contact",
+      "duplicatePointPairs": 300,
+      "zeroLengthSegments": 24,
+      "endpointTouches": 1
+    },
+    {
+      "a0": 0.45,
+      "tau": 0,
+      "hold": "drawing",
+      "duplicatePointPairs": 300,
+      "zeroLengthSegments": 24,
+      "endpointTouches": 1
+    },
+    {
+      "a0": 0.45,
+      "tau": 0,
+      "hold": "contact",
+      "duplicatePointPairs": 300,
+      "zeroLengthSegments": 24,
+      "endpointTouches": 1
+    }
+  ],
+  "positivePostTouchdownContributors": [
+    {
+      "a0": 0.25,
+      "tau": 0.7047794140598445,
+      "hold": "drawing",
+      "phase": "open",
+      "contributingCases": [
+        {
+          "id": "pad19-a20-l12",
+          "weight": 0.5,
+          "requestedShapeTau": 0.7047794140598443,
+          "touchdownTau": 0.6985294140598448,
+          "heldTau": 0.6735294140596402,
+          "frame": 144,
+          "next": 144,
+          "share": 0,
+          "sectionKey": "pad19-a20-l12/0.70477941405984434/144/144/0.0000000000000000/7.0000000000000000"
+        }
+      ],
+      "geometrySummary": {
+        "pointCount": 128,
+        "properIntersectionCount": 0,
+        "collinearOverlapCount": 0,
+        "nonAdjacentEndpointTouchCount": 0,
+        "duplicatePointCount": 0,
+        "zeroLengthSegmentCount": 0,
+        "verticalRayCount": 127,
+        "maxVerticalCrossingCount": 3,
+        "raysWithUndersideAboveFace": 61,
+        "raysWithUndersideBelowFace": 0,
+        "raysWithCoincidentUndersideFace": 0,
+        "minSignedUndersideFaceGap": 0.04298406377353281,
+        "maxSignedUndersideFaceGap": 0.8232947650853535
+      }
+    },
+    {
+      "a0": 0.25,
+      "tau": 0.7058889233527461,
+      "hold": "drawing",
+      "phase": "open",
+      "contributingCases": [
+        {
+          "id": "pad19-a20-l12",
+          "weight": 0.5,
+          "requestedShapeTau": 0.7058889233527461,
+          "touchdownTau": 0.6985294140598448,
+          "heldTau": 0.6735294140596402,
+          "frame": 144,
+          "next": 144,
+          "share": 0,
+          "sectionKey": "pad19-a20-l12/0.70588892335274611/144/144/0.0000000000000000/7.0000000000000000"
+        }
+      ],
+      "geometrySummary": {
+        "pointCount": 128,
+        "properIntersectionCount": 0,
+        "collinearOverlapCount": 0,
+        "nonAdjacentEndpointTouchCount": 0,
+        "duplicatePointCount": 0,
+        "zeroLengthSegmentCount": 0,
+        "verticalRayCount": 127,
+        "maxVerticalCrossingCount": 3,
+        "raysWithUndersideAboveFace": 61,
+        "raysWithUndersideBelowFace": 0,
+        "raysWithCoincidentUndersideFace": 0,
+        "minSignedUndersideFaceGap": 0.04255190741099257,
+        "maxSignedUndersideFaceGap": 0.8221371830825317
+      }
+    },
+    {
+      "a0": 0.25,
+      "tau": 0.8470667080232953,
+      "hold": "drawing",
+      "phase": "open",
+      "contributingCases": [
+        {
+          "id": "pad19-a20-l12",
+          "weight": 0.5,
+          "requestedShapeTau": 0.8470667080232953,
+          "touchdownTau": 0.6985294140598448,
+          "heldTau": 0.6735294140596402,
+          "frame": 144,
+          "next": 144,
+          "share": 0,
+          "sectionKey": "pad19-a20-l12/0.84706670802329531/144/144/0.0000000000000000/7.0000000000000000"
+        }
+      ],
+      "geometrySummary": {
+        "pointCount": 128,
+        "properIntersectionCount": 0,
+        "collinearOverlapCount": 0,
+        "nonAdjacentEndpointTouchCount": 0,
+        "duplicatePointCount": 0,
+        "zeroLengthSegmentCount": 0,
+        "verticalRayCount": 127,
+        "maxVerticalCrossingCount": 3,
+        "raysWithUndersideAboveFace": 64,
+        "raysWithUndersideBelowFace": 0,
+        "raysWithCoincidentUndersideFace": 0,
+        "minSignedUndersideFaceGap": 0.05070368681000015,
+        "maxSignedUndersideFaceGap": 0.8007524250670769
+      }
+    },
+    {
+      "a0": 0.25,
+      "tau": 0.9317733788256248,
+      "hold": "drawing",
+      "phase": "open",
+      "contributingCases": [
+        {
+          "id": "pad19-a20-l12",
+          "weight": 0.5,
+          "requestedShapeTau": 0.9317733788256249,
+          "touchdownTau": 0.6985294140598448,
+          "heldTau": 0.6735294140596402,
+          "frame": 144,
+          "next": 144,
+          "share": 0,
+          "sectionKey": "pad19-a20-l12/0.93177337882562494/144/144/0.0000000000000000/7.0000000000000000"
+        }
+      ],
+      "geometrySummary": {
+        "pointCount": 128,
+        "properIntersectionCount": 0,
+        "collinearOverlapCount": 0,
+        "nonAdjacentEndpointTouchCount": 0,
+        "duplicatePointCount": 0,
+        "zeroLengthSegmentCount": 0,
+        "verticalRayCount": 127,
+        "maxVerticalCrossingCount": 3,
+        "raysWithUndersideAboveFace": 65,
+        "raysWithUndersideBelowFace": 0,
+        "raysWithCoincidentUndersideFace": 0,
+        "minSignedUndersideFaceGap": 0.052895440021032414,
+        "maxSignedUndersideFaceGap": 0.8204635674231597
+      }
+    },
+    {
+      "a0": 0.375,
+      "tau": 1.1900910482141445,
+      "hold": "drawing",
+      "phase": "open",
+      "contributingCases": [
+        {
+          "id": "pad19-a30-l12",
+          "weight": 0.5,
+          "requestedShapeTau": 1.1900910482141445,
+          "touchdownTau": 1.1838410482141448,
+          "heldTau": 1.1338410482139238,
+          "frame": 157,
+          "next": 157,
+          "share": 0,
+          "sectionKey": "pad19-a30-l12/1.1900910482141445/157/157/0.0000000000000000/7.0000000000000000"
+        }
+      ],
+      "geometrySummary": {
+        "pointCount": 128,
+        "properIntersectionCount": 0,
+        "collinearOverlapCount": 0,
+        "nonAdjacentEndpointTouchCount": 0,
+        "duplicatePointCount": 0,
+        "zeroLengthSegmentCount": 0,
+        "verticalRayCount": 127,
+        "maxVerticalCrossingCount": 5,
+        "raysWithUndersideAboveFace": 65,
+        "raysWithUndersideBelowFace": 0,
+        "raysWithCoincidentUndersideFace": 0,
+        "minSignedUndersideFaceGap": 0.07002688956402792,
+        "maxSignedUndersideFaceGap": 0.9245605667882031
+      }
+    },
+    {
+      "a0": 0.375,
+      "tau": 1.263523376316905,
+      "hold": "drawing",
+      "phase": "open",
+      "contributingCases": [
+        {
+          "id": "pad19-a30-l12",
+          "weight": 0.5,
+          "requestedShapeTau": 1.263523376316905,
+          "touchdownTau": 1.1838410482141448,
+          "heldTau": 1.1338410482139238,
+          "frame": 157,
+          "next": 157,
+          "share": 0,
+          "sectionKey": "pad19-a30-l12/1.2635233763169049/157/157/0.0000000000000000/7.0000000000000000"
+        }
+      ],
+      "geometrySummary": {
+        "pointCount": 128,
+        "properIntersectionCount": 0,
+        "collinearOverlapCount": 0,
+        "nonAdjacentEndpointTouchCount": 0,
+        "duplicatePointCount": 0,
+        "zeroLengthSegmentCount": 0,
+        "verticalRayCount": 127,
+        "maxVerticalCrossingCount": 5,
+        "raysWithUndersideAboveFace": 66,
+        "raysWithUndersideBelowFace": 0,
+        "raysWithCoincidentUndersideFace": 0,
+        "minSignedUndersideFaceGap": 0.08031912504857108,
+        "maxSignedUndersideFaceGap": 0.9156309926310781
+      }
+    }
+  ],
+  "perConditionCounts": [
+    {
+      "a0": 0.2,
+      "drawing": 10,
+      "contact": 10
+    },
+    {
+      "a0": 0.25,
+      "drawing": 12,
+      "contact": 12
+    },
+    {
+      "a0": 0.3,
+      "drawing": 16,
+      "contact": 16
+    },
+    {
+      "a0": 0.375,
+      "drawing": 12,
+      "contact": 12
+    },
+    {
+      "a0": 0.45,
+      "drawing": 10,
+      "contact": 10
+    }
+  ],
+  "candidate": "none",
+  "actualBigIncidence": "unproven",
+  "phaseBlendShapeDefect": "not demonstrated by these samples"
+}

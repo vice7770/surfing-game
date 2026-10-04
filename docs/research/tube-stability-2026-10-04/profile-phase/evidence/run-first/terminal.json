@@ -1,0 +1,13 @@
+{
+  "schema": "profile-phase-terminal/v1",
+  "valid": true,
+  "sampleCount": 120,
+  "contributionSectionCount": 86,
+  "inputCount": 31,
+  "beforeAfterEqual": true,
+  "report": {
+    "path": "/private/tmp/surf-profile-phase-probe-20261004/run-first/report.json",
+    "bytes": 19516379,
+    "sha256": "ea30fda388c10a86f6ff374db74f768c04d57a6e38706fa4a24aa83a22ab6b25"
+  }
+}
