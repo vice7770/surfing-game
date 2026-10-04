@@ -1,7 +1,7 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { dampedMode } from '../dev/carveMetrics';
-import { AttachedRider } from './AttachedRider';
+import { AttachedRider, CROUCH_DEPTH, MANUAL_CROUCH_DEPTH } from './AttachedRider';
 import { LIP_CONTACT, type LipContactParcel, type LipParcelSource } from './DetachedSurfer';
 import { BoardBody } from './BoardBody';
 import { REFERENCE_RIDER } from './boardReference';
@@ -12,6 +12,8 @@ import { SwellWater } from './SwellWater';
 import type { SurfWater, WaterSample } from './SurfWater';
 
 const STEP = 1 / 60;
+/** About 0.195 m of lowering: the pumping posture that full manual crouch used to select. */
+const PUMPING_CROUCH = 0.72;
 
 /** A board level at the surface (lowest bottom point at `bottomY`) with a rider mounted in `phase`. */
 function mounted(phase: 'standing' | 'prone' = 'standing', bottomY = 0) {
@@ -760,16 +762,16 @@ describe('lean, trim, crouch and heading hold', () => {
     expect(ahead.pitch).toBeLessThan(neutral.pitch);
   });
 
-  it('crouches to about two thirds of its height and stands back up', () => {
+  it('tucks deeper than Compress and stands back up', () => {
     const { board, rider, water } = acrossFace(0, 6);
     run(board, water, 1);
     const standing = rider.leg.height + rider.leg.extension;
     rider.crouch = 1;
-    run(board, water, 0.5);
+    run(board, water, 0.8);
     const crouched = rider.leg.height + rider.leg.extension;
-    expect(crouched / standing).toBeGreaterThan(0.6);
-    expect(crouched / standing).toBeLessThan(0.7);
-    run(board, water, 4.5);
+    expect(standing - crouched).toBeGreaterThan(MANUAL_CROUCH_DEPTH - 0.05);
+    expect(standing - crouched).toBeLessThan(MANUAL_CROUCH_DEPTH + 0.05);
+    run(board, water, 4.2);
     expect(rider.attached).toBe(true);
     rider.crouch = 0;
     run(board, water, 1);
@@ -786,14 +788,15 @@ describe('lean, trim, crouch and heading hold', () => {
       return ride;
     };
 
-    it('compresses to the full crouch depth, alone or over the crouch, and releases back to the crouch', () => {
+    it('keeps Compress shallower than the manual tuck, deepens the pumping crouch, and releases back to it', () => {
       const full = settled();
       full.rider.crouch = 1;
       run(full.board, full.water, 1);
       const alone = settled();
       alone.rider.compress = 1;
       run(alone.board, alone.water, 1);
-      expect(height(alone.rider)).toBeCloseTo(height(full.rider), 1);
+      expect(alone.rider.leg.rest).toBeCloseTo(-CROUCH_DEPTH, 3);
+      expect(height(alone.rider) - height(full.rider)).toBeCloseTo(MANUAL_CROUCH_DEPTH - CROUCH_DEPTH, 1);
       const over = settled();
       over.rider.crouch = 0.6;
       run(over.board, over.water, 1);
@@ -1233,12 +1236,19 @@ describe('lean, trim, crouch and heading hold', () => {
     // Compress at the base of the bottom turn: from Shift's crouch on the drop either way, and on its own from standing.
     // From standing the board fell away under the dropping legs: the leg, a spring both ways, pulled it up and the
     // rider fell into the turn at about 1 s.
-    it.each([['frontside', -1, 0.6], ['backside', 1, 0.6], ['from standing', -1, 0], ['from Shift held down (the keyboard)', -1, 1]])('stays on through a compressed bottom turn, %s', (_how, steer, crouch) => {
+    it.each([['frontside', -1, 0.6], ['backside', 1, 0.6], ['from standing', -1, 0], ['from the full pumping posture', -1, PUMPING_CROUCH]])('stays on through a compressed bottom turn, %s', (_how, steer, crouch) => {
       const turn = bottomTurn(steer, 90, 1.2, 'regular', crouch);
       expect(turn.entry).toBeGreaterThan(6.5);
       expect(turn.entry).toBeLessThan(8);
       expect(turn.attached).toBe(true);
       expect(turn.turned).toBeGreaterThan(55);
+    });
+
+    it('keeps standing and turns through ninety degrees after a deep manual tuck', () => {
+      const turn = bottomTurn(-1, 90, 1.2, 'regular', 1);
+      expect(turn.attached).toBe(true);
+      expect(turn.reached).toBeDefined();
+      expect(turn.exit).toBeGreaterThan(0.7 * turn.entry);
     });
 
     // The top turn (the stances spec item 6): climbing the face, the rider turns back down it. Before the top-turn plan
@@ -1612,11 +1622,11 @@ describe('the swing drawn', () => {
 describe('a hand in the face', () => {
   const weight = REFERENCE_RIDER.mass * WATER.gravity;
   /** A board planing at 6 m/s along +z with a crouched rider, a wall of water 0.35 m to its left (+x). */
-  const pocket = (hand: boolean, water: SurfWater = new WallWater(0.35, 0.35)) => {
+  const pocket = (hand: boolean, water: SurfWater = new WallWater(0.35, 0.35), crouch = PUMPING_CROUCH) => {
     const { board, rider } = mounted('standing');
     board.velocity.z = 6;
     rider.velocity.z = 6;
-    rider.crouch = 1;
+    rider.crouch = crouch;
     run(board, water, 0.6);
     const speed = board.velocity.length();
     const heading = headingOf(board);
@@ -1642,6 +1652,15 @@ describe('a hand in the face', () => {
     expect(extra).toBeLessThan(4);
     expect(withHand.turn).toBeGreaterThan(without.turn);
     // The water's work on the hand, and its moment through the feet, close the energy ledger.
+    expect(withHand.ledger).toBeLessThan(0.02);
+  });
+
+  it('retains a braking and steering hand in the deeper tube tuck', () => {
+    const without = pocket(false, undefined, 1);
+    const withHand = pocket(true, undefined, 1);
+    expect(withHand.rider.attached).toBe(true);
+    expect(withHand.deceleration).toBeGreaterThan(without.deceleration);
+    expect(withHand.turn).toBeGreaterThan(without.turn);
     expect(withHand.ledger).toBeLessThan(0.02);
   });
 

@@ -436,12 +436,13 @@ const STEER_DEADBAND = 0.05;
 /** Trim: the upper body shifts fore or aft by up to this much, m, moving the load along the board (provisional). */
 const TRIM_SHIFT = 0.25;
 /**
- * The height ladder (the movement-flow spec): standing, the crouch (the pumping
- * stance) and Compress (the sharp turn's). Compress shortens the leg by up to
- * CROUCH_DEPTH, m, to about two thirds of the standing height (0.6-0.7 in the
- * survey, for tube clearance; knees and hips at 90° or less), the crouch by
- * CROUCH_SHARE of it (knees about 100–110°: the stances spec's crouch of 0.6
- * bent them to 106°). The leg moves at most MAX_LEG_SPEED, m/s (a
+ * The height ladder: standing, the pumping crouch, Compress (the sharp turn's)
+ * and a deeper manual tuck for a tube. Compress shortens the leg by up to
+ * CROUCH_DEPTH, m. Through manual input 0.6 the pumping crouch keeps its
+ * CROUCH_SHARE of that depth; further input adds a smooth tuck, reaching
+ * MANUAL_CROUCH_DEPTH at 1. Compress fades out this extra tuck to keep its
+ * existing sharp-turn stance. These are provisional posture targets. The leg
+ * moves at most MAX_LEG_SPEED, m/s (a
  * countermovement jump's take-off speed, so a jump stays possible), and softens
  * toward the legs-bent 22 kN/m (provisional). The weight stays the trim's in
  * every stance: W/S put it on the front foot for a bottom turn, the back foot
@@ -449,8 +450,23 @@ const TRIM_SHIFT = 0.25;
  */
 export const CROUCH_DEPTH = 0.3;
 export const CROUCH_SHARE = 0.65;
+export const MANUAL_CROUCH_DEPTH = 0.45;
+const PUMPING_CROUCH_LIMIT = 0.6;
 const MAX_LEG_SPEED = 2.5;
 const CROUCH_SOFTENING = 0.5;
+
+/** Preserve the pumping stance, then fold deeper through the remaining manual range. */
+function manualCrouchShare(input: number, compress: number): number {
+  const crouch = Math.max(0, Math.min(1, input));
+  const tuck = Math.max(0, (crouch - PUMPING_CROUCH_LIMIT) / (1 - PUMPING_CROUCH_LIMIT));
+  const smoothTuck = tuck * tuck * (3 - 2 * tuck);
+  const turn = Math.max(0, Math.min(1, compress));
+  const manual = CROUCH_SHARE * crouch
+    + ((MANUAL_CROUCH_DEPTH - CROUCH_SHARE * CROUCH_DEPTH) / CROUCH_DEPTH) * smoothTuck;
+  // Fade only the tuck below the full Compress stance, so intermediate turn input cannot
+  // extend further than its final posture. Shallower manual stances keep their old max selection.
+  return manual - Math.max(0, manual - 1) * turn;
+}
 /**
  * How the leg's rest length moves toward the crouch asked for: critically damped
  * at LEG_FREQUENCY, rad/s; going down at most CROUCH_ACCELERATION, m/s² (about
@@ -1585,6 +1601,7 @@ export class AttachedRider {
     this.assistForce.set(0, 0, 0);
     this.carryForce.set(0, 0, 0);
     this.leanOutForce.set(0, 0, 0);
+    // Compress keeps its pumping-stance activation; a deeper manual tuck does not disable a pressed turn control.
     const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const compress = Math.max(0, Math.min(1, this.compress));
     if (!this.upright || !this.banking || !this.planing || compress <= crouch || Math.abs(this.steer) <= STEER_DEADBAND) return;
@@ -1636,11 +1653,11 @@ export class AttachedRider {
     // The crouch: a shorter leg, reached no faster than the legs can move, and softer.
     // Critically damped, and going down no harder than keeps the feet loaded: a sudden drop of the leg would
     // have to pull the body down, and unloaded feet lose their grip.
-    const crouch = CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
+    const crouch = manualCrouchShare(this.crouch, this.compress);
     const compress = Math.max(0, Math.min(1, this.compress));
     const rest = -Math.max(crouch, compress) * CROUCH_DEPTH;
     const down = rest < this.leg.rest;
-    const compressing = compress > crouch;
+    const compressing = compress > CROUCH_SHARE * Math.max(0, Math.min(1, this.crouch));
     const accelerationLimit = !down ? EXTEND_ACCELERATION
       : compressing ? Math.max(CROUCH_ACCELERATION, this.legLoad / this.mass - COMPRESS_KEEP * WATER.gravity) : CROUCH_ACCELERATION;
     const speedLimit = down ? CROUCH_SPEED : MAX_LEG_SPEED;
@@ -1650,7 +1667,10 @@ export class AttachedRider {
     const acceleration = Math.max(-accelerationLimit * (1 - hold), Math.min(accelerationLimit,
       LEG_FREQUENCY * LEG_FREQUENCY * (rest - this.leg.rest) - 2 * LEG_FREQUENCY * this.restRate));
     this.restRate = Math.max(-speedLimit * (1 - hold), Math.min(speedLimit, this.restRate + acceleration * h));
-    this.leg.rest = Math.max(-CROUCH_DEPTH, Math.min(0, this.leg.rest + this.restRate * h));
+    // Compress keeps its old stop; a deeper manual target opens more travel. A released tuck
+    // retains its current travel limit while extending, so release cannot snap the body up.
+    const deepest = Math.max(-this.leg.rest, CROUCH_DEPTH, -rest);
+    this.leg.rest = Math.max(-deepest, Math.min(0, this.leg.rest + this.restRate * h));
     // Feet on a deck only push: compressing, the legs fold no faster than the body falls onto them, so a board
     // dropping or rolling away from under the rider unloads the feet rather than being pulled up by them.
     const slack = this.leg.extension - this.legLoad / this.legStiffness;
@@ -1658,9 +1678,10 @@ export class AttachedRider {
       this.leg.rest = Math.min(0, slack);
       this.restRate = Math.max(this.restRate, this.leg.rate);
     }
-    if (this.leg.rest === 0 || this.leg.rest === -CROUCH_DEPTH) this.restRate = 0;
+    if (this.leg.rest === 0 || this.leg.rest === -deepest) this.restRate = 0;
     this.extending = this.restRate > 0 && this.leg.rest < rest;
-    this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * -this.leg.rest) / CROUCH_DEPTH);
+    // The deeper tuck keeps the current bent-leg stiffness rather than softening below it.
+    this.legStiffness = LEG_STIFFNESS * (1 - (CROUCH_SOFTENING * Math.min(CROUCH_DEPTH, -this.leg.rest)) / CROUCH_DEPTH);
     this.legDamping = 2 * RIDER_LEG.axialDamping * Math.sqrt(this.legStiffness * this.mass);
     this.leg.height = this.localCenter.y - this.base.y;
     // Where the centre of mass is along the leg, and how fast it moves along it relative to where it is carried.

@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { AttachedRider, CROUCH_DEPTH, CROUCH_SHARE } from './AttachedRider';
+import { AttachedRider, CROUCH_DEPTH, CROUCH_SHARE, MANUAL_CROUCH_DEPTH } from './AttachedRider';
 import { BoardBody } from './BoardBody';
 import { PlaneWater } from './PlaneWater';
 
@@ -34,21 +34,31 @@ function frontShare(set: (rider: AttachedRider) => void, seconds: number): numbe
 }
 
 describe('the height ladder (the movement-flow spec)', () => {
-  it('crouches to the crouch share of the depth, and compresses to all of it', () => {
+  it('keeps the pumping depth, tucks deeper manually, and retains the Compress depth', () => {
+    const pumping = glide((rider) => { rider.crouch = 0.6; }, 1.5).rider;
     const crouched = glide((rider) => { rider.crouch = 1; }, 1.5).rider;
     const compressed = glide((rider) => { rider.compress = 1; }, 1.5).rider;
-    expect(crouched.attached && compressed.attached).toBe(true);
-    expect(crouched.leg.rest).toBeCloseTo(-CROUCH_SHARE * CROUCH_DEPTH, 2);
+    expect(pumping.attached && crouched.attached && compressed.attached).toBe(true);
+    expect(pumping.leg.rest).toBeCloseTo(-0.6 * CROUCH_SHARE * CROUCH_DEPTH, 2);
+    expect(crouched.leg.rest).toBeCloseTo(-MANUAL_CROUCH_DEPTH, 2);
     expect(compressed.leg.rest).toBeCloseTo(-CROUCH_DEPTH, 2);
   });
 
-  it('goes deeper compressing over the crouch than crouching', () => {
+  it('goes deeper compressing over the pumping crouch than crouching', () => {
+    const crouched = glide((rider) => { rider.crouch = 0.6; }, 1.5).rider;
+    const both = glide((rider) => { rider.crouch = 0.6; rider.compress = 1; }, 1.5).rider;
+    expect(both.attached).toBe(true);
+    expect(both.leg.rest).toBeLessThan(crouched.leg.rest - 0.05);
+  });
+
+  it('selects the normal Compress stance with a full manual tuck also held', () => {
     const both = glide((rider) => { rider.crouch = 1; rider.compress = 1; }, 1.5).rider;
-    expect(both.leg.rest).toBeLessThan(-CROUCH_SHARE * CROUCH_DEPTH - 0.05);
+    expect(both.attached).toBe(true);
+    expect(both.leg.rest).toBeCloseTo(-CROUCH_DEPTH, 2);
   });
 
   // Paced by the turn's load alone, Compress took about a second to its depth riding straight (the spec's Q1).
-  it('drops into Compress from standing as fast as into the crouch, and on to its own depth', () => {
+  it('drops into Compress from standing as fast as into the pumping crouch, and on to its own depth', () => {
     const when = (set: (rider: AttachedRider) => void, depth: number) => {
       let reached = Number.NaN;
       glide(set, 1, (rider, _board, time) => {
@@ -56,8 +66,8 @@ describe('the height ladder (the movement-flow spec)', () => {
       });
       return reached;
     };
-    const crouchDepth = 0.9 * CROUCH_SHARE * CROUCH_DEPTH;
-    expect(when((rider) => { rider.compress = 1; }, crouchDepth)).toBeLessThanOrEqual(when((rider) => { rider.crouch = 1; }, crouchDepth) + 0.03);
+    const crouchDepth = 0.9 * 0.6 * CROUCH_SHARE * CROUCH_DEPTH;
+    expect(when((rider) => { rider.compress = 1; }, crouchDepth)).toBeLessThanOrEqual(when((rider) => { rider.crouch = 0.6; }, crouchDepth) + 0.03);
     expect(when((rider) => { rider.compress = 1; }, 0.9 * CROUCH_DEPTH)).toBeLessThan(0.6);
   });
 

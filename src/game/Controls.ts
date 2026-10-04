@@ -143,7 +143,7 @@ export class Controls {
     const duckKeys = !standing && this.active && keys.has('duckDive') ? 1 : 0;
     const steer = this.ramps.steer.update(steerKeys, dt);
     const trim = this.ramps.trim.update(trimKeys, dt);
-    // Compress is at least the crouch's depth: taken over from the crouch it starts there, not from standing.
+    // Switching from crouch starts Compress at the current input ramp, avoiding a delayed turn request.
     if (compressKeys) this.ramps.compress.raise(this.ramps.crouch.value);
     const crouch = this.ramps.crouch.update(crouchKeys, dt);
     const compress = this.ramps.compress.update(compressKeys, dt);

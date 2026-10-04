@@ -1,0 +1,1837 @@
+{
+  "scope": "Four committed GLB skeletons; ordinary flat-water RideSession at initial speed 8 m/s, 60 ticks standing preparation and 60 ticks selected input at 60 Hz; PosedBody default point and bone inertia and RiderMotion each tick; head joint is not crown or full skinned mesh.",
+  "runs": [
+    {
+      "id": "surfer1",
+      "standing": {
+        "publishedPelvis": 0.777089500686225,
+        "publishedHead": 1.3770895006862247,
+        "drawnHips": 0.7842593102799061,
+        "drawnNeck": 1.2703095090668692,
+        "drawnHead": 1.338347004353981,
+        "footError": 3.4045345628197902e-06,
+        "phase": "standing",
+        "attached": true,
+        "rest": 0
+      },
+      "compressed": {
+        "publishedPelvis": 0.478131282624102,
+        "publishedHead": 1.0781312826241018,
+        "drawnHips": 0.5578789894780228,
+        "drawnNeck": 0.9037904289646973,
+        "drawnHead": 0.952358643811365,
+        "footError": 3.0904790368651684e-06,
+        "phase": "standing",
+        "attached": true,
+        "rest": -0.29960816914977423
+      },
+      "tucked": {
+        "publishedPelvis": 0.3320966733511508,
+        "publishedHead": 0.9320966733511507,
+        "drawnHips": 0.41433357391922865,
+        "drawnNeck": 0.8340408666630559,
+        "drawnHead": 0.8928846501457539,
+        "footError": 2.5667680163962083e-06,
+        "phase": "standing",
+        "attached": true,
+        "rest": -0.4498215678447794
+      },
+      "transitions": [
+        {
+          "drawnHead": 1.364482088738774,
+          "drawnHips": 0.8115741325054672,
+          "publishedHead": 1.376559481181026,
+          "publishedPelvis": 0.776559481181026,
+          "footError": 3.161206792267355e-06
+        },
+        {
+          "drawnHead": 1.3636088558017627,
+          "drawnHips": 0.8106781940079424,
+          "publishedHead": 1.3763654494119528,
+          "publishedPelvis": 0.7763654494119531,
+          "footError": 3.174208644835633e-06
+        },
+        {
+          "drawnHead": 1.3626096612745677,
+          "drawnHips": 0.8099134543004215,
+          "publishedHead": 1.375584242041848,
+          "publishedPelvis": 0.775584242041848,
+          "footError": 3.184197935896632e-06
+        },
+        {
+          "drawnHead": 1.3613017037811728,
+          "drawnHips": 0.8092751901616246,
+          "publishedHead": 1.3738007874839289,
+          "publishedPelvis": 0.7738007874839291,
+          "footError": 3.1908878029037725e-06
+        },
+        {
+          "drawnHead": 1.3595209303101725,
+          "drawnHips": 0.8087871023393581,
+          "publishedHead": 1.3706645772285502,
+          "publishedPelvis": 0.7706645772285503,
+          "footError": 3.193575406470516e-06
+        },
+        {
+          "drawnHead": 1.3571609621977216,
+          "drawnHips": 0.808512173893576,
+          "publishedHead": 1.3659254618405434,
+          "publishedPelvis": 0.7659254618405437,
+          "footError": 3.191090564412514e-06
+        },
+        {
+          "drawnHead": 1.3538903278954013,
+          "drawnHips": 0.8084777966184322,
+          "publishedHead": 1.3594259994750237,
+          "publishedPelvis": 0.7594259994750239,
+          "footError": 3.18213752242622e-06
+        },
+        {
+          "drawnHead": 1.3494993857156021,
+          "drawnHips": 0.8086039356108855,
+          "publishedHead": 1.3511004259523427,
+          "publishedPelvis": 0.7511004259523428,
+          "footError": 3.1667919075179355e-06
+        },
+        {
+          "drawnHead": 1.3429887478168139,
+          "drawnHips": 0.8075618602129577,
+          "publishedHead": 1.340949430019581,
+          "publishedPelvis": 0.740949430019581,
+          "footError": 3.155720215207669e-06
+        },
+        {
+          "drawnHead": 1.3336745599782645,
+          "drawnHips": 0.8034797229959901,
+          "publishedHead": 1.3290173088222732,
+          "publishedPelvis": 0.7290173088222734,
+          "footError": 3.166064677503724e-06
+        },
+        {
+          "drawnHead": 1.3189055741745233,
+          "drawnHips": 0.7930280751751179,
+          "publishedHead": 1.3153719537267132,
+          "publishedPelvis": 0.7153719537267134,
+          "footError": 3.2178615334025256e-06
+        },
+        {
+          "drawnHead": 1.2996844755658628,
+          "drawnHips": 0.7777849500421238,
+          "publishedHead": 1.3000892989763366,
+          "publishedPelvis": 0.7000892989763368,
+          "footError": 3.284438372713261e-06
+        },
+        {
+          "drawnHead": 1.277682700647134,
+          "drawnHips": 0.7609719589634404,
+          "publishedHead": 1.2832432867755135,
+          "publishedPelvis": 0.6832432867755137,
+          "footError": 3.3367887109679582e-06
+        },
+        {
+          "drawnHead": 1.252856704534353,
+          "drawnHips": 0.7426557596636764,
+          "publishedHead": 1.2649024196055463,
+          "publishedPelvis": 0.6649024196055464,
+          "footError": 3.373686962218042e-06
+        },
+        {
+          "drawnHead": 1.2250947223144568,
+          "drawnHips": 0.7229057177413115,
+          "publishedHead": 1.2451376660331865,
+          "publishedPelvis": 0.6451376660331867,
+          "footError": 3.394756109754308e-06
+        },
+        {
+          "drawnHead": 1.1943552306537522,
+          "drawnHips": 0.7018434045139926,
+          "publishedHead": 1.2240719741825594,
+          "publishedPelvis": 0.6240719741825594,
+          "footError": 3.4003613378026322e-06
+        },
+        {
+          "drawnHead": 1.160808678971617,
+          "drawnHips": 0.6797107051157774,
+          "publishedHead": 1.2019485903197678,
+          "publishedPelvis": 0.601948590319768,
+          "footError": 3.392396281288823e-06
+        },
+        {
+          "drawnHead": 1.1249294384912736,
+          "drawnHips": 0.6568921228360266,
+          "publishedHead": 1.179155034312074,
+          "publishedPelvis": 0.5791550343120742,
+          "footError": 3.3740355033236186e-06
+        },
+        {
+          "drawnHead": 1.0873762724080358,
+          "drawnHips": 0.6338388937960828,
+          "publishedHead": 1.1561481309043098,
+          "publishedPelvis": 0.55614813090431,
+          "footError": 3.3492332383995066e-06
+        },
+        {
+          "drawnHead": 1.0486281119203327,
+          "drawnHips": 0.6108814258376055,
+          "publishedHead": 1.1332557829708316,
+          "publishedPelvis": 0.5332557829708316,
+          "footError": 3.321492402021554e-06
+        },
+        {
+          "drawnHead": 1.0088054578779266,
+          "drawnHips": 0.5881397207326222,
+          "publishedHead": 1.1105838016022729,
+          "publishedPelvis": 0.5105838016022729,
+          "footError": 3.2924991078517103e-06
+        },
+        {
+          "drawnHead": 0.9681081941389119,
+          "drawnHips": 0.5657418585171416,
+          "publishedHead": 1.088247683119002,
+          "publishedPelvis": 0.48824768311900224,
+          "footError": 3.2629522739493998e-06
+        },
+        {
+          "drawnHead": 0.9436284622430949,
+          "drawnHips": 0.5440182439875093,
+          "publishedHead": 1.0665727223668982,
+          "publishedPelvis": 0.46657272236689834,
+          "footError": 3.2047823562457096e-06
+        },
+        {
+          "drawnHead": 0.9358794996357109,
+          "drawnHips": 0.5233374029871692,
+          "publishedHead": 1.0459253836680766,
+          "publishedPelvis": 0.44592538366807666,
+          "footError": 3.1553068670073155e-06
+        },
+        {
+          "drawnHead": 0.9279957900871224,
+          "drawnHips": 0.504120144246249,
+          "publishedHead": 1.0267295064081228,
+          "publishedPelvis": 0.426729506408123,
+          "footError": 3.105287997535964e-06
+        },
+        {
+          "drawnHead": 0.9202612834226624,
+          "drawnHips": 0.486608309256532,
+          "publishedHead": 1.0092288133265326,
+          "publishedPelvis": 0.4092288133265326,
+          "footError": 3.057075606829e-06
+        },
+        {
+          "drawnHead": 0.9129084856927738,
+          "drawnHips": 0.4709067326078094,
+          "publishedHead": 0.9935274158583731,
+          "publishedPelvis": 0.39352741585837325,
+          "footError": 3.011843957926859e-06
+        },
+        {
+          "drawnHead": 0.9061322791090091,
+          "drawnHips": 0.4570221245403339,
+          "publishedHead": 0.9796263905783593,
+          "publishedPelvis": 0.37962639057835945,
+          "footError": 2.9695907148342274e-06
+        },
+        {
+          "drawnHead": 0.9001447889110549,
+          "drawnHips": 0.44506365486325905,
+          "publishedHead": 0.9676299926618293,
+          "publishedPelvis": 0.3676299926618293,
+          "footError": 2.930518751531864e-06
+        },
+        {
+          "drawnHead": 0.895091888058013,
+          "drawnHips": 0.4350924462179611,
+          "publishedHead": 0.9575976857123912,
+          "publishedPelvis": 0.3575976857123914,
+          "footError": 2.8950196823841843e-06
+        },
+        {
+          "drawnHead": 0.8909720690843529,
+          "drawnHips": 0.4269309593149423,
+          "publishedHead": 0.9493486872958169,
+          "publishedPelvis": 0.34934868729581703,
+          "footError": 2.86265323421675e-06
+        },
+        {
+          "drawnHead": 0.8878018373439993,
+          "drawnHips": 0.4205034089194068,
+          "publishedHead": 0.9428059996497016,
+          "publishedPelvis": 0.34280599964970176,
+          "footError": 2.833495471990435e-06
+        },
+        {
+          "drawnHead": 0.8855353583423808,
+          "drawnHips": 0.4156648492999465,
+          "publishedHead": 0.9378240222084685,
+          "publishedPelvis": 0.3378240222084686,
+          "footError": 2.8074376304920435e-06
+        },
+        {
+          "drawnHead": 0.8840403092509528,
+          "drawnHips": 0.4121292692402218,
+          "publishedHead": 0.9341147073789015,
+          "publishedPelvis": 0.33411470737890153,
+          "footError": 2.783789079204854e-06
+        },
+        {
+          "drawnHead": 0.8832027891335748,
+          "drawnHips": 0.40967636444179173,
+          "publishedHead": 0.9314572408634929,
+          "publishedPelvis": 0.33145724086349304,
+          "footError": 2.762126442488223e-06
+        },
+        {
+          "drawnHead": 0.8829135560483594,
+          "drawnHips": 0.4081178198187106,
+          "publishedHead": 0.9296650649784775,
+          "publishedPelvis": 0.32966506497847764,
+          "footError": 2.742205557947278e-06
+        },
+        {
+          "drawnHead": 0.883064733880765,
+          "drawnHips": 0.40728350673171854,
+          "publishedHead": 0.9285722656446115,
+          "publishedPelvis": 0.3285722656446117,
+          "footError": 2.7238991515650924e-06
+        },
+        {
+          "drawnHead": 0.8835373930859562,
+          "drawnHips": 0.40698990549305375,
+          "publishedHead": 0.928000604799215,
+          "publishedPelvis": 0.3280006047992151,
+          "footError": 2.70699950084634e-06
+        },
+        {
+          "drawnHead": 0.884223997868625,
+          "drawnHips": 0.4070795451860061,
+          "publishedHead": 0.927799905937568,
+          "publishedPelvis": 0.327799905937568,
+          "footError": 2.691405321253363e-06
+        },
+        {
+          "drawnHead": 0.8850275655280442,
+          "drawnHips": 0.4074225732322283,
+          "publishedHead": 0.9278510924529875,
+          "publishedPelvis": 0.32785109245298766,
+          "footError": 2.677207523712342e-06
+        },
+        {
+          "drawnHead": 0.8858701590145525,
+          "drawnHips": 0.407915658938245,
+          "publishedHead": 0.9280614442756696,
+          "publishedPelvis": 0.32806144427566974,
+          "footError": 2.664504663386242e-06
+        },
+        {
+          "drawnHead": 0.8867161881935175,
+          "drawnHips": 0.40849937503770284,
+          "publishedHead": 0.9283751216204152,
+          "publishedPelvis": 0.3283751216204154,
+          "footError": 2.653104934890159e-06
+        },
+        {
+          "drawnHead": 0.8875423742731251,
+          "drawnHips": 0.4091327095973276,
+          "publishedHead": 0.9287535127411818,
+          "publishedPelvis": 0.3287535127411818,
+          "footError": 2.6416414462337168e-06
+        },
+        {
+          "drawnHead": 0.8883319911142584,
+          "drawnHips": 0.4097852375493542,
+          "publishedHead": 0.9291679857129149,
+          "publishedPelvis": 0.3291679857129151,
+          "footError": 2.6314071342030547e-06
+        },
+        {
+          "drawnHead": 0.8890728301962226,
+          "drawnHips": 0.41043360521832584,
+          "publishedHead": 0.9295963990114694,
+          "publishedPelvis": 0.32959639901146953,
+          "footError": 2.622305582957467e-06
+        },
+        {
+          "drawnHead": 0.8897559841808215,
+          "drawnHips": 0.41105947644761226,
+          "publishedHead": 0.9300210920711125,
+          "publishedPelvis": 0.33002109207111263,
+          "footError": 2.6142443916663194e-06
+        },
+        {
+          "drawnHead": 0.8903751552219783,
+          "drawnHips": 0.4116484123704705,
+          "publishedHead": 0.9304278235691348,
+          "publishedPelvis": 0.33042782356913486,
+          "footError": 2.6071324978980565e-06
+        },
+        {
+          "drawnHead": 0.8909262696009261,
+          "drawnHips": 0.41218929954862527,
+          "publishedHead": 0.9308052671026624,
+          "publishedPelvis": 0.3308052671026626,
+          "footError": 2.600879961088044e-06
+        },
+        {
+          "drawnHead": 0.8914072467045624,
+          "drawnHips": 0.4126740584751251,
+          "publishedHead": 0.9311447913004641,
+          "publishedPelvis": 0.33114479130046415,
+          "footError": 2.595399080137353e-06
+        },
+        {
+          "drawnHead": 0.8918178249415614,
+          "drawnHips": 0.41309745798658304,
+          "publishedHead": 0.9314403455807341,
+          "publishedPelvis": 0.3314403455807341,
+          "footError": 2.5906060121519514e-06
+        },
+        {
+          "drawnHead": 0.8921593891866536,
+          "drawnHips": 0.41345693283762863,
+          "publishedHead": 0.9316883453688757,
+          "publishedPelvis": 0.3316883453688758,
+          "footError": 2.5864223816432047e-06
+        },
+        {
+          "drawnHead": 0.8924347744922334,
+          "drawnHips": 0.4137523539858512,
+          "publishedHead": 0.9318875038668544,
+          "publishedPelvis": 0.33188750386685456,
+          "footError": 2.5827765166721486e-06
+        },
+        {
+          "drawnHead": 0.8926480407394138,
+          "drawnHips": 0.41398573688838813,
+          "publishedHead": 0.9320385941551952,
+          "publishedPelvis": 0.3320385941551953,
+          "footError": 2.5796042011936907e-06
+        },
+        {
+          "drawnHead": 0.8928042246671111,
+          "drawnHips": 0.41416089540863055,
+          "publishedHead": 0.9321441485166624,
+          "publishedPelvis": 0.33214414851666263,
+          "footError": 2.576848927074692e-06
+        },
+        {
+          "drawnHead": 0.8929090814104588,
+          "drawnHips": 0.41428306083592603,
+          "publishedHead": 0.9322081144217254,
+          "publishedPelvis": 0.33220811442172543,
+          "footError": 2.5744616742773404e-06
+        },
+        {
+          "drawnHead": 0.8929688291863113,
+          "drawnHips": 0.4143584898686641,
+          "publishedHead": 0.9322354914387903,
+          "publishedPelvis": 0.3322354914387904,
+          "footError": 2.5724003520110497e-06
+        },
+        {
+          "drawnHead": 0.892989909638397,
+          "drawnHips": 0.41439408467124367,
+          "publishedHead": 0.9322319729091192,
+          "publishedPelvis": 0.3322319729091193,
+          "footError": 2.5706290061663695e-06
+        },
+        {
+          "drawnHead": 0.8929787737866178,
+          "drawnHips": 0.41439704431716096,
+          "publishedHead": 0.93220361260994,
+          "publishedPelvis": 0.33220361260994014,
+          "footError": 2.569116906290551e-06
+        },
+        {
+          "drawnHead": 0.8929417003645761,
+          "drawnHips": 0.41437456164492564,
+          "publishedHead": 0.9321565314185226,
+          "publishedPelvis": 0.33215653141852275,
+          "footError": 2.5678376001631655e-06
+        },
+        {
+          "drawnHead": 0.8928846501457539,
+          "drawnHips": 0.41433357391922865,
+          "publishedHead": 0.9320966733511507,
+          "publishedPelvis": 0.3320966733511508,
+          "footError": 2.5667680163962083e-06
+        }
+      ]
+    },
+    {
+      "id": "surfer2",
+      "standing": {
+        "publishedPelvis": 0.777089500686225,
+        "publishedHead": 1.3770895006862247,
+        "drawnHips": 0.7957455940218723,
+        "drawnNeck": 1.2747462667112082,
+        "drawnHead": 1.3375613698853688,
+        "footError": 1.9398618533354368e-06,
+        "phase": "standing",
+        "attached": true,
+        "rest": 0
+      },
+      "compressed": {
+        "publishedPelvis": 0.478131282624102,
+        "publishedHead": 1.0781312826241018,
+        "drawnHips": 0.5693776794771964,
+        "drawnNeck": 0.8959245252513752,
+        "drawnHead": 0.9388896457925858,
+        "footError": 1.754042435026857e-06,
+        "phase": "standing",
+        "attached": true,
+        "rest": -0.29960816914977423
+      },
+      "tucked": {
+        "publishedPelvis": 0.3320966733511508,
+        "publishedHead": 0.9320966733511507,
+        "drawnHips": 0.42582008183942177,
+        "drawnNeck": 0.8266861248640026,
+        "drawnHead": 0.8793485151422983,
+        "footError": 1.4350823755821282e-06,
+        "phase": "standing",
+        "attached": true,
+        "rest": -0.4498215678447794
+      },
+      "transitions": [
+        {
+          "drawnHead": 1.3640379011738084,
+          "drawnHips": 0.8230745951573436,
+          "publishedHead": 1.376559481181026,
+          "publishedPelvis": 0.776559481181026,
+          "footError": 1.8000241494038504e-06
+        },
+        {
+          "drawnHead": 1.3631538714318965,
+          "drawnHips": 0.8221781060752545,
+          "publishedHead": 1.3763654494119528,
+          "publishedPelvis": 0.7763654494119531,
+          "footError": 1.807485367814464e-06
+        },
+        {
+          "drawnHead": 1.362044195958,
+          "drawnHips": 0.8214156536970098,
+          "publishedHead": 1.375584242041848,
+          "publishedPelvis": 0.775584242041848,
+          "footError": 1.8129515925169438e-06
+        },
+        {
+          "drawnHead": 1.3606917429643965,
+          "drawnHips": 0.8207747186816824,
+          "publishedHead": 1.3738007874839289,
+          "publishedPelvis": 0.7738007874839291,
+          "footError": 1.8166326955411484e-06
+        },
+        {
+          "drawnHead": 1.3588368758172902,
+          "drawnHips": 0.8202822830797099,
+          "publishedHead": 1.3706645772285502,
+          "publishedPelvis": 0.7706645772285503,
+          "footError": 1.8178857609334276e-06
+        },
+        {
+          "drawnHead": 1.3563315556751225,
+          "drawnHips": 0.8200021867956543,
+          "publishedHead": 1.3659254618405434,
+          "publishedPelvis": 0.7659254618405437,
+          "footError": 1.8159543406234692e-06
+        },
+        {
+          "drawnHead": 1.3529397863161168,
+          "drawnHips": 0.8199590899046757,
+          "publishedHead": 1.3594259994750237,
+          "publishedPelvis": 0.7594259994750239,
+          "footError": 1.810288778295874e-06
+        },
+        {
+          "drawnHead": 1.3484112433029403,
+          "drawnHips": 0.8200632524756459,
+          "publishedHead": 1.3511004259523427,
+          "publishedPelvis": 0.7511004259523428,
+          "footError": 1.8009517768612188e-06
+        },
+        {
+          "drawnHead": 1.34173356606686,
+          "drawnHips": 0.8189885047019523,
+          "publishedHead": 1.340949430019581,
+          "publishedPelvis": 0.740949430019581,
+          "footError": 1.7941232775589818e-06
+        },
+        {
+          "drawnHead": 1.3321628945154507,
+          "drawnHips": 0.8149070336962411,
+          "publishedHead": 1.3290173088222732,
+          "publishedPelvis": 0.7290173088222734,
+          "footError": 1.7994028660997257e-06
+        },
+        {
+          "drawnHead": 1.317160719551125,
+          "drawnHips": 0.8045419020527628,
+          "publishedHead": 1.3153719537267132,
+          "publishedPelvis": 0.7153719537267134,
+          "footError": 1.8283471881740117e-06
+        },
+        {
+          "drawnHead": 1.2974255677473916,
+          "drawnHips": 0.7893025668604547,
+          "publishedHead": 1.3000892989763366,
+          "publishedPelvis": 0.7000892989763368,
+          "footError": 1.866130659946376e-06
+        },
+        {
+          "drawnHead": 1.274892328504378,
+          "drawnHips": 0.7724896752557591,
+          "publishedHead": 1.2832432867755135,
+          "publishedPelvis": 0.6832432867755137,
+          "footError": 1.8958599255637569e-06
+        },
+        {
+          "drawnHead": 1.2494441755029306,
+          "drawnHips": 0.7541736971174096,
+          "publishedHead": 1.2649024196055463,
+          "publishedPelvis": 0.6649024196055464,
+          "footError": 1.9167330021031193e-06
+        },
+        {
+          "drawnHead": 1.2209587971720481,
+          "drawnHips": 0.7344239802580642,
+          "publishedHead": 1.2451376660331865,
+          "publishedPelvis": 0.6451376660331867,
+          "footError": 1.9282646047705456e-06
+        },
+        {
+          "drawnHead": 1.1893860029831476,
+          "drawnHips": 0.7133620628159574,
+          "publishedHead": 1.2240719741825594,
+          "publishedPelvis": 0.6240719741825594,
+          "footError": 1.9307868724390714e-06
+        },
+        {
+          "drawnHead": 1.1548941437443048,
+          "drawnHips": 0.6912298060100194,
+          "publishedHead": 1.2019485903197678,
+          "publishedPelvis": 0.601948590319768,
+          "footError": 1.9252826175047016e-06
+        },
+        {
+          "drawnHead": 1.1179661589999987,
+          "drawnHips": 0.6684117375843415,
+          "publishedHead": 1.179155034312074,
+          "publishedPelvis": 0.5791550343120742,
+          "footError": 1.9134586475177307e-06
+        },
+        {
+          "drawnHead": 1.0792790232427683,
+          "drawnHips": 0.645359144852795,
+          "publishedHead": 1.1561481309043098,
+          "publishedPelvis": 0.55614813090431,
+          "footError": 1.8977060562204435e-06
+        },
+        {
+          "drawnHead": 1.03932727826444,
+          "drawnHips": 0.6224024201534686,
+          "publishedHead": 1.1332557829708316,
+          "publishedPelvis": 0.5332557829708316,
+          "footError": 1.8801012835660155e-06
+        },
+        {
+          "drawnHead": 0.9982345967544828,
+          "drawnHips": 0.5996614540624821,
+          "publishedHead": 1.1105838016022729,
+          "publishedPelvis": 0.5105838016022729,
+          "footError": 1.8616731670910479e-06
+        },
+        {
+          "drawnHead": 0.9562049603154392,
+          "drawnHips": 0.5772642300432719,
+          "publishedHead": 1.088247683119002,
+          "publishedPelvis": 0.48824768311900224,
+          "footError": 1.8428855592133051e-06
+        },
+        {
+          "drawnHead": 0.9308359238225518,
+          "drawnHips": 0.5555411185776878,
+          "publishedHead": 1.0665727223668982,
+          "publishedPelvis": 0.46657272236689834,
+          "footError": 1.8183108107167108e-06
+        },
+        {
+          "drawnHead": 0.9227746001074247,
+          "drawnHips": 0.5348606347185849,
+          "publishedHead": 1.0459253836680766,
+          "publishedPelvis": 0.44592538366807666,
+          "footError": 1.7865230343333448e-06
+        },
+        {
+          "drawnHead": 0.9146828804800712,
+          "drawnHips": 0.5156436173535573,
+          "publishedHead": 1.0267295064081228,
+          "publishedPelvis": 0.426729506408123,
+          "footError": 1.7549012875845798e-06
+        },
+        {
+          "drawnHead": 0.9068297678039867,
+          "drawnHips": 0.49813192740973455,
+          "publishedHead": 1.0092288133265326,
+          "publishedPelvis": 0.4092288133265326,
+          "footError": 1.7248112761234521e-06
+        },
+        {
+          "drawnHead": 0.8994291096277887,
+          "drawnHips": 0.4824303964635892,
+          "publishedHead": 0.9935274158583731,
+          "publishedPelvis": 0.39352741585837325,
+          "footError": 1.6968983678231793e-06
+        },
+        {
+          "drawnHead": 0.8926565167388363,
+          "drawnHips": 0.46854569257549966,
+          "publishedHead": 0.9796263905783593,
+          "publishedPelvis": 0.37962639057835945,
+          "footError": 1.671105295984994e-06
+        },
+        {
+          "drawnHead": 0.8867070138100736,
+          "drawnHips": 0.45658694690786994,
+          "publishedHead": 0.9676299926618293,
+          "publishedPelvis": 0.3676299926618293,
+          "footError": 1.6475095694865853e-06
+        },
+        {
+          "drawnHead": 0.8817113086831591,
+          "drawnHips": 0.44661527114535604,
+          "publishedHead": 0.9575976857123912,
+          "publishedPelvis": 0.3575976857123914,
+          "footError": 1.6262942599925081e-06
+        },
+        {
+          "drawnHead": 0.8776562503530082,
+          "drawnHips": 0.43845310109711116,
+          "publishedHead": 0.9493486872958169,
+          "publishedPelvis": 0.34934868729581703,
+          "footError": 1.6071496720644588e-06
+        },
+        {
+          "drawnHead": 0.8745488815318586,
+          "drawnHips": 0.4320246433399885,
+          "publishedHead": 0.9428059996497016,
+          "publishedPelvis": 0.34280599964970176,
+          "footError": 1.5900783677569978e-06
+        },
+        {
+          "drawnHead": 0.87233639945387,
+          "drawnHips": 0.427184948688321,
+          "publishedHead": 0.9378240222084685,
+          "publishedPelvis": 0.3378240222084686,
+          "footError": 1.5749776553872909e-06
+        },
+        {
+          "drawnHead": 0.8708839678865055,
+          "drawnHips": 0.4236479914832625,
+          "publishedHead": 0.9341147073789015,
+          "publishedPelvis": 0.33411470737890153,
+          "footError": 1.5614135157450237e-06
+        },
+        {
+          "drawnHead": 0.8700764902649897,
+          "drawnHips": 0.42119346598440177,
+          "publishedHead": 0.9314572408634929,
+          "publishedPelvis": 0.33145724086349304,
+          "footError": 1.5488431673961326e-06
+        },
+        {
+          "drawnHead": 0.8698045061192227,
+          "drawnHips": 0.4196330742171291,
+          "publishedHead": 0.9296650649784775,
+          "publishedPelvis": 0.32966506497847764,
+          "footError": 1.5363742387637609e-06
+        },
+        {
+          "drawnHead": 0.8699607007372303,
+          "drawnHips": 0.4187967244608356,
+          "publishedHead": 0.9285722656446115,
+          "publishedPelvis": 0.3285722656446117,
+          "footError": 1.5249714425125055e-06
+        },
+        {
+          "drawnHead": 0.8704278384742132,
+          "drawnHips": 0.418500941934928,
+          "publishedHead": 0.928000604799215,
+          "publishedPelvis": 0.3280006047992151,
+          "footError": 1.5144871361382627e-06
+        },
+        {
+          "drawnHead": 0.8711003910426187,
+          "drawnHips": 0.41858831574797106,
+          "publishedHead": 0.927799905937568,
+          "publishedPelvis": 0.327799905937568,
+          "footError": 1.5048442880771784e-06
+        },
+        {
+          "drawnHead": 0.8718835510494616,
+          "drawnHips": 0.41892907911134386,
+          "publishedHead": 0.9278510924529875,
+          "publishedPelvis": 0.32785109245298766,
+          "footError": 1.4960876021147963e-06
+        },
+        {
+          "drawnHead": 0.8727015538587303,
+          "drawnHips": 0.4194199842089147,
+          "publishedHead": 0.9280614442756696,
+          "publishedPelvis": 0.32806144427566974,
+          "footError": 1.4882683109981392e-06
+        },
+        {
+          "drawnHead": 0.8735201206634804,
+          "drawnHips": 0.4200016299937783,
+          "publishedHead": 0.9283751216204152,
+          "publishedPelvis": 0.3283751216204154,
+          "footError": 1.4812911324398461e-06
+        },
+        {
+          "drawnHead": 0.8743170240828051,
+          "drawnHips": 0.42063302136173475,
+          "publishedHead": 0.9287535127411818,
+          "publishedPelvis": 0.3287535127411818,
+          "footError": 1.4750741266019743e-06
+        },
+        {
+          "drawnHead": 0.8750764365202264,
+          "drawnHips": 0.4212837450577876,
+          "publishedHead": 0.9291679857129149,
+          "publishedPelvis": 0.3291679857129151,
+          "footError": 1.469550075549614e-06
+        },
+        {
+          "drawnHead": 0.8757869268262922,
+          "drawnHips": 0.42193045459042555,
+          "publishedHead": 0.9295963990114694,
+          "publishedPelvis": 0.32959639901146953,
+          "footError": 1.4646590759218141e-06
+        },
+        {
+          "drawnHead": 0.8764402585654675,
+          "drawnHips": 0.4225548168649013,
+          "publishedHead": 0.9300210920711125,
+          "publishedPelvis": 0.33002109207111263,
+          "footError": 1.460344589991187e-06
+        },
+        {
+          "drawnHead": 0.8770307019936769,
+          "drawnHips": 0.42314239253424274,
+          "publishedHead": 0.9304278235691348,
+          "publishedPelvis": 0.33042782356913486,
+          "footError": 1.4565518179597626e-06
+        },
+        {
+          "drawnHead": 0.8775546471464222,
+          "drawnHips": 0.4236820647489965,
+          "publishedHead": 0.9308052671026624,
+          "publishedPelvis": 0.3308052671026626,
+          "footError": 1.4532274961852344e-06
+        },
+        {
+          "drawnHead": 0.8780103705897189,
+          "drawnHips": 0.4241657482657623,
+          "publishedHead": 0.9311447913004641,
+          "publishedPelvis": 0.33114479130046415,
+          "footError": 1.4503204482467127e-06
+        },
+        {
+          "drawnHead": 0.8783978613701897,
+          "drawnHips": 0.4245882044308683,
+          "publishedHead": 0.9314403455807341,
+          "publishedPelvis": 0.3314403455807341,
+          "footError": 1.4477824220430823e-06
+        },
+        {
+          "drawnHead": 0.8787186521938233,
+          "drawnHips": 0.424946859272051,
+          "publishedHead": 0.9316883453688757,
+          "publishedPelvis": 0.3316883453688758,
+          "footError": 1.4455688997927666e-06
+        },
+        {
+          "drawnHead": 0.8789756308181813,
+          "drawnHips": 0.42524157423459696,
+          "publishedHead": 0.9318875038668544,
+          "publishedPelvis": 0.33188750386685456,
+          "footError": 1.4436397069699144e-06
+        },
+        {
+          "drawnHead": 0.8791728257704627,
+          "drawnHips": 0.4254743548581912,
+          "publishedHead": 0.9320385941551952,
+          "publishedPelvis": 0.3320385941551953,
+          "footError": 1.441959333353755e-06
+        },
+        {
+          "drawnHead": 0.8793151718340805,
+          "drawnHips": 0.4256490049933003,
+          "publishedHead": 0.9321441485166624,
+          "publishedPelvis": 0.33214414851666263,
+          "footError": 1.440496972167711e-06
+        },
+        {
+          "drawnHead": 0.8794082662984608,
+          "drawnHips": 0.4257707460640925,
+          "publishedHead": 0.9322081144217254,
+          "publishedPelvis": 0.33220811442172543,
+          "footError": 1.4392263035075662e-06
+        },
+        {
+          "drawnHead": 0.8794581285360434,
+          "drawnHips": 0.42584582523473596,
+          "publishedHead": 0.9322354914387903,
+          "publishedPelvis": 0.3322354914387904,
+          "footError": 1.4381250885878966e-06
+        },
+        {
+          "drawnHead": 0.8794709745256825,
+          "drawnHips": 0.42588113559730034,
+          "publishedHead": 0.9322319729091192,
+          "publishedPelvis": 0.3322319729091193,
+          "footError": 1.437174647951781e-06
+        },
+        {
+          "drawnHead": 0.879453015604081,
+          "drawnHips": 0.4258838677016318,
+          "publishedHead": 0.93220361260994,
+          "publishedPelvis": 0.33220361260994014,
+          "footError": 1.4363592795630062e-06
+        },
+        {
+          "drawnHead": 0.879410287801074,
+          "drawnHips": 0.42586120646186765,
+          "publishedHead": 0.9321565314185226,
+          "publishedPelvis": 0.33215653141852275,
+          "footError": 1.4356656768450037e-06
+        },
+        {
+          "drawnHead": 0.8793485151422983,
+          "drawnHips": 0.42582008183942177,
+          "publishedHead": 0.9320966733511507,
+          "publishedPelvis": 0.3320966733511508,
+          "footError": 1.4350823755821282e-06
+        }
+      ]
+    },
+    {
+      "id": "surfer3",
+      "standing": {
+        "publishedPelvis": 0.777089500686225,
+        "publishedHead": 1.3770895006862247,
+        "drawnHips": 0.8658785580680509,
+        "drawnNeck": 1.391827564666431,
+        "drawnHead": 1.4351504039759404,
+        "footError": 9.840475675201467e-07,
+        "phase": "standing",
+        "attached": true,
+        "rest": 0
+      },
+      "compressed": {
+        "publishedPelvis": 0.478131282624102,
+        "publishedHead": 1.0781312826241018,
+        "drawnHips": 0.6348954199219632,
+        "drawnNeck": 0.9954080057356564,
+        "drawnHead": 1.0252108590678217,
+        "footError": 9.919306843042455e-07,
+        "phase": "standing",
+        "attached": true,
+        "rest": -0.29960816914977423
+      },
+      "tucked": {
+        "publishedPelvis": 0.3320966733511508,
+        "publishedHead": 0.9320966733511507,
+        "drawnHips": 0.490958512253015,
+        "drawnNeck": 0.9388337228667766,
+        "drawnHead": 0.9757935118453774,
+        "footError": 9.242495355003051e-07,
+        "phase": "standing",
+        "attached": true,
+        "rest": -0.4498215678447794
+      },
+      "transitions": [
+        {
+          "drawnHead": 1.461094187774617,
+          "drawnHips": 0.8932339006395399,
+          "publishedHead": 1.376559481181026,
+          "publishedPelvis": 0.776559481181026,
+          "footError": 8.791617773768496e-07
+        },
+        {
+          "drawnHead": 1.4602259316954003,
+          "drawnHips": 0.8923364006609906,
+          "publishedHead": 1.3763654494119528,
+          "publishedPelvis": 0.7763654494119531,
+          "footError": 8.841608866984754e-07
+        },
+        {
+          "drawnHead": 1.4592506858412548,
+          "drawnHips": 0.891556966565281,
+          "publishedHead": 1.375584242041848,
+          "publishedPelvis": 0.775584242041848,
+          "footError": 8.881029180105391e-07
+        },
+        {
+          "drawnHead": 1.4576376789791103,
+          "drawnHips": 0.8908788558293068,
+          "publishedHead": 1.3738007874839289,
+          "publishedPelvis": 0.7738007874839291,
+          "footError": 8.904710289845294e-07
+        },
+        {
+          "drawnHead": 1.4555545153669642,
+          "drawnHips": 0.8903218786372095,
+          "publishedHead": 1.3706645772285502,
+          "publishedPelvis": 0.7706645772285503,
+          "footError": 8.914377485898199e-07
+        },
+        {
+          "drawnHead": 1.4526142561942672,
+          "drawnHips": 0.8899416061669672,
+          "publishedHead": 1.3659254618405434,
+          "publishedPelvis": 0.7659254618405437,
+          "footError": 8.902416524305434e-07
+        },
+        {
+          "drawnHead": 1.448591945521741,
+          "drawnHips": 0.889722822377663,
+          "publishedHead": 1.3594259994750237,
+          "publishedPelvis": 0.7594259994750239,
+          "footError": 8.867314206049488e-07
+        },
+        {
+          "drawnHead": 1.4429925474538503,
+          "drawnHips": 0.8890613447690139,
+          "publishedHead": 1.3511004259523427,
+          "publishedPelvis": 0.7511004259523428,
+          "footError": 8.827773689511471e-07
+        },
+        {
+          "drawnHead": 1.4357917772397104,
+          "drawnHips": 0.8870460125078515,
+          "publishedHead": 1.340949430019581,
+          "publishedPelvis": 0.740949430019581,
+          "footError": 8.820081262770261e-07
+        },
+        {
+          "drawnHead": 1.4258670802604787,
+          "drawnHips": 0.8819835829197281,
+          "publishedHead": 1.3290173088222732,
+          "publishedPelvis": 0.7290173088222734,
+          "footError": 8.896024790632385e-07
+        },
+        {
+          "drawnHead": 1.4106029210228104,
+          "drawnHips": 0.8705531962164899,
+          "publishedHead": 1.3153719537267132,
+          "publishedPelvis": 0.7153719537267134,
+          "footError": 9.129573116588468e-07
+        },
+        {
+          "drawnHead": 1.391049829333035,
+          "drawnHips": 0.8553126907260064,
+          "publishedHead": 1.3000892989763366,
+          "publishedPelvis": 0.7000892989763368,
+          "footError": 9.397942055897027e-07
+        },
+        {
+          "drawnHead": 1.3686008867370725,
+          "drawnHips": 0.8385051492250463,
+          "publishedHead": 1.2832432867755135,
+          "publishedPelvis": 0.6832432867755137,
+          "footError": 9.628087840943743e-07
+        },
+        {
+          "drawnHead": 1.3431516787945048,
+          "drawnHips": 0.8201954408721412,
+          "publishedHead": 1.2649024196055463,
+          "publishedPelvis": 0.6649024196055464,
+          "footError": 9.81623846432051e-07
+        },
+        {
+          "drawnHead": 1.314572811509102,
+          "drawnHips": 0.8004525590163892,
+          "publishedHead": 1.2451376660331865,
+          "publishedPelvis": 0.6451376660331867,
+          "footError": 9.960082617201579e-07
+        },
+        {
+          "drawnHead": 1.282802993412835,
+          "drawnHips": 0.77939785298178,
+          "publishedHead": 1.2240719741825594,
+          "publishedPelvis": 0.6240719741825594,
+          "footError": 1.006035281932763e-06
+        },
+        {
+          "drawnHead": 1.2480001844625768,
+          "drawnHips": 0.7572734674887579,
+          "publishedHead": 1.2019485903197678,
+          "publishedPelvis": 0.601948590319768,
+          "footError": 1.0120258596627316e-06
+        },
+        {
+          "drawnHead": 1.2106443129622309,
+          "drawnHips": 0.7344650766436986,
+          "publishedHead": 1.179155034312074,
+          "publishedPelvis": 0.5791550343120742,
+          "footError": 1.014542569964361e-06
+        },
+        {
+          "drawnHead": 1.1714146073264482,
+          "drawnHips": 0.7114255344002931,
+          "publishedHead": 1.1561481309043098,
+          "publishedPelvis": 0.55614813090431,
+          "footError": 1.014468527784699e-06
+        },
+        {
+          "drawnHead": 1.1307968076367132,
+          "drawnHips": 0.6884849658240155,
+          "publishedHead": 1.1332557829708316,
+          "publishedPelvis": 0.5332557829708316,
+          "footError": 1.0127053561257302e-06
+        },
+        {
+          "drawnHead": 1.088883644068132,
+          "drawnHips": 0.6657604738759663,
+          "publishedHead": 1.1105838016022729,
+          "publishedPelvis": 0.5105838016022729,
+          "footError": 1.0098887034465736e-06
+        },
+        {
+          "drawnHead": 1.0458458097792216,
+          "drawnHips": 0.6433775647294565,
+          "publishedHead": 1.088247683119002,
+          "publishedPelvis": 0.48824768311900224,
+          "footError": 1.0063862737073592e-06
+        },
+        {
+          "drawnHead": 1.0205522232904218,
+          "drawnHips": 0.6216656743849568,
+          "publishedHead": 1.0665727223668982,
+          "publishedPelvis": 0.46657272236689834,
+          "footError": 1.001204511422021e-06
+        },
+        {
+          "drawnHead": 1.0137750608846814,
+          "drawnHips": 0.6009929820991624,
+          "publishedHead": 1.0459253836680766,
+          "publishedPelvis": 0.44592538366807666,
+          "footError": 9.937972864962023e-07
+        },
+        {
+          "drawnHead": 1.0068535263751133,
+          "drawnHips": 0.5817810360957103,
+          "publishedHead": 1.0267295064081228,
+          "publishedPelvis": 0.426729506408123,
+          "footError": 9.992813400059358e-07
+        },
+        {
+          "drawnHead": 1.0000447002948805,
+          "drawnHips": 0.5642721434632603,
+          "publishedHead": 1.0092288133265326,
+          "publishedPelvis": 0.4092288133265326,
+          "footError": 9.94803457680849e-07
+        },
+        {
+          "drawnHead": 0.9935593408117684,
+          "drawnHips": 0.5485710204829433,
+          "publishedHead": 0.9935274158583731,
+          "publishedPelvis": 0.39352741585837325,
+          "footError": 9.901619004109064e-07
+        },
+        {
+          "drawnHead": 0.9875754175161471,
+          "drawnHips": 0.5346831989750273,
+          "publishedHead": 0.9796263905783593,
+          "publishedPelvis": 0.37962639057835945,
+          "footError": 9.85494004627101e-07
+        },
+        {
+          "drawnHead": 0.982286790872471,
+          "drawnHips": 0.5227168108028066,
+          "publishedHead": 0.9676299926618293,
+          "publishedPelvis": 0.3676299926618293,
+          "footError": 9.809086741976286e-07
+        },
+        {
+          "drawnHead": 0.9778286763200692,
+          "drawnHips": 0.5127326639180184,
+          "publishedHead": 0.9575976857123912,
+          "publishedPelvis": 0.3575976857123914,
+          "footError": 9.76519380265677e-07
+        },
+        {
+          "drawnHead": 0.9742042170557349,
+          "drawnHips": 0.5045525537268103,
+          "publishedHead": 0.9493486872958169,
+          "publishedPelvis": 0.34934868729581703,
+          "footError": 9.723244583360334e-07
+        },
+        {
+          "drawnHead": 0.971429801376116,
+          "drawnHips": 0.49810046712387873,
+          "publishedHead": 0.9428059996497016,
+          "publishedPelvis": 0.34280599964970176,
+          "footError": 9.683786044686822e-07
+        },
+        {
+          "drawnHead": 0.9694625761110253,
+          "drawnHips": 0.4932313428406716,
+          "publishedHead": 0.9378240222084685,
+          "publishedPelvis": 0.3378240222084686,
+          "footError": 9.647100533092854e-07
+        },
+        {
+          "drawnHead": 0.9681843249623858,
+          "drawnHips": 0.4896587464930862,
+          "publishedHead": 0.9341147073789015,
+          "publishedPelvis": 0.33411470737890153,
+          "footError": 9.61258305139622e-07
+        },
+        {
+          "drawnHead": 0.9674917545646773,
+          "drawnHips": 0.4871622705765748,
+          "publishedHead": 0.9314572408634929,
+          "publishedPelvis": 0.33145724086349304,
+          "footError": 9.579902505053295e-07
+        },
+        {
+          "drawnHead": 0.9672847081438923,
+          "drawnHips": 0.4855539708463258,
+          "publishedHead": 0.9296650649784775,
+          "publishedPelvis": 0.32966506497847764,
+          "footError": 9.548933020562741e-07
+        },
+        {
+          "drawnHead": 0.9674639365621297,
+          "drawnHips": 0.4846646057292058,
+          "publishedHead": 0.9285722656446115,
+          "publishedPelvis": 0.3285722656446117,
+          "footError": 9.519693814175345e-07
+        },
+        {
+          "drawnHead": 0.9679212855707583,
+          "drawnHips": 0.4843117620656459,
+          "publishedHead": 0.928000604799215,
+          "publishedPelvis": 0.3280006047992151,
+          "footError": 9.492045533378493e-07
+        },
+        {
+          "drawnHead": 0.9685594208603304,
+          "drawnHips": 0.4843395033325071,
+          "publishedHead": 0.927799905937568,
+          "publishedPelvis": 0.327799905937568,
+          "footError": 9.465987456895102e-07
+        },
+        {
+          "drawnHead": 0.9692909335756359,
+          "drawnHips": 0.4846202580714974,
+          "publishedHead": 0.9278510924529875,
+          "publishedPelvis": 0.32785109245298766,
+          "footError": 9.441821974380448e-07
+        },
+        {
+          "drawnHead": 0.9700466136225974,
+          "drawnHips": 0.48505295624833733,
+          "publishedHead": 0.9280614442756696,
+          "publishedPelvis": 0.32806144427566974,
+          "footError": 9.419858099947779e-07
+        },
+        {
+          "drawnHead": 0.9707958589874452,
+          "drawnHips": 0.4855789309976014,
+          "publishedHead": 0.9283751216204152,
+          "publishedPelvis": 0.3283751216204154,
+          "footError": 9.399968551372581e-07
+        },
+        {
+          "drawnHead": 0.9715192385003396,
+          "drawnHips": 0.48615768695531636,
+          "publishedHead": 0.9287535127411818,
+          "publishedPelvis": 0.3287535127411818,
+          "footError": 9.382027931152984e-07
+        },
+        {
+          "drawnHead": 0.9722032085646958,
+          "drawnHips": 0.48675919007166285,
+          "publishedHead": 0.9291679857129149,
+          "publishedPelvis": 0.3291679857129151,
+          "footError": 9.365925245577226e-07
+        },
+        {
+          "drawnHead": 0.9728382536982016,
+          "drawnHips": 0.4873603561662865,
+          "publishedHead": 0.9295963990114694,
+          "publishedPelvis": 0.32959639901146953,
+          "footError": 9.351549091335922e-07
+        },
+        {
+          "drawnHead": 0.973417759646783,
+          "drawnHips": 0.48794300519811984,
+          "publishedHead": 0.9300210920711125,
+          "publishedPelvis": 0.33002109207111263,
+          "footError": 9.338780883421846e-07
+        },
+        {
+          "drawnHead": 0.9739373558966691,
+          "drawnHips": 0.4884927524034974,
+          "publishedHead": 0.9304278235691348,
+          "publishedPelvis": 0.33042782356913486,
+          "footError": 9.324792709030373e-07
+        },
+        {
+          "drawnHead": 0.9743945356759728,
+          "drawnHips": 0.4889984499919924,
+          "publishedHead": 0.9308052671026624,
+          "publishedPelvis": 0.3308052671026626,
+          "footError": 9.312273786125538e-07
+        },
+        {
+          "drawnHead": 0.9747884212684543,
+          "drawnHips": 0.4894519103490172,
+          "publishedHead": 0.9311447913004641,
+          "publishedPelvis": 0.33114479130046415,
+          "footError": 9.301214374551007e-07
+        },
+        {
+          "drawnHead": 0.9751195902105178,
+          "drawnHips": 0.48984773534536313,
+          "publishedHead": 0.9314403455807341,
+          "publishedPelvis": 0.3314403455807341,
+          "footError": 9.291480908783359e-07
+        },
+        {
+          "drawnHead": 0.9753899139010953,
+          "drawnHips": 0.4901831482329412,
+          "publishedHead": 0.9316883453688757,
+          "publishedPelvis": 0.3316883453688758,
+          "footError": 9.282941362397849e-07
+        },
+        {
+          "drawnHead": 0.9756023855686603,
+          "drawnHips": 0.49045777710128735,
+          "publishedHead": 0.9318875038668544,
+          "publishedPelvis": 0.33188750386685456,
+          "footError": 9.275469757498458e-07
+        },
+        {
+          "drawnHead": 0.9757609311987577,
+          "drawnHips": 0.49067337482082585,
+          "publishedHead": 0.9320385941551952,
+          "publishedPelvis": 0.3320385941551953,
+          "footError": 9.268949418518293e-07
+        },
+        {
+          "drawnHead": 0.9758702068762984,
+          "drawnHips": 0.4908334828738411,
+          "publishedHead": 0.9321441485166624,
+          "publishedPelvis": 0.33214414851666263,
+          "footError": 9.263274750477646e-07
+        },
+        {
+          "drawnHead": 0.9759353908791166,
+          "drawnHips": 0.490943058524601,
+          "publishedHead": 0.9322081144217254,
+          "publishedPelvis": 0.33220811442172543,
+          "footError": 9.258352092969069e-07
+        },
+        {
+          "drawnHead": 0.9759619803529715,
+          "drawnHips": 0.4910080892384256,
+          "publishedHead": 0.9322354914387903,
+          "publishedPelvis": 0.3322354914387904,
+          "footError": 9.254099439295221e-07
+        },
+        {
+          "drawnHead": 0.9759556017634317,
+          "drawnHips": 0.4910352175963569,
+          "publishedHead": 0.9322319729091192,
+          "publishedPelvis": 0.3322319729091193,
+          "footError": 9.250445519923444e-07
+        },
+        {
+          "drawnHead": 0.9759218425019108,
+          "drawnHips": 0.4910313962005445,
+          "publishedHead": 0.93220361260994,
+          "publishedPelvis": 0.33220361260994014,
+          "footError": 9.247328471285821e-07
+        },
+        {
+          "drawnHead": 0.975866108691793,
+          "drawnHips": 0.49100358680216954,
+          "publishedHead": 0.9321565314185226,
+          "publishedPelvis": 0.33215653141852275,
+          "footError": 9.24469428285988e-07
+        },
+        {
+          "drawnHead": 0.9757935118453774,
+          "drawnHips": 0.490958512253015,
+          "publishedHead": 0.9320966733511507,
+          "publishedPelvis": 0.3320966733511508,
+          "footError": 9.242495355003051e-07
+        }
+      ]
+    },
+    {
+      "id": "surfer4",
+      "standing": {
+        "publishedPelvis": 0.777089500686225,
+        "publishedHead": 1.3770895006862247,
+        "drawnHips": 0.853605071133224,
+        "drawnNeck": 1.3692454887109924,
+        "drawnHead": 1.4090074343976757,
+        "footError": 9.787048631103794e-07,
+        "phase": "standing",
+        "attached": true,
+        "rest": 0
+      },
+      "compressed": {
+        "publishedPelvis": 0.478131282624102,
+        "publishedHead": 1.0781312826241018,
+        "drawnHips": 0.6223443434988501,
+        "drawnNeck": 0.9551489024573981,
+        "drawnHead": 0.9809176857321993,
+        "footError": 2.6678258624096595e-06,
+        "phase": "standing",
+        "attached": true,
+        "rest": -0.29960816914977423
+      },
+      "tucked": {
+        "publishedPelvis": 0.3320966733511508,
+        "publishedHead": 0.9320966733511507,
+        "drawnHips": 0.4784471970521882,
+        "drawnNeck": 0.89501533507953,
+        "drawnHead": 0.9272093682481047,
+        "footError": 2.806683196822864e-06,
+        "phase": "standing",
+        "attached": true,
+        "rest": -0.4498215678447794
+      },
+      "transitions": [
+        {
+          "drawnHead": 1.4355357978741745,
+          "drawnHips": 0.8808831915879357,
+          "publishedHead": 1.376559481181026,
+          "publishedPelvis": 0.776559481181026,
+          "footError": 9.750957990339678e-07
+        },
+        {
+          "drawnHead": 1.4346502389393605,
+          "drawnHips": 0.8799875513364368,
+          "publishedHead": 1.3763654494119528,
+          "publishedPelvis": 0.7763654494119531,
+          "footError": 9.751847213428592e-07
+        },
+        {
+          "drawnHead": 1.4335508146618252,
+          "drawnHips": 0.8792079017892341,
+          "publishedHead": 1.375584242041848,
+          "publishedPelvis": 0.775584242041848,
+          "footError": 9.750421359405327e-07
+        },
+        {
+          "drawnHead": 1.4319939669922128,
+          "drawnHips": 0.8785296021454104,
+          "publishedHead": 1.3738007874839289,
+          "publishedPelvis": 0.7738007874839291,
+          "footError": 9.744783758010636e-07
+        },
+        {
+          "drawnHead": 1.4296599949655133,
+          "drawnHips": 0.8779660642515091,
+          "publishedHead": 1.3706645772285502,
+          "publishedPelvis": 0.7706645772285503,
+          "footError": 9.731167234474365e-07
+        },
+        {
+          "drawnHead": 1.4265854188125715,
+          "drawnHips": 0.8775774642485412,
+          "publishedHead": 1.3659254618405434,
+          "publishedPelvis": 0.7659254618405437,
+          "footError": 9.70672060818984e-07
+        },
+        {
+          "drawnHead": 1.422543147429306,
+          "drawnHips": 0.8773541195235314,
+          "publishedHead": 1.3594259994750237,
+          "publishedPelvis": 0.7594259994750239,
+          "footError": 9.673473250936347e-07
+        },
+        {
+          "drawnHead": 1.4168171417995659,
+          "drawnHips": 0.8766847815146824,
+          "publishedHead": 1.3511004259523427,
+          "publishedPelvis": 0.7511004259523428,
+          "footError": 9.797846552216114e-07
+        },
+        {
+          "drawnHead": 1.4091848826711924,
+          "drawnHips": 0.8746329877734628,
+          "publishedHead": 1.340949430019581,
+          "publishedPelvis": 0.740949430019581,
+          "footError": 1.0328418303598685e-06
+        },
+        {
+          "drawnHead": 1.3989131110229798,
+          "drawnHips": 0.8694884000518182,
+          "publishedHead": 1.3290173088222732,
+          "publishedPelvis": 0.7290173088222734,
+          "footError": 1.1617319640020032e-06
+        },
+        {
+          "drawnHead": 1.3828046461222165,
+          "drawnHips": 0.8579164051678633,
+          "publishedHead": 1.3153719537267132,
+          "publishedPelvis": 0.7153719537267134,
+          "footError": 1.4040112733813554e-06
+        },
+        {
+          "drawnHead": 1.362495769965868,
+          "drawnHips": 0.842673818065636,
+          "publishedHead": 1.3000892989763366,
+          "publishedPelvis": 0.7000892989763368,
+          "footError": 1.6557957509543915e-06
+        },
+        {
+          "drawnHead": 1.3391764763930856,
+          "drawnHips": 0.8258639090065123,
+          "publishedHead": 1.2832432867755135,
+          "publishedPelvis": 0.6832432867755137,
+          "footError": 1.8745841338832535e-06
+        },
+        {
+          "drawnHead": 1.3127287094448583,
+          "drawnHips": 0.8075516834527583,
+          "publishedHead": 1.2649024196055463,
+          "publishedPelvis": 0.6649024196055464,
+          "footError": 2.0638374950818143e-06
+        },
+        {
+          "drawnHead": 1.2830090696706349,
+          "drawnHips": 0.7878062896106541,
+          "publishedHead": 1.2451376660331865,
+          "publishedPelvis": 0.6451376660331867,
+          "footError": 2.2263717467946628e-06
+        },
+        {
+          "drawnHead": 1.2499465625872441,
+          "drawnHips": 0.7667492040328016,
+          "publishedHead": 1.2240719741825594,
+          "publishedPelvis": 0.6240719741825594,
+          "footError": 2.3645806710633395e-06
+        },
+        {
+          "drawnHead": 1.2137003038394847,
+          "drawnHips": 0.7446225696052706,
+          "publishedHead": 1.2019485903197678,
+          "publishedPelvis": 0.601948590319768,
+          "footError": 2.4803389716849623e-06
+        },
+        {
+          "drawnHead": 1.1747670108835024,
+          "drawnHips": 0.721811829686302,
+          "publishedHead": 1.179155034312074,
+          "publishedPelvis": 0.5791550343120742,
+          "footError": 2.5757218453276558e-06
+        },
+        {
+          "drawnHead": 1.133856260684611,
+          "drawnHips": 0.6987695407462451,
+          "publishedHead": 1.1561481309043098,
+          "publishedPelvis": 0.55614813090431,
+          "footError": 2.6527888906437048e-06
+        },
+        {
+          "drawnHead": 1.0914825079280728,
+          "drawnHips": 0.6758258428428346,
+          "publishedHead": 1.1332557829708316,
+          "publishedPelvis": 0.5332557829708316,
+          "footError": 2.7130994877599167e-06
+        },
+        {
+          "drawnHead": 1.0477543854536684,
+          "drawnHips": 0.6530982741392023,
+          "publishedHead": 1.1105838016022729,
+          "publishedPelvis": 0.5105838016022729,
+          "footError": 2.7579990184036245e-06
+        },
+        {
+          "drawnHead": 1.0028623375421053,
+          "drawnHips": 0.630712726701274,
+          "publishedHead": 1.088247683119002,
+          "publishedPelvis": 0.48824768311900224,
+          "footError": 2.789382706721377e-06
+        },
+        {
+          "drawnHead": 0.9761720441900033,
+          "drawnHips": 0.6089987702938179,
+          "publishedHead": 1.0665727223668982,
+          "publishedPelvis": 0.46657272236689834,
+          "footError": 2.811684374867177e-06
+        },
+        {
+          "drawnHead": 0.9685782240489417,
+          "drawnHips": 0.5883246248559508,
+          "publishedHead": 1.0459253836680766,
+          "publishedPelvis": 0.44592538366807666,
+          "footError": 2.8224587333195646e-06
+        },
+        {
+          "drawnHead": 0.9609819753727007,
+          "drawnHips": 0.5691117096034964,
+          "publishedHead": 1.0267295064081228,
+          "publishedPelvis": 0.426729506408123,
+          "footError": 2.8214425583933776e-06
+        },
+        {
+          "drawnHead": 0.953633245028376,
+          "drawnHips": 0.5516022491075294,
+          "publishedHead": 1.0092288133265326,
+          "publishedPelvis": 0.4092288133265326,
+          "footError": 2.811099763114109e-06
+        },
+        {
+          "drawnHead": 0.9467276858949588,
+          "drawnHips": 0.5359009722122947,
+          "publishedHead": 0.9935274158583731,
+          "publishedPelvis": 0.39352741585837325,
+          "footError": 2.7935938527582e-06
+        },
+        {
+          "drawnHead": 0.940424415223394,
+          "drawnHips": 0.5220135894664204,
+          "publishedHead": 0.9796263905783593,
+          "publishedPelvis": 0.37962639057835945,
+          "footError": 2.773110248487598e-06
+        },
+        {
+          "drawnHead": 0.9349015021406669,
+          "drawnHips": 0.5100483922848871,
+          "publishedHead": 0.9676299926618293,
+          "publishedPelvis": 0.3676299926618293,
+          "footError": 2.7531008420705903e-06
+        },
+        {
+          "drawnHead": 0.9302776086319771,
+          "drawnHips": 0.5000662301664772,
+          "publishedHead": 0.9575976857123912,
+          "publishedPelvis": 0.3575976857123914,
+          "footError": 2.7360330758352786e-06
+        },
+        {
+          "drawnHead": 0.9265373552504754,
+          "drawnHips": 0.49188899646297596,
+          "publishedHead": 0.9493486872958169,
+          "publishedPelvis": 0.34934868729581703,
+          "footError": 2.7231466621059607e-06
+        },
+        {
+          "drawnHead": 0.9236832126350332,
+          "drawnHips": 0.4854407066493995,
+          "publishedHead": 0.9428059996497016,
+          "publishedPelvis": 0.34280599964970176,
+          "footError": 2.7150481243800187e-06
+        },
+        {
+          "drawnHead": 0.9216597985248759,
+          "drawnHips": 0.48057631098029857,
+          "publishedHead": 0.9378240222084685,
+          "publishedPelvis": 0.3378240222084686,
+          "footError": 2.711653516230282e-06
+        },
+        {
+          "drawnHead": 0.920338918267433,
+          "drawnHips": 0.47700943563396847,
+          "publishedHead": 0.9341147073789015,
+          "publishedPelvis": 0.33411470737890153,
+          "footError": 2.7122925474475176e-06
+        },
+        {
+          "drawnHead": 0.9196106789323907,
+          "drawnHips": 0.47451968390685534,
+          "publishedHead": 0.9314572408634929,
+          "publishedPelvis": 0.33145724086349304,
+          "footError": 2.7161901133845758e-06
+        },
+        {
+          "drawnHead": 0.9193705851778285,
+          "drawnHips": 0.47291904975624377,
+          "publishedHead": 0.9296650649784775,
+          "publishedPelvis": 0.32966506497847764,
+          "footError": 2.722500434544178e-06
+        },
+        {
+          "drawnHead": 0.919516722235412,
+          "drawnHips": 0.4720381510768161,
+          "publishedHead": 0.9285722656446115,
+          "publishedPelvis": 0.3285722656446117,
+          "footError": 2.7303766517376546e-06
+        },
+        {
+          "drawnHead": 0.9199393659198258,
+          "drawnHips": 0.47169440218960296,
+          "publishedHead": 0.928000604799215,
+          "publishedPelvis": 0.3280006047992151,
+          "footError": 2.739022928547094e-06
+        },
+        {
+          "drawnHead": 0.9205406668674294,
+          "drawnHips": 0.47173162975534,
+          "publishedHead": 0.927799905937568,
+          "publishedPelvis": 0.327799905937568,
+          "footError": 2.7477762133385385e-06
+        },
+        {
+          "drawnHead": 0.9212337029441622,
+          "drawnHips": 0.4720219128241242,
+          "publishedHead": 0.9278510924529875,
+          "publishedPelvis": 0.32785109245298766,
+          "footError": 2.7560841511927406e-06
+        },
+        {
+          "drawnHead": 0.9219502660329745,
+          "drawnHips": 0.47246383610583786,
+          "publishedHead": 0.9280614442756696,
+          "publishedPelvis": 0.32806144427566974,
+          "footError": 2.763594066062066e-06
+        },
+        {
+          "drawnHead": 0.922660320894505,
+          "drawnHips": 0.4729986196824462,
+          "publishedHead": 0.9283751216204152,
+          "publishedPelvis": 0.3283751216204154,
+          "footError": 2.7702746637452163e-06
+        },
+        {
+          "drawnHead": 0.9233449424915988,
+          "drawnHips": 0.4735856917222001,
+          "publishedHead": 0.9287535127411818,
+          "publishedPelvis": 0.3287535127411818,
+          "footError": 2.7761532717008382e-06
+        },
+        {
+          "drawnHead": 0.9239910500744667,
+          "drawnHips": 0.47419496080673,
+          "publishedHead": 0.9291679857129149,
+          "publishedPelvis": 0.3291679857129151,
+          "footError": 2.7812793734696717e-06
+        },
+        {
+          "drawnHead": 0.924589520652719,
+          "drawnHips": 0.47480330379573243,
+          "publishedHead": 0.9295963990114694,
+          "publishedPelvis": 0.32959639901146953,
+          "footError": 2.785713622970776e-06
+        },
+        {
+          "drawnHead": 0.9251340493066311,
+          "drawnHips": 0.4753925187854568,
+          "publishedHead": 0.9300210920711125,
+          "publishedPelvis": 0.33002109207111263,
+          "footError": 2.7895210605394116e-06
+        },
+        {
+          "drawnHead": 0.9256204887985271,
+          "drawnHips": 0.47594821446493457,
+          "publishedHead": 0.9304278235691348,
+          "publishedPelvis": 0.33042782356913486,
+          "footError": 2.792766981830398e-06
+        },
+        {
+          "drawnHead": 0.9260464736394581,
+          "drawnHips": 0.4764592497175892,
+          "publishedHead": 0.9308052671026624,
+          "publishedPelvis": 0.3308052671026626,
+          "footError": 2.79551447890061e-06
+        },
+        {
+          "drawnHead": 0.9264111941330119,
+          "drawnHips": 0.47691745457515544,
+          "publishedHead": 0.9311447913004641,
+          "publishedPelvis": 0.33114479130046415,
+          "footError": 2.7978230002763633e-06
+        },
+        {
+          "drawnHead": 0.9267152340210697,
+          "drawnHips": 0.47731745726469077,
+          "publishedHead": 0.9314403455807341,
+          "publishedPelvis": 0.3314403455807341,
+          "footError": 2.7997475266587044e-06
+        },
+        {
+          "drawnHead": 0.9269604216253804,
+          "drawnHips": 0.47765651394169384,
+          "publishedHead": 0.9316883453688757,
+          "publishedPelvis": 0.3316883453688758,
+          "footError": 2.8013382219563347e-06
+        },
+        {
+          "drawnHead": 0.9271496701402324,
+          "drawnHips": 0.47793429016711647,
+          "publishedHead": 0.9318875038668544,
+          "publishedPelvis": 0.33188750386685456,
+          "footError": 2.8026403468816835e-06
+        },
+        {
+          "drawnHead": 0.9272867997705594,
+          "drawnHips": 0.4781525791076396,
+          "publishedHead": 0.9320385941551952,
+          "publishedPelvis": 0.3320385941551953,
+          "footError": 2.8036943985843114e-06
+        },
+        {
+          "drawnHead": 0.9273763446345029,
+          "drawnHips": 0.4783149638871518,
+          "publishedHead": 0.9321441485166624,
+          "publishedPelvis": 0.33214414851666263,
+          "footError": 2.804536391383566e-06
+        },
+        {
+          "drawnHead": 0.9274233525568174,
+          "drawnHips": 0.4784264435463934,
+          "publishedHead": 0.9322081144217254,
+          "publishedPelvis": 0.33220811442172543,
+          "footError": 2.8051982156419267e-06
+        },
+        {
+          "drawnHead": 0.9274331876206248,
+          "drawnHips": 0.4784930465099539,
+          "publishedHead": 0.9322354914387903,
+          "publishedPelvis": 0.3322354914387904,
+          "footError": 2.8057080502637426e-06
+        },
+        {
+          "drawnHead": 0.9274113448704742,
+          "drawnHips": 0.47852145478564456,
+          "publishedHead": 0.9322319729091192,
+          "publishedPelvis": 0.3322319729091193,
+          "footError": 2.80609076370518e-06
+        },
+        {
+          "drawnHead": 0.9273632848215261,
+          "drawnHips": 0.47851865836314256,
+          "publishedHead": 0.93220361260994,
+          "publishedPelvis": 0.33220361260994014,
+          "footError": 2.806368309756985e-06
+        },
+        {
+          "drawnHead": 0.9272942931158781,
+          "drawnHips": 0.4784916540125098,
+          "publishedHead": 0.9321565314185226,
+          "publishedPelvis": 0.33215653141852275,
+          "footError": 2.806560080421518e-06
+        },
+        {
+          "drawnHead": 0.9272093682481047,
+          "drawnHips": 0.4784471970521882,
+          "publishedHead": 0.9320966733511507,
+          "publishedPelvis": 0.3320966733511508,
+          "footError": 2.806683196822864e-06
+        }
+      ]
+    }
+  ]
+}

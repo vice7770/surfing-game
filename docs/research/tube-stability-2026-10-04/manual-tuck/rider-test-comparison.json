@@ -1,0 +1,20 @@
+{
+  "baselineCommit": "e0b0e33b3117c990ce65f99cf9df207f2d8a7a3d",
+  "baselineTestCount": 117,
+  "baselineFailureCount": 9,
+  "candidateTestCount": 159,
+  "candidatePassCount": 152,
+  "candidateFailureCount": 7,
+  "newFailures": {},
+  "changedFailureMessages": {},
+  "unchangedPreexistingFailures": {
+    "lean, trim, crouch and heading hold Compress puts the weight over the front foot": "AssertionError: expected -0.2780896811201096 to be greater than -0.2635387281875907",
+    "lean, trim, crouch and heading hold the banked body (turn redesign) holds Compress taken mid-turn on flat water at 7 m/s": "AssertionError: expected false to be true // Object.is equality",
+    "lean, trim, crouch and heading hold the banked body (turn redesign) holds Compress taken mid-turn on flat water at 8 m/s": "AssertionError: expected false to be true // Object.is equality",
+    "lean, trim, crouch and heading hold the banked body (turn redesign) holds Compress taken mid-turn on flat water at 10 m/s": "AssertionError: expected 1.6017150447816593 to be less than or equal to 1.3718852223410694",
+    "lean, trim, crouch and heading hold the banked body (turn redesign) holds Compress taken mid-turn at 11 m/s no worse than before the top-turn plan": "AssertionError: expected 1.5010448459922558 to be less than or equal to 0.87",
+    "lean, trim, crouch and heading hold the banked body (turn redesign) makes a deep U at the bottom of the face": "Error: Expect test to fail",
+    "lean, trim, crouch and heading hold the banked body (turn redesign) turns at least as hard compressed as crouched, keeping as much speed": "Error: Expect test to fail"
+  },
+  "scope": "Final repaired partial-Compress source, including AttachedRider, deep-crouch, RideSession and stanceLadder suites. Baseline includes only committed AttachedRider suite. Two obsolete committed height expectations were replaced to cover intended manual-tuck/Compress distinction."
+}
