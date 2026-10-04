@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""Archive original evidence bytes and recorded identities; no experiment imports or replay."""
+import gzip, hashlib, json, math, pathlib, statistics
+
+R = pathlib.Path('/Users/regina/Desktop/Projects/surfing-game')
+A = R / 'docs/research/performance-2026-10-04/material-buffer-swap-rejected'
+ROOTS = {'v1': pathlib.Path('/private/tmp/surf-material-buffer-swap-20261004'), 'v2': pathlib.Path('/private/tmp/surf-material-buffer-swap-v2-20261004')}
+CHECKPOINT = 'c6982456ca9f73bd19527f8032a6790f1d2b8b85'
+READY = {'v1': 'b61acbe1b82904fef46e92c75ffae36ef96e94f85604a06405ef50b7f18a6b6d', 'v2': 'ffdf14abf1b455653678d77b084f1e605e77451a8ba44b98de07d829ce7e4df1'}
+sha = lambda b: hashlib.sha256(b).hexdigest()
+def write_json(path, value): path.write_text(json.dumps(value, indent=2) + '\n')
+def identity(path, b): return {'path': str(path), 'bytes': len(b), 'sha256': sha(b)}
+assert A.is_dir() and not (A / 'manifest.json').exists(), 'New archive only'
+payloads, known, decoded, closure = [], {}, {}, []
+for version, root in ROOTS.items():
+    assert sha((root / 'ready.json').read_bytes()) == READY[version]
+    for source in sorted(root.rglob('*')):
+        if not source.is_file() or source.is_symlink() or 'node_modules' in source.parts or 'compiled' in source.relative_to(root).parts: continue
+        relative = str(source.relative_to(root))
+        data = source.read_bytes()
+        name = relative + ('.txt' if source.suffix in {'.ts', '.mjs', '.py'} else '') + '.gz'
+        target = A / 'evidence' / version / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        packed = gzip.compress(data, compresslevel=9, mtime=0)
+        target.write_bytes(packed)
+        alias = identity(source, data)
+        payloads.append({'storedPath': str(target.relative_to(A)), 'storedBytes': len(packed), 'storedSha256': sha(packed), 'encoding': 'gzip-mtime0', 'expandedBytes': len(data), 'expandedSha256': sha(data), 'originalAliases': [alias], 'originalRelativePath': version + '/' + relative})
+        known[str(source)] = alias; decoded[version + '/' + relative] = data
+        if source.name in {'ready.json', 'compiled.json', 'pins.json', 'terminal.json'}: closure.append(version + '/' + relative)
+audit = pathlib.Path('/private/tmp/surf-material-swap-consumer-audit-20261004.md')
+data = audit.read_bytes(); packed = gzip.compress(data, compresslevel=9, mtime=0)
+target = A / 'evidence/consumer-audit.md.gz'; target.parent.mkdir(parents=True, exist_ok=True); target.write_bytes(packed)
+alias = identity(audit, data); known[str(audit)] = alias
+payloads.append({'storedPath': str(target.relative_to(A)), 'storedBytes': len(packed), 'storedSha256': sha(packed), 'encoding': 'gzip-mtime0', 'expandedBytes': len(data), 'expandedSha256': sha(data), 'originalAliases': [alias], 'originalRelativePath': 'consumer-audit.md'})
+prior_path = A.parent / 'foam-advection-cadence-rejected/manifest.json'
+prior_raw = prior_path.read_bytes(); prior = json.loads(prior_raw)
+reused = prior['reusedInputs']
+for record in reused:
+    packed = (A / record['storedPath']).read_bytes(); assert len(packed) == record['storedBytes'] and sha(packed) == record['storedSha256']
+    data = gzip.decompress(packed) if record['aliasEncoding'] == 'gzip-generated' else packed
+    for alias in record['originalAliases']:
+        assert len(data) == alias['bytes'] and sha(data) == alias['sha256']; known[alias['path']] = alias
+references = {}
+for version in ROOTS:
+    ready = json.loads(decoded[version + '/ready.json']); compiled = json.loads(decoded[version + '/compiled.json'])
+    assert ready['canonicalRuntimeCheckpoint'] == CHECKPOINT and compiled['readySha256'] == READY[version]
+    for record in ready['inputs'] + compiled['outputs']:
+        path = record['path']
+        if path in known:
+            assert known[path] == record
+            continue
+        if path in references: assert references[path]['originalAliases'] == [record]; continue
+        if path.startswith(str(R / 'src') + '/') or path.startswith(str(R / 'public') + '/'):
+            ref = {'kind': 'committed-source-or-asset-identity', 'commit': CHECKPOINT, 'repositoryPath': str(pathlib.Path(path).relative_to(R)), 'originalAliases': [record], 'availability': 'Recorded selected-commit byte identity, asserted by source freeze. Source/asset bytes are not copied or read by default verification; Git blob availability is not reverified here.'}
+        else:
+            kind = 'compiled-output-identity' if '/compiled/' in path else 'dependency-or-repository-config-identity'
+            ref = {'kind': kind, 'originalAliases': [record], 'availability': 'Identity-only external original path; not copied or required for default verification. Optional --originals requires continued availability and exact bytes.'}
+        references[path] = ref
+cost = json.loads(decoded['v2/cost-first/report.json']); proof = json.loads(decoded['v2/proof-first/report.json'])
+rows = cost['rows']; values = [(r['baseline']['totalMs'] - r['candidate']['totalMs']) / 8 for r in rows]
+mean = sum(values) / len(values)
+summary = {'schema': 'material-buffer-swap-rejection-summary/v1', 'decision': 'REJECT_NO_ADOPTION_NO_NATIVE', 'canonicalRuntimeCheckpoint': CHECKPOINT, 'readySha256': READY, 'v1ProofCases': 0, 'v1ProofFailure': json.loads(decoded['v1/proof-first/report.json'])['firstFailure'], 'v2ProofCases': proof['cases'], 'pairs': len(rows), 'ticksPerSample': 8, 'warmPairs': 4, 'completedTicksPerArm': cost['work']['completedTicksPerArm'], 'meanSavingPerStepMs': mean, 'medianSavingPerStepMs': statistics.median(values), 'minSavingPerStepMs': min(values), 'maxSavingPerStepMs': max(values), 'heuristicLower95Ms': mean - 1.96 * statistics.stdev(values) / math.sqrt(len(values)), 'positivePairs': sum(v > 0 for v in values), 'orderMeans': {order: sum(r['savingPerStepMs'] for r in rows if r['order'] == order) / 16 for order in ['AB', 'BA']}, 'baselineMeanPerStepMs': sum(r['baseline']['totalMs'] for r in rows) / (32 * 8), 'candidateMeanPerStepMs': sum(r['candidate']['totalMs'] for r in rows) / (32 * 8), 'thresholdMs': 0.1, 'thresholdPass': False, 'originalCaptureIncomplete': True, 'pausedF32ExportDistinctEpoch': True, 'nativeExecuted': False, 'candidateAdopted': False, 'boardRiderTrajectoryParityClaimed': False, 'gpuFpsOrVisualParityClaimed': False, 'outcomes': {v: {mode: {k: json.loads(decoded[v + '/root-' + mode + '-first/terminal.json'])[k] for k in ['valid', 'pinsUnchanged', 'startedAt', 'endedAt', 'elapsedSeconds']} for mode in (['checks', 'proof'] if v == 'v1' else ['checks', 'proof', 'cost'])} for v in ROOTS}}
+write_json(A / 'summary.json', summary)
+generated = []
+for name in ['README.md', 'summary.json', 'verify.py', 'archive.py.txt']:
+    data = (A / name).read_bytes(); generated.append(identity(name, data))
+manifest = {'schema': 'material-buffer-swap-rejected-archive/v1', 'status': 'Rejected at first complete-path V2 CPU cost gate; V1 packaging failure and unchanged-candidate V2 repair retained.', 'canonicalRuntimeCheckpoint': CHECKPOINT, 'scratchOriginalRoots': {k: str(v) for k, v in ROOTS.items()}, 'readySha256': READY, 'payloads': payloads, 'reusedInputs': reused, 'authorityLinks': [{'path': '../foam-advection-cadence-rejected/manifest.json', 'bytes': len(prior_raw), 'sha256': sha(prior_raw)}], 'identityReferences': sorted(references.values(), key=lambda r: r['originalAliases'][0]['path']), 'closureAuthorities': sorted(closure), 'generatedRecords': generated, 'dependencyLink': json.loads(decoded['v2/ready.json'])['dependencyLink'], 'scope': {'archiveOnlyBytesAndStoredRowArithmetic': True, 'numericalExperimentReexecuted': False, 'candidateSourceChanged': False, 'v1FirstFailurePreserved': True, 'v1CostAndNativeNotRun': True, 'v2FirstCostRejected': True, 'nativeNotRun': True, 'noAdoption': True, 'noBoardRiderTrajectoryOrGpuFpsVisualParityClaim': True, 'wholeSourceAndCompiledModulesStored': False, 'defaultVerificationRequiresOriginalExternalPaths': False}, 'storedPayloadCount': len(payloads), 'storedPayloadBytes': sum(p['storedBytes'] for p in payloads)}
+write_json(A / 'manifest.json', manifest)
+print(json.dumps({'archived': True, 'payloads': len(payloads), 'bytes': manifest['storedPayloadBytes'], 'identityReferences': len(references), 'summary': {k: summary[k] for k in ['meanSavingPerStepMs', 'medianSavingPerStepMs', 'heuristicLower95Ms', 'positivePairs', 'baselineMeanPerStepMs', 'candidateMeanPerStepMs']}}, indent=2))

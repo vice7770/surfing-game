@@ -1,0 +1,13 @@
+{
+  "valid": true,
+  "manifestSha256": "b9bd5ce0d28f4978ecf0e57a81f6f3fe70eadd1323601672caaaf802e2a21e3c",
+  "storedPayloads": 60,
+  "storedPayloadBytes": 287167,
+  "borrowedInputs": 7,
+  "identityReferences": 578,
+  "closureChecks": 4192,
+  "proofCasesChecked": 6,
+  "costRowsChecked": 32,
+  "originalPathsChecked": 645,
+  "numericalExperimentReexecuted": false
+}

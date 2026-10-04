@@ -1,0 +1,126 @@
+{
+  "schema": "material-buffer-swap-rejection-summary/v1",
+  "decision": "REJECT_NO_ADOPTION_NO_NATIVE",
+  "canonicalRuntimeCheckpoint": "c6982456ca9f73bd19527f8032a6790f1d2b8b85",
+  "readySha256": {
+    "v1": "b61acbe1b82904fef46e92c75ffae36ef96e94f85604a06405ef50b7f18a6b6d",
+    "v2": "ffdf14abf1b455653678d77b084f1e605e77451a8ba44b98de07d829ce7e4df1"
+  },
+  "v1ProofCases": 0,
+  "v1ProofFailure": "Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'three' imported from /private/tmp/surf-material-buffer-swap-20261004/compiled/baseline.mjs",
+  "v2ProofCases": [
+    {
+      "name": "Small canonical transformed generic default eight complete mocked ticks",
+      "ticks": 8,
+      "allFiveMaterialArraysExact": true,
+      "hostWaterCrashLipSourcesListsSnapshotsAndCurrentPhysicalSamplesExact": true,
+      "encodedStateExact": true,
+      "defaultIdentitiesStable": true,
+      "experimentalOwningPairsAlternateOnly": false,
+      "originalMaterialDataDescriptors": true
+    },
+    {
+      "name": "Small canonical experimental all-five swap eight complete mocked ticks",
+      "ticks": 8,
+      "allFiveMaterialArraysExact": true,
+      "hostWaterCrashLipSourcesListsSnapshotsAndCurrentPhysicalSamplesExact": true,
+      "encodedStateExact": true,
+      "defaultIdentitiesStable": true,
+      "experimentalOwningPairsAlternateOnly": true,
+      "originalMaterialDataDescriptors": true
+    },
+    {
+      "name": "Retained 116k experimental all-five swap eight complete mocked ticks",
+      "ticks": 8,
+      "allFiveMaterialArraysExact": true,
+      "hostWaterCrashLipSourcesListsSnapshotsAndCurrentPhysicalSamplesExact": true,
+      "encodedStateExact": true,
+      "defaultIdentitiesStable": true,
+      "experimentalOwningPairsAlternateOnly": true,
+      "originalMaterialDataDescriptors": true
+    },
+    {
+      "name": "Eight full-resolution material ticks on stretched rows with dry clearing, pulses, stale prior stencil, +2/-3/full-width shifts, splash/plunge/trapped air",
+      "allFiveExact": true,
+      "sourceAndListsExact": true,
+      "currentPhysicalSamplesExact": true,
+      "originalSharedStencilConsumedOnce": true
+    },
+    {
+      "name": "Eight ordinary fallback-departure ticks and unchanged nonpositive no-op",
+      "allFiveExact": true,
+      "owningPairsOnly": true
+    },
+    {
+      "name": "Odd/even current-pair export and read-only capture; direct F64 and unchanged F32-header restore into opposite current parity, then eight complete CPU ticks",
+      "stateHeaderUnchanged": true,
+      "originalTkeResetRetained": true,
+      "allFiveAndCurrentPhysicalSamplesExact": true
+    }
+  ],
+  "pairs": 32,
+  "ticksPerSample": 8,
+  "warmPairs": 4,
+  "completedTicksPerArm": 288,
+  "meanSavingPerStepMs": -0.2595628242187562,
+  "medianSavingPerStepMs": -0.18164318750001485,
+  "minSavingPerStepMs": -1.2185885000000667,
+  "maxSavingPerStepMs": 0.9262708749998865,
+  "heuristicLower95Ms": -0.42481210504118716,
+  "positivePairs": 11,
+  "orderMeans": {
+    "AB": -0.32121192187501535,
+    "BA": -0.19791372656249706
+  },
+  "baselineMeanPerStepMs": 9.337882003906241,
+  "candidateMeanPerStepMs": 9.597444828124997,
+  "thresholdMs": 0.1,
+  "thresholdPass": false,
+  "originalCaptureIncomplete": true,
+  "pausedF32ExportDistinctEpoch": true,
+  "nativeExecuted": false,
+  "candidateAdopted": false,
+  "boardRiderTrajectoryParityClaimed": false,
+  "gpuFpsOrVisualParityClaimed": false,
+  "outcomes": {
+    "v1": {
+      "checks": {
+        "valid": true,
+        "pinsUnchanged": true,
+        "startedAt": "2026-10-04T08:30:18.875843+00:00",
+        "endedAt": "2026-10-04T08:30:31.568389+00:00",
+        "elapsedSeconds": 12.692452208022587
+      },
+      "proof": {
+        "valid": false,
+        "pinsUnchanged": true,
+        "startedAt": "2026-10-04T08:30:40.671708+00:00",
+        "endedAt": "2026-10-04T08:30:40.903972+00:00",
+        "elapsedSeconds": 0.23216691601555794
+      }
+    },
+    "v2": {
+      "checks": {
+        "valid": true,
+        "pinsUnchanged": true,
+        "startedAt": "2026-10-04T08:36:05.548319+00:00",
+        "endedAt": "2026-10-04T08:36:17.748880+00:00",
+        "elapsedSeconds": 12.20048025000142
+      },
+      "proof": {
+        "valid": true,
+        "pinsUnchanged": true,
+        "startedAt": "2026-10-04T08:36:21.040642+00:00",
+        "endedAt": "2026-10-04T08:36:23.252033+00:00",
+        "elapsedSeconds": 2.2113115419633687
+      },
+      "cost": {
+        "valid": false,
+        "pinsUnchanged": true,
+        "startedAt": "2026-10-04T08:36:41.510606+00:00",
+        "endedAt": "2026-10-04T08:36:49.041121+00:00",
+        "elapsedSeconds": 7.530454792024102
+      }
+    }
+  }
+}
