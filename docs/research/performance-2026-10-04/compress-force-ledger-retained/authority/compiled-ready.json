@@ -1,0 +1,138 @@
+{
+  "edition": "compact-output-four-test-pass-one-bundle-compiled-ready",
+  "frozenUtc": "2026-10-04T01:41:44.522896+00:00",
+  "allPreparedAndFrozenFirstReferencesUnchanged": true,
+  "all35SourceAuthorityRecordsUnchanged": true,
+  "syntheticOutputOnlyTestsPassed": 4,
+  "testsFailed": 0,
+  "bundleExitCode": 0,
+  "numericalDiagnosticRuns": 0,
+  "productionChanges": [],
+  "rootCompiledReviewAndFreshLeaseRequired": true,
+  "preparedFiles": [
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/schema.ts",
+      "bytes": 4187,
+      "sha256": "848c5a92792c79de6d7c1001ae7436ce4ec20814a6527376f3ddd12bbbcc4b4b"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/schema.test.ts",
+      "bytes": 3149,
+      "sha256": "df862b4de6ce084df0e860a2c7286d233988ffdfa3693f3183b2b79e01ecade1"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/driver.ts",
+      "bytes": 13597,
+      "sha256": "5cff9d0b0d54590b7b1a6257f0874160b5694916e7502feb01d0107fc341f050"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/driver.output-only.patch",
+      "bytes": 6407,
+      "sha256": "5ad4d213e0a26310a5343566983df2aa31849627af0c28ac34c29832d1d0b253"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/launcher.py",
+      "bytes": 1441,
+      "sha256": "4d7913c1573dd3aa5b30bb15f4b54d4cf5d18c9feae45a5b98e901b3ed8f3e93"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/vitest.config.ts",
+      "bytes": 185,
+      "sha256": "65d90939c8c389554450c42d31e3d3e9ab13db1af7e5bd4baa09b3e15dbbcea0"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/authority.json",
+      "bytes": 9992,
+      "sha256": "10d68c5371dfcc09a03db879ca72325fc35e671853e6a4793f7d98a064a56008"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/plan.md",
+      "bytes": 4747,
+      "sha256": "3ea77decd2a4dc744b1aadd42098eb87877165312f26840b3e1867e6867c7c1d"
+    }
+  ],
+  "frozenFirstReferences": [
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/observer.ts",
+      "bytes": 11769,
+      "sha256": "aaa021c7d6c2521bf0a67579440426ecfb73b458280b85787030ff9e4d6d3363"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/driver.ts",
+      "bytes": 11899,
+      "sha256": "5609a6a3294c138bc22a94bd98cb1c4ca1a1c45dee9a708b3a03d713e0e7c080"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/driver.mjs",
+      "bytes": 529407,
+      "sha256": "7b913fdc574d09182ae8ec54894f294e52512773946487a380de8ba8ec622caa"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/compiled-ready.json",
+      "bytes": 4058,
+      "sha256": "a5748fb19fafa7fa3c1785c62147c73f38988f150f410f704c9faf3af9105339"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/authority.json",
+      "bytes": 9992,
+      "sha256": "10d68c5371dfcc09a03db879ca72325fc35e671853e6a4793f7d98a064a56008"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/diagnostic-terminal.freeze.json",
+      "bytes": 1386,
+      "sha256": "f2a273129fda4708f0c470376d33a82c9122ccedba35ddda39689c231bd52b0b"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/report.oversize-summary.json",
+      "bytes": 88,
+      "sha256": "0a702b848bff3dccd8044a14f767b32a94f33a46e0055a95e193c25bcd9620fd"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-20261004/interpretation.md",
+      "bytes": 1535,
+      "sha256": "2dd135b650ee8cf48e819c8c862c8f8a95e31a11cc6a0b41100ec4dc5f5ef348"
+    }
+  ],
+  "compiledVerificationRecords": [
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/ready.json",
+      "bytes": 3495,
+      "sha256": "128e0bf72c10ba3418217961fb95d80761de02b9a72bec778d89fc50012d61f7"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/schema-tests.log",
+      "bytes": 645,
+      "sha256": "269654021661f99f5af38ec1b861834c33fb18fb755d565e599a12d0e481006d"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/schema-tests-process.json",
+      "bytes": 368,
+      "sha256": "c1624bcfbaa7f12605664b2926ba8445c74ab3afaba416618b03203f39674997"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/schema-tests-terminal.json",
+      "bytes": 438,
+      "sha256": "d60b8c33084f1c17c7193554aa986150bffb91268f0dfc05042e7f0ed99e451f"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/bundle.log",
+      "bytes": 87,
+      "sha256": "c308168e67969cab0b6b34b591048ca9c4b464f9ee4afe5e92333148bdaf317e"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/bundle-process.json",
+      "bytes": 438,
+      "sha256": "52df4ad96366256e1def84d7c563dadb2b5a4022ee67dfe5ff2d31ee835774da"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/bundle-terminal.json",
+      "bytes": 508,
+      "sha256": "070e4e0fc923ecd930bdf5c6469b93021b16defe73e772db58eed9f149f6d737"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/driver.mjs",
+      "bytes": 534257,
+      "sha256": "19a549d6af5d3a95dc22e6bf53ce139abb0ccac8ec680d6e99f0b9dafe29ca8e"
+    }
+  ]
+}

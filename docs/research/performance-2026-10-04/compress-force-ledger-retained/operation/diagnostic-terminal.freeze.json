@@ -1,0 +1,67 @@
+{
+  "edition": "one-retained-compact-compress-diagnostic-terminal",
+  "frozenUtc": "2026-10-04T01:47:35.970819+00:00",
+  "actualOutputValuesRoundtrip": true,
+  "validRecordedDiagnostic": true,
+  "paritySteps": 864,
+  "observedSubsteps": 27004,
+  "sourceAndCompiledAuthorityUnchanged": true,
+  "rawYawSummaryBugPreserved": true,
+  "derivedYawPureRecordedStepSelection": true,
+  "rawEncodedBytes": 64258882,
+  "rawEncodedSha256": "e6aafecbe0111cc8af9c024d9199c852cf425a5a683743b8646e4f84a67a0422",
+  "noPhysicsCausalFpsTubeOrAdoptionClaim": true,
+  "noAutomaticRepairOrRetry": true,
+  "records": [
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/compiled-ready.json",
+      "bytes": 5319,
+      "sha256": "e9dfd423f604cafe5e9527294143b1f86f3d7afe55d26e54ca021e535243131d"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/report.json.gz",
+      "bytes": 19064261,
+      "sha256": "aaf554d89a123805abddbcc96d4cd9daefae17bcf3538bfbf179e30c71ea4f1e"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/stdout.txt",
+      "bytes": 4586,
+      "sha256": "b81399f9bf24ed196eba3ca3668c56d1ebb794d52f174d6444b74a24e995ed95"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/terminal.json",
+      "bytes": 389,
+      "sha256": "a9b3d9745caa824259d0f9e5e12fd6aaaec74b7137753bd6ac4cd36f0fd9fb50"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/postprocess.py",
+      "bytes": 7773,
+      "sha256": "71e77b0a37bb08b4171564ac639ecb930e57987465ff88f4c59d3464cc6bfec8"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/postprocess.stdout.txt",
+      "bytes": 8784,
+      "sha256": "8beba396d1cd504cbc02e39d110b9a65809dbc986289d022ac4251aa40dd5e03"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/postprocess.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/derived.json",
+      "bytes": 580626,
+      "sha256": "e6398ce5cc75d0aac54c56ce41c3df1e2b7bd72a0dccd87840c2397a20be17b9"
+    },
+    {
+      "path": "/private/tmp/compress-force-ledger-compact-20261004/interpretation.md",
+      "bytes": 6901,
+      "sha256": "86e97b2278e0b83401605f41405427fd04737bb965d9de9ef33b61b0504cd5ae"
+    }
+  ]
+}

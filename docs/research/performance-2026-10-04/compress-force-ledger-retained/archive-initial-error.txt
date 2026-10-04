@@ -1,0 +1,7 @@
+Filesystem archive helper exited 1 at final README-link validation after payload verification.
+Traceback (most recent call last):
+  File "/private/tmp/archive-compress-retained-20261004.py", line 189, in <module>
+    assert (DEST / link).exists(), link
+           ~~~~~~~~~~~~~~~~~~~~^^
+AssertionError: root-review-ready.json
+No physics, diagnostic, tests or bundle ran. The missing file was generated archive metadata, not evidence.

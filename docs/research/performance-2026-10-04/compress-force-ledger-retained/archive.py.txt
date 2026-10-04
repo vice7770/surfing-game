@@ -1,0 +1,225 @@
+"""Archive existing evidence bytes only; no imports of physics or execution tools."""
+from pathlib import Path
+import datetime, gzip, hashlib, io, json, re
+
+REPO = Path('/Users/regina/Desktop/Projects/surfing-game')
+ORIGIN = Path('/private/tmp/compress-force-ledger-compact-20261004')
+FIRST = Path('/private/tmp/compress-force-ledger-20261004')
+DEST = REPO / 'docs/research/performance-2026-10-04/compress-force-ledger-retained'
+HISTORY = DEST.parent / 'compress-force-ledger-output-limit'
+sha = lambda blob: hashlib.sha256(blob).hexdigest()
+def describe(path):
+    blob = path.read_bytes()
+    return {'originalPath': str(path), 'bytes': len(blob), 'sha256': sha(blob)}
+def write_json(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + '\n')
+
+assert not DEST.exists(), 'New archive only; refuse to overwrite evidence'
+compiled = json.loads((ORIGIN / 'compiled-ready.json').read_bytes())
+terminal = json.loads((ORIGIN / 'diagnostic-terminal.freeze.json').read_bytes())
+assert compiled['all35SourceAuthorityRecordsUnchanged'] is True
+assert terminal['validRecordedDiagnostic'] is True
+assert terminal['paritySteps'] == 864 and terminal['observedSubsteps'] == 27004
+expected = {r['path']: r for key in ['preparedFiles', 'frozenFirstReferences', 'compiledVerificationRecords'] for r in compiled[key]}
+expected.update({r['path']: r for r in terminal['records']})
+for path, record in expected.items():
+    actual = describe(Path(path))
+    assert actual['bytes'] == record['bytes'] and actual['sha256'] == record['sha256'], path
+assert sha((ORIGIN / 'compiled-ready.json').read_bytes()) == 'e9dfd423f604cafe5e9527294143b1f86f3d7afe55d26e54ca021e535243131d'
+assert sha((ORIGIN / 'diagnostic-terminal.freeze.json').read_bytes()) == 'a76b40f721f179d11b126efb0815cbb4793675253fe7603543b550f67493e685'
+DEST.mkdir(parents=True)
+payloads = []
+aliases = []
+external = []
+
+def archive(source, relative, encoding='identity', expanded=None, original_aliases=()):
+    original = source.read_bytes()
+    if encoding == 'gzip-mtime0':
+        buffer = io.BytesIO()
+        with gzip.GzipFile(filename='', mode='wb', fileobj=buffer, mtime=0, compresslevel=9) as stream:
+            stream.write(original)
+        stored = buffer.getvalue()
+        assert stored[4:8] == b'\0\0\0\0'
+        assert gzip.decompress(stored) == original
+        expanded = original
+    elif encoding == 'retained-original-gzip':
+        stored = original
+        assert expanded is not None and gzip.decompress(stored) == expanded
+    else:
+        assert encoding == 'identity'
+        stored = original
+        expanded = original
+    target = DEST / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(stored)
+    assert target.read_bytes() == stored
+    record = {
+        'storedPath': relative, 'encoding': encoding,
+        'storedBytes': len(stored), 'storedSha256': sha(stored),
+        'expandedBytes': len(expanded), 'expandedSha256': sha(expanded),
+        'original': describe(source),
+        'originalAliases': [describe(Path(p)) for p in original_aliases],
+    }
+    for alias in record['originalAliases']:
+        assert Path(alias['originalPath']).read_bytes() == original
+    payloads.append(record)
+    return record
+
+raw = gzip.decompress((ORIGIN / 'report.json.gz').read_bytes())
+assert len(raw) == 64258882 and sha(raw) == 'e6aafecbe0111cc8af9c024d9199c852cf425a5a683743b8646e4f84a67a0422'
+primary = archive(ORIGIN / 'report.json.gz', 'report.json.gz', 'retained-original-gzip', raw)
+assert primary['storedBytes'] == 19064261
+del raw
+derived = archive(ORIGIN / 'derived.json', 'derived.json.gz', 'gzip-mtime0')
+archive(ORIGIN / 'interpretation.md', 'interpretation.md')
+for name in ['schema.ts', 'schema.test.ts', 'driver.ts', 'launcher.py', 'vitest.config.ts']:
+    archive(ORIGIN / name, 'source/' + name + '.txt', original_aliases=[HISTORY / 'SOURCE-ONLY' / (name + '.txt')])
+for name in ['driver.output-only.patch', 'plan.md']:
+    archive(ORIGIN / name, 'source/' + name, original_aliases=[HISTORY / 'SOURCE-ONLY' / name])
+archive(ORIGIN / 'ready.json', 'authority/prepared-ready.json', original_aliases=[HISTORY / 'SOURCE-ONLY/ready.json'])
+archive(ORIGIN / 'compiled-ready.json', 'authority/compiled-ready.json')
+for source, relative in [
+    ('schema-tests.log', 'checks/schema-tests.log'),
+    ('schema-tests-process.json', 'checks/process.json'),
+    ('schema-tests-terminal.json', 'checks/terminal.json'),
+    ('bundle.log', 'bundle/bundle.log'),
+    ('bundle-process.json', 'bundle/process.json'),
+    ('bundle-terminal.json', 'bundle/terminal.json'),
+    ('stdout.txt', 'operation/stdout.txt'),
+    ('stderr.txt', 'operation/stderr.txt'),
+    ('terminal.json', 'operation/terminal.json'),
+    ('diagnostic-terminal.freeze.json', 'operation/diagnostic-terminal.freeze.json'),
+    ('postprocess.py', 'derivation/postprocess.py.txt'),
+    ('postprocess.stdout.txt', 'derivation/stdout.txt'),
+]:
+    archive(ORIGIN / source, relative)
+aliases.append({
+    'logicalArchivedPath': 'derivation/stderr.txt', 'storedPath': 'operation/stderr.txt',
+    'original': describe(ORIGIN / 'postprocess.stderr.txt'), 'reason': 'Exact byte-identical empty stderr; one stored payload',
+})
+assert (ORIGIN / 'postprocess.stderr.txt').read_bytes() == (ORIGIN / 'stderr.txt').read_bytes()
+archive(Path(__file__), 'archive.py.txt')
+
+def history_reference(relative, original_paths, role):
+    target = HISTORY / relative
+    byte_description = describe(target)
+    refs = [describe(Path(p)) for p in original_paths]
+    for ref in refs:
+        assert ref['bytes'] == byte_description['bytes'] and ref['sha256'] == byte_description['sha256']
+    record = {'kind': 'existing-durable-byte-reference', 'relativePath': '../compress-force-ledger-output-limit/' + relative,
+              'bytes': byte_description['bytes'], 'sha256': byte_description['sha256'],
+              'originalAliases': refs, 'role': role}
+    external.append(record)
+    return record
+
+source_authority = history_reference('authority/source-authority.json', [ORIGIN / 'authority.json', FIRST / 'authority.json'], 'Exact shared 35-file dependency authority; no dependency clone')
+history_reference('source/observer.ts.txt', [FIRST / 'observer.ts'], 'Original unchanged numerical-method observer imported by compact driver')
+history_reference('source/driver.ts.txt', [FIRST / 'driver.ts'], 'Original driver used as direct output-only patch base')
+history_reference('bundle/compiled-ready.json', [FIRST / 'compiled-ready.json'], 'First original compiled identity and checks, not successful numerical output')
+history_reference('operation/diagnostic-terminal.freeze.json', [FIRST / 'diagnostic-terminal.freeze.json'], 'Historical output-limit failure freeze remains unchanged')
+history_reference('operation/report.oversize-summary.json', [FIRST / 'report.oversize-summary.json'], '94,521,423-byte failed original output; no primary retained report')
+history_reference('operation/interpretation.md', [FIRST / 'interpretation.md'], 'Historical failure limits, not retrospectively upgraded')
+for path, role in [(ORIGIN / 'driver.mjs', 'Compact Node ESM bundle'), (FIRST / 'driver.mjs', 'Original Node ESM bundle')]:
+    external.append({'kind': 'compiled-byte-identity-only-not-archived', **describe(path), 'role': role,
+                     'rebuildRequiresExactPinnedSourcesAndDependencies': True})
+source_records = json.loads((ORIGIN / 'authority.json').read_bytes())['files']
+assert len(source_records) == 35
+external.append({
+    'kind': 'original-dependency-records-not-copied', 'authorityReference': source_authority['relativePath'],
+    'records': source_records, 'archiveVerification': 'Authority JSON bytes checked; 35 historical dependencies not re-scanned or copied by this archive',
+    'reproductionLimit': 'Tracked source reference plus dependency hashes; node_modules and two historical TMP probes are external prerequisites, not claimed stored bytes',
+})
+
+readme = '''# Retained Compress force ledger
+
+This archive retains one diagnostic with unchanged rider and hull physics: all eight cases completed 108 observed and 108 separate unwrapped-control outer steps, with 864 full own-data/typed-byte parity comparisons and 27,004 observed hull substeps. The actual encoded output passed JSON decoding and `isDeepStrictEqual` against the complete in-memory report. These are observation checks for this fixture, not a physics fix, causal experiment, energy-conservation proof or FPS measurement.
+
+The preceding [output-limit failure](../compress-force-ledger-output-limit/README.md) remains historical and invalid. Its 94,521,423-byte result exceeded the unchanged 64 MiB limit and did not leave a primary report. This later operation used a lossless field dictionary and tuple representation. It did not alter the numerical loop, observer, inputs, force formulae or limits. Historical preparation files still say “unexecuted” because that was their status when written; their bytes were not rewritten after later checks and execution.
+
+## Retained evidence and diagnostic bug
+
+- [Primary tuple trace](report.json.gz): the original 19,064,261-byte gzip is copied exactly, without recompression. It expands to 64,258,882 bytes, SHA256 `e6aafecbe0111cc8af9c024d9199c852cf425a5a683743b8646e4f84a67a0422`. Stored SHA256 `aaf554d89a123805abddbcc96d4cd9daefae17bcf3538bfbf179e30c71ea4f1e`.
+- [Derived observations](derived.json.gz): the existing 580,626-byte JSON is compressed with gzip mtime 0. Its expanded SHA256 is `e6398ce5cc75d0aac54c56ce41c3df1e2b7bd72a0dccd87840c2397a20be17b9`; stored hash and byte count are in the manifest.
+- [Interpretation](interpretation.md), [pure postprocessor](derivation/postprocess.py.txt), [derivation stdout](derivation/stdout.txt) and [diagnostic terminal freeze](operation/diagnostic-terminal.freeze.json) preserve the distinctions between recorded state, derived summaries and limits.
+
+Raw outer records were built as `{phase, ...posture(...)}`; the rider phase `standing` overwrote the maneuver phase. The original yaw filter therefore selected no Compress samples and produced empty/zero summaries in every case. Raw source, bundle, report and stdout retain that diagnostic bug. No claim relies on raw zero yaw. The separately authorized postprocessor selects recorded outer `step >= 48`, exactly 60 yaw-rate samples per case, with the historical 0.2 rad/s turning-point deadband and 0.05 rad/s sign exclusion. It uses only retained values; it does not call physics or rerun the fixture. Input chronology, state parity, substep maneuver phases and event records are separately valid.
+
+Derived held → Compress yaw swing is 1.0976 → 1.2075 rad/s at 7 m/s, 0.9772 → 1.8369 at 8 m/s, 0.6859 → 1.6017 at 10 m/s, and 0 → 1.5010 at 11 m/s. All rates keep their sign; rate swing remains. The 7/8 m/s Compress cases detach. Recorded first infeasible contacts are support-tip constraints, preceding later low-speed bank runaway, with room below friction and normal-load caps. These observations identify chronology to investigate; they do not isolate a cause. Signed assistance work and force/RHS witnesses are retained in the trace. Reported kinetic energy excludes rotor/elastic/actuation terms, so subtracting booked work does not establish a closed total-energy ledger. No tuning or adoption follows from this archive.
+
+## Exact operation and checks
+
+The Node process started 2026-10-04T01:42:31.440179Z and exited 0 at 01:42:41.942310Z, without the 30 s hard timeout. It retained the original 20 s cooperative limit, eight cases, 108 steps per case, 60,000-substep cap, 512 rich-window rows per case and 67,108,864-byte output maximum. The recorded 4,937.75125 ms value precedes final encoding/round-trip/gzip and is not cost or FPS evidence. [Original stdout](operation/stdout.txt), [stderr](operation/stderr.txt) and [terminal](operation/terminal.json) retain actual process evidence.
+
+Before this operation, the one [four-test output-only schema check](checks/schema-tests.log) passed, followed by one conditional [Node ESM bundle](bundle/bundle.log). [Test terminal](checks/terminal.json), [bundle terminal](bundle/terminal.json) and [compiled readiness](authority/compiled-ready.json) preserve the exact commands and identity records. No client build, additional physics test, numerical retry or simulation was run by this archival step. The compact compiled bundle is an external hash-only reference: 534,257 bytes, SHA256 `19a549d6af5d3a95dc22e6bf53ce139abb0ccac8ec680d6e99f0b9dafe29ca8e`.
+
+## Sources and reproduction boundary
+
+[Compact driver](source/driver.ts.txt), [schema](source/schema.ts.txt), [schema tests](source/schema.test.ts.txt), [direct output-only diff](source/driver.output-only.patch), [launcher](source/launcher.py.txt), [test config](source/vitest.config.ts.txt), [plan](source/plan.md) and [prepared readiness](authority/prepared-ready.json) are exact bytes. Tests are stored with `.test.ts.txt` names so repository Vitest discovery cannot run them. The source plan and readiness are preserved as historical preparation, including their then-unexecuted wording.
+
+The [original observer](../compress-force-ledger-output-limit/source/observer.ts.txt), [original driver](../compress-force-ledger-output-limit/source/driver.ts.txt), [shared 35-file source authority](../compress-force-ledger-output-limit/authority/source-authority.json) and [original compiled readiness](../compress-force-ledger-output-limit/bundle/compiled-ready.json) are references to already retained evidence. The manifest lists exact aliases and hashes. Dependency source bytes are not duplicated here. The authority includes tracked sources, the Three runtime, package metadata, the given diagnosis and two historical TMP probes; it is not a claim that all 35 records are tracked source files. Its preparation HEAD is `bffba2e69c4a64e4489f02412dab79f5ea967447`.
+
+The exact driver, config, launcher and postprocessor use their original absolute TMP/repository paths. A future reproduction must restore the pinned source/dependency versions and original observer, restore the archived sources at their recorded paths, then obtain a fresh execution scope before rebuilding or running a numerical diagnostic. The stored compiled bundle identity alone does not provide its bytes. Pure trace derivation can instead restore only the exact primary gzip and postprocessor to the original owned TMP layout and run the postprocessor in a separate output location by an explicitly documented path adaptation; that would be a new derivation, not a repeat simulation. None was run during this archive.
+
+## Archive integrity
+
+[Manifest](manifest.json) records original/stored/expanded byte counts and SHA256 values, byte-identical aliases, external dependencies, and the compiled identities. Empty derivation stderr aliases the stored empty operation stderr; it was not silently omitted. The archive retains both the original diagnostic and the corrected summary rather than replacing the raw bug. [Archive script](archive.py.txt), [SHA256SUMS](SHA256SUMS) and [root review readiness](root-review-ready.json) record filesystem-only verification. The primary gzip is unchanged; only the existing derived JSON receives deterministic compression. No original TMP file, historical archive, production runtime, repository index or Git state was modified.
+'''
+(DEST / 'README.md').write_text(readme)
+manifest = {
+    'edition': 'compress-force-ledger-retained-evidence-archive-v1',
+    'createdUtc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    'scope': 'New docs archive only; byte copying, deterministic derived gzip and filesystem SHA verification; no numerical execution',
+    'primaryOriginalGzipNotRecompressed': True, 'derivedGzipMtime': 0,
+    'historicalPreparationAndFailureUnchanged': True, 'rawPhaseCollisionPreserved': True,
+    'correctedYawIsPureDerivedStepAtLeast48': True, 'compiledBundlesHashOnly': True,
+    'payloads': payloads, 'byteIdenticalAliases': aliases, 'externalReferences': external,
+    'payloadStoredBytes': sum(r['storedBytes'] for r in payloads),
+    'payloadExpandedBytes': sum(r['expandedBytes'] for r in payloads),
+    'controlFiles': 'README.md, manifest.json, SHA256SUMS and root-review-ready.json are generated archive metadata, not rewritten evidence',
+}
+write_json(DEST / 'manifest.json', manifest)
+files_for_sums = sorted(p for p in DEST.rglob('*') if p.is_file())
+(DEST / 'SHA256SUMS').write_text(''.join(f'{sha(p.read_bytes())}  {p.relative_to(DEST).as_posix()}\n' for p in files_for_sums))
+for line in (DEST / 'SHA256SUMS').read_text().splitlines():
+    digest, relative = line.split('  ', 1)
+    assert sha((DEST / relative).read_bytes()) == digest
+links = re.findall(r'\]\(([^)]+)\)', readme)
+for link in links:
+    assert (DEST / link).exists(), link
+for record in payloads:
+    stored = (DEST / record['storedPath']).read_bytes()
+    expanded = gzip.decompress(stored) if record['encoding'] != 'identity' else stored
+    assert len(expanded) == record['expandedBytes'] and sha(expanded) == record['expandedSha256']
+    assert len(stored) == record['storedBytes'] and sha(stored) == record['storedSha256']
+for test in DEST.rglob('*test*'):
+    if test.is_file() and '.test.' in test.name:
+        assert test.name.endswith('.txt')
+controls = [describe(DEST / name) for name in ['README.md', 'manifest.json', 'SHA256SUMS']]
+for record in controls:
+    record['path'] = Path(record.pop('originalPath')).relative_to(DEST).as_posix()
+ready = {
+    'edition': 'compress-retained-archive-root-review-ready',
+    'verifiedUtc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    'uniquePayloadFiles': len(payloads), 'logicalByteIdenticalAliases': len(aliases),
+    'additionalOriginalByteIdenticalAliases': sum(len(r['originalAliases']) for r in payloads),
+    'payloadStoredBytes': manifest['payloadStoredBytes'], 'payloadExpandedBytes': manifest['payloadExpandedBytes'],
+    'primaryStoredBytes': primary['storedBytes'], 'primaryExpandedBytes': primary['expandedBytes'],
+    'primaryStoredSha256': primary['storedSha256'], 'primaryExpandedSha256': primary['expandedSha256'],
+    'derivedStoredBytes': derived['storedBytes'], 'derivedExpandedBytes': derived['expandedBytes'],
+    'derivedStoredSha256': derived['storedSha256'], 'derivedExpandedSha256': derived['expandedSha256'],
+    'allPayloadStoredAndExpandedHashesVerified': True,
+    'primaryOriginalGzipByteIdentical': True, 'derivedDecompressionByteIdenticalAndMtime0': True,
+    'readmeLocalLinksResolved': len(links), 'archivedTestsAreTextOnly': True,
+    'rawPhaseCollisionPreserved': True, 'derivedYawStepAtLeast48Separate': True,
+    'historicalFailureAndPreparedMetadataUnchanged': True, 'sourceAndBundlesExternallyReferenced': True,
+    'physicsSimulationTestsBundleGpuBrowserOrBenchmarkRerunByArchive': False,
+    'productionOrGitChanges': False, 'controlRecords': controls,
+}
+write_json(DEST / 'root-review-ready.json', ready)
+all_files = sorted(p for p in DEST.rglob('*') if p.is_file())
+print(json.dumps({'directory': str(DEST), 'files': len(all_files), 'totalStoredBytes': sum(p.stat().st_size for p in all_files),
+                  'payloadStoredBytes': manifest['payloadStoredBytes'], 'payloadExpandedBytes': manifest['payloadExpandedBytes'],
+                  'readySha256': sha((DEST / 'root-review-ready.json').read_bytes()), 'manifestSha256': sha((DEST / 'manifest.json').read_bytes()),
+                  'sha256SumsSha256': sha((DEST / 'SHA256SUMS').read_bytes()), 'readmeLocalLinksResolved': len(links),
+                  'derivedStoredBytes': derived['storedBytes'], 'derivedStoredSha256': derived['storedSha256']}, indent=2))

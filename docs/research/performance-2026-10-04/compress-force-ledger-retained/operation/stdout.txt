@@ -1,0 +1,198 @@
+{
+  "valid": true,
+  "out": "/private/tmp/compress-force-ledger-compact-20261004/report.json.gz",
+  "encodedBytes": 64258882,
+  "rawSha256": "e6aafecbe0111cc8af9c024d9199c852cf425a5a683743b8646e4f84a67a0422",
+  "actualOutputValuesRoundtrip": true,
+  "elapsedMs": 4937.75125,
+  "paritySteps": 864,
+  "observedSubsteps": 27004,
+  "cases": [
+    {
+      "speed": 7,
+      "variant": "held",
+      "events": [
+        {
+          "step": 99,
+          "t": 0.8598958333332791,
+          "ordinal": 3186,
+          "criterion": "first bank excess >10 degrees"
+        }
+      ],
+      "legacyYawTurningPoints": {
+        "points": [],
+        "largestSwing": 0
+      }
+    },
+    {
+      "speed": 7,
+      "variant": "compress",
+      "events": [
+        {
+          "step": 55,
+          "t": 0.12395833333332085,
+          "ordinal": 1773,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 55,
+          "t": 0.12395833333332085,
+          "ordinal": 1773,
+          "criterion": "first contact limit tip"
+        },
+        {
+          "step": 81,
+          "t": 0.5546874999999631,
+          "ordinal": 2600,
+          "criterion": "first bank excess >10 degrees"
+        },
+        {
+          "step": 84,
+          "t": 0.6078124999999601,
+          "ordinal": 2702,
+          "criterion": "first original 70 degree bank cap"
+        },
+        {
+          "step": 99,
+          "t": 0.8541666666666128,
+          "ordinal": 3175,
+          "criterion": "first separation"
+        }
+      ],
+      "legacyYawTurningPoints": {
+        "points": [],
+        "largestSwing": 0
+      }
+    },
+    {
+      "speed": 8,
+      "variant": "held",
+      "events": [
+        {
+          "step": 100,
+          "t": 0.8817708333332779,
+          "ordinal": 3228,
+          "criterion": "first bank excess >10 degrees"
+        },
+        {
+          "step": 104,
+          "t": 0.9484374999999408,
+          "ordinal": 3356,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 104,
+          "t": 0.9484374999999408,
+          "ordinal": 3356,
+          "criterion": "first contact limit tip"
+        }
+      ],
+      "legacyYawTurningPoints": {
+        "points": [],
+        "largestSwing": 0
+      }
+    },
+    {
+      "speed": 8,
+      "variant": "compress",
+      "events": [
+        {
+          "step": 53,
+          "t": 0.08645833333332298,
+          "ordinal": 1701,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 53,
+          "t": 0.08645833333332298,
+          "ordinal": 1701,
+          "criterion": "first contact limit tip"
+        },
+        {
+          "step": 75,
+          "t": 0.4541666666666355,
+          "ordinal": 2407,
+          "criterion": "first bank excess >10 degrees"
+        },
+        {
+          "step": 79,
+          "t": 0.5208333333332984,
+          "ordinal": 2535,
+          "criterion": "first original 70 degree bank cap"
+        },
+        {
+          "step": 92,
+          "t": 0.7463541666666189,
+          "ordinal": 2968,
+          "criterion": "first separation"
+        }
+      ],
+      "legacyYawTurningPoints": {
+        "points": [],
+        "largestSwing": 0
+      }
+    },
+    {
+      "speed": 10,
+      "variant": "held",
+      "events": [],
+      "legacyYawTurningPoints": {
+        "points": [],
+        "largestSwing": 0
+      }
+    },
+    {
+      "speed": 10,
+      "variant": "compress",
+      "events": [
+        {
+          "step": 55,
+          "t": 0.12187499999998763,
+          "ordinal": 1769,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 55,
+          "t": 0.12187499999998763,
+          "ordinal": 1769,
+          "criterion": "first contact limit tip"
+        }
+      ],
+      "legacyYawTurningPoints": {
+        "points": [],
+        "largestSwing": 0
+      }
+    },
+    {
+      "speed": 11,
+      "variant": "held",
+      "events": [],
+      "legacyYawTurningPoints": {
+        "points": [],
+        "largestSwing": 0
+      }
+    },
+    {
+      "speed": 11,
+      "variant": "compress",
+      "events": [
+        {
+          "step": 48,
+          "t": 0.00989583333332733,
+          "ordinal": 1554,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 48,
+          "t": 0.00989583333332733,
+          "ordinal": 1554,
+          "criterion": "first contact limit tip"
+        }
+      ],
+      "legacyYawTurningPoints": {
+        "points": [],
+        "largestSwing": 0
+      }
+    }
+  ]
+}

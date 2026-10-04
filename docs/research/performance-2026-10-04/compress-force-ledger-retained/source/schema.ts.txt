@@ -1,0 +1,66 @@
+// Output-only lossless record schema. No body/solver/observer dependency.
+// All repeated object keys live once in a shared header dictionary. Arrays
+// and record tuples are tagged separately, so arbitrary input strings cannot
+// collide with a record tag. Finite numeric values remain numeric values.
+export type CompactReport = { edition: 'compress-ledger-tuples-v1'; fields: string[]; shapes: number[][]; payload: any };
+export function encodeReport(input: any): CompactReport {
+  const fields: string[] = [], shapes: number[][] = [];
+  const fieldIds = new Map<string, number>(), shapeIds = new Map<string, number>();
+  const field = (key: string) => { let id = fieldIds.get(key); if (id === undefined) { id = fields.length; fields.push(key); fieldIds.set(key, id); } return id; };
+  const encode = (value: any): any => {
+    if (value === undefined) return ['u'];
+    if (typeof value === 'number') {
+      if (Object.is(value, -0)) return ['n', '-0'];
+      if (Number.isNaN(value)) return ['n', 'NaN'];
+      if (value === Infinity) return ['n', '+Infinity'];
+      if (value === -Infinity) return ['n', '-Infinity'];
+      return value;
+    }
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') return value;
+    if (Array.isArray(value)) return ['a', ...value.map(encode)];
+    if (typeof value !== 'object' || Object.getPrototypeOf(value) !== Object.prototype) throw new Error('Output schema requires plain records/arrays/primitive values');
+    const keys = Object.keys(value), ids = keys.map(field), signature = ids.join(',');
+    let id = shapeIds.get(signature);
+    if (id === undefined) { id = shapes.length; shapes.push(ids); shapeIds.set(signature, id); }
+    return ['r', id, ...keys.map(key => encode(value[key]))];
+  };
+  return { edition: 'compress-ledger-tuples-v1', fields, shapes, payload: encode(input) };
+}
+export function decodeReport(report: CompactReport): any {
+  if (report.edition !== 'compress-ledger-tuples-v1') throw new Error('Unknown output schema');
+  const decode = (token: any): any => {
+    if (!Array.isArray(token)) return token;
+    if (token[0] === 'a') return token.slice(1).map(decode);
+    if (token[0] === 'u' && token.length === 1) return undefined;
+    if (token[0] === 'n' && token.length === 2) {
+      switch (token[1]) { case '-0': return -0; case 'NaN': return NaN; case '+Infinity': return Infinity; case '-Infinity': return -Infinity; }
+      throw new Error('Unknown exceptional number');
+    }
+    if (token[0] !== 'r' || !Number.isInteger(token[1])) throw new Error('Malformed output tuple');
+    const shape = report.shapes[token[1]];
+    if (!shape || token.length !== shape.length + 2) throw new Error('Output tuple/shape length mismatch');
+    const result: Record<string, any> = {};
+    shape.forEach((id, i) => { const key = report.fields[id]; if (typeof key !== 'string') throw new Error('Unknown output field'); Object.defineProperty(result, key, { value: decode(token[i + 2]), enumerable: true, writable: true, configurable: true }); });
+    return result;
+  };
+  return decode(report.payload);
+}
+
+// Bound-error evidence deliberately excludes large substep/window tables.
+// It reports only retained facts, including the last successful full-state
+// parity step. It never manufactures completion or an attachment assertion.
+export function failureSummary(report: any, error: unknown, encodedBytes: number | null): any {
+  return {
+    edition: 'compact-compress-ledger-failure-summary', valid: false,
+    error: String(error), encodedBytes,
+    startedUtc: report.startedUtc, finishedUtc: report.finishedUtc,
+    elapsedMs: report.elapsedMs, limits: report.limits,
+    originalReportValid: report.valid, originalReportError: report.error ?? null,
+    paritySteps: report.paritySteps, observedSubsteps: report.observedSubsteps,
+    latestVerified: report.latestVerified ?? null,
+    completedCases: report.cases.map((x: any) => ({ speed: x.speed, variant: x.variant,
+      paritySteps: x.paritySteps, observedSubsteps: x.observedSubsteps,
+      events: x.events, legacyYawTurningPoints: x.legacyYawTurningPoints, signFlips: x.signFlips })),
+    detailedTraceRetained: false,
+  };
+}

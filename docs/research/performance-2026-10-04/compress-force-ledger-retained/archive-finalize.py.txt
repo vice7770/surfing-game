@@ -1,0 +1,95 @@
+"""Complete only new archive metadata; preserve the initial helper and existing payloads."""
+from pathlib import Path
+import datetime, gzip, hashlib, json, re
+
+DEST = Path('/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/compress-force-ledger-retained')
+sha = lambda value: hashlib.sha256(value).hexdigest()
+def record(path):
+    blob = path.read_bytes()
+    return {'originalPath': str(path), 'bytes': len(blob), 'sha256': sha(blob)}
+def save_json(path, value):
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + '\n')
+manifest = json.loads((DEST / 'manifest.json').read_bytes())
+for item in manifest['payloads']:
+    stored = (DEST / item['storedPath']).read_bytes()
+    assert len(stored) == item['storedBytes'] and sha(stored) == item['storedSha256']
+    expanded = gzip.decompress(stored) if item['encoding'] != 'identity' else stored
+    assert len(expanded) == item['expandedBytes'] and sha(expanded) == item['expandedSha256']
+    original = Path(item['original']['originalPath']).read_bytes()
+    assert len(original) == item['original']['bytes'] and sha(original) == item['original']['sha256']
+    assert (original == stored) if item['encoding'] != 'gzip-mtime0' else (original == expanded)
+for name in ['README.md', 'manifest.json', 'SHA256SUMS']:
+    saved = Path('/private/tmp/compress-retained-archive-initial-' + name.replace('/', '-'))
+    assert not saved.exists()
+    saved.write_bytes((DEST / name).read_bytes())
+error = Path('/private/tmp/compress-retained-archive-initial-error.txt')
+assert not error.exists()
+error.write_text('Filesystem archive helper exited 1 at final README-link validation after payload verification.\nTraceback (most recent call last):\n  File "/private/tmp/archive-compress-retained-20261004.py", line 189, in <module>\n    assert (DEST / link).exists(), link\n           ~~~~~~~~~~~~~~~~~~~~^^\nAssertionError: root-review-ready.json\nNo physics, diagnostic, tests or bundle ran. The missing file was generated archive metadata, not evidence.\n')
+for source, relative in [(Path(__file__), 'archive-finalize.py.txt'), (error, 'archive-initial-error.txt')]:
+    target = DEST / relative
+    assert not target.exists()
+    blob = source.read_bytes()
+    target.write_bytes(blob)
+    manifest['payloads'].append({'storedPath': relative, 'encoding': 'identity', 'storedBytes': len(blob),
+       'storedSha256': sha(blob), 'expandedBytes': len(blob), 'expandedSha256': sha(blob),
+       'original': record(source), 'originalAliases': []})
+manifest['archivalFilesystemFailure'] = {
+    'error': 'README root-review-ready link checked before generated ready file existed',
+    'originalHelperStoredPath': 'archive.py.txt', 'errorStoredPath': 'archive-initial-error.txt',
+    'finalizerStoredPath': 'archive-finalize.py.txt',
+    'initialControlRecords': [record(Path('/private/tmp/compress-retained-archive-initial-' + name)) for name in ['README.md', 'manifest.json', 'SHA256SUMS']],
+    'retainedEvidenceChanged': False, 'numericalOperationPerformed': False,
+}
+manifest['payloadStoredBytes'] = sum(r['storedBytes'] for r in manifest['payloads'])
+manifest['payloadExpandedBytes'] = sum(r['expandedBytes'] for r in manifest['payloads'])
+save_json(DEST / 'manifest.json', manifest)
+with (DEST / 'README.md').open('a') as stream:
+    stream.write('\nThe initial archive helper caught a filesystem metadata ordering error: it checked the README link to `root-review-ready.json` before generating that file. Its [exact helper](archive.py.txt) and [error](archive-initial-error.txt) are preserved. A separate [metadata finalizer](archive-finalize.py.txt) verified every existing payload and original hash before completing the generated manifest/checksums/readiness. Retained evidence, the original operation and the historical archive were not changed or rerun.\n')
+summed = sorted(p for p in DEST.rglob('*') if p.is_file() and p.name not in ['SHA256SUMS', 'root-review-ready.json'])
+(DEST / 'SHA256SUMS').write_text(''.join(f'{sha(p.read_bytes())}  {p.relative_to(DEST).as_posix()}\n' for p in summed))
+for line in (DEST / 'SHA256SUMS').read_text().splitlines():
+    digest, relative = line.split('  ', 1)
+    assert sha((DEST / relative).read_bytes()) == digest
+readme = (DEST / 'README.md').read_text()
+links = re.findall(r'\]\(([^)]+)\)', readme)
+primary = next(r for r in manifest['payloads'] if r['storedPath'] == 'report.json.gz')
+derived = next(r for r in manifest['payloads'] if r['storedPath'] == 'derived.json.gz')
+assert (DEST / 'derived.json.gz').read_bytes()[4:8] == b'\0\0\0\0'
+for ref in manifest['externalReferences']:
+    if ref['kind'] == 'existing-durable-byte-reference':
+        content = (DEST / ref['relativePath']).read_bytes()
+        assert len(content) == ref['bytes'] and sha(content) == ref['sha256']
+for test in DEST.rglob('*test*'):
+    if test.is_file() and '.test.' in test.name:
+        assert test.name.endswith('.txt')
+controls = []
+for name in ['README.md', 'manifest.json', 'SHA256SUMS']:
+    info = record(DEST / name)
+    info['path'] = Path(info.pop('originalPath')).relative_to(DEST).as_posix()
+    controls.append(info)
+ready = {
+    'edition': 'compress-retained-archive-root-review-ready', 'verifiedUtc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    'uniquePayloadFiles': len(manifest['payloads']), 'logicalByteIdenticalAliases': len(manifest['byteIdenticalAliases']),
+    'additionalOriginalByteIdenticalAliases': sum(len(r['originalAliases']) for r in manifest['payloads']),
+    'payloadStoredBytes': manifest['payloadStoredBytes'], 'payloadExpandedBytes': manifest['payloadExpandedBytes'],
+    'primaryStoredBytes': primary['storedBytes'], 'primaryExpandedBytes': primary['expandedBytes'],
+    'primaryStoredSha256': primary['storedSha256'], 'primaryExpandedSha256': primary['expandedSha256'],
+    'derivedStoredBytes': derived['storedBytes'], 'derivedExpandedBytes': derived['expandedBytes'],
+    'derivedStoredSha256': derived['storedSha256'], 'derivedExpandedSha256': derived['expandedSha256'],
+    'allPayloadStoredAndExpandedHashesVerified': True, 'primaryOriginalGzipByteIdentical': True,
+    'derivedDecompressionByteIdenticalAndMtime0': True, 'readmeLocalLinksResolved': len(links),
+    'archivedTestsAreTextOnly': True, 'rawPhaseCollisionPreserved': True, 'derivedYawStepAtLeast48Separate': True,
+    'historicalFailureAndPreparedMetadataUnchanged': True, 'sourceAndBundlesExternallyReferenced': True,
+    'archivalFilesystemFailurePreservedAndOnlyMetadataFinalized': True,
+    'physicsSimulationTestsBundleGpuBrowserOrBenchmarkRerunByArchive': False, 'productionOrGitChanges': False,
+    'controlRecords': controls,
+}
+save_json(DEST / 'root-review-ready.json', ready)
+for link in links:
+    assert (DEST / link).exists(), link
+all_files = [p for p in DEST.rglob('*') if p.is_file()]
+print(json.dumps({'directory': str(DEST), 'files': len(all_files), 'totalStoredBytes': sum(p.stat().st_size for p in all_files),
+    'payloadStoredBytes': manifest['payloadStoredBytes'], 'payloadExpandedBytes': manifest['payloadExpandedBytes'],
+    'readySha256': sha((DEST / 'root-review-ready.json').read_bytes()), 'manifestSha256': sha((DEST / 'manifest.json').read_bytes()),
+    'sha256SumsSha256': sha((DEST / 'SHA256SUMS').read_bytes()), 'readmeLocalLinksResolved': len(links),
+    'derivedStoredBytes': derived['storedBytes'], 'derivedStoredSha256': derived['storedSha256']}, indent=2))

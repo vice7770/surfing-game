@@ -1,0 +1,109 @@
+"""Pure retained-byte decoding/derivation. No physics imports or simulation calls."""
+from pathlib import Path
+import gzip, hashlib, json, math
+
+here=Path('/private/tmp/compress-force-ledger-compact-20261004')
+blob=(here/'report.json.gz').read_bytes(); raw=gzip.decompress(blob)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+assert len(raw)==64258882 and sha(raw)=='e6aafecbe0111cc8af9c024d9199c852cf425a5a683743b8646e4f84a67a0422'
+encoded=json.loads(raw); assert encoded['edition']=='compress-ledger-tuples-v1'
+fields=encoded['fields']; shapes=encoded['shapes']
+indexes=[{fields[field]:i+2 for i,field in enumerate(shape)} for shape in shapes]
+def get(record,key):
+    assert record[0]=='r'
+    return record[indexes[record[1]][key]]
+def maybe(record,key,default=None):
+    assert record[0]=='r'
+    index=indexes[record[1]].get(key)
+    return record[index] if index is not None else default
+def array(token):
+    assert token[0]=='a'
+    return token[1:]
+def decode(token):
+    if not isinstance(token,list):return token
+    tag=token[0]
+    if tag=='a':return [decode(x) for x in token[1:]]
+    if tag=='r':return {fields[field]:decode(token[i+2]) for i,field in enumerate(shapes[token[1]])}
+    if tag=='u':return {'undefined':True}
+    if tag=='n':return {'-0':-0.0,'NaN':float('nan'),'+Infinity':float('inf'),'-Infinity':-float('inf')}[token[1]]
+    raise ValueError(f'Unknown schema tag {tag}')
+def turning(values,deadband=.2):
+    high=low=values[0]; high_at=low_at=0; direction=0; points=[]
+    for index,value in enumerate(values):
+        if direction>=0 and value>high:high=value;high_at=index
+        if direction<=0 and value<low:low=value;low_at=index
+        if direction>=0 and high-value>deadband:
+            points.append({'index':high_at,'value':high});direction=-1;low=value;low_at=index
+        elif direction<=0 and value-low>deadband:
+            points.append({'index':low_at,'value':low});direction=1;high=value;high_at=index
+    return {'points':points,'largestSwing':max([abs(points[i]['value']-points[i-1]['value']) for i in range(1,len(points))]+[0])}
+def flips(values):
+    last=0; total=0
+    for value in values:
+        if abs(value)<.05:continue
+        sign=1 if value>0 else -1
+        if last and sign!=last:total+=1
+        last=sign
+    return total
+def magnitude(values):return math.sqrt(sum(x*x for x in values))
+payload=encoded['payload']; assert get(payload,'valid') is True
+assert get(payload,'paritySteps')==864 and get(payload,'observedSubsteps')==27004
+results=[]; counts=0
+for case_token in array(get(payload,'cases')):
+    speed=get(case_token,'speed');variant=get(case_token,'variant')
+    outer=[decode(x) for x in array(get(case_token,'outer'))]
+    assert len(outer)==108 and [x['step'] for x in outer]==list(range(108))
+    assert get(case_token,'paritySteps')==108
+    rates=[x['spin'][1] for x in outer if x['step']>=48]
+    assert len(rates)==60 and all(math.isfinite(x) for x in rates)
+    assert all(x['phase']=='standing' for x in outer)
+    events=decode(get(case_token,'events'))
+    inner_tokens=array(get(case_token,'substeps')); counts+=len(inner_tokens)
+    assert len(inner_tokens)==get(case_token,'observedSubsteps')
+    compress=[x for x in inner_tokens if get(x,'phase')=='compress']
+    work={}; signs={}; first=decode(compress[0])
+    for row in compress:
+        deltas=decode(get(row,'riderWorkDelta'))
+        for key,value in deltas.items():
+            work[key]=work.get(key,0)+value
+            signs.setdefault(key,{'positiveSubsteps':0,'negativeSubsteps':0,'zeroSubsteps':0})
+            signs[key]['positiveSubsteps' if value>0 else 'negativeSubsteps' if value<0 else 'zeroSubsteps']+=1
+    rich={get(x,'ordinal'):x for x in array(get(case_token,'richStageWindows'))}
+    witnesses=[]
+    for event in events:
+        assert event['ordinal'] in rich
+        row=decode(rich[event['ordinal']])
+        assert row['phase']=='compress'
+        compact_row=next(decode(x) for x in compress if get(x,'ordinal')==event['ordinal'])
+        stages={x['method']:x for x in row['stages']}
+        witnesses.append({'event':event,'stateBefore':row['before'],'stateAfter':row['after'],
+            'assistFormation':stages.get('compressAssist'),'legStage':stages.get('prepareLeg'),'bankStage':stages.get('prepareBank'),
+            'actualProjections':row['projections'],'standingSolve':row.get('standingSolve'),
+            'substepRiderWorkDelta':compact_row['riderWorkDelta'],'substepBoardWorkDelta':compact_row['boardWorkDelta']})
+    before=outer[47];after=outer[-1]
+    public_work={key:after['riderWork'][key]-before['riderWork'][key] for key in after['riderWork']}
+    for key in public_work:assert math.isclose(public_work[key],work[key],rel_tol=1e-11,abs_tol=1e-10)
+    results.append({'speed':speed,'variant':variant,'paritySteps':108,'observedSubsteps':len(inner_tokens),
+        'derivedYawTurningPoints':turning(rates),'derivedYawSignFlips':flips(rates),'minYaw':min(rates),'maxYaw':max(rates),
+        'rawYawSummaryIgnoredDueToPhaseCollision':decode(get(case_token,'legacyYawTurningPoints')),
+        'firstCompressSubstep':first,'events':events,'eventWitnesses':witnesses,
+        'compressRiderWorkFromRecordedSubstepDifferences':work,'workSignSubstepCounts':signs,
+        'publicCumulativeWorkDifferenceCrosscheck':public_work,
+        'beforeCompress':before,'lastOuterStep':after,
+        'compressForceMagnitudesAtFirstSubstep':{k:magnitude(v) for k,v in first['forces'].items()} if first['forces'] else None})
+assert counts==27004 and len(results)==8
+stdout=json.loads((here/'stdout.txt').read_text());assert stdout['actualOutputValuesRoundtrip'] is True
+derived={'edition':'pure-retained-compress-ledger-derivation','inputs':{'compressedBytes':len(blob),'compressedSha256':sha(blob),'encodedRawBytes':len(raw),'encodedRawSha256':sha(raw),
+    'scriptPath':str(here/'postprocess.py'),'scriptSha256':sha((here/'postprocess.py').read_bytes()),'originalActualOutputRoundtrip':True},
+    'validOriginalRecord':True,'paritySteps':864,'observedSubsteps':27004,
+    'diagnosticSummaryBug':'outer {phase,...posture} is overwritten by posture.phase=standing; raw outer.filter(phase===compress) returns empty. Raw source/output remain unchanged.',
+    'derivedYawRule':'Use exactly outer.step>=48,60reported world yaw rates; historical .2rad/s turning-point deadband and .05rad/s sign-flip exclusion. No simulation/replay/source repair.',
+    'cases':results,'limits':['No counterfactual force isolation or causal conclusion','No closed total-energy proof from original reported kinetic/work measures','No FPS/browser/GPU/tube evidence','No successful run claim for the first discarded report']}
+(here/'derived.json').write_text(json.dumps(derived,indent=2,allow_nan=False)+'\n')
+summary=[{'speed':x['speed'],'variant':x['variant'],'yawSwing':x['derivedYawTurningPoints']['largestSwing'],'signFlips':x['derivedYawSignFlips'],
+    'firstForceMagnitudes':x['compressForceMagnitudesAtFirstSubstep'],
+    'assistWork':x['compressRiderWorkFromRecordedSubstepDifferences']['assist'],'carryWork':x['compressRiderWorkFromRecordedSubstepDifferences']['carry'],'leanOutWork':x['compressRiderWorkFromRecordedSubstepDifferences']['leanOut'],
+    'finalAttached':x['lastOuterStep']['attached'],'finalBank':x['lastOuterStep']['bodyBank'],'finalReference':x['lastOuterStep']['referenceBank'],'finalSpeed':x['lastOuterStep']['speed'],
+    'firstCompressRest':x['firstCompressSubstep']['rest'],'firstCompressAssistBeforeRest':x['firstCompressSubstep']['assistEvaluation']['rest'],
+    'events':x['events']} for x in results]
+print(json.dumps({'inputs':derived['inputs'],'cases':summary,'derivedBytes':(here/'derived.json').stat().st_size,'derivedSha256':sha((here/'derived.json').read_bytes())},indent=2))

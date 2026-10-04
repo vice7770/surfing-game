@@ -1,0 +1,46 @@
+{
+  "edition": "compress-retained-archive-root-review-ready",
+  "verifiedUtc": "2026-10-04T01:53:44.678034+00:00",
+  "uniquePayloadFiles": 27,
+  "logicalByteIdenticalAliases": 1,
+  "additionalOriginalByteIdenticalAliases": 8,
+  "payloadStoredBytes": 19235046,
+  "payloadExpandedBytes": 64943211,
+  "primaryStoredBytes": 19064261,
+  "primaryExpandedBytes": 64258882,
+  "primaryStoredSha256": "aaf554d89a123805abddbcc96d4cd9daefae17bcf3538bfbf179e30c71ea4f1e",
+  "primaryExpandedSha256": "e6aafecbe0111cc8af9c024d9199c852cf425a5a683743b8646e4f84a67a0422",
+  "derivedStoredBytes": 67082,
+  "derivedExpandedBytes": 580626,
+  "derivedStoredSha256": "e5f1da91c0944be9f913fce4486d6a3094e6891114dbf4a50383b725179391af",
+  "derivedExpandedSha256": "e6398ce5cc75d0aac54c56ce41c3df1e2b7bd72a0dccd87840c2397a20be17b9",
+  "allPayloadStoredAndExpandedHashesVerified": true,
+  "primaryOriginalGzipByteIdentical": true,
+  "derivedDecompressionByteIdenticalAndMtime0": true,
+  "readmeLocalLinksResolved": 34,
+  "archivedTestsAreTextOnly": true,
+  "rawPhaseCollisionPreserved": true,
+  "derivedYawStepAtLeast48Separate": true,
+  "historicalFailureAndPreparedMetadataUnchanged": true,
+  "sourceAndBundlesExternallyReferenced": true,
+  "archivalFilesystemFailurePreservedAndOnlyMetadataFinalized": true,
+  "physicsSimulationTestsBundleGpuBrowserOrBenchmarkRerunByArchive": false,
+  "productionOrGitChanges": false,
+  "controlRecords": [
+    {
+      "bytes": 7921,
+      "sha256": "f2bd641e6e1bd830f953e09eae52cc73adca73d3cab47f27f4005ccaab421280",
+      "path": "README.md"
+    },
+    {
+      "bytes": 36059,
+      "sha256": "33977ff35452e579e7799f7544be86dd6bd5b37bf85b3c9254a5d633e4ae49be",
+      "path": "manifest.json"
+    },
+    {
+      "bytes": 2562,
+      "sha256": "fe970424613e82dc12330ccf55f44d1f34821935302dd86fba534a9fce022806",
+      "path": "SHA256SUMS"
+    }
+  ]
+}

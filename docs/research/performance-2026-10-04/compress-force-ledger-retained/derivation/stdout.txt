@@ -1,0 +1,321 @@
+{
+  "inputs": {
+    "compressedBytes": 19064261,
+    "compressedSha256": "aaf554d89a123805abddbcc96d4cd9daefae17bcf3538bfbf179e30c71ea4f1e",
+    "encodedRawBytes": 64258882,
+    "encodedRawSha256": "e6aafecbe0111cc8af9c024d9199c852cf425a5a683743b8646e4f84a67a0422",
+    "scriptPath": "/private/tmp/compress-force-ledger-compact-20261004/postprocess.py",
+    "scriptSha256": "71e77b0a37bb08b4171564ac639ecb930e57987465ff88f4c59d3464cc6bfec8",
+    "originalActualOutputRoundtrip": true
+  },
+  "cases": [
+    {
+      "speed": 7,
+      "variant": "held",
+      "yawSwing": 1.097621497125815,
+      "signFlips": 0,
+      "firstForceMagnitudes": {
+        "gravity": 716.13,
+        "water": 0.0,
+        "assist": 0.0,
+        "carry": 0.0,
+        "leanOut": 0.0,
+        "total": 716.13
+      },
+      "assistWork": 0,
+      "carryWork": 0,
+      "leanOutWork": 0,
+      "finalAttached": true,
+      "finalBank": 0.5453949666625602,
+      "finalReference": 0.3012158540427334,
+      "finalSpeed": 3.484031475219311,
+      "firstCompressRest": 0,
+      "firstCompressAssistBeforeRest": 0,
+      "events": [
+        {
+          "step": 99,
+          "t": 0.8598958333332791,
+          "ordinal": 3186,
+          "criterion": "first bank excess >10 degrees"
+        }
+      ]
+    },
+    {
+      "speed": 7,
+      "variant": "compress",
+      "yawSwing": 1.207452639178089,
+      "signFlips": 0,
+      "firstForceMagnitudes": {
+        "gravity": 716.13,
+        "water": 0.0,
+        "assist": 300.6049603086736,
+        "carry": 123.90616214766263,
+        "leanOut": 0.0,
+        "total": 786.484746247721
+      },
+      "assistWork": -2.096004572419823,
+      "carryWork": 1597.1150897181403,
+      "leanOutWork": 0,
+      "finalAttached": false,
+      "finalBank": 1.2217304763960306,
+      "finalReference": 0.2768179125149688,
+      "finalSpeed": 2.8966144944604073,
+      "firstCompressRest": -1.6276041666666668e-06,
+      "firstCompressAssistBeforeRest": 0,
+      "events": [
+        {
+          "step": 55,
+          "t": 0.12395833333332085,
+          "ordinal": 1773,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 55,
+          "t": 0.12395833333332085,
+          "ordinal": 1773,
+          "criterion": "first contact limit tip"
+        },
+        {
+          "step": 81,
+          "t": 0.5546874999999631,
+          "ordinal": 2600,
+          "criterion": "first bank excess >10 degrees"
+        },
+        {
+          "step": 84,
+          "t": 0.6078124999999601,
+          "ordinal": 2702,
+          "criterion": "first original 70 degree bank cap"
+        },
+        {
+          "step": 99,
+          "t": 0.8541666666666128,
+          "ordinal": 3175,
+          "criterion": "first separation"
+        }
+      ]
+    },
+    {
+      "speed": 8,
+      "variant": "held",
+      "yawSwing": 0.9772467908173478,
+      "signFlips": 0,
+      "firstForceMagnitudes": {
+        "gravity": 716.13,
+        "water": 0.0,
+        "assist": 0.0,
+        "carry": 0.0,
+        "leanOut": 0.0,
+        "total": 716.13
+      },
+      "assistWork": 0,
+      "carryWork": 0,
+      "leanOutWork": 0,
+      "finalAttached": true,
+      "finalBank": 0.7633868770368343,
+      "finalReference": 0.4777592211110543,
+      "finalSpeed": 4.647208994639035,
+      "firstCompressRest": 0,
+      "firstCompressAssistBeforeRest": 0,
+      "events": [
+        {
+          "step": 100,
+          "t": 0.8817708333332779,
+          "ordinal": 3228,
+          "criterion": "first bank excess >10 degrees"
+        },
+        {
+          "step": 104,
+          "t": 0.9484374999999408,
+          "ordinal": 3356,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 104,
+          "t": 0.9484374999999408,
+          "ordinal": 3356,
+          "criterion": "first contact limit tip"
+        }
+      ]
+    },
+    {
+      "speed": 8,
+      "variant": "compress",
+      "yawSwing": 1.8368574119611147,
+      "signFlips": 0,
+      "firstForceMagnitudes": {
+        "gravity": 716.13,
+        "water": 0.0,
+        "assist": 412.78307794645343,
+        "carry": 148.74113565480997,
+        "leanOut": 0.0,
+        "total": 839.854732542974
+      },
+      "assistWork": 11.94647242571449,
+      "carryWork": 1868.3294365063016,
+      "leanOutWork": 0,
+      "finalAttached": false,
+      "finalBank": 1.2217304763960306,
+      "finalReference": 0.39208058112652694,
+      "finalSpeed": 3.3575885332300635,
+      "firstCompressRest": -1.6276041666666668e-06,
+      "firstCompressAssistBeforeRest": 0,
+      "events": [
+        {
+          "step": 53,
+          "t": 0.08645833333332298,
+          "ordinal": 1701,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 53,
+          "t": 0.08645833333332298,
+          "ordinal": 1701,
+          "criterion": "first contact limit tip"
+        },
+        {
+          "step": 75,
+          "t": 0.4541666666666355,
+          "ordinal": 2407,
+          "criterion": "first bank excess >10 degrees"
+        },
+        {
+          "step": 79,
+          "t": 0.5208333333332984,
+          "ordinal": 2535,
+          "criterion": "first original 70 degree bank cap"
+        },
+        {
+          "step": 92,
+          "t": 0.7463541666666189,
+          "ordinal": 2968,
+          "criterion": "first separation"
+        }
+      ]
+    },
+    {
+      "speed": 10,
+      "variant": "held",
+      "yawSwing": 0.6859426111705347,
+      "signFlips": 0,
+      "firstForceMagnitudes": {
+        "gravity": 716.13,
+        "water": 0.0,
+        "assist": 0.0,
+        "carry": 0.0,
+        "leanOut": 0.0,
+        "total": 716.13
+      },
+      "assistWork": 0,
+      "carryWork": 0,
+      "leanOutWork": 0,
+      "finalAttached": true,
+      "finalBank": 0.8452120178887002,
+      "finalReference": 0.8433379679787777,
+      "finalSpeed": 6.944655281243915,
+      "firstCompressRest": 0,
+      "firstCompressAssistBeforeRest": 0,
+      "events": []
+    },
+    {
+      "speed": 10,
+      "variant": "compress",
+      "yawSwing": 1.6017150447816593,
+      "signFlips": 0,
+      "firstForceMagnitudes": {
+        "gravity": 716.13,
+        "water": 0.0,
+        "assist": 426.60655574837176,
+        "carry": 151.74419274045758,
+        "leanOut": 0.0,
+        "total": 847.2671540535144
+      },
+      "assistWork": -158.56085605488576,
+      "carryWork": 2192.7208253864765,
+      "leanOutWork": 0,
+      "finalAttached": true,
+      "finalBank": 0.8376676501509527,
+      "finalReference": 0.8726646259968823,
+      "finalSpeed": 9.372297015022578,
+      "firstCompressRest": -1.6276041666666668e-06,
+      "firstCompressAssistBeforeRest": 0,
+      "events": [
+        {
+          "step": 55,
+          "t": 0.12187499999998763,
+          "ordinal": 1769,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 55,
+          "t": 0.12187499999998763,
+          "ordinal": 1769,
+          "criterion": "first contact limit tip"
+        }
+      ]
+    },
+    {
+      "speed": 11,
+      "variant": "held",
+      "yawSwing": 0,
+      "signFlips": 0,
+      "firstForceMagnitudes": {
+        "gravity": 716.13,
+        "water": 0.0,
+        "assist": 0.0,
+        "carry": 0.0,
+        "leanOut": 0.0,
+        "total": 716.13
+      },
+      "assistWork": 0,
+      "carryWork": 0,
+      "leanOutWork": 0,
+      "finalAttached": true,
+      "finalBank": 0.8351584559287619,
+      "finalReference": 0.8726646259968823,
+      "finalSpeed": 7.748861123766495,
+      "firstCompressRest": 0,
+      "firstCompressAssistBeforeRest": 0,
+      "events": []
+    },
+    {
+      "speed": 11,
+      "variant": "compress",
+      "yawSwing": 1.5010448459922558,
+      "signFlips": 0,
+      "firstForceMagnitudes": {
+        "gravity": 716.13,
+        "water": 0.0,
+        "assist": 426.6065557483717,
+        "carry": 150.7742945776598,
+        "leanOut": 0.0,
+        "total": 847.093984285616
+      },
+      "assistWork": -135.88338680619398,
+      "carryWork": 2426.1562529144117,
+      "leanOutWork": 0,
+      "finalAttached": true,
+      "finalBank": 0.8256190968489414,
+      "finalReference": 0.8726646259968823,
+      "finalSpeed": 10.533207598399878,
+      "firstCompressRest": -1.6276041666666668e-06,
+      "firstCompressAssistBeforeRest": 0,
+      "events": [
+        {
+          "step": 48,
+          "t": 0.00989583333332733,
+          "ordinal": 1554,
+          "criterion": "first infeasible coupled contact"
+        },
+        {
+          "step": 48,
+          "t": 0.00989583333332733,
+          "ordinal": 1554,
+          "criterion": "first contact limit tip"
+        }
+      ]
+    }
+  ],
+  "derivedBytes": 580626,
+  "derivedSha256": "e6398ce5cc75d0aac54c56ce41c3df1e2b7bd72a0dccd87840c2397a20be17b9"
+}
