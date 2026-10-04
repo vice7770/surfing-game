@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "hardwareStarted": false,
+  "hardwareAuthorization": "pending root frozen-adapter review",
+  "base": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "manifest": {
+    "path": "/private/tmp/contact-lazy-height-20261004/manifest.json",
+    "sha256": "cdca9cbb343863e882eea54b4a5762d0b6dbfff37df87990a789ec98632193bc"
+  },
+  "patch": {
+    "path": "/private/tmp/contact-lazy-height-20261004/observer.patch",
+    "sha256": "6c307c5577fb083dee41ce97e2680801db65cdf457fef6b90d5ede6309bc3362"
+  },
+  "preparedPlan": {
+    "path": "/private/tmp/contact-lazy-height-20261004/prepared-plan.json",
+    "sha256": "88f966adde2426f8bc9aaee74aa7aa0404588d0b6f9d01ec522a38123c496889"
+  },
+  "adapter": {
+    "path": "/private/tmp/contact-lazy-height-20261004/adapter.mjs",
+    "sha256": "39843dfed8de8cb1e0561b0dbb75769c39b854c035dcb08391414ff4c24aad34"
+  },
+  "note": {
+    "path": "/private/tmp/contact-lazy-height-20261004/prepared-plan.md",
+    "sha256": "d790db7292823863737d5df4fe3bec929b0a9410ae601e2059361b0f025f0bd2"
+  },
+  "sourceClosureSha256": "99c6fddcd618feda0cac5ab0e4a0fbe1ab37e22f4ba18ad2c29f3cf7caae6f00",
+  "buildClosureSha256": "fc2ae942bb1767f0472c70143fb50f76434676c2c562bdb1d3ecd9fed9bc8066",
+  "allUnownedAsArchived": true,
+  "unownedCount": 546,
+  "worker": {
+    "path": "assets/surfZoneWorker-CeUF6aeU.js",
+    "bytes": 445256,
+    "sha256": "555f3d898a802b96679c8eb477034a8896fbaad315273544ce70596d5cde55bc"
+  },
+  "main": {
+    "path": "assets/index-BpKGe5Ov.js",
+    "bytes": 582425,
+    "sha256": "15091bf010422a12fb262c9680cc08ad7b3817acfbec2e33d73b0e27d100daf9"
+  },
+  "observerTests": 7,
+  "summaryTests": 4,
+  "strictBuildPassed": true,
+  "bounds": {
+    "fromOwnedChromeSpawnSeconds": 150,
+    "afterSpinUpSimSeconds": 90,
+    "postwaterEpochs": 15,
+    "retries": 0
+  },
+  "ports": {
+    "preview": 4215,
+    "ownedCdp": 9625
+  }
+}

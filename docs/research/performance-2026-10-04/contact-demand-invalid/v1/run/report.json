@@ -1,0 +1,501 @@
+{
+  "schema": 1,
+  "kind": "One original-eager contact demand capture; no FPS claim",
+  "plan": {
+    "kind": "One original-eager contact demand capture; no FPS claim",
+    "base": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+    "url": "http://127.0.0.1:4215/?diagnostics",
+    "viewport": {
+      "width": 1708,
+      "height": 926,
+      "browserDpr": 2,
+      "effectiveDpr": 1.75,
+      "canvasWidth": 2989,
+      "canvasHeight": 1620
+    },
+    "route": "ordinary menu → Surf → Padang → Big → Paddle out; idle rider; no synthetic stepping/fast-forward/pocket reflex",
+    "schedule": {
+      "afterCompletedSpinUpSimSeconds": 90,
+      "consecutivePostwaterEpochs": 15,
+      "fixedStepSeconds": 0.016666666666666666,
+      "overallSecondsFromOwnedChromeSpawn": 150,
+      "retries": 0
+    },
+    "graphics": {
+      "preset": "high",
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high"
+    },
+    "expectedConfig": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "runtimeOverrides": [
+      {
+        "realm": "page only",
+        "target": "Math.random",
+        "algorithm": "canonical FPS bootstrap Mulberry32",
+        "initialState": 24301,
+        "purpose": "deterministic menu/Three allocation sequence selects actual ordinary sea seed8761; worker RNG and SurfZoneConfig are not overridden"
+      }
+    ],
+    "workerRngOverride": false,
+    "camera": "unchanged ordinary ride",
+    "manifestSha256": "cdca9cbb343863e882eea54b4a5762d0b6dbfff37df87990a789ec98632193bc",
+    "build": [
+      {
+        "path": "assets/WorkerSurfZone-B5xWKLFK.js",
+        "bytes": 848363,
+        "sha256": "b8f798ada03f03c06514c749527a814da663f9f2c3b6a5dd25e4f8d34f25b9c0"
+      },
+      {
+        "path": "assets/devStepping-B13xA4xz.js",
+        "bytes": 320,
+        "sha256": "7d7e7ba06989d600d49b792edd68576330d4746eca02d999143eccad1b3c9a9d"
+      },
+      {
+        "path": "assets/index-BpKGe5Ov.js",
+        "bytes": 582425,
+        "sha256": "15091bf010422a12fb262c9680cc08ad7b3817acfbec2e33d73b0e27d100daf9"
+      },
+      {
+        "path": "assets/index-DA8NEfOT.css",
+        "bytes": 33213,
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+      },
+      {
+        "path": "assets/jevRecorder-DirY3i1K.js",
+        "bytes": 15917,
+        "sha256": "4034c634a7b67106a267cb8bdcfcf32ddd37be5212de8d602e58d9dcbd7a4d54"
+      },
+      {
+        "path": "assets/particleBench-0-fyXJ4_.js",
+        "bytes": 10708,
+        "sha256": "a0ac26397addeb8182c4e68c9dc66662fd83cb39b4ae7b502106464fb59910fd"
+      },
+      {
+        "path": "assets/rideRecorder-stoH_hRI.js",
+        "bytes": 41108,
+        "sha256": "d7a84d4b265eb0548c5c8cdde4570110162191110d5ab96fbb5d759eb6f24db6"
+      },
+      {
+        "path": "assets/surfZoneWorker-CeUF6aeU.js",
+        "bytes": 445256,
+        "sha256": "555f3d898a802b96679c8eb477034a8896fbaad315273544ce70596d5cde55bc"
+      },
+      {
+        "path": "assets/waterSheet-RG1Q4ZgU.js",
+        "bytes": 11689,
+        "sha256": "b31031278a5bae2866c6e8cea1873870cb50522fe64bbe2ea9a94e4fa366449e"
+      },
+      {
+        "path": "barrels/pad19-a20-l12.bin",
+        "bytes": 149848,
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      },
+      {
+        "path": "barrels/pad19-a30-l12.bin",
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      {
+        "path": "barrels/pad19-a45-l12.bin",
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      {
+        "path": "barrels/periodic-padang19s-l12.bin",
+        "bytes": 181852,
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      },
+      {
+        "path": "barrels/periodic-point21-a15-l12.bin",
+        "bytes": 106500,
+        "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+      },
+      {
+        "path": "barrels/periodic-point21-a23-l12.bin",
+        "bytes": 128172,
+        "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+      },
+      {
+        "path": "barrels/periodic-point21-a30-l12.bin",
+        "bytes": 173576,
+        "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+      },
+      {
+        "path": "barrels/periodic-reef42-l12.bin",
+        "bytes": 193180,
+        "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+      },
+      {
+        "path": "build.json",
+        "bytes": 21,
+        "sha256": "1b54c291836255044ce92d38c35cd59afc54fb8986153535a66017703803a914"
+      },
+      {
+        "path": "index.html",
+        "bytes": 1626,
+        "sha256": "7e96c3a47592d390e239b6b2bc5b78927bd9b012e748cb0a1bc0158b400ddd8b"
+      }
+    ]
+  },
+  "runId": "af17f719-9926-4bad-a45d-3e5c97fa0f1e",
+  "valid": false,
+  "incomplete": true,
+  "startedAt": "2026-10-04T00:17:39.666Z",
+  "sourceChecks": true,
+  "ownedChromeClosed": true,
+  "ownServerClosed": true,
+  "polls": [],
+  "served": [
+    {
+      "path": "assets/WorkerSurfZone-B5xWKLFK.js",
+      "sha256": "b8f798ada03f03c06514c749527a814da663f9f2c3b6a5dd25e4f8d34f25b9c0"
+    },
+    {
+      "path": "assets/devStepping-B13xA4xz.js",
+      "sha256": "7d7e7ba06989d600d49b792edd68576330d4746eca02d999143eccad1b3c9a9d"
+    },
+    {
+      "path": "assets/index-BpKGe5Ov.js",
+      "sha256": "15091bf010422a12fb262c9680cc08ad7b3817acfbec2e33d73b0e27d100daf9"
+    },
+    {
+      "path": "assets/index-DA8NEfOT.css",
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "path": "assets/jevRecorder-DirY3i1K.js",
+      "sha256": "4034c634a7b67106a267cb8bdcfcf32ddd37be5212de8d602e58d9dcbd7a4d54"
+    },
+    {
+      "path": "assets/particleBench-0-fyXJ4_.js",
+      "sha256": "a0ac26397addeb8182c4e68c9dc66662fd83cb39b4ae7b502106464fb59910fd"
+    },
+    {
+      "path": "assets/rideRecorder-stoH_hRI.js",
+      "sha256": "d7a84d4b265eb0548c5c8cdde4570110162191110d5ab96fbb5d759eb6f24db6"
+    },
+    {
+      "path": "assets/surfZoneWorker-CeUF6aeU.js",
+      "sha256": "555f3d898a802b96679c8eb477034a8896fbaad315273544ce70596d5cde55bc"
+    },
+    {
+      "path": "assets/waterSheet-RG1Q4ZgU.js",
+      "sha256": "b31031278a5bae2866c6e8cea1873870cb50522fe64bbe2ea9a94e4fa366449e"
+    },
+    {
+      "path": "barrels/pad19-a20-l12.bin",
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "path": "barrels/pad19-a30-l12.bin",
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "path": "barrels/pad19-a45-l12.bin",
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "path": "barrels/periodic-padang19s-l12.bin",
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "path": "barrels/periodic-point21-a15-l12.bin",
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    {
+      "path": "barrels/periodic-point21-a23-l12.bin",
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    {
+      "path": "barrels/periodic-point21-a30-l12.bin",
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    {
+      "path": "barrels/periodic-reef42-l12.bin",
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    {
+      "path": "build.json",
+      "sha256": "1b54c291836255044ce92d38c35cd59afc54fb8986153535a66017703803a914"
+    },
+    {
+      "path": "index.html",
+      "sha256": "7e96c3a47592d390e239b6b2bc5b78927bd9b012e748cb0a1bc0158b400ddd8b"
+    }
+  ],
+  "literalBuildId": "58ceb6a29",
+  "preSpawnPortProof": {
+    "closed": true,
+    "reason": "ECONNREFUSED"
+  },
+  "chromeSpawnedAt": "2026-10-04T00:17:39.720Z",
+  "chromeProcess": {
+    "pid": 18658,
+    "profile": "/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-contact-demand-C4I89W",
+    "spawnargs": [
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "--remote-debugging-port=9625",
+      "--user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-contact-demand-C4I89W",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-extensions",
+      "--disable-backgrounding-occluded-windows",
+      "--disable-renderer-backgrounding",
+      "--disable-background-timer-throttling",
+      "--autoplay-policy=no-user-gesture-required",
+      "--window-size=1708,966",
+      "--window-position=60,60",
+      "--app=about:blank"
+    ],
+    "stderr": "\nDevTools listening on ws://127.0.0.1:9625/devtools/browser/2dc5f2e7-014d-402a-8dd2-8b29bf362067\nTrying to load the allocator multiple times. This is *not* supported.\n[18658:11451823:1004/011742.404707:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT\nCreated TensorFlow Lite XNNPACK delegate for CPU.\n",
+    "exit": {
+      "at": "2026-10-04T00:17:54.828Z",
+      "code": 0,
+      "signal": null
+    }
+  },
+  "lastTargetPollError": "TypeError: fetch failed",
+  "lastTargetInventory": [
+    {
+      "description": "",
+      "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9625/devtools/page/7E280D0DE3C61D9DF8114F5ACCEFFD3C",
+      "id": "7E280D0DE3C61D9DF8114F5ACCEFFD3C",
+      "title": "Google Hangouts",
+      "type": "background_page",
+      "url": "chrome-extension://nkeimhogjdpnpccoofpliimaahmaaome/background.html",
+      "webSocketDebuggerUrl": "ws://127.0.0.1:9625/devtools/page/7E280D0DE3C61D9DF8114F5ACCEFFD3C"
+    },
+    {
+      "description": "",
+      "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9625/devtools/page/11A3F38D55DAFFB151E7D147AFBE9650",
+      "id": "11A3F38D55DAFFB151E7D147AFBE9650",
+      "title": "New Tab",
+      "type": "page",
+      "url": "chrome://newtab/",
+      "webSocketDebuggerUrl": "ws://127.0.0.1:9625/devtools/page/11A3F38D55DAFFB151E7D147AFBE9650"
+    },
+    {
+      "description": "",
+      "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9625/devtools/page/FFA5B3B6488D627003EE5554C954E4AC",
+      "id": "FFA5B3B6488D627003EE5554C954E4AC",
+      "title": "",
+      "type": "browser_ui",
+      "url": "chrome://omnibox-popup.top-chrome/",
+      "webSocketDebuggerUrl": "ws://127.0.0.1:9625/devtools/page/FFA5B3B6488D627003EE5554C954E4AC"
+    },
+    {
+      "description": "",
+      "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@f89f3a4363808e117c592adedcf9947882ac3b79/inspector.html?ws=127.0.0.1:9625/devtools/page/4ED10E2D7FF45F6CB0721C39736CC7A1",
+      "id": "4ED10E2D7FF45F6CB0721C39736CC7A1",
+      "title": "",
+      "type": "browser_ui",
+      "url": "chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html",
+      "webSocketDebuggerUrl": "ws://127.0.0.1:9625/devtools/page/4ED10E2D7FF45F6CB0721C39736CC7A1"
+    }
+  ],
+  "rideReadyAt": "2026-10-04T00:17:54.682Z",
+  "initial": {
+    "config": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "status": {
+      "seaTime": 311.3577132243044,
+      "timeToSet": 24.98333333333335,
+      "stepMs": 36.30000001192093,
+      "compute": "gpu",
+      "cells": 116000,
+      "breakPoint": {
+        "x": -50,
+        "z": -265.09137870490895
+      },
+      "breakDepth": 4.849587719671077,
+      "breaker": {
+        "value": 0.26596061299602175,
+        "type": "spilling"
+      },
+      "breakingFraction": 0.013271688238538354,
+      "lipLaunches": 0,
+      "lipVolume": 0,
+      "lipJets": 0,
+      "lipRollers": 0,
+      "lipAirborne": 0,
+      "spray": 1101,
+      "onsetScale": 1,
+      "ride": {
+        "phase": "prone",
+        "speed": 0.4605936607371819,
+        "boardSpeed": 0.473154615502994,
+        "cue": false,
+        "popUp": {
+          "outcome": "none",
+          "duration": 0,
+          "landingPeak": 0,
+          "frontShare": 0
+        },
+        "resets": 0,
+        "wave": {
+          "valid": true,
+          "directionX": 0,
+          "directionZ": 1,
+          "aheadOfCrest": 18.786186998342277,
+          "crestSpeed": 9.490575208926657,
+          "faceHeight": 0.3264881502380845,
+          "faceFraction": 0.08874646761622086,
+          "crestBreaking": 0,
+          "curlDistance": null,
+          "curlSide": 0,
+          "speedOverGround": 0.4605936607371819,
+          "speedShoreward": -0.43063786994924225,
+          "speedAlongCrest": 0.16339383488019887,
+          "requiredSpeed": null
+        },
+        "balance": 0.9999892579681163,
+        "bank": 0,
+        "leash": {
+          "snapped": false,
+          "tension": 0,
+          "distance": 0,
+          "reeling": false
+        },
+        "duck": 0,
+        "boardInReach": false,
+        "knock": 0,
+        "breath": 1,
+        "rescues": 0
+      },
+      "pipelineMs": {
+        "water": 5.0999999940395355,
+        "breaking": 1.0999999940395355,
+        "front": 6.0999999940395355,
+        "lip": 0.5,
+        "foam": 8.200000017881393,
+        "airSources": 0.699999988079071,
+        "aeration": 7.300000011920929,
+        "board": 7.300000011920929,
+        "contact": 0.5999999940395355,
+        "bubbles": 0.9000000059604645,
+        "spray": 1.2999999821186066,
+        "sounds": 0.10000002384185791,
+        "step": 40.400000005960464,
+        "surface": 0,
+        "snapshotAeration": 0,
+        "flow": 0,
+        "snapshotFields": 6.699999988079071,
+        "snapshot": 7.899999976158142,
+        "summary": 0.5,
+        "batch": 40.400000005960464,
+        "batchSteps": 1,
+        "total": 48.79999998211861,
+        "deviceSubsteps": 1,
+        "devicePack": 1.199999988079071,
+        "deviceCfl": 0.5,
+        "deviceEncode": 0.4000000059604645,
+        "deviceMap": 2,
+        "deviceUnpack": 0.9000000059604645
+      }
+    },
+    "start": {
+      "config": {
+        "spot": "padang",
+        "seed": 8761,
+        "significantHeight": 3.8,
+        "peakPeriod": 18,
+        "directionDegrees": 0,
+        "spreading": 150,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "dx": 2,
+        "fineSpacing": 1,
+        "componentCount": 64
+      },
+      "rider": true,
+      "barrelCaseCount": 4,
+      "renderSpacingHasOwn": true,
+      "renderSpacingUndefined": true
+    },
+    "startSerial": 1,
+    "advanceSerial": 2,
+    "workerUrl": "http://127.0.0.1:4215/assets/surfZoneWorker-CeUF6aeU.js",
+    "hostPortObserved": true,
+    "viewport": [
+      1708,
+      891
+    ],
+    "browserDpr": 2,
+    "canvas": [
+      2989,
+      1559
+    ],
+    "grid": {
+      "xMin": -160,
+      "zMin": -1233.0249111256337,
+      "spacing": 2,
+      "nx": 161,
+      "nz": 633
+    },
+    "maskSpacing": 1,
+    "renderSpacing": 2,
+    "maxBatchSteps": 1,
+    "waterLook": "rich",
+    "vertexNormals": false,
+    "particles": "high",
+    "graphics": {
+      "preset": "high",
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high"
+    },
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"
+  },
+  "error": "Error: Native viewport/density differs\n    at assert (file:///private/tmp/contact-lazy-height-20261004/adapter.mjs:28:56)\n    at route (file:///private/tmp/contact-lazy-height-20261004/adapter.mjs:79:2)\n    at async run (file:///private/tmp/contact-lazy-height-20261004/adapter.mjs:102:135)\n    at async file:///private/tmp/contact-lazy-height-20261004/adapter.mjs:104:5",
+  "portProof": {
+    "closed": true,
+    "reason": "ECONNREFUSED"
+  },
+  "closedAt": "2026-10-04T00:17:55.298Z"
+}

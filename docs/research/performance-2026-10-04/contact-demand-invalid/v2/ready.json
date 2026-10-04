@@ -1,0 +1,83 @@
+{
+  "schema": 2,
+  "hardwareStarted": false,
+  "hardwareAuthorization": "pending root new-adapter review",
+  "runtimeDirectory": "/private/tmp/contact-lazy-height-20261004",
+  "adapterDirectory": "/private/tmp/contact-lazy-height-20261004-v2",
+  "originalManifest": {
+    "path": "/private/tmp/contact-lazy-height-20261004/manifest.json",
+    "sha256": "cdca9cbb343863e882eea54b4a5762d0b6dbfff37df87990a789ec98632193bc"
+  },
+  "originalFailedRun": {
+    "path": "/private/tmp/contact-lazy-height-20261004/run/report.json",
+    "sha256": "db5e3e0471228d196cb04d479cb1b0428d6985de078e778674f42cc677b74eed",
+    "valid": false,
+    "polls": 0,
+    "epochsCollected": 0,
+    "failure": "Nativeviewportguard before counts",
+    "observedViewport": [
+      1708,
+      891
+    ],
+    "observedCanvas": [
+      2989,
+      1559
+    ]
+  },
+  "manifest": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v2/manifest.json",
+    "sha256": "352c8826a20ce07baf0a0bf83da51e51a5306c526c4a87e855c77bb12fbf3761"
+  },
+  "adapter": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v2/adapter.mjs",
+    "sha256": "7b4a2f7fcdbdc84308741f0dbea89a1be230f53986f4d224f9e5c250de581749"
+  },
+  "deltaPatch": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v2/adapter-v1-to-v2.patch",
+    "sha256": "fa2c018304d52eb7510749a519176b971b6713fc95cacdb7f82488ba1a8d0914"
+  },
+  "note": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v2/delta.md",
+    "sha256": "2dee939bd395744c2ee43cf79e185744ac88f5605552ed9b9a24211a4922205d"
+  },
+  "preparedPlan": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v2/prepared-plan.json",
+    "sha256": "7b310bccaaee5b284c0b8188fe15792a18c9545115fd8d4cf66443fe7c1a25e0"
+  },
+  "sourceClosureSha256": "99c6fddcd618feda0cac5ab0e4a0fbe1ab37e22f4ba18ad2c29f3cf7caae6f00",
+  "buildClosureSha256": "fc2ae942bb1767f0472c70143fb50f76434676c2c562bdb1d3ecd9fed9bc8066",
+  "sourceBuildUnchanged": true,
+  "guardUnchanged": true,
+  "syntaxAndDryPlanPassed": true,
+  "checksReused": {
+    "observer": "7/7 pure tests, actual original eager classes; final tests.log",
+    "summary": "4/4 pure tests; summary-tests.log",
+    "typescript": "npm run build includes strict tsc -b; no failures",
+    "vite": "BUILD_ID=58ceb6a29 npm run build passed; build.log",
+    "syntax": "node --check adapter.mjs and count-summary.mjs passed",
+    "noHardwareRun": true,
+    "noProductionChanges": true,
+    "v2": "node --check adapter.mjs passed; default invocation verified all original550source/19build/13preparation plus3new artifacts and produced plan only; no server/browser/runtime rebuild"
+  },
+  "ports": {
+    "preview": 4215,
+    "ownedCdp": 9625
+  },
+  "schedule": {
+    "afterCompletedSpinUpSimSeconds": 90,
+    "consecutivePostwaterEpochs": 15,
+    "fixedStepSeconds": 0.016666666666666666,
+    "overallSecondsFromOwnedChromeSpawn": 150,
+    "retries": 0
+  },
+  "worker": {
+    "path": "assets/surfZoneWorker-CeUF6aeU.js",
+    "bytes": 445256,
+    "sha256": "555f3d898a802b96679c8eb477034a8896fbaad315273544ce70596d5cde55bc"
+  },
+  "main": {
+    "path": "assets/index-BpKGe5Ov.js",
+    "bytes": 582425,
+    "sha256": "15091bf010422a12fb262c9680cc08ad7b3817acfbec2e33d73b0e27d100daf9"
+  }
+}

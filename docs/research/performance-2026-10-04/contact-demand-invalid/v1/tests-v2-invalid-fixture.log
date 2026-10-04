@@ -1,0 +1,27 @@
+
+ RUN  v5.0.1 /private/tmp/contact-lazy-height-20261004/scratch
+
+ ❯ src/wave/contactDemandQa.test.ts (7 tests | 1 failed) 729ms
+   ❯ QA eager contact demand observer (7)
+     × records candidate misses and XZ-only overlapping candidate reads separately 9ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/contactDemandQa.test.ts > QA eager contact demand observer > records candidate misses and XZ-only overlapping candidate reads separately
+AssertionError: expected 0 to be greater than 0
+ ❯ src/wave/contactDemandQa.test.ts:97:27
+     95|     expect(observedResults).toEqual(referenceResults); expect(observed…
+     96|     const e = observer.epochs[0];
+     97|     expect(e.heldXz.size).toBeGreaterThan(0); expect(e.queries[1].held…
+       |                           ^
+     98|     expect(e.queries.some(q => q.candidates.some(c => c.crossings === …
+     99|     for (const trace of e.queries) expect(trace.heldXz.every(s => e.he…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  01:08:35
+   Duration  946ms (tests 84%, transform 13%, import 3%)
+

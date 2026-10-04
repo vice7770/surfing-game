@@ -1,0 +1,53 @@
+--- original/adapter.mjs
++++ v2/adapter.mjs
+@@ -7,22 +7,22 @@
+ import {spawn} from 'node:child_process';
+ import {join,resolve,extname} from 'node:path';
+ import {tmpdir} from 'node:os';
+-import {Page,sleep} from './scratch/scripts/browser/cdp.mjs';
+-import {summarize} from './count-summary.mjs';
+-const WORK='/private/tmp/contact-lazy-height-20261004',DIST=join(WORK,'scratch/dist'),PORT=4215,CDP=9625,PAGE_URL='http://127.0.0.1:'+PORT+'/?diagnostics';
++import {Page,sleep} from '../contact-lazy-height-20261004/scratch/scripts/browser/cdp.mjs';
++import {summarize} from '../contact-lazy-height-20261004/count-summary.mjs';
++const RUNTIME_WORK='/private/tmp/contact-lazy-height-20261004',ADAPTER_WORK='/private/tmp/contact-lazy-height-20261004-v2',DIST=join(RUNTIME_WORK,'scratch/dist'),PORT=4215,CDP=9625,PAGE_URL='http://127.0.0.1:'+PORT+'/?diagnostics';
+ const args=Object.fromEntries(process.argv.slice(2).map(a=>{const i=a.indexOf('=');if(!a.startsWith('--')||i<0)throw Error('Use --name=value');return[a.slice(2,i),a.slice(i+1)];}));
+ if(Object.keys(args).some(k=>!['run','out'].includes(k)))throw Error('Only run/out may vary');
+ if(args.run&&!['true','false'].includes(args.run))throw Error('run=true|false');
+ const hash=b=>createHash('sha256').update(b).digest('hex');
+-const manifestPath=join(WORK,'manifest.json'),manifest=JSON.parse(readFileSync(manifestPath));
++const manifestPath=join(ADAPTER_WORK,'manifest.json'),manifest=JSON.parse(readFileSync(manifestPath));
+ const GRAPHICS={preset:'high',renderScale:1,nativePixelDensity:true,frameLimit:60,waterSimulation:'auto',seaDetail:'rich',caustics:true,sprayMist:true,oceanView:'far',foam:'detailed',waterLook:'rich',particles:'high'};
+ const EXPECTED={spot:'padang',seed:8761,significantHeight:3.8,peakPeriod:18,directionDegrees:0,spreading:150,tide:0,windSpeed:0,stage:2,compute:'auto',dx:2,fineSpacing:1,componentCount:64};
+-const PLAN={kind:'One original-eager contact demand capture; no FPS claim',base:manifest.base,url:PAGE_URL,viewport:{width:1708,height:926,browserDpr:2,effectiveDpr:1.75,canvasWidth:2989,canvasHeight:1620},route:'ordinary menu → Surf → Padang → Big → Paddle out; idle rider; no synthetic stepping/fast-forward/pocket reflex',schedule:{afterCompletedSpinUpSimSeconds:90,consecutivePostwaterEpochs:15,fixedStepSeconds:1/60,overallSecondsFromOwnedChromeSpawn:150,retries:0},graphics:GRAPHICS,expectedConfig:EXPECTED,runtimeOverrides:[{realm:'page only',target:'Math.random',algorithm:'canonical FPS bootstrap Mulberry32',initialState:0x5eed,purpose:'deterministic menu/Three allocation sequence selects actual ordinary sea seed8761; worker RNG and SurfZoneConfig are not overridden'}],workerRngOverride:false,camera:'unchanged ordinary ride',manifestSha256:hash(readFileSync(manifestPath)),build:manifest.build};
+-for(const r of manifest.sources)if(hash(readFileSync(join(WORK,'scratch',r.path)))!==r.sha256)throw Error('Scratch source changed:'+r.path);
++const PLAN={kind:'One original-eager contact demand capture; no FPS claim',base:manifest.base,url:PAGE_URL,viewport:{width:1708,height:926,browserDpr:2,effectiveDpr:1.75,canvasWidth:2989,canvasHeight:1620},route:'ordinary menu → Surf → Padang → Big → Paddle out; idle rider; no synthetic stepping/fast-forward/pocket reflex',schedule:{afterCompletedSpinUpSimSeconds:90,consecutivePostwaterEpochs:15,fixedStepSeconds:1/60,overallSecondsFromOwnedChromeSpawn:150,retries:0},graphics:GRAPHICS,expectedConfig:EXPECTED,runtimeOverrides:[{realm:'page only',target:'Math.random',algorithm:'canonical FPS bootstrap Mulberry32',initialState:0x5eed,purpose:'deterministic menu/Three allocation sequence selects actual ordinary sea seed8761; worker RNG and SurfZoneConfig are not overridden'}],workerRngOverride:false,camera:'unchanged ordinary ride',manifestSha256:hash(readFileSync(manifestPath)),runtimeDirectory:RUNTIME_WORK,adapterDirectory:ADAPTER_WORK,viewportPlacement:'fit on actual ready menu document before selecting Surf; guard unchanged',originalFailedRun:manifest.originalFailedRun,build:manifest.build};
++for(const r of manifest.sources)if(hash(readFileSync(join(RUNTIME_WORK,'scratch',r.path)))!==r.sha256)throw Error('Scratch source changed:'+r.path);
+ for(const r of manifest.build)if(hash(readFileSync(join(DIST,r.path)))!==r.sha256)throw Error('Build changed:'+r.path);
+-for(const r of manifest.preparation)if(hash(readFileSync(join(WORK,r.path)))!==r.sha256)throw Error('Preparation changed:'+r.path);
++for(const r of manifest.preparation)if(hash(readFileSync(r.absolutePath??join(ADAPTER_WORK,r.path)))!==r.sha256)throw Error('Preparation changed:'+r.path);
+ if(args.run!=='true'){console.log(JSON.stringify({...PLAN,chromeStarted:false},null,2));process.exit(0);}
+-const OUT=args.out??join(WORK,'run');if(existsSync(OUT))throw Error('Output exists; refusing overwrite');mkdirSync(OUT,{recursive:true});
++const OUT=resolve(args.out??join(ADAPTER_WORK,'run'));if(!OUT.startsWith(ADAPTER_WORK+'/'))throw Error('V2 output must stay inside its new adapter directory');if(existsSync(OUT))throw Error('Output exists; refusing overwrite');mkdirSync(OUT,{recursive:true});
+ const report={schema:1,kind:PLAN.kind,plan:PLAN,runId:randomUUID(),valid:false,incomplete:true,startedAt:new Date().toISOString(),sourceChecks:true,ownedChromeClosed:false,ownServerClosed:false,polls:[]};
+ const save=()=>writeFileSync(join(OUT,'report.json'),JSON.stringify(report,null,2)+'\n');save();
+ const assert=(condition,message)=>{if(!condition)throw Error(message);};
+@@ -57,7 +57,7 @@
+  overall=setTimeout(()=>deadlineReject(Error('Hard150s overall deadline; no retry')),150000);
+  let launchError;chrome.once('error',e=>{launchError=e;report.chromeProcess.startError=String(e);});let target;
+  for(let i=0;i<100&&!target;i++){await sleep(150);if(launchError)throw launchError;try{const inventory=await(await fetch('http://127.0.0.1:'+CDP+'/json/list',{signal:AbortSignal.timeout(500)})).json();report.lastTargetInventory=inventory;const pages=inventory.filter(t=>t.type==='page');if(pages.length>1)throw Error('Ambiguous owned page inventory');if(pages.length===1)target=pages[0];}catch(e){if(String(e).includes('Ambiguous'))throw e;report.lastTargetPollError=String(e);}}
+- assert(target?.webSocketDebuggerUrl,'Owned sole page unavailable');page=await Page.connect(target.webSocketDebuggerUrl);await page.send('Page.enable');await page.send('Runtime.enable');await page.send('Emulation.setFocusEmulationEnabled',{enabled:true});await page.fitViewport(1708,926);
++ assert(target?.webSocketDebuggerUrl,'Owned sole page unavailable');page=await Page.connect(target.webSocketDebuggerUrl);await page.send('Page.enable');await page.send('Runtime.enable');await page.send('Emulation.setFocusEmulationEnabled',{enabled:true});
+ }
+ async function validateServed(){
+  report.served=[];
+@@ -67,6 +67,10 @@
+ async function route(){
+  await page.send('Page.addScriptToEvaluateOnNewDocument',{source:'('+pagePrelude.toString()+')('+JSON.stringify({graphics:GRAPHICS})+');'});await page.send('Page.navigate',{url:PAGE_URL});
+  await page.waitFor("window.__contactQa?.fatal || (document.querySelector('.screen-menu')&&!document.querySelector('.is-scene-pending'))",45000);
++ // V2 only: real Chrome page chrome can differ from about:blank. Fit before ordinary Surf route.
++ await page.fitViewport(1708,926);
++ await page.waitFor("innerWidth===1708&&innerHeight===926&&window.breaklineDiagnostics?.canvas.width===2989&&window.breaklineDiagnostics?.canvas.height===1620",10000);
++ report.menuViewportSettled=await page.eval("({viewport:[innerWidth,innerHeight],browserDpr:devicePixelRatio,canvas:[window.breaklineDiagnostics.canvas.width,window.breaklineDiagnostics.canvas.height],screen:document.querySelector('#app')?.dataset.screen})");save();
+  await page.click('.tile','Surf');await page.waitFor("document.querySelector('#app')?.dataset.screen==='surf'",15000);await page.click('.spot-card','Padang');await page.click('.segmented button','Big');await page.click('.button-primary','Paddle out');
+  await page.waitFor("window.__contactQa?.fatal || (document.querySelector('#app')?.dataset.screen==='ride'&&window.breaklineDiagnostics?.mode.ready===true&&window.breaklineDiagnostics.mode.host?.snapshot?.status?.compute==='gpu')",45000);
+  if(await page.eval('window.__contactQa.fatal'))throw Error(await page.eval('window.__contactQa.fatal'));

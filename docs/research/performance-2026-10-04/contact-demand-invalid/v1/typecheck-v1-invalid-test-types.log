@@ -1,0 +1,40 @@
+src/wave/contactDemandQa.test.ts(43,12): error TS2339: Property 'simulation' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(44,65): error TS2339: Property 'afterWater' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(63,68): error TS2339: Property 'simulation' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(64,43): error TS2339: Property 'afterWater' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(74,89): error TS2339: Property 'simulation' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(75,68): error TS2339: Property 'simulation' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(75,105): error TS2339: Property 'afterWater' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(93,68): error TS2339: Property 'simulation' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(94,46): error TS2339: Property 'afterWater' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(103,90): error TS2339: Property 'gauge' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(104,12): error TS2339: Property 'gauge' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(106,12): error TS2339: Property 'simulation' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(106,49): error TS2339: Property 'afterWater' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(107,12): error TS2339: Property 'simulation' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(108,43): error TS2339: Property 'afterWater' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(108,64): error TS2339: Property 'gauge' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(108,87): error TS2339: Property 'simulation' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(112,12): error TS2339: Property 'afterWater' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(118,70): error TS2339: Property 'simulation' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.
+src/wave/contactDemandQa.test.ts(118,107): error TS2339: Property 'afterWater' does not exist on type 'never'.
+  The intersection 'SurfZoneRunner & { afterWater(): void; gauge: { update(): void; }; }' was reduced to 'never' because property 'gauge' exists in multiple constituents and is private in some.

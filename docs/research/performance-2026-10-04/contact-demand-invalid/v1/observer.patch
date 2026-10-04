@@ -1,0 +1,397 @@
+--- a/src/game/SurfZoneWorkerCore.ts
++++ b/src/game/SurfZoneWorkerCore.ts
+@@ -1,3 +1,4 @@
++import { attachContactDemandQa } from '../wave/contactDemandQa';
+ import type { BoussinesqSolver } from '../wave/BoussinesqSolver';
+ import { SurfZoneRunner, type RideRequest, type SurfZoneBuffers, type SurfZoneRunnerOptions } from '../wave/SurfZoneRunner';
+ import type { SprayLook } from '../wave/SprayCloud';
+@@ -90,7 +91,7 @@
+           runner.setSprayEnabled(this.sprayEnabled);
+           runner.setParticleLevel(this.particleLevel);
+           this.runner = runner;
+-          this.ready(runner);
++          this.ready(runner, options ?? {});
+         })();
+       }
+       const runner = new SurfZoneRunner(config, options);
+@@ -99,7 +100,7 @@
+       runner.setSprayEnabled(this.sprayEnabled);
+       runner.setParticleLevel(this.particleLevel);
+       this.runner = runner;
+-      this.ready(runner);
++      this.ready(runner, options ?? {});
+       return;
+     }
+     const { runner } = this;
+@@ -131,7 +132,8 @@
+     runner.simulation.importState(decodeSurfZoneState(sea));
+   }
+ 
+-  private ready(runner: SurfZoneRunner): void {
++  private ready(runner: SurfZoneRunner, options: SurfZoneRunnerOptions): void {
++    attachContactDemandQa(runner, options);
+     const buffers = runner.createBuffers();
+     runner.fill(buffers);
+     const bed = runner.bed.slice();
+--- a/src/game/surfZoneWorker.ts
++++ b/src/game/surfZoneWorker.ts
+@@ -1,4 +1,6 @@
+ /// <reference lib="webworker" />
++import type { ContactDemandObserver } from '../wave/contactDemandQa';
++import type { SurfZoneRunner } from '../wave/SurfZoneRunner';
+ import { GpuBoussinesq } from '../wave/gpu/GpuBoussinesq';
+ import { SurfZoneWorkerCore, type SurfZoneRequest } from './SurfZoneWorkerCore';
+ 
+@@ -6,6 +8,35 @@
+ const scope = self as unknown as DedicatedWorkerGlobalScope;
+ // Stage 2 water steps on the GPU where WebGPU allows (plan P6), else on the CPU.
+ const core = new SurfZoneWorkerCore((reply, transfer) => scope.postMessage(reply, transfer), (solver) => GpuBoussinesq.create(solver));
++// QA-only control messages. Ordinary requests/replies and their transfer buffers remain unchanged.
++const qaTag = '__contactDemand20261004';
++const qaCore = core as unknown as { runner?: SurfZoneRunner; stepping?: Promise<void> };
++let qaStarts = 0, qaAdvances = 0;
++let qaStart: unknown;
++scope.addEventListener('message', (event: MessageEvent) => {
++  const request = event.data;
++  if (!request?.[qaTag]) {
++    if (request?.type === 'start') {
++      qaStarts += 1;
++      qaStart = { config: { ...request.config }, rider: request.options?.rider, barrelCaseCount: request.options?.barrelCases?.length ?? 0,
++        renderSpacingHasOwn: Object.prototype.hasOwnProperty.call(request.options ?? {}, 'renderSpacing'), renderSpacingUndefined: request.options?.renderSpacing === undefined };
++    }
++    if (request?.type === 'advance') qaAdvances += 1;
++    return;
++  }
++  event.stopImmediatePropagation();
++  try {
++    const observer = (globalThis as unknown as { __contactDemandQa?: ContactDemandObserver }).__contactDemandQa;
++    if (!observer || !qaCore.runner || qaStarts !== 1) throw Error('QA needs exactly one ready ordinary contact runner');
++    let value: unknown;
++    if (request.command === 'summary') value = { ...observer.status(), qaStarts, qaAdvances, qaStart, compute: qaCore.runner.simulation.device ? 'gpu' : 'cpu', workerMathRandomNative: /\[native code\]/.test(Function.prototype.toString.call(Math.random)) };
++    else if (request.command === 'collect') {
++      if (qaCore.stepping || !observer.status().complete || !observer.status().ordinaryArraysIdentical) throw Error('QA requires completed capture and settled ordinary runner');
++      value = { json: observer.dump(), qaStarts, qaAdvances, qaStart, seaTime: qaCore.runner.simulation.solver.time, workerMathRandomNative: /\[native code\]/.test(Function.prototype.toString.call(Math.random)) };
++    } else throw Error('Unknown QA control');
++    scope.postMessage({ [qaTag]: true, id: request.id, value });
++  } catch (cause) { scope.postMessage({ [qaTag]: true, id: request.id, error: String(cause) }); }
++});
+ scope.onmessage = (event: MessageEvent<SurfZoneRequest>) => {
+   const pending = core.handle(event.data);
+   // A failure inside an async step reaches the page's onerror like a synchronous one.
+--- /dev/null
++++ b/src/wave/contactDemandQa.test.ts
+@@ -0,0 +1,134 @@
++import { describe, expect, it } from 'vitest';
++import { ContactDemandObserver, DEMAND_SCHEDULE, rowHalo } from './contactDemandQa';
++import { FRONT_FIELD, FRONT_STRIDE } from './barrel/frontRecords';
++import { ProfileLibrary } from './barrel/ProfileLibrary';
++import { createContactHit, SweptContact } from './barrel/sweptContact';
++import { LOFT_SAMPLES } from './barrel/sweptLoft';
++import { tubeCase } from './barrel/toyCase';
++
++const records = () => {
++  const out = new Float32Array(21 * FRONT_STRIDE);
++  for (let k = 0; k < 21; k++) {
++    const o = k * FRONT_STRIDE;
++    out[o + FRONT_FIELD.x] = k + 0.5; out[o + FRONT_FIELD.z] = -100; out[o + FRONT_FIELD.front] = 1; out[o + FRONT_FIELD.sigma] = k;
++    out[o + FRONT_FIELD.tau] = .45; out[o + FRONT_FIELD.footHeight] = 2.1; out[o + FRONT_FIELD.footDepth] = 7; out[o + FRONT_FIELD.throwZ] = -100;
++  }
++  return out;
++};
++const makeContact = () => new SweptContact(new ProfileLibrary([tubeCase(.3)]), .05);
++const fakeRunner = (contact: SweptContact, tick: () => void) => ({
++  contact, config: { tide: .5, spot: 'padang', seed: 8761 }, grid: { spacing: 2, nx: 2, nz: 2, xMin: 0, zMin: -100 }, water: { spacing: 2 },
++  simulation: { solver: { time: 100, restLevel: .5, nx: 2, nz: 2, dx: 2, h: new Float64Array([1.000000000000001, 2, 3, 4]), bed: new Float64Array([-2.000000000000001, -3, -4, -5]), xCenters: new Float64Array([1, 3]), zCenters: new Float64Array([-100, -98]), dz: new Float64Array([2, 2]) }, windowXMin: 0 },
++  afterWater: tick, gauge: { update: tick },
++} as any);
++const byteValues = (contact: SweptContact) => Object.fromEntries(Object.entries(contact.last!).map(([k, v]) => [k, ArrayBuffer.isView(v) ? Array.from(new Uint8Array(v.buffer, v.byteOffset, v.byteLength)) : v]));
++
++describe('QA eager contact demand observer', () => {
++  it('clamps normal position halos to final surviving runs', () => {
++    expect(rowHalo(2, [[2, 5], [7, 8]])).toEqual([2, 3]);
++    expect(rowHalo(5, [[2, 5], [7, 8]])).toEqual([4, 5]);
++    expect(rowHalo(7, [[2, 5], [7, 8]])).toEqual([7, 8]);
++    expect(() => rowHalo(6, [[2, 5], [7, 8]])).toThrow('outside every original final run');
++  });
++  it('preserves all original height calls and full eager output bytes with a stateful callback', () => {
++    const reference = makeContact(), observed = makeContact();
++    const sequence = (calls: number[][]) => (x: number, z: number) => { calls.push([x, z]); return .5 + 1e-7 * calls.length + x * 1e-8 + z * 1e-8; };
++    const refCalls: number[][] = [], obsCalls: number[][] = [];
++    const input = new Float32Array(42 * FRONT_STRIDE); input.set(records()); input.set(records(), 21 * FRONT_STRIDE);
++    for (let k = 21; k < 42; k++) { const o = k * FRONT_STRIDE; input[o + FRONT_FIELD.front] = 2; input[o + FRONT_FIELD.x] += 9.5; input[o + FRONT_FIELD.tau] = .2; }
++    const inputBefore = input.slice();
++    const runner = fakeRunner(observed, () => observed.update(input, 42, .5, sequence(obsCalls)));
++    const observer = new ContactDemandObserver(runner, {});
++    runner.simulation.solver.time += 90;
++    reference.update(input, 42, .5, sequence(refCalls)); runner.afterWater();
++    expect(obsCalls).toEqual(refCalls); expect(byteValues(observed)).toEqual(byteValues(reference)); expect(input).toEqual(inputBefore);
++    const e = observer.epochs[0];
++    expect(e.heightCalls.initial + e.heightCalls.forwardRest + e.heightCalls.seal).toBe(refCalls.length);
++    expect(e.heightCalls.forwardRest).toBeGreaterThan(0); expect(e.heightCalls.seal).toBeGreaterThan(0);
++    expect(e.normalRows).toBe(e.runs.reduce((sum, [a,b]) => sum + b-a+1, 0)); expect(e.normalMs).toBeGreaterThanOrEqual(0);
++  });
++  it('preserves ordered hits, misses, floor results and reused miss output fields', () => {
++    const reference = makeContact(), observed = makeContact(), input = records();
++    const originalCalls: unknown[] = [], observedCalls: unknown[] = [];
++    const run = (contact: SweptContact, target: unknown[]) => {
++      contact.update(input, 21, .5, () => .5);
++      const hit = createContactHit();
++      for (const [x, y, z] of [[10.5, 3, -93], [10.5, 5, -93], [1000, -200, -1000], [10.5, -100, -93]]) {
++        const before = { ...hit }; const result = contact.query(x, y, z, hit); target.push({ before, result, after: { ...hit } });
++      }
++      target.push(contact.floorAt(10.5, -93), contact.floorAt(1000, -1000));
++    };
++    const runner = fakeRunner(observed, () => run(observed, observedCalls));
++    const observer = new ContactDemandObserver(runner, {}); runner.simulation.solver.time += 90;
++    run(reference, originalCalls); runner.afterWater();
++    expect(observedCalls).toEqual(originalCalls); expect(reference.stats).toEqual(observed.stats);
++    const e = observer.epochs[0]; expect(e.queries).toHaveLength(6);
++    expect(e.queries[2].result).toBe(false); expect(e.queries[2].initial).toEqual(e.queries[2].output);
++    expect(e.queries.slice(4).every(q => q.normalVertices.length === 0)).toBe(true);
++    expect(e.hitNormalVertices.size).toBeGreaterThan(0); expect(e.heightRows.size).toBeGreaterThan(0);
++    expect(e.candidates.size).toBeGreaterThan(0); expect(e.haloRows.size).toBeLessThan(e.normalRows);
++  });
++  it('copies F64 provider authority separately before original callbacks can mutate it', () => {
++    const contact = makeContact(); let runner: ReturnType<typeof fakeRunner>;
++    runner = fakeRunner(contact, () => contact.update(records(), 21, .5, () => { runner.simulation.solver.h[0] = 99; return .5; }));
++    const observer = new ContactDemandObserver(runner, {}); runner.simulation.solver.time += 90; runner.afterWater();
++    const f = observer.firstFixture as any;
++    expect(f.solver.h).toBeInstanceOf(Float64Array); expect(f.solver.h[0]).toBe(1.000000000000001); expect(f.solver.bed[0]).toBe(-2.000000000000001);
++    expect(f.solver.h[0]).not.toBe(Math.fround(f.solver.h[0])); expect(f.nodeSpacing).toBe(2); expect(f.solver.dz).toEqual(new Float64Array([2, 2]));
++  });
++  it('records candidate misses and XZ-only overlapping candidate reads separately', () => {
++    const observed = makeContact(), reference = makeContact(); const observedResults: unknown[] = [], referenceResults: unknown[] = [];
++    const heldFixture = (contact: SweptContact) => {
++      const original = contact.query, state = contact as any;
++      contact.query = (x, y, z, hit) => {
++        const result = original.call(contact, x, y, z, hit);
++        if (result && x === 10.3 && z === -93) {
++          // Original eager public-mutation fixture: an indexed later strip is placed over the found strip.
++          const first = state.cellStrips[state.found], later = first + 1;
++          contact.last!.sliceFront[later] = 2;
++          for (let v = later * LOFT_SAMPLES; v < (later + 2) * LOFT_SAMPLES; v++) contact.last!.positions[3*v] -= .5;
++          expect(state.heldByAnother(contact.last!, first, x, z)).toBe(true);
++        }
++        return result;
++      };
++    };
++    heldFixture(observed); heldFixture(reference);
++    const run = (contact: SweptContact, target: unknown[]) => {
++      const state = contact as any;
++      contact.update(records(), 21, .5, () => .5);
++      const hit = createContactHit(); target.push(contact.query(10.3, 2.5, -93, hit), { ...hit });
++      target.push(contact.query(10.3, 2.5, state.z0 + state.nz * 2 - .01, hit), { ...hit });
++    };
++    const runner = fakeRunner(observed, () => run(observed, observedResults));
++    const observer = new ContactDemandObserver(runner, {}); runner.simulation.solver.time += 90;
++    run(reference, referenceResults); runner.afterWater();
++    expect(observedResults).toEqual(referenceResults); expect(observed.stats).toEqual(reference.stats);
++    const e = observer.epochs[0];
++    expect(e.heldXz.size).toBeGreaterThan(0); expect(e.queries[0].heldXz.length).toBeGreaterThan(0);
++    expect(e.queries.some(q => q.candidates.some(c => c.crossings === 0))).toBe(true);
++    for (const trace of e.queries) expect(trace.heldXz.every(s => e.heldXz.has(s))).toBe(true);
++  });
++  it('tags gauge queries outside and inside afterWater, and captures exactly fifteen consecutive epochs', () => {
++    const contact = makeContact(); const input = records(); let runner: ReturnType<typeof fakeRunner>;
++    runner = fakeRunner(contact, () => { contact.update(input, 21, .5, () => .5); runner.gauge.update(); });
++    runner.gauge.update = () => { contact.floorAt(10.5, -93); };
++    const observer = new ContactDemandObserver(runner, {});
++    runner.simulation.solver.time += 89; runner.afterWater(); expect(observer.epochs).toHaveLength(0);
++    runner.simulation.solver.time += 1;
++    for (let k = 0; k < 15; k++) { runner.afterWater(); runner.gauge.update(); runner.simulation.solver.time += DEMAND_SCHEDULE.fixedStep; }
++    expect(observer.status().complete).toBe(true); expect(observer.epochs).toHaveLength(15);
++    expect(observer.epochs[0].queries.map(q => q.phase)).toEqual(['gauge-afterWater', 'gauge-outside-afterWater']);
++    const clocks = observer.epochs.map(e => e.seaTime); for (let k = 1; k < 15; k++) expect(clocks[k] - clocks[k - 1]).toBeCloseTo(1/60, 10);
++    runner.afterWater(); expect(observer.epochs).toHaveLength(15);
++  });
++  it('consumes no random values and serializes tagged nonfinite values and exact typed bytes', () => {
++    const contact = makeContact(), runner = fakeRunner(contact, () => { contact.update(records(), 21, .5, () => .5); contact.floorAt(999, 999); });
++    const random = Math.random; Math.random = () => { throw Error('unexpected random'); };
++    try {
++      const observer = new ContactDemandObserver(runner, {}); runner.simulation.solver.time += 90; runner.afterWater();
++      const report = JSON.parse(observer.dump()); expect(report.epochs[0].queries[0].result).toEqual({ number: 'NaN' }); expect(report.firstFixture.solver.h.type).toBe('Float64Array');
++      expect(Buffer.from(report.firstFixture.solver.h.base64, 'base64')).toEqual(Buffer.from((observer.firstFixture as any).solver.h.buffer));
++      expect(observer.status().ordinaryArraysIdentical).toBe(true);
++    } finally { Math.random = random; }
++  });
++});
+--- /dev/null
++++ b/src/wave/contactDemandQa.ts
+@@ -0,0 +1,177 @@
++/** QA scratch only: observes original eager contact; never replaces geometry or answers. */
++import type { SurfZoneRunner, SurfZoneRunnerOptions } from './SurfZoneRunner';
++import { FRONT_STRIDE } from './barrel/frontRecords';
++import { LOFT_SAMPLES, type LoftResult } from './barrel/sweptLoft';
++import type { ContactHit, SweptContact } from './barrel/sweptContact';
++
++export const DEMAND_SCHEDULE = { delaySeconds: 90, epochs: 15, fixedStep: 1 / 60 } as const;
++type Phase = 'body-afterWater' | 'gauge-afterWater' | 'gauge-outside-afterWater' | 'other-public';
++type PrivateContact = Pick<SweptContact, 'update' | 'query' | 'floorAt' | 'last'> & { at: Int32Array; loft: { result: LoftResult; forwardRest: (...a: any[]) => any; sealRuns: (...a: any[]) => any; normals: (a: number, b: number) => void }; crossings: (...a: any[]) => number; heldByAnother: (...a: any[]) => boolean; ensureBucket: (s: number) => void; normalAt: (...a: any[]) => void };
++type Trace = { ordinal: number; phase: Phase; method: string; input: number[]; initial?: ContactHit; result?: unknown; output?: ContactHit; candidates: { strip: number; x: number; z: number; crossings: number }[]; heldXz: number[]; normalVertices: number[]; error?: string };
++type Epoch = { ordinal: number; seaTime: number; afterWaterEnded: boolean; slices: number; vertices: number; indices: number; joinedStrips: number; runs: [number, number][]; heightCalls: { initial: number; forwardRest: number; seal: number }; normalMs: number; normalCalls: number; normalRows: number; buildMs: number; candidates: Set<number>; heldXz: Set<number>; heightRows: Set<number>; hitNormalRows: Set<number>; hitNormalVertices: Set<number>; haloRows: Set<number>; byPhase: Record<string, { calls: number; candidates: Set<number>; heldXz: Set<number>; heightRows: Set<number>; normalVertices: Set<number>; haloRows: Set<number> }>; queries: Trace[] };
++const cloneHit = (hit: ContactHit): ContactHit => ({ ...hit });
++const phaseCounts = () => ({ calls: 0, candidates: new Set<number>(), heldXz: new Set<number>(), heightRows: new Set<number>(), normalVertices: new Set<number>(), haloRows: new Set<number>() });
++
++/** Run-bound halo of one normal row. A captured final run is the authority, including cuts and end seals. */
++export function rowHalo(row: number, runs: readonly (readonly [number, number])[]): number[] {
++  const run = runs.find(([first, last]) => row >= first && row <= last);
++  if (!run) throw Error('Selected normal vertex is outside every original final run');
++  return Array.from(new Set([Math.max(run[0], row - 1), row, Math.min(run[1], row + 1)]));
++}
++
++export class ContactDemandObserver {
++  readonly epochs: Epoch[] = [];
++  firstFixture?: Record<string, unknown>;
++  fault?: string;
++  private current?: Epoch;
++  private trace?: Trace;
++  private phase: Phase = 'other-public';
++  private afterWater = false;
++  private holding = false;
++  private heightStage: 'initial' | 'forwardRest' | 'seal' = 'initial';
++  private completedAt?: number;
++  readonly spinUpEnd: number;
++  readonly sourceIdentities: unknown[];
++
++  constructor(readonly runner: SurfZoneRunner, readonly options: SurfZoneRunnerOptions) {
++    this.spinUpEnd = runner.simulation.solver.time;
++    this.sourceIdentities = [runner.simulation.solver.h, runner.simulation.solver.bed, runner.contact, runner.water];
++    if (!runner.contact) throw Error('Contact observer needs original eager contact');
++    this.install(runner.contact as unknown as PrivateContact);
++    const r = runner as any;
++    const originalAfter = r.afterWater;
++    r.afterWater = (...args: any[]) => {
++      if (this.epochs.length < DEMAND_SCHEDULE.epochs && runner.simulation.solver.time - this.spinUpEnd >= DEMAND_SCHEDULE.delaySeconds - 1e-7) {
++        this.current = { ordinal: this.epochs.length + 1, seaTime: runner.simulation.solver.time, afterWaterEnded: false, slices: 0, vertices: 0, indices: 0, joinedStrips: 0, runs: [], heightCalls: { initial: 0, forwardRest: 0, seal: 0 }, normalMs: 0, normalCalls: 0, normalRows: 0, buildMs: 0, candidates: new Set(), heldXz: new Set(), heightRows: new Set(), hitNormalRows: new Set(), hitNormalVertices: new Set(), haloRows: new Set(), byPhase: {}, queries: [] };
++        this.epochs.push(this.current);
++      } else if (this.epochs.length >= DEMAND_SCHEDULE.epochs) this.current = undefined;
++      const oldPhase = this.phase; this.phase = 'body-afterWater'; this.afterWater = true;
++      try { return Reflect.apply(originalAfter, r, args); }
++      finally { this.afterWater = false; this.phase = oldPhase; if (this.current) { this.current.afterWaterEnded = true; if (this.current.ordinal === DEMAND_SCHEDULE.epochs) this.completedAt = performance.now(); } }
++    };
++    if (r.gauge) {
++      const originalGauge = r.gauge.update;
++      r.gauge.update = (...args: any[]) => {
++        const old = this.phase; this.phase = this.afterWater ? 'gauge-afterWater' : 'gauge-outside-afterWater';
++        try { return Reflect.apply(originalGauge, r.gauge, args); } finally { this.phase = old; }
++      };
++    }
++  }
++
++  private install(contact: PrivateContact): void {
++    const loft = contact.loft;
++    for (const [method, stage] of [['forwardRest', 'forwardRest'], ['sealRuns', 'seal']] as const) {
++      const original = loft[method];
++      loft[method] = (...args: any[]) => {
++        const before = this.heightStage; this.heightStage = stage;
++        try { return Reflect.apply(original, loft, args); } finally { this.heightStage = before; }
++      };
++    }
++    const originalNormals = loft.normals;
++    loft.normals = (first, last) => {
++      if (!this.current) return Reflect.apply(originalNormals, loft, [first, last]);
++      const start = performance.now();
++      try { return Reflect.apply(originalNormals, loft, [first, last]); }
++      finally { this.current.normalMs += performance.now() - start; this.current.normalCalls += 1; this.current.normalRows += last - first + 1; this.current.runs.push([first, last]); }
++    };
++    const originalUpdate = contact.update;
++    contact.update = (records, count, stillLevel, heightAt) => {
++      const epoch = this.current;
++      if (!epoch) return Reflect.apply(originalUpdate, contact, [records, count, stillLevel, heightAt]);
++      if (!this.firstFixture) {
++        const sim = this.runner.simulation, s = sim.solver;
++        const nodeSpacing = (this.runner.water as any).spacing;
++        this.firstFixture = { byteOrder: new Uint8Array(new Uint32Array([0x01020304]).buffer)[0] === 4 ? 'little' : 'big', seaTime: s.time, config: { ...this.runner.config }, options: { ...this.options, barrelCases: this.options.barrelCases?.map(bytes => bytes.slice()) }, grid: { ...this.runner.grid }, windowXMin: sim.windowXMin, restLevel: s.restLevel, nodeSpacing, solver: { nx: s.nx, nz: s.nz, dx: s.dx, h: s.h.slice(), bed: s.bed.slice(), xCenters: s.xCenters.slice(), zCenters: s.zCenters.slice(), dz: s.dz.slice() }, records: records.slice(0, count * FRONT_STRIDE), recordCount: count, stillLevel, contactOptions: { bucket: (contact as any).bucket }, loftOptions: { contact: true, sheet: false } };
++      }
++      const start = performance.now();
++      try {
++        return Reflect.apply(originalUpdate, contact, [records, count, stillLevel, (x: number, z: number) => { epoch.heightCalls[this.heightStage] += 1; return heightAt(x, z); }]);
++      } finally {
++        epoch.buildMs = performance.now() - start;
++        const result = contact.last;
++        if (result) {
++          epoch.slices = result.sliceCount; epoch.vertices = result.vertexCount; epoch.indices = result.indexCount;
++          for (let s = 0; s + 1 < result.sliceCount; s++) epoch.joinedStrips += result.sliceJoined[s] === 1 ? 1 : 0;
++          if (epoch.ordinal === 1) this.firstFixture!.loft = activeLoft(result);
++        }
++      }
++    };
++    const originalCrossings = contact.crossings;
++    contact.crossings = (...args: any[]) => {
++      const result = Reflect.apply(originalCrossings, contact, args);
++      const s = args[1] as number;
++      if (this.current && this.trace) {
++        this.trace.candidates.push({ strip: s, x: args[2], z: args[3], crossings: result });
++        this.current.candidates.add(s); this.counts().candidates.add(s);
++        for (const row of [s, s + 1]) { this.current.heightRows.add(row); this.counts().heightRows.add(row); }
++      }
++      return result;
++    };
++    const originalHeld = contact.heldByAnother;
++    contact.heldByAnother = (...args: any[]) => {
++      const before = this.holding; this.holding = true;
++      try { return Reflect.apply(originalHeld, contact, args); } finally { this.holding = before; }
++    };
++    const originalBucket = contact.ensureBucket;
++    contact.ensureBucket = (s: number) => {
++      if (this.current && this.trace && this.holding) { this.trace.heldXz.push(s); this.current.heldXz.add(s); this.counts().heldXz.add(s); }
++      return Reflect.apply(originalBucket, contact, [s]);
++    };
++    const originalNormal = contact.normalAt;
++    contact.normalAt = (...args: any[]) => {
++      if (this.current && this.trace) {
++        for (let m = 0; m < 3; m++) {
++          const v = contact.at[3 * args[1] + m], row = Math.floor(v / LOFT_SAMPLES);
++          this.trace.normalVertices.push(v); this.current.hitNormalRows.add(row); this.current.hitNormalVertices.add(v); this.counts().normalVertices.add(v);
++          try { for (const halo of rowHalo(row, this.current.runs)) { this.current.haloRows.add(halo); this.counts().haloRows.add(halo); } } catch (cause) { this.fault = String(cause); }
++        }
++      }
++      return Reflect.apply(originalNormal, contact, args);
++    };
++    for (const method of ['query', 'floorAt'] as const) {
++      const original = contact[method];
++      (contact as any)[method] = (...args: any[]) => {
++        if (!this.current) return Reflect.apply(original, contact, args);
++        const old = this.trace;
++        const trace: Trace = { ordinal: this.current.queries.length + 1, phase: this.phase, method, input: args.slice(0, method === 'query' ? 3 : 2), ...(method === 'query' ? { initial: cloneHit(args[3]) } : {}), candidates: [], heldXz: [], normalVertices: [] };
++        this.current.queries.push(trace); this.trace = trace; this.counts().calls += 1;
++        try { const result = Reflect.apply(original, contact, args); trace.result = result; return result; }
++        catch (cause) { trace.error = String(cause); throw cause; }
++        finally { if (method === 'query') trace.output = cloneHit(args[3]); this.trace = old; }
++      };
++    }
++  }
++  private counts() { return this.current!.byPhase[this.phase] ??= phaseCounts(); }
++  status() { return { schema: 1, spinUpEnd: this.spinUpEnd, gate: this.spinUpEnd + DEMAND_SCHEDULE.delaySeconds, seaTime: this.runner.simulation.solver.time, epochs: this.epochs.length, complete: this.epochs.length === DEMAND_SCHEDULE.epochs && this.epochs.at(-1)!.afterWaterEnded, completedAt: this.completedAt, fault: this.fault, ordinaryArraysIdentical: this.sourceIdentities[0] === this.runner.simulation.solver.h && this.sourceIdentities[1] === this.runner.simulation.solver.bed && this.sourceIdentities[2] === this.runner.contact && this.sourceIdentities[3] === this.runner.water }; }
++  dump(): string { return JSON.stringify({ schedule: DEMAND_SCHEDULE, status: this.status(), epochs: this.epochs, firstFixture: this.firstFixture }, encode); }
++}
++
++function activeLoft(loft: LoftResult): Record<string, unknown> {
++  const result: Record<string, unknown> = {};
++  for (const [key, value] of Object.entries(loft)) {
++    if (ArrayBuffer.isView(value)) {
++      const n = key === 'indices' ? loft.indexCount : key.startsWith('slice') ? loft.sliceCount : key === 'positions' || key === 'normals' ? 3 * loft.vertexCount : key === 'throat' ? 4 * loft.vertexCount : loft.vertexCount;
++      result[key] = (value as Float32Array).slice(0, n);
++    } else result[key] = value;
++  }
++  return result;
++}
++function encode(_key: string, value: unknown): unknown {
++  if (typeof value === 'number' && (!Number.isFinite(value) || Object.is(value, -0))) return { number: Object.is(value, -0) ? '-0' : String(value) };
++  if (value === undefined) return { undefined: true };
++  if (value instanceof Set) return Array.from(value).sort((a: number, b: number) => a - b);
++  if (ArrayBuffer.isView(value)) {
++    const bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
++    let raw = ''; for (let i = 0; i < bytes.length; i += 8192) raw += String.fromCharCode(...bytes.subarray(i, i + 8192));
++    return { type: value.constructor.name, byteLength: bytes.byteLength, base64: btoa(raw) };
++  }
++  return value;
++}
++
++/** Called only by the scratch worker ready path, after the completed spin-up and seating. */
++export function attachContactDemandQa(runner: SurfZoneRunner, options: SurfZoneRunnerOptions): void {
++  if (!runner.contact) return;
++  const scope = globalThis as unknown as { __contactDemandQa?: ContactDemandObserver };
++  if (scope.__contactDemandQa) throw Error('QA observer cannot retarget a second ordinary runner');
++  scope.__contactDemandQa = new ContactDemandObserver(runner, options);
++}

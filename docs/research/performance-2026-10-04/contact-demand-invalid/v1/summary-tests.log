@@ -1,0 +1,12 @@
+✔ separates crossing misses, overlap XZ candidates, exclusive unions and demanded normals (3.376542ms)
+✔ rejects a missing epoch, widened gate or nonconsecutive simulation clock (0.480583ms)
+✔ rejects count disagreement and any floor normal demand (0.992792ms)
+✔ returns descriptive component clocks and no inferred speed acceptance (0.238875ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.243958

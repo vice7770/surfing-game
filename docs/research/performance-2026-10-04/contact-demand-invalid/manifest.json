@@ -1,0 +1,270 @@
+{
+  "schema": 1,
+  "kind": "Two incomplete contact-demand attempts; zero captured epochs; no demand, timing, or FPS finding",
+  "runtimeBase": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "sourceClosureSha256": "99c6fddcd618feda0cac5ab0e4a0fbe1ab37e22f4ba18ad2c29f3cf7caae6f00",
+  "buildClosureSha256": "fc2ae942bb1767f0472c70143fb50f76434676c2c562bdb1d3ecd9fed9bc8066",
+  "records": [
+    {
+      "path": "v1/ready.json",
+      "bytes": 1870,
+      "sha256": "efafb8f28c5a4fc5f356451109e91c90d34b5d61d02942de43a72d76fce5b3ef",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/ready.json",
+      "originalBytes": 1870,
+      "originalSha256": "efafb8f28c5a4fc5f356451109e91c90d34b5d61d02942de43a72d76fce5b3ef",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/manifest.json.gz",
+      "bytes": 34605,
+      "sha256": "d2157b5ec3ad7352da4089832f04b57eea19dec9280ed1453c6fdcf7d149bdb4",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/manifest.json",
+      "originalBytes": 178830,
+      "originalSha256": "cdca9cbb343863e882eea54b4a5762d0b6dbfff37df87990a789ec98632193bc",
+      "encoding": "gzip"
+    },
+    {
+      "path": "v1/adapter.mjs",
+      "bytes": 16472,
+      "sha256": "39843dfed8de8cb1e0561b0dbb75769c39b854c035dcb08391414ff4c24aad34",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/adapter.mjs",
+      "originalBytes": 16472,
+      "originalSha256": "39843dfed8de8cb1e0561b0dbb75769c39b854c035dcb08391414ff4c24aad34",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/prepared-plan.json.gz",
+      "bytes": 2175,
+      "sha256": "e4ae846b37d9a89078881e7a7bdfab0ddef36572de2366b4a0d8c35989b1ef2b",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/prepared-plan.json",
+      "originalBytes": 4953,
+      "originalSha256": "88f966adde2426f8bc9aaee74aa7aa0404588d0b6f9d01ec522a38123c496889",
+      "encoding": "gzip"
+    },
+    {
+      "path": "v1/run-console.log",
+      "bytes": 513,
+      "sha256": "88a11cb6b608a21354155d1b0b54c19a1b858490ac4cfd0904a1c36275ba070c",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/run-console.log",
+      "originalBytes": 513,
+      "originalSha256": "88a11cb6b608a21354155d1b0b54c19a1b858490ac4cfd0904a1c36275ba070c",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/run/report.json",
+      "bytes": 16973,
+      "sha256": "db5e3e0471228d196cb04d479cb1b0428d6985de078e778674f42cc677b74eed",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/run/report.json",
+      "originalBytes": 16973,
+      "originalSha256": "db5e3e0471228d196cb04d479cb1b0428d6985de078e778674f42cc677b74eed",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/intent.md",
+      "bytes": 9955,
+      "sha256": "85944f06c0cbb91ad70ce07659d52407dcb35c88a309acdfc3a6c2c535ea0644",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/intent.md",
+      "originalBytes": 9955,
+      "originalSha256": "85944f06c0cbb91ad70ce07659d52407dcb35c88a309acdfc3a6c2c535ea0644",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/prepared-plan.md",
+      "bytes": 5805,
+      "sha256": "d790db7292823863737d5df4fe3bec929b0a9410ae601e2059361b0f025f0bd2",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/prepared-plan.md",
+      "originalBytes": 5805,
+      "originalSha256": "d790db7292823863737d5df4fe3bec929b0a9410ae601e2059361b0f025f0bd2",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/count-summary.mjs",
+      "bytes": 4341,
+      "sha256": "589f6fea1f441e2fada9376f226c20a87dd02e65d05b7c3f1070fbde0d425e61",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/count-summary.mjs",
+      "originalBytes": 4341,
+      "originalSha256": "589f6fea1f441e2fada9376f226c20a87dd02e65d05b7c3f1070fbde0d425e61",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/count-summary.test.mjs",
+      "bytes": 2358,
+      "sha256": "52b73239f3a7b64c6b6c5c2f3f1a2e325bf85ee1d9f6ca1cc398ec814ec00af1",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/count-summary.test.mjs",
+      "originalBytes": 2358,
+      "originalSha256": "52b73239f3a7b64c6b6c5c2f3f1a2e325bf85ee1d9f6ca1cc398ec814ec00af1",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/tests.log",
+      "bytes": 198,
+      "sha256": "a2a2e412fb34b507c4bae3dc448ae6f41547c425870a0da3f13a281326864751",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/tests.log",
+      "originalBytes": 198,
+      "originalSha256": "a2a2e412fb34b507c4bae3dc448ae6f41547c425870a0da3f13a281326864751",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/summary-tests.log",
+      "bytes": 468,
+      "sha256": "9560bc9060d051513bc78aa382434438fc22aaf81a865d55310c8981fee0e598",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/summary-tests.log",
+      "originalBytes": 468,
+      "originalSha256": "9560bc9060d051513bc78aa382434438fc22aaf81a865d55310c8981fee0e598",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/build.log",
+      "bytes": 1328,
+      "sha256": "6d5a6146d3f891fd2f3d42a127684e6ec98b88d535a25723008da753baccbbe2",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/build.log",
+      "originalBytes": 1328,
+      "originalSha256": "6d5a6146d3f891fd2f3d42a127684e6ec98b88d535a25723008da753baccbbe2",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/typecheck.log",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/tests-v2-invalid-fixture.log",
+      "bytes": 1207,
+      "sha256": "690a92381ddc2b46ce40ba4a6e60f08221d15a549af846e0b579bee02115c435",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/tests-v2-invalid-fixture.log",
+      "originalBytes": 1207,
+      "originalSha256": "690a92381ddc2b46ce40ba4a6e60f08221d15a549af846e0b579bee02115c435",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/typecheck-v1-invalid-test-types.log",
+      "bytes": 6058,
+      "sha256": "e066bc459af106190cb2821942fe5f094c60ac977f7c5d6afb4e289f86b54c3f",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/typecheck-v1-invalid-test-types.log",
+      "originalBytes": 6058,
+      "originalSha256": "e066bc459af106190cb2821942fe5f094c60ac977f7c5d6afb4e289f86b54c3f",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/observer.patch",
+      "bytes": 27866,
+      "sha256": "6c307c5577fb083dee41ce97e2680801db65cdf457fef6b90d5ede6309bc3362",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/observer.patch",
+      "originalBytes": 27866,
+      "originalSha256": "6c307c5577fb083dee41ce97e2680801db65cdf457fef6b90d5ede6309bc3362",
+      "encoding": "identity"
+    },
+    {
+      "path": "v1/freeze.py",
+      "bytes": 4225,
+      "sha256": "211d1dfa7d4b73c760d3913cc4523bd7c3b7d087abe2b3177b3f0e52cc9d70c0",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004/freeze.py",
+      "originalBytes": 4225,
+      "originalSha256": "211d1dfa7d4b73c760d3913cc4523bd7c3b7d087abe2b3177b3f0e52cc9d70c0",
+      "encoding": "identity"
+    },
+    {
+      "path": "v2/ready.json",
+      "bytes": 3219,
+      "sha256": "255791cc9a5debad571f3dab3b8f0ab7a1b2010e4d18d9d5072f63c8566be98c",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004-v2/ready.json",
+      "originalBytes": 3219,
+      "originalSha256": "255791cc9a5debad571f3dab3b8f0ab7a1b2010e4d18d9d5072f63c8566be98c",
+      "encoding": "identity"
+    },
+    {
+      "path": "v2/manifest.json.gz",
+      "bytes": 35308,
+      "sha256": "c3748e963a8d6df066ea40e4ade8f788dc3f6544cbec1b01bc1ae95f281636ba",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004-v2/manifest.json",
+      "originalBytes": 182462,
+      "originalSha256": "352c8826a20ce07baf0a0bf83da51e51a5306c526c4a87e855c77bb12fbf3761",
+      "encoding": "gzip"
+    },
+    {
+      "path": "v2/adapter.mjs",
+      "bytes": 17503,
+      "sha256": "7b4a2f7fcdbdc84308741f0dbea89a1be230f53986f4d224f9e5c250de581749",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004-v2/adapter.mjs",
+      "originalBytes": 17503,
+      "originalSha256": "7b4a2f7fcdbdc84308741f0dbea89a1be230f53986f4d224f9e5c250de581749",
+      "encoding": "identity"
+    },
+    {
+      "path": "v2/prepared-plan.json.gz",
+      "bytes": 2424,
+      "sha256": "3f0faf8daa1cf89665363fd2f9cb934a7e026bb039fcc9235461dfea8f3cc114",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004-v2/prepared-plan.json",
+      "originalBytes": 5596,
+      "originalSha256": "7b310bccaaee5b284c0b8188fe15792a18c9545115fd8d4cf66443fe7c1a25e0",
+      "encoding": "gzip"
+    },
+    {
+      "path": "v2/run-console.log",
+      "bytes": 686,
+      "sha256": "77763eacc01fd4a231c350a0afbdfe30db430ffc5b6fa644e5f85d1986366b3d",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004-v2/run-console.log",
+      "originalBytes": 686,
+      "originalSha256": "77763eacc01fd4a231c350a0afbdfe30db430ffc5b6fa644e5f85d1986366b3d",
+      "encoding": "identity"
+    },
+    {
+      "path": "v2/run/report.json",
+      "bytes": 13467,
+      "sha256": "f3adac332dc5f924d2d7f9f494d9088a6ee4e7ffc54a02596c9fbcb8e33a3a71",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004-v2/run/report.json",
+      "originalBytes": 13467,
+      "originalSha256": "f3adac332dc5f924d2d7f9f494d9088a6ee4e7ffc54a02596c9fbcb8e33a3a71",
+      "encoding": "identity"
+    },
+    {
+      "path": "v2/adapter-v1-to-v2.patch",
+      "bytes": 8380,
+      "sha256": "fa2c018304d52eb7510749a519176b971b6713fc95cacdb7f82488ba1a8d0914",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004-v2/adapter-v1-to-v2.patch",
+      "originalBytes": 8380,
+      "originalSha256": "fa2c018304d52eb7510749a519176b971b6713fc95cacdb7f82488ba1a8d0914",
+      "encoding": "identity"
+    },
+    {
+      "path": "v2/delta.md",
+      "bytes": 2114,
+      "sha256": "2dee939bd395744c2ee43cf79e185744ac88f5605552ed9b9a24211a4922205d",
+      "originalPath": "/private/tmp/contact-lazy-height-20261004-v2/delta.md",
+      "originalBytes": 2114,
+      "originalSha256": "2dee939bd395744c2ee43cf79e185744ac88f5605552ed9b9a24211a4922205d",
+      "encoding": "identity"
+    },
+    {
+      "path": "source-designs/contact-demand-strip-feasibility-20261004.md",
+      "bytes": 11390,
+      "sha256": "995e53c77cc54052ee9cf7681155d9e9cd5a08757b49c60822e61fc90689eac9",
+      "originalPath": "/private/tmp/contact-demand-strip-feasibility-20261004.md",
+      "originalBytes": 11390,
+      "originalSha256": "995e53c77cc54052ee9cf7681155d9e9cd5a08757b49c60822e61fc90689eac9",
+      "encoding": "identity"
+    },
+    {
+      "path": "source-designs/contact-eager-unused-work-20261004.md",
+      "bytes": 9678,
+      "sha256": "f9d6e9675451a74fe84cc3bd4573c070bbc808d7d2be7c0aa7e4b3022bfcf61b",
+      "originalPath": "/private/tmp/contact-eager-unused-work-20261004.md",
+      "originalBytes": 9678,
+      "originalSha256": "f9d6e9675451a74fe84cc3bd4573c070bbc808d7d2be7c0aa7e4b3022bfcf61b",
+      "encoding": "identity"
+    },
+    {
+      "path": "source-designs/contact-owned-height-provider-20261004.md",
+      "bytes": 11318,
+      "sha256": "45bb5f158531bbe0bfc5e2229c03441fee4bbb0dc496c56cd66be3064e4effc2",
+      "originalPath": "/private/tmp/contact-owned-height-provider-20261004.md",
+      "originalBytes": 11318,
+      "originalSha256": "45bb5f158531bbe0bfc5e2229c03441fee4bbb0dc496c56cd66be3064e4effc2",
+      "encoding": "identity"
+    }
+  ]
+}
