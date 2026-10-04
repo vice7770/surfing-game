@@ -1,0 +1,210 @@
+{
+  "schema": 3,
+  "hardwareStarted": false,
+  "hardwareAuthorization": "pending root v3 adapter/authority review and separate ONE capture lease",
+  "runtimeDirectory": "/private/tmp/contact-lazy-height-20261004",
+  "adapterDirectory": "/private/tmp/contact-lazy-height-20261004-v3",
+  "scope": "Contact demand only at recorded stable actual native dimensions; not canonical-pixel FPS or render-quality acceptance; v1/v2 invalid zero-epoch outcomes retained",
+  "manifest": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v3/manifest.json",
+    "bytes": 185871,
+    "sha256": "263d341cc1333e556fd3a39be07e3b98551c3ac4806bb77d121ce389a3f5a49b"
+  },
+  "adapter": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v3/adapter.mjs",
+    "bytes": 24247,
+    "sha256": "04ca5dbc3a9c5587383b7e31cc3d1476d7a0ee77fc507e72a2576dec36d1326d"
+  },
+  "deltaPatch": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v3/adapter-v2-to-v3.patch",
+    "bytes": 22470,
+    "sha256": "1339e5dd8746cbbb3c3feeb8ffd12dbc1075d64871d7017c033104f5947de922"
+  },
+  "note": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v3/delta.md",
+    "bytes": 4394,
+    "sha256": "f1ab26563ba2a2dd2ee5bf3efbe61c91533350d2ac3f5282bf82566b950ba435"
+  },
+  "preparedPlan": {
+    "path": "/private/tmp/contact-lazy-height-20261004-v3/prepared-plan.json",
+    "bytes": 6681,
+    "sha256": "d8e5dbe3928dc929d1a3576e8fae5f5e305ae689df6821982f975d6c296d9565"
+  },
+  "diagnosis": {
+    "path": "/private/tmp/contact-demand-viewport-diagnosis-20261004.md",
+    "sha256": "2949ce2cdfc2d8d4e4dae9d8d962dae17bf88fa55a6e2b6259db12d0cf82f7a8"
+  },
+  "retainedAuthorities": [
+    {
+      "path": "/private/tmp/contact-lazy-height-20261004/manifest.json",
+      "sha256": "cdca9cbb343863e882eea54b4a5762d0b6dbfff37df87990a789ec98632193bc"
+    },
+    {
+      "path": "/private/tmp/contact-lazy-height-20261004/ready.json",
+      "sha256": "efafb8f28c5a4fc5f356451109e91c90d34b5d61d02942de43a72d76fce5b3ef"
+    },
+    {
+      "path": "/private/tmp/contact-lazy-height-20261004/prepared-plan.json",
+      "sha256": "88f966adde2426f8bc9aaee74aa7aa0404588d0b6f9d01ec522a38123c496889"
+    },
+    {
+      "path": "/private/tmp/contact-lazy-height-20261004-v2/manifest.json",
+      "sha256": "352c8826a20ce07baf0a0bf83da51e51a5306c526c4a87e855c77bb12fbf3761"
+    },
+    {
+      "path": "/private/tmp/contact-lazy-height-20261004-v2/ready.json",
+      "sha256": "255791cc9a5debad571f3dab3b8f0ab7a1b2010e4d18d9d5072f63c8566be98c"
+    },
+    {
+      "path": "/private/tmp/contact-lazy-height-20261004-v2/prepared-plan.json",
+      "sha256": "7b310bccaaee5b284c0b8188fe15792a18c9545115fd8d4cf66443fe7c1a25e0"
+    }
+  ],
+  "originalFailedRuns": [
+    {
+      "version": "v1",
+      "path": "/private/tmp/contact-lazy-height-20261004/run/report.json",
+      "sha256": "db5e3e0471228d196cb04d479cb1b0428d6985de078e778674f42cc677b74eed",
+      "valid": false,
+      "polls": 0,
+      "epochsCollected": 0,
+      "failure": "Error: Native viewport/density differs",
+      "closedAt": "2026-10-04T00:17:55.298Z",
+      "ownedChromeClosed": true
+    },
+    {
+      "version": "v2",
+      "path": "/private/tmp/contact-lazy-height-20261004-v2/run/report.json",
+      "sha256": "f3adac332dc5f924d2d7f9f494d9088a6ee4e7ffc54a02596c9fbcb8e33a3a71",
+      "valid": false,
+      "polls": 0,
+      "epochsCollected": 0,
+      "failure": "Error: timed out waiting for innerWidth===1708&&innerHeight===926&&window.breaklineDiagnostics?.canvas.width===2989&&window.breaklineDiagnostics?.canvas.height===1620",
+      "closedAt": "2026-10-04T00:24:21.990Z",
+      "ownedChromeClosed": true
+    }
+  ],
+  "sourceClosureSha256": "99c6fddcd618feda0cac5ab0e4a0fbe1ab37e22f4ba18ad2c29f3cf7caae6f00",
+  "buildClosureSha256": "fc2ae942bb1767f0472c70143fb50f76434676c2c562bdb1d3ecd9fed9bc8066",
+  "sourceBuildObserverUnchanged": true,
+  "validationCounts": {
+    "originalSources": 550,
+    "buildAssets": 19,
+    "preparation": 19,
+    "retainedAuthorityFiles": 6,
+    "invalidRunReports": 2,
+    "diagnosis": 1,
+    "sourceAudits": 3,
+    "totalActiveHashChecks": 600
+  },
+  "syntaxAndDefaultDryPlanPassed": true,
+  "noServerBrowserBuildTestsBenchReplayProductionOrGit": true,
+  "checksReused": {
+    "observer": "7/7 pure tests, actual original eager classes; final tests.log",
+    "summary": "4/4 pure tests; summary-tests.log",
+    "typescript": "npm run build includes strict tsc -b; no failures",
+    "vite": "BUILD_ID=58ceb6a29 npm run build passed; build.log",
+    "syntax": "node --check adapter.mjs and count-summary.mjs passed",
+    "noHardwareRun": true,
+    "noProductionChanges": true
+  },
+  "v3Checks": "node --check adapter.mjs passed; default dry-plan invocation actively verifies550originalsource/19build/19preparation+6retained authorities+2invalid reports+diagnosis+3audits; no server/browser/build/test/runtime changes",
+  "ports": {
+    "preview": 4215,
+    "ownedCdp": 9625
+  },
+  "schedule": {
+    "afterCompletedSpinUpSimSeconds": 90,
+    "consecutivePostwaterEpochs": 15,
+    "fixedStepSeconds": 0.016666666666666666,
+    "overallSecondsFromOwnedChromeSpawn": 150,
+    "retries": 0
+  },
+  "viewport": {
+    "scope": "actual stable native dimensional tuple from loaded menu through ride/complete/pause; canonical FPS pixels not required",
+    "browserDpr": 2,
+    "expectedHighPixelRatio": 1.75,
+    "resizeOverrides": [],
+    "recordBeforeGuards": true
+  },
+  "initialOwnedWindowRequest": {
+    "size": [
+      1708,
+      966
+    ],
+    "position": [
+      60,
+      60
+    ],
+    "desktopSuppliesActualDimensions": true,
+    "noSubsequentFitOrResize": true
+  },
+  "runtimeOverrides": [
+    {
+      "realm": "page only",
+      "target": "Math.random",
+      "algorithm": "canonical FPS bootstrap Mulberry32",
+      "initialState": 24301,
+      "purpose": "deterministic menu/Three allocation sequence selects actual ordinary sea seed8761; worker RNG and SurfZoneConfig are not overridden"
+    }
+  ],
+  "contextOverride": {
+    "method": "Emulation.setFocusEmulationEnabled",
+    "enabled": true,
+    "resizing": false
+  },
+  "idleInputScope": {
+    "fieldsObservedWithOwnUndefinedTypeValue": [
+      "paddle",
+      "popUp",
+      "hand",
+      "reel",
+      "steer",
+      "trim",
+      "crouch",
+      "compress",
+      "duckDive",
+      "rotate",
+      "retry",
+      "place",
+      "spawnAt",
+      "stance",
+      "pocketReflex"
+    ],
+    "expectedBooleanFalse": [
+      "paddle",
+      "popUp",
+      "hand",
+      "reel",
+      "retry",
+      "pocketReflex"
+    ],
+    "expectedNumericZero": [
+      "steer",
+      "trim",
+      "crouch",
+      "compress",
+      "duckDive"
+    ],
+    "expectedUndefined": [
+      "rotate",
+      "place",
+      "spawnAt",
+      "reactions"
+    ],
+    "steps": 1,
+    "maxBatchSteps": 1,
+    "mutations": false
+  },
+  "worker": {
+    "path": "assets/surfZoneWorker-CeUF6aeU.js",
+    "bytes": 445256,
+    "sha256": "555f3d898a802b96679c8eb477034a8896fbaad315273544ce70596d5cde55bc"
+  },
+  "main": {
+    "path": "assets/index-BpKGe5Ov.js",
+    "bytes": 582425,
+    "sha256": "15091bf010422a12fb262c9680cc08ad7b3817acfbec2e33d73b0e27d100daf9"
+  },
+  "literalBuildId": "58ceb6a29"
+}

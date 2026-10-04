@@ -1,0 +1,130 @@
+--- contact-lazy-height-20261004-v2/adapter.mjs
++++ contact-lazy-height-20261004-v3/adapter.mjs
+@@ -9,7 +9,7 @@
+ import {tmpdir} from 'node:os';
+ import {Page,sleep} from '../contact-lazy-height-20261004/scratch/scripts/browser/cdp.mjs';
+ import {summarize} from '../contact-lazy-height-20261004/count-summary.mjs';
+-const RUNTIME_WORK='/private/tmp/contact-lazy-height-20261004',ADAPTER_WORK='/private/tmp/contact-lazy-height-20261004-v2',DIST=join(RUNTIME_WORK,'scratch/dist'),PORT=4215,CDP=9625,PAGE_URL='http://127.0.0.1:'+PORT+'/?diagnostics';
++const RUNTIME_WORK='/private/tmp/contact-lazy-height-20261004',ADAPTER_WORK='/private/tmp/contact-lazy-height-20261004-v3',DIST=join(RUNTIME_WORK,'scratch/dist'),PORT=4215,CDP=9625,PAGE_URL='http://127.0.0.1:'+PORT+'/?diagnostics';
+ const args=Object.fromEntries(process.argv.slice(2).map(a=>{const i=a.indexOf('=');if(!a.startsWith('--')||i<0)throw Error('Use --name=value');return[a.slice(2,i),a.slice(i+1)];}));
+ if(Object.keys(args).some(k=>!['run','out'].includes(k)))throw Error('Only run/out may vary');
+ if(args.run&&!['true','false'].includes(args.run))throw Error('run=true|false');
+@@ -17,28 +17,45 @@
+ const manifestPath=join(ADAPTER_WORK,'manifest.json'),manifest=JSON.parse(readFileSync(manifestPath));
+ const GRAPHICS={preset:'high',renderScale:1,nativePixelDensity:true,frameLimit:60,waterSimulation:'auto',seaDetail:'rich',caustics:true,sprayMist:true,oceanView:'far',foam:'detailed',waterLook:'rich',particles:'high'};
+ const EXPECTED={spot:'padang',seed:8761,significantHeight:3.8,peakPeriod:18,directionDegrees:0,spreading:150,tide:0,windSpeed:0,stage:2,compute:'auto',dx:2,fineSpacing:1,componentCount:64};
+-const PLAN={kind:'One original-eager contact demand capture; no FPS claim',base:manifest.base,url:PAGE_URL,viewport:{width:1708,height:926,browserDpr:2,effectiveDpr:1.75,canvasWidth:2989,canvasHeight:1620},route:'ordinary menu → Surf → Padang → Big → Paddle out; idle rider; no synthetic stepping/fast-forward/pocket reflex',schedule:{afterCompletedSpinUpSimSeconds:90,consecutivePostwaterEpochs:15,fixedStepSeconds:1/60,overallSecondsFromOwnedChromeSpawn:150,retries:0},graphics:GRAPHICS,expectedConfig:EXPECTED,runtimeOverrides:[{realm:'page only',target:'Math.random',algorithm:'canonical FPS bootstrap Mulberry32',initialState:0x5eed,purpose:'deterministic menu/Three allocation sequence selects actual ordinary sea seed8761; worker RNG and SurfZoneConfig are not overridden'}],workerRngOverride:false,camera:'unchanged ordinary ride',manifestSha256:hash(readFileSync(manifestPath)),runtimeDirectory:RUNTIME_WORK,adapterDirectory:ADAPTER_WORK,viewportPlacement:'fit on actual ready menu document before selecting Surf; guard unchanged',originalFailedRun:manifest.originalFailedRun,build:manifest.build};
++const PLAN={kind:'One original-eager contact demand capture at recorded stable native dimensions; no FPS/render-quality claim',base:manifest.base,url:PAGE_URL,viewport:{scope:'actual stable native dimensional tuple from loaded menu through ride/complete/pause; canonical FPS pixels not required',browserDpr:2,expectedHighPixelRatio:1.75,resizeOverrides:[],recordBeforeGuards:true},route:'ordinary menu → Surf → Padang → Big → Paddle out; idle rider; no synthetic stepping/fast-forward/pocket reflex',schedule:{afterCompletedSpinUpSimSeconds:90,consecutivePostwaterEpochs:15,fixedStepSeconds:1/60,overallSecondsFromOwnedChromeSpawn:150,retries:0},graphics:GRAPHICS,expectedConfig:EXPECTED,runtimeOverrides:[{realm:'page only',target:'Math.random',algorithm:'canonical FPS bootstrap Mulberry32',initialState:0x5eed,purpose:'deterministic menu/Three allocation sequence selects actual ordinary sea seed8761; worker RNG and SurfZoneConfig are not overridden'}],workerRngOverride:false,contextOverride:{method:'Emulation.setFocusEmulationEnabled',enabled:true,resizing:false},initialOwnedWindowRequest:{size:[1708,966],position:[60,60],desktopSuppliesActualDimensions:true,noSubsequentFitOrResize:true},camera:'unchanged ordinary ride',manifestSha256:hash(readFileSync(manifestPath)),runtimeDirectory:RUNTIME_WORK,adapterDirectory:ADAPTER_WORK,viewportPlacement:'observe actual native dimensions and Browser bounds; no fit/setWindowBounds/device-metrics/recording.resize',originalFailedRuns:manifest.originalFailedRuns,build:manifest.build};
+ for(const r of manifest.sources)if(hash(readFileSync(join(RUNTIME_WORK,'scratch',r.path)))!==r.sha256)throw Error('Scratch source changed:'+r.path);
+ for(const r of manifest.build)if(hash(readFileSync(join(DIST,r.path)))!==r.sha256)throw Error('Build changed:'+r.path);
+ for(const r of manifest.preparation)if(hash(readFileSync(r.absolutePath??join(ADAPTER_WORK,r.path)))!==r.sha256)throw Error('Preparation changed:'+r.path);
++for(const r of [...manifest.retainedAuthorities,...manifest.originalFailedRuns,manifest.diagnosis,...manifest.auditReferences])if(hash(readFileSync(r.path))!==r.sha256)throw Error('Retained authority changed:'+r.path);
+ if(args.run!=='true'){console.log(JSON.stringify({...PLAN,chromeStarted:false},null,2));process.exit(0);}
+-const OUT=resolve(args.out??join(ADAPTER_WORK,'run'));if(!OUT.startsWith(ADAPTER_WORK+'/'))throw Error('V2 output must stay inside its new adapter directory');if(existsSync(OUT))throw Error('Output exists; refusing overwrite');mkdirSync(OUT,{recursive:true});
+-const report={schema:1,kind:PLAN.kind,plan:PLAN,runId:randomUUID(),valid:false,incomplete:true,startedAt:new Date().toISOString(),sourceChecks:true,ownedChromeClosed:false,ownServerClosed:false,polls:[]};
++const OUT=resolve(args.out??join(ADAPTER_WORK,'run'));if(!OUT.startsWith(ADAPTER_WORK+'/'))throw Error('V3 output must stay inside its new adapter directory');if(existsSync(OUT))throw Error('Output exists; refusing overwrite');mkdirSync(OUT,{recursive:true});
++const report={schema:3,kind:PLAN.kind,plan:PLAN,runId:randomUUID(),valid:false,incomplete:true,startedAt:new Date().toISOString(),sourceChecks:true,ownedChromeClosed:false,ownServerClosed:false,polls:[],nativeObservations:[]};
+ const save=()=>writeFileSync(join(OUT,'report.json'),JSON.stringify(report,null,2)+'\n');save();
+ const assert=(condition,message)=>{if(!condition)throw Error(message);};
+ function pagePrelude(options){
+  let random=0x5eed;Math.random=()=>{random=(random+0x6D2B79F5)|0;let t=Math.imul(random^(random>>>15),1|random);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};
+  localStorage.setItem('breakline.settings.v1',JSON.stringify({graphics:options.graphics,detected:{preset:'high',water:'accurate',lowPerformance:false},gameplay:{showTelemetry:true},seen:{rideHints:true,lowPerformanceNotice:true}}));
+- const p=window.__contactQa={tag:'__contactDemand20261004',workers:[],controls:new Map(),id:0};
++ const p=window.__contactQa={tag:'__contactDemand20261004',workers:[],controls:new Map(),id:0,resizeEvents:0,resizeLog:[]};
++ window.addEventListener('resize',()=>{p.resizeEvents++;p.resizeLog.push({at:performance.now(),inner:[innerWidth,innerHeight],outer:[outerWidth,outerHeight],dpr:devicePixelRatio});});
++ const field=(object,key)=>{const v=object?.[key];return{own:Object.prototype.hasOwnProperty.call(object??{},key),undefined:v===undefined,type:typeof v,...(v===undefined?{}:{value:typeof v==='number'&&(!Number.isFinite(v)||Object.is(v,-0))?{number:Object.is(v,-0)?'-0':String(v)}:v})};};
++ const idleSnapshot=request=>({steps:field(request,'steps'),input:field(request,'input').undefined?field(request,'input'):{own:Object.prototype.hasOwnProperty.call(request,'input'),undefined:false,type:typeof request.input,fields:Object.fromEntries(['paddle','popUp','hand','reel','steer','trim','crouch','compress','duckDive','rotate','retry','place','spawnAt','stance','pocketReflex'].map(key=>[key,field(request.input,key)]))},reactions:field(request,'reactions').undefined?field(request,'reactions'):{own:Object.prototype.hasOwnProperty.call(request,'reactions'),undefined:false,type:typeof request.reactions,length:request.reactions?.length,constructor:request.reactions?.constructor?.name}});
+  const Native=window.Worker;
+  window.Worker=class extends Native{
+-  constructor(url,descriptor){super(url,descriptor);this.qaTracked=/\/surfZoneWorker-[^/]+\.js$/.test(new URL(url,location.href).pathname);this.qaStarts=0;this.qaAdvances=0;this.qaUrl=new URL(url,location.href).href;if(!this.qaTracked)return;p.workers.push(this);
++  constructor(url,descriptor){super(url,descriptor);this.qaTracked=/\/surfZoneWorker-[^/]+\.js$/.test(new URL(url,location.href).pathname);this.qaStarts=0;this.qaAdvances=0;this.qaInputSignatures=new Map();this.qaInputFaults=[];this.qaInterventions=[];this.qaMessageTypes={};this.qaUrl=new URL(url,location.href).href;if(!this.qaTracked)return;p.workers.push(this);
+    this.addEventListener('message',event=>{const data=event.data;if(!data?.[p.tag])return;event.stopImmediatePropagation();const pending=p.controls.get(data.id);if(!pending)return;p.controls.delete(data.id);clearTimeout(pending.timer);data.error?pending.reject(Error(data.error)):pending.resolve(data.value);});
+    this.addEventListener('error',event=>{p.fatal=event.message||'worker error';});
+   }
++  qaInputAudit(){return{advances:this.qaAdvances,signatures:[...this.qaInputSignatures.values()],faults:this.qaInputFaults.slice(),interventions:this.qaInterventions.slice(),messageTypes:{...this.qaMessageTypes},lastAdvance:this.qaLastAdvance??null};}
+   postMessage(request,...rest){
+-   if(this.qaTracked&&request?.type==='start'){this.qaStarts++;this.qaStart={config:{...request.config},rider:request.options?.rider,barrelCaseCount:request.options?.barrelCases?.length??0,renderSpacingHasOwn:Object.prototype.hasOwnProperty.call(request.options??{},'renderSpacing'),renderSpacingUndefined:request.options?.renderSpacing===undefined};}
+-   if(this.qaTracked&&request?.type==='advance'){this.qaAdvances++;this.qaLastAdvance={serial:this.qaAdvances,steps:request.steps};}
++   if(this.qaTracked&&request?.type){this.qaMessageTypes[request.type]=(this.qaMessageTypes[request.type]??0)+1;if(!['start','advance','look','sprayEnabled','particles'].includes(request.type))this.qaInterventions.push({type:request.type,at:performance.now()});}
++   if(this.qaTracked&&request?.type==='start'){this.qaStarts++;this.qaStart={config:{...request.config},rider:request.options?.rider,barrelCaseCount:request.options?.barrelCases?.length??0,renderSpacingHasOwn:Object.prototype.hasOwnProperty.call(request.options??{},'renderSpacing'),renderSpacingUndefined:request.options?.renderSpacing===undefined};if(request.sea!==undefined||this.qaStarts!==1)this.qaInterventions.push({type:'start-sea-or-restart',at:performance.now(),sea:field(request,'sea')});}
++   if(this.qaTracked&&request?.type==='advance'){
++    this.qaAdvances++;const shape=idleSnapshot(request),reasons=[];
++    if(request.steps!==1)reasons.push('steps must be1');
++    if(!request.input||typeof request.input!=='object')reasons.push('actual input object missing');
++    for(const key of ['paddle','popUp','hand','reel'])if(request.input?.[key]!==false)reasons.push(key+' must befalse');
++    for(const key of ['steer','trim','crouch','compress','duckDive'])if(request.input?.[key]!==0)reasons.push(key+' must be0');
++    if(request.input?.rotate!==undefined)reasons.push('rotate must remain undefined');
++    if(request.input?.retry!==false||request.input?.place!==undefined||request.input?.spawnAt!==undefined||request.reactions!==undefined||request.input?.pocketReflex!==false)reasons.push('state/retry/place/spawn/reaction/reflex intervention');
++    const signature=JSON.stringify(shape),entry=this.qaInputSignatures.get(signature);if(entry){entry.count++;entry.lastSerial=this.qaAdvances;}else this.qaInputSignatures.set(signature,{firstSerial:this.qaAdvances,lastSerial:this.qaAdvances,count:1,shape});
++    if(reasons.length&&this.qaInputFaults.length<32)this.qaInputFaults.push({serial:this.qaAdvances,reasons,shape});
++    this.qaLastAdvance={serial:this.qaAdvances,steps:request.steps,input:shape.input,reactions:shape.reactions};
++   }
+    return Reflect.apply(Native.prototype.postMessage,this,[request,...rest]);
+   }
+  };
+@@ -57,40 +74,58 @@
+  overall=setTimeout(()=>deadlineReject(Error('Hard150s overall deadline; no retry')),150000);
+  let launchError;chrome.once('error',e=>{launchError=e;report.chromeProcess.startError=String(e);});let target;
+  for(let i=0;i<100&&!target;i++){await sleep(150);if(launchError)throw launchError;try{const inventory=await(await fetch('http://127.0.0.1:'+CDP+'/json/list',{signal:AbortSignal.timeout(500)})).json();report.lastTargetInventory=inventory;const pages=inventory.filter(t=>t.type==='page');if(pages.length>1)throw Error('Ambiguous owned page inventory');if(pages.length===1)target=pages[0];}catch(e){if(String(e).includes('Ambiguous'))throw e;report.lastTargetPollError=String(e);}}
+- assert(target?.webSocketDebuggerUrl,'Owned sole page unavailable');page=await Page.connect(target.webSocketDebuggerUrl);await page.send('Page.enable');await page.send('Runtime.enable');await page.send('Emulation.setFocusEmulationEnabled',{enabled:true});
++ assert(target?.webSocketDebuggerUrl,'Owned sole page unavailable');page=await Page.connect(target.webSocketDebuggerUrl);await page.send('Page.enable');await page.send('Runtime.enable');await page.send('Emulation.setFocusEmulationEnabled',{enabled:true});await observeNative('aboutblank');
+ }
+ async function validateServed(){
+  report.served=[];
+  for(const r of manifest.build){const res=await fetch('http://127.0.0.1:'+PORT+'/'+r.path,{signal:AbortSignal.timeout(2000)});assert(res.ok,'Served asset unavailable:'+r.path);const bytes=Buffer.from(await res.arrayBuffer());assert(hash(bytes)===r.sha256,'Served bytes changed:'+r.path);report.served.push({path:r.path,sha256:hash(bytes)});}
+  const build=await(await fetch('http://127.0.0.1:'+PORT+'/build.json')).json();assert(build.build==='58ceb6a29','Literal BUILD_ID differs');report.literalBuildId=build.build;save();
+ }
++let nativeMenu;
++async function observeNative(phase){
++ const value=await page.eval(`(()=>{const d=window.breaklineDiagnostics,c=d?.canvas,w=d?.mode?.host?.port,p=window.__contactQa,r=c?.getBoundingClientRect(),v=window.visualViewport;let stored=null,storageError=null;try{stored=JSON.parse(localStorage.getItem('breakline.settings.v1')??'null');}catch(error){storageError=String(error);}return{inner:[innerWidth,innerHeight],outer:[outerWidth,outerHeight],position:[screenX,screenY],dpr:devicePixelRatio,screen:{width:screen.width,height:screen.height,availWidth:screen.availWidth,availHeight:screen.availHeight,availLeft:screen.availLeft,availTop:screen.availTop},visualViewport:v?{width:v.width,height:v.height,scale:v.scale,offsetLeft:v.offsetLeft,offsetTop:v.offsetTop}:null,canvas:c?{backing:[c.width,c.height],client:[c.clientWidth,c.clientHeight],style:[c.style.width,c.style.height],rect:r?{x:r.x,y:r.y,width:r.width,height:r.height}:null}:null,screenState:document.querySelector('#app')?.dataset.screen??null,graphics:stored?.graphics??null,storageError,resizeEvents:p?.resizeEvents??null,resizeLog:p?.resizeLog??null,inputAudit:typeof w?.qaInputAudit==='function'?w.qaInputAudit():null};})()`);
++ const {windowId}=await page.send('Browser.getWindowForTarget');const {bounds}=await page.send('Browser.getWindowBounds',{windowId});
++ const record={phase,at:new Date().toISOString(),page:value,browser:{windowId,bounds}};report.nativeObservations.push(record);save();return record;
++}
++const nativeTuple=n=>({inner:n.page.inner,outer:n.page.outer,dpr:n.page.dpr,screen:n.page.screen,canvas:n.page.canvas?{backing:n.page.canvas.backing,client:n.page.canvas.client,rectSize:[n.page.canvas.rect.width,n.page.canvas.rect.height]}:null,browserDimensions:{width:n.browser.bounds.width,height:n.browser.bounds.height,windowState:n.browser.bounds.windowState}});
++function guardNative(n,first=false){
++ const p=n.page,c=p.canvas;assert(p.dpr===2&&p.inner.every(x=>Number.isFinite(x)&&x>0)&&c,'Actual native viewport/DPR/canvas invalid');
++ assert(c.backing[0]===Math.floor(p.inner[0]*1.75)&&c.backing[1]===Math.floor(p.inner[1]*1.75),'Actual High source-native backing differs');
++ for(const[k,v]of Object.entries(GRAPHICS))assert(p.graphics?.[k]===v,'Observed graphics.'+k+' differs');
++ if(first){nativeMenu=n;report.nativeReference=nativeTuple(n);save();}
++ else{assert(JSON.stringify(nativeTuple(n))===JSON.stringify(report.nativeReference),'Actual native dimensional tuple changed');assert(p.resizeEvents===nativeMenu.page.resizeEvents,'Native resize occurred after menu reference');}
++}
++function guardIdle(audit){
++ assert(audit&&audit.advances>0&&audit.faults.length===0&&audit.interventions.length===0,'Actual native advance input/state scope differs');
++ assert(audit.signatures.reduce((sum,s)=>sum+s.count,0)===audit.advances,'Actual advance input audit incomplete');
++ assert(audit.lastAdvance?.steps===1,'Actual last advance steps differs');
++}
+ async function route(){
+  await page.send('Page.addScriptToEvaluateOnNewDocument',{source:'('+pagePrelude.toString()+')('+JSON.stringify({graphics:GRAPHICS})+');'});await page.send('Page.navigate',{url:PAGE_URL});
+  await page.waitFor("window.__contactQa?.fatal || (document.querySelector('.screen-menu')&&!document.querySelector('.is-scene-pending'))",45000);
+- // V2 only: real Chrome page chrome can differ from about:blank. Fit before ordinary Surf route.
+- await page.fitViewport(1708,926);
+- await page.waitFor("innerWidth===1708&&innerHeight===926&&window.breaklineDiagnostics?.canvas.width===2989&&window.breaklineDiagnostics?.canvas.height===1620",10000);
+- report.menuViewportSettled=await page.eval("({viewport:[innerWidth,innerHeight],browserDpr:devicePixelRatio,canvas:[window.breaklineDiagnostics.canvas.width,window.breaklineDiagnostics.canvas.height],screen:document.querySelector('#app')?.dataset.screen})");save();
++ const menu=await observeNative('menu');guardNative(menu,true);
+  await page.click('.tile','Surf');await page.waitFor("document.querySelector('#app')?.dataset.screen==='surf'",15000);await page.click('.spot-card','Padang');await page.click('.segmented button','Big');await page.click('.button-primary','Paddle out');
+  await page.waitFor("window.__contactQa?.fatal || (document.querySelector('#app')?.dataset.screen==='ride'&&window.breaklineDiagnostics?.mode.ready===true&&window.breaklineDiagnostics.mode.host?.snapshot?.status?.compute==='gpu')",45000);
+  if(await page.eval('window.__contactQa.fatal'))throw Error(await page.eval('window.__contactQa.fatal'));
+  report.rideReadyAt=new Date().toISOString();
+  report.initial=await page.eval(`(()=>{const d=window.breaklineDiagnostics,h=d.mode.host,p=window.__contactQa,w=h.port;return{config:d.mode.config,status:h.snapshot.status,start:w.qaStart,startSerial:w.qaStarts,advanceSerial:w.qaAdvances,workerUrl:w.qaUrl,hostPortObserved:p.workers.includes(w),viewport:[innerWidth,innerHeight],browserDpr:devicePixelRatio,canvas:[d.canvas.width,d.canvas.height],grid:h.init.grid,maskSpacing:d.water.barrelMaskGrid?.spacing,renderSpacing:d.water.grid.spacing,maxBatchSteps:h.maxBatchSteps,waterLook:d.water.drawnLook,vertexNormals:d.water.vertexNormals,particles:d.mode.particleLevel,graphics:JSON.parse(localStorage.getItem('breakline.settings.v1')).graphics,userAgent:navigator.userAgent};})()`);save();
++ const ride=await observeNative('ride');guardNative(ride);guardIdle(ride.page.inputAudit);
+  const o=report.initial;
+  for(const[k,v]of Object.entries(EXPECTED)){assert(o.config[k]===v,'config.'+k+' differs');assert(o.start?.config?.[k]===v,'actual start config.'+k+' differs');}
+  for(const[k,v]of Object.entries(GRAPHICS))assert(o.graphics[k]===v,'graphics.'+k+' differs');
+  assert(o.hostPortObserved&&o.startSerial===1&&o.start.rider===true&&o.start.barrelCaseCount===4&&o.start.renderSpacingHasOwn===true&&o.start.renderSpacingUndefined===true,'Actual start/contact options differ');
+- assert(o.viewport[0]===1708&&o.viewport[1]===926&&o.browserDpr===2&&o.canvas[0]===2989&&o.canvas[1]===1620,'Native viewport/density differs');
+  assert(o.status.compute==='gpu'&&o.status.cells===116000&&o.renderSpacing===2&&o.maskSpacing===1&&o.maxBatchSteps===1&&o.waterLook==='rich'&&o.vertexNormals===false&&o.particles==='high','Ordinary backend/grid/quality differs');
+  assert(new URL(o.workerUrl).pathname==='/'+manifest.worker.path,'Loaded worker differs');
+  for(;;){
+-  const summary=await page.eval("window.__contactQa.command('summary')");report.polls.push({wallAt:new Date().toISOString(),...summary});save();
++  const summary=await page.eval("window.__contactQa.command('summary')");const input=await page.eval("({audit:window.breaklineDiagnostics.mode.host.port.qaInputAudit(),resizeEvents:window.__contactQa.resizeEvents})");report.polls.push({wallAt:new Date().toISOString(),...summary,input});save();guardIdle(input.audit);assert(input.resizeEvents===nativeMenu.page.resizeEvents,'Native resize occurred during count wait');
+   assert(summary.qaStarts===1&&summary.ordinaryArraysIdentical===true&&summary.compute==='gpu'&&summary.workerMathRandomNative===true,'Worker source identity/backend changed');
+   if(summary.complete)break;
+   await sleep(500);
+  }
++ const complete=await observeNative('complete');guardNative(complete);guardIdle(complete.page.inputAudit);
+  await page.press('Escape');await page.waitFor("document.querySelector('#app')?.dataset.screen==='pause'&&window.breaklineDiagnostics.mode.host.outstandingSteps===0",10000);
+  report.pause=await page.eval(`(()=>{const d=window.breaklineDiagnostics,h=d.mode.host,w=h.port;return{screen:document.querySelector('#app')?.dataset.screen,status:h.snapshot.status,outstanding:h.outstandingSteps,advanceSerial:w.qaAdvances,lastAdvance:w.qaLastAdvance};})()`);save();
++ const pause=await observeNative('pause');guardNative(pause);guardIdle(pause.page.inputAudit);
+  report.collectStartedAt=new Date().toISOString();const collected=await page.eval("window.__contactQa.command('collect')");
+  const raw=Buffer.from(collected.json),gz=gzipSync(raw);writeFileSync(join(OUT,'capture.json.gz'),gz);
+  report.capture={path:join(OUT,'capture.json.gz'),storedBytes:gz.length,storedSha256:hash(gz),jsonBytes:raw.length,jsonSha256:hash(raw),workerMetadata:{qaStarts:collected.qaStarts,qaAdvances:collected.qaAdvances,qaStart:collected.qaStart,seaTime:collected.seaTime,workerMathRandomNative:collected.workerMathRandomNative},serializedAfterNaturalPause:true};

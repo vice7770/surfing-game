@@ -1,0 +1,203 @@
+{
+  "kind": "One original-eager contact demand capture at recorded stable native dimensions; no FPS/render-quality claim",
+  "base": "58ceb6a29617c00f93fb3b21eff3058d824319d5",
+  "url": "http://127.0.0.1:4215/?diagnostics",
+  "viewport": {
+    "scope": "actual stable native dimensional tuple from loaded menu through ride/complete/pause; canonical FPS pixels not required",
+    "browserDpr": 2,
+    "expectedHighPixelRatio": 1.75,
+    "resizeOverrides": [],
+    "recordBeforeGuards": true
+  },
+  "route": "ordinary menu → Surf → Padang → Big → Paddle out; idle rider; no synthetic stepping/fast-forward/pocket reflex",
+  "schedule": {
+    "afterCompletedSpinUpSimSeconds": 90,
+    "consecutivePostwaterEpochs": 15,
+    "fixedStepSeconds": 0.016666666666666666,
+    "overallSecondsFromOwnedChromeSpawn": 150,
+    "retries": 0
+  },
+  "graphics": {
+    "preset": "high",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "auto",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "expectedConfig": {
+    "spot": "padang",
+    "seed": 8761,
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stage": 2,
+    "compute": "auto",
+    "dx": 2,
+    "fineSpacing": 1,
+    "componentCount": 64
+  },
+  "runtimeOverrides": [
+    {
+      "realm": "page only",
+      "target": "Math.random",
+      "algorithm": "canonical FPS bootstrap Mulberry32",
+      "initialState": 24301,
+      "purpose": "deterministic menu/Three allocation sequence selects actual ordinary sea seed8761; worker RNG and SurfZoneConfig are not overridden"
+    }
+  ],
+  "workerRngOverride": false,
+  "contextOverride": {
+    "method": "Emulation.setFocusEmulationEnabled",
+    "enabled": true,
+    "resizing": false
+  },
+  "initialOwnedWindowRequest": {
+    "size": [
+      1708,
+      966
+    ],
+    "position": [
+      60,
+      60
+    ],
+    "desktopSuppliesActualDimensions": true,
+    "noSubsequentFitOrResize": true
+  },
+  "camera": "unchanged ordinary ride",
+  "manifestSha256": "263d341cc1333e556fd3a39be07e3b98551c3ac4806bb77d121ce389a3f5a49b",
+  "runtimeDirectory": "/private/tmp/contact-lazy-height-20261004",
+  "adapterDirectory": "/private/tmp/contact-lazy-height-20261004-v3",
+  "viewportPlacement": "observe actual native dimensions and Browser bounds; no fit/setWindowBounds/device-metrics/recording.resize",
+  "originalFailedRuns": [
+    {
+      "version": "v1",
+      "path": "/private/tmp/contact-lazy-height-20261004/run/report.json",
+      "sha256": "db5e3e0471228d196cb04d479cb1b0428d6985de078e778674f42cc677b74eed",
+      "valid": false,
+      "polls": 0,
+      "epochsCollected": 0,
+      "failure": "Error: Native viewport/density differs",
+      "closedAt": "2026-10-04T00:17:55.298Z",
+      "ownedChromeClosed": true
+    },
+    {
+      "version": "v2",
+      "path": "/private/tmp/contact-lazy-height-20261004-v2/run/report.json",
+      "sha256": "f3adac332dc5f924d2d7f9f494d9088a6ee4e7ffc54a02596c9fbcb8e33a3a71",
+      "valid": false,
+      "polls": 0,
+      "epochsCollected": 0,
+      "failure": "Error: timed out waiting for innerWidth===1708&&innerHeight===926&&window.breaklineDiagnostics?.canvas.width===2989&&window.breaklineDiagnostics?.canvas.height===1620",
+      "closedAt": "2026-10-04T00:24:21.990Z",
+      "ownedChromeClosed": true
+    }
+  ],
+  "build": [
+    {
+      "path": "assets/WorkerSurfZone-B5xWKLFK.js",
+      "bytes": 848363,
+      "sha256": "b8f798ada03f03c06514c749527a814da663f9f2c3b6a5dd25e4f8d34f25b9c0"
+    },
+    {
+      "path": "assets/devStepping-B13xA4xz.js",
+      "bytes": 320,
+      "sha256": "7d7e7ba06989d600d49b792edd68576330d4746eca02d999143eccad1b3c9a9d"
+    },
+    {
+      "path": "assets/index-BpKGe5Ov.js",
+      "bytes": 582425,
+      "sha256": "15091bf010422a12fb262c9680cc08ad7b3817acfbec2e33d73b0e27d100daf9"
+    },
+    {
+      "path": "assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "path": "assets/jevRecorder-DirY3i1K.js",
+      "bytes": 15917,
+      "sha256": "4034c634a7b67106a267cb8bdcfcf32ddd37be5212de8d602e58d9dcbd7a4d54"
+    },
+    {
+      "path": "assets/particleBench-0-fyXJ4_.js",
+      "bytes": 10708,
+      "sha256": "a0ac26397addeb8182c4e68c9dc66662fd83cb39b4ae7b502106464fb59910fd"
+    },
+    {
+      "path": "assets/rideRecorder-stoH_hRI.js",
+      "bytes": 41108,
+      "sha256": "d7a84d4b265eb0548c5c8cdde4570110162191110d5ab96fbb5d759eb6f24db6"
+    },
+    {
+      "path": "assets/surfZoneWorker-CeUF6aeU.js",
+      "bytes": 445256,
+      "sha256": "555f3d898a802b96679c8eb477034a8896fbaad315273544ce70596d5cde55bc"
+    },
+    {
+      "path": "assets/waterSheet-RG1Q4ZgU.js",
+      "bytes": 11689,
+      "sha256": "b31031278a5bae2866c6e8cea1873870cb50522fe64bbe2ea9a94e4fa366449e"
+    },
+    {
+      "path": "barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "path": "barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "path": "barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "path": "barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "path": "barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    {
+      "path": "barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    {
+      "path": "barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    {
+      "path": "barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    {
+      "path": "build.json",
+      "bytes": 21,
+      "sha256": "1b54c291836255044ce92d38c35cd59afc54fb8986153535a66017703803a914"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1626,
+      "sha256": "7e96c3a47592d390e239b6b2bc5b78927bd9b012e748cb0a1bc0158b400ddd8b"
+    }
+  ],
+  "chromeStarted": false
+}

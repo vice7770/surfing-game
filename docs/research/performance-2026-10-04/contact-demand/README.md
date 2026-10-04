@@ -1,0 +1,30 @@
+# Contact demand: valid original eager capture
+
+One separately authorized v3 capture recorded 15 consecutive ordinary post-water contact epochs after 90 simulated seconds beyond completed spin-up/seating. It establishes sparse query demand in this idle-rider interval. No deferred-contact candidate, removable-cost result, FPS improvement or render-quality result is accepted by this capture.
+
+The numerical runtime remains `58ceb6a29617c00f93fb3b21eff3058d824319d5`, before the later `4c81983d9` ClockLink pruning repair. The QA observer wraps the original eager build and query methods without changing their geometry, query order or returned values. It reuses the frozen 550 source records and 19 build assets; no current production source was substituted. Seven observer tests, four pure summarizer tests and the strict TypeScript/Vite build belong to the retained original preparation authority. The [v1/v2 archive](../contact-demand-invalid/README.md) preserves those source patches, tests, logs, helper and prior authorities without duplicating runtime bundles or public assets here. Both earlier viewport attempts remain invalid with zero captured epochs. The [viewport diagnosis](../contact-demand-viewport-diagnosis.md) explains the new count-only scope.
+
+Actual start and configuration guards passed: Padang Big, seed8761, Hs3.8m, T18s, direction0°, spread150°, tide0, wind0, stage2, GPU116000 cells, 64 sea components, dx2/fineSpacing1, renderSpacing2 and independent maskSpacing1, rider enabled with four barrel cases, High/Rich with pixel normals and High particles. The declared page-only Mulberry32 bootstrap controls the ordinary menu/allocation sequence; worker `Math.random` remains native. There were no manual physics steps, retry, placement, spawn, reactions, camera override, fast-forward or automatic retry.
+
+The native CSS viewport was 1708×879, DPR2, with High canvas backing2989×1538. The dimensional tuple stayed identical from menu through ride, count completion and natural pause, with zero resize events. This is the source-correct `floor(innerSize×1.75)` backing, not the canonical FPS capture dimensions. All 5429 observed Ride-worker advances used steps1/maxBatch1 and the declared idle input; zero input faults or interventions occurred. Missing and explicit-undefined fields remain distinct in the raw report. The menu observation retains a separate practice worker with `pocketReflex:true`; that worker is not the Ride worker whose actual start/configuration, object identity and input audit are guarded. Its retained practice-input fault is not a Ride count failure.
+
+The observer's field named `seaTime` is `solver.time`, not the published status sea clock. Completed spin-up was36; the first captured update was125.99999999999488 and the last126.2333333333282, spaced1/60s. The run started00:41:45.578UTC, finished00:43:35.650UTC, and closed00:43:36.354UTC. Its own Chrome/CDP9625 and server4215 closed; the terminal report records `ECONNREFUSED`. The predeclared 150-second overall bound was retained.
+
+| Per-update demand over the 15 captured epochs | Range |
+| --- | ---: |
+| Active slices | 174–197 |
+| Eager normal vertices from final joined runs | 21440–23986 |
+| Distinct normal vertices actually read by successful hits | 20–90 |
+| Conservative height rows ∪ run-clamped normal-position halo rows | 8–16 |
+| Distinct strips entering crossings, including zero-crossing misses | 5–14 |
+| Distinct later strips examined only for XZ overlap | 0–10 |
+| Recorded public calls, including floor calls | 627–649 |
+| Floor calls | 186 |
+
+The height-row count conservatively includes whole rows for every entered crossing candidate, even candidates whose bucket/triangle test reads no Y. Normal halos are counted separately and must be unioned with those rows. The XZ-only overlap strips are not additional height demands; all observed XZ-only strips were outside the crossing-strip set in this interval. Body-phase calls missed the swept geometry here; the successful swept hits and normal reads came from the gauge phase. This idle-rider interval does not bound contact demand while riding inside a tube or in another scene.
+
+The [first fixture and ordered transcripts](run/capture.json.gz) include exact separate Float64 h/bed, x/z centers and dz, actual height-provider inputs, original packed records, library/options, and active eager loft prefixes. First-epoch authority is125 packed records,187 slices,627 public calls (441 `query` plus186 `floorAt`),28 successful query hits and65 distinct hit-normal vertices. Tagged nonfinite/undefined initial and returned values are retained, including unchanged outputs on misses. Only this first epoch has the F64 provider and packed-record/loft state required for a controlled contact replay. The other14 contain demand counts and ordered query streams, without later F64/record states; they cannot establish replay parity for later geometry or recreate the full solver/physics history.
+
+Instrumented build and normal component clocks are intrusive and timer-quantized, including observer/timer overhead. They are not an uncontended benchmark or a saving estimate. Counts support a separate exactness and complete-path cost test; they do not justify accepting a lazy implementation by themselves.
+
+[Manifest](manifest.json) pins stored bytes, original bytes and losslessly expanded gzip hashes. The capture is2451650 stored bytes, SHA256 `e7bbbb85cf03450f97fe8807414f749dbada7a5b5fa814e490f578f26f965e2f`; expanded JSON is13547682 bytes, SHA256 `a9c1e4d0b759aac2a9123e9d02cef97a957e959415d65ad098f53b3f99287648`. All ten retained raw artifacts and all29 referenced prior-archive records were checked against their originals. The pure original summarizer reproduces [summary.json](run/summary.json) exactly; no geometry/solver replay or hardware run occurred during archival. Preparation `noHardwareRun`/`chromeStarted:false` flags describe the frozen pre-run state, while the terminal [run report](run/report.json.gz) establishes this completed capture. [SHA256SUMS](SHA256SUMS) covers the local archive files.
