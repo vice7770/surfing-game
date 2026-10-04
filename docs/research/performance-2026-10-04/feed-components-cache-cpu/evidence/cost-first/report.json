@@ -1,0 +1,839 @@
+{
+  "schema": "feed-components-complete-mock-host-cost/v1",
+  "valid": true,
+  "rows": [
+    {
+      "pair": 0,
+      "order": "AB",
+      "baselineMs": 6.56962499999986,
+      "candidateMs": 4.002874999999904,
+      "savingMs": 2.5667499999999563,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 2.980041999999912,
+        "cfl": 0.3405830000001515,
+        "encode": 1.300375000000031,
+        "map": 0.006416999999828477,
+        "unpack": 1.9302079999999933
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4704580000000078,
+        "cfl": 0.31533300000000963,
+        "encode": 1.2218340000001717,
+        "map": 0.08429099999989376,
+        "unpack": 1.8975419999999303
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 1,
+      "order": "BA",
+      "baselineMs": 5.443667000000005,
+      "candidateMs": 4.545292000000018,
+      "savingMs": 0.8983749999999873,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.5160829999999805,
+        "cfl": 0.29683399999998983,
+        "encode": 1.4001659999998992,
+        "map": 0.012584000000060769,
+        "unpack": 2.2047079999999823
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4329169999998612,
+        "cfl": 0.2930830000000242,
+        "encode": 1.3689170000000104,
+        "map": 0.006250000000136424,
+        "unpack": 2.421333000000004
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 2,
+      "order": "BA",
+      "baselineMs": 5.883499999999913,
+      "candidateMs": 3.887333000000126,
+      "savingMs": 1.9961669999997866,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.5364580000000387,
+        "cfl": 0.37820800000008603,
+        "encode": 1.2887089999999262,
+        "map": 0.007250000000112777,
+        "unpack": 2.630332999999837
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.39104100000008657,
+        "cfl": 0.28254199999992125,
+        "encode": 1.1398329999999532,
+        "map": 0.05841699999996308,
+        "unpack": 1.999958000000106
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 3,
+      "order": "AB",
+      "baselineMs": 5.902250000000095,
+      "candidateMs": 4.762208999999984,
+      "savingMs": 1.1400410000001102,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.9998329999998532,
+        "cfl": 0.381458000000066,
+        "encode": 1.3660419999998794,
+        "map": 0.008375000000114596,
+        "unpack": 2.127707999999984
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.38487499999996544,
+        "cfl": 0.28062500000010004,
+        "encode": 1.6507919999999103,
+        "map": 0.015041000000110216,
+        "unpack": 2.417167000000063
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 4,
+      "order": "AB",
+      "baselineMs": 4.438250000000153,
+      "candidateMs": 4.189750000000004,
+      "savingMs": 0.24850000000014916,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.232915999999932,
+        "cfl": 0.2840000000001055,
+        "encode": 1.1408749999998236,
+        "map": 0.006792000000132248,
+        "unpack": 1.75974999999994
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4526660000001357,
+        "cfl": 0.2640419999997903,
+        "encode": 1.6571670000000722,
+        "map": 0.017749999999978172,
+        "unpack": 1.7872500000000855
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 5,
+      "order": "BA",
+      "baselineMs": 4.0721249999999145,
+      "candidateMs": 4.06962499999986,
+      "savingMs": 0.0025000000000545697,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.3164170000000013,
+        "cfl": 0.3009999999999309,
+        "encode": 0.9964999999999691,
+        "map": 0.0072079999999914435,
+        "unpack": 1.4122079999999642
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4021250000000691,
+        "cfl": 0.25966700000003584,
+        "encode": 1.1512499999998909,
+        "map": 0.005208000000038737,
+        "unpack": 2.241709000000128
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 6,
+      "order": "BA",
+      "baselineMs": 4.544834000000037,
+      "candidateMs": 3.404166999999916,
+      "savingMs": 1.1406670000001213,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.2391250000000582,
+        "cfl": 0.3145409999999629,
+        "encode": 0.9256250000000819,
+        "map": 0.0064589999999498104,
+        "unpack": 2.0465409999999338
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4084580000001097,
+        "cfl": 0.2777499999999691,
+        "encode": 1.0447080000001279,
+        "map": 0.01383399999986068,
+        "unpack": 1.645291000000043
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 7,
+      "order": "AB",
+      "baselineMs": 4.248500000000149,
+      "candidateMs": 3.485249999999951,
+      "savingMs": 0.7632500000001983,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.3446670000000722,
+        "cfl": 0.3122080000000551,
+        "encode": 0.9871249999998781,
+        "map": 0.006542000000081316,
+        "unpack": 1.5905829999999241
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4676249999999982,
+        "cfl": 0.2742920000000595,
+        "encode": 0.8517079999999169,
+        "map": 0.008332999999993262,
+        "unpack": 1.8671250000002146
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 8,
+      "order": "AB",
+      "baselineMs": 4.075583999999935,
+      "candidateMs": 3.5851249999998345,
+      "savingMs": 0.4904590000001008,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.34050000000002,
+        "cfl": 0.3207919999999831,
+        "encode": 0.9362909999999829,
+        "map": 0.007667000000083135,
+        "unpack": 1.4600419999999303
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4287500000000364,
+        "cfl": 0.33662500000014006,
+        "encode": 1.0597089999998843,
+        "map": 0.005290999999942869,
+        "unpack": 1.746375000000171
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 9,
+      "order": "BA",
+      "baselineMs": 4.699082999999973,
+      "candidateMs": 3.308125000000018,
+      "savingMs": 1.390957999999955,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.5232499999999618,
+        "cfl": 0.2901249999999891,
+        "encode": 1.2565839999999753,
+        "map": 0.010457999999971435,
+        "unpack": 1.6079170000000431
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4889579999999114,
+        "cfl": 0.27312499999993634,
+        "encode": 0.9564589999999953,
+        "map": 0.005666000000019267,
+        "unpack": 1.570791999999983
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 10,
+      "order": "BA",
+      "baselineMs": 4.240917000000081,
+      "candidateMs": 3.2671660000000884,
+      "savingMs": 0.9737509999999929,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.377958000000035,
+        "cfl": 0.26854199999979755,
+        "encode": 0.971958000000086,
+        "map": 0.00641700000005585,
+        "unpack": 1.5945409999999356
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.3919170000001486,
+        "cfl": 0.31779099999994287,
+        "encode": 0.9659590000001117,
+        "map": 0.004790999999841006,
+        "unpack": 1.5655839999999444
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 11,
+      "order": "AB",
+      "baselineMs": 4.57141700000011,
+      "candidateMs": 3.2590000000000146,
+      "savingMs": 1.3124170000000959,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.2996249999998781,
+        "cfl": 0.35333300000002055,
+        "encode": 1.2089590000000499,
+        "map": 0.006290999999919222,
+        "unpack": 1.6832919999999376
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4118750000000091,
+        "cfl": 0.264458999999988,
+        "encode": 0.9404160000001411,
+        "map": 0.00895900000000438,
+        "unpack": 1.6219579999999496
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 12,
+      "order": "AB",
+      "baselineMs": 4.153833000000077,
+      "candidateMs": 3.96283399999993,
+      "savingMs": 0.19099900000014713,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.1888340000000426,
+        "cfl": 0.3837909999999738,
+        "encode": 1.0134169999998903,
+        "map": 0.005208000000038737,
+        "unpack": 1.5498340000001463
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4382919999998194,
+        "cfl": 0.2811659999999847,
+        "encode": 0.9380419999999958,
+        "map": 0.006333000000040556,
+        "unpack": 2.2849590000000717
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 13,
+      "order": "BA",
+      "baselineMs": 4.048041999999896,
+      "candidateMs": 3.455500000000029,
+      "savingMs": 0.5925419999998667,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.252875000000131,
+        "cfl": 0.2991660000000138,
+        "encode": 0.9239999999999782,
+        "map": 0.007708999999977095,
+        "unpack": 1.5550409999998465
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.5534589999999753,
+        "cfl": 0.262583000000177,
+        "encode": 0.9754579999998896,
+        "map": 0.005499999999983629,
+        "unpack": 1.6264169999999467
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 14,
+      "order": "BA",
+      "baselineMs": 4.7165410000000065,
+      "candidateMs": 3.2334999999998217,
+      "savingMs": 1.4830410000001848,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.5263749999999163,
+        "cfl": 0.35687499999994543,
+        "encode": 1.0784580000001824,
+        "map": 0.006333999999924345,
+        "unpack": 1.7389160000000174
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.3786670000001777,
+        "cfl": 0.26158299999997325,
+        "encode": 1.0547079999998914,
+        "map": 0.006792000000132248,
+        "unpack": 1.5227919999999813
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 15,
+      "order": "AB",
+      "baselineMs": 4.595209000000068,
+      "candidateMs": 3.1885829999998805,
+      "savingMs": 1.4066260000001876,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.4409169999998994,
+        "cfl": 0.2654580000000806,
+        "encode": 1.1229169999999158,
+        "map": 0.01812500000005457,
+        "unpack": 1.7356250000000273
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.43170899999995527,
+        "cfl": 0.30520799999999326,
+        "encode": 0.8113749999999982,
+        "map": 0.004167000000052212,
+        "unpack": 1.6234580000000278
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 16,
+      "order": "AB",
+      "baselineMs": 4.5162499999999,
+      "candidateMs": 3.4086670000001504,
+      "savingMs": 1.1075829999997495,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.3631249999998545,
+        "cfl": 0.27137500000003456,
+        "encode": 1.318166999999903,
+        "map": 0.008625000000165528,
+        "unpack": 1.5444579999998496
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4939160000001266,
+        "cfl": 0.3316250000000309,
+        "encode": 0.9662089999999353,
+        "map": 0.005333000000064203,
+        "unpack": 1.603582999999844
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 17,
+      "order": "BA",
+      "baselineMs": 4.298125000000027,
+      "candidateMs": 3.821374999999989,
+      "savingMs": 0.4767500000000382,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.2885420000000067,
+        "cfl": 0.3034160000001975,
+        "encode": 0.9585419999998521,
+        "map": 0.008958000000120592,
+        "unpack": 1.7292499999998654
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.39104199999997036,
+        "cfl": 0.2718330000000151,
+        "encode": 1.242334000000028,
+        "map": 0.005333000000064203,
+        "unpack": 1.9018329999998969
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 18,
+      "order": "BA",
+      "baselineMs": 4.238832999999886,
+      "candidateMs": 3.243750000000091,
+      "savingMs": 0.995082999999795,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.2778749999999945,
+        "cfl": 0.2714170000001559,
+        "encode": 0.9307499999999891,
+        "map": 0.006832999999915046,
+        "unpack": 1.7357919999999467
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4532090000000153,
+        "cfl": 0.30054100000006656,
+        "encode": 1.0700839999999516,
+        "map": 0.007540999999946507,
+        "unpack": 1.4036670000000413
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 19,
+      "order": "AB",
+      "baselineMs": 4.272707999999966,
+      "candidateMs": 3.8047079999998914,
+      "savingMs": 0.4680000000000746,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.3826249999999618,
+        "cfl": 0.37154099999997925,
+        "encode": 0.94074999999998,
+        "map": 0.0072920000000067375,
+        "unpack": 1.5596669999999904
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.5314590000000408,
+        "cfl": 0.3225410000000011,
+        "encode": 1.1696670000001177,
+        "map": 0.01687499999979991,
+        "unpack": 1.7471669999999904
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 20,
+      "order": "AB",
+      "baselineMs": 4.315792000000101,
+      "candidateMs": 3.4883749999999054,
+      "savingMs": 0.8274170000001959,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.2374589999999444,
+        "cfl": 0.2668330000001333,
+        "encode": 0.9566249999998035,
+        "map": 0.006083000000216998,
+        "unpack": 1.8285839999998643
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.49891699999989214,
+        "cfl": 0.3345000000001619,
+        "encode": 1.0120829999998477,
+        "map": 0.004292000000077678,
+        "unpack": 1.623540999999932
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 21,
+      "order": "BA",
+      "baselineMs": 3.900082999999995,
+      "candidateMs": 3.5369590000000244,
+      "savingMs": 0.3631239999999707,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.2850000000000819,
+        "cfl": 0.27129100000001927,
+        "encode": 0.9224169999999958,
+        "map": 0.009332999999969616,
+        "unpack": 1.4020419999999376
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.47833300000002055,
+        "cfl": 0.2520000000001801,
+        "encode": 0.9193339999999353,
+        "map": 0.024249999999938154,
+        "unpack": 1.8188749999999345
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 22,
+      "order": "BA",
+      "baselineMs": 3.8587079999999787,
+      "candidateMs": 3.6894580000000587,
+      "savingMs": 0.16924999999991996,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.3315000000000055,
+        "cfl": 0.2588749999999891,
+        "encode": 0.8509169999999813,
+        "map": 0.005499999999983629,
+        "unpack": 1.402749999999969
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.4207920000001195,
+        "cfl": 0.4138749999999618,
+        "encode": 1.2975830000000315,
+        "map": 0.0048749999998563,
+        "unpack": 1.5413750000000164
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 23,
+      "order": "AB",
+      "baselineMs": 3.9975409999999556,
+      "candidateMs": 3.818708999999899,
+      "savingMs": 0.17883200000005672,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.255916999999954,
+        "cfl": 0.3219579999999951,
+        "encode": 0.9009169999999358,
+        "map": 0.006708000000116954,
+        "unpack": 1.5015000000000782
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.5011669999998958,
+        "cfl": 0.25320800000008603,
+        "encode": 0.7822919999998703,
+        "map": 0.004249999999956344,
+        "unpack": 2.2627910000001066
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 24,
+      "order": "AB",
+      "baselineMs": 4.023124999999936,
+      "candidateMs": 3.564082999999755,
+      "savingMs": 0.45904200000018136,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.2712080000001151,
+        "cfl": 0.2528749999999036,
+        "encode": 0.9448340000001281,
+        "map": 0.00666599999999562,
+        "unpack": 1.5374590000001263
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.37249999999994543,
+        "cfl": 0.3035829999998896,
+        "encode": 0.8942080000001624,
+        "map": 0.005624999999781721,
+        "unpack": 1.9764169999998558
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 25,
+      "order": "BA",
+      "baselineMs": 4.242374999999811,
+      "candidateMs": 3.248667000000296,
+      "savingMs": 0.9937079999995149,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.509208999999828,
+        "cfl": 0.28150000000005093,
+        "encode": 1.000583000000006,
+        "map": 0.005541999999877589,
+        "unpack": 1.4310410000002776
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.42716599999994287,
+        "cfl": 0.248833999999988,
+        "encode": 0.9407499999997526,
+        "map": 0.0036660000000665605,
+        "unpack": 1.6156670000000304
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 26,
+      "order": "BA",
+      "baselineMs": 4.2413329999999405,
+      "candidateMs": 3.000500000000102,
+      "savingMs": 1.2408329999998386,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.185457999999926,
+        "cfl": 0.24808400000028996,
+        "encode": 1.1457080000000133,
+        "map": 0.005832999999711319,
+        "unpack": 1.6476250000000618
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.3564160000000811,
+        "cfl": 0.2694169999999758,
+        "encode": 0.9699580000001333,
+        "map": 0.005000000000109139,
+        "unpack": 1.3859170000000631
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 27,
+      "order": "AB",
+      "baselineMs": 4.282708000000184,
+      "candidateMs": 3.1757920000000013,
+      "savingMs": 1.106916000000183,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.2004579999997986,
+        "cfl": 0.2527090000003227,
+        "encode": 0.914082999999664,
+        "map": 0.008166999999957625,
+        "unpack": 1.8945410000001175
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.42916699999977936,
+        "cfl": 0.28204100000039034,
+        "encode": 1.0301669999998921,
+        "map": 0.005083000000013271,
+        "unpack": 1.4217499999999745
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 28,
+      "order": "AB",
+      "baselineMs": 4.094665999999961,
+      "candidateMs": 3.2138330000002497,
+      "savingMs": 0.8808329999997113,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.2173749999997199,
+        "cfl": 0.2972500000000764,
+        "encode": 0.7660000000000764,
+        "map": 0.005666000000019267,
+        "unpack": 1.7961249999998472
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.40237500000012005,
+        "cfl": 0.3583749999997963,
+        "encode": 0.9263750000000073,
+        "map": 0.005250000000160071,
+        "unpack": 1.5136250000000473
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 29,
+      "order": "BA",
+      "baselineMs": 3.95120900000029,
+      "candidateMs": 3.7858329999999114,
+      "savingMs": 0.16537600000037855,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.3058750000000146,
+        "cfl": 0.2510419999998703,
+        "encode": 0.8567080000002534,
+        "map": 0.0061670000000049185,
+        "unpack": 1.5202500000000327
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.42370800000026065,
+        "cfl": 0.3212079999998423,
+        "encode": 1.099333999999999,
+        "map": 0.04366600000003018,
+        "unpack": 1.8885420000001432
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 30,
+      "order": "BA",
+      "baselineMs": 3.879457999999886,
+      "candidateMs": 3.1203340000001845,
+      "savingMs": 0.7591239999997015,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.284874999999829,
+        "cfl": 0.2729159999998956,
+        "encode": 0.8739169999998921,
+        "map": 0.007500000000163709,
+        "unpack": 1.4320830000001479
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.380916999999954,
+        "cfl": 0.24787500000002183,
+        "encode": 0.9464579999998932,
+        "map": 0.00491699999975026,
+        "unpack": 1.5300830000001042
+      },
+      "substeps": 1
+    },
+    {
+      "pair": 31,
+      "order": "AB",
+      "baselineMs": 4.203291999999692,
+      "candidateMs": 3.2047080000002097,
+      "savingMs": 0.9985839999994823,
+      "baselineDiagnostics": {
+        "substeps": 1,
+        "pack": 1.516208000000006,
+        "cfl": 0.2580830000001697,
+        "encode": 0.9489589999998316,
+        "map": 0.009415999999873748,
+        "unpack": 1.459374999999909
+      },
+      "candidateDiagnostics": {
+        "substeps": 1,
+        "pack": 0.5204579999999623,
+        "cfl": 0.2599169999998594,
+        "encode": 0.8124579999998787,
+        "map": 0.004417000000103144,
+        "unpack": 1.598667000000205
+      },
+      "substeps": 1
+    }
+  ],
+  "localCpuOnly": true,
+  "readySha256": "a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519",
+  "inputAuthority": {
+    "captureIncomplete": true,
+    "f32CommittedExport": true,
+    "captureSha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988",
+    "compressedSha256": "dd97ed4b53d1aa78eabdb58534a370e26d03cf553fe1bf26fe18d83d9bad48b3",
+    "rawSha256": "5ff85c873bb360c5df127084cb01b84fddd26ed971fa3ca19ddf3ece5bd6db18",
+    "pausedSeaTime": 328.04104655763683,
+    "solverTime": 52.69999999999905,
+    "seaTimeOffset": 275.34104655763775,
+    "limitation": "Paused F32 transport export, distinct from the earlier three drawn snapshots and full internal F64 precision; absent RATEH/NU remain constructor defaults, not measured native values."
+  },
+  "config": {
+    "spot": "padang",
+    "seed": 8761,
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stage": 2,
+    "compute": "auto",
+    "dx": 2,
+    "fineSpacing": 1,
+    "componentCount": 64
+  },
+  "statistics": {
+    "pairs": 32,
+    "meanSavingMs": 0.8683593124999902,
+    "medianSavingMs": 0.8896039999998493,
+    "pairedMeanLower95Ms": 0.6736756316207896,
+    "thresholdMs": 0.1,
+    "orderStrata": [
+      {
+        "order": "AB",
+        "pairs": 16,
+        "meanSavingMs": 0.8841405625000363
+      },
+      {
+        "order": "BA",
+        "pairs": 16,
+        "meanSavingMs": 0.8525780624999442
+      }
+    ],
+    "thresholdPass": true,
+    "caveat": "Approximate paired-mean normal bound on one fixed CPU sample; order strata are retained. No bootstrap, adaptive extra pairs or retry. Not native performance or population inference."
+  },
+  "work": {
+    "cells": 116000,
+    "components": 64,
+    "initialSolverTime": 52.69999999999905,
+    "finalSolverTime": 53.36666666666568,
+    "completedStepCallsPerArm": 40,
+    "readbackFields": 9,
+    "candidateRemovesOnlyOneWeightsScanPerCall": true,
+    "queueByteLengthsOrderAndUniformsEstablishedByProof": true,
+    "allFinalDeviceBytesAndSolverOutputsExact": true,
+    "steadyBufferIdentitiesPreserved": true,
+    "timed": "Complete ordinary GpuBoussinesq.step/runWaterStep: upload conversion and mock memory queue writes, original CFL, uniforms including their unchanged slot scan, command/kernel dispatch bookkeeping, nine memory readback copies, async map microtask, unpack, viscosity peak and plunge/time adoption.",
+    "excluded": "Real WGSL/GPU execution, driver/queue stalls, renderer/worker publication/FPS, physics CPU consumers. Mock dispatches are no-ops; imported held fields do not physically evolve. Construction/intake/equality/hashing and statistics outside timings.",
+    "fieldLimit": "Actual paused F32 imported water/breaking/predictor/plunge fields; absent RATEH/NU are constructor defaults. All original peak/clock feedback loops execute, but this is not the native evolved viscosity/CFL distribution."
+  },
+  "elapsedMs": 2108.733834
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "feed-components-native-root-coordination/v1",
+  "authority": "Direct coordination messages from /root to /root/tube_live_capture in this task on 2026-10-04",
+  "standaloneTcpToolArtifactSaved": false,
+  "pair": {
+    "session": 1168,
+    "status": "CLOSED0",
+    "valid": true,
+    "startedAt": "2026-10-04T07:18:00.899Z",
+    "endedAt": "2026-10-04T07:21:59.243Z"
+  },
+  "independentTcpClosure": {
+    "timeQualification": "After pair ended 2026-10-04T07:21:59.243Z and before indexed CPU checks started 2026-10-04T07:22:37.593970Z; exact independent-check timestamp was not saved",
+    "afterExclusive": "2026-10-04T07:21:59.243Z",
+    "beforeExclusive": "2026-10-04T07:22:37.593970Z",
+    "rootCorrection": "Root corrected its earlier approximate ~07:23 attribution using the actual tool sequence; all five ECONNREFUSED rows are unchanged.",
+    "method": "Root's independent elevated read-only TCP checks",
+    "rows": [
+      {"port": 4241, "closed": true, "reason": "ECONNREFUSED"},
+      {"port": 9651, "closed": true, "reason": "ECONNREFUSED"},
+      {"port": 4242, "closed": true, "reason": "ECONNREFUSED"},
+      {"port": 9652, "closed": true, "reason": "ECONNREFUSED"},
+      {"port": 4200, "closed": true, "reason": "ECONNREFUSED"}
+    ],
+    "earlierSandboxResults": "The same ports returned EPERM in the initial sandbox checks; those rows were explicitly not closure evidence.",
+    "archiveWorkerRepeatedChecks": false
+  },
+  "decision": "HOLD",
+  "adopted": false,
+  "mainMergeClaimed": false,
+  "decisionReason": "Packing improved, but displayed FPS did not improve and native whole-path results did not justify adoption from this one serial pair.",
+  "inferenceLimits": "No causal regression, heat, order-independent or general FPS claim. Root is reviewing a separate simpler indexed scan from b0.",
+  "quotedClosureFollowup": "Independent elevated TCP closure output not saved separately; use explicitly attributed root coordination note. Exact output rows ports4241,9651,4242,9652,4200 each closed:true reason:ECONNREFUSED. Prior sandbox sameports EPERM rows explicitly non-evidence."
+}

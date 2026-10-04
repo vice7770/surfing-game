@@ -1,0 +1,94 @@
+{
+  "schema": "root-feed-indexed-gate/v1",
+  "kind": "checks",
+  "readySha256": "dff888a1445e61edf7c96af1148a67c48b07cbde62bcb3b7c5d7c613e6d40d4d",
+  "startedAt": "2026-10-04T07:22:37.593970+00:00",
+  "parentPid": 57406,
+  "pins": 67,
+  "outerTimeoutSeconds": 30,
+  "commands": [
+    {
+      "name": "strict",
+      "command": [
+        "node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "/private/tmp/surf-feed-indexed-scan-20261004/tsconfig.qa.json"
+      ],
+      "startedAt": "2026-10-04T07:22:37.602595+00:00",
+      "childPid": 57417,
+      "endedAt": "2026-10-04T07:22:39.396102+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-indexed-scan-20261004/root-checks/command-0.log"
+    },
+    {
+      "name": "buildSyntax",
+      "command": [
+        "node",
+        "--check",
+        "/private/tmp/surf-feed-indexed-scan-20261004/build.mjs"
+      ],
+      "startedAt": "2026-10-04T07:22:39.417984+00:00",
+      "childPid": 57447,
+      "endedAt": "2026-10-04T07:22:39.463144+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-indexed-scan-20261004/root-checks/command-1.log"
+    },
+    {
+      "name": "transformSyntax",
+      "command": [
+        "node",
+        "--check",
+        "/private/tmp/surf-feed-indexed-scan-20261004/patch-source.mjs"
+      ],
+      "startedAt": "2026-10-04T07:22:39.484986+00:00",
+      "childPid": 57448,
+      "endedAt": "2026-10-04T07:22:39.525187+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-indexed-scan-20261004/root-checks/command-2.log"
+    },
+    {
+      "name": "bundle",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-indexed-scan-20261004/build.mjs"
+      ],
+      "startedAt": "2026-10-04T07:22:39.547170+00:00",
+      "childPid": 57449,
+      "endedAt": "2026-10-04T07:22:39.808051+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-indexed-scan-20261004/root-checks/command-3.log"
+    },
+    {
+      "name": "unarmedProof",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-indexed-scan-20261004/compiled/proof.mjs"
+      ],
+      "startedAt": "2026-10-04T07:22:39.829922+00:00",
+      "childPid": 57451,
+      "endedAt": "2026-10-04T07:22:39.874440+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-indexed-scan-20261004/root-checks/command-4.log"
+    },
+    {
+      "name": "unarmedCost",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-indexed-scan-20261004/compiled/cost.mjs"
+      ],
+      "startedAt": "2026-10-04T07:22:39.896100+00:00",
+      "childPid": 57453,
+      "endedAt": "2026-10-04T07:22:39.940645+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-indexed-scan-20261004/root-checks/command-5.log"
+    }
+  ],
+  "valid": true,
+  "pinsUnchanged": true,
+  "endedAt": "2026-10-04T07:22:39.963411+00:00",
+  "elapsedSeconds": 2.3693624589941464
+}

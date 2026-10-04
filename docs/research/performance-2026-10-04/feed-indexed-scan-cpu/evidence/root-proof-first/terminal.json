@@ -1,0 +1,28 @@
+{
+  "schema": "root-feed-indexed-gate/v1",
+  "kind": "proof",
+  "readySha256": "dff888a1445e61edf7c96af1148a67c48b07cbde62bcb3b7c5d7c613e6d40d4d",
+  "startedAt": "2026-10-04T07:23:08.385232+00:00",
+  "parentPid": 57593,
+  "pins": 71,
+  "outerTimeoutSeconds": 20,
+  "commands": [
+    {
+      "name": "proof",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-indexed-scan-20261004/compiled/proof.mjs",
+        "--run=true"
+      ],
+      "startedAt": "2026-10-04T07:23:08.394410+00:00",
+      "childPid": 57632,
+      "endedAt": "2026-10-04T07:23:10.695826+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-indexed-scan-20261004/root-proof-first/command-0.log"
+    }
+  ],
+  "valid": true,
+  "pinsUnchanged": true,
+  "endedAt": "2026-10-04T07:23:10.720135+00:00",
+  "elapsedSeconds": 2.3348399169626646
+}

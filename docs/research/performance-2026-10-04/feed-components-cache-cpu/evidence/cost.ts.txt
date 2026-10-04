@@ -1,0 +1,46 @@
+// Complete real runWaterStep host path on a CPU memory mock. All mock dispatches are no-ops.
+import assert from 'node:assert/strict';
+import { readFileSync,writeFileSync,mkdirSync,existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { performance } from 'node:perf_hooks';
+import { WORK,authority,heldInput,exact,sha,pin,type Arm } from './common';
+import { RecordingGpu,globals } from './mockGpu';
+const args=process.argv.slice(2);assert(args.length<=1&&args.every(a=>a==='--run=true'));
+if(!args.includes('--run=true')){console.log(JSON.stringify({planOnly:true,actualHeldCells:116000,components:64,warmPairs:8,measuredPairs:32,wholeMethod:'runWaterStep via ordinary step(1/60)',usefulMeanGainRequiredMs:.1,noRealGpuDriverOrFps:true}));process.exit(0);}
+const OUT=join(WORK,'cost-first');assert(!existsSync(OUT));mkdirSync(OUT);
+const report:any={schema:'feed-components-complete-mock-host-cost/v1',valid:false,rows:[],localCpuOnly:true};
+const save=()=>{const b=Buffer.from(JSON.stringify(report,null,2)+'\n');assert(b.length<=512*1024);writeFileSync(join(OUT,'report.json'),b);return{path:join(OUT,'report.json'),bytes:b.length,sha256:sha(b)};};
+const restore=globals(),live:{dispose():void}[]=[];const wholeStart=performance.now(),bound=()=>assert(performance.now()-wholeStart<15000,'15 s complete cost operation budget');
+try{
+ const a=await authority();report.readySha256=a.readySha;
+ const proof=JSON.parse(readFileSync(join(WORK,'proof-first/terminal.json'),'utf8'));assert.equal(proof.valid,true);assert.equal(proof.readySha256,a.readySha);pin(proof.report);
+ const input=heldInput(a.ready);report.inputAuthority=input.authority;report.config=input.config;
+ const make=async(arm:Arm)=>{const scene=new arm.SurfZoneSimulation(input.config,'warm'),state=arm.decodeSurfZoneState(input.bytes);scene.importState(state);assert.equal(scene.solver.h.length,116000);assert.equal(scene.sea.components.length,64);assert.equal(scene.seaTime,input.authority.pausedSeaTime);assert(scene.solver instanceof arm.BoussinesqSolver);const solver=scene.solver as InstanceType<Arm['BoussinesqSolver']>,feed=solver.relaxationZones.find(z=>z instanceof arm.SideFeed)as InstanceType<Arm['SideFeed']>;assert(feed);assert(feed.deviceShape().slots>0);
+  // No recording/hashing or numerical kernel substitute in the timed mock. Actual buffer writes/copies/map
+  // lifecycle and all original host conversion, CFL, encoding, unpacking/adoption loops still execute.
+  const mock=new RecordingGpu(false),host=await arm.GpuBoussinesq.create(solver,mock.gpu);assert(host);live.push(host);bound();
+  return{arm,scene,solver,feed,mock,host,identities:arm.DEVICE_READBACK.map(i=>arm.readbackTarget(solver,i))};
+ };
+ const b=await make(a.baseline),c=await make(a.candidate),initialTime=b.solver.time;
+ const equal=()=>{
+  assert.equal(b.solver.time,c.solver.time);assert.equal(b.solver.plungeVersion,c.solver.plungeVersion);assert.equal(b.host.lastSubsteps,c.host.lastSubsteps);assert.equal(b.mock.buffers.length,c.mock.buffers.length);
+  for(let i=0;i<b.mock.buffers.length;i++){assert.equal(b.mock.buffers[i].size,c.mock.buffers[i].size);assert.equal(b.mock.buffers[i].mapped,false);assert.equal(c.mock.buffers[i].mapped,false);exact(new Uint8Array(b.mock.buffers[i].bytes),new Uint8Array(c.mock.buffers[i].bytes),'Actual mock device buffer'+i);}
+  for(let k=0;k<b.arm.DEVICE_READBACK.length;k++){const i=b.arm.DEVICE_READBACK[k],vb=b.arm.readbackTarget(b.solver,i),vc=c.arm.readbackTarget(c.solver,i);assert.equal(vb,b.identities[k]);assert.equal(vc,c.identities[k]);exact(vb,vc,'Complete host feedback field'+i);}
+  exact(b.solver.plungeHold,c.solver.plungeHold,'Plunge aging feedback');assert.equal(b.solver.maxStableStep(),c.solver.maxStableStep());bound();
+ };
+ const call=async(actor:typeof b)=>{const start=performance.now();await actor.host.step(1/60);const total=performance.now()-start;return{total,diagnostics:{...actor.host.diagnostics},lastStepMs:actor.host.lastStepMs,substeps:actor.host.lastSubsteps};};
+ const orders=['AB','BA','BA','AB'];
+ const pair=async(i:number)=>{const order=orders[i%4],first=await call(order==='AB'?b:c),second=await call(order==='AB'?c:b),bb=order==='AB'?first:second,cc=order==='AB'?second:first;equal();return{pair:i,order,baselineMs:bb.total,candidateMs:cc.total,savingMs:bb.total-cc.total,baselineDiagnostics:bb.diagnostics,candidateDiagnostics:cc.diagnostics,substeps:bb.substeps};};
+ for(let i=0;i<8;i++)await pair(i);
+ for(let i=0;i<32;i++)report.rows.push(await pair(i));
+ equal();const savings:number[]=report.rows.map((r:any)=>r.savingMs),mean=savings.reduce((s,v)=>s+v,0)/savings.length,variance=savings.reduce((s,v)=>s+(v-mean)**2,0)/(savings.length-1),lower95=mean-1.96*Math.sqrt(variance/savings.length),sorted=[...savings].sort((x,y)=>x-y);
+ const strata=['AB','BA'].map(order=>{const x:number[]=report.rows.filter((r:any)=>r.order===order).map((r:any)=>r.savingMs);return{order,pairs:x.length,meanSavingMs:x.reduce((s,v)=>s+v,0)/x.length};});
+ report.statistics={pairs:savings.length,meanSavingMs:mean,medianSavingMs:(sorted[15]+sorted[16])/2,pairedMeanLower95Ms:lower95,thresholdMs:.1,orderStrata:strata,thresholdPass:lower95>.1&&strata.every(s=>s.meanSavingMs>.1),
+  caveat:'Approximate paired-mean normal bound on one fixed CPU sample; order strata are retained. No bootstrap, adaptive extra pairs or retry. Not native performance or population inference.'};
+ report.work={cells:116000,components:64,initialSolverTime:initialTime,finalSolverTime:b.solver.time,completedStepCallsPerArm:40,readbackFields:9,candidateRemovesOnlyOneWeightsScanPerCall:true,queueByteLengthsOrderAndUniformsEstablishedByProof:true,allFinalDeviceBytesAndSolverOutputsExact:true,steadyBufferIdentitiesPreserved:true,
+  timed:'Complete ordinary GpuBoussinesq.step/runWaterStep: upload conversion and mock memory queue writes, original CFL, uniforms including their unchanged slot scan, command/kernel dispatch bookkeeping, nine memory readback copies, async map microtask, unpack, viscosity peak and plunge/time adoption.',
+  excluded:'Real WGSL/GPU execution, driver/queue stalls, renderer/worker publication/FPS, physics CPU consumers. Mock dispatches are no-ops; imported held fields do not physically evolve. Construction/intake/equality/hashing and statistics outside timings.',
+  fieldLimit:'Actual paused F32 imported water/breaking/predictor/plunge fields; absent RATEH/NU are constructor defaults. All original peak/clock feedback loops execute, but this is not the native evolved viscosity/CFL distribution.'};
+ a.check();report.elapsedMs=performance.now()-wholeStart;assert(report.statistics.thresholdPass,'No >0.1 ms useful paired complete-host gain');report.valid=true;const payload=save();writeFileSync(join(OUT,'terminal.json'),JSON.stringify({valid:true,readySha256:a.readySha,inputPinsUnchanged:true,usefulGainPass:true,report:payload},null,2)+'\n');console.log(JSON.stringify({valid:true,statistics:report.statistics,report:payload}));
+}catch(error){report.strictStop=true;report.firstFailure=String(error);const payload=save();writeFileSync(join(OUT,'terminal.json'),JSON.stringify({valid:false,strictStop:true,error:String(error),report:payload},null,2)+'\n');process.exitCode=1;console.error(String(error));}
+finally{for(const h of live)h.dispose();restore();}

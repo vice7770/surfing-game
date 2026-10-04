@@ -1,0 +1,942 @@
+{
+  "schema": "feed-components-cache-cpu-archive/v1",
+  "status": "Frozen source plus completed bounded CPU proof/cost; no native result or adoption.",
+  "canonicalRuntimeCommit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+  "docsCheckpointAtSourceFreeze": "4a2657bea",
+  "scratchOriginalRoot": "/private/tmp/surf-feed-components-cache-20261004",
+  "readySha256": "a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519",
+  "decodedExportCapBytes": 8388608,
+  "payloads": [
+    {
+      "storedPath": "evidence/build.mjs.txt",
+      "storedBytes": 2497,
+      "storedSha256": "f3c591c5da83a1cbb0241de958c82b4d2cfe020389964794347a671a7bc2d8a7",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/build.mjs",
+          "bytes": 2497,
+          "sha256": "f3c591c5da83a1cbb0241de958c82b4d2cfe020389964794347a671a7bc2d8a7"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/common.ts.txt",
+      "storedBytes": 2864,
+      "storedSha256": "5249d630f6e2172a050ad6bfed8f39b86d51c2b707773726b9dc8d92693c8f2a",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/common.ts",
+          "bytes": 2864,
+          "sha256": "5249d630f6e2172a050ad6bfed8f39b86d51c2b707773726b9dc8d92693c8f2a"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/compiled.json",
+      "storedBytes": 970,
+      "storedSha256": "f7f7f9dec5fcb21b582b7596b6ca1147447bdbfb5700c07693351b62f2123c81",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/compiled.json",
+          "bytes": 970,
+          "sha256": "f7f7f9dec5fcb21b582b7596b6ca1147447bdbfb5700c07693351b62f2123c81"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/cost-first/report.json",
+      "storedBytes": 24916,
+      "storedSha256": "13b29e13d385e8b5a25191a2dfaae1d9fe1c7cc120aeea935efc48411c6c3a95",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/cost-first/report.json",
+          "bytes": 24916,
+          "sha256": "13b29e13d385e8b5a25191a2dfaae1d9fe1c7cc120aeea935efc48411c6c3a95"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/cost-first/terminal.json",
+      "storedBytes": 368,
+      "storedSha256": "f7327c5ed67a45ae8ca82b6a00b1647395b01e44fc97b30a939f9add0b156d15",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/cost-first/terminal.json",
+          "bytes": 368,
+          "sha256": "f7327c5ed67a45ae8ca82b6a00b1647395b01e44fc97b30a939f9add0b156d15"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/cost.ts.txt",
+      "storedBytes": 7310,
+      "storedSha256": "17636df2a22995db128955f5bd3df498f2e185d16cc88fc5526b23624827e6fb",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/cost.ts",
+          "bytes": 7310,
+          "sha256": "17636df2a22995db128955f5bd3df498f2e185d16cc88fc5526b23624827e6fb"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/entry.ts.txt",
+      "storedBytes": 882,
+      "storedSha256": "4b432664a538f10d2d0594bebf8bafaee6e5afd52ce109a412b3b4e42d732ae6",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/entry.ts",
+          "bytes": 882,
+          "sha256": "4b432664a538f10d2d0594bebf8bafaee6e5afd52ce109a412b3b4e42d732ae6"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/inputs.json",
+      "storedBytes": 10473,
+      "storedSha256": "ca864d90bedc8d2d9d8299dffbda1e85e6459169fdb1c8e1be8ae3ea311624ab",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/inputs.json",
+          "bytes": 10473,
+          "sha256": "ca864d90bedc8d2d9d8299dffbda1e85e6459169fdb1c8e1be8ae3ea311624ab"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/mockGpu.ts.txt",
+      "storedBytes": 5283,
+      "storedSha256": "88f8d00d89f47166cbe6e0cf28e791eb84f31399589082a4046433fffc4da2c7",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/mockGpu.ts",
+          "bytes": 5283,
+          "sha256": "88f8d00d89f47166cbe6e0cf28e791eb84f31399589082a4046433fffc4da2c7"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/patch-source.mjs.txt",
+      "storedBytes": 883,
+      "storedSha256": "bb9e4f41a550ea5ff27693928a956d5d4dd6717899db94e539e0b4894a17b7c3",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/patch-source.mjs",
+          "bytes": 883,
+          "sha256": "bb9e4f41a550ea5ff27693928a956d5d4dd6717899db94e539e0b4894a17b7c3"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/proof-first/report.json",
+      "storedBytes": 4237,
+      "storedSha256": "1a5b29c7269ed0b10dfecc428bbd46864c30a91f941b21217aa157d2b84e7982",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/proof-first/report.json",
+          "bytes": 4237,
+          "sha256": "1a5b29c7269ed0b10dfecc428bbd46864c30a91f941b21217aa157d2b84e7982"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/proof-first/terminal.json",
+      "storedBytes": 342,
+      "storedSha256": "281566f81e9609725fea8a497de4f4bf2d7cdf6658aeafdd461b71ee65646244",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/proof-first/terminal.json",
+          "bytes": 342,
+          "sha256": "281566f81e9609725fea8a497de4f4bf2d7cdf6658aeafdd461b71ee65646244"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/proof.ts.txt",
+      "storedBytes": 11289,
+      "storedSha256": "43f09bf73dcb2b3a3bc01ee2a18685975791f0996d47e6e172e9b7fe36c570b7",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/proof.ts",
+          "bytes": 11289,
+          "sha256": "43f09bf73dcb2b3a3bc01ee2a18685975791f0996d47e6e172e9b7fe36c570b7"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/proposal.md",
+      "storedBytes": 6058,
+      "storedSha256": "390eb28fd62f2442ef12bdaee8e2a5275b99918668302a3a57277ecba029441a",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/proposal.md",
+          "bytes": 6058,
+          "sha256": "390eb28fd62f2442ef12bdaee8e2a5275b99918668302a3a57277ecba029441a"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/ready.json",
+      "storedBytes": 15659,
+      "storedSha256": "a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/ready.json",
+          "bytes": 15659,
+          "sha256": "a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-checks/command-0.log",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-0.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-checks/command-1.log",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-1.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-checks/command-2.log",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-2.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-checks/command-3.log",
+      "storedBytes": 748,
+      "storedSha256": "78b0820a4077a36d194cafd2a65efb8106c3e81c71ecbc13bcca6da0dec8458d",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-3.log",
+          "bytes": 748,
+          "sha256": "78b0820a4077a36d194cafd2a65efb8106c3e81c71ecbc13bcca6da0dec8458d"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-checks/command-4.log",
+      "storedBytes": 178,
+      "storedSha256": "1f1b2a952ccadba56e79e8c2c023f594036c76f23fc08addf8654cdfd7f63dcb",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-4.log",
+          "bytes": 178,
+          "sha256": "1f1b2a952ccadba56e79e8c2c023f594036c76f23fc08addf8654cdfd7f63dcb"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-checks/command-5.log",
+      "storedBytes": 204,
+      "storedSha256": "32c28c407021665db15ae7a9b0079e6246b4b93929ff5452ba549af3631634ff",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-5.log",
+          "bytes": 204,
+          "sha256": "32c28c407021665db15ae7a9b0079e6246b4b93929ff5452ba549af3631634ff"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-checks/pins.json",
+      "storedBytes": 12076,
+      "storedSha256": "e13db54a08a17893e2761d2d198a686bbdac6a586696ff2b4af0d8edf98aff9a",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-checks/pins.json",
+          "bytes": 12076,
+          "sha256": "e13db54a08a17893e2761d2d198a686bbdac6a586696ff2b4af0d8edf98aff9a"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-checks/terminal.json",
+      "storedBytes": 2753,
+      "storedSha256": "3b0f239b98c031fabfbf4ef8d5f56ffab1b31d4dfd35d7e0d5d3240c15b9ffef",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-checks/terminal.json",
+          "bytes": 2753,
+          "sha256": "3b0f239b98c031fabfbf4ef8d5f56ffab1b31d4dfd35d7e0d5d3240c15b9ffef"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-cost-first/command.log",
+      "storedBytes": 702,
+      "storedSha256": "89be20e4570e10eb16c28a33330759e8f13b42dc6608b71c17e2f4f945203b61",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-cost-first/command.log",
+          "bytes": 702,
+          "sha256": "89be20e4570e10eb16c28a33330759e8f13b42dc6608b71c17e2f4f945203b61"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-cost-first/pins.json",
+      "storedBytes": 13437,
+      "storedSha256": "d3c60d8f618542d73d38a8c8ecd92d75dbc7086d9001f8a6727f211aff861654",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-cost-first/pins.json",
+          "bytes": 13437,
+          "sha256": "d3c60d8f618542d73d38a8c8ecd92d75dbc7086d9001f8a6727f211aff861654"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-cost-first/terminal.json",
+      "storedBytes": 459,
+      "storedSha256": "1323e2733bb592fd770ec14ec5a09063260bc234f157fee8d84e850bf6d141b6",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-cost-first/terminal.json",
+          "bytes": 459,
+          "sha256": "1323e2733bb592fd770ec14ec5a09063260bc234f157fee8d84e850bf6d141b6"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-gates.py.txt",
+      "storedBytes": 2336,
+      "storedSha256": "600b852a606cd8e53a59e6300e1558a5bda94f69a71d6d4009ea4e3ac0baa5f2",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-gates.py",
+          "bytes": 2336,
+          "sha256": "600b852a606cd8e53a59e6300e1558a5bda94f69a71d6d4009ea4e3ac0baa5f2"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-one.py.txt",
+      "storedBytes": 2281,
+      "storedSha256": "d24b843f1faf3003f702fc057d1b77be849f01f36785b38a67a688bfb073dd14",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-one.py",
+          "bytes": 2281,
+          "sha256": "d24b843f1faf3003f702fc057d1b77be849f01f36785b38a67a688bfb073dd14"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-proof-first/command.log",
+      "storedBytes": 207,
+      "storedSha256": "e3af0c71e7507381e9aa881bb589d9c4256684484b73d2b0e6167d99c4e46fbc",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-proof-first/command.log",
+          "bytes": 207,
+          "sha256": "e3af0c71e7507381e9aa881bb589d9c4256684484b73d2b0e6167d99c4e46fbc"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-proof-first/pins.json",
+      "storedBytes": 13042,
+      "storedSha256": "8ab5d0a33722fffe3a3b4453f2f5fb5ba81b59f16366380971ff74171422e94f",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-proof-first/pins.json",
+          "bytes": 13042,
+          "sha256": "8ab5d0a33722fffe3a3b4453f2f5fb5ba81b59f16366380971ff74171422e94f"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-proof-first/terminal.json",
+      "storedBytes": 460,
+      "storedSha256": "42a3610fa75159ffcd18e1f1463ff9d07c2e7f2d9949b4c79bc8e2d705b66b04",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/root-proof-first/terminal.json",
+          "bytes": 460,
+          "sha256": "42a3610fa75159ffcd18e1f1463ff9d07c2e7f2d9949b4c79bc8e2d705b66b04"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/tsconfig.qa.json",
+      "storedBytes": 630,
+      "storedSha256": "f41d788346bd336f35242f4d9d94be6cec3a7fa1bd7f7e65ef751971494de141",
+      "encoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-cache-20261004/tsconfig.qa.json",
+          "bytes": 630,
+          "sha256": "f41d788346bd336f35242f4d9d94be6cec3a7fa1bd7f7e65ef751971494de141"
+        }
+      ]
+    }
+  ],
+  "reusedInputs": [
+    {
+      "storedPath": "../../tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/report.json.gz",
+      "storedBytes": 84311,
+      "storedSha256": "5ea70c9ba1cf9862a4bdc0db788a7e350f79b924653b728a47ace1a967a47e4c",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 605120,
+      "expandedSha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/report.json",
+          "bytes": 605120,
+          "sha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988"
+        }
+      ],
+      "sourceArchiveManifest": "../../tube-stability-2026-10-04/live-big-capture/manifest.json",
+      "sourceArchiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341"
+    },
+    {
+      "storedPath": "../../tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/committed-worker-export.bin.deflate",
+      "storedBytes": 2423908,
+      "storedSha256": "dd97ed4b53d1aa78eabdb58534a370e26d03cf553fe1bf26fe18d83d9bad48b3",
+      "encoding": "deflate-original",
+      "expandedBytes": 5723732,
+      "expandedSha256": "5ff85c873bb360c5df127084cb01b84fddd26ed971fa3ca19ddf3ece5bd6db18",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/committed-worker-export.bin.deflate",
+          "bytes": 2423908,
+          "sha256": "dd97ed4b53d1aa78eabdb58534a370e26d03cf553fe1bf26fe18d83d9bad48b3"
+        }
+      ],
+      "sourceArchiveManifest": "../../tube-stability-2026-10-04/live-big-capture/manifest.json",
+      "sourceArchiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341"
+    }
+  ],
+  "gitReferences": [
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AdvectionStencil.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/AdvectionStencil.ts",
+      "blob": "1b98518c9d3d31d648cb6bcd85034e792fdeeb99",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AerationField.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/AerationField.ts",
+      "blob": "2b8cacc2dc4e1c73697f44b565d2fac62ce220b7",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/Bathymetry.ts",
+      "blob": "3b75ba2f8377a5d5a782e6c2b70e607e731f1f65",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/BoussinesqSolver.ts",
+      "blob": "d66af8332c19b04bc2bcfe4b9ae1d6d73ff3fba9",
+      "bytes": 38556,
+      "sha256": "66cdbb3eb83f7d03ade33c11a429889b217d3b81cd6246b6dd5006a40b0e5d79"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Breaking.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/Breaking.ts",
+      "blob": "2ff23fbab6035e46d0646fce3b8a00a0eb715dda",
+      "bytes": 12851,
+      "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/CrestKinematics.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/CrestKinematics.ts",
+      "blob": "7cad8d9db6662fa4a6c15041d1724131fc043fa9",
+      "bytes": 5019,
+      "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/FoamField.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/FoamField.ts",
+      "blob": "7bb99eb0b18381f0e0f4f13f7bd30a8137e0f2b9",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Overturn.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/Overturn.ts",
+      "blob": "66a5c32f571b7e18ff28b1215f46168de9ff329e",
+      "bytes": 10648,
+      "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/PlungingLip.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/PlungingLip.ts",
+      "blob": "8a195119e3e69816380434992aefcdac3e4143f5",
+      "bytes": 66165,
+      "sha256": "901f08ec0c4e24167df9321b06c29b221dd86689d9c602d7ae4cd194046ac13b"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Refraction.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/Refraction.ts",
+      "blob": "64f5a0418c7ca2cf87f67d38f2ce40f3814ab3f9",
+      "bytes": 5965,
+      "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/SeaState.ts",
+      "blob": "4c82f19b5e0b34f1389a74e1aff415fb4e0d4025",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/SeaStateBoundary.ts",
+      "blob": "ff3fce00da264688216c38c58545f74571aabcf5",
+      "bytes": 5460,
+      "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/ShallowWaterSolver.ts",
+      "blob": "a5095cabe2600d4c3dc88bec267e42e443bd3438",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/SideFeed.ts",
+      "blob": "0dfc8e8a5426a5994ae4dc4972cdb5833be50beb",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfMeter.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/SurfMeter.ts",
+      "blob": "c0ebaa10eed2cb714123f6bdc1ca21c061d12b16",
+      "bytes": 3170,
+      "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/SurfZoneSimulation.ts",
+      "blob": "650e3896e25a5d4fe8eebcda00a93e9ed3b60042",
+      "bytes": 71099,
+      "sha256": "18e7928601d7208d5f7ff1a15a34995f7e63ebeec497dbe7bf7527b06d15948a"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SwellReadout.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/SwellReadout.ts",
+      "blob": "85b8d144e6f0619da6a4dff0f6b19e61b0a0fd5e",
+      "bytes": 2110,
+      "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/BreakingFront.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/BreakingFront.ts",
+      "blob": "6b6a49ebc37cc3a6cc4b9e66cc3a86ea30cadcb2",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/ProfileLibrary.ts",
+      "blob": "21af2d67c9b335d1efa324f0e912a40b4ce2d9b6",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/SweptCrash.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/SweptCrash.ts",
+      "blob": "70abad5c3aa31e88cf0946710d35eb5f4355f07d",
+      "bytes": 28953,
+      "sha256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/barrelSpots.ts",
+      "blob": "b236aa2f6cc95c02aa8b1a82e2a8c8fbba6244e3",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crashCurve.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/crashCurve.ts",
+      "blob": "b3433ed05e135027fb4866af7353da9e9d71ce1d",
+      "bytes": 14166,
+      "sha256": "361183fa14ead52594e1bad25a6a47fd274bc294e8f8c6d5199814e01e4778a9"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestOnset.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/crestOnset.ts",
+      "blob": "37e13b44356115f211e88aa28bd6c75d8e20815d",
+      "bytes": 4651,
+      "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/crestRays.ts",
+      "blob": "f1541ca7b6024cadf5971fdcac549ccc6b1fa591",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/frontRecords.ts",
+      "blob": "90c6b679dd0b1b9196f46ac12eb180c4606271f0",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/heldOverturn.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/heldOverturn.ts",
+      "blob": "f1ae50b956d4643ab30b7f606957c70c46604793",
+      "bytes": 4886,
+      "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/lipSheet.ts",
+      "blob": "953770aeff0cb6aa5e05ed581558254bc51ce845",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/sliceClock.ts",
+      "blob": "79e48491414e707f6f5a9b35cddea6725c4612e1",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/barrel/sweptLoft.ts",
+      "blob": "8345c1e983db70f82b9a7ad2dd43e7d8597f2a01",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/breakingAge.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/breakingAge.ts",
+      "blob": "19bf68cc5e7ee451f5bf29380865af4b93325fb1",
+      "bytes": 2861,
+      "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/dispersion.ts",
+      "blob": "09867670796a46731fe146c2f45b93a88bf625dd",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/gpu/GpuBoussinesq.ts",
+      "blob": "5e3dbb317fa4e54468cbd26980e71ba40e2a590e",
+      "bytes": 23863,
+      "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/boussinesqWgsl.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/gpu/boussinesqWgsl.ts",
+      "blob": "0ee020d1f1f6726f760fbdeca28f28bef1b4a6d8",
+      "bytes": 38276,
+      "sha256": "1b9f973616605f8e3d71e99d599f73497839f3d66bdbfc0bed320545518f173f"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/pool.ts",
+      "blob": "62bd3bfc4386b2a154077c6b27eca8378e5228cc",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/random.ts",
+      "blob": "85a28f719f8e01259a7a7f43c379ac92cc65f829",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfForecast.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/surfForecast.ts",
+      "blob": "5512b114d9d9790a9eeb8abd75617387a4d28388",
+      "bytes": 3914,
+      "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfZoneState.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/surfZoneState.ts",
+      "blob": "f9b7e0f9b18c9378dfb2c603d38c784066a2faee",
+      "bytes": 3955,
+      "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/tubeTable.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/tubeTable.ts",
+      "blob": "b38d8c8f368b543171f3887f46214f1da951b50d",
+      "bytes": 6876,
+      "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc"
+    },
+    {
+      "kind": "canonical-runtime",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/warmStart.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/warmStart.ts",
+      "blob": "a04aab6128638ffef801215d44e34b6ba3914807",
+      "bytes": 6238,
+      "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d"
+    },
+    {
+      "kind": "package-input",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/package-lock.json",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "package-lock.json",
+      "blob": "eac6c8324a197ebf84e7dfb0d8d9b8ab8eab56be",
+      "bytes": 42710,
+      "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+    },
+    {
+      "kind": "package-input",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/package.json",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "package.json",
+      "blob": "79311ff6270a25b2c0ac6d120668db2bbf8f7ac4",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "kind": "type-input",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/webgpu-env.d.ts",
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "relativePath": "src/wave/gpu/webgpu-env.d.ts",
+      "blob": "cbd44f35fa691e48f1512b8c0fb7b6283a9b6bc7",
+      "bytes": 40,
+      "sha256": "039706dee4c12a5f855fe20b669865a5af1da6e9add02e461a188821aa7a36d1"
+    }
+  ],
+  "externalIdentityReferences": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@webgpu/types/dist/index.d.ts",
+      "bytes": 117813,
+      "sha256": "bd08a7d5dc63f6b360c471a05f842a9db40acc0ed685171c272842e614de6e19",
+      "kind": "tool-input"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@webgpu/types/package.json",
+      "bytes": 740,
+      "sha256": "c58597e365f42b61a165210e49e90a864730ee4716473de67d36dfa42519ec99",
+      "kind": "tool-input"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs",
+      "bytes": 1642,
+      "sha256": "57122bb7de7bf7116dc1d1866ad367753dee6820d55b81a3656d0c2e6c6f79d8",
+      "kind": "tool-input"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/package.json",
+      "bytes": 6219,
+      "sha256": "4ac9bd4b57a1470fa4515e479cea7ca78875802b661b87dfc896e216d4cf6869",
+      "kind": "tool-input"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+      "bytes": 45,
+      "sha256": "8d5fa5bd883fec0979fc2004f1fe1d99aef40570155d550eadc0b03b55513bf0",
+      "kind": "tool-input"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/lib/typescript.js",
+      "bytes": 9112572,
+      "sha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+      "kind": "tool-input"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/package.json",
+      "bytes": 3620,
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+      "kind": "tool-input"
+    },
+    {
+      "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/baseline.mjs",
+      "bytes": 721883,
+      "sha256": "be402e6324eb89ee70cefc45497f04c4dfbedf674c422f0dd5e09ab89539c262",
+      "kind": "compiled-output"
+    },
+    {
+      "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/candidate.mjs",
+      "bytes": 722031,
+      "sha256": "124ec1118ed270ce5f15e337181ef4c33aafa38b99bae7d64d613330f7269586",
+      "kind": "compiled-output"
+    },
+    {
+      "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/proof.mjs",
+      "bytes": 20370,
+      "sha256": "6cbb30c994c7eb5ee29b4508f05cb0d92e016a1989d490e4e51ae0298d9f58ac",
+      "kind": "compiled-output"
+    },
+    {
+      "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/cost.mjs",
+      "bytes": 15968,
+      "sha256": "984f28774c435279c5efe60bfcad6ab035266c0792a0b79759723bd16026d416",
+      "kind": "compiled-output"
+    }
+  ],
+  "closureAuthorities": [
+    "/private/tmp/surf-feed-components-cache-20261004/ready.json",
+    "/private/tmp/surf-feed-components-cache-20261004/inputs.json",
+    "/private/tmp/surf-feed-components-cache-20261004/compiled.json",
+    "/private/tmp/surf-feed-components-cache-20261004/root-checks/pins.json",
+    "/private/tmp/surf-feed-components-cache-20261004/root-proof-first/pins.json",
+    "/private/tmp/surf-feed-components-cache-20261004/root-cost-first/pins.json",
+    "/private/tmp/surf-feed-components-cache-20261004/proof-first/terminal.json",
+    "/private/tmp/surf-feed-components-cache-20261004/cost-first/terminal.json",
+    "/private/tmp/surf-feed-components-cache-20261004/proof-first/report.json",
+    "/private/tmp/surf-feed-components-cache-20261004/cost-first/report.json"
+  ],
+  "generatedRecords": [
+    {
+      "path": "README.md",
+      "bytes": 8195,
+      "sha256": "2c7a4d6d853501335c65ac629154e636453ad15e02bbdcaf0d174513e5bb3630"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 10738,
+      "sha256": "92b3a264f88f3fb9a5c27453ae75744a29fbad53f9ae92f04978b153ed2bd61e"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 9945,
+      "sha256": "589dae79d5b399b6afd1ece8ddd82fa035d6d90519c2acc929c5544e5005753d"
+    }
+  ],
+  "storagePolicy": "Original source and wrappers inert as .txt; original metadata/logs/reports byte-exact. Reuse existing capture aliases and b0 Git blobs. Compiled outputs and tools identities only, optional --originals verification.",
+  "scope": "Bytes, stored outcomes and row arithmetic only; no imports, builds, benchmark reruns, browser/native/FPS or canonical/index/Git mutation."
+}

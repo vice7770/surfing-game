@@ -1,0 +1,48 @@
+import hashlib, json, os, pathlib, subprocess, sys, time
+from datetime import datetime, timezone
+
+work = pathlib.Path('/private/tmp/surf-feed-components-cache-20261004')
+kind = sys.argv[1]
+assert kind in ['proof', 'cost'] and len(sys.argv)==2
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+ready_raw = (work/'ready.json').read_bytes()
+expected = 'a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519'
+assert sha(ready_raw)==expected
+ready = json.loads(ready_raw)
+compiled_raw=(work/'compiled.json').read_bytes()
+compiled=json.loads(compiled_raw)
+pins = ready['inputs'] + compiled['outputs'] + [
+ {'path':str(work/'ready.json'),'bytes':len(ready_raw),'sha256':expected},
+ {'path':str(work/'compiled.json'),'bytes':len(compiled_raw),'sha256':sha(compiled_raw)}]
+if kind=='cost':
+ proof_raw=(work/'proof-first/terminal.json').read_bytes()
+ proof=json.loads(proof_raw)
+ assert proof['valid'] is True
+ pins += [proof['report'],{'path':str(work/'proof-first/terminal.json'),'bytes':len(proof_raw),'sha256':sha(proof_raw)}]
+def check():
+ for p in pins:
+  raw=pathlib.Path(p['path']).read_bytes()
+  assert len(raw)==p['bytes'] and sha(raw)==p['sha256'],p['path']
+check()
+out=work/('root-'+kind+'-first')
+assert not out.exists()
+out.mkdir()
+(out/'pins.json').write_text(json.dumps(pins,indent=2)+'\n')
+now=lambda:datetime.now(timezone.utc).isoformat()
+command=ready['commands']['proof' if kind=='proof' else 'costOnlyAfterProof']
+env=os.environ.copy();env['FEED_COMPONENTS_READY_SHA256']=expected
+terminal={'schema':'root-feed-components-one-run/v1','kind':kind,'command':command,'parentPid':os.getpid(),'startedAt':now(),'pins':len(pins),'outerTimeoutSeconds':20}
+started=time.monotonic()
+with (out/'command.log').open('wb') as log:
+ try:
+  proc=subprocess.Popen(command,cwd=work,env=env,stdout=log,stderr=subprocess.STDOUT)
+  terminal['childPid']=proc.pid
+  code=proc.wait(timeout=20)
+ except subprocess.TimeoutExpired:
+  proc.kill();code=proc.wait();terminal['timeout']=True
+terminal.update(endedAt=now(),elapsedSeconds=time.monotonic()-started,exitCode=code)
+check();terminal['pinsUnchanged']=True
+(out/'terminal.json').write_text(json.dumps(terminal,indent=2)+'\n')
+print(json.dumps(terminal),flush=True)
+print((out/'command.log').read_text(),flush=True)
+sys.exit(code)

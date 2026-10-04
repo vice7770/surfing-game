@@ -1,0 +1,18 @@
+{
+  "schema": "root-feed-components-one-run/v1",
+  "kind": "cost",
+  "command": [
+    "node",
+    "/private/tmp/surf-feed-components-cache-20261004/compiled/cost.mjs",
+    "--run=true"
+  ],
+  "parentPid": 52296,
+  "startedAt": "2026-10-04T07:05:36.695549+00:00",
+  "pins": 69,
+  "outerTimeoutSeconds": 20,
+  "childPid": 52297,
+  "endedAt": "2026-10-04T07:05:38.920996+00:00",
+  "elapsedSeconds": 2.2253742089960724,
+  "exitCode": 0,
+  "pinsUnchanged": true
+}

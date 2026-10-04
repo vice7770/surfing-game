@@ -1,0 +1,103 @@
+{
+  "schema": "feed-indexed-complete-host-proof/v1",
+  "valid": true,
+  "cases": [
+    {
+      "name": "native F64 special values, read-only shape, dynamic public uniforms, exact restore",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 71,
+      "protocolSha256": "754109423ed1451ce23085cf0524bb53f14504089e59cdeb7b407a83505a3d16"
+    },
+    {
+      "name": "actual SideFeed complete steps C1",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 56,
+      "protocolSha256": "55414edc5053465ef6ffff2337b229db0ef022976e6c52221c3ab9771ea286d8"
+    },
+    {
+      "name": "actual SideFeed complete steps C7",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 56,
+      "protocolSha256": "07568b4b7e116e1f3ce89d24ff2ed333c7a3c1888f94b29d9f921e8bf83dc42b"
+    },
+    {
+      "name": "actual SideFeed complete steps C64",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 56,
+      "protocolSha256": "dcb092ff17bfe19878bcbc6a10ed21f0f8c8085f0888a7e13120fa5a6a0489b8"
+    },
+    {
+      "name": "mutable weights, zero/restored slots, layout/window/time refresh, generic uniforms",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 56,
+      "protocolSha256": "1ae9348341cdbd2da10e302a165011f37fe3ff156f7da9733143ba27fb967cf7"
+    },
+    {
+      "name": "zero-slot creation and restoration",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 71,
+      "protocolSha256": "c5dd776056b8e9fa9e28e49068c580809e494b6c5c175694502dfd88a46b70ed"
+    },
+    {
+      "name": "no-feed supported solver",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 53,
+      "protocolSha256": "a1dd04514ceba0ac6b822425209f2221942d580c92523455891a6732005a30b2"
+    },
+    {
+      "name": "deferred commit, multiple substeps, real adoption feedback, discard/rebase",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 68,
+      "protocolSha256": "649da1ac76086b5a40c2bdb85e8f613d4c80c117439f8cdbeee404e98a5740c8"
+    },
+    {
+      "name": "map rejection, rebase and diagnostic no-readback parity",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 45,
+      "protocolSha256": "b1db4aae7a90ca994937df39cc9942526964ad6dac4f0376aed17804c3f8884d"
+    },
+    {
+      "name": "actual retained ordinary-size complete host protocol",
+      "queueBytesOrderAndLengthExact": true,
+      "allDeviceBuffersAndNineDestinationsExact": true,
+      "identitiesClocksCflAndPlungeExact": true,
+      "protocolEvents": 56,
+      "protocolSha256": "ca19676b0e78ebcb42d1242a7308ad4026c1a73704032fd46ae7281deb51d808"
+    }
+  ],
+  "actualHeld": {
+    "captureIncomplete": true,
+    "f32CommittedExport": true,
+    "captureSha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988",
+    "compressedSha256": "dd97ed4b53d1aa78eabdb58534a370e26d03cf553fe1bf26fe18d83d9bad48b3",
+    "rawSha256": "5ff85c873bb360c5df127084cb01b84fddd26ed971fa3ca19ddf3ece5bd6db18",
+    "pausedSeaTime": 328.04104655763683,
+    "solverTime": 52.69999999999905,
+    "seaTimeOffset": 275.34104655763775,
+    "limitation": "Paused F32 transport export, distinct from the earlier three drawn snapshots and full internal F64 precision; absent RATEH/NU remain constructor defaults, not measured native values.",
+    "cells": 116000,
+    "components": 64,
+    "allQueuePayloadHashesAndStateBitsExact": true,
+    "noWgslExecution": true
+  },
+  "readySha256": "dff888a1445e61edf7c96af1148a67c48b07cbde62bcb3b7c5d7c613e6d40d4d",
+  "scope": "Literal canonical versus one indexed-loop candidate. Queue and host protocol only; no numerical WGSL/GPU/render/FPS validation."
+}

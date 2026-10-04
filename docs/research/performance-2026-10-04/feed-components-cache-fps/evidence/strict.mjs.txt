@@ -1,0 +1,28 @@
+// Future whole-project no-emit typing; exactly one canonical source is read virtually.
+import assert from 'node:assert/strict';
+import { readFileSync,writeFileSync,existsSync } from 'node:fs';
+import { join,resolve } from 'node:path';
+import ts from '/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/lib/typescript.js';
+import { candidateSource } from '/private/tmp/surf-feed-components-cache-20261004/patch-source.mjs';
+import { WORK,ROOT,json,sha,captureAuthority } from './authority.mjs';
+const before=captureAuthority(),source=json(join(WORK,'source-manifest.json')),spec=source.onlyRuntimeDifference,target=spec.path;
+const output=join(WORK,'strict-terminal.json');assert(!existsSync(output),'Fresh strict metadata only');
+const term={schema:'feed-components-fps-candidate-strict/v1',valid:false,startedAt:new Date().toISOString(),pid:process.pid,target,sourceBefore:before,sourceAfter:null,substitutions:[],diagnostics:[],sourceImportsExecuted:false};
+try{
+ const config=ts.readConfigFile(join(ROOT,'tsconfig.json'),ts.sys.readFile);assert.equal(config.error,undefined);
+ const parsed=ts.parseJsonConfigFileContent(config.config,ts.sys,ROOT,{noEmit:true,incremental:false},join(ROOT,'tsconfig.json'));
+ assert.equal(parsed.errors.length,0);assert(parsed.fileNames.length>0);assert(parsed.fileNames.every(p=>resolve(p).startsWith(ROOT+'/src/')),'Original src-only include');
+ const options=parsed.options,host=ts.createCompilerHost(options),read=host.readFile.bind(host);
+ host.getCurrentDirectory=()=>ROOT;host.writeFile=()=>{throw Error('No-emit gate attempted a file write');};
+ const canonical=new Map(source.arms[0].files.map(p=>[join(ROOT,p.path),p]));
+ host.readFile=file=>{const p=resolve(file),text=read(file);
+  if(p.startsWith(ROOT+'/src/')){const pin=canonical.get(p);assert(pin,'Unpinned project read '+p);assert(text!==undefined);const b=Buffer.from(text);assert.equal(b.length,pin.bytes,p);assert.equal(sha(b),pin.sha256,p);}
+  if(p!==target)return text;
+  assert(text!==undefined);const virtual=candidateSource(text);assert.equal(Buffer.byteLength(virtual),spec.virtualCandidate.bytes);assert.equal(sha(Buffer.from(virtual)),spec.virtualCandidate.sha256);assert.equal(virtual.split('export class GpuBoussinesq')[0],text.split('export class GpuBoussinesq')[0]);
+  term.substitutions.push({path:p,originalSha256:spec.original.sha256,virtualSha256:spec.virtualCandidate.sha256});return virtual;
+ };
+ const program=ts.createProgram(parsed.fileNames,options,host);const diagnostics=ts.getPreEmitDiagnostics(program);term.rootFileCount=parsed.fileNames.length;term.programFileCount=program.getSourceFiles().length;
+ assert(term.substitutions.length>0,'Candidate target was never read');term.diagnostics=diagnostics.map(d=>({code:d.code,message:ts.flattenDiagnosticMessageText(d.messageText,'\n'),file:d.file?.fileName,start:d.start}));
+ if(diagnostics.length)console.error(ts.formatDiagnosticsWithColorAndContext(diagnostics,{getCanonicalFileName:p=>p,getCurrentDirectory:()=>ROOT,getNewLine:()=> '\n'}));
+ assert.equal(diagnostics.length,0,'Whole-project candidate typing failed');term.valid=true;
+}finally{term.sourceAfter=captureAuthority();assert.deepEqual(term.sourceAfter,before,'Immutable inputs changed');term.endedAt=new Date().toISOString();writeFileSync(output,JSON.stringify(term,null,2)+'\n');console.log(JSON.stringify({strict:term.valid,pid:term.pid,substitutions:term.substitutions,sourcePins:before.length}));}

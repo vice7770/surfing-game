@@ -1,0 +1,8 @@
+// One anchored source substitution only; no runtime imports or numerical execution.
+import assert from 'node:assert/strict';
+export function candidateSource(source) {
+  const before = '    for (const weight of this.weights) if (weight > 0) slots += 1;';
+  const after = '    const weights = this.weights;\n    for (let i = 0; i < weights.length; i += 1) if (weights[i] > 0) slots += 1;';
+  assert.equal(source.split(before).length - 1, 1, 'Unique canonical deviceShape loop required');
+  return source.replace(before, after);
+}

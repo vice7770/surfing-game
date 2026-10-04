@@ -1,0 +1,85 @@
+{
+  "schema": "feed-indexed-independent-stored-row-summary/v1",
+  "readySha256": "dff888a1445e61edf7c96af1148a67c48b07cbde62bcb3b7c5d7c613e6d40d4d",
+  "proofCases": 10,
+  "pairs": 32,
+  "substepsPerTimedCall": 1,
+  "recomputed": {
+    "meanSavingMs": 1.8660390625000076,
+    "medianSavingMs": 1.8648964999998725,
+    "heuristicLower95Ms": 1.8134999124138391,
+    "positivePairs": 32,
+    "minSavingMs": 1.5462919999997666,
+    "maxSavingMs": 2.267333000000008,
+    "firstHalfMeanMs": 1.8541561874999672,
+    "lastHalfMeanMs": 1.877921937500048,
+    "baselineMeanMs": 4.986264249999998,
+    "candidateMeanMs": 3.1202251874999902,
+    "orderStrata": [
+      {
+        "order": "AB",
+        "pairs": 16,
+        "meanSavingMs": 1.850726624999993
+      },
+      {
+        "order": "BA",
+        "pairs": 16,
+        "meanSavingMs": 1.8813515000000223
+      }
+    ],
+    "meanStageSavingMs": {
+      "pack": 0.8073295625000085,
+      "cfl": 0.27876287499996266,
+      "encode": 0.8115912187500385,
+      "map": 0.0031640312499945367,
+      "unpack": -0.032888031250010386
+    }
+  },
+  "reportedStatistics": {
+    "pairs": 32,
+    "meanSavingMs": 1.8660390625000076,
+    "medianSavingMs": 1.8648964999998725,
+    "pairedMeanLower95Ms": 1.8134999124138391,
+    "thresholdMs": 0.1,
+    "orderStrata": [
+      {
+        "order": "AB",
+        "pairs": 16,
+        "meanSavingMs": 1.850726624999993
+      },
+      {
+        "order": "BA",
+        "pairs": 16,
+        "meanSavingMs": 1.8813515000000223
+      }
+    ],
+    "thresholdPass": true,
+    "caveat": "Approximate paired-mean normal bound on one fixed CPU sample; order strata are retained. No bootstrap, adaptive extra pairs or retry. Not native performance or population inference."
+  },
+  "arithmeticExactMatch": true,
+  "claims": {
+    "sourceAndCpuOnly": true,
+    "native": false,
+    "fps": false,
+    "adopted": false
+  },
+  "limits": [
+    "Held F32 transport; RATEH/NU constructor defaults.",
+    "All timed calls one substep.",
+    "Mock dispatches are no-ops; no physical field evolution.",
+    "Unchanged CFL timing differs; complete mean gain cannot be assigned exclusively to iterator mechanics.",
+    "One fixed CPU sample, no native timing or FPS acceptance.",
+    "Customized iterators/replacement/detachment/prototype patching outside supported scope."
+  ],
+  "inputAuthority": {
+    "captureIncomplete": true,
+    "f32CommittedExport": true,
+    "captureSha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988",
+    "compressedSha256": "dd97ed4b53d1aa78eabdb58534a370e26d03cf553fe1bf26fe18d83d9bad48b3",
+    "rawSha256": "5ff85c873bb360c5df127084cb01b84fddd26ed971fa3ca19ddf3ece5bd6db18",
+    "pausedSeaTime": 328.04104655763683,
+    "solverTime": 52.69999999999905,
+    "seaTimeOffset": 275.34104655763775,
+    "limitation": "Paused F32 transport export, distinct from the earlier three drawn snapshots and full internal F64 precision; absent RATEH/NU remain constructor defaults, not measured native values."
+  }
+}

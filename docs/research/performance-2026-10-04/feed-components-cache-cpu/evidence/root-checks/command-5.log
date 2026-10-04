@@ -1,0 +1,1 @@
+{"planOnly":true,"actualHeldCells":116000,"components":64,"warmPairs":8,"measuredPairs":32,"wholeMethod":"runWaterStep via ordinary step(1/60)","usefulMeanGainRequiredMs":0.1,"noRealGpuDriverOrFps":true}

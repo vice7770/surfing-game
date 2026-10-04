@@ -1,0 +1,59 @@
+import assert from 'node:assert/strict';
+import { writeFileSync,mkdirSync,existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { WORK,authority,heldInput,exact,sha,type Arm } from './common';
+import { RecordingGpu,globals } from './mockGpu';
+const DT=1/60,args=process.argv.slice(2);assert(args.length<=1&&args.every(a=>a==='--run=true'));
+if(!args.includes('--run=true')){console.log(JSON.stringify({planOnly:true,candidate:'fixed side-feed components cache only',tests:'full canonical device paths, mutable feed weights and refresh, actual held import',realGpu:false}));process.exit(0);}
+const OUT=join(WORK,'proof-first');assert(!existsSync(OUT));mkdirSync(OUT);const report:any={schema:'feed-components-complete-host-proof/v1',valid:false,cases:[],actualHeld:null};
+const save=()=>{const b=Buffer.from(JSON.stringify(report,null,2)+'\n');assert(b.length<=1024*1024);writeFileSync(join(OUT,'report.json'),b);return{path:join(OUT,'report.json'),bytes:b.length,sha256:sha(b)};};
+const restore=globals(),live:{dispose():void}[]=[];
+try{
+ const a=await authority();report.readySha256=a.readySha;
+ const config={spot:'padang' as const,seed:5,significantHeight:1.2,peakPeriod:16,directionDegrees:10,spreading:12,tide:0,windSpeed:0,stage:2 as const,alongShore:32,dx:4,fineSpacing:8,coarseSpacing:16,spinUpPeriods:1,componentCount:7};
+ async function pair(options:{spot?:'padang'|'point';components?:number;zeroBeforeCreate?:boolean}={}){
+  const make=async(arm:Arm)=>{const scene=new arm.SurfZoneSimulation({...config,spot:options.spot??'padang',componentCount:options.components??7},'warm');assert(scene.solver instanceof arm.BoussinesqSolver);const solver=scene.solver as InstanceType<Arm['BoussinesqSolver']>,feed=solver.relaxationZones.find(z=>z instanceof arm.SideFeed) as InstanceType<Arm['SideFeed']>|undefined;
+   const originalWeights=feed?.weights.slice();if(options.zeroBeforeCreate)feed!.weights.fill(0);const mock=new RecordingGpu(),host=await arm.GpuBoussinesq.create(solver,mock.gpu);assert(host);live.push(host);return{arm,scene,solver,feed,originalWeights,mock,host,identities:arm.DEVICE_READBACK.map(index=>arm.readbackTarget(solver,index))};};
+  const b=await make(a.baseline),c=await make(a.candidate);assert.deepEqual(c.mock.events,b.mock.events,'Creation protocol');b.mock.clear();c.mock.clear();return{b,c};
+ }
+ type Pair=Awaited<ReturnType<typeof pair>>;
+ const equal=(p:Pair,label:string)=>{
+  assert.deepEqual(p.c.mock.events,p.b.mock.events,label+' ordered queue/encode/map protocol and write bytes');assert.equal(p.b.mock.buffers.length,p.c.mock.buffers.length);
+  for(let i=0;i<p.b.mock.buffers.length;i++){const b=p.b.mock.buffers[i],c=p.c.mock.buffers[i];assert.equal(c.size,b.size);assert.equal(c.mapped,b.mapped);assert.equal(c.destroyed,b.destroyed);exact(new Uint8Array(c.bytes),new Uint8Array(b.bytes),label+' device buffer'+i);}
+  for(let i=0;i<p.b.arm.DEVICE_READBACK.length;i++){const index=p.b.arm.DEVICE_READBACK[i],b=p.b.arm.readbackTarget(p.b.solver,index),c=p.c.arm.readbackTarget(p.c.solver,index);assert.equal(b,p.b.identities[i]);assert.equal(c,p.c.identities[i]);exact(b,c,label+' solver destination'+index);}
+  exact(p.b.solver.plungeHold,p.c.solver.plungeHold,label+' plunge clock aging');assert.equal(p.b.solver.time,p.c.solver.time);assert.equal(p.b.solver.plungeVersion,p.c.solver.plungeVersion);assert.equal(p.b.host.lastSubsteps,p.c.host.lastSubsteps);assert.equal(p.b.host.diagnostics.substeps,p.c.host.diagnostics.substeps);assert.equal(p.b.solver.maxStableStep(),p.c.solver.maxStableStep(),label+' adopted peak/CFL feedback');
+ };
+ const step=async(p:Pair,label:string,dt=DT)=>{p.b.mock.clear();p.c.mock.clear();await p.b.host.step(dt);await p.c.host.step(dt);equal(p,label);};
+ const done=(name:string,p:Pair)=>{report.cases.push({name,queueBytesOrderAndLengthExact:true,allDeviceBuffersAndNineDestinationsExact:true,identitiesClocksCflAndPlungeExact:true,protocolEvents:p.b.mock.events.length,protocolSha256:sha(Buffer.from(JSON.stringify(p.b.mock.events)))});p.b.host.dispose();p.c.host.dispose();save();};
+ for(const components of [1,7,64]){const p=await pair({components});assert(p.b.feed&&p.c.feed);assert(p.b.feed.deviceShape().slots>0);await step(p,'initial feed C'+components);await step(p,'steady feed C'+components);assert.equal(p.b.feed.deviceShape().components,components);assert.equal(p.c.feed.deviceShape().components,components);done('actual SideFeed complete steps C'+components,p);}
+ {
+  const p=await pair();await step(p,'initial');
+  const feedB=p.b.feed!,feedC=p.c.feed!,weightsB=feedB.weights.slice(),weightsC=feedC.weights.slice();
+  const cell=weightsB.findIndex(w=>w>0);assert(cell>=0);feedB.weights[cell]=0;feedC.weights[cell]=0;await step(p,'public individual weight mutation without invalidation');
+  feedB.weights.fill(0);feedC.weights.fill(0);await step(p,'public all-zero weights without invalidation');
+  feedB.weights.set(weightsB);feedC.weights.set(weightsC);await step(p,'public restored weights without invalidation');
+  feedB.weights.fill(0);feedC.weights.fill(0);p.b.solver.invalidateDeviceLayout();p.c.solver.invalidateDeviceLayout();await step(p,'zero weights with layout refresh');
+  feedB.weights.set(weightsB);feedC.weights.set(weightsC);await step(p,'restored weights without refresh: retain baseline stale feedSlots oddity');
+  p.b.solver.invalidateDeviceLayout();p.c.solver.invalidateDeviceLayout();await step(p,'restored weights with layout refresh');
+  for(const column of [2,-3]){p.b.solver.shiftAlongShore(column);p.c.solver.shiftAlongShore(column);assert.equal(feedB.deviceShape().components,7);assert.equal(feedC.deviceShape().components,7);await step(p,'window shift'+column);}
+  feedB.timeOffset+=1.25;feedC.timeOffset+=1.25;await step(p,'time offset');
+  // Exported generic writeParams must still read public mutable slots at each invocation, even without table refresh.
+  const params=(actor:typeof p.b)=>{const out=new ArrayBuffer(actor.arm.PARAM_WORDS*4),layout=actor.solver.deviceLayout();actor.arm.writeParams(actor.solver,layout,{boundary:layout.zones[0] as InstanceType<Arm['SeaStateBoundary']>,firstRow:0,rows:1,feed:actor.feed},DT,DT,out);return out;};
+  const before=new Uint32Array(params(p.b))[20];assert(before>0);feedB.weights.fill(0);feedC.weights.fill(0);const b0=params(p.b),c0=params(p.c);exact(new Uint8Array(b0),new Uint8Array(c0),'exported writeParams remains literal');assert.equal(new Uint32Array(b0)[20],0);assert.equal(new Uint32Array(b0)[21],7);done('mutable weights, zero/restored slots, layout/window/time refresh, generic uniforms',p);
+ }
+ {const p=await pair({zeroBeforeCreate:true});await step(p,'initial zero-slot feed');await step(p,'steady zero-slot feed');p.b.feed!.weights.set(p.b.originalWeights!);p.c.feed!.weights.set(p.c.originalWeights!);await step(p,'restored without layout refresh');p.b.solver.invalidateDeviceLayout();p.c.solver.invalidateDeviceLayout();await step(p,'restored after layout refresh');done('zero-slot creation and restoration',p);}
+ {const p=await pair({spot:'point'});assert(!p.b.feed&&!p.c.feed);await step(p,'no-feed initial');await step(p,'no-feed steady');done('no-feed supported solver',p);}
+ {
+  const p=await pair();for(const actor of [p.b,p.c]){const n=actor.solver.h.length;actor.mock.onCompute=()=>{const f=new Float32Array(actor.mock.buffers[0].bytes);f[actor.arm.FIELD.H*n+3]=2.125;f[actor.arm.FIELD.NU*n+3]=100;f[actor.arm.FIELD.RATEH*n+3]=-.125;};actor.solver.plungeHold[5]=DT/2;actor.solver.plungeVersion++;}
+  const tb=p.b.solver.time,tc=p.c.solver.time;const hb=p.b.solver.h.slice(),hc=p.c.solver.h.slice();p.b.mock.clear();p.c.mock.clear();const rb=await p.b.host.prepareStep(DT),rc=await p.c.host.prepareStep(DT);assert(rb&&rc);assert.equal(p.b.solver.time,tb);assert.equal(p.c.solver.time,tc);exact(p.b.solver.h,hb,'deferred water unpublished');exact(p.c.solver.h,hc,'deferred candidate water unpublished');assert.equal(rb.commit(),true);assert.equal(rc.commit(),true);equal(p,'prepared result commit');assert.equal(p.b.solver.h[3],2.125);assert.equal(p.b.solver.viscosity[3],100);assert.equal(p.b.solver.surfaceRiseRate[3],-.125);assert.equal(p.b.solver.plungeHold[5],0);
+  await step(p,'next full step after returned peak/clock feedback',p.b.solver.maxStableStep()*2.1);assert(p.b.host.lastSubsteps>1);p.b.mock.clear();p.c.mock.clear();const db=await p.b.host.prepareStep(DT),dc=await p.c.host.prepareStep(DT);assert(db&&dc);db.discard();dc.discard();equal(p,'discard');await step(p,'rebased layout after discard');done('deferred commit, multiple substeps, real adoption feedback, discard/rebase',p);
+ }
+ {
+  const p=await pair();await step(p,'before failure');const time=p.b.solver.time;p.b.mock.failMap=true;p.c.mock.failMap=true;await assert.rejects(p.b.host.prepareStep(DT),/injected map rejection/);await assert.rejects(p.c.host.prepareStep(DT),/injected map rejection/);equal(p,'map failure protocol');assert.equal(p.b.solver.time,time);await step(p,'recovery layout after deferred map failure');p.b.host.readback=false;p.c.host.readback=false;await step(p,'diagnostic no readback');assert.equal(p.b.host.diagnostics.unpack,0);done('map rejection, rebase and diagnostic no-readback parity',p);
+ }
+ // One complete actual ordinary-size imported poststate pair; summary hashes avoid retaining huge write arrays.
+ const input=heldInput(a.ready),makeHeld=async(arm:Arm)=>{const scene=new arm.SurfZoneSimulation(input.config,'warm'),state=arm.decodeSurfZoneState(input.bytes);scene.importState(state);assert(scene.solver instanceof arm.BoussinesqSolver);assert.equal(scene.solver.h.length,116000);assert.equal(scene.seaTime,input.authority.pausedSeaTime);const mock=new RecordingGpu(true,false),solver=scene.solver as InstanceType<Arm['BoussinesqSolver']>,host=await arm.GpuBoussinesq.create(solver,mock.gpu);assert(host);live.push(host);return{arm,scene,solver,feed:solver.relaxationZones.find(z=>z instanceof arm.SideFeed)as InstanceType<Arm['SideFeed']>,mock,host,originalWeights:undefined,identities:arm.DEVICE_READBACK.map(i=>arm.readbackTarget(solver,i))};};
+ const held={b:await makeHeld(a.baseline),c:await makeHeld(a.candidate)};assert(held.b.feed.deviceShape().slots>0);assert.deepEqual(held.b.mock.events,held.c.mock.events);await step(held,'actual imported held initial');await step(held,'actual imported held steady');report.actualHeld={...input.authority,cells:116000,components:64,allQueuePayloadHashesAndStateBitsExact:true,noWgslExecution:true};done('actual retained ordinary-size complete host protocol',held);
+ a.check();report.valid=true;report.scope='Literal canonical versus exact three-edit candidate. Queue and host protocol only; no numerical WGSL/GPU/render/FPS validation.';const payload=save();writeFileSync(join(OUT,'terminal.json'),JSON.stringify({valid:true,readySha256:a.readySha,inputPinsUnchanged:true,report:payload},null,2)+'\n');console.log(JSON.stringify({valid:true,cases:report.cases.length,report:payload}));
+}catch(error){report.strictStop=true;report.firstFailure=String(error);const payload=save();writeFileSync(join(OUT,'terminal.json'),JSON.stringify({valid:false,strictStop:true,error:String(error),report:payload},null,2)+'\n');process.exitCode=1;console.error(String(error));}
+finally{for(const h of live)h.dispose();restore();}

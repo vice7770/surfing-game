@@ -1,0 +1,26 @@
+{
+  "schema": "feed-components-compiled/v1",
+  "readySha256": "a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519",
+  "outputs": [
+    {
+      "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/baseline.mjs",
+      "bytes": 721883,
+      "sha256": "be402e6324eb89ee70cefc45497f04c4dfbedf674c422f0dd5e09ab89539c262"
+    },
+    {
+      "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/candidate.mjs",
+      "bytes": 722031,
+      "sha256": "124ec1118ed270ce5f15e337181ef4c33aafa38b99bae7d64d613330f7269586"
+    },
+    {
+      "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/proof.mjs",
+      "bytes": 20370,
+      "sha256": "6cbb30c994c7eb5ee29b4508f05cb0d92e016a1989d490e4e51ae0298d9f58ac"
+    },
+    {
+      "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/cost.mjs",
+      "bytes": 15968,
+      "sha256": "984f28774c435279c5efe60bfcad6ab035266c0792a0b79759723bd16026d416"
+    }
+  ]
+}

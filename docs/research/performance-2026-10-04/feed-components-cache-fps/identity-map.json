@@ -1,0 +1,591 @@
+{
+  "schema": "feed-components-native-identity-map/v1",
+  "runtimeBaseline": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+  "commonBuildId": "306258296",
+  "sourceManifest": {
+    "path": "/private/tmp/surf-feed-components-fps-20261004/source-manifest.json",
+    "bytes": 204717,
+    "sha256": "e6ef8e2dd86f6da9adc547442d4a02f6bc1d27e7aec555e758f392e965cef230"
+  },
+  "ready": {
+    "path": "/private/tmp/surf-feed-components-fps-20261004/ready.json",
+    "bytes": 14521,
+    "sha256": "3a60b4eba4503a84eaa981294e92bfa6f98be9ecb95427a44a40aa8243a54c99"
+  },
+  "bindings": {
+    "path": "/private/tmp/surf-feed-components-fps-20261004/bindings.json",
+    "bytes": 1488,
+    "sha256": "f5625f5fe4ff408745cb4ad8db36f50a70d38e886552e92274d078f7ab8b0514"
+  },
+  "sourceTransform": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts",
+    "relativePath": "src/wave/gpu/GpuBoussinesq.ts",
+    "original": {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts",
+      "bytes": 23863,
+      "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+    },
+    "transform": {
+      "path": "/private/tmp/surf-feed-components-cache-20261004/patch-source.mjs",
+      "bytes": 883,
+      "sha256": "bb9e4f41a550ea5ff27693928a956d5d4dd6717899db94e539e0b4894a17b7c3"
+    },
+    "virtualCandidate": {
+      "bytes": 24025,
+      "sha256": "c3fd4e6c7b5f21411cea25caad13bc54ceae31c1ad0ade9fffc0c454172cde92"
+    },
+    "editCount": 3,
+    "mode": "canonical original path; one source load/readFile substitution; no changed source file or clone",
+    "exportedHelpersAndWriteParamsStayLiteral": true
+  },
+  "arms": {
+    "baseline": {
+      "manifest": {
+        "path": "/private/tmp/surf-feed-components-fps-20261004/baseline/build-manifest.json",
+        "bytes": 3046,
+        "sha256": "8b236aa2df75f86af4c5a471fd0cedcfd56131b74615c161987bc74737d6b026"
+      },
+      "outputRoot": "/private/tmp/surf-full-writer-adoption-20261004/dist",
+      "clientEntry": "assets/index-BiXZLaDY.js",
+      "worker": "assets/surfZoneWorker-XSUZFAPK.js",
+      "outputRecords": [
+        {
+          "path": "assets/WorkerSurfZone-BB7sI1yB.js",
+          "bytes": 864212,
+          "sha256": "f9411e88ec31206b40ca802045e44dce45366459dde1562328147e4ef14f1695"
+        },
+        {
+          "path": "assets/devStepping-OeqPgeQx.js",
+          "bytes": 320,
+          "sha256": "7e8ce909af5c6029e2ac9c2f27ffb24ef33cb4bd73615499fc8a3c3aebd529f2"
+        },
+        {
+          "path": "assets/index-BiXZLaDY.js",
+          "bytes": 582536,
+          "sha256": "0e8a27307d8ef24cd4fa1e5be0c851a4cb5a42667c25c183f2a9708dd6622b4a"
+        },
+        {
+          "path": "assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "assets/jevRecorder-BCRCVsr2.js",
+          "bytes": 15917,
+          "sha256": "d00003b275d8ea80d5bac54966a435b08f2564df1e7ea9c982ba6a1f34469fc4"
+        },
+        {
+          "path": "assets/particleBench-Cx_LUC3T.js",
+          "bytes": 10708,
+          "sha256": "b9dbba904449c689d75cd507d6cce86147548bfb6763f4125c0a069b501f5b5c"
+        },
+        {
+          "path": "assets/rideRecorder-BBvqTGwX.js",
+          "bytes": 41108,
+          "sha256": "1d3ac63e1cc773c36524a76e586dfc352d647a36e2560a6ba94da97a89658ced"
+        },
+        {
+          "path": "assets/surfZoneWorker-XSUZFAPK.js",
+          "bytes": 448078,
+          "sha256": "b711e16bf2b92e17507b0fccfd2d9a6e6b517a7b9e7f7ce4656fdaf0b95e1114"
+        },
+        {
+          "path": "assets/waterSheet-DtwnWSCT.js",
+          "bytes": 11689,
+          "sha256": "7dc43bfe5e86106c81ac5dcf05f3fe3202a5a62cefdda156c2b790ff6ff8281f"
+        },
+        {
+          "path": "build.json",
+          "bytes": 21,
+          "sha256": "5b8191a757583877f88c232c4276175ddd9df82440e1cbe95c930bed3b4349e1"
+        },
+        {
+          "path": "index.html",
+          "bytes": 1626,
+          "sha256": "4ddcf6712c2dd291c84d7ef21c3f95a47a7172bbb5a6ba3693327732f41c2e0b"
+        }
+      ],
+      "originalCompiledAliases": [
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/assets/WorkerSurfZone-BB7sI1yB.js",
+          "bytes": 864212,
+          "sha256": "f9411e88ec31206b40ca802045e44dce45366459dde1562328147e4ef14f1695"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/assets/devStepping-OeqPgeQx.js",
+          "bytes": 320,
+          "sha256": "7e8ce909af5c6029e2ac9c2f27ffb24ef33cb4bd73615499fc8a3c3aebd529f2"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/assets/index-BiXZLaDY.js",
+          "bytes": 582536,
+          "sha256": "0e8a27307d8ef24cd4fa1e5be0c851a4cb5a42667c25c183f2a9708dd6622b4a"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/assets/jevRecorder-BCRCVsr2.js",
+          "bytes": 15917,
+          "sha256": "d00003b275d8ea80d5bac54966a435b08f2564df1e7ea9c982ba6a1f34469fc4"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/assets/particleBench-Cx_LUC3T.js",
+          "bytes": 10708,
+          "sha256": "b9dbba904449c689d75cd507d6cce86147548bfb6763f4125c0a069b501f5b5c"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/assets/rideRecorder-BBvqTGwX.js",
+          "bytes": 41108,
+          "sha256": "1d3ac63e1cc773c36524a76e586dfc352d647a36e2560a6ba94da97a89658ced"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/assets/surfZoneWorker-XSUZFAPK.js",
+          "bytes": 448078,
+          "sha256": "b711e16bf2b92e17507b0fccfd2d9a6e6b517a7b9e7f7ce4656fdaf0b95e1114"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/assets/waterSheet-DtwnWSCT.js",
+          "bytes": 11689,
+          "sha256": "7dc43bfe5e86106c81ac5dcf05f3fe3202a5a62cefdda156c2b790ff6ff8281f"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/build.json",
+          "bytes": 21,
+          "sha256": "5b8191a757583877f88c232c4276175ddd9df82440e1cbe95c930bed3b4349e1"
+        },
+        {
+          "path": "/private/tmp/surf-full-writer-adoption-20261004/dist/index.html",
+          "bytes": 1626,
+          "sha256": "4ddcf6712c2dd291c84d7ef21c3f95a47a7172bbb5a6ba3693327732f41c2e0b"
+        }
+      ],
+      "compiledServed": [
+        {
+          "path": "assets/WorkerSurfZone-BB7sI1yB.js",
+          "bytes": 864212,
+          "sha256": "f9411e88ec31206b40ca802045e44dce45366459dde1562328147e4ef14f1695"
+        },
+        {
+          "path": "assets/devStepping-OeqPgeQx.js",
+          "bytes": 320,
+          "sha256": "7e8ce909af5c6029e2ac9c2f27ffb24ef33cb4bd73615499fc8a3c3aebd529f2"
+        },
+        {
+          "path": "assets/index-BiXZLaDY.js",
+          "bytes": 582536,
+          "sha256": "0e8a27307d8ef24cd4fa1e5be0c851a4cb5a42667c25c183f2a9708dd6622b4a"
+        },
+        {
+          "path": "assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "assets/jevRecorder-BCRCVsr2.js",
+          "bytes": 15917,
+          "sha256": "d00003b275d8ea80d5bac54966a435b08f2564df1e7ea9c982ba6a1f34469fc4"
+        },
+        {
+          "path": "assets/particleBench-Cx_LUC3T.js",
+          "bytes": 10708,
+          "sha256": "b9dbba904449c689d75cd507d6cce86147548bfb6763f4125c0a069b501f5b5c"
+        },
+        {
+          "path": "assets/rideRecorder-BBvqTGwX.js",
+          "bytes": 41108,
+          "sha256": "1d3ac63e1cc773c36524a76e586dfc352d647a36e2560a6ba94da97a89658ced"
+        },
+        {
+          "path": "assets/surfZoneWorker-XSUZFAPK.js",
+          "bytes": 448078,
+          "sha256": "b711e16bf2b92e17507b0fccfd2d9a6e6b517a7b9e7f7ce4656fdaf0b95e1114"
+        },
+        {
+          "path": "assets/waterSheet-DtwnWSCT.js",
+          "bytes": 11689,
+          "sha256": "7dc43bfe5e86106c81ac5dcf05f3fe3202a5a62cefdda156c2b790ff6ff8281f"
+        },
+        {
+          "path": "build.json",
+          "bytes": 21,
+          "sha256": "5b8191a757583877f88c232c4276175ddd9df82440e1cbe95c930bed3b4349e1"
+        },
+        {
+          "path": "index.html",
+          "bytes": 1626,
+          "sha256": "4ddcf6712c2dd291c84d7ef21c3f95a47a7172bbb5a6ba3693327732f41c2e0b"
+        }
+      ],
+      "actualWorkerUrls": [
+        "http://127.0.0.1:4241/assets/surfZoneWorker-XSUZFAPK.js"
+      ],
+      "fpsArtifact": {
+        "root": "/private/tmp/surf-full-writer-adoption-20261004/dist",
+        "sha256": "89076a1a68c972eb20610a724d7a4b73614a07e6625d416ace940d55f52be1fc",
+        "entry": "assets/index-BiXZLaDY.js",
+        "worker": "assets/surfZoneWorker-XSUZFAPK.js",
+        "files": [
+          {
+            "file": "index.html",
+            "sha256": "4ddcf6712c2dd291c84d7ef21c3f95a47a7172bbb5a6ba3693327732f41c2e0b"
+          },
+          {
+            "file": "assets/WorkerSurfZone-BB7sI1yB.js",
+            "sha256": "f9411e88ec31206b40ca802045e44dce45366459dde1562328147e4ef14f1695"
+          },
+          {
+            "file": "assets/devStepping-OeqPgeQx.js",
+            "sha256": "7e8ce909af5c6029e2ac9c2f27ffb24ef33cb4bd73615499fc8a3c3aebd529f2"
+          },
+          {
+            "file": "assets/index-BiXZLaDY.js",
+            "sha256": "0e8a27307d8ef24cd4fa1e5be0c851a4cb5a42667c25c183f2a9708dd6622b4a"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/jevRecorder-BCRCVsr2.js",
+            "sha256": "d00003b275d8ea80d5bac54966a435b08f2564df1e7ea9c982ba6a1f34469fc4"
+          },
+          {
+            "file": "assets/particleBench-Cx_LUC3T.js",
+            "sha256": "b9dbba904449c689d75cd507d6cce86147548bfb6763f4125c0a069b501f5b5c"
+          },
+          {
+            "file": "assets/rideRecorder-BBvqTGwX.js",
+            "sha256": "1d3ac63e1cc773c36524a76e586dfc352d647a36e2560a6ba94da97a89658ced"
+          },
+          {
+            "file": "assets/surfZoneWorker-XSUZFAPK.js",
+            "sha256": "b711e16bf2b92e17507b0fccfd2d9a6e6b517a7b9e7f7ce4656fdaf0b95e1114"
+          },
+          {
+            "file": "assets/waterSheet-DtwnWSCT.js",
+            "sha256": "7dc43bfe5e86106c81ac5dcf05f3fe3202a5a62cefdda156c2b790ff6ff8281f"
+          }
+        ],
+        "verified": [
+          {
+            "file": "index.html",
+            "sha256": "4ddcf6712c2dd291c84d7ef21c3f95a47a7172bbb5a6ba3693327732f41c2e0b"
+          },
+          {
+            "file": "assets/WorkerSurfZone-BB7sI1yB.js",
+            "sha256": "f9411e88ec31206b40ca802045e44dce45366459dde1562328147e4ef14f1695"
+          },
+          {
+            "file": "assets/devStepping-OeqPgeQx.js",
+            "sha256": "7e8ce909af5c6029e2ac9c2f27ffb24ef33cb4bd73615499fc8a3c3aebd529f2"
+          },
+          {
+            "file": "assets/index-BiXZLaDY.js",
+            "sha256": "0e8a27307d8ef24cd4fa1e5be0c851a4cb5a42667c25c183f2a9708dd6622b4a"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/jevRecorder-BCRCVsr2.js",
+            "sha256": "d00003b275d8ea80d5bac54966a435b08f2564df1e7ea9c982ba6a1f34469fc4"
+          },
+          {
+            "file": "assets/particleBench-Cx_LUC3T.js",
+            "sha256": "b9dbba904449c689d75cd507d6cce86147548bfb6763f4125c0a069b501f5b5c"
+          },
+          {
+            "file": "assets/rideRecorder-BBvqTGwX.js",
+            "sha256": "1d3ac63e1cc773c36524a76e586dfc352d647a36e2560a6ba94da97a89658ced"
+          },
+          {
+            "file": "assets/surfZoneWorker-XSUZFAPK.js",
+            "sha256": "b711e16bf2b92e17507b0fccfd2d9a6e6b517a7b9e7f7ce4656fdaf0b95e1114"
+          },
+          {
+            "file": "assets/waterSheet-DtwnWSCT.js",
+            "sha256": "7dc43bfe5e86106c81ac5dcf05f3fe3202a5a62cefdda156c2b790ff6ff8281f"
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "manifest": {
+        "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/build-manifest.json",
+        "bytes": 4444,
+        "sha256": "d3ff55647f323fa9d932b5607a2f431fdcd6eeefdcb0c5c84e8a09eb24436cc9"
+      },
+      "outputRoot": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist",
+      "clientEntry": "assets/index-BmPnHyp7.js",
+      "worker": "assets/surfZoneWorker-B3bMoB5b.js",
+      "outputRecords": [
+        {
+          "path": "assets/devStepping-DmljE7JM.js",
+          "bytes": 320,
+          "sha256": "203a4ccb1fa68f01604ba1c727120db3463715b9cfcb7e1c3603b5e831b94caa"
+        },
+        {
+          "path": "assets/index-BmPnHyp7.js",
+          "bytes": 582536,
+          "sha256": "162777e2a7d75cc25eed097a65f52a8de5fa57c0d7d09c2702c6af6cfad1b0b5"
+        },
+        {
+          "path": "assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "assets/jevRecorder-iOu4RNSn.js",
+          "bytes": 15917,
+          "sha256": "417e70d07cc05595235a41148fb93ef4fb0370032df34dd60323c555703c1aee"
+        },
+        {
+          "path": "assets/particleBench-BrEIUDeL.js",
+          "bytes": 10708,
+          "sha256": "b8351ea80fbaa0cf3e3b07dec15d0a008373f548904d4aec409cbb77cdd74caa"
+        },
+        {
+          "path": "assets/rideRecorder-nLtaBLy-.js",
+          "bytes": 41108,
+          "sha256": "c6873c1ad51d76c1d82572d0cd2eb5882e5468fea593c69616013cd357375ee7"
+        },
+        {
+          "path": "assets/surfZoneWorker-B3bMoB5b.js",
+          "bytes": 448124,
+          "sha256": "9f6d1618678ecf8679c6bea160a0398afc90db3a0d372ca129cf6a6876256819"
+        },
+        {
+          "path": "assets/waterSheet-Ca0hZXzi.js",
+          "bytes": 11689,
+          "sha256": "1d49f178363c5023db18182c35a329f9c5fbfa30e308c619b3a391cc24dde1f7"
+        },
+        {
+          "path": "assets/WorkerSurfZone-t5khq1P-.js",
+          "bytes": 864212,
+          "sha256": "799cef03e441942d975c665befdbd938e0a0810c0c639453ed479d45fb08e7e3"
+        },
+        {
+          "path": "build.json",
+          "bytes": 21,
+          "sha256": "5b8191a757583877f88c232c4276175ddd9df82440e1cbe95c930bed3b4349e1"
+        },
+        {
+          "path": "index.html",
+          "bytes": 1626,
+          "sha256": "2af7721d2f17ac518754b4fae778527ed883e80d984cccd98b2cc7b39f383268"
+        }
+      ],
+      "originalCompiledAliases": [
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/assets/devStepping-DmljE7JM.js",
+          "bytes": 320,
+          "sha256": "203a4ccb1fa68f01604ba1c727120db3463715b9cfcb7e1c3603b5e831b94caa"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/assets/index-BmPnHyp7.js",
+          "bytes": 582536,
+          "sha256": "162777e2a7d75cc25eed097a65f52a8de5fa57c0d7d09c2702c6af6cfad1b0b5"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/assets/jevRecorder-iOu4RNSn.js",
+          "bytes": 15917,
+          "sha256": "417e70d07cc05595235a41148fb93ef4fb0370032df34dd60323c555703c1aee"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/assets/particleBench-BrEIUDeL.js",
+          "bytes": 10708,
+          "sha256": "b8351ea80fbaa0cf3e3b07dec15d0a008373f548904d4aec409cbb77cdd74caa"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/assets/rideRecorder-nLtaBLy-.js",
+          "bytes": 41108,
+          "sha256": "c6873c1ad51d76c1d82572d0cd2eb5882e5468fea593c69616013cd357375ee7"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/assets/surfZoneWorker-B3bMoB5b.js",
+          "bytes": 448124,
+          "sha256": "9f6d1618678ecf8679c6bea160a0398afc90db3a0d372ca129cf6a6876256819"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/assets/waterSheet-Ca0hZXzi.js",
+          "bytes": 11689,
+          "sha256": "1d49f178363c5023db18182c35a329f9c5fbfa30e308c619b3a391cc24dde1f7"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/assets/WorkerSurfZone-t5khq1P-.js",
+          "bytes": 864212,
+          "sha256": "799cef03e441942d975c665befdbd938e0a0810c0c639453ed479d45fb08e7e3"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/build.json",
+          "bytes": 21,
+          "sha256": "5b8191a757583877f88c232c4276175ddd9df82440e1cbe95c930bed3b4349e1"
+        },
+        {
+          "path": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist/index.html",
+          "bytes": 1626,
+          "sha256": "2af7721d2f17ac518754b4fae778527ed883e80d984cccd98b2cc7b39f383268"
+        }
+      ],
+      "compiledServed": [
+        {
+          "path": "assets/devStepping-DmljE7JM.js",
+          "bytes": 320,
+          "sha256": "203a4ccb1fa68f01604ba1c727120db3463715b9cfcb7e1c3603b5e831b94caa"
+        },
+        {
+          "path": "assets/index-BmPnHyp7.js",
+          "bytes": 582536,
+          "sha256": "162777e2a7d75cc25eed097a65f52a8de5fa57c0d7d09c2702c6af6cfad1b0b5"
+        },
+        {
+          "path": "assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "assets/jevRecorder-iOu4RNSn.js",
+          "bytes": 15917,
+          "sha256": "417e70d07cc05595235a41148fb93ef4fb0370032df34dd60323c555703c1aee"
+        },
+        {
+          "path": "assets/particleBench-BrEIUDeL.js",
+          "bytes": 10708,
+          "sha256": "b8351ea80fbaa0cf3e3b07dec15d0a008373f548904d4aec409cbb77cdd74caa"
+        },
+        {
+          "path": "assets/rideRecorder-nLtaBLy-.js",
+          "bytes": 41108,
+          "sha256": "c6873c1ad51d76c1d82572d0cd2eb5882e5468fea593c69616013cd357375ee7"
+        },
+        {
+          "path": "assets/surfZoneWorker-B3bMoB5b.js",
+          "bytes": 448124,
+          "sha256": "9f6d1618678ecf8679c6bea160a0398afc90db3a0d372ca129cf6a6876256819"
+        },
+        {
+          "path": "assets/waterSheet-Ca0hZXzi.js",
+          "bytes": 11689,
+          "sha256": "1d49f178363c5023db18182c35a329f9c5fbfa30e308c619b3a391cc24dde1f7"
+        },
+        {
+          "path": "assets/WorkerSurfZone-t5khq1P-.js",
+          "bytes": 864212,
+          "sha256": "799cef03e441942d975c665befdbd938e0a0810c0c639453ed479d45fb08e7e3"
+        },
+        {
+          "path": "build.json",
+          "bytes": 21,
+          "sha256": "5b8191a757583877f88c232c4276175ddd9df82440e1cbe95c930bed3b4349e1"
+        },
+        {
+          "path": "index.html",
+          "bytes": 1626,
+          "sha256": "2af7721d2f17ac518754b4fae778527ed883e80d984cccd98b2cc7b39f383268"
+        }
+      ],
+      "actualWorkerUrls": [
+        "http://127.0.0.1:4242/assets/surfZoneWorker-B3bMoB5b.js"
+      ],
+      "fpsArtifact": {
+        "root": "/private/tmp/surf-feed-components-fps-20261004/candidate/dist",
+        "sha256": "81a23bcf36a90d524357fe2d4fecfa39cf01ebb5df0b9dedec0744252e5e81ac",
+        "entry": "assets/index-BmPnHyp7.js",
+        "worker": "assets/surfZoneWorker-B3bMoB5b.js",
+        "files": [
+          {
+            "file": "index.html",
+            "sha256": "2af7721d2f17ac518754b4fae778527ed883e80d984cccd98b2cc7b39f383268"
+          },
+          {
+            "file": "assets/WorkerSurfZone-t5khq1P-.js",
+            "sha256": "799cef03e441942d975c665befdbd938e0a0810c0c639453ed479d45fb08e7e3"
+          },
+          {
+            "file": "assets/devStepping-DmljE7JM.js",
+            "sha256": "203a4ccb1fa68f01604ba1c727120db3463715b9cfcb7e1c3603b5e831b94caa"
+          },
+          {
+            "file": "assets/index-BmPnHyp7.js",
+            "sha256": "162777e2a7d75cc25eed097a65f52a8de5fa57c0d7d09c2702c6af6cfad1b0b5"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/jevRecorder-iOu4RNSn.js",
+            "sha256": "417e70d07cc05595235a41148fb93ef4fb0370032df34dd60323c555703c1aee"
+          },
+          {
+            "file": "assets/particleBench-BrEIUDeL.js",
+            "sha256": "b8351ea80fbaa0cf3e3b07dec15d0a008373f548904d4aec409cbb77cdd74caa"
+          },
+          {
+            "file": "assets/rideRecorder-nLtaBLy-.js",
+            "sha256": "c6873c1ad51d76c1d82572d0cd2eb5882e5468fea593c69616013cd357375ee7"
+          },
+          {
+            "file": "assets/surfZoneWorker-B3bMoB5b.js",
+            "sha256": "9f6d1618678ecf8679c6bea160a0398afc90db3a0d372ca129cf6a6876256819"
+          },
+          {
+            "file": "assets/waterSheet-Ca0hZXzi.js",
+            "sha256": "1d49f178363c5023db18182c35a329f9c5fbfa30e308c619b3a391cc24dde1f7"
+          }
+        ],
+        "verified": [
+          {
+            "file": "index.html",
+            "sha256": "2af7721d2f17ac518754b4fae778527ed883e80d984cccd98b2cc7b39f383268"
+          },
+          {
+            "file": "assets/WorkerSurfZone-t5khq1P-.js",
+            "sha256": "799cef03e441942d975c665befdbd938e0a0810c0c639453ed479d45fb08e7e3"
+          },
+          {
+            "file": "assets/devStepping-DmljE7JM.js",
+            "sha256": "203a4ccb1fa68f01604ba1c727120db3463715b9cfcb7e1c3603b5e831b94caa"
+          },
+          {
+            "file": "assets/index-BmPnHyp7.js",
+            "sha256": "162777e2a7d75cc25eed097a65f52a8de5fa57c0d7d09c2702c6af6cfad1b0b5"
+          },
+          {
+            "file": "assets/index-DA8NEfOT.css",
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          {
+            "file": "assets/jevRecorder-iOu4RNSn.js",
+            "sha256": "417e70d07cc05595235a41148fb93ef4fb0370032df34dd60323c555703c1aee"
+          },
+          {
+            "file": "assets/particleBench-BrEIUDeL.js",
+            "sha256": "b8351ea80fbaa0cf3e3b07dec15d0a008373f548904d4aec409cbb77cdd74caa"
+          },
+          {
+            "file": "assets/rideRecorder-nLtaBLy-.js",
+            "sha256": "c6873c1ad51d76c1d82572d0cd2eb5882e5468fea593c69616013cd357375ee7"
+          },
+          {
+            "file": "assets/surfZoneWorker-B3bMoB5b.js",
+            "sha256": "9f6d1618678ecf8679c6bea160a0398afc90db3a0d372ca129cf6a6876256819"
+          },
+          {
+            "file": "assets/waterSheet-Ca0hZXzi.js",
+            "sha256": "1d49f178363c5023db18182c35a329f9c5fbfa30e308c619b3a391cc24dde1f7"
+          }
+        ]
+      }
+    }
+  }
+}

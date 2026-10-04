@@ -1,0 +1,50 @@
+// CPU memory/queue lifetime mock only. Dispatches are recorded no-ops, never WGSL/physics emulation.
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+export type Event={kind:string;[key:string]:unknown};
+export class BufferMemory {
+ readonly bytes:ArrayBuffer; mapped=false; destroyed=false;
+ constructor(readonly id:number,readonly size:number,readonly usage:number,private readonly owner:RecordingGpu){this.bytes=new ArrayBuffer(size);}
+ async mapAsync(mode:number){assert(!this.destroyed&&!this.mapped);this.owner.event({kind:'map',id:this.id,mode});if(this.owner.failMap){this.owner.failMap=false;throw Error('injected map rejection');}this.mapped=true;}
+ getMappedRange(){assert(this.mapped&&!this.destroyed);this.owner.event({kind:'mappedRange',id:this.id});return this.bytes;}
+ unmap(){assert(this.mapped&&!this.destroyed);this.mapped=false;this.owner.event({kind:'unmap',id:this.id});}
+ destroy(){assert(!this.mapped);this.destroyed=true;this.owner.event({kind:'destroyBuffer',id:this.id});}
+}
+export class RecordingGpu {
+ readonly buffers:BufferMemory[]=[];readonly events:Event[]=[];failMap=false;destroyed=false;
+ /** Protocol cases may inject recognizable device output; CPU cost leaves all dispatches as no-ops. */
+ onCompute?:()=>void;
+ constructor(readonly recording:boolean=true,readonly recordPayloads:boolean=true){}
+ event(e:Event){if(this.recording)this.events.push(e);}
+ clear(){this.events.length=0;}
+ private write(buffer:BufferMemory,offset:number,data:ArrayBuffer|ArrayBufferView,dataOffset=0,size?:number){
+  assert(!buffer.mapped&&!buffer.destroyed);const typed=ArrayBuffer.isView(data),element=typed&&'BYTES_PER_ELEMENT'in data?Number(data.BYTES_PER_ELEMENT):1;
+  const start=(typed?data.byteOffset:0)+dataOffset*element,length=size===undefined?data.byteLength-dataOffset*element:size*element;
+  assert(offset%4===0&&length%4===0&&offset>=0&&offset+length<=buffer.size);
+  const raw=new Uint8Array(typed?data.buffer:data,start,length);new Uint8Array(buffer.bytes,offset,length).set(raw);
+  this.event({kind:'write',id:buffer.id,offset,dataOffset,size: size??null,element,length:raw.length,bytes:this.recording&&this.recordPayloads?Array.from(raw):null,sha256:this.recording&&!this.recordPayloads?createHash('sha256').update(raw).digest('hex'):null});
+ }
+ readonly device={
+  queue:{writeBuffer:(buffer:BufferMemory,offset:number,data:ArrayBuffer|ArrayBufferView,dataOffset?:number,size?:number)=>this.write(buffer,offset,data,dataOffset,size),
+   submit:(commands:{run():void}[])=>{this.event({kind:'submit',commands:commands.length});for(const c of commands)c.run();},
+   onSubmittedWorkDone:async()=>{this.event({kind:'waitSubmitted'});}},
+  createBuffer:({size,usage}:{size:number;usage:number})=>{const b=new BufferMemory(this.buffers.length,size,usage,this);this.buffers.push(b);this.event({kind:'createBuffer',id:b.id,size,usage});return b;},
+  createBindGroupLayout:()=>({}),createPipelineLayout:()=>({}),
+  createBindGroup:({entries}:{entries:{binding:number;resource:{buffer:BufferMemory}}[]})=>{const id=entries.map(e=>[e.binding,e.resource.buffer.id]);this.event({kind:'bind',entries:id});return{id};},
+  createComputePipeline:({compute}:{compute:{entryPoint:string}})=>({entryPoint:compute.entryPoint}),
+  createShaderModule:()=>({getCompilationInfo:async()=>({messages:[]})}),
+  createCommandEncoder:()=>{const copies:{from:BufferMemory;source:number;to:BufferMemory;target:number;size:number}[]=[];let ended=false,finished=false;
+   this.event({kind:'encoder'});return{
+    beginComputePass:()=>{this.event({kind:'beginPass'});return{setBindGroup:(index:number,b:{id:number[][]})=>this.event({kind:'group',index,entries:b.id}),
+     setPipeline:(p:{entryPoint:string})=>this.event({kind:'pipeline',entryPoint:p.entryPoint}),dispatchWorkgroups:(groups:number)=>this.event({kind:'dispatch',groups}),end:()=>{assert(!ended);ended=true;this.event({kind:'endPass'});}};},
+    copyBufferToBuffer:(from:BufferMemory,source:number,to:BufferMemory,target:number,size:number)=>{assert(ended&&!finished);assert(source>=0&&source+size<=from.size&&target>=0&&target+size<=to.size);copies.push({from,source,to,target,size});this.event({kind:'copy',from:from.id,source,to:to.id,target,size});},
+    finish:()=>{assert(ended&&!finished);finished=true;this.event({kind:'finish'});return{run:()=>{this.onCompute?.();for(const c of copies){assert(!c.from.mapped&&!c.to.mapped);new Uint8Array(c.to.bytes,c.target,c.size).set(new Uint8Array(c.from.bytes,c.source,c.size));}}};},
+   };},
+  destroy:()=>{this.destroyed=true;this.event({kind:'destroyDevice'});},
+ };
+ readonly gpu={requestAdapter:async()=>({limits:{maxStorageBufferBindingSize:1e9,maxBufferSize:1e9},requestDevice:async()=>this.device})}as unknown as GPU;
+}
+export function globals(){const values={GPUBufferUsage:{STORAGE:1,COPY_DST:2,COPY_SRC:4,MAP_READ:8,UNIFORM:16},GPUShaderStage:{COMPUTE:1},GPUMapMode:{READ:1}},old=new Map<string,PropertyDescriptor|undefined>();
+ for(const[k,v]of Object.entries(values)){old.set(k,Object.getOwnPropertyDescriptor(globalThis,k));Object.defineProperty(globalThis,k,{configurable:true,writable:true,value:v});}
+ return()=>{for(const[k,v]of old)if(v)Object.defineProperty(globalThis,k,v);else delete(globalThis as any)[k];};
+}

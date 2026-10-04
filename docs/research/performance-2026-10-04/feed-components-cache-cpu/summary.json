@@ -1,0 +1,307 @@
+{
+  "schema": "feed-components-cache-cpu-archive-summary/v1",
+  "canonicalRuntimeCommit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+  "docsCheckpointAtSourceFreeze": "4a2657bea",
+  "claims": {
+    "sourceAndCpuOnly": true,
+    "native": false,
+    "fps": false,
+    "adopted": false
+  },
+  "candidate": "Three edits: cache actual constructor-fixed SideFeed components at existing feed shape refresh and use only recurring time-block upload; exported writeParams literal original.",
+  "semanticScope": "Actual constructor-fixed SideFeed; mutable weights and layout/window refresh preserve baseline behavior. Unsupported dynamic deviceShape monkey-patches/subclasses excluded.",
+  "readySha256": "a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519",
+  "proofReport": {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/proof-first/report.json",
+    "bytes": 4237,
+    "sha256": "1a5b29c7269ed0b10dfecc428bbd46864c30a91f941b21217aa157d2b84e7982"
+  },
+  "costReport": {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/cost-first/report.json",
+    "bytes": 24916,
+    "sha256": "13b29e13d385e8b5a25191a2dfaae1d9fe1c7cc120aeea935efc48411c6c3a95"
+  },
+  "recomputed": {
+    "pairs": 32,
+    "warmPairs": 8,
+    "positivePairs": 32,
+    "meanSavingMs": 0.8683593124999902,
+    "medianSavingMs": 0.8896039999998493,
+    "heuristicLower95Ms": 0.6736756316207896,
+    "normalFormula": "mean - 1.96 * sqrt(sampleVariance / 32)",
+    "normalBoundQualification": "Heuristic serial-sample normal approximation, not demonstrated 95% coverage or population inference.",
+    "orderStrata": [
+      {
+        "order": "AB",
+        "pairs": 16,
+        "meanSavingMs": 0.8841405625000363
+      },
+      {
+        "order": "BA",
+        "pairs": 16,
+        "meanSavingMs": 0.8525780624999442
+      }
+    ],
+    "minSavingMs": 0.0025000000000545697,
+    "maxSavingMs": 2.5667499999999563,
+    "baselineMeanMs": 4.453736968749993,
+    "candidateMeanMs": 3.585377656250003,
+    "meanStageSavingMs": {
+      "pack": 0.9691640624999494,
+      "cfl": 0.00865100000002883,
+      "encode": -0.022492218750016946,
+      "map": -0.0050897187499785446,
+      "unpack": -0.08198190625004287
+    },
+    "allTimedCallsOneSubstep": true,
+    "wholeCpuThresholdMs": 0.1,
+    "frozenThresholdPass": true
+  },
+  "inputAuthority": {
+    "captureIncomplete": true,
+    "f32CommittedExport": true,
+    "captureSha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988",
+    "compressedSha256": "dd97ed4b53d1aa78eabdb58534a370e26d03cf553fe1bf26fe18d83d9bad48b3",
+    "rawSha256": "5ff85c873bb360c5df127084cb01b84fddd26ed971fa3ca19ddf3ece5bd6db18",
+    "pausedSeaTime": 328.04104655763683,
+    "solverTime": 52.69999999999905,
+    "seaTimeOffset": 275.34104655763775,
+    "limitation": "Paused F32 transport export, distinct from the earlier three drawn snapshots and full internal F64 precision; absent RATEH/NU remain constructor defaults, not measured native values."
+  },
+  "heldMetadata": {
+    "originalFiveDrawCaptureValid": false,
+    "committedExportAtDistinctPausedClock": true,
+    "snapshotUnchanged": true,
+    "outstandingSteps": 0,
+    "pausedSeaTime": 328.04104655763683,
+    "solverTime": 52.69999999999905,
+    "seaTimeOffset": 275.34104655763775,
+    "nx": 160,
+    "nz": 725,
+    "cells": 116000,
+    "config": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "serializedFields": [
+      [
+        "h",
+        116000
+      ],
+      [
+        "qx",
+        116000
+      ],
+      [
+        "qz",
+        116000
+      ],
+      [
+        "foam.dense",
+        116000
+      ],
+      [
+        "foam.residual",
+        116000
+      ],
+      [
+        "aeration.air",
+        116000
+      ],
+      [
+        "aeration.depth",
+        116000
+      ],
+      [
+        "outerBreak",
+        160
+      ],
+      [
+        "lastThrow",
+        160
+      ],
+      [
+        "lastOnset",
+        160
+      ],
+      [
+        "breakingStrength",
+        116000
+      ],
+      [
+        "breakingAge",
+        116000
+      ],
+      [
+        "plungeHold",
+        116000
+      ],
+      [
+        "predictor.x",
+        116000
+      ],
+      [
+        "predictor.z",
+        116000
+      ]
+    ],
+    "ratehNuOmittedConstructorDefaultsPreserved": true
+  },
+  "work": {
+    "cells": 116000,
+    "components": 64,
+    "initialSolverTime": 52.69999999999905,
+    "finalSolverTime": 53.36666666666568,
+    "completedStepCallsPerArm": 40,
+    "readbackFields": 9,
+    "candidateRemovesOnlyOneWeightsScanPerCall": true,
+    "queueByteLengthsOrderAndUniformsEstablishedByProof": true,
+    "allFinalDeviceBytesAndSolverOutputsExact": true,
+    "steadyBufferIdentitiesPreserved": true,
+    "timed": "Complete ordinary GpuBoussinesq.step/runWaterStep: upload conversion and mock memory queue writes, original CFL, uniforms including their unchanged slot scan, command/kernel dispatch bookkeeping, nine memory readback copies, async map microtask, unpack, viscosity peak and plunge/time adoption.",
+    "excluded": "Real WGSL/GPU execution, driver/queue stalls, renderer/worker publication/FPS, physics CPU consumers. Mock dispatches are no-ops; imported held fields do not physically evolve. Construction/intake/equality/hashing and statistics outside timings.",
+    "fieldLimit": "Actual paused F32 imported water/breaking/predictor/plunge fields; absent RATEH/NU are constructor defaults. All original peak/clock feedback loops execute, but this is not the native evolved viscosity/CFL distribution."
+  },
+  "limitations": [
+    "Local Node CPU/mock memory queue only; no WGSL execution, real GPU/driver/queue stall, rendering, worker publication or FPS.",
+    "All timed rows use one substep; multiple-substep proof is separate.",
+    "Committed paused F32 SET1 export is distinct from three earlier drawn frames; original five-frame capture failed.",
+    "RATEH/NU absent from SET1, leaving constructor defaults; original peak/CFL/clock loops execute without native evolved field distribution.",
+    "Mock includes small bookkeeping allocations and asynchronous map microtasks; no physical evolution.",
+    "Compiled runtime bundles kept as identities/original aliases; no source tree or held-fixture duplication."
+  ],
+  "rootTerminals": {
+    "root-checks": {
+      "schema": "root-feed-components-cpu-gates/v1",
+      "startedAt": "2026-10-04T07:04:32.174642+00:00",
+      "pid": 52073,
+      "pins": 62,
+      "commands": [
+        {
+          "name": "strict",
+          "command": [
+            "node",
+            "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+            "--noEmit",
+            "--incremental",
+            "false",
+            "-p",
+            "/private/tmp/surf-feed-components-cache-20261004/tsconfig.qa.json"
+          ],
+          "startedAt": "2026-10-04T07:04:32.182660+00:00",
+          "endedAt": "2026-10-04T07:04:33.797116+00:00",
+          "exitCode": 0,
+          "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-0.log"
+        },
+        {
+          "name": "buildSyntax",
+          "command": [
+            "node",
+            "--check",
+            "/private/tmp/surf-feed-components-cache-20261004/build.mjs"
+          ],
+          "startedAt": "2026-10-04T07:04:33.816938+00:00",
+          "endedAt": "2026-10-04T07:04:33.866104+00:00",
+          "exitCode": 0,
+          "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-1.log"
+        },
+        {
+          "name": "transformSyntax",
+          "command": [
+            "node",
+            "--check",
+            "/private/tmp/surf-feed-components-cache-20261004/patch-source.mjs"
+          ],
+          "startedAt": "2026-10-04T07:04:33.884858+00:00",
+          "endedAt": "2026-10-04T07:04:33.930296+00:00",
+          "exitCode": 0,
+          "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-2.log"
+        },
+        {
+          "name": "bundle",
+          "command": [
+            "node",
+            "/private/tmp/surf-feed-components-cache-20261004/build.mjs"
+          ],
+          "startedAt": "2026-10-04T07:04:33.948973+00:00",
+          "endedAt": "2026-10-04T07:04:34.194244+00:00",
+          "exitCode": 0,
+          "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-3.log"
+        },
+        {
+          "name": "unarmedProof",
+          "command": [
+            "node",
+            "/private/tmp/surf-feed-components-cache-20261004/compiled/proof.mjs"
+          ],
+          "startedAt": "2026-10-04T07:04:34.213726+00:00",
+          "endedAt": "2026-10-04T07:04:34.262511+00:00",
+          "exitCode": 0,
+          "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-4.log"
+        },
+        {
+          "name": "unarmedCost",
+          "command": [
+            "node",
+            "/private/tmp/surf-feed-components-cache-20261004/compiled/cost.mjs"
+          ],
+          "startedAt": "2026-10-04T07:04:34.281860+00:00",
+          "endedAt": "2026-10-04T07:04:34.326969+00:00",
+          "exitCode": 0,
+          "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-5.log"
+        }
+      ],
+      "valid": true,
+      "endedAt": "2026-10-04T07:04:34.346273+00:00",
+      "elapsedSeconds": 2.17156587500358,
+      "pinsUnchanged": true
+    },
+    "root-proof-first": {
+      "schema": "root-feed-components-one-run/v1",
+      "kind": "proof",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-components-cache-20261004/compiled/proof.mjs",
+        "--run=true"
+      ],
+      "parentPid": 52186,
+      "startedAt": "2026-10-04T07:05:07.726986+00:00",
+      "pins": 67,
+      "outerTimeoutSeconds": 20,
+      "childPid": 52187,
+      "endedAt": "2026-10-04T07:05:10.018926+00:00",
+      "elapsedSeconds": 2.291855707997456,
+      "exitCode": 0,
+      "pinsUnchanged": true
+    },
+    "root-cost-first": {
+      "schema": "root-feed-components-one-run/v1",
+      "kind": "cost",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-components-cache-20261004/compiled/cost.mjs",
+        "--run=true"
+      ],
+      "parentPid": 52296,
+      "startedAt": "2026-10-04T07:05:36.695549+00:00",
+      "pins": 69,
+      "outerTimeoutSeconds": 20,
+      "childPid": 52297,
+      "endedAt": "2026-10-04T07:05:38.920996+00:00",
+      "elapsedSeconds": 2.2253742089960724,
+      "exitCode": 0,
+      "pinsUnchanged": true
+    }
+  }
+}

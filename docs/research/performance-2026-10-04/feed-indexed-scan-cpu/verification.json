@@ -1,0 +1,32 @@
+{
+  "schema": "feed-indexed-archive-byte-arithmetic-verification/v1",
+  "pass": true,
+  "manifestSha256": "614f47372ec0a868353c0c54134b9c5e719b2aad3a4b2d30e96f0f8c0e3a5fa4",
+  "storedPayloads": 24,
+  "reusedPayloads": 8,
+  "originalAliases": 34,
+  "storedPayloadBytes": 64209,
+  "parentDeclaredIdentities": 120,
+  "closureReferenceChecks": 292,
+  "newCompiledIdentityReferences": 3,
+  "proofCases": 10,
+  "pairs": 32,
+  "positivePairs": 32,
+  "reusedCaptureByteReferencesChecked": 2,
+  "meanSavingMs": 1.8660390625000076,
+  "medianSavingMs": 1.8648964999998725,
+  "heuristicLower95Ms": 1.8134999124138391,
+  "orderStrata": [
+    {
+      "order": "AB",
+      "pairs": 16,
+      "meanSavingMs": 1.850726624999993
+    },
+    {
+      "order": "BA",
+      "pairs": 16,
+      "meanSavingMs": 1.8813515000000223
+    }
+  ],
+  "scope": "Archived bytes, parent hash-bound input identity declarations, recorded gate outcomes and stored-row arithmetic only. No imports, replay, build, benchmark, native, FPS or current external bundle/tool hashing."
+}

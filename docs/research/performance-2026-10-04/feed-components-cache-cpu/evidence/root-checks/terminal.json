@@ -1,0 +1,85 @@
+{
+  "schema": "root-feed-components-cpu-gates/v1",
+  "startedAt": "2026-10-04T07:04:32.174642+00:00",
+  "pid": 52073,
+  "pins": 62,
+  "commands": [
+    {
+      "name": "strict",
+      "command": [
+        "node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "/private/tmp/surf-feed-components-cache-20261004/tsconfig.qa.json"
+      ],
+      "startedAt": "2026-10-04T07:04:32.182660+00:00",
+      "endedAt": "2026-10-04T07:04:33.797116+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-0.log"
+    },
+    {
+      "name": "buildSyntax",
+      "command": [
+        "node",
+        "--check",
+        "/private/tmp/surf-feed-components-cache-20261004/build.mjs"
+      ],
+      "startedAt": "2026-10-04T07:04:33.816938+00:00",
+      "endedAt": "2026-10-04T07:04:33.866104+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-1.log"
+    },
+    {
+      "name": "transformSyntax",
+      "command": [
+        "node",
+        "--check",
+        "/private/tmp/surf-feed-components-cache-20261004/patch-source.mjs"
+      ],
+      "startedAt": "2026-10-04T07:04:33.884858+00:00",
+      "endedAt": "2026-10-04T07:04:33.930296+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-2.log"
+    },
+    {
+      "name": "bundle",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-components-cache-20261004/build.mjs"
+      ],
+      "startedAt": "2026-10-04T07:04:33.948973+00:00",
+      "endedAt": "2026-10-04T07:04:34.194244+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-3.log"
+    },
+    {
+      "name": "unarmedProof",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-components-cache-20261004/compiled/proof.mjs"
+      ],
+      "startedAt": "2026-10-04T07:04:34.213726+00:00",
+      "endedAt": "2026-10-04T07:04:34.262511+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-4.log"
+    },
+    {
+      "name": "unarmedCost",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-components-cache-20261004/compiled/cost.mjs"
+      ],
+      "startedAt": "2026-10-04T07:04:34.281860+00:00",
+      "endedAt": "2026-10-04T07:04:34.326969+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-components-cache-20261004/root-checks/command-5.log"
+    }
+  ],
+  "valid": true,
+  "endedAt": "2026-10-04T07:04:34.346273+00:00",
+  "elapsedSeconds": 2.17156587500358,
+  "pinsUnchanged": true
+}

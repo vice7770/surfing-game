@@ -1,0 +1,22 @@
+// Local source/compiled/public authority only; imported by later separately approved gates.
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+export const WORK='/private/tmp/surf-feed-components-fps-20261004';
+export const ROOT='/Users/regina/Desktop/Projects/surfing-game';
+export const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+export const json=file=>JSON.parse(readFileSync(file,'utf8'));
+export const record=file=>{const bytes=readFileSync(file);return{path:file,bytes:bytes.length,sha256:sha(bytes)};};
+export function verify(file,pin){const actual=record(file);assert.equal(actual.bytes,pin.bytes,file);assert.equal(actual.sha256,pin.sha256,file);return actual;}
+export function reviewed(){const readyPath=join(WORK,'ready.json'),readyBytes=readFileSync(readyPath);assert.equal(sha(readyBytes),process.env.FEED_COMPONENTS_FPS_READY_SHA256,'Reviewed source-ready pin required');const ready=JSON.parse(readyBytes);assert.equal(ready.stage,'source-ready; checks/build/hardware unexecuted');return ready;}
+export function captureAuthority(){
+ const ready=reviewed(),source=json(join(WORK,'source-manifest.json')),reuse=json(join(WORK,'baseline-reuse.json')),assets=json(join(WORK,'public-assets.json')),dep=json(join(WORK,'dependency-authority.json'));
+ const pins=new Map();const add=p=>{const old=pins.get(p.path);assert(!old||(old.bytes===p.bytes&&old.sha256===p.sha256),p.path);pins.set(p.path,p);};
+ add(record(join(WORK,'ready.json')));for(const p of [...ready.artifacts,...ready.borrowedSourceAuthorities])add(p);
+ for(const arm of source.arms)for(const p of arm.files)add({...p,path:join(arm.root,p.path)});
+ for(const p of reuse.outputRecords)add({...p,path:join(reuse.outputRoot,p.path)});
+ for(const p of assets.files)add({...p,path:join(assets.root,p.path)});
+ for(const p of [...dep.packageRecords,dep.cdpHelper,...dep.lockFiles,dep.compilerImplementation,dep.viteImplementation,dep.viteWorkerConfigurationTypes,dep.viteWorkerImplementation])add(p);
+ return [...pins.values()].sort((a,b)=>a.path.localeCompare(b.path)).map(p=>verify(p.path,p));
+}

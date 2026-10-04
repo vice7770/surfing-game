@@ -1,0 +1,11 @@
+{
+  "valid": true,
+  "readySha256": "a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519",
+  "inputPinsUnchanged": true,
+  "usefulGainPass": true,
+  "report": {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/cost-first/report.json",
+    "bytes": 24916,
+    "sha256": "13b29e13d385e8b5a25191a2dfaae1d9fe1c7cc120aeea935efc48411c6c3a95"
+  }
+}

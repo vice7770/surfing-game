@@ -1,0 +1,53 @@
+{
+  "default": {
+    "schema": "feed-indexed-native-archive-byte-arithmetic-verification/v1",
+    "pass": true,
+    "manifestSha256": "d9f1c83a256329e7e1b5634fc5bad29b62a81ee6336c8eecb8c8d90ccdad1602",
+    "storedPayloads": 62,
+    "reusedPayloads": 29,
+    "closureReferenceChecks": 5858,
+    "completedNativePairs": 2,
+    "completedNativeArms": 4,
+    "decision": "HOLD",
+    "originalsRequested": false,
+    "originalFilesChecked": 0,
+    "scope": "Bytes, declared identities, recorded guards and available count/summary arithmetic only; no quantile reconstruction, game import/execution, physics replay, network or FPS rerun."
+  },
+  "originals": {
+    "schema": "feed-indexed-native-archive-byte-arithmetic-verification/v1",
+    "pass": true,
+    "manifestSha256": "d9f1c83a256329e7e1b5634fc5bad29b62a81ee6336c8eecb8c8d90ccdad1602",
+    "storedPayloads": 62,
+    "reusedPayloads": 29,
+    "closureReferenceChecks": 5858,
+    "completedNativePairs": 2,
+    "completedNativeArms": 4,
+    "decision": "HOLD",
+    "originalsRequested": true,
+    "originalFilesChecked": 843,
+    "scope": "Bytes, declared identities, recorded guards and available count/summary arithmetic only; no quantile reconstruction, game import/execution, physics replay, network or FPS rerun."
+  },
+  "noGameOrExperimentExecution": true,
+  "logs": [
+    {
+      "path": "/private/tmp/surf-feed-indexed-fps-archive-20261004/verify-first.stdout",
+      "bytes": 595,
+      "sha256": "68097b36c1552ee75cdfd336d1b49407c14120d63559f55b52a3c9db68fb00a2"
+    },
+    {
+      "path": "/private/tmp/surf-feed-indexed-fps-archive-20261004/verify-first.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-feed-indexed-fps-archive-20261004/verify-originals.stdout",
+      "bytes": 596,
+      "sha256": "2945082fd5067e10adf5d48ec8d40cac46bab4e81dbf3c184b76b982399399af"
+    },
+    {
+      "path": "/private/tmp/surf-feed-indexed-fps-archive-20261004/verify-originals.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

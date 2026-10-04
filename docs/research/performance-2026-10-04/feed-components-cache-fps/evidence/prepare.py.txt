@@ -1,0 +1,34 @@
+from pathlib import Path
+import json,hashlib,difflib
+R=Path('/Users/regina/Desktop/Projects/surfing-game');W=Path('/private/tmp/surf-feed-components-fps-20261004');OLD=Path('/private/tmp/surf-full-writer-fps-20261004');AD=Path('/private/tmp/surf-full-writer-adoption-20261004');C=Path('/private/tmp/surf-feed-components-cache-20261004');H=lambda b:hashlib.sha256(b).hexdigest()
+def rec(p):b=p.read_bytes();return {'path':str(p),'bytes':len(b),'sha256':H(b)}
+def save(n,o):(W/n).write_text(json.dumps(o,indent=2)+'\n')
+for n in ['survey.mjs','native-owned.mjs','passive-guard.mjs','public-assets.json']:(W/n).write_bytes((OLD/n).read_bytes())
+source=json.loads((AD/'source-after.json').read_text());assert len(source)==549
+files=[]
+for rel,pin in sorted(source.items()):
+ r=rec(R/rel);assert (r['bytes'],r['sha256'])==(pin['bytes'],pin['sha256']),rel;files.append({'path':rel,'bytes':r['bytes'],'sha256':r['sha256']})
+for rel in ['index.html','package-lock.json','package.json','tsconfig.json','vite.config.ts']:
+ r=rec(R/rel);files.append({'path':rel,'bytes':r['bytes'],'sha256':r['sha256']})
+files.sort(key=lambda r:r['path']);assert len(files)==554
+original=(R/'src/wave/gpu/GpuBoussinesq.ts').read_text();patched=original
+edits=[('  private feedSlots = 0;','  private feedSlots = 0;\n  /** Constructor-fixed SideFeed count, captured at the existing table refresh. */\n  private feedComponents = 0;'),('    this.feedSlots = feed.deviceShape().slots;','    const shape = feed.deviceShape();\n    this.feedSlots = shape.slots;\n    this.feedComponents = shape.components;'),('device.queue.writeBuffer(this.feedBuffer, 0, this.feedPacked, 0, this.zone.feed.deviceShape().components * 3);','device.queue.writeBuffer(this.feedBuffer, 0, this.feedPacked, 0, this.feedComponents * 3);')]
+for a,b in edits:assert patched.count(a)==1;patched=patched.replace(a,b)
+trans={'path':str(R/'src/wave/gpu/GpuBoussinesq.ts'),'relativePath':'src/wave/gpu/GpuBoussinesq.ts','original':rec(R/'src/wave/gpu/GpuBoussinesq.ts'),'transform':rec(C/'patch-source.mjs'),'virtualCandidate':{'bytes':len(patched.encode()),'sha256':H(patched.encode())},'editCount':3,'mode':'canonical original path; one source load/readFile substitution; no changed source file or clone','exportedHelpersAndWriteParamsStayLiteral':True}
+assert rec(C/'ready.json')['sha256']=='a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519'
+save('source-manifest.json',{'schema':'feed-components-fps-source/v1','baseline':'b0e003b8670c9d0be83bc9bb24c30b5382a54499','commonBuildId':'306258296','sourceCheckpointAuthority':rec(AD/'source-after.json'),'documentationHeadReportedByRoot':'4a2657bea','arms':[{'arm':name,'root':str(R),'fileCount':len(files),'files':files,'effectiveSourceMode':'literal canonical' if name=='baseline' else 'same canonical closure plus single pinned virtual source transformation'} for name in ['baseline','candidate']],'onlyRuntimeDifference':trans,'sourceBytePreparationOnly':True,'noSourceClones':True})
+bm=json.loads((AD/'build-manifest.json').read_text());rows=bm['outputRecords'];workers=[r for r in rows if r['path'].startswith('assets/surfZoneWorker-')];assert len(rows)==11 and len(workers)==1;html=(AD/'dist/index.html').read_text();import re;client=re.search(r'<script[^>]+src="([^"]+)"',html).group(1).lstrip('/')
+save('baseline-reuse.json',{'schema':'feed-components-fps-baseline-reuse/v1','outputRoot':str(AD/'dist'),'commonBuildId':'306258296','sourcePinCount':554,'originalCompilation':rec(AD/'build-manifest.json'),'originalTerminal':rec(AD/'terminal.json'),'sourceAfter':rec(AD/'source-after.json'),'runtimeBaseline':'b0e003b8670c9d0be83bc9bb24c30b5382a54499','clientEntry':client,'surfZoneWorker':workers[0]['path'],'outputRecords':rows,'allElevenByteExactMeasuredWriterCandidate':bm['allElevenByteExactMeasuredCandidate'],'buildFlagsAuthority':rec(AD/'build.mjs'),'readOnlyDirectReuse':True})
+dep=json.loads((OLD/'dependency-authority.json').read_text());dep['schema']='feed-components-fps-dependencies/v1';dep['lockFiles']=[rec(R/'package-lock.json')];dep['sourceOnlyBorrow']=rec(OLD/'dependency-authority.json');dep['compilerImplementation']=rec(R/'node_modules/typescript/lib/typescript.js');dep['viteImplementation']=rec(R/'node_modules/vite/dist/node/index.js');dep['viteWorkerConfigurationTypes']=rec(R/'node_modules/vite/dist/node/index.d.ts');save('dependency-authority.json',dep)
+borrow=[rec(OLD/n) for n in ['survey.mjs','native-owned.mjs','passive-guard.mjs','public-assets.json','ready.json','bindings.json','root-run/report.json']]+[rec(AD/n) for n in ['build-manifest.json','source-after.json','terminal.json','build.mjs']]
+for n in ['ready.json','inputs.json','patch-source.mjs','compiled.json','root-checks/terminal.json','proof-first/report.json','proof-first/terminal.json','cost-first/report.json','cost-first/terminal.json']:
+ if (C/n).exists():borrow.append(rec(C/n))
+save('borrowed-authorities.json',{'schema':'feed-components-fps-borrowed/v1','records':borrow,'physicalCaptureNotNeeded':'This is ordinary native gameplay, no fixture replay; no capture/assets copied.'})
+p=(OLD/'pair.mjs').read_text();p=p.replace(str(OLD),str(W)).replace('FULL_WRITER_FPS_READY_SHA256','FEED_COMPONENTS_FPS_READY_SHA256').replace('FULL_WRITER_FPS_BINDINGS_SHA256','FEED_COMPONENTS_FPS_BINDINGS_SHA256').replace("'full-writer-fps-build-arm/v1'","'feed-components-fps-build-arm/v1'").replace("'full-writer-passive-pair/v1'","'feed-components-passive-pair/v1'").replace("join(BUILD, 'candidate', '.cache/vite-build')","join(WORK, '.cache/vite-build')").replace('port: 4235, cdp: 9645','port: 4241, cdp: 9651').replace('port: 4236, cdp: 9646','port: 4242, cdp: 9652')
+# Parent behavior remains the same; candidate build cache is owned by this gate rather than a copied source root.
+(W/'pair.mjs').write_text(p)
+(W/'pair.mjs.diff').write_text(''.join(difflib.unified_diff((OLD/'pair.mjs').read_text().splitlines(True),p.splitlines(True),fromfile=str(OLD/'pair.mjs'),tofile=str(W/'pair.mjs'))))
+# Same metadata binder, changed only directory/schema.
+p=(OLD/'bind-launch.py').read_text().replace(str(OLD),str(W)).replace('full-writer-fps-bindings/v1','feed-components-fps-bindings/v1');(W/'bind-launch.py').write_text(p)
+(W/'derivation.json').write_text(json.dumps({'schema':'feed-components-fps-derivation/v1','exactCopies':[{'borrowed':rec(OLD/n),'owned':rec(W/n),'byteIdentical':True} for n in ['survey.mjs','native-owned.mjs','passive-guard.mjs','public-assets.json']],'pairDiff':rec(W/'pair.mjs.diff'),'singleRuntimeTransform':trans,'inheritedInternalEnvironmentKeys':['FULL_WRITER_FPS_LAUNCHER_REPORT','FULL_WRITER_FPS_EXPECTED_WORKER','FULL_WRITER_FPS_EXPECTED_SOLO_ONE_STEP'],'sourceOnly':True},indent=2)+'\n')
+print('Source preparation only: 554 canonical inputs, no source copies, exact three-anchor virtual digest',trans['virtualCandidate'])

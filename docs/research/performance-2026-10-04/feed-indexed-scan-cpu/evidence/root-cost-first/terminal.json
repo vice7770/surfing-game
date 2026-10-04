@@ -1,0 +1,28 @@
+{
+  "schema": "root-feed-indexed-gate/v1",
+  "kind": "cost",
+  "readySha256": "dff888a1445e61edf7c96af1148a67c48b07cbde62bcb3b7c5d7c613e6d40d4d",
+  "startedAt": "2026-10-04T07:23:20.190847+00:00",
+  "parentPid": 57675,
+  "pins": 73,
+  "outerTimeoutSeconds": 20,
+  "commands": [
+    {
+      "name": "costOnlyAfterProof",
+      "command": [
+        "node",
+        "/private/tmp/surf-feed-indexed-scan-20261004/compiled/cost.mjs",
+        "--run=true"
+      ],
+      "startedAt": "2026-10-04T07:23:20.201859+00:00",
+      "childPid": 57686,
+      "endedAt": "2026-10-04T07:23:22.410501+00:00",
+      "exitCode": 0,
+      "log": "/private/tmp/surf-feed-indexed-scan-20261004/root-cost-first/command-0.log"
+    }
+  ],
+  "valid": true,
+  "pinsUnchanged": true,
+  "endedAt": "2026-10-04T07:23:22.434594+00:00",
+  "elapsedSeconds": 2.243640291970223
+}

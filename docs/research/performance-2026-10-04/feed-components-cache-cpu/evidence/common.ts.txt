@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { inflateSync } from 'node:zlib';
+import { pathToFileURL } from 'node:url';
+import type * as Runtime from './entry';
+export const WORK='/private/tmp/surf-feed-components-cache-20261004';
+export type Arm=typeof Runtime;
+export type Pin={path:string;bytes:number;sha256:string};
+export const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
+export const view=(v:ArrayBufferView)=>new Uint8Array(v.buffer,v.byteOffset,v.byteLength);
+export const exact=(a:ArrayBufferView,b:ArrayBufferView,label:string)=>{assert.equal(a.byteLength,b.byteLength,label);assert(Buffer.from(a.buffer,a.byteOffset,a.byteLength).equals(Buffer.from(b.buffer,b.byteOffset,b.byteLength)),label);};
+export function pin(p:Pin){const b=readFileSync(p.path);assert.equal(b.length,p.bytes,p.path);assert.equal(sha(b),p.sha256,p.path);}
+export async function authority(){
+ const raw=readFileSync(join(WORK,'ready.json')),readySha=sha(raw),ready=JSON.parse(raw.toString());assert.equal(readySha,process.env.FEED_COMPONENTS_READY_SHA256,'Reviewed source-ready pin required');
+ const check=()=>{for(const p of ready.inputs as Pin[])pin(p);};check();const compiled=JSON.parse(readFileSync(join(WORK,'compiled.json'),'utf8'));assert.equal(compiled.readySha256,readySha);for(const p of compiled.outputs as Pin[])pin(p);
+ const baseline=await import(pathToFileURL(join(WORK,'compiled/baseline.mjs')).href) as Arm,candidate=await import(pathToFileURL(join(WORK,'compiled/candidate.mjs')).href) as Arm;
+ return{ready,readySha,check,baseline,candidate};
+}
+export function heldInput(ready:any){
+ const capture=JSON.parse(readFileSync(ready.capture.path,'utf8')),compressed=readFileSync(capture.export.file.path);assert.equal(sha(compressed),capture.export.sha256);
+ const bytes=inflateSync(compressed,{maxOutputLength:8*1024*1024});assert.equal(bytes.length,capture.export.expandedBytes);assert.equal(sha(bytes),capture.export.expandedSha256);
+ const config=capture.plan.config,actual=capture.nativeAudit.observations[1].actual.config;assert.deepEqual(config,actual);assert.equal(config.spot,'padang');assert.equal(config.seed,8761);assert.equal(config.componentCount,64);
+ return{config,bytes:new Uint8Array(bytes),authority:{captureIncomplete:true,f32CommittedExport:true,captureSha256:ready.capture.sha256,compressedSha256:capture.export.sha256,rawSha256:capture.export.expandedSha256,pausedSeaTime:capture.export.pausedSeaTime,solverTime:capture.export.header.solverTime,seaTimeOffset:capture.export.header.seaTimeOffset,
+  limitation:'Paused F32 transport export, distinct from the earlier three drawn snapshots and full internal F64 precision; absent RATEH/NU remain constructor defaults, not measured native values.'}};
+}

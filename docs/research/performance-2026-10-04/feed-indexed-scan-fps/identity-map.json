@@ -1,0 +1,363 @@
+{
+  "schema": "feed-indexed-native-two-order-identities/v1",
+  "baselineRuntime": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+  "literalBuildId": "306258296",
+  "virtualTarget": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts",
+    "relativePath": "src/wave/SideFeed.ts",
+    "original": {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd"
+    },
+    "transform": {
+      "path": "/private/tmp/surf-feed-indexed-scan-20261004/patch-source.mjs",
+      "bytes": 529,
+      "sha256": "d9913440c380fcd3b56b7520912e007747bfceca5a7b8f61c335a886ccf8eb70"
+    },
+    "virtualCandidate": {
+      "bytes": 10085,
+      "sha256": "ac2b896d945ebdaf8b0530bd3ed515a7701d16c078991d93ca3a5870b3687dd2"
+    },
+    "editCount": 1,
+    "mode": "canonical original path; one source load/readFile substitution; no changed source file or clone",
+    "ascendingNativeFloat64WeightScan": true,
+    "noNewCacheOrGenerationState": true,
+    "componentCacheExcluded": true,
+    "canonicalGpuUnchanged": {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts",
+      "bytes": 23863,
+      "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+    },
+    "exportedHelpersAndClassPrefixStayLiteral": true
+  },
+  "arms": {
+    "baseline": {
+      "outputRoot": "/private/tmp/surf-full-writer-adoption-20261004/dist",
+      "clientEntry": "assets/index-BiXZLaDY.js",
+      "surfZoneWorker": "assets/surfZoneWorker-XSUZFAPK.js",
+      "outputRecords": [
+        {
+          "path": "assets/WorkerSurfZone-BB7sI1yB.js",
+          "bytes": 864212,
+          "sha256": "f9411e88ec31206b40ca802045e44dce45366459dde1562328147e4ef14f1695"
+        },
+        {
+          "path": "assets/devStepping-OeqPgeQx.js",
+          "bytes": 320,
+          "sha256": "7e8ce909af5c6029e2ac9c2f27ffb24ef33cb4bd73615499fc8a3c3aebd529f2"
+        },
+        {
+          "path": "assets/index-BiXZLaDY.js",
+          "bytes": 582536,
+          "sha256": "0e8a27307d8ef24cd4fa1e5be0c851a4cb5a42667c25c183f2a9708dd6622b4a"
+        },
+        {
+          "path": "assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "assets/jevRecorder-BCRCVsr2.js",
+          "bytes": 15917,
+          "sha256": "d00003b275d8ea80d5bac54966a435b08f2564df1e7ea9c982ba6a1f34469fc4"
+        },
+        {
+          "path": "assets/particleBench-Cx_LUC3T.js",
+          "bytes": 10708,
+          "sha256": "b9dbba904449c689d75cd507d6cce86147548bfb6763f4125c0a069b501f5b5c"
+        },
+        {
+          "path": "assets/rideRecorder-BBvqTGwX.js",
+          "bytes": 41108,
+          "sha256": "1d3ac63e1cc773c36524a76e586dfc352d647a36e2560a6ba94da97a89658ced"
+        },
+        {
+          "path": "assets/surfZoneWorker-XSUZFAPK.js",
+          "bytes": 448078,
+          "sha256": "b711e16bf2b92e17507b0fccfd2d9a6e6b517a7b9e7f7ce4656fdaf0b95e1114"
+        },
+        {
+          "path": "assets/waterSheet-DtwnWSCT.js",
+          "bytes": 11689,
+          "sha256": "7dc43bfe5e86106c81ac5dcf05f3fe3202a5a62cefdda156c2b790ff6ff8281f"
+        },
+        {
+          "path": "build.json",
+          "bytes": 21,
+          "sha256": "5b8191a757583877f88c232c4276175ddd9df82440e1cbe95c930bed3b4349e1"
+        },
+        {
+          "path": "index.html",
+          "bytes": 1626,
+          "sha256": "4ddcf6712c2dd291c84d7ef21c3f95a47a7172bbb5a6ba3693327732f41c2e0b"
+        }
+      ]
+    },
+    "candidate": {
+      "outputRoot": "/private/tmp/surf-feed-indexed-fps-20261004/candidate/dist",
+      "clientEntry": "assets/index-6zfJLfSg.js",
+      "surfZoneWorker": "assets/surfZoneWorker-DCG3fY_e.js",
+      "outputRecords": [
+        {
+          "path": "assets/devStepping-B4gl02W_.js",
+          "bytes": 320,
+          "sha256": "019e97b883ec1682539690a43410996e803e3169fdc25be6500c6805b3224229"
+        },
+        {
+          "path": "assets/index-6zfJLfSg.js",
+          "bytes": 582536,
+          "sha256": "5a957e35324b4c36f1ba356ecf458abcb2d376f8b17ce0e231ebae505f7d7725"
+        },
+        {
+          "path": "assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "assets/jevRecorder-8BkCRASB.js",
+          "bytes": 15917,
+          "sha256": "64a4876000c4d49426448ee49fc2069b30e850b4c59c93b80425922309cb0950"
+        },
+        {
+          "path": "assets/particleBench-BZMFKTHx.js",
+          "bytes": 10708,
+          "sha256": "466e8904d3eb02c2cf02d81462689be92d5f267102931208808ae20190dbc7ad"
+        },
+        {
+          "path": "assets/rideRecorder-BhEmS6fI.js",
+          "bytes": 41108,
+          "sha256": "e6c716d83b0c2b852d89d18e120a18428ed6331c04d9d28ec73732b3a445105d"
+        },
+        {
+          "path": "assets/surfZoneWorker-DCG3fY_e.js",
+          "bytes": 448098,
+          "sha256": "3d48c3c116d1c58615a0dce746232dc9baf48cdb801f3215e39dc2763879a958"
+        },
+        {
+          "path": "assets/waterSheet-Xg4qfsOq.js",
+          "bytes": 11689,
+          "sha256": "b10d38ede43414d3d2202e0be0e30a6063dc0138913e5bd1bf84b8898093d0e0"
+        },
+        {
+          "path": "assets/WorkerSurfZone-BIHGUJBM.js",
+          "bytes": 864232,
+          "sha256": "31b3da9e502f256f8fba8b460fda0e2b42507d6e0fe9ad90489aac7c1e38fbc1"
+        },
+        {
+          "path": "build.json",
+          "bytes": 21,
+          "sha256": "5b8191a757583877f88c232c4276175ddd9df82440e1cbe95c930bed3b4349e1"
+        },
+        {
+          "path": "index.html",
+          "bytes": 1626,
+          "sha256": "0bee557c6aad8811627baf988460d27a7c6cee453255891c6e2933d1c030c484"
+        }
+      ]
+    }
+  },
+  "orders": {
+    "AB": {
+      "report": {
+        "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run/report.json",
+        "bytes": 20587,
+        "sha256": "553364db1f5882c412e0ec5c153a131f9e888f37e3ce43d86e8245290052d425"
+      },
+      "arms": [
+        {
+          "arm": "baseline",
+          "actualCommand": [
+            "/opt/homebrew/Cellar/node/23.10.0_1/bin/node",
+            "/private/tmp/surf-feed-indexed-fps-20261004/survey.mjs",
+            "/private/tmp/surf-feed-indexed-fps-20261004/root-run/baseline/fps.json",
+            "--url=http://127.0.0.1:4243/?diagnostics",
+            "--dir=/private/tmp/surf-full-writer-adoption-20261004/dist",
+            "--features=true",
+            "--only=High (baseline)",
+            "--spot=Padang",
+            "--swell=Big",
+            "--warmSeconds=5",
+            "--rideSeconds=90",
+            "--gpuTiming=false",
+            "--diagnosticGpu=false",
+            "--edition=single-step-publication",
+            "--width=1708",
+            "--height=966",
+            "--cdp=9653",
+            "--commit=b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+            "--build=306258296"
+          ],
+          "pid": 58801,
+          "terminal": {
+            "code": 0,
+            "signal": null,
+            "at": "2026-10-04T07:28:53.941Z"
+          },
+          "fps": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run/baseline/fps.json",
+            "bytes": 100717,
+            "sha256": "7630ec7e8e2f35dcdb24c939c921201b9a379893383dfb5656d9a9dffda504df"
+          },
+          "nativeAudit": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run/baseline/native-audit.json",
+            "bytes": 27049,
+            "sha256": "142da57d18f9cea32e5053f41830391b7b65de85acbe0efd14936496ae94d1e8"
+          },
+          "launcher": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run/baseline/launcher.json",
+            "bytes": 11491,
+            "sha256": "6ab237685a9a39970e77b2a1e3c588685ebd5ae755caa09546d26e5b57808855"
+          }
+        },
+        {
+          "arm": "candidate",
+          "actualCommand": [
+            "/opt/homebrew/Cellar/node/23.10.0_1/bin/node",
+            "/private/tmp/surf-feed-indexed-fps-20261004/survey.mjs",
+            "/private/tmp/surf-feed-indexed-fps-20261004/root-run/candidate/fps.json",
+            "--url=http://127.0.0.1:4244/?diagnostics",
+            "--dir=/private/tmp/surf-feed-indexed-fps-20261004/candidate/dist",
+            "--features=true",
+            "--only=High (baseline)",
+            "--spot=Padang",
+            "--swell=Big",
+            "--warmSeconds=5",
+            "--rideSeconds=90",
+            "--gpuTiming=false",
+            "--diagnosticGpu=false",
+            "--edition=single-step-publication",
+            "--width=1708",
+            "--height=966",
+            "--cdp=9654",
+            "--commit=b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+            "--build=306258296",
+            "--baseline=/private/tmp/surf-feed-indexed-fps-20261004/root-run/baseline/fps.json"
+          ],
+          "pid": 59646,
+          "terminal": {
+            "code": 0,
+            "signal": null,
+            "at": "2026-10-04T07:30:52.192Z"
+          },
+          "fps": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run/candidate/fps.json",
+            "bytes": 100666,
+            "sha256": "980ac1248173b2a6cbfb93e1c617f1588d0bfb8fc15feed517d1717c6bf2354a"
+          },
+          "nativeAudit": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run/candidate/native-audit.json",
+            "bytes": 27001,
+            "sha256": "f5beebcf2568f0ca26b728bc1f9d015e5698dcbc46dada951bbb19dc191767a0"
+          },
+          "launcher": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run/candidate/launcher.json",
+            "bytes": 11615,
+            "sha256": "4006e1d0fc89d6f7eda38e28881962a95e719cd048cbeaf07df403788ac07000"
+          }
+        }
+      ]
+    },
+    "BA": {
+      "report": {
+        "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/report.json",
+        "bytes": 23776,
+        "sha256": "0da1a639aad8f969701a8268422075c46318fb0a75aeb4f6f78f0902d3c0514f"
+      },
+      "arms": [
+        {
+          "arm": "candidate",
+          "actualCommand": [
+            "/opt/homebrew/Cellar/node/23.10.0_1/bin/node",
+            "/private/tmp/surf-feed-indexed-fps-20261004/survey.mjs",
+            "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/candidate/fps.json",
+            "--url=http://127.0.0.1:4245/?diagnostics",
+            "--dir=/private/tmp/surf-feed-indexed-fps-20261004/candidate/dist",
+            "--features=true",
+            "--only=High (baseline)",
+            "--spot=Padang",
+            "--swell=Big",
+            "--warmSeconds=5",
+            "--rideSeconds=90",
+            "--gpuTiming=false",
+            "--diagnosticGpu=false",
+            "--edition=single-step-publication",
+            "--width=1708",
+            "--height=966",
+            "--cdp=9655",
+            "--commit=b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+            "--build=306258296",
+            "--baseline=/private/tmp/surf-feed-indexed-fps-20261004/root-run/baseline/fps.json"
+          ],
+          "pid": 61976,
+          "terminal": {
+            "code": 0,
+            "signal": null,
+            "at": "2026-10-04T07:37:07.587Z"
+          },
+          "fps": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/candidate/fps.json",
+            "bytes": 100647,
+            "sha256": "8e66a52ca90ac5d54063856591dc9001e542364172619bc71dc23610060617d8"
+          },
+          "nativeAudit": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/candidate/native-audit.json",
+            "bytes": 27053,
+            "sha256": "db74fe856da1a13d25b001fa881bd1d03de6ee88e3dd65d22c6c6239bb83bb02"
+          },
+          "launcher": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/candidate/launcher.json",
+            "bytes": 11174,
+            "sha256": "a30f88229a7701d2645de70aeb453626989ec71e7f89d0e45dfa386e3bd14057"
+          }
+        },
+        {
+          "arm": "baseline",
+          "actualCommand": [
+            "/opt/homebrew/Cellar/node/23.10.0_1/bin/node",
+            "/private/tmp/surf-feed-indexed-fps-20261004/survey.mjs",
+            "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/baseline/fps.json",
+            "--url=http://127.0.0.1:4246/?diagnostics",
+            "--dir=/private/tmp/surf-full-writer-adoption-20261004/dist",
+            "--features=true",
+            "--only=High (baseline)",
+            "--spot=Padang",
+            "--swell=Big",
+            "--warmSeconds=5",
+            "--rideSeconds=90",
+            "--gpuTiming=false",
+            "--diagnosticGpu=false",
+            "--edition=single-step-publication",
+            "--width=1708",
+            "--height=966",
+            "--cdp=9656",
+            "--commit=b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+            "--build=306258296",
+            "--baseline=/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/candidate/fps.json"
+          ],
+          "pid": 62655,
+          "terminal": {
+            "code": 0,
+            "signal": null,
+            "at": "2026-10-04T07:39:07.716Z"
+          },
+          "fps": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/baseline/fps.json",
+            "bytes": 100726,
+            "sha256": "6c755dc6775422719bcaceb353bb4e1d8f4ffd6428f611646fd5dfea19da685c"
+          },
+          "nativeAudit": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/baseline/native-audit.json",
+            "bytes": 27053,
+            "sha256": "65477c3f2546442f96ef59d22bae31f6378c4cac5c0d6d865dd15dd8d8715ff5"
+          },
+          "launcher": {
+            "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/baseline/launcher.json",
+            "bytes": 11776,
+            "sha256": "4447f6297992dd39dc7a64cef04a12d3216fda5728b8b70c10856cdff1b67f13"
+          }
+        }
+      ]
+    }
+  }
+}

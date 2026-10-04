@@ -1,0 +1,33 @@
+// Future candidate-only Vite compilation; canonical imports stay canonical, no source tree clone.
+import assert from 'node:assert/strict';
+import { readFileSync,writeFileSync,readdirSync,existsSync,mkdirSync } from 'node:fs';
+import { join,posix } from 'node:path';
+import { build } from '/Users/regina/Desktop/Projects/surfing-game/node_modules/vite/dist/node/index.js';
+import { candidateSource } from '/private/tmp/surf-feed-components-cache-20261004/patch-source.mjs';
+import { WORK,ROOT,json,sha,record,reviewed,captureAuthority } from './authority.mjs';
+const ready=reviewed(),before=captureAuthority(),sourcePath=join(WORK,'source-manifest.json'),source=json(sourcePath),reuse=json(join(WORK,'baseline-reuse.json')),spec=source.onlyRuntimeDifference;
+assert.equal(process.env.BUILD_ID,'306258296','Same measured literal build ID required');assert(json(join(WORK,'strict-terminal.json')).valid,'Candidate strict must pass before build');
+for(const path of ['build-terminal.json','bindings.json','candidate/dist','baseline/build-manifest.json','candidate/build-manifest.json'])assert(!existsSync(join(WORK,path)),'Fresh output only: '+path);
+const out=join(WORK,'candidate/dist'),cache=join(WORK,'.cache/vite-build'),target=spec.path,loads=[],canonical=new Map(source.arms[0].files.map(p=>[join(ROOT,p.path),p]));
+const plugin=realm=>({name:'single-reviewed-feed-component-source-'+realm,enforce:'pre',load(id){
+ const path=id.split('?')[0];if(!path.startsWith(ROOT+'/src/'))return null;
+ const pin=canonical.get(path);assert(pin,'Unpinned canonical loaded source '+path);const bytes=readFileSync(path);assert.equal(bytes.length,pin.bytes);assert.equal(sha(bytes),pin.sha256);
+ if(path!==target)return null;
+ const original=bytes.toString('utf8'),virtual=candidateSource(original);assert.equal(Buffer.byteLength(virtual),spec.virtualCandidate.bytes);assert.equal(sha(Buffer.from(virtual)),spec.virtualCandidate.sha256);assert.equal(virtual.split('export class GpuBoussinesq')[0],original.split('export class GpuBoussinesq')[0]);
+ loads.push({realm,id,canonicalPath:path,originalSha256:spec.original.sha256,virtualSha256:spec.virtualCandidate.sha256});return{code:virtual,map:null};
+}});
+const flags={root:ROOT,configFile:join(ROOT,'vite.config.ts'),configLoader:'runner',cacheDir:cache,build:{outDir:out,copyPublicDir:false,emptyOutDir:false}};
+const terminal={schema:'feed-components-fps-build-terminal/v1',status:'running',runtimeBaseline:source.baseline,buildId:'306258296',readySha256:sha(readFileSync(join(WORK,'ready.json'))),sourceManifestSha256:sha(readFileSync(sourcePath)),baselineReused:true,armManifests:[],sourceBefore:before,sourceAfter:null,sourceLoads:loads,startedAt:new Date().toISOString(),pid:process.pid,failure:null};
+function outputs(dir,prefix=''){const rows=[];for(const item of readdirSync(join(dir,prefix),{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name))){assert(!item.isSymbolicLink(),item.name);const name=posix.join(prefix,item.name);if(item.isDirectory())rows.push(...outputs(dir,name));else if(item.isFile()){const r=record(join(dir,name));rows.push({path:name,bytes:r.bytes,sha256:r.sha256});}}return rows;}
+function saveManifest(arm,metadata){mkdirSync(join(WORK,arm),{recursive:true});const file=join(WORK,arm,'build-manifest.json');writeFileSync(file,JSON.stringify({schema:'feed-components-fps-build-arm/v1',arm,status:'passed',runtimeBaseline:source.baseline,buildId:'306258296',readySha256:terminal.readySha256,sourceManifest:record(sourcePath),literalSourceFiles:554,taskPublicAssetCopies:false,...metadata},null,2)+'\n');terminal.armManifests.push({arm,...record(file)});}
+try{
+ console.log(JSON.stringify({stage:'START',pid:process.pid,buildId:'306258296',canonicalRoot:ROOT,sourceTransformOnly:target}));
+ await build({...flags,plugins:[plugin('main')],worker:{plugins:()=>[plugin('worker')]}});
+ assert(loads.some(p=>p.realm==='worker'),'Canonical GPU candidate was not substituted in real worker compilation');
+ const rows=outputs(out),workers=rows.filter(p=>/^assets\/surfZoneWorker-[^/]+\.js$/.test(p.path));assert.equal(rows.length,11);assert.equal(workers.length,1);const oldWorker=reuse.outputRecords.find(p=>p.path===reuse.surfZoneWorker);assert(oldWorker);assert.notEqual(workers[0].sha256,oldWorker.sha256,'Candidate worker must change');
+ assert.equal(json(join(out,'build.json')).build,'306258296');const html=readFileSync(join(out,'index.html'),'utf8'),scripts=[...html.matchAll(/<script\b[^>]*\btype="module"[^>]*\bsrc="([^"]+)"/g)];assert.equal(scripts.length,1);const client=scripts[0][1].replace(/^\//,'');assert(rows.some(p=>p.path===client));
+ saveManifest('baseline',{outputRoot:reuse.outputRoot,reusedCanonicalCompilation:true,originalCompilation:reuse.originalCompilation,originalBuildTerminal:reuse.originalTerminal,publicAssetCopies:false,inlineBuildFlags:null,clientEntry:reuse.clientEntry,surfZoneWorker:reuse.surfZoneWorker,outputRecords:reuse.outputRecords});
+ saveManifest('candidate',{outputRoot:out,reusedCanonicalCompilation:false,publicAssetCopies:false,inlineBuildFlags:flags,sourceTransform:{...spec,loads},workerPluginFactory:true,clientEntry:client,surfZoneWorker:workers[0].path,outputRecords:rows});
+ terminal.status='passed';console.log(JSON.stringify({stage:'TERMINAL',status:'passed',armManifests:terminal.armManifests,sourceLoads:loads}));
+}catch(error){terminal.status='failed';terminal.failure=String(error);throw error;}
+finally{terminal.sourceAfter=captureAuthority();assert.deepEqual(terminal.sourceAfter,before,'Immutable inputs changed');terminal.endedAt=new Date().toISOString();writeFileSync(join(WORK,'build-terminal.json'),JSON.stringify(terminal,null,2)+'\n');}

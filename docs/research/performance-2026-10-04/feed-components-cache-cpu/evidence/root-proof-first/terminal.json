@@ -1,0 +1,18 @@
+{
+  "schema": "root-feed-components-one-run/v1",
+  "kind": "proof",
+  "command": [
+    "node",
+    "/private/tmp/surf-feed-components-cache-20261004/compiled/proof.mjs",
+    "--run=true"
+  ],
+  "parentPid": 52186,
+  "startedAt": "2026-10-04T07:05:07.726986+00:00",
+  "pins": 67,
+  "outerTimeoutSeconds": 20,
+  "childPid": 52187,
+  "endedAt": "2026-10-04T07:05:10.018926+00:00",
+  "elapsedSeconds": 2.291855707997456,
+  "exitCode": 0,
+  "pinsUnchanged": true
+}

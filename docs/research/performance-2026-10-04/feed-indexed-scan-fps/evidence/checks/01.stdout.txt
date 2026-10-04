@@ -1,0 +1,1 @@
+{"strict":true,"pid":58564,"substitutions":[{"path":"/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts","originalSha256":"ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd","virtualSha256":"ac2b896d945ebdaf8b0530bd3ed515a7701d16c078991d93ca3a5870b3687dd2"}],"sourcePins":667}

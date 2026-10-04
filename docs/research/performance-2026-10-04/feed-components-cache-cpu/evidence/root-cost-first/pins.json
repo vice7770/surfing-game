@@ -1,0 +1,347 @@
+[
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@webgpu/types/dist/index.d.ts",
+    "bytes": 117813,
+    "sha256": "bd08a7d5dc63f6b360c471a05f842a9db40acc0ed685171c272842e614de6e19"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@webgpu/types/package.json",
+    "bytes": 740,
+    "sha256": "c58597e365f42b61a165210e49e90a864730ee4716473de67d36dfa42519ec99"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs",
+    "bytes": 1642,
+    "sha256": "57122bb7de7bf7116dc1d1866ad367753dee6820d55b81a3656d0c2e6c6f79d8"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/package.json",
+    "bytes": 6219,
+    "sha256": "4ac9bd4b57a1470fa4515e479cea7ca78875802b661b87dfc896e216d4cf6869"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+    "bytes": 45,
+    "sha256": "8d5fa5bd883fec0979fc2004f1fe1d99aef40570155d550eadc0b03b55513bf0"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/lib/typescript.js",
+    "bytes": 9112572,
+    "sha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/package.json",
+    "bytes": 3620,
+    "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/package-lock.json",
+    "bytes": 42710,
+    "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/package.json",
+    "bytes": 4917,
+    "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AdvectionStencil.ts",
+    "bytes": 2316,
+    "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AerationField.ts",
+    "bytes": 13174,
+    "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+    "bytes": 18386,
+    "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver.ts",
+    "bytes": 38556,
+    "sha256": "66cdbb3eb83f7d03ade33c11a429889b217d3b81cd6246b6dd5006a40b0e5d79"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Breaking.ts",
+    "bytes": 12851,
+    "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/CrestKinematics.ts",
+    "bytes": 5019,
+    "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/FoamField.ts",
+    "bytes": 8686,
+    "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Overturn.ts",
+    "bytes": 10648,
+    "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/PlungingLip.ts",
+    "bytes": 66165,
+    "sha256": "901f08ec0c4e24167df9321b06c29b221dd86689d9c602d7ae4cd194046ac13b"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Refraction.ts",
+    "bytes": 5965,
+    "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+    "bytes": 8739,
+    "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary.ts",
+    "bytes": 5460,
+    "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver.ts",
+    "bytes": 33545,
+    "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts",
+    "bytes": 10038,
+    "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfMeter.ts",
+    "bytes": 3170,
+    "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.ts",
+    "bytes": 71099,
+    "sha256": "18e7928601d7208d5f7ff1a15a34995f7e63ebeec497dbe7bf7527b06d15948a"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SwellReadout.ts",
+    "bytes": 2110,
+    "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/BreakingFront.ts",
+    "bytes": 39920,
+    "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+    "bytes": 17189,
+    "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/SweptCrash.ts",
+    "bytes": 28953,
+    "sha256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+    "bytes": 9578,
+    "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crashCurve.ts",
+    "bytes": 14166,
+    "sha256": "361183fa14ead52594e1bad25a6a47fd274bc294e8f8c6d5199814e01e4778a9"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestOnset.ts",
+    "bytes": 4651,
+    "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+    "bytes": 14454,
+    "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+    "bytes": 1776,
+    "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/heldOverturn.ts",
+    "bytes": 4886,
+    "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+    "bytes": 15981,
+    "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+    "bytes": 12756,
+    "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+    "bytes": 60183,
+    "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/breakingAge.ts",
+    "bytes": 2861,
+    "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+    "bytes": 3285,
+    "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts",
+    "bytes": 23863,
+    "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/boussinesqWgsl.ts",
+    "bytes": 38276,
+    "sha256": "1b9f973616605f8e3d71e99d599f73497839f3d66bdbfc0bed320545518f173f"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/webgpu-env.d.ts",
+    "bytes": 40,
+    "sha256": "039706dee4c12a5f855fe20b669865a5af1da6e9add02e461a188821aa7a36d1"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+    "bytes": 11917,
+    "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+    "bytes": 424,
+    "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfForecast.ts",
+    "bytes": 3914,
+    "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfZoneState.ts",
+    "bytes": 3955,
+    "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/tubeTable.ts",
+    "bytes": 6876,
+    "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc"
+  },
+  {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/warmStart.ts",
+    "bytes": 6238,
+    "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/build.mjs",
+    "bytes": 2497,
+    "sha256": "f3c591c5da83a1cbb0241de958c82b4d2cfe020389964794347a671a7bc2d8a7"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/common.ts",
+    "bytes": 2864,
+    "sha256": "5249d630f6e2172a050ad6bfed8f39b86d51c2b707773726b9dc8d92693c8f2a"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/cost.ts",
+    "bytes": 7310,
+    "sha256": "17636df2a22995db128955f5bd3df498f2e185d16cc88fc5526b23624827e6fb"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/entry.ts",
+    "bytes": 882,
+    "sha256": "4b432664a538f10d2d0594bebf8bafaee6e5afd52ce109a412b3b4e42d732ae6"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/inputs.json",
+    "bytes": 10473,
+    "sha256": "ca864d90bedc8d2d9d8299dffbda1e85e6459169fdb1c8e1be8ae3ea311624ab"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/mockGpu.ts",
+    "bytes": 5283,
+    "sha256": "88f8d00d89f47166cbe6e0cf28e791eb84f31399589082a4046433fffc4da2c7"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/patch-source.mjs",
+    "bytes": 883,
+    "sha256": "bb9e4f41a550ea5ff27693928a956d5d4dd6717899db94e539e0b4894a17b7c3"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/proof.ts",
+    "bytes": 11289,
+    "sha256": "43f09bf73dcb2b3a3bc01ee2a18685975791f0996d47e6e172e9b7fe36c570b7"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/proposal.md",
+    "bytes": 6058,
+    "sha256": "390eb28fd62f2442ef12bdaee8e2a5275b99918668302a3a57277ecba029441a"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/tsconfig.qa.json",
+    "bytes": 630,
+    "sha256": "f41d788346bd336f35242f4d9d94be6cec3a7fa1bd7f7e65ef751971494de141"
+  },
+  {
+    "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/committed-worker-export.bin.deflate",
+    "bytes": 2423908,
+    "sha256": "dd97ed4b53d1aa78eabdb58534a370e26d03cf553fe1bf26fe18d83d9bad48b3"
+  },
+  {
+    "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/report.json",
+    "bytes": 605120,
+    "sha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/baseline.mjs",
+    "bytes": 721883,
+    "sha256": "be402e6324eb89ee70cefc45497f04c4dfbedf674c422f0dd5e09ab89539c262"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/candidate.mjs",
+    "bytes": 722031,
+    "sha256": "124ec1118ed270ce5f15e337181ef4c33aafa38b99bae7d64d613330f7269586"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/proof.mjs",
+    "bytes": 20370,
+    "sha256": "6cbb30c994c7eb5ee29b4508f05cb0d92e016a1989d490e4e51ae0298d9f58ac"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/cost.mjs",
+    "bytes": 15968,
+    "sha256": "984f28774c435279c5efe60bfcad6ab035266c0792a0b79759723bd16026d416"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/ready.json",
+    "bytes": 15659,
+    "sha256": "a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/compiled.json",
+    "bytes": 970,
+    "sha256": "f7f7f9dec5fcb21b582b7596b6ca1147447bdbfb5700c07693351b62f2123c81"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/proof-first/report.json",
+    "bytes": 4237,
+    "sha256": "1a5b29c7269ed0b10dfecc428bbd46864c30a91f941b21217aa157d2b84e7982"
+  },
+  {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/proof-first/terminal.json",
+    "bytes": 342,
+    "sha256": "281566f81e9609725fea8a497de4f4bf2d7cdf6658aeafdd461b71ee65646244"
+  }
+]

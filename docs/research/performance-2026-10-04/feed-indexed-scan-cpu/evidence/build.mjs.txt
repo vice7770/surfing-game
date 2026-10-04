@@ -1,0 +1,42 @@
+// Parent-reviewed source bundling only. Does not import or execute numerical entries.
+import assert from 'node:assert/strict';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+import { candidateSource } from './patch-source.mjs';
+const WORK = '/private/tmp/surf-feed-indexed-scan-20261004', ROOT = '/Users/regina/Desktop/Projects/surfing-game';
+const sha = b => createHash('sha256').update(b).digest('hex');
+const raw = readFileSync(join(WORK, 'ready.json')), ready = JSON.parse(raw);
+assert.equal(sha(raw), process.env.FEED_INDEXED_READY_SHA256, 'Reviewed ready pin required');
+const pins = new Map(ready.inputs.map(p => [p.path, p]));
+const verify = () => { for (const p of ready.inputs) { const b = readFileSync(p.path); assert.equal(b.length, p.bytes, p.path); assert.equal(sha(b), p.sha256, p.path); } };
+verify();
+assert(!existsSync(join(WORK, 'compiled')) && !existsSync(join(WORK, 'compiled.json')), 'No overwrite');
+const { rolldown } = await import(pathToFileURL(join(ROOT, 'node_modules/rolldown/dist/index.mjs')).href);
+mkdirSync(join(WORK, 'compiled'));
+const outputs = [];
+for (const [name, entry, candidate] of [['candidate', 'entry.ts', true], ['proof', 'proof.ts', false], ['cost', 'cost.ts', false]]) {
+  const build = await rolldown({ input: join(WORK, entry), platform: 'node', external: [/^node:/], plugins: [{
+    name: 'pin-source-and-single-indexed-loop',
+    load(id) {
+      const path = id.split('?')[0];
+      if (path.startsWith(ROOT + '/src/') || path.startsWith(WORK + '/') || path === ready.reusedMock.path) {
+        const p = pins.get(path); assert(p, 'Unpinned loaded source ' + path);
+        const b = readFileSync(path); assert.equal(b.length, p.bytes); assert.equal(sha(b), p.sha256);
+        if (candidate && path === join(ROOT, 'src/wave/SideFeed.ts')) {
+          const patched = candidateSource(b.toString());
+          assert.equal(sha(Buffer.from(patched)), ready.candidateSource.sha256, 'Exact reviewed one-loop source');
+          return { code: patched, map: null };
+        }
+      }
+      return null;
+    },
+  }] });
+  const path = join(WORK, 'compiled/' + name + '.mjs');
+  try { await build.write({ file: path, format: 'esm' }); } finally { await build.close(); }
+  const b = readFileSync(path); outputs.push({ path, bytes: b.length, sha256: sha(b) });
+}
+verify();
+writeFileSync(join(WORK, 'compiled.json'), JSON.stringify({ schema: 'feed-indexed-compiled/v1', readySha256: sha(raw), reusedBaseline: ready.baseline, outputs }, null, 2) + '\n');
+console.log(JSON.stringify({ bundlePrepared: true, noNumericalExecution: true, reusedBaseline: ready.baseline, outputs }));

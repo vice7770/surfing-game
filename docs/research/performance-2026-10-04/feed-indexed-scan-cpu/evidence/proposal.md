@@ -1,0 +1,27 @@
+# Source-only indexed side-feed slot scan
+
+This candidate replaces only the `for-of` scan inside `SideFeed.deviceShape()` with an ascending indexed scan over the same constructor-owned native Float64Array. It retains a fresh scan at every original call, the `weight > 0` predicate, constructor-fixed component count, uniform-writing chronology, queue payloads and all public element mutations. It adds no slot cache, ownership grant, generation counter, shader or simulation change.
+
+The base is canonical runtime b0e003b8670c9d0be83bc9bb24c30b5382a54499. The separately frozen component-cache candidate is unadopted and excluded. If root adopts it later, this preparation stops at changed pins; it must not silently rebase. Root owns canonical source, Git, all checks, execution and adoption. This package is source-only during root's serial native FPS lease; no runtime imports, checks, builds, tests, cost or browser operations have been performed here.
+
+## Reused authority
+
+The independently bundled literal b0 baseline remains external at the original component-cache package, bound by its recorded 721,883-byte SHA. The unchanged memory GPU mock and actual retained input ledger are reused by path and SHA. Only the small adapted harness sources are copied. Canonical source and packages, the held capture report and compressed 2,423,908-byte SET1 export are referenced, not duplicated or expanded during preparation. No broad runtime tree or native FPS closure is copied or altered.
+
+The actual held fixture is Padang Big seed8761, 116,000 cells and 64 components, solverTime52.69999999999905, paused seaTime328.04104655763683. Its committed F32 export is distinct from the earlier incomplete five-draw capture. RATEH and NU are absent and retain constructor defaults. This is a transport fixture, not complete historical F64 state or evolved native viscosity.
+
+## Supported semantics and limits
+
+Native positive numbers including positive subnormals and +Infinity count; zero, -0, NaN, negative numbers and -Infinity do not. Repeated direct element edits, all-zero/restored arrays, window rebuilds and phase changes remain visible without a cache. Source and existing tests expose numerical cell weights, and deviceTables already indexes the same array.
+
+This is not a universal JavaScript equivalence claim for an overridden Symbol.iterator, runtime replacement of the readonly weights property, detached buffers, or prototype monkey-patching. None is a supported observed SideFeed path; the ordinary worker never transfers weights. No cache is justified by readonly array-property syntax.
+
+## Proposed root gates, unexecuted
+
+1. One strict TypeScript, build/transform syntax, source-pinned candidate/proof/cost bundle and unarmed-entry sequence. The baseline is the existing literal b0 module; candidate modifies only SideFeed's uniquely anchored loop. A before/after input ledger rejects any canonical/scratch/fixture/package change. No numerical entry is imported during bundling. Gate commands share a 30-second parent deadline and stop at the first failure.
+2. One proof process with a 20-second outer deadline and fresh retained output. Reuse the nine actual canonical memory-GPU host cases: C1/C7/C64; individual/all-zero/restored weights with and without layout refresh; shifted windows, phase offset and dynamic exported uniforms; zero-slot creation/restoration; no-feed; deferred commit, recognizably returned NU/RATEH and real peak/CFL/plunge feedback, multiple substeps and discard/rebase; map rejection/recovery and diagnostic no-readback; actual held-size initial/steady protocol. Add one focused actual SideFeed case for special F64 weights, exact weight-bit immutability, stable array identity, count5→4→5→0 from direct edits without invalidation, fresh public uniform bytes and full queue/state parity after restoring real weights. Never upload synthetic positive weights at invalid strip-table locations. Ten bounded cases total.
+3. Only after proof passes, one complete ordinary GPU.step CPU cost process, 20-second outer deadline and 15-second internal whole-operation budget. Independently import the same actual held F32 export into two real simulations. Use the unchanged nonrecording mock, eight fixed warm pairs and32 measured AB/BA/BA/AB pairs at1/60 second. Include original conversion, mock queue copies, dynamic slot recomputation, CFL, actual encoding, nine staged readback copies, map microtask, unpack and viscosity/plunge/clock adoption. Compare final exact device/solver bytes, identities and clocks after every pair outside timing. Mock kernels are no-ops; exclude real WGSL, driver stalls, renderer/publication/FPS and post-water physical consumers.
+
+The useful gate requires the stored approximate paired-mean lower95 bound and both order-stratum means above0.1ms, with raw complete-call and stage rows retained. Both forms remain O(N); for-of may already be optimized by the engine. A passing memory-host gate permits only consideration of a distinct native gate. No speedup is currently established. No adaptive samples, retries or unreported repairs. Proof report cap1MiB; cost report cap512KiB; decode cap8MiB. Every failure preserves its first report/logs and leaves later gates unrun.
+
+After root's current native lease closes, root may run gates.py checks, then gates.py proof, then gates.py cost with the exact FEED_INDEXED_READY_SHA256 printed in readiness. This preparation performs none of them.

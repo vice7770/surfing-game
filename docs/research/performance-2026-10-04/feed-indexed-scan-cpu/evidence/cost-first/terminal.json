@@ -1,0 +1,11 @@
+{
+  "valid": true,
+  "readySha256": "dff888a1445e61edf7c96af1148a67c48b07cbde62bcb3b7c5d7c613e6d40d4d",
+  "inputPinsUnchanged": true,
+  "usefulGainPass": true,
+  "report": {
+    "path": "/private/tmp/surf-feed-indexed-scan-20261004/cost-first/report.json",
+    "bytes": 24949,
+    "sha256": "a572a0699ebfe34ff1eeed3146327586ae07153767716067c21f50140aaa9ef0"
+  }
+}

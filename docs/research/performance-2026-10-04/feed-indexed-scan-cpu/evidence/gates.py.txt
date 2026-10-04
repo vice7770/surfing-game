@@ -1,0 +1,76 @@
+"""Root-only later gates. This source is prepared, not executed by its author."""
+import hashlib, json, os, pathlib, subprocess, sys, time
+from datetime import datetime, timezone
+
+work = pathlib.Path('/private/tmp/surf-feed-indexed-scan-20261004')
+kind = sys.argv[1]
+assert len(sys.argv) == 2 and kind in ['checks', 'proof', 'cost']
+sha = lambda raw: hashlib.sha256(raw).hexdigest()
+ready_raw = (work / 'ready.json').read_bytes()
+expected = os.environ['FEED_INDEXED_READY_SHA256']
+assert sha(ready_raw) == expected, 'Reviewed readiness required'
+ready = json.loads(ready_raw)
+pins = ready['inputs'] + [{'path': str(work / 'ready.json'), 'bytes': len(ready_raw), 'sha256': expected}]
+if kind != 'checks':
+    checks = json.loads((work / 'root-checks/terminal.json').read_text())
+    assert checks['valid'] is True and checks['readySha256'] == expected
+    compiled_raw = (work / 'compiled.json').read_bytes()
+    compiled = json.loads(compiled_raw)
+    assert compiled['readySha256'] == expected and compiled['reusedBaseline'] == ready['baseline']
+    pins += compiled['outputs'] + [{'path': str(work / 'compiled.json'), 'bytes': len(compiled_raw), 'sha256': sha(compiled_raw)}]
+if kind == 'cost':
+    proof_raw = (work / 'proof-first/terminal.json').read_bytes()
+    proof = json.loads(proof_raw)
+    assert proof['valid'] is True and proof['readySha256'] == expected
+    pins += [proof['report'], {'path': str(work / 'proof-first/terminal.json'), 'bytes': len(proof_raw), 'sha256': sha(proof_raw)}]
+
+def check():
+    assert (work / 'node_modules').is_symlink() and str((work / 'node_modules').resolve()) == ready['dependenciesDirectory'], 'Pinned dependency link'
+    for p in pins:
+        raw = pathlib.Path(p['path']).read_bytes()
+        assert len(raw) == p['bytes'] and sha(raw) == p['sha256'], p['path']
+
+check()
+out = work / ('root-checks' if kind == 'checks' else 'root-' + kind + '-first')
+assert not out.exists(), 'Preserve first attempt; no overwrite'
+out.mkdir()
+(out / 'pins.json').write_text(json.dumps(pins, indent=2) + '\n')
+now = lambda: datetime.now(timezone.utc).isoformat()
+bound = 30 if kind == 'checks' else 20
+terminal = {'schema': 'root-feed-indexed-gate/v1', 'kind': kind, 'readySha256': expected, 'startedAt': now(), 'parentPid': os.getpid(), 'pins': len(pins), 'outerTimeoutSeconds': bound, 'commands': [], 'valid': False}
+started = time.monotonic()
+names = ['strict', 'buildSyntax', 'transformSyntax', 'bundle', 'unarmedProof', 'unarmedCost'] if kind == 'checks' else ['proof' if kind == 'proof' else 'costOnlyAfterProof']
+exit_code = 1
+try:
+    for index, name in enumerate(names):
+        check()
+        remaining = bound - (time.monotonic() - started)
+        assert remaining > 0, 'Whole root gate deadline'
+        command = ready['commands'][name]
+        row = {'name': name, 'command': command, 'startedAt': now()}
+        with (out / ('command-' + str(index) + '.log')).open('wb') as log:
+            proc = subprocess.Popen(command, cwd=work, env=os.environ.copy(), stdout=log, stderr=subprocess.STDOUT)
+            row['childPid'] = proc.pid
+            try:
+                code = proc.wait(timeout=remaining)
+            except subprocess.TimeoutExpired:
+                proc.kill(); code = proc.wait(); row['timeout'] = True
+        row.update(endedAt=now(), exitCode=code, log=str(out / ('command-' + str(index) + '.log')))
+        terminal['commands'].append(row)
+        check()
+        print(json.dumps(row), flush=True)
+        if code:
+            raise RuntimeError(name + ' failed; remaining commands not run')
+    terminal['valid'] = True
+    exit_code = 0
+except Exception as error:
+    terminal['firstFailure'] = str(error)
+finally:
+    try:
+        check(); terminal['pinsUnchanged'] = True
+    except Exception as error:
+        terminal['pinsUnchanged'] = False; terminal['pinFailure'] = str(error); terminal['valid'] = False; exit_code = 1
+    terminal.update(endedAt=now(), elapsedSeconds=time.monotonic() - started)
+    (out / 'terminal.json').write_text(json.dumps(terminal, indent=2) + '\n')
+    print(json.dumps(terminal), flush=True)
+sys.exit(exit_code)

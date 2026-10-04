@@ -1,0 +1,23 @@
+{
+  "valid": true,
+  "commands": [
+    {
+      "argv": [
+        "node",
+        "--check",
+        "pair-reversed.mjs"
+      ],
+      "exitCode": 0
+    },
+    {
+      "argv": [
+        "node",
+        "pair-reversed.mjs",
+        "--run=false"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "startedAt": "2026-10-04T07:35:00.124790+00:00",
+  "endedAt": "2026-10-04T07:35:00.427157+00:00"
+}

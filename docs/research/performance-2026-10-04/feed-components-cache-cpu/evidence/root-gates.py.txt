@@ -1,0 +1,49 @@
+import hashlib, json, os, pathlib, subprocess, sys, time
+from datetime import datetime, timezone
+
+work = pathlib.Path('/private/tmp/surf-feed-components-cache-20261004')
+ready_path = work / 'ready.json'
+expected = 'a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519'
+ready_raw = ready_path.read_bytes()
+assert hashlib.sha256(ready_raw).hexdigest() == expected
+ready = json.loads(ready_raw)
+out = work / 'root-checks'
+assert not out.exists(), 'Keep first attempt; do not overwrite'
+out.mkdir()
+pins = ready['inputs'] + [{'path':str(ready_path), 'bytes':len(ready_raw), 'sha256':expected}]
+def check():
+    for item in pins:
+        raw = pathlib.Path(item['path']).read_bytes()
+        assert len(raw) == item['bytes'], item['path']
+        assert hashlib.sha256(raw).hexdigest() == item['sha256'], item['path']
+def now():
+    return datetime.now(timezone.utc).isoformat()
+check()
+(out/'pins.json').write_text(json.dumps(pins, indent=2)+'\n')
+env = os.environ.copy()
+env['FEED_COMPONENTS_READY_SHA256'] = expected
+terminal = {'schema':'root-feed-components-cpu-gates/v1', 'startedAt':now(), 'pid':os.getpid(), 'pins':len(pins), 'commands':[], 'valid':False}
+started = time.monotonic()
+names = ['strict','buildSyntax','transformSyntax','bundle','unarmedProof','unarmedCost']
+try:
+    for index, name in enumerate(names):
+        check()
+        command = ready['commands'][name]
+        entry = {'name':name, 'command':command, 'startedAt':now()}
+        with (out/('command-'+str(index)+'.log')).open('wb') as log:
+            result = subprocess.run(command, cwd=work, env=env, stdout=log, stderr=subprocess.STDOUT, timeout=30)
+        entry.update(endedAt=now(), exitCode=result.returncode, log=str(out/('command-'+str(index)+'.log')))
+        terminal['commands'].append(entry)
+        check()
+        print(json.dumps(entry), flush=True)
+        if result.returncode:
+            raise RuntimeError(name+' failed; remaining commands were not run')
+    terminal['valid'] = True
+except Exception as error:
+    terminal['firstFailure'] = str(error)
+finally:
+    check()
+    terminal.update(endedAt=now(), elapsedSeconds=time.monotonic()-started, pinsUnchanged=True)
+    (out/'terminal.json').write_text(json.dumps(terminal,indent=2)+'\n')
+    print(json.dumps(terminal),flush=True)
+sys.exit(0 if terminal['valid'] else 1)

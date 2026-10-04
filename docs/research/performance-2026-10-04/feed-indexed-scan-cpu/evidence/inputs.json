@@ -1,0 +1,28 @@
+{
+  "schema": "feed-indexed-inputs/v1",
+  "canonicalRuntimeCheckpoint": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+  "reusedSourceReadiness": {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/ready.json",
+    "bytes": 15659,
+    "sha256": "a090e34a3addf2502d8df652228a90aa96d35ab10229222d704e111279e32519"
+  },
+  "reusedCompiledBaseline": {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/compiled/baseline.mjs",
+    "bytes": 721883,
+    "sha256": "be402e6324eb89ee70cefc45497f04c4dfbedf674c422f0dd5e09ab89539c262"
+  },
+  "reusedHeldInputAuthority": {
+    "path": "/private/tmp/surf-feed-components-cache-20261004/inputs.json",
+    "bytes": 10473,
+    "sha256": "ca864d90bedc8d2d9d8299dffbda1e85e6459169fdb1c8e1be8ae3ea311624ab"
+  },
+  "capture": {
+    "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/report.json",
+    "bytes": 605120,
+    "sha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988"
+  },
+  "noOriginalPackageMutation": true,
+  "noFixturesCopiedOrExpanded": true,
+  "ownerPerformedRuntimeImportsOrChecks": false,
+  "semanticScope": "Constructor-owned native non-detached Float64Array, ordinary numeric entries and public between-call element mutations; not customized iterators, readonly bypass/replacement, detached buffers or prototype monkey-patching."
+}

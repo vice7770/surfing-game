@@ -1,0 +1,56 @@
+{
+  "schema": "feed-indexed-native-root-coordination/v1",
+  "decision": "HOLD",
+  "adopted": false,
+  "runtimeUnchanged": true,
+  "unusedAdoptionChecksExecuted": false,
+  "rootSessions": {
+    "CPU": {
+      "session": 10126,
+      "closedCode": 0
+    },
+    "AB": {
+      "session": 90735,
+      "closedCode": 0
+    },
+    "BA": {
+      "session": 91537,
+      "closedCode": 0
+    }
+  },
+  "actualEvidence": {
+    "CPU": {
+      "path": "/private/tmp/surf-feed-indexed-fps-20261004/checks/terminal.json",
+      "bytes": 13694,
+      "sha256": "2b9c2e42ceef81891889e6886b181ba4c5e2abf95e43e333f4c5eaff4ecfb292"
+    },
+    "AB": {
+      "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run/report.json",
+      "bytes": 20587,
+      "sha256": "553364db1f5882c412e0ec5c153a131f9e888f37e3ce43d86e8245290052d425"
+    },
+    "BA": {
+      "path": "/private/tmp/surf-feed-indexed-fps-20261004/root-run-reversed/report.json",
+      "bytes": 23776,
+      "sha256": "0da1a639aad8f969701a8268422075c46318fb0a75aeb4f6f78f0902d3c0514f"
+    },
+    "reversedChecks": {
+      "path": "/private/tmp/surf-feed-indexed-fps-20261004/reversed-checks/terminal.json",
+      "bytes": 386,
+      "sha256": "1d75ab701f6421007e993657733bb65289c017d8ccf3dc44c469d9ca7a6fa944"
+    },
+    "ABIndependentClosure": {
+      "path": "/private/tmp/surf-feed-indexed-fps-20261004/independent-closure.json",
+      "bytes": 502,
+      "sha256": "7c633440cb2417388ca00ecc0fa52069f2f19fad376feffafb1221edfeb35765"
+    },
+    "BAIndependentClosure": {
+      "path": "/private/tmp/surf-feed-indexed-fps-20261004/independent-reversed-closure.json",
+      "bytes": 502,
+      "sha256": "cb2959cd596bcfa335414996f5e2728a1e558f9dc531d1532b72911be2ec9068"
+    }
+  },
+  "port5173Untouched": true,
+  "noNewNativeClosureToolExecutionByArchiveWorker": true,
+  "noNumericalOrNativeRerunByArchiveWorker": true
+}
