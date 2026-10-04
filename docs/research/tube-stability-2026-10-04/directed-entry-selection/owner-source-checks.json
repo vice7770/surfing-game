@@ -1,0 +1,33 @@
+{
+  "passed": 5,
+  "failed": 0,
+  "resourcesStarted": false,
+  "sourceSha256": "f1436518dcdd7f975ea4fe141c11625a23d0ee10968fdf62e5895b53cc7d78a0",
+  "checks": [
+    "all-phase steering bounds and locked front",
+    "invalid steering/front/crossing rejection",
+    "actual-column movie gate excludes curl proxy",
+    "artifact count and byte bounds",
+    "published sea counter checks"
+  ],
+  "steering": {
+    "allInputPhasesBounded": true,
+    "targetedInputs": 3,
+    "lockedFront": 7,
+    "maximumAbsoluteActualSteer": 0.02,
+    "maximumSteerDelta": 0.006666666666666667,
+    "maximumAbsolute": 0.2,
+    "slewRatePerSecond": 0.4
+  },
+  "extractedFunctions": [
+    "artifact_names_check",
+    "clock_equal",
+    "finite_number",
+    "integer",
+    "movie_gate",
+    "png_caps_check",
+    "sea_counters_check",
+    "steering_check"
+  ],
+  "scope": "Pure mocked owner checks only; no actual trajectory, TCP connection, native process, cleanup or body passage proof"
+}

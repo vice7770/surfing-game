@@ -1,0 +1,33 @@
+{
+  "nativeSession": 66575,
+  "terminalExitCode": 0,
+  "steps": 545,
+  "physicalSeconds": 9.083333333333334,
+  "phases": {
+    "prone": 544,
+    "fallen": 1
+  },
+  "firstStanding": null,
+  "stop": {
+    "kind": "first-published-fall-or-separation",
+    "step": 545,
+    "phase": "fallen",
+    "separation": "lost board",
+    "resets": 0
+  },
+  "popupPulses": 0,
+  "targetedInputs": 0,
+  "qualifiedTargets": 0,
+  "eligibleRowPairObservations": 10755,
+  "faceEligibilityRejectedObservations": 10755,
+  "coarseAirRejections": 0,
+  "coarseCandidates": 0,
+  "exactColumnChecks": 0,
+  "detectorMilliseconds": 2231.5999990701675,
+  "maximumAbsoluteAppliedSteer": 0,
+  "browserErrors": [],
+  "entryOrClearanceAccepted": false,
+  "movieTriggered": false,
+  "scope": "All10755 eligible joined-row-pair observations were rejected by forward-face/normal eligibility BEFORE air-height generation. No height or exact air column was tested. These repeated row observations are not distinct openings. No target meant no popup or target steer under declared policy; this does not prove failed takeoff physics, insufficient opening height or absence of all playable openings.",
+  "nextAction": "Audit geometric crest coordinates and rejection reason (normal validity/dot, behind crest, >14m ahead) separately before another input or spawn change."
+}

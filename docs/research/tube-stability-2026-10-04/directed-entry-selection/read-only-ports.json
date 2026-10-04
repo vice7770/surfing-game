@@ -1,0 +1,27 @@
+{
+  "resourcesStarted": false,
+  "readOnlyTcpOnly": true,
+  "time": "2026-10-04T19:48:14.927896+00:00",
+  "ports": {
+    "4293": {
+      "closed": null,
+      "reason": "[Errno 1] Operation not permitted"
+    },
+    "9703": {
+      "closed": null,
+      "reason": "[Errno 1] Operation not permitted"
+    },
+    "4310": {
+      "closed": null,
+      "reason": "[Errno 1] Operation not permitted"
+    },
+    "4311": {
+      "closed": null,
+      "reason": "[Errno 1] Operation not permitted"
+    },
+    "4312": {
+      "closed": null,
+      "reason": "[Errno 1] Operation not permitted"
+    }
+  }
+}

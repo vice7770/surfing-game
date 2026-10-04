@@ -1,0 +1,42 @@
+{
+  "complete": true,
+  "resourcesStarted": false,
+  "pureExtractedOwnerChecks": {
+    "verify_copy": true,
+    "verify_production_inputs": true,
+    "verify_sources": true
+  },
+  "assets": 50,
+  "productionInputs": 327,
+  "preparation": {
+    "file": "/private/tmp/tube-directed-entry-20261004/preparation.json",
+    "bytes": 24152,
+    "sha256": "23fedaaad9d2163b69db388873066d2a50e78b20e1c2140bcda6b35a19c50162"
+  },
+  "native": {
+    "file": "/private/tmp/tube-directed-entry-20261004/native.mjs",
+    "bytes": 33248,
+    "sha256": "7cebcf65fc023bb703748807738d0874ee1316a4b46b975181f56d8e0596df0d"
+  },
+  "owner": {
+    "file": "/private/tmp/tube-directed-entry-20261004/run.py",
+    "bytes": 26135,
+    "sha256": "f1436518dcdd7f975ea4fe141c11625a23d0ee10968fdf62e5895b53cc7d78a0"
+  },
+  "bodyWitnesses": {
+    "file": "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs",
+    "bytes": 11626,
+    "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+  },
+  "selector": {
+    "file": "/private/tmp/tube-directed-entry-20261004/tube-target.mjs",
+    "bytes": 8503,
+    "sha256": "20cc5f415c38961886f678cf9a678cbe15d8d7e1401857f397c994ef219f8090"
+  },
+  "policy": {
+    "file": "/private/tmp/tube-directed-entry-20261004/policy.json",
+    "bytes": 3473,
+    "sha256": "16bf327aa5878c25e315cb1c19dbff94936c14ea2c7f419df98385dd9ca48f19"
+  },
+  "nativeOutputStillAbsent": true
+}

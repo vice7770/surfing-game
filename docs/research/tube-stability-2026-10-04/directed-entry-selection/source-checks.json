@@ -1,0 +1,51 @@
+{
+  "complete": true,
+  "frozenPreparationOnly": true,
+  "resourcesStarted": false,
+  "productionInputs": 327,
+  "copiedAssets": 50,
+  "sourceContentsUnchanged": true,
+  "builtAssetsUnchanged": true,
+  "originalBodyWitnessLogicUnchanged": true,
+  "helperMockPassed": 21,
+  "checks": {
+    "helper-fixtures.json": {
+      "passed": 10,
+      "receipt": {
+        "file": "/private/tmp/tube-directed-entry-20261004/helper-fixtures.json",
+        "bytes": 1209,
+        "sha256": "ea561cddff7d752baf6071e7097126b53d22fa4bb1ba20ed51e3de4eadaf69b2"
+      }
+    },
+    "installed-driver-fixtures.json": {
+      "passed": 6,
+      "receipt": {
+        "file": "/private/tmp/tube-directed-entry-20261004/installed-driver-fixtures.json",
+        "bytes": 61738,
+        "sha256": "9bba884cc49a5e0c6d059d5628d37865dfd0b126287e4468e780b5264effb6ca"
+      }
+    },
+    "owner-source-checks.json": {
+      "passed": 5,
+      "receipt": {
+        "file": "/private/tmp/tube-directed-entry-20261004/owner-source-checks.json",
+        "bytes": 968,
+        "sha256": "b253268eb6200f8bb5abbcd7bfe8ff04b786af6abf7519e8138ec103e47f864d"
+      }
+    }
+  },
+  "finitePlan": {
+    "file": "/private/tmp/tube-directed-entry-20261004/dry-plan.json",
+    "bytes": 1111,
+    "sha256": "03403a4d914f0e75d8c0cc92ea8b7982d0afeb85e1fe69c7c96ba65f2e16fea6"
+  },
+  "readOnlyPorts": {
+    "file": "/private/tmp/tube-directed-entry-20261004/read-only-ports-escalated.json",
+    "bytes": 495,
+    "sha256": "9d1471cff36013ecbf1e192f3a172dadb523c5ae273480c9a449aa28672e74bb"
+  },
+  "diagnosticInputSourceChecksPassed": true,
+  "originalLauncherUnchanged": true,
+  "allThreeUserPortsPreservedByContract": true,
+  "goalComplete": false
+}

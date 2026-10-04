@@ -1,0 +1,12 @@
+{
+  "readOnly": true,
+  "head": "9f50d677ba6a4faaed4c50a9a2f80c835d1e6c2b",
+  "productionCount": 327,
+  "copied327ContentsMatchRepository": true,
+  "mismatches": [],
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-directed-entry-20261004/candidate-source-frozen.json",
+    "bytes": 76493,
+    "sha256": "232ef050a36bc6b8ee89c201301fdb467295727f9598be44b0b497b9612be880"
+  }
+}

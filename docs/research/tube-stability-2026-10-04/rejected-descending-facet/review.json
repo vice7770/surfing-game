@@ -1,0 +1,225 @@
+{
+  "schema": "rejected-descending-facet-archive-review/v1",
+  "scope": "Stored offline evidence only; no evaluation, source reconstruction, imports or native rerun during archival.",
+  "consumerReady": false,
+  "productionAdopted": false,
+  "nativeAdopted": false,
+  "fixedRecipeUntuned": true,
+  "outcome": {
+    "captured": {
+      "attempted": 5,
+      "valid": 5,
+      "invalid": 0,
+      "activeDistinctTipThroat": 5,
+      "allValidFinite": true,
+      "allValidAnchorsRestExact": true,
+      "beforeCrossedAmongValid": 0,
+      "afterCrossedAmongValid": 0,
+      "newPairSamples": 0,
+      "cleanBecomesCrossed": 0,
+      "pairCountIncrease": 0,
+      "pairCountDecrease": 0,
+      "newZeroEdgeSamples": 0,
+      "newZeroEdges": 0,
+      "facetMarginOutsideSamples": 0,
+      "capFloorNonpositiveSamples": 0,
+      "newCapFloorContactFromClear": 0
+    },
+    "capturedRanges": {
+      "sheetThickness": [
+        0.2401426569504296,
+        0.2502737811298165
+      ],
+      "minimumOffsetEdgeFraction": [
+        0.7986014713809825,
+        0.8329615878928287
+      ],
+      "minimumCapFloorGap": [
+        0.309712494933869,
+        0.6846243675148936
+      ],
+      "maximumTurn": 54.85759841123762,
+      "maximumThroatJoinTurn": 1.290255416890664,
+      "maximumZeroReachSurfaceDisplacement": null,
+      "zeroReachChangedSurfaceCount": 0,
+      "zeroReachMaximumJoinTurn": null
+    },
+    "allRawFrames": {
+      "attempted": 1224,
+      "valid": 1224,
+      "invalid": 0,
+      "activeDistinctTipThroat": 348,
+      "allValidFinite": true,
+      "allValidAnchorsRestExact": true,
+      "beforeCrossedAmongValid": 23,
+      "afterCrossedAmongValid": 3,
+      "newPairSamples": 1,
+      "cleanBecomesCrossed": 0,
+      "pairCountIncrease": 1,
+      "pairCountDecrease": 20,
+      "newZeroEdgeSamples": 0,
+      "newZeroEdges": 0,
+      "facetMarginOutsideSamples": 154,
+      "capFloorNonpositiveSamples": 0,
+      "newCapFloorContactFromClear": 0
+    },
+    "allRawFrameRanges": {
+      "sheetThickness": [
+        3.5863766000602125e-06,
+        0.04939999748021365
+      ],
+      "minimumOffsetEdgeFraction": [
+        0.7499999999999908,
+        0.9999802176081117
+      ],
+      "minimumCapFloorGap": [
+        0.0007148547614334241,
+        0.2878762630445413
+      ],
+      "maximumTurn": 145.45663317364634,
+      "maximumThroatJoinTurn": 100.95030011603544,
+      "maximumZeroReachSurfaceDisplacement": 0.42244261570241953,
+      "zeroReachChangedSurfaceCount": 876,
+      "zeroReachMaximumJoinTurn": 100.95030011603544
+    },
+    "jointAfterRawF32Interpolation": {
+      "attempted": 3648,
+      "valid": 3648,
+      "invalid": 0,
+      "activeDistinctTipThroat": 1089,
+      "allValidFinite": true,
+      "allValidAnchorsRestExact": true,
+      "beforeCrossedAmongValid": 64,
+      "afterCrossedAmongValid": 7,
+      "newPairSamples": 3,
+      "cleanBecomesCrossed": 0,
+      "pairCountIncrease": 2,
+      "pairCountDecrease": 57,
+      "newZeroEdgeSamples": 0,
+      "newZeroEdges": 0,
+      "facetMarginOutsideSamples": 399,
+      "capFloorNonpositiveSamples": 1,
+      "newCapFloorContactFromClear": 0
+    },
+    "pretransformThenF32InterpolationDiagnostic": {
+      "attempted": 3648,
+      "valid": 3648,
+      "invalid": 0,
+      "activeDistinctTipThroat": 1089,
+      "allValidFinite": true,
+      "allValidAnchorsRestExact": true,
+      "beforeCrossedAmongValid": 64,
+      "afterCrossedAmongValid": 20,
+      "newPairSamples": 16,
+      "cleanBecomesCrossed": 12,
+      "pairCountIncrease": 16,
+      "pairCountDecrease": 56,
+      "newZeroEdgeSamples": 0,
+      "newZeroEdges": 0,
+      "facetMarginOutsideSamples": 444,
+      "capFloorNonpositiveSamples": 0,
+      "newCapFloorContactFromClear": 0
+    },
+    "allCapturedCrouchedTargetPass": false,
+    "allCapturedGenerousTargetPass": false,
+    "allCapturedAnalyticThicknessBandPass": true,
+    "production12HashesUnchanged": true,
+    "authoritativeOrder": "raw case/time/held-profile interpolation -> joint Hermite/facet construction -> F32 result",
+    "consumerReady": false,
+    "nativeAdopted": false,
+    "newPathologyInAuthoritativeOrder": true,
+    "velocity": {
+      "samples": 1216,
+      "materialTipVelocityAlwaysExactlyUnchanged": true,
+      "maximumVertexSpeedRatio": 5.270411782866567,
+      "maximumRatioSample": {
+        "case": "periodic-reef42-l12",
+        "frames": [
+          2,
+          3
+        ],
+        "sourceMaximumVertexSpeed": 0.7843741080557181,
+        "candidateMaximumVertexSpeed": 4.133974541272311,
+        "ratio": 5.270411782866567,
+        "tipVelocityExactlyUnchanged": true
+      }
+    }
+  },
+  "capturedMeasurements": [
+    {
+      "row": 124,
+      "width113": 1.214750454011734,
+      "width160": 0.5332147536810772,
+      "maximumGap": 1.663035677082744,
+      "maximumTurnDegrees": 50.56212250420596
+    },
+    {
+      "row": 125,
+      "width113": 1.3414100821469899,
+      "width160": 0.6772156729931973,
+      "maximumGap": 1.691466024323594,
+      "maximumTurnDegrees": 45.244451559032335
+    },
+    {
+      "row": 126,
+      "width113": 1.4097046502426402,
+      "width160": 0.6930163154348292,
+      "maximumGap": 1.687853318456721,
+      "maximumTurnDegrees": 54.17540151497689
+    },
+    {
+      "row": 127,
+      "width113": 1.4364744748878744,
+      "width160": 0.7798174655148784,
+      "maximumGap": 1.7049669542964838,
+      "maximumTurnDegrees": 54.707191460831
+    },
+    {
+      "row": 128,
+      "width113": 1.453912113752096,
+      "width160": 0.8159327048037834,
+      "maximumGap": 1.7108379455421123,
+      "maximumTurnDegrees": 54.85759841123762
+    }
+  ],
+  "crouchedTargetPassed": 4,
+  "generousTargetPassed": 0,
+  "rawNewOver90TurnFrames": 27,
+  "zeroReachFrames": 876,
+  "allZeroReachRoofsChanged": true,
+  "maximumZeroReachDisplacementH0": 0.42244261570241953,
+  "facetMarginClassification": {
+    "raw": {
+      "outsideCountRecordedByFrozenEvaluator": 154,
+      "active": 0,
+      "zeroReach": 154,
+      "minimumRecordedMargin": -1.734723475976807e-18
+    },
+    "afterRawInterpolation": {
+      "outsideCountRecordedByFrozenEvaluator": 399,
+      "active": 0,
+      "zeroReach": 399,
+      "minimumRecordedMargin": -3.469446951953614e-18
+    },
+    "pretransformDiagnostic": {
+      "outsideCountRecordedByFrozenEvaluator": 444,
+      "active": 14,
+      "zeroReach": 430,
+      "minimumRecordedMargin": -0.00024077110803947155
+    }
+  },
+  "startEndProductionHashesMatchedBeforeIntentionalRestoration": true,
+  "immutable12SourceBaselineMatched": true,
+  "motivation": "Shared 32..112 analytic face/curl and explicit formation/open/sealing/retirement lifecycle, with coherent geometry-derived channels. This motivates broader representation work; it is not success or adoption.",
+  "limits": [
+    "No production/consumer/native/body/board/path integration or acceptance.",
+    "Zero-reach outer non-curl geometry is deliberately reconstructed; this is measured rather than silently preserved.",
+    "The new cap can lie below original64 and hit the floor earlier; authoredTD cannot be treated as physical cap impact.",
+    "Tip64 material velocity is unchanged, but new cap/roof material flow and contact clocks require explicit consumer review.",
+    "Case scaling7m is illustrative, actual captured outlines are metres.",
+    "Incoming crest31 absent in captures; outgoing32->33 substituted and labeled.",
+    "Proper crossings omit endpoint/collinear/volume tests.",
+    "Fixed adjacent-time grids do not prove arbitrary cross-case/alongshore/3D continuity.",
+    "Per-query construction needs runtime cost assessment and matching fresh derived caches before any implementation."
+  ]
+}

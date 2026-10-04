@@ -1,0 +1,84 @@
+{
+  "schema": "rejected-descending-facet-original-inventory/v1",
+  "originalRoot": "/private/tmp/tube-descending-facet-profile-20261004",
+  "originalFiles": {
+    "README.md": {
+      "bytes": 2996,
+      "sha256": "d43e07f339b9f314ca4212125da8e4d77c1aa97f842d3578a423135518efd681"
+    },
+    "__pycache__/prototype.cpython-314.pyc": {
+      "bytes": 30731,
+      "sha256": "12868d097fad623cd50fb6af843d6b3a5a0fddd80733dba660fca4eb7725a165"
+    },
+    "captured-profile-comparison.png": {
+      "bytes": 174473,
+      "sha256": "b356c3f05dff8d0b5a9669f0234bff6a856bbe9b53f379b487f9812059b55313"
+    },
+    "causal-analysis-and-next-scope.md": {
+      "bytes": 10788,
+      "sha256": "bf7ad69a3830079067fdcf2817a69bd22d841383ab1cf0dcdc574f586875a2ce"
+    },
+    "causal-diagnostics.json": {
+      "bytes": 295932,
+      "sha256": "6d6da3a0d9e6bd694bfeb248739149c57675a331bf33dd550dc0cbea1b3ec714"
+    },
+    "diagnostics.py": {
+      "bytes": 8886,
+      "sha256": "923b8e6b7cc899771e03598f59cbc9a8de1e781a921f29dfa75038dada04712c"
+    },
+    "evaluate.py": {
+      "bytes": 16315,
+      "sha256": "3b0c0d6b4d97470edf7448c2ba8fe8eb68bc7ece07b464f6f8ac80e6240a0183"
+    },
+    "evaluation-output.jsonl": {
+      "bytes": 16005,
+      "sha256": "21d886c7f61ed29f37d3b89acc20a0f7e6a5c06d7b9c5527238ccb578120b1cb"
+    },
+    "evaluation-start.json": {
+      "bytes": 3277,
+      "sha256": "b7e2628565f87d0aa0440be637af7a4d57894d63664698c0acd6be39e8cbddd2"
+    },
+    "failure-profile-comparison.png": {
+      "bytes": 120701,
+      "sha256": "4dd3b92f86876e04bd2395468b720bef1be89daeb951a58c921a3ca976fad826"
+    },
+    "failure-profiles.json": {
+      "bytes": 208134,
+      "sha256": "96abd04b48f0eeb194b77737d563cc39d259c682d0491a2b920cd2bad55f860f"
+    },
+    "immutable-source-baseline.json": {
+      "bytes": 8003,
+      "sha256": "42cfbbbe0f5655fb3d35c926039669d23310e84c1f88c8469154c3b3e456b58e"
+    },
+    "manifest.json": {
+      "bytes": 3683,
+      "sha256": "ffbd8c52141315dcb9965cf2b59644fedda73d0e6a464105be8a6d7645c253ba"
+    },
+    "plot.py": {
+      "bytes": 6150,
+      "sha256": "4eeca76fa244ce7177e9a02c415a01abaefaac2eab5965ce6c93f838105d3a99"
+    },
+    "prototype.py": {
+      "bytes": 11815,
+      "sha256": "f75b758185b37f97ed5583176273ce62d83fb991e83681e5cf049c9354c5ac96"
+    },
+    "recipe.md": {
+      "bytes": 8033,
+      "sha256": "5b9327f59eac80bb7dcfb52e9f963cb6ef395e4de99d29ae81c5783580ad1b57"
+    },
+    "report.json": {
+      "bytes": 8784384,
+      "sha256": "94ddcf5f50f3811756cd76b02e10a67e90fd34cb9ff05e9d10452efd0d44b479"
+    },
+    "report.json.gz": {
+      "bytes": 1051400,
+      "sha256": "1baf6ea24463e24a1d5d01ec1d2417b743d37a261243c1b4c7877dae8bfbbcf8"
+    },
+    "summary.json": {
+      "bytes": 65421,
+      "sha256": "45a95a6c69b9b4ecbb6e17a33ec4652b64326907ef7bd7028cf8d13dc4a6f688"
+    }
+  },
+  "beforeAfterSame": true,
+  "scope": "Byte-only read of originals; no imports, reconstruction or evaluations. Existing __pycache__ is inventoried but not duplicated."
+}

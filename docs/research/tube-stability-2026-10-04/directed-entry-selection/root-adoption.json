@@ -1,0 +1,23 @@
+{
+  "files": [
+    {
+      "file": "src/wave/SurfZoneSimulation.ts",
+      "beforeSha256": "18e7928601d7208d5f7ff1a15a34995f7e63ebeec497dbe7bf7527b06d15948a",
+      "adoptedSha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+    },
+    {
+      "file": "src/wave/SurfZoneSimulation.test.ts",
+      "beforeSha256": "6b49a17db4d32c87ac4d7dfd49af7121233888f2afc5332c48113cfcd2d34d34",
+      "adoptedSha256": "58d44cfc1f7db444b5d51239fb4901e8fe5eefb7fb0d83e91e30fef85ec3a690"
+    },
+    {
+      "file": "src/wave/barrel/BreakingFront.test.ts",
+      "beforeSha256": "a2e2f9517cb47b31d396dda7e6a61d5d4237843d53c828d57aaf07e5b143bb3f",
+      "adoptedSha256": "e3c815d4e4cadca59826e7b42a99ab7cb71282211a35d13eda9d82aa5307905a"
+    }
+  ],
+  "nativeCompleted": true,
+  "nativeExitCode": 0,
+  "startupAccepted": true,
+  "tubeQualityAccepted": false
+}

@@ -1,0 +1,54 @@
+{
+  "patchSha256": "81b6b31a829c5d385684380cf3953ebd7b3be126a9704b65387b1b2f79ee9c6f",
+  "all12ArchivedSourcesEqualLive": true,
+  "files": [
+    {
+      "file": "src/physics/PhysicalSurfWater.test.ts",
+      "candidateSha256": "e93c6af2769119f076234b288ac0b4fd72c799dcb0b955c16d1cdfe3815f09bf"
+    },
+    {
+      "file": "src/wave/barrel/ProfileLibrary.ts",
+      "candidateSha256": "51e3d15ce21a13e4fa50280d9d06027f969bca5b46681454bf39ddcc7060f8cf"
+    },
+    {
+      "file": "src/wave/barrel/barrelLibrary.test.ts",
+      "candidateSha256": "2cb8b61cf45997ee48ad9d4158f449a1c581e31ca1df1945c9a2b2842c6ea19c"
+    },
+    {
+      "file": "src/wave/barrel/barrelLibrary.ts",
+      "candidateSha256": "d0a15a5d25e44520b50322349ec0c77a4e4bf1b80c770353bc16a3c33588fcf7"
+    },
+    {
+      "file": "src/wave/barrel/crashCurve.test.ts",
+      "candidateSha256": "93ecc0d466227cbec335672f6f9082f57c5bc7b82ddb6bb1df159bb945783b7a"
+    },
+    {
+      "file": "src/wave/barrel/crashCurve.ts",
+      "candidateSha256": "0c67238b1b68b2dc60fff93ba3f62f0ea49e591c0701ed1e6d1070542975e1fb"
+    },
+    {
+      "file": "src/wave/barrel/sweptContact.test.ts",
+      "candidateSha256": "070e102892246e76095165a83da973001cfc023d400632a3f82c873545af2f65"
+    },
+    {
+      "file": "src/wave/barrel/sweptContact.ts",
+      "candidateSha256": "eb13808a5549a8e74a225a96e17a739cd15b3997ab7b9f475ffe2baa8d402236"
+    },
+    {
+      "file": "src/wave/barrel/sweptLoft.test.ts",
+      "candidateSha256": "bf4db2be984c3db4d98a826faff41d291fdb1418d737c33050bb7f68061774cb"
+    },
+    {
+      "file": "src/wave/barrel/sweptLoft.ts",
+      "candidateSha256": "3a45525b9e5c302e3c94d46162f174f7acae3cd51230506c7b4804d833899860"
+    },
+    {
+      "file": "src/wave/barrel/rolledCurl.test.ts",
+      "candidateSha256": "0a3a075443dfffb297a4cb7cb8f6bf0bc263364ab3a57b754714327d74cc6ac0"
+    },
+    {
+      "file": "src/wave/barrel/rolledCurl.ts",
+      "candidateSha256": "78ff57e175da1dd4acfc840f93bfe5dd67e7ec5aff9c0bcef3d0f66ff8a61ae3"
+    }
+  ]
+}

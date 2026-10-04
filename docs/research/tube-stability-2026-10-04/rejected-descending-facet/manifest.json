@@ -1,0 +1,439 @@
+{
+  "schema": "rejected-descending-facet-evidence-archive/v1",
+  "scope": "Exact frozen trial evidence and lossless transport. Byte-only packaging/verification; no prototype/game import, numerical/native rerun or adoption.",
+  "manifestExcludedFromOwnInventory": true,
+  "originalScratch": "/private/tmp/tube-descending-facet-profile-20261004",
+  "originalScratchPreserved": true,
+  "sourceAdoptionRewritten": false,
+  "consumerReady": false,
+  "productionAdopted": false,
+  "nativeAdopted": false,
+  "originalPayloadFiles": 19,
+  "storedFilesExcludingManifest": 24,
+  "storedBytesExcludingManifest": 1560987,
+  "files": {
+    "README.md": {
+      "storedReceipt": {
+        "bytes": 4653,
+        "sha256": "35984e9dfba31caa29ad122c368c3060f29ce2fbc9334eb155c305a45027fe8e"
+      },
+      "encoding": "identity",
+      "authoredForArchive": true
+    },
+    "baseline/receipt.json": {
+      "storedReceipt": {
+        "bytes": 2015,
+        "sha256": "ac41208d789d804375b943b01b2aa8e09175f46df16ccaa321fb80e98117d424"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-rejected-live-source-verification-20261004/receipt.json"
+      ],
+      "originalReceipt": {
+        "bytes": 2015,
+        "sha256": "ac41208d789d804375b943b01b2aa8e09175f46df16ccaa321fb80e98117d424"
+      }
+    },
+    "baseline/restoration.json": {
+      "storedReceipt": {
+        "bytes": 1899,
+        "sha256": "5e26e73b57bab5adef44acb556ae0b63af970e182ae8b447863ffa670c744ddb"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-rejected-live-source-verification-20261004/restoration.json"
+      ],
+      "originalReceipt": {
+        "bytes": 1899,
+        "sha256": "5e26e73b57bab5adef44acb556ae0b63af970e182ae8b447863ffa670c744ddb"
+      }
+    },
+    "captured-profile-comparison.png": {
+      "storedReceipt": {
+        "bytes": 174473,
+        "sha256": "b356c3f05dff8d0b5a9669f0234bff6a856bbe9b53f379b487f9812059b55313"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/captured-profile-comparison.png"
+      ],
+      "originalReceipt": {
+        "bytes": 174473,
+        "sha256": "b356c3f05dff8d0b5a9669f0234bff6a856bbe9b53f379b487f9812059b55313"
+      }
+    },
+    "causal-analysis-and-next-scope.md": {
+      "storedReceipt": {
+        "bytes": 10788,
+        "sha256": "bf7ad69a3830079067fdcf2817a69bd22d841383ab1cf0dcdc574f586875a2ce"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/causal-analysis-and-next-scope.md"
+      ],
+      "originalReceipt": {
+        "bytes": 10788,
+        "sha256": "bf7ad69a3830079067fdcf2817a69bd22d841383ab1cf0dcdc574f586875a2ce"
+      }
+    },
+    "causal-diagnostics.json.gz": {
+      "storedReceipt": {
+        "bytes": 37703,
+        "sha256": "ea92a8e69a534888f3ecd90ff9bb50c6f63cc43cfa910153c1c242b783082487"
+      },
+      "encoding": "gzip",
+      "decodedReceipt": {
+        "bytes": 295932,
+        "sha256": "6d6da3a0d9e6bd694bfeb248739149c57675a331bf33dd550dc0cbea1b3ec714"
+      },
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/causal-diagnostics.json"
+      ],
+      "originalReceipt": {
+        "bytes": 295932,
+        "sha256": "6d6da3a0d9e6bd694bfeb248739149c57675a331bf33dd550dc0cbea1b3ec714"
+      }
+    },
+    "diagnostics.py": {
+      "storedReceipt": {
+        "bytes": 8886,
+        "sha256": "923b8e6b7cc899771e03598f59cbc9a8de1e781a921f29dfa75038dada04712c"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/diagnostics.py"
+      ],
+      "originalReceipt": {
+        "bytes": 8886,
+        "sha256": "923b8e6b7cc899771e03598f59cbc9a8de1e781a921f29dfa75038dada04712c"
+      }
+    },
+    "evaluate.py": {
+      "storedReceipt": {
+        "bytes": 16315,
+        "sha256": "3b0c0d6b4d97470edf7448c2ba8fe8eb68bc7ece07b464f6f8ac80e6240a0183"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/evaluate.py"
+      ],
+      "originalReceipt": {
+        "bytes": 16315,
+        "sha256": "3b0c0d6b4d97470edf7448c2ba8fe8eb68bc7ece07b464f6f8ac80e6240a0183"
+      }
+    },
+    "evaluation-output.jsonl": {
+      "storedReceipt": {
+        "bytes": 16005,
+        "sha256": "21d886c7f61ed29f37d3b89acc20a0f7e6a5c06d7b9c5527238ccb578120b1cb"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/evaluation-output.jsonl"
+      ],
+      "originalReceipt": {
+        "bytes": 16005,
+        "sha256": "21d886c7f61ed29f37d3b89acc20a0f7e6a5c06d7b9c5527238ccb578120b1cb"
+      }
+    },
+    "evaluation-start.json": {
+      "storedReceipt": {
+        "bytes": 3277,
+        "sha256": "b7e2628565f87d0aa0440be637af7a4d57894d63664698c0acd6be39e8cbddd2"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/evaluation-start.json"
+      ],
+      "originalReceipt": {
+        "bytes": 3277,
+        "sha256": "b7e2628565f87d0aa0440be637af7a4d57894d63664698c0acd6be39e8cbddd2"
+      }
+    },
+    "failure-profile-comparison.png": {
+      "storedReceipt": {
+        "bytes": 120701,
+        "sha256": "4dd3b92f86876e04bd2395468b720bef1be89daeb951a58c921a3ca976fad826"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/failure-profile-comparison.png"
+      ],
+      "originalReceipt": {
+        "bytes": 120701,
+        "sha256": "4dd3b92f86876e04bd2395468b720bef1be89daeb951a58c921a3ca976fad826"
+      }
+    },
+    "failure-profiles.json.gz": {
+      "storedReceipt": {
+        "bytes": 33367,
+        "sha256": "4d571133d3e0ab58791346a347112ad005a09b42c808a2118e543060d5a03f6d"
+      },
+      "encoding": "gzip",
+      "decodedReceipt": {
+        "bytes": 208134,
+        "sha256": "96abd04b48f0eeb194b77737d563cc39d259c682d0491a2b920cd2bad55f860f"
+      },
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/failure-profiles.json"
+      ],
+      "originalReceipt": {
+        "bytes": 208134,
+        "sha256": "96abd04b48f0eeb194b77737d563cc39d259c682d0491a2b920cd2bad55f860f"
+      }
+    },
+    "immutable-source-baseline.json": {
+      "storedReceipt": {
+        "bytes": 8003,
+        "sha256": "42cfbbbe0f5655fb3d35c926039669d23310e84c1f88c8469154c3b3e456b58e"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/immutable-source-baseline.json"
+      ],
+      "originalReceipt": {
+        "bytes": 8003,
+        "sha256": "42cfbbbe0f5655fb3d35c926039669d23310e84c1f88c8469154c3b3e456b58e"
+      }
+    },
+    "input-references.json": {
+      "storedReceipt": {
+        "bytes": 8261,
+        "sha256": "0ac4f39f197d2b805d6706c9e4245c7081144b7de413e09157d5775bb77b60f4"
+      },
+      "encoding": "identity",
+      "authoredForArchive": true
+    },
+    "original-README.md.gz": {
+      "storedReceipt": {
+        "bytes": 1572,
+        "sha256": "a7f0e4e2dc465d53eec3de517487bf36f9ff0658fd4e2c7c7fd97c09bcd8e453"
+      },
+      "encoding": "gzip",
+      "decodedReceipt": {
+        "bytes": 2996,
+        "sha256": "d43e07f339b9f314ca4212125da8e4d77c1aa97f842d3578a423135518efd681"
+      },
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/README.md"
+      ],
+      "originalReceipt": {
+        "bytes": 2996,
+        "sha256": "d43e07f339b9f314ca4212125da8e4d77c1aa97f842d3578a423135518efd681"
+      }
+    },
+    "original-manifest.json": {
+      "storedReceipt": {
+        "bytes": 3683,
+        "sha256": "ffbd8c52141315dcb9965cf2b59644fedda73d0e6a464105be8a6d7645c253ba"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/manifest.json"
+      ],
+      "originalReceipt": {
+        "bytes": 3683,
+        "sha256": "ffbd8c52141315dcb9965cf2b59644fedda73d0e6a464105be8a6d7645c253ba"
+      }
+    },
+    "plot.py": {
+      "storedReceipt": {
+        "bytes": 6150,
+        "sha256": "4eeca76fa244ce7177e9a02c415a01abaefaac2eab5965ce6c93f838105d3a99"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/plot.py"
+      ],
+      "originalReceipt": {
+        "bytes": 6150,
+        "sha256": "4eeca76fa244ce7177e9a02c415a01abaefaac2eab5965ce6c93f838105d3a99"
+      }
+    },
+    "prototype.py": {
+      "storedReceipt": {
+        "bytes": 11815,
+        "sha256": "f75b758185b37f97ed5583176273ce62d83fb991e83681e5cf049c9354c5ac96"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/prototype.py"
+      ],
+      "originalReceipt": {
+        "bytes": 11815,
+        "sha256": "f75b758185b37f97ed5583176273ce62d83fb991e83681e5cf049c9354c5ac96"
+      }
+    },
+    "recipe.md": {
+      "storedReceipt": {
+        "bytes": 8033,
+        "sha256": "5b9327f59eac80bb7dcfb52e9f963cb6ef395e4de99d29ae81c5783580ad1b57"
+      },
+      "encoding": "identity",
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/recipe.md"
+      ],
+      "originalReceipt": {
+        "bytes": 8033,
+        "sha256": "5b9327f59eac80bb7dcfb52e9f963cb6ef395e4de99d29ae81c5783580ad1b57"
+      }
+    },
+    "report.json.gz": {
+      "storedReceipt": {
+        "bytes": 1051400,
+        "sha256": "1baf6ea24463e24a1d5d01ec1d2417b743d37a261243c1b4c7877dae8bfbbcf8"
+      },
+      "encoding": "gzip",
+      "decodedReceipt": {
+        "bytes": 8784384,
+        "sha256": "94ddcf5f50f3811756cd76b02e10a67e90fd34cb9ff05e9d10452efd0d44b479"
+      },
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/report.json"
+      ],
+      "originalReceipt": {
+        "bytes": 8784384,
+        "sha256": "94ddcf5f50f3811756cd76b02e10a67e90fd34cb9ff05e9d10452efd0d44b479"
+      },
+      "originalTransportPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/report.json.gz"
+      ],
+      "originalTransportReceipt": {
+        "bytes": 1051400,
+        "sha256": "1baf6ea24463e24a1d5d01ec1d2417b743d37a261243c1b4c7877dae8bfbbcf8"
+      }
+    },
+    "review.json": {
+      "storedReceipt": {
+        "bytes": 7665,
+        "sha256": "c22a0a1761f87b8095fdad09997ac30336c05a9845574f9bcb12e8e0ad29e9f5"
+      },
+      "encoding": "identity",
+      "authoredForArchive": true
+    },
+    "scratch-inventory.json": {
+      "storedReceipt": {
+        "bytes": 3013,
+        "sha256": "cf954575c6317a37a69d641dc9249a5b395b5532487bd67aa9634934f985bab8"
+      },
+      "encoding": "identity",
+      "authoredForArchive": true
+    },
+    "summary.json.gz": {
+      "storedReceipt": {
+        "bytes": 11144,
+        "sha256": "5d3816be727abb0d7da8f109cac3fd9688812e8c22584767db278bc820d9c20e"
+      },
+      "encoding": "gzip",
+      "decodedReceipt": {
+        "bytes": 65421,
+        "sha256": "45a95a6c69b9b4ecbb6e17a33ec4652b64326907ef7bd7028cf8d13dc4a6f688"
+      },
+      "originalPaths": [
+        "/private/tmp/tube-descending-facet-profile-20261004/summary.json"
+      ],
+      "originalReceipt": {
+        "bytes": 65421,
+        "sha256": "45a95a6c69b9b4ecbb6e17a33ec4652b64326907ef7bd7028cf8d13dc4a6f688"
+      }
+    },
+    "verify.py": {
+      "storedReceipt": {
+        "bytes": 10166,
+        "sha256": "31bb8b50eca0323b455d290241b87dfdcabcce46bffb5859978c210063bc85b0"
+      },
+      "encoding": "identity",
+      "authoredForArchive": true
+    }
+  },
+  "priorArchivedReferences": {
+    "../rejected-roof-thinning/inputs/captured-polylines.json.gz": {
+      "transportReceipt": {
+        "bytes": 11188,
+        "sha256": "9209ec5559e879955756db49ed66cf54c82fab3b076bcca3c649f950729ecf94"
+      },
+      "decodedReceipt": {
+        "bytes": 24838,
+        "sha256": "4393da0633def6a9c79000c4cf87cf20eeba582bb9d81e60e81cf7a2aa78263b"
+      },
+      "encoding": "gzip"
+    },
+    "../rejected-roof-thinning/inputs/case-frame-index.json.gz": {
+      "transportReceipt": {
+        "bytes": 23816,
+        "sha256": "47e1302e19fceaa701146e5f2033d0d40c5d7190dce24a7a98477190cef7afa1"
+      },
+      "decodedReceipt": {
+        "bytes": 75642,
+        "sha256": "793b238187b0c16c87069c0df6360758fd73d4c085902d3b7ce9fe73b4cc54d4"
+      },
+      "encoding": "gzip"
+    },
+    "../rejected-monotone-return/input-references.json": {
+      "transportReceipt": {
+        "bytes": 5042,
+        "sha256": "b43f5c506119aebf6391206b8b1b2f9ebbf3d0c8a6ce5fbf3872c8791d901afe"
+      },
+      "decodedReceipt": {
+        "bytes": 5042,
+        "sha256": "b43f5c506119aebf6391206b8b1b2f9ebbf3d0c8a6ce5fbf3872c8791d901afe"
+      },
+      "encoding": "identity"
+    },
+    "../descending-curl-experiment/geometry/measurement_functions.py": {
+      "transportReceipt": {
+        "bytes": 2654,
+        "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+      },
+      "decodedReceipt": {
+        "bytes": 2654,
+        "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+      },
+      "encoding": "identity"
+    },
+    "../descending-curl-experiment/geometry/air_metrics.py": {
+      "transportReceipt": {
+        "bytes": 3250,
+        "sha256": "f22fa4f178be309d11d908a8e11b773784e90732f8cb467685f9f340d798031d"
+      },
+      "decodedReceipt": {
+        "bytes": 3250,
+        "sha256": "f22fa4f178be309d11d908a8e11b773784e90732f8cb467685f9f340d798031d"
+      },
+      "encoding": "identity"
+    },
+    "../descending-curl-experiment/geometry/prototype.py": {
+      "transportReceipt": {
+        "bytes": 17532,
+        "sha256": "10334352cb76aaca66279a88747ada626b474bb49cd74ebc9d10da142a6797dd"
+      },
+      "decodedReceipt": {
+        "bytes": 17532,
+        "sha256": "10334352cb76aaca66279a88747ada626b474bb49cd74ebc9d10da142a6797dd"
+      },
+      "encoding": "identity"
+    },
+    "../descending-curl-experiment/source/candidate.patch.gz": {
+      "transportReceipt": {
+        "bytes": 13914,
+        "sha256": "81eef04ac0aab46eefe468e9947d448938ce9a85e2d30286c20a7f96b8c5292b"
+      },
+      "decodedReceipt": {
+        "bytes": 50426,
+        "sha256": "81b6b31a829c5d385684380cf3953ebd7b3be126a9704b65387b1b2f79ee9c6f"
+      },
+      "encoding": "gzip"
+    }
+  },
+  "caseAssetHashesReferenced": 8,
+  "numericFiguresAreNativeEvidence": false,
+  "startAndEndReceipts": {
+    "start": "evaluation-start.json",
+    "end": "report.json.gz:productionAtEnd",
+    "immutableComparison": "immutable-source-baseline.json",
+    "parentArchivedSources": "baseline/receipt.json",
+    "parentIntentionalRestoration": "baseline/restoration.json"
+  },
+  "rawFramesRecorded": 1224,
+  "adjacentInterpolationSamplesRecordedPerOrder": 3648
+}

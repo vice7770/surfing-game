@@ -1,0 +1,157 @@
+{
+  "schema": "directed-entry-selection-input-references/v1",
+  "scope": "Frozen source/assets referenced by exact hashes against committed coherent-startup archive; no full source or dist copied.",
+  "copiedProductionInputCount": 327,
+  "copiedDistFileCount": 50,
+  "sourceReceipt": "candidate-source-frozen.json.gz",
+  "priorCoherentSourceReceipt": "../coherent-startup/native/candidate-source-frozen.json.gz",
+  "priorCoherentBuildReceipt": "../coherent-startup/native/build-result.json",
+  "sourceContentComparedByRelativePathBytesAndSha256": true,
+  "sourceReceiptAbsolutePathsDifferOnlyForIsolatedCopy": true,
+  "distAssetsComparedByPathBytesAndSha256": true,
+  "priorArchivedReferences": {
+    "../coherent-startup/candidate/source-manifest.json": {
+      "transportReceipt": {
+        "bytes": 984,
+        "sha256": "f4c058b32190d65fca4f604e2796b8bf0d572ca47b53d0a0afd2612d8184ff9c"
+      },
+      "decodedReceipt": {
+        "bytes": 984,
+        "sha256": "f4c058b32190d65fca4f604e2796b8bf0d572ca47b53d0a0afd2612d8184ff9c"
+      },
+      "encoding": "identity",
+      "sameAsOriginalPath": "/private/tmp/tube-directed-entry-20261004/candidate-source-manifest.json"
+    },
+    "../coherent-startup/candidate/candidate.patch.gz": {
+      "transportReceipt": {
+        "bytes": 3433,
+        "sha256": "8f255d34f5398152b622c896335d032b8eda099862ff27c4234926813416a341"
+      },
+      "decodedReceipt": {
+        "bytes": 11059,
+        "sha256": "435b40857c1e7426426e9568016239785f5151e5ef2af4adcf7d45b1a449ff8d"
+      },
+      "encoding": "gzip",
+      "sameAsOriginalPath": "/private/tmp/tube-directed-entry-20261004/candidate.patch"
+    },
+    "../coherent-startup/native/candidate-source-frozen.json.gz": {
+      "transportReceipt": {
+        "bytes": 19405,
+        "sha256": "922e59257b087b3a896fb7cdec5717fa16786c81c4dc45005d2d17fcf1d3285d"
+      },
+      "decodedReceipt": {
+        "bytes": 76820,
+        "sha256": "2c37cb662d15f381b4c260a6539a4d0c2f8d8265936301f2fab7da2ef710137a"
+      },
+      "encoding": "gzip",
+      "sameAsOriginalPath": "/private/tmp/tube-directed-entry-20261004/prior-candidate-source-frozen.json"
+    },
+    "../coherent-startup/native/build-result.json": {
+      "transportReceipt": {
+        "bytes": 9034,
+        "sha256": "fc54f77fdbe56a52a33f69728112c1a68404ed60ea7385b1fb62171637a0524b"
+      },
+      "decodedReceipt": {
+        "bytes": 9034,
+        "sha256": "fc54f77fdbe56a52a33f69728112c1a68404ed60ea7385b1fb62171637a0524b"
+      },
+      "encoding": "identity"
+    },
+    "../coherent-startup/manifest.json": {
+      "transportReceipt": {
+        "bytes": 28641,
+        "sha256": "769045fd4b952f2fc7b86e203d96131a7c5fc0e13924b77d762dacf9fbcb4a80"
+      },
+      "decodedReceipt": {
+        "bytes": 28641,
+        "sha256": "769045fd4b952f2fc7b86e203d96131a7c5fc0e13924b77d762dacf9fbcb4a80"
+      },
+      "encoding": "identity"
+    },
+    "../coherent-startup/input-references.json": {
+      "transportReceipt": {
+        "bytes": 3507,
+        "sha256": "0b77b05881ea99066e49caab32612212d058d69c38a4d4830b0a2f90425a9e7d"
+      },
+      "decodedReceipt": {
+        "bytes": 3507,
+        "sha256": "0b77b05881ea99066e49caab32612212d058d69c38a4d4830b0a2f90425a9e7d"
+      },
+      "encoding": "identity"
+    },
+    "../coherent-startup/native/source/native.mjs.gz": {
+      "transportReceipt": {
+        "bytes": 10985,
+        "sha256": "15da4c7e0bb4ca2690d28e07ce507f3d672dd1f940841f39d5d71adb4e717d84"
+      },
+      "decodedReceipt": {
+        "bytes": 32205,
+        "sha256": "f139537019d13bc038d229977386ece40b307bf1fd63a0d3e7e1a79dcaea34ea"
+      },
+      "encoding": "gzip",
+      "sameAsOriginalPath": "/private/tmp/tube-coherent-warmup-native-20261004/native.mjs"
+    },
+    "../coherent-startup/native/source/run.py.gz": {
+      "transportReceipt": {
+        "bytes": 8041,
+        "sha256": "906bf90fe6ce010f333a0cc6251b02022e7e9544d528dd7247ae830d55c22c3d"
+      },
+      "decodedReceipt": {
+        "bytes": 25890,
+        "sha256": "65f9d981e7bbc0fbe5cf2df1eb7f28833a7511657fa64a81c389b849f6abf63a"
+      },
+      "encoding": "gzip",
+      "sameAsOriginalPath": "/private/tmp/tube-coherent-warmup-native-20261004/run.py"
+    },
+    "../coherent-startup/native/source/native-owned.mjs.gz": {
+      "transportReceipt": {
+        "bytes": 2608,
+        "sha256": "5b98887ff50f493dcb149916c78e30d7a38076ddd0d38a81e26ad96202deec3a"
+      },
+      "decodedReceipt": {
+        "bytes": 6532,
+        "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+      },
+      "encoding": "gzip",
+      "sameAsOriginalPath": "/private/tmp/tube-coherent-warmup-native-20261004/native-owned.mjs"
+    },
+    "../coherent-startup/native/source/body-witnesses.mjs.gz": {
+      "transportReceipt": {
+        "bytes": 4185,
+        "sha256": "7884e62dc00edd9cb88261a6c777db91adeedd281a94b090a14a851cfdedc6f7"
+      },
+      "decodedReceipt": {
+        "bytes": 11089,
+        "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+      },
+      "encoding": "gzip",
+      "sameAsOriginalPath": "/private/tmp/tube-coherent-warmup-native-20261004/body-witnesses.mjs"
+    },
+    "../descending-curl-experiment/menu-big/diagnostic-autopilot.mjs.gz": {
+      "transportReceipt": {
+        "bytes": 80582,
+        "sha256": "d1c0ea0cbace9be8efc7252654dc8a808ded1ad0fcca1cb3e1e851de6563b85b"
+      },
+      "decodedReceipt": {
+        "bytes": 347555,
+        "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2"
+      },
+      "encoding": "gzip"
+    },
+    "../gentle-ordinary-entry/source/browser-cdp.mjs.gz": {
+      "transportReceipt": {
+        "bytes": 2704,
+        "sha256": "68b77a48cba18b5616f427239749ca70a9fb1109ea19eab5d52f9aa2fc33a77e"
+      },
+      "decodedReceipt": {
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "encoding": "gzip"
+    }
+  },
+  "noPhysicalStateEqualityClaim": true,
+  "unchangedAutopilotCompiledBundle": "Prior unchanged compiled 347,555-byte accepted-gauge Autopilot module; SHA256 e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2. No new compile or rebuild for the directed selector.",
+  "originalSourceRoot": "/private/tmp/tube-directed-entry-20261004/candidate",
+  "originalDist": "/private/tmp/tube-directed-entry-20261004/dist"
+}

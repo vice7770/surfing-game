@@ -1,0 +1,54 @@
+{
+  "ownRejectedWorkRestoredTo": "ac3be1303",
+  "all12LiveCandidateSourcesMatchedArchiveBeforeRestoration": true,
+  "files": [
+    {
+      "file": "src/physics/PhysicalSurfWater.test.ts",
+      "restoredSha256": "1eb4caab9b5f53396b0917f13a0d55d4753815d8013d63573d9dabcf78273f85"
+    },
+    {
+      "file": "src/wave/barrel/ProfileLibrary.ts",
+      "restoredSha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+    },
+    {
+      "file": "src/wave/barrel/barrelLibrary.test.ts",
+      "restoredSha256": "8757acd54ea4ffba192c1c7992aac80c7ba46b03b31e23904e4626990551fc47"
+    },
+    {
+      "file": "src/wave/barrel/barrelLibrary.ts",
+      "restoredSha256": "b58c4038afae8f3994cbf9e58a90a9806ac61d717a0cb51940ff7c5cd059d974"
+    },
+    {
+      "file": "src/wave/barrel/crashCurve.test.ts",
+      "restoredSha256": "9c6759ffbd1ec6d1d24e048bd71b90d4936a89acb1c78146f5ef319de19519c2"
+    },
+    {
+      "file": "src/wave/barrel/crashCurve.ts",
+      "restoredSha256": "361183fa14ead52594e1bad25a6a47fd274bc294e8f8c6d5199814e01e4778a9"
+    },
+    {
+      "file": "src/wave/barrel/sweptContact.test.ts",
+      "restoredSha256": "7a63cff85cf812858d963025d1b05e6cb5178bc74553481ae0daffd9cd4e0fcf"
+    },
+    {
+      "file": "src/wave/barrel/sweptContact.ts",
+      "restoredSha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba"
+    },
+    {
+      "file": "src/wave/barrel/sweptLoft.test.ts",
+      "restoredSha256": "e1fb8c89e3f4f47973fa96d51bdd153367efc59f437fc264a0f78deb269545b3"
+    },
+    {
+      "file": "src/wave/barrel/sweptLoft.ts",
+      "restoredSha256": "b281a97c08f6b233d8861c43cf8e7a2b6efc56ff716816241043c964c17fef86"
+    },
+    {
+      "file": "src/wave/barrel/rolledCurl.test.ts",
+      "removedArchivedExperimentalFile": true
+    },
+    {
+      "file": "src/wave/barrel/rolledCurl.ts",
+      "removedArchivedExperimentalFile": true
+    }
+  ]
+}

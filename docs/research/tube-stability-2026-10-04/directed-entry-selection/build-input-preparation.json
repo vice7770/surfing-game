@@ -1,0 +1,19 @@
+{
+  "base": "0ab379ba1cdb64b44e8023833399a428990afa60",
+  "acceptedFilesChecked": 594,
+  "missingAcceptedFilesAdded": [
+    "index.html"
+  ],
+  "candidateSourceFilesPreserved": [
+    "src/wave/SurfZoneSimulation.test.ts",
+    "src/wave/SurfZoneSimulation.ts",
+    "src/wave/barrel/BreakingFront.test.ts"
+  ],
+  "productionInputCount": 327,
+  "firstBuild": {
+    "session": 30117,
+    "exitCode": 1,
+    "failure": "Isolated unit fixture omitted index.html; Vite unresolved entry"
+  },
+  "productionAdoption": false
+}

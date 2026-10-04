@@ -1,0 +1,36 @@
+{
+  "sourceOnlyPlan": true,
+  "arm": "candidate",
+  "dist": "/private/tmp/tube-directed-entry-20261004/dist",
+  "wholeSeconds": 180,
+  "commandSeconds": 168,
+  "cleanupSeconds": 7,
+  "maximumSteps": 1800,
+  "maximumPhysicalSeconds": 30,
+  "maximumPngs": 4,
+  "maximumUniqueArtifacts": 6,
+  "initialCheckpoint": "fresh prone after install+ready; no driver physics advance",
+  "maximumPngBytesEach": 12582912,
+  "maximumPngBytesTotal": 50331648,
+  "maximumReportBytes": 33554432,
+  "maximumNdjsonBytes": 25165824,
+  "optionalMovieMaximumAdvances": 240,
+  "optionalMovieMaximumRequests": 241,
+  "optionalMovieMaximumBytes": 16777216,
+  "optionalMovieTrigger": "First post-step standing row with positive drawn loft indices and qualified actual candidate air column within15m or partial/contained witness",
+  "standingInputPhase": "inputView.ride.phase",
+  "maximumAllPhaseSteer": 0.2,
+  "allPhaseSteerSlewPerSecond": 0.4,
+  "captureCompletionIsEntryPass": false,
+  "ports": [
+    4293,
+    9703
+  ],
+  "userPorts": [
+    4310,
+    4311,
+    4312
+  ],
+  "userPortsMustStayOpen": true,
+  "resourcesStarted": false
+}
