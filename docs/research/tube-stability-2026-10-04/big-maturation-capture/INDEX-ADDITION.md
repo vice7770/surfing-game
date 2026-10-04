@@ -1,0 +1,1 @@
+[Big maturation capture](tube-stability-2026-10-04/big-maturation-capture/README.md): V1 observer failure retained; V2 seven ordinary renders and 46 same-packet rows establish one original strip lifecycle through touchdown/retirement. All active loft geometry was behind the captured camera, so no visible-quality, original WaveLab repair or FPS acceptance follows.

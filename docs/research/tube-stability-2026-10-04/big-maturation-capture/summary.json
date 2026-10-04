@@ -1,0 +1,229 @@
+{
+  "status": "ACTUAL_ORIGINAL_STRIP_LIFECYCLE_CAPTURED_VISUAL_QUALITY_UNPROVED",
+  "v1Valid": false,
+  "v1Frames": 0,
+  "v1FirstFailure": "Error: Error: Active mesh index differs from loft",
+  "v2Valid": true,
+  "frames": 7,
+  "publicationRows": 46,
+  "events": 3,
+  "originalPayloads": 379,
+  "originalStoredBytes": 52369602,
+  "ownedRawBytes": 171306563,
+  "selection": {
+    "pointId": 2,
+    "stripId": 2,
+    "frontIdAtSelection": 0,
+    "generation": 1,
+    "publication": 989,
+    "seaTime": 327.8077132243035,
+    "tau": 0.25985640009212574,
+    "touchdown": 0.6242390131508564,
+    "initialLoftBracket": {
+      "indices": [
+        15,
+        16,
+        17,
+        18
+      ],
+      "sigma": [
+        5.855224609375,
+        7.326269626617432
+      ],
+      "formed": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "rule": "Actual point ID and original strip ID from this published worker packet within a fully formed joined OPEN source bracket; identities never retargeted"
+  },
+  "frameRows": [
+    {
+      "index": 0,
+      "reason": "selected-OPEN",
+      "publication": 989,
+      "seaTime": 327.8077132243035,
+      "vertexCount": 3752,
+      "barrelMeshActuallyDrawn": true,
+      "skippedWorkerPublicationsSincePreviousRetainedFrame": null
+    },
+    {
+      "index": 1,
+      "reason": "later-OPEN-1",
+      "publication": 995,
+      "seaTime": 327.9077132243035,
+      "vertexCount": 3752,
+      "barrelMeshActuallyDrawn": true,
+      "skippedWorkerPublicationsSincePreviousRetainedFrame": 5
+    },
+    {
+      "index": 2,
+      "reason": "later-OPEN-2",
+      "publication": 998,
+      "seaTime": 327.95771322430346,
+      "vertexCount": 3886,
+      "barrelMeshActuallyDrawn": true,
+      "skippedWorkerPublicationsSincePreviousRetainedFrame": 2
+    },
+    {
+      "index": 3,
+      "reason": "late-pre-TD",
+      "publication": 1012,
+      "seaTime": 328.1910465576368,
+      "vertexCount": 3886,
+      "barrelMeshActuallyDrawn": true,
+      "skippedWorkerPublicationsSincePreviousRetainedFrame": 13
+    },
+    {
+      "index": 4,
+      "reason": "first-completed-draw-after-TD-event",
+      "publication": 1016,
+      "seaTime": 328.2577132243035,
+      "vertexCount": 3886,
+      "barrelMeshActuallyDrawn": true,
+      "skippedWorkerPublicationsSincePreviousRetainedFrame": 3
+    },
+    {
+      "index": 5,
+      "reason": "post-TD-moving",
+      "publication": 1021,
+      "seaTime": 328.3410465576368,
+      "vertexCount": 3216,
+      "barrelMeshActuallyDrawn": true,
+      "skippedWorkerPublicationsSincePreviousRetainedFrame": 4
+    },
+    {
+      "index": 6,
+      "reason": "original-strip-retired",
+      "publication": 1034,
+      "seaTime": 328.5577132243034,
+      "vertexCount": 2278,
+      "barrelMeshActuallyDrawn": true,
+      "skippedWorkerPublicationsSincePreviousRetainedFrame": 12
+    }
+  ],
+  "eventRows": [
+    {
+      "sequence": 2,
+      "method": "holdJet",
+      "stripId": 2,
+      "pointId": null,
+      "solverTime": 52.133333333332416,
+      "seaTime": 327.47437989097017,
+      "result": 0.8878905142100846,
+      "reason": null
+    },
+    {
+      "sequence": 6,
+      "method": "crashJet",
+      "stripId": 2,
+      "pointId": 2,
+      "solverTime": 52.916666666665705,
+      "seaTime": 328.2577132243035,
+      "result": true,
+      "reason": null
+    },
+    {
+      "sequence": 9,
+      "method": "removeStrip",
+      "stripId": 2,
+      "pointId": 2,
+      "solverTime": 53.21666666666569,
+      "seaTime": 328.5577132243034,
+      "result": null,
+      "reason": "actual-removal-with-no-live-parcels"
+    }
+  ],
+  "projection": [
+    {
+      "state": 0,
+      "reason": "selected-OPEN",
+      "seaTime": 327.8077132243035,
+      "vertices": 3752,
+      "nonpositiveClipW": 3752,
+      "insideClipVertices": 0,
+      "clipWRange": [
+        -177.00413273046019,
+        -148.53035795881175
+      ]
+    },
+    {
+      "state": 1,
+      "reason": "later-OPEN-1",
+      "seaTime": 327.9077132243035,
+      "vertices": 3752,
+      "nonpositiveClipW": 3752,
+      "insideClipVertices": 0,
+      "clipWRange": [
+        -177.59443320012667,
+        -149.08504257821178
+      ]
+    },
+    {
+      "state": 2,
+      "reason": "later-OPEN-2",
+      "seaTime": 327.95771322430346,
+      "vertices": 3886,
+      "nonpositiveClipW": 3886,
+      "insideClipVertices": 0,
+      "clipWRange": [
+        -177.89354964120713,
+        -149.36307059851796
+      ]
+    },
+    {
+      "state": 3,
+      "reason": "late-pre-TD",
+      "seaTime": 328.1910465576368,
+      "vertices": 3886,
+      "nonpositiveClipW": 3886,
+      "insideClipVertices": 0,
+      "clipWRange": [
+        -179.24636840228192,
+        -150.6326187217725
+      ]
+    },
+    {
+      "state": 4,
+      "reason": "first-completed-draw-after-TD-event",
+      "seaTime": 328.2577132243035,
+      "vertices": 3886,
+      "nonpositiveClipW": 3886,
+      "insideClipVertices": 0,
+      "clipWRange": [
+        -179.59661439580708,
+        -150.99742251221534
+      ]
+    },
+    {
+      "state": 5,
+      "reason": "post-TD-moving",
+      "seaTime": 328.3410465576368,
+      "vertices": 3216,
+      "nonpositiveClipW": 3216,
+      "insideClipVertices": 0,
+      "clipWRange": [
+        -179.98109246115064,
+        -151.48015863025472
+      ]
+    },
+    {
+      "state": 6,
+      "reason": "original-strip-retired",
+      "seaTime": 328.5577132243034,
+      "vertices": 2278,
+      "nonpositiveClipW": 2278,
+      "insideClipVertices": 0,
+      "clipWRange": [
+        -181.42214617452782,
+        -152.36846231283872
+      ]
+    }
+  ],
+  "visualQualityAccepted": false,
+  "originalWaveLabFailureAccepted": false,
+  "nativeFpsClaim": false,
+  "physicsCandidate": false
+}

@@ -1,0 +1,25 @@
+{
+  "status": "REJECTED_ORIGINAL_COMPLETE_PATH_COST_GATE",
+  "pairs": 32,
+  "ticksPerSample": 8,
+  "meanSavingPerStepMs": 0.11080208203128272,
+  "medianSavingPerStepMs": 0.04713287499998842,
+  "positivePairs": 20,
+  "heuristicLower95Ms": -0.056942666979625134,
+  "orderMeans": {
+    "AB": 0.12248111718753663,
+    "BA": 0.09912304687502882
+  },
+  "meanCompletePerStepMs": {
+    "baseline": 10.13530484765627,
+    "candidate": 10.024502765624987
+  },
+  "proofCases": 6,
+  "maximumChannelError": 3.1410217360416937e-07,
+  "maximumRenderedFoamError": 2.980232238769531e-07,
+  "maximumCoverageSumOvershoot": 1.4901161193847656e-08,
+  "nativeRun": false,
+  "adopted": false,
+  "runtimeCandidateUnchangedAcrossV1V2V3": true,
+  "costRetry": false
+}
