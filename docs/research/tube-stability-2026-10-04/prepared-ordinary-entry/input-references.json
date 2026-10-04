@@ -1,0 +1,30 @@
+{
+  "references": [
+    {
+      "repository": "docs/research/tube-stability-2026-10-04/coherent-startup/native/preparation.json",
+      "bytes": 22424,
+      "sha256": "e3f55c09b434dcbb08c82905eabb3c9d06dffe87a676269ca7eff745593c3961"
+    },
+    {
+      "repository": "docs/research/tube-stability-2026-10-04/coherent-startup/native/candidate-source-frozen.json.gz",
+      "bytes": 19405,
+      "sha256": "922e59257b087b3a896fb7cdec5717fa16786c81c4dc45005d2d17fcf1d3285d"
+    },
+    {
+      "repository": "docs/research/tube-stability-2026-10-04/directed-entry-selection/source/tube-target.mjs.gz",
+      "bytes": 3179,
+      "sha256": "9bacc609bd846b443d18d8447447eb99c3b2094d3220f75e7bb02ddd170b1b63"
+    },
+    {
+      "repository": "docs/research/tube-stability-2026-10-04/directed-entry-selection/source/body-witnesses.mjs.gz",
+      "bytes": 4362,
+      "sha256": "c0559d96d8b1b9a6b3fa75337efe771d2013b373cb27076b92d34b8fa648eb79"
+    },
+    {
+      "repository": "docs/research/tube-stability-2026-10-04/directed-entry-selection/source/native-owned.mjs.gz",
+      "bytes": 2608,
+      "sha256": "5b98887ff50f493dcb149916c78e30d7a38076ddd0d38a81e26ad96202deec3a"
+    }
+  ],
+  "scope": "327 accepted source and50 built-asset content receipts remain in the prior coherent-startup archive; unchanged target/witness/launcher helpers are referenced without copies."
+}

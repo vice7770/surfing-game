@@ -1,0 +1,14 @@
+{
+  "passed": 6,
+  "failed": 0,
+  "resourcesStarted": false,
+  "checks": [
+    "closest any phase includes distant post and nearer pre independently of open selection",
+    "bounded near-board records keep full count and explicit truncation",
+    "phase crossing future incoming front is retained without changing raw state",
+    "full prior exact snapshot reproduces known actual initial front56 and held lookup phase",
+    "library endpoint clamps scale by actual foot height and preserve finite times",
+    "empty raw inventory retains null nearest and invalid sized controls reject"
+  ],
+  "scope": "Pure helper and prior exact-snapshot fixtures only; no new game trajectory or future opening claim."
+}

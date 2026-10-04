@@ -1,0 +1,21 @@
+{
+  "complete": true,
+  "scope": "Offline read-only analysis of the completed prepared ordinary entry trial; no game launch or original mutation.",
+  "artifacts": [
+    {
+      "path": "/private/tmp/tube-prepared-ordinary-entry-analysis-20261004/analyze.py",
+      "bytes": 16116,
+      "sha256": "1598c9aa77de9c1c9169ac6e8f7481e2e7f0ba4fe278bb27539eafdc74e1266f"
+    },
+    {
+      "path": "/private/tmp/tube-prepared-ordinary-entry-analysis-20261004/analysis.json",
+      "bytes": 183160,
+      "sha256": "c99d23113e597107ecaf2836f15b44903a1ea3dd08bbdcca09b2f14872ebb669"
+    },
+    {
+      "path": "/private/tmp/tube-prepared-ordinary-entry-analysis-20261004/summary.json",
+      "bytes": 38608,
+      "sha256": "0f19de888865ee796afc369df09eb28f54318aeefdcc3fe49d35b33566176440"
+    }
+  ]
+}

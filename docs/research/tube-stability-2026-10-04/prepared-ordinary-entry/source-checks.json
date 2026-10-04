@@ -1,0 +1,57 @@
+{
+  "complete": true,
+  "frozenPreparationOnly": true,
+  "resourcesStarted": false,
+  "portProbePerformed": false,
+  "productionInputs": 327,
+  "copiedAssets": 50,
+  "sourceContentsUnchanged": true,
+  "builtAssetsUnchanged": true,
+  "targetAndWitnessAndLauncherByteExact": true,
+  "priorStartupAndNativeVideoStartByteExact": true,
+  "onlyInputPolicyChange": "Independent once-only normal valid manual popup no longer requires a qualified opening",
+  "boundedNearFrontEvidenceReadOnly": true,
+  "ordinaryBoardBodyStatusRetained": true,
+  "helperMockPassed": 32,
+  "checks": {
+    "helper-fixtures.json": {
+      "passed": 10,
+      "receipt": {
+        "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/helper-fixtures.json",
+        "bytes": 1209,
+        "sha256": "ea561cddff7d752baf6071e7097126b53d22fa4bb1ba20ed51e3de4eadaf69b2"
+      }
+    },
+    "installed-driver-fixtures.json": {
+      "passed": 9,
+      "receipt": {
+        "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/installed-driver-fixtures.json",
+        "bytes": 143940,
+        "sha256": "7bacd10552da8c6cba21d9d682d5867fab6e9edb9b69fcb55c712a28c9e8edff"
+      }
+    },
+    "front-evidence-fixtures.json": {
+      "passed": 6,
+      "receipt": {
+        "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/front-evidence-fixtures.json",
+        "bytes": 707,
+        "sha256": "96b7d524569e3540d893ef5152c20f7d354fad57c1c3d2dfa2d82aa38c3162bf"
+      }
+    },
+    "owner-source-checks.json": {
+      "passed": 7,
+      "receipt": {
+        "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/owner-source-checks.json",
+        "bytes": 1160,
+        "sha256": "a7ff6e3b44d1b70ae13b5df4009c8c71a678868fd624dbdd6c63d36f3c155dd2"
+      }
+    }
+  },
+  "finitePlan": {
+    "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/dry-plan.json",
+    "bytes": 1120,
+    "sha256": "7e9b69515dc65bc5d148f154960b98f2e41b29e5b1f019897a1d09f183895958"
+  },
+  "allThreeUserPortsPreservedByOwnerContract": true,
+  "goalComplete": false
+}

@@ -1,0 +1,14 @@
+{
+  "resourcesStarted": false,
+  "preparation": {
+    "file": "/private/tmp/tube-prepared-ordinary-entry-20261004/preparation.json",
+    "bytes": 26933,
+    "sha256": "3c9d7a57170b3d54f3ad0fdddaee99c4f11d0414876fc557e4fec665e26f8651"
+  },
+  "actualExtractedOwnerVerifiers": {
+    "verify_copy": true,
+    "verify_production_inputs": true,
+    "verify_sources": true
+  },
+  "goalComplete": false
+}

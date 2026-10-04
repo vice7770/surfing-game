@@ -1,0 +1,17 @@
+One diagnostics-only ordinary entry attempt, prepared for root's sole finite invocation.
+
+The prior fixed selector found no target because the rider was behind all eligible formed crests, before any air-height test. Offline exact geometry contains1.79m sampled air columns on front79 about149m away; this is not evidence of a reachable passage. The unchanged local gauge wave is unbroken and is not identified by the joined-front snapshot. Neither prior fall alone establishes a source spawn defect.
+
+The only input-policy change is independent once-only normal pop-up. Keep production paddle sequencing and the initial prone spawn. On the first ordinary go attempt, pulse popUp once while prone when cue OR(valid wave,ahead0..8m,faceFraction>=0.35,shorewardSpeed>=2). Qualified target is no longer a prerequisite. No target means steer0. The actual target row/face/height gates, first-front lock, heading cap0.2/slew0.4s, nominal headTOP1.13m plus explicit deck0.1m, and earliest-standing crouch1 remain byte-exact/fixed. No forces, placement, resets, forced go/cue or experimental geometry.
+
+Per-step evidence retains all previous current boardPose, seven rider points, ride bank/balance, production pop-up outcome/duration, separation and body witness data. The new pure collector reads existing published9-word raw joined-front records, logs closest ANY phase, closest pre/open/post and up to8 nearest records within40m, with full near count/truncation. Phase follows the accepted Padang library's exact touchdown-header bracket/scale arithmetic using the current raw foot height/depth/tau. Nearest drawn crest phase/weight/formed metadata is independent actual geometry evidence. The published-board gauge crest is explicitly approximate because the gauge uses combined centre of mass. No private unjoined CrestTrack or same-incoming-wave identity is asserted.
+
+Copies327 frozen accepted production inputs and all50 prior built assets byte-exact; no rebuild. Target, witness and native launcher remain byte-exact. Source/hash checks and32 pure/mock groups passed, including independent valid pop-up with no target, invalid-gate/second-attempt refusal, exact prior initial-front56 consistency, and a synthetic pre→open→post incoming transition. These checks are not a game trajectory.
+
+The owner allows at most1800 ordinary1/60s steps/30 physical seconds,20s combined selector/body detector time,168s command and7s cleanup inside180s total. Stop at first published fall/separation/reset, target loss, detector exhaustion, pilot completion or cap. No retry. PNGs≤4; native movie only on actual standing near a qualified candidate≤15m or partial/contained witness,≤240 advances/241 requests/16MiB. Recorder's first request/start handshake is unchanged. No eligible event means no movie.
+
+Own diagnostic ports4295/9705 only. User4310/4311/4312 are checked open before and after and never managed. Preparation performed no port probe or launch. Root reviews preparation.json, freeze-verification.json, policy.json and dry-plan.json, then runs once:
+
+python3 /private/tmp/tube-prepared-ordinary-entry-20261004/run.py --run --arm candidate --out /private/tmp/tube-prepared-ordinary-entry-20261004/native-first
+
+Capture completion is not a tube-entry, body-clearance, visual-quality, FPS, adoption or goal-completion pass. Current frozen source/policy are concrete reviewable diagnostics; all prior native originals are preserved.
