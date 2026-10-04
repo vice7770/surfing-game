@@ -1,0 +1,87 @@
+{
+  "schema": "zero-mask-fps-first-bounded-archive-pass/v1",
+  "valid": true,
+  "startedAt": "2026-10-04T13:33:05.471056+00:00",
+  "deadlineSeconds": 30,
+  "archiveCapBytes": 33554432,
+  "logsCapBytes": 1048576,
+  "resultCapBytes": 131072,
+  "commands": [
+    {
+      "name": "archive-first",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/archive-first.py"
+      ],
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps",
+      "startedAt": "2026-10-04T13:33:05.471515+00:00",
+      "pid": 65521,
+      "freshProcessGroup": 65521,
+      "exitCode": 0,
+      "childClosed": true,
+      "endedAt": "2026-10-04T13:33:05.843230+00:00",
+      "elapsedSeconds": 0.3718135840026662,
+      "log": {
+        "path": "archive-first.log",
+        "bytes": 659,
+        "sha256": "41f413f15a82d358cfc1dfb0b3b97727e415657516d9b41d089652b41ea55a1f"
+      }
+    },
+    {
+      "name": "late-analysis-first",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/late-analysis.py",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/late-analysis-first.json"
+      ],
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps",
+      "startedAt": "2026-10-04T13:33:05.844270+00:00",
+      "pid": 65522,
+      "freshProcessGroup": 65522,
+      "exitCode": 0,
+      "childClosed": true,
+      "endedAt": "2026-10-04T13:33:05.950707+00:00",
+      "elapsedSeconds": 0.10645204200409353,
+      "log": {
+        "path": "late-analysis-first.log",
+        "bytes": 3150,
+        "sha256": "36df3c7deedc2297e5c1083fb1af3a853b45013baba2f6787ef4e8bb011f27a2"
+      }
+    },
+    {
+      "name": "verify-first",
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/verify.py",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/verify-first.result.json"
+      ],
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps",
+      "startedAt": "2026-10-04T13:33:05.952539+00:00",
+      "pid": 65523,
+      "freshProcessGroup": 65523,
+      "exitCode": 0,
+      "childClosed": true,
+      "endedAt": "2026-10-04T13:33:06.070442+00:00",
+      "elapsedSeconds": 0.11796204099664465,
+      "log": {
+        "path": "verify-first.log",
+        "bytes": 1713,
+        "sha256": "75330b9b2ad16034f53911cce5e9620829930271aee03d20424a908f3f240179"
+      }
+    }
+  ],
+  "heavyJobsClosed": true,
+  "scope": "One first-only offline archive/standalone late analysis/default verifier pass; no retries or game/helper/native/browser/build/raster execution.",
+  "firstProductionValid": true,
+  "firstLateAnalysisValid": true,
+  "firstDefaultVerifierValid": true,
+  "nativeHarnessValid": true,
+  "archiveBytesBeforeFinalReceipt": 1013667,
+  "fpsAcceptance": false,
+  "causalGuardBenefit": false,
+  "tubeQualityPass": false,
+  "adoption": false,
+  "endedAt": "2026-10-04T13:33:06.072127+00:00",
+  "elapsedSeconds": 0.6010813330067322,
+  "firstLogsBytes": 5522
+}

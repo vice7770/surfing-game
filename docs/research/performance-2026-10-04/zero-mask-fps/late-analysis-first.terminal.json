@@ -1,0 +1,21 @@
+{
+  "name": "late-analysis-first",
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/late-analysis.py",
+    "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/late-analysis-first.json"
+  ],
+  "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps",
+  "startedAt": "2026-10-04T13:33:05.844270+00:00",
+  "pid": 65522,
+  "freshProcessGroup": 65522,
+  "exitCode": 0,
+  "childClosed": true,
+  "endedAt": "2026-10-04T13:33:05.950707+00:00",
+  "elapsedSeconds": 0.10645204200409353,
+  "log": {
+    "path": "late-analysis-first.log",
+    "bytes": 3150,
+    "sha256": "36df3c7deedc2297e5c1083fb1af3a853b45013baba2f6787ef4e8bb011f27a2"
+  }
+}

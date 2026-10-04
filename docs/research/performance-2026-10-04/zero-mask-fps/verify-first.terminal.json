@@ -1,0 +1,21 @@
+{
+  "name": "verify-first",
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/verify.py",
+    "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/verify-first.result.json"
+  ],
+  "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps",
+  "startedAt": "2026-10-04T13:33:05.952539+00:00",
+  "pid": 65523,
+  "freshProcessGroup": 65523,
+  "exitCode": 0,
+  "childClosed": true,
+  "endedAt": "2026-10-04T13:33:06.070442+00:00",
+  "elapsedSeconds": 0.11796204099664465,
+  "log": {
+    "path": "verify-first.log",
+    "bytes": 1713,
+    "sha256": "75330b9b2ad16034f53911cce5e9620829930271aee03d20424a908f3f240179"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "zero-mask-fps-archive-verification/v1",
+  "valid": true,
+  "checks": [
+    {
+      "check": "retained-byte-aliases-helpers-gates-and-explicit-runtime-omissions",
+      "valid": true,
+      "payloads": 33,
+      "aliases": 39,
+      "sourcePins": 592,
+      "sourceCopyPins": 592,
+      "compiledPins": 49
+    },
+    {
+      "check": "actual-served-worker-public-cases-ordinary-guards-independent-closure-and-native-budgets",
+      "valid": true,
+      "completedGETs": 46,
+      "nativeOutputBytes": 4430348,
+      "wholeOutputBytes": 4432704,
+      "combinedLogBytes": 1311,
+      "driverElapsedSeconds": 119.0309075419791
+    },
+    {
+      "check": "independent-raw-whole-and-predeclared-half-open-late-window-analysis",
+      "valid": true,
+      "sampleWallSeconds": 90.42480000001193,
+      "wholeRenderedFps": 60,
+      "wholePhysicsStepsPerSecond": 58.5,
+      "lateDrawnFps": [
+        60.0,
+        59.9
+      ],
+      "latePhysicsStepsPerSecond": [
+        58.86789430480844,
+        51.08121913830846
+      ]
+    }
+  ],
+  "fpsAcceptance": false,
+  "causalGuardBenefit": false,
+  "tubeQualityPass": false,
+  "adoption": false,
+  "scope": "Durable retained evidence integrity and descriptive raw analysis only. Full592 production source/current copies and49 compiled bodies are omitted metadata-only pins. No complete runtime dependency closure, game/helper replay, native process, raster decoding, FPS threshold, causal speedup or tube quality claim.",
+  "retainedEvidenceIntegrity": true,
+  "archiveBytesAtVerification": 1009423,
+  "payloads": 33,
+  "aliases": 39,
+  "nativeHarnessValid": true,
+  "elapsedSeconds": 0.05378179100807756,
+  "endedAt": "2026-10-04T13:33:06.053955+00:00"
+}

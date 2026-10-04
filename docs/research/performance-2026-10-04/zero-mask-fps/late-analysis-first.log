@@ -1,0 +1,76 @@
+{
+  "schema": "zero-mask-fps-first-late-analysis/v1",
+  "valid": true,
+  "fpsAcceptance": false,
+  "causalGuardBenefit": false,
+  "tubeQualityPass": false,
+  "adoption": false,
+  "startedAt": "2026-10-04T13:33:05.890627+00:00",
+  "scope": "Descriptive offline analysis only. Predeclared half-open wall windows use actual sample endpoint origin; callback draws and physics progress remain separate. No paired causal comparison, FPS acceptance threshold, tube quality or adoption decision.",
+  "endpoints": {
+    "startedAt": 20759.19999998808,
+    "endedAt": 111184,
+    "timeOrigin": 1791119906366.4
+  },
+  "whole": {
+    "callbackRows": 10843,
+    "drawnCallbackIntervals": 5423,
+    "originalIntervalDenominatorSeconds": 90.425,
+    "renderedFpsUnrounded": 59.972352778545755,
+    "publicationRows": 5290,
+    "publicationSpanSeconds": 90.40589999997616,
+    "seaAdvanceSeconds": 88.14999999999588,
+    "physicsStepsPerWallSecondUnrounded": 58.50281895320048,
+    "renderedFrameMsP95Unrounded": 17.5,
+    "renderedFrameMsMaxUnrounded": 58.099999999998545,
+    "originalReport": {
+      "renderedFps": 60,
+      "physicsStepsPerWallSecond": 58.5,
+      "renderedFrameMsP95": 17.5,
+      "renderedFrameMsMax": 58.1
+    }
+  },
+  "windows": [
+    {
+      "fromSeconds": 45,
+      "toSeconds": 60,
+      "halfOpen": true,
+      "lowerWallMs": 65759.19999998808,
+      "upperWallMs": 80759.19999998808,
+      "callbackRows": 1801,
+      "drawnCallbackIntervals": 900,
+      "drawnFps": 60.0,
+      "publicationRows": 883,
+      "firstPublicationWallMs": 65774.5,
+      "lastPublicationWallMs": 80757.19999998808,
+      "firstSeaTime": 361.2077132243016,
+      "lastSeaTime": 375.9077132243008,
+      "publicationSpanSeconds": 14.982699999988078,
+      "seaAdvanceSeconds": 14.699999999999193,
+      "physicsStepsPerWallSecond": 58.86789430480844
+    },
+    {
+      "fromSeconds": 80,
+      "toSeconds": 90,
+      "halfOpen": true,
+      "lowerWallMs": 100759.19999998808,
+      "upperWallMs": 110759.19999998808,
+      "callbackRows": 1196,
+      "drawnCallbackIntervals": 599,
+      "drawnFps": 59.9,
+      "publicationRows": 511,
+      "firstPublicationWallMs": 100774.69999998808,
+      "lastPublicationWallMs": 110758.80000001192,
+      "firstSeaTime": 395.49104655763296,
+      "lastSeaTime": 403.991046557633,
+      "publicationSpanSeconds": 9.984100000023842,
+      "seaAdvanceSeconds": 8.500000000000057,
+      "physicsStepsPerWallSecond": 51.08121913830846
+    }
+  ],
+  "callbackWindowFormula": "count(callbackTimestampMs in [origin+a*1000,origin+b*1000) with drawCalls>0)/(b-a)",
+  "physicsWindowFormula": "(lastSea-firstSea)*60/((lastPublicationWall-firstPublicationWall)/1000), publications selected in the same half-open wall window",
+  "timingQualification": "Draw counters aggregate original observer callback intervals; the first interval can cross sample origin. Existing simulationTimeline uses first publication as origin. Equal wall windows need not represent equal wave clocks. Stage quantiles overlap and are not additive request latency.",
+  "elapsedSeconds": 0.04377279197797179,
+  "endedAt": "2026-10-04T13:33:05.934403+00:00"
+}

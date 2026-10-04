@@ -1,0 +1,17 @@
+{
+  "schema": "zero-mask-fps-first-archive-production/v1",
+  "valid": true,
+  "scope": "Read/hash once per original path, exact-byte copies/gzip roundtrip only; no game/helper import, replay, build, native process or raster decoding.",
+  "payloads": 33,
+  "aliases": 39,
+  "storedPayloadBytes": 642402,
+  "archiveBytes": 996846,
+  "manifestSha256": "7843697dcd293f977d2d7dee2a1c198cfc5804d5cc9802356e133808d63a28aa",
+  "firstCreationVerification": {
+    "pinOccurrencesVerified": 1323,
+    "uniquePathsReadOnce": 1276,
+    "uniqueOriginalBytesRead": 89760218,
+    "allOriginalPinnedInputIdentitiesVerified": true
+  },
+  "elapsedSeconds": 0.3166355419671163
+}

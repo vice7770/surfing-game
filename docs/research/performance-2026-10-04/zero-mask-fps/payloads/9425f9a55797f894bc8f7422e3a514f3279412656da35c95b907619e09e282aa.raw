@@ -1,0 +1,80 @@
+{
+  "schema": "root-passive-original-native-driver/v1",
+  "valid": true,
+  "commandSeconds": 175,
+  "cleanupSeconds": 5,
+  "wholeSeconds": 180,
+  "readySha256": "7c4c016509a373b70b670cb51aa413b83966170c8b8f2f4bb3b063c17d4058be",
+  "bindingsSha256": "2d3128d031b2eeb22d33d4d22919be022f8428d5c4337337a02feebd51ea1db9",
+  "startedAt": "2026-10-04T13:18:20.213274+00:00",
+  "signals": [],
+  "prePorts": {
+    "4259": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "9669": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "4200": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "5173": {
+      "closed": false,
+      "reason": "TCP accepted"
+    }
+  },
+  "command": [
+    "node",
+    "/private/tmp/surf-zero-mask-fps-20261004/capture.mjs",
+    "--run=true",
+    "--out=/private/tmp/surf-zero-mask-fps-20261004/native-first"
+  ],
+  "pid": 61408,
+  "processGroup": 61408,
+  "processGroupCreatedByThisDriver": true,
+  "membersAtCleanup": [],
+  "membersAfterCleanup": [],
+  "cleanupElapsedSeconds": 0.0716861670371145,
+  "exitCode": 0,
+  "postPorts": {
+    "4259": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "9669": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "4200": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "5173": {
+      "closed": false,
+      "reason": "TCP accepted"
+    }
+  },
+  "independentClosureValid": true,
+  "untouchedPortScope": "4200/5173 are read-only TCP witnesses; no signal, stop, or interaction",
+  "log": {
+    "path": "/private/tmp/surf-zero-mask-fps-20261004/native-first.native-driver.log",
+    "bytes": 156,
+    "sha256": "f7d132aa39d2c7b35b04299d6fe51e2927d80601ac57f1f72e1a32ef2bdf26d7"
+  },
+  "nativeReport": {
+    "path": "/private/tmp/surf-zero-mask-fps-20261004/native-first/report.json",
+    "bytes": 25732,
+    "sha256": "a2e95883013d66be823e4e8060d8484439342396f2bb63faa0204c2dbf73db71"
+  },
+  "nativeValid": true,
+  "nativeIncomplete": false,
+  "nativeFirstFailure": null,
+  "nativeOutputBytes": 4430348,
+  "totalLogBytes": 1311,
+  "endedAt": "2026-10-04T13:20:19.245111+00:00",
+  "elapsedSeconds": 119.0309075419791,
+  "wholeOutputBytes": 4432704
+}

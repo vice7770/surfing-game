@@ -1,0 +1,15 @@
+{
+  "schema": "root-zero-mask-production-type-observation/v1",
+  "valid": true,
+  "recordedAt": "2026-10-04T13:07:07.199Z",
+  "cwd": "/Users/regina/Desktop/Projects/surfing-game",
+  "command": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
+  "result": {
+    "chunk_id": "0c192b",
+    "wall_time_seconds": 4.951827833,
+    "exit_code": 0,
+    "original_token_count": 0,
+    "output": ""
+  },
+  "scope": "First current production strict typecheck tool observation; no inherited old source typing claim."
+}

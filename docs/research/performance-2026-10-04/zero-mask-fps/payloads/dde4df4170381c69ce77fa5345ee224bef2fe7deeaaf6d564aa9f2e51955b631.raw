@@ -1,0 +1,42 @@
+from pathlib import Path
+import datetime, hashlib, json, signal, subprocess, time
+
+signal.alarm(30)
+w = Path('/private/tmp/surf-zero-mask-fps-20261004')
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+ready_sha = sha(w/'ready.json')
+assert ready_sha == '7c4c016509a373b70b670cb51aa413b83966170c8b8f2f4bb3b063c17d4058be'
+ready = json.loads((w/'ready.json').read_text())
+logs = w/'root-helper-checks-first'
+logs.mkdir()
+commands = [['node', '--check', str(w/name)] for name in ['freeze.mjs','bounded-output.mjs','capture.mjs','survey.mjs','native-owned.mjs','passive-guard.mjs']]
+commands += [['python3','-c','import ast,pathlib; ast.parse(pathlib.Path('+repr(str(w/'native-driver.py'))+').read_text()); print("AST parse passed")'], ['node',str(w/'capture.mjs'),'--run=false'], ['python3',str(w/'native-driver.py'),'--run=false']]
+observations = []
+start = time.monotonic()
+for i, command in enumerate(commands):
+    tick = time.monotonic()
+    result = subprocess.run(command,cwd=w,capture_output=True,timeout=10)
+    body = result.stdout+result.stderr
+    assert len(body) <= 1024*1024
+    log = logs/('command-'+str(i)+'.log')
+    log.write_bytes(body)
+    observations.append({'argv':command,'exitCode':result.returncode,'elapsedSeconds':time.monotonic()-tick,'log':str(log),'logBytes':len(body),'logSha256':sha(log)})
+    assert result.returncode == 0, observations[-1]
+assert len(ready['sourceFiles']) == len(ready['sourceCopies']) == 592
+for original, copy in zip(ready['sourceFiles'],ready['sourceCopies']):
+    b = Path(original['path']).read_bytes()
+    assert b == Path(copy['path']).read_bytes()
+    assert len(b) == original['bytes'] == copy['bytes']
+    assert hashlib.sha256(b).hexdigest() == original['sha256'] == copy['sha256']
+assert len(ready['compiledFiles']) == 49
+for pin in ready['compiledFiles']+ready['firstRoot']['pins']:
+    p = Path(pin['path'])
+    assert p.stat().st_size == pin['bytes'] and sha(p) == pin['sha256']
+for pin in ready['firstRoot']['pins']:
+    receipt = json.loads(Path(pin['path']).read_text())
+    assert receipt['valid'] and receipt['result']['exit_code'] == 0
+assert sha(w/'ready.json') == ready_sha
+receipt = {'valid':True,'readySha256':ready_sha,'helperSyntaxFresh':True,'currentSourceByteIdentityVerified':True,'currentDistByteIdentityVerified':True,'firstCurrentTypeBuildReceiptsVerified':True,'command':'python3 '+str(w/'root-checks-first.py'),'recordedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'elapsedSeconds':time.monotonic()-start,'commands':observations,'sourceFiles':592,'distFiles':49,'scope':'Fresh helper syntax/unarmed guards plus current exact source-copy/dist/first root receipt identity; no type/build repeat, native resource or timing sample.'}
+with (w/'root-helper-checks.json').open('x') as f:
+    json.dump(receipt,f,indent=2); f.write('\n')
+print(json.dumps({'valid':True,'helperChecks':len(observations),'sourceFiles':592,'distFiles':49,'elapsedSeconds':receipt['elapsedSeconds'],'readySha256':ready_sha}))

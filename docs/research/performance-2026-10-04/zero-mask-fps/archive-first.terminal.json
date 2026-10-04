@@ -1,0 +1,20 @@
+{
+  "name": "archive-first",
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps/archive-first.py"
+  ],
+  "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/zero-mask-fps",
+  "startedAt": "2026-10-04T13:33:05.471515+00:00",
+  "pid": 65521,
+  "freshProcessGroup": 65521,
+  "exitCode": 0,
+  "childClosed": true,
+  "endedAt": "2026-10-04T13:33:05.843230+00:00",
+  "elapsedSeconds": 0.3718135840026662,
+  "log": {
+    "path": "archive-first.log",
+    "bytes": 659,
+    "sha256": "41f413f15a82d358cfc1dfb0b3b97727e415657516d9b41d089652b41ea55a1f"
+  }
+}

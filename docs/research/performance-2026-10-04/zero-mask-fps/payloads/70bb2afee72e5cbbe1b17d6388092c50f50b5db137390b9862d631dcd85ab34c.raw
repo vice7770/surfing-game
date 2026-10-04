@@ -1,0 +1,18 @@
+// Shared evidence IO only. Caps retained files, not browser/GPU heap or actual peak RSS.
+import assert from 'node:assert/strict';
+import { existsSync,lstatSync,mkdirSync,readFileSync,readdirSync,realpathSync,writeFileSync as originalWrite } from 'node:fs';
+import { dirname,join,relative,resolve } from 'node:path';
+export const WORK='/private/tmp/surf-zero-mask-fps-20261004',OUT=join(WORK,'native-first');
+export const TOTAL=384*1024*1024,LOG_SHARE=512*1024,RECEIPT=128*1024,METADATA=8*1024*1024;
+function rows(root){if(!existsSync(root))return [];const s=lstatSync(root);assert(s.isDirectory()&&!s.isSymbolicLink());const found=[];for(const name of readdirSync(root)){const p=join(root,name),stat=lstatSync(p);assert(!stat.isSymbolicLink());if(stat.isDirectory())found.push(...rows(p));else{assert(stat.isFile());found.push({path:p,bytes:stat.size});}}return found;}
+export function outputBytes(){return rows(OUT).reduce((sum,row)=>sum+row.bytes,0);}
+export function writeFileSync(path,value,options={}){
+  const p=resolve(path),rel=relative(OUT,p);assert(rel&&!rel.startsWith('..')&&!rel.startsWith('/'),'Only owned native evidence files');
+  const bytes=typeof value==='string'?Buffer.from(value,options.encoding??'utf8'):Buffer.from(value);
+  const cap=p.endsWith('.png')?32*1024*1024:p.endsWith('.log')?LOG_SHARE:METADATA;assert(bytes.length<=cap,'Evidence per-file budget exceeded');
+  const current=rows(OUT),next=current.reduce((sum,row)=>sum+(row.path===p?0:row.bytes),bytes.length),remaining=TOTAL-LOG_SHARE-RECEIPT;
+  assert(next<=remaining,'384MiB all outputs including sibling supervisor reservations exceeded');
+  if(p!==join(OUT,'report.json')&&p!==join(OUT,'native.log'))assert(next<=remaining-METADATA-LOG_SHARE,'Reserve failure metadata/native log within total cap');
+  mkdirSync(dirname(p),{recursive:true});assert.equal(realpathSync(dirname(p)),dirname(p));if(existsSync(p))assert(lstatSync(p).isFile()&&!lstatSync(p).isSymbolicLink());originalWrite(p,bytes,options);
+}
+export function readOwned(name){const p=join(OUT,name);assert(lstatSync(p).isFile()&&!lstatSync(p).isSymbolicLink());assert.equal(realpathSync(p),p);return readFileSync(p);}
