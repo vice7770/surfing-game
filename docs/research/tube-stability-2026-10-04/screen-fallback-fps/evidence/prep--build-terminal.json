@@ -1,0 +1,24 @@
+{
+  "schema": "tube-fallback-candidate-build-terminal/v1",
+  "status": "passed",
+  "runtimeBaseline": "e3e630bc45339e0f7564e59cfdd556275c06de92",
+  "buildId": "306258296",
+  "readySha256": "62d8b19e2fa3ac773403c20f5b7dea064284ea34eac2b4671f3945ee33afa154",
+  "sourceManifestSha256": "77548eb89455a1b1b6153a3ca81622b6ea435fba184fb04ea79a45a0553a715b",
+  "baselineReused": true,
+  "armManifests": [
+    {
+      "arm": "baseline",
+      "path": "/private/tmp/surf-tube-fallback-fps-20261004/baseline/build-manifest.json",
+      "bytes": 3342,
+      "sha256": "3432035686aa8f879b9c868d0720115a1d03fdd189dcb25490998a596e70053d"
+    },
+    {
+      "arm": "candidate",
+      "path": "/private/tmp/surf-tube-fallback-fps-20261004/candidate/build-manifest.json",
+      "bytes": 4762,
+      "sha256": "c5e4a8404ac620d36da8b13b8ab268fc0cc3e4e140ac8a2ae0ef38e34c7d863f"
+    }
+  ],
+  "failure": null
+}

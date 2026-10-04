@@ -1,0 +1,3 @@
+{"stage":"START","arm":"baseline","pid":98574,"server":4231,"cdp":9641,"sourceManifest":"77548eb89455a1b1b6153a3ca81622b6ea435fba184fb04ea79a45a0553a715b","compiledManifest":"3432035686aa8f879b9c868d0720115a1d03fdd189dcb25490998a596e70053d"}
+{"stage":"START","arm":"candidate","pid":99126,"server":4232,"cdp":9642,"sourceManifest":"77548eb89455a1b1b6153a3ca81622b6ea435fba184fb04ea79a45a0553a715b","compiledManifest":"c5e4a8404ac620d36da8b13b8ab268fc0cc3e4e140ac8a2ae0ef38e34c7d863f"}
+{"valid":true,"incomplete":false,"report":"/private/tmp/surf-tube-fallback-fps-20261004/root-run/report.json"}

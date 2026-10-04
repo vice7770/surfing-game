@@ -1,0 +1,10 @@
+[33mWarning: Invalid input options (1 issue found)
+- For the "define". Invalid key: Expected never but received "define". [0m
+
+ WARN  inlineDynamicImports option is deprecated, please use codeSplitting: false instead.
+
+[33mWarning: Invalid input options (1 issue found)
+- For the "define". Invalid key: Expected never but received "define". [0m
+
+ WARN  inlineDynamicImports option is deprecated, please use codeSplitting: false instead.
+

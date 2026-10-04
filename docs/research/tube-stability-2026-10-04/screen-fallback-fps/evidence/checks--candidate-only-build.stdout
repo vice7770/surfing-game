@@ -1,0 +1,20 @@
+{"stage":"START","arm":"candidate","buildId":"306258296","baselineReused":true}
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 250 modules transformed.
+rendering chunks...
+computing gzip size...
+candidate/dist/build.json                           0.02 kB │ gzip:   0.04 kB
+candidate/dist/index.html                           1.62 kB │ gzip:   0.62 kB
+candidate/dist/assets/surfZoneWorker-tIJO8MTG.js  447.01 kB
+candidate/dist/assets/index-DA8NEfOT.css           33.21 kB │ gzip:   7.32 kB
+candidate/dist/assets/devStepping-k2UjmiPo.js       0.32 kB │ gzip:   0.25 kB
+candidate/dist/assets/particleBench-kslOprnN.js    10.70 kB │ gzip:   4.44 kB
+candidate/dist/assets/waterSheet-SLHp9ZKD.js       11.68 kB │ gzip:   5.35 kB
+candidate/dist/assets/jevRecorder-DYZISQu4.js      15.91 kB │ gzip:   6.65 kB
+candidate/dist/assets/rideRecorder-D5NoCuBx.js     41.10 kB │ gzip:  13.40 kB
+candidate/dist/assets/index-DEsZK6tc.js           582.53 kB │ gzip: 160.75 kB
+candidate/dist/assets/WorkerSurfZone-BFghfPC-.js  858.27 kB │ gzip: 265.62 kB
+
+✓ built in 291ms
+{"stage":"TERMINAL","status":"passed","workerByteExact":true,"armManifests":[{"arm":"baseline","path":"/private/tmp/surf-tube-fallback-fps-20261004/baseline/build-manifest.json","bytes":3342,"sha256":"3432035686aa8f879b9c868d0720115a1d03fdd189dcb25490998a596e70053d"},{"arm":"candidate","path":"/private/tmp/surf-tube-fallback-fps-20261004/candidate/build-manifest.json","bytes":4762,"sha256":"c5e4a8404ac620d36da8b13b8ab268fc0cc3e4e140ac8a2ae0ef38e34c7d863f"}]}

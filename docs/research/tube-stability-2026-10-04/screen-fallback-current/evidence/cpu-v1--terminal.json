@@ -1,0 +1,74 @@
+{
+  "schema": "tube-fallback-native-cpu-terminal/v1",
+  "pid": 96857,
+  "start": "2026-10-04T04:15:36.661414+00:00",
+  "readySha256": "face4cce0e10daf0abba3adfade79f0970c4e38e5d237db75af3188eb718956c",
+  "commands": [
+    {
+      "number": 1,
+      "args": [
+        "node",
+        "--check",
+        "authority.mjs"
+      ],
+      "cwd": "/private/tmp/surf-tube-fallback-current-20261004/native",
+      "start": "2026-10-04T04:15:36.661774+00:00",
+      "stdout": "01-stdout.log",
+      "stderr": "01-stderr.log",
+      "pid": 96868,
+      "exitCode": 0,
+      "end": "2026-10-04T04:15:36.710912+00:00"
+    },
+    {
+      "number": 2,
+      "args": [
+        "node",
+        "--check",
+        "build.mjs"
+      ],
+      "cwd": "/private/tmp/surf-tube-fallback-current-20261004/native",
+      "start": "2026-10-04T04:15:36.711434+00:00",
+      "stdout": "02-stdout.log",
+      "stderr": "02-stderr.log",
+      "pid": 96869,
+      "exitCode": 0,
+      "end": "2026-10-04T04:15:36.754210+00:00"
+    },
+    {
+      "number": 3,
+      "args": [
+        "node",
+        "--check",
+        "device-gate.mjs"
+      ],
+      "cwd": "/private/tmp/surf-tube-fallback-current-20261004/native",
+      "start": "2026-10-04T04:15:36.754683+00:00",
+      "stdout": "03-stdout.log",
+      "stderr": "03-stderr.log",
+      "pid": 96870,
+      "exitCode": 0,
+      "end": "2026-10-04T04:15:36.797181+00:00"
+    },
+    {
+      "number": 4,
+      "args": [
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/tsc",
+        "-p",
+        "tsconfig.native.json",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/private/tmp/surf-tube-fallback-current-20261004/native",
+      "start": "2026-10-04T04:15:36.797595+00:00",
+      "stdout": "04-stdout.log",
+      "stderr": "04-stderr.log",
+      "pid": 96871,
+      "exitCode": 2,
+      "end": "2026-10-04T04:15:39.534595+00:00"
+    }
+  ],
+  "pass_": false,
+  "sourceBeforeAfterExact": true,
+  "end": "2026-10-04T04:15:39.551484+00:00",
+  "inputCount": 310
+}

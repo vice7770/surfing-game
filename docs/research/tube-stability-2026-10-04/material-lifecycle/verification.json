@@ -1,0 +1,12 @@
+{
+  "valid": true,
+  "scope": "Archive stored/decompressed/original-alias and external-byte verification only; no game/test/build/measurement execution",
+  "originalFiles": 31,
+  "uniquePayloads": 22,
+  "exactDuplicateOriginalAliases": 9,
+  "storedEvidenceBytes": 44618,
+  "expandedUniqueBytes": 212223,
+  "externalReferencesVerified": 129,
+  "markdownLinksVerified": 6,
+  "manifestSha256": "b20f47183b3d3d3add03ce3e9b9b5181a0e62ef6d6bb8bd93ec4195c5d707be4"
+}

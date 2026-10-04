@@ -1,0 +1,18 @@
+--- /private/tmp/surf-water-prefetch-fps-20261004/native-owned.mjs
++++ /private/tmp/surf-tube-fallback-fps-20261004/native-owned.mjs
+@@ -20,13 +20,13 @@
+ 
+ export async function launch({ url, width, height, port, args }) {
+   if (width !== 1708 || height !== 966 || JSON.stringify(args) !== JSON.stringify(['--mute-audio'])) throw Error('Owned launch contract changed');
+-  const output = process.env.CONTACT_FPS_LAUNCHER_REPORT;
++  const output = process.env.FALLBACK_FPS_LAUNCHER_REPORT;
+   if (!output) throw Error('Launcher evidence path missing');
+   const evidence = { initialRequest: { size: [1708, 966], position: [60, 60] }, resizeOverrides: [], ownedChromeClosed: false };
+   const save = () => writeFileSync(output, JSON.stringify(evidence, null, 2) + '\n');
+   evidence.preSpawnPort = await tcpProof(port);
+   if (evidence.preSpawnPort.closed !== true) throw Error('Owned CDP port must be unoccupied');
+-  const profile = mkdtempSync(join(tmpdir(), 'breakline-prefetch-fps-'));
++  const profile = mkdtempSync(join(tmpdir(), 'breakline-tube-fallback-fps-'));
+   const chrome = spawn(process.env.CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', [
+     `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
+     '--no-first-run', '--no-default-browser-check', '--disable-extensions',

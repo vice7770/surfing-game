@@ -1,0 +1,219 @@
+{
+  "schema": "screen-fallback-fps-derived-summary/v1",
+  "valid": true,
+  "incomplete": false,
+  "status": "HOLD-not-adopted",
+  "startedAt": "2026-10-04T04:21:06.575Z",
+  "endedAt": "2026-10-04T04:25:06.859Z",
+  "order": [
+    "baseline",
+    "candidate"
+  ],
+  "arms": {
+    "baseline": {
+      "renderedFps": 60,
+      "freshSnapshotsPerSecond": 57.51,
+      "simulationSecondsPerWallSecond": 0.959,
+      "renderedFrameMsP50": 16.7,
+      "renderedFrameMsP95": 24.3,
+      "renderedFrameMsP99": 25.6,
+      "renderedFrameMsMax": 41.8,
+      "snapshotIntervalMsP50": 17,
+      "snapshotIntervalMsP95": 22.2,
+      "snapshotIntervalMsP99": 27,
+      "snapshotIntervalMsMax": 53.6,
+      "renderedDrawCalls": 54,
+      "renderedTrianglesP50": 1149313,
+      "renderedTrianglesP95": 1195015,
+      "physicsStepDeltaDistribution": {
+        "1": 5177
+      },
+      "physicsStepsBetweenPublicationsMax": 1,
+      "nonIntegralPhysicsStepDeltas": 0,
+      "duplicatePublicationEvents": 0,
+      "backwardsPublicationEvents": 0,
+      "config": {
+        "spot": "padang",
+        "seed": 8761,
+        "significantHeight": 3.8,
+        "peakPeriod": 18,
+        "directionDegrees": 0,
+        "spreading": 150,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "dx": 2,
+        "fineSpacing": 1,
+        "componentCount": 64
+      },
+      "observed": {
+        "viewport": "1708 \u00d7 879",
+        "browserDpr": 2,
+        "renderPixelRatio": 1.75,
+        "graphics": {
+          "renderScale": 1,
+          "nativePixelDensity": true,
+          "frameLimit": 60,
+          "waterSimulation": "auto",
+          "seaDetail": "rich",
+          "caustics": true,
+          "sprayMist": true,
+          "oceanView": "far",
+          "foam": "detailed",
+          "waterLook": "rich",
+          "particles": "high",
+          "preset": "high"
+        },
+        "waterLook": "rich",
+        "vertexNormals": false,
+        "particleLevel": "high",
+        "renderSpacing": 2,
+        "maxBatchSteps": 1,
+        "compute": "gpu",
+        "screen": "ride"
+      },
+      "ordinaryConfigMatches": true,
+      "baselineComparable": true,
+      "comparisonFailures": [],
+      "pipelineTotalP50": 16.5,
+      "pipelineTotalP95": 21.7,
+      "lateCompleteWallBins": [
+        {
+          "fromSeconds": 80,
+          "freshHz": 50.56,
+          "physicsHz": 50.56,
+          "totalP50": 17.4
+        },
+        {
+          "fromSeconds": 82,
+          "freshHz": 50.77,
+          "physicsHz": 50.77,
+          "totalP50": 17.6
+        },
+        {
+          "fromSeconds": 84,
+          "freshHz": 46.88,
+          "physicsHz": 46.88,
+          "totalP50": 20.4
+        },
+        {
+          "fromSeconds": 86,
+          "freshHz": 40.24,
+          "physicsHz": 40.24,
+          "totalP50": 23.7
+        },
+        {
+          "fromSeconds": 88,
+          "freshHz": 42.17,
+          "physicsHz": 42.17,
+          "totalP50": 22.9
+        }
+      ]
+    },
+    "candidate": {
+      "renderedFps": 60,
+      "freshSnapshotsPerSecond": 57.06,
+      "simulationSecondsPerWallSecond": 0.951,
+      "renderedFrameMsP50": 16.7,
+      "renderedFrameMsP95": 25,
+      "renderedFrameMsP99": 26.1,
+      "renderedFrameMsMax": 83.9,
+      "snapshotIntervalMsP50": 17,
+      "snapshotIntervalMsP95": 22.3,
+      "snapshotIntervalMsP99": 27.3,
+      "snapshotIntervalMsMax": 69.8,
+      "renderedDrawCalls": 56,
+      "renderedTrianglesP50": 1426305,
+      "renderedTrianglesP95": 1472502,
+      "physicsStepDeltaDistribution": {
+        "1": 5137
+      },
+      "physicsStepsBetweenPublicationsMax": 1,
+      "nonIntegralPhysicsStepDeltas": 0,
+      "duplicatePublicationEvents": 0,
+      "backwardsPublicationEvents": 0,
+      "config": {
+        "spot": "padang",
+        "seed": 8761,
+        "significantHeight": 3.8,
+        "peakPeriod": 18,
+        "directionDegrees": 0,
+        "spreading": 150,
+        "tide": 0,
+        "windSpeed": 0,
+        "stage": 2,
+        "compute": "auto",
+        "dx": 2,
+        "fineSpacing": 1,
+        "componentCount": 64
+      },
+      "observed": {
+        "viewport": "1708 \u00d7 879",
+        "browserDpr": 2,
+        "renderPixelRatio": 1.75,
+        "graphics": {
+          "renderScale": 1,
+          "nativePixelDensity": true,
+          "frameLimit": 60,
+          "waterSimulation": "auto",
+          "seaDetail": "rich",
+          "caustics": true,
+          "sprayMist": true,
+          "oceanView": "far",
+          "foam": "detailed",
+          "waterLook": "rich",
+          "particles": "high",
+          "preset": "high"
+        },
+        "waterLook": "rich",
+        "vertexNormals": false,
+        "particleLevel": "high",
+        "renderSpacing": 2,
+        "maxBatchSteps": 1,
+        "compute": "gpu",
+        "screen": "ride"
+      },
+      "ordinaryConfigMatches": true,
+      "baselineComparable": true,
+      "comparisonFailures": [],
+      "pipelineTotalP50": 16.3,
+      "pipelineTotalP95": 21.7,
+      "lateCompleteWallBins": [
+        {
+          "fromSeconds": 80,
+          "freshHz": 51.21,
+          "physicsHz": 51.21,
+          "totalP50": 17.2
+        },
+        {
+          "fromSeconds": 82,
+          "freshHz": 48.32,
+          "physicsHz": 48.32,
+          "totalP50": 18.6
+        },
+        {
+          "fromSeconds": 84,
+          "freshHz": 50.53,
+          "physicsHz": 50.53,
+          "totalP50": 18.3
+        },
+        {
+          "fromSeconds": 86,
+          "freshHz": 43.25,
+          "physicsHz": 43.25,
+          "totalP50": 21.1
+        },
+        {
+          "fromSeconds": 88,
+          "freshHz": 44.77,
+          "physicsHz": 44.77,
+          "totalP50": 21
+        }
+      ]
+    }
+  },
+  "triangleIncrease": 276992,
+  "triangleIncreasePercent": 24.100658393318454,
+  "limits": "One sequential ordinary90second pair with5warmseconds. Wall bins are independent elapsedwalltime, not matchedsea clocks. No causal attribution or wholephysics/visual acceptance."
+}

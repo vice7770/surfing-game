@@ -1,0 +1,1473 @@
+{
+  "schema": "material-lifecycle-lossless-archive/v1",
+  "scope": "Completed fresh CPU material lifecycle evidence; no native visual/GPU/FPS/full tube acceptance",
+  "acceptedRuntimeRevision": "e3e630bc45339e0f7564e59cfdd556275c06de92",
+  "entries": [
+    {
+      "storedPath": "evidence/v2/.vitest-cache/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 106,
+      "storedSha256": "01c3de966a7066510a96e105c5d71de7e4ae3d492ecb86ef7683d5aedd023a8a",
+      "expandedBytes": 95,
+      "expandedSha256": "5b8eecd4e022eb898136d74ddcddbac186f303c2207b287cdb97f01ab46c508c",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/.vitest-cache/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json",
+          "bytes": 95,
+          "sha256": "5b8eecd4e022eb898136d74ddcddbac186f303c2207b287cdb97f01ab46c508c"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/cases.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 354,
+      "storedSha256": "53867597a3a04e2815a24615acf20b89fca702aa2e4bef57568a94085e96a5a3",
+      "expandedBytes": 824,
+      "expandedSha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/cases.json",
+          "bytes": 824,
+          "sha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928"
+        },
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/cases.json",
+          "bytes": 824,
+          "sha256": "e9c9a5bd2425c7978ff149c27db4e7822df5855e5d7cad86a301f1734e248928"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks-first/after.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 4581,
+      "storedSha256": "b9ec6ccd4a14d411eaf99f66f0e4fd420228a5c3c1be2b24b2681648d445a1ca",
+      "expandedBytes": 17587,
+      "expandedSha256": "6b403a728a3378877839cd9ba204234b3752f9cddd8120800a8fcf06b40c2c49",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/after.json",
+          "bytes": 17587,
+          "sha256": "6b403a728a3378877839cd9ba204234b3752f9cddd8120800a8fcf06b40c2c49"
+        },
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/before.json",
+          "bytes": 17587,
+          "sha256": "6b403a728a3378877839cd9ba204234b3752f9cddd8120800a8fcf06b40c2c49"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks-first/lifecycle.stderr.log",
+      "encoding": "identity",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/lifecycle.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/strict.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/strict.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks-first/lifecycle.stdout.log",
+      "encoding": "identity",
+      "storedBytes": 188,
+      "storedSha256": "1f01a481659a124b3262b2de0d313fb9b850e0ba75e4973c2a6bd8dc7fb8836c",
+      "expandedBytes": 188,
+      "expandedSha256": "1f01a481659a124b3262b2de0d313fb9b850e0ba75e4973c2a6bd8dc7fb8836c",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/lifecycle.stdout.log",
+          "bytes": 188,
+          "sha256": "1f01a481659a124b3262b2de0d313fb9b850e0ba75e4973c2a6bd8dc7fb8836c"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/checks-first/terminal.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 415,
+      "storedSha256": "0a1e73860a15c5cbeb83820d902932816ff67729f434270d423c728cd5080311",
+      "expandedBytes": 1088,
+      "expandedSha256": "205e9179f9f4716eb5fa15b3b3c0864b515f43975e28b5c489a1536f28640397",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/terminal.json",
+          "bytes": 1088,
+          "sha256": "205e9179f9f4716eb5fa15b3b3c0864b515f43975e28b5c489a1536f28640397"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/first-console.log.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 540,
+      "storedSha256": "8d82cf2692ac560b58708bcfb979594e2a3578c3f5e821601bcafdf92f7e4fcb",
+      "expandedBytes": 1318,
+      "expandedSha256": "517637ee490826e2994654f5020c257432a783360fe63af7d87241b4ff010edb",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/first-console.log",
+          "bytes": 1318,
+          "sha256": "517637ee490826e2994654f5020c257432a783360fe63af7d87241b4ff010edb"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/lifecycle.test.ts.txt.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 4554,
+      "storedSha256": "f85f95b7770b90ca5470358978571d40c67d1bd0efe68aa36150d6873e75a071",
+      "expandedBytes": 13518,
+      "expandedSha256": "34736d1cb792266a0a3c47c0b513ae1afeb927100478029b28c8a6626c26ce80",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/lifecycle.test.ts",
+          "bytes": 13518,
+          "sha256": "34736d1cb792266a0a3c47c0b513ae1afeb927100478029b28c8a6626c26ce80"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/observer-semantics-v2.patch.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 2157,
+      "storedSha256": "7c1594c6781c9b2cab0bc0470e0c996a218c4a0b4cfb1e7443bebbb6eb027b7e",
+      "expandedBytes": 6344,
+      "expandedSha256": "2434e7ee246d8f8d637e5fb292e1335d3b2bc7f33597d7547dd1ab080b6dffb2",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/observer-semantics-v2.patch",
+          "bytes": 6344,
+          "sha256": "2434e7ee246d8f8d637e5fb292e1335d3b2bc7f33597d7547dd1ab080b6dffb2"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/package.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 1105,
+      "storedSha256": "e3e0a12715a1a6ffaf470ee53dca3ae4585fead023eea4bc57d5cf8ec1075c5e",
+      "expandedBytes": 4917,
+      "expandedSha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/package.json",
+          "bytes": 4917,
+          "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+        },
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/package.json",
+          "bytes": 4917,
+          "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/proof-freeze.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 1328,
+      "storedSha256": "7d7deab773c0cc3a7ce89804c6d2286f8c35aea886226b8eb6706592fb930c60",
+      "expandedBytes": 3435,
+      "expandedSha256": "6e34816d86b66f22fdf31c2f4821c56f36cfd0c0bf5de25e76ceb849271f455b",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/proof-freeze.json",
+          "bytes": 3435,
+          "sha256": "6e34816d86b66f22fdf31c2f4821c56f36cfd0c0bf5de25e76ceb849271f455b"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/proof-summary.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 1807,
+      "storedSha256": "746e9221cba43c19ca10d09ff1fcfa854c7751b3d9875b0770f456a38110e54d",
+      "expandedBytes": 9284,
+      "expandedSha256": "323572b3dccf272b186fbc4f240d8ade891a32a3dbc613e90e48931fe6f1f56b",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/proof-summary.json",
+          "bytes": 9284,
+          "sha256": "323572b3dccf272b186fbc4f240d8ade891a32a3dbc613e90e48931fe6f1f56b"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/proposal.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 3152,
+      "storedSha256": "40f3543662a600e36c7c4f17d131e6028b22b843481a3cad70ae21d2b1541c9f",
+      "expandedBytes": 6900,
+      "expandedSha256": "88bd5b4d097c2857897a4674ea0f526ec4d71145647df0c7eb4749fcd0fb2883",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/proposal.json",
+          "bytes": 6900,
+          "sha256": "88bd5b4d097c2857897a4674ea0f526ec4d71145647df0c7eb4749fcd0fb2883"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/ready.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 1167,
+      "storedSha256": "4f2b5a45c076d74d23fe531982868de3c91d4b64ce2611753f4ce05b5f241270",
+      "expandedBytes": 3436,
+      "expandedSha256": "4e0bb9152cbc50dbd0335e1b16834ae6e262483dabe463c11e0e2f1e2e4d12ee",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/ready.json",
+          "bytes": 3436,
+          "sha256": "4e0bb9152cbc50dbd0335e1b16834ae6e262483dabe463c11e0e2f1e2e4d12ee"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/run-selected.mjs.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 1483,
+      "storedSha256": "57012e6b3bfa8aaec0c08aa89e17afef82ef87f661321475646daf0d1897fa7f",
+      "expandedBytes": 3840,
+      "expandedSha256": "81668a9fd6f9225b12fc508b6d7c5807fc2120cc37ee65f30672a6e2cc5b9d95",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/run-selected.mjs",
+          "bytes": 3840,
+          "sha256": "81668a9fd6f9225b12fc508b6d7c5807fc2120cc37ee65f30672a6e2cc5b9d95"
+        },
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/run-selected.mjs",
+          "bytes": 3840,
+          "sha256": "81668a9fd6f9225b12fc508b6d7c5807fc2120cc37ee65f30672a6e2cc5b9d95"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/run/result.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 6649,
+      "storedSha256": "2642916bb27fa7171981d572cd201ec4ff503aa030539b33558474db0b3c9874",
+      "expandedBytes": 77752,
+      "expandedSha256": "387a896eeb9157d92bf630f939756761f40ffb1171342c152c3724eea17d916f",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/run/result.json",
+          "bytes": 77752,
+          "sha256": "387a896eeb9157d92bf630f939756761f40ffb1171342c152c3724eea17d916f"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/source-manifest.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 6453,
+      "storedSha256": "663e85cae9ae26670db57fd5b368e86c1e1c62956561fe8718e193205e9a36ea",
+      "expandedBytes": 40350,
+      "expandedSha256": "0366bab8d8a2eb4842034a558228b40bf0ded2a35fbd260dcff2732c778247d5",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source-manifest.json",
+          "bytes": 40350,
+          "sha256": "0366bab8d8a2eb4842034a558228b40bf0ded2a35fbd260dcff2732c778247d5"
+        },
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/source-manifest.json",
+          "bytes": 40350,
+          "sha256": "0366bab8d8a2eb4842034a558228b40bf0ded2a35fbd260dcff2732c778247d5"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/tsconfig.lifecycle.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 352,
+      "storedSha256": "7ff937f4826aa3e612ff47b78f3687f7f449ce071a5be62562c20ffd9e2c47e7",
+      "expandedBytes": 604,
+      "expandedSha256": "9734090b03ef8186288f4c65b3d0a78f724cb86f6d58c7392c523da619a8bb73",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/tsconfig.lifecycle.json",
+          "bytes": 604,
+          "sha256": "9734090b03ef8186288f4c65b3d0a78f724cb86f6d58c7392c523da619a8bb73"
+        },
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/tsconfig.lifecycle.json",
+          "bytes": 604,
+          "sha256": "9734090b03ef8186288f4c65b3d0a78f724cb86f6d58c7392c523da619a8bb73"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/v2/vitest.lifecycle.config.ts.txt",
+      "encoding": "identity",
+      "storedBytes": 241,
+      "storedSha256": "68b6c4e2dce622c7b741614ad9ff3a69a2ab8d687c6b475a0ba175d68f7ee91a",
+      "expandedBytes": 241,
+      "expandedSha256": "68b6c4e2dce622c7b741614ad9ff3a69a2ab8d687c6b475a0ba175d68f7ee91a",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/vitest.lifecycle.config.ts",
+          "bytes": 241,
+          "sha256": "68b6c4e2dce622c7b741614ad9ff3a69a2ab8d687c6b475a0ba175d68f7ee91a"
+        },
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/vitest.lifecycle.config.ts",
+          "bytes": 241,
+          "sha256": "68b6c4e2dce622c7b741614ad9ff3a69a2ab8d687c6b475a0ba175d68f7ee91a"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/unexecuted-v1/lifecycle.test.ts.txt.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 4323,
+      "storedSha256": "a9b0bddfe5bee74a3dd4f031cd5eeb878e25296832e4e3aa53911dd4779e5ede",
+      "expandedBytes": 12823,
+      "expandedSha256": "e157578e4e85c05df423330f25ec080ee5e77d488470c7a6cf7ad2ac1f6d1137",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/lifecycle.test.ts",
+          "bytes": 12823,
+          "sha256": "e157578e4e85c05df423330f25ec080ee5e77d488470c7a6cf7ad2ac1f6d1137"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/unexecuted-v1/proposal.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 2717,
+      "storedSha256": "b61d5573ac4092668530407b86556069b784ecf7be6d5ddf3ee81f1cd94ec017",
+      "expandedBytes": 5861,
+      "expandedSha256": "d27b2b3a72f6dbc87d2eb4d7dd84821a659ca1216dfb06788a606f851d79d794",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/proposal.json",
+          "bytes": 5861,
+          "sha256": "d27b2b3a72f6dbc87d2eb4d7dd84821a659ca1216dfb06788a606f851d79d794"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/unexecuted-v1/ready.json.gz",
+      "encoding": "gzip-mtime0",
+      "storedBytes": 946,
+      "storedSha256": "57f0727cffbcd804e803bdb7c606a8850a88edb59af48e286216e53c9ec466d2",
+      "expandedBytes": 1818,
+      "expandedSha256": "12ad2d394556ec505e5675ec1a478d24d4b7731e1222c693b39ef6b5d11ba259",
+      "originals": [
+        {
+          "path": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/ready.json",
+          "bytes": 1818,
+          "sha256": "12ad2d394556ec505e5675ec1a478d24d4b7731e1222c693b39ef6b5d11ba259"
+        }
+      ]
+    }
+  ],
+  "originalFileCount": 31,
+  "uniquePayloadCount": 22,
+  "exactDuplicateOriginalAliases": 9,
+  "storedEvidenceBytes": 44618,
+  "expandedUniqueBytes": 212223,
+  "originalPathMap": [
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/.vitest-cache/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json",
+      "storedPath": "evidence/v2/.vitest-cache/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/cases.json",
+      "storedPath": "evidence/v2/cases.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/after.json",
+      "storedPath": "evidence/checks-first/after.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/before.json",
+      "storedPath": "evidence/checks-first/after.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/lifecycle.stderr.log",
+      "storedPath": "evidence/checks-first/lifecycle.stderr.log"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/lifecycle.stdout.log",
+      "storedPath": "evidence/checks-first/lifecycle.stdout.log"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/strict.stderr.log",
+      "storedPath": "evidence/checks-first/lifecycle.stderr.log"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/strict.stdout.log",
+      "storedPath": "evidence/checks-first/lifecycle.stderr.log"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/checks-first/terminal.json",
+      "storedPath": "evidence/checks-first/terminal.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/first-console.log",
+      "storedPath": "evidence/v2/first-console.log.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/lifecycle.test.ts",
+      "storedPath": "evidence/v2/lifecycle.test.ts.txt.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/observer-semantics-v2.patch",
+      "storedPath": "evidence/v2/observer-semantics-v2.patch.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/package.json",
+      "storedPath": "evidence/v2/package.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/proof-freeze.json",
+      "storedPath": "evidence/v2/proof-freeze.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/proof-summary.json",
+      "storedPath": "evidence/v2/proof-summary.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/proposal.json",
+      "storedPath": "evidence/v2/proposal.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/ready.json",
+      "storedPath": "evidence/v2/ready.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/run-selected.mjs",
+      "storedPath": "evidence/v2/run-selected.mjs.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/run/result.json",
+      "storedPath": "evidence/run/result.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/source-manifest.json",
+      "storedPath": "evidence/v2/source-manifest.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/tsconfig.lifecycle.json",
+      "storedPath": "evidence/v2/tsconfig.lifecycle.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/vitest.lifecycle.config.ts",
+      "storedPath": "evidence/v2/vitest.lifecycle.config.ts.txt"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/cases.json",
+      "storedPath": "evidence/v2/cases.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/lifecycle.test.ts",
+      "storedPath": "evidence/unexecuted-v1/lifecycle.test.ts.txt.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/package.json",
+      "storedPath": "evidence/v2/package.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/proposal.json",
+      "storedPath": "evidence/unexecuted-v1/proposal.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/ready.json",
+      "storedPath": "evidence/unexecuted-v1/ready.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/run-selected.mjs",
+      "storedPath": "evidence/v2/run-selected.mjs.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/source-manifest.json",
+      "storedPath": "evidence/v2/source-manifest.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/tsconfig.lifecycle.json",
+      "storedPath": "evidence/v2/tsconfig.lifecycle.json.gz"
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-material-lifecycle-20261004/unexecuted-v1/vitest.lifecycle.config.ts",
+      "storedPath": "evidence/v2/vitest.lifecycle.config.ts.txt"
+    }
+  ],
+  "externalAuthority": [
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/AttachedRider.ts",
+      "bytes": 134070,
+      "sha256": "9a4781251cb3def1f43d1f598e9cb8149ad09257233ca0fe6ee2790d6e189362",
+      "acceptedSourcePath": "src/physics/AttachedRider.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.ts",
+      "bytes": 134070,
+      "sha256": "9a4781251cb3def1f43d1f598e9cb8149ad09257233ca0fe6ee2790d6e189362",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4",
+      "acceptedSourcePath": "src/physics/BoardBody.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/DetachedSurfer.ts",
+      "bytes": 30945,
+      "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd",
+      "acceptedSourcePath": "src/physics/DetachedSurfer.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/DetachedSurfer.ts",
+      "bytes": 30945,
+      "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/MinimumJerkTrack.ts",
+      "bytes": 2659,
+      "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb",
+      "acceptedSourcePath": "src/physics/MinimumJerkTrack.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/MinimumJerkTrack.ts",
+      "bytes": 2659,
+      "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb",
+      "acceptedSourcePath": "src/physics/PhysicalSurfWater.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840",
+      "acceptedSourcePath": "src/physics/SurfWater.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/boardReference.ts",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032",
+      "acceptedSourcePath": "src/physics/boardReference.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardReference.ts",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/boardShape.ts",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2",
+      "acceptedSourcePath": "src/physics/boardShape.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardShape.ts",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/finForces.ts",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc",
+      "acceptedSourcePath": "src/physics/finForces.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/finForces.ts",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/hullForces.ts",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149",
+      "acceptedSourcePath": "src/physics/hullForces.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/hullForces.ts",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/legSpring.ts",
+      "bytes": 5593,
+      "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c",
+      "acceptedSourcePath": "src/physics/legSpring.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/legSpring.ts",
+      "bytes": 5593,
+      "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/physics/riderPosture.ts",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734",
+      "acceptedSourcePath": "src/physics/riderPosture.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/riderPosture.ts",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/AdvectionStencil.ts",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54",
+      "acceptedSourcePath": "src/wave/AdvectionStencil.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AdvectionStencil.ts",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/AerationField.ts",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+      "acceptedSourcePath": "src/wave/AerationField.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AerationField.ts",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54",
+      "acceptedSourcePath": "src/wave/Bathymetry.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/BoussinesqSolver.ts",
+      "bytes": 38556,
+      "sha256": "66cdbb3eb83f7d03ade33c11a429889b217d3b81cd6246b6dd5006a40b0e5d79",
+      "acceptedSourcePath": "src/wave/BoussinesqSolver.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver.ts",
+      "bytes": 38556,
+      "sha256": "66cdbb3eb83f7d03ade33c11a429889b217d3b81cd6246b6dd5006a40b0e5d79",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/Breaking.ts",
+      "bytes": 12851,
+      "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3",
+      "acceptedSourcePath": "src/wave/Breaking.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Breaking.ts",
+      "bytes": 12851,
+      "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/CrestKinematics.ts",
+      "bytes": 5019,
+      "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d",
+      "acceptedSourcePath": "src/wave/CrestKinematics.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/CrestKinematics.ts",
+      "bytes": 5019,
+      "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/FoamField.ts",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "acceptedSourcePath": "src/wave/FoamField.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/FoamField.ts",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/Overturn.ts",
+      "bytes": 10648,
+      "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29",
+      "acceptedSourcePath": "src/wave/Overturn.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Overturn.ts",
+      "bytes": 10648,
+      "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/PlungingLip.ts",
+      "bytes": 66165,
+      "sha256": "901f08ec0c4e24167df9321b06c29b221dd86689d9c602d7ae4cd194046ac13b",
+      "acceptedSourcePath": "src/wave/PlungingLip.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/PlungingLip.ts",
+      "bytes": 66165,
+      "sha256": "901f08ec0c4e24167df9321b06c29b221dd86689d9c602d7ae4cd194046ac13b",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/Refraction.ts",
+      "bytes": 5965,
+      "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b",
+      "acceptedSourcePath": "src/wave/Refraction.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Refraction.ts",
+      "bytes": 5965,
+      "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7",
+      "acceptedSourcePath": "src/wave/SeaState.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/SeaStateBoundary.ts",
+      "bytes": 5460,
+      "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c",
+      "acceptedSourcePath": "src/wave/SeaStateBoundary.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary.ts",
+      "bytes": 5460,
+      "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/ShallowWaterSolver.ts",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980",
+      "acceptedSourcePath": "src/wave/ShallowWaterSolver.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver.ts",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/SideFeed.ts",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd",
+      "acceptedSourcePath": "src/wave/SideFeed.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/SprayCloud.ts",
+      "bytes": 25478,
+      "sha256": "43fb50e67f430eeefe062bd5125a6b2e35725a806c68b0c6ea7a5ae8dd530f74",
+      "acceptedSourcePath": "src/wave/SprayCloud.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SprayCloud.ts",
+      "bytes": 25478,
+      "sha256": "43fb50e67f430eeefe062bd5125a6b2e35725a806c68b0c6ea7a5ae8dd530f74",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/SurfMeter.ts",
+      "bytes": 3170,
+      "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c",
+      "acceptedSourcePath": "src/wave/SurfMeter.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfMeter.ts",
+      "bytes": 3170,
+      "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/SurfZoneSimulation.ts",
+      "bytes": 68993,
+      "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920",
+      "acceptedSourcePath": "src/wave/SurfZoneSimulation.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.ts",
+      "bytes": 68993,
+      "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/SwellReadout.ts",
+      "bytes": 2110,
+      "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3",
+      "acceptedSourcePath": "src/wave/SwellReadout.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SwellReadout.ts",
+      "bytes": 2110,
+      "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/BreakingFront.ts",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c",
+      "acceptedSourcePath": "src/wave/barrel/BreakingFront.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/BreakingFront.ts",
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "acceptedSourcePath": "src/wave/barrel/ProfileLibrary.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 17189,
+      "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/SweptCrash.ts",
+      "bytes": 28953,
+      "sha256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da",
+      "acceptedSourcePath": "src/wave/barrel/SweptCrash.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/SweptCrash.ts",
+      "bytes": 28953,
+      "sha256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2036,
+      "sha256": "b58c4038afae8f3994cbf9e58a90a9806ac61d717a0cb51940ff7c5cd059d974",
+      "acceptedSourcePath": "src/wave/barrel/barrelLibrary.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2036,
+      "sha256": "b58c4038afae8f3994cbf9e58a90a9806ac61d717a0cb51940ff7c5cd059d974",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8",
+      "acceptedSourcePath": "src/wave/barrel/barrelLibraryIndex.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "acceptedSourcePath": "src/wave/barrel/barrelSpots.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/crashCurve.ts",
+      "bytes": 14166,
+      "sha256": "361183fa14ead52594e1bad25a6a47fd274bc294e8f8c6d5199814e01e4778a9",
+      "acceptedSourcePath": "src/wave/barrel/crashCurve.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crashCurve.ts",
+      "bytes": 14166,
+      "sha256": "361183fa14ead52594e1bad25a6a47fd274bc294e8f8c6d5199814e01e4778a9",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/crestOnset.ts",
+      "bytes": 4651,
+      "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3",
+      "acceptedSourcePath": "src/wave/barrel/crestOnset.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestOnset.ts",
+      "bytes": 4651,
+      "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "acceptedSourcePath": "src/wave/barrel/crestRays.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+      "bytes": 14454,
+      "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "acceptedSourcePath": "src/wave/barrel/frontRecords.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/heldOverturn.ts",
+      "bytes": 4886,
+      "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44",
+      "acceptedSourcePath": "src/wave/barrel/heldOverturn.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/heldOverturn.ts",
+      "bytes": 4886,
+      "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "acceptedSourcePath": "src/wave/barrel/lipSheet.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+      "bytes": 15981,
+      "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "acceptedSourcePath": "src/wave/barrel/profileFormat.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204",
+      "acceptedSourcePath": "src/wave/barrel/sliceClock.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba",
+      "acceptedSourcePath": "src/wave/barrel/sweptContact.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "acceptedSourcePath": "src/wave/barrel/sweptLoft.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/breakingAge.ts",
+      "bytes": 2861,
+      "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992",
+      "acceptedSourcePath": "src/wave/breakingAge.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/breakingAge.ts",
+      "bytes": 2861,
+      "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "acceptedSourcePath": "src/wave/dispersion.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/particleBudget.ts",
+      "bytes": 2109,
+      "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+      "acceptedSourcePath": "src/wave/particleBudget.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/particleBudget.ts",
+      "bytes": 2109,
+      "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/particleSources.ts",
+      "bytes": 788,
+      "sha256": "76e2b38a5329a8f5b36d9373513d52cb42a92361b996287ac74d4e5458c96cb0",
+      "acceptedSourcePath": "src/wave/particleSources.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/particleSources.ts",
+      "bytes": 788,
+      "sha256": "76e2b38a5329a8f5b36d9373513d52cb42a92361b996287ac74d4e5458c96cb0",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c",
+      "acceptedSourcePath": "src/wave/pool.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e",
+      "acceptedSourcePath": "src/wave/random.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/surfForecast.ts",
+      "bytes": 3914,
+      "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5",
+      "acceptedSourcePath": "src/wave/surfForecast.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfForecast.ts",
+      "bytes": 3914,
+      "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/surfZoneState.ts",
+      "bytes": 3955,
+      "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab",
+      "acceptedSourcePath": "src/wave/surfZoneState.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfZoneState.ts",
+      "bytes": 3955,
+      "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/tubeTable.ts",
+      "bytes": 6876,
+      "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc",
+      "acceptedSourcePath": "src/wave/tubeTable.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/tubeTable.ts",
+      "bytes": 6876,
+      "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "untouched extracted runtime",
+      "path": "/private/tmp/surf-tube-material-lifecycle-20261004/source/src/wave/warmStart.ts",
+      "bytes": 6238,
+      "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d",
+      "acceptedSourcePath": "src/wave/warmStart.ts",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "canonical source authority",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/warmStart.ts",
+      "bytes": 6238,
+      "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d",
+      "revision": "e3e630bc45339e0f7564e59cfdd556275c06de92"
+    },
+    {
+      "role": "authored case asset",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "role": "authored case asset",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "role": "authored case asset",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "role": "authored case asset",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "role": "dependency package",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/package.json",
+      "bytes": 3620,
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+      "package": "typescript",
+      "version": "5.9.3"
+    },
+    {
+      "role": "dependency package",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/package.json",
+      "bytes": 5445,
+      "sha256": "bb27a3b3f172321701a7b1f1d90a59e5c9596673176f553a91c1e93b9667abfa",
+      "package": "vitest",
+      "version": "5.0.1"
+    },
+    {
+      "role": "dependency package",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/vite/package.json",
+      "bytes": 5082,
+      "sha256": "fd3af4eaf4eecb2069f3e2715d6aaa2137d084a8a95097389523f52213c08094",
+      "package": "vite",
+      "version": "8.3.1"
+    },
+    {
+      "role": "dependency package",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/package.json",
+      "bytes": 3672,
+      "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de",
+      "package": "three",
+      "version": "0.186.1"
+    },
+    {
+      "role": "dependency package",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@types/node/package.json",
+      "bytes": 3823,
+      "sha256": "f24c6b704fa4fdb2633cd4787fb0533cdca3cd15ab4a02b031c6c2e462cd380a",
+      "package": "@types/node",
+      "version": "22.20.4"
+    },
+    {
+      "role": "dependency package",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@types/three/package.json",
+      "bytes": 1708,
+      "sha256": "b0253caeb8b99b6a64150e6279cc4bbf30e61610683bdf39f8db2667d6103626",
+      "package": "@types/three",
+      "version": "0.186.0"
+    },
+    {
+      "role": "dependency package",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@webgpu/types/package.json",
+      "bytes": 740,
+      "sha256": "c58597e365f42b61a165210e49e90a864730ee4716473de67d36dfa42519ec99",
+      "package": "@webgpu/types",
+      "version": "0.1.74"
+    },
+    {
+      "role": "fixture source",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.test.ts",
+      "bytes": 73083,
+      "sha256": "638ea27b64593e4c3932f224b720804e4006c67a63b065c5903e6b44430b38ce",
+      "lines": "31-35,933-936,1058-1085"
+    },
+    {
+      "role": "accepted prefetch runtime pin",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/WorkerSurfZone.ts",
+      "bytes": 8319,
+      "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+    },
+    {
+      "role": "accepted prefetch runtime pin",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/SurfZoneWorkerCore.ts",
+      "bytes": 9863,
+      "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+    },
+    {
+      "role": "accepted prefetch runtime pin",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneRunner.ts",
+      "bytes": 40621,
+      "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+    },
+    {
+      "role": "accepted prefetch runtime pin",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.ts",
+      "bytes": 68993,
+      "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920"
+    },
+    {
+      "role": "accepted prefetch runtime pin",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts",
+      "bytes": 23863,
+      "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+    }
+  ],
+  "excluded": "The56 copied runtime dependency bytes, canonical production source, four case assets and seven dependency trees are not copied; metadata/hash references only. No binary/compiled payload exists in this proof."
+}

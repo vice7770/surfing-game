@@ -1,0 +1,51 @@
+{
+  "schema": "tube-fallback-prescribed-compiled/v1",
+  "status": "passed",
+  "readySha256": "4a06dccba8ddb1fce0871a2ee4551b4ec78424d773767d2e8a08c47859f2388a",
+  "buildId": "e3e630bc4-qa-fallback-prescribed",
+  "arms": [
+    {
+      "arm": "baseline",
+      "sourceReadySha256": "4a06dccba8ddb1fce0871a2ee4551b4ec78424d773767d2e8a08c47859f2388a",
+      "outputRoot": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/baseline",
+      "componentOnly": true,
+      "productionMainImported": false
+    },
+    {
+      "arm": "candidate",
+      "sourceReadySha256": "4a06dccba8ddb1fce0871a2ee4551b4ec78424d773767d2e8a08c47859f2388a",
+      "outputRoot": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/candidate",
+      "componentOnly": true,
+      "productionMainImported": false
+    }
+  ],
+  "records": [
+    {
+      "url": "/baseline/entry.js",
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/baseline/entry.js",
+      "bytes": 2770687,
+      "sha256": "e09de4ca4bab7af7c6427785044c4137045541aa2a32d9db1ac72fe581c9bbf0"
+    },
+    {
+      "url": "/baseline/index.html",
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/baseline/index.html",
+      "bytes": 238,
+      "sha256": "f48ccd2b8f6d3b63bcf11efd4ae85b22c5426e49424b149eaa10eaf54a69fc8b"
+    },
+    {
+      "url": "/candidate/entry.js",
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/candidate/entry.js",
+      "bytes": 2775724,
+      "sha256": "6a819222318d4f26b5513206a2c44ffe13f4356bcc36b2439d12ca92b2fd6b4f"
+    },
+    {
+      "url": "/candidate/index.html",
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/candidate/index.html",
+      "bytes": 238,
+      "sha256": "f48ccd2b8f6d3b63bcf11efd4ae85b22c5426e49424b149eaa10eaf54a69fc8b"
+    }
+  ],
+  "noWorkerEmitted": true,
+  "contextContract": "Main context options mirrored/pinned literally; actual main is not imported into component entry.",
+  "productionChanged": false
+}

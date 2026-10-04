@@ -1,0 +1,47 @@
+{
+  "schema": "tube-fallback-current-cpu-check-terminal/v1",
+  "startedAt": "2026-10-04T03:57:12.346Z",
+  "pid": 91643,
+  "readySha256": "9d83280f674e1c06ff6cadfe1345d755b1972adb0f5055df158b64d5fd21cca4",
+  "stages": [
+    {
+      "stage": "strict",
+      "executable": "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/tsc",
+      "args": [
+        "-p",
+        "tsconfig.qa.json",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/private/tmp/surf-tube-fallback-current-20261004",
+      "startedAt": "2026-10-04T03:57:12.347Z",
+      "pid": 91644,
+      "exitCode": 0,
+      "signal": null,
+      "endedAt": "2026-10-04T03:57:15.205Z",
+      "timedOut": false
+    },
+    {
+      "stage": "three-complete-test-files",
+      "executable": "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/vitest",
+      "args": [
+        "run",
+        "--config",
+        "vitest.config.ts",
+        "--maxWorkers=1",
+        "--reporter=json",
+        "--outputFile=checks/vitest.json"
+      ],
+      "cwd": "/private/tmp/surf-tube-fallback-current-20261004",
+      "startedAt": "2026-10-04T03:57:15.205Z",
+      "pid": 91647,
+      "exitCode": 0,
+      "signal": null,
+      "endedAt": "2026-10-04T03:57:17.971Z",
+      "timedOut": false
+    }
+  ],
+  "status": "passed",
+  "authorityUnchanged": true,
+  "endedAt": "2026-10-04T03:57:17.984Z"
+}

@@ -1,0 +1,163 @@
+{
+  "schema": "screen-fallback-current-derived-summary/v1",
+  "status": "component-gate-passed-runtime-hold",
+  "baseGitRef": "e3e630bc45339e0f7564e59cfdd556275c06de92",
+  "sourceReadySha256": "033ae2d6730dc562ca799debccbe987b7729279e279f5b37a5b92b1f60fba8dc",
+  "compiledSha256": "579c5a961d94f5cea128846f6590f68558c9c18ea16877aa2768288913020056",
+  "valid": true,
+  "qualityAccepted": false,
+  "start": "2026-10-04T04:19:53.077Z",
+  "end": "2026-10-04T04:20:02.914Z",
+  "solverSteps": 0,
+  "viewport": {
+    "css": [
+      1040,
+      613
+    ],
+    "dpr": 2,
+    "buffer": [
+      960,
+      540
+    ]
+  },
+  "checkpoints": [
+    {
+      "name": "open",
+      "step": 59,
+      "seaTime": 164.98333333333332,
+      "controls": 21,
+      "indexCount": 36708,
+      "interior": {
+        "s": 23,
+        "phase": 1,
+        "weight": 1,
+        "overturned": 1
+      },
+      "pixelComparison": {
+        "lostWater": 0,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "newBed": 0,
+        "gainedWater": 713,
+        "changed": 759
+      },
+      "air": {
+        "outsideAir": 579,
+        "inAir": 0,
+        "uncertain": 134,
+        "invalidWorld": 0,
+        "count": 713
+      }
+    },
+    {
+      "name": "touchdown",
+      "step": 61,
+      "seaTime": 165.01666666666668,
+      "controls": 21,
+      "indexCount": 36708,
+      "interior": {
+        "s": 23,
+        "phase": 2,
+        "weight": 0.9659481644630432,
+        "overturned": 1
+      },
+      "pixelComparison": {
+        "lostWater": 0,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "newBed": 0,
+        "gainedWater": 629,
+        "changed": 671
+      },
+      "air": {
+        "outsideAir": 500,
+        "inAir": 0,
+        "uncertain": 129,
+        "invalidWorld": 0,
+        "count": 629
+      }
+    },
+    {
+      "name": "midcollapse",
+      "step": 75,
+      "seaTime": 165.25,
+      "controls": 21,
+      "indexCount": 36708,
+      "interior": {
+        "s": 23,
+        "phase": 2,
+        "weight": 0.48870161175727844,
+        "overturned": 1
+      },
+      "pixelComparison": {
+        "lostWater": 0,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "newBed": 0,
+        "gainedWater": 74,
+        "changed": 81
+      },
+      "air": {
+        "outsideAir": 3,
+        "inAir": 0,
+        "uncertain": 71,
+        "invalidWorld": 0,
+        "count": 74
+      }
+    },
+    {
+      "name": "empty",
+      "step": 92,
+      "seaTime": 165.53333333333333,
+      "controls": 21,
+      "indexCount": 0,
+      "interior": null,
+      "pixelComparison": {
+        "lostWater": 0,
+        "lostSwept": 0,
+        "gainedSwept": 0,
+        "newBed": 0,
+        "gainedWater": 0,
+        "changed": 0
+      },
+      "air": {
+        "outsideAir": 0,
+        "inAir": 0,
+        "uncertain": 0,
+        "invalidWorld": 0,
+        "count": 0
+      }
+    }
+  ],
+  "closure": {
+    "4200": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "4223": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    },
+    "9633": {
+      "closed": true,
+      "reason": "ECONNREFUSED"
+    }
+  },
+  "authorityUnchanged": true,
+  "allNativeNormalRepeatsExact": true,
+  "candidateResourcesOnce": true,
+  "candidateDefaultStencilClears": {
+    "count": 45,
+    "allZeroWritable": true,
+    "first": {
+      "mask": 17664,
+      "value": 0,
+      "writable": 4294967295
+    },
+    "last": {
+      "mask": 17664,
+      "value": 0,
+      "writable": 4294967295
+    }
+  }
+}

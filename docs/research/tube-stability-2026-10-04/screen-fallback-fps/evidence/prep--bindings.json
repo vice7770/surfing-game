@@ -1,0 +1,40 @@
+{
+  "schema": "tube-fallback-fps-bindings/v1",
+  "pending": false,
+  "buildReady": {
+    "path": "/private/tmp/surf-tube-fallback-fps-20261004/ready.json",
+    "bytes": 9838,
+    "sha256": "62d8b19e2fa3ac773403c20f5b7dea064284ea34eac2b4671f3945ee33afa154"
+  },
+  "sourceManifest": {
+    "path": "/private/tmp/surf-tube-fallback-fps-20261004/source-manifest.json",
+    "bytes": 368315,
+    "sha256": "77548eb89455a1b1b6153a3ca81622b6ea435fba184fb04ea79a45a0553a715b"
+  },
+  "buildTerminal": {
+    "path": "/private/tmp/surf-tube-fallback-fps-20261004/build-terminal.json",
+    "bytes": 889,
+    "sha256": "821cc4e50ff21f50ba66d798d361952e11a34d3c8feb737b88b540d1702ffca7"
+  },
+  "publicAssets": {
+    "path": "/private/tmp/surf-tube-fallback-fps-20261004/public-assets.json",
+    "bytes": 10729,
+    "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+  },
+  "arms": {
+    "baseline": {
+      "arm": "baseline",
+      "path": "/private/tmp/surf-tube-fallback-fps-20261004/baseline/build-manifest.json",
+      "bytes": 3342,
+      "sha256": "3432035686aa8f879b9c868d0720115a1d03fdd189dcb25490998a596e70053d"
+    },
+    "candidate": {
+      "arm": "candidate",
+      "path": "/private/tmp/surf-tube-fallback-fps-20261004/candidate/build-manifest.json",
+      "bytes": 4762,
+      "sha256": "c5e4a8404ac620d36da8b13b8ab268fc0cc3e4e140ac8a2ae0ef38e34c7d863f"
+    }
+  },
+  "baselineReused": true,
+  "sourceOnlyPreparationDoesNotGrantHardware": true
+}

@@ -1,0 +1,24 @@
+# Current late water fallback: component proof, adoption on hold
+
+The isolated renderer gate passed. The candidate preserves original water and swept coverage while drawing only previously mask-rejected water behind the existing depth/stencil result. It remains **on hold**, with no production adoption: the subsequent single ordinary FPS pair did not show a gain and added substantial drawing work. The six renderer overlays are the retained late fallback rebased onto accepted `e3e630bc45339e0f7564e59cfdd556275c06de92`; no fog, physics, contact, profile, ray or grid changes are part of this candidate.
+
+[Summary](summary.json) derives from the exact compressed native report listed in [manifest.json](manifest.json). The manifest records every original path, stored/decompressed SHA-256 and deduplicated alias. Raw flags remain `valid:true`, `qualityAccepted:false`.
+
+| Checkpoint | Uniform step | Restored water pixels | Verified outside air | Uncertain air | In air / invalid world |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Opening | 59 | 713 | 579 | 134 | 0 / 0 |
+| Touchdown | 61 | 629 | 500 | 129 | 0 / 0 |
+| Midcollapse | 75 | 74 | 3 | 71 | 0 / 0 |
+| Empty | 92 | 0 | 0 | 0 | 0 / 0 |
+
+At every checkpoint, lost original water, lost original swept pixels, newly visible swept pixels and newly exposed bed are zero. The air test uses GPU-displaced world coordinates and actual indexed three-layer geometry. Ambiguous crossings remain uncertain; in particular 71 of 74 midcollapse gains are unclassified. Zero detected intrusion is not a complete cavity proof.
+
+This is a prescribed renderer **protocol**: all 21 packed controls persist through uniform authored opening, touchdown, collapse and full fade. It runs the actual `WaterSurface.update()` and `PhysicalMode.drawBarrel()` methods on a declared constant wet-plane component facade, with zero solver steps. It does not prove natural material-ID retirement, moving-wave conservation, low-cavity fog or whole-gameplay quality. Main is pinned but not imported; its actual stencil context options are mirrored. The source domain contains all active geometry. Identical controls, camera, active geometry and surface hashes are checked between arms. The context has a 960×540 render buffer at renderer pixel ratio 1, while native screenshots record browser DPR 2 and CSS 1040×613; these dimensions must not be conflated.
+
+All four normal captures precede diagnostic wrapping and retain enabled original caustics. Every normal PNG repeat is byte-exact in this run. The diagnostic companion holds the existing caustic texture, instruments the original displacement/discard/depth path once, and records the fallback's composed shader through passive inheritance. It performs no manual mask synchronization, geometry upload or private cache correction. Held draw and capability toggles preserve upload versions; unsupported and hidden outputs match baseline, reactivation is exact, and empty clears mask/roof/fallback/stencil writes while retaining all controls. Exposed shared resources dispose once, context is lost, source authority is unchanged and owned Chrome plus ports 4223/9633/4200 close. The successful operation ran 04:19:53.077–04:20:02.914 UTC.
+
+The first CPU attempt stops at strict TypeScript exit 2 after three syntax checks: GL union binding, seabed uniform typing and literal-union filter typing are QA defects, not renderer failures. V2 repairs those and removes duplicate fallback instrumentation, but its exit-zero bundle used an unsupported top-level Rolldown `define` option and retained an unresolved arm symbol. That bundle is invalid and never ran on hardware. V3 uses the installed `transform.define` option and explicitly rejects unresolved/wrong emitted arm constants. All six v3 commands pass with 311 source pins unchanged; the earlier 35 tests across all three renderer suites also pass. Exact earlier sources/readiness/logs are retained; large invalid/current bundles are referenced by hash rather than copied.
+
+The [separate ordinary FPS archive](../screen-fallback-fps/README.md) records root's ordinary serial FPS pair placed the baseline before fallback. Display is 60 Hz for both, but fresh updates fall 57.51→57.06/s and simulated/wall progress .959→.951. Render p95/p99 rise 24.3/25.6→25.0/26.1 ms, render maximum 41.8→83.9 ms and snapshot maximum 53.6→69.8 ms. Median triangles increase 1,149,313→1,426,305 (+24.1%), with draw calls 54→56. These are the parent's reported separate FPS observations, not derived from this component capture, and do not isolate a cause. The candidate remains on hold. Canonical source/assets/bundles are not cloned into this archive.
+
+`python3 verify.py --originals` verifies stored/decompressed bytes and available original aliases; it runs no game, benchmark or numerical replay.

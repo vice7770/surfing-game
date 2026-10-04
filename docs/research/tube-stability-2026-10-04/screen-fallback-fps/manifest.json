@@ -1,0 +1,755 @@
+{
+  "schema": "screen-fallback-fps-archive/v1",
+  "baseGitRef": "e3e630bc45339e0f7564e59cfdd556275c06de92",
+  "status": "HOLD-not-adopted",
+  "createdAt": "2026-10-04T04:29:56.543804+00:00",
+  "records": [
+    {
+      "storedPath": "evidence/prep--README.md.gz",
+      "storedBytes": 2006,
+      "storedSha256": "a087ea032480253301ff521f200231cf5f3d6c7ec4d4813e9a06fdaa724cad34",
+      "encoding": "gzip",
+      "expandedBytes": 3841,
+      "expandedSha256": "a07623d38f5e6f63beeafd4f6f5e13c78ac832d5d4280f53bb9fa915ef0af3a3",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/README.md"
+      ],
+      "roles": [
+        "prep/README.md"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--baseline-reuse.json.gz",
+      "storedBytes": 1489,
+      "storedSha256": "16310d4c2e80b82d05f870ef22d142a7603d8880db2929b5e26c9a89d07aa9b8",
+      "encoding": "gzip",
+      "expandedBytes": 3720,
+      "expandedSha256": "5483222d1cb49b9898ebe2800a07e2191bd744f121b2f0be374dd0b74d77c2a6",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/baseline-reuse.json"
+      ],
+      "roles": [
+        "prep/baseline-reuse.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--bind-launch.py.txt.gz",
+      "storedBytes": 654,
+      "storedSha256": "369b38583ecfe929b1f94da6eb771a1a64c88eaf231c31db931ccdc57bc1df1c",
+      "encoding": "gzip",
+      "expandedBytes": 1256,
+      "expandedSha256": "37c0fc9c90344237e730ebe49a920ffbedee6ad343a7333ab65369f70250aea3",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/bind-launch.py"
+      ],
+      "roles": [
+        "prep/bind-launch.py"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--bindings.json",
+      "storedBytes": 1470,
+      "storedSha256": "e426c24c28e03878cd91303d9590f38994ea12f450340f8b455d26a69fc3542a",
+      "encoding": "identity",
+      "expandedBytes": 1470,
+      "expandedSha256": "e426c24c28e03878cd91303d9590f38994ea12f450340f8b455d26a69fc3542a",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/bindings.json"
+      ],
+      "roles": [
+        "prep/bindings.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--build-only.mjs.txt.gz",
+      "storedBytes": 2440,
+      "storedSha256": "fbbd976724a87ca73ef2f8f0dd342fd796be8f72bac29082b7d34d2129dfb8f9",
+      "encoding": "gzip",
+      "expandedBytes": 6648,
+      "expandedSha256": "72129c3eff06cf30206a5c612602b1aee7fa73f2f70cad62744e220cc395412f",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/build-only.mjs"
+      ],
+      "roles": [
+        "prep/build-only.mjs"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--build-terminal.json",
+      "storedBytes": 889,
+      "storedSha256": "821cc4e50ff21f50ba66d798d361952e11a34d3c8feb737b88b540d1702ffca7",
+      "encoding": "identity",
+      "expandedBytes": 889,
+      "expandedSha256": "821cc4e50ff21f50ba66d798d361952e11a34d3c8feb737b88b540d1702ffca7",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/build-terminal.json"
+      ],
+      "roles": [
+        "prep/build-terminal.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--checks-runner.py.txt.gz",
+      "storedBytes": 1611,
+      "storedSha256": "d32bd1cc9814a78621a363d8992fde0b39e688cdbd048d15ea00bd710251be50",
+      "encoding": "gzip",
+      "expandedBytes": 3971,
+      "expandedSha256": "a92395c87344817501a29455ffd78b75d7a55a382395bf55f5a49fa1e60cf2d6",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks-runner.py"
+      ],
+      "roles": [
+        "prep/checks-runner.py"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--dependency-authority.json.gz",
+      "storedBytes": 884,
+      "storedSha256": "585775895865e6f513d22c890bbb2c60888ac338f47d0a9fd40939f053a81d70",
+      "encoding": "gzip",
+      "expandedBytes": 2753,
+      "expandedSha256": "4f4c8bb2d70fe45538117fe95db106fba7d9db43beb91d96142576b02a253fa9",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/dependency-authority.json"
+      ],
+      "roles": [
+        "prep/dependency-authority.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--derivation.json.gz",
+      "storedBytes": 1809,
+      "storedSha256": "4dc80776ef09648bb188733b1983c40af07d1e0a88a875bf1da95b4dde43b7f3",
+      "encoding": "gzip",
+      "expandedBytes": 6988,
+      "expandedSha256": "4ab027e11e67fcefc3e29af3b9d970d6df79a0ce647347fb6cb885a963eccf4c",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/derivation.json"
+      ],
+      "roles": [
+        "prep/derivation.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--derive-only.py.txt.gz",
+      "storedBytes": 2096,
+      "storedSha256": "ed28b6595d933d608c394811cd5d7b75c0c2c8cbf8267b8c6aa183170131246e",
+      "encoding": "gzip",
+      "expandedBytes": 5068,
+      "expandedSha256": "7e07d641694528af0b0b8b6753a3f0a9b53ebbeec195a672615cdcfe8d37dc15",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/derive-only.py"
+      ],
+      "roles": [
+        "prep/derive-only.py"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--freeze.py.txt.gz",
+      "storedBytes": 1706,
+      "storedSha256": "3fd74e1fa1b99724993f585e26062556b9b6b9f3ba702099b703f248a4dc730a",
+      "encoding": "gzip",
+      "expandedBytes": 4033,
+      "expandedSha256": "4d0af4a1865cc5790974f08602c649c5cd28b5181d849a74a86952d93f31ad83",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/freeze.py"
+      ],
+      "roles": [
+        "prep/freeze.py"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--launch-ready.json.gz",
+      "storedBytes": 65132,
+      "storedSha256": "866e9e63fe9f317ef882718b10e96cb5ed5a8d3dcfd6a38dc754d05c999f558a",
+      "encoding": "gzip",
+      "expandedBytes": 273049,
+      "expandedSha256": "4e122ff7b4675fb4ebab83f7962636e73b63ccb6365d73309646f27e4684bd3d",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/launch-ready.json"
+      ],
+      "roles": [
+        "prep/launch-ready.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--native-owned.mjs.txt.gz",
+      "storedBytes": 2275,
+      "storedSha256": "5d4a80dfe3d5f7f78d733d3bc6e051858008b55a4726bde843e102c9f57ae321",
+      "encoding": "gzip",
+      "expandedBytes": 5514,
+      "expandedSha256": "823034b339ed5c065b9060c9d381eef1ee2d3f76940e4cf6992033dfdf7b01d4",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/native-owned.mjs"
+      ],
+      "roles": [
+        "prep/native-owned.mjs"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--native-owned.mjs.diff",
+      "storedBytes": 1329,
+      "storedSha256": "bb1fd1430bd101a45b187e23a1bcb221f396fbe2730c5b13072f5434fd8b4e32",
+      "encoding": "identity",
+      "expandedBytes": 1329,
+      "expandedSha256": "bb1fd1430bd101a45b187e23a1bcb221f396fbe2730c5b13072f5434fd8b4e32",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/native-owned.mjs.diff"
+      ],
+      "roles": [
+        "prep/native-owned.mjs.diff"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--pair.mjs.txt.gz",
+      "storedBytes": 4708,
+      "storedSha256": "752e3e75c999e654fc65756891b022fa4232b953fb05717319b910b50bf33bca",
+      "encoding": "gzip",
+      "expandedBytes": 13555,
+      "expandedSha256": "819c102e3bca50c898ff2eae96f3f0d6a9477c3a2ac23a83b891e551619ca7cb",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/pair.mjs"
+      ],
+      "roles": [
+        "prep/pair.mjs"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--pair.mjs.diff.gz",
+      "storedBytes": 2427,
+      "storedSha256": "ec04a7f0d37f536038f2ad879d37ebdb902f9829f1822a329958a45fe1b45fc8",
+      "encoding": "gzip",
+      "expandedBytes": 6996,
+      "expandedSha256": "d62de135f7f3ab830a664766f0429e5afcdb046a5a60af936b29ee9e5c2ce4c0",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/pair.mjs.diff"
+      ],
+      "roles": [
+        "prep/pair.mjs.diff"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--passive-guard.mjs.txt.gz",
+      "storedBytes": 3922,
+      "storedSha256": "a0bc21c3a43c6ce1b2cf031caafb22a5d05f6813d73e3bd278433179ff263920",
+      "encoding": "gzip",
+      "expandedBytes": 10297,
+      "expandedSha256": "419bb9dd64f7b1680ff57e9b3c8a3bcdc85b38ab16b0c0ae7547377ed7bba6c5",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/passive-guard.mjs"
+      ],
+      "roles": [
+        "prep/passive-guard.mjs"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--passive-guard.mjs.diff.gz",
+      "storedBytes": 999,
+      "storedSha256": "0f2b2b4016cd1e6c0986cb6d244a35727c2193dfa1c5d7931bbd41c295a23a5c",
+      "encoding": "gzip",
+      "expandedBytes": 2581,
+      "expandedSha256": "d180561855182cd254b3f586dd98473e47c9c06d27f3f0e0fa81dabb45f5a00c",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/passive-guard.mjs.diff"
+      ],
+      "roles": [
+        "prep/passive-guard.mjs.diff"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--plan.json.gz",
+      "storedBytes": 3420,
+      "storedSha256": "c2aed6c2d948cb29d2d67f53fdbaa3067dd50da9a64e9dc6bf2d9e43b48813b4",
+      "encoding": "gzip",
+      "expandedBytes": 7996,
+      "expandedSha256": "d472700fda4685798ee95d34cc1ab37d6ba7134317916c765e0bf35f7af8d45d",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/plan.json"
+      ],
+      "roles": [
+        "prep/plan.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--prepare-source-note.txt",
+      "storedBytes": 397,
+      "storedSha256": "701085f408d054f9bd00c1cea91c64697a0421a3560921ef1c2312e38cf09840",
+      "encoding": "identity",
+      "expandedBytes": 397,
+      "expandedSha256": "701085f408d054f9bd00c1cea91c64697a0421a3560921ef1c2312e38cf09840",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/prepare-source-note.txt"
+      ],
+      "roles": [
+        "prep/prepare-source-note.txt"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--prepare.first-version.py.txt.gz",
+      "storedBytes": 4029,
+      "storedSha256": "f06cdb78de1b15017f16df070cacd4efb7ad05038a13fdbabc555913c86f6bf8",
+      "encoding": "gzip",
+      "expandedBytes": 10789,
+      "expandedSha256": "9378d6dedf99568f2605d397a9d5d9fef069325828350371f3d2498a0a375c1f",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/prepare.first-version.py.txt"
+      ],
+      "roles": [
+        "prep/prepare.first-version.py.txt"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--prepare.py.txt.gz",
+      "storedBytes": 4019,
+      "storedSha256": "444534802aa8b8004a2e568e6f2d2585b486483cf21be0a180fb93467850915e",
+      "encoding": "gzip",
+      "expandedBytes": 10783,
+      "expandedSha256": "3fc6b873b2c4f0841436277b863aabef8b856bc80a542a120e5481c19272dc99",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/prepare.py"
+      ],
+      "roles": [
+        "prep/prepare.py"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--proposal.md.gz",
+      "storedBytes": 1798,
+      "storedSha256": "cdc6e9102549b1e281b36fc31be64cb599e7f6543e748a4e05fae4259ac4bc43",
+      "encoding": "gzip",
+      "expandedBytes": 3516,
+      "expandedSha256": "3a6d0ad2448d108ec528c8291441482eeeb0727e260a9e092a7ce70559fef9e5",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/proposal.md"
+      ],
+      "roles": [
+        "prep/proposal.md"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--public-assets.json.gz",
+      "storedBytes": 2572,
+      "storedSha256": "6a851a2f927d78fe7274562115014a1952670c0b99a62c2abaa1499f4ebe2d13",
+      "encoding": "gzip",
+      "expandedBytes": 10729,
+      "expandedSha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/public-assets.json"
+      ],
+      "roles": [
+        "prep/public-assets.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--ready.json.gz",
+      "storedBytes": 2984,
+      "storedSha256": "6a9c11fd6cd098abea8caab567773913257529153dd832918d1d25d00857f597",
+      "encoding": "gzip",
+      "expandedBytes": 9838,
+      "expandedSha256": "62d8b19e2fa3ac773403c20f5b7dea064284ea34eac2b4671f3945ee33afa154",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/ready.json"
+      ],
+      "roles": [
+        "prep/ready.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--ready.metadata-before.json.gz",
+      "storedBytes": 2988,
+      "storedSha256": "ff0e2b3eab0a322847815c7ced4986f59ad157d2b60a71ee738086fd928fc37f",
+      "encoding": "gzip",
+      "expandedBytes": 9838,
+      "expandedSha256": "aaf04ec2bf2569d486ebbcafb7335467687f734af565c74879a7a7f5dd4217a6",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/ready.metadata-before.json"
+      ],
+      "roles": [
+        "prep/ready.metadata-before.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--root-run.console.log",
+      "storedBytes": 596,
+      "storedSha256": "9d2535787beb2ed4a45db857d7582b8c739202363d71769b27289c9bce181a94",
+      "encoding": "identity",
+      "expandedBytes": 596,
+      "expandedSha256": "9d2535787beb2ed4a45db857d7582b8c739202363d71769b27289c9bce181a94",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run.console.log"
+      ],
+      "roles": [
+        "prep/root-run.console.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--runtime-only.patch.gz",
+      "storedBytes": 4537,
+      "storedSha256": "6d2ea387881e89b205d6539896decc178659961f07bed5c8431a0f8a32e5d837",
+      "encoding": "gzip",
+      "expandedBytes": 14606,
+      "expandedSha256": "0afd202a83bf5d09bcee03777fa615d7c66da318f0d7b76d9218a50fc410a342",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/runtime-only.patch"
+      ],
+      "roles": [
+        "prep/runtime-only.patch"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--source-manifest.json.gz",
+      "storedBytes": 65060,
+      "storedSha256": "01f2d6e6d02d4bac15920a353c0d5db245b13a2df5f156c0e3f4e69bb53b342b",
+      "encoding": "gzip",
+      "expandedBytes": 368315,
+      "expandedSha256": "77548eb89455a1b1b6153a3ca81622b6ea435fba184fb04ea79a45a0553a715b",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/source-manifest.json"
+      ],
+      "roles": [
+        "prep/source-manifest.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--survey-original-derivation.json.gz",
+      "storedBytes": 2909,
+      "storedSha256": "5bc9015f8f211cf0512cbadc598281886b4f028d0234b9c82d356c34450cfa77",
+      "encoding": "gzip",
+      "expandedBytes": 7601,
+      "expandedSha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/survey-original-derivation.json"
+      ],
+      "roles": [
+        "prep/survey-original-derivation.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--survey-original.patch.gz",
+      "storedBytes": 3335,
+      "storedSha256": "5e6a3095fc01cef49b80214624e213ba40ade91ff8b90a5286d1358216ede3e7",
+      "encoding": "gzip",
+      "expandedBytes": 7933,
+      "expandedSha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/survey-original.patch"
+      ],
+      "roles": [
+        "prep/survey-original.patch"
+      ]
+    },
+    {
+      "storedPath": "evidence/prep--survey.mjs.txt.gz",
+      "storedBytes": 12468,
+      "storedSha256": "055d83140143f78102efe3c6dafbae785e949a47f903b2376e0423e24590b2e3",
+      "encoding": "gzip",
+      "expandedBytes": 37750,
+      "expandedSha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/survey.mjs"
+      ],
+      "roles": [
+        "prep/survey.mjs"
+      ]
+    },
+    {
+      "storedPath": "evidence/checks--bind-launch.stderr",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "identity",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/bind-launch.stderr",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/candidate-strict.stderr",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/candidate-strict.stdout",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/syntax-native-owned.stderr",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/syntax-native-owned.stdout",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/syntax-pair.stderr",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/syntax-pair.stdout",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/syntax-passive-guard.stderr",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/syntax-passive-guard.stdout",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/syntax-survey.stderr",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/syntax-survey.stdout",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/unarmed-dry.stderr"
+      ],
+      "roles": [
+        "checks/bind-launch.stderr",
+        "checks/candidate-strict.stderr",
+        "checks/candidate-strict.stdout",
+        "checks/syntax-native-owned.stderr",
+        "checks/syntax-native-owned.stdout",
+        "checks/syntax-pair.stderr",
+        "checks/syntax-pair.stdout",
+        "checks/syntax-passive-guard.stderr",
+        "checks/syntax-passive-guard.stdout",
+        "checks/syntax-survey.stderr",
+        "checks/syntax-survey.stdout",
+        "checks/unarmed-dry.stderr"
+      ]
+    },
+    {
+      "storedPath": "evidence/checks--bind-launch.stdout",
+      "storedBytes": 208,
+      "storedSha256": "df1e84604c9c63066f87fee3d50940bcb8200beb542ff97027c32d0078ef1baf",
+      "encoding": "identity",
+      "expandedBytes": 208,
+      "expandedSha256": "df1e84604c9c63066f87fee3d50940bcb8200beb542ff97027c32d0078ef1baf",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/bind-launch.stdout"
+      ],
+      "roles": [
+        "checks/bind-launch.stdout"
+      ]
+    },
+    {
+      "storedPath": "evidence/checks--candidate-only-build.stderr",
+      "storedBytes": 360,
+      "storedSha256": "351b524197fb492920789369e7f1a271420c757633fbb553b280a181ac4c31a4",
+      "encoding": "identity",
+      "expandedBytes": 360,
+      "expandedSha256": "351b524197fb492920789369e7f1a271420c757633fbb553b280a181ac4c31a4",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/candidate-only-build.stderr"
+      ],
+      "roles": [
+        "checks/candidate-only-build.stderr"
+      ]
+    },
+    {
+      "storedPath": "evidence/checks--candidate-only-build.stdout",
+      "storedBytes": 1569,
+      "storedSha256": "991522c71573a16967b2397fe649fa3c244c788c1c76fc9dcd6de59e9dd45185",
+      "encoding": "identity",
+      "expandedBytes": 1569,
+      "expandedSha256": "991522c71573a16967b2397fe649fa3c244c788c1c76fc9dcd6de59e9dd45185",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/candidate-only-build.stdout"
+      ],
+      "roles": [
+        "checks/candidate-only-build.stdout"
+      ]
+    },
+    {
+      "storedPath": "evidence/checks--source-after.json.gz",
+      "storedBytes": 60412,
+      "storedSha256": "3932d0da30682bdbfc9318fe78f1a2246caa9fd2129f6fd722d0ca20025fd2f0",
+      "encoding": "gzip",
+      "expandedBytes": 238995,
+      "expandedSha256": "119587ae7d152dfbbc4c50b0d51ff4e22f90636b15c3709148a45bed0d24aef4",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/source-after.json",
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/source-before.json"
+      ],
+      "roles": [
+        "checks/source-after.json",
+        "checks/source-before.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/checks--terminal.json.gz",
+      "storedBytes": 1360,
+      "storedSha256": "95a44bc8b9c06dbe12c9eae49b7d7d0bea03b6088b2e2f1d1d76f0479c7f2a55",
+      "encoding": "gzip",
+      "expandedBytes": 9259,
+      "expandedSha256": "5aedeead120210796a158d7080469435e2d28c470a58b4d8a0384a14053c1512",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/terminal.json"
+      ],
+      "roles": [
+        "checks/terminal.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/checks--unarmed-dry.stdout.gz",
+      "storedBytes": 3643,
+      "storedSha256": "9d612f5a9a24ecadbdbb8566e1bd21c21f18b701a56f7c157bcb5ee7cfa226c1",
+      "encoding": "gzip",
+      "expandedBytes": 8998,
+      "expandedSha256": "9829429c64c352ebd61c1fa8fddd74a6389d021e4d3a58792cd034522c3d4014",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/checks/unarmed-dry.stdout"
+      ],
+      "roles": [
+        "checks/unarmed-dry.stdout"
+      ]
+    },
+    {
+      "storedPath": "evidence/root-run--baseline--fps.json.gz",
+      "storedBytes": 8403,
+      "storedSha256": "30138a82a423e83adac22ff5c16b0e3ffe95a45f07166dccf7ec7c91a6a44387",
+      "encoding": "gzip",
+      "expandedBytes": 100205,
+      "expandedSha256": "7026eaf5aefb5419c497a9d4eeb142ac8976a16048bc065cc1021e138f7a3a12",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run/baseline/fps.json"
+      ],
+      "roles": [
+        "root-run/baseline/fps.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/root-run--baseline--launcher.json.gz",
+      "storedBytes": 2548,
+      "storedSha256": "860ac607431ff0b23c2ebc0215067b34eea268b60485c2a4c2e6d5864bab6426",
+      "encoding": "gzip",
+      "expandedBytes": 14488,
+      "expandedSha256": "5171b618746b7df09f4155cba16305160aa4aaaca3040146d3971a07d9f7800a",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run/baseline/launcher.json"
+      ],
+      "roles": [
+        "root-run/baseline/launcher.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/root-run--baseline--native-audit.json.gz",
+      "storedBytes": 1817,
+      "storedSha256": "62012d5d7b3840f6227e3a8b6a57dd51c0c09824a89d928ac4958656316b137a",
+      "encoding": "gzip",
+      "expandedBytes": 26487,
+      "expandedSha256": "d743ec70120a80a356e74e2c96292b0de4ec05440576eee24b7dfd4bf0ee8ac1",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run/baseline/native-audit.json"
+      ],
+      "roles": [
+        "root-run/baseline/native-audit.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/root-run--baseline--stdout.log",
+      "storedBytes": 1155,
+      "storedSha256": "6bf9e782cde322d48f96087fbbb38ea418909e8c85e10c61ed3f05066b7fa2ef",
+      "encoding": "identity",
+      "expandedBytes": 1155,
+      "expandedSha256": "6bf9e782cde322d48f96087fbbb38ea418909e8c85e10c61ed3f05066b7fa2ef",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run/baseline/stdout.log"
+      ],
+      "roles": [
+        "root-run/baseline/stdout.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/root-run--candidate--fps.json.gz",
+      "storedBytes": 8615,
+      "storedSha256": "b0485a39d9f3233cf2c02d7c56b5b617028a88d8c7bb6b88ae5bfe249000391b",
+      "encoding": "gzip",
+      "expandedBytes": 100136,
+      "expandedSha256": "94685fa1e00609ee9011a9efe91f98046423109d3c7e51271a2b89b9845f4ec8",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run/candidate/fps.json"
+      ],
+      "roles": [
+        "root-run/candidate/fps.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/root-run--candidate--launcher.json.gz",
+      "storedBytes": 2308,
+      "storedSha256": "98e378a1c92a91f656606a7d83a246cf6ee3f4eb6f6324925b02f83a6d0027e0",
+      "encoding": "gzip",
+      "expandedBytes": 11780,
+      "expandedSha256": "4ca8c80d3648045cf3a4ef0e38de33a80918065079d1f26b3ae0a888d2a42297",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run/candidate/launcher.json"
+      ],
+      "roles": [
+        "root-run/candidate/launcher.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/root-run--candidate--native-audit.json.gz",
+      "storedBytes": 1808,
+      "storedSha256": "c14c0bc1a9960967bee98464b2689e79e8fc07934c8c6ac26adcf69cd2868203",
+      "encoding": "gzip",
+      "expandedBytes": 26435,
+      "expandedSha256": "418914028328b36f049a042c0b30bd25d1a2ee6587ae4b1c5b59097b13bc3aa6",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run/candidate/native-audit.json"
+      ],
+      "roles": [
+        "root-run/candidate/native-audit.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/root-run--candidate--stdout.log",
+      "storedBytes": 1155,
+      "storedSha256": "5f064825b2fcfec5870bbda05f88a1cbf9de606228e01fa7673d1cdefe3016c5",
+      "encoding": "identity",
+      "expandedBytes": 1155,
+      "expandedSha256": "5f064825b2fcfec5870bbda05f88a1cbf9de606228e01fa7673d1cdefe3016c5",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run/candidate/stdout.log"
+      ],
+      "roles": [
+        "root-run/candidate/stdout.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/root-run--report.json.gz",
+      "storedBytes": 5743,
+      "storedSha256": "8c6418782633803fcd3469631474a6b0c4ad2cba498b5f010c383970ab012450",
+      "encoding": "gzip",
+      "expandedBytes": 18049,
+      "expandedSha256": "97d8aef747a91ad4f5773918cf46317fc245efe0ea52b57af02e06312ed08f38",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/root-run/report.json"
+      ],
+      "roles": [
+        "root-run/report.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/baseline--build-manifest.json.gz",
+      "storedBytes": 1456,
+      "storedSha256": "598e606e263961b89f87a6800ea41f7cf9a87abee4405242eeddc68b9793ae80",
+      "encoding": "gzip",
+      "expandedBytes": 3342,
+      "expandedSha256": "3432035686aa8f879b9c868d0720115a1d03fdd189dcb25490998a596e70053d",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/baseline/build-manifest.json"
+      ],
+      "roles": [
+        "baseline/build-manifest.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/candidate--build-manifest.json.gz",
+      "storedBytes": 1715,
+      "storedSha256": "9cad9ed1ebedf495abdc7050e1dd74e5abe935fec96f2868d3aae61af9648ed6",
+      "encoding": "gzip",
+      "expandedBytes": 4762,
+      "expandedSha256": "c5e4a8404ac620d36da8b13b8ab268fc0cc3e4e140ac8a2ae0ef38e34c7d863f",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-fps-20261004/candidate/build-manifest.json"
+      ],
+      "roles": [
+        "candidate/build-manifest.json"
+      ]
+    }
+  ],
+  "verification": {
+    "storedExpandedOriginalExact": true,
+    "records": 50,
+    "originalAliases": 62
+  },
+  "externalReferenceScope": "Ready/source/dependency/public/build metadata retain exact external identities; no sources/assets/bundles copied.",
+  "derivedFiles": [
+    {
+      "path": "README.md",
+      "bytes": 3585,
+      "sha256": "90f94b892a31623d7c2c1c8f4e05c8e0cf81b8e67f97969f54fd5f0df525b45a"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 5996,
+      "sha256": "514e47f97a9866ebefb38cd7f120e2eb5b7e07dfd6591fee851c768c79b66985"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 935,
+      "sha256": "b559bc3d971414a3721d64a609fe1c4887b0e9e8e12d763e8c4a0fd0700cd4c8"
+    }
+  ]
+}

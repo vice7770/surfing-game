@@ -1,0 +1,6 @@
+entry.ts(58,28): error TS2551: Property 'DRAW_FRAMEBUFFER_BINDING' does not exist on type 'WebGLRenderingContext | WebGL2RenderingContext'. Did you mean 'FRAMEBUFFER_BINDING'?
+  Property 'DRAW_FRAMEBUFFER_BINDING' does not exist on type 'WebGLRenderingContext'.
+entry.ts(86,45): error TS2345: Argument of type 'CausticSource' is not assignable to parameter of type '{ waterAttenuation: { value: unknown; }; waterSunDirection: { value: unknown; }; }'.
+  Property 'waterAttenuation' is missing in type 'CausticSource' but required in type '{ waterAttenuation: { value: unknown; }; waterSunDirection: { value: unknown; }; }'.
+entry.ts(98,87): error TS2345: Argument of type 'number' is not assignable to parameter of type '1 | 4'.
+entry.ts(101,76): error TS2345: Argument of type 'number' is not assignable to parameter of type '1 | 4'.

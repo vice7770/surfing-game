@@ -1,0 +1,20 @@
+{
+  "schema": "tube-fallback-prescribed-native-plan/v1",
+  "readySha256": "4a06dccba8ddb1fce0871a2ee4551b4ec78424d773767d2e8a08c47859f2388a",
+  "compiledSha256": "fe03760c25c96293667cc1b21f66bd1a307fd0800b5aaaf794d8b37e803e704b",
+  "run": false,
+  "serverPort": 4223,
+  "cdpPort": 9633,
+  "offPort": 4200,
+  "untouchedPort": 5173,
+  "boundMs": 60000,
+  "checkpoints": [
+    "open",
+    "touchdown",
+    "midcollapse",
+    "empty"
+  ],
+  "controlCount": 21,
+  "solverSteps": 0,
+  "scope": "Actual renderer component methods, mirror literal main stencil options; prescribed protocol, not natural physical lifecycle or FPS."
+}

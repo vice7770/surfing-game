@@ -1,0 +1,1006 @@
+{
+  "schema": "screen-fallback-current-archive/v1",
+  "createdAt": "2026-10-04T04:28:24.103864+00:00",
+  "baseGitRef": "e3e630bc45339e0f7564e59cfdd556275c06de92",
+  "status": "component-protocol-passed-runtime-on-hold",
+  "records": [
+    {
+      "storedPath": "evidence/native-v3--ready.json.gz",
+      "storedBytes": 2595,
+      "storedSha256": "9bd33d365c18d7d9c7472af21a7d3af23c67b8e0cae193a47a6ac8c202e4484d",
+      "encoding": "gzip",
+      "expandedBytes": 7294,
+      "expandedSha256": "033ae2d6730dc562ca799debccbe987b7729279e279f5b37a5b92b1f60fba8dc",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/ready.json"
+      ],
+      "roles": [
+        "native-v3/ready.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v3--entry.ts.txt.gz",
+      "storedBytes": 7829,
+      "storedSha256": "db73d249203d34727f0b56ebd206c3fef3dba9ae19e81ee8a3add4e019d90a49",
+      "encoding": "gzip",
+      "expandedBytes": 23462,
+      "expandedSha256": "f791d9203066ea801950db9c045bdb774b295eb22837544eaa4394a859609680",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/entry.ts",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-build-repair-v2/entry.ts"
+      ],
+      "roles": [
+        "native-v3/entry.ts",
+        "native-v2/entry.ts"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v3--cavity.ts.txt.gz",
+      "storedBytes": 2464,
+      "storedSha256": "738cb704f3cc7482ace3bdd1d33a3ef61f8f9712c00bd42bf3838fb71ac6d5bd",
+      "encoding": "gzip",
+      "expandedBytes": 6950,
+      "expandedSha256": "2aa0f11715fadef2fde1b80f6681486e5d31889837655d7b6a46f6a868d54ae2",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/cavity.ts",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-harness-repair-v1/cavity.ts",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-build-repair-v2/cavity.ts"
+      ],
+      "roles": [
+        "native-v3/cavity.ts",
+        "native-v1/cavity.ts",
+        "native-v2/cavity.ts"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v3--authority.mjs.txt.gz",
+      "storedBytes": 1454,
+      "storedSha256": "c7748e8de29cd6bb62865659a869ab479f8e5a1c8adb6fa1e063b8787b0cac6a",
+      "encoding": "gzip",
+      "expandedBytes": 3928,
+      "expandedSha256": "9061d1a95727300a78a696a0cad01137d6b839a10aca2aa2f5226e6a71a0f4c1",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/authority.mjs",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-harness-repair-v1/authority.mjs",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-build-repair-v2/authority.mjs"
+      ],
+      "roles": [
+        "native-v3/authority.mjs",
+        "native-v1/authority.mjs",
+        "native-v2/authority.mjs"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v3--build.mjs.txt.gz",
+      "storedBytes": 1130,
+      "storedSha256": "8982effbd2968af2eabdeff85bef9d653ffd136576a34d3952027898893ef239",
+      "encoding": "gzip",
+      "expandedBytes": 2307,
+      "expandedSha256": "337ebc4a3df0201daca28a74e3cddd5abb404084408539c4d7ffc158718709fe",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/build.mjs"
+      ],
+      "roles": [
+        "native-v3/build.mjs"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v3--device-gate.mjs.txt.gz",
+      "storedBytes": 5429,
+      "storedSha256": "98c5d613aea9ac426a82edda754885697c9d629dd85b6f77295d457810188b4e",
+      "encoding": "gzip",
+      "expandedBytes": 15905,
+      "expandedSha256": "d60b9924c881cbc8809b8af4db09a108dc448c7ddc418da94203b8f4851bc5d7",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/device-gate.mjs",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-harness-repair-v1/device-gate.mjs",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-build-repair-v2/device-gate.mjs"
+      ],
+      "roles": [
+        "native-v3/device-gate.mjs",
+        "native-v1/device-gate.mjs",
+        "native-v2/device-gate.mjs"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v3--tsconfig.native.json",
+      "storedBytes": 883,
+      "storedSha256": "7a29bd63f4f13c8db08ef6fc76578d30ec1a4dfafe519a242caa67b72ebd4b3e",
+      "encoding": "identity",
+      "expandedBytes": 883,
+      "expandedSha256": "7a29bd63f4f13c8db08ef6fc76578d30ec1a4dfafe519a242caa67b72ebd4b3e",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/tsconfig.native.json",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-harness-repair-v1/tsconfig.native.json",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-build-repair-v2/tsconfig.native.json"
+      ],
+      "roles": [
+        "native-v3/tsconfig.native.json",
+        "native-v1/tsconfig.native.json",
+        "native-v2/tsconfig.native.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v3--PLAN.md.gz",
+      "storedBytes": 2933,
+      "storedSha256": "f0da92824d637fec63a61b6a060f8375797dbca2472685368c884dc42c7e6114",
+      "encoding": "gzip",
+      "expandedBytes": 5767,
+      "expandedSha256": "051c4faee19fea3bd7d02a21dd7960a45550a465cc080e1a5f75526bbee5965c",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/PLAN.md"
+      ],
+      "roles": [
+        "native-v3/PLAN.md"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v3--compiled.json",
+      "storedBytes": 2021,
+      "storedSha256": "579c5a961d94f5cea128846f6590f68558c9c18ea16877aa2768288913020056",
+      "encoding": "identity",
+      "expandedBytes": 2021,
+      "expandedSha256": "579c5a961d94f5cea128846f6590f68558c9c18ea16877aa2768288913020056",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/compiled.json"
+      ],
+      "roles": [
+        "native-v3/compiled.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v1--ready.json.gz",
+      "storedBytes": 2212,
+      "storedSha256": "5aae4adf675b0efb0859c40b5568bce6c0a5e44b69c7a566128a2eea60591be5",
+      "encoding": "gzip",
+      "expandedBytes": 6512,
+      "expandedSha256": "face4cce0e10daf0abba3adfade79f0970c4e38e5d237db75af3188eb718956c",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-harness-repair-v1/ready.json"
+      ],
+      "roles": [
+        "native-v1/ready.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v1--entry.ts.txt.gz",
+      "storedBytes": 7481,
+      "storedSha256": "64cb83b2ddf75e22c9ae30dba1598a2494980e18785080f856467ccb9d94df84",
+      "encoding": "gzip",
+      "expandedBytes": 21863,
+      "expandedSha256": "d2bba13c7e45dee0f9d16c8a811c3fa5a45a08d390670a57e2d0d4a52a61e05f",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-harness-repair-v1/entry.ts"
+      ],
+      "roles": [
+        "native-v1/entry.ts"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v1--build.mjs.txt.gz",
+      "storedBytes": 1048,
+      "storedSha256": "3abeaa75a628d5de6c8013e731ddcfae3093ddcc83ca5260b2bf5aaff2c876e2",
+      "encoding": "gzip",
+      "expandedBytes": 2077,
+      "expandedSha256": "3ad4be25dc9e7e6524c09aa92acae31095064f16adc4106a8fda9cbe71dfc83d",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-harness-repair-v1/build.mjs",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-build-repair-v2/build.mjs"
+      ],
+      "roles": [
+        "native-v1/build.mjs",
+        "native-v2/build.mjs"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v1--PLAN.md.gz",
+      "storedBytes": 2431,
+      "storedSha256": "136af0cf4a75317900820b61fea7515bd6a0c8b22578af7447c92fbd69e88c2c",
+      "encoding": "gzip",
+      "expandedBytes": 4653,
+      "expandedSha256": "8e3e47fe3c4fde31ca3dc7c6376ec66ff542ab31f79aca026f1698e924a4c32d",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-harness-repair-v1/PLAN.md"
+      ],
+      "roles": [
+        "native-v1/PLAN.md"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v2--ready.json.gz",
+      "storedBytes": 2339,
+      "storedSha256": "5e488bee3ee09ee362084be3912a2fadd5608e4c3c24ad6e097646d971c95ec6",
+      "encoding": "gzip",
+      "expandedBytes": 6724,
+      "expandedSha256": "4a06dccba8ddb1fce0871a2ee4551b4ec78424d773767d2e8a08c47859f2388a",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-build-repair-v2/ready.json"
+      ],
+      "roles": [
+        "native-v2/ready.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v2--PLAN.md.gz",
+      "storedBytes": 2718,
+      "storedSha256": "52fe948b16ed9cde87cdd955bcba6413e9b7d8524a69ca4a94d742e99259c22f",
+      "encoding": "gzip",
+      "expandedBytes": 5293,
+      "expandedSha256": "516fea4647a13ade011578dd7751009667ab54c2bc8bd571968f8e9f254dc5f3",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-build-repair-v2/PLAN.md"
+      ],
+      "roles": [
+        "native-v2/PLAN.md"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-v2--compiled.json",
+      "storedBytes": 2021,
+      "storedSha256": "fe03760c25c96293667cc1b21f66bd1a307fd0800b5aaaf794d8b37e803e704b",
+      "encoding": "identity",
+      "expandedBytes": 2021,
+      "expandedSha256": "fe03760c25c96293667cc1b21f66bd1a307fd0800b5aaaf794d8b37e803e704b",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/pre-build-repair-v2/compiled.json"
+      ],
+      "roles": [
+        "native-v2/compiled.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v1--01-stderr.log",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "identity",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/01-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/01-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/02-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/02-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/03-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/03-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/04-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/01-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/01-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/02-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/02-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/03-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/03-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/04-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/04-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/06-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/01-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/01-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/02-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/02-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/03-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/03-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/04-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/04-stdout.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/05-stderr.log",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/06-stderr.log"
+      ],
+      "roles": [
+        "cpu-v1/01-stderr.log",
+        "cpu-v1/01-stdout.log",
+        "cpu-v1/02-stderr.log",
+        "cpu-v1/02-stdout.log",
+        "cpu-v1/03-stderr.log",
+        "cpu-v1/03-stdout.log",
+        "cpu-v1/04-stderr.log",
+        "cpu-v2/01-stderr.log",
+        "cpu-v2/01-stdout.log",
+        "cpu-v2/02-stderr.log",
+        "cpu-v2/02-stdout.log",
+        "cpu-v2/03-stderr.log",
+        "cpu-v2/03-stdout.log",
+        "cpu-v2/04-stderr.log",
+        "cpu-v2/04-stdout.log",
+        "cpu-v2/06-stderr.log",
+        "cpu-v3/01-stderr.log",
+        "cpu-v3/01-stdout.log",
+        "cpu-v3/02-stderr.log",
+        "cpu-v3/02-stdout.log",
+        "cpu-v3/03-stderr.log",
+        "cpu-v3/03-stdout.log",
+        "cpu-v3/04-stderr.log",
+        "cpu-v3/04-stdout.log",
+        "cpu-v3/05-stderr.log",
+        "cpu-v3/06-stderr.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v1--04-stdout.log",
+      "storedBytes": 834,
+      "storedSha256": "e41559a3fd0bad1d3a03c4ea8aa04d5390b42706451c930b034c7e056a3c0332",
+      "encoding": "identity",
+      "expandedBytes": 834,
+      "expandedSha256": "e41559a3fd0bad1d3a03c4ea8aa04d5390b42706451c930b034c7e056a3c0332",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/04-stdout.log"
+      ],
+      "roles": [
+        "cpu-v1/04-stdout.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v1--after.json.gz",
+      "storedBytes": 16797,
+      "storedSha256": "b91295522a494d3cd201dde0c2eb56f14c8ccc02e942c849e68234303733c6bd",
+      "encoding": "gzip",
+      "expandedBytes": 60994,
+      "expandedSha256": "0d7eaac513c858954702ca945486750a4f79f881c49f8b67dd1d5e170db92b8e",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/after.json",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/before.json"
+      ],
+      "roles": [
+        "cpu-v1/after.json",
+        "cpu-v1/before.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v1--terminal.json",
+      "storedBytes": 2015,
+      "storedSha256": "594a00d7ac7d8dd706376659312ed9aae5932ee0ec656fb53baa2ba0275b699e",
+      "encoding": "identity",
+      "expandedBytes": 2015,
+      "expandedSha256": "594a00d7ac7d8dd706376659312ed9aae5932ee0ec656fb53baa2ba0275b699e",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v1/terminal.json"
+      ],
+      "roles": [
+        "cpu-v1/terminal.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v2--05-stderr.log",
+      "storedBytes": 442,
+      "storedSha256": "d459b89b4073c0e95d2286656debca2b7d48c0528ff037d5720ac04d0f80fa31",
+      "encoding": "identity",
+      "expandedBytes": 442,
+      "expandedSha256": "d459b89b4073c0e95d2286656debca2b7d48c0528ff037d5720ac04d0f80fa31",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/05-stderr.log"
+      ],
+      "roles": [
+        "cpu-v2/05-stderr.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v2--05-stdout.log",
+      "storedBytes": 1369,
+      "storedSha256": "ac405ba027c3529af2a8582c5071004d60f55d0f55c2e98e8c2769a01b521fa4",
+      "encoding": "identity",
+      "expandedBytes": 1369,
+      "expandedSha256": "ac405ba027c3529af2a8582c5071004d60f55d0f55c2e98e8c2769a01b521fa4",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/05-stdout.log"
+      ],
+      "roles": [
+        "cpu-v2/05-stdout.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v2--06-stdout.log",
+      "storedBytes": 624,
+      "storedSha256": "ad252635848bd97ea3b502b2769d5ff2f1d51f53be4b44e4f92bb7f5636035d9",
+      "encoding": "identity",
+      "expandedBytes": 624,
+      "expandedSha256": "ad252635848bd97ea3b502b2769d5ff2f1d51f53be4b44e4f92bb7f5636035d9",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/06-stdout.log"
+      ],
+      "roles": [
+        "cpu-v2/06-stdout.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v2--after.json.gz",
+      "storedBytes": 16797,
+      "storedSha256": "50fb0a6c9f1a3cc3901f0feed05f39e086a2ff0d667af405d1d19313df706fc8",
+      "encoding": "gzip",
+      "expandedBytes": 60994,
+      "expandedSha256": "39b11a746b8a0269af47c68864c07f17290f72433d19e380cae8959250a46dae",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/after.json",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/before.json"
+      ],
+      "roles": [
+        "cpu-v2/after.json",
+        "cpu-v2/before.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v2--terminal.json.gz",
+      "storedBytes": 729,
+      "storedSha256": "416a6d475ccdf720c5e0f4306fcc27988b47de64abc5c96a8915f586d4fa0050",
+      "encoding": "gzip",
+      "expandedBytes": 2991,
+      "expandedSha256": "ca5ba64c1b8404da3ab394ce669155dbec9ae215f8397090890a27a117ebd3c6",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v2/terminal.json"
+      ],
+      "roles": [
+        "cpu-v2/terminal.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v3--05-stdout.log",
+      "storedBytes": 1369,
+      "storedSha256": "794a1af9391c8a9fbf7be5c76aa87ba50707214e2c112d2cbb4022cd1b81964b",
+      "encoding": "identity",
+      "expandedBytes": 1369,
+      "expandedSha256": "794a1af9391c8a9fbf7be5c76aa87ba50707214e2c112d2cbb4022cd1b81964b",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/05-stdout.log"
+      ],
+      "roles": [
+        "cpu-v3/05-stdout.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v3--06-stdout.log",
+      "storedBytes": 624,
+      "storedSha256": "bd207a1c399794708f510bd0b465beb126bdf57944de40c40109d2a069c3a891",
+      "encoding": "identity",
+      "expandedBytes": 624,
+      "expandedSha256": "bd207a1c399794708f510bd0b465beb126bdf57944de40c40109d2a069c3a891",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/06-stdout.log"
+      ],
+      "roles": [
+        "cpu-v3/06-stdout.log"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v3--after.json.gz",
+      "storedBytes": 16867,
+      "storedSha256": "98d901caac9a3cc9bfddaf0b12d40ac49ce6d4e5144c363295b5998378cd22ec",
+      "encoding": "gzip",
+      "expandedBytes": 61227,
+      "expandedSha256": "9f6c886a1bfda93b07d27a3ba3c11e84b851444736aa4e92238dc9a37ce91ed8",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/after.json",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/before.json"
+      ],
+      "roles": [
+        "cpu-v3/after.json",
+        "cpu-v3/before.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/cpu-v3--terminal.json.gz",
+      "storedBytes": 728,
+      "storedSha256": "0b4d7d34e38b0ae005e960c296728dd518daa041106cbb50321fd8eb66f4b1ad",
+      "encoding": "gzip",
+      "expandedBytes": 2991,
+      "expandedSha256": "17f3d76931b51d3024aa13da6c2359e11b3a6910e2f574434b5b357b69c02f51",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/checks-v3/terminal.json"
+      ],
+      "roles": [
+        "cpu-v3/terminal.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/overlay-and-check--candidate.patch.gz",
+      "storedBytes": 9234,
+      "storedSha256": "09c8b14de12ec7a5eaf3fc21356062f24abe278b4275ff7a7fa33c51e4da10fc",
+      "encoding": "gzip",
+      "expandedBytes": 38761,
+      "expandedSha256": "77c8251d9ff6d90ccee80a0cf94b20900e443b132561db2e1d9e5e5d76fcc22c",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/candidate.patch"
+      ],
+      "roles": [
+        "overlay-and-check/candidate.patch"
+      ]
+    },
+    {
+      "storedPath": "evidence/overlay-and-check--source-manifest.json.gz",
+      "storedBytes": 3109,
+      "storedSha256": "ee528a92429bf04326ce486d08004789c71469275b07f35bbfe325fe5f0b234a",
+      "encoding": "gzip",
+      "expandedBytes": 10085,
+      "expandedSha256": "384a56fc80b15361d1d28359a24836c077b99746e9964ee8ef683cc14389ec65",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/source-manifest.json"
+      ],
+      "roles": [
+        "overlay-and-check/source-manifest.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/overlay-and-check--ready.json.gz",
+      "storedBytes": 1652,
+      "storedSha256": "107c5f1142d5d3fcc868db03eb122855bf2cd711f22f92ebf421c98acf6c002b",
+      "encoding": "gzip",
+      "expandedBytes": 4325,
+      "expandedSha256": "42f71514012eaf27cd72f9c9061e200e8b0c14a08860c1e05da383c4b547e122",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/ready.json"
+      ],
+      "roles": [
+        "overlay-and-check/ready.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/overlay-and-check--harness-ready.json.gz",
+      "storedBytes": 1460,
+      "storedSha256": "5acb09c277b776327ea283f61fae4b5e0b5663198b2f4b29306faa78041e326c",
+      "encoding": "gzip",
+      "expandedBytes": 3067,
+      "expandedSha256": "9d83280f674e1c06ff6cadfe1345d755b1972adb0f5055df158b64d5fd21cca4",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/harness-ready.json"
+      ],
+      "roles": [
+        "overlay-and-check/harness-ready.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/overlay-and-check--check-inputs.json.gz",
+      "storedBytes": 25552,
+      "storedSha256": "d6b0b6a9544b872257467459cf5b98ff29acbcab7111cd58f6a08fe8c0c56569",
+      "encoding": "gzip",
+      "expandedBytes": 176662,
+      "expandedSha256": "afb511ca8e9ce379986594f70e76986e60749b0345744adb2dbdad797cbb57b8",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/check-inputs.json"
+      ],
+      "roles": [
+        "overlay-and-check/check-inputs.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/overlay-and-check--checks--terminal.json",
+      "storedBytes": 1367,
+      "storedSha256": "d79e11718f654040b680009486eb0f9da55de36fa6830467c34d106e8c890a4c",
+      "encoding": "identity",
+      "expandedBytes": 1367,
+      "expandedSha256": "d79e11718f654040b680009486eb0f9da55de36fa6830467c34d106e8c890a4c",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/checks/terminal.json"
+      ],
+      "roles": [
+        "overlay-and-check/checks/terminal.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/overlay-and-check--checks--vitest.json.gz",
+      "storedBytes": 2822,
+      "storedSha256": "7e16b730e562fc71af113ecf02fa71d616b36ffbc6a6a775be10f9fe759aab90",
+      "encoding": "gzip",
+      "expandedBytes": 15168,
+      "expandedSha256": "e926470a598af0dfb3025ae16cdf527ce6fe315540581a55233f18647797d965",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/checks/vitest.json"
+      ],
+      "roles": [
+        "overlay-and-check/checks/vitest.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-run--report.json.gz",
+      "storedBytes": 10947,
+      "storedSha256": "c48d85cb8c6bcca180d7d3344e5795a6fec83cb9556ae86a88bb3484423bc721",
+      "encoding": "gzip",
+      "expandedBytes": 116787,
+      "expandedSha256": "00556d51d35aae1cfdfecdc12efce27e07471ee98150a15e7df0334b492f0475",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/report.json"
+      ],
+      "roles": [
+        "native-run/report.json"
+      ]
+    },
+    {
+      "storedPath": "evidence/native-run--console.log",
+      "storedBytes": 528,
+      "storedSha256": "1ffba4cdc054f370fcf338f6a498081bc0d5e138b1bc449b00873fbdcd779eb0",
+      "encoding": "identity",
+      "expandedBytes": 528,
+      "expandedSha256": "1ffba4cdc054f370fcf338f6a498081bc0d5e138b1bc449b00873fbdcd779eb0",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3.console.log"
+      ],
+      "roles": [
+        "native-run/console.log"
+      ]
+    },
+    {
+      "storedPath": "images/baseline-empty-normal-repeat.png",
+      "storedBytes": 691540,
+      "storedSha256": "7d54f874e5e4bc6d63be1e59993f8d8807bfb138a2fef1683aac2ef5db9af9fc",
+      "encoding": "identity",
+      "expandedBytes": 691540,
+      "expandedSha256": "7d54f874e5e4bc6d63be1e59993f8d8807bfb138a2fef1683aac2ef5db9af9fc",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-empty-normal-repeat.png",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-empty-normal.png",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-empty-normal-repeat.png",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-empty-normal.png"
+      ],
+      "roles": [
+        "baseline-empty-normal-repeat.png",
+        "baseline-empty-normal.png",
+        "candidate-empty-normal-repeat.png",
+        "candidate-empty-normal.png"
+      ]
+    },
+    {
+      "storedPath": "pixels/baseline-empty.rgba.rgba.gz",
+      "storedBytes": 2213,
+      "storedSha256": "55bf1eb60f88ea038b936191b5e5dbb2dc1eb320e92c46a7a3c35052fc08bdf9",
+      "encoding": "gzip",
+      "expandedBytes": 2073600,
+      "expandedSha256": "7bf63449647dbb03ac25b93b026c7d9bee25ea452b7c6ccb4ceb8df96957a7cf",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-empty.rgba",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-inactive.rgba",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-empty.rgba",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-inactive.rgba"
+      ],
+      "roles": [
+        "baseline-empty.rgba",
+        "baseline-inactive.rgba",
+        "candidate-empty.rgba",
+        "candidate-inactive.rgba"
+      ]
+    },
+    {
+      "storedPath": "images/baseline-midcollapse-normal-repeat.png",
+      "storedBytes": 756076,
+      "storedSha256": "6281f2d780480ad6785ddc875d8c53c8c36bf2ae434c637041c4f7c108b48c3d",
+      "encoding": "identity",
+      "expandedBytes": 756076,
+      "expandedSha256": "6281f2d780480ad6785ddc875d8c53c8c36bf2ae434c637041c4f7c108b48c3d",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-midcollapse-normal-repeat.png",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-midcollapse-normal.png"
+      ],
+      "roles": [
+        "baseline-midcollapse-normal-repeat.png",
+        "baseline-midcollapse-normal.png"
+      ]
+    },
+    {
+      "storedPath": "pixels/baseline-midcollapse.rgba.rgba.gz",
+      "storedBytes": 5171,
+      "storedSha256": "88997f1c226d670e24af55712845a813d7976f4f302396b9e3a4118a38249fc4",
+      "encoding": "gzip",
+      "expandedBytes": 2073600,
+      "expandedSha256": "adefd2b8717e999ecc334bc6990cd40b0a4504de4feb895b325bd5c3e9380dc7",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-midcollapse.rgba"
+      ],
+      "roles": [
+        "baseline-midcollapse.rgba"
+      ]
+    },
+    {
+      "storedPath": "images/baseline-open-normal-repeat.png",
+      "storedBytes": 822665,
+      "storedSha256": "8c5941335af4a59d52128304eaac7acb0db5f98f63f4c2988c4e029f497884ad",
+      "encoding": "identity",
+      "expandedBytes": 822665,
+      "expandedSha256": "8c5941335af4a59d52128304eaac7acb0db5f98f63f4c2988c4e029f497884ad",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-open-normal-repeat.png",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-open-normal.png"
+      ],
+      "roles": [
+        "baseline-open-normal-repeat.png",
+        "baseline-open-normal.png"
+      ]
+    },
+    {
+      "storedPath": "pixels/baseline-open.rgba.rgba.gz",
+      "storedBytes": 5753,
+      "storedSha256": "bf283afc34506ad072079b5f7fbfcec4bbf7130bd5b627029178c3b56ca0f31f",
+      "encoding": "gzip",
+      "expandedBytes": 2073600,
+      "expandedSha256": "6981f0fad82e3884ae99b00bed4177140f8a8cded12e74a1d03bfd65439f7956",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-open.rgba",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-unsupported.rgba",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-unsupported.rgba"
+      ],
+      "roles": [
+        "baseline-open.rgba",
+        "baseline-unsupported.rgba",
+        "candidate-unsupported.rgba"
+      ]
+    },
+    {
+      "storedPath": "images/baseline-touchdown-normal-repeat.png",
+      "storedBytes": 823030,
+      "storedSha256": "9de754d7ca6dd12cdb681bb341d7046b72c8f86aaf3501be00efc1b34aa58cc8",
+      "encoding": "identity",
+      "expandedBytes": 823030,
+      "expandedSha256": "9de754d7ca6dd12cdb681bb341d7046b72c8f86aaf3501be00efc1b34aa58cc8",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-touchdown-normal-repeat.png",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-touchdown-normal.png"
+      ],
+      "roles": [
+        "baseline-touchdown-normal-repeat.png",
+        "baseline-touchdown-normal.png"
+      ]
+    },
+    {
+      "storedPath": "pixels/baseline-touchdown.rgba.rgba.gz",
+      "storedBytes": 5643,
+      "storedSha256": "be26be440835d114d696997332a2ce176be454dfb4d718c88b9dc9332d1d6012",
+      "encoding": "gzip",
+      "expandedBytes": 2073600,
+      "expandedSha256": "05715ad6d23f1f12c53f851880314d55498a224ebf907fcab7ab99bad87915c0",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/baseline-touchdown.rgba"
+      ],
+      "roles": [
+        "baseline-touchdown.rgba"
+      ]
+    },
+    {
+      "storedPath": "images/candidate-midcollapse-normal-repeat.png",
+      "storedBytes": 754905,
+      "storedSha256": "8f12ae2da6223fd74e7a03b31a1cca9de5a04e7d89aa064e20677ca048b2c8de",
+      "encoding": "identity",
+      "expandedBytes": 754905,
+      "expandedSha256": "8f12ae2da6223fd74e7a03b31a1cca9de5a04e7d89aa064e20677ca048b2c8de",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-midcollapse-normal-repeat.png",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-midcollapse-normal.png"
+      ],
+      "roles": [
+        "candidate-midcollapse-normal-repeat.png",
+        "candidate-midcollapse-normal.png"
+      ]
+    },
+    {
+      "storedPath": "pixels/candidate-midcollapse.rgba.rgba.gz",
+      "storedBytes": 5144,
+      "storedSha256": "6b5979c09916d0d3263786ebd860c530d27a99ff30f624c03ebe9aa33fd1a9c1",
+      "encoding": "gzip",
+      "expandedBytes": 2073600,
+      "expandedSha256": "13c3463e007833b6271499ee11e509753931c0649017294cb56b4ddc0156e043",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-midcollapse.rgba"
+      ],
+      "roles": [
+        "candidate-midcollapse.rgba"
+      ]
+    },
+    {
+      "storedPath": "images/candidate-open-normal-repeat.png",
+      "storedBytes": 806352,
+      "storedSha256": "ca3087c4c7db00bcd9440cd59f9b2de43a5846a7faa959f80389ee5ce11e5d5b",
+      "encoding": "identity",
+      "expandedBytes": 806352,
+      "expandedSha256": "ca3087c4c7db00bcd9440cd59f9b2de43a5846a7faa959f80389ee5ce11e5d5b",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-open-normal-repeat.png",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-open-normal.png"
+      ],
+      "roles": [
+        "candidate-open-normal-repeat.png",
+        "candidate-open-normal.png"
+      ]
+    },
+    {
+      "storedPath": "pixels/candidate-open.rgba.rgba.gz",
+      "storedBytes": 5254,
+      "storedSha256": "c2e73c2310332699c14aa001962c4a0700c2b6ccafcd4cc3b5f62cf544530cd6",
+      "encoding": "gzip",
+      "expandedBytes": 2073600,
+      "expandedSha256": "b87dbac33787ef894fd6c0506ea122dbef34b51732e253e7cec09b85e6a9984c",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-open.rgba"
+      ],
+      "roles": [
+        "candidate-open.rgba"
+      ]
+    },
+    {
+      "storedPath": "images/candidate-touchdown-normal-repeat.png",
+      "storedBytes": 808172,
+      "storedSha256": "7e6898b42481e164f18d8dde88840fb28fff06bb35ba4c11b3ae1f1fae913521",
+      "encoding": "identity",
+      "expandedBytes": 808172,
+      "expandedSha256": "7e6898b42481e164f18d8dde88840fb28fff06bb35ba4c11b3ae1f1fae913521",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-touchdown-normal-repeat.png",
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-touchdown-normal.png"
+      ],
+      "roles": [
+        "candidate-touchdown-normal-repeat.png",
+        "candidate-touchdown-normal.png"
+      ]
+    },
+    {
+      "storedPath": "pixels/candidate-touchdown.rgba.rgba.gz",
+      "storedBytes": 5215,
+      "storedSha256": "371514624864c9ab9e9966bdf804be8cb765ddbb7d8850b347e43ab5cdce9d51",
+      "encoding": "gzip",
+      "expandedBytes": 2073600,
+      "expandedSha256": "731ac70ba12070f664e472725a4896f3e61aac1e04e2fba22bf01dd90cc381ad",
+      "originalPaths": [
+        "/private/tmp/surf-tube-fallback-current-20261004/native/root-native-v3/candidate-touchdown.rgba"
+      ],
+      "roles": [
+        "candidate-touchdown.rgba"
+      ]
+    }
+  ],
+  "borrowedReferences": [
+    {
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/ready.json",
+      "bytes": 4325,
+      "sha256": "42f71514012eaf27cd72f9c9061e200e8b0c14a08860c1e05da383c4b547e122"
+    },
+    {
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/harness-ready.json",
+      "bytes": 3067,
+      "sha256": "9d83280f674e1c06ff6cadfe1345d755b1972adb0f5055df158b64d5fd21cca4"
+    },
+    {
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/check-inputs.json",
+      "bytes": 176662,
+      "sha256": "afb511ca8e9ce379986594f70e76986e60749b0345744adb2dbdad797cbb57b8"
+    },
+    {
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/source-manifest.json",
+      "bytes": 10085,
+      "sha256": "384a56fc80b15361d1d28359a24836c077b99746e9964ee8ef683cc14389ec65"
+    },
+    {
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/checks/terminal.json",
+      "bytes": 1367,
+      "sha256": "d79e11718f654040b680009486eb0f9da55de36fa6830467c34d106e8c890a4c"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs",
+      "bytes": 1642,
+      "sha256": "57122bb7de7bf7116dc1d1866ad367753dee6820d55b81a3656d0c2e6c6f79d8"
+    },
+    {
+      "path": "/private/tmp/surf-tube-repair-combined-20261003/src/scene/barrel/renderedCavity.ts",
+      "bytes": 6944,
+      "sha256": "1b89c48a59b940bb57892b04601ea883839522fcede49799ec41c4b293c35927"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/main.ts",
+      "bytes": 56808,
+      "sha256": "95d52f07d106be65fa2509a7a6c5fefc736244f61a27c8fbcced5f9ed9037490"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/WaterSurface.ts",
+      "bytes": 34094,
+      "sha256": "3eda73239893f599e2c242ec6ef568f463b47fd0f2bc495768a24ec6de85a000"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/WaterSurface.test.ts",
+      "bytes": 11489,
+      "sha256": "539ad0199962bac31bfb043d78a01359a067819064e02353282bdf6087ee0b8f"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 28027,
+      "sha256": "cc52d17fb7cbf90621ec51a50b0236a055bd44b8794459361e41277000a88186"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.test.ts",
+      "bytes": 19338,
+      "sha256": "462cec51884ef8c351bf982decd5fafb35fa099c63f3427ea7e76c1c5deb7595"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 5620,
+      "sha256": "f52314fb81f295a7b389b5c74133a4c538c4060563e0c30ce5d89c311c724697"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.test.ts",
+      "bytes": 7770,
+      "sha256": "11996a0efc5f6095a9a975d80197f6bb6b4079d31fa624bde717c950e2adefe5"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 1877,
+      "sha256": "d18790112d5c9b06903fffcce66f320e31974cec27e402c74b0030e608a1e589"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/shared/define-config-C7HCoqY8.d.mts",
+      "bytes": 153988,
+      "sha256": "92838424768e9276fe20df849027dbfbe057b45e238fb23ed035ab5765cec243"
+    }
+  ],
+  "caseReferences": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "copied": false,
+      "url": "/barrels/pad19-a20-l12.bin"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "copied": false,
+      "url": "/barrels/pad19-a30-l12.bin"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "copied": false,
+      "url": "/barrels/pad19-a45-l12.bin"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "copied": false,
+      "url": "/barrels/periodic-padang19s-l12.bin"
+    }
+  ],
+  "compiledReferences": [
+    {
+      "url": "/baseline/entry.js",
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/baseline/entry.js",
+      "bytes": 2770110,
+      "sha256": "b6ea42a69c8499ab2065ea17af02f86ab43741e4fabbec19def7a96668effd46"
+    },
+    {
+      "url": "/baseline/index.html",
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/baseline/index.html",
+      "bytes": 238,
+      "sha256": "f48ccd2b8f6d3b63bcf11efd4ae85b22c5426e49424b149eaa10eaf54a69fc8b"
+    },
+    {
+      "url": "/candidate/entry.js",
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/candidate/entry.js",
+      "bytes": 2775559,
+      "sha256": "7ab68b84fce044cfb0874878801be9c6c92fe4a1de18c37b9336bff417e5ddfa"
+    },
+    {
+      "url": "/candidate/index.html",
+      "path": "/private/tmp/surf-tube-fallback-current-20261004/native/dist/candidate/index.html",
+      "bytes": 238,
+      "sha256": "f48ccd2b8f6d3b63bcf11efd4ae85b22c5426e49424b149eaa10eaf54a69fc8b"
+    }
+  ],
+  "excluded": "No canonical source/public assets or compiled bundles copied; numerical fixtures and FPS raw evidence remain separately owned.",
+  "verification": {
+    "storedExpandedOriginalExact": true,
+    "records": 52,
+    "originalAliases": 104
+  },
+  "derivedFiles": [
+    {
+      "path": "README.md",
+      "bytes": 4832,
+      "sha256": "b27dcaeb2516fa7eb8d2aac1213487b81412dc9986091177bd4a8c89cebbf0bb"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 3477,
+      "sha256": "664736fb72414cae4c4666c4f284e5063d56e84dd39301233e70c2036ffa53a6"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 935,
+      "sha256": "b559bc3d971414a3721d64a609fe1c4887b0e9e8e12d763e8c4a0fd0700cd4c8"
+    }
+  ]
+}
