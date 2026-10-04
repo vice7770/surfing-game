@@ -1,0 +1,201 @@
+import { ClampToEdgeWrapping, DataTexture, LinearFilter, Matrix4, NearestFilter, PlaneGeometry, RedFormat, UnsignedByteType } from 'three';
+import { describe, expect, it, vi } from 'vitest';
+import { WaterSurface, type SurfaceGrid } from '../WaterSurface';
+import { CoarseFallbackRows } from './fallbackRows';
+
+const grid: SurfaceGrid = { xMin: -10, zMin: -100, spacing: 1, nx: 21, nz: 101 };
+function plane(width = 20, depth = 100, nx = 10, nz = 50) {
+  return new PlaneGeometry(width, depth, nx, nz).rotateX(-Math.PI / 2);
+}
+function texture(data: Uint8Array, g = grid) {
+  const t = new DataTexture(data, g.nx, g.nz, RedFormat, UnsignedByteType);
+  t.minFilter = LinearFilter; t.magFilter = LinearFilter; t.generateMipmaps = false;
+  return t;
+}
+function sparse(g = grid, first = 40, last = 45) {
+  const data = new Uint8Array(g.nx * g.nz);
+  data[first * g.nx + 4] = 1; data[last * g.nx + g.nx - 4] = 255;
+  return data;
+}
+function selectedCell(helper: CoarseFallbackRows, source: PlaneGeometry, row: number) {
+  const first = row * source.parameters.widthSegments * 6;
+  return first >= helper.view.drawRange.start && first + source.parameters.widthSegments * 6 <= helper.view.drawRange.start + helper.view.drawRange.count;
+}
+
+// Independent real-arithmetic support envelope of the actual uploaded F32 uniform and positions.
+function assertSupportKept(helper: CoarseFallbackRows, source: PlaneGeometry, g: SurfaceGrid, low: number, high: number, m: Matrix4) {
+  const positions = source.getAttribute('position');
+  const nx = source.parameters.widthSegments + 1, nz = source.parameters.heightSegments + 1;
+  const origin = Math.fround(g.zMin), spacing = Math.fround(g.spacing);
+  const lower = origin + (low - 1) * spacing, upper = origin + (high + 1) * spacing;
+  const scale = Math.fround(m.elements[10]), shift = Math.fround(m.elements[14]);
+  for (let row = 0; row < nz - 1; row++) {
+    // Deliberately round separate product and addition as in the shader, rather than nominal grid math.
+    const z0 = Math.fround(Math.fround(scale * positions.getZ(row * nx)) + shift);
+    const z1 = Math.fround(Math.fround(scale * positions.getZ((row + 1) * nx)) + shift);
+    if (z1 >= lower && z0 <= upper) expect(selectedCell(helper, source, row)).toBe(true);
+  }
+}
+
+describe('conservative coarse fallback rows', () => {
+  it('keeps every potentially positive LINEAR-mask primitive, full X, sharing buffers without changing original range', () => {
+    const source = plane(), helper = new CoarseFallbackRows(source), data = sparse(), t = texture(data);
+    const original = { ...source.drawRange }, p = source.getAttribute('position'), index = source.index;
+    const m = new Matrix4().makeTranslation(0, 0, -50);
+    helper.setMask(data, grid, t); helper.apply(m, t);
+    expect(helper.view).not.toBe(source); expect(helper.view.attributes).toBe(source.attributes); expect(helper.view.index).toBe(index);
+    expect(helper.view.drawRange.count).toBeGreaterThan(0); expect(helper.view.drawRange.count).toBeLessThan(index!.count);
+    expect(helper.view.drawRange.start % (source.parameters.widthSegments * 6)).toBe(0);
+    expect(helper.view.drawRange.count % (source.parameters.widthSegments * 6)).toBe(0);
+    assertSupportKept(helper, source, grid, 40, 45, m);
+    expect(source.drawRange).toEqual(original); expect(source.getAttribute('position')).toBe(p); expect(source.index).toBe(index);
+    helper.dispose(); source.dispose(); t.dispose();
+  });
+
+  it('uses actual F32 origins, scales, translations and row coordinates with outward room', () => {
+    const g = { ...grid, zMin: -1200.1234567, spacing: 0.5, nz: 201 };
+    const source = plane(20, 100, 10, 50), helper = new CoarseFallbackRows(source), data = sparse(g, 75, 83), t = texture(data, g);
+    const m = new Matrix4().makeScale(1.125, 1, 1.000013).setPosition(0.125, 0, -1150.1234321);
+    helper.setMask(data, g, t); helper.apply(m, t);
+    assertSupportKept(helper, source, g, 75, 83, m);
+    expect(helper.view.drawRange.count).toBeLessThan(source.index!.count);
+    helper.dispose(); source.dispose(); t.dispose();
+  });
+
+  it('intersects with an original restricted draw range and never writes it', () => {
+    const source = plane(), helper = new CoarseFallbackRows(source), data = sparse(), t = texture(data);
+    source.setDrawRange(12 * 60, 10 * 60);
+    const original = { ...source.drawRange };
+    helper.setMask(data, grid, t); helper.apply(new Matrix4().makeTranslation(0, 0, -50), t);
+    expect(helper.view.drawRange.start).toBeGreaterThanOrEqual(original.start);
+    expect(helper.view.drawRange.start + helper.view.drawRange.count).toBeLessThanOrEqual(original.start + original.count);
+    expect(source.drawRange).toEqual(original);
+    helper.dispose(); source.dispose(); t.dispose();
+  });
+
+  it('uses full draw for any positive border, full mask or unsupported spacing; zero masks safely draw zero', () => {
+    const source = plane(), helper = new CoarseFallbackRows(source), m = new Matrix4().makeTranslation(0, 0, -50);
+    for (const node of [0, 10, grid.nx - 1, 40 * grid.nx, 41 * grid.nx - 1, grid.nx * grid.nz - 10]) {
+      const data = sparse(); data[node] = 1; const t = texture(data);
+      helper.setMask(data, grid, t); helper.apply(m, t); expect(helper.view.drawRange).toEqual(source.drawRange); t.dispose();
+    }
+    for (const [data, g] of [[new Uint8Array(grid.nx * grid.nz).fill(255), grid], [sparse(), { ...grid, spacing: 0.1 }]] as const) {
+      const t = texture(data, g); helper.setMask(data, g, t); helper.apply(m, t); expect(helper.view.drawRange).toEqual(source.drawRange); t.dispose();
+    }
+    const empty = new Uint8Array(grid.nx * grid.nz), t = texture(empty);
+    helper.setMask(empty, grid, t); helper.apply(m, t); expect(helper.view.drawRange.count).toBe(0);
+    helper.clearMask(); helper.apply(m, t); expect(helper.view.drawRange).toEqual(source.drawRange);
+    helper.dispose(); source.dispose(); t.dispose();
+  });
+
+  it('falls back for unsafe transforms, non-height-only displacement and changed filter/upload/attributes', () => {
+    const source = plane(), helper = new CoarseFallbackRows(source), data = sparse(), t = texture(data);
+    const safe = new Matrix4().makeTranslation(0, 0, -50);
+    for (const m of [new Matrix4().makeRotationX(0.01), new Matrix4().makeRotationY(0.01), new Matrix4().makeScale(1, 1, -1), new Matrix4().makeTranslation(0, 0, 1e8)]) {
+      helper.setMask(data, grid, t); helper.apply(m, t); expect(helper.view.drawRange).toEqual(source.drawRange);
+    }
+    helper.setMask(data, grid, t); helper.apply(safe, t, false); expect(helper.view.drawRange).toEqual(source.drawRange);
+    t.magFilter = NearestFilter; helper.apply(safe, t); expect(helper.view.drawRange).toEqual(source.drawRange);
+    t.magFilter = LinearFilter; t.wrapT = ClampToEdgeWrapping; t.needsUpdate = true;
+    helper.apply(safe, t); expect(helper.view.drawRange).toEqual(source.drawRange);
+    helper.setMask(data, grid, t); source.getAttribute('position').needsUpdate = true;
+    helper.apply(safe, t); expect(helper.view.drawRange).toEqual(source.drawRange);
+    helper.dispose(); source.dispose(); t.dispose();
+  });
+
+  it('falls back safely for absent/NaN parameters, wrong topology and changed row order', () => {
+    for (const alter of [
+      (p: PlaneGeometry) => Object.defineProperty(p, 'parameters', { value: undefined }),
+      (p: PlaneGeometry) => { p.parameters.heightSegments = Number.NaN; },
+      (p: PlaneGeometry) => { p.index!.setX(0, 5); },
+      (p: PlaneGeometry) => { p.getAttribute('position').setZ(0, 500); },
+    ]) {
+      const source = plane(); alter(source);
+      const helper = new CoarseFallbackRows(source), data = sparse(), t = texture(data);
+      helper.setMask(data, grid, t); helper.apply(new Matrix4(), t); expect(helper.view.drawRange).toEqual(source.drawRange);
+      helper.dispose(); source.dispose(); t.dispose();
+    }
+  });
+
+  it('reuses one view through masks/held transforms and disposes it only on source replacement/final cleanup', () => {
+    const source = plane(), helper = new CoarseFallbackRows(source), view = helper.view;
+    const disposal = vi.spyOn(view, 'dispose'), sourceDisposal = vi.spyOn(source, 'dispose');
+    const data = sparse(), t = texture(data);
+    for (let step = 0; step < 4; step++) {
+      helper.bind(source); helper.setMask(data, grid, t); helper.apply(new Matrix4().makeTranslation(0, 0, -50 + step), t);
+      expect(helper.view).toBe(view);
+    }
+    expect(disposal).not.toHaveBeenCalled(); expect(sourceDisposal).not.toHaveBeenCalled();
+    const replacement = plane(20, 80, 10, 40); helper.bind(replacement);
+    expect(disposal).toHaveBeenCalledTimes(1); expect(helper.view.index).toBe(replacement.index);
+    const replacementDisposal = vi.spyOn(helper.view, 'dispose'); helper.dispose();
+    expect(replacementDisposal).toHaveBeenCalledTimes(1);
+    source.dispose(); replacement.dispose(); t.dispose();
+  });
+});
+
+function sourceFixture() {
+  return { grid: { xMin: -10, zMin: -100, spacing: 2, nx: 11, nz: 51 }, cubic: true,
+    time: 0, bedRevision: 0, write: (out: Float32Array) => out.fill(0), writeBed: (out: Float32Array) => out.fill(-7) };
+}
+function renderHook(water: WaterSurface) {
+  water.mesh.updateMatrixWorld(true);
+  const repair = water.barrelFallback!;
+  repair.onBeforeRender(undefined as never, undefined as never, undefined as never, repair.geometry, repair.material, undefined as never);
+  return { ...repair.geometry.drawRange };
+}
+
+describe('WaterSurface rowband ownership wiring', () => {
+  it('binds current copied bytes including short-mask retained bytes; Rich patch stays full', () => {
+    const water = new WaterSurface(sourceFixture()); water.setLook('rich');
+    water.setBarrelEnabled(true); water.setBarrelScreenFallback(true);
+    water.setBarrelMask(sparse(water.barrelMaskGrid)); water.update();
+    const original = { ...water.mesh.geometry.drawRange }, fullPatch = { ...water.patch.geometry.drawRange };
+    const first = renderHook(water), repair = water.barrelFallback!, view = repair.geometry;
+    expect(first.count).toBeGreaterThan(0); expect(first.count).toBeLessThan(water.mesh.geometry.index!.count);
+    expect(repair.frustumCulled).toBe(false); expect(water.barrelPatchFallback!.geometry).toBe(water.patch.geometry);
+    expect(water.barrelPatchFallback!.geometry.drawRange).toEqual(fullPatch);
+    water.setBarrelMask(new Uint8Array(1)); expect(renderHook(water)).toEqual(first);
+    expect(repair.geometry).toBe(view); expect(water.mesh.geometry.drawRange).toEqual(original);
+    water.dispose();
+  });
+
+  it('uses current matrix at actual repair hook, preserving range updates on a held mask without allocation', () => {
+    const water = new WaterSurface(sourceFixture()); water.setBarrelEnabled(true); water.setBarrelScreenFallback(true);
+    water.setBarrelMask(sparse(water.barrelMaskGrid)); water.update();
+    const repair = water.barrelFallback!, view = repair.geometry, first = renderHook(water);
+    water.mesh.position.z += 20;
+    const shifted = renderHook(water); expect(shifted).not.toEqual(first); expect(repair.geometry).toBe(view);
+    water.mesh.rotation.y = 0.1; expect(renderHook(water)).toEqual(water.mesh.geometry.drawRange);
+    water.dispose();
+  });
+
+  it('allocates lazily, keeps inactive/unsupported invisible, reactivates current support and clears changed grid', () => {
+    const source = sourceFixture(), water = new WaterSurface(source);
+    expect(water.barrelFallback).toBeUndefined(); water.setBarrelEnabled(true);
+    water.setBarrelMask(sparse(water.barrelMaskGrid)); expect(water.barrelFallback).toBeUndefined();
+    water.setBarrelScreenFallback(true); water.update(); const first = renderHook(water), repair = water.barrelFallback!;
+    expect(first.count).toBeLessThan(water.mesh.geometry.index!.count); expect(repair.visible).toBe(true);
+    water.setBarrelScreenFallback(false); expect(repair.visible).toBe(false);
+    water.setBarrelScreenFallback(true); expect(renderHook(water)).toEqual(first); expect(repair.visible).toBe(true);
+    source.grid.zMin += 10; void water.barrelMaskGrid;
+    expect(water.barrelMaskActive).toBe(false); expect(repair.visible).toBe(false);
+    expect(renderHook(water)).toEqual(water.mesh.geometry.drawRange);
+    water.setBarrelMask(sparse(water.barrelMaskGrid)); water.update(); expect(repair.visible).toBe(true);
+    water.setBarrelMask(null); expect(repair.visible).toBe(false);
+    water.dispose();
+  });
+
+  it('replaces/disposes only the private view at a changed source geometry and keeps original resource disposal once', () => {
+    const water = new WaterSurface(sourceFixture()); water.setBarrelEnabled(true); water.setBarrelScreenFallback(true);
+    water.setBarrelMask(sparse(water.barrelMaskGrid)); water.update(); renderHook(water);
+    const oldView = water.barrelFallback!.geometry, oldDispose = vi.spyOn(oldView, 'dispose');
+    const originalDispose = vi.spyOn(water.mesh.geometry, 'dispose');
+    water.setSource({ ...sourceFixture(), grid: { ...sourceFixture().grid, nz: 41 } });
+    expect(originalDispose).toHaveBeenCalledTimes(1); expect(oldDispose).toHaveBeenCalledTimes(1);
+    expect(water.barrelFallback!.geometry).not.toBe(oldView);
+    expect(water.barrelFallback!.geometry.index).toBe(water.mesh.geometry.index);
+    const viewDispose = vi.spyOn(water.barrelFallback!.geometry, 'dispose'), sourceDispose = vi.spyOn(water.mesh.geometry, 'dispose');
+    water.dispose(); expect(viewDispose).toHaveBeenCalledTimes(1); expect(sourceDispose).toHaveBeenCalledTimes(1);
+  });
+});
