@@ -1,0 +1,59 @@
+{
+  "schema": "contact-height-integration-ready/v1",
+  "directory": "/private/tmp/contact-height-demand-integration-20261004",
+  "stage": "source-only frozen; execution awaits parent review and CPU lease",
+  "artifacts": [
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/prepare.py",
+      "bytes": 7892,
+      "sha256": "83b905a1f1df3a0f4f6cd4abc1c056f363f123f076a18a1f81a6b8f5fafd910d"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/intent.md",
+      "bytes": 3094,
+      "sha256": "4cd4b490c119d9542e1d93a0920e0a38870333d081da7ebd02129dd09868982d"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/README.md",
+      "bytes": 1962,
+      "sha256": "fa1a49940ec04c494f6f372f2c70d7b6bbd446094aaca9601fca7eaf9bbe64ec"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/vitest.integration.config.ts",
+      "bytes": 494,
+      "sha256": "b770d0d7db21053927f2f801dd25508f7108f839625bab70e8539983d48fff3a"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/tsconfig.integration.json",
+      "bytes": 248,
+      "sha256": "fac910258047681f08755943d62a4f5a2d9b23f7b2ea173c6858e8ec18b2dd05"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/source-manifest.json",
+      "bytes": 154898,
+      "sha256": "ea58e8bede2442ff60fb659817b460bd3a9fef937b25b69ca8f500476580d599"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/preparation-manifest.json",
+      "bytes": 9301,
+      "sha256": "128024d5d57da202200c26c3161dac6783efadd21e938b3ea1a2922266517793"
+    }
+  ],
+  "closureFileCount": 148,
+  "closureBytes": 1769576,
+  "caseInputCount": 8,
+  "expectedTests": 74,
+  "checks": {
+    "syntax": "NOT_RUN",
+    "typecheck": "NOT_RUN",
+    "tests": "NOT_RUN",
+    "replay": "NOT_RUN",
+    "build": "NOT_RUN",
+    "cost": "NOT_RUN",
+    "GPU": "NOT_RUN",
+    "browser": "NOT_RUN",
+    "server": "NOT_RUN",
+    "GitMutation": "NONE"
+  },
+  "scopeBlockers": []
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "contact-height-integration-terminal/v1",
+  "stage": "authorized verification terminal; no runtime adoption",
+  "strict": {
+    "phase": "strict",
+    "command": [
+      "./node_modules/.bin/tsc",
+      "-p",
+      "tsconfig.integration.json",
+      "--pretty",
+      "false"
+    ],
+    "cwd": "/private/tmp/contact-height-demand-integration-20261004",
+    "startedAt": "2026-10-04T01:48:07.325641+00:00",
+    "pid": 46244,
+    "stage": "TERMINAL",
+    "endedAt": "2026-10-04T01:48:09.467376+00:00",
+    "exitCode": 0,
+    "durationSeconds": 2.1494388750288635,
+    "inputHashesUnchanged": true,
+    "inputRecordCount": 178,
+    "log": {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/checks/strict.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "tests": {
+    "phase": "tests",
+    "command": [
+      "./node_modules/.bin/vitest",
+      "run",
+      "--config",
+      "vitest.integration.config.ts",
+      "--maxWorkers=1"
+    ],
+    "cwd": "/private/tmp/contact-height-demand-integration-20261004",
+    "startedAt": "2026-10-04T01:48:17.408723+00:00",
+    "pid": 46308,
+    "stage": "TERMINAL",
+    "endedAt": "2026-10-04T01:49:27.211834+00:00",
+    "exitCode": 0,
+    "durationSeconds": 69.8292918750085,
+    "inputHashesUnchanged": true,
+    "inputRecordCount": 178,
+    "log": {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/checks/tests.log",
+      "bytes": 5091,
+      "sha256": "fc1d9356787984c19696c624b4013168e8ebb6c998a072aec6a2d315b0dfb643"
+    },
+    "testJsonReport": {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/checks/integration-tests.json",
+      "bytes": 26369,
+      "sha256": "b5fd43c00352655da9b50d08304241a977f7fb3d9aa318937ee48948ef084928"
+    }
+  },
+  "selectedFiles": [
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/src/game/SurfZoneHost.test.ts",
+      "status": "passed",
+      "tests": 8,
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/src/game/WorkerSurfZone.test.ts",
+      "status": "passed",
+      "tests": 23,
+      "passed": 23,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/src/wave/SurfZoneRunner.test.ts",
+      "status": "passed",
+      "tests": 43,
+      "passed": 43,
+      "failed": 0,
+      "pending": 0
+    }
+  ],
+  "pass": true,
+  "totalTests": 74,
+  "passedTests": 74,
+  "failedTests": 0,
+  "sourceInputsUnchanged": true,
+  "noRetry": true,
+  "noSourceEdits": true,
+  "productionChanges": false,
+  "costOrFPSClaim": false
+}

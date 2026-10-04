@@ -1,0 +1,232 @@
+{
+  "schema": "contact-height-integration-preparation/v1",
+  "stage": "source-only frozen; execution awaits parent review and CPU lease",
+  "baseCommit": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "directory": "/private/tmp/contact-height-demand-integration-20261004",
+  "ownedPreparation": [
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/prepare.py",
+      "bytes": 7892,
+      "sha256": "83b905a1f1df3a0f4f6cd4abc1c056f363f123f076a18a1f81a6b8f5fafd910d"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/intent.md",
+      "bytes": 3094,
+      "sha256": "4cd4b490c119d9542e1d93a0920e0a38870333d081da7ebd02129dd09868982d"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/README.md",
+      "bytes": 1962,
+      "sha256": "fa1a49940ec04c494f6f372f2c70d7b6bbd446094aaca9601fca7eaf9bbe64ec"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/vitest.integration.config.ts",
+      "bytes": 494,
+      "sha256": "b770d0d7db21053927f2f801dd25508f7108f839625bab70e8539983d48fff3a"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/tsconfig.integration.json",
+      "bytes": 248,
+      "sha256": "fac910258047681f08755943d62a4f5a2d9b23f7b2ea173c6858e8ec18b2dd05"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-integration-20261004/source-manifest.json",
+      "bytes": 154898,
+      "sha256": "ea58e8bede2442ff60fb659817b460bd3a9fef937b25b69ca8f500476580d599"
+    }
+  ],
+  "reviewedInputAuthorities": [
+    {
+      "path": "/private/tmp/contact-normal-demand-prototype-20261004/candidate-manifest.json",
+      "bytes": 9291,
+      "sha256": "b3bd2f7700abb1db27a66904284d9b3dc2484b8691a8a3f93a6fc02a68be43a0"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/candidate-manifest.json",
+      "bytes": 65169,
+      "sha256": "1cfa8ddb3c82fea2d2cfbc551328523dc20c89f9c71bcd264cb7ab3260163e2c"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/ready.json",
+      "bytes": 2651,
+      "sha256": "3d8eb0e103fa0620b0e2c78b442fb997bd05add991c30feca8f506e046ead311"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/verification-proof.json",
+      "bytes": 5796,
+      "sha256": "b03ef09e8b3d5a915d8c014f11683bec03a8bde20257079adc188e7117f0efa9"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-prototype-20261004/checks/terminal.json",
+      "bytes": 925,
+      "sha256": "4f2c1d652225d132fa46f876faa72aa4cc9f9058b267dac156554276b78df38c"
+    }
+  ],
+  "runtimeSourceClosure": {
+    "path": "/private/tmp/contact-height-demand-integration-20261004/source-manifest.json",
+    "bytes": 154898,
+    "sha256": "ea58e8bede2442ff60fb659817b460bd3a9fef937b25b69ca8f500476580d599"
+  },
+  "closureFileCount": 148,
+  "closureBytes": 1769576,
+  "selectedExistingTests": [
+    {
+      "path": "src/wave/SurfZoneRunner.test.ts",
+      "bytes": 35301,
+      "sha256": "76f3a16434add7378c18526cd5f6b4a75d9f05f807e6e6322bf1b051aad4883c",
+      "literalItCalls": 43,
+      "itEachDeclarations": 0
+    },
+    {
+      "path": "src/game/WorkerSurfZone.test.ts",
+      "bytes": 26185,
+      "sha256": "c8d4c364bfbf08a32c871ef19c56bd8ff22f41d5bea63cc327f575a654b35f92",
+      "literalItCalls": 15,
+      "itEachDeclarations": 3
+    },
+    {
+      "path": "src/game/SurfZoneHost.test.ts",
+      "bytes": 8884,
+      "sha256": "e505ac63edfdf0228b8dcb4f99a6cca95171362b438f3b497f30f255df618a5a",
+      "literalItCalls": 8,
+      "itEachDeclarations": 0
+    }
+  ],
+  "sourceInventoryExpectedExpandedTests": 74,
+  "expansionDetail": {
+    "Runner": 43,
+    "Worker": {
+      "single": 15,
+      "itEachRows": [
+        2,
+        2,
+        4
+      ],
+      "total": 23
+    },
+    "Host": 8
+  },
+  "expectedRuntimeChanges": [
+    "src/wave/barrel/sweptLoft.ts",
+    "src/wave/barrel/sweptContact.ts",
+    "src/physics/PhysicalSurfWater.ts",
+    "src/wave/SurfZoneRunner.ts",
+    "src/game/SurfZoneWorkerCore.ts"
+  ],
+  "allOtherClosureFiles": "exact ef60 Git blobs; original test files unchanged",
+  "caseInputs": [
+    {
+      "path": "public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37",
+      "originalPath": "/private/tmp/contact-normal-demand-prototype-20261004/public/barrels/pad19-a20-l12.bin",
+      "resolvedPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+      "mode": "read-only input use; narrow symlink, no asset copy"
+    },
+    {
+      "path": "public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041",
+      "originalPath": "/private/tmp/contact-normal-demand-prototype-20261004/public/barrels/pad19-a30-l12.bin",
+      "resolvedPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+      "mode": "read-only input use; narrow symlink, no asset copy"
+    },
+    {
+      "path": "public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af",
+      "originalPath": "/private/tmp/contact-normal-demand-prototype-20261004/public/barrels/pad19-a45-l12.bin",
+      "resolvedPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+      "mode": "read-only input use; narrow symlink, no asset copy"
+    },
+    {
+      "path": "public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab",
+      "originalPath": "/private/tmp/contact-normal-demand-prototype-20261004/public/barrels/periodic-padang19s-l12.bin",
+      "resolvedPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+      "mode": "read-only input use; narrow symlink, no asset copy"
+    },
+    {
+      "path": "public/barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0",
+      "originalPath": "/private/tmp/contact-normal-demand-prototype-20261004/public/barrels/periodic-reef42-l12.bin",
+      "resolvedPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-reef42-l12.bin",
+      "mode": "read-only input use; narrow symlink, no asset copy"
+    },
+    {
+      "path": "public/barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2",
+      "originalPath": "/private/tmp/contact-normal-demand-prototype-20261004/public/barrels/periodic-point21-a15-l12.bin",
+      "resolvedPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a15-l12.bin",
+      "mode": "read-only input use; narrow symlink, no asset copy"
+    },
+    {
+      "path": "public/barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72",
+      "originalPath": "/private/tmp/contact-normal-demand-prototype-20261004/public/barrels/periodic-point21-a23-l12.bin",
+      "resolvedPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a23-l12.bin",
+      "mode": "read-only input use; narrow symlink, no asset copy"
+    },
+    {
+      "path": "public/barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081",
+      "originalPath": "/private/tmp/contact-normal-demand-prototype-20261004/public/barrels/periodic-point21-a30-l12.bin",
+      "resolvedPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a30-l12.bin",
+      "mode": "read-only input use; narrow symlink, no asset copy"
+    }
+  ],
+  "dependencies": {
+    "path": "/private/tmp/contact-height-demand-integration-20261004/node_modules",
+    "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules",
+    "usage": "read-only; no install or package mutations"
+  },
+  "proposedCommands": [
+    {
+      "args": [
+        "./node_modules/.bin/tsc",
+        "-p",
+        "tsconfig.integration.json",
+        "--pretty",
+        "false"
+      ],
+      "log": "checks/strict.log"
+    },
+    {
+      "requiresPreviousExit": 0,
+      "args": [
+        "./node_modules/.bin/vitest",
+        "run",
+        "--config",
+        "vitest.integration.config.ts",
+        "--maxWorkers=1"
+      ],
+      "log": "checks/tests.log",
+      "jsonReport": "checks/integration-tests.json"
+    }
+  ],
+  "limits": [
+    "No execution/collection result yet",
+    "Existing Worker suite uses Point without cases; not itself active private ordinary Padang owner proof",
+    "Explicit existing long per-test timeouts retained unchanged",
+    "No client entry or production build closure",
+    "No benchmark/FPS/adoption claim"
+  ],
+  "checks": {
+    "syntax": "NOT_RUN",
+    "typecheck": "NOT_RUN",
+    "tests": "NOT_RUN",
+    "replay": "NOT_RUN",
+    "build": "NOT_RUN",
+    "cost": "NOT_RUN",
+    "GPU": "NOT_RUN",
+    "browser": "NOT_RUN",
+    "server": "NOT_RUN",
+    "GitMutation": "NONE"
+  },
+  "scopeBlockers": []
+}

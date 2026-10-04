@@ -1,0 +1,70 @@
+
+ RUN  v5.0.1 /private/tmp/contact-height-demand-integration-20261004
+
+stderr | src/wave/SurfZoneRunner.test.ts > SurfZoneRunner > steps on the CPU when the GPU device never arrives, instead of waiting forever (wave sizes)
+No surf zone device within 50 ms; stepping on the CPU.
+
+ ✓ src/wave/SurfZoneRunner.test.ts (43 tests) 44493ms
+   ✓ SurfZoneRunner (17)
+     ✓ reports the measured surf, measuring until waves have broken (wave sizes) 1223ms
+     ✓ steps the surf zone exactly like the simulation it wraps, at a fixed 1/60 s 1456ms
+     ✓ builds warm and spins up later, seating the board and rider on the spun-up sea 1133ms
+     ✓ reports how many breaks threw a jet and how many spilled 438ms
+     ✓ renders on a finer grid when asked, for close shots, leaving the physics as it is 881ms
+     ✓ reduces large Padang snapshots while honoring explicit spacing and retaining the physics grid 581ms
+     ✓ carries the air breaking drives into the water: a landing lip aerates where it falls, and the snapshot holds it per node 974ms
+     ✓ fills a snapshot with the render surface, the current, the lip and the bubbles 781ms
+     ✓ reports the readout values the simulation would give 597ms
+     ✓ builds the same sea on either side of the worker boundary 439ms
+     ✓ splashes spray where lip water lands, and hands it over in the snapshot 809ms
+     ✓ breaks a closing tube’s air into the aeration field, and blows its spits, eruptions and foam balls into the spray (G9) 1247ms
+     ✓ hands the spray each landing’s whole water and kind, and the look it is drawn in 438ms
+     ✓ carries a bubble cloud in the runner, not in the renderer 444ms
+   ✓ SurfZoneRunner with a board (4)
+     ✓ floats a riderless board in the lineup on every spot’s calm water, at its draft 5404ms
+     ✓ lets passing waves move the board on the Beach, and keeps it finite 3793ms
+     ✓ puts a board that left the window back in the lineup, counting it 461ms
+     ✓ snapshots the board’s pose as stepped, and nothing without one 2227ms
+   ✓ SurfZoneRunner with a rider (14)
+     ✓ cues the pop-up in the take-off window, lying down only 414ms
+     ✓ rides the stance it starts with, changing it only for the next ride 853ms
+     ✓ lies a rider prone on the board in the lineup, and snapshots its render points and phase 632ms
+     ✓ snapshots the leash, the duck-dive and the swimmer 990ms
+     ✓ rescues a fallen rider whose breath runs out, back to the lineup with a full breath 464ms
+     ✓ starts the rider just outside the break line, where catches happen 419ms
+     ✓ paddles toward the beach when asked 1763ms
+     ✓ puts board and rider back in the lineup on retry, without restarting the wave 891ms
+     ✓ places the rider where a lesson asks, standing, as a restart 420ms
+     ✓ spawns the rider where asked, relative to the take-off (spec N1) 418ms
+     ✓ respawns at a given spot on retry, and there again on the next 531ms
+     ✓ reports the board's push on the water in each snapshot, once 629ms
+     ✓ applies remote boards' pushes before its next step, without reporting them as its own 425ms
+     ✓ reads each ride from its trace, and reports the finished ride as plain data 461ms
+   ✓ SurfZoneRunner rider in waves (2)
+     ✓ measures the rider against the wave it rides, and reports its speed over ground 4034ms
+     ✓ holds on lying down while paddling through passing waves 3449ms
+   ✓ SurfZoneRunner sound events (3)
+     ✓ reports no roar on a calm sea, and roar where breaking water moves 999ms
+     ✓ reports each lip landing once, and merges a burst beyond its capacity without losing water 433ms
+     ✓ reports a paddler’s strokes with the work each hand did 642ms
+   ✓ the swept contact in the surf zone (3)
+     ✓ rides the swept surface at Padang Padang with the cases, and the lip parcels strike no one 501ms
+     ✓ runs the crash with the cases at Padang Padang, with or without a rider, and hears only the barrel’s landings (PR 5) 1268ms
+     ✓ rides the carved water, struck by parcels, without the cases or away from a swept spot 418ms
+ ✓ src/game/WorkerSurfZone.test.ts (23 tests) 3048ms
+   ✓ SurfZoneWorkerCore (5)
+     ✓ replies with the same start data and snapshots as the in-page surf zone, transferring the buffers 371ms
+   ✓ WorkerSurfZone (17)
+     ✓ steps the same sea, lip and rider at every Particles level; only the particles differ 420ms
+ ✓ src/game/SurfZoneHost.test.ts (8 tests) 20622ms
+   ✓ LocalSurfZone (7)
+     ✓ restores a running sea in place, and the same water follows every time 629ms
+     ✓ keeps the practice Reef’s water steady while its tubes collapse (G9) 16346ms
+     ✓ carves the page's heights exactly as the worker does, from the raw heights and tubes it is sent 3273ms
+
+ Test Files  3 passed (3)
+      Tests  74 passed (74)
+   Start at  02:48:17
+   Duration  69.60s (tests 98%, transform 1%, import 1%)
+
+JSON report written to /private/tmp/contact-height-demand-integration-20261004/checks/integration-tests.json

@@ -1,0 +1,14 @@
+{
+  "phase": "tests",
+  "command": [
+    "./node_modules/.bin/vitest",
+    "run",
+    "--config",
+    "vitest.integration.config.ts",
+    "--maxWorkers=1"
+  ],
+  "cwd": "/private/tmp/contact-height-demand-integration-20261004",
+  "startedAt": "2026-10-04T01:48:17.408723+00:00",
+  "pid": 46308,
+  "stage": "RUNNING"
+}

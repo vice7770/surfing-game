@@ -1,0 +1,29 @@
+{
+  "phase": "tests",
+  "command": [
+    "./node_modules/.bin/vitest",
+    "run",
+    "--config",
+    "vitest.integration.config.ts",
+    "--maxWorkers=1"
+  ],
+  "cwd": "/private/tmp/contact-height-demand-integration-20261004",
+  "startedAt": "2026-10-04T01:48:17.408723+00:00",
+  "pid": 46308,
+  "stage": "TERMINAL",
+  "endedAt": "2026-10-04T01:49:27.211834+00:00",
+  "exitCode": 0,
+  "durationSeconds": 69.8292918750085,
+  "inputHashesUnchanged": true,
+  "inputRecordCount": 178,
+  "log": {
+    "path": "/private/tmp/contact-height-demand-integration-20261004/checks/tests.log",
+    "bytes": 5091,
+    "sha256": "fc1d9356787984c19696c624b4013168e8ebb6c998a072aec6a2d315b0dfb643"
+  },
+  "testJsonReport": {
+    "path": "/private/tmp/contact-height-demand-integration-20261004/checks/integration-tests.json",
+    "bytes": 26369,
+    "sha256": "b5fd43c00352655da9b50d08304241a977f7fb3d9aa318937ee48948ef084928"
+  }
+}

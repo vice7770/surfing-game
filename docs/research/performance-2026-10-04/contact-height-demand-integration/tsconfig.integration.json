@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node", "vitest/globals", "@webgpu/types"] },
+  "include": [
+    "src/wave/SurfZoneRunner.test.ts",
+    "src/game/WorkerSurfZone.test.ts",
+    "src/game/SurfZoneHost.test.ts"
+  ]
+}

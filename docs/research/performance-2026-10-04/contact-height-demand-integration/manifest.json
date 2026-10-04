@@ -1,0 +1,231 @@
+{
+  "schema": "height-demand-integration-archive/v1",
+  "baseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "sourceFiles": 148,
+  "inputRecords": 178,
+  "passedTests": 74,
+  "selectedFiles": 3,
+  "productionChange": false,
+  "liveFpsAcceptance": false,
+  "records": [
+    {
+      "archivePath": "prepare.py",
+      "encoding": "identity",
+      "storedBytes": 7892,
+      "storedSha256": "83b905a1f1df3a0f4f6cd4abc1c056f363f123f076a18a1f81a6b8f5fafd910d",
+      "expandedBytes": 7892,
+      "expandedSha256": "83b905a1f1df3a0f4f6cd4abc1c056f363f123f076a18a1f81a6b8f5fafd910d",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/prepare.py"
+    },
+    {
+      "archivePath": "intent.md",
+      "encoding": "identity",
+      "storedBytes": 3094,
+      "storedSha256": "4cd4b490c119d9542e1d93a0920e0a38870333d081da7ebd02129dd09868982d",
+      "expandedBytes": 3094,
+      "expandedSha256": "4cd4b490c119d9542e1d93a0920e0a38870333d081da7ebd02129dd09868982d",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/intent.md"
+    },
+    {
+      "archivePath": "README.prepared.md",
+      "encoding": "identity",
+      "storedBytes": 1962,
+      "storedSha256": "fa1a49940ec04c494f6f372f2c70d7b6bbd446094aaca9601fca7eaf9bbe64ec",
+      "expandedBytes": 1962,
+      "expandedSha256": "fa1a49940ec04c494f6f372f2c70d7b6bbd446094aaca9601fca7eaf9bbe64ec",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/README.md"
+    },
+    {
+      "archivePath": "ready.json",
+      "encoding": "identity",
+      "storedBytes": 2081,
+      "storedSha256": "e1c44a1ac23ad6e145f1eb13308c5b3b2c97acb00385b182a35f41c488ceacea",
+      "expandedBytes": 2081,
+      "expandedSha256": "e1c44a1ac23ad6e145f1eb13308c5b3b2c97acb00385b182a35f41c488ceacea",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/ready.json"
+    },
+    {
+      "archivePath": "preparation-manifest.json",
+      "encoding": "identity",
+      "storedBytes": 9301,
+      "storedSha256": "128024d5d57da202200c26c3161dac6783efadd21e938b3ea1a2922266517793",
+      "expandedBytes": 9301,
+      "expandedSha256": "128024d5d57da202200c26c3161dac6783efadd21e938b3ea1a2922266517793",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/preparation-manifest.json"
+    },
+    {
+      "archivePath": "source-manifest.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 21228,
+      "storedSha256": "767c73d5166d0a0e4c220afb375c174f5e33c7fb5a5368496b9a9cebb1a8db1b",
+      "expandedBytes": 154898,
+      "expandedSha256": "ea58e8bede2442ff60fb659817b460bd3a9fef937b25b69ca8f500476580d599",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/source-manifest.json"
+    },
+    {
+      "archivePath": "vitest.integration.config.ts",
+      "encoding": "identity",
+      "storedBytes": 494,
+      "storedSha256": "b770d0d7db21053927f2f801dd25508f7108f839625bab70e8539983d48fff3a",
+      "expandedBytes": 494,
+      "expandedSha256": "b770d0d7db21053927f2f801dd25508f7108f839625bab70e8539983d48fff3a",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/vitest.integration.config.ts"
+    },
+    {
+      "archivePath": "tsconfig.integration.json",
+      "encoding": "identity",
+      "storedBytes": 248,
+      "storedSha256": "fac910258047681f08755943d62a4f5a2d9b23f7b2ea173c6858e8ec18b2dd05",
+      "expandedBytes": 248,
+      "expandedSha256": "fac910258047681f08755943d62a4f5a2d9b23f7b2ea173c6858e8ec18b2dd05",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/tsconfig.integration.json"
+    },
+    {
+      "archivePath": "checks/run-one.py",
+      "encoding": "identity",
+      "storedBytes": 3499,
+      "storedSha256": "92ab5aef69d19f8bd669dc5ac4f6bbcc6e9dcaedf306d383195a6e3d26b3019b",
+      "expandedBytes": 3499,
+      "expandedSha256": "92ab5aef69d19f8bd669dc5ac4f6bbcc6e9dcaedf306d383195a6e3d26b3019b",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/run-one.py"
+    },
+    {
+      "archivePath": "checks/strict-start.json",
+      "encoding": "identity",
+      "storedBytes": 303,
+      "storedSha256": "21ab495f4c050e0be2cec6593a7e0282a0607487024d95daa3c134edeebaaa84",
+      "expandedBytes": 303,
+      "expandedSha256": "21ab495f4c050e0be2cec6593a7e0282a0607487024d95daa3c134edeebaaa84",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/strict-start.json"
+    },
+    {
+      "archivePath": "checks/strict-terminal.json",
+      "encoding": "identity",
+      "storedBytes": 672,
+      "storedSha256": "a69f0d953aee33f38c6de89a158affde76f01e3c7f8c6f50daa48adc64a6f075",
+      "expandedBytes": 672,
+      "expandedSha256": "a69f0d953aee33f38c6de89a158affde76f01e3c7f8c6f50daa48adc64a6f075",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/strict-terminal.json"
+    },
+    {
+      "archivePath": "checks/strict.log",
+      "encoding": "identity",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/strict.log"
+    },
+    {
+      "archivePath": "checks/strict-inputs-before.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 9904,
+      "storedSha256": "32e51516cff5150eeb6e3af083772a77edf7372c8260d9e776acd952c8946d9f",
+      "expandedBytes": 36879,
+      "expandedSha256": "91d02f63d84ca20612f84167f5276f7f6a850066c1928976450d20488988c0bf",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/strict-inputs-before.json"
+    },
+    {
+      "archivePath": "checks/strict-inputs-after.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 9904,
+      "storedSha256": "32e51516cff5150eeb6e3af083772a77edf7372c8260d9e776acd952c8946d9f",
+      "expandedBytes": 36879,
+      "expandedSha256": "91d02f63d84ca20612f84167f5276f7f6a850066c1928976450d20488988c0bf",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/strict-inputs-after.json"
+    },
+    {
+      "archivePath": "checks/tests-start.json",
+      "encoding": "identity",
+      "storedBytes": 318,
+      "storedSha256": "dd5c4cf1439423d1d3bc6eda745a35b71b6efd95d96890e7e6ed3483abbd9f5e",
+      "expandedBytes": 318,
+      "expandedSha256": "dd5c4cf1439423d1d3bc6eda745a35b71b6efd95d96890e7e6ed3483abbd9f5e",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/tests-start.json"
+    },
+    {
+      "archivePath": "checks/tests-terminal.json",
+      "encoding": "identity",
+      "storedBytes": 916,
+      "storedSha256": "c05262ef77bb073b939a87e58de7f24fcabc73153a7052c79373dd224391700c",
+      "expandedBytes": 916,
+      "expandedSha256": "c05262ef77bb073b939a87e58de7f24fcabc73153a7052c79373dd224391700c",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/tests-terminal.json"
+    },
+    {
+      "archivePath": "checks/tests.log",
+      "encoding": "identity",
+      "storedBytes": 5091,
+      "storedSha256": "fc1d9356787984c19696c624b4013168e8ebb6c998a072aec6a2d315b0dfb643",
+      "expandedBytes": 5091,
+      "expandedSha256": "fc1d9356787984c19696c624b4013168e8ebb6c998a072aec6a2d315b0dfb643",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/tests.log"
+    },
+    {
+      "archivePath": "checks/tests-inputs-before.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 9904,
+      "storedSha256": "32e51516cff5150eeb6e3af083772a77edf7372c8260d9e776acd952c8946d9f",
+      "expandedBytes": 36879,
+      "expandedSha256": "91d02f63d84ca20612f84167f5276f7f6a850066c1928976450d20488988c0bf",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/tests-inputs-before.json"
+    },
+    {
+      "archivePath": "checks/tests-inputs-after.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 9904,
+      "storedSha256": "32e51516cff5150eeb6e3af083772a77edf7372c8260d9e776acd952c8946d9f",
+      "expandedBytes": 36879,
+      "expandedSha256": "91d02f63d84ca20612f84167f5276f7f6a850066c1928976450d20488988c0bf",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/tests-inputs-after.json"
+    },
+    {
+      "archivePath": "checks/integration-tests.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 4294,
+      "storedSha256": "dc6b9f9207fc568f08010cb0b75f76a36c6b1f93dd3552779d398e271a1c6f37",
+      "expandedBytes": 26369,
+      "expandedSha256": "b5fd43c00352655da9b50d08304241a977f7fb3d9aa318937ee48948ef084928",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/integration-tests.json"
+    },
+    {
+      "archivePath": "checks/terminal.json",
+      "encoding": "identity",
+      "storedBytes": 2735,
+      "storedSha256": "ce92c338fb4775b018a6c7c4d07fa3dcc055fea3e7bbdda03db356a386fed992",
+      "expandedBytes": 2735,
+      "expandedSha256": "ce92c338fb4775b018a6c7c4d07fa3dcc055fea3e7bbdda03db356a386fed992",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/terminal.json"
+    },
+    {
+      "archivePath": "checks/verification-proof.json",
+      "encoding": "identity",
+      "storedBytes": 4842,
+      "storedSha256": "a1cbc9b315dfcdad868bc01cb8468fa9dc9ff80c71e56efe60c97901ffab311d",
+      "expandedBytes": 4842,
+      "expandedSha256": "a1cbc9b315dfcdad868bc01cb8468fa9dc9ff80c71e56efe60c97901ffab311d",
+      "originalPath": "/private/tmp/contact-height-demand-integration-20261004/checks/verification-proof.json"
+    },
+    {
+      "archivePath": "README.md",
+      "encoding": "identity",
+      "storedBytes": 2335,
+      "storedSha256": "f4dee0a1635145aa9ede52537c1c0a9939621a9a74878a45f9e8021bde3b200e",
+      "expandedBytes": 2335,
+      "expandedSha256": "f4dee0a1635145aa9ede52537c1c0a9939621a9a74878a45f9e8021bde3b200e",
+      "originalPath": null
+    }
+  ],
+  "externalReferences": [
+    {
+      "relativeReference": "../contact-height-demand-prototype/manifest.json",
+      "bytes": 38281,
+      "sha256": "327ffff080b0042b92dc54e113a39149213ec8b45c3b15f86e5c7c46e143ab1f"
+    },
+    {
+      "relativeReference": "../contact-normal-demand-prototype/manifest.json",
+      "bytes": 38526,
+      "sha256": "826bf399bde7c040871ee81dca608ad79cf19a5a99aa3912aa35a4a85a3279b7"
+    }
+  ]
+}
