@@ -1,0 +1,165 @@
+{
+  "status": "passed",
+  "payloads": 110,
+  "aliases": 138,
+  "pinClosures": 1920,
+  "immutableGitBlobChecks": 618,
+  "gitAuthorityNotReadWithoutFlag": false,
+  "profileSummaries": {
+    "early": {
+      "samples": 1485,
+      "profileDurationMs": 8034.682,
+      "sampleWeightMs": 8029.55,
+      "firstDeltaUs": 31507,
+      "lastSample": {
+        "index": 1484,
+        "nodeId": 11,
+        "timeUs": 300862486604,
+        "offsetUs": 8029550
+      },
+      "lastSampleTimeUs": 300862486604,
+      "trailingResidualUs": 5132,
+      "precedingIntervalEstimator": {
+        "name": "preceding-interval estimator",
+        "convention": "Assign timeDeltas[i], the interval from profile start (i=0) or previous sample to sample i, to sample i. This is an estimator, not its known execution duration.",
+        "firstDeltaUs": 31507,
+        "lastSampleTimeUs": 300862486604,
+        "trailingResidualUs": 5132,
+        "trailingResidualAssigned": false,
+        "renormalizedToProfileDuration": false
+      },
+      "categoriesMs": {
+        "root": 0,
+        "idle": 2093.904,
+        "pinned-script": 5638.776999999996,
+        "native-or-unresolved": 238.025,
+        "program": 37.006,
+        "gc": 21.838
+      },
+      "sampleWeightCoverage": 0.9993612690583149
+    },
+    "late": {
+      "samples": 1367,
+      "profileDurationMs": 8022.182,
+      "sampleWeightMs": 8020.115,
+      "firstDeltaUs": 19109,
+      "lastSample": {
+        "index": 1366,
+        "nodeId": 72,
+        "timeUs": 300932476261,
+        "offsetUs": 8020115
+      },
+      "lastSampleTimeUs": 300932476261,
+      "trailingResidualUs": 2067,
+      "precedingIntervalEstimator": {
+        "name": "preceding-interval estimator",
+        "convention": "Assign timeDeltas[i], the interval from profile start (i=0) or previous sample to sample i, to sample i. This is an estimator, not its known execution duration.",
+        "firstDeltaUs": 19109,
+        "lastSampleTimeUs": 300932476261,
+        "trailingResidualUs": 2067,
+        "trailingResidualAssigned": false,
+        "renormalizedToProfileDuration": false
+      },
+      "categoriesMs": {
+        "root": 0,
+        "idle": 889.385,
+        "pinned-script": 6791.6669999999995,
+        "native-or-unresolved": 285.017,
+        "gc": 17.345,
+        "program": 36.701
+      },
+      "sampleWeightCoverage": 0.99974233942835
+    }
+  },
+  "scalarDiagnostic": {
+    "early": {
+      "binStartPageMs": 26001.30000001192,
+      "binEndPageMs": 34001.30000001192,
+      "publishedPackets": 477,
+      "publishedPacketsPerSecond": 59.625,
+      "countsMedian": {
+        "front": 0,
+        "lip": 0,
+        "tube": 0,
+        "bubble": 4096,
+        "spray": 4096
+      },
+      "pipelineMedianMs": {
+        "water": 3.900000035762787,
+        "breaking": 0.19999998807907104,
+        "front": 1.300000011920929,
+        "lip": 0,
+        "foam": 2.200000047683716,
+        "airSources": 0.09999996423721313,
+        "aeration": 1.7000000476837158,
+        "board": 0.5999999642372131,
+        "contact": 0,
+        "bubbles": 0.19999998807907104,
+        "spray": 0.3999999761581421,
+        "sounds": 0,
+        "step": 13.400000035762787,
+        "surface": 0,
+        "snapshotAeration": 0,
+        "flow": 0,
+        "snapshotFields": 1.7999999523162842,
+        "snapshot": 2,
+        "summary": 0.19999998807907104,
+        "batch": 13.400000035762787,
+        "batchSteps": 1,
+        "total": 15.699999988079071,
+        "deviceSubsteps": 1,
+        "devicePack": 1.0999999642372131,
+        "deviceCfl": 0.30000001192092896,
+        "deviceEncode": 0.5,
+        "deviceMap": 6,
+        "deviceUnpack": 0.5
+      },
+      "meaning": "Planned page-observer wall bin, not exact Profiler command interval or actual drawn FPS"
+    },
+    "late": {
+      "binStartPageMs": 96001.30000001192,
+      "binEndPageMs": 104001.30000001192,
+      "publishedPackets": 467,
+      "publishedPacketsPerSecond": 58.375,
+      "countsMedian": {
+        "front": 101,
+        "lip": 24,
+        "tube": 0,
+        "bubble": 4096,
+        "spray": 5083
+      },
+      "pipelineMedianMs": {
+        "water": 1.399999976158142,
+        "breaking": 0.10000002384185791,
+        "front": 2.199999988079071,
+        "lip": 0.10000002384185791,
+        "foam": 2.300000011920929,
+        "airSources": 0.10000002384185791,
+        "aeration": 1.699999988079071,
+        "board": 0.6000000238418579,
+        "contact": 1.4000000357627869,
+        "bubbles": 0.19999998807907104,
+        "spray": 0.3999999761581421,
+        "sounds": 0,
+        "step": 13.799999952316284,
+        "surface": 0,
+        "snapshotAeration": 0,
+        "flow": 0,
+        "snapshotFields": 1.699999988079071,
+        "snapshot": 2.099999964237213,
+        "summary": 0.19999998807907104,
+        "batch": 13.799999952316284,
+        "batchSteps": 1,
+        "total": 16.100000023841858,
+        "deviceSubsteps": 2,
+        "devicePack": 1.199999988079071,
+        "deviceCfl": 0.30000001192092896,
+        "deviceEncode": 0.8999999761581421,
+        "deviceMap": 3.5,
+        "deviceUnpack": 0.5
+      },
+      "meaning": "Planned page-observer wall bin, not exact Profiler command interval or actual drawn FPS"
+    }
+  },
+  "scope": "Bytes, immutable source refs and retained arithmetic only. No runtime/protocol replay, benchmark or native/API/network execution; no FPS/thermal/exclusiveGPU/allocation/adoption claim."
+}
