@@ -1,0 +1,1 @@
+import"./WorkerSurfZone-BMMxhQi4.js";var e=new MessageChannel,t=[];e.port1.onmessage=()=>t.shift()?.();var n=()=>new Promise(n=>{t.push(n),e.port2.postMessage(0)});async function r(e,t,r){let i=()=>e.mode.host?.outstandingSteps??0;for(let a=0;a<t;)i()<6?(e.step(r),a+=1):await n();for(;i()>0;)await n()}export{n,r as t};
