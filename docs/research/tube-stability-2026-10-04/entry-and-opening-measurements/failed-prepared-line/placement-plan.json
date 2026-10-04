@@ -1,0 +1,24 @@
+{
+  "protocol": "One normal placement one second before target clock, then ordinary manual tuck input; no second placement or forced poses",
+  "derivation": "Prior observed one-second endpoint minus requested placement, an estimate rather than a directly published initial worker pose",
+  "previousRequestedPlacement": {
+    "x": 150.3824691772461,
+    "z": -6.938243746757507,
+    "heading": -1.7350022771514813,
+    "speed": 8,
+    "phase": "standing",
+    "followSurface": true
+  },
+  "observedEndpointXZ": [
+    144.99791648178189,
+    -0.5880309233977293
+  ],
+  "preparationPlacement": {
+    "x": 155.7670218727103,
+    "z": -13.288456570117285,
+    "heading": -1.7350022771514813,
+    "speed": 8,
+    "phase": "standing",
+    "followSurface": true
+  }
+}

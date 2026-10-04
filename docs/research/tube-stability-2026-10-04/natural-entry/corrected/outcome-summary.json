@@ -1,0 +1,156 @@
+{
+  "complete": true,
+  "firstFailure": null,
+  "steps": 762,
+  "physicalSeconds": 12.7,
+  "seaTimeStart": 535.7230587494499,
+  "seaTimeEnd": 548.4230587494492,
+  "phaseCounts": {
+    "prone": 762
+  },
+  "cueSteps": [],
+  "popUpSteps": [],
+  "paddleSteps": 761,
+  "firstPaddleStep": 1,
+  "firstStanding": null,
+  "stop": "pilot-done-before-step",
+  "pilotOutcome": "missed the wave",
+  "browserErrors": [],
+  "entry": {
+    "observedStandingOutside": false,
+    "firstPartial": null,
+    "firstConnectedWitnessEntry": null,
+    "containmentWithoutObservedOutside": null,
+    "firstConnectedWitnessExit": null,
+    "maximumConsecutiveContainedSteps": 0,
+    "residenceIntervals": [],
+    "fullBodyClearancePass": false
+  },
+  "closure": {
+    "complete": true,
+    "independentClosureValid": true,
+    "closedPorts": {
+      "4288": true,
+      "9698": true
+    },
+    "copiedDistUnchanged": true,
+    "diagnosticSourcesUnchanged": true,
+    "user4310StillOpen": true,
+    "elapsedSeconds": 37.15483754198067
+  },
+  "lastWave": {
+    "valid": true,
+    "directionX": -0.16679236969386405,
+    "directionZ": 0.9859920412518072,
+    "aheadOfCrest": 31.525432095508236,
+    "crestSpeed": -14.821338770052506,
+    "faceHeight": 2.181218544640449,
+    "faceFraction": 0.10316654069776365,
+    "crestBreaking": 0,
+    "curlDistance": null,
+    "curlSide": 0,
+    "speedOverGround": 0.4401769088590684,
+    "speedShoreward": 0.32508255862006,
+    "speedAlongCrest": 0.29677776394763794,
+    "requiredSpeed": -15.634240079773823
+  },
+  "visibleHead": {
+    "available": true,
+    "vertices": 6863,
+    "meshes": [
+      {
+        "name": "Humanbraid01",
+        "headVertices": 1109
+      },
+      {
+        "name": "Humaneyebrow010",
+        "headVertices": 124
+      },
+      {
+        "name": "Humaneyelashes01",
+        "headVertices": 250
+      },
+      {
+        "name": "Humanhigh-poly",
+        "headVertices": 1076
+      },
+      {
+        "name": "LOD0",
+        "headVertices": 4304
+      }
+    ],
+    "min": [
+      -48.768243137072055,
+      -0.645284005691472,
+      -246.4616421750576
+    ],
+    "max": [
+      -48.58155277592997,
+      -0.40017751049572836,
+      -246.23628029941278
+    ],
+    "extremalVertices": {
+      "min0": {
+        "world": [
+          -48.768243137072055,
+          -0.5265434062225645,
+          -246.33436239881
+        ],
+        "mesh": "Humanbraid01",
+        "vertex": 254,
+        "headInfluence": 1
+      },
+      "max0": {
+        "world": [
+          -48.58155277592997,
+          -0.5104446460414305,
+          -246.32916590054074
+        ],
+        "mesh": "Humanbraid01",
+        "vertex": 222,
+        "headInfluence": 1
+      },
+      "min1": {
+        "world": [
+          -48.64251152736625,
+          -0.645284005691472,
+          -246.35378288324523
+        ],
+        "mesh": "LOD0",
+        "vertex": 3552,
+        "headInfluence": 0.5137254901960784
+      },
+      "max1": {
+        "world": [
+          -48.67262586230596,
+          -0.40017751049572836,
+          -246.32831091993793
+        ],
+        "mesh": "Humanbraid01",
+        "vertex": 3722,
+        "headInfluence": 1
+      },
+      "min2": {
+        "world": [
+          -48.69060014866721,
+          -0.5710310208372186,
+          -246.4616421750576
+        ],
+        "mesh": "Humanbraid01",
+        "vertex": 24,
+        "headInfluence": 0.7137254901960784
+      },
+      "max2": {
+        "world": [
+          -48.669799582483044,
+          -0.557171374318647,
+          -246.23628029941278
+        ],
+        "mesh": "LOD0",
+        "vertex": 1452,
+        "headInfluence": 1
+      }
+    },
+    "scope": "Visible vertices with >=.5 head-bone influence, including weighted hair/eyes; world extents only, not complete mesh/water clearance"
+  }
+}

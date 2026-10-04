@@ -1,0 +1,131 @@
+{
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 5167,
+      "sha256": "cd561ea161999a0fc01d57d643b5b1bbd843a0bcf00fd044a63c7dfc68b5846e"
+    },
+    {
+      "file": "archive-origins.json",
+      "bytes": 9324,
+      "sha256": "29ac107782af1e1d46213babc728ccfcf62c2eb6c28af90237f96b677360f3c7"
+    },
+    {
+      "file": "corrected/autopilot-entry.ts",
+      "bytes": 296,
+      "sha256": "daa2e72a04e87ed97e2814ea1b7115440e796b2ec62f650caf20609ee6e2ebb1"
+    },
+    {
+      "file": "corrected/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "corrected/dist/diagnostic-autopilot.mjs",
+      "bytes": 347555,
+      "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2"
+    },
+    {
+      "file": "corrected/native-first/00-final.png",
+      "bytes": 2537862,
+      "sha256": "07b60ad7177af503c3ec6eecb6b5e06febee91c58e21ab202373b659cde236d3"
+    },
+    {
+      "file": "corrected/native-first/launcher.json",
+      "bytes": 12386,
+      "sha256": "d694f6c5f5ab71a42c9194dcef3b8f3a3b21be0c0c488a270fbaff7b84191f4a"
+    },
+    {
+      "file": "corrected/native-first/report.json.gz",
+      "bytes": 517330,
+      "sha256": "4c7b56225fecf088c9cb8fc32da2e5c0dd1c1f1f4f8459135791ff782de70b27"
+    },
+    {
+      "file": "corrected/native-first/steps.ndjson.gz",
+      "bytes": 508332,
+      "sha256": "2141e8df4cadd1721fee64268dfa911f4051db4f7d9509ab3ec2f55e4ae066fc"
+    },
+    {
+      "file": "corrected/native-first-owner.json",
+      "bytes": 2963,
+      "sha256": "c6f3c08fbdebe85b16b4e3667db52b7ddf0e67551f9b2293e6693414a249739c"
+    },
+    {
+      "file": "corrected/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "corrected/native.mjs",
+      "bytes": 18144,
+      "sha256": "7929264234d4cbde23044b398cbedd36f2f3204d621b6192db26d233e1a53a83"
+    },
+    {
+      "file": "corrected/outcome-summary.json",
+      "bytes": 3768,
+      "sha256": "20e7f6747710e6fb56d11d93c7d6414648b2cb3f41a7c5d505d5c9992b1b4b4c"
+    },
+    {
+      "file": "corrected/preparation.json",
+      "bytes": 12973,
+      "sha256": "694709e5071ec7d7da8703acf8f810e5a30581e865fdd4f80fac49f31b07de68"
+    },
+    {
+      "file": "corrected/run.py",
+      "bytes": 7793,
+      "sha256": "2e6f838e3c24471d91cb3a4838bea362fe1a1479034de3dca7cb2727c3cf585f"
+    },
+    {
+      "file": "corrected/source-check.json",
+      "bytes": 476,
+      "sha256": "1c5ceecf116d059a0c2b4a0eea7638eba7a3901f49bfce1f400670f09b5bda4b"
+    },
+    {
+      "file": "corrected/source-check.mjs",
+      "bytes": 2604,
+      "sha256": "7bc194200ad4779983ee9d900ae26b858becb06609ce3b15a43b8427e13dd8be"
+    },
+    {
+      "file": "failed-readiness/as-launched-native.mjs",
+      "bytes": 18136,
+      "sha256": "ac9a4824c4b4b2d3d12515afd555e4735dc3b3402f361ecab67115eb393146ff"
+    },
+    {
+      "file": "failed-readiness/as-launched-preparation.json",
+      "bytes": 12198,
+      "sha256": "11ec2a1ed5d8ebaa19eb19af09a57999bb3a26467920ed86642af80df2f23b89"
+    },
+    {
+      "file": "failed-readiness/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "failed-readiness/native-first/launcher.json",
+      "bytes": 9775,
+      "sha256": "c08c57d1008b8ebe1ce7cd44f11e8f2587f097111d4f19d58bcccd01d052f9cb"
+    },
+    {
+      "file": "failed-readiness/native-first/report.json.gz",
+      "bytes": 6844,
+      "sha256": "fd7eb04655c7263dffdf46eda2b75e4d779f1179da3f3db7d2c6775c33c2abad"
+    },
+    {
+      "file": "failed-readiness/native-first-owner.json",
+      "bytes": 2837,
+      "sha256": "d87d1a82160761abdd328b711008d3d27668c9b183d7db5d2c929647f78fe183"
+    },
+    {
+      "file": "failed-readiness/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "failed-readiness/run.py",
+      "bytes": 7395,
+      "sha256": "7fce1cc13f7f8f408b8df6f21c6c9218e60c40a83abda1c0d37bdf194c285c10"
+    }
+  ],
+  "originalCopiesVerified": true,
+  "perStepNdjsonEqualsReport": true
+}

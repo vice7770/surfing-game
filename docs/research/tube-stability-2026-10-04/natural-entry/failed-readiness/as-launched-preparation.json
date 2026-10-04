@@ -1,0 +1,314 @@
+{
+  "schema": "tube-natural-entry-preparation/v1",
+  "sourceDist": "/private/tmp/tube-no-splash-ribbons-20261004/dist",
+  "copyDist": "/private/tmp/tube-natural-entry-20261004/dist",
+  "acceptedRevision": "957c6f9d0",
+  "rendererScope": "Accepted957 billboard renderer includes foam balls; root later rendering omission is not present in this copy. Worker/contact geometry source is unchanged by that omission.",
+  "assets": {
+    "assets/WorkerSurfZone-dU0qsLsl.js": {
+      "bytes": 868595,
+      "sha256": "192cb5e6708a791a38746adf058655c4c676af75390b8cb5be8898b659926a0d"
+    },
+    "assets/audio/bubbles-1.m4a": {
+      "bytes": 256855,
+      "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+    },
+    "assets/audio/bubbles-2.m4a": {
+      "bytes": 198252,
+      "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+    },
+    "assets/audio/distant-1.m4a": {
+      "bytes": 883404,
+      "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+    },
+    "assets/audio/distant-2.m4a": {
+      "bytes": 912023,
+      "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+    },
+    "assets/audio/lipJet-1.m4a": {
+      "bytes": 62354,
+      "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+    },
+    "assets/audio/lipJet-2.m4a": {
+      "bytes": 47086,
+      "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+    },
+    "assets/audio/lipRoller-1.m4a": {
+      "bytes": 36688,
+      "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+    },
+    "assets/audio/lipRoller-2.m4a": {
+      "bytes": 27855,
+      "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+    },
+    "assets/audio/paddle-1.m4a": {
+      "bytes": 14645,
+      "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+    },
+    "assets/audio/paddle-2.m4a": {
+      "bytes": 13593,
+      "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+    },
+    "assets/audio/plunge-1.m4a": {
+      "bytes": 24612,
+      "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+    },
+    "assets/audio/plunge-2.m4a": {
+      "bytes": 22031,
+      "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+    },
+    "assets/audio/roar-1.m4a": {
+      "bytes": 419823,
+      "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+    },
+    "assets/audio/roar-2.m4a": {
+      "bytes": 387857,
+      "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+    },
+    "assets/audio/sounds.json": {
+      "bytes": 3499,
+      "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+    },
+    "assets/devStepping-4KzZk9nO.js": {
+      "bytes": 320,
+      "sha256": "066cafcbada2b2804e796c1b3400045a05e5ecc3e77f3200948cbfb1f0d9381a"
+    },
+    "assets/index-BhtMZcQv.js": {
+      "bytes": 582397,
+      "sha256": "298f5dfce8c75a467d3b06bd5e4ed549db72470190f09bee705a3e0dde1baf09"
+    },
+    "assets/index-DA8NEfOT.css": {
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    "assets/jevRecorder-CVEzk2Dn.js": {
+      "bytes": 15917,
+      "sha256": "3ee9e83d6e49d28e43838a054edb0e23ea7e8dcd70435f02095cf95e68976919"
+    },
+    "assets/particleBench-D2VXQecC.js": {
+      "bytes": 10708,
+      "sha256": "3091eae96cdd30158917c69ecc4a4a033925115fa47790b7581c4d69bb574a56"
+    },
+    "assets/rideRecorder-JGaAljfU.js": {
+      "bytes": 41108,
+      "sha256": "379f9b848b93d5d3bf67e2cbf5aae55e37302b5df3a929e58085dab306f8ec67"
+    },
+    "assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg": {
+      "bytes": 681062,
+      "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+    },
+    "assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+    },
+    "assets/skies/qwantani_sunrise_puresky.jpg": {
+      "bytes": 357301,
+      "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+    },
+    "assets/skies/qwantani_sunrise_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+    },
+    "assets/skies/qwantani_sunset_puresky.jpg": {
+      "bytes": 372349,
+      "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+    },
+    "assets/skies/qwantani_sunset_puresky_1k.hdr": {
+      "bytes": 2097202,
+      "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+    },
+    "assets/skies/skies.json": {
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    "assets/surfZoneWorker-C_Oi2eP6.js": {
+      "bytes": 448496,
+      "sha256": "d54a31ec949add36b01b347cd592ed3049cc0f0a4b0dd2118b46a7a26b031995"
+    },
+    "assets/surfers/surfer1.glb": {
+      "bytes": 1007368,
+      "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+    },
+    "assets/surfers/surfer2.glb": {
+      "bytes": 1595524,
+      "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+    },
+    "assets/surfers/surfer3.glb": {
+      "bytes": 1545008,
+      "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+    },
+    "assets/surfers/surfer4.glb": {
+      "bytes": 1229872,
+      "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+    },
+    "assets/surfers/surfers.json": {
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    },
+    "assets/waterSheet-BBpAKH2n.js": {
+      "bytes": 11689,
+      "sha256": "122ece25d6386bf1ed62c7e6611dad05355bc88a8bd7f43c4a984cfefe5d193f"
+    },
+    "barrels/pad19-a20-l12.bin": {
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    "barrels/pad19-a30-l12.bin": {
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    "barrels/pad19-a45-l12.bin": {
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    "barrels/periodic-padang19s-l12.bin": {
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    "barrels/periodic-point21-a15-l12.bin": {
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    "barrels/periodic-point21-a23-l12.bin": {
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    "barrels/periodic-point21-a30-l12.bin": {
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    "barrels/periodic-reef42-l12.bin": {
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    "build.json": {
+      "bytes": 43,
+      "sha256": "00e0cfd0ba8ecdc0bf2ce13e27bfa01c1a37286f7c97dc25af5d6cbb0aa6f904"
+    },
+    "index.html": {
+      "bytes": 1626,
+      "sha256": "0b867497ce548696492b4a84f0e6ef81a7824562dc4826dd12a1819701eeed3b"
+    },
+    "lessons/pool-s2-caught.sea": {
+      "bytes": 2180693,
+      "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+    },
+    "lessons/pool-s2-pocket.sea": {
+      "bytes": 2176894,
+      "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+    },
+    "lessons/pool-s2-waiting.sea": {
+      "bytes": 2232988,
+      "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+    }
+  },
+  "sources": {
+    "src/dev/Autopilot.ts": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/dev/Autopilot.ts",
+      "bytes": 32175,
+      "sha256": "0cdfb3daf9d09ae432b4654f25d4cc16f1289e44a3dd44abda33b96527c75a0a"
+    },
+    "src/wave/SurfZoneRunner.ts": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneRunner.ts",
+      "bytes": 40621,
+      "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+    },
+    "src/physics/riderPosture.ts": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/riderPosture.ts",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734"
+    },
+    "src/physics/boardReference.ts": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardReference.ts",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032"
+    },
+    "src/physics/AttachedRider.ts": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.ts",
+      "bytes": 135460,
+      "sha256": "3fc5c9c86a7e2c148dabd2c22bbd6c4ebde6416bdc2dad82661a15c43596ac0d"
+    },
+    "src/physics/RideSession.ts": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/RideSession.ts",
+      "bytes": 13831,
+      "sha256": "57818ef317fd0616d53a07d631304dff303a8904f488d7ddd96693859ca1bd2e"
+    }
+  },
+  "sourceAndCopyBytesVerified": true,
+  "resourcesStarted": false,
+  "diagnosticAssets": {
+    "diagnostic-autopilot.mjs": {
+      "bytes": 347555,
+      "sha256": "e6c6339a667a2eaedf6a2cb61dc8c19c5d1c1b3b00c1b7e0b240620c704a8ec2"
+    }
+  },
+  "diagnosticSources": {
+    "autopilot-entry.ts": {
+      "file": "/private/tmp/tube-natural-entry-20261004/autopilot-entry.ts",
+      "bytes": 296,
+      "sha256": "daa2e72a04e87ed97e2814ea1b7115440e796b2ec62f650caf20609ee6e2ebb1"
+    },
+    "body-witnesses.mjs": {
+      "file": "/private/tmp/tube-natural-entry-20261004/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    "native.mjs": {
+      "file": "/private/tmp/tube-natural-entry-20261004/native.mjs",
+      "bytes": 18136,
+      "sha256": "ac9a4824c4b4b2d3d12515afd555e4735dc3b3402f361ecab67115eb393146ff"
+    },
+    "native-owned.mjs": {
+      "file": "/private/tmp/tube-natural-entry-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    "run.py": {
+      "file": "/private/tmp/tube-natural-entry-20261004/run.py",
+      "bytes": 7395,
+      "sha256": "7fce1cc13f7f8f408b8df6f21c6c9218e60c40a83abda1c0d37bdf194c285c10"
+    },
+    "source-check.mjs": {
+      "file": "/private/tmp/tube-natural-entry-20261004/source-check.mjs",
+      "bytes": 2598,
+      "sha256": "e6adda293a3c61b6bb66379620d34b2a9127892f4f7ba10533be64172181b03c"
+    },
+    "browser-cdp": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    }
+  },
+  "sourceChecks": {
+    "schema": "tube-natural-entry-source-check/v1",
+    "complete": true,
+    "resourcesStarted": false,
+    "scope": "Finite offline synthetic detector/source checks; no runtime or trajectory claim",
+    "outcomes": [
+      "three ordered component crossings with clear reference spheres",
+      "production water parity blocks apparent cavity",
+      "collinear and coincident triangles retain actual segment contact",
+      "unchanged input module exports and positive-radius guard"
+    ]
+  },
+  "preparedAt": "2026-10-04T17:36:13.803404+00:00",
+  "ports": [
+    4287,
+    9697
+  ],
+  "futureRootOnlyCommand": "python3 /private/tmp/tube-natural-entry-20261004/run.py --run --arm baseline --out /private/tmp/tube-natural-entry-20261004/native-first",
+  "protocol": {
+    "maximumSteps": 1080,
+    "maximumPhysicalSeconds": 18,
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7,
+    "maximumPngs": 3,
+    "maximumReportBytes": 33554432,
+    "maximumNdjsonBytes": 25165824,
+    "detectorCumulativeBudgetMs": 20000,
+    "oneStepAtATime": true,
+    "noPlacementResetOrSearch": true,
+    "runtimeExecuted": false
+  }
+}

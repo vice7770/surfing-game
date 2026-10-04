@@ -1,0 +1,387 @@
+{
+  "source": "Actual BarrelWater, actual indexed quad APIs. Synthetic input; not claimed native runtime occurrence.",
+  "threeSeaConnectedSheets": {
+    "components": 3,
+    "columnCrossings": [
+      0,
+      2,
+      4
+    ],
+    "actual": [
+      {
+        "point": {
+          "x": 0.5,
+          "y": -1,
+          "z": 0.5
+        },
+        "actual": true
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 1,
+          "z": 0.5
+        },
+        "actual": false
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 2.5,
+          "z": 0.5
+        },
+        "actual": true
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 3.5,
+          "z": 0.5
+        },
+        "actual": true
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 5,
+          "z": 0.5
+        },
+        "actual": false
+      }
+    ],
+    "expectedWaterUnion": [
+      true,
+      true,
+      true,
+      true,
+      false
+    ],
+    "independentSheets": [
+      [
+        {
+          "point": {
+            "x": 0.5,
+            "y": -1,
+            "z": 0.5
+          },
+          "actual": true
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 1,
+            "z": 0.5
+          },
+          "actual": false
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 2.5,
+            "z": 0.5
+          },
+          "actual": false
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 3.5,
+            "z": 0.5
+          },
+          "actual": false
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 5,
+            "z": 0.5
+          },
+          "actual": false
+        }
+      ],
+      [
+        {
+          "point": {
+            "x": 0.5,
+            "y": -1,
+            "z": 0.5
+          },
+          "actual": true
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 1,
+            "z": 0.5
+          },
+          "actual": true
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 2.5,
+            "z": 0.5
+          },
+          "actual": false
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 3.5,
+            "z": 0.5
+          },
+          "actual": false
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 5,
+            "z": 0.5
+          },
+          "actual": false
+        }
+      ],
+      [
+        {
+          "point": {
+            "x": 0.5,
+            "y": -1,
+            "z": 0.5
+          },
+          "actual": true
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 1,
+            "z": 0.5
+          },
+          "actual": true
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 2.5,
+            "z": 0.5
+          },
+          "actual": true
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 3.5,
+            "z": 0.5
+          },
+          "actual": true
+        },
+        {
+          "point": {
+            "x": 0.5,
+            "y": 5,
+            "z": 0.5
+          },
+          "actual": false
+        }
+      ]
+    ]
+  },
+  "twoSeaConnectedSheets": {
+    "components": 2,
+    "columnCrossings": [
+      0,
+      4
+    ],
+    "actual": [
+      {
+        "point": {
+          "x": 0.5,
+          "y": -1,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 1,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 2.5,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 3.5,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 5,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      }
+    ],
+    "expectedWaterUnion": [
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "validFloorAndFiniteRoof": {
+    "components": 2,
+    "columnCrossings": [
+      0,
+      2,
+      3
+    ],
+    "actual": [
+      {
+        "point": {
+          "x": 0.5,
+          "y": -1,
+          "z": 0.5
+        },
+        "actual": true
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 1,
+          "z": 0.5
+        },
+        "actual": false
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 2.5,
+          "z": 0.5
+        },
+        "actual": true
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 3.5,
+          "z": 0.5
+        },
+        "actual": false
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 5,
+          "z": 0.5
+        },
+        "actual": false
+      }
+    ],
+    "expectedWaterUnion": [
+      true,
+      false,
+      true,
+      false,
+      false
+    ],
+    "finiteOnlyActual": [
+      {
+        "point": {
+          "x": 0.5,
+          "y": -1,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 1,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 2.5,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 3.5,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      },
+      {
+        "point": {
+          "x": 0.5,
+          "y": 5,
+          "z": 0.5
+        },
+        "actual": "undefined"
+      }
+    ],
+    "note": "The floor and finite roof are two actual indexed components; the roof has four vertical indexed walls. Connectivity split with the same odd-total guard rejects the even-crossing finite roof. A finite roof needs its own closed-solid parity."
+  },
+  "mask": {
+    "nodes": 9,
+    "values": [
+      255,
+      255,
+      255,
+      255,
+      255,
+      255,
+      255,
+      255,
+      255
+    ],
+    "note": "Mask takes maximum triangle weight; disconnected same-front parity grouping does not alter its output."
+  },
+  "actualProfileTripleCopy": {
+    "components": 3,
+    "baseComponents": 1,
+    "point": {
+      "x": 10.25,
+      "y": 4.076630115509033,
+      "z": -98.47331619262695
+    },
+    "perComponent": [
+      false,
+      true,
+      true
+    ],
+    "aggregate": false,
+    "expectedWaterUnion": true,
+    "dy": [
+      0,
+      4,
+      8
+    ],
+    "base": {
+      "sliceCount": 47,
+      "indexCount": 36708,
+      "rayMinAdvance": 0.5,
+      "rayInvalidIntervals": 0
+    },
+    "note": "Three overlapping vertically translated copies intentionally exceed one-front ray-plan input invariants. This isolates the classifier contract, not proof that transport creates this state."
+  }
+}

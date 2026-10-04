@@ -1,0 +1,123 @@
+{
+  "copies": [
+    {
+      "original": "/private/tmp/tube-opening-shape-20261004/receipt.json",
+      "retained": "opening/receipt.json",
+      "bytes": 194702,
+      "sha256": "20f3f4acb52cf7732683b04cc27a96709364fbb386b33d9fa0fe3e65ab76f409"
+    },
+    {
+      "original": "/private/tmp/tube-opening-shape-20261004/measure.py",
+      "retained": "opening/measure.py",
+      "bytes": 10813,
+      "sha256": "c6f6207f68383016829c8b43734e9a181ebda9a01c7d209d7735d2015c5d5763"
+    },
+    {
+      "original": "/private/tmp/tube-hold-area-20261004/report.json",
+      "retained": "hold-frame/report.json",
+      "bytes": 162015,
+      "sha256": "868dabcc7a22f6fc4a387c24e89083939e6c7b8ac69e74c17afea44d0acc43dc"
+    },
+    {
+      "original": "/private/tmp/tube-hold-area-20261004/table.txt",
+      "retained": "hold-frame/table.txt",
+      "bytes": 1112,
+      "sha256": "879426408033972427c7edefd68ad00f147a450906707678b0760f2e6d2c0659"
+    },
+    {
+      "original": "/private/tmp/tube-hold-area-20261004/compare.ts",
+      "retained": "hold-frame/compare.ts",
+      "bytes": 9255,
+      "sha256": "e3f4a1cad3e696ed83ab231bbba3962c9b1c64bf2d3366a21bee8cb6f2a31ad6"
+    },
+    {
+      "original": "/private/tmp/tube-hold-area-20261004/compare.mjs",
+      "retained": "hold-frame/compare.mjs",
+      "bytes": 24361,
+      "sha256": "c1c900069400272f928daa59f39be45f3b5fac02e169a4b12a0ab4d2e89930bd"
+    },
+    {
+      "original": "/private/tmp/tube-prepared-line-20261004/native.mjs",
+      "retained": "failed-prepared-line/native.mjs",
+      "bytes": 20523,
+      "sha256": "999b5ba13c99522c2206d2bdba818e45f54a3b46416afbf9cc03c1f0b9380344"
+    },
+    {
+      "original": "/private/tmp/tube-prepared-line-20261004/native-owned.mjs",
+      "retained": "failed-prepared-line/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "original": "/private/tmp/tube-prepared-line-20261004/run.py",
+      "retained": "failed-prepared-line/run.py",
+      "bytes": 6665,
+      "sha256": "ea61d80de61857324db6d047e5ad150445b2072c15e0fedbd74836368b9321ab"
+    },
+    {
+      "original": "/private/tmp/tube-prepared-line-20261004/placement-plan.json",
+      "retained": "failed-prepared-line/placement-plan.json",
+      "bytes": 760,
+      "sha256": "6862279a97d1ac7d7db9952a8815ae8678525eb0ecea412fa8010b97f4a6c0ce"
+    },
+    {
+      "original": "/private/tmp/tube-prepared-line-20261004/native-first-owner.json",
+      "retained": "failed-prepared-line/native-first-owner.json",
+      "bytes": 2737,
+      "sha256": "010da56ae240b31444a52f12cc529131fcdb33477848345ce147bc518ad94077"
+    },
+    {
+      "original": "/private/tmp/tube-prepared-line-20261004/native-first/report.json",
+      "retained": "failed-prepared-line/native-first/report.json",
+      "bytes": 197437,
+      "sha256": "911d12b1dde84817be504fa6df495d54ffbccbe9c6a8a6c83994e7e4e6cf41d6"
+    },
+    {
+      "original": "/private/tmp/tube-prepared-line-20261004/native-first/launcher.json",
+      "retained": "failed-prepared-line/native-first/launcher.json",
+      "bytes": 11330,
+      "sha256": "e33452ade841bf4133104b5387b51bf5d9069b38e7a83645a0e794c704182af5"
+    },
+    {
+      "original": "/private/tmp/tube-connected-air-audit-20261004/README.md",
+      "retained": "classifier-scope/README.md",
+      "bytes": 4535,
+      "sha256": "b855cdee363fae80e74d97a3fcb49183133b7fb245661add94a4dc29f46112d8"
+    },
+    {
+      "original": "/private/tmp/tube-connected-air-audit-20261004/audit.mjs",
+      "retained": "classifier-scope/audit.mjs",
+      "bytes": 113218,
+      "sha256": "a4862f97b2788be150586151b0b9a72ecf7043f25bdc86c24b94461104db0e4b"
+    },
+    {
+      "original": "/private/tmp/tube-connected-air-audit-20261004/audit.ts",
+      "retained": "classifier-scope/audit.ts",
+      "bytes": 7790,
+      "sha256": "f0b9f6a8b7b4511bd1547578375db6aa6eabf1539577206c1827d94dc0959c3d"
+    },
+    {
+      "original": "/private/tmp/tube-connected-air-audit-20261004/report.json",
+      "retained": "classifier-scope/report.json",
+      "bytes": 6928,
+      "sha256": "e4cea25e02cc3b3a8a89281089ecf9d23a71ca558578e069e1ad2190793a2f7a"
+    },
+    {
+      "original": "/private/tmp/tube-connected-air-audit-20261004/source-hashes.json",
+      "retained": "classifier-scope/source-hashes.json",
+      "bytes": 1652,
+      "sha256": "eaf7a7f54424d02fa7e60a3449dfdf70a72e4415dae5cda3640aded015330981"
+    },
+    {
+      "original": "/private/tmp/tube-connected-air-audit-20261004/stdout.json",
+      "retained": "classifier-scope/stdout.json",
+      "bytes": 6928,
+      "sha256": "e4cea25e02cc3b3a8a89281089ecf9d23a71ca558578e069e1ad2190793a2f7a"
+    }
+  ],
+  "openingInput": {
+    "retained": "../splash-attribution/native-report.json",
+    "sha256": "b3a498dd6afe77bde1429b0d1b0aefb434f6304c0bb9d728b37dc865c69373c9"
+  },
+  "omitted": "Three failed-prepared-line PNGs and transient owner log; original native artifacts/hashes remain in its report, without a visual or body pass claim."
+}
