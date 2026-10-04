@@ -1,0 +1,12 @@
+✔ both original arithmetic bodies retain literal F32 stores and storage reloads (1.360417ms)
+✔ all unrelated WGSL, layouts, boundary arithmetic and later kernels stay literal (0.669292ms)
+✔ only the adjacent dispatch pair changes, with original diagnostic entrypoints retained (0.614459ms)
+✔ the full device step is unchanged, and standalone pipelines are also compiled (0.368292ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 49.901041

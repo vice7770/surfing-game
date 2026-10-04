@@ -1,0 +1,177 @@
+import { BoussinesqSolver } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver';
+import { SeaStateBoundary } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary';
+import { SideFeed } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed';
+import { SeaState } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState';
+import { GpuBoussinesq as Eager, DEVICE_READBACK, readbackTarget } from './baseline/src/wave/gpu/GpuBoussinesq';
+import { GpuBoussinesq as Fused } from './candidate/src/wave/gpu/GpuBoussinesq';
+import { FIELD } from './baseline/src/wave/gpu/boussinesqWgsl';
+
+type Host = Pick<Eager, 'solver' | 'step' | 'diagnostics' | 'lastSubsteps' | 'device' | 'dispose' | 'kernels'>;
+type Boundary = 'open' | 'wall';
+const FIELDS = ['H', 'QX', 'QZ', 'RATEH', 'STRENGTH', 'AGE', 'NU', 'PREDX', 'PREDZ'];
+const COST_PAIRS = 24, WARM_PAIRS = 4;
+function assert(condition: unknown, message: string): asserts condition { if (!condition) throw Error(message); }
+const mark = (stage: string) => console.log(JSON.stringify({ fusionStage: stage }));
+
+/** Explicit deterministic supplied inputs; neither a historical Padang state nor an ordinary ride. */
+function fixture(nx: number, nz: number, boundary: Boundary, fed: boolean, breakingEnabled = true) {
+  const zEdges = new Float64Array(nz + 1);
+  zEdges[0] = fed ? -1400 : -32;
+  for (let iz = 0; iz < nz; iz++) {
+    const spacing = fed ? (iz < 150 ? 4 : iz < 200 ? 4 - 3 * (iz - 150) / 50 : 1) : 0.8 + 0.05 * (iz % 5);
+    zEdges[iz + 1] = zEdges[iz] + spacing;
+  }
+  const solver = new BoussinesqSolver({ nx, xMin: -7, dx: 2, zEdges, xBoundary: boundary },
+    (_x, z) => fed ? 8 - 0.001 * z : 2,
+    { manning: 0.02, breaking: breakingEnabled ? { onset: fed ? 0.12 : 0.02, end: 0.01, transition: 5, delta: 1.2 } : false });
+  const predictor = solver.predictor;
+  assert(predictor, 'Supplied fixture requires default dispersion and predictor state');
+  solver.time = 2.25;
+  for (let iz = 0; iz < nz; iz++) for (let ix = 0; ix < nx; ix++) {
+    const i = iz * nx + ix, x = solver.xCenters[ix], z = solver.zCenters[iz];
+    const wet = fed || (ix > 1 && ix < nx - 2 && iz > 0);
+    solver.h[i] = wet ? Math.max(0.06, solver.h[i] + 0.12 * Math.sin(0.17 * x) * Math.cos(0.13 * z)) : ix === 0 ? 0 : 0.00005;
+    solver.qx[i] = wet ? -0.8 * solver.h[i] * Math.sin(0.23 * x) : 0;
+    solver.qz[i] = wet ? -0.8 * solver.h[i] * Math.sin(0.23 * z) : 0;
+    solver.breakingStrength[i] = wet ? 0.25 : 0;
+    solver.breakingAge[i] = wet ? 0.5 + (i % 7) * 0.03 : 0;
+    predictor.x[i] = wet ? 0.002 * Math.cos(0.11 * x) : 0;
+    predictor.z[i] = wet ? -0.001 * Math.sin(0.17 * z) : 0;
+    if (!fed && ix === 8 && iz > 5 && iz < 10) solver.plungeHold[i] = 0.3;
+  }
+  if (fed) {
+    const sea = SeaState.fromSpectrum({ significantHeight: 1.2, peakPeriod: 18, direction: 0,
+      spreading: 150, componentCount: 64, depth: 10 }, 8761);
+    const weights = new Float64Array(nx * nz);
+    for (let iz = 0; iz < 20; iz++) for (let ix = 0; ix < nx; ix++) weights[iz * nx + ix] = 0.04 * (20 - iz) / 20;
+    solver.addRelaxationZone(new SeaStateBoundary(solver, sea, weights, 400));
+    const sides = new SideFeed(solver, sea, { referenceZ: solver.zCenters[20], timeOffset: 400 });
+    assert(sides.deviceShape().slots > 0, 'Supplied cost fixture needs actual side-feed slots');
+    solver.addRelaxationZone(sides);
+  }
+  return solver;
+}
+
+function snapshotStorage(n: number) {
+  return DEVICE_READBACK.map(() => {
+    const values = new Float32Array(n);
+    return { values, bits: new Uint32Array(values.buffer) };
+  });
+}
+function fillSnapshot(solver: BoussinesqSolver, target: ReturnType<typeof snapshotStorage>) {
+  DEVICE_READBACK.forEach((field, k) => target[k].values.set(readbackTarget(solver, field)));
+}
+function exact(a: ReturnType<typeof snapshotStorage>, b: ReturnType<typeof snapshotStorage>, label: string) {
+  for (let k = 0; k < a.length; k++) for (let i = 0; i < a[k].bits.length; i++) {
+    if (!Number.isFinite(a[k].values[i]) || !Number.isFinite(b[k].values[i])) throw Error(`${label}: nonfinite ${FIELDS[k]}[${i}]`);
+    if (a[k].bits[i] !== b[k].bits[i]) throw Error(`${label}: ${FIELDS[k]}[${i}] bits ${a[k].bits[i]} != ${b[k].bits[i]}`);
+  }
+}
+async function createPair(nx: number, nz: number, boundary: Boundary, fed: boolean, breakingEnabled = true) {
+  const a = fixture(nx, nz, boundary, fed, breakingEnabled), b = fixture(nx, nz, boundary, fed, breakingEnabled);
+  const snapshots = [snapshotStorage(nx * nz), snapshotStorage(nx * nz)] as const;
+  fillSnapshot(a, snapshots[0]); fillSnapshot(b, snapshots[1]); exact(...snapshots, 'initial supplied inputs');
+  let before: Eager | undefined, after: Fused | undefined;
+  try {
+    before = await Eager.create(a); after = await Fused.create(b);
+    assert(before && after, 'Actual WebGPU hosts required; no CPU fallback');
+    const deviceErrors: string[] = [];
+    for (const host of [before, after]) host.device.addEventListener('uncapturederror', (event) => deviceErrors.push(event.error.message));
+    return { before, after, snapshots, deviceErrors };
+  } catch (error) { before?.dispose(); after?.dispose(); throw error; }
+}
+function comparePair(pair: Awaited<ReturnType<typeof createPair>>, label: string) {
+  assert(pair.deviceErrors.length === 0, `${label}: uncaptured GPU errors: ${pair.deviceErrors.join('; ')}`);
+  fillSnapshot(pair.before.solver, pair.snapshots[0]); fillSnapshot(pair.after.solver, pair.snapshots[1]);
+  exact(...pair.snapshots, label);
+  assert(pair.before.solver.time === pair.after.solver.time, `${label}: solver clocks differ`);
+  assert(pair.before.lastSubsteps === pair.after.lastSubsteps, `${label}: CFL substeps differ`);
+}
+async function viscosityFields(host: Host) {
+  // QA-only read outside timing. The original complete .step performs its unchanged nine-field map.
+  const n = host.solver.nx * host.solver.nz;
+  const buffer = host.device.createBuffer({ size: 2 * n * 4, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
+  try {
+    const fields = (host as unknown as { fields: GPUBuffer }).fields;
+    const encoder = host.device.createCommandEncoder();
+    encoder.copyBufferToBuffer(fields, FIELD.VISCX * n * 4, buffer, 0, n * 4);
+    encoder.copyBufferToBuffer(fields, FIELD.VISCZ * n * 4, buffer, n * 4, n * 4);
+    host.device.queue.submit([encoder.finish()]); await buffer.mapAsync(GPUMapMode.READ);
+    const bytes = new Uint8Array(buffer.getMappedRange()).slice(); buffer.unmap();
+    const values = new Float32Array(bytes.buffer);
+    let nonzero = 0; for (const value of values) { assert(Number.isFinite(value), 'Nonfinite viscosity field'); if (value !== 0) nonzero++; }
+    return { bytes, nonzero };
+  } finally { buffer.destroy(); }
+}
+const median = (values: number[]) => {
+  const sorted = [...values].sort((a, b) => a - b), mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+};
+async function run() {
+  const started = performance.now();
+  const parity = [];
+  mark('PARITY');
+  const cases = [
+    { boundary: 'open', breakingEnabled: true }, { boundary: 'wall', breakingEnabled: true },
+    { boundary: 'open', breakingEnabled: false },
+  ] as const;
+  for (const { boundary, breakingEnabled } of cases) for (const multiple of [false, true]) {
+    const pair = await createPair(65, 19, boundary, false, breakingEnabled);
+    try {
+      const dt = multiple ? pair.before.solver.maxStableStep() * 2.2 : 1 / 60;
+      const counts: number[] = [];
+      const initialH = pair.snapshots[0][0].bits.slice();
+      const dryDepth = pair.before.solver.deviceLayout().dryDepth;
+      const initialWet = pair.before.solver.h.filter((h) => h > dryDepth).length;
+      assert(initialWet > 0 && initialWet < 65 * 19, 'Fixture must contain wet and dry initial cells');
+      let storedNonzeroViscous = 0, changedH = 0;
+      for (let step = 0; step < 3; step++) {
+        await pair.before.step(dt); await pair.after.step(dt); comparePair(pair, `${boundary}/${breakingEnabled}/${multiple}/${step}`);
+        assert(multiple ? pair.before.lastSubsteps > 1 : pair.before.lastSubsteps === 1, 'Required CFL branch not exercised');
+        counts.push(pair.before.lastSubsteps);
+        if (step === 0) {
+          const a = await viscosityFields(pair.before), b = await viscosityFields(pair.after);
+          assert(a.bytes.length === b.bytes.length && a.bytes.every((v, i) => v === b.bytes[i]), 'Stored VISC bytes differ');
+          storedNonzeroViscous = a.nonzero;
+          for (let i = 0; i < initialH.length; i++) if (initialH[i] !== pair.snapshots[0][0].bits[i]) changedH++;
+          assert(changedH > 0, 'The update must change water even when viscosity is zero');
+          if (breakingEnabled) assert(a.nonzero > 0, 'Fixture does not exercise nonzero viscous terms');
+          else {
+            assert(a.nonzero === 0, 'Breaking-disabled VISC fields must be zero');
+            assert(pair.before.solver.viscosity.every((nu) => nu === 0), 'Breaking-disabled NU field must be zero');
+          }
+        }
+        assert(performance.now() - started < 60000, 'In-page60second bound');
+      }
+      parity.push({ boundary, breakingEnabled, cells: 65 * 19, initialWet, initialDry: 65 * 19 - initialWet,
+        dt, substeps: counts, exactNineFields: true, finite: true, storedNonzeroViscous, changedH });
+    } finally { pair.before.dispose(); pair.after.dispose(); }
+  }
+  mark('COMPLETE_STEP_COST');
+  const pair = await createPair(160, 725, 'open', true), rows = [];
+  try {
+    for (let warm = 0; warm < WARM_PAIRS; warm++) {
+      await pair.before.step(1 / 60); await pair.after.step(1 / 60); comparePair(pair, `warm/${warm}`);
+    }
+    for (let index = 0; index < COST_PAIRS; index++) {
+      const order = index % 2 === 0 ? ['before', 'after'] as const : ['after', 'before'] as const;
+      const measures = {} as Record<'before' | 'after', { elapsed: number; stages: typeof pair.before.diagnostics; substeps: number }>;
+      for (const key of order) {
+        const begin = performance.now(); await pair[key].step(1 / 60); const elapsed = performance.now() - begin;
+        measures[key] = { elapsed, stages: { ...pair[key].diagnostics }, substeps: pair[key].lastSubsteps };
+      }
+      comparePair(pair, `cost/${index}`);
+      rows.push({ index, order, ...measures, saving: measures.before.elapsed - measures.after.elapsed });
+      assert(performance.now() - started < 60000, 'In-page60second bound');
+    }
+    return { schema: 'viscous-update-fusion-device-gate/v1', valid: true,
+      fields: FIELDS, parity, cost: { fixture: 'Supplied synthetic160×725nonuniform,64seededcomponents,offshore+side-feed; not a historical/ordinary Padang state',
+        cells: 116000, warmPairs: WARM_PAIRS, balancedPairs: COST_PAIRS, rows,
+        beforeMedian: median(rows.map((r) => r.before.elapsed)), afterMedian: median(rows.map((r) => r.after.elapsed)),
+        pairedMedianSaving: median(rows.map((r) => r.saving)), positivePairs: rows.filter((r) => r.saving > 0).length,
+        exactNineFieldsEveryPair: true, measured: 'Original complete.step including packing,CFL,encoding,submission,mapAsync and unpack/adopt; setup and parity scans/extraVISCread excluded' },
+      elapsedSeconds: (performance.now() - started) / 1000,
+      limits: ['Periodic boundaries are refused by the original GPU host; unchanged in source only','No dispatch timestamps','No FPS/ordinary contention or late-state claim','One balanced device sequence','No adoption','Retained VISC stores/reloads; compiler bit parity is a required gate'] };
+  } finally { pair.before.dispose(); pair.after.dispose(); }
+}
+Object.assign(window, { fusionQaReady: true, fusionQaRun: run });

@@ -1,0 +1,74 @@
+--- a/src/wave/gpu/boussinesqWgsl.ts
++++ b/src/wave/gpu/boussinesqWgsl.ts
+@@ -459,8 +459,7 @@
+ }
+ 
+ // K9: the eddy-viscosity terms (BoussinesqSolver.breakingTerms, second half).
+-@compute @workgroup_size(64) fn viscous(@builtin(global_invocation_id) id: vec3<u32>) {
+-  let i = cellOf(id); if (i >= P.n) { return; }
++fn viscousCell(i: u32) {
+   let nx = P.nx; let ix = i % nx; let iz = i / nx;
+   let nu = at(${FIELD.NU}u, i);
+   let periodic = P.boundary == PERIODIC;
+@@ -484,14 +483,30 @@
+   put(${FIELD.VISCZ}u, i, select(0.0, vz, P.breaks == 1u));
+ }
+ 
++@compute @workgroup_size(64) fn viscous(@builtin(global_invocation_id) id: vec3<u32>) {
++  let i = cellOf(id); if (i >= P.n) { return; }
++  viscousCell(i);
++}
++
+ // K10: advance h, P̄ and Q̄.
+-@compute @workgroup_size(64) fn update(@builtin(global_invocation_id) id: vec3<u32>) {
+-  let i = cellOf(id); if (i >= P.n) { return; }
++fn updateCell(i: u32) {
+   let h = max(0.0, at(${FIELD.H}u, i) + P.dt * at(${FIELD.RATEH}u, i));
+   put(${FIELD.H}u, i, h);
+   let wet = h > P.dryDepth;
+   put(${FIELD.PBAR}u, i, select(0.0, at(${FIELD.PBAR}u, i) + P.dt * (at(${FIELD.RATEQX}u, i) + at(${FIELD.SRCX}u, i) + at(${FIELD.VISCX}u, i)), wet));
+   put(${FIELD.QBAR}u, i, select(0.0, at(${FIELD.QBAR}u, i) + P.dt * (at(${FIELD.RATEQZ}u, i) + at(${FIELD.SRCZ}u, i) + at(${FIELD.VISCZ}u, i)), wet));
++}
++
++@compute @workgroup_size(64) fn update(@builtin(global_invocation_id) id: vec3<u32>) {
++  let i = cellOf(id); if (i >= P.n) { return; }
++  updateCell(i);
++}
++
++// Same-cell K9→K10: retain both F32 VISC stores and update's original storage reloads.
++@compute @workgroup_size(64) fn viscousUpdate(@builtin(global_invocation_id) id: vec3<u32>) {
++  let i = cellOf(id); if (i >= P.n) { return; }
++  viscousCell(i);
++  updateCell(i);
+ }
+ 
+ // K11: the row systems for P from P̄, one cell per thread: bands a, b, c and the right side, into the dead face fields.
+@@ -688,4 +703,7 @@
+ }
+ 
+ /** Entry points in the order one substep runs them (the relaxation zone after, as on the CPU). */
+-export const STEP_KERNELS = ['begin', 'mask', 'modified', 'predict', 'rates', 'sources', 'breaking', 'shear', 'viscous', 'update', 'rowTerms', 'rows', 'columnTerms', 'columns', 'finish', 'relax', 'relaxSides'] as const;
++export const UNFUSED_STEP_KERNELS = ['begin', 'mask', 'modified', 'predict', 'rates', 'sources', 'breaking', 'shear', 'viscous', 'update', 'rowTerms', 'rows', 'columnTerms', 'columns', 'finish', 'relax', 'relaxSides'] as const;
++export const STEP_KERNELS = ['begin', 'mask', 'modified', 'predict', 'rates', 'sources', 'breaking', 'shear', 'viscousUpdate', 'rowTerms', 'rows', 'columnTerms', 'columns', 'finish', 'relax', 'relaxSides'] as const;
++/** Keep original standalone pipelines available to explicitly selected diagnostics. */
++export const ALL_KERNELS = [...UNFUSED_STEP_KERNELS, 'viscousUpdate'] as const;
+--- a/src/wave/gpu/GpuBoussinesq.ts
++++ b/src/wave/gpu/GpuBoussinesq.ts
+@@ -2,7 +2,7 @@
+ import { SeaStateBoundary } from '../SeaStateBoundary';
+ import { SideFeed } from '../SideFeed';
+ import { PERIODIC, WALL, cflSubsteps } from '../ShallowWaterSolver';
+-import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KERNELS, boussinesqWgsl } from './boussinesqWgsl';
++import { ALL_KERNELS, COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KERNELS, boussinesqWgsl } from './boussinesqWgsl';
+ 
+ const WORKGROUP = 64;
+ const TAU = 2 * Math.PI;
+@@ -226,7 +226,7 @@
+     });
+     this.bindLayout = bindLayout;
+     const pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [bindLayout] });
+-    this.pipelines = new Map(STEP_KERNELS.map((entryPoint) => [entryPoint, device.createComputePipeline({ layout: pipelineLayout, compute: { module, entryPoint } })]));
++    this.pipelines = new Map(ALL_KERNELS.map((entryPoint) => [entryPoint, device.createComputePipeline({ layout: pipelineLayout, compute: { module, entryPoint } })]));
+     this.feedBuffer = device.createBuffer({ size: 4, usage: storage });
+     this.bindGroup = this.bind();
+     device.queue.writeBuffer(this.grid, 0, packGrid(solver, layout));

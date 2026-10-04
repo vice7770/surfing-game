@@ -1,0 +1,59 @@
+import { readFileSync } from 'node:fs';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+
+const read = (arm, name) => readFileSync(new URL(`${arm}/src/wave/gpu/${name}`, import.meta.url), 'utf8');
+const base = read('baseline', 'boussinesqWgsl.ts'), candidate = read('candidate', 'boussinesqWgsl.ts');
+function body(text, name) {
+  const head = text.indexOf(`fn ${name}(`); assert(head >= 0);
+  const start = text.indexOf('{', head); let end = start + 1, depth = 1;
+  while (depth) { depth += Number(text[end] === '{') - Number(text[end] === '}'); end++; }
+  return text.slice(start + 1, end - 1);
+}
+const guard = '\n  let i = cellOf(id); if (i >= P.n) { return; }';
+function kernels(text, name) {
+  const match = text.match(new RegExp(`export const ${name} = (\\[[^;]+\\]) as const;`));
+  assert(match); return JSON.parse(match[1].replaceAll("'", '"'));
+}
+
+test('both original arithmetic bodies retain literal F32 stores and storage reloads', () => {
+  for (const name of ['viscous', 'update']) {
+    assert(body(base, name).startsWith(guard));
+    assert.equal(body(candidate, `${name}Cell`), body(base, name).slice(guard.length));
+    assert.equal(body(candidate, name), `${guard}\n  ${name}Cell(i);\n`);
+  }
+  assert.equal(body(candidate, 'viscousUpdate'), `${guard}\n  viscousCell(i);\n  updateCell(i);\n`);
+  assert.match(body(candidate, 'viscousCell'), /put\(\$\{FIELD\.VISCX\}u, i,/);
+  assert.match(body(candidate, 'viscousCell'), /put\(\$\{FIELD\.VISCZ\}u, i,/);
+  assert.match(body(candidate, 'updateCell'), /at\(\$\{FIELD\.VISCX\}u, i\)/);
+  assert.match(body(candidate, 'updateCell'), /at\(\$\{FIELD\.VISCZ\}u, i\)/);
+});
+
+test('all unrelated WGSL, layouts, boundary arithmetic and later kernels stay literal', () => {
+  assert.equal(candidate.slice(0, candidate.indexOf('// K9:')), base.slice(0, base.indexOf('// K9:')));
+  const tail = (text) => text.slice(text.indexOf('// K11:'), text.indexOf('export const'));
+  assert.equal(tail(candidate), tail(base));
+  const writes = [...body(candidate, 'updateCell').matchAll(/put\(\$\{FIELD\.([A-Z]+)\}/g)].map((m) => m[1]);
+  assert.deepEqual(writes, ['H', 'PBAR', 'QBAR']);
+  // None of these are read by the viscosity body: its neighbour inputs remain settled.
+  for (const field of writes) assert(!body(candidate, 'viscousCell').includes(`FIELD.${field}`));
+});
+
+test('only the adjacent dispatch pair changes, with original diagnostic entrypoints retained', () => {
+  const old = kernels(base, 'STEP_KERNELS'), next = kernels(candidate, 'STEP_KERNELS');
+  assert.equal(old.length, 17); assert.equal(next.length, 16);
+  const expected = [...old]; expected.splice(expected.indexOf('viscous'), 2, 'viscousUpdate');
+  assert.deepEqual(next, expected); assert.deepEqual(kernels(candidate, 'UNFUSED_STEP_KERNELS'), old);
+  assert(candidate.includes("export const ALL_KERNELS = [...UNFUSED_STEP_KERNELS, 'viscousUpdate'] as const;"));
+  for (const name of old) assert(candidate.includes(`fn ${name}(`));
+});
+
+test('the full device step is unchanged, and standalone pipelines are also compiled', () => {
+  const a = read('baseline', 'GpuBoussinesq.ts'), b = read('candidate', 'GpuBoussinesq.ts');
+  const expected = a.replace('{ COMPONENT_STRIDE,', '{ ALL_KERNELS, COMPONENT_STRIDE,')
+    .replace('new Map(STEP_KERNELS.map((entryPoint)', 'new Map(ALL_KERNELS.map((entryPoint)');
+  assert.equal(b, expected);
+  assert(b.includes('kernels: string[] = [...STEP_KERNELS]'));
+  assert(b.includes('for (const kernel of this.kernels)'));
+  assert(b.includes('pass.dispatchWorkgroups(groups);'));
+});

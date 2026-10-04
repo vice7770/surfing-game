@@ -1,0 +1,103 @@
+--- device-gate.mjs
++++ device-gate-v3.mjs
+@@ -16,18 +16,21 @@
+   const m = /^--(run|out)=(.*)$/.exec(arg); if (!m) throw Error(`Unknown argument: ${arg}`); return [m[1], m[2]];
+ }));
+ const readyBytes = readFileSync(`${WORK}/ready.json`), readySha256 = sha(readyBytes), ready = JSON.parse(readyBytes);
++const launchReadyBytes = readFileSync(`${WORK}/launch-ready-v3.json`), launchReadySha256 = sha(launchReadyBytes), launchReady = JSON.parse(launchReadyBytes);
++if (readySha256 !== launchReady.programReadySha256) throw Error('Frozen program readiness binding differs');
+ if (args.run !== 'true') {
+-  console.log(JSON.stringify({ armed: false, readySha256, command: 'FUSION_READY_SHA256=<reviewed> node device-gate.mjs --run=true --out=<fresh absolute dir>',
++  console.log(JSON.stringify({ armed: false, readySha256, launchReadySha256, command: 'FUSION_READY_SHA256=<reviewed program> FUSION_LAUNCH_READY_SHA256=<reviewed launcher> node device-gate-v3.mjs --run=true --out=<fresh absolute dir>',
+     ports: { server: PORT, cdp: CDP, keepClosed: 4200 }, hardSeconds: HARD_MS / 1000,
+     sequence: 'one six-case exact-nine-field parity gate, then only if valid one balanced24-pair complete device-step timing' }, null, 2));
+   process.exit(0);
+ }
+ if (process.env.FUSION_READY_SHA256 !== readySha256) throw Error('Reviewed source readiness hash required');
++if (process.env.FUSION_LAUNCH_READY_SHA256 !== launchReadySha256) throw Error('Reviewed launcher readiness hash required');
+ if (!args.out || !args.out.startsWith('/private/tmp/')) throw Error('Fresh absolute /private/tmp output required');
+ const OUT = resolve(args.out); if (existsSync(OUT)) throw Error('Refuse to overwrite an earlier run');
+ mkdirSync(OUT);
+-const terminal = { schema: 'viscous-update-fusion-owned-run/v1', valid: false, started: new Date().toISOString(),
+-  readySha256, hardSeconds: HARD_MS / 1000, command: process.argv, ports: { server: PORT, cdp: CDP }, events: [] };
++const terminal = { schema: 'viscous-update-fusion-owned-run/v3', valid: false, started: new Date().toISOString(),
++  readySha256, launchReadySha256, hardSeconds: HARD_MS / 1000, command: process.argv, ports: { server: PORT, cdp: CDP }, events: [] };
+ let server, chrome, profile, page, childExit, expired = false;
+ let exitCode = 1;
+ function event(stage) { const row = { stage, utc: new Date().toISOString() }; terminal.events.push(row); console.log(JSON.stringify(row)); }
+@@ -51,7 +54,12 @@
+     const bytes = readFileSync(pin.path);
+     if (bytes.length !== pin.bytes || sha(bytes) !== pin.sha256) throw Error(`Frozen input changed: ${pin.path}`);
+   }
++  for (const pin of launchReady.inputs) {
++    const bytes = readFileSync(pin.path);
++    if (bytes.length !== pin.bytes || sha(bytes) !== pin.sha256) throw Error(`Launcher input changed: ${pin.path}`);
++  }
+   const compiledBytes = readFileSync(`${WORK}/compiled.json`), compiled = JSON.parse(compiledBytes);
++  if (sha(compiledBytes) !== launchReady.compiledSha256) throw Error('Frozen compiled authority differs');
+   if (compiled.status !== 'passed' || compiled.readySha256 !== readySha256) throw Error('Matching successful bundle required');
+   terminal.compiled = { bytes: compiledBytes.length, sha256: sha(compiledBytes), files: compiled.files };
+   const assets = new Map();
+@@ -72,16 +80,47 @@
+   profile = mkdtempSync(join(tmpdir(), 'surf-viscous-fusion-'));
+   chrome = spawn(CHROME, [`--remote-debugging-port=${CDP}`, `--user-data-dir=${profile}`,
+     '--no-first-run', '--no-default-browser-check', '--disable-extensions', '--disable-backgrounding-occluded-windows',
+-    '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--window-size=1280,760', '--window-position=60,60', '--app=about:blank'], { stdio: 'ignore' });
+-  childExit = once(chrome, 'exit'); terminal.chromePid = chrome.pid; event('OWNED_CHROME_STARTED');
++    '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--window-size=1280,760', '--window-position=60,60', '--app=about:blank'], { stdio: ['ignore', 'pipe', 'pipe'] });
++  terminal.chromePid = chrome.pid; terminal.chromeStdout = ''; terminal.chromeStderr = '';
++  for (const [name, stream] of [['chromeStdout', chrome.stdout], ['chromeStderr', chrome.stderr]]) {
++    stream.on('data', (bytes) => {
++      const room = 16384 - Buffer.byteLength(terminal[name]);
++      if (room > 0) terminal[name] += bytes.subarray(0, room).toString();
++    });
++  }
++  let spawnError;
++  chrome.once('error', (error) => { spawnError = error; terminal.spawnError = { name: error.name, message: error.message }; });
++  childExit = once(chrome, 'exit').catch((error) => { terminal.exitWaitError = error.message; return [null, 'spawn-error']; });
++  event('OWNED_CHROME_STARTED');
+   let target;
+-  for (let tries = 0; tries < 100 && !target; tries++) {
++  const startupStarted = Date.now(), inventoryKeys = new Set();
++  terminal.distinctTargetInventories = [];
++  for (let tries = 0; tries < 100 && !target && Date.now() - startupStarted < 10000; tries++) {
+     if (expired) throw Error('Hard deadline');
+-    try { target = (await (await fetch(`http://127.0.0.1:${CDP}/json/list`)).json()).find((t) => t.type === 'page' && t.url === 'about:blank'); }
+-    catch { /* bounded startup observation; no new Chrome/retry operation */ }
++    if (spawnError) throw spawnError;
++    try {
++      const list = await (await fetch(`http://127.0.0.1:${CDP}/json/list`, { signal: AbortSignal.timeout(500) })).json();
++      if (!Array.isArray(list)) throw Error('Invalid owned target inventory');
++      const observed = { utc: new Date().toISOString(), total: list.length, truncated: list.length > 12,
++        targets: list.slice(0, 12).map((t) => Object.fromEntries(['type', 'id', 'title', 'url', 'webSocketDebuggerUrl']
++          .map((name) => [name, typeof t[name] === 'string' ? t[name].slice(0, 512) : null]))) };
++      terminal.firstTargetInventory ??= observed; terminal.lastTargetInventory = observed;
++      const key = JSON.stringify(observed.targets);
++      if (!inventoryKeys.has(key) && terminal.distinctTargetInventories.length < 10) {
++        inventoryKeys.add(key); terminal.distinctTargetInventories.push(observed);
++      }
++      // Successful native-owned launcher authority: select the sole actual page, then navigate explicitly.
++      const pages = list.filter((t) => t.type === 'page');
++      if (pages.length > 1) throw Error('Ambiguous owned page inventory');
++      if (pages.length === 1) target = pages[0];
++    } catch (error) {
++      terminal.lastTargetPollError = error.message;
++      if (error.message.includes('Ambiguous') || error.message.includes('Invalid owned')) throw error;
++    }
+     if (!target) await sleep(100);
+   }
+-  if (!target) throw Error('Owned blank page did not appear');
++  if (!target?.webSocketDebuggerUrl) throw Error('Owned sole page unavailable');
++  terminal.selectedTarget = { type: target.type, id: target.id, url: target.url, webSocketDebuggerUrl: target.webSocketDebuggerUrl };
+   page = await Page.connect(target.webSocketDebuggerUrl);
+   page.on('Runtime.consoleAPICalled', (params) => {
+     for (const arg of params.args ?? []) if (typeof arg.value === 'string' && arg.value.includes('fusionStage')) {
+@@ -101,7 +140,7 @@
+ } finally {
+   clearTimeout(deadline);
+   page?.socket.close();
+-  if (chrome && chrome.exitCode === null && chrome.signalCode === null) {
++  if (chrome?.pid && chrome.exitCode === null && chrome.signalCode === null) {
+     chrome.kill('SIGTERM');
+     try { await bounded(childExit, 1500, 'TERM deadline'); }
+     catch { chrome.kill('SIGKILL'); try { await bounded(childExit, 1500, 'KILL deadline'); } catch (error) { terminal.cleanupFailure = error.message; } }

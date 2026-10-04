@@ -1,0 +1,724 @@
+{
+  "schema": "viscous-update-fusion-evidence-archive/v1",
+  "decision": "not-adopted",
+  "sourceBoundary": "6f321d704269f9f1afc73750ab2b1f4a86f61122; two water files unchanged at accepted contact adoption",
+  "programReadySha256": "26f2c678e0982ef08d82cb4d8b20ebbcaa91339e4bf572c41abb98ab6e699c28",
+  "launcherReadySha256": "492b3039be7cef023ef5d5bb815d6a5e23ea00de3516b7016df8cbd8b156a41a",
+  "successfulResultSha256": "5907c149bc2cb587e157bad52b9a7ae4007b7c0880f2e3d3c7e395430f3a3b89",
+  "borrowedAuthorities": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver.ts",
+      "role": "borrowed-readonly",
+      "bytes": 38556,
+      "sha256": "66cdbb3eb83f7d03ade33c11a429889b217d3b81cd6246b6dd5006a40b0e5d79",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver.ts",
+      "role": "borrowed-readonly",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary.ts",
+      "role": "borrowed-readonly",
+      "bytes": 5460,
+      "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts",
+      "role": "borrowed-readonly",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/breakingAge.ts",
+      "role": "borrowed-readonly",
+      "bytes": 2861,
+      "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+      "role": "borrowed-readonly",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+      "role": "borrowed-readonly",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+      "role": "borrowed-readonly",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/warmStart.ts",
+      "role": "borrowed-readonly",
+      "bytes": 6238,
+      "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+      "role": "borrowed-readonly",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+      "role": "borrowed-readonly",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/webgpu-env.d.ts",
+      "role": "borrowed-readonly",
+      "bytes": 40,
+      "sha256": "039706dee4c12a5f855fe20b669865a5af1da6e9add02e461a188821aa7a36d1",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "role": "borrowed-readonly",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/tsconfig.json",
+      "role": "borrowed-readonly",
+      "bytes": 550,
+      "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/package.json",
+      "role": "borrowed-readonly",
+      "bytes": 6219,
+      "sha256": "4ac9bd4b57a1470fa4515e479cea7ca78875802b661b87dfc896e216d4cf6869",
+      "authority": "installed package metadata pinned in ready-v2"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/package.json",
+      "role": "borrowed-readonly",
+      "bytes": 3620,
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+      "authority": "installed package metadata pinned in ready-v2"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@webgpu/types/package.json",
+      "role": "borrowed-readonly",
+      "bytes": 740,
+      "sha256": "c58597e365f42b61a165210e49e90a864730ee4716473de67d36dfa42519ec99",
+      "authority": "installed package metadata pinned in ready-v2"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts",
+      "role": "borrowed-readonly",
+      "bytes": 19563,
+      "sha256": "4487b00fcecbda83f14e14da06c63eddd837639d4c48c8a25deaa5c9714c90e9",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/boussinesqWgsl.ts",
+      "role": "borrowed-readonly",
+      "bytes": 38276,
+      "sha256": "1b9f973616605f8e3d71e99d599f73497839f3d66bdbfc0bed320545518f173f",
+      "authority": "accepted Git 6f321d704269f9f1afc73750ab2b1f4a86f61122"
+    }
+  ],
+  "compiledProgram": {
+    "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/dist/entry.js",
+    "bytes": 203486,
+    "sha256": "4091049f5b96807ab08dc0145afe290cbc1a52b682ff5415a8bd3bc694b9cf85",
+    "copied": false,
+    "manifestOriginalPath": "/private/tmp/surf-viscous-update-fusion-20261004/compiled.json",
+    "manifestSha256": "5bab88fd12bcad884bc3138d0479533217d0ca5c26fb209bf78e1791fa503be4"
+  },
+  "records": [
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/candidate.patch",
+      "storedPath": "source/original-fusion.patch",
+      "compression": "none",
+      "originalBytes": 4128,
+      "originalSha256": "e4819350e2a6ae7bc1173f6db0b43b36c36ac184f6d149c2268c3b6697937c6e",
+      "storedBytes": 4128,
+      "storedSha256": "e4819350e2a6ae7bc1173f6db0b43b36c36ac184f6d149c2268c3b6697937c6e"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/candidate.patch",
+      "storedPath": "source/original-fusion.patch",
+      "compression": "none",
+      "originalBytes": 4128,
+      "originalSha256": "e4819350e2a6ae7bc1173f6db0b43b36c36ac184f6d149c2268c3b6697937c6e",
+      "storedBytes": 4128,
+      "storedSha256": "e4819350e2a6ae7bc1173f6db0b43b36c36ac184f6d149c2268c3b6697937c6e"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/qa-source-repair.patch",
+      "storedPath": "source/qa-import-allocation-repair.patch",
+      "compression": "none",
+      "originalBytes": 7617,
+      "originalSha256": "baf448db44e7354d59e213d0c5d944759341a732b8599d58993beae6a5a98aae",
+      "storedBytes": 7617,
+      "storedSha256": "baf448db44e7354d59e213d0c5d944759341a732b8599d58993beae6a5a98aae"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/launcher-v3.patch",
+      "storedPath": "source/launcher-v3.patch",
+      "compression": "none",
+      "originalBytes": 7743,
+      "originalSha256": "22cb5d5ac31bdd09d10d59b16d2b5ed39eaea25ee40b04b727045f218e61c7f9",
+      "storedBytes": 7743,
+      "storedSha256": "22cb5d5ac31bdd09d10d59b16d2b5ed39eaea25ee40b04b727045f218e61c7f9"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/source-dispatch.test.mjs",
+      "storedPath": "source/source-dispatch-v1.mjs.txt",
+      "compression": "none",
+      "originalBytes": 3573,
+      "originalSha256": "bbd1efd379ebe58a5888428815b0fc763e3fe65e3fdfa5d837cf2cc4cd7bd38a",
+      "storedBytes": 3573,
+      "storedSha256": "bbd1efd379ebe58a5888428815b0fc763e3fe65e3fdfa5d837cf2cc4cd7bd38a"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/source-dispatch.test.mjs",
+      "storedPath": "source/source-dispatch-v2.mjs.txt",
+      "compression": "none",
+      "originalBytes": 4170,
+      "originalSha256": "c73c402c0ebe2b1fb731fa357b510e626f6161c01b7e52ef8a2c60714b296962",
+      "storedBytes": 4170,
+      "storedSha256": "c73c402c0ebe2b1fb731fa357b510e626f6161c01b7e52ef8a2c60714b296962"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/browser-entry.ts",
+      "storedPath": "source/browser-entry-v1.ts.txt",
+      "compression": "none",
+      "originalBytes": 11653,
+      "originalSha256": "7b6985cb9f4336f81d9d8e8a85b3ab02e841de44648b36ad9223f95e858a0cc8",
+      "storedBytes": 11653,
+      "storedSha256": "7b6985cb9f4336f81d9d8e8a85b3ab02e841de44648b36ad9223f95e858a0cc8"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/browser-entry.ts",
+      "storedPath": "source/browser-entry-v2.ts.txt",
+      "compression": "none",
+      "originalBytes": 11772,
+      "originalSha256": "dbeb396532ad345d2bf5279cd3a7763726865e92db4c5d6538d9d7de0c0da109",
+      "storedBytes": 11772,
+      "storedSha256": "dbeb396532ad345d2bf5279cd3a7763726865e92db4c5d6538d9d7de0c0da109"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/device-gate.mjs",
+      "storedPath": "source/device-gate-v2.mjs.txt",
+      "compression": "none",
+      "originalBytes": 8474,
+      "originalSha256": "ede808e4151e7fdcbe488b84a4e0888697559429a9e7a7941cd07dfeb7623ead",
+      "storedBytes": 8474,
+      "storedSha256": "ede808e4151e7fdcbe488b84a4e0888697559429a9e7a7941cd07dfeb7623ead"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/device-gate.mjs",
+      "storedPath": "source/device-gate-v2.mjs.txt",
+      "compression": "none",
+      "originalBytes": 8474,
+      "originalSha256": "ede808e4151e7fdcbe488b84a4e0888697559429a9e7a7941cd07dfeb7623ead",
+      "storedBytes": 8474,
+      "storedSha256": "ede808e4151e7fdcbe488b84a4e0888697559429a9e7a7941cd07dfeb7623ead"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/device-gate-v3.mjs",
+      "storedPath": "source/device-gate-v3.mjs.txt",
+      "compression": "none",
+      "originalBytes": 11318,
+      "originalSha256": "aace0e546f35441ed6a3734d74027efd4d0cbfbffd5f97568df4f60f91ac04d9",
+      "storedBytes": 11318,
+      "storedSha256": "aace0e546f35441ed6a3734d74027efd4d0cbfbffd5f97568df4f60f91ac04d9"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/bundle.mjs",
+      "storedPath": "source/bundle.mjs.txt",
+      "compression": "none",
+      "originalBytes": 1700,
+      "originalSha256": "f4648dc5ad8389fa62a3137ab7777ae16052c606f1f8f7455838f1d18acddc30",
+      "storedBytes": 1700,
+      "storedSha256": "f4648dc5ad8389fa62a3137ab7777ae16052c606f1f8f7455838f1d18acddc30"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/bundle.mjs",
+      "storedPath": "source/bundle.mjs.txt",
+      "compression": "none",
+      "originalBytes": 1700,
+      "originalSha256": "f4648dc5ad8389fa62a3137ab7777ae16052c606f1f8f7455838f1d18acddc30",
+      "storedBytes": 1700,
+      "storedSha256": "f4648dc5ad8389fa62a3137ab7777ae16052c606f1f8f7455838f1d18acddc30"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/tsconfig.fusion.json",
+      "storedPath": "source/tsconfig.fusion.json",
+      "compression": "none",
+      "originalBytes": 217,
+      "originalSha256": "a8714f855cd4c0c60a8310a8bd1eb1907dc69baf7fc109d4dd25761efeea7475",
+      "storedBytes": 217,
+      "storedSha256": "a8714f855cd4c0c60a8310a8bd1eb1907dc69baf7fc109d4dd25761efeea7475"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/tsconfig.fusion.json",
+      "storedPath": "source/tsconfig.fusion.json",
+      "compression": "none",
+      "originalBytes": 217,
+      "originalSha256": "a8714f855cd4c0c60a8310a8bd1eb1907dc69baf7fc109d4dd25761efeea7475",
+      "storedBytes": 217,
+      "storedSha256": "a8714f855cd4c0c60a8310a8bd1eb1907dc69baf7fc109d4dd25761efeea7475"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/ready.json",
+      "storedPath": "source/ready-v1.json.gz",
+      "compression": "gzip",
+      "originalBytes": 7569,
+      "originalSha256": "579c42de8a6098fe90e6202aaecfe9f372d35f98f86d5bbd84ff42c246a5235c",
+      "storedBytes": 2161,
+      "storedSha256": "321b1a4a09fc7b32508e7e19477bd8a4665143df06405059171b72a56e385640"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/ready.json",
+      "storedPath": "source/ready-v2.json.gz",
+      "compression": "gzip",
+      "originalBytes": 9382,
+      "originalSha256": "26f2c678e0982ef08d82cb4d8b20ebbcaa91339e4bf572c41abb98ab6e699c28",
+      "storedBytes": 2540,
+      "storedSha256": "6472ff95de1306f852c109d34404bdb1e92e69bdbe895afda7ff03f8c3b034fb"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/launch-ready-v3.json",
+      "storedPath": "source/launch-ready-v3.json.gz",
+      "compression": "gzip",
+      "originalBytes": 3024,
+      "originalSha256": "492b3039be7cef023ef5d5bb815d6a5e23ea00de3516b7016df8cbd8b156a41a",
+      "storedBytes": 1071,
+      "storedSha256": "af1d25ef37857a24b7f6982f9426ce9a9a6b44333e4df92fab083c13f35b474e"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/manifest.json",
+      "storedPath": "source/v1-preservation.json.gz",
+      "compression": "gzip",
+      "originalBytes": 6430,
+      "originalSha256": "0bff0b5b03936f7b4a032e1827acf8206755ac317a47c4d6394cec68f23a6d24",
+      "storedBytes": 1338,
+      "storedSha256": "d4c09127813e76de4a9bc3f448bcbe8763a747bbf5268db72d9b45b0566da7c4"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/README.md",
+      "storedPath": "source/preparation-v1.md",
+      "compression": "none",
+      "originalBytes": 4502,
+      "originalSha256": "15f5e3d419bda22093f1799e76c0ed4556d3c80c9f8b098bb14c4e49b852e448",
+      "storedBytes": 4502,
+      "storedSha256": "15f5e3d419bda22093f1799e76c0ed4556d3c80c9f8b098bb14c4e49b852e448"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/README.md",
+      "storedPath": "source/preparation-v2.md",
+      "compression": "none",
+      "originalBytes": 5210,
+      "originalSha256": "ea2fcdc6de360a12829f1527d7acc5e7138c1b967235970e20d4a33781c610e5",
+      "storedBytes": 5210,
+      "storedSha256": "ea2fcdc6de360a12829f1527d7acc5e7138c1b967235970e20d4a33781c610e5"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/launcher-v3-plan.md",
+      "storedPath": "source/launcher-v3-plan.md",
+      "compression": "none",
+      "originalBytes": 2099,
+      "originalSha256": "b7f1fd02aa7f80447500c253b5e482228fd0a5cad173ca49c101fc28ccb17a4d",
+      "storedBytes": 2099,
+      "storedSha256": "b7f1fd02aa7f80447500c253b5e482228fd0a5cad173ca49c101fc28ccb17a4d"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/bootstrap-diagnosis.md",
+      "storedPath": "source/bootstrap-diagnosis.md",
+      "compression": "none",
+      "originalBytes": 3288,
+      "originalSha256": "e151f519e91983212837d67e7d3943ac62e102b1fbeebdd1c1b5c685447836c3",
+      "storedBytes": 3288,
+      "storedSha256": "e151f519e91983212837d67e7d3943ac62e102b1fbeebdd1c1b5c685447836c3"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/compiled.json",
+      "storedPath": "source/compiled-reference.json",
+      "compression": "none",
+      "originalBytes": 465,
+      "originalSha256": "5bab88fd12bcad884bc3138d0479533217d0ca5c26fb209bf78e1791fa503be4",
+      "storedBytes": 465,
+      "storedSha256": "5bab88fd12bcad884bc3138d0479533217d0ca5c26fb209bf78e1791fa503be4"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks/before.json",
+      "storedPath": "checks/v1/before.json.gz",
+      "compression": "gzip",
+      "originalBytes": 5480,
+      "originalSha256": "c0a6b7ba5d7aba22f4fe862cf343be77c13a4ca96adf6945299f8a6110783450",
+      "storedBytes": 1743,
+      "storedSha256": "acbbbfcc269924eb1fabdacd179e75f94531e8436b15a62974063e2e20bc7b53"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/checks/before.json",
+      "storedPath": "checks/v1/before.json.gz",
+      "compression": "gzip",
+      "originalBytes": 5480,
+      "originalSha256": "c0a6b7ba5d7aba22f4fe862cf343be77c13a4ca96adf6945299f8a6110783450",
+      "storedBytes": 1743,
+      "storedSha256": "acbbbfcc269924eb1fabdacd179e75f94531e8436b15a62974063e2e20bc7b53"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks/after.json",
+      "storedPath": "checks/v1/before.json.gz",
+      "compression": "gzip",
+      "originalBytes": 5480,
+      "originalSha256": "c0a6b7ba5d7aba22f4fe862cf343be77c13a4ca96adf6945299f8a6110783450",
+      "storedBytes": 1743,
+      "storedSha256": "acbbbfcc269924eb1fabdacd179e75f94531e8436b15a62974063e2e20bc7b53"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/checks/after.json",
+      "storedPath": "checks/v1/before.json.gz",
+      "compression": "gzip",
+      "originalBytes": 5480,
+      "originalSha256": "c0a6b7ba5d7aba22f4fe862cf343be77c13a4ca96adf6945299f8a6110783450",
+      "storedBytes": 1743,
+      "storedSha256": "acbbbfcc269924eb1fabdacd179e75f94531e8436b15a62974063e2e20bc7b53"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks/execution.json",
+      "storedPath": "checks/v1/execution.json.gz",
+      "compression": "gzip",
+      "originalBytes": 1825,
+      "originalSha256": "19eb74d9e9ac22f7018afa8bab7b5e0ff589b4d2f6b515bc2de0591ed1fa2e85",
+      "storedBytes": 507,
+      "storedSha256": "5bd42ac16d959fd25350c24326535f7296f78f17ec90bb0659ececba163b2907"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/checks/execution.json",
+      "storedPath": "checks/v1/execution.json.gz",
+      "compression": "gzip",
+      "originalBytes": 1825,
+      "originalSha256": "19eb74d9e9ac22f7018afa8bab7b5e0ff589b4d2f6b515bc2de0591ed1fa2e85",
+      "storedBytes": 507,
+      "storedSha256": "5bd42ac16d959fd25350c24326535f7296f78f17ec90bb0659ececba163b2907"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks/terminal.json",
+      "storedPath": "checks/v1/terminal.json.gz",
+      "compression": "gzip",
+      "originalBytes": 2400,
+      "originalSha256": "e8934b118d1f1683f9fb47572d9e2849a26dd8723795b14f74cd1c87394fa9cf",
+      "storedBytes": 850,
+      "storedSha256": "cf61f729cd8172eb089019818f8f6edafeec6d5707e8b120002012439fd15be8"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/checks/terminal.json",
+      "storedPath": "checks/v1/terminal.json.gz",
+      "compression": "gzip",
+      "originalBytes": 2400,
+      "originalSha256": "e8934b118d1f1683f9fb47572d9e2849a26dd8723795b14f74cd1c87394fa9cf",
+      "storedBytes": 850,
+      "storedSha256": "cf61f729cd8172eb089019818f8f6edafeec6d5707e8b120002012439fd15be8"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks/01.log",
+      "storedPath": "checks/v1/01.log",
+      "compression": "none",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/checks/01.log",
+      "storedPath": "checks/v1/01.log",
+      "compression": "none",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks/02.log",
+      "storedPath": "checks/v1/01.log",
+      "compression": "none",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/checks/02.log",
+      "storedPath": "checks/v1/01.log",
+      "compression": "none",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks/03.log",
+      "storedPath": "checks/v1/03.log",
+      "compression": "none",
+      "originalBytes": 505,
+      "originalSha256": "21548267a7cc57e25883827beb16521d64d8ddbff87deec2e2693c14f3e0e28b",
+      "storedBytes": 505,
+      "storedSha256": "21548267a7cc57e25883827beb16521d64d8ddbff87deec2e2693c14f3e0e28b"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/checks/03.log",
+      "storedPath": "checks/v1/03.log",
+      "compression": "none",
+      "originalBytes": 505,
+      "originalSha256": "21548267a7cc57e25883827beb16521d64d8ddbff87deec2e2693c14f3e0e28b",
+      "storedBytes": 505,
+      "storedSha256": "21548267a7cc57e25883827beb16521d64d8ddbff87deec2e2693c14f3e0e28b"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks/04.log",
+      "storedPath": "checks/v1/04.log",
+      "compression": "none",
+      "originalBytes": 1284,
+      "originalSha256": "38ded683c5c687131841d3b0481ceb1599da709ccabbb8531e3a47d2b2708049",
+      "storedBytes": 1284,
+      "storedSha256": "38ded683c5c687131841d3b0481ceb1599da709ccabbb8531e3a47d2b2708049"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/v1/checks/04.log",
+      "storedPath": "checks/v1/04.log",
+      "compression": "none",
+      "originalBytes": 1284,
+      "originalSha256": "38ded683c5c687131841d3b0481ceb1599da709ccabbb8531e3a47d2b2708049",
+      "storedBytes": 1284,
+      "storedSha256": "38ded683c5c687131841d3b0481ceb1599da709ccabbb8531e3a47d2b2708049"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/before.json",
+      "storedPath": "checks/v2/before.json.gz",
+      "compression": "gzip",
+      "originalBytes": 6649,
+      "originalSha256": "3e6cdf4c748cc93da39c99bdb982809bae965e3c27a45cbe20c71e2ec975df69",
+      "storedBytes": 2030,
+      "storedSha256": "fb3ffe887f581cd840a4198961d948dbb4f28836c02e968a636f2b2e6175cd2d"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/after.json",
+      "storedPath": "checks/v2/before.json.gz",
+      "compression": "gzip",
+      "originalBytes": 6649,
+      "originalSha256": "3e6cdf4c748cc93da39c99bdb982809bae965e3c27a45cbe20c71e2ec975df69",
+      "storedBytes": 2030,
+      "storedSha256": "fb3ffe887f581cd840a4198961d948dbb4f28836c02e968a636f2b2e6175cd2d"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/execution.json",
+      "storedPath": "checks/v2/execution.json.gz",
+      "compression": "gzip",
+      "originalBytes": 2712,
+      "originalSha256": "652d2bd91c4c1c7592a0b2c45bb11d48ae820bb7fcab01854c1ce5bb9f28dbbd",
+      "storedBytes": 625,
+      "storedSha256": "3faabe680eb77506519bd8b82fcb4c9690338912df24a3f2eec7a2276857c00e"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/terminal.json",
+      "storedPath": "checks/v2/terminal.json.gz",
+      "compression": "gzip",
+      "originalBytes": 3056,
+      "originalSha256": "e7252a964fa70d9177417615ab035bec2fd38bb930e7e601db3c67ed3b4e59ba",
+      "storedBytes": 922,
+      "storedSha256": "05e38b78bfe4bcb7aa2195d7c6da50f3f817748464797eafcdc57ee2b05cca23"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/01.log",
+      "storedPath": "checks/v1/01.log",
+      "compression": "none",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/02.log",
+      "storedPath": "checks/v1/01.log",
+      "compression": "none",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/03.log",
+      "storedPath": "checks/v2/03.log",
+      "compression": "none",
+      "originalBytes": 503,
+      "originalSha256": "78c4876a8afbca9d09fa2f915ecc798a86a731a784e1a054df4c39bc1eec5cb3",
+      "storedBytes": 503,
+      "storedSha256": "78c4876a8afbca9d09fa2f915ecc798a86a731a784e1a054df4c39bc1eec5cb3"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/04.log",
+      "storedPath": "checks/v1/01.log",
+      "compression": "none",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/05.log",
+      "storedPath": "checks/v2/05.log",
+      "compression": "none",
+      "originalBytes": 251,
+      "originalSha256": "59d8fdf60379ec0014344899a7b52481fdfd10cdcde442731e3f899fa2b8c53c",
+      "storedBytes": 251,
+      "storedSha256": "59d8fdf60379ec0014344899a7b52481fdfd10cdcde442731e3f899fa2b8c53c"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-v2/06.log",
+      "storedPath": "checks/v2/06.log",
+      "compression": "none",
+      "originalBytes": 438,
+      "originalSha256": "fbac71b4ab07d3b1c547c311c4a2be01a12b4d3d694674d147441ecb0b7141a9",
+      "storedBytes": 438,
+      "storedSha256": "fbac71b4ab07d3b1c547c311c4a2be01a12b4d3d694674d147441ecb0b7141a9"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-launch-v3/before.json",
+      "storedPath": "checks/launcher-v3/before.json.gz",
+      "compression": "gzip",
+      "originalBytes": 10705,
+      "originalSha256": "29d3f333e69fdd08dd784b3f9f80dbecbb7335601dbe7b75e5da33321a8ee73b",
+      "storedBytes": 2746,
+      "storedSha256": "ec917ea21faf193d78839866cc0c9f8dd91bf66e11ca97bd64106a83dfb1bb23"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-launch-v3/after.json",
+      "storedPath": "checks/launcher-v3/before.json.gz",
+      "compression": "gzip",
+      "originalBytes": 10705,
+      "originalSha256": "29d3f333e69fdd08dd784b3f9f80dbecbb7335601dbe7b75e5da33321a8ee73b",
+      "storedBytes": 2746,
+      "storedSha256": "ec917ea21faf193d78839866cc0c9f8dd91bf66e11ca97bd64106a83dfb1bb23"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-launch-v3/execution.json",
+      "storedPath": "checks/launcher-v3/execution.json.gz",
+      "compression": "gzip",
+      "originalBytes": 788,
+      "originalSha256": "44a5dcd071087755af0d4d4042d6baf4cf0cdf950137141aebe567175d797400",
+      "storedBytes": 322,
+      "storedSha256": "529d8e37dd6972f22a9da12525cc1cd66da082dfbaa44a640ac0820d214a5926"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-launch-v3/terminal.json",
+      "storedPath": "checks/launcher-v3/terminal.json.gz",
+      "compression": "gzip",
+      "originalBytes": 1626,
+      "originalSha256": "c10de8d55364cdef7a822b726593eb35b979ff5ee427f15f4291e215e2b33aec",
+      "storedBytes": 639,
+      "storedSha256": "6da34405e0d0ff433d82fa0a1dfa662f3be2712e527ff05c28ceb70f3e029eef"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-launch-v3/1.log",
+      "storedPath": "checks/v1/01.log",
+      "compression": "none",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/checks-launch-v3/2.log",
+      "storedPath": "checks/launcher-v3/2.log",
+      "compression": "none",
+      "originalBytes": 587,
+      "originalSha256": "e3633d4aa0273bbaf8720ddd8e98e4f87a9346777e4cc6a15fea733b67a3a9d0",
+      "storedBytes": 587,
+      "storedSha256": "e3633d4aa0273bbaf8720ddd8e98e4f87a9346777e4cc6a15fea733b67a3a9d0"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/run/result.json",
+      "storedPath": "run/bootstrap-invalid/result.json.gz",
+      "compression": "gzip",
+      "originalBytes": 1582,
+      "originalSha256": "dc51a31619099cbcbe84c31556624a16c5dff230231a011a8b0aba92352d2f97",
+      "storedBytes": 766,
+      "storedSha256": "7112df9fe66dafdd40da1079b700d07dbff3546d4640957501f6af44e2f66ba5"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/run/operation.json",
+      "storedPath": "run/bootstrap-invalid/operation.json.gz",
+      "compression": "gzip",
+      "originalBytes": 1052,
+      "originalSha256": "ac1ae8f281718ff8e700c2ca75adbffd079bb6e47a21fe94a083ae374abd1c97",
+      "storedBytes": 536,
+      "storedSha256": "1febe4ea9c5e79101c9060a8b9e1e6ad1c7cf382948d4a3ac8dd258360b67933"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/run/stdout.log",
+      "storedPath": "run/bootstrap-invalid/stdout.log",
+      "compression": "none",
+      "originalBytes": 296,
+      "originalSha256": "18273b6ab67823108e8dbe0ee03f264e113ad0ef0c6fa578dd10e1e2364bbb14",
+      "storedBytes": 296,
+      "storedSha256": "18273b6ab67823108e8dbe0ee03f264e113ad0ef0c6fa578dd10e1e2364bbb14"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/run-v3/result.json",
+      "storedPath": "run/valid/result.json.gz",
+      "compression": "gzip",
+      "originalBytes": 32742,
+      "originalSha256": "5907c149bc2cb587e157bad52b9a7ae4007b7c0880f2e3d3c7e395430f3a3b89",
+      "storedBytes": 3644,
+      "storedSha256": "2d8cc4651c236dbfac3c3493a98c7a0cdb768f161deb2169e9baf3d0dd2e08e3"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/run-v3/operation.json",
+      "storedPath": "run/valid/operation.json.gz",
+      "compression": "gzip",
+      "originalBytes": 1256,
+      "originalSha256": "45318e5bad34038f01bd598b13fd51d16795dff72f11c0c6ef98a70666065fd9",
+      "storedBytes": 613,
+      "storedSha256": "746a339729032dec06ae861c50bbfbfd89355aec5c1e18da239d2ef485a682f5"
+    },
+    {
+      "originalPath": "/private/tmp/surf-viscous-update-fusion-20261004/run-v3/stdout.log",
+      "storedPath": "run/valid/stdout.log",
+      "compression": "none",
+      "originalBytes": 430,
+      "originalSha256": "33a21d5a513866447da3f8ab7d51ffa47c122897a5ba18a1c07e670878ad0e26",
+      "storedBytes": 430,
+      "storedSha256": "33a21d5a513866447da3f8ab7d51ffa47c122897a5ba18a1c07e670878ad0e26"
+    }
+  ],
+  "metadata": [
+    {
+      "storedPath": "README.md",
+      "bytes": 5346,
+      "sha256": "ffbefc6d2b91fee3adccdc5ee1c85e3c10716e8c532ca1e040966354f89d1e04"
+    },
+    {
+      "storedPath": "summary.json",
+      "bytes": 2497,
+      "sha256": "f6d22c4a8902eb02dcbe1e660c4886fb9871c0b9564b239d2f557f49239af3fb"
+    }
+  ],
+  "productionRuntimeModified": false
+}

@@ -1,0 +1,8 @@
+{
+  "extends": "/Users/regina/Desktop/Projects/surfing-game/tsconfig.json",
+  "include": [
+    "browser-entry.ts",
+    "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/webgpu-env.d.ts"
+  ],
+  "exclude": []
+}

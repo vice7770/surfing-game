@@ -1,0 +1,6 @@
+{"stage":"OWNED_CHROME_STARTED","utc":"2026-10-04T02:39:49.519Z"}
+{"stage":"DEVICE_GATE_STARTED","utc":"2026-10-04T02:39:50.766Z"}
+{"fusionStage":"PARITY"}
+{"fusionStage":"COMPLETE_STEP_COST"}
+{"stage":"DEVICE_GATE_PASSED","utc":"2026-10-04T02:39:51.891Z"}
+{"stage":"TERMINAL","valid":true,"exitCode":0,"closed":{"4200":true,"4218":true,"9628":true},"result":"/private/tmp/surf-viscous-update-fusion-20261004/run-v3/result.json"}

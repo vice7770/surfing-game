@@ -1,0 +1,88 @@
+--- v1/baseline/src/wave/gpu/GpuBoussinesq.ts
++++ baseline/src/wave/gpu/GpuBoussinesq.ts
+@@ -1,7 +1,7 @@
+-import { BoussinesqSolver, type BoussinesqDeviceLayout } from '../BoussinesqSolver';
+-import { SeaStateBoundary } from '../SeaStateBoundary';
+-import { SideFeed } from '../SideFeed';
+-import { PERIODIC, WALL, cflSubsteps } from '../ShallowWaterSolver';
++import { BoussinesqSolver, type BoussinesqDeviceLayout } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver';
++import { SeaStateBoundary } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary';
++import { SideFeed } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed';
++import { PERIODIC, WALL, cflSubsteps } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver';
+ import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KERNELS, boussinesqWgsl } from './boussinesqWgsl';
+ 
+ const WORKGROUP = 64;
+--- v1/candidate/src/wave/gpu/GpuBoussinesq.ts
++++ candidate/src/wave/gpu/GpuBoussinesq.ts
+@@ -1,7 +1,7 @@
+-import { BoussinesqSolver, type BoussinesqDeviceLayout } from '../BoussinesqSolver';
+-import { SeaStateBoundary } from '../SeaStateBoundary';
+-import { SideFeed } from '../SideFeed';
+-import { PERIODIC, WALL, cflSubsteps } from '../ShallowWaterSolver';
++import { BoussinesqSolver, type BoussinesqDeviceLayout } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver';
++import { SeaStateBoundary } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary';
++import { SideFeed } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed';
++import { PERIODIC, WALL, cflSubsteps } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver';
+ import { ALL_KERNELS, COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KERNELS, boussinesqWgsl } from './boussinesqWgsl';
+ 
+ const WORKGROUP = 64;
+--- v1/browser-entry.ts
++++ browser-entry.ts
+@@ -1,6 +1,6 @@
+-import { BoussinesqSolver } from './baseline/src/wave/BoussinesqSolver';
+-import { SeaStateBoundary } from './baseline/src/wave/SeaStateBoundary';
+-import { SideFeed } from './baseline/src/wave/SideFeed';
++import { BoussinesqSolver } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver';
++import { SeaStateBoundary } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary';
++import { SideFeed } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed';
+ import { SeaState } from '/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState';
+ import { GpuBoussinesq as Eager, DEVICE_READBACK, readbackTarget } from './baseline/src/wave/gpu/GpuBoussinesq';
+ import { GpuBoussinesq as Fused } from './candidate/src/wave/gpu/GpuBoussinesq';
+@@ -63,8 +63,8 @@
+ }
+ function exact(a: ReturnType<typeof snapshotStorage>, b: ReturnType<typeof snapshotStorage>, label: string) {
+   for (let k = 0; k < a.length; k++) for (let i = 0; i < a[k].bits.length; i++) {
+-    assert(Number.isFinite(a[k].values[i]) && Number.isFinite(b[k].values[i]), `${label}: nonfinite ${FIELDS[k]}[${i}]`);
+-    assert(a[k].bits[i] === b[k].bits[i], `${label}: ${FIELDS[k]}[${i}] bits ${a[k].bits[i]} != ${b[k].bits[i]}`);
++    if (!Number.isFinite(a[k].values[i]) || !Number.isFinite(b[k].values[i])) throw Error(`${label}: nonfinite ${FIELDS[k]}[${i}]`);
++    if (a[k].bits[i] !== b[k].bits[i]) throw Error(`${label}: ${FIELDS[k]}[${i}] bits ${a[k].bits[i]} != ${b[k].bits[i]}`);
+   }
+ }
+ async function createPair(nx: number, nz: number, boundary: Boundary, fed: boolean, breakingEnabled = true) {
+--- v1/source-dispatch.test.mjs
++++ source-dispatch.test.mjs
+@@ -49,7 +49,15 @@
+ });
+ 
+ test('the full device step is unchanged, and standalone pipelines are also compiled', () => {
++  const original = readFileSync('/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts', 'utf8');
++  let rebound = original;
++  for (const name of ['BoussinesqSolver', 'SeaStateBoundary', 'SideFeed', 'ShallowWaterSolver']) {
++    const from = `from '../${name}'`;
++    assert.equal(rebound.split(from).length, 2, 'Exactly one documented QA import per shared module');
++    rebound = rebound.replace(from, `from '/Users/regina/Desktop/Projects/surfing-game/src/wave/${name}'`);
++  }
+   const a = read('baseline', 'GpuBoussinesq.ts'), b = read('candidate', 'GpuBoussinesq.ts');
++  assert.equal(a, rebound, 'Baseline differs only by the four documented shared-module QA imports');
+   const expected = a.replace('{ COMPONENT_STRIDE,', '{ ALL_KERNELS, COMPONENT_STRIDE,')
+     .replace('new Map(STEP_KERNELS.map((entryPoint)', 'new Map(ALL_KERNELS.map((entryPoint)');
+   assert.equal(b, expected);
+--- v1/README.md
++++ README.md
+@@ -1,6 +1,6 @@
+ # Viscosity/update dispatch fusion — isolated preparation
+ 
+-No production change or execution is claimed. The two GPU source variants are literal copies of the unchanged water source at the contact-adoption boundary `6f321d704269f9f1afc73750ab2b1f4a86f61122`. Only the candidate's two GPU files differ. Immediate solver/sea dependencies and the installed dependencies are read-only links; no repository, public assets or historical snapshots are copied.
++No production change or execution is claimed. The two GPU source variants preserve the unchanged water arithmetic and complete device step at the contact-adoption boundary `6f321d704269f9f1afc73750ab2b1f4a86f61122`. Both arm hosts bind their four shared solver/sea imports to the same canonical absolute source path, preventing duplicate private TypeScript class identities. Apart from that documented QA-only import binding, only the candidate's two GPU files differ. Immediate solver/sea dependencies and the installed dependencies are read-only links; no repository, public assets or historical snapshots are copied.
+ 
+ `viscous` reads settled `NU`, `QX`, `QZ`, `SHEAR` and their neighbours, then writes `VISCX/Z[i]`. `update` reads those same-cell stores and changes only `H/PBAR/QBAR[i]`, none of which viscosity reads. Running the two bodies consecutively for each cell needs no global intermediate barrier. Both original arithmetic bodies remain literal, including storage writes and reloads. The helpers contain any local early return; the fused entry always calls the update helper afterward. The actual pinned viscosity body has no dry/zero-viscosity early return (only its original entry bounds guard).
+ 
+@@ -21,7 +21,7 @@
+ node device-gate.mjs --run=false
+ ```
+ 
+-These commands have **not run**. The bundle command refuses an existing `dist`, verifies pinned source before/after, and writes only a QA HTML/ES module plus `compiled.json`. A separate reviewed hardware lease would run exactly once:
++For the initial frozen source, commands1–3 passed (four source tests); command4 stopped with three TypeScript nominal solver-identity errors. No bundle/GPU ran. All20 original owned/preparation/check files are retained byte-exact under `v1/`, including original readiness and failure. This revised source fixes only shared import identity and creates mismatch strings solely on failed parity conditions, avoiding success-path transient strings leaking GC into later timing. The revised commands have **not run**. The bundle command refuses an existing `dist`, verifies pinned source before/after, and writes only a QA HTML/ES module plus `compiled.json`. A separate reviewed hardware lease would run exactly once:
+ 
+ ```sh
+ FUSION_READY_SHA256=<reviewed ready.json hash> node device-gate.mjs --run=true --out=/private/tmp/surf-viscous-update-fusion-20261004/run

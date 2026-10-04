@@ -1,0 +1,89 @@
+{
+  "schema": "viscous-update-fusion-durable-summary/v1",
+  "decision": "not-adopted",
+  "validNumericGate": true,
+  "parity": {
+    "cases": 6,
+    "stepsPerCase": 3,
+    "mappedFields": [
+      "H",
+      "QX",
+      "QZ",
+      "RATEH",
+      "STRENGTH",
+      "AGE",
+      "NU",
+      "PREDX",
+      "PREDZ"
+    ],
+    "finiteAndF32Exact": true,
+    "storedViscosityExact": true,
+    "substeps": [
+      1,
+      3
+    ],
+    "wetDry": true,
+    "zeroBreaking": true,
+    "periodicGpuSupported": false
+  },
+  "cost": {
+    "cells": 116000,
+    "warmPairs": 4,
+    "balancedPairs": 24,
+    "allTimedSubsteps": [
+      3
+    ],
+    "beforeMedianMs": 5.300000011920929,
+    "afterMedianMs": 5.100000023841858,
+    "pairedMedianSavingMs": 0.09999996423721313,
+    "pairedMeanSavingMs": 0.8749999975164732,
+    "positivePairs": 18,
+    "negativePairs": 6,
+    "beforeMaxMs": 26.899999976158142,
+    "afterMaxMs": 10.300000011920929,
+    "beforeP95NearestRankMs": 5.800000011920929,
+    "afterP95NearestRankMs": 5.600000023841858,
+    "byFirstArm": {
+      "before": {
+        "pairs": 12,
+        "pairedMedianSavingMs": 0.050000011920928955,
+        "pairedMeanSavingMs": 0.14166667064030966
+      },
+      "after": {
+        "pairs": 12,
+        "pairedMedianSavingMs": 0.2499999701976776,
+        "pairedMeanSavingMs": 1.6083333243926365
+      }
+    },
+    "measured": "Original complete.step including packing,CFL,encoding,submission,mapAsync and unpack/adopt; setup and parity scans/extraVISCread excluded",
+    "fixture": "Supplied synthetic160\u00d7725nonuniform,64seededcomponents,offshore+side-feed; not a historical/ordinary Padang state"
+  },
+  "native": {
+    "innerWidth": 1280,
+    "innerHeight": 673,
+    "dpr": 2,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "secure": true
+  },
+  "selectedPageUrl": "chrome://newtab/",
+  "started": "2026-10-04T02:39:49.501Z",
+  "ended": "2026-10-04T02:39:51.941Z",
+  "ownedChromePid": 67196,
+  "ownedChromeExit": {
+    "code": 0,
+    "signal": null
+  },
+  "closed": {
+    "4200": true,
+    "4218": true,
+    "9628": true
+  },
+  "limits": [
+    "Periodic boundaries are refused by the original GPU host; unchanged in source only",
+    "No dispatch timestamps",
+    "No FPS/ordinary contention or late-state claim",
+    "One balanced device sequence",
+    "No adoption",
+    "Retained VISC stores/reloads; compiler bit parity is a required gate"
+  ]
+}

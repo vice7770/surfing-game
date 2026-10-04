@@ -1,0 +1,29 @@
+import { build } from 'rolldown';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const root = fileURLToPath(new URL('.', import.meta.url));
+const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
+const readyBytes = readFileSync(`${root}/ready.json`), ready = JSON.parse(readyBytes);
+for (const pin of ready.inputs) {
+  const bytes = readFileSync(pin.path);
+  if (bytes.length !== pin.bytes || sha(bytes) !== pin.sha256) throw Error(`Source changed: ${pin.path}`);
+}
+if (existsSync(`${root}/dist`)) throw Error('Refuse to overwrite an existing compiled authority');
+mkdirSync(`${root}/dist`);
+await build({ input: `${root}/browser-entry.ts`, platform: 'browser', tsconfig: `${root}/tsconfig.fusion.json`,
+  output: { file: `${root}/dist/entry.js`, format: 'esm' } });
+const html = '<!doctype html><meta charset="utf-8"><title>Viscous/update device gate</title><script type="module" src="/entry.js"></script>\n';
+writeFileSync(`${root}/dist/index.html`, html);
+for (const pin of ready.inputs) {
+  const bytes = readFileSync(pin.path);
+  if (bytes.length !== pin.bytes || sha(bytes) !== pin.sha256) throw Error(`Source changed during bundle: ${pin.path}`);
+}
+const files = ['index.html', 'entry.js'].map((name) => {
+  const bytes = readFileSync(`${root}/dist/${name}`);
+  return { name, bytes: bytes.length, sha256: sha(bytes) };
+});
+writeFileSync(`${root}/compiled.json`, `${JSON.stringify({ schema: 'viscous-update-fusion-compiled/v1',
+  status: 'passed', readySha256: sha(readyBytes), files }, null, 2)}\n`);
+console.log(JSON.stringify({ stage: 'BUNDLED', files }));

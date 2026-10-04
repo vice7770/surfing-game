@@ -1,0 +1,8 @@
+browser-entry.ts(76,64): error TS2345: Argument of type 'import("/private/tmp/surf-viscous-update-fusion-20261004/baseline/src/wave/BoussinesqSolver").BoussinesqSolver' is not assignable to parameter of type 'import("/private/tmp/surf-viscous-update-fusion-20261004/candidate/src/wave/BoussinesqSolver").BoussinesqSolver'.
+  Types have separate declarations of a private property 'kennedy'.
+browser-entry.ts(85,69): error TS2345: Argument of type 'import("/private/tmp/surf-viscous-update-fusion-20261004/candidate/src/wave/BoussinesqSolver").BoussinesqSolver' is not assignable to parameter of type 'import("/private/tmp/surf-viscous-update-fusion-20261004/baseline/src/wave/BoussinesqSolver").BoussinesqSolver'.
+  Types have separate declarations of a private property 'kennedy'.
+browser-entry.ts(133,83): error TS2345: Argument of type 'GpuBoussinesq' is not assignable to parameter of type 'Host'.
+  Types of property 'solver' are incompatible.
+    Type 'import("/private/tmp/surf-viscous-update-fusion-20261004/candidate/src/wave/BoussinesqSolver").BoussinesqSolver' is not assignable to type 'import("/private/tmp/surf-viscous-update-fusion-20261004/baseline/src/wave/BoussinesqSolver").BoussinesqSolver'.
+      Types have separate declarations of a private property 'kennedy'.

@@ -1,0 +1,119 @@
+import { createHash } from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
+import { createConnection } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Page, sleep } from '/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs';
+
+const WORK = fileURLToPath(new URL('.', import.meta.url)), PORT = 4218, CDP = 9628, HARD_MS = 90000;
+const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
+const args = Object.fromEntries(process.argv.slice(2).map((arg) => {
+  const m = /^--(run|out)=(.*)$/.exec(arg); if (!m) throw Error(`Unknown argument: ${arg}`); return [m[1], m[2]];
+}));
+const readyBytes = readFileSync(`${WORK}/ready.json`), readySha256 = sha(readyBytes), ready = JSON.parse(readyBytes);
+if (args.run !== 'true') {
+  console.log(JSON.stringify({ armed: false, readySha256, command: 'FUSION_READY_SHA256=<reviewed> node device-gate.mjs --run=true --out=<fresh absolute dir>',
+    ports: { server: PORT, cdp: CDP, keepClosed: 4200 }, hardSeconds: HARD_MS / 1000,
+    sequence: 'one six-case exact-nine-field parity gate, then only if valid one balanced24-pair complete device-step timing' }, null, 2));
+  process.exit(0);
+}
+if (process.env.FUSION_READY_SHA256 !== readySha256) throw Error('Reviewed source readiness hash required');
+if (!args.out || !args.out.startsWith('/private/tmp/')) throw Error('Fresh absolute /private/tmp output required');
+const OUT = resolve(args.out); if (existsSync(OUT)) throw Error('Refuse to overwrite an earlier run');
+mkdirSync(OUT);
+const terminal = { schema: 'viscous-update-fusion-owned-run/v1', valid: false, started: new Date().toISOString(),
+  readySha256, hardSeconds: HARD_MS / 1000, command: process.argv, ports: { server: PORT, cdp: CDP }, events: [] };
+let server, chrome, profile, page, childExit, expired = false;
+let exitCode = 1;
+function event(stage) { const row = { stage, utc: new Date().toISOString() }; terminal.events.push(row); console.log(JSON.stringify(row)); }
+function portOpen(port) {
+  return new Promise((resolveOpen, reject) => {
+    const socket = createConnection({ host: '127.0.0.1', port });
+    socket.once('connect', () => { socket.destroy(); resolveOpen(true); });
+    socket.once('error', (error) => { socket.destroy(); if (error.code === 'ECONNREFUSED') resolveOpen(false); else reject(error); });
+    socket.setTimeout(1000, () => { socket.destroy(); reject(Error(`TCP observation timed out: ${port}`)); });
+  });
+}
+async function bounded(promise, ms, label) {
+  let timer; try { return await Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(Error(label)), ms); })]); }
+  finally { clearTimeout(timer); }
+}
+const deadline = setTimeout(() => {
+  expired = true; chrome?.kill('SIGKILL'); page?.socket.close(); server?.closeAllConnections();
+}, HARD_MS);
+try {
+  for (const pin of ready.inputs) {
+    const bytes = readFileSync(pin.path);
+    if (bytes.length !== pin.bytes || sha(bytes) !== pin.sha256) throw Error(`Frozen input changed: ${pin.path}`);
+  }
+  const compiledBytes = readFileSync(`${WORK}/compiled.json`), compiled = JSON.parse(compiledBytes);
+  if (compiled.status !== 'passed' || compiled.readySha256 !== readySha256) throw Error('Matching successful bundle required');
+  terminal.compiled = { bytes: compiledBytes.length, sha256: sha(compiledBytes), files: compiled.files };
+  const assets = new Map();
+  if (compiled.files.length !== 2 || !compiled.files.some((f) => f.name === 'index.html') || !compiled.files.some((f) => f.name === 'entry.js')) throw Error('Unexpected compiled outputs');
+  for (const file of compiled.files) {
+    const bytes = readFileSync(`${WORK}/dist/${file.name}`);
+    if (bytes.length !== file.bytes || sha(bytes) !== file.sha256) throw Error(`Compiled bytes changed: ${file.name}`);
+    assets.set(`/${file.name}`, bytes);
+  }
+  for (const port of [PORT, CDP, 4200]) if (await portOpen(port)) throw Error(`Required unoccupied port: ${port}`);
+  server = createServer((request, response) => {
+    const path = request.url === '/' ? '/index.html' : request.url;
+    const bytes = assets.get(path);
+    if (!bytes) { response.writeHead(404).end(); return; }
+    response.writeHead(200, { 'Content-Type': path === '/entry.js' ? 'application/javascript' : 'text/html', 'Cache-Control': 'no-store' }).end(bytes);
+  });
+  await new Promise((resolveListen, reject) => { server.once('error', reject); server.listen(PORT, '127.0.0.1', resolveListen); });
+  profile = mkdtempSync(join(tmpdir(), 'surf-viscous-fusion-'));
+  chrome = spawn(CHROME, [`--remote-debugging-port=${CDP}`, `--user-data-dir=${profile}`,
+    '--no-first-run', '--no-default-browser-check', '--disable-extensions', '--disable-backgrounding-occluded-windows',
+    '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--window-size=1280,760', '--window-position=60,60', '--app=about:blank'], { stdio: 'ignore' });
+  childExit = once(chrome, 'exit'); terminal.chromePid = chrome.pid; event('OWNED_CHROME_STARTED');
+  let target;
+  for (let tries = 0; tries < 100 && !target; tries++) {
+    if (expired) throw Error('Hard deadline');
+    try { target = (await (await fetch(`http://127.0.0.1:${CDP}/json/list`)).json()).find((t) => t.type === 'page' && t.url === 'about:blank'); }
+    catch { /* bounded startup observation; no new Chrome/retry operation */ }
+    if (!target) await sleep(100);
+  }
+  if (!target) throw Error('Owned blank page did not appear');
+  page = await Page.connect(target.webSocketDebuggerUrl);
+  page.on('Runtime.consoleAPICalled', (params) => {
+    for (const arg of params.args ?? []) if (typeof arg.value === 'string' && arg.value.includes('fusionStage')) {
+      terminal.events.push({ browser: arg.value, utc: new Date().toISOString() }); console.log(arg.value);
+    }
+  });
+  await page.send('Page.enable'); await page.send('Runtime.enable');
+  await page.send('Page.navigate', { url: `http://127.0.0.1:${PORT}/` });
+  await bounded(page.waitFor('window.fusionQaReady === true', 15000), 16000, 'Entry readiness deadline');
+  terminal.native = await page.eval('({ innerWidth, innerHeight, dpr: devicePixelRatio, userAgent: navigator.userAgent, secure: isSecureContext })');
+  event('DEVICE_GATE_STARTED');
+  terminal.result = await bounded(page.eval('window.fusionQaRun()'), Math.max(1, HARD_MS - (Date.now() - Date.parse(terminal.started))), 'Overall device deadline');
+  if (!terminal.result?.valid || expired) throw Error('Device gate invalid or expired');
+  terminal.valid = true; exitCode = 0; event('DEVICE_GATE_PASSED');
+} catch (error) {
+  terminal.failure = { name: error.name, message: error.message, stack: error.stack }; event('FIRST_FAILURE');
+} finally {
+  clearTimeout(deadline);
+  page?.socket.close();
+  if (chrome && chrome.exitCode === null && chrome.signalCode === null) {
+    chrome.kill('SIGTERM');
+    try { await bounded(childExit, 1500, 'TERM deadline'); }
+    catch { chrome.kill('SIGKILL'); try { await bounded(childExit, 1500, 'KILL deadline'); } catch (error) { terminal.cleanupFailure = error.message; } }
+  }
+  if (server) { server.closeAllConnections(); await bounded(new Promise((resolveClose) => server.close(resolveClose)), 1500, 'Server closure deadline').catch((e) => { terminal.cleanupFailure = e.message; }); }
+  const ports = {};
+  for (const port of [PORT, CDP, 4200]) { try { ports[port] = !(await portOpen(port)); } catch (error) { ports[port] = error.message; } }
+  terminal.closed = ports; terminal.chromeExit = chrome ? { code: chrome.exitCode, signal: chrome.signalCode } : null;
+  if (profile && chrome && (chrome.exitCode !== null || chrome.signalCode !== null)) rmSync(profile, { recursive: true, force: true });
+  if (Object.values(ports).some((v) => v !== true) || terminal.cleanupFailure) { terminal.valid = false; exitCode = 1; }
+  terminal.ended = new Date().toISOString(); terminal.exitCode = exitCode;
+  writeFileSync(`${OUT}/result.json`, `${JSON.stringify(terminal, null, 2)}\n`);
+  console.log(JSON.stringify({ stage: 'TERMINAL', valid: terminal.valid, exitCode, closed: terminal.closed, result: `${OUT}/result.json` }));
+}
+process.exitCode = exitCode;

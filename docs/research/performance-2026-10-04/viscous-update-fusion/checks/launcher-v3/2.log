@@ -1,0 +1,13 @@
+{
+  "armed": false,
+  "readySha256": "26f2c678e0982ef08d82cb4d8b20ebbcaa91339e4bf572c41abb98ab6e699c28",
+  "launchReadySha256": "492b3039be7cef023ef5d5bb815d6a5e23ea00de3516b7016df8cbd8b156a41a",
+  "command": "FUSION_READY_SHA256=<reviewed program> FUSION_LAUNCH_READY_SHA256=<reviewed launcher> node device-gate-v3.mjs --run=true --out=<fresh absolute dir>",
+  "ports": {
+    "server": 4218,
+    "cdp": 9628,
+    "keepClosed": 4200
+  },
+  "hardSeconds": 90,
+  "sequence": "one six-case exact-nine-field parity gate, then only if valid one balanced24-pair complete device-step timing"
+}
