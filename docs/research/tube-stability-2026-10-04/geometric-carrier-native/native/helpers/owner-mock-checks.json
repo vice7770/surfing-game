@@ -1,0 +1,25 @@
+{
+  "schema": "bounded-C-carrier-support-owner-CPU-fixtures/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "actualOwnerCalled": false,
+  "actualRootCompleteBuildVerifiedReadOnly": true,
+  "awaitingRootBuild": false,
+  "sourcePins": 581,
+  "assets": 49,
+  "groupCount": 9,
+  "groups": [
+    "closed4310/4311 and open4312 preserved without TCP probe",
+    "closed user4312 rejected",
+    "reopened4310 rejected",
+    "unknown state rejected",
+    "missing port rejected",
+    "initial closed4312 rejected",
+    "actual finalized root complete build verified read-only",
+    "rootPartialBuildResult changed pin rejected",
+    "priorStaticAssetsSeal changed pin rejected"
+  ],
+  "placeholderBuildOrSealCreated": false,
+  "nativeLaunchStillPending": true
+}

@@ -1,0 +1,1 @@
+{"snapshots": [["initial", {"slices": 119, "vertices": 15946, "indices": 93366}], ["first-phase2", {"slices": 151, "vertices": 20234, "indices": 118902}]], "analysis": {"file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/analysis.json", "bytes": 1263172, "sha256": "d64f0179e11c23b563be4779f9439a2ac0738d911f9664b46c1cbc5a8d8dbfcf"}, "plots": 22}

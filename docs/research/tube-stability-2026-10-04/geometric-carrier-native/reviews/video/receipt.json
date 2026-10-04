@@ -1,0 +1,56 @@
+{
+  "schema": "actual-encoded-carrier-movie-inspection/v1",
+  "input": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/moving-C.webm",
+    "bytes": 937149,
+    "sha256": "3ac3ea5454a9718fd2298e39748f11da65d32b67d3e3c46906b6f3056732cd92"
+  },
+  "actualEncodedFrames": 69,
+  "selectedIndices": [
+    0,
+    17,
+    34,
+    51,
+    68
+  ],
+  "decodedFrames": [
+    {
+      "frame": 0,
+      "file": "/private/tmp/tube-carrier-video-review-20261004/decoded-01.png",
+      "bytes": 307517,
+      "sha256": "f64aa58525a3efa89f7c44ab2bea5915cd6c8f4dda29b7fbedce57fe12475db4"
+    },
+    {
+      "frame": 17,
+      "file": "/private/tmp/tube-carrier-video-review-20261004/decoded-02.png",
+      "bytes": 548393,
+      "sha256": "311592c0d91ae915731bb1efaf15aa8d9f39f213f8016724a19dea7f90ee37b2"
+    },
+    {
+      "frame": 34,
+      "file": "/private/tmp/tube-carrier-video-review-20261004/decoded-03.png",
+      "bytes": 548627,
+      "sha256": "0d3a2164401abca5549ba6faa5d04c920ef29ffa9f3acbd8107469f06c14648e"
+    },
+    {
+      "frame": 51,
+      "file": "/private/tmp/tube-carrier-video-review-20261004/decoded-04.png",
+      "bytes": 553631,
+      "sha256": "bc3faaa797a676e4047c537d2c86ca2cdd461846317cd8ed590526f58c93ca1a"
+    },
+    {
+      "frame": 68,
+      "file": "/private/tmp/tube-carrier-video-review-20261004/decoded-05.png",
+      "bytes": 993537,
+      "sha256": "8472171a31f3ee1a1b76982ef4d65cd617e7d3a7d7e8631a17f704f5c3d5ec90"
+    }
+  ],
+  "probe": {
+    "file": "/private/tmp/tube-carrier-video-review-20261004/ffprobe.json",
+    "bytes": 291,
+    "sha256": "c68b2de0f17fc7c56719c917dc24bcab1ede51c7b9e73e7e39df862123530cff"
+  },
+  "inputUnchanged": true,
+  "physicalPlaybackRateClaim": false,
+  "rootPixelInspectionPending": true
+}

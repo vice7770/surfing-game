@@ -1,0 +1,18 @@
+{
+  "complete": true,
+  "mouthPolicyIntegration": true,
+  "initialDirectedSameComponentCandidate": true,
+  "fullSightlineAndWaterClassifications": true,
+  "absentCandidateExteriorFallbackRecordedEvenBelowSurface": true,
+  "blockedSightlineFailureAndLocalHeadingRetained": true,
+  "exteriorCloneRestoredInAllThreePolicies": true,
+  "originalFollowAndControlsUntouched": true,
+  "loftWordsAndDrawEpochUnchanged": true,
+  "initialMovieFrameUsesInnerCameraPositionAndQuaternion": true,
+  "exactOptionalInitialAndObservedPhase2Words": true,
+  "duplicateSnapshotEpochRejected": true,
+  "fullSnapshotNormalAndAuxWordsNonmutating": true,
+  "mockOnly": true,
+  "resourcesStarted": false,
+  "portsProbed": false
+}

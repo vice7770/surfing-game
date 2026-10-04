@@ -1,0 +1,52 @@
+{
+  "schema": "bounded-C-indexed-loft-analysis-ready/v1",
+  "status": "complete-frozen-offline-analysis",
+  "rootTerminalSession": 74434,
+  "rootTerminalExit": 0,
+  "rootSeal": "1f99b63593ebdb1e33c167957e8c9d45ac5cf0f537a4b448ab57b777208309af",
+  "manifest": {
+    "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/manifest.json",
+    "bytes": 9184,
+    "sha256": "a8c9ad4e1507f1590fd0df3678bae31ee8935e1f1be94970130535335b9a08cc"
+  },
+  "analysis": {
+    "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/analysis.json",
+    "bytes": 1263172,
+    "sha256": "d64f0179e11c23b563be4779f9439a2ac0738d911f9664b46c1cbc5a8d8dbfcf"
+  },
+  "analyzer": {
+    "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/analyze_loft.py",
+    "bytes": 33882,
+    "sha256": "183489d38a3081f18943edd26f5026c9a29b139e88e0afe9a82b797ab70b2ce5"
+  },
+  "tests": {
+    "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/test_analyzer.py",
+    "bytes": 5251,
+    "sha256": "dc84c91aeb786f95206d38d6eeff78bc9b13fb3ac2daa305fd38c8d4c0705dce"
+  },
+  "testLog": {
+    "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/unit-tests.log",
+    "bytes": 1083,
+    "sha256": "39dc9aaa87c47ff13edad2bf941ac4248a50b6466cc6d8deeda942410c9fa299"
+  },
+  "actualRunLog": {
+    "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual-run.log",
+    "bytes": 369,
+    "sha256": "6a35e8d6b305407167f1d1bf35e42f1f181278645c6087d6dada6eb6ea62ab45"
+  },
+  "sourceMethodManifest": {
+    "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/source-method-pins.json",
+    "bytes": 1419,
+    "sha256": "26ce2b1fee99f3df3a47226f08f7c6e0d260170284414d1582004f79794da608"
+  },
+  "artifactCount": 31,
+  "immutableNativeInputCount": 3,
+  "sourceMethodPinCount": 6,
+  "plots": 22,
+  "unitTestsPassed": 9,
+  "actualOfflineExit": 0,
+  "inputPreservationRechecked": true,
+  "nativeInputsUnchanged": true,
+  "scope": "Exact indexed geometric cavity, paired thickness, contour curvature, supplied normals/winding and fixed recorded exterior segment; no pixel/material ownership, visibility/body/FPS/adoption or temporal stability claim.",
+  "verifyCommand": "/Users/regina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 /private/tmp/tube-carrier-loft-geometry-analysis-20261004/verify-ready.py"
+}

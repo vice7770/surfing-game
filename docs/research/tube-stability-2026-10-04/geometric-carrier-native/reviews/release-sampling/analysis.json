@@ -1,0 +1,374 @@
+{
+  "schema": "carrier-release-sampling-readonly-audit/v1",
+  "complete": true,
+  "inputs": {
+    "stress.test.ts": {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/stress.test.ts",
+      "bytes": 13319,
+      "sha256": "e3596c3b839db3ed07d7be3296bd2a9d67a238d7524d634db49a83b74f0344d4"
+    },
+    "report.json": {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/report.json",
+      "bytes": 783065,
+      "sha256": "d0752e6e446fab362f18edb78a38ba80753116526d06d32ae695d76394109799"
+    },
+    "README.md": {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/README.md",
+      "bytes": 3182,
+      "sha256": "51d49983aa52542c7fa1c2a50fe4d4b4356757f6ae0dfb2b4d62b6dfea72ae20"
+    },
+    "outcome.json": {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/outcome.json",
+      "bytes": 7855,
+      "sha256": "3535a6450e8b04467aa0f0e47a95096693993ffdcf890ce0d284509be38ec08a"
+    }
+  },
+  "selectedExistingReportAnalysis": [
+    {
+      "label": "small-control",
+      "distance": 0.2,
+      "reportedLoftSlices": 43,
+      "grids": {
+        "afterCrash": {
+          "spanFromSourceDoubleSigma": 31.012176082442107,
+          "predictedBaseCountBeforeF32PacketRounding": 64,
+          "predictedBaseStep": 0.49225676321336675
+        },
+        "baselineAfterCrash": {
+          "spanFromSourceDoubleSigma": 31.002200910251936,
+          "predictedBaseCountBeforeF32PacketRounding": 64,
+          "predictedBaseStep": 0.49209842714685614
+        }
+      },
+      "stations": [
+        {
+          "x": 10.5,
+          "tauResidual": 2.6040604605981343e-07,
+          "weightResidual": 0.00010183154109197085,
+          "xyzResidual": [
+            [
+              0,
+              0.00026112743495883446,
+              2.9293978158762e-06
+            ],
+            [
+              0,
+              1.4527294016798285e-05,
+              2.829653588776182e-06
+            ],
+            [
+              0,
+              1.4527294016798285e-05,
+              2.9293978158762e-06
+            ]
+          ],
+          "currentFirstBracketX": 10.318436622619629,
+          "referenceFirstBracketX": 10.324922561645508
+        },
+        {
+          "x": 11,
+          "tauResidual": 0.0002731889881750771,
+          "weightResidual": 0.0014792314205280543,
+          "xyzResidual": [
+            [
+              0,
+              0.003793228690452649,
+              -5.4739821017335544e-05
+            ],
+            [
+              0,
+              0.0002110282560437403,
+              -5.4739821017335544e-05
+            ],
+            [
+              0,
+              0.0002110282560437403,
+              -5.4739821017335544e-05
+            ]
+          ],
+          "currentFirstBracketX": 10.81023120880127,
+          "referenceFirstBracketX": 10.816558837890625
+        },
+        {
+          "x": 12,
+          "tauResidual": 1.5437473366297638e-07,
+          "weightResidual": 0.0016042149998055644,
+          "xyzResidual": [
+            [
+              0,
+              0.004113687058893367,
+              1.3721578326908457e-06
+            ],
+            [
+              0,
+              0.0002288575371049567,
+              1.3721578326908457e-06
+            ],
+            [
+              0,
+              0.0002288575371049567,
+              1.3721578326908457e-06
+            ]
+          ],
+          "currentFirstBracketX": 11.79455280303955,
+          "referenceFirstBracketX": 11.800569534301758
+        },
+        {
+          "x": 13,
+          "tauResidual": 1.9769454739915204e-08,
+          "weightResidual": 1.18685085551129e-05,
+          "xyzResidual": [
+            [
+              0,
+              3.045948207924809e-05,
+              3.2571263304248532e-06
+            ],
+            [
+              0,
+              1.6914144757157468e-06,
+              -5.575709352001468e-07
+            ],
+            [
+              0,
+              1.6914144757157468e-06,
+              3.2571263304248532e-06
+            ]
+          ],
+          "currentFirstBracketX": 12.779047966003418,
+          "referenceFirstBracketX": 12.784748077392578
+        }
+      ]
+    },
+    {
+      "label": "newer-measured-distance",
+      "distance": 2.6349639892578125,
+      "reportedLoftSlices": 43,
+      "grids": {
+        "afterCrash": {
+          "spanFromSourceDoubleSigma": 32.31022680362504,
+          "predictedBaseCountBeforeF32PacketRounding": 66,
+          "predictedBaseStep": 0.4970804123634622
+        },
+        "baselineAfterCrash": {
+          "spanFromSourceDoubleSigma": 31.002200910251936,
+          "predictedBaseCountBeforeF32PacketRounding": 64,
+          "predictedBaseStep": 0.49209842714685614
+        }
+      },
+      "stations": [
+        {
+          "x": 10.5,
+          "tauResidual": 4.6778409146241984e-08,
+          "weightResidual": -0.0007651342312121013,
+          "xyzResidual": [
+            [
+              0,
+              -0.001962042033672961,
+              9.069258126714885e-07
+            ],
+            [
+              0,
+              -0.00010915399647924435,
+              -1.908546636286701e-07
+            ],
+            [
+              0,
+              -0.00010915399647924435,
+              9.069258126714885e-07
+            ]
+          ],
+          "currentFirstBracketX": 10.369158744812012,
+          "referenceFirstBracketX": 10.324922561645508
+        },
+        {
+          "x": 11,
+          "tauResidual": -0.009393351294402885,
+          "weightResidual": -0.010839776296924342,
+          "xyzResidual": [
+            [
+              0,
+              -0.027796547780917363,
+              0.001992336322139465
+            ],
+            [
+              0,
+              -0.0015464022402112455,
+              0.0019902750918845413
+            ],
+            [
+              0,
+              -0.0015464022402112455,
+              0.001992336322139465
+            ]
+          ],
+          "currentFirstBracketX": 10.86577320098877,
+          "referenceFirstBracketX": 10.816558837890625
+        },
+        {
+          "x": 12,
+          "tauResidual": 7.05962504010671e-08,
+          "weightResidual": -0.008886804541343218,
+          "xyzResidual": [
+            [
+              0,
+              -0.022788559886631976,
+              4.2906133757014686e-07
+            ],
+            [
+              0,
+              -0.001267794897070823,
+              -4.022899915412381e-07
+            ],
+            [
+              0,
+              -0.001267794897070823,
+              4.2906133757014686e-07
+            ]
+          ],
+          "currentFirstBracketX": 11.61125659942627,
+          "referenceFirstBracketX": 11.800569534301758
+        },
+        {
+          "x": 13,
+          "tauResidual": -4.328266856035157e-08,
+          "weightResidual": -0.0028964131961348727,
+          "xyzResidual": [
+            [
+              0,
+              -0.007427314391857065,
+              8.521993066779032e-07
+            ],
+            [
+              0,
+              -0.00041320329581633064,
+              8.521993066779032e-07
+            ],
+            [
+              0,
+              -0.00041320329581633064,
+              8.521993066779032e-07
+            ]
+          ],
+          "currentFirstBracketX": 12.605400085449219,
+          "referenceFirstBracketX": 12.784748077392578
+        }
+      ]
+    },
+    {
+      "label": "older-measured-distance",
+      "distance": 2.80810546875,
+      "reportedLoftSlices": 43,
+      "grids": {
+        "afterCrash": {
+          "spanFromSourceDoubleSigma": 32.44972991125833,
+          "predictedBaseCountBeforeF32PacketRounding": 66,
+          "predictedBaseStep": 0.4992266140193589
+        },
+        "baselineAfterCrash": {
+          "spanFromSourceDoubleSigma": 31.002200910251936,
+          "predictedBaseCountBeforeF32PacketRounding": 64,
+          "predictedBaseStep": 0.49209842714685614
+        }
+      },
+      "stations": [
+        {
+          "x": 10.5,
+          "tauResidual": -1.3105664042889487e-07,
+          "weightResidual": 0.0006763171999394696,
+          "xyzResidual": [
+            [
+              0,
+              0.0017342869545955587,
+              -8.481450919362032e-07
+            ],
+            [
+              0,
+              9.648346908158788e-05,
+              1.3838764090223776e-06
+            ],
+            [
+              0,
+              9.648346908158788e-05,
+              -8.481450919362032e-07
+            ]
+          ],
+          "currentFirstBracketX": 10.282320022583008,
+          "referenceFirstBracketX": 10.324922561645508
+        },
+        {
+          "x": 11,
+          "tauResidual": -0.015547080530371904,
+          "weightResidual": 0.010534097517916147,
+          "xyzResidual": [
+            [
+              0,
+              0.02701271462446983,
+              0.0032964233576961988
+            ],
+            [
+              0,
+              0.0015027954238761854,
+              0.0032930749461073106
+            ],
+            [
+              0,
+              0.0015027954238761854,
+              0.0032964233576961988
+            ]
+          ],
+          "currentFirstBracketX": 10.781078338623047,
+          "referenceFirstBracketX": 10.816558837890625
+        },
+        {
+          "x": 12,
+          "tauResidual": -4.581083623556026e-08,
+          "weightResidual": 0.01521862089074244,
+          "xyzResidual": [
+            [
+              0,
+              0.039025180928959236,
+              -6.048314205031602e-07
+            ],
+            [
+              0,
+              0.0021710843303889837,
+              -6.048314205031602e-07
+            ],
+            [
+              0,
+              0.0021710843303889837,
+              -6.048314205031602e-07
+            ]
+          ],
+          "currentFirstBracketX": 11.529703140258789,
+          "referenceFirstBracketX": 11.800569534301758
+        },
+        {
+          "x": 13,
+          "tauResidual": -3.293934414116961e-08,
+          "weightResidual": -0.0005645930266803267,
+          "xyzResidual": [
+            [
+              0,
+              -0.0014477764074942723,
+              1.5931411070368995e-06
+            ],
+            [
+              0,
+              -8.054706548127344e-05,
+              1.38410332795047e-06
+            ],
+            [
+              0,
+              -8.054706548127344e-05,
+              1.5931411070368995e-06
+            ]
+          ],
+          "currentFirstBracketX": 12.528138160705566,
+          "referenceFirstBracketX": 12.784748077392578
+        }
+      ]
+    }
+  ],
+  "noNewProbeOrRerun": true
+}

@@ -1,0 +1,3855 @@
+{
+  "schema": "geometric-carrier-native-archive-manifest/v1",
+  "files": [
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/README.md",
+      "path": "source/receipts/README-original.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 8707,
+        "sha256": "1b449ae7e5be2ae583e43a36dc37cd3f279d7116cb585078539cc62105248751"
+      },
+      "decoded": {
+        "bytes": 8707,
+        "sha256": "1b449ae7e5be2ae583e43a36dc37cd3f279d7116cb585078539cc62105248751"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/evidence-pins.json",
+      "path": "source/receipts/evidence-pins.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 13892,
+        "sha256": "3c482262825db637e43cd640876978caabc51d4322bf8f4009af1f1795c90704"
+      },
+      "decoded": {
+        "bytes": 13892,
+        "sha256": "3c482262825db637e43cd640876978caabc51d4322bf8f4009af1f1795c90704"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/handoff-fixture.json",
+      "path": "source/receipts/handoff-fixture.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 17499,
+        "sha256": "95d61a80dee918bf411c28816a876705699dbdc9d05962f77610d330b55dfa09"
+      },
+      "decoded": {
+        "bytes": 17499,
+        "sha256": "95d61a80dee918bf411c28816a876705699dbdc9d05962f77610d330b55dfa09"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/parent-copy.json",
+      "path": "source/receipts/parent-copy.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 30632,
+        "sha256": "e1a3fe2f72d82c7637c6ca25bc9c954ec05b55dc731f5fc3e3dbab15acac5f51"
+      },
+      "decoded": {
+        "bytes": 95709,
+        "sha256": "e5562b91eece2262bcebeccdcb175bef874a529e61124f59687d7894afb30596"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-complete.json",
+      "path": "source/receipts/physical-metrics-complete.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      },
+      "decoded": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-final-isolation.json",
+      "path": "source/receipts/physical-metrics-final-isolation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      },
+      "decoded": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-final.json",
+      "path": "source/receipts/physical-metrics-final.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      },
+      "decoded": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-frozen.json",
+      "path": "source/receipts/physical-metrics-frozen.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      },
+      "decoded": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-ready.json",
+      "path": "source/receipts/physical-metrics-ready.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      },
+      "decoded": {
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/prepare-freeze.py",
+      "path": "source/receipts/prepare-freeze.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 10864,
+        "sha256": "0a77977052245de559348c4d478e9b8c499348c705379f08d6b487b46d8f63a8"
+      },
+      "decoded": {
+        "bytes": 10864,
+        "sha256": "0a77977052245de559348c4d478e9b8c499348c705379f08d6b487b46d8f63a8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/public-history-contract.json",
+      "path": "source/receipts/public-history-contract.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4829,
+        "sha256": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25"
+      },
+      "decoded": {
+        "bytes": 4829,
+        "sha256": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json",
+      "path": "source/receipts/readiness.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 35390,
+        "sha256": "767fc87fcd2effc97ed5b31e5f24db5fe463ddc51d80d0bb99514605f6781cd6"
+      },
+      "decoded": {
+        "bytes": 115387,
+        "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/recipe.md",
+      "path": "source/receipts/recipe.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 840,
+        "sha256": "c9b87d8e825bd3f88324f84b18be91c11899683762913ac5857510ff2a7573ee"
+      },
+      "decoded": {
+        "bytes": 840,
+        "sha256": "c9b87d8e825bd3f88324f84b18be91c11899683762913ac5857510ff2a7573ee"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/result-before-isolation.json",
+      "path": "source/receipts/result-before-isolation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 23362,
+        "sha256": "6421a6473826b8d0755cd74d78c4f518559dbbcb249f76772b73a1d182be35d5"
+      },
+      "decoded": {
+        "bytes": 23362,
+        "sha256": "6421a6473826b8d0755cd74d78c4f518559dbbcb249f76772b73a1d182be35d5"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/result.json",
+      "path": "source/receipts/result.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 24292,
+        "sha256": "e5ae513fe1d1a891c2eaac8d31b52c8665ff5892fecfeec231c5833423f237ce"
+      },
+      "decoded": {
+        "bytes": 24292,
+        "sha256": "e5ae513fe1d1a891c2eaac8d31b52c8665ff5892fecfeec231c5833423f237ce"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch",
+      "path": "source/receipts/runtime.patch",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 20810,
+        "sha256": "0712531bca6a2cbcaec484661f2d0360d274798d4da5f038c0c873fabfa74eab"
+      },
+      "decoded": {
+        "bytes": 20810,
+        "sha256": "0712531bca6a2cbcaec484661f2d0360d274798d4da5f038c0c873fabfa74eab"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch.apply.log",
+      "path": "source/receipts/runtime.patch.apply.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 335,
+        "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+      },
+      "decoded": {
+        "bytes": 335,
+        "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch.dry-run.log",
+      "path": "source/receipts/runtime.patch.dry-run.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 335,
+        "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+      },
+      "decoded": {
+        "bytes": 335,
+        "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins-before-isolation.json",
+      "path": "source/receipts/source-pins-before-isolation.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 30442,
+        "sha256": "a1fa3a9bb1e4fee85fd31a558ab824b47dec6836403d504a3b59fb5975b07137"
+      },
+      "decoded": {
+        "bytes": 95422,
+        "sha256": "9419fd8c8bd2aa16400b2cc5edeb2e680e032d471c88e337a40b6445dd4f6c4b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins.json",
+      "path": "source/receipts/source-pins.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 30444,
+        "sha256": "b01a8e7d49a5e9adc993c50cb7b2307692ef9d461563d6c84e6d9a9334e57757"
+      },
+      "decoded": {
+        "bytes": 95422,
+        "sha256": "0c32f04c0bb80bab34ddb88611d49a3f9202bc73bc5c70b1d9a851e09c87cba1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-complete.log",
+      "path": "source/receipts/strict-complete.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-final-isolation.log",
+      "path": "source/receipts/strict-final-isolation.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-final.log",
+      "path": "source/receipts/strict-final.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-fourth.log",
+      "path": "source/receipts/strict-fourth.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 777,
+        "sha256": "354077c95f616ff160fc4f4987ada6246e367b6ff80ee3edb9dc954b0e964997"
+      },
+      "decoded": {
+        "bytes": 777,
+        "sha256": "354077c95f616ff160fc4f4987ada6246e367b6ff80ee3edb9dc954b0e964997"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-frozen.log",
+      "path": "source/receipts/strict-frozen.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-initial-after-fix.log",
+      "path": "source/receipts/strict-initial-after-fix.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-ready.log",
+      "path": "source/receipts/strict-ready.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-with-tests-first.log",
+      "path": "source/receipts/strict-with-tests-first.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 777,
+        "sha256": "d381e0bdd6c594418867004e182c0aeffcb54761269c0602d5274b0687fa3912"
+      },
+      "decoded": {
+        "bytes": 777,
+        "sha256": "d381e0bdd6c594418867004e182c0aeffcb54761269c0602d5274b0687fa3912"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-complete.log",
+      "path": "source/receipts/test-complete.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 102,
+        "sha256": "24b43c4ff1bc5e8ea8b0aa6410cbac98f665a38bea841d43097653bed06b6d22"
+      },
+      "decoded": {
+        "bytes": 102,
+        "sha256": "24b43c4ff1bc5e8ea8b0aa6410cbac98f665a38bea841d43097653bed06b6d22"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-fifth.log",
+      "path": "source/receipts/test-fifth.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 99,
+        "sha256": "92db60772b51039cbd1f89b54c53b882e4a724c174d32aa8a1fc1ee5f4f7c142"
+      },
+      "decoded": {
+        "bytes": 99,
+        "sha256": "92db60772b51039cbd1f89b54c53b882e4a724c174d32aa8a1fc1ee5f4f7c142"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-final-isolation.log",
+      "path": "source/receipts/test-final-isolation.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 109,
+        "sha256": "041a00d7f11a2bd4d353c15977cbc154a6ec18ddb4e2fbb8ffcab64c3e8849e8"
+      },
+      "decoded": {
+        "bytes": 109,
+        "sha256": "041a00d7f11a2bd4d353c15977cbc154a6ec18ddb4e2fbb8ffcab64c3e8849e8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-final.log",
+      "path": "source/receipts/test-final.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 99,
+        "sha256": "743186277899dcf5574cd19c43147c6208c8a34e06673fd25ca011129a200fd6"
+      },
+      "decoded": {
+        "bytes": 99,
+        "sha256": "743186277899dcf5574cd19c43147c6208c8a34e06673fd25ca011129a200fd6"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-first.log",
+      "path": "source/receipts/test-first.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 99,
+        "sha256": "aba2dccbf5622cab5991dba1037087abc5dcc9dbd9086b76e48c36a707431589"
+      },
+      "decoded": {
+        "bytes": 99,
+        "sha256": "aba2dccbf5622cab5991dba1037087abc5dcc9dbd9086b76e48c36a707431589"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-fourth.log",
+      "path": "source/receipts/test-fourth.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 100,
+        "sha256": "ce3f1ea734aca688df34cf8488cf05dcfdd16d974383ab8b8d80437b90a9a5f1"
+      },
+      "decoded": {
+        "bytes": 100,
+        "sha256": "ce3f1ea734aca688df34cf8488cf05dcfdd16d974383ab8b8d80437b90a9a5f1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-frozen.log",
+      "path": "source/receipts/test-frozen.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 100,
+        "sha256": "57e12ca9db8c21ee721e62723f766ddd39719edeb2e530ff54b645eb084f990e"
+      },
+      "decoded": {
+        "bytes": 100,
+        "sha256": "57e12ca9db8c21ee721e62723f766ddd39719edeb2e530ff54b645eb084f990e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-complete.json",
+      "path": "source/receipts/test-metrics-complete.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 19916,
+        "sha256": "dafe3eecfce6de02cd89ced15d8de31f652dd4c45d317cd5a26c26c9f2d9f168"
+      },
+      "decoded": {
+        "bytes": 19916,
+        "sha256": "dafe3eecfce6de02cd89ced15d8de31f652dd4c45d317cd5a26c26c9f2d9f168"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-fifth.json",
+      "path": "source/receipts/test-metrics-fifth.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 18819,
+        "sha256": "aac5566c7f2f8db2128a9ceab98b565b293d0519ac95c6846bcc233c31130a5f"
+      },
+      "decoded": {
+        "bytes": 18819,
+        "sha256": "aac5566c7f2f8db2128a9ceab98b565b293d0519ac95c6846bcc233c31130a5f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-final-isolation.json",
+      "path": "source/receipts/test-metrics-final-isolation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5776,
+        "sha256": "b28435a30ce3390b79fe846ebfedb85601b58954957c86233aecf615233a3cf8"
+      },
+      "decoded": {
+        "bytes": 5776,
+        "sha256": "b28435a30ce3390b79fe846ebfedb85601b58954957c86233aecf615233a3cf8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-final.json",
+      "path": "source/receipts/test-metrics-final.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 18995,
+        "sha256": "56e9f52a8f1cfeaff390b0bba129ef15bb717eaa48d7f4091d42b0a6309ac88b"
+      },
+      "decoded": {
+        "bytes": 18995,
+        "sha256": "56e9f52a8f1cfeaff390b0bba129ef15bb717eaa48d7f4091d42b0a6309ac88b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-first.json",
+      "path": "source/receipts/test-metrics-first.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7049,
+        "sha256": "cb352f4b3fe6072da2a4ae553b77223583be69ee8c2706dae42837062b51cc80"
+      },
+      "decoded": {
+        "bytes": 7049,
+        "sha256": "cb352f4b3fe6072da2a4ae553b77223583be69ee8c2706dae42837062b51cc80"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-fourth.json",
+      "path": "source/receipts/test-metrics-fourth.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 14537,
+        "sha256": "b9141ddb045ef6a133b3c6c8cfe0f60a8ea48eda2a0d78b9546ea7b005f59178"
+      },
+      "decoded": {
+        "bytes": 14537,
+        "sha256": "b9141ddb045ef6a133b3c6c8cfe0f60a8ea48eda2a0d78b9546ea7b005f59178"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-frozen.json",
+      "path": "source/receipts/test-metrics-frozen.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 18995,
+        "sha256": "56e9f52a8f1cfeaff390b0bba129ef15bb717eaa48d7f4091d42b0a6309ac88b"
+      },
+      "decoded": {
+        "bytes": 18995,
+        "sha256": "56e9f52a8f1cfeaff390b0bba129ef15bb717eaa48d7f4091d42b0a6309ac88b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-postphase.json",
+      "path": "source/receipts/test-metrics-postphase.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 19304,
+        "sha256": "5b964e6eac38e557682a9cb0416d2a5ea8fedc11a027b7d1d92b3176b2896bf6"
+      },
+      "decoded": {
+        "bytes": 19304,
+        "sha256": "5b964e6eac38e557682a9cb0416d2a5ea8fedc11a027b7d1d92b3176b2896bf6"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-ready.json",
+      "path": "source/receipts/test-metrics-ready.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 19295,
+        "sha256": "f476702c0cd5b13f68afd923e53b52796a6bbec406e85d297e004f9e49368335"
+      },
+      "decoded": {
+        "bytes": 19295,
+        "sha256": "f476702c0cd5b13f68afd923e53b52796a6bbec406e85d297e004f9e49368335"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-second.json",
+      "path": "source/receipts/test-metrics-second.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 9066,
+        "sha256": "9b69d3171abd5780c8a0740e26c6491a22cfac9202d739dffa76d0842d1b9089"
+      },
+      "decoded": {
+        "bytes": 9066,
+        "sha256": "9b69d3171abd5780c8a0740e26c6491a22cfac9202d739dffa76d0842d1b9089"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-third.json",
+      "path": "source/receipts/test-metrics-third.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 9986,
+        "sha256": "526c93478cc9d904cd870e332971517b2c5c5b5f7f0252546f4ba7c4c1e881ab"
+      },
+      "decoded": {
+        "bytes": 9986,
+        "sha256": "526c93478cc9d904cd870e332971517b2c5c5b5f7f0252546f4ba7c4c1e881ab"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-postphase.log",
+      "path": "source/receipts/test-postphase.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 103,
+        "sha256": "4d14ec3c58a84f185d6c768a22e2ebb1993a6170050d53111adb7e0f068e11fd"
+      },
+      "decoded": {
+        "bytes": 103,
+        "sha256": "4d14ec3c58a84f185d6c768a22e2ebb1993a6170050d53111adb7e0f068e11fd"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-ready.log",
+      "path": "source/receipts/test-ready.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 99,
+        "sha256": "8fa88765d2356dc7f983d8691ffc673c3962f3c439a3216ecde227993930ddb5"
+      },
+      "decoded": {
+        "bytes": 99,
+        "sha256": "8fa88765d2356dc7f983d8691ffc673c3962f3c439a3216ecde227993930ddb5"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-complete.json",
+      "path": "source/receipts/test-result-complete.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 40967,
+        "sha256": "b8388c2a3bdaabb4c67d82937d84f59568c7a781ec8ac25dcafdf7cc6f92b002"
+      },
+      "decoded": {
+        "bytes": 40967,
+        "sha256": "b8388c2a3bdaabb4c67d82937d84f59568c7a781ec8ac25dcafdf7cc6f92b002"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-fifth.json",
+      "path": "source/receipts/test-result-fifth.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4648,
+        "sha256": "9cb0a26f6de87960fe97c7893e8a6bd2551cb200f5685068ef45ffeaf77ee831"
+      },
+      "decoded": {
+        "bytes": 4648,
+        "sha256": "9cb0a26f6de87960fe97c7893e8a6bd2551cb200f5685068ef45ffeaf77ee831"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-final-isolation.json",
+      "path": "source/receipts/test-result-final-isolation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 41929,
+        "sha256": "6dbce57b2cb785e3d5db91bfb426f97162ea18fa9faf0e7e64621ac753bccda9"
+      },
+      "decoded": {
+        "bytes": 41929,
+        "sha256": "6dbce57b2cb785e3d5db91bfb426f97162ea18fa9faf0e7e64621ac753bccda9"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-final.json",
+      "path": "source/receipts/test-result-final.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 40983,
+        "sha256": "5143aa642102da662e563d94c0db67bef90b271275e60f6ac5fefc38a39c80a4"
+      },
+      "decoded": {
+        "bytes": 40983,
+        "sha256": "5143aa642102da662e563d94c0db67bef90b271275e60f6ac5fefc38a39c80a4"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-first.json",
+      "path": "source/receipts/test-result-first.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5295,
+        "sha256": "6956462d3ef904b4c39aab4ffac0a5cd762330d7a08f7986b4f57f8d57673ffe"
+      },
+      "decoded": {
+        "bytes": 5295,
+        "sha256": "6956462d3ef904b4c39aab4ffac0a5cd762330d7a08f7986b4f57f8d57673ffe"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-fourth.json",
+      "path": "source/receipts/test-result-fourth.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5738,
+        "sha256": "4b3d42c2aef2c4b70fedc5d6c6c373d87b28294ae84060adee95f80755653a63"
+      },
+      "decoded": {
+        "bytes": 5738,
+        "sha256": "4b3d42c2aef2c4b70fedc5d6c6c373d87b28294ae84060adee95f80755653a63"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-frozen.json",
+      "path": "source/receipts/test-result-frozen.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 40956,
+        "sha256": "dbc3e466c8f248274d81c114af6cabe9807008607a2e75143ce524b573a78275"
+      },
+      "decoded": {
+        "bytes": 40956,
+        "sha256": "dbc3e466c8f248274d81c114af6cabe9807008607a2e75143ce524b573a78275"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-postphase.json",
+      "path": "source/receipts/test-result-postphase.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4664,
+        "sha256": "7dd5c82e88f00c84abe3ef9fe59d3831b4445136786aab23de3bb83f7622d131"
+      },
+      "decoded": {
+        "bytes": 4664,
+        "sha256": "7dd5c82e88f00c84abe3ef9fe59d3831b4445136786aab23de3bb83f7622d131"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-ready.json",
+      "path": "source/receipts/test-result-ready.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 40949,
+        "sha256": "168d65577d044e77cc42f4be1467bf2022308bd783444f51b8ca6ed852b23c82"
+      },
+      "decoded": {
+        "bytes": 40949,
+        "sha256": "168d65577d044e77cc42f4be1467bf2022308bd783444f51b8ca6ed852b23c82"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-second.json",
+      "path": "source/receipts/test-result-second.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5581,
+        "sha256": "8f662e64d3181306bf61d53c7d2dbcbb42abbd7307bf9e194508bc9d86e502da"
+      },
+      "decoded": {
+        "bytes": 5581,
+        "sha256": "8f662e64d3181306bf61d53c7d2dbcbb42abbd7307bf9e194508bc9d86e502da"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-third.json",
+      "path": "source/receipts/test-result-third.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4209,
+        "sha256": "18a1f8833e8a3aaf82fe5931043cde464db681ef0e2f84a4c170a54ff6f814a7"
+      },
+      "decoded": {
+        "bytes": 4209,
+        "sha256": "18a1f8833e8a3aaf82fe5931043cde464db681ef0e2f84a4c170a54ff6f814a7"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-second.log",
+      "path": "source/receipts/test-second.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 100,
+        "sha256": "c147cf9617776657fad0c1bff80ffa76dbe1ee8b55373ea325f268c969729762"
+      },
+      "decoded": {
+        "bytes": 100,
+        "sha256": "c147cf9617776657fad0c1bff80ffa76dbe1ee8b55373ea325f268c969729762"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-third.log",
+      "path": "source/receipts/test-third.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 99,
+        "sha256": "826ff0c9fe9ea9b2ac323675d852fef7e4bcfe8e2cbc9ddc5416e87f1de26aa9"
+      },
+      "decoded": {
+        "bytes": 99,
+        "sha256": "826ff0c9fe9ea9b2ac323675d852fef7e4bcfe8e2cbc9ddc5416e87f1de26aa9"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests-before-isolation.patch",
+      "path": "source/receipts/tests-before-isolation.patch",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 26926,
+        "sha256": "49111800224a7f5c0a39d09ecde43330eebfa9d73a4383887a5b42424a4eff40"
+      },
+      "decoded": {
+        "bytes": 26926,
+        "sha256": "49111800224a7f5c0a39d09ecde43330eebfa9d73a4383887a5b42424a4eff40"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch",
+      "path": "source/receipts/tests.patch",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 28663,
+        "sha256": "1869b94cb7c95811c6cb970ab96cd09aef841d1af678096d88fd95a1eddf1c2b"
+      },
+      "decoded": {
+        "bytes": 28663,
+        "sha256": "1869b94cb7c95811c6cb970ab96cd09aef841d1af678096d88fd95a1eddf1c2b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch.apply.log",
+      "path": "source/receipts/tests.patch.apply.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 55,
+        "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+      },
+      "decoded": {
+        "bytes": 55,
+        "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch.dry-run.log",
+      "path": "source/receipts/tests.patch.dry-run.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 55,
+        "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+      },
+      "decoded": {
+        "bytes": 55,
+        "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/verification-before-isolation.json",
+      "path": "source/receipts/verification-before-isolation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4116,
+        "sha256": "7620017f29484a8c644116cc3e6d9b5559b50791bde836ab4c0b73d487acd064"
+      },
+      "decoded": {
+        "bytes": 4116,
+        "sha256": "7620017f29484a8c644116cc3e6d9b5559b50791bde836ab4c0b73d487acd064"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/verification.json",
+      "path": "source/receipts/verification.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4152,
+        "sha256": "8d775a6574ae0bc661ad5584134b7b37ef5b94ff8054cfd2a81e4fd5c24ff5ea"
+      },
+      "decoded": {
+        "bytes": 4152,
+        "sha256": "8d775a6574ae0bc661ad5584134b7b37ef5b94ff8054cfd2a81e4fd5c24ff5ea"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/verify-ready.py",
+      "path": "source/receipts/verify-ready.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1327,
+        "sha256": "5946081836822591d3bbe7f67e645d4db0ae698fd6dd0349361b81dd92bb8e24"
+      },
+      "decoded": {
+        "bytes": 1327,
+        "sha256": "5946081836822591d3bbe7f67e645d4db0ae698fd6dd0349361b81dd92bb8e24"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/SurfZoneSimulation.ts",
+      "path": "source/before/src/wave/SurfZoneSimulation.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 70902,
+        "sha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+      },
+      "decoded": {
+        "bytes": 70902,
+        "sha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/SurfZoneSimulation.ts",
+      "path": "source/after/src/wave/SurfZoneSimulation.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 71135,
+        "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+      },
+      "decoded": {
+        "bytes": 71135,
+        "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/BreakingFront.ts",
+      "path": "source/before/src/wave/barrel/BreakingFront.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 39920,
+        "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+      },
+      "decoded": {
+        "bytes": 39920,
+        "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/BreakingFront.ts",
+      "path": "source/after/src/wave/barrel/BreakingFront.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 40421,
+        "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8"
+      },
+      "decoded": {
+        "bytes": 40421,
+        "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+      "path": "source/after/src/wave/barrel/ProfileLibrary.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 28989,
+        "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+      },
+      "decoded": {
+        "bytes": 28989,
+        "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/SweptCrash.ts",
+      "path": "source/after/src/wave/barrel/SweptCrash.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 33689,
+        "sha256": "190bbd5c7101874cc6ad3788b3ddc89d9f27ca4d1341194468942b85479f77b8"
+      },
+      "decoded": {
+        "bytes": 33689,
+        "sha256": "190bbd5c7101874cc6ad3788b3ddc89d9f27ca4d1341194468942b85479f77b8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/frontRecords.ts",
+      "path": "source/before/src/wave/barrel/frontRecords.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1776,
+        "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+      },
+      "decoded": {
+        "bytes": 1776,
+        "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/frontRecords.ts",
+      "path": "source/after/src/wave/barrel/frontRecords.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1941,
+        "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+      },
+      "decoded": {
+        "bytes": 1941,
+        "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptLoft.ts",
+      "path": "source/after/src/wave/barrel/sweptLoft.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 64331,
+        "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c"
+      },
+      "decoded": {
+        "bytes": 64331,
+        "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/carrierSupport.test.ts",
+      "path": "source/after/src/wave/barrel/carrierSupport.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 28328,
+        "sha256": "07a5434bd9363384318f868c9ddba45187e15f6432640ddf2c93428df1f02590"
+      },
+      "decoded": {
+        "bytes": 28328,
+        "sha256": "07a5434bd9363384318f868c9ddba45187e15f6432640ddf2c93428df1f02590"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/carrierSupport.ts",
+      "path": "source/after/src/wave/barrel/carrierSupport.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5898,
+        "sha256": "7555e0452f5bd0824b051d4165c17c1c2caca8373eb9d291cc5f479ac98d52ca"
+      },
+      "decoded": {
+        "bytes": 5898,
+        "sha256": "7555e0452f5bd0824b051d4165c17c1c2caca8373eb9d291cc5f479ac98d52ca"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.mjs",
+      "path": "native/helpers/loft-snapshot-tools.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2957,
+        "sha256": "eddf8c0905336fa839a9abdd1af8cdc637f89d243ad0370b3ddc21cc384a53bd"
+      },
+      "decoded": {
+        "bytes": 2957,
+        "sha256": "eddf8c0905336fa839a9abdd1af8cdc637f89d243ad0370b3ddc21cc384a53bd"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/station-tools.mjs",
+      "path": "native/helpers/station-tools.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 17541,
+        "sha256": "65043d2fb90b01bdf174c0e8455638aba1d8cf1cb92479ca0e55a69cd317c966"
+      },
+      "decoded": {
+        "bytes": 17541,
+        "sha256": "65043d2fb90b01bdf174c0e8455638aba1d8cf1cb92479ca0e55a69cd317c966"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptContact.ts",
+      "path": "source/methods/src/wave/barrel/sweptContact.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 29546,
+        "sha256": "9d17bdbbbcfdebbab1bc46bc31b5ffae5935010d6e7b347b190b841a6ecc7c46"
+      },
+      "decoded": {
+        "bytes": 29546,
+        "sha256": "9d17bdbbbcfdebbab1bc46bc31b5ffae5935010d6e7b347b190b841a6ecc7c46"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/run.py",
+      "path": "native/helpers/run.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 26108,
+        "sha256": "45be1857b9013e34ea361d8478b0cdb509b0e10e4d832a93d70d4656171e4084"
+      },
+      "decoded": {
+        "bytes": 26108,
+        "sha256": "45be1857b9013e34ea361d8478b0cdb509b0e10e4d832a93d70d4656171e4084"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/native.mjs",
+      "path": "native/helpers/native.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 11882,
+        "sha256": "d3714330141b5de2e04819740400ceb3daaca658c1d7994d6d5fd907a3dcff5c"
+      },
+      "decoded": {
+        "bytes": 11882,
+        "sha256": "d3714330141b5de2e04819740400ceb3daaca658c1d7994d6d5fd907a3dcff5c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/native-owned.mjs",
+      "path": "native/helpers/native-owned.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6532,
+        "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+      },
+      "decoded": {
+        "bytes": 6532,
+        "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/moving-shape.mjs",
+      "path": "native/helpers/moving-shape.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 36443,
+        "sha256": "86c8fbf321c5a4e363725d7e7aaea3036f75f5579d4c47c4240a21a798f0e3f9"
+      },
+      "decoded": {
+        "bytes": 36443,
+        "sha256": "86c8fbf321c5a4e363725d7e7aaea3036f75f5579d4c47c4240a21a798f0e3f9"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-tools.mjs",
+      "path": "native/helpers/mouth-tools.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5316,
+        "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+      },
+      "decoded": {
+        "bytes": 5316,
+        "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-tools.test.mjs",
+      "path": "native/helpers/mouth-tools.test.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7489,
+        "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+      },
+      "decoded": {
+        "bytes": 7489,
+        "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.test.mjs",
+      "path": "native/helpers/loft-snapshot-tools.test.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3270,
+        "sha256": "436c8f11eddfaf1704c7a45bb857cd5b18548557cae943a3b7428f1b5db519be"
+      },
+      "decoded": {
+        "bytes": 3270,
+        "sha256": "436c8f11eddfaf1704c7a45bb857cd5b18548557cae943a3b7428f1b5db519be"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-integration-checks.mjs",
+      "path": "native/helpers/mouth-integration-checks.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 14966,
+        "sha256": "4ba82d3b5add32b19800651e6e2e40b396ea7b13ca504cd0ac1c030c431387cd"
+      },
+      "decoded": {
+        "bytes": 14966,
+        "sha256": "4ba82d3b5add32b19800651e6e2e40b396ea7b13ca504cd0ac1c030c431387cd"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mock-checks.mjs",
+      "path": "native/helpers/mock-checks.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 22365,
+        "sha256": "a2d37a080acd3f3b866dc5509dde758b7e7dacb98907a4a3c264855d2013bee4"
+      },
+      "decoded": {
+        "bytes": 22365,
+        "sha256": "a2d37a080acd3f3b866dc5509dde758b7e7dacb98907a4a3c264855d2013bee4"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/identity-checks.mjs",
+      "path": "native/helpers/identity-checks.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 14110,
+        "sha256": "37289d7c92ef8e6432fc8f4b95c3ae165959dfc0455b76b3b86f329cc81f198a"
+      },
+      "decoded": {
+        "bytes": 14110,
+        "sha256": "37289d7c92ef8e6432fc8f4b95c3ae165959dfc0455b76b3b86f329cc81f198a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-event-checks.py",
+      "path": "native/helpers/owner-event-checks.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4024,
+        "sha256": "608522a6c5097b33729bf29e80cc387bc1d064ed9f38cf158e21f9eeb31aac9b"
+      },
+      "decoded": {
+        "bytes": 4024,
+        "sha256": "608522a6c5097b33729bf29e80cc387bc1d064ed9f38cf158e21f9eeb31aac9b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-mock-checks.py",
+      "path": "native/helpers/owner-mock-checks.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2035,
+        "sha256": "ee736e849d08943644ec84ccaf28601b8bdb640c9964ce9115287ce7a79ef7c9"
+      },
+      "decoded": {
+        "bytes": 2035,
+        "sha256": "ee736e849d08943644ec84ccaf28601b8bdb640c9964ce9115287ce7a79ef7c9"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-snapshot-checks.py",
+      "path": "native/helpers/owner-snapshot-checks.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5745,
+        "sha256": "78a4bb5c3b0d9e3f831f9c32c92c7cecded016a6ed789bec3556639108945d10"
+      },
+      "decoded": {
+        "bytes": 5745,
+        "sha256": "78a4bb5c3b0d9e3f831f9c32c92c7cecded016a6ed789bec3556639108945d10"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/helper-types.d.ts",
+      "path": "native/helpers/helper-types.d.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 87,
+        "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+      },
+      "decoded": {
+        "bytes": 87,
+        "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/README.md",
+      "path": "native/helpers/README.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5199,
+        "sha256": "eda2216c5f8bce95a1e4b35788f72010990cab825b4da9c86fa8b4a33295f2e3"
+      },
+      "decoded": {
+        "bytes": 5199,
+        "sha256": "eda2216c5f8bce95a1e4b35788f72010990cab825b4da9c86fa8b4a33295f2e3"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/blueprint.txt",
+      "path": "native/helpers/blueprint.txt",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1170,
+        "sha256": "86d0dd90082ae42d7d53431982db6cbe73c673cc6c62c1019745373f86dd4cb7"
+      },
+      "decoded": {
+        "bytes": 1170,
+        "sha256": "86d0dd90082ae42d7d53431982db6cbe73c673cc6c62c1019745373f86dd4cb7"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/provenance.json",
+      "path": "native/helpers/provenance.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 8134,
+        "sha256": "b3b272ca57c574b2e78f56a51201b733da6343d362a68796a4dc82f994cfd129"
+      },
+      "decoded": {
+        "bytes": 8134,
+        "sha256": "b3b272ca57c574b2e78f56a51201b733da6343d362a68796a4dc82f994cfd129"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/check-source.py",
+      "path": "native/helpers/check-source.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5427,
+        "sha256": "e3b3e15306f8d22d142ec2afedb82d5b0ca16d7ccce7b4bc74fa502780893e60"
+      },
+      "decoded": {
+        "bytes": 5427,
+        "sha256": "e3b3e15306f8d22d142ec2afedb82d5b0ca16d7ccce7b4bc74fa502780893e60"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/new-source-contract-checks.json",
+      "path": "native/helpers/new-source-contract-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 12270,
+        "sha256": "17dc49f81a2ecaf2ac9412e419553caa32364792adc8273898b95077eebc3e5d"
+      },
+      "decoded": {
+        "bytes": 12270,
+        "sha256": "17dc49f81a2ecaf2ac9412e419553caa32364792adc8273898b95077eebc3e5d"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation-runner.py",
+      "path": "native/helpers/cpu-validation-runner.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2947,
+        "sha256": "abf6a22ca36d48347cb2f1a79735e0f8e7688138c7edc4a45ceadfd888b764af"
+      },
+      "decoded": {
+        "bytes": 2947,
+        "sha256": "abf6a22ca36d48347cb2f1a79735e0f8e7688138c7edc4a45ceadfd888b764af"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation.json",
+      "path": "native/helpers/cpu-validation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 14357,
+        "sha256": "2eb33edef3242dd8ef4a90e0ce212f6e4fda7b6426927040944ed24b92d7fd9b"
+      },
+      "decoded": {
+        "bytes": 14357,
+        "sha256": "2eb33edef3242dd8ef4a90e0ce212f6e4fda7b6426927040944ed24b92d7fd9b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation.log",
+      "path": "native/helpers/cpu-validation.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 9024,
+        "sha256": "f4473607d7838469df8e60d71695eb9d5de6600c5a38409f03e263f0a4caf197"
+      },
+      "decoded": {
+        "bytes": 9024,
+        "sha256": "f4473607d7838469df8e60d71695eb9d5de6600c5a38409f03e263f0a4caf197"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-integration-checks.json",
+      "path": "native/helpers/mouth-integration-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 704,
+        "sha256": "cfb2f3e1a871474c7b3a7dae51392d87b8141174ade2d116b7dc24adfe38fb6b"
+      },
+      "decoded": {
+        "bytes": 704,
+        "sha256": "cfb2f3e1a871474c7b3a7dae51392d87b8141174ade2d116b7dc24adfe38fb6b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mock-checks.json",
+      "path": "native/helpers/mock-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2334,
+        "sha256": "6fcaaa9364cc835eb4cc4068e3c829f96d2956e8545e2f40d964f74fbb8abd59"
+      },
+      "decoded": {
+        "bytes": 2334,
+        "sha256": "6fcaaa9364cc835eb4cc4068e3c829f96d2956e8545e2f40d964f74fbb8abd59"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/identity-checks.json",
+      "path": "native/helpers/identity-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4764,
+        "sha256": "936e3dbeade80521face8449cef62cb758fd72cbc7ce71ee223746d45c538990"
+      },
+      "decoded": {
+        "bytes": 4764,
+        "sha256": "936e3dbeade80521face8449cef62cb758fd72cbc7ce71ee223746d45c538990"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/carrier-event-fixtures.json",
+      "path": "native/helpers/carrier-event-fixtures.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 30886,
+        "sha256": "24a877841d37c43376f842b124ad03a0061d6300c09c93e52b4a1757d3e40cdd"
+      },
+      "decoded": {
+        "bytes": 30886,
+        "sha256": "24a877841d37c43376f842b124ad03a0061d6300c09c93e52b4a1757d3e40cdd"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/carrier-probe-fixtures.json",
+      "path": "native/helpers/carrier-probe-fixtures.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 16984,
+        "sha256": "8f7fb2cd2f4fb1f1699d2c305ab0c67828d3582692e23fc12856af58431da8b2"
+      },
+      "decoded": {
+        "bytes": 214270,
+        "sha256": "ee69dd76061482992447fc4e2858cc3ff140bdb4cbc792c9723251f4feba3b12"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-event-checks.json",
+      "path": "native/helpers/owner-event-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 939,
+        "sha256": "da5609a65de837fd4066691625d93742fce31cfbffd2f023d941ce65a4631a5d"
+      },
+      "decoded": {
+        "bytes": 939,
+        "sha256": "da5609a65de837fd4066691625d93742fce31cfbffd2f023d941ce65a4631a5d"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-mock-checks.json",
+      "path": "native/helpers/owner-mock-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 785,
+        "sha256": "3e4e3bc6363e2daebb6bbef94d2e73f593b4b6f918afb6f920074b472f78980f"
+      },
+      "decoded": {
+        "bytes": 785,
+        "sha256": "3e4e3bc6363e2daebb6bbef94d2e73f593b4b6f918afb6f920074b472f78980f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-snapshot-checks.json",
+      "path": "native/helpers/owner-snapshot-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 792,
+        "sha256": "8239c629cef4da902574f5a251af2a6b542c431b49d3dcaa5993080bedab1193"
+      },
+      "decoded": {
+        "bytes": 792,
+        "sha256": "8239c629cef4da902574f5a251af2a6b542c431b49d3dcaa5993080bedab1193"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/snapshot-owner-fixture/loft-initial.json",
+      "path": "native/helpers/snapshot-owner-fixture/loft-initial.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 24348,
+        "sha256": "4e64e8e0ce67698fd3b52ab79172ab7839228916dc525e7e699d1ca0733f6f1a"
+      },
+      "decoded": {
+        "bytes": 24348,
+        "sha256": "4e64e8e0ce67698fd3b52ab79172ab7839228916dc525e7e699d1ca0733f6f1a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/snapshot-owner-fixture/loft-first-phase2.json",
+      "path": "native/helpers/snapshot-owner-fixture/loft-first-phase2.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 24366,
+        "sha256": "fba4031947edb07e9bdd96fcca369b3d12424d4cb71b6300249944df7681eea1"
+      },
+      "decoded": {
+        "bytes": 24366,
+        "sha256": "fba4031947edb07e9bdd96fcca369b3d12424d4cb71b6300249944df7681eea1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/freeze.py",
+      "path": "native/helpers/freeze.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7937,
+        "sha256": "fddb148e84a09e1878d198997491ecbd63a64f9b242eb1c272821f6696af208c"
+      },
+      "decoded": {
+        "bytes": 7937,
+        "sha256": "fddb148e84a09e1878d198997491ecbd63a64f9b242eb1c272821f6696af208c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/helper-pins.json",
+      "path": "native/manifests/helper-pins.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 8612,
+        "sha256": "8251fee136e91d8b2a33966b7a87f0b342d5403d8017941ee5f00bed7a120da9"
+      },
+      "decoded": {
+        "bytes": 8612,
+        "sha256": "8251fee136e91d8b2a33966b7a87f0b342d5403d8017941ee5f00bed7a120da9"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/readiness.json",
+      "path": "native/manifests/readiness.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 19086,
+        "sha256": "2864cc76604845ce3ca919aa58d92787d135cd16b30e2a6d0f3d1ea8abed0546"
+      },
+      "decoded": {
+        "bytes": 19086,
+        "sha256": "2864cc76604845ce3ca919aa58d92787d135cd16b30e2a6d0f3d1ea8abed0546"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/root-build-result.json",
+      "path": "native/manifests/root-build-result.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 32476,
+        "sha256": "e8b51db81b912fec9c8eddd71a3b39ceaa2f3b2eb41ea0114381de4928dc01ce"
+      },
+      "decoded": {
+        "bytes": 141190,
+        "sha256": "b9d834fd7c47d668b2d49f08cc690b4a2070e4a4849c359e5e998e9f13208464"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/root-complete-build-result.json",
+      "path": "native/manifests/root-complete-build-result.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 35277,
+        "sha256": "270be828095a6c87483fa8934f9376101133ecf71ffbe8276df498e5a8f8971e"
+      },
+      "decoded": {
+        "bytes": 179795,
+        "sha256": "0476e7e2fa189165cba5b6bb6f2393d9964f93ab4e31074cac2dab770df2b417"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/seal.json",
+      "path": "native/manifests/seal.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 38984,
+        "sha256": "9ec26ebc9ff4a19ffc20c60b3ad7a71ce84fa8a8a8cbdc37c05e9227711bcb42"
+      },
+      "decoded": {
+        "bytes": 173358,
+        "sha256": "1f99b63593ebdb1e33c167957e8c9d45ac5cf0f537a4b448ab57b777208309af"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-build-20261004/build-result.json",
+      "path": "native/build-preparation/build-result.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 32200,
+        "sha256": "5de60dd26ed021e73009639839691aae4c1fc352da51280ee3b35709cdf480ad"
+      },
+      "decoded": {
+        "bytes": 135820,
+        "sha256": "e6ed76a9f474b7fe62ff52f437df10e3e0d5b95e865d05ca0e46d56cb45395ec"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-build-20261004/complete-build.py",
+      "path": "native/build-preparation/complete-build.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3884,
+        "sha256": "0195c939147004efd1c15fff73f3f508dfef2b3c4e8ba96a2096d4a03ac036f4"
+      },
+      "decoded": {
+        "bytes": 3884,
+        "sha256": "0195c939147004efd1c15fff73f3f508dfef2b3c4e8ba96a2096d4a03ac036f4"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-build-20261004/prebuild.json",
+      "path": "native/build-preparation/prebuild.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 30781,
+        "sha256": "602a5ec1cf349cb4b15a3a48ad8485124741c3785d468f4c45cb050b5cae9d93"
+      },
+      "decoded": {
+        "bytes": 130688,
+        "sha256": "9c4cc07435c1c625e5994e1c11aae3ae00e9c15d9aee7d01d8cd820e0f9931f5"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-build-20261004/prebuild.py",
+      "path": "native/build-preparation/prebuild.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2165,
+        "sha256": "d00b83423acdd36126c896d5dee682d0e19cee74684fd4a472379e17800df70e"
+      },
+      "decoded": {
+        "bytes": 2165,
+        "sha256": "d00b83423acdd36126c896d5dee682d0e19cee74684fd4a472379e17800df70e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-build-20261004/root-carrier-seal.py",
+      "path": "native/build-preparation/root-carrier-seal.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4658,
+        "sha256": "91d49bb8dd6ea8c88179656eb1c2c1f7fbe50693cce84c727ef6d1455f66d490"
+      },
+      "decoded": {
+        "bytes": 4658,
+        "sha256": "91d49bb8dd6ea8c88179656eb1c2c1f7fbe50693cce84c727ef6d1455f66d490"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first-owner.json",
+      "path": "native/candidate-first-owner.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3307,
+        "sha256": "1a448bfdcb2fa4582abff5e74726eff9c2d4c9935cb1499fd5f555baeafe7e02"
+      },
+      "decoded": {
+        "bytes": 3307,
+        "sha256": "1a448bfdcb2fa4582abff5e74726eff9c2d4c9935cb1499fd5f555baeafe7e02"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first-owner.log",
+      "path": "native/candidate-first-owner.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1406,
+        "sha256": "ec32de5a71fb885d93a65d47e2c04ab6437c3dddaff64b2a5b2151a36df105ec"
+      },
+      "decoded": {
+        "bytes": 1406,
+        "sha256": "ec32de5a71fb885d93a65d47e2c04ab6437c3dddaff64b2a5b2151a36df105ec"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/0-initial.png",
+      "path": "native/capture/0-initial.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 960567,
+        "sha256": "1edc65f94ad788d211dfa626a9446c576dbd4a710f4e5976576a3ead2794b237"
+      },
+      "decoded": {
+        "bytes": 960567,
+        "sha256": "1edc65f94ad788d211dfa626a9446c576dbd4a710f4e5976576a3ead2794b237"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/1-initial-exterior.png",
+      "path": "native/capture/1-initial-exterior.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2423162,
+        "sha256": "a6d9691c7fb31024aced5ab7b62465d51dd486677ed87c9e4a0d8c9f416e39ab"
+      },
+      "decoded": {
+        "bytes": 2423162,
+        "sha256": "a6d9691c7fb31024aced5ab7b62465d51dd486677ed87c9e4a0d8c9f416e39ab"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/2-first-phase2.png",
+      "path": "native/capture/2-first-phase2.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1112247,
+        "sha256": "84fe56ea251de48d33b9912439487f03f875544c398729ddf282cd392d116ade"
+      },
+      "decoded": {
+        "bytes": 1112247,
+        "sha256": "84fe56ea251de48d33b9912439487f03f875544c398729ddf282cd392d116ade"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/3-terminal.png",
+      "path": "native/capture/3-terminal.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1789936,
+        "sha256": "e15a7e93516d1908a6744add4f238e065be914f767d5379ecc6297cb8ab9e4ef"
+      },
+      "decoded": {
+        "bytes": 1789936,
+        "sha256": "e15a7e93516d1908a6744add4f238e065be914f767d5379ecc6297cb8ab9e4ef"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/launcher.json",
+      "path": "native/capture/launcher.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 2236,
+        "sha256": "33fd740cb4d00928de16b5a92c4ff98a20b5aeb668fd5b18190b3b9ecd63b2dd"
+      },
+      "decoded": {
+        "bytes": 11491,
+        "sha256": "6da4e4d37de388e62a75b55b7f12e3c3e8c9dc167ffe6e846f18d1144e628014"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/loft-first-phase2.json",
+      "path": "native/capture/loft-first-phase2.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 507994,
+        "sha256": "3b6c7009378ebecb73c075ede1228e7c7ca4d628ac19adb3cb9e25c680ce3b23"
+      },
+      "decoded": {
+        "bytes": 2280086,
+        "sha256": "fbbfce1016677cfdf0f87c38207602148870de1910b68d3a284a89acaf4b3f2d"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/loft-initial.json",
+      "path": "native/capture/loft-initial.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 378554,
+        "sha256": "c06d3e133c6ef8b950e0ac296c6f15720cf8720a07274dc7da584089361e0f8b"
+      },
+      "decoded": {
+        "bytes": 1796420,
+        "sha256": "1a9722cc198f7cb4c4df56de1ece30e2417fbd462df2249c54d4cb143f17c32f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/moving-C.webm",
+      "path": "native/capture/moving-C.webm",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 937149,
+        "sha256": "3ac3ea5454a9718fd2298e39748f11da65d32b67d3e3c46906b6f3056732cd92"
+      },
+      "decoded": {
+        "bytes": 937149,
+        "sha256": "3ac3ea5454a9718fd2298e39748f11da65d32b67d3e3c46906b6f3056732cd92"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/report.json",
+      "path": "native/capture/report.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 2079906,
+        "sha256": "94796c7ec69f81aaaa3f1b2ae257bc06f0d9f083bccc27ff6dd72d6a6f06d68f"
+      },
+      "decoded": {
+        "bytes": 9452886,
+        "sha256": "a4934771a954d4363d3618719ac0e4ef236aeac1ca2f6d938940dabd7f87a988"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/README.md",
+      "path": "reviews/release-stress/README.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3182,
+        "sha256": "51d49983aa52542c7fa1c2a50fe4d4b4356757f6ae0dfb2b4d62b6dfea72ae20"
+      },
+      "decoded": {
+        "bytes": 3182,
+        "sha256": "51d49983aa52542c7fa1c2a50fe4d4b4356757f6ae0dfb2b4d62b6dfea72ae20"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/frozen-preservation.json",
+      "path": "reviews/release-stress/frozen-preservation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 424,
+        "sha256": "639000f4c099b56324c01731e20bed13b1211d8f57ae248a25ce7f4f0fd08f8e"
+      },
+      "decoded": {
+        "bytes": 424,
+        "sha256": "639000f4c099b56324c01731e20bed13b1211d8f57ae248a25ce7f4f0fd08f8e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/manifest.json",
+      "path": "reviews/release-stress/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2500,
+        "sha256": "c6a67e4434943783b5a3ea283d1e41adc2cec3937b5ad5de3c6f88c5ac9c9967"
+      },
+      "decoded": {
+        "bytes": 2500,
+        "sha256": "c6a67e4434943783b5a3ea283d1e41adc2cec3937b5ad5de3c6f88c5ac9c9967"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/outcome.json",
+      "path": "reviews/release-stress/outcome.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7855,
+        "sha256": "3535a6450e8b04467aa0f0e47a95096693993ffdcf890ce0d284509be38ec08a"
+      },
+      "decoded": {
+        "bytes": 7855,
+        "sha256": "3535a6450e8b04467aa0f0e47a95096693993ffdcf890ce0d284509be38ec08a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/package.json",
+      "path": "reviews/release-stress/package.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 65,
+        "sha256": "d709e6551688a5def9708255075bde10fdbb29eead3cad17c27dbb973e1fe6f1"
+      },
+      "decoded": {
+        "bytes": 65,
+        "sha256": "d709e6551688a5def9708255075bde10fdbb29eead3cad17c27dbb973e1fe6f1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/readiness.json",
+      "path": "reviews/release-stress/readiness.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1350,
+        "sha256": "e70248b97415e50638ca8825c693a7c3cc2d902d15dc59d6a08224bce5ecf59b"
+      },
+      "decoded": {
+        "bytes": 1350,
+        "sha256": "e70248b97415e50638ca8825c693a7c3cc2d902d15dc59d6a08224bce5ecf59b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/report.json",
+      "path": "reviews/release-stress/report.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 44436,
+        "sha256": "494c0d0f191a58bd2fd2a9ac7e08e9e246613595eb70cb6759b1317b9505258d"
+      },
+      "decoded": {
+        "bytes": 783065,
+        "sha256": "d0752e6e446fab362f18edb78a38ba80753116526d06d32ae695d76394109799"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/stress.test.ts",
+      "path": "reviews/release-stress/stress.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 13319,
+        "sha256": "e3596c3b839db3ed07d7be3296bd2a9d67a238d7524d634db49a83b74f0344d4"
+      },
+      "decoded": {
+        "bytes": 13319,
+        "sha256": "e3596c3b839db3ed07d7be3296bd2a9d67a238d7524d634db49a83b74f0344d4"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/strict-complete.log",
+      "path": "reviews/release-stress/strict-complete.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/strict-first.log",
+      "path": "reviews/release-stress/strict-first.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/test-first.log",
+      "path": "reviews/release-stress/test-first.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 96,
+        "sha256": "85e7214b688426227c10617051ce52ecba6f3a28f898664ed8cb4dc6d0be9093"
+      },
+      "decoded": {
+        "bytes": 96,
+        "sha256": "85e7214b688426227c10617051ce52ecba6f3a28f898664ed8cb4dc6d0be9093"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/test-result-first.json",
+      "path": "reviews/release-stress/test-result-first.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2792,
+        "sha256": "d5866b6cb398835a8281c3536907be111f70e7de944c236b232589b0ad074d46"
+      },
+      "decoded": {
+        "bytes": 2792,
+        "sha256": "d5866b6cb398835a8281c3536907be111f70e7de944c236b232589b0ad074d46"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-stress-20261004/tsconfig.json",
+      "path": "reviews/release-stress/tsconfig.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 651,
+        "sha256": "8fae968f425e07d5f2aa7fa14a2517ed6079c49512791941685b26e7cba1c5ba"
+      },
+      "decoded": {
+        "bytes": 651,
+        "sha256": "8fae968f425e07d5f2aa7fa14a2517ed6079c49512791941685b26e7cba1c5ba"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-source-review-20261004/pins-and-checks.json",
+      "path": "reviews/source/pins-and-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2016,
+        "sha256": "af1c0b368c81f425d1acb4c6a738ddc23888f6f3a854e91c5fcb4a8081df8599"
+      },
+      "decoded": {
+        "bytes": 2016,
+        "sha256": "af1c0b368c81f425d1acb4c6a738ddc23888f6f3a854e91c5fcb4a8081df8599"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-source-review-20261004/review.md",
+      "path": "reviews/source/review.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 9985,
+        "sha256": "38bc18fe7b8aff187ceab0705cca2b3407ec1e090451293ab0fd433bedf3eb93"
+      },
+      "decoded": {
+        "bytes": 9985,
+        "sha256": "38bc18fe7b8aff187ceab0705cca2b3407ec1e090451293ab0fd433bedf3eb93"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-source-review-20261004/root-freeze-recheck.json",
+      "path": "reviews/source/root-freeze-recheck.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 584,
+        "sha256": "3fc58342c580fef264c74f36fcb43ad62786b991f949dedf54f25c68eb151865"
+      },
+      "decoded": {
+        "bytes": 584,
+        "sha256": "3fc58342c580fef264c74f36fcb43ad62786b991f949dedf54f25c68eb151865"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-sampling-review-20261004/analysis.json",
+      "path": "reviews/release-sampling/analysis.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 10534,
+        "sha256": "e3a6071ffa472a10b8cdb22c3efaafdf7586ab241edc7e9dc51792d9d141aa43"
+      },
+      "decoded": {
+        "bytes": 10534,
+        "sha256": "e3a6071ffa472a10b8cdb22c3efaafdf7586ab241edc7e9dc51792d9d141aa43"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-release-sampling-review-20261004/review.md",
+      "path": "reviews/release-sampling/review.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7546,
+        "sha256": "dc9036131a85f8dda6567c7be60eaef5d38895e04613f003f7b14d4a20bc6acb"
+      },
+      "decoded": {
+        "bytes": 7546,
+        "sha256": "dc9036131a85f8dda6567c7be60eaef5d38895e04613f003f7b14d4a20bc6acb"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-stable-sampling-design-20261004/design.md",
+      "path": "reviews/stable-X-design/design.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 11847,
+        "sha256": "fd70e41187301d14d80c49d10ada570543c3ff5976e4af6ec0ee7a95fe22234f"
+      },
+      "decoded": {
+        "bytes": 11847,
+        "sha256": "fd70e41187301d14d80c49d10ada570543c3ff5976e4af6ec0ee7a95fe22234f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-native-evidence-review-20261004/analysis.json",
+      "path": "reviews/native-evidence/analysis.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 55635,
+        "sha256": "03e12b0a2908ad90e9c80d2bdc5339e5a5a9bc36879dd1ddc215df3c026b6c1a"
+      },
+      "decoded": {
+        "bytes": 274407,
+        "sha256": "d1f6b76a051ae6411491f3797a4d2bb38d55e19ceab3e617382690b3092fc196"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-native-evidence-review-20261004/analyze.py",
+      "path": "reviews/native-evidence/analyze.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 23922,
+        "sha256": "dedd591845116b078571b199598378b1648b1b71a18c717953b734c9998c66c8"
+      },
+      "decoded": {
+        "bytes": 23922,
+        "sha256": "dedd591845116b078571b199598378b1648b1b71a18c717953b734c9998c66c8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-native-evidence-review-20261004/receipt.json",
+      "path": "reviews/native-evidence/receipt.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 828,
+        "sha256": "d9645f8caed23cb56ee47b2e4a21b5b78efbb0f00aae4c1938a85198fae21fe1"
+      },
+      "decoded": {
+        "bytes": 828,
+        "sha256": "d9645f8caed23cb56ee47b2e4a21b5b78efbb0f00aae4c1938a85198fae21fe1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-native-evidence-review-20261004/report.md",
+      "path": "reviews/native-evidence/report.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7733,
+        "sha256": "a37f98c7ca227d7bbd54854aa48ac9661f5158dc9271c67a36360bcdc49891da"
+      },
+      "decoded": {
+        "bytes": 7733,
+        "sha256": "a37f98c7ca227d7bbd54854aa48ac9661f5158dc9271c67a36360bcdc49891da"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-native-prep-notes-20261004/README.md",
+      "path": "reviews/native-preparation/README.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3454,
+        "sha256": "e89b9f1c1aeed799be47ca7ba1cb78bf5ebeecdb34e46b4ad8fa393ec9f86803"
+      },
+      "decoded": {
+        "bytes": 3454,
+        "sha256": "e89b9f1c1aeed799be47ca7ba1cb78bf5ebeecdb34e46b4ad8fa393ec9f86803"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-native-prep-notes-20261004/verification.json",
+      "path": "reviews/native-preparation/verification.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1012,
+        "sha256": "068ecc30cee6d74ddd32e01bad293a49f282393263295908bb8aaacb64a48347"
+      },
+      "decoded": {
+        "bytes": 1012,
+        "sha256": "068ecc30cee6d74ddd32e01bad293a49f282393263295908bb8aaacb64a48347"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/README.md",
+      "path": "reviews/geometry/README.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4772,
+        "sha256": "bb9800e45bdaa3fd75338d03507af774f76eaf50801fa5691d940003d46948be"
+      },
+      "decoded": {
+        "bytes": 4772,
+        "sha256": "bb9800e45bdaa3fd75338d03507af774f76eaf50801fa5691d940003d46948be"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/analysis.json",
+      "path": "reviews/geometry/actual/analysis.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 144269,
+        "sha256": "19a03c88d452013986b1983fd71a67f885a17e82cc471efa4e4ebced3d3f177c"
+      },
+      "decoded": {
+        "bytes": 1263172,
+        "sha256": "d64f0179e11c23b563be4779f9439a2ac0738d911f9664b46c1cbc5a8d8dbfcf"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-cavity-detail.png",
+      "path": "reviews/geometry/actual/first-phase2-cavity-detail.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 23058,
+        "sha256": "824f303bb9051fde9bf2a5801161ead5d40cba6287287275d342b11b5c7ff5c5"
+      },
+      "decoded": {
+        "bytes": 23058,
+        "sha256": "824f303bb9051fde9bf2a5801161ead5d40cba6287287275d342b11b5c7ff5c5"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-cavity-detail.svg",
+      "path": "reviews/geometry/actual/first-phase2-cavity-detail.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 21679,
+        "sha256": "99d29f5827b32cc16a9d60fe2676a86115291ef535195d7d977c346a672e8a94"
+      },
+      "decoded": {
+        "bytes": 21679,
+        "sha256": "99d29f5827b32cc16a9d60fe2676a86115291ef535195d7d977c346a672e8a94"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-fixed-X-section.png",
+      "path": "reviews/geometry/actual/first-phase2-fixed-X-section.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 25998,
+        "sha256": "62d04bc7bb9e0951df5fc5ac1259dd54458417ce75a19428bd18a7fe3f4f0e81"
+      },
+      "decoded": {
+        "bytes": 25998,
+        "sha256": "62d04bc7bb9e0951df5fc5ac1259dd54458417ce75a19428bd18a7fe3f4f0e81"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-fixed-X-section.svg",
+      "path": "reviews/geometry/actual/first-phase2-fixed-X-section.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 35232,
+        "sha256": "d614f12638d9bcc9108fca3d411f27cc734ef15abe0a09164ba072da1234604e"
+      },
+      "decoded": {
+        "bytes": 35232,
+        "sha256": "d614f12638d9bcc9108fca3d411f27cc734ef15abe0a09164ba072da1234604e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-normal80-96.png",
+      "path": "reviews/geometry/actual/first-phase2-normal80-96.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 30550,
+        "sha256": "f120173e6742dd04f9f6a30eac9f3f5e41f2392203d2e006af27665a4ba28a6b"
+      },
+      "decoded": {
+        "bytes": 30550,
+        "sha256": "f120173e6742dd04f9f6a30eac9f3f5e41f2392203d2e006af27665a4ba28a6b"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-normal80-96.svg",
+      "path": "reviews/geometry/actual/first-phase2-normal80-96.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6487,
+        "sha256": "737049992f6e61ca43bf9f044b133bf8b1925d5e76c2c71ffcb45e8e090c9214"
+      },
+      "decoded": {
+        "bytes": 6487,
+        "sha256": "737049992f6e61ca43bf9f044b133bf8b1925d5e76c2c71ffcb45e8e090c9214"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-paired-thickness.png",
+      "path": "reviews/geometry/actual/first-phase2-paired-thickness.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 28138,
+        "sha256": "9a7e52e8a7b8f892eff9823dcd1b6b516245029e8f346962413205e288ef1477"
+      },
+      "decoded": {
+        "bytes": 28138,
+        "sha256": "9a7e52e8a7b8f892eff9823dcd1b6b516245029e8f346962413205e288ef1477"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-paired-thickness.svg",
+      "path": "reviews/geometry/actual/first-phase2-paired-thickness.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6955,
+        "sha256": "f11d25c9dac31db1ed55a996b4822f5733ed0995a753d6d973ebc41ab1bead52"
+      },
+      "decoded": {
+        "bytes": 6955,
+        "sha256": "f11d25c9dac31db1ed55a996b4822f5733ed0995a753d6d973ebc41ab1bead52"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-root80-96.png",
+      "path": "reviews/geometry/actual/first-phase2-root80-96.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 23765,
+        "sha256": "00c60d3addc3c71c0c97affc289e0b3f6518d656af8d865c150a350224df9ded"
+      },
+      "decoded": {
+        "bytes": 23765,
+        "sha256": "00c60d3addc3c71c0c97affc289e0b3f6518d656af8d865c150a350224df9ded"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-root80-96.svg",
+      "path": "reviews/geometry/actual/first-phase2-root80-96.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6505,
+        "sha256": "4b44f8bdd1f9f1b9be87aafcf650cc6b418e46dd4eed6c5d6c9982d015a54cad"
+      },
+      "decoded": {
+        "bytes": 6505,
+        "sha256": "4b44f8bdd1f9f1b9be87aafcf650cc6b418e46dd4eed6c5d6c9982d015a54cad"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-cavity-detail.png",
+      "path": "reviews/geometry/actual/initial-cavity-detail.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 23396,
+        "sha256": "c577acb2d93cd8fb93005b3f660d296cc7786004d0a4c01b407b8b932700e5ef"
+      },
+      "decoded": {
+        "bytes": 23396,
+        "sha256": "c577acb2d93cd8fb93005b3f660d296cc7786004d0a4c01b407b8b932700e5ef"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-cavity-detail.svg",
+      "path": "reviews/geometry/actual/initial-cavity-detail.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 21655,
+        "sha256": "91c7b6b0bccfa40c675d2fa4b133a5d48d54e8cff628f101a1c54e9abe1549b3"
+      },
+      "decoded": {
+        "bytes": 21655,
+        "sha256": "91c7b6b0bccfa40c675d2fa4b133a5d48d54e8cff628f101a1c54e9abe1549b3"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-exterior-ray-plan.png",
+      "path": "reviews/geometry/actual/initial-exterior-ray-plan.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 23758,
+        "sha256": "2d4c01004147dd6bbe58e8cae301dd7d5dc479257c3ed5c6305db432e0819e28"
+      },
+      "decoded": {
+        "bytes": 23758,
+        "sha256": "2d4c01004147dd6bbe58e8cae301dd7d5dc479257c3ed5c6305db432e0819e28"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-exterior-ray-plan.svg",
+      "path": "reviews/geometry/actual/initial-exterior-ray-plan.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4262,
+        "sha256": "330cbd91a57fb1b1ad59f49086bef12d005856f554e9e6ff4d51ed8bc5bacd13"
+      },
+      "decoded": {
+        "bytes": 4262,
+        "sha256": "330cbd91a57fb1b1ad59f49086bef12d005856f554e9e6ff4d51ed8bc5bacd13"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-fixed-X-section.png",
+      "path": "reviews/geometry/actual/initial-fixed-X-section.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 25643,
+        "sha256": "d002e9c5c1a98cf89463dd8e60eb411e5d397af4657d4f44e86cccd3b436016c"
+      },
+      "decoded": {
+        "bytes": 25643,
+        "sha256": "d002e9c5c1a98cf89463dd8e60eb411e5d397af4657d4f44e86cccd3b436016c"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-fixed-X-section.svg",
+      "path": "reviews/geometry/actual/initial-fixed-X-section.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 35226,
+        "sha256": "dd5e56e10c10f3721729cd28c9559bf906ecdbc5199cf6ef399676f802ff4512"
+      },
+      "decoded": {
+        "bytes": 35226,
+        "sha256": "dd5e56e10c10f3721729cd28c9559bf906ecdbc5199cf6ef399676f802ff4512"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-normal80-96.png",
+      "path": "reviews/geometry/actual/initial-normal80-96.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 29291,
+        "sha256": "46e122ed4b6c4570432de3f2da34ee71df82a989bd2ae64fc8afe15e3219c0fb"
+      },
+      "decoded": {
+        "bytes": 29291,
+        "sha256": "46e122ed4b6c4570432de3f2da34ee71df82a989bd2ae64fc8afe15e3219c0fb"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-normal80-96.svg",
+      "path": "reviews/geometry/actual/initial-normal80-96.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6480,
+        "sha256": "91eab071c5e30151ee2b1e1443c45e7cefbb843f7c4c31f09c442e4c1165cc16"
+      },
+      "decoded": {
+        "bytes": 6480,
+        "sha256": "91eab071c5e30151ee2b1e1443c45e7cefbb843f7c4c31f09c442e4c1165cc16"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-paired-thickness.png",
+      "path": "reviews/geometry/actual/initial-paired-thickness.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 28781,
+        "sha256": "941688f365aff71e71974689e950065253ad4751b2939e5e2f7c889b08a0ef1a"
+      },
+      "decoded": {
+        "bytes": 28781,
+        "sha256": "941688f365aff71e71974689e950065253ad4751b2939e5e2f7c889b08a0ef1a"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-paired-thickness.svg",
+      "path": "reviews/geometry/actual/initial-paired-thickness.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6986,
+        "sha256": "bdf56b4267ec83e25b5ce3f87718afa26144109cadbdb38716cd7b69c9a38513"
+      },
+      "decoded": {
+        "bytes": 6986,
+        "sha256": "bdf56b4267ec83e25b5ce3f87718afa26144109cadbdb38716cd7b69c9a38513"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-root80-96.png",
+      "path": "reviews/geometry/actual/initial-root80-96.png",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 23314,
+        "sha256": "7f60d7bc69d8f26c5c6635cf803448f1cce7e97bf6966de32bb4c14ef1b0ad14"
+      },
+      "decoded": {
+        "bytes": 23314,
+        "sha256": "7f60d7bc69d8f26c5c6635cf803448f1cce7e97bf6966de32bb4c14ef1b0ad14"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-root80-96.svg",
+      "path": "reviews/geometry/actual/initial-root80-96.svg",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6499,
+        "sha256": "e9461bc661bf20dc1b720c96c204112530b7c5038cc68f792fde5ae11611e912"
+      },
+      "decoded": {
+        "bytes": 6499,
+        "sha256": "e9461bc661bf20dc1b720c96c204112530b7c5038cc68f792fde5ae11611e912"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual-run.log",
+      "path": "reviews/geometry/actual-run.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 369,
+        "sha256": "6a35e8d6b305407167f1d1bf35e42f1f181278645c6087d6dada6eb6ea62ab45"
+      },
+      "decoded": {
+        "bytes": 369,
+        "sha256": "6a35e8d6b305407167f1d1bf35e42f1f181278645c6087d6dada6eb6ea62ab45"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/analyze_loft.py",
+      "path": "reviews/geometry/analyze_loft.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 33882,
+        "sha256": "183489d38a3081f18943edd26f5026c9a29b139e88e0afe9a82b797ab70b2ce5"
+      },
+      "decoded": {
+        "bytes": 33882,
+        "sha256": "183489d38a3081f18943edd26f5026c9a29b139e88e0afe9a82b797ab70b2ce5"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/manifest.json",
+      "path": "reviews/geometry/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 9184,
+        "sha256": "a8c9ad4e1507f1590fd0df3678bae31ee8935e1f1be94970130535335b9a08cc"
+      },
+      "decoded": {
+        "bytes": 9184,
+        "sha256": "a8c9ad4e1507f1590fd0df3678bae31ee8935e1f1be94970130535335b9a08cc"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/readiness.json",
+      "path": "reviews/geometry/readiness.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2381,
+        "sha256": "91f2f350dd72511ef4f28cac796a52c7377865823b88a1fd272b72748c642a19"
+      },
+      "decoded": {
+        "bytes": 2381,
+        "sha256": "91f2f350dd72511ef4f28cac796a52c7377865823b88a1fd272b72748c642a19"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/source-method-pins.json",
+      "path": "reviews/geometry/source-method-pins.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1419,
+        "sha256": "26ce2b1fee99f3df3a47226f08f7c6e0d260170284414d1582004f79794da608"
+      },
+      "decoded": {
+        "bytes": 1419,
+        "sha256": "26ce2b1fee99f3df3a47226f08f7c6e0d260170284414d1582004f79794da608"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/source-methods.md",
+      "path": "reviews/geometry/source-methods.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6701,
+        "sha256": "6eb7ad530e40c8a5a9cdbf81243f7e74a74fc2bb5ede2a9d9160d8355afd50ad"
+      },
+      "decoded": {
+        "bytes": 6701,
+        "sha256": "6eb7ad530e40c8a5a9cdbf81243f7e74a74fc2bb5ede2a9d9160d8355afd50ad"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/test_analyzer.py",
+      "path": "reviews/geometry/test_analyzer.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 5251,
+        "sha256": "dc84c91aeb786f95206d38d6eeff78bc9b13fb3ac2daa305fd38c8d4c0705dce"
+      },
+      "decoded": {
+        "bytes": 5251,
+        "sha256": "dc84c91aeb786f95206d38d6eeff78bc9b13fb3ac2daa305fd38c8d4c0705dce"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/unit-tests.log",
+      "path": "reviews/geometry/unit-tests.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1083,
+        "sha256": "39dc9aaa87c47ff13edad2bf941ac4248a50b6466cc6d8deeda942410c9fa299"
+      },
+      "decoded": {
+        "bytes": 1083,
+        "sha256": "39dc9aaa87c47ff13edad2bf941ac4248a50b6466cc6d8deeda942410c9fa299"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/verify-ready.py",
+      "path": "reviews/geometry/verify-ready.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1423,
+        "sha256": "b01ddb0c852473c5e19ab55cc377036cf447697fb8b40e54e9e8cae276846350"
+      },
+      "decoded": {
+        "bytes": 1423,
+        "sha256": "b01ddb0c852473c5e19ab55cc377036cf447697fb8b40e54e9e8cae276846350"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-authored-span-screen-20261004/result.json",
+      "path": "reviews/authored-span/result.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 4971,
+        "sha256": "75a80b15f7490957a14d4fbc6424c74d4787f3124cf206e19da8068c3a18dd67"
+      },
+      "decoded": {
+        "bytes": 4971,
+        "sha256": "75a80b15f7490957a14d4fbc6424c74d4787f3124cf206e19da8068c3a18dd67"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-video-review-20261004/receipt.json",
+      "path": "reviews/video/receipt.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1790,
+        "sha256": "f08ec9f01b67a8bdeba696766d86e7c066846154ea81861349cc78fba4a54704"
+      },
+      "decoded": {
+        "bytes": 1790,
+        "sha256": "f08ec9f01b67a8bdeba696766d86e7c066846154ea81861349cc78fba4a54704"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-video-review-20261004/ffprobe.json",
+      "path": "reviews/video/ffprobe.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 291,
+        "sha256": "c68b2de0f17fc7c56719c917dc24bcab1ede51c7b9e73e7e39df862123530cff"
+      },
+      "decoded": {
+        "bytes": 291,
+        "sha256": "c68b2de0f17fc7c56719c917dc24bcab1ede51c7b9e73e7e39df862123530cff"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-video-review-20261004/pixel-inspection.json",
+      "path": "reviews/video/pixel-inspection.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 2371,
+        "sha256": "489aa2efc72e8fa45e816a258fc8cddce7ba747242b3bc14f84327c09fec85ce"
+      },
+      "decoded": {
+        "bytes": 2371,
+        "sha256": "489aa2efc72e8fa45e816a258fc8cddce7ba747242b3bc14f84327c09fec85ce"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-screen-ray-review-20261004/README.md",
+      "path": "reviews/screen-ray/README.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 10448,
+        "sha256": "e26b0360221181f066cf0525de2d59340e8011b0c63ed4d002e88ba31a709328"
+      },
+      "decoded": {
+        "bytes": 10448,
+        "sha256": "e26b0360221181f066cf0525de2d59340e8011b0c63ed4d002e88ba31a709328"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-screen-ray-review-20261004/analysis-pins.json",
+      "path": "reviews/screen-ray/analysis-pins.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 571,
+        "sha256": "4c4ad902b4147ec842a5e7109a3b1044c01cb9523ad10edd953dc00034e01aad"
+      },
+      "decoded": {
+        "bytes": 571,
+        "sha256": "4c4ad902b4147ec842a5e7109a3b1044c01cb9523ad10edd953dc00034e01aad"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-screen-ray-review-20261004/analyze.py",
+      "path": "reviews/screen-ray/analyze.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 25097,
+        "sha256": "c22e30d29ea5e9064380fbd6b2598cb93c7e267cf5609788869d4106a5be36e6"
+      },
+      "decoded": {
+        "bytes": 25097,
+        "sha256": "c22e30d29ea5e9064380fbd6b2598cb93c7e267cf5609788869d4106a5be36e6"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-screen-ray-review-20261004/report.json",
+      "path": "reviews/screen-ray/report.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 19213,
+        "sha256": "7991e39095b48563cec3f431337dd6a6b327a991cebcf0956415d19a623c4f9c"
+      },
+      "decoded": {
+        "bytes": 109713,
+        "sha256": "68b07164a2a68d1bf5521b806cbac6b9fe86184f7ef83eeedf81609be2f675e4"
+      }
+    },
+    {
+      "path": "README.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 10267,
+        "sha256": "7743d6542cedf27acb058b49228da09998ac8f4f83726d67f7aa7eaa87af3560"
+      },
+      "decoded": {
+        "bytes": 10267,
+        "sha256": "7743d6542cedf27acb058b49228da09998ac8f4f83726d67f7aa7eaa87af3560"
+      },
+      "generatedByArchiveWorker": true
+    },
+    {
+      "path": "outcome.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 13230,
+        "sha256": "d9a8d3097cdda198b75155815d5e5310346a7ddb15dbb55ec07e489ba6f39ef8"
+      },
+      "decoded": {
+        "bytes": 13230,
+        "sha256": "d9a8d3097cdda198b75155815d5e5310346a7ddb15dbb55ec07e489ba6f39ef8"
+      },
+      "generatedByArchiveWorker": true
+    },
+    {
+      "path": "verify.py",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 13713,
+        "sha256": "e24456614cae4f1589b612a2e1c47b6952191fa86aa72872a7decdaf06b60f24"
+      },
+      "decoded": {
+        "bytes": 13713,
+        "sha256": "e24456614cae4f1589b612a2e1c47b6952191fa86aa72872a7decdaf06b60f24"
+      },
+      "generatedByArchiveWorker": true
+    }
+  ],
+  "externalFiles": [
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+      "path": "../shared-sheet/demand/source/src/wave/barrel/ProfileLibrary.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 26076,
+        "sha256": "ff3c0d2a928d9b17e6d98b372ad3aa7dc80907cfc8a469a36e949bb309ead9c6"
+      },
+      "decoded": {
+        "bytes": 26076,
+        "sha256": "ff3c0d2a928d9b17e6d98b372ad3aa7dc80907cfc8a469a36e949bb309ead9c6"
+      },
+      "previousArchiveOriginalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source/src/wave/barrel/ProfileLibrary.ts"
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/SweptCrash.ts",
+      "path": "../parallel-physical-native/source/physical-runtime/after/src/wave/barrel/SweptCrash.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 32406,
+        "sha256": "fb95dab980cbbcb532b875a328da21d4f36f4b152e090a20add77b1d58210b24"
+      },
+      "decoded": {
+        "bytes": 32406,
+        "sha256": "fb95dab980cbbcb532b875a328da21d4f36f4b152e090a20add77b1d58210b24"
+      },
+      "previousArchiveOriginalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/SweptCrash.ts"
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/sweptLoft.ts",
+      "path": "../shared-sheet/fullsheet/source/src/wave/barrel/sweptLoft.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 63917,
+        "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+      },
+      "decoded": {
+        "bytes": 63917,
+        "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+      },
+      "previousArchiveOriginalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/source/src/wave/barrel/sweptLoft.ts"
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json",
+      "path": "../parallel-physical-native/source/physical/receipts/readiness.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 32927,
+        "sha256": "035d3d79b47a88eaeaed17906539a61d0e352a846a5eb381f04a3e839a7f1b8e"
+      },
+      "decoded": {
+        "bytes": 103658,
+        "sha256": "f973340740f7173b8e7a6624d953b503b6b7320fcc5d7c84e873512367307d67"
+      },
+      "previousArchiveOriginalPath": "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json"
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sharedUpperRoot.ts",
+      "path": "../shared-sheet/fullsheet/source/src/wave/barrel/sharedUpperRoot.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3200,
+        "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+      },
+      "decoded": {
+        "bytes": 3200,
+        "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+      },
+      "previousArchiveOriginalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/source/src/wave/barrel/sharedUpperRoot.ts"
+    },
+    {
+      "originalPath": "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs",
+      "path": "../parallel-physical-native/native/dependencies/tube-directed-entry-20261004/body-witnesses.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 11626,
+        "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+      },
+      "decoded": {
+        "bytes": 11626,
+        "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+      },
+      "previousArchiveOriginalPath": "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs"
+    },
+    {
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "path": "../parallel-physical-native/native/dependencies/browser/cdp.mjs",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "decoded": {
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "previousArchiveOriginalPath": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs"
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json",
+      "path": "../parallel-physical-native/native/dependencies/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 1314,
+        "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+      },
+      "decoded": {
+        "bytes": 1314,
+        "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+      },
+      "previousArchiveOriginalPath": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json"
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/new-source-contract-checks.json",
+      "path": "../parallel-physical-native/native/preparation/new-source-contract-checks.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 10116,
+        "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+      },
+      "decoded": {
+        "bytes": 10116,
+        "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+      },
+      "previousArchiveOriginalPath": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/new-source-contract-checks.json"
+    }
+  ],
+  "patches": [
+    {
+      "patch": "source/receipts/runtime.patch",
+      "files": [
+        {
+          "path": "src/wave/SurfZoneSimulation.ts",
+          "before": {
+            "path": "source/before/src/wave/SurfZoneSimulation.ts"
+          },
+          "after": {
+            "path": "source/after/src/wave/SurfZoneSimulation.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/BreakingFront.ts",
+          "before": {
+            "path": "source/before/src/wave/barrel/BreakingFront.ts"
+          },
+          "after": {
+            "path": "source/after/src/wave/barrel/BreakingFront.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/ProfileLibrary.ts",
+          "before": {
+            "path": "../shared-sheet/demand/source/src/wave/barrel/ProfileLibrary.ts"
+          },
+          "after": {
+            "path": "source/after/src/wave/barrel/ProfileLibrary.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/SweptCrash.ts",
+          "before": {
+            "path": "../parallel-physical-native/source/physical-runtime/after/src/wave/barrel/SweptCrash.ts"
+          },
+          "after": {
+            "path": "source/after/src/wave/barrel/SweptCrash.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/carrierSupport.ts",
+          "before": null,
+          "after": {
+            "path": "source/after/src/wave/barrel/carrierSupport.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/frontRecords.ts",
+          "before": {
+            "path": "source/before/src/wave/barrel/frontRecords.ts"
+          },
+          "after": {
+            "path": "source/after/src/wave/barrel/frontRecords.ts"
+          }
+        },
+        {
+          "path": "src/wave/barrel/sweptLoft.ts",
+          "before": {
+            "path": "../shared-sheet/fullsheet/source/src/wave/barrel/sweptLoft.ts"
+          },
+          "after": {
+            "path": "source/after/src/wave/barrel/sweptLoft.ts"
+          }
+        }
+      ]
+    },
+    {
+      "patch": "source/receipts/tests.patch",
+      "files": [
+        {
+          "path": "src/wave/barrel/carrierSupport.test.ts",
+          "before": null,
+          "after": {
+            "path": "source/after/src/wave/barrel/carrierSupport.test.ts"
+          }
+        }
+      ]
+    }
+  ],
+  "originalIntegrityInputs": {
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/README.md": {
+      "bytes": 8707,
+      "sha256": "1b449ae7e5be2ae583e43a36dc37cd3f279d7116cb585078539cc62105248751"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/evidence-pins.json": {
+      "bytes": 13892,
+      "sha256": "3c482262825db637e43cd640876978caabc51d4322bf8f4009af1f1795c90704"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/handoff-fixture.json": {
+      "bytes": 17499,
+      "sha256": "95d61a80dee918bf411c28816a876705699dbdc9d05962f77610d330b55dfa09"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/parent-copy.json": {
+      "bytes": 95709,
+      "sha256": "e5562b91eece2262bcebeccdcb175bef874a529e61124f59687d7894afb30596"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-complete.json": {
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-final-isolation.json": {
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-final.json": {
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-frozen.json": {
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-ready.json": {
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/prepare-freeze.py": {
+      "bytes": 10864,
+      "sha256": "0a77977052245de559348c4d478e9b8c499348c705379f08d6b487b46d8f63a8"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/public-history-contract.json": {
+      "bytes": 4829,
+      "sha256": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json": {
+      "bytes": 115387,
+      "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/recipe.md": {
+      "bytes": 840,
+      "sha256": "c9b87d8e825bd3f88324f84b18be91c11899683762913ac5857510ff2a7573ee"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/result-before-isolation.json": {
+      "bytes": 23362,
+      "sha256": "6421a6473826b8d0755cd74d78c4f518559dbbcb249f76772b73a1d182be35d5"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/result.json": {
+      "bytes": 24292,
+      "sha256": "e5ae513fe1d1a891c2eaac8d31b52c8665ff5892fecfeec231c5833423f237ce"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch": {
+      "bytes": 20810,
+      "sha256": "0712531bca6a2cbcaec484661f2d0360d274798d4da5f038c0c873fabfa74eab"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch.apply.log": {
+      "bytes": 335,
+      "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch.dry-run.log": {
+      "bytes": 335,
+      "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins-before-isolation.json": {
+      "bytes": 95422,
+      "sha256": "9419fd8c8bd2aa16400b2cc5edeb2e680e032d471c88e337a40b6445dd4f6c4b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins.json": {
+      "bytes": 95422,
+      "sha256": "0c32f04c0bb80bab34ddb88611d49a3f9202bc73bc5c70b1d9a851e09c87cba1"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-complete.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-final-isolation.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-final.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-fourth.log": {
+      "bytes": 777,
+      "sha256": "354077c95f616ff160fc4f4987ada6246e367b6ff80ee3edb9dc954b0e964997"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-frozen.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-initial-after-fix.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-ready.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-with-tests-first.log": {
+      "bytes": 777,
+      "sha256": "d381e0bdd6c594418867004e182c0aeffcb54761269c0602d5274b0687fa3912"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-complete.log": {
+      "bytes": 102,
+      "sha256": "24b43c4ff1bc5e8ea8b0aa6410cbac98f665a38bea841d43097653bed06b6d22"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-fifth.log": {
+      "bytes": 99,
+      "sha256": "92db60772b51039cbd1f89b54c53b882e4a724c174d32aa8a1fc1ee5f4f7c142"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-final-isolation.log": {
+      "bytes": 109,
+      "sha256": "041a00d7f11a2bd4d353c15977cbc154a6ec18ddb4e2fbb8ffcab64c3e8849e8"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-final.log": {
+      "bytes": 99,
+      "sha256": "743186277899dcf5574cd19c43147c6208c8a34e06673fd25ca011129a200fd6"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-first.log": {
+      "bytes": 99,
+      "sha256": "aba2dccbf5622cab5991dba1037087abc5dcc9dbd9086b76e48c36a707431589"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-fourth.log": {
+      "bytes": 100,
+      "sha256": "ce3f1ea734aca688df34cf8488cf05dcfdd16d974383ab8b8d80437b90a9a5f1"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-frozen.log": {
+      "bytes": 100,
+      "sha256": "57e12ca9db8c21ee721e62723f766ddd39719edeb2e530ff54b645eb084f990e"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-complete.json": {
+      "bytes": 19916,
+      "sha256": "dafe3eecfce6de02cd89ced15d8de31f652dd4c45d317cd5a26c26c9f2d9f168"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-fifth.json": {
+      "bytes": 18819,
+      "sha256": "aac5566c7f2f8db2128a9ceab98b565b293d0519ac95c6846bcc233c31130a5f"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-final-isolation.json": {
+      "bytes": 5776,
+      "sha256": "b28435a30ce3390b79fe846ebfedb85601b58954957c86233aecf615233a3cf8"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-final.json": {
+      "bytes": 18995,
+      "sha256": "56e9f52a8f1cfeaff390b0bba129ef15bb717eaa48d7f4091d42b0a6309ac88b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-first.json": {
+      "bytes": 7049,
+      "sha256": "cb352f4b3fe6072da2a4ae553b77223583be69ee8c2706dae42837062b51cc80"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-fourth.json": {
+      "bytes": 14537,
+      "sha256": "b9141ddb045ef6a133b3c6c8cfe0f60a8ea48eda2a0d78b9546ea7b005f59178"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-frozen.json": {
+      "bytes": 18995,
+      "sha256": "56e9f52a8f1cfeaff390b0bba129ef15bb717eaa48d7f4091d42b0a6309ac88b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-postphase.json": {
+      "bytes": 19304,
+      "sha256": "5b964e6eac38e557682a9cb0416d2a5ea8fedc11a027b7d1d92b3176b2896bf6"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-ready.json": {
+      "bytes": 19295,
+      "sha256": "f476702c0cd5b13f68afd923e53b52796a6bbec406e85d297e004f9e49368335"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-second.json": {
+      "bytes": 9066,
+      "sha256": "9b69d3171abd5780c8a0740e26c6491a22cfac9202d739dffa76d0842d1b9089"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-third.json": {
+      "bytes": 9986,
+      "sha256": "526c93478cc9d904cd870e332971517b2c5c5b5f7f0252546f4ba7c4c1e881ab"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-postphase.log": {
+      "bytes": 103,
+      "sha256": "4d14ec3c58a84f185d6c768a22e2ebb1993a6170050d53111adb7e0f068e11fd"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-ready.log": {
+      "bytes": 99,
+      "sha256": "8fa88765d2356dc7f983d8691ffc673c3962f3c439a3216ecde227993930ddb5"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-complete.json": {
+      "bytes": 40967,
+      "sha256": "b8388c2a3bdaabb4c67d82937d84f59568c7a781ec8ac25dcafdf7cc6f92b002"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-fifth.json": {
+      "bytes": 4648,
+      "sha256": "9cb0a26f6de87960fe97c7893e8a6bd2551cb200f5685068ef45ffeaf77ee831"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-final-isolation.json": {
+      "bytes": 41929,
+      "sha256": "6dbce57b2cb785e3d5db91bfb426f97162ea18fa9faf0e7e64621ac753bccda9"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-final.json": {
+      "bytes": 40983,
+      "sha256": "5143aa642102da662e563d94c0db67bef90b271275e60f6ac5fefc38a39c80a4"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-first.json": {
+      "bytes": 5295,
+      "sha256": "6956462d3ef904b4c39aab4ffac0a5cd762330d7a08f7986b4f57f8d57673ffe"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-fourth.json": {
+      "bytes": 5738,
+      "sha256": "4b3d42c2aef2c4b70fedc5d6c6c373d87b28294ae84060adee95f80755653a63"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-frozen.json": {
+      "bytes": 40956,
+      "sha256": "dbc3e466c8f248274d81c114af6cabe9807008607a2e75143ce524b573a78275"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-postphase.json": {
+      "bytes": 4664,
+      "sha256": "7dd5c82e88f00c84abe3ef9fe59d3831b4445136786aab23de3bb83f7622d131"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-ready.json": {
+      "bytes": 40949,
+      "sha256": "168d65577d044e77cc42f4be1467bf2022308bd783444f51b8ca6ed852b23c82"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-second.json": {
+      "bytes": 5581,
+      "sha256": "8f662e64d3181306bf61d53c7d2dbcbb42abbd7307bf9e194508bc9d86e502da"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-third.json": {
+      "bytes": 4209,
+      "sha256": "18a1f8833e8a3aaf82fe5931043cde464db681ef0e2f84a4c170a54ff6f814a7"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-second.log": {
+      "bytes": 100,
+      "sha256": "c147cf9617776657fad0c1bff80ffa76dbe1ee8b55373ea325f268c969729762"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/test-third.log": {
+      "bytes": 99,
+      "sha256": "826ff0c9fe9ea9b2ac323675d852fef7e4bcfe8e2cbc9ddc5416e87f1de26aa9"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/tests-before-isolation.patch": {
+      "bytes": 26926,
+      "sha256": "49111800224a7f5c0a39d09ecde43330eebfa9d73a4383887a5b42424a4eff40"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch": {
+      "bytes": 28663,
+      "sha256": "1869b94cb7c95811c6cb970ab96cd09aef841d1af678096d88fd95a1eddf1c2b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch.apply.log": {
+      "bytes": 55,
+      "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch.dry-run.log": {
+      "bytes": 55,
+      "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/verification-before-isolation.json": {
+      "bytes": 4116,
+      "sha256": "7620017f29484a8c644116cc3e6d9b5559b50791bde836ab4c0b73d487acd064"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/verification.json": {
+      "bytes": 4152,
+      "sha256": "8d775a6574ae0bc661ad5584134b7b37ef5b94ff8054cfd2a81e4fd5c24ff5ea"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/verify-ready.py": {
+      "bytes": 1327,
+      "sha256": "5946081836822591d3bbe7f67e645d4db0ae698fd6dd0349361b81dd92bb8e24"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/SurfZoneSimulation.ts": {
+      "bytes": 70902,
+      "sha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/SurfZoneSimulation.ts": {
+      "bytes": 71135,
+      "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/BreakingFront.ts": {
+      "bytes": 39920,
+      "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/BreakingFront.ts": {
+      "bytes": 40421,
+      "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/ProfileLibrary.ts": {
+      "bytes": 26076,
+      "sha256": "ff3c0d2a928d9b17e6d98b372ad3aa7dc80907cfc8a469a36e949bb309ead9c6"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/ProfileLibrary.ts": {
+      "bytes": 28989,
+      "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/SweptCrash.ts": {
+      "bytes": 32406,
+      "sha256": "fb95dab980cbbcb532b875a328da21d4f36f4b152e090a20add77b1d58210b24"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/SweptCrash.ts": {
+      "bytes": 33689,
+      "sha256": "190bbd5c7101874cc6ad3788b3ddc89d9f27ca4d1341194468942b85479f77b8"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/frontRecords.ts": {
+      "bytes": 1776,
+      "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/frontRecords.ts": {
+      "bytes": 1941,
+      "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/sweptLoft.ts": {
+      "bytes": 63917,
+      "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptLoft.ts": {
+      "bytes": 64331,
+      "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/carrierSupport.test.ts": {
+      "bytes": 28328,
+      "sha256": "07a5434bd9363384318f868c9ddba45187e15f6432640ddf2c93428df1f02590"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/carrierSupport.ts": {
+      "bytes": 5898,
+      "sha256": "7555e0452f5bd0824b051d4165c17c1c2caca8373eb9d291cc5f479ac98d52ca"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json": {
+      "bytes": 103658,
+      "sha256": "f973340740f7173b8e7a6624d953b503b6b7320fcc5d7c84e873512367307d67"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sharedUpperRoot.ts": {
+      "bytes": 3200,
+      "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.mjs": {
+      "bytes": 2957,
+      "sha256": "eddf8c0905336fa839a9abdd1af8cdc637f89d243ad0370b3ddc21cc384a53bd"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/station-tools.mjs": {
+      "bytes": 17541,
+      "sha256": "65043d2fb90b01bdf174c0e8455638aba1d8cf1cb92479ca0e55a69cd317c966"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptContact.ts": {
+      "bytes": 29546,
+      "sha256": "9d17bdbbbcfdebbab1bc46bc31b5ffae5935010d6e7b347b190b841a6ecc7c46"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/run.py": {
+      "bytes": 26108,
+      "sha256": "45be1857b9013e34ea361d8478b0cdb509b0e10e4d832a93d70d4656171e4084"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/native.mjs": {
+      "bytes": 11882,
+      "sha256": "d3714330141b5de2e04819740400ceb3daaca658c1d7994d6d5fd907a3dcff5c"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/native-owned.mjs": {
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/moving-shape.mjs": {
+      "bytes": 36443,
+      "sha256": "86c8fbf321c5a4e363725d7e7aaea3036f75f5579d4c47c4240a21a798f0e3f9"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-tools.mjs": {
+      "bytes": 5316,
+      "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-tools.test.mjs": {
+      "bytes": 7489,
+      "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.test.mjs": {
+      "bytes": 3270,
+      "sha256": "436c8f11eddfaf1704c7a45bb857cd5b18548557cae943a3b7428f1b5db519be"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-integration-checks.mjs": {
+      "bytes": 14966,
+      "sha256": "4ba82d3b5add32b19800651e6e2e40b396ea7b13ca504cd0ac1c030c431387cd"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mock-checks.mjs": {
+      "bytes": 22365,
+      "sha256": "a2d37a080acd3f3b866dc5509dde758b7e7dacb98907a4a3c264855d2013bee4"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/identity-checks.mjs": {
+      "bytes": 14110,
+      "sha256": "37289d7c92ef8e6432fc8f4b95c3ae165959dfc0455b76b3b86f329cc81f198a"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-event-checks.py": {
+      "bytes": 4024,
+      "sha256": "608522a6c5097b33729bf29e80cc387bc1d064ed9f38cf158e21f9eeb31aac9b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-mock-checks.py": {
+      "bytes": 2035,
+      "sha256": "ee736e849d08943644ec84ccaf28601b8bdb640c9964ce9115287ce7a79ef7c9"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-snapshot-checks.py": {
+      "bytes": 5745,
+      "sha256": "78a4bb5c3b0d9e3f831f9c32c92c7cecded016a6ed789bec3556639108945d10"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/helper-types.d.ts": {
+      "bytes": 87,
+      "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/README.md": {
+      "bytes": 5199,
+      "sha256": "eda2216c5f8bce95a1e4b35788f72010990cab825b4da9c86fa8b4a33295f2e3"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/blueprint.txt": {
+      "bytes": 1170,
+      "sha256": "86d0dd90082ae42d7d53431982db6cbe73c673cc6c62c1019745373f86dd4cb7"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/provenance.json": {
+      "bytes": 8134,
+      "sha256": "b3b272ca57c574b2e78f56a51201b733da6343d362a68796a4dc82f994cfd129"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/check-source.py": {
+      "bytes": 5427,
+      "sha256": "e3b3e15306f8d22d142ec2afedb82d5b0ca16d7ccce7b4bc74fa502780893e60"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/new-source-contract-checks.json": {
+      "bytes": 12270,
+      "sha256": "17dc49f81a2ecaf2ac9412e419553caa32364792adc8273898b95077eebc3e5d"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation-runner.py": {
+      "bytes": 2947,
+      "sha256": "abf6a22ca36d48347cb2f1a79735e0f8e7688138c7edc4a45ceadfd888b764af"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation.json": {
+      "bytes": 14357,
+      "sha256": "2eb33edef3242dd8ef4a90e0ce212f6e4fda7b6426927040944ed24b92d7fd9b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation.log": {
+      "bytes": 9024,
+      "sha256": "f4473607d7838469df8e60d71695eb9d5de6600c5a38409f03e263f0a4caf197"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-integration-checks.json": {
+      "bytes": 704,
+      "sha256": "cfb2f3e1a871474c7b3a7dae51392d87b8141174ade2d116b7dc24adfe38fb6b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mock-checks.json": {
+      "bytes": 2334,
+      "sha256": "6fcaaa9364cc835eb4cc4068e3c829f96d2956e8545e2f40d964f74fbb8abd59"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/identity-checks.json": {
+      "bytes": 4764,
+      "sha256": "936e3dbeade80521face8449cef62cb758fd72cbc7ce71ee223746d45c538990"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/carrier-event-fixtures.json": {
+      "bytes": 30886,
+      "sha256": "24a877841d37c43376f842b124ad03a0061d6300c09c93e52b4a1757d3e40cdd"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/carrier-probe-fixtures.json": {
+      "bytes": 214270,
+      "sha256": "ee69dd76061482992447fc4e2858cc3ff140bdb4cbc792c9723251f4feba3b12"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-event-checks.json": {
+      "bytes": 939,
+      "sha256": "da5609a65de837fd4066691625d93742fce31cfbffd2f023d941ce65a4631a5d"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-mock-checks.json": {
+      "bytes": 785,
+      "sha256": "3e4e3bc6363e2daebb6bbef94d2e73f593b4b6f918afb6f920074b472f78980f"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-snapshot-checks.json": {
+      "bytes": 792,
+      "sha256": "8239c629cef4da902574f5a251af2a6b542c431b49d3dcaa5993080bedab1193"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/snapshot-owner-fixture/loft-initial.json": {
+      "bytes": 24348,
+      "sha256": "4e64e8e0ce67698fd3b52ab79172ab7839228916dc525e7e699d1ca0733f6f1a"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/snapshot-owner-fixture/loft-first-phase2.json": {
+      "bytes": 24366,
+      "sha256": "fba4031947edb07e9bdd96fcca369b3d12424d4cb71b6300249944df7681eea1"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/freeze.py": {
+      "bytes": 7937,
+      "sha256": "fddb148e84a09e1878d198997491ecbd63a64f9b242eb1c272821f6696af208c"
+    },
+    "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs": {
+      "bytes": 11626,
+      "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+    },
+    "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs": {
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json": {
+      "bytes": 1314,
+      "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+    },
+    "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/new-source-contract-checks.json": {
+      "bytes": 10116,
+      "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/helper-pins.json": {
+      "bytes": 8612,
+      "sha256": "8251fee136e91d8b2a33966b7a87f0b342d5403d8017941ee5f00bed7a120da9"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/readiness.json": {
+      "bytes": 19086,
+      "sha256": "2864cc76604845ce3ca919aa58d92787d135cd16b30e2a6d0f3d1ea8abed0546"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/root-build-result.json": {
+      "bytes": 141190,
+      "sha256": "b9d834fd7c47d668b2d49f08cc690b4a2070e4a4849c359e5e998e9f13208464"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/root-complete-build-result.json": {
+      "bytes": 179795,
+      "sha256": "0476e7e2fa189165cba5b6bb6f2393d9964f93ab4e31074cac2dab770df2b417"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/seal.json": {
+      "bytes": 173358,
+      "sha256": "1f99b63593ebdb1e33c167957e8c9d45ac5cf0f537a4b448ab57b777208309af"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-build-20261004/build-result.json": {
+      "bytes": 135820,
+      "sha256": "e6ed76a9f474b7fe62ff52f437df10e3e0d5b95e865d05ca0e46d56cb45395ec"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-build-20261004/complete-build.py": {
+      "bytes": 3884,
+      "sha256": "0195c939147004efd1c15fff73f3f508dfef2b3c4e8ba96a2096d4a03ac036f4"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-build-20261004/prebuild.json": {
+      "bytes": 130688,
+      "sha256": "9c4cc07435c1c625e5994e1c11aae3ae00e9c15d9aee7d01d8cd820e0f9931f5"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-build-20261004/prebuild.py": {
+      "bytes": 2165,
+      "sha256": "d00b83423acdd36126c896d5dee682d0e19cee74684fd4a472379e17800df70e"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-build-20261004/root-carrier-seal.py": {
+      "bytes": 4658,
+      "sha256": "91d49bb8dd6ea8c88179656eb1c2c1f7fbe50693cce84c727ef6d1455f66d490"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first-owner.json": {
+      "bytes": 3307,
+      "sha256": "1a448bfdcb2fa4582abff5e74726eff9c2d4c9935cb1499fd5f555baeafe7e02"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first-owner.log": {
+      "bytes": 1406,
+      "sha256": "ec32de5a71fb885d93a65d47e2c04ab6437c3dddaff64b2a5b2151a36df105ec"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/0-initial.png": {
+      "bytes": 960567,
+      "sha256": "1edc65f94ad788d211dfa626a9446c576dbd4a710f4e5976576a3ead2794b237"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/1-initial-exterior.png": {
+      "bytes": 2423162,
+      "sha256": "a6d9691c7fb31024aced5ab7b62465d51dd486677ed87c9e4a0d8c9f416e39ab"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/2-first-phase2.png": {
+      "bytes": 1112247,
+      "sha256": "84fe56ea251de48d33b9912439487f03f875544c398729ddf282cd392d116ade"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/3-terminal.png": {
+      "bytes": 1789936,
+      "sha256": "e15a7e93516d1908a6744add4f238e065be914f767d5379ecc6297cb8ab9e4ef"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/launcher.json": {
+      "bytes": 11491,
+      "sha256": "6da4e4d37de388e62a75b55b7f12e3c3e8c9dc167ffe6e846f18d1144e628014"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/loft-first-phase2.json": {
+      "bytes": 2280086,
+      "sha256": "fbbfce1016677cfdf0f87c38207602148870de1910b68d3a284a89acaf4b3f2d"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/loft-initial.json": {
+      "bytes": 1796420,
+      "sha256": "1a9722cc198f7cb4c4df56de1ece30e2417fbd462df2249c54d4cb143f17c32f"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/moving-C.webm": {
+      "bytes": 937149,
+      "sha256": "3ac3ea5454a9718fd2298e39748f11da65d32b67d3e3c46906b6f3056732cd92"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/report.json": {
+      "bytes": 9452886,
+      "sha256": "a4934771a954d4363d3618719ac0e4ef236aeac1ca2f6d938940dabd7f87a988"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/README.md": {
+      "bytes": 3182,
+      "sha256": "51d49983aa52542c7fa1c2a50fe4d4b4356757f6ae0dfb2b4d62b6dfea72ae20"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/frozen-preservation.json": {
+      "bytes": 424,
+      "sha256": "639000f4c099b56324c01731e20bed13b1211d8f57ae248a25ce7f4f0fd08f8e"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/manifest.json": {
+      "bytes": 2500,
+      "sha256": "c6a67e4434943783b5a3ea283d1e41adc2cec3937b5ad5de3c6f88c5ac9c9967"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/outcome.json": {
+      "bytes": 7855,
+      "sha256": "3535a6450e8b04467aa0f0e47a95096693993ffdcf890ce0d284509be38ec08a"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/package.json": {
+      "bytes": 65,
+      "sha256": "d709e6551688a5def9708255075bde10fdbb29eead3cad17c27dbb973e1fe6f1"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/readiness.json": {
+      "bytes": 1350,
+      "sha256": "e70248b97415e50638ca8825c693a7c3cc2d902d15dc59d6a08224bce5ecf59b"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/report.json": {
+      "bytes": 783065,
+      "sha256": "d0752e6e446fab362f18edb78a38ba80753116526d06d32ae695d76394109799"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/stress.test.ts": {
+      "bytes": 13319,
+      "sha256": "e3596c3b839db3ed07d7be3296bd2a9d67a238d7524d634db49a83b74f0344d4"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/strict-complete.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/strict-first.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/test-first.log": {
+      "bytes": 96,
+      "sha256": "85e7214b688426227c10617051ce52ecba6f3a28f898664ed8cb4dc6d0be9093"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/test-result-first.json": {
+      "bytes": 2792,
+      "sha256": "d5866b6cb398835a8281c3536907be111f70e7de944c236b232589b0ad074d46"
+    },
+    "/private/tmp/tube-carrier-release-stress-20261004/tsconfig.json": {
+      "bytes": 651,
+      "sha256": "8fae968f425e07d5f2aa7fa14a2517ed6079c49512791941685b26e7cba1c5ba"
+    },
+    "/private/tmp/tube-carrier-source-review-20261004/pins-and-checks.json": {
+      "bytes": 2016,
+      "sha256": "af1c0b368c81f425d1acb4c6a738ddc23888f6f3a854e91c5fcb4a8081df8599"
+    },
+    "/private/tmp/tube-carrier-source-review-20261004/review.md": {
+      "bytes": 9985,
+      "sha256": "38bc18fe7b8aff187ceab0705cca2b3407ec1e090451293ab0fd433bedf3eb93"
+    },
+    "/private/tmp/tube-carrier-source-review-20261004/root-freeze-recheck.json": {
+      "bytes": 584,
+      "sha256": "3fc58342c580fef264c74f36fcb43ad62786b991f949dedf54f25c68eb151865"
+    },
+    "/private/tmp/tube-carrier-release-sampling-review-20261004/analysis.json": {
+      "bytes": 10534,
+      "sha256": "e3a6071ffa472a10b8cdb22c3efaafdf7586ab241edc7e9dc51792d9d141aa43"
+    },
+    "/private/tmp/tube-carrier-release-sampling-review-20261004/review.md": {
+      "bytes": 7546,
+      "sha256": "dc9036131a85f8dda6567c7be60eaef5d38895e04613f003f7b14d4a20bc6acb"
+    },
+    "/private/tmp/tube-carrier-stable-sampling-design-20261004/design.md": {
+      "bytes": 11847,
+      "sha256": "fd70e41187301d14d80c49d10ada570543c3ff5976e4af6ec0ee7a95fe22234f"
+    },
+    "/private/tmp/tube-carrier-native-evidence-review-20261004/analysis.json": {
+      "bytes": 274407,
+      "sha256": "d1f6b76a051ae6411491f3797a4d2bb38d55e19ceab3e617382690b3092fc196"
+    },
+    "/private/tmp/tube-carrier-native-evidence-review-20261004/analyze.py": {
+      "bytes": 23922,
+      "sha256": "dedd591845116b078571b199598378b1648b1b71a18c717953b734c9998c66c8"
+    },
+    "/private/tmp/tube-carrier-native-evidence-review-20261004/receipt.json": {
+      "bytes": 828,
+      "sha256": "d9645f8caed23cb56ee47b2e4a21b5b78efbb0f00aae4c1938a85198fae21fe1"
+    },
+    "/private/tmp/tube-carrier-native-evidence-review-20261004/report.md": {
+      "bytes": 7733,
+      "sha256": "a37f98c7ca227d7bbd54854aa48ac9661f5158dc9271c67a36360bcdc49891da"
+    },
+    "/private/tmp/tube-carrier-native-prep-notes-20261004/README.md": {
+      "bytes": 3454,
+      "sha256": "e89b9f1c1aeed799be47ca7ba1cb78bf5ebeecdb34e46b4ad8fa393ec9f86803"
+    },
+    "/private/tmp/tube-carrier-native-prep-notes-20261004/verification.json": {
+      "bytes": 1012,
+      "sha256": "068ecc30cee6d74ddd32e01bad293a49f282393263295908bb8aaacb64a48347"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/README.md": {
+      "bytes": 4772,
+      "sha256": "bb9800e45bdaa3fd75338d03507af774f76eaf50801fa5691d940003d46948be"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/analysis.json": {
+      "bytes": 1263172,
+      "sha256": "d64f0179e11c23b563be4779f9439a2ac0738d911f9664b46c1cbc5a8d8dbfcf"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-cavity-detail.png": {
+      "bytes": 23058,
+      "sha256": "824f303bb9051fde9bf2a5801161ead5d40cba6287287275d342b11b5c7ff5c5"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-cavity-detail.svg": {
+      "bytes": 21679,
+      "sha256": "99d29f5827b32cc16a9d60fe2676a86115291ef535195d7d977c346a672e8a94"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-fixed-X-section.png": {
+      "bytes": 25998,
+      "sha256": "62d04bc7bb9e0951df5fc5ac1259dd54458417ce75a19428bd18a7fe3f4f0e81"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-fixed-X-section.svg": {
+      "bytes": 35232,
+      "sha256": "d614f12638d9bcc9108fca3d411f27cc734ef15abe0a09164ba072da1234604e"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-normal80-96.png": {
+      "bytes": 30550,
+      "sha256": "f120173e6742dd04f9f6a30eac9f3f5e41f2392203d2e006af27665a4ba28a6b"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-normal80-96.svg": {
+      "bytes": 6487,
+      "sha256": "737049992f6e61ca43bf9f044b133bf8b1925d5e76c2c71ffcb45e8e090c9214"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-paired-thickness.png": {
+      "bytes": 28138,
+      "sha256": "9a7e52e8a7b8f892eff9823dcd1b6b516245029e8f346962413205e288ef1477"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-paired-thickness.svg": {
+      "bytes": 6955,
+      "sha256": "f11d25c9dac31db1ed55a996b4822f5733ed0995a753d6d973ebc41ab1bead52"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-root80-96.png": {
+      "bytes": 23765,
+      "sha256": "00c60d3addc3c71c0c97affc289e0b3f6518d656af8d865c150a350224df9ded"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-root80-96.svg": {
+      "bytes": 6505,
+      "sha256": "4b44f8bdd1f9f1b9be87aafcf650cc6b418e46dd4eed6c5d6c9982d015a54cad"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-cavity-detail.png": {
+      "bytes": 23396,
+      "sha256": "c577acb2d93cd8fb93005b3f660d296cc7786004d0a4c01b407b8b932700e5ef"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-cavity-detail.svg": {
+      "bytes": 21655,
+      "sha256": "91c7b6b0bccfa40c675d2fa4b133a5d48d54e8cff628f101a1c54e9abe1549b3"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-exterior-ray-plan.png": {
+      "bytes": 23758,
+      "sha256": "2d4c01004147dd6bbe58e8cae301dd7d5dc479257c3ed5c6305db432e0819e28"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-exterior-ray-plan.svg": {
+      "bytes": 4262,
+      "sha256": "330cbd91a57fb1b1ad59f49086bef12d005856f554e9e6ff4d51ed8bc5bacd13"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-fixed-X-section.png": {
+      "bytes": 25643,
+      "sha256": "d002e9c5c1a98cf89463dd8e60eb411e5d397af4657d4f44e86cccd3b436016c"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-fixed-X-section.svg": {
+      "bytes": 35226,
+      "sha256": "dd5e56e10c10f3721729cd28c9559bf906ecdbc5199cf6ef399676f802ff4512"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-normal80-96.png": {
+      "bytes": 29291,
+      "sha256": "46e122ed4b6c4570432de3f2da34ee71df82a989bd2ae64fc8afe15e3219c0fb"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-normal80-96.svg": {
+      "bytes": 6480,
+      "sha256": "91eab071c5e30151ee2b1e1443c45e7cefbb843f7c4c31f09c442e4c1165cc16"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-paired-thickness.png": {
+      "bytes": 28781,
+      "sha256": "941688f365aff71e71974689e950065253ad4751b2939e5e2f7c889b08a0ef1a"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-paired-thickness.svg": {
+      "bytes": 6986,
+      "sha256": "bdf56b4267ec83e25b5ce3f87718afa26144109cadbdb38716cd7b69c9a38513"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-root80-96.png": {
+      "bytes": 23314,
+      "sha256": "7f60d7bc69d8f26c5c6635cf803448f1cce7e97bf6966de32bb4c14ef1b0ad14"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-root80-96.svg": {
+      "bytes": 6499,
+      "sha256": "e9461bc661bf20dc1b720c96c204112530b7c5038cc68f792fde5ae11611e912"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual-run.log": {
+      "bytes": 369,
+      "sha256": "6a35e8d6b305407167f1d1bf35e42f1f181278645c6087d6dada6eb6ea62ab45"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/analyze_loft.py": {
+      "bytes": 33882,
+      "sha256": "183489d38a3081f18943edd26f5026c9a29b139e88e0afe9a82b797ab70b2ce5"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/manifest.json": {
+      "bytes": 9184,
+      "sha256": "a8c9ad4e1507f1590fd0df3678bae31ee8935e1f1be94970130535335b9a08cc"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/readiness.json": {
+      "bytes": 2381,
+      "sha256": "91f2f350dd72511ef4f28cac796a52c7377865823b88a1fd272b72748c642a19"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/source-method-pins.json": {
+      "bytes": 1419,
+      "sha256": "26ce2b1fee99f3df3a47226f08f7c6e0d260170284414d1582004f79794da608"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/source-methods.md": {
+      "bytes": 6701,
+      "sha256": "6eb7ad530e40c8a5a9cdbf81243f7e74a74fc2bb5ede2a9d9160d8355afd50ad"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/test_analyzer.py": {
+      "bytes": 5251,
+      "sha256": "dc84c91aeb786f95206d38d6eeff78bc9b13fb3ac2daa305fd38c8d4c0705dce"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/unit-tests.log": {
+      "bytes": 1083,
+      "sha256": "39dc9aaa87c47ff13edad2bf941ac4248a50b6466cc6d8deeda942410c9fa299"
+    },
+    "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/verify-ready.py": {
+      "bytes": 1423,
+      "sha256": "b01ddb0c852473c5e19ab55cc377036cf447697fb8b40e54e9e8cae276846350"
+    },
+    "/private/tmp/tube-carrier-authored-span-screen-20261004/result.json": {
+      "bytes": 4971,
+      "sha256": "75a80b15f7490957a14d4fbc6424c74d4787f3124cf206e19da8068c3a18dd67"
+    },
+    "/private/tmp/tube-carrier-video-review-20261004/receipt.json": {
+      "bytes": 1790,
+      "sha256": "f08ec9f01b67a8bdeba696766d86e7c066846154ea81861349cc78fba4a54704"
+    },
+    "/private/tmp/tube-carrier-video-review-20261004/ffprobe.json": {
+      "bytes": 291,
+      "sha256": "c68b2de0f17fc7c56719c917dc24bcab1ede51c7b9e73e7e39df862123530cff"
+    },
+    "/private/tmp/tube-carrier-video-review-20261004/pixel-inspection.json": {
+      "bytes": 2371,
+      "sha256": "489aa2efc72e8fa45e816a258fc8cddce7ba747242b3bc14f84327c09fec85ce"
+    },
+    "/private/tmp/tube-carrier-screen-ray-review-20261004/README.md": {
+      "bytes": 10448,
+      "sha256": "e26b0360221181f066cf0525de2d59340e8011b0c63ed4d002e88ba31a709328"
+    },
+    "/private/tmp/tube-carrier-screen-ray-review-20261004/analysis-pins.json": {
+      "bytes": 571,
+      "sha256": "4c4ad902b4147ec842a5e7109a3b1044c01cb9523ad10edd953dc00034e01aad"
+    },
+    "/private/tmp/tube-carrier-screen-ray-review-20261004/analyze.py": {
+      "bytes": 25097,
+      "sha256": "c22e30d29ea5e9064380fbd6b2598cb93c7e267cf5609788869d4106a5be36e6"
+    },
+    "/private/tmp/tube-carrier-screen-ray-review-20261004/report.json": {
+      "bytes": 109713,
+      "sha256": "68b07164a2a68d1bf5521b806cbac6b9fe86184f7ef83eeedf81609be2f675e4"
+    },
+    "/private/tmp/tube-carrier-video-review-20261004/decoded-01.png": {
+      "bytes": 307517,
+      "sha256": "f64aa58525a3efa89f7c44ab2bea5915cd6c8f4dda29b7fbedce57fe12475db4"
+    },
+    "/private/tmp/tube-carrier-video-review-20261004/decoded-02.png": {
+      "bytes": 548393,
+      "sha256": "311592c0d91ae915731bb1efaf15aa8d9f39f213f8016724a19dea7f90ee37b2"
+    },
+    "/private/tmp/tube-carrier-video-review-20261004/decoded-03.png": {
+      "bytes": 548627,
+      "sha256": "0d3a2164401abca5549ba6faa5d04c920ef29ffa9f3acbd8107469f06c14648e"
+    },
+    "/private/tmp/tube-carrier-video-review-20261004/decoded-04.png": {
+      "bytes": 553631,
+      "sha256": "bc3faaa797a676e4047c537d2c86ca2cdd461846317cd8ed590526f58c93ca1a"
+    },
+    "/private/tmp/tube-carrier-video-review-20261004/decoded-05.png": {
+      "bytes": 993537,
+      "sha256": "8472171a31f3ee1a1b76982ef4d65cd617e7d3a7d7e8631a17f704f5c3d5ec90"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/package.json": {
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/package-lock.json": {
+      "bytes": 42710,
+      "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/boundedCProfile.ts": {
+      "bytes": 18088,
+      "sha256": "0dba650afc9844df79c1beb61319bddbc257562c0f93ff083fe3838e0cebbd98"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/lipSheet.ts": {
+      "bytes": 16305,
+      "sha256": "b932aadcaa5fa6e1d1eb067bece4bb658e35e3dfa52c56d688634b8408fd453e"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/scene/waterOptics.ts": {
+      "bytes": 13592,
+      "sha256": "3b235ece7102e835f467126158f961c45cdaaff5dbb32ce2b28544a26159ad07"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/scene/barrel/SweptBarrelMesh.ts": {
+      "bytes": 30437,
+      "sha256": "3f232ce4e085ee62570daad821b777702394fbe5b772c3feda0c046f4b7489d8"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/scene/barrel/SweptBarrel.ts": {
+      "bytes": 6980,
+      "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/scene/barrel/barrelMaskGlsl.ts": {
+      "bytes": 2142,
+      "sha256": "82a029625f3b9c48680166ccd16cb75028f1cc269a3e4690cf3a168b2f47f44b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/scene/water/richWaterGlsl.ts": {
+      "bytes": 8059,
+      "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/game/PhysicalMode.ts": {
+      "bytes": 41940,
+      "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/node_modules/three/src/renderers/shaders/ShaderChunk/normal_vertex.glsl.js": {
+      "bytes": 365,
+      "sha256": "dc2bb76df6c6829d909b155f0936793c26b097394e0d43911eb51a3279696c9b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/node_modules/three/src/renderers/shaders/ShaderChunk/normal_fragment_begin.glsl.js": {
+      "bytes": 1267,
+      "sha256": "528bc133122cd63341c01e568b69a12034bfd6efb8ff031bb3d13e4bb09cbe2b"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/node_modules/three/src/renderers/shaders/ShaderChunk/defaultnormal_vertex.glsl.js": {
+      "bytes": 1269,
+      "sha256": "a53598c95d3a03bee22c5d098c1dd0275da047b42afb449780b61af0247d565e"
+    },
+    "/private/tmp/tube-bounded-c-carrier-support-20261004/source/node_modules/three/src/math/Vector3.js": {
+      "bytes": 28214,
+      "sha256": "9fa712118252ac8bbccededa1211d3ccf190c4e74c056b73557f76b66f53cf45"
+    }
+  },
+  "omitted": [
+    {
+      "originalPath": "/private/tmp/tube-carrier-video-review-20261004/decoded-01.png",
+      "bytes": 307517,
+      "sha256": "f64aa58525a3efa89f7c44ab2bea5915cd6c8f4dda29b7fbedce57fe12475db4",
+      "reason": "Derived decoded PNG omitted; exact69-frame movie and original decode/pixel receipts retained."
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-video-review-20261004/decoded-02.png",
+      "bytes": 548393,
+      "sha256": "311592c0d91ae915731bb1efaf15aa8d9f39f213f8016724a19dea7f90ee37b2",
+      "reason": "Derived decoded PNG omitted; exact69-frame movie and original decode/pixel receipts retained."
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-video-review-20261004/decoded-03.png",
+      "bytes": 548627,
+      "sha256": "0d3a2164401abca5549ba6faa5d04c920ef29ffa9f3acbd8107469f06c14648e",
+      "reason": "Derived decoded PNG omitted; exact69-frame movie and original decode/pixel receipts retained."
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-video-review-20261004/decoded-04.png",
+      "bytes": 553631,
+      "sha256": "bc3faaa797a676e4047c537d2c86ca2cdd461846317cd8ed590526f58c93ca1a",
+      "reason": "Derived decoded PNG omitted; exact69-frame movie and original decode/pixel receipts retained."
+    },
+    {
+      "originalPath": "/private/tmp/tube-carrier-video-review-20261004/decoded-05.png",
+      "bytes": 993537,
+      "sha256": "8472171a31f3ee1a1b76982ef4d65cd617e7d3a7d7e8631a17f704f5c3d5ec90",
+      "reason": "Derived decoded PNG omitted; exact69-frame movie and original decode/pixel receipts retained."
+    }
+  ],
+  "parentReadiness": {
+    "path": "../parallel-physical-native/source/physical/receipts/readiness.json.gz"
+  },
+  "acceptance": {
+    "tubeQuality": false,
+    "mouth": false,
+    "airCorridor": false,
+    "bodyPassage": false,
+    "FPS": false,
+    "productionAdoption": false
+  },
+  "fullSourceDependenciesOrBuildReconstructionClaim": false,
+  "originalSourceBuildHelperPinCheckGroups": {
+    "carrierSource": 582,
+    "physicalParent": 580,
+    "rootBuildSource": 581,
+    "rootBuiltAssets": 21,
+    "completeAssetsPerManifest": 49,
+    "sealedHelpers": 44
+  },
+  "omittedCandidateImplementation": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/",
+  "excludedCaches": "__pycache__",
+  "originalScreenDependencyChecksDoNotClaimDependencyArchive": true
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "bounded-C-loft-offline-source-method-pins/v1",
+  "pins": [
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 28989,
+      "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 64331,
+      "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 3200,
+      "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.mjs",
+      "bytes": 2957,
+      "sha256": "eddf8c0905336fa839a9abdd1af8cdc637f89d243ad0370b3ddc21cc384a53bd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/station-tools.mjs",
+      "bytes": 17541,
+      "sha256": "65043d2fb90b01bdf174c0e8455638aba1d8cf1cb92479ca0e55a69cd317c966"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptContact.ts",
+      "bytes": 29546,
+      "sha256": "9d17bdbbbcfdebbab1bc46bc31b5ffae5935010d6e7b347b190b841a6ecc7c46"
+    }
+  ]
+}

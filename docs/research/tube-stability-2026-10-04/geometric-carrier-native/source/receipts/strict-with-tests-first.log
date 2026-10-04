@@ -1,0 +1,4 @@
+src/wave/barrel/carrierSupport.test.ts(164,101): error TS2345: Argument of type 'import("/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/SweptCrash").CrashSea' is not assignable to parameter of type 'import("/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/SweptCrash").CrashSea'.
+  Types of property 'solver' are incompatible.
+    Type 'import("/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/ShallowWaterSolver").ShallowWaterSolver' is not assignable to type 'import("/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/ShallowWaterSolver").ShallowWaterSolver'.
+      Property 'gravity' is protected but type 'ShallowWaterSolver' is not a class derived from 'ShallowWaterSolver'.

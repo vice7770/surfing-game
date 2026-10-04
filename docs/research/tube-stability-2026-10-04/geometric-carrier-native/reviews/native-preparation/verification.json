@@ -1,0 +1,31 @@
+{
+  "schema": "carrier-native-helper-final-verification/v1",
+  "complete": true,
+  "readiness": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/readiness.json",
+    "bytes": 19086,
+    "sha256": "2864cc76604845ce3ca919aa58d92787d135cd16b30e2a6d0f3d1ea8abed0546"
+  },
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/helper-pins.json",
+    "bytes": 8612,
+    "sha256": "8251fee136e91d8b2a33966b7a87f0b342d5403d8017941ee5f00bed7a120da9"
+  },
+  "helperCount": 42,
+  "sourceBuildAssetCounts": [
+    581,
+    49
+  ],
+  "frozenReadinessSourcePins": 582,
+  "allPinnedInputsExact": true,
+  "oldFailedOwnerRecordsUnchanged": true,
+  "rootSealAbsentAtFreeze": true,
+  "rootSealNowExists": true,
+  "rootNativeOutputDirectoryNowExists": true,
+  "workerResourcesStarted": false,
+  "workerPortsProbed": false,
+  "workerBuildPerformed": false,
+  "workerSourceEdited": false,
+  "workerGitMutated": false,
+  "readinessNotTubeQualityAcceptance": true
+}

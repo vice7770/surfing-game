@@ -1,0 +1,272 @@
+{
+  "schema": "bounded-C-carrier-support-CPU-validation/v1",
+  "complete": true,
+  "commands": [
+    {
+      "command": [
+        "node",
+        "--test",
+        "mouth-tools.test.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.11848175001796335,
+      "stdoutAndStderr": "\u2714 uses actual indexed air at directed young boundary; checks complete rising sightline (9.029541ms)\n\u2714 immutable negative younger direction selects same run opposite boundary (6.3875ms)\n\u2714 local air endpoints do not hide intervening raised floor obstruction (2.969875ms)\n\u2714 joined run boundary and foreign front prevent a viewpoint search (3.088ms)\n\u2714 single exterior pose and width are finite, with no extra height or pose retries (2.462ms)\n\u2714 short interval beside run end stays strictly youngerward of fractional eye (1.913833ms)\n\u2714 same front label cannot substitute for the eye sheet component (1.241875ms)\n\u2714 whole interval finds actual same-component air more than three cells from boundary, younger sign=1 (7.032375ms)\n\u2714 whole interval finds actual same-component air more than three cells from boundary, younger sign=-1 (5.414458ms)\n\u2714 absent mouth candidate retains a single declared exterior anchored at current selected air eye (1.168791ms)\n\u2714 blocked full sightline retains failure while the single exterior remains a diagnostic pose (1.986792ms)\n\u2139 tests 11\n\u2139 suites 0\n\u2139 pass 11\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 90.588459\n"
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "loft-snapshot-tools.test.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.07164120895322412,
+      "stdoutAndStderr": "\u2714 exact active words include normals and aux but exclude unused capacities (2.532833ms)\n\u2714 noncanonical NaN payload and signed zero are preserved rather than JSON number converted (0.892ms)\n\u2714 normal absence is an explicit unavailable optional capture and does not calculate normals (0.157375ms)\n\u2714 copy and encoding detects altered array words and identities (1.042084ms)\n\u2714 full snapshots reject missing aux, truncated active arrays and undeclared epochs (0.218459ms)\n\u2714 bounded full active mesh counts reject without partial/downsampled substitutes (0.071417ms)\n\u2139 tests 6\n\u2139 suites 0\n\u2139 pass 6\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 44.186458\n"
+    },
+    {
+      "command": [
+        "node",
+        "mouth-integration-checks.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.04675412498181686,
+      "stdoutAndStderr": "{\"complete\":true,\"mouthPolicyIntegration\":true,\"initialDirectedSameComponentCandidate\":true,\"fullSightlineAndWaterClassifications\":true,\"absentCandidateExteriorFallbackRecordedEvenBelowSurface\":true,\"blockedSightlineFailureAndLocalHeadingRetained\":true,\"exteriorCloneRestoredInAllThreePolicies\":true,\"originalFollowAndControlsUntouched\":true,\"loftWordsAndDrawEpochUnchanged\":true,\"initialMovieFrameUsesInnerCameraPositionAndQuaternion\":true,\"exactOptionalInitialAndObservedPhase2Words\":true,\"duplicateSnapshotEpochRejected\":true,\"fullSnapshotNormalAndAuxWordsNonmutating\":true,\"mockOnly\":true,\"resourcesStarted\":false,\"portsProbed\":false}\n"
+    },
+    {
+      "command": [
+        "node",
+        "mock-checks.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.04784304095664993,
+      "stdoutAndStderr": "{\"complete\":true,\"resourcesStarted\":false,\"portsProbed\":false,\"mockOnly\":true,\"groups\":[\"fixed-X mapping follows rebased sigma and moving raw Z\",\"raw exact internal/end ties are deterministic and never extrapolate\",\"front absence is distinct from bounds and one-point join loss\",\"duplicate/nonmonotone X or sigma is an invariant failure\",\"loft join bracket tracks mapped sigma and fails honestly when cut\",\"actual crest-X bracket is independent of raw sigma and deterministic at joins\",\"full row metadata includes all slice arrays and actual crest/cap/toe\",\"rich cubic height reproduces constant and interior affine nodes\",\"exact indexed segment hit is double-sided and excludes out-of-segment hits\",\"eye exactly inside witnessed air; target toward younger side; no visibility claim\",\"initial frame request precedes recorder onstart\",\"source-faithful stale loft refreshes before observe; epoch and exact capture words agree\",\"sigma rebase survives; air loss/post observed without stop; join loss retains all rows/raw and blocks more steps\",\"exact neutral inputs/clock, clone-only camera and mesh state, movie bounds/closure\",\"capture rejects changed indexed geometry words after measurement\",\"stale public water epoch is rejected before measurement\",\"public stable IDs allow refit ages beyond DT; fixed station persists; changed point IDs stop with all inventory\",\"public export rejects changed solver snapshot words\",\"public export rejects changed normal actor pose\",\"public export rejects changed drawn surface words\",\"public export rejects changed exact indexed loft words\",\"public export rejects changed public draw-generation count\",\"public export clean snapshot/draw/surface/actor words pass positive identity gate\",\"two original-ID public carrier exports exercise independently; second after air loss; repeated observation/capture adds none; honest join loss stops\",\"strict F32 equality does not trigger; no second-point wait/export after honest join loss\",\"changed exported ID during direct history probe fails immediately and preserves held camera\"],\"groupCount\":26,\"noNativeAppearanceOrBodyClaim\":true,\"publicExportCalls\":18,\"publicExportMockOnly\":true}\n"
+    },
+    {
+      "command": [
+        "node",
+        "identity-checks.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.06443270802265033,
+      "stdoutAndStderr": "{\"complete\":true,\"groups\":51,\"noDTEqualityGate\":true,\"resourcesStarted\":false}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "owner-event-checks.py"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.14587333402596414,
+      "stdoutAndStderr": "{\"complete\": true, \"actualRecordedIdentityTransitionsPassed\": 4, \"oldActualEventsProveNewLeaseSemantics\": false, \"oldSchemaOrIdentityMutationsRejected\": 5, \"syntheticCarrierEventsPassed\": 1, \"syntheticCarrierMutationsRejected\": 7, \"syntheticDirectProbeObservationsPassed\": 6, \"syntheticDirectProbeMutationsRejected\": 4, \"inputCapture\": {\"file\": \"/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json\", \"bytes\": 7810380, \"sha256\": \"fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3\"}, \"syntheticFixture\": {\"file\": \"/private/tmp/tube-bounded-c-carrier-support-native-20261004/carrier-event-fixtures.json\", \"bytes\": 30886, \"sha256\": \"24a877841d37c43376f842b124ad03a0061d6300c09c93e52b4a1757d3e40cdd\"}, \"oldOwnerRewrittenOrRetroaccepted\": false, \"actualNewNativeCarrierProofPending\": true, \"resourcesStarted\": false, \"portsProbed\": false}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "owner-mock-checks.py"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.09587316703982651,
+      "stdoutAndStderr": "{\"schema\": \"bounded-C-carrier-support-owner-CPU-fixtures/v1\", \"complete\": true, \"resourcesStarted\": false, \"portsProbed\": false, \"actualOwnerCalled\": false, \"actualRootCompleteBuildVerifiedReadOnly\": true, \"awaitingRootBuild\": false, \"sourcePins\": 581, \"assets\": 49, \"groupCount\": 9, \"groups\": [\"closed4310/4311 and open4312 preserved without TCP probe\", \"closed user4312 rejected\", \"reopened4310 rejected\", \"unknown state rejected\", \"missing port rejected\", \"initial closed4312 rejected\", \"actual finalized root complete build verified read-only\", \"rootPartialBuildResult changed pin rejected\", \"priorStaticAssetsSeal changed pin rejected\"], \"placeholderBuildOrSealCreated\": false, \"nativeLaunchStillPending\": true}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "owner-snapshot-checks.py"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.06820008304202929,
+      "stdoutAndStderr": "{\"schema\": \"bounded-C-carrier-support-owner-snapshot-fixtures/v1\", \"complete\": true, \"mockOnly\": true, \"resourcesStarted\": false, \"portsProbed\": false, \"groupCount\": 14, \"groups\": [\"two exact complete word snapshots and separate4PNG+movie inventory accepted\", \"hash rejected\", \"countCap rejected\", \"bytesCap rejected\", \"totalCap rejected\", \"epoch rejected\", \"inventory rejected\", \"arrayCount rejected\", \"normalDtype rejected\", \"claim rejected\", \"nonmutation rejected\", \"unexpectedPhase rejected\", \"actual encountered phase2 optional normals absence explicitly recorded without fake words\", \"phase2 never encountered requires only initial snapshot, no forced phase/search\"], \"nativeGeometryOrQualityProven\": false}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "check-source.py"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.16096791700692847,
+      "stdoutAndStderr": "{\"complete\": true, \"frozenReadinessSourcePins\": 582, \"actualRootBuildVerified\": true, \"actualBuildSourcePins\": 581, \"actualBuildAssetPins\": 49, \"awaitingRootBuild\": false, \"resourcesStarted\": false, \"portsProbed\": false}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "run.py",
+        "--arm",
+        "candidate"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.0714185829856433,
+      "stdoutAndStderr": "{\"sourceOnly\": true, \"resourcesStarted\": false, \"portsProbed\": false, \"arm\": \"candidate\", \"sealRequired\": \"/private/tmp/tube-bounded-c-carrier-support-native-20261004/seal.json\", \"ports\": [4299, 9709], \"protectedPorts\": [4310, 4311, 4312], \"maximumNeutralSteps\": 300, \"maximumMovingSteps\": 240, \"maximumMovieBytes\": 16777216, \"maximumLoftSnapshotCount\": 2, \"maximumLoftSnapshotJsonBytesEach\": 6291456, \"reportBytes\": 33554432, \"wholeSeconds\": 180, \"commandSeconds\": 168, \"cleanupSeconds\": 7}\n"
+    },
+    {
+      "command": [
+        "node",
+        "/private/tmp/tube-bounded-c-carrier-support-20261004/source/node_modules/typescript/bin/tsc",
+        "--allowJs",
+        "--checkJs",
+        "--noEmit",
+        "--module",
+        "nodenext",
+        "--target",
+        "es2022",
+        "--moduleResolution",
+        "nodenext",
+        "--lib",
+        "es2022,dom",
+        "--skipLibCheck",
+        "helper-types.d.ts",
+        "moving-shape.mjs",
+        "station-tools.mjs",
+        "mouth-tools.mjs",
+        "loft-snapshot-tools.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.32730337500106543,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "identity-checks.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.023670541995670646,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "loft-snapshot-tools.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.022988000011537224,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "loft-snapshot-tools.test.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.023007875017356128,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "mock-checks.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.026304833008907735,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "mouth-integration-checks.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.024060583033133298,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "mouth-tools.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.022853708011098206,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "mouth-tools.test.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.020502790983300656,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "moving-shape.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.02102008304791525,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "native-owned.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.021147291990928352,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "native.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.021229917008895427,
+      "stdoutAndStderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "station-tools.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.020947040989995003,
+      "stdoutAndStderr": ""
+    }
+  ],
+  "typingRepairHistory": [
+    {
+      "command": [
+        "node",
+        "/private/tmp/tube-bounded-c-carrier-support-20261004/source/node_modules/typescript/bin/tsc",
+        "--allowJs",
+        "--checkJs",
+        "--noEmit",
+        "--module",
+        "nodenext",
+        "--target",
+        "es2022",
+        "--moduleResolution",
+        "nodenext",
+        "--lib",
+        "es2022,dom",
+        "--skipLibCheck",
+        "helper-types.d.ts",
+        "moving-shape.mjs",
+        "station-tools.mjs",
+        "mouth-tools.mjs",
+        "loft-snapshot-tools.mjs"
+      ],
+      "exitCode": 2,
+      "stdoutAndStderr": "loft-snapshot-tools.mjs(12,56): error TS2339: Property 'length' does not exist on type 'ArrayBufferView<ArrayBufferLike>'.\nloft-snapshot-tools.mjs(13,75): error TS2339: Property 'BYTES_PER_ELEMENT' does not exist on type 'ArrayBufferView<ArrayBufferLike>'.\n",
+      "repair": "Explicit supported typed-array guard supplies length/BYTES_PER_ELEMENT; no word/geometry policy change"
+    }
+  ],
+  "unchangedSuccessfulFixtureCommandsNotRepeated": true,
+  "PythonAST": true,
+  "JSsyntax": true,
+  "checkJsNoEmit": true,
+  "actualStdoutAndStderrCaptured": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "buildPerformed": false
+}

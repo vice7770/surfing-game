@@ -1,0 +1,25 @@
+{
+  "schema": "bounded-C-carrier-support-owner-snapshot-fixtures/v1",
+  "complete": true,
+  "mockOnly": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "groupCount": 14,
+  "groups": [
+    "two exact complete word snapshots and separate4PNG+movie inventory accepted",
+    "hash rejected",
+    "countCap rejected",
+    "bytesCap rejected",
+    "totalCap rejected",
+    "epoch rejected",
+    "inventory rejected",
+    "arrayCount rejected",
+    "normalDtype rejected",
+    "claim rejected",
+    "nonmutation rejected",
+    "unexpectedPhase rejected",
+    "actual encountered phase2 optional normals absence explicitly recorded without fake words",
+    "phase2 never encountered requires only initial snapshot, no forced phase/search"
+  ],
+  "nativeGeometryOrQualityProven": false
+}

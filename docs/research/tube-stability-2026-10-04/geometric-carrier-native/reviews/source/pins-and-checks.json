@@ -1,0 +1,62 @@
+{
+  "parentPinnedInputsUnchanged": true,
+  "parentInputCount": 580,
+  "candidateExistingChanges": [
+    "src/wave/SurfZoneSimulation.ts",
+    "src/wave/barrel/BreakingFront.ts",
+    "src/wave/barrel/ProfileLibrary.ts",
+    "src/wave/barrel/SweptCrash.ts",
+    "src/wave/barrel/frontRecords.ts",
+    "src/wave/barrel/sweptLoft.ts"
+  ],
+  "candidateParentBytesUnchanged": 574,
+  "candidatePinCount": 582,
+  "candidatePinsMatched": true,
+  "artifactAndReferenceCount": 75,
+  "allReadinessEvidencePinsMatch": true,
+  "failures": [],
+  "readinessSha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0",
+  "runtimeAndTestPins": [
+    {
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "bytes": 71135,
+      "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+    },
+    {
+      "path": "src/wave/barrel/BreakingFront.ts",
+      "bytes": 40421,
+      "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8"
+    },
+    {
+      "path": "src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 28989,
+      "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+    },
+    {
+      "path": "src/wave/barrel/SweptCrash.ts",
+      "bytes": 33689,
+      "sha256": "190bbd5c7101874cc6ad3788b3ddc89d9f27ca4d1341194468942b85479f77b8"
+    },
+    {
+      "path": "src/wave/barrel/carrierSupport.ts",
+      "bytes": 5898,
+      "sha256": "7555e0452f5bd0824b051d4165c17c1c2caca8373eb9d291cc5f479ac98d52ca"
+    },
+    {
+      "path": "src/wave/barrel/frontRecords.ts",
+      "bytes": 1941,
+      "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "bytes": 64331,
+      "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c"
+    },
+    {
+      "path": "src/wave/barrel/carrierSupport.test.ts",
+      "bytes": 28328,
+      "sha256": "07a5434bd9363384318f868c9ddba45187e15f6432640ddf2c93428df1f02590"
+    }
+  ],
+  "readOnlyNoRerun": true
+}

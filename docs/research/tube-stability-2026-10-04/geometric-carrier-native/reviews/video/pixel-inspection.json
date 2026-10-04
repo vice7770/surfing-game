@@ -1,0 +1,53 @@
+{
+  "schema": "root-actual-carrier-media-pixel-inspection/v1",
+  "actualViewImageCallsComplete": true,
+  "decodedMovieFramesViewed": [
+    0,
+    17,
+    34,
+    51,
+    68
+  ],
+  "pngCheckpointsViewed": [
+    {
+      "label": "initial",
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/0-initial.png",
+      "bytes": 960567,
+      "sha256": "1edc65f94ad788d211dfa626a9446c576dbd4a710f4e5976576a3ead2794b237"
+    },
+    {
+      "label": "initial-exterior",
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/1-initial-exterior.png",
+      "bytes": 2423162,
+      "sha256": "a6d9691c7fb31024aced5ab7b62465d51dd486677ed87c9e4a0d8c9f416e39ab"
+    },
+    {
+      "label": "first-phase2",
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/2-first-phase2.png",
+      "bytes": 1112247,
+      "sha256": "84fe56ea251de48d33b9912439487f03f875544c398729ddf282cd392d116ade"
+    },
+    {
+      "label": "terminal",
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/3-terminal.png",
+      "bytes": 1789936,
+      "sha256": "e15a7e93516d1908a6744add4f238e065be914f767d5379ecc6297cb8ab9e4ef"
+    }
+  ],
+  "decodeReceipt": {
+    "file": "/private/tmp/tube-carrier-video-review-20261004/receipt.json",
+    "bytes": 1790,
+    "sha256": "f08ec9f01b67a8bdeba696766d86e7c066846154ea81861349cc78fba4a54704"
+  },
+  "findings": [
+    "Encoded frame0 matches internal initial pose rather than exterior companion.",
+    "The internal views show a green near-vertical wall, a sharp dark wall/roof crease, and a broad sky-coloured sheet on the right. No convincing clear rounded mouth is established by these pixels.",
+    "At phase2 and intermediate decoded frames, thin vertical fins and a sharp seam remain visible. These pixels alone do not attribute them to geometry, supplied vertex normals, fragment shading or ordinary-water ownership.",
+    "The single exterior image shows a small distant folded wave but does not establish a visible entrance.",
+    "Terminal view is held after honest join loss; it shows the underside and ordinary water, not a continuing usable tube."
+  ],
+  "nativeShapeAccepted": false,
+  "ordinaryBodyPassageProven": false,
+  "rasterCausalAttribution": false,
+  "fpsOrPhysicalPlaybackRateClaim": false
+}

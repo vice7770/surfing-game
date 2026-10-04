@@ -1,0 +1,858 @@
+{
+  "schema": "bounded-C-carrier-support-result/v1",
+  "complete": true,
+  "validation": {
+    "strictTypescript": {
+      "command": "./node_modules/.bin/tsc --noEmit",
+      "cwd": "/private/tmp/tube-bounded-c-carrier-support-20261004/source",
+      "exitCode": 0,
+      "terminalSession": 57860,
+      "log": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-frozen.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "boundedTests": {
+      "command": "CARRIER_METRICS=/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-frozen.json PARALLEL_PHYSICAL_METRICS=/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-frozen.json ./node_modules/.bin/vitest run src/wave/barrel/carrierSupport.test.ts src/wave/barrel/BreakingFront.test.ts src/wave/barrel/SweptCrash.test.ts src/wave/barrel/frontRecords.test.ts src/wave/barrel/sliceClock.test.ts src/wave/barrel/parallelPhysicalCoupling.test.ts --reporter=json --outputFile=/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-frozen.json",
+      "cwd": "/private/tmp/tube-bounded-c-carrier-support-20261004/source",
+      "exitCode": 0,
+      "terminalSession": 10089,
+      "tests": 97,
+      "passed": 97,
+      "failed": 0,
+      "files": 6,
+      "newFocusedTests": 9,
+      "report": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-frozen.json",
+        "bytes": 40956,
+        "sha256": "dbc3e466c8f248274d81c114af6cabe9807008607a2e75143ce524b573a78275"
+      },
+      "metrics": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-frozen.json",
+        "bytes": 18995,
+        "sha256": "56e9f52a8f1cfeaff390b0bba129ef15bb717eaa48d7f4091d42b0a6309ac88b"
+      },
+      "physicalMetrics": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-frozen.json",
+        "bytes": 3391,
+        "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+      },
+      "log": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-frozen.log",
+        "bytes": 100,
+        "sha256": "57e12ca9db8c21ee721e62723f766ddd39719edeb2e530ff54b645eb084f990e"
+      }
+    }
+  },
+  "measuredFixture": {
+    "report": {
+      "path": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/report.json",
+      "sha256": "a17654bd706fbd3c6518b94ad9deb31f096bc7a98e114795a0a3b6a6801bfd4d",
+      "bytes": 8769787
+    },
+    "before": {
+      "rows": [
+        1,
+        2
+      ],
+      "phases": [
+        2,
+        2
+      ],
+      "weights": [
+        0.015285242348909378,
+        0.08891306072473526
+      ],
+      "z": [
+        -129.6892242998713,
+        -127.26634334703363,
+        -126.76465650350274
+      ],
+      "y": [
+        0.2656314979386659,
+        0.016626619757425243,
+        0.016626619757425243
+      ]
+    },
+    "after": {
+      "rows": [
+        1,
+        2
+      ],
+      "phases": [
+        2,
+        2
+      ],
+      "weights": [
+        0.016402697190642357,
+        0.10300925374031067
+      ],
+      "z": [
+        -129.56122002459827,
+        -127.13832587774105,
+        -126.63664683818418
+      ],
+      "y": [
+        0.1160662162074489,
+        0.007264161459894619,
+        0.007264161459894619
+      ]
+    },
+    "landmarkDeltaZ": [
+      0.12800427527304237,
+      0.12801746929257263,
+      0.12800966531855806
+    ],
+    "rawOldDelta": 2.6349639892578125,
+    "newEndpointDelta": 0.26518004868671596,
+    "immutable": [
+      [
+        158,
+        6.624247192383583,
+        -140.54818799998338,
+        1.5649843571611293,
+        35.5057857034707
+      ],
+      [
+        159,
+        6.648556790294768,
+        -138.86865730509928,
+        1.5669200797867315,
+        35.63005199734316
+      ]
+    ],
+    "history": {
+      "policy": "bounded-C-incident-support/v1",
+      "atTau": 1.6120177507400513,
+      "solverTime": 37.06666666666666,
+      "ownPocketAlive": false,
+      "retainedForGeometry": true,
+      "geometricPaceActive": true,
+      "state": "incident-support",
+      "incidents": [
+        {
+          "otherId": 159,
+          "front": 72,
+          "boundSeconds": 1.8499191099132068,
+          "minimumPacketAge": 1.431322455406189,
+          "potentiallyLive": true,
+          "maxScale": 7,
+          "maxAuthoredTD": 1.368731429193744,
+          "partitions": 1
+        }
+      ]
+    },
+    "nativeRerunClaim": false
+  },
+  "interiorOnly": {
+    "endpointOwnUntil": [
+      0.5477172622900233,
+      1.6431517868700696
+    ],
+    "endpointTau": [
+      0.5577172622900233,
+      1.6531517868700696
+    ],
+    "interiorTau": 1.1054345245800463,
+    "interiorRetirement": 1.224733030930574,
+    "history": {
+      "policy": "bounded-C-incident-support/v1",
+      "atTau": 0.5577172622900233,
+      "solverTime": 1,
+      "ownPocketAlive": false,
+      "retainedForGeometry": true,
+      "geometricPaceActive": true,
+      "state": "incident-support",
+      "incidents": [
+        {
+          "otherId": 101,
+          "front": 1,
+          "boundSeconds": 2.097611104464132,
+          "minimumPacketAge": 0.5577172622900233,
+          "potentiallyLive": true,
+          "maxScale": 9,
+          "maxAuthoredTD": 1.368731429193744,
+          "partitions": 1
+        }
+      ]
+    }
+  },
+  "budget": {
+    "actualBudgetTriggered": true,
+    "priorClamps": 4,
+    "priorRevivedDeadRows": 3,
+    "nextRevivedDeadRows": 0,
+    "rawDrawAndContactByteParity": true
+  },
+  "retirement": {
+    "bound": 1.6000291448564612,
+    "liveBefore": [
+      {
+        "id": 108,
+        "tau": 0.5,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 38
+      },
+      {
+        "id": 109,
+        "tau": 0.5,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 38
+      },
+      {
+        "id": 110,
+        "tau": 0.5,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 38
+      },
+      {
+        "id": 111,
+        "tau": 0.5,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 38
+      },
+      {
+        "id": 112,
+        "tau": 0.5,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 38
+      },
+      {
+        "id": 113,
+        "tau": 0.5,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 38
+      },
+      {
+        "id": 114,
+        "tau": 0.5,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 38
+      }
+    ],
+    "releaseResiduals": [
+      {
+        "id": 105,
+        "tauResidual": 2.1436037317412726e-06,
+        "zResidual": 8.57441492740918e-06
+      },
+      {
+        "id": 106,
+        "tauResidual": -1.1102230246251565e-16,
+        "zResidual": 0
+      },
+      {
+        "id": 107,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 108,
+        "tauResidual": 1.1102230246251565e-16,
+        "zResidual": 0
+      },
+      {
+        "id": 109,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 110,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 111,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 112,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 113,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 114,
+        "tauResidual": 0,
+        "zResidual": 0
+      }
+    ],
+    "roofResiduals": [
+      {
+        "x": 13,
+        "a": {
+          "rows": [
+            10,
+            11
+          ],
+          "phases": [
+            1,
+            1
+          ],
+          "weights": [
+            1,
+            1
+          ],
+          "z": [
+            40.54666670064834,
+            42.250068176935144,
+            42.614508928898914
+          ],
+          "y": [
+            2.759761978997488,
+            0.5016210714752422,
+            0.2688354509985527
+          ]
+        },
+        "b": {
+          "rows": [
+            10,
+            11
+          ],
+          "phases": [
+            1,
+            1
+          ],
+          "weights": [
+            1,
+            1
+          ],
+          "z": [
+            40.54666514683553,
+            42.250068722714126,
+            42.61450782700248
+          ],
+          "y": [
+            2.7597621091041735,
+            0.5016211255903973,
+            0.26883534320181274
+          ]
+        },
+        "zResiduals": [
+          1.553812808197108e-06,
+          -5.457789811202929e-07,
+          1.1018964372055962e-06
+        ],
+        "yResiduals": [
+          -1.3010668542534631e-07,
+          -5.411515513475962e-08,
+          1.0779673997873829e-07
+        ]
+      },
+      {
+        "x": 17,
+        "a": {
+          "rows": [
+            18,
+            19
+          ],
+          "phases": [
+            1,
+            1
+          ],
+          "weights": [
+            1,
+            1
+          ],
+          "z": [
+            40.70666572844357,
+            42.44245638217819,
+            42.813825091555614
+          ],
+          "y": [
+            2.7366650065746683,
+            0.4902521437172758,
+            0.2605384566393737
+          ]
+        },
+        "b": {
+          "rows": [
+            18,
+            19
+          ],
+          "phases": [
+            1,
+            1
+          ],
+          "weights": [
+            1,
+            1
+          ],
+          "z": [
+            40.706665514867886,
+            42.44245533944228,
+            42.81382236559047
+          ],
+          "y": [
+            2.736664983284644,
+            0.4902520265391437,
+            0.26053845898946787
+          ]
+        },
+        "zResiduals": [
+          2.1357568158464346e-07,
+          1.042735910061765e-06,
+          2.725965146055387e-06
+        ],
+        "yResiduals": [
+          2.3290024131483733e-08,
+          1.1717813214184858e-07,
+          -2.3500941748189064e-09
+        ]
+      },
+      {
+        "x": 21,
+        "a": {
+          "rows": [
+            26,
+            27
+          ],
+          "phases": [
+            1,
+            1
+          ],
+          "weights": [
+            1,
+            1
+          ],
+          "z": [
+            40.866664737208595,
+            42.58402431168869,
+            42.95144697869841
+          ],
+          "y": [
+            2.7135542456394246,
+            0.48800858660283347,
+            0.2603244195315836
+          ]
+        },
+        "b": {
+          "rows": [
+            26,
+            27
+          ],
+          "phases": [
+            1,
+            1
+          ],
+          "weights": [
+            1,
+            1
+          ],
+          "z": [
+            40.866665882900236,
+            42.58402451201837,
+            42.9514470455987
+          ],
+          "y": [
+            2.7135541597043553,
+            0.488008427476796,
+            0.2603244311129574
+          ]
+        },
+        "zResiduals": [
+          -1.1456916411134443e-06,
+          -2.0032967995575746e-07,
+          -6.690029152878196e-08
+        ],
+        "yResiduals": [
+          8.593506928278316e-08,
+          1.5912603745782405e-07,
+          -1.1581373804414596e-08
+        ]
+      }
+    ],
+    "liveAfter": [
+      {
+        "id": 108,
+        "tau": 0.6766666666666666,
+        "z": 40.70666666666666,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 0.6766666666666666,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 107,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.6566666666666665,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 109,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.6766666666666666,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 109,
+        "tau": 0.6966666666666665,
+        "z": 40.78666666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 0.6966666666666665,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 108,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.6766666666666666,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 110,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.6966666579246521,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 110,
+        "tau": 0.7166666666666666,
+        "z": 40.86666666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 0.7166666666666666,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 109,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.6966666579246521,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 111,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.7166666388511658,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 111,
+        "tau": 0.7366666666666666,
+        "z": 40.946666666666665,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 0.7366666666666666,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 110,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.7166666388511658,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 112,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.7366666666666666,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 112,
+        "tau": 0.7566666666666666,
+        "z": 41.026666666666664,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 0.7566666666666666,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 111,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.7366666666666666,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 113,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.7566666603088379,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 113,
+        "tau": 0.7766666666666666,
+        "z": 41.10666666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 0.7766666666666666,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 112,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.7566666603088379,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 114,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.7766666412353516,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 114,
+        "tau": 0.7966666666666666,
+        "z": 41.18666666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 0.7966666666666666,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 113,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 0.7766666412353516,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      }
+    ],
+    "globalContinuityProof": false
+  },
+  "lifecycle": {
+    "ownUntil": 1.4491236647965373,
+    "bound": 1.6000291448564612,
+    "supportOnlyFrames": 19,
+    "throws": 7,
+    "fundedWater": 3.3042741666605453,
+    "trappedOnce": 19.617311960677746,
+    "emitted": 19.617311960677725,
+    "heldAir": 0,
+    "airborneWater": 0,
+    "onceOnlyFundingAndAir": true
+  },
+  "stall": {
+    "component": [
+      {
+        "front": 1,
+        "pointIds": [
+          100,
+          101
+        ],
+        "boundSeconds": 2.097611104464132,
+        "latestSourceTime": 0
+      }
+    ],
+    "bound": 2.097611104464132,
+    "noAdditionalWaterOrAir": true,
+    "originalOwnPocketStallRetained": true
+  },
+  "raw": {
+    "trackerExportEquality": true,
+    "solverBytesEquality": true,
+    "packetWordsEquality": true,
+    "physicalLipLedgerEquality": true,
+    "epochs": 7
+  },
+  "bounds": [
+    {
+      "a": {
+        "footHeight": 0.12,
+        "footDepth": 1
+      },
+      "b": {
+        "footHeight": 5.5,
+        "footDepth": 9
+      },
+      "bound": {
+        "seconds": 2.4444367626466064,
+        "maxScale": 12.222222222222221,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 5
+      },
+      "actualMax": 2.21397160463909,
+      "scaleMax": 12.222222222222221
+    },
+    {
+      "a": {
+        "footHeight": 4.7,
+        "footDepth": 2
+      },
+      "b": {
+        "footHeight": 0.42,
+        "footDepth": 7
+      },
+      "bound": {
+        "seconds": 2.2596770874387073,
+        "maxScale": 10.444444020589193,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 5
+      },
+      "actualMax": 2.0466313482481873,
+      "scaleMax": 10.444444020589193
+    },
+    {
+      "a": {
+        "footHeight": 0.4,
+        "footDepth": 1
+      },
+      "b": {
+        "footHeight": 3.6,
+        "footDepth": 9
+      },
+      "bound": {
+        "seconds": 2.097611104464132,
+        "maxScale": 9,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 1
+      },
+      "actualMax": 1.8143146226959361,
+      "scaleMax": 9
+    },
+    {
+      "a": {
+        "footHeight": 2.63,
+        "footDepth": 7
+      },
+      "b": {
+        "footHeight": 2.65,
+        "footDepth": 7
+      },
+      "bound": {
+        "seconds": 1.8499191099132068,
+        "maxScale": 7,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 1
+      },
+      "actualMax": 1.5677374427434958,
+      "scaleMax": 7
+    }
+  ],
+  "limits": [
+    "New isolated source experiment, not built, not native captured, not adopted, not merged.",
+    "Observed-refitted-age CPU handoff fixture only: +0.265180 m endpoint and about +0.1280 m fixed-X joined phase-2 crest/lip/toe. This is not constant-DT motion or new native appearance proof.",
+    "Conservative incident bound can retain longer than exact provider retirement; no endpoint-max-only or arbitrary seconds allowance. Normal release remains local dependency based.",
+    "Forced stalled support retirement removes an entire physically expired dependent raw component. It may shorten late geometry; native appearance still requires review.",
+    "Focused same-front retirement regression measures clock and surviving roof sampling residuals. It does not prove global continuity for every layout/clock refit.",
+    "RAW parity established for bounded tracker/crash/packet and actual budgeted draw/contact fixtures; no giant query-domain rerun.",
+    "No browser FPS/performance/adoption/body passage/mouth entrance/tube gameplay claim. New allocations and provider-bound work have not been benchmarked.",
+    "Physical width/funding remains projected X quadrature. No exact varying-section volume integral claim.",
+    "Identity columns describe a fixed solver station, not a material particle trajectory. Dynamic support fields never replace immutable identity gates.",
+    "Public history for held/imported states may have an earlier source solver epoch. Incident minimum age may be negative. Paused/drained native helpers must audit current exported source state without stepping.",
+    "Parent frozen test imports in the new bounded regression require the retained local parent tree; runtime.patch itself reconstructs portable byte-exact runtime files."
+  ],
+  "buildReadyClaim": false,
+  "nativeReadyClaim": false,
+  "adoptionReady": false,
+  "resourceUse": {
+    "native": false,
+    "browser": false,
+    "ports": false,
+    "build": false,
+    "Git": false,
+    "repoMutation": false,
+    "subagents": false
+  }
+}

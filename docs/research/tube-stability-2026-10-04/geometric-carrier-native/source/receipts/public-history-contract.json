@@ -1,0 +1,92 @@
+{
+  "schema": "bounded-C-carrier-public-history-contract/v1",
+  "policy": "bounded-C-incident-support/v1",
+  "frontPointField": "carrierSupport",
+  "optionalForUnpacedPoint": true,
+  "fields": {
+    "policy": "exact literal bounded-C-incident-support/v1",
+    "atTau": "finite number; exact source point tau at refresh",
+    "solverTime": "finite source solver epoch at refresh; held/imported history may precede exported solver epoch",
+    "ownPocketAlive": "boolean: point.tau < unchanged point.jetUntil",
+    "retainedForGeometry": "boolean: !ownPocketAlive && incidents.some(potentiallyLive)",
+    "geometricPaceActive": "boolean: ownPocketAlive || retainedForGeometry",
+    "state": "own-pocket | incident-support | released, from those two booleans",
+    "incidents": "array of current adjacent increasing-X same-front raw support records; held points have none"
+  },
+  "incidentFields": {
+    "otherId": "nonnegative integer stable source point identity",
+    "front": "nonnegative integer current source component identity",
+    "boundSeconds": "finite positive conservative provider retirement bound, seconds",
+    "minimumPacketAge": "finite min(endpoint source tau, endpoint Float32 tau); CAN BE NEGATIVE for unformed younger neighbor",
+    "potentiallyLive": "boolean minimumPacketAge < boundSeconds",
+    "maxScale": "finite positive actual bracket scale bound; includes H/caseA single/clamped case",
+    "maxAuthoredTD": "finite positive maximum authored nondimensional touchdown within crossed case/clamp domain",
+    "partitions": "positive integer H/D case/clamp partitions"
+  },
+  "sharedPredicate": "own = jetPace !== undefined && jetUntil !== undefined && tau < jetUntil; geometric = own || (history.policy === bounded-C-incident-support/v1 && history.atTau === tau && history.geometricPaceActive && jetPace !== undefined && jetBase !== undefined)",
+  "packet": {
+    "stride": 9,
+    "paceFieldIndex": 8,
+    "carrierPresent": "shared geometric predicate => Float32 jetPace; otherwise NaN",
+    "carrierAbsent": "exact old own-pocket conditional => Float32 jetPace; otherwise NaN",
+    "otherFieldsUnchanged": true
+  },
+  "pointPlacement": "while shared geometric predicate holds, z = jetBase + jetPace * tau; fitted tau may advance by more than DT",
+  "immutableFingerprint": [
+    "id",
+    "column",
+    "x",
+    "footHeight",
+    "footDepth",
+    "throwZ",
+    "jetPace",
+    "jetBase",
+    "jetAt",
+    "jetUntil"
+  ],
+  "dynamicFieldsNeverImmutable": [
+    "carrierSupport.*",
+    "front",
+    "sigma",
+    "tau",
+    "z",
+    "seen",
+    "crestZ"
+  ],
+  "refreshOrder": [
+    {
+      "source": "src/wave/barrel/BreakingFront.ts:285",
+      "meaning": "refresh active supports and isolated held history before crest matching/coast"
+    },
+    {
+      "source": "src/wave/barrel/BreakingFront.ts:422",
+      "meaning": "refresh current incidents after link/split"
+    },
+    {
+      "source": "src/wave/SurfZoneSimulation.ts:885",
+      "meaning": "tracker then fitted monotone clock advance then crash"
+    },
+    {
+      "source": "src/wave/barrel/SweptCrash.ts:204",
+      "meaning": "refresh after original own-pocket watchdog, before geometric component watchdog and pace placement"
+    },
+    {
+      "source": "src/wave/barrel/SweptCrash.ts:268",
+      "meaning": "refresh after all new throws are assigned once, before final geometry/air/water processing"
+    }
+  ],
+  "sourceReferences": {
+    "typesAndPredicate": "src/wave/barrel/carrierSupport.ts:4",
+    "supportRefresh": "src/wave/barrel/carrierSupport.ts:46",
+    "watchdog": "src/wave/barrel/carrierSupport.ts:89",
+    "providerBound": "src/wave/barrel/ProfileLibrary.ts:333",
+    "packet": "src/wave/barrel/frontRecords.ts:17",
+    "trackerPredicate": "src/wave/barrel/BreakingFront.ts:729",
+    "exportDeepCopy": "src/wave/barrel/BreakingFront.ts:643",
+    "budgetDeadGuard": "src/wave/barrel/sweptLoft.ts:550"
+  },
+  "publicExport": "read-only deep copy of point/history/incident records; no refresh, clock advance, solver readback, or native actor relocation added",
+  "identityProof": "Exact ordered point IDs, columns, fixed X, current unique front/join bracket, immutable jet fingerprint remain required. History is dynamic qualification only. Do not equate source and F32 ages or assert DT-age equality.",
+  "physicalOwnLifetime": "jetUntil, physical live array, jetStrip funding/void/crash/pour/air expiry and original own-pocket watchdog unchanged; support history never extends own pocket",
+  "watchdog": "If a raw contiguous front still has retained support, every own pocket is expired, and solver time-latestSourceTime >=2*max incident provider bound, remove whole dependent raw component before drawing; latest source epoch=max(jetAt ?? broke). Existing 2-lifetime watchdog factor is reused; not a normal global lease."
+}

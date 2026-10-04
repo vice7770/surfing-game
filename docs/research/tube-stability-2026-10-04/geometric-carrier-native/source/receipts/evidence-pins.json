@@ -1,0 +1,336 @@
+{
+  "schema": "bounded-C-carrier-evidence-pins/v1",
+  "count": 66,
+  "pins": [
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/README.md",
+      "bytes": 8707,
+      "sha256": "1b449ae7e5be2ae583e43a36dc37cd3f279d7116cb585078539cc62105248751"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/handoff-fixture.json",
+      "bytes": 17499,
+      "sha256": "95d61a80dee918bf411c28816a876705699dbdc9d05962f77610d330b55dfa09"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/parent-copy.json",
+      "bytes": 95709,
+      "sha256": "e5562b91eece2262bcebeccdcb175bef874a529e61124f59687d7894afb30596"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-complete.json",
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-final-isolation.json",
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-final.json",
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-frozen.json",
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/physical-metrics-ready.json",
+      "bytes": 3391,
+      "sha256": "0151e2ed576761c34a5339779c8f82dba60a6361acf2d41f36e2831e2bf199a8"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/prepare-freeze.py",
+      "bytes": 10864,
+      "sha256": "0a77977052245de559348c4d478e9b8c499348c705379f08d6b487b46d8f63a8"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/public-history-contract.json",
+      "bytes": 4829,
+      "sha256": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/recipe.md",
+      "bytes": 840,
+      "sha256": "c9b87d8e825bd3f88324f84b18be91c11899683762913ac5857510ff2a7573ee"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/result-before-isolation.json",
+      "bytes": 23362,
+      "sha256": "6421a6473826b8d0755cd74d78c4f518559dbbcb249f76772b73a1d182be35d5"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/result.json",
+      "bytes": 24292,
+      "sha256": "e5ae513fe1d1a891c2eaac8d31b52c8665ff5892fecfeec231c5833423f237ce"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch",
+      "bytes": 20810,
+      "sha256": "0712531bca6a2cbcaec484661f2d0360d274798d4da5f038c0c873fabfa74eab"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch.apply.log",
+      "bytes": 335,
+      "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch.dry-run.log",
+      "bytes": 335,
+      "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins-before-isolation.json",
+      "bytes": 95422,
+      "sha256": "9419fd8c8bd2aa16400b2cc5edeb2e680e032d471c88e337a40b6445dd4f6c4b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins.json",
+      "bytes": 95422,
+      "sha256": "0c32f04c0bb80bab34ddb88611d49a3f9202bc73bc5c70b1d9a851e09c87cba1"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-complete.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-final-isolation.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-fourth.log",
+      "bytes": 777,
+      "sha256": "354077c95f616ff160fc4f4987ada6246e367b6ff80ee3edb9dc954b0e964997"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-frozen.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-initial-after-fix.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-ready.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/strict-with-tests-first.log",
+      "bytes": 777,
+      "sha256": "d381e0bdd6c594418867004e182c0aeffcb54761269c0602d5274b0687fa3912"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-complete.log",
+      "bytes": 102,
+      "sha256": "24b43c4ff1bc5e8ea8b0aa6410cbac98f665a38bea841d43097653bed06b6d22"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-fifth.log",
+      "bytes": 99,
+      "sha256": "92db60772b51039cbd1f89b54c53b882e4a724c174d32aa8a1fc1ee5f4f7c142"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-final-isolation.log",
+      "bytes": 109,
+      "sha256": "041a00d7f11a2bd4d353c15977cbc154a6ec18ddb4e2fbb8ffcab64c3e8849e8"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-final.log",
+      "bytes": 99,
+      "sha256": "743186277899dcf5574cd19c43147c6208c8a34e06673fd25ca011129a200fd6"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-first.log",
+      "bytes": 99,
+      "sha256": "aba2dccbf5622cab5991dba1037087abc5dcc9dbd9086b76e48c36a707431589"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-fourth.log",
+      "bytes": 100,
+      "sha256": "ce3f1ea734aca688df34cf8488cf05dcfdd16d974383ab8b8d80437b90a9a5f1"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-frozen.log",
+      "bytes": 100,
+      "sha256": "57e12ca9db8c21ee721e62723f766ddd39719edeb2e530ff54b645eb084f990e"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-complete.json",
+      "bytes": 19916,
+      "sha256": "dafe3eecfce6de02cd89ced15d8de31f652dd4c45d317cd5a26c26c9f2d9f168"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-fifth.json",
+      "bytes": 18819,
+      "sha256": "aac5566c7f2f8db2128a9ceab98b565b293d0519ac95c6846bcc233c31130a5f"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-final-isolation.json",
+      "bytes": 5776,
+      "sha256": "b28435a30ce3390b79fe846ebfedb85601b58954957c86233aecf615233a3cf8"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-final.json",
+      "bytes": 18995,
+      "sha256": "56e9f52a8f1cfeaff390b0bba129ef15bb717eaa48d7f4091d42b0a6309ac88b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-first.json",
+      "bytes": 7049,
+      "sha256": "cb352f4b3fe6072da2a4ae553b77223583be69ee8c2706dae42837062b51cc80"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-fourth.json",
+      "bytes": 14537,
+      "sha256": "b9141ddb045ef6a133b3c6c8cfe0f60a8ea48eda2a0d78b9546ea7b005f59178"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-frozen.json",
+      "bytes": 18995,
+      "sha256": "56e9f52a8f1cfeaff390b0bba129ef15bb717eaa48d7f4091d42b0a6309ac88b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-postphase.json",
+      "bytes": 19304,
+      "sha256": "5b964e6eac38e557682a9cb0416d2a5ea8fedc11a027b7d1d92b3176b2896bf6"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-ready.json",
+      "bytes": 19295,
+      "sha256": "f476702c0cd5b13f68afd923e53b52796a6bbec406e85d297e004f9e49368335"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-second.json",
+      "bytes": 9066,
+      "sha256": "9b69d3171abd5780c8a0740e26c6491a22cfac9202d739dffa76d0842d1b9089"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-metrics-third.json",
+      "bytes": 9986,
+      "sha256": "526c93478cc9d904cd870e332971517b2c5c5b5f7f0252546f4ba7c4c1e881ab"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-postphase.log",
+      "bytes": 103,
+      "sha256": "4d14ec3c58a84f185d6c768a22e2ebb1993a6170050d53111adb7e0f068e11fd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-ready.log",
+      "bytes": 99,
+      "sha256": "8fa88765d2356dc7f983d8691ffc673c3962f3c439a3216ecde227993930ddb5"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-complete.json",
+      "bytes": 40967,
+      "sha256": "b8388c2a3bdaabb4c67d82937d84f59568c7a781ec8ac25dcafdf7cc6f92b002"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-fifth.json",
+      "bytes": 4648,
+      "sha256": "9cb0a26f6de87960fe97c7893e8a6bd2551cb200f5685068ef45ffeaf77ee831"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-final-isolation.json",
+      "bytes": 41929,
+      "sha256": "6dbce57b2cb785e3d5db91bfb426f97162ea18fa9faf0e7e64621ac753bccda9"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-final.json",
+      "bytes": 40983,
+      "sha256": "5143aa642102da662e563d94c0db67bef90b271275e60f6ac5fefc38a39c80a4"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-first.json",
+      "bytes": 5295,
+      "sha256": "6956462d3ef904b4c39aab4ffac0a5cd762330d7a08f7986b4f57f8d57673ffe"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-fourth.json",
+      "bytes": 5738,
+      "sha256": "4b3d42c2aef2c4b70fedc5d6c6c373d87b28294ae84060adee95f80755653a63"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-frozen.json",
+      "bytes": 40956,
+      "sha256": "dbc3e466c8f248274d81c114af6cabe9807008607a2e75143ce524b573a78275"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-postphase.json",
+      "bytes": 4664,
+      "sha256": "7dd5c82e88f00c84abe3ef9fe59d3831b4445136786aab23de3bb83f7622d131"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-ready.json",
+      "bytes": 40949,
+      "sha256": "168d65577d044e77cc42f4be1467bf2022308bd783444f51b8ca6ed852b23c82"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-second.json",
+      "bytes": 5581,
+      "sha256": "8f662e64d3181306bf61d53c7d2dbcbb42abbd7307bf9e194508bc9d86e502da"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-result-third.json",
+      "bytes": 4209,
+      "sha256": "18a1f8833e8a3aaf82fe5931043cde464db681ef0e2f84a4c170a54ff6f814a7"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-second.log",
+      "bytes": 100,
+      "sha256": "c147cf9617776657fad0c1bff80ffa76dbe1ee8b55373ea325f268c969729762"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/test-third.log",
+      "bytes": 99,
+      "sha256": "826ff0c9fe9ea9b2ac323675d852fef7e4bcfe8e2cbc9ddc5416e87f1de26aa9"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests-before-isolation.patch",
+      "bytes": 26926,
+      "sha256": "49111800224a7f5c0a39d09ecde43330eebfa9d73a4383887a5b42424a4eff40"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch",
+      "bytes": 28663,
+      "sha256": "1869b94cb7c95811c6cb970ab96cd09aef841d1af678096d88fd95a1eddf1c2b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch.apply.log",
+      "bytes": 55,
+      "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch.dry-run.log",
+      "bytes": 55,
+      "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/verification-before-isolation.json",
+      "bytes": 4116,
+      "sha256": "7620017f29484a8c644116cc3e6d9b5559b50791bde836ab4c0b73d487acd064"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/verification.json",
+      "bytes": 4152,
+      "sha256": "8d775a6574ae0bc661ad5584134b7b37ef5b94ff8054cfd2a81e4fd5c24ff5ea"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/verify-ready.py",
+      "bytes": 1327,
+      "sha256": "5946081836822591d3bbe7f67e645d4db0ae698fd6dd0349361b81dd92bb8e24"
+    }
+  ]
+}

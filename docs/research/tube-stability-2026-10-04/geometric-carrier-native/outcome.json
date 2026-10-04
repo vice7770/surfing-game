@@ -1,0 +1,491 @@
+{
+  "schema": "geometric-carrier-native-archived-outcome/v1",
+  "complete": true,
+  "isolatedCandidateOnly": true,
+  "sourcePreparation": {
+    "sourcePins": 582,
+    "parentSourcePins": 580,
+    "changedExistingRuntime": 6,
+    "newRuntimeFiles": 1,
+    "newTestsFiles": 1,
+    "recordedFocusedTestsPassed": 97,
+    "recordedNewTests": 9,
+    "strictTSExit": 0,
+    "ownPhysicalFundingAndIndividualJetUntilUnchanged": true,
+    "lifecycle": {
+      "ownUntil": 1.4491236647965373,
+      "bound": 1.6000291448564612,
+      "supportOnlyFrames": 19,
+      "throws": 7,
+      "fundedWater": 3.3042741666605453,
+      "trappedOnce": 19.617311960677746,
+      "emitted": 19.617311960677725,
+      "heldAir": 0,
+      "airborneWater": 0,
+      "onceOnlyFundingAndAir": true
+    },
+    "releaseSupportIsGeometryOnly": true
+  },
+  "rootBuild": {
+    "sourcePins": 581,
+    "excludedPreparationInput": "docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json",
+    "freshBuildAssets": 21,
+    "staticAssetsAdded": 28,
+    "equalOverlaps": 2,
+    "completeAssets": 49,
+    "terminalExit": 0
+  },
+  "rootNativeTerminalNotification": {
+    "session": 74434,
+    "exit": 0,
+    "authority": "Root terminal notification; exact original finite-owner receipt separately retained."
+  },
+  "recordedNativeChronology": {
+    "observations": 69,
+    "physicsAdvances": 68,
+    "physicalSeconds": 1.133333333333269,
+    "firstPhase2": 47,
+    "phaseChanges": [
+      {
+        "movingStep": 0,
+        "rows": [
+          1,
+          1
+        ]
+      },
+      {
+        "movingStep": 47,
+        "rows": [
+          2,
+          1
+        ]
+      },
+      {
+        "movingStep": 48,
+        "rows": [
+          1,
+          1
+        ]
+      },
+      {
+        "movingStep": 49,
+        "rows": [
+          2,
+          1
+        ]
+      },
+      {
+        "movingStep": 51,
+        "rows": [
+          2,
+          2
+        ]
+      }
+    ],
+    "firstAirLoss": 56,
+    "joinLoss": 68,
+    "cameraLastValidStep": 67,
+    "frameRequests": 69,
+    "encodedFrameCountOrPlaybackRateClaim": false,
+    "selectedLocked": {
+      "front": 106,
+      "stationX": 16.161534309387207,
+      "initialSigma": 68.5797233581543,
+      "along": 0.6346206665039062,
+      "youngerSign": 1,
+      "stationIdentity": "fixed-Eulerian-solver-column-crest-station",
+      "materialTrajectoryClaim": false
+    },
+    "retirementOrPhysicalDeathClaim": false
+  },
+  "actualDirectGeometricSupportProof": [
+    {
+      "movingStep": 63,
+      "pointID": 158,
+      "column": 87,
+      "x": 15,
+      "currentFront": 120,
+      "sourceTau": 1.578525572028738,
+      "immutableJetUntil": 1.5649843571611293,
+      "sourceExpiredAmount": 0.013541214867608842,
+      "rawF32Tau": 1.5785255432128906,
+      "immutableUntilF32": 1.5649843215942383,
+      "strictF32TriggerMargin": 0.013541221618652344,
+      "sourceHistory": {
+        "policy": "bounded-C-incident-support/v1",
+        "atTau": 1.578525572028738,
+        "solverTime": 37.04999999999994,
+        "ownPocketAlive": false,
+        "retainedForGeometry": true,
+        "geometricPaceActive": true,
+        "state": "incident-support",
+        "incidents": [
+          {
+            "otherId": 156,
+            "front": 120,
+            "boundSeconds": 1.8499191099132068,
+            "minimumPacketAge": 1.5785255432128906,
+            "potentiallyLive": true,
+            "maxScale": 7,
+            "maxAuthoredTD": 1.368731429193744,
+            "partitions": 1
+          },
+          {
+            "otherId": 159,
+            "front": 120,
+            "boundSeconds": 1.8499191099132068,
+            "minimumPacketAge": 1.4254783391952515,
+            "potentiallyLive": true,
+            "maxScale": 7,
+            "maxAuthoredTD": 1.368731429193744,
+            "partitions": 1
+          }
+        ]
+      },
+      "sourceZ": -130.084254803803,
+      "rawZ": -130.08425903320312,
+      "beforeRawZ": -130.19500732421875,
+      "rawZTransition": 0.110748291015625,
+      "beforeRawTau": 1.5618181228637695,
+      "rawTauTransition": 0.016707420349121094,
+      "observedRawTauRefitResidualToDT": 4.0753682454427315e-05,
+      "observedRawZResidualToPaceDT": 0.00026614665985107144,
+      "ownPhysicalLifetimeExtended": false,
+      "immutableFingerprintExact": true,
+      "afterLocalAirLossStillJoined": true,
+      "actualPublicHistoryProven": true
+    }
+  ],
+  "maximumAbsoluteFixedStationZChanges": {
+    "crest": {
+      "beforeStep": 6,
+      "afterStep": 7,
+      "deltaZ": 0.11126076638493032,
+      "beforeLandmark": [
+        16.161534309387207,
+        3.4414196387856815,
+        -135.98930961951154
+      ],
+      "afterLandmark": [
+        16.161534309387207,
+        3.4320214626372985,
+        -135.87804885312661
+      ],
+      "beforeRows": [
+        88,
+        89
+      ],
+      "afterRows": [
+        88,
+        89
+      ],
+      "beforeWeights": [
+        1,
+        1
+      ],
+      "afterWeights": [
+        1,
+        1
+      ]
+    },
+    "cap": {
+      "beforeStep": 32,
+      "afterStep": 33,
+      "deltaZ": 0.14560453708753585,
+      "beforeLandmark": [
+        16.161534309387207,
+        0.514644553932716,
+        -130.85368544481116
+      ],
+      "afterLandmark": [
+        16.161534309387207,
+        0.5030230634003543,
+        -130.70808090772363
+      ],
+      "beforeRows": [
+        92,
+        93
+      ],
+      "afterRows": [
+        94,
+        95
+      ],
+      "beforeWeights": [
+        1,
+        1
+      ],
+      "afterWeights": [
+        1,
+        1
+      ]
+    },
+    "toe": {
+      "beforeStep": 32,
+      "afterStep": 33,
+      "deltaZ": 0.15307310851747502,
+      "beforeLandmark": [
+        16.161534309387207,
+        0.24979051729265728,
+        -130.37085507698828
+      ],
+      "afterLandmark": [
+        16.161534309387207,
+        0.23926575847848425,
+        -130.2177819684708
+      ],
+      "beforeRows": [
+        92,
+        93
+      ],
+      "afterRows": [
+        94,
+        95
+      ],
+      "beforeWeights": [
+        1,
+        1
+      ],
+      "afterWeights": [
+        1,
+        1
+      ]
+    }
+  },
+  "maximumRawColumnZChanges": {
+    "158": {
+      "beforeStep": 6,
+      "afterStep": 7,
+      "pointID": 158,
+      "column": 87,
+      "x": 15,
+      "before": {
+        "record": 56,
+        "x": 15,
+        "z": -136.38047790527344,
+        "front": 106,
+        "sigma": 67.63616943359375,
+        "tau": 0.6287157535552979,
+        "footHeight": 2.6372344493865967,
+        "footDepth": 7,
+        "throwZ": -140.54818725585938,
+        "pace": 6.6289286613464355
+      },
+      "after": {
+        "record": 56,
+        "x": 15,
+        "z": -136.26968383789062,
+        "front": 106,
+        "sigma": 67.5478744506836,
+        "tau": 0.6454281806945801,
+        "footHeight": 2.6372344493865967,
+        "footDepth": 7,
+        "throwZ": -140.54818725585938,
+        "pace": 6.6289286613464355
+      },
+      "deltaZ": 0.1107940673828125,
+      "deltaTau": 0.016712427139282227
+    },
+    "159": {
+      "beforeStep": 6,
+      "afterStep": 7,
+      "pointID": 159,
+      "column": 88,
+      "x": 17,
+      "before": {
+        "record": 57,
+        "x": 17,
+        "z": -135.70693969726562,
+        "front": 106,
+        "sigma": 69.74653625488281,
+        "tau": 0.4753488302230835,
+        "footHeight": 2.6462104320526123,
+        "footDepth": 7,
+        "throwZ": -138.86865234375,
+        "pace": 6.651371479034424
+      },
+      "after": {
+        "record": 57,
+        "x": 17,
+        "z": -135.5953369140625,
+        "front": 106,
+        "sigma": 69.65850067138672,
+        "tau": 0.49212637543678284,
+        "footHeight": 2.6462104320526123,
+        "footDepth": 7,
+        "throwZ": -138.86865234375,
+        "pace": 6.651371479034424
+      },
+      "deltaZ": 0.111602783203125,
+      "deltaTau": 0.01677754521369934
+    }
+  },
+  "nativeConclusion": "This isolated capture shows no metre-scale jump at the tracked fixed-X landmarks or ordered two raw points; it is not matched-old-state equivalence or a global stability/FPS result.",
+  "terminalLoss": {
+    "rawBracketPresent": true,
+    "loftBracketAbsent": true,
+    "cameraHeldAtStep": 67,
+    "firstRetainedCurrentFrontRow": {
+      "row": 87,
+      "sliceFront": 120,
+      "sliceSigma": 5.9784321784973145,
+      "sliceTau": 1.5394045114517212,
+      "slicePhase": 2,
+      "sliceLife": 1.2392224073410034,
+      "sliceCollapse": 0.32429906725883484,
+      "sliceFade": 0.08365357667207718,
+      "sliceTipGap": 0,
+      "sliceRestHold": 4.838954448699951,
+      "sliceRestEnd": 6.413656711578369,
+      "sliceRestClimb": 0.314940482378006,
+      "sliceToeClimb": 1.8063814640045166,
+      "sliceJoined": 1,
+      "sliceRayX": 0,
+      "sliceRayZ": 1,
+      "sliceWeight": 0,
+      "sliceOverturned": 1,
+      "sliceTipAlong": 0,
+      "sliceTipUp": -7.61637020111084,
+      "sliceAnchorVX": 0,
+      "sliceAnchorVZ": 0,
+      "sliceTipTransportAlong": 0,
+      "sliceTipTransportUp": 0,
+      "sliceFormed": 0.1327677220106125,
+      "sliceTipX": 16.60025978088379,
+      "sliceTipY": 1.8611172437667847,
+      "sliceTipZ": -126.54878234863281,
+      "sliceMouth": 0,
+      "crest": [
+        16.60025978088379,
+        1.7727198600769043,
+        -128.97265625
+      ],
+      "cap": [
+        16.60025978088379,
+        1.8611172437667847,
+        -126.54878234863281
+      ],
+      "toe": [
+        16.60025978088379,
+        1.8109822273254395,
+        -126.04679870605469
+      ],
+      "floorDatum": [
+        16.60025978088379,
+        1.8611172437667847,
+        -126.54878234863281
+      ]
+    },
+    "retainedFrontRowCount": 67,
+    "firstRetainedXMinusLockedX": 0.43872547149658203,
+    "notPhysicalDeath": true
+  },
+  "mouthDiagnostics": {
+    "openObservationCount": 56,
+    "columnQueries": 1344,
+    "insideSightlineClear": 56,
+    "externalSightlineObstructed": 56,
+    "shoreward2mObstructed": 56,
+    "noVisibilityAcceptance": true
+  },
+  "geometry": {
+    "snapshots": [
+      {
+        "label": "initial",
+        "counts": {
+          "slices": 119,
+          "vertices": 15946,
+          "indices": 93366
+        },
+        "cavitySpan": 2.4961471557617188,
+        "maximumAirHeight": 2.8680269665279705,
+        "verticalInnerWall88to92": 1.6921496987342834,
+        "exactNormalWordDifferences": 0,
+        "strictSectionCrossings": 0
+      },
+      {
+        "label": "first-phase2",
+        "counts": {
+          "slices": 151,
+          "vertices": 20234,
+          "indices": 118902
+        },
+        "cavitySpan": 2.511417060521495,
+        "maximumAirHeight": 2.6747537922345623,
+        "verticalInnerWall88to92": 1.5030853127247386,
+        "exactNormalWordDifferences": 0,
+        "strictSectionCrossings": 0
+      }
+    ],
+    "initialExteriorFirstHit": {
+      "triangle": 25639,
+      "vertices": [
+        13050,
+        13183,
+        13184
+      ],
+      "rows": [
+        97,
+        98,
+        98
+      ],
+      "fronts": [
+        106,
+        106,
+        106
+      ],
+      "profileIndices": [
+        49,
+        48,
+        49
+      ],
+      "cellStartProfileIndex": 48,
+      "contourBand": "outer-roof",
+      "position": [
+        [
+          20.186790466308594,
+          2.1302881240844727,
+          -133.54937744140625
+        ],
+        [
+          20.634201049804688,
+          2.109680414199829,
+          -133.33631896972656
+        ],
+        [
+          20.634201049804688,
+          2.0923922061920166,
+          -133.32513427734375
+        ]
+      ],
+      "fraction": 0.9438726216286225,
+      "distance": 56.57878288984361,
+      "point": [
+        20.593705357538212,
+        2.1021397689411274,
+        -133.34951798117584
+      ],
+      "barycentric": [
+        0.09051125243853564,
+        0.36542571419209186,
+        0.5440630333693726
+      ],
+      "doubleSided": true,
+      "sameSelectedTubeFront": true,
+      "componentClassification": "same selected tube component"
+    }
+  },
+  "visualReviewBoundary": "Root inspected all four native PNGs and five exact-movie decoded frames. Wall/roof crease, sky-coloured curtain and fins remain visible; actual declared exterior and two-metre shoreward rays remain blocked. Pixel inspection is not per-fragment attribution.",
+  "screenRayFinal": "Three specified initial ideal rays hit the same component; intended winding/normals agree. Ideal reflected rays rehit indexed barrel and source sweptLeaves rejects all three. Separate ideal thin-sheet transmission remains supported at curtain; paired exit-normal alternative rotates outgoing 1.632 degrees without changing its gate. No shader-causality or supported guard fix claim.",
+  "samplingFollowup": "Frozen source stable-X DESIGN retained as a proposal; ongoing candidate implementation excluded. Release stress retains up to 39.025 mm crestY  / 15.547 ms sampled-age residuals without numerical continuity acceptance.",
+  "acceptance": {
+    "tubeQuality": false,
+    "mouth": false,
+    "airCorridor": false,
+    "bodyPassage": false,
+    "FPS": false,
+    "productionAdoption": false
+  },
+  "fullSourceDependenciesOrBuildReconstructionClaim": false,
+  "archivingReranSourceModelBuildNativeTests": false,
+  "archivingUsedResourcesOrPorts": false
+}

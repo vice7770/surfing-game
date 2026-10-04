@@ -1,0 +1,185 @@
+{
+  "schema": "carrier-native-helper-preparation-provenance/v1",
+  "parent": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004",
+  "parentHelperInputs": [
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/run.py",
+      "bytes": 16823,
+      "sha256": "0da3b1d109f1097ee47d68801d7ab794c896623322880683ec24ec0e6b06c63c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native.mjs",
+      "bytes": 10355,
+      "sha256": "6e5a3825f16d203c310b4ddf2a22c0dad4e4313e77b6658988971ee0f9b54b5a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/moving-shape.mjs",
+      "bytes": 29668,
+      "sha256": "15db7127b8b8b5a7fb1e0047c3bbfa52c18f2b9c9d16cd9b2602d40030fa4cb9"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/station-tools.mjs",
+      "bytes": 14480,
+      "sha256": "6bab70e985b48f18ffd247d2ef7128b12cfbe091d94f6fbc4a5d1a12713239c7"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-tools.mjs",
+      "bytes": 5316,
+      "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-tools.test.mjs",
+      "bytes": 7489,
+      "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mouth-integration-checks.mjs",
+      "bytes": 13417,
+      "sha256": "623264328ada86f513d5e0ee3dc27d8ab74490507f1d38266ca57dace004c2a2"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-event-checks.py",
+      "bytes": 2190,
+      "sha256": "68428569e19ddb36b0854f7215e5a3e0d326f68b45c70226e7d2fdaba2c1d63d"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/mock-checks.mjs",
+      "bytes": 17402,
+      "sha256": "edccd540df43085afa00e2810350709d71f0f6a5d7bdb1c4e4574d1a6fd1444c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/identity-checks.mjs",
+      "bytes": 8366,
+      "sha256": "26be79dd89860d79940ff0869ca7cc265b9228a256ff80c13125fb49c5634193"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/owner-mock-checks.py",
+      "bytes": 4739,
+      "sha256": "4a11e3c362786d004cac6a99bfc3c004ac16fc6ba9a7b0138057f2c24aca56d2"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/helper-types.d.ts",
+      "bytes": 87,
+      "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/freeze.py",
+      "bytes": 5851,
+      "sha256": "eed125a73069ddeb3e8792fff6e4cb838cf9e14353b25f7c561ff4169564e20e"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/cpu-validation-runner.py",
+      "bytes": 1925,
+      "sha256": "130d80971a1cf172304dff3c4fe8b5b381701bca17b8fdcca674d6d8598e3460"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/check-source.py",
+      "bytes": 1618,
+      "sha256": "ea6529d947643a601f48b04402e8f151ca06c020b7336295c6b455c0cd17f17d"
+    }
+  ],
+  "parentReadiness": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/readiness.json",
+    "bytes": 15562,
+    "sha256": "3f8831e7a3650c3a653755556201422ab73196cda24976b3d4c7adf1b1896b0e"
+  },
+  "resourcesStarted": false,
+  "rootBuildAvailable": true,
+  "sourceContractFinal": true,
+  "frozen": false,
+  "carrierSourceReadiness": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json",
+    "bytes": 115387,
+    "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+  },
+  "carrierSourcePinsManifest": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins.json",
+    "bytes": 95422,
+    "sha256": "0c32f04c0bb80bab34ddb88611d49a3f9202bc73bc5c70b1d9a851e09c87cba1"
+  },
+  "publicHistoryContract": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/public-history-contract.json",
+    "bytes": 4829,
+    "sha256": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25"
+  },
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/root-complete-build-result.json",
+    "bytes": 179795,
+    "sha256": "0476e7e2fa189165cba5b6bb6f2393d9964f93ab4e31074cac2dab770df2b417"
+  },
+  "priorFailedMouth": {
+    "readiness.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/readiness.json",
+      "bytes": 7880,
+      "sha256": "035803cecc6066d3c5dcb85c4f0980fe033441400d8d6f04b2c5d2c6d7c9efd7"
+    },
+    "helper-pins.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/helper-pins.json",
+      "bytes": 3996,
+      "sha256": "3f76fbc1aff59ce7fc8bde69515ed55b453139cccc39873b22eb7f1d4f65f0f6"
+    },
+    "seal.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/seal.json",
+      "bytes": 159781,
+      "sha256": "6f30f65162c54b981ba107f9d678cc818d4070a110dbba88c085f77390f5663e"
+    },
+    "candidate-first-owner.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.json",
+      "bytes": 3304,
+      "sha256": "eb1ec10a3b5daaabbec752f15c25ed681bb0e08061b9180f9cce6607671b348c"
+    },
+    "candidate-first-owner.log": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.log",
+      "bytes": 1406,
+      "sha256": "41debde6c013ad8e6a30506542d6d4a37456fc013d0d7b3632b47ab2d17a68b2"
+    },
+    "candidate-first/report.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/report.json",
+      "bytes": 446667,
+      "sha256": "90d3904392032044286a521778c272b4714ab62c1e44ffe9409b8a0b6592c890"
+    },
+    "candidate-first/0-initial.png": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/0-initial.png",
+      "bytes": 1014733,
+      "sha256": "b3a0c32a54494741a2cd5b62ab23d5cc9a0e243d1b2fd127d50ef98ac9725e29"
+    }
+  },
+  "priorFailedParallel": {
+    "readiness.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/readiness.json",
+      "bytes": 9755,
+      "sha256": "a3bcc8a13e9bd26e6d45956caaf21f4cad3f0872c8862d609c37c45a29c8529d"
+    },
+    "seal.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/seal.json",
+      "bytes": 159598,
+      "sha256": "59e70b5fbe5e0cf15ee319c14a7320c4a7c48c29919e19d565960d98d0c03eae"
+    },
+    "candidate-first-owner.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first-owner.json",
+      "bytes": 3266,
+      "sha256": "3974cccfa213d65336b2b135a21f5e45ebc544d8bfc0a555cda835030aa46af1"
+    },
+    "candidate-first/report.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json",
+      "bytes": 7810380,
+      "sha256": "fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3"
+    }
+  },
+  "physicalSourceReadiness": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json",
+    "bytes": 103658,
+    "sha256": "f973340740f7173b8e7a6624d953b503b6b7320fcc5d7c84e873512367307d67"
+  },
+  "physicalHelperSourceContract": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/new-source-contract-checks.json",
+    "bytes": 10116,
+    "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+  },
+  "originalRecordsNeverRewrittenOrRetroaccepted": true
+}

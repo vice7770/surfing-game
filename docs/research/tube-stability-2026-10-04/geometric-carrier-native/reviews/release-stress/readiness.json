@@ -1,0 +1,37 @@
+{
+  "schema": "bounded-C-carrier-release-stress-readiness/v1",
+  "complete": true,
+  "frozenAtUTC": "2026-10-04T23:18:36.481798+00:00",
+  "harness": {
+    "file": "/private/tmp/tube-carrier-release-stress-20261004/stress.test.ts",
+    "bytes": 13319,
+    "sha256": "e3596c3b839db3ed07d7be3296bd2a9d67a238d7524d634db49a83b74f0344d4"
+  },
+  "outcome": {
+    "file": "/private/tmp/tube-carrier-release-stress-20261004/outcome.json",
+    "bytes": 7855,
+    "sha256": "3535a6450e8b04467aa0f0e47a95096693993ffdcf890ce0d284509be38ec08a"
+  },
+  "report": {
+    "file": "/private/tmp/tube-carrier-release-stress-20261004/report.json",
+    "bytes": 783065,
+    "sha256": "d0752e6e446fab362f18edb78a38ba80753116526d06d32ae695d76394109799"
+  },
+  "manifest": {
+    "file": "/private/tmp/tube-carrier-release-stress-20261004/manifest.json",
+    "bytes": 2500,
+    "sha256": "c6a67e4434943783b5a3ea283d1e41adc2cec3937b5ad5de3c6f88c5ac9c9967"
+  },
+  "frozenPreservation": {
+    "file": "/private/tmp/tube-carrier-release-stress-20261004/frozen-preservation.json",
+    "bytes": 424,
+    "sha256": "639000f4c099b56324c01731e20bed13b1211d8f57ae248a25ce7f4f0fd08f8e"
+  },
+  "strictTSExitCode": 0,
+  "testsPassed": 5,
+  "testsFailed": 0,
+  "numericalContinuityPassClaim": false,
+  "nativeAppearanceClaim": false,
+  "adoptionReady": false,
+  "readyForRootReview": true
+}

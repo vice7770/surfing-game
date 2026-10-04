@@ -1,0 +1,454 @@
+{
+  "schema": "bounded-C-carrier-support-native-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "buildPerformed": false,
+  "sourceModified": false,
+  "rootOwnsBuildCompositionSealAndNative": true,
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/root-complete-build-result.json",
+    "bytes": 179795,
+    "sha256": "0476e7e2fa189165cba5b6bb6f2393d9964f93ab4e31074cac2dab770df2b417"
+  },
+  "sourcePins": 581,
+  "assets": 49,
+  "frozenSourceReadinessPins": 582,
+  "helperPins": [
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/run.py",
+      "bytes": 26108,
+      "sha256": "45be1857b9013e34ea361d8478b0cdb509b0e10e4d832a93d70d4656171e4084"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/native.mjs",
+      "bytes": 11882,
+      "sha256": "d3714330141b5de2e04819740400ceb3daaca658c1d7994d6d5fd907a3dcff5c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/moving-shape.mjs",
+      "bytes": 36443,
+      "sha256": "86c8fbf321c5a4e363725d7e7aaea3036f75f5579d4c47c4240a21a798f0e3f9"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/station-tools.mjs",
+      "bytes": 17541,
+      "sha256": "65043d2fb90b01bdf174c0e8455638aba1d8cf1cb92479ca0e55a69cd317c966"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-tools.mjs",
+      "bytes": 5316,
+      "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.mjs",
+      "bytes": 2957,
+      "sha256": "eddf8c0905336fa839a9abdd1af8cdc637f89d243ad0370b3ddc21cc384a53bd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-tools.test.mjs",
+      "bytes": 7489,
+      "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.test.mjs",
+      "bytes": 3270,
+      "sha256": "436c8f11eddfaf1704c7a45bb857cd5b18548557cae943a3b7428f1b5db519be"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-integration-checks.mjs",
+      "bytes": 14966,
+      "sha256": "4ba82d3b5add32b19800651e6e2e40b396ea7b13ca504cd0ac1c030c431387cd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mock-checks.mjs",
+      "bytes": 22365,
+      "sha256": "a2d37a080acd3f3b866dc5509dde758b7e7dacb98907a4a3c264855d2013bee4"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/identity-checks.mjs",
+      "bytes": 14110,
+      "sha256": "37289d7c92ef8e6432fc8f4b95c3ae165959dfc0455b76b3b86f329cc81f198a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-event-checks.py",
+      "bytes": 4024,
+      "sha256": "608522a6c5097b33729bf29e80cc387bc1d064ed9f38cf158e21f9eeb31aac9b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-mock-checks.py",
+      "bytes": 2035,
+      "sha256": "ee736e849d08943644ec84ccaf28601b8bdb640c9964ce9115287ce7a79ef7c9"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-snapshot-checks.py",
+      "bytes": 5745,
+      "sha256": "78a4bb5c3b0d9e3f831f9c32c92c7cecded016a6ed789bec3556639108945d10"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/helper-types.d.ts",
+      "bytes": 87,
+      "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/README.md",
+      "bytes": 5199,
+      "sha256": "eda2216c5f8bce95a1e4b35788f72010990cab825b4da9c86fa8b4a33295f2e3"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/blueprint.txt",
+      "bytes": 1170,
+      "sha256": "86d0dd90082ae42d7d53431982db6cbe73c673cc6c62c1019745373f86dd4cb7"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/provenance.json",
+      "bytes": 8134,
+      "sha256": "b3b272ca57c574b2e78f56a51201b733da6343d362a68796a4dc82f994cfd129"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/check-source.py",
+      "bytes": 5427,
+      "sha256": "e3b3e15306f8d22d142ec2afedb82d5b0ca16d7ccce7b4bc74fa502780893e60"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/new-source-contract-checks.json",
+      "bytes": 12270,
+      "sha256": "17dc49f81a2ecaf2ac9412e419553caa32364792adc8273898b95077eebc3e5d"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation-runner.py",
+      "bytes": 2947,
+      "sha256": "abf6a22ca36d48347cb2f1a79735e0f8e7688138c7edc4a45ceadfd888b764af"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation.json",
+      "bytes": 14357,
+      "sha256": "2eb33edef3242dd8ef4a90e0ce212f6e4fda7b6426927040944ed24b92d7fd9b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation.log",
+      "bytes": 9024,
+      "sha256": "f4473607d7838469df8e60d71695eb9d5de6600c5a38409f03e263f0a4caf197"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-integration-checks.json",
+      "bytes": 704,
+      "sha256": "cfb2f3e1a871474c7b3a7dae51392d87b8141174ade2d116b7dc24adfe38fb6b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mock-checks.json",
+      "bytes": 2334,
+      "sha256": "6fcaaa9364cc835eb4cc4068e3c829f96d2956e8545e2f40d964f74fbb8abd59"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/identity-checks.json",
+      "bytes": 4764,
+      "sha256": "936e3dbeade80521face8449cef62cb758fd72cbc7ce71ee223746d45c538990"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/carrier-event-fixtures.json",
+      "bytes": 30886,
+      "sha256": "24a877841d37c43376f842b124ad03a0061d6300c09c93e52b4a1757d3e40cdd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/carrier-probe-fixtures.json",
+      "bytes": 214270,
+      "sha256": "ee69dd76061482992447fc4e2858cc3ff140bdb4cbc792c9723251f4feba3b12"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-event-checks.json",
+      "bytes": 939,
+      "sha256": "da5609a65de837fd4066691625d93742fce31cfbffd2f023d941ce65a4631a5d"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-mock-checks.json",
+      "bytes": 785,
+      "sha256": "3e4e3bc6363e2daebb6bbef94d2e73f593b4b6f918afb6f920074b472f78980f"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-snapshot-checks.json",
+      "bytes": 792,
+      "sha256": "8239c629cef4da902574f5a251af2a6b542c431b49d3dcaa5993080bedab1193"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/snapshot-owner-fixture/loft-initial.json",
+      "bytes": 24348,
+      "sha256": "4e64e8e0ce67698fd3b52ab79172ab7839228916dc525e7e699d1ca0733f6f1a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/snapshot-owner-fixture/loft-first-phase2.json",
+      "bytes": 24366,
+      "sha256": "fba4031947edb07e9bdd96fcca369b3d12424d4cb71b6300249944df7681eea1"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/freeze.py",
+      "bytes": 7937,
+      "sha256": "fddb148e84a09e1878d198997491ecbd63a64f9b242eb1c272821f6696af208c"
+    },
+    {
+      "file": "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs",
+      "bytes": 11626,
+      "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json",
+      "bytes": 1314,
+      "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/new-source-contract-checks.json",
+      "bytes": 10116,
+      "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json",
+      "bytes": 115387,
+      "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/public-history-contract.json",
+      "bytes": 4829,
+      "sha256": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins.json",
+      "bytes": 95422,
+      "sha256": "0c32f04c0bb80bab34ddb88611d49a3f9202bc73bc5c70b1d9a851e09c87cba1"
+    }
+  ],
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/helper-pins.json",
+    "bytes": 8612,
+    "sha256": "8251fee136e91d8b2a33966b7a87f0b342d5403d8017941ee5f00bed7a120da9"
+  },
+  "sourceContractCheck": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/new-source-contract-checks.json",
+    "bytes": 12270,
+    "sha256": "17dc49f81a2ecaf2ac9412e419553caa32364792adc8273898b95077eebc3e5d"
+  },
+  "carrierSourceReadiness": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json",
+    "bytes": 115387,
+    "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+  },
+  "publicHistoryContract": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/public-history-contract.json",
+    "bytes": 4829,
+    "sha256": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25"
+  },
+  "priorAirSeal": {
+    "file": "/private/tmp/tube-bounded-c-air-native-20261004/seal.json",
+    "bytes": 239171,
+    "sha256": "da83687daa6eb63a187c8cd28754751bbdfc556f841eb7f569f9fc654fc84058"
+  },
+  "priorFullsheetSeal": {
+    "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/seal.json",
+    "bytes": 160645,
+    "sha256": "d56f253f68021a2660ba05c2877f5a607eae7c2830976509ab35ef79dd1a92a9"
+  },
+  "priorParallelSeal": {
+    "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/seal.json",
+    "bytes": 159598,
+    "sha256": "59e70b5fbe5e0cf15ee319c14a7320c4a7c48c29919e19d565960d98d0c03eae"
+  },
+  "priorMouthSeal": {
+    "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/seal.json",
+    "bytes": 159781,
+    "sha256": "6f30f65162c54b981ba107f9d678cc818d4070a110dbba88c085f77390f5663e"
+  },
+  "priorPhysicalMouthSeal": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/seal.json",
+    "bytes": 169360,
+    "sha256": "f150be697ffba17a19bab8b8b76915c8a1087b199bfc3f9ab4384699fab54fb1"
+  },
+  "priorFailedParallel": {
+    "readiness.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/readiness.json",
+      "bytes": 9755,
+      "sha256": "a3bcc8a13e9bd26e6d45956caaf21f4cad3f0872c8862d609c37c45a29c8529d"
+    },
+    "seal.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/seal.json",
+      "bytes": 159598,
+      "sha256": "59e70b5fbe5e0cf15ee319c14a7320c4a7c48c29919e19d565960d98d0c03eae"
+    },
+    "candidate-first-owner.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first-owner.json",
+      "bytes": 3266,
+      "sha256": "3974cccfa213d65336b2b135a21f5e45ebc544d8bfc0a555cda835030aa46af1"
+    },
+    "candidate-first/report.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json",
+      "bytes": 7810380,
+      "sha256": "fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3"
+    }
+  },
+  "priorFailedMouth": {
+    "readiness.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/readiness.json",
+      "bytes": 7880,
+      "sha256": "035803cecc6066d3c5dcb85c4f0980fe033441400d8d6f04b2c5d2c6d7c9efd7"
+    },
+    "helper-pins.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/helper-pins.json",
+      "bytes": 3996,
+      "sha256": "3f76fbc1aff59ce7fc8bde69515ed55b453139cccc39873b22eb7f1d4f65f0f6"
+    },
+    "seal.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/seal.json",
+      "bytes": 159781,
+      "sha256": "6f30f65162c54b981ba107f9d678cc818d4070a110dbba88c085f77390f5663e"
+    },
+    "candidate-first-owner.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.json",
+      "bytes": 3304,
+      "sha256": "eb1ec10a3b5daaabbec752f15c25ed681bb0e08061b9180f9cce6607671b348c"
+    },
+    "candidate-first-owner.log": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.log",
+      "bytes": 1406,
+      "sha256": "41debde6c013ad8e6a30506542d6d4a37456fc013d0d7b3632b47ab2d17a68b2"
+    },
+    "candidate-first/report.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/report.json",
+      "bytes": 446667,
+      "sha256": "90d3904392032044286a521778c272b4714ab62c1e44ffe9409b8a0b6592c890"
+    },
+    "candidate-first/0-initial.png": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/0-initial.png",
+      "bytes": 1014733,
+      "sha256": "b3a0c32a54494741a2cd5b62ab23d5cc9a0e243d1b2fd127d50ef98ac9725e29"
+    }
+  },
+  "priorFailedAgeGate": {
+    "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-first/report.json",
+    "bytes": 2800493,
+    "sha256": "4fe7b581ef01089fd00e025abd4a6757f71ffb76a73c3eaf41499738ba74a399"
+  },
+  "physicalSourceReadiness": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json",
+    "bytes": 103658,
+    "sha256": "f973340740f7173b8e7a6624d953b503b6b7320fcc5d7c84e873512367307d67"
+  },
+  "componentLineagePolicy": {
+    "station": "fixed-Eulerian-solver-column-crest-X",
+    "originalSelectionImmutable": true,
+    "currentIDFirst": true,
+    "attemptOnlyIfCurrentRawRangeExcludesStationOrAbsent": true,
+    "publicExportAtInitialAndProspectiveRenameOnly": true,
+    "publicExportOncePerProspectiveCurrentSnapshotEpoch": true,
+    "sameOrderedTwoInternalPointIDs": true,
+    "sameInternalColumnsExactXFootHeightDepthThrowPaceBaseAtUntil": true,
+    "F32RawRecordParityAtExport": true,
+    "finiteNonnegativeMonotoneAges": true,
+    "DTEqualityRequired": false,
+    "observedRefitAndCrestResidualsDescriptiveOnly": true,
+    "uniqueCandidateWithActualJoinedCrestX": true,
+    "allTestedGatesAndInventoriesRetained": true,
+    "pointIDsVerifiedOnlyAtPublicExportEpochs": true,
+    "solverArraysDecodedOrRetained": false,
+    "materialPointIdentityClaim": false,
+    "physicalDeathClaim": false,
+    "actualEventTrajectoryClaimKey": "materialTrajectoryClaim",
+    "dynamicCarrierHistoryNeverImmutable": true,
+    "carrierPolicy": "bounded-C-incident-support/v1",
+    "noSolverEpochOrDTAgeEqualityGate": true
+  },
+  "cameraPolicy": "whole-directed-interval-full-sightline-and-declared-exterior-fallback",
+  "boundarySampling": "24 uniform interior stations over ENTIRE current eye-to-directed first-unformed/run-end interval; boundary-nearest first, strictly youngerward, original along, exact current eye component; furthest sampled strict air; no retry after blocked segment",
+  "exteriorAnchorPolicy": {
+    "candidateExists": "current strict-air mouth candidate, including when inner sightline blocked",
+    "candidateAbsent": "CURRENT selected strict-air eye and current canonical ray/tangent",
+    "width": "initial full 128-point contour W",
+    "singlePose": "2W youngerward + W shoreward; existing one water-height clamp",
+    "belowSurfaceOrOccluded": "capture and explicitly retain diagnostic failure",
+    "poseRetries": 0,
+    "innerMovieCameraRestored": true
+  },
+  "protectedStatesRequiredInitiallyAndFinally": {
+    "4310": "closed",
+    "4311": "closed",
+    "4312": "open"
+  },
+  "directHistoryProbePolicy": {
+    "maximumExtraExports": 2,
+    "originalOrderedPointIDsOnly": true,
+    "strictOriginalF32OwnUntilWordTrigger": true,
+    "publicCurrentDynamicHistoryRequired": true,
+    "afterAirLossWhileJoined": true,
+    "noSecondPointWait": true,
+    "honestJoinOrIdentityLossFirst": true,
+    "rawPaceAloneNotLeaseProof": true
+  },
+  "loftSnapshotPolicy": {
+    "maximumCount": 2,
+    "maximumJsonBytesEach": 6291456,
+    "maximumTotalJsonBytes": 12582912,
+    "maximumRawBytesEach": 4194304,
+    "labels": [
+      "initial",
+      "first-phase2"
+    ],
+    "phase2OnlyIfActuallyEncountered": true,
+    "exactFullActiveTypedWords": true,
+    "unusedCapacityIncluded": false,
+    "mediaInventorySeparate": true,
+    "normals": "loft vertex normals supplied to draw mesh; no fragment or G-buffer attribution",
+    "perFragmentOwnershipOrVisibilityClaim": false
+  },
+  "checks": {
+    "identityGroups": 51,
+    "movingExportGroups": 26,
+    "ownerSnapshotGroups": 14,
+    "ownerProtectedAndBuildGroups": 9,
+    "actualPriorIdentityTransitions": 4,
+    "actualPriorEventsProveNewLeaseSemantics": false,
+    "syntheticCarrierEvents": 1,
+    "syntheticDirectProbeObservations": 6,
+    "syntheticDirectProbeMutationsRejected": 4,
+    "unchangedPublicSourcePairs": 12,
+    "declaredChangedPublicSourcePairs": 4,
+    "sourceReadinessAllPinsVerified": true,
+    "rootBuildAllPinsVerified": true,
+    "snapshotToolsTests": 6,
+    "indexedMouthGeometryTests": 11,
+    "checkJsNoEmit": true,
+    "PythonAST": true,
+    "JSsyntax": true,
+    "dryOwnerNoResources": true,
+    "inheritedGpuTestNotRerun": true
+  },
+  "maximumNeutralSelectionSteps": 300,
+  "maximumMovingSteps": 240,
+  "maximumCandidateColumnQueriesPerMouthObservation": 24,
+  "detectorMilliseconds": 20000,
+  "maximumPNGCount": 4,
+  "movieBytes": 16777216,
+  "pngBytes": 50331648,
+  "reportBytes": 33554432,
+  "wholeSeconds": 180,
+  "commandSeconds": 168,
+  "cleanupSeconds": 7,
+  "oldFailuresBytePinnedNotRetroaccepted": true,
+  "newSourceNativeLeaseProofPending": true,
+  "acceptance": {
+    "nativeShape": false,
+    "mouthVisibility": false,
+    "exteriorEntrance": false,
+    "airCorridor": false,
+    "bodyPassage": false,
+    "FPS": false,
+    "productionAdoption": false
+  }
+}

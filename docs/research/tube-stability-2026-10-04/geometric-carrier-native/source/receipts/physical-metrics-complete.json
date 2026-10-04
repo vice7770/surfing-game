@@ -1,0 +1,131 @@
+{
+  "planar": [
+    {
+      "expectedNormalZ": 1,
+      "normalXSign": -1,
+      "centerPace": 4,
+      "measuredPhysicalZ": 1,
+      "drawRayZ": 1,
+      "source": "solver-face"
+    },
+    {
+      "expectedNormalZ": 1,
+      "normalXSign": 1,
+      "centerPace": 4,
+      "measuredPhysicalZ": 1,
+      "drawRayZ": 1,
+      "source": "solver-face"
+    },
+    {
+      "expectedNormalZ": 0.8,
+      "normalXSign": -1,
+      "centerPace": 4.99999999999992,
+      "measuredPhysicalZ": 0.8000000000000128,
+      "drawRayZ": 1,
+      "source": "solver-face"
+    },
+    {
+      "expectedNormalZ": 0.8,
+      "normalXSign": 1,
+      "centerPace": 4.99999999999992,
+      "measuredPhysicalZ": 0.8000000000000128,
+      "drawRayZ": 1,
+      "source": "solver-face"
+    },
+    {
+      "expectedNormalZ": 0.7071067811865476,
+      "normalXSign": -1,
+      "centerPace": 5.656854249492381,
+      "measuredPhysicalZ": 0.7071067811865475,
+      "drawRayZ": 1,
+      "source": "solver-face"
+    },
+    {
+      "expectedNormalZ": 0.7071067811865476,
+      "normalXSign": 1,
+      "centerPace": 5.656854249492381,
+      "measuredPhysicalZ": 0.7071067811865475,
+      "drawRayZ": 1,
+      "source": "solver-face"
+    },
+    {
+      "expectedNormalZ": 0.3,
+      "normalXSign": -1,
+      "centerPace": 8,
+      "measuredPhysicalZ": 0.3000000000000069,
+      "drawRayZ": 1,
+      "source": "solver-face"
+    },
+    {
+      "expectedNormalZ": 0.3,
+      "normalXSign": 1,
+      "centerPace": 8,
+      "measuredPhysicalZ": 0.3000000000000069,
+      "drawRayZ": 1,
+      "source": "solver-face"
+    }
+  ],
+  "lifecycle": [
+    {
+      "slope": 0,
+      "asked": 0.26973664125914276,
+      "funded": 0.26973664125914276,
+      "starved": 0,
+      "openMaximum": 1.6550635376993097,
+      "trappedOnce": 1.5813157963881461,
+      "expectedProjectedDose": 1.5813157963881461,
+      "emitted": 1.5813157963881461,
+      "heldAir": 0,
+      "crashes": 7,
+      "fundingSourceShareFixture": 1,
+      "exactVaryingSectionIntegralClaim": false
+    },
+    {
+      "slope": 0.75,
+      "asked": 0.29447231578509037,
+      "funded": 0.29447231578509037,
+      "starved": 0,
+      "openMaximum": 1.8068378911410448,
+      "trappedOnce": 1.7263272574338164,
+      "expectedProjectedDose": 1.7263272574338164,
+      "emitted": 1.7263272574338164,
+      "heldAir": 0,
+      "crashes": 7,
+      "fundingSourceShareFixture": 1,
+      "exactVaryingSectionIntegralClaim": false
+    },
+    {
+      "slope": -0.75,
+      "asked": 0.29447231578509037,
+      "funded": 0.29447231578509037,
+      "starved": 0,
+      "openMaximum": 1.8068378911410448,
+      "trappedOnce": 1.7263272574338164,
+      "expectedProjectedDose": 1.7263272574338164,
+      "emitted": 1.7263272574338164,
+      "heldAir": 0,
+      "crashes": 7,
+      "fundingSourceShareFixture": 1,
+      "exactVaryingSectionIntegralClaim": false
+    }
+  ],
+  "projectedWidth": [
+    {
+      "one": {
+        "span": 1,
+        "asked": 0.04907871929751506,
+        "currentVolume": 0.3005938319855126,
+        "prospectiveArea": 0.04907871929751506,
+        "currentArea": 0.3005938319855126
+      },
+      "two": {
+        "span": 2,
+        "asked": 0.09815743859503012,
+        "currentVolume": 0.6011876639710252,
+        "prospectiveArea": 0.04907871929751506,
+        "currentArea": 0.3005938319855126
+      },
+      "varyingSectionVolumeIntegralClaim": false
+    }
+  ]
+}

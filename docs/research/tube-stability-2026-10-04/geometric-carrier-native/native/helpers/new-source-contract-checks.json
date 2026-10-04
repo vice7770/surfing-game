@@ -1,0 +1,299 @@
+{
+  "schema": "bounded-C-carrier-support-source-contract-checks/v1",
+  "complete": true,
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json",
+    "bytes": 115387,
+    "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+  },
+  "publicHistoryContract": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/public-history-contract.json",
+    "bytes": 4829,
+    "sha256": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins.json",
+    "bytes": 95422,
+    "sha256": "0c32f04c0bb80bab34ddb88611d49a3f9202bc73bc5c70b1d9a851e09c87cba1"
+  },
+  "frozenReadinessSourcePins": 582,
+  "runtimeChangedPins": [
+    {
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "bytes": 71135,
+      "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+    },
+    {
+      "path": "src/wave/barrel/BreakingFront.ts",
+      "bytes": 40421,
+      "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8"
+    },
+    {
+      "path": "src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 28989,
+      "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+    },
+    {
+      "path": "src/wave/barrel/SweptCrash.ts",
+      "bytes": 33689,
+      "sha256": "190bbd5c7101874cc6ad3788b3ddc89d9f27ca4d1341194468942b85479f77b8"
+    },
+    {
+      "path": "src/wave/barrel/carrierSupport.ts",
+      "bytes": 5898,
+      "sha256": "7555e0452f5bd0824b051d4165c17c1c2caca8373eb9d291cc5f479ac98d52ca"
+    },
+    {
+      "path": "src/wave/barrel/frontRecords.ts",
+      "bytes": 1941,
+      "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "bytes": 64331,
+      "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c"
+    }
+  ],
+  "unchangedPublicDrawingExportControlSourcePairs": [
+    {
+      "relative": "src/main.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/main.ts",
+        "bytes": 56712,
+        "sha256": "e88b0f82571f74ffcf8ad1d902ba21a5f0bf62293077617f316994b1c4c82ce5"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/main.ts",
+        "bytes": 56712,
+        "sha256": "e88b0f82571f74ffcf8ad1d902ba21a5f0bf62293077617f316994b1c4c82ce5"
+      }
+    },
+    {
+      "relative": "src/game/PhysicalMode.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/PhysicalMode.ts",
+        "bytes": 41940,
+        "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/game/PhysicalMode.ts",
+        "bytes": 41940,
+        "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+      }
+    },
+    {
+      "relative": "src/scene/WaterSurface.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/scene/WaterSurface.ts",
+        "bytes": 39192,
+        "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/scene/WaterSurface.ts",
+        "bytes": 39192,
+        "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+      }
+    },
+    {
+      "relative": "src/game/SurfZoneHost.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/SurfZoneHost.ts",
+        "bytes": 8020,
+        "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/game/SurfZoneHost.ts",
+        "bytes": 8020,
+        "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424"
+      }
+    },
+    {
+      "relative": "src/scene/PhysicalSurfaceSource.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/scene/PhysicalSurfaceSource.ts",
+        "bytes": 3054,
+        "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/scene/PhysicalSurfaceSource.ts",
+        "bytes": 3054,
+        "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003"
+      }
+    },
+    {
+      "relative": "src/game/WorkerSurfZone.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/WorkerSurfZone.ts",
+        "bytes": 8319,
+        "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/game/WorkerSurfZone.ts",
+        "bytes": 8319,
+        "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+      }
+    },
+    {
+      "relative": "src/game/SurfZoneWorkerCore.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/SurfZoneWorkerCore.ts",
+        "bytes": 9863,
+        "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/game/SurfZoneWorkerCore.ts",
+        "bytes": 9863,
+        "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+      }
+    },
+    {
+      "relative": "src/wave/surfZoneState.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/surfZoneState.ts",
+        "bytes": 3955,
+        "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/surfZoneState.ts",
+        "bytes": 3955,
+        "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sliceClock.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/sliceClock.ts",
+        "bytes": 12756,
+        "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sliceClock.ts",
+        "bytes": 12756,
+        "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/crestRays.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/crestRays.ts",
+        "bytes": 15787,
+        "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/crestRays.ts",
+        "bytes": 15787,
+        "sha256": "c8ca345c572662fe695a19e5061e2413012423b57ad0a6bc87fe74ec47bb9714"
+      }
+    },
+    {
+      "relative": "src/game/SurfZoneWaterPrefetch.test.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/game/SurfZoneWaterPrefetch.test.ts",
+        "bytes": 17570,
+        "sha256": "df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/game/SurfZoneWaterPrefetch.test.ts",
+        "bytes": 17570,
+        "sha256": "df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e"
+      }
+    },
+    {
+      "relative": "src/wave/gpu/GpuBoussinesq.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/gpu/GpuBoussinesq.ts",
+        "bytes": 23863,
+        "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/gpu/GpuBoussinesq.ts",
+        "bytes": 23863,
+        "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+      }
+    }
+  ],
+  "changedPublicSourcePairsDeclaredRuntime": [
+    {
+      "relative": "src/wave/SurfZoneSimulation.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/SurfZoneSimulation.ts",
+        "bytes": 70902,
+        "sha256": "c788c34600924aaf62ee9c8815e9f67149e8dbe39934725dd03edf9ed2175ab2"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/SurfZoneSimulation.ts",
+        "bytes": 71135,
+        "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/BreakingFront.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/BreakingFront.ts",
+        "bytes": 39920,
+        "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/BreakingFront.ts",
+        "bytes": 40421,
+        "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/frontRecords.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/frontRecords.ts",
+        "bytes": 1776,
+        "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/frontRecords.ts",
+        "bytes": 1941,
+        "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sweptLoft.ts",
+      "parent": {
+        "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 63917,
+        "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 64331,
+        "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c"
+      }
+    }
+  ],
+  "predicateAndDeepCopiedHistoryVerified": true,
+  "exportRetainsNormalActiveOrderButNoHistoryRefreshStepOrReadbackAdded": true,
+  "inheritedGpuExportTest": {
+    "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/gpu-export-checks.json",
+    "bytes": 1314,
+    "sha256": "dde58adfc0270c498fd4b225c29aba18283e9abf5122989b8fc3d6c70c5cbb12"
+  },
+  "inheritedGpuTestNotRerunAndNotNewLeaseProof": true,
+  "priorSourceContract": {
+    "file": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/new-source-contract-checks.json",
+    "bytes": 10116,
+    "sha256": "91f2cd7403cebeaebac0502c151122732847605a289174743a480746475f9601"
+  },
+  "failedProvenanceUnchanged": true,
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/root-complete-build-result.json",
+    "bytes": 179795,
+    "sha256": "0476e7e2fa189165cba5b6bb6f2393d9964f93ab4e31074cac2dab770df2b417"
+  },
+  "actualRootBuildVerified": true,
+  "awaitingRootBuild": false,
+  "actualBuildSourcePins": 581,
+  "actualBuildAssetPins": 49,
+  "actualManifestOmittedResearchSourcePins": [
+    "docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json"
+  ],
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "buildPerformed": false,
+  "appearanceMouthBodyFPSAcceptance": false
+}

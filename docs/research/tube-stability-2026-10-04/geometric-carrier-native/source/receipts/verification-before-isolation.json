@@ -1,0 +1,129 @@
+{
+  "schema": "bounded-C-carrier-source-verification/v1",
+  "complete": true,
+  "parentInputCount": 580,
+  "parentInputsUnchanged": true,
+  "parentReadinessUnchanged": true,
+  "candidateCount": 582,
+  "changedExistingRuntimeFiles": [
+    "src/wave/SurfZoneSimulation.ts",
+    "src/wave/barrel/BreakingFront.ts",
+    "src/wave/barrel/ProfileLibrary.ts",
+    "src/wave/barrel/SweptCrash.ts",
+    "src/wave/barrel/frontRecords.ts",
+    "src/wave/barrel/sweptLoft.ts"
+  ],
+  "addedFiles": [
+    "src/wave/barrel/carrierSupport.test.ts",
+    "src/wave/barrel/carrierSupport.ts"
+  ],
+  "unmodifiedParentInputs": 574,
+  "runtimePatchReconstruction": [
+    {
+      "argv": [
+        "patch",
+        "-p1",
+        "--dry-run",
+        "-i",
+        "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch"
+      ],
+      "cwd": "/private/tmp/tube-bounded-c-carrier-support-20261004/patch-verification",
+      "exitCode": 0,
+      "log": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch.dry-run.log",
+        "bytes": 335,
+        "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+      }
+    },
+    {
+      "argv": [
+        "patch",
+        "-p1",
+        "-i",
+        "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch"
+      ],
+      "cwd": "/private/tmp/tube-bounded-c-carrier-support-20261004/patch-verification",
+      "exitCode": 0,
+      "log": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/runtime.patch.apply.log",
+        "bytes": 335,
+        "sha256": "57acb047901abfa12d4b0850a47ded139aab8fbb039edc463a3f5ba7b37ac70e"
+      }
+    },
+    {
+      "argv": [
+        "patch",
+        "-p1",
+        "--dry-run",
+        "-i",
+        "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch"
+      ],
+      "cwd": "/private/tmp/tube-bounded-c-carrier-support-20261004/patch-verification",
+      "exitCode": 0,
+      "log": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch.dry-run.log",
+        "bytes": 55,
+        "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+      }
+    },
+    {
+      "argv": [
+        "patch",
+        "-p1",
+        "-i",
+        "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch"
+      ],
+      "cwd": "/private/tmp/tube-bounded-c-carrier-support-20261004/patch-verification",
+      "exitCode": 0,
+      "log": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/tests.patch.apply.log",
+        "bytes": 55,
+        "sha256": "661eefa610d372d79c4a15d129fe7b3ea77100a82f14f94d6a79f6e17fd4b99a"
+      }
+    }
+  ],
+  "reconstructedFiles": [
+    {
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79",
+      "bytes": 71135
+    },
+    {
+      "path": "src/wave/barrel/BreakingFront.ts",
+      "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8",
+      "bytes": 40421
+    },
+    {
+      "path": "src/wave/barrel/ProfileLibrary.ts",
+      "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e",
+      "bytes": 28989
+    },
+    {
+      "path": "src/wave/barrel/SweptCrash.ts",
+      "sha256": "190bbd5c7101874cc6ad3788b3ddc89d9f27ca4d1341194468942b85479f77b8",
+      "bytes": 33689
+    },
+    {
+      "path": "src/wave/barrel/carrierSupport.ts",
+      "sha256": "7555e0452f5bd0824b051d4165c17c1c2caca8373eb9d291cc5f479ac98d52ca",
+      "bytes": 5898
+    },
+    {
+      "path": "src/wave/barrel/frontRecords.ts",
+      "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7",
+      "bytes": 1941
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c",
+      "bytes": 64331
+    },
+    {
+      "path": "src/wave/barrel/carrierSupport.test.ts",
+      "sha256": "57507e7eda94dc1f29b65ad6b4a99f39eea9c201c6b4d8b0e769a9d86b99bcf2",
+      "bytes": 26608
+    }
+  ],
+  "allReconstructedBytesEqual": true,
+  "frozenOrRepoMutationClaim": false
+}

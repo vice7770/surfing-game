@@ -1,0 +1,13 @@
+{
+  "rootFreezeReadinessMatch": true,
+  "readinessSha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0",
+  "sourcePinCount": 582,
+  "namedFreezeHashes": {
+    "sourcePinsManifest": "0c32f04c0bb80bab34ddb88611d49a3f9202bc73bc5c70b1d9a851e09c87cba1",
+    "publicHistoryContract": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25",
+    "runtimePatch": "0712531bca6a2cbcaec484661f2d0360d274798d4da5f038c0c873fabfa74eab",
+    "testPatch": "1869b94cb7c95811c6cb970ab96cd09aef841d1af678096d88fd95a1eddf1c2b"
+  },
+  "failures": [],
+  "complete": true
+}

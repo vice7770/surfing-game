@@ -1,0 +1,214 @@
+{
+  "schema": "bounded-C-indexed-loft-analysis-manifest/v1",
+  "artifactPins": [
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/README.md",
+      "bytes": 4772,
+      "sha256": "bb9800e45bdaa3fd75338d03507af774f76eaf50801fa5691d940003d46948be"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/analysis.json",
+      "bytes": 1263172,
+      "sha256": "d64f0179e11c23b563be4779f9439a2ac0738d911f9664b46c1cbc5a8d8dbfcf"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-cavity-detail.png",
+      "bytes": 23058,
+      "sha256": "824f303bb9051fde9bf2a5801161ead5d40cba6287287275d342b11b5c7ff5c5"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-cavity-detail.svg",
+      "bytes": 21679,
+      "sha256": "99d29f5827b32cc16a9d60fe2676a86115291ef535195d7d977c346a672e8a94"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-fixed-X-section.png",
+      "bytes": 25998,
+      "sha256": "62d04bc7bb9e0951df5fc5ac1259dd54458417ce75a19428bd18a7fe3f4f0e81"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-fixed-X-section.svg",
+      "bytes": 35232,
+      "sha256": "d614f12638d9bcc9108fca3d411f27cc734ef15abe0a09164ba072da1234604e"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-normal80-96.png",
+      "bytes": 30550,
+      "sha256": "f120173e6742dd04f9f6a30eac9f3f5e41f2392203d2e006af27665a4ba28a6b"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-normal80-96.svg",
+      "bytes": 6487,
+      "sha256": "737049992f6e61ca43bf9f044b133bf8b1925d5e76c2c71ffcb45e8e090c9214"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-paired-thickness.png",
+      "bytes": 28138,
+      "sha256": "9a7e52e8a7b8f892eff9823dcd1b6b516245029e8f346962413205e288ef1477"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-paired-thickness.svg",
+      "bytes": 6955,
+      "sha256": "f11d25c9dac31db1ed55a996b4822f5733ed0995a753d6d973ebc41ab1bead52"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-root80-96.png",
+      "bytes": 23765,
+      "sha256": "00c60d3addc3c71c0c97affc289e0b3f6518d656af8d865c150a350224df9ded"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/first-phase2-root80-96.svg",
+      "bytes": 6505,
+      "sha256": "4b44f8bdd1f9f1b9be87aafcf650cc6b418e46dd4eed6c5d6c9982d015a54cad"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-cavity-detail.png",
+      "bytes": 23396,
+      "sha256": "c577acb2d93cd8fb93005b3f660d296cc7786004d0a4c01b407b8b932700e5ef"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-cavity-detail.svg",
+      "bytes": 21655,
+      "sha256": "91c7b6b0bccfa40c675d2fa4b133a5d48d54e8cff628f101a1c54e9abe1549b3"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-exterior-ray-plan.png",
+      "bytes": 23758,
+      "sha256": "2d4c01004147dd6bbe58e8cae301dd7d5dc479257c3ed5c6305db432e0819e28"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-exterior-ray-plan.svg",
+      "bytes": 4262,
+      "sha256": "330cbd91a57fb1b1ad59f49086bef12d005856f554e9e6ff4d51ed8bc5bacd13"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-fixed-X-section.png",
+      "bytes": 25643,
+      "sha256": "d002e9c5c1a98cf89463dd8e60eb411e5d397af4657d4f44e86cccd3b436016c"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-fixed-X-section.svg",
+      "bytes": 35226,
+      "sha256": "dd5e56e10c10f3721729cd28c9559bf906ecdbc5199cf6ef399676f802ff4512"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-normal80-96.png",
+      "bytes": 29291,
+      "sha256": "46e122ed4b6c4570432de3f2da34ee71df82a989bd2ae64fc8afe15e3219c0fb"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-normal80-96.svg",
+      "bytes": 6480,
+      "sha256": "91eab071c5e30151ee2b1e1443c45e7cefbb843f7c4c31f09c442e4c1165cc16"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-paired-thickness.png",
+      "bytes": 28781,
+      "sha256": "941688f365aff71e71974689e950065253ad4751b2939e5e2f7c889b08a0ef1a"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-paired-thickness.svg",
+      "bytes": 6986,
+      "sha256": "bdf56b4267ec83e25b5ce3f87718afa26144109cadbdb38716cd7b69c9a38513"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-root80-96.png",
+      "bytes": 23314,
+      "sha256": "7f60d7bc69d8f26c5c6635cf803448f1cce7e97bf6966de32bb4c14ef1b0ad14"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual/initial-root80-96.svg",
+      "bytes": 6499,
+      "sha256": "e9461bc661bf20dc1b720c96c204112530b7c5038cc68f792fde5ae11611e912"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/actual-run.log",
+      "bytes": 369,
+      "sha256": "6a35e8d6b305407167f1d1bf35e42f1f181278645c6087d6dada6eb6ea62ab45"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/analyze_loft.py",
+      "bytes": 33882,
+      "sha256": "183489d38a3081f18943edd26f5026c9a29b139e88e0afe9a82b797ab70b2ce5"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/source-method-pins.json",
+      "bytes": 1419,
+      "sha256": "26ce2b1fee99f3df3a47226f08f7c6e0d260170284414d1582004f79794da608"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/source-methods.md",
+      "bytes": 6701,
+      "sha256": "6eb7ad530e40c8a5a9cdbf81243f7e74a74fc2bb5ede2a9d9160d8355afd50ad"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/test_analyzer.py",
+      "bytes": 5251,
+      "sha256": "dc84c91aeb786f95206d38d6eeff78bc9b13fb3ac2daa305fd38c8d4c0705dce"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/unit-tests.log",
+      "bytes": 1083,
+      "sha256": "39dc9aaa87c47ff13edad2bf941ac4248a50b6466cc6d8deeda942410c9fa299"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-loft-geometry-analysis-20261004/verify-ready.py",
+      "bytes": 1423,
+      "sha256": "b01ddb0c852473c5e19ab55cc377036cf447697fb8b40e54e9e8cae276846350"
+    }
+  ],
+  "inputPins": [
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/report.json",
+      "bytes": 9452886,
+      "sha256": "a4934771a954d4363d3618719ac0e4ef236aeac1ca2f6d938940dabd7f87a988"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/loft-initial.json",
+      "bytes": 1796420,
+      "sha256": "1a9722cc198f7cb4c4df56de1ece30e2417fbd462df2249c54d4cb143f17c32f"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/loft-first-phase2.json",
+      "bytes": 2280086,
+      "sha256": "fbbfce1016677cfdf0f87c38207602148870de1910b68d3a284a89acaf4b3f2d"
+    }
+  ],
+  "sourceMethodPins": [
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 28989,
+      "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 64331,
+      "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 3200,
+      "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.mjs",
+      "bytes": 2957,
+      "sha256": "eddf8c0905336fa839a9abdd1af8cdc637f89d243ad0370b3ddc21cc384a53bd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/station-tools.mjs",
+      "bytes": 17541,
+      "sha256": "65043d2fb90b01bdf174c0e8455638aba1d8cf1cb92479ca0e55a69cd317c966"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptContact.ts",
+      "bytes": 29546,
+      "sha256": "9d17bdbbbcfdebbab1bc46bc31b5ffae5935010d6e7b347b190b841a6ecc7c46"
+    }
+  ],
+  "excluded": [
+    "__pycache__",
+    "manifest.json self-reference",
+    "readiness.json pinned separately"
+  ]
+}

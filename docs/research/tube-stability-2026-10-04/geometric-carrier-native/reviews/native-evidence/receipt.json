@@ -1,0 +1,25 @@
+{
+  "schema": "carrier-native-review-output-pins/v1",
+  "complete": true,
+  "outputs": [
+    {
+      "file": "/private/tmp/tube-carrier-native-evidence-review-20261004/analyze.py",
+      "bytes": 23922,
+      "sha256": "dedd591845116b078571b199598378b1648b1b71a18c717953b734c9998c66c8"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-native-evidence-review-20261004/analysis.json",
+      "bytes": 274407,
+      "sha256": "d1f6b76a051ae6411491f3797a4d2bb38d55e19ceab3e617382690b3092fc196"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-native-evidence-review-20261004/report.md",
+      "bytes": 7733,
+      "sha256": "a37f98c7ca227d7bbd54854aa48ac9661f5158dc9271c67a36360bcdc49891da"
+    }
+  ],
+  "originalInputsVerifiedUnchanged": true,
+  "checks": 54,
+  "inputCount": 759,
+  "nativeResourcesOrTestsRerun": false
+}

@@ -1,0 +1,160 @@
+{
+  "schema": "bounded-C-carrier-release-stress-outcome/v1",
+  "complete": true,
+  "actualTrials": 5,
+  "contractGateFailures": 0,
+  "strictTSExitCode": 0,
+  "strictTerminalSession": 21538,
+  "testExitCode": 0,
+  "testsPassed": 5,
+  "testsFailed": 0,
+  "testCommand": "./node_modules/.bin/vitest run stress.test.ts --reporter=json --outputFile=/private/tmp/tube-carrier-release-stress-20261004/test-result-first.json",
+  "strictCommand": "./node_modules/.bin/tsc --noEmit",
+  "cwd": "/private/tmp/tube-carrier-release-stress-20261004",
+  "summaries": [
+    {
+      "label": "small-control",
+      "distance": 0.2,
+      "allPointIDsAndOneFrontPreserved": true,
+      "mandatoryPositiveOverturnedPhase2RoofPreserved": true,
+      "currentSlices": 43,
+      "baselineSlices": 43,
+      "indexCountEqual": true,
+      "joinedFrontAndPhase2FlagsEqual": true,
+      "maxSurvivingRawPointTauResidualSeconds": 3.215405597334353e-07,
+      "maxSurvivingRawPointZResidualMetres": 1.2861622380455628e-06,
+      "maxFixedXInterpolatedTauResidualSeconds": 0.0002731889881750771,
+      "maxFixedXHorizontalZResidualMetres": 5.4739821017335544e-05,
+      "maxFixedXCrestHeightResidualMetres": 0.004113687058893367,
+      "maxFixedXLipHeightResidualMetres": 0.0002288575371049567,
+      "maxFixedXToeHeightResidualMetres": 0.0002288575371049567,
+      "maxFixedXWeightResidual": 0.0016042149998055644,
+      "noNumericContinuityToleranceApplied": true
+    },
+    {
+      "label": "newer-measured-distance",
+      "distance": 2.6349639892578125,
+      "allPointIDsAndOneFrontPreserved": true,
+      "mandatoryPositiveOverturnedPhase2RoofPreserved": true,
+      "currentSlices": 43,
+      "baselineSlices": 43,
+      "indexCountEqual": true,
+      "joinedFrontAndPhase2FlagsEqual": true,
+      "maxSurvivingRawPointTauResidualSeconds": 8.768661352576146e-08,
+      "maxSurvivingRawPointZResidualMetres": 3.5074645410304583e-07,
+      "maxFixedXInterpolatedTauResidualSeconds": 0.009393351294402885,
+      "maxFixedXHorizontalZResidualMetres": 0.001992336322139465,
+      "maxFixedXCrestHeightResidualMetres": 0.027796547780917363,
+      "maxFixedXLipHeightResidualMetres": 0.0015464022402112455,
+      "maxFixedXToeHeightResidualMetres": 0.0015464022402112455,
+      "maxFixedXWeightResidual": 0.010839776296924342,
+      "noNumericContinuityToleranceApplied": true
+    },
+    {
+      "label": "older-measured-distance",
+      "distance": 2.80810546875,
+      "allPointIDsAndOneFrontPreserved": true,
+      "mandatoryPositiveOverturnedPhase2RoofPreserved": true,
+      "currentSlices": 43,
+      "baselineSlices": 43,
+      "indexCountEqual": true,
+      "joinedFrontAndPhase2FlagsEqual": true,
+      "maxSurvivingRawPointTauResidualSeconds": 1.0776672443313373e-07,
+      "maxSurvivingRawPointZResidualMetres": 4.310669012852486e-07,
+      "maxFixedXInterpolatedTauResidualSeconds": 0.015547080530371904,
+      "maxFixedXHorizontalZResidualMetres": 0.0032964233576961988,
+      "maxFixedXCrestHeightResidualMetres": 0.039025180928959236,
+      "maxFixedXLipHeightResidualMetres": 0.0021710843303889837,
+      "maxFixedXToeHeightResidualMetres": 0.0021710843303889837,
+      "maxFixedXWeightResidual": 0.01521862089074244,
+      "noNumericContinuityToleranceApplied": true
+    },
+    {
+      "label": "hypothetical-newer-negative-return",
+      "distance": -2.6349639892578125,
+      "allPointIDsAndOneFrontPreserved": true,
+      "mandatoryPositiveOverturnedPhase2RoofPreserved": true,
+      "currentSlices": 43,
+      "baselineSlices": 43,
+      "indexCountEqual": true,
+      "joinedFrontAndPhase2FlagsEqual": true,
+      "maxSurvivingRawPointTauResidualSeconds": 1.0776672443313373e-07,
+      "maxSurvivingRawPointZResidualMetres": 4.310669012852486e-07,
+      "maxFixedXInterpolatedTauResidualSeconds": 0.009393589712981987,
+      "maxFixedXHorizontalZResidualMetres": 0.001992336322139465,
+      "maxFixedXCrestHeightResidualMetres": 0.02779621718725009,
+      "maxFixedXLipHeightResidualMetres": 0.0015463842331660121,
+      "maxFixedXToeHeightResidualMetres": 0.0015463842331660121,
+      "maxFixedXWeightResidual": 0.010839653481034217,
+      "noNumericContinuityToleranceApplied": true
+    },
+    {
+      "label": "hypothetical-older-negative-return",
+      "distance": -2.80810546875,
+      "allPointIDsAndOneFrontPreserved": true,
+      "mandatoryPositiveOverturnedPhase2RoofPreserved": true,
+      "currentSlices": 43,
+      "baselineSlices": 43,
+      "indexCountEqual": true,
+      "joinedFrontAndPhase2FlagsEqual": true,
+      "maxSurvivingRawPointTauResidualSeconds": 1.0776672443313373e-07,
+      "maxSurvivingRawPointZResidualMetres": 4.310669012852486e-07,
+      "maxFixedXInterpolatedTauResidualSeconds": 0.015547080530371904,
+      "maxFixedXHorizontalZResidualMetres": 0.0032964233576961988,
+      "maxFixedXCrestHeightResidualMetres": 0.039025180928959236,
+      "maxFixedXLipHeightResidualMetres": 0.0021710843303889837,
+      "maxFixedXToeHeightResidualMetres": 0.0021710843303889837,
+      "maxFixedXWeightResidual": 0.01521862089074244,
+      "noNumericContinuityToleranceApplied": true
+    }
+  ],
+  "observedResidualFinding": "Large release changes near-boundary sampling/end-seal geometry and interpolated ages despite tiny surviving raw-point clock/Z residuals. Maximum measured fixed-X crest height difference39.0251809mm, lip2.1710843mm, horizontal Z3.2964234mm, sampled tau15.5470805ms. Mandatory X13/17/21 phase2 roof remains. No numerical continuity pass is claimed.",
+  "limits": [
+    "Synthetic parameter stress from the frozen positive-weight overturned phase2 fixture; not replay of native state or motion.",
+    "Only handoff DISTANCES are measured capture inputs; other controlled positions, bases, timings and solver substrate are explicitly synthetic.",
+    "Negative return cases are source-supported hypothetical solver reacquisition within the same match reach, not observed native return.",
+    "No arbitrary numerical success tolerance: report every clock/XYZ/weight/topology residual; passing identity/lifetime/phase gates is not broad visual continuity proof.",
+    "No build/native/browser/resource/port/Git/repository/frozen-file mutation or adoption claim.",
+    "One controlled linear throw-time slope, uniform foot parameters, and synthetic reset bases from the frozen release fixture. It does not establish native/global same-front stability for other peel histories, parameter variation or larger reacquisition."
+  ],
+  "pins": {
+    "harness": {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/stress.test.ts",
+      "bytes": 13319,
+      "sha256": "e3596c3b839db3ed07d7be3296bd2a9d67a238d7524d634db49a83b74f0344d4"
+    },
+    "report": {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/report.json",
+      "bytes": 783065,
+      "sha256": "d0752e6e446fab362f18edb78a38ba80753116526d06d32ae695d76394109799"
+    },
+    "testReport": {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/test-result-first.json",
+      "bytes": 2792,
+      "sha256": "d5866b6cb398835a8281c3536907be111f70e7de944c236b232589b0ad074d46"
+    },
+    "strictLog": {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/strict-complete.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "frozenPreservation": {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/frozen-preservation.json",
+      "bytes": 424,
+      "sha256": "639000f4c099b56324c01731e20bed13b1211d8f57ae248a25ce7f4f0fd08f8e"
+    }
+  },
+  "readyForRootReview": true,
+  "nativeAppearanceClaim": false,
+  "adoptionReady": false,
+  "resourceUse": {
+    "build": false,
+    "native": false,
+    "browser": false,
+    "ports": false,
+    "Git": false,
+    "repoMutation": false,
+    "frozenMutation": false,
+    "subagents": false
+  }
+}

@@ -1,0 +1,259 @@
+{
+  "bounds": [
+    {
+      "a": {
+        "footHeight": 0.12,
+        "footDepth": 1
+      },
+      "b": {
+        "footHeight": 5.5,
+        "footDepth": 9
+      },
+      "bound": {
+        "seconds": 2.4444367626466064,
+        "maxScale": 12.222222222222221,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 5
+      },
+      "actualMax": 2.21397160463909,
+      "scaleMax": 12.222222222222221
+    },
+    {
+      "a": {
+        "footHeight": 4.7,
+        "footDepth": 2
+      },
+      "b": {
+        "footHeight": 0.42,
+        "footDepth": 7
+      },
+      "bound": {
+        "seconds": 2.2596770874387073,
+        "maxScale": 10.444444020589193,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 5
+      },
+      "actualMax": 2.0466313482481873,
+      "scaleMax": 10.444444020589193
+    },
+    {
+      "a": {
+        "footHeight": 0.4,
+        "footDepth": 1
+      },
+      "b": {
+        "footHeight": 3.6,
+        "footDepth": 9
+      },
+      "bound": {
+        "seconds": 2.097611104464132,
+        "maxScale": 9,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 1
+      },
+      "actualMax": 1.8143146226959361,
+      "scaleMax": 9
+    },
+    {
+      "a": {
+        "footHeight": 2.63,
+        "footDepth": 7
+      },
+      "b": {
+        "footHeight": 2.65,
+        "footDepth": 7
+      },
+      "bound": {
+        "seconds": 1.8499191099132068,
+        "maxScale": 7,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 1
+      },
+      "actualMax": 1.5677374427434958,
+      "scaleMax": 7
+    }
+  ],
+  "interior": {
+    "endpointOwnUntil": [
+      0.5477172622900233,
+      1.6431517868700696
+    ],
+    "endpointTau": [
+      0.5577172622900233,
+      1.6531517868700696
+    ],
+    "interiorTau": 1.1054345245800463,
+    "interiorRetirement": 1.224733030930574,
+    "history": {
+      "policy": "bounded-C-incident-support/v1",
+      "atTau": 0.5577172622900233,
+      "solverTime": 1,
+      "ownPocketAlive": false,
+      "retainedForGeometry": true,
+      "geometricPaceActive": true,
+      "state": "incident-support",
+      "incidents": [
+        {
+          "otherId": 101,
+          "front": 1,
+          "boundSeconds": 2.097611104464132,
+          "minimumPacketAge": 0.5577172622900233,
+          "potentiallyLive": true,
+          "maxScale": 9,
+          "maxAuthoredTD": 1.368731429193744,
+          "partitions": 1
+        }
+      ]
+    }
+  },
+  "handoff": {
+    "report": {
+      "path": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/report.json",
+      "sha256": "a17654bd706fbd3c6518b94ad9deb31f096bc7a98e114795a0a3b6a6801bfd4d",
+      "bytes": 8769787
+    },
+    "before": {
+      "rows": [
+        1,
+        2
+      ],
+      "phases": [
+        2,
+        2
+      ],
+      "overturned": [
+        1,
+        1
+      ],
+      "weights": [
+        0.015285242348909378,
+        0.08891306072473526
+      ],
+      "z": [
+        -129.6892242998713,
+        -127.26634334703363,
+        -126.76465650350274
+      ],
+      "y": [
+        0.2656314979386659,
+        0.016626619757425243,
+        0.016626619757425243
+      ]
+    },
+    "after": {
+      "rows": [
+        1,
+        2
+      ],
+      "phases": [
+        2,
+        2
+      ],
+      "overturned": [
+        1,
+        1
+      ],
+      "weights": [
+        0.016402697190642357,
+        0.10300925374031067
+      ],
+      "z": [
+        -129.56122002459827,
+        -127.13832587774105,
+        -126.63664683818418
+      ],
+      "y": [
+        0.1160662162074489,
+        0.007264161459894619,
+        0.007264161459894619
+      ]
+    },
+    "landmarkDeltaZ": [
+      0.12800427527304237,
+      0.12801746929257263,
+      0.12800966531855806
+    ],
+    "rawOldDelta": 2.6349639892578125,
+    "newEndpointDelta": 0.26518004868671596,
+    "immutable": [
+      [
+        158,
+        6.624247192383583,
+        -140.54818799998338,
+        1.5649843571611293,
+        35.5057857034707
+      ],
+      [
+        159,
+        6.648556790294768,
+        -138.86865730509928,
+        1.5669200797867315,
+        35.63005199734316
+      ]
+    ],
+    "history": {
+      "policy": "bounded-C-incident-support/v1",
+      "atTau": 1.6120177507400513,
+      "solverTime": 37.06666666666666,
+      "ownPocketAlive": false,
+      "retainedForGeometry": true,
+      "geometricPaceActive": true,
+      "state": "incident-support",
+      "incidents": [
+        {
+          "otherId": 159,
+          "front": 72,
+          "boundSeconds": 1.8499191099132068,
+          "minimumPacketAge": 1.431322455406189,
+          "potentiallyLive": true,
+          "maxScale": 7,
+          "maxAuthoredTD": 1.368731429193744,
+          "partitions": 1
+        }
+      ]
+    },
+    "nativeRerunClaim": false
+  },
+  "budget": {
+    "actualBudgetTriggered": true,
+    "priorClamps": 4,
+    "priorRevivedDeadRows": 3,
+    "nextRevivedDeadRows": 0,
+    "rawDrawAndContactByteParity": true
+  },
+  "stall": {
+    "component": [
+      {
+        "front": 1,
+        "pointIds": [
+          100,
+          101
+        ],
+        "boundSeconds": 2.097611104464132,
+        "latestSourceTime": 0
+      }
+    ],
+    "bound": 2.097611104464132,
+    "noAdditionalWaterOrAir": true,
+    "originalOwnPocketStallRetained": true
+  },
+  "lifecycle": {
+    "ownUntil": 1.4491236647965373,
+    "bound": 1.6000291448564612,
+    "supportOnlyFrames": 19,
+    "throws": 7,
+    "fundedWater": 3.3042741666605453,
+    "trappedOnce": 19.617311960677746,
+    "emitted": 19.617311960677725,
+    "heldAir": 0,
+    "airborneWater": 0,
+    "onceOnlyFundingAndAir": true
+  },
+  "raw": {
+    "trackerExportEquality": true,
+    "solverBytesEquality": true,
+    "packetWordsEquality": true,
+    "physicalLipLedgerEquality": true,
+    "epochs": 7
+  }
+}

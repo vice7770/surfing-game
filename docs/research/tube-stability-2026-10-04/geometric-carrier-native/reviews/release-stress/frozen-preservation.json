@@ -1,0 +1,12 @@
+{
+  "schema": "bounded-C-carrier-release-stress-frozen-preservation/v1",
+  "complete": true,
+  "readiness": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json",
+    "bytes": 115387,
+    "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+  },
+  "sourcePinsUnchanged": 582,
+  "artifactPinsUnchanged": 66,
+  "scope": "read-only check; no frozen/source files written"
+}

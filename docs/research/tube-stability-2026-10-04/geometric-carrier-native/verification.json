@@ -1,0 +1,136 @@
+{
+  "schema": "geometric-carrier-native-archive-final-verification/v1",
+  "complete": true,
+  "manifestSha256": "ede43f427c499b3cd45cfe598d2cc8d2e18616f4380f3b4c4fe1265165643cfb",
+  "portableWorkingDirectoriesChecked": 2,
+  "originalInputCheckInvocations": 1,
+  "commands": [
+    {
+      "argv": [
+        "/Users/regina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/geometric-carrier-native/verify.py"
+      ],
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game",
+      "exitCode": 0,
+      "result": {
+        "schema": "geometric-carrier-native-archive-verification/v1",
+        "passed": true,
+        "manifestSha256": "ede43f427c499b3cd45cfe598d2cc8d2e18616f4380f3b4c4fe1265165643cfb",
+        "payloadFiles": 205,
+        "externalReferences": 9,
+        "transportBytes": 12879062,
+        "decodedBytes": 26681510,
+        "exactPatchSets": 2,
+        "exactPatchedFileChecks": 8,
+        "candidateSourcePins": 582,
+        "rootBuildSourcePins": 581,
+        "completeAssets": 49,
+        "helperManifestPins": 42,
+        "rootSealHelperPins": 44,
+        "nativeMedia": 5,
+        "fullLoftSnapshots": 2,
+        "snapshotJSONBytes": 4076506,
+        "snapshotRawWordBytes": 3047682,
+        "encodedFramesRecorded": 69,
+        "independentNativeChecksRecorded": 54,
+        "decodedPNGsOmitted": 5,
+        "originalPathsRehashed": 0,
+        "optionalOriginalSourceBuildHelperChecks": 0,
+        "noSourceModelBuildNativeTestsOrResourcesRun": true,
+        "fullSourceDependenciesOrBuildReconstructionClaim": false,
+        "adoptionAcceptance": false
+      },
+      "savedStdout": {
+        "file": "/private/tmp/tube-carrier-durable-archive-20261005/portable-repo-cwd.json",
+        "bytes": 912,
+        "sha256": "b874cfa3454c5ac3f049c91b8493c2df190182251237f3b6fa4a2a37ca883ab7"
+      }
+    },
+    {
+      "argv": [
+        "/Users/regina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/geometric-carrier-native/verify.py"
+      ],
+      "cwd": "/private/tmp/tube-carrier-durable-archive-20261005",
+      "exitCode": 0,
+      "result": {
+        "schema": "geometric-carrier-native-archive-verification/v1",
+        "passed": true,
+        "manifestSha256": "ede43f427c499b3cd45cfe598d2cc8d2e18616f4380f3b4c4fe1265165643cfb",
+        "payloadFiles": 205,
+        "externalReferences": 9,
+        "transportBytes": 12879062,
+        "decodedBytes": 26681510,
+        "exactPatchSets": 2,
+        "exactPatchedFileChecks": 8,
+        "candidateSourcePins": 582,
+        "rootBuildSourcePins": 581,
+        "completeAssets": 49,
+        "helperManifestPins": 42,
+        "rootSealHelperPins": 44,
+        "nativeMedia": 5,
+        "fullLoftSnapshots": 2,
+        "snapshotJSONBytes": 4076506,
+        "snapshotRawWordBytes": 3047682,
+        "encodedFramesRecorded": 69,
+        "independentNativeChecksRecorded": 54,
+        "decodedPNGsOmitted": 5,
+        "originalPathsRehashed": 0,
+        "optionalOriginalSourceBuildHelperChecks": 0,
+        "noSourceModelBuildNativeTestsOrResourcesRun": true,
+        "fullSourceDependenciesOrBuildReconstructionClaim": false,
+        "adoptionAcceptance": false
+      },
+      "savedStdout": {
+        "file": "/private/tmp/tube-carrier-durable-archive-20261005/portable-second-cwd.json",
+        "bytes": 912,
+        "sha256": "b874cfa3454c5ac3f049c91b8493c2df190182251237f3b6fa4a2a37ca883ab7"
+      }
+    },
+    {
+      "argv": [
+        "/Users/regina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/geometric-carrier-native/verify.py",
+        "--originals"
+      ],
+      "cwd": "/private/tmp/tube-carrier-durable-archive-20261005",
+      "exitCode": 0,
+      "result": {
+        "schema": "geometric-carrier-native-archive-verification/v1",
+        "passed": true,
+        "manifestSha256": "ede43f427c499b3cd45cfe598d2cc8d2e18616f4380f3b4c4fe1265165643cfb",
+        "payloadFiles": 205,
+        "externalReferences": 9,
+        "transportBytes": 12879062,
+        "decodedBytes": 26681510,
+        "exactPatchSets": 2,
+        "exactPatchedFileChecks": 8,
+        "candidateSourcePins": 582,
+        "rootBuildSourcePins": 581,
+        "completeAssets": 49,
+        "helperManifestPins": 42,
+        "rootSealHelperPins": 44,
+        "nativeMedia": 5,
+        "fullLoftSnapshots": 2,
+        "snapshotJSONBytes": 4076506,
+        "snapshotRawWordBytes": 3047682,
+        "encodedFramesRecorded": 69,
+        "independentNativeChecksRecorded": 54,
+        "decodedPNGsOmitted": 5,
+        "originalPathsRehashed": 230,
+        "optionalOriginalSourceBuildHelperChecks": 1906,
+        "noSourceModelBuildNativeTestsOrResourcesRun": true,
+        "fullSourceDependenciesOrBuildReconstructionClaim": false,
+        "adoptionAcceptance": false
+      },
+      "savedStdout": {
+        "file": "/private/tmp/tube-carrier-durable-archive-20261005/original-input-check.json",
+        "bytes": 917,
+        "sha256": "223357a23a705cefd4722b63cbe202cdeb1d36d6f323d9e2404810422f1cc968"
+      }
+    }
+  ],
+  "noSourceModelBuildNativeTestsOrResourcesRun": true,
+  "entireSourceDependenciesOrBuildReconstructionClaim": false,
+  "adoptionAcceptance": false
+}

@@ -1,0 +1,14 @@
+test_actual_triangle_diagonal_preserved (test_analyzer.Tests.test_actual_triangle_diagonal_preserved) ... ok
+test_bounds_active_words (test_analyzer.Tests.test_bounds_active_words) ... ok
+test_cavity_span_height_and_collapsed_roof (test_analyzer.Tests.test_cavity_span_height_and_collapsed_roof) ... ok
+test_exact_decode_endian (test_analyzer.Tests.test_exact_decode_endian) ... ok
+test_exact_first_hit_band_component_segment (test_analyzer.Tests.test_exact_first_hit_band_component_segment) ... ok
+test_proper_section_crossing_excludes_shared_endpoints (test_analyzer.Tests.test_proper_section_crossing_excludes_shared_endpoints) ... ok
+test_source_half_open_vertical_crossing_and_slope (test_analyzer.Tests.test_source_half_open_vertical_crossing_and_slope) ... ok
+test_source_indices_normals_convention (test_analyzer.Tests.test_source_indices_normals_convention) ... ok
+test_unique_station_and_limited_geometry (test_analyzer.Tests.test_unique_station_and_limited_geometry) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.027s
+
+OK

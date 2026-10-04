@@ -1,0 +1,386 @@
+--- a/src/wave/SurfZoneSimulation.ts
++++ b/src/wave/SurfZoneSimulation.ts
+@@ -27,6 +27,7 @@
+ import type { ProfileLibrary } from './barrel/ProfileLibrary';
+ import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
+ import { SweptCrash } from './barrel/SweptCrash';
++import { CarrierSupport } from './barrel/carrierSupport';
+ import { BARREL_SLOPE } from './barrel/sweptLoft';
+ 
+ /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
+@@ -630,9 +631,10 @@
+       // The spot's barrel record (`BARREL_SPOTS`); `barrel` is the constructor's profile library, for the crash.
+       const record = BARREL_SPOTS[config.spot]!;
+       this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', record.onset);
+-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? record.front);
++      const slope = BARREL_SLOPE[config.spot];
++      const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && config.sweptCrash !== false ? new CarrierSupport(barrel, slope) : undefined;
++      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? record.front, carrier);
+       this.frontFrom = barrelFrontFrom(config, tank);
+-      const slope = BARREL_SLOPE[config.spot];
+       if (barrel && slope !== undefined && config.sweptCrash !== false) {
+         this.crash = new SweptCrash(barrel, slope);
+         this.whitewater = new Float64Array(this.solver.h.length);
+--- a/src/wave/barrel/BreakingFront.ts
++++ b/src/wave/barrel/BreakingFront.ts
+@@ -1,5 +1,6 @@
+ import type { CrestSample } from './crestOnset';
+ import type { OnsetTiming } from './sliceClock';
++import { CarrierSupport, copyCarrierPoint, geometricPaceActive, type CarrierSupportHistory } from './carrierSupport';
+ 
+ /** Crests in neighbouring columns this many rows apart in z are one front (provisional). */
+ const LINK_ROWS = 3;
+@@ -178,6 +179,8 @@
+   jetBase?: number;
+   jetUntil?: number;
+   jetAt?: number;
++  /** C-only dynamic incident support evidence; individual physical jetUntil remains unchanged. */
++  carrierSupport?: CarrierSupportHistory;
+   /** The solver's crest it claimed this step while on its pace, m; absent with none in reach (PR 5). */
+   crestZ?: number;
+   /** Its crest's speed along its column over the last few frames, m/s (`crestMotion`, PACE_SECONDS); absent unmeasured. */
+@@ -274,13 +277,15 @@
+    * `cell`: the rows' spacing where fronts form, m; `timing`: the wedge’s foot, the join and throw depths (sliceClock);
+    * `options`: the spot's rules beyond Padang Padang's (none there).
+    */
+-  constructor(cell: number, private readonly timing: OnsetTiming, private readonly options: FrontOptions = {}) {
++  constructor(cell: number, private readonly timing: OnsetTiming, private readonly options: FrontOptions = {}, private readonly carrier?: CarrierSupport) {
+     this.linkReach = LINK_ROWS * cell;
+     this.matchReach = MATCH_REACH + cell;
+   }
+ 
+   update(samples: readonly CrestSample[], count: number, time: number): void {
+     this.retainActiveOrder();
++    this.carrier?.refresh(this.points, time);
++    this.carrier?.refreshHeld(this.held, time);
+     const previous = [...(this.order ?? this.points), ...this.held];
+     const pointsOf = byColumn(previous);
+     const tracksOf = byColumn(this.tracks);
+@@ -414,6 +419,7 @@
+     if (coasting) points.sort((a, b) => a.column - b.column || a.z - b.z);
+     const linked = this.link(points);
+     this.points = linked.fronts;
++    this.carrier?.refresh(this.points, time);
+     this.order = linked.order;
+     this.held = previous.filter((old) => !matched.has(old) && time - old.seen <= HOLD);
+     const kept = this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD);
+@@ -637,14 +643,14 @@
+   exportState(): FrontState {
+     this.retainActiveOrder();
+     return {
+-      nextId: this.nextId, nextFront: this.nextFront, points: this.points.map((p) => ({ ...p })), held: this.held.map((p) => ({ ...p })),
++      nextId: this.nextId, nextFront: this.nextFront, points: this.points.map(copyCarrierPoint), held: this.held.map(copyCarrierPoint),
+       tracks: this.tracks.map((t) => ({ ...t })),
+       ...(this.order ? { order: this.order.map((p) => p.id) } : {}),
+     };
+   }
+ 
+   importState(state: FrontState): void {
+-    const points = state.points.map((p) => ({ ...p }));
++    const points = state.points.map(copyCarrierPoint);
+     // The order lists these same points (`FrontState.order`). One that names a point the state lacks, or misses or
+     // repeats one, is not this front's: it is refused before anything is taken over.
+     const byId = new Map(points.map((p) => [p.id, p]));
+@@ -660,7 +666,7 @@
+     this.nextFront = state.nextFront;
+     this.points = points;
+     this.order = order;
+-    this.held = state.held.map((p) => ({ ...p }));
++    this.held = state.held.map(copyCarrierPoint);
+     this.tracks = (state.tracks ?? []).map((t) => ({ ...t }));
+   }
+ }
+@@ -721,6 +727,7 @@
+  * hasn't faded (its clock short of `jetUntil`), crashed or not (the advisor, 2026-10-03).
+  */
+ function runsOnPace(point: FrontPoint): boolean {
++  if (point.carrierSupport) return geometricPaceActive(point);
+   return point.jetPace !== undefined && point.jetUntil !== undefined && point.tau < point.jetUntil;
+ }
+ 
+--- a/src/wave/barrel/ProfileLibrary.ts
++++ b/src/wave/barrel/ProfileLibrary.ts
+@@ -1,6 +1,17 @@
+ import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, boundedCCap, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent } from './boundedCProfile';
+ import { pairInnerSheet } from './sharedUpperRoot';
+ import { GRAVITY } from '../dispersion';
++
++let carrierRounding: DataView | undefined;
++function carrierNextUp(value: number): number {
++  if (!Number.isFinite(value) || value < 0) throw new Error('Invalid positive carrier bound');
++  carrierRounding ??= new DataView(new ArrayBuffer(8));
++  carrierRounding.setFloat64(0, value);
++  const low = carrierRounding.getUint32(4);
++  carrierRounding.setUint32(4, low === 0xffffffff ? 0 : low + 1);
++  if (low === 0xffffffff) carrierRounding.setUint32(0, carrierRounding.getUint32(0) + 1);
++  return carrierRounding.getFloat64(0);
++}
+ 
+ /**
+  * The swept barrel's profile library (the Padang Padang spec, Part B): simulated 2D breakers (Basilisk, the advisor's
+@@ -318,6 +329,42 @@
+     return { lower: b.lower, upper: b.upper, weight: b.weight, scale: b.scale, clamped: b.clamped };
+   }
+ 
++  /** C incident-interpolation support only; it never changes an individual pocket's physical lifetime. */
++  carrierRetirementBound(slope: number, a: { footHeight: number; footDepth: number }, b: { footHeight: number; footDepth: number }): {
++    seconds: number; maxScale: number; maxAuthoredTD: number; partitions: number;
++  } {
++    if (this.options.geometry !== 'bounded-C') throw new Error('Carrier support requires the bounded C provider');
++    // The loft interpolates these actual F32 packet endpoints. H/D is monotone for positive affine H and D.
++    const h0 = Math.fround(a.footHeight), h1 = Math.fround(b.footHeight);
++    const d0 = Math.fround(a.footDepth), d1 = Math.fround(b.footDepth);
++    if (![h0, h1, d0, d1].every(v => Number.isFinite(v) && v > 0)) throw new Error('Invalid carrier support foot domain');
++    let group = this.bySlope[0];
++    for (const candidate of this.bySlope) if (Math.abs(candidate[0].slope - slope) < Math.abs(group[0].slope - slope)) group = candidate;
++    const stops = [0, 1];
++    for (const c of group) {
++      const denominator = h1 - h0 - c.nonlinearity * (d1 - d0);
++      if (denominator === 0) continue;
++      const t = (c.nonlinearity * d0 - h0) / denominator;
++      if (t > 0 && t < 1) stops.push(t);
++    }
++    stops.sort((x, y) => x - y);
++    const probes = [...stops];
++    for (let k = 0; k + 1 < stops.length; k += 1) probes.push((stops[k] + stops[k + 1]) / 2);
++    let maxScale = 0, maxAuthoredTD = 0;
++    for (const t of probes) {
++      const q = this.bracket({ slope, footHeight: h0 + t * (h1 - h0), footDepth: d0 + t * (d1 - d0) });
++      // Within each partition, scale is affine D, or affine H/caseA when clamped to a single case.
++      maxScale = Math.max(maxScale, q.scale);
++      maxAuthoredTD = Math.max(maxAuthoredTD, q.lower.touchdown, q.upper.touchdown);
++    }
++    // C impact = TD + .3 TD * eventFraction, and collapse = .3 TD; eventFraction is in [0,1].
++    // Round each positive bound operation upward, including scale/TD and the Froude unit.
++    const unit = carrierNextUp(Math.sqrt(carrierNextUp(carrierNextUp(maxScale) / GRAVITY)));
++    const seconds = carrierNextUp(carrierNextUp(1.6 * carrierNextUp(maxAuthoredTD)) * unit);
++    if (!Number.isFinite(seconds) || !(seconds > 0)) throw new Error('Nonfinite carrier support bound');
++    return { seconds, maxScale, maxAuthoredTD, partitions: stops.length - 1 };
++  }
++
+   /** The cases a slice blends (the nearest slope's two bracketing its A0), its scale (h0, m) and τ's unit, s. */
+   private bracket(query: Omit<ProfileQuery, 'seconds'>) {
+     let group = this.bySlope[0];
+--- a/src/wave/barrel/SweptCrash.ts
++++ b/src/wave/barrel/SweptCrash.ts
+@@ -6,6 +6,7 @@
+ import type { CrestRayPlan } from './crestRays';
+ import { CrashCurve, createCrashSlice, type CrashSlice, type JetMotion } from './crashCurve';
+ import type { ProfileLibrary } from './ProfileLibrary';
++import { CarrierSupport, geometricPaceActive } from './carrierSupport';
+ 
+ /**
+  * A thrown point, jet or not, runs on its crest's pace from the throw until its slice has faded (the advisor, 2026-10-01
+@@ -138,6 +139,10 @@
+   updateMs = 0;
+   private readonly geometry: CrashCurve;
+   private readonly columnSections: boolean;
++  private readonly carrier: CarrierSupport | undefined;
++  /** C geometric watchdog only; all individual pockets have already expired before these components leave. */
++  readonly carrierExited: FrontPoint[] = [];
++  readonly carrierRetirements: { front: number; pointIds: number[]; boundSeconds: number; latestSourceTime: number }[] = [];
+   private readonly foreseen = createCrashSlice();
+   private readonly motion: JetMotion = { tipAlong: 0, tipUp: 0, crestSpeed: 0 };
+   private readonly pool: CrashPoint[] = [];
+@@ -169,6 +174,7 @@
+   constructor(library: ProfileLibrary, slope: number) {
+     this.geometry = new CrashCurve(library, slope);
+     this.columnSections = library.options.geometry === 'bounded-C';
++    this.carrier = this.columnSections ? new CarrierSupport(library, slope) : undefined;
+   }
+ 
+   /**
+@@ -192,6 +198,23 @@
+       kept += 1;
+     }
+     points.length = kept;
++    this.carrierExited.length = 0;
++    this.carrierRetirements.length = 0;
++    if (this.carrier) {
++      this.carrier.refresh(points, solver.time);
++      const expired = this.carrier.stalledExpiredComponents(points, solver.time);
++      this.carrierRetirements.push(...expired);
++      if (expired.length) {
++        const fronts = new Set(expired.map(c => c.front));
++        kept = 0;
++        for (const p of points) {
++          if (fronts.has(p.front)) { this.carrierExited.push(p); continue; }
++          points[kept++] = p;
++        }
++        points.length = kept;
++        this.carrier.refresh(points, solver.time);
++      }
++    }
+     if (this.analyticVoids.size > 0) {
+       this.presentVoids.clear();
+       for (const p of points) if (p.jetStrip !== undefined && p.jetStrip >= 0) this.presentVoids.add(p.jetStrip);
+@@ -209,8 +232,10 @@
+     // A point past its throw, jet or not, runs on its pace (BreakingFront), still claiming its crest, until its slice has
+     // faded: z = jetBase + jetPace τ, with no blend (the advisor, 2026-10-03). Then it goes back to the ordinary match.
+     for (const p of points) {
+-      if (p.jetPace === undefined || p.jetBase === undefined || p.jetUntil === undefined || !(p.tau < p.jetUntil)) continue;
+-      p.z = p.jetBase + p.jetPace * p.tau;
++      if (this.carrier) {
++        if (p.jetBase === undefined || !geometricPaceActive(p)) continue;
++      } else if (p.jetPace === undefined || p.jetBase === undefined || p.jetUntil === undefined || !(p.tau < p.jetUntil)) continue;
++      p.z = p.jetBase + p.jetPace! * p.tau;
+     }
+     this.measureArc(points);
+     const heightAt = (x: number, z: number) => solver.sampleCentered(solver.h, x, z) + solver.sampleCentered(solver.bed, x, z);
+@@ -240,6 +265,7 @@
+       }
+     }
+     for (const thrown of this.paced) thrown.point.z = thrown.point.jetBase! + thrown.point.jetPace! * thrown.point.tau;
++    this.carrier?.refresh(points, solver.time);
+     if (this.paced.length > 0) {
+       // All throws first read the same existing-paced geometry. Only after all their positions are finalized do
+       // we replace its arc and ray plans; slices, widths and subsequently serialized records see this final stage.
+--- /dev/null
++++ b/src/wave/barrel/carrierSupport.ts
+@@ -0,0 +1,113 @@
++import type { FrontPoint } from './BreakingFront';
++import type { ProfileLibrary } from './ProfileLibrary';
++
++export interface CarrierIncidentHistory {
++  readonly otherId: number;
++  readonly front: number;
++  readonly boundSeconds: number;
++  readonly minimumPacketAge: number;
++  readonly potentiallyLive: boolean;
++  readonly maxScale: number;
++  readonly maxAuthoredTD: number;
++  readonly partitions: number;
++}
++
++/** Dynamic exported evidence; none of these fields is an immutable point-identity fingerprint. */
++export interface CarrierSupportHistory {
++  readonly policy: 'bounded-C-incident-support/v1';
++  readonly atTau: number;
++  readonly solverTime: number;
++  readonly ownPocketAlive: boolean;
++  readonly retainedForGeometry: boolean;
++  readonly geometricPaceActive: boolean;
++  readonly state: 'own-pocket' | 'incident-support' | 'released';
++  readonly incidents: readonly CarrierIncidentHistory[];
++}
++
++/** One authority for tracker claim/coast, crash placement, packet pace and exported carrier history. */
++export function geometricPaceActive(point: FrontPoint): boolean {
++  const own = point.jetPace !== undefined && point.jetUntil !== undefined && point.tau < point.jetUntil;
++  const h = point.carrierSupport;
++  return own || !!(h && h.policy === 'bounded-C-incident-support/v1' && h.atTau === point.tau && h.geometricPaceActive
++    && point.jetPace !== undefined && point.jetBase !== undefined);
++}
++
++export function copyCarrierPoint(point: FrontPoint): FrontPoint {
++  if (!point.carrierSupport) return { ...point };
++  return { ...point, carrierSupport: { ...point.carrierSupport, incidents: point.carrierSupport.incidents.map(i => ({ ...i })) } };
++}
++
++/** Geometry only. It never sets jetUntil, rethrows water or changes physical void/strip expiry. */
++export class CarrierSupport {
++  constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
++    if (library.options.geometry !== 'bounded-C') throw new Error('Carrier support is C-only');
++  }
++
++  refresh(points: readonly FrontPoint[], time: number): void {
++    if (!Number.isFinite(time)) throw new Error('Nonfinite carrier history epoch');
++    const incident = new Map<FrontPoint, CarrierIncidentHistory[]>();
++    for (let k = 0; k + 1 < points.length; k += 1) {
++      const a = points[k], b = points[k + 1];
++      if (a.front !== b.front || !(b.x > a.x)) continue;
++      const bound = this.library.carrierRetirementBound(this.slope, a, b);
++      // F32 packet ages can round downward. Retire only when both the actual and packet ages clear the bound.
++      const minimumPacketAge = Math.min(a.tau, b.tau, Math.fround(a.tau), Math.fround(b.tau));
++      if (!Number.isFinite(minimumPacketAge)) throw new Error('Nonfinite carrier support age');
++      const potentiallyLive = minimumPacketAge < bound.seconds;
++      const add = (p: FrontPoint, other: FrontPoint) => {
++        const entries = incident.get(p) ?? [];
++        entries.push({ otherId: other.id, front: p.front, boundSeconds: bound.seconds, minimumPacketAge, potentiallyLive,
++          maxScale: bound.maxScale, maxAuthoredTD: bound.maxAuthoredTD, partitions: bound.partitions });
++        incident.set(p, entries);
++      };
++      add(a, b); add(b, a);
++    }
++    for (const p of points) {
++      if (p.jetPace === undefined) { if (p.carrierSupport) delete p.carrierSupport; continue; }
++      if (![p.jetPace, p.jetBase, p.jetUntil, p.jetAt, p.tau].every(v => v !== undefined && Number.isFinite(v))) {
++        throw new Error('Incomplete geometric carrier history');
++      }
++      const ownPocketAlive = p.tau < p.jetUntil!;
++      const incidents = incident.get(p) ?? [];
++      const retainedForGeometry = !ownPocketAlive && incidents.some(i => i.potentiallyLive);
++      p.carrierSupport = { policy: 'bounded-C-incident-support/v1', atTau: p.tau, solverTime: time,
++        ownPocketAlive, retainedForGeometry, geometricPaceActive: ownPocketAlive || retainedForGeometry,
++        state: ownPocketAlive ? 'own-pocket' : retainedForGeometry ? 'incident-support' : 'released', incidents };
++    }
++  }
++
++  /** Held points are not currently raw loft support; they keep only their individual pocket pace. */
++  refreshHeld(points: readonly FrontPoint[], time: number): void {
++    for (const p of points) this.refresh([p], time);
++  }
++
++  /**
++   * A truly stalled, already physically expired component cannot coast forever inside the conservative bound.
++   * Reuse the established 2-lifetime watchdog, now with the finite provider support bound and latest source epoch.
++   * Drop the whole dependent raw component before drawing; never switch an endpoint to solver matching inside it.
++   */
++  stalledExpiredComponents(points: readonly FrontPoint[], time: number): { front: number; pointIds: number[]; boundSeconds: number; latestSourceTime: number }[] {
++    const retired = [];
++    let start = 0;
++    while (start < points.length) {
++      let end = start + 1;
++      while (end < points.length && points[end].front === points[start].front) end += 1;
++      const run = points.slice(start, end);
++      if (run.some(p => p.carrierSupport?.retainedForGeometry)) {
++        const ownAlive = run.some(p => p.tau < (p.jetUntil ?? (() => {
++          const t = this.library.profileTimes({ slope: this.slope, footHeight: p.footHeight, footDepth: p.footDepth });
++          return t.touchdownSeconds + t.collapseSeconds;
++        })()));
++        if (!ownAlive) {
++          const boundSeconds = Math.max(...run.flatMap(p => p.carrierSupport?.incidents.map(i => i.boundSeconds) ?? []));
++          const latestSourceTime = Math.max(...run.map(p => p.jetAt ?? p.broke));
++          if (Number.isFinite(boundSeconds) && Number.isFinite(latestSourceTime) && time - latestSourceTime >= 2 * boundSeconds) {
++            retired.push({ front: run[0].front, pointIds: run.map(p => p.id), boundSeconds, latestSourceTime });
++          }
++        }
++      }
++      start = end;
++    }
++    return retired;
++  }
++}
+--- a/src/wave/barrel/frontRecords.ts
++++ b/src/wave/barrel/frontRecords.ts
+@@ -1,4 +1,5 @@
+ import type { FrontPoint } from './BreakingFront';
++import { geometricPaceActive } from './carrierSupport';
+ 
+ /**
+  * A front point as the snapshot carries it to the page (the Padang Padang spec, Part B, PR 3): where its crest is, which
+@@ -26,7 +27,8 @@
+     out[o + FRONT_FIELD.footHeight] = p.footHeight;
+     out[o + FRONT_FIELD.footDepth] = p.footDepth;
+     out[o + FRONT_FIELD.throwZ] = p.throwZ ?? Number.NaN;
+-    out[o + FRONT_FIELD.pace] = p.jetPace !== undefined && p.jetUntil !== undefined && p.tau < p.jetUntil ? p.jetPace : Number.NaN;
++    if (p.carrierSupport) out[o + FRONT_FIELD.pace] = geometricPaceActive(p) ? p.jetPace! : Number.NaN;
++    else out[o + FRONT_FIELD.pace] = p.jetPace !== undefined && p.jetUntil !== undefined && p.tau < p.jetUntil ? p.jetPace : Number.NaN;
+   }
+   return count;
+ }
+--- a/src/wave/barrel/sweptLoft.ts
++++ b/src/wave/barrel/sweptLoft.ts
+@@ -546,6 +546,12 @@
+       const s = this.at(records, f, sigma, this.sample);
+       const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+       let tau = s.tau;
++      // A C support certificate concerns actual interpolated packet age. Budgeted clock lowering must not
++      // resurrect an already retired raw interpolation and continue consuming its released carrier coordinates.
++      if (this.library.options.geometry === 'bounded-C' && budgeted && collapseFade(tau, times.touchdownSeconds, times.collapseSeconds) === 0) {
++        inRun = false;
++        continue;
++      }
+       if (budgeted && inRun) {
+         const bound = times.touchdownSeconds / 4;
+         const clamped = Math.min(previousTau + bound, Math.max(previousTau - bound, tau));

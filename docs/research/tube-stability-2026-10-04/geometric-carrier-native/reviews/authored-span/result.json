@@ -1,0 +1,161 @@
+{
+  "schema": "authored-raw-profile-span-screen/v1",
+  "sourceMethod": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/ProfileLibrary.ts",
+    "bytes": 28989,
+    "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+  },
+  "rows": [
+    {
+      "case": "pad19-a30-l12",
+      "source": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/public/barrels/pad19-a30-l12.bin",
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      "tag": "nearest-nd-tau-0.52",
+      "frame": 130,
+      "tau": 0.5088410482139594,
+      "heldClear": true,
+      "crest": [
+        0.5239762663841248,
+        0.40974000096321106
+      ],
+      "lip": [
+        0.7045754790306091,
+        0.31641000509262085
+      ],
+      "throat": [
+        0.604275643825531,
+        0.24608999490737915
+      ],
+      "toe": [
+        0.8520745635032654,
+        0.04010999947786331
+      ],
+      "crestToToeSpanOverHeight": 0.8876397906032705,
+      "crestToLipSpanOverHeight": 0.48859457273693024,
+      "lipToThroatSpanOverHeight": 0.2713519865866571,
+      "metricAtScale7": {
+        "crestToToeSpan": 2.2966880798339844,
+        "crestToLipSpan": 1.2641944885253906,
+        "lipToThroatSpan": 0.7020988464355469,
+        "crestToToeHeight": 2.5874100103974342
+      }
+    },
+    {
+      "case": "pad19-a30-l12",
+      "source": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/public/barrels/pad19-a30-l12.bin",
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      "tag": "source-held-clear",
+      "frame": 155,
+      "tau": 1.1338410482139238,
+      "heldClear": true,
+      "crest": [
+        1.0864763259887695,
+        0.3680900037288666
+      ],
+      "lip": [
+        1.4351739883422852,
+        0.08202999830245972
+      ],
+      "throat": [
+        1.1739740371704102,
+        0.1875
+      ],
+      "toe": [
+        1.437973976135254,
+        0.02157999947667122
+      ],
+      "crestToToeSpanOverHeight": 1.0143939448589743,
+      "crestToLipSpanOverHeight": 1.0063134053114613,
+      "lipToThroatSpanOverHeight": 0.7538020489064138,
+      "metricAtScale7": {
+        "crestToToeSpan": 2.4604835510253906,
+        "crestToLipSpan": 2.4408836364746094,
+        "lipToThroatSpan": 1.828399658203125,
+        "crestToToeHeight": 2.4255700297653675
+      }
+    },
+    {
+      "case": "pad19-a45-l12",
+      "source": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/public/barrels/pad19-a45-l12.bin",
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      "tag": "nearest-nd-tau-0.52",
+      "frame": 128,
+      "tau": 0.5187314291937888,
+      "heldClear": true,
+      "crest": [
+        0.6239729523658752,
+        0.5835300087928772
+      ],
+      "lip": [
+        0.838473379611969,
+        0.4804700016975403
+      ],
+      "throat": [
+        0.7153730988502502,
+        0.3867200016975403
+      ],
+      "toe": [
+        1.1278735399246216,
+        0.057679999619722366
+      ],
+      "crestToToeSpanOverHeight": 0.9582591590158538,
+      "crestToLipSpanOverHeight": 0.40791180660693277,
+      "lipToThroatSpanOverHeight": 0.23409770583684367,
+      "metricAtScale7": {
+        "crestToToeSpan": 3.5273041129112244,
+        "crestToLipSpan": 1.5015029907226562,
+        "lipToThroatSpan": 0.8617019653320312,
+        "crestToToeHeight": 3.680950064212084
+      }
+    },
+    {
+      "case": "pad19-a45-l12",
+      "source": {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/public/barrels/pad19-a45-l12.bin",
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      "tag": "source-held-clear",
+      "frame": 161,
+      "tau": 1.3437314291938005,
+      "heldClear": true,
+      "crest": [
+        1.5145732164382935,
+        0.5239899754524231
+      ],
+      "lip": [
+        2.0067739486694336,
+        0.0922200009226799
+      ],
+      "throat": [
+        1.6169730424880981,
+        0.2929700016975403
+      ],
+      "toe": [
+        2.0067739486694336,
+        0.029990000650286674
+      ],
+      "crestToToeSpanOverHeight": 0.996357808374956,
+      "crestToLipSpanOverHeight": 0.996357808374956,
+      "lipToThroatSpanOverHeight": 0.7890707005348812,
+      "metricAtScale7": {
+        "crestToToeSpan": 3.445405125617981,
+        "crestToLipSpan": 3.445405125617981,
+        "lipToThroatSpan": 2.728606343269348,
+        "crestToToeHeight": 3.457999823614955
+      }
+    }
+  ],
+  "rawCaseEvidenceOnly": true,
+  "newNativeGeometryOrMatchedStateClaim": false,
+  "sampling": "Nearest raw authored frame at NDtau0.52 and exact heldFrame scan, no temporal interpolation, parameter blend or world loft reconstruction."
+}
