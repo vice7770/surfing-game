@@ -1,0 +1,400 @@
+{
+  "schema": "tube-whole-curl-fixed-view-source-checks/v1",
+  "checkedAt": "2026-10-04T18:35:45.928001+00:00",
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "checks": [
+    {
+      "name": "Node present for syntax only",
+      "passed": true
+    },
+    {
+      "name": "native.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "native-owned.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "ray-faces.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "run.py AST syntax",
+      "passed": true
+    },
+    {
+      "name": "verify-source.py AST syntax",
+      "passed": true
+    },
+    {
+      "name": "SETTINGS exact frozen prior source",
+      "passed": true
+    },
+    {
+      "name": "OVERRIDES exact frozen prior source",
+      "passed": true
+    },
+    {
+      "name": "GRAPHICS exact frozen prior source",
+      "passed": true
+    },
+    {
+      "name": "Preserved input const eye=[155.32094597816467,4.819468761980533,-.038138747215270996];",
+      "passed": true
+    },
+    {
+      "name": "Preserved input const target=[150.3824691772461,.8194687619805336,-6.938243746757507];",
+      "passed": true
+    },
+    {
+      "name": "Preserved input await d.start(${JSON.stringify(SETTINGS)},${JSON.stringify(OVERRIDES)},{rider:false,lab:true});",
+      "passed": true
+    },
+    {
+      "name": "Preserved input await d.mode.sweptBarrel.ready;d.setWaterLook('rich');await d.setTimeOfDay('midday');",
+      "passed": true
+    },
+    {
+      "name": "Preserved input d.resize(1708,879);",
+      "passed": true
+    },
+    {
+      "name": "Frozen step/recorder mechanics preserved async function ordinaryStep(",
+      "passed": true
+    },
+    {
+      "name": "Frozen step/recorder mechanics preserved const nextPaint=",
+      "passed": true
+    },
+    {
+      "name": "Frozen step/recorder mechanics preserved async function steps(",
+      "passed": true
+    },
+    {
+      "name": "Fresh PNG render in same evaluation",
+      "passed": true
+    },
+    {
+      "name": "Fresh video render in same evaluation",
+      "passed": true
+    },
+    {
+      "name": "1047 settle exact",
+      "passed": true
+    },
+    {
+      "name": "Choose once",
+      "passed": true
+    },
+    {
+      "name": "Fixed original sigma lock",
+      "passed": true
+    },
+    {
+      "name": "Inventory precedes selection",
+      "passed": true
+    },
+    {
+      "name": "Eligibility diagnostic, no candidate filtering",
+      "passed": true
+    },
+    {
+      "name": "Null row outside tolerance",
+      "passed": true
+    },
+    {
+      "name": "Cross-section guard row -1",
+      "passed": true
+    },
+    {
+      "name": "Target pass remains separate",
+      "passed": true
+    },
+    {
+      "name": "No visibility/opacity assignments",
+      "passed": true
+    },
+    {
+      "name": "Ray helper unchanged",
+      "passed": true
+    },
+    {
+      "name": "Dry owner exit",
+      "passed": true
+    },
+    {
+      "name": "Dry plan no resources",
+      "passed": true
+    },
+    {
+      "name": "Ports unchanged",
+      "passed": true
+    },
+    {
+      "name": "Deadlines unchanged",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/WorkerSurfZone-D_PFvR7h.js",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/bubbles-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/bubbles-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/distant-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/distant-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/lipJet-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/lipJet-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/lipRoller-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/lipRoller-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/paddle-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/paddle-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/plunge-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/plunge-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/roar-1.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/roar-2.m4a",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/audio/sounds.json",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/devStepping-DwuhWxX0.js",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/index-DA8NEfOT.css",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/index-b-VrQkvK.js",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/jevRecorder-CbsRIahA.js",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/particleBench-pMk_Bt39.js",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/rideRecorder-UpIyaSrS.js",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/skies/qwantani_sunrise_puresky.jpg",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/skies/qwantani_sunrise_puresky_1k.hdr",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/skies/qwantani_sunset_puresky.jpg",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/skies/qwantani_sunset_puresky_1k.hdr",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/skies/skies.json",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/surfZoneWorker-ms23wI7Q.js",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/surfers/surfer1.glb",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/surfers/surfer2.glb",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/surfers/surfer3.glb",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/surfers/surfer4.glb",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/surfers/surfers.json",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/assets/waterSheet-BOkyCRqg.js",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/barrels/pad19-a20-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/barrels/pad19-a30-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/barrels/pad19-a45-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/barrels/periodic-padang19s-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/barrels/periodic-point21-a15-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/barrels/periodic-point21-a23-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/barrels/periodic-point21-a30-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/barrels/periodic-reef42-l12.bin",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/build.json",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/index.html",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/lessons/pool-s2-caught.sea",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/lessons/pool-s2-pocket.sea",
+      "passed": true
+    },
+    {
+      "name": "Frozen/copied dist/lessons/pool-s2-waiting.sea",
+      "passed": true
+    },
+    {
+      "name": "All49 no extra files",
+      "passed": true
+    },
+    {
+      "name": "Build ID unchanged",
+      "passed": true
+    },
+    {
+      "name": "All328 production/public/build inputs unchanged",
+      "passed": true
+    },
+    {
+      "name": "Preserved first failure first-failure-report.json",
+      "passed": true
+    },
+    {
+      "name": "Preserved first failure first-failure-launcher.json",
+      "passed": true
+    },
+    {
+      "name": "Preserved first failure first-failure-owner.json",
+      "passed": true
+    },
+    {
+      "name": "Preserved first failure first-failure-owner.log",
+      "passed": true
+    },
+    {
+      "name": "Prior whole work unchanged",
+      "passed": true
+    },
+    {
+      "name": "SharedCDP helper unchanged",
+      "passed": true
+    },
+    {
+      "name": "Whole candidate production diff preserved",
+      "passed": true
+    }
+  ],
+  "sourceOnlyPlan": {
+    "sourceOnlyPlan": true,
+    "arm": "candidate",
+    "dist": "/private/tmp/tube-whole-curl-fixed-view-20261004/dist",
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7,
+    "heldFrames": 3,
+    "pngs": 3,
+    "movingSingleSteps": 60,
+    "singleClipMaximumBytes": 16777216,
+    "reportMaximumBytes": 2097152,
+    "untouchedUserPorts": [
+      4310,
+      4311
+    ],
+    "ports": [
+      4290,
+      9700
+    ],
+    "resourcesStarted": false
+  },
+  "limitations": "Offline syntax/static/freeze checks only; no new pixels, recorder capability, runtime cleanup or tube acceptance."
+}

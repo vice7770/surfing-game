@@ -1,0 +1,63 @@
+{
+  "schema": "tube-whole-curl-freeze-checks/v1",
+  "checkedAt": "2026-10-04T18:27:00.516188+00:00",
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "syntax": [
+    {
+      "file": "native.mjs",
+      "syntax": true
+    },
+    {
+      "file": "native-owned.mjs",
+      "syntax": true
+    },
+    {
+      "file": "ray-faces.mjs",
+      "syntax": true
+    },
+    {
+      "file": "run.py",
+      "syntax": true
+    },
+    {
+      "file": "check-source.py",
+      "syntax": true
+    },
+    {
+      "file": "prepare-build.py",
+      "syntax": true
+    }
+  ],
+  "sourceOnlyPlan": {
+    "sourceOnlyPlan": true,
+    "arm": "candidate",
+    "dist": "/private/tmp/tube-whole-curl-native-20261004/dist",
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7,
+    "heldFrames": 3,
+    "pngs": 3,
+    "movingSingleSteps": 60,
+    "singleClipMaximumBytes": 16777216,
+    "reportMaximumBytes": 2097152,
+    "untouchedUserPorts": [
+      4310,
+      4311
+    ],
+    "ports": [
+      4290,
+      9700
+    ],
+    "resourcesStarted": false
+  },
+  "productionSourceHashesIdentical": true,
+  "preparedNativeFilesUnchanged": true,
+  "scope": "Offline post-build syntax/freeze checks; no native, browser, server or port operation.",
+  "sharedCdpHelperUnchanged": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+    "bytes": 7064,
+    "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+  }
+}

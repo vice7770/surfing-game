@@ -1,0 +1,86 @@
+{
+  "schema": "tube-whole-curl-source-manifest/v1",
+  "sourceOnly": true,
+  "baselinePath": "/private/tmp/tube-no-foam-balls-20261004",
+  "ownedSources": [
+    {
+      "path": "/private/tmp/tube-whole-curl-native-20261004/native.mjs",
+      "bytes": 36084,
+      "sha256": "b109571569dd693064bd45f385e77a3a4110ab7b36662277fecd769d51a46342"
+    },
+    {
+      "path": "/private/tmp/tube-whole-curl-native-20261004/native-owned.mjs",
+      "bytes": 6529,
+      "sha256": "9a89534dc0335d9382d87d45772c3643861d0bc6cc9005ac13b4025ddabeb9c3"
+    },
+    {
+      "path": "/private/tmp/tube-whole-curl-native-20261004/ray-faces.mjs",
+      "bytes": 5770,
+      "sha256": "b6dd37e64884c900dfb209720896b0be295f883ec15f0a86f23a30a54d811828"
+    },
+    {
+      "path": "/private/tmp/tube-whole-curl-native-20261004/run.py",
+      "bytes": 7959,
+      "sha256": "76f7fee5f26f44fdd78a288b25d896cc507bda6168a77ccfb09532daf57cbc2b"
+    },
+    {
+      "path": "/private/tmp/tube-whole-curl-native-20261004/check-source.py",
+      "bytes": 4951,
+      "sha256": "2c2fed67ed8b50894382009438115ca6ee3ef668884903f4b604afd6bf76fec9"
+    },
+    {
+      "path": "/private/tmp/tube-whole-curl-native-20261004/README.md",
+      "bytes": 3920,
+      "sha256": "3b07392b651a640219dd486536678589da055fcfc5b199c071bbb69182d1d499"
+    },
+    {
+      "path": "/private/tmp/tube-whole-curl-native-20261004/baseline-native-first-owner.json",
+      "bytes": 2735,
+      "sha256": "ec29e8ac2b6f485308319aeab20af37940807319a2c6d7139e968d21320707a1"
+    }
+  ],
+  "baselineReferences": [
+    {
+      "path": "/private/tmp/tube-no-foam-balls-20261004/native.mjs",
+      "bytes": 25356,
+      "sha256": "9f9c5154b089dac65ec8b38c2bbac5d57fd02ea4d1d6350935c36201942e29f7"
+    },
+    {
+      "path": "/private/tmp/tube-no-foam-balls-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "path": "/private/tmp/tube-no-foam-balls-20261004/ray-faces.mjs",
+      "bytes": 5770,
+      "sha256": "b6dd37e64884c900dfb209720896b0be295f883ec15f0a86f23a30a54d811828"
+    },
+    {
+      "path": "/private/tmp/tube-no-foam-balls-20261004/run.py",
+      "bytes": 6613,
+      "sha256": "d94260341985bc555d27904519a5ae5d27f6c2e14d6050541d77823da02ccd18"
+    },
+    {
+      "path": "/private/tmp/tube-no-foam-balls-20261004/native-first-owner.json",
+      "bytes": 2735,
+      "sha256": "ec29e8ac2b6f485308319aeab20af37940807319a2c6d7139e968d21320707a1"
+    },
+    {
+      "path": "/private/tmp/tube-no-foam-balls-20261004/native-first/report.json",
+      "bytes": 98189,
+      "sha256": "9b19b2294a05b67aa6cb59c44fa583faee62ac347a5a6023f0fb5e5efdd21ee4"
+    }
+  ],
+  "sharedCdpHelper": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+    "bytes": 7064,
+    "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+  },
+  "checksReceipt": {
+    "path": "/private/tmp/tube-whole-curl-native-20261004/source-checks.json",
+    "bytes": 3760,
+    "sha256": "7efec4450ea46cad258f435bf39512b93602713e340a54ae02528a1ac08060c6"
+  },
+  "builtDist": null,
+  "captureOutputs": null
+}

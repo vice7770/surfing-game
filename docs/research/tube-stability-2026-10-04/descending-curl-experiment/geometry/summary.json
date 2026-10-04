@@ -1,0 +1,127 @@
+{
+  "schema": "full-c-curl-offline/v1",
+  "complete": true,
+  "actualAggregate": {
+    "total": 5,
+    "valid": 5,
+    "invalid": 0,
+    "newCrossedFrames": 0,
+    "previouslyCleanBecomesCrossed": 0,
+    "newPairs": 0,
+    "removedPairs": 0,
+    "retainedPairsMoved": 0,
+    "beforeCrossed": 0,
+    "afterCrossed": 0,
+    "maturityRange": [
+      0.9998006886623841,
+      0.9999911390960344
+    ],
+    "tipYChangeRange": [
+      0.8483532787661316,
+      1.2787346992789808
+    ],
+    "maxGapAfterRange": [
+      1.6809910292154204,
+      1.7518469237950782
+    ],
+    "maxContinuousUsefulWidthAfterRange": [
+      0.028678057690615155,
+      0.13097021046364432
+    ],
+    "maximumTurnAfter": 22.50138124845734,
+    "maximumThroatJoinAfter": 3.3282566091325823
+  },
+  "actualOpeningTargetPass": false,
+  "aggregate": {
+    "total": 293,
+    "valid": 293,
+    "invalid": 0,
+    "newCrossedFrames": 1,
+    "previouslyCleanBecomesCrossed": 0,
+    "newPairs": 1,
+    "removedPairs": 7,
+    "retainedPairsMoved": 1,
+    "beforeCrossed": 10,
+    "afterCrossed": 5,
+    "maturityRange": [
+      0.0,
+      1
+    ],
+    "tipYChangeRange": [
+      -0.03247877802143537,
+      0.2835611367813985
+    ],
+    "maxGapAfterRange": [
+      0.023636006499651682,
+      0.3457910850796709
+    ],
+    "maxContinuousUsefulWidthAfterRange": [
+      0,
+      0.327662568721955
+    ],
+    "maximumTurnAfter": 173.80326935762983,
+    "maximumThroatJoinAfter": 154.32824988238843
+  },
+  "interpolation": {
+    "sampleCount": 840,
+    "newPairSamples": 1,
+    "movedRetainedPairSamples": 0,
+    "failures": [
+      {
+        "case": "periodic-padang19s-l12",
+        "frames": [
+          152,
+          153
+        ],
+        "share": 0.75,
+        "change": {
+          "beforePairCount": 1,
+          "afterPairCount": 1,
+          "newPairs": [
+            {
+              "q": 0.41564831650679007,
+              "y": 0.1825686935690659,
+              "segments": [
+                [
+                  62,
+                  63
+                ],
+                [
+                  69,
+                  70
+                ]
+              ]
+            }
+          ],
+          "removedPairs": [
+            {
+              "q": 0.41609463027919374,
+              "y": 0.17913443480410682,
+              "segments": [
+                [
+                  63,
+                  64
+                ],
+                [
+                  70,
+                  71
+                ]
+              ]
+            }
+          ],
+          "retainedPairsMoved": []
+        }
+      }
+    ]
+  },
+  "unsafe": true,
+  "limitations": [
+    "No native/drawing/contact/body/optical proof.",
+    "No actual incoming crest31 is retained in captured profiles; outgoing33 tangent substituted and labeled.",
+    "Case scales remain nondimensional;7m threshold does not prove actual scene scale.",
+    "Proper crossings omit collinear/endpoint touches.",
+    "Held-frame eligibility is original, not recomputed for changed tip.",
+    "Original authored touchdown and tip-velocity tables are not valid physical authorities for the changed tip.",
+    "No mass conservation or hydrodynamic claim."
+  ]
+}

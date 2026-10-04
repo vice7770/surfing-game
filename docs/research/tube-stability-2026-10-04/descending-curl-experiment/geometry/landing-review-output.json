@@ -1,0 +1,245 @@
+{
+  "actual": [
+    {
+      "scope": "meters",
+      "id": "124",
+      "frame": null,
+      "maturity": 0.9999911390960344,
+      "beforeNearestFace": {
+        "q": 1.943802887596164,
+        "y": 0.2575664220432049,
+        "distanceFromTip": 0.813613074683942,
+        "segment": [
+          108,
+          109
+        ],
+        "t": 0.8286009635922332
+      },
+      "afterNearestFace": {
+        "q": 1.5844148686008166,
+        "y": 0.3654690304940434,
+        "distanceFromTip": 1.6285530896323768,
+        "segment": [
+          104,
+          105
+        ],
+        "t": 0.7053252549563342
+      },
+      "nearestAlongChange": -0.35938801899534734,
+      "verticalFloorBelowTip": {
+        "q": 2.1471166371282346,
+        "y": 0.21272919984384872,
+        "segment": [
+          111,
+          112
+        ]
+      },
+      "sameXFloorCoverage": true,
+      "candidateTip": [
+        2.1471166371282346,
+        1.8937202812533143
+      ]
+    },
+    {
+      "scope": "meters",
+      "id": "125",
+      "frame": null,
+      "maturity": 0.9998006886623841,
+      "beforeNearestFace": {
+        "q": 2.220728322721897,
+        "y": 0.2029102642413255,
+        "distanceFromTip": 0.6689657765451062,
+        "segment": [
+          110,
+          111
+        ],
+        "t": 0.23981409313988758
+      },
+      "afterNearestFace": {
+        "q": 1.9078752346902774,
+        "y": 0.2728855543712476,
+        "distanceFromTip": 1.6671477064739073,
+        "segment": [
+          106,
+          107
+        ],
+        "t": 0.7947563645489434
+      },
+      "nearestAlongChange": -0.3128530880316196,
+      "verticalFloorBelowTip": {
+        "q": 2.3432592921604596,
+        "y": 0.18067825537260335,
+        "segment": [
+          111,
+          112
+        ]
+      },
+      "sameXFloorCoverage": true,
+      "candidateTip": [
+        2.3432592921604596,
+        1.8821780068801166
+      ]
+    },
+    {
+      "scope": "meters",
+      "id": "126",
+      "frame": null,
+      "maturity": 0.9999379197257496,
+      "beforeNearestFace": {
+        "q": 2.3258756585762814,
+        "y": 0.18622768547305588,
+        "distanceFromTip": 0.4569252921572149,
+        "segment": [
+          110,
+          111
+        ],
+        "t": 0.4770225699477056
+      },
+      "afterNearestFace": {
+        "q": 2.1975033686064407,
+        "y": 0.210913378024684,
+        "distanceFromTip": 1.6880159585037595,
+        "segment": [
+          109,
+          110
+        ],
+        "t": 0.1582561591819174
+      },
+      "nearestAlongChange": -0.12837228996984074,
+      "verticalFloorBelowTip": {
+        "q": 2.445537608148286,
+        "y": 0.16267154580597795,
+        "segment": [
+          111,
+          112
+        ]
+      },
+      "sameXFloorCoverage": true,
+      "candidateTip": [
+        2.445537608148286,
+        1.8806070302190812
+      ]
+    },
+    {
+      "scope": "meters",
+      "id": "127",
+      "frame": null,
+      "maturity": 0.9999432160780947,
+      "beforeNearestFace": {
+        "q": 2.3454742965795994,
+        "y": 0.19065796738478594,
+        "distanceFromTip": 0.4564030835680008,
+        "segment": [
+          110,
+          111
+        ],
+        "t": 0.4824897764071014
+      },
+      "afterNearestFace": {
+        "q": 2.2336133932627313,
+        "y": 0.2137945693196522,
+        "distanceFromTip": 1.705685399213415,
+        "segment": [
+          109,
+          110
+        ],
+        "t": 0.339808745590575
+      },
+      "nearestAlongChange": -0.11186090331686804,
+      "verticalFloorBelowTip": {
+        "q": 2.4752659893704534,
+        "y": 0.1645500418394679,
+        "segment": [
+          111,
+          112
+        ]
+      },
+      "sameXFloorCoverage": true,
+      "candidateTip": [
+        2.4752659893704534,
+        1.9022751596387193
+      ]
+    },
+    {
+      "scope": "meters",
+      "id": "128",
+      "frame": null,
+      "maturity": 0.999945658339786,
+      "beforeNearestFace": {
+        "q": 2.360040400180491,
+        "y": 0.19697850468737735,
+        "distanceFromTip": 0.46493059716364277,
+        "segment": [
+          110,
+          111
+        ],
+        "t": 0.46965868262524707
+      },
+      "afterNearestFace": {
+        "q": 2.2341006864574147,
+        "y": 0.22286072015909586,
+        "distanceFromTip": 1.7179837267159905,
+        "segment": [
+          109,
+          110
+        ],
+        "t": 0.2000536767270175
+      },
+      "nearestAlongChange": -0.12593971372307644,
+      "verticalFloorBelowTip": {
+        "q": 2.4930151285281643,
+        "y": 0.1693751304437779,
+        "segment": [
+          111,
+          112
+        ]
+      },
+      "sameXFloorCoverage": true,
+      "candidateTip": [
+        2.4930151285281643,
+        1.9212221060096326
+      ]
+    }
+  ],
+  "caseFramesWithoutVerticalFloor": 0,
+  "maximumBackwardNearestAlongDrift": {
+    "scope": "h0",
+    "id": "pad19-a45-l12",
+    "frame": 152,
+    "maturity": 0.9999927918843216,
+    "beforeNearestFace": {
+      "q": 1.6280278879247772,
+      "y": 0.07212297343596567,
+      "distanceFromTip": 0.18394048332502747,
+      "segment": [
+        108,
+        109
+      ],
+      "t": 0.41644529857950696
+    },
+    "afterNearestFace": {
+      "q": 1.3776732683181763,
+      "y": 0.31641000509262085,
+      "distanceFromTip": 0.31981246211142617,
+      "segment": [
+        88,
+        89
+      ],
+      "t": 0
+    },
+    "nearestAlongChange": -0.2503546196066009,
+    "verticalFloorBelowTip": {
+      "q": 1.6877738237380981,
+      "y": 0.05416179576186418,
+      "segment": [
+        111,
+        112
+      ]
+    },
+    "sameXFloorCoverage": true,
+    "candidateTip": [
+      1.6877738237380981,
+      0.3946254540143548
+    ]
+  }
+}

@@ -1,0 +1,714 @@
+{
+  "schema": "whole-curl-full-factory/v1",
+  "complete": true,
+  "policy": "Transform allframes with frozen recipe; any active invalid is a failed candidate, m0 raw",
+  "preflight": {
+    "allFrames": 1224,
+    "activeFrames": 307,
+    "invalidFrames": 0,
+    "invalid": []
+  },
+  "stoppedForInvalidGeometry": false,
+  "float32TransformedFrameRounding": true,
+  "framesWithNewPairs": 1,
+  "framesCleanBecomingCrossed": 0,
+  "framesPairCountIncrease": 0,
+  "framesPairCountDecrease": 5,
+  "changedCrossings": [
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 153,
+      "phase": "open",
+      "maturity": 0.08103493954849947,
+      "change": {
+        "beforePairCount": 1,
+        "afterPairCount": 1,
+        "newPairs": [
+          {
+            "q": 0.42076868353386,
+            "y": 0.18392346650285687,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [
+          {
+            "q": 0.4213123734173197,
+            "y": 0.1778784273350462,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 160,
+      "phase": "open",
+      "maturity": 0.3247301359390166,
+      "change": {
+        "beforePairCount": 1,
+        "afterPairCount": 1,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": [
+          {
+            "before": {
+              "q": 0.5624008178710938,
+              "y": 0.15650039763129941,
+              "segments": [
+                [
+                  63,
+                  64
+                ],
+                [
+                  65,
+                  66
+                ]
+              ]
+            },
+            "after": {
+              "q": 0.5621887528253583,
+              "y": 0.1640800323270635,
+              "segments": [
+                [
+                  63,
+                  64
+                ],
+                [
+                  65,
+                  66
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "adjacentFrameInterpolationSampleCount": 3648,
+  "adjacentFrameChangedPairs": [
+    {
+      "case": "periodic-padang19s-l12",
+      "frames": [
+        152,
+        153
+      ],
+      "share": 0.75,
+      "beforePhases": [
+        "open",
+        "open"
+      ],
+      "change": {
+        "beforePairCount": 1,
+        "afterPairCount": 1,
+        "newPairs": [
+          {
+            "q": 0.4156483177063027,
+            "y": 0.1825687674823414,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                69,
+                70
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [
+          {
+            "q": 0.41609462981837175,
+            "y": 0.17913442933935034,
+            "segments": [
+              [
+                63,
+                64
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frames": [
+        128,
+        129
+      ],
+      "share": 0.25,
+      "beforePhases": [
+        "open",
+        "open"
+      ],
+      "change": {
+        "beforePairCount": 1,
+        "afterPairCount": 1,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": [
+          {
+            "before": {
+              "q": 0.19056125916530042,
+              "y": 0.041773522507915446,
+              "segments": [
+                [
+                  87,
+                  88
+                ],
+                [
+                  89,
+                  90
+                ]
+              ]
+            },
+            "after": {
+              "q": 0.1905590658152423,
+              "y": 0.041773307929942174,
+              "segments": [
+                [
+                  87,
+                  88
+                ],
+                [
+                  89,
+                  90
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "adjacentFrameCleanBecomingCrossed": 0,
+  "adjacentFramePairCountIncrease": 0,
+  "touchdownNeighborCoverage": [
+    {
+      "case": "pad19-a20-l12",
+      "frame": 143,
+      "phase": "open",
+      "tau": 0.6735294140596402,
+      "touchdown": 0.6985294140598448,
+      "maturity": 0.9906672409037531,
+      "tip": {
+        "point": 64,
+        "q": 0.7212225794792175,
+        "y": 0.2154228389263153
+      },
+      "floorBelowTip": {
+        "y": 0.06677222073078155,
+        "segment": [
+          100,
+          101
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "pad19-a20-l12",
+      "frame": 144,
+      "phase": "open",
+      "tau": 0.6985294140596388,
+      "touchdown": 0.6985294140598448,
+      "maturity": 0.9906672409037531,
+      "tip": {
+        "point": 64,
+        "q": 0.7212225794792175,
+        "y": 0.2154228389263153
+      },
+      "floorBelowTip": {
+        "y": 0.06677222073078155,
+        "segment": [
+          100,
+          101
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "pad19-a30-l12",
+      "frame": 156,
+      "phase": "open",
+      "tau": 1.1588410482139224,
+      "touchdown": 1.1838410482141448,
+      "maturity": 0.0,
+      "tip": {
+        "point": 64,
+        "q": 1.4666757583618164,
+        "y": 0.046879999339580536
+      },
+      "floorBelowTip": {
+        "y": 0.021549272232434965,
+        "segment": [
+          105,
+          106
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "pad19-a30-l12",
+      "frame": 157,
+      "phase": "open",
+      "tau": 1.183841048213921,
+      "touchdown": 1.1838410482141448,
+      "maturity": 0.0,
+      "tip": {
+        "point": 64,
+        "q": 1.4666757583618164,
+        "y": 0.046879999339580536
+      },
+      "floorBelowTip": {
+        "y": 0.021549272232434965,
+        "segment": [
+          105,
+          106
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "pad19-a45-l12",
+      "frame": 161,
+      "phase": "open",
+      "tau": 1.3437314291938005,
+      "touchdown": 1.368731429193744,
+      "maturity": 0.9999688073200181,
+      "tip": {
+        "point": 64,
+        "q": 2.0067739486694336,
+        "y": 0.3757811486721039
+      },
+      "floorBelowTip": {
+        "y": 0.029990000650286674,
+        "segment": [
+          111,
+          112
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "pad19-a45-l12",
+      "frame": 162,
+      "phase": "post",
+      "tau": 1.3687314291938009,
+      "touchdown": 1.368731429193744,
+      "maturity": 0.9999688073200181,
+      "tip": {
+        "point": 64,
+        "q": 2.0067739486694336,
+        "y": 0.3757811486721039
+      },
+      "floorBelowTip": {
+        "y": 0.029990000650286674,
+        "segment": [
+          111,
+          112
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 174,
+      "phase": "open",
+      "tau": 0.9499999999997542,
+      "touchdown": 0.9750000000000014,
+      "maturity": 0.9641344968927631,
+      "tip": {
+        "point": 64,
+        "q": 0.8340988159179688,
+        "y": 0.15701915323734283
+      },
+      "floorBelowTip": {
+        "y": -0.0036489880342541192,
+        "segment": [
+          100,
+          101
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 175,
+      "phase": "open",
+      "tau": 0.9749999999997527,
+      "touchdown": 0.9750000000000014,
+      "maturity": 0.0,
+      "tip": {
+        "point": 64,
+        "q": 0.8286018371582031,
+        "y": 0.01561999972909689
+      },
+      "floorBelowTip": null,
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "frame": 101,
+      "phase": "open",
+      "tau": 0.7750000000002153,
+      "touchdown": 0.8000000000000043,
+      "maturity": 0.9831277893056647,
+      "tip": {
+        "point": 64,
+        "q": 0.7347030639648438,
+        "y": 0.20355038344860077
+      },
+      "floorBelowTip": {
+        "y": 0.04364630639022608,
+        "segment": [
+          97,
+          98
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "frame": 102,
+      "phase": "post",
+      "tau": 0.8000000000002174,
+      "touchdown": 0.8000000000000043,
+      "maturity": 0.0,
+      "tip": {
+        "point": 64,
+        "q": 0.736602783203125,
+        "y": 0.052730001509189606
+      },
+      "floorBelowTip": null,
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 122,
+      "phase": "open",
+      "tau": 0.8500000000002572,
+      "touchdown": 0.875,
+      "maturity": 0.9987148287982409,
+      "tip": {
+        "point": 64,
+        "q": 0.9121971130371094,
+        "y": 0.2905580699443817
+      },
+      "floorBelowTip": {
+        "y": 0.09130004950097625,
+        "segment": [
+          96,
+          97
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frame": 123,
+      "phase": "post",
+      "tau": 0.8750000000002593,
+      "touchdown": 0.875,
+      "maturity": 0.0,
+      "tip": {
+        "point": 64,
+        "q": 0.9081993103027344,
+        "y": 0.11049000173807144
+      },
+      "floorBelowTip": null,
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "frame": 166,
+      "phase": "open",
+      "tau": 1.1500000000003539,
+      "touchdown": 1.1750000000000043,
+      "maturity": 0.9998924204285117,
+      "tip": {
+        "point": 64,
+        "q": 1.3845977783203125,
+        "y": 0.25419920682907104
+      },
+      "floorBelowTip": {
+        "y": -0.04112727626625421,
+        "segment": [
+          109,
+          110
+        ]
+      },
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "frame": 167,
+      "phase": "post",
+      "tau": 1.175000000000356,
+      "touchdown": 1.1750000000000043,
+      "maturity": 0.0,
+      "tip": {
+        "point": 64,
+        "q": 1.3311004638671875,
+        "y": -0.022460000589489937
+      },
+      "floorBelowTip": null,
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 185,
+      "phase": "open",
+      "tau": 1.5999999999997385,
+      "touchdown": 1.625,
+      "maturity": 0.0,
+      "tip": {
+        "point": 64,
+        "q": 1.3388004302978516,
+        "y": -0.011719999834895134
+      },
+      "floorBelowTip": null,
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frame": 186,
+      "phase": "open",
+      "tau": 1.624999999999737,
+      "touchdown": 1.625,
+      "maturity": 0,
+      "tip": {
+        "point": 64,
+        "q": 1.3008003234863281,
+        "y": -0.06290999799966812
+      },
+      "floorBelowTip": null,
+      "change": {
+        "beforePairCount": 0,
+        "afterPairCount": 0,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": []
+      }
+    }
+  ],
+  "touchdownNeighborMissingVerticalFloor": 0,
+  "cases": [
+    {
+      "id": "pad19-a20-l12",
+      "frameCount": 145,
+      "activeFrames": 27,
+      "asset": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+        "bytes": 149848,
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      }
+    },
+    {
+      "id": "pad19-a30-l12",
+      "frameCount": 158,
+      "activeFrames": 41,
+      "asset": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      }
+    },
+    {
+      "id": "pad19-a45-l12",
+      "frameCount": 163,
+      "activeFrames": 51,
+      "asset": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      }
+    },
+    {
+      "id": "periodic-padang19s-l12",
+      "frameCount": 176,
+      "activeFrames": 28,
+      "asset": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+        "bytes": 181852,
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      }
+    },
+    {
+      "id": "periodic-point21-a15-l12",
+      "frameCount": 103,
+      "activeFrames": 28,
+      "asset": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a15-l12.bin",
+        "bytes": 106500,
+        "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+      }
+    },
+    {
+      "id": "periodic-point21-a23-l12",
+      "frameCount": 124,
+      "activeFrames": 32,
+      "asset": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a23-l12.bin",
+        "bytes": 128172,
+        "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+      }
+    },
+    {
+      "id": "periodic-point21-a30-l12",
+      "frameCount": 168,
+      "activeFrames": 44,
+      "asset": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a30-l12.bin",
+        "bytes": 173576,
+        "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+      }
+    },
+    {
+      "id": "periodic-reef42-l12",
+      "frameCount": 187,
+      "activeFrames": 56,
+      "asset": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-reef42-l12.bin",
+        "bytes": 193180,
+        "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+      }
+    }
+  ],
+  "sourceFiles": [
+    {
+      "file": "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/prototype.py",
+      "bytes": 17532,
+      "sha256": "10334352cb76aaca66279a88747ada626b474bb49cd74ebc9d10da142a6797dd"
+    },
+    {
+      "file": "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/recipe.md",
+      "bytes": 5628,
+      "sha256": "e84a5015293e94071bafdc65cf90d0f5fbe4b8e2f78e9b2b9f90fed8e41cb929"
+    },
+    {
+      "file": "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/full-factory-coverage.py",
+      "bytes": 6021,
+      "sha256": "6df99488c5017c4e8615ed2599fc28df10befec5c88e5282e9d23bce25af1a60"
+    }
+  ],
+  "limits": [
+    "No production/native/contact/body validation.",
+    "maturity handles geometry, no time/phase gate.",
+    "Cross-case blend still needs verification at actual production queries.",
+    "Vertical floor coverage does not prove actual touchdown of raised tip."
+  ]
+}

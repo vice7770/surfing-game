@@ -1,0 +1,161 @@
+{
+  "schema": "tube-whole-curl-source-checks/v1",
+  "checkedAt": "2026-10-04T18:21:07.658231+00:00",
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "complete": true,
+  "checks": [
+    {
+      "name": "Installed Node for syntax-only --check",
+      "passed": true
+    },
+    {
+      "name": "native.mjs syntax",
+      "passed": true,
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "native-owned.mjs syntax",
+      "passed": true,
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "ray-faces.mjs syntax",
+      "passed": true,
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "run.py AST syntax",
+      "passed": true
+    },
+    {
+      "name": "check-source.py AST syntax",
+      "passed": true
+    },
+    {
+      "name": "SETTINGS exact baseline source",
+      "passed": true
+    },
+    {
+      "name": "OVERRIDES exact baseline source",
+      "passed": true
+    },
+    {
+      "name": "GRAPHICS exact baseline source",
+      "passed": true
+    },
+    {
+      "name": "Preserved baseline const eye=[155.32094597816467,4.819468761980533,-.038138747215270996];",
+      "passed": true
+    },
+    {
+      "name": "Preserved baseline const target=[150.3824691772461,.8194687619805336,-6.938243746757507];",
+      "passed": true
+    },
+    {
+      "name": "Preserved baseline const candidates=[],targetSigma=32.379207311;",
+      "passed": true
+    },
+    {
+      "name": "Preserved baseline await d.start(${JSON.stringify(SETTINGS)},${JSON.stringify(OVERRIDES)},{rider:false,lab:true});",
+      "passed": true
+    },
+    {
+      "name": "Preserved baseline await d.mode.sweptBarrel.ready;d.setWaterLook('rich');await d.setTimeOfDay('midday');",
+      "passed": true
+    },
+    {
+      "name": "Preserved baseline d.resize(1708,879);",
+      "passed": true
+    },
+    {
+      "name": "Exact 1047 settle",
+      "passed": true
+    },
+    {
+      "name": "Choose exactly once after fixed settle",
+      "passed": true
+    },
+    {
+      "name": "Three fixed PNG indices",
+      "passed": true
+    },
+    {
+      "name": "60 sequential ordinary step calls",
+      "passed": true
+    },
+    {
+      "name": "No material opacity assignments",
+      "passed": true
+    },
+    {
+      "name": "No mesh visibility assignments",
+      "passed": true
+    },
+    {
+      "name": "No legacy visibility/opacity inspection functions",
+      "passed": true
+    },
+    {
+      "name": "Ray helper exact unchanged baseline",
+      "passed": true
+    },
+    {
+      "name": "Baseline owner receipt exact unchanged",
+      "passed": true
+    },
+    {
+      "name": "Source-only owner plan exit",
+      "passed": true
+    },
+    {
+      "name": "Plan starts no resources",
+      "passed": true
+    },
+    {
+      "name": "Only fresh owned ports",
+      "passed": true
+    },
+    {
+      "name": "User servers retained",
+      "passed": true
+    },
+    {
+      "name": "Whole/command/cleanup deadlines",
+      "passed": true
+    },
+    {
+      "name": "Capture byte caps",
+      "passed": true
+    }
+  ],
+  "sourceOnlyPlan": {
+    "sourceOnlyPlan": true,
+    "arm": "candidate",
+    "dist": "/private/tmp/tube-whole-curl-native-20261004/dist",
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7,
+    "heldFrames": 3,
+    "pngs": 3,
+    "movingSingleSteps": 60,
+    "singleClipMaximumBytes": 16777216,
+    "reportMaximumBytes": 2097152,
+    "untouchedUserPorts": [
+      4310,
+      4311
+    ],
+    "ports": [
+      4290,
+      9700
+    ],
+    "resourcesStarted": false
+  },
+  "limitations": "Syntax/static preserved-input checks only. No built artifact, MediaRecorder capability, pixels, timing, cleanup runtime or tube quality verified."
+}

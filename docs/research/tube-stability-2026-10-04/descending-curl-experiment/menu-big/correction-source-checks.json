@@ -1,0 +1,138 @@
+{
+  "schema": "tube-menu-big-stream-start-corrections/v1",
+  "complete": true,
+  "checkedAt": "2026-10-04T18:45:27.745744+00:00",
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "checks": [
+    {
+      "name": "native.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "native-owned.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "body-witnesses.mjs syntax",
+      "passed": true
+    },
+    {
+      "name": "run.py AST syntax",
+      "passed": true
+    },
+    {
+      "name": "SETTINGS byte-identical",
+      "passed": true
+    },
+    {
+      "name": "EXPECTED_CONFIG byte-identical",
+      "passed": true
+    },
+    {
+      "name": "GRAPHICS byte-identical",
+      "passed": true
+    },
+    {
+      "name": "POLICY byte-identical",
+      "passed": true
+    },
+    {
+      "name": "Popup gate / normal single-step block byte-identical",
+      "passed": true
+    },
+    {
+      "name": "No override start",
+      "passed": true
+    },
+    {
+      "name": "Initial request counted once",
+      "passed": true
+    },
+    {
+      "name": "Published clip step/clock/request/hash fields",
+      "passed": true
+    },
+    {
+      "name": "One internal worker request",
+      "passed": true
+    },
+    {
+      "name": "Preflight under report/try",
+      "passed": true
+    },
+    {
+      "name": "Cleanup measured/enforced",
+      "passed": true
+    },
+    {
+      "name": "Independent media/clock validator",
+      "passed": true
+    },
+    {
+      "name": "Dry plan exit",
+      "passed": true
+    },
+    {
+      "name": "No resources in dry plan",
+      "passed": true
+    },
+    {
+      "name": "Owned/user ports isolated",
+      "passed": true
+    },
+    {
+      "name": "Whole/command/cleanup unchanged",
+      "passed": true
+    },
+    {
+      "name": "Optional clip and byte caps independently declared",
+      "passed": true
+    },
+    {
+      "name": "Extracted real startup request-before-onstart test",
+      "passed": true
+    }
+  ],
+  "sourceOnlyPlan": {
+    "sourceOnlyPlan": true,
+    "arm": "candidate",
+    "dist": "/private/tmp/tube-menu-big-entry-20261004/dist",
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7,
+    "maximumSteps": 1800,
+    "maximumPhysicalSeconds": 30,
+    "maximumPngs": 3,
+    "maximumPngBytesEach": 12582912,
+    "maximumPngBytesTotal": 37748736,
+    "maximumReportBytes": 33554432,
+    "maximumNdjsonBytes": 25165824,
+    "optionalMovieMaximumAdvances": 240,
+    "optionalMovieMaximumRequests": 241,
+    "optionalMovieMaximumBytes": 16777216,
+    "ports": [
+      4291,
+      9701
+    ],
+    "userPorts": [
+      4310,
+      4311
+    ],
+    "userPortsMustStayOpen": true,
+    "resourcesStarted": false
+  },
+  "sourceFiles": [
+    {
+      "file": "/private/tmp/tube-menu-big-entry-20261004/native.mjs",
+      "bytes": 25991,
+      "sha256": "686c3b0033a010a59d92579ab6e391a6748d170ed955ce7cc9ea0557b0481bfc"
+    },
+    {
+      "file": "/private/tmp/tube-menu-big-entry-20261004/run.py",
+      "bytes": 17494,
+      "sha256": "38b170fcb6c63465b14af8ae82586ca734d6d60f46c87b76770d8da1d34e8d27"
+    }
+  ],
+  "scope": "Native stream-start and owner corrections only. Root owns assets/bundle/preparation.json freeze and single later launch; no production/config/gate changes or resources started."
+}

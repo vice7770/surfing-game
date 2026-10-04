@@ -1,0 +1,744 @@
+{
+  "schema": "full-c-curl-reviewed-feasibility/v1",
+  "sourceReceipt": {
+    "file": "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/report.json",
+    "sha256": "a1de7f8f36771c652752b6528c9a0e41e3a9c1103a90d79069ac931785f60d61",
+    "bytes": 8001145
+  },
+  "candidateClassification": "Promising bounded integration candidate, not completed or visually accepted.",
+  "originalReceiptUnsafeMeaning": "The initial report uses a deliberately strict any changed crossing-pair gate. Paired review distinguishes inherited crossing migrations from creation or increase of crossings; no coefficients/source geometry are changed.",
+  "cleanToCrossedFrames": 0,
+  "framesWithMoreCrossingPairs": 0,
+  "inheritedCrossingMigrations": [
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 153,
+      "maturity": 0.08103493954849947,
+      "change": {
+        "beforePairCount": 1,
+        "afterPairCount": 1,
+        "newPairs": [
+          {
+            "q": 0.42076867582829613,
+            "y": 0.18392343386738402,
+            "segments": [
+              [
+                61,
+                62
+              ],
+              [
+                70,
+                71
+              ]
+            ]
+          }
+        ],
+        "removedPairs": [
+          {
+            "q": 0.4213123734173197,
+            "y": 0.1778784273350462,
+            "segments": [
+              [
+                62,
+                63
+              ],
+              [
+                71,
+                72
+              ]
+            ]
+          }
+        ],
+        "retainedPairsMoved": []
+      }
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 160,
+      "maturity": 0.3247301359390166,
+      "change": {
+        "beforePairCount": 1,
+        "afterPairCount": 1,
+        "newPairs": [],
+        "removedPairs": [],
+        "retainedPairsMoved": [
+          {
+            "before": {
+              "q": 0.5624008178710938,
+              "y": 0.15650039763129941,
+              "segments": [
+                [
+                  63,
+                  64
+                ],
+                [
+                  65,
+                  66
+                ]
+              ]
+            },
+            "after": {
+              "q": 0.5621887652423883,
+              "y": 0.16408001281081938,
+              "segments": [
+                [
+                  63,
+                  64
+                ],
+                [
+                  65,
+                  66
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "actual": [
+    {
+      "row": 124,
+      "maxSeparateAirGap": {
+        "gap": 1.6809910814094655,
+        "q": 2.1471166371282346,
+        "floorSegment": [
+          111,
+          112
+        ],
+        "roofSegment": [
+          64,
+          65
+        ],
+        "verticalIntervalPreserved": true
+      },
+      "continuousWidthAtGap1_6": 0.028678057690615155,
+      "centralThicknessRange47_56and68_78": [
+        0.16980853148407885,
+        0.30426716988757757
+      ],
+      "rootThicknessAt40": 0.5928153932941511,
+      "tipHeightChange": 0.8483532787661316,
+      "junctions": [
+        {
+          "point": 60,
+          "turnDegrees": -9.5124308606023,
+          "absoluteTurnDegrees": 9.5124308606023,
+          "incomingLength": 0.0724279884832734,
+          "outgoingLength": 0.04684956742363424
+        },
+        {
+          "point": 64,
+          "turnDegrees": -22.499908299583783,
+          "absoluteTurnDegrees": 22.499908299583783,
+          "incomingLength": 0.04684988830401242,
+          "outgoingLength": 0.0468500540681647
+        },
+        {
+          "point": 68,
+          "turnDegrees": -14.734828489806823,
+          "absoluteTurnDegrees": 14.734828489806823,
+          "incomingLength": 0.04685003563887435,
+          "outgoingLength": 0.07616216505211718
+        },
+        {
+          "point": 88,
+          "turnDegrees": 2.8616337393834796,
+          "absoluteTurnDegrees": 2.8616337393834796,
+          "incomingLength": 0.14396958824680794,
+          "outgoingLength": 0.09087979145759635
+        }
+      ],
+      "beforeAndAfterFullCrossings": [
+        0,
+        0
+      ]
+    },
+    {
+      "row": 125,
+      "maxSeparateAirGap": {
+        "gap": 1.7014997515075132,
+        "q": 2.3432592921604596,
+        "floorSegment": [
+          111,
+          112
+        ],
+        "roofSegment": [
+          64,
+          65
+        ],
+        "verticalIntervalPreserved": true
+      },
+      "continuousWidthAtGap1_6": 0.04662284453396337,
+      "centralThicknessRange47_56and68_78": [
+        0.17195240780513674,
+        0.3219790726265354
+      ],
+      "rootThicknessAt40": 0.6152558242299676,
+      "tipHeightChange": 1.021619377844167,
+      "junctions": [
+        {
+          "point": 60,
+          "turnDegrees": -9.632724539651214,
+          "absoluteTurnDegrees": 9.632724539651214,
+          "incomingLength": 0.07937294500064401,
+          "outgoingLength": 0.047429183606736466
+        },
+        {
+          "point": 64,
+          "turnDegrees": -22.497149727538574,
+          "absoluteTurnDegrees": 22.497149727538574,
+          "incomingLength": 0.04743683526267289,
+          "outgoingLength": 0.047441773497836646
+        },
+        {
+          "point": 68,
+          "turnDegrees": -14.404444707094333,
+          "absoluteTurnDegrees": 14.404444707094333,
+          "incomingLength": 0.047441543190329206,
+          "outgoingLength": 0.08414642977484939
+        },
+        {
+          "point": 88,
+          "turnDegrees": 3.034580660159176,
+          "absoluteTurnDegrees": 3.034580660159176,
+          "incomingLength": 0.15256425975467416,
+          "outgoingLength": 0.09298085298084065
+        }
+      ],
+      "beforeAndAfterFullCrossings": [
+        0,
+        0
+      ]
+    },
+    {
+      "row": 126,
+      "maxSeparateAirGap": {
+        "gap": 1.7179354844131032,
+        "q": 2.445537608148286,
+        "floorSegment": [
+          111,
+          112
+        ],
+        "roofSegment": [
+          64,
+          65
+        ],
+        "verticalIntervalPreserved": true
+      },
+      "continuousWidthAtGap1_6": 0.06800698711906117,
+      "centralThicknessRange47_56and68_78": [
+        0.17356334324339442,
+        0.3185921499131391
+      ],
+      "rootThicknessAt40": 0.6040770518670422,
+      "tipHeightChange": 1.2534011815252335,
+      "junctions": [
+        {
+          "point": 60,
+          "turnDegrees": -9.698802554206493,
+          "absoluteTurnDegrees": 9.698802554206493,
+          "incomingLength": 0.08298684031851461,
+          "outgoingLength": 0.047882064751616125
+        },
+        {
+          "point": 64,
+          "turnDegrees": -22.499767217133403,
+          "absoluteTurnDegrees": 22.499767217133403,
+          "incomingLength": 0.04788477240613683,
+          "outgoingLength": 0.047886340373782706
+        },
+        {
+          "point": 68,
+          "turnDegrees": -14.23847778404348,
+          "absoluteTurnDegrees": 14.23847778404348,
+          "incomingLength": 0.04788630232115233,
+          "outgoingLength": 0.09021137887763117
+        },
+        {
+          "point": 88,
+          "turnDegrees": 3.272610483348495,
+          "absoluteTurnDegrees": 3.272610483348495,
+          "incomingLength": 0.15010360706088266,
+          "outgoingLength": 0.09944804833982854
+        }
+      ],
+      "beforeAndAfterFullCrossings": [
+        0,
+        0
+      ]
+    },
+    {
+      "row": 127,
+      "maxSeparateAirGap": {
+        "gap": 1.7377251177992514,
+        "q": 2.4752659893704534,
+        "floorSegment": [
+          111,
+          112
+        ],
+        "roofSegment": [
+          64,
+          65
+        ],
+        "verticalIntervalPreserved": true
+      },
+      "continuousWidthAtGap1_6": 0.10225735770514133,
+      "centralThicknessRange47_56and68_78": [
+        0.17556045696308278,
+        0.3211955246559886
+      ],
+      "rootThicknessAt40": 0.6077350813603442,
+      "tipHeightChange": 1.274058177750902,
+      "junctions": [
+        {
+          "point": 60,
+          "turnDegrees": -9.700579363158779,
+          "absoluteTurnDegrees": 9.700579363158779,
+          "incomingLength": 0.08399857478756761,
+          "outgoingLength": 0.048433394220941714
+        },
+        {
+          "point": 64,
+          "turnDegrees": -22.499794490442444,
+          "absoluteTurnDegrees": 22.499794490442444,
+          "incomingLength": 0.04843589819520692,
+          "outgoingLength": 0.04843737188345157
+        },
+        {
+          "point": 68,
+          "turnDegrees": -14.233066524389027,
+          "absoluteTurnDegrees": 14.233066524389027,
+          "incomingLength": 0.048437308152869146,
+          "outgoingLength": 0.09155586235931681
+        },
+        {
+          "point": 88,
+          "turnDegrees": 3.297375357889653,
+          "absoluteTurnDegrees": 3.297375357889653,
+          "incomingLength": 0.15106094781240925,
+          "outgoingLength": 0.10040230607874302
+        }
+      ],
+      "beforeAndAfterFullCrossings": [
+        0,
+        0
+      ]
+    },
+    {
+      "row": 128,
+      "maxSeparateAirGap": {
+        "gap": 1.7518469755658548,
+        "q": 2.4930151285281643,
+        "floorSegment": [
+          111,
+          112
+        ],
+        "roofSegment": [
+          64,
+          65
+        ],
+        "verticalIntervalPreserved": true
+      },
+      "continuousWidthAtGap1_6": 0.13097021046364432,
+      "centralThicknessRange47_56and68_78": [
+        0.17698593113072206,
+        0.32165257901154753
+      ],
+      "rootThicknessAt40": 0.6069135441459275,
+      "tipHeightChange": 1.2787346992789808,
+      "junctions": [
+        {
+          "point": 60,
+          "turnDegrees": -9.703715947178688,
+          "absoluteTurnDegrees": 9.703715947178688,
+          "incomingLength": 0.08459672971085104,
+          "outgoingLength": 0.04882685875879226
+        },
+        {
+          "point": 64,
+          "turnDegrees": -22.499793862927095,
+          "absoluteTurnDegrees": 22.499793862927095,
+          "incomingLength": 0.04882923498209362,
+          "outgoingLength": 0.04883065121344237
+        },
+        {
+          "point": 68,
+          "turnDegrees": -14.233619913823153,
+          "absoluteTurnDegrees": 14.233619913823153,
+          "incomingLength": 0.04883062402770846,
+          "outgoingLength": 0.09250720362685631
+        },
+        {
+          "point": 88,
+          "turnDegrees": 3.3282566091325823,
+          "absoluteTurnDegrees": 3.3282566091325823,
+          "incomingLength": 0.15107530672896383,
+          "outgoingLength": 0.10089735895910011
+        }
+      ],
+      "beforeAndAfterFullCrossings": [
+        0,
+        0
+      ]
+    }
+  ],
+  "turnReview": {
+    "frames": 293,
+    "beforeMaxTurnOver90": 58,
+    "afterMaxTurnOver90": 11,
+    "largestIncrease": {
+      "case": "periodic-reef42-l12",
+      "frame": 143,
+      "maturity": 0.8766016670594824,
+      "before": {
+        "point": 32,
+        "turnDegrees": -17.224319993639657,
+        "absoluteTurnDegrees": 17.224319993639657,
+        "incomingLength": 0.06522343861352226,
+        "outgoingLength": 0.0038058025519573596
+      },
+      "after": {
+        "point": 78,
+        "turnDegrees": 37.62347885064421,
+        "absoluteTurnDegrees": 37.62347885064421,
+        "incomingLength": 0.0016807901658276,
+        "outgoingLength": 0.0018039282065444781
+      },
+      "delta": 20.399158857004554
+    },
+    "remainingAfterOver90": [
+      {
+        "case": "periodic-padang19s-l12",
+        "frame": 151,
+        "maturity": 0.05666749468533295,
+        "before": {
+          "point": 73,
+          "turnDegrees": 109.32506813075133,
+          "absoluteTurnDegrees": 109.32506813075133,
+          "incomingLength": 0.0015376030771140318,
+          "outgoingLength": 0.0024748201374058063
+        },
+        "after": {
+          "point": 73,
+          "turnDegrees": 100.34586626701693,
+          "absoluteTurnDegrees": 100.34586626701693,
+          "incomingLength": 0.001596740006058202,
+          "outgoingLength": 0.002427111963880133
+        },
+        "delta": -8.979201863734403
+      },
+      {
+        "case": "periodic-padang19s-l12",
+        "frame": 153,
+        "maturity": 0.08103493954849947,
+        "before": {
+          "point": 69,
+          "turnDegrees": 176.94137452272392,
+          "absoluteTurnDegrees": 176.94137452272392,
+          "incomingLength": 0.0027999981872199355,
+          "outgoingLength": 0.003164058882844533
+        },
+        "after": {
+          "point": 64,
+          "turnDegrees": 173.80326935762983,
+          "absoluteTurnDegrees": 173.80326935762983,
+          "incomingLength": 0.003579649575724636,
+          "outgoingLength": 0.0026622153810833267
+        },
+        "delta": -3.138105165094089
+      },
+      {
+        "case": "periodic-padang19s-l12",
+        "frame": 156,
+        "maturity": 0.19980753498594392,
+        "before": {
+          "point": 63,
+          "turnDegrees": -135.27649657371813,
+          "absoluteTurnDegrees": 135.27649657371813,
+          "incomingLength": 0.004263755657241451,
+          "outgoingLength": 0.005513931294624141
+        },
+        "after": {
+          "point": 63,
+          "turnDegrees": -126.49301749995367,
+          "absoluteTurnDegrees": 126.49301749995367,
+          "incomingLength": 0.003034875663479612,
+          "outgoingLength": 0.005104978983704219
+        },
+        "delta": -8.783479073764468
+      },
+      {
+        "case": "periodic-padang19s-l12",
+        "frame": 160,
+        "maturity": 0.3247301359390166,
+        "before": {
+          "point": 65,
+          "turnDegrees": 174.63666908219977,
+          "absoluteTurnDegrees": 174.63666908219977,
+          "incomingLength": 0.0032241084231833827,
+          "outgoingLength": 0.003139987587928772
+        },
+        "after": {
+          "point": 64,
+          "turnDegrees": 166.61635281072063,
+          "absoluteTurnDegrees": 166.61635281072063,
+          "incomingLength": 0.0039118350597671875,
+          "outgoingLength": 0.0010449056382588427
+        },
+        "delta": -8.020316271479146
+      },
+      {
+        "case": "periodic-reef42-l12",
+        "frame": 70,
+        "maturity": 0.0,
+        "before": {
+          "point": 84,
+          "turnDegrees": -155.34400390506514,
+          "absoluteTurnDegrees": 155.34400390506514,
+          "incomingLength": 0.0016479151569230362,
+          "outgoingLength": 0.0027104537905092204
+        },
+        "after": {
+          "point": 84,
+          "turnDegrees": -155.34400390506514,
+          "absoluteTurnDegrees": 155.34400390506514,
+          "incomingLength": 0.0016479151569230362,
+          "outgoingLength": 0.0027104537905092204
+        },
+        "delta": 0.0
+      },
+      {
+        "case": "periodic-reef42-l12",
+        "frame": 71,
+        "maturity": 0.0,
+        "before": {
+          "point": 84,
+          "turnDegrees": 128.2154039240438,
+          "absoluteTurnDegrees": 128.2154039240438,
+          "incomingLength": 0.0022599995136260986,
+          "outgoingLength": 0.0013740260067789942
+        },
+        "after": {
+          "point": 84,
+          "turnDegrees": 128.2154039240438,
+          "absoluteTurnDegrees": 128.2154039240438,
+          "incomingLength": 0.0022599995136260986,
+          "outgoingLength": 0.0013740260067789942
+        },
+        "delta": 0.0
+      },
+      {
+        "case": "periodic-reef42-l12",
+        "frame": 72,
+        "maturity": 0.0,
+        "before": {
+          "point": 69,
+          "turnDegrees": -126.61587785275073,
+          "absoluteTurnDegrees": 126.61587785275073,
+          "incomingLength": 0.0021888108468960184,
+          "outgoingLength": 0.0008584761330952697
+        },
+        "after": {
+          "point": 69,
+          "turnDegrees": -126.61587785275073,
+          "absoluteTurnDegrees": 126.61587785275073,
+          "incomingLength": 0.0021888108468960184,
+          "outgoingLength": 0.0008584761330952697
+        },
+        "delta": 0.0
+      },
+      {
+        "case": "periodic-reef42-l12",
+        "frame": 74,
+        "maturity": 0.0,
+        "before": {
+          "point": 70,
+          "turnDegrees": -165.89414947675277,
+          "absoluteTurnDegrees": 165.89414947675277,
+          "incomingLength": 0.0017594261537810193,
+          "outgoingLength": 0.0028456530100773128
+        },
+        "after": {
+          "point": 70,
+          "turnDegrees": -165.89414947675277,
+          "absoluteTurnDegrees": 165.89414947675277,
+          "incomingLength": 0.0017594261537810193,
+          "outgoingLength": 0.0028456530100773128
+        },
+        "delta": 0.0
+      },
+      {
+        "case": "periodic-reef42-l12",
+        "frame": 85,
+        "maturity": 0,
+        "before": {
+          "point": 69,
+          "turnDegrees": -167.22783535491834,
+          "absoluteTurnDegrees": 167.22783535491834,
+          "incomingLength": 0.0023567379274494903,
+          "outgoingLength": 0.0023224681299852555
+        },
+        "after": {
+          "point": 69,
+          "turnDegrees": -167.22783535491834,
+          "absoluteTurnDegrees": 167.22783535491834,
+          "incomingLength": 0.0023567379274494903,
+          "outgoingLength": 0.0023224681299852555
+        },
+        "delta": 0.0
+      },
+      {
+        "case": "periodic-reef42-l12",
+        "frame": 90,
+        "maturity": 0,
+        "before": {
+          "point": 88,
+          "turnDegrees": 150.41587838736447,
+          "absoluteTurnDegrees": 150.41587838736447,
+          "incomingLength": 0.0014618850944124735,
+          "outgoingLength": 0.018022505401578657
+        },
+        "after": {
+          "point": 88,
+          "turnDegrees": 150.41587838736447,
+          "absoluteTurnDegrees": 150.41587838736447,
+          "incomingLength": 0.0014618850944124735,
+          "outgoingLength": 0.018022505401578657
+        },
+        "delta": 0.0
+      },
+      {
+        "case": "periodic-reef42-l12",
+        "frame": 98,
+        "maturity": 0,
+        "before": {
+          "point": 69,
+          "turnDegrees": -170.6810639751132,
+          "absoluteTurnDegrees": 170.6810639751132,
+          "incomingLength": 0.0023103475954734057,
+          "outgoingLength": 0.0023447092063384155
+        },
+        "after": {
+          "point": 69,
+          "turnDegrees": -170.6810639751132,
+          "absoluteTurnDegrees": 170.6810639751132,
+          "incomingLength": 0.0023103475954734057,
+          "outgoingLength": 0.0023447092063384155
+        },
+        "delta": 0.0
+      }
+    ]
+  },
+  "adjacentFrameInterpolation": {
+    "sampleCount": 840,
+    "newPairSamples": 1,
+    "movedRetainedPairSamples": 0,
+    "failures": [
+      {
+        "case": "periodic-padang19s-l12",
+        "frames": [
+          152,
+          153
+        ],
+        "share": 0.75,
+        "change": {
+          "beforePairCount": 1,
+          "afterPairCount": 1,
+          "newPairs": [
+            {
+              "q": 0.41564831650679007,
+              "y": 0.1825686935690659,
+              "segments": [
+                [
+                  62,
+                  63
+                ],
+                [
+                  69,
+                  70
+                ]
+              ]
+            }
+          ],
+          "removedPairs": [
+            {
+              "q": 0.41609463027919374,
+              "y": 0.17913443480410682,
+              "segments": [
+                [
+                  63,
+                  64
+                ],
+                [
+                  70,
+                  71
+                ]
+              ]
+            }
+          ],
+          "retainedPairsMoved": []
+        }
+      }
+    ]
+  },
+  "continuityScope": {
+    "tauInterpolationShares": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "onlyContiguousOriginalEligibleFrames": true,
+    "crossCaseInterpolationUntested": true,
+    "actualAlongshoreFullLoftUntested": true,
+    "float32RoundingUntested": true
+  },
+  "velocityReview": {
+    "samples": 280,
+    "units": "h0 per sqrt(h0/g); finite differences of positions, not fitted tipVelocity or physical flow.",
+    "maximumRatioCandidateToOriginal": 1.0447230456266665,
+    "maximumCandidate": {
+      "case": "periodic-reef42-l12",
+      "frames": [
+        175,
+        176
+      ],
+      "tauStep": 0.02499999999999858,
+      "originalMaxVertexSpeed": 17.24289584009164,
+      "candidateMaxVertexSpeed": 17.24289584009164,
+      "originalTipVelocity": [
+        0.9460449218750537,
+        -0.468800067901638
+      ],
+      "candidateTipVelocity": [
+        0.9460449218750537,
+        -0.6933348586038562
+      ]
+    },
+    "maximumTipVelocityChange": {
+      "case": "pad19-a20-l12",
+      "frames": [
+        141,
+        142
+      ],
+      "tauStep": 0.02499999999999858,
+      "originalMaxVertexSpeed": 1.74886142871003,
+      "candidateMaxVertexSpeed": 1.0408168780455798,
+      "originalTipVelocity": [
+        1.040039062500059,
+        -1.4059996604920233
+      ],
+      "candidateTipVelocity": [
+        1.040039062500059,
+        -0.0402308600274149
+      ]
+    }
+  },
+  "timingProposal": {
+    "chosenSemantic": "Retain authored touchdown as a breaking/whitewater event that initiates settling of the analytic curl; do not call it geometric tip-floor contact of the new representation.",
+    "settlingDuration": "Recompute modified held void height and retain collapseSeconds=sqrt(2*W/g), with existing shared draw/contact linear height fade. This is an authored game effect, not a validated ballistic freefall.",
+    "tipVelocity": "Refit from transformed positions using existing sustainedOverturn/refitTip before any ProfileLibrary/cache construction.",
+    "validationRequired": "All cases, all transformed frames including formerly ineligible/TD/post frames; transformed held selection, actual frame/case interpolation, native moving loft and real rider contact/body traversal."
+  },
+  "noProductionNoNativeNoTuning": true
+}

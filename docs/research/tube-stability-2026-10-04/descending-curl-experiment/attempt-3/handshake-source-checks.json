@@ -1,0 +1,37 @@
+{
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "checks": [
+    {
+      "name": "fixed-view",
+      "passed": true,
+      "sourcePath": "/private/tmp/tube-whole-curl-stream-start-20261004/native.mjs",
+      "functionSha256": "85933a8c4cc77774aadaccdd52d211e27686f5df7e548cc70a0e92ff669d1502",
+      "events": [
+        "captureStream",
+        "start",
+        "render",
+        "requestFrame",
+        "onstart"
+      ],
+      "initialRequest": 1,
+      "scope": "Extracted real beginVideo source in a mock recorder requiring a first frame to emit onstart; proves callback/request ordering only, no native capability or pixels."
+    },
+    {
+      "name": "big-first-standing",
+      "passed": true,
+      "sourcePath": "/private/tmp/tube-menu-big-entry-20261004/native.mjs",
+      "functionSha256": "68cf944ed052b59bdbf160567952d036647564c5a2fd30d76bcb4dab658d8eb5",
+      "events": [
+        "captureStream",
+        "start",
+        "render",
+        "requestFrame",
+        "onstart"
+      ],
+      "initialRequest": 1,
+      "scope": "Extracted real beginVideo source in a mock recorder requiring a first frame to emit onstart; proves callback/request ordering only, no native capability or pixels."
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "schema": "descending-curl-root-review/v1",
+  "candidateAdopted": false,
+  "goalComplete": false,
+  "experimentalProductionState": "Retained uncommitted for next shape representation; accepted code unchanged",
+  "nativeCapture": {
+    "complete": true,
+    "physicsAdvances": 60,
+    "physicsSeconds": 1,
+    "requestedFrames": 61,
+    "originalWebmSha256": "220005a2fd0aabf4f2728abcfb5dec36f30bf17665d7bd9bf2d85bbcbc049bc4",
+    "fixedFront48Coverage": false,
+    "fixedViewInventory": {
+      "seaTime": 553.173058749449,
+      "settleSteps": 1047,
+      "front": 48,
+      "requestedSigma": 32.379207311,
+      "maximumSigmaDeltaMeters": 0.75,
+      "rows": [],
+      "front48Counts": {
+        "total": 0,
+        "formed": 0,
+        "weighted": 0,
+        "livePhase": 0,
+        "joined": 0,
+        "qualified": 0
+      },
+      "global": {
+        "sliceCount": 144,
+        "vertexCount": 19296,
+        "indexCount": 113316,
+        "frontIDs": [
+          36,
+          38
+        ],
+        "frontRowCounts": {
+          "36": 85,
+          "38": 59
+        },
+        "snapshotCounts": {
+          "front": 108,
+          "tubes": 0,
+          "lip": 7
+        }
+      },
+      "scope": "Read-only inventory at the original fixed time before selecting any diagnostic source row; no simulation or geometry writes"
+    },
+    "rootVisualReview": "Original normally rendered PNGs at.3,.5,1.0 physics seconds and decoded native movie frames show a thinner edge with a broad shallow overhang that settles into foam. Convincing rolling tube not established. No same-strip/physics-equality claim."
+  },
+  "actualMenuBig": {
+    "complete": true,
+    "actualConfig": {
+      "spot": "padang",
+      "seed": 1,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "steps": 162,
+    "popupPulses": 1,
+    "popupTrigger": {
+      "step": 11,
+      "kind": "manual-telemetry",
+      "wave": {
+        "valid": true,
+        "directionX": -0.01786031038830715,
+        "directionZ": 0.9998404919350052,
+        "aheadOfCrest": 4.789465595353292,
+        "crestSpeed": 9.669055974528916,
+        "faceHeight": 4.0274813032933,
+        "faceFraction": 0.8714884149488946,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 7.445262571054732,
+        "speedShoreward": 7.396838814568798,
+        "speedAlongCrest": -0.8477678356938223,
+        "requiredSpeed": null
+      },
+      "cue": false,
+      "pilotState": "go",
+      "attempts": 1
+    },
+    "firstStanding": {
+      "step": 83,
+      "seaTime": 363.19004276701423,
+      "physicalSeconds": 1.3833333333333333
+    },
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 162,
+      "phase": "fallen",
+      "separation": "balance",
+      "resets": 0
+    },
+    "loftSliceMinMax": [
+      0,
+      0
+    ],
+    "standingSeconds": 1.316666666666606,
+    "maxAbsBankRadians": 1.2217304763960306,
+    "entry": {
+      "observedStandingOutside": true,
+      "firstPartial": null,
+      "firstConnectedWitnessEntry": null,
+      "containmentWithoutObservedOutside": null,
+      "firstConnectedWitnessExit": null,
+      "maximumConsecutiveContainedSteps": 0,
+      "residenceIntervals": [],
+      "fullBodyClearancePass": false
+    },
+    "video": {
+      "complete": true,
+      "bytes": 749921,
+      "mimeType": "video/webm;codecs=vp9",
+      "requestCount": 80,
+      "requestFrameCount": 80,
+      "startStep": 83,
+      "endStep": 162,
+      "physicsAdvances": 79,
+      "physicalSeconds": 1.316666666666606,
+      "startSeaTime": 363.19004276701423,
+      "endSeaTime": 364.50670943368084,
+      "wallMilliseconds": 2940.399999976158,
+      "tracksStopped": true,
+      "physicalPlaybackRateClaim": false,
+      "encodedFrameCountClaim": false,
+      "file": "standing-motion.webm",
+      "sha256": "31e3450cecef0fac7fcc940636ce2f1ef78267998157c6c34ab2862446fdcfe0"
+    },
+    "clearanceVerdict": "Unmeasured: no actual loft during any trial step; balance failure is not a tube-clearance failure."
+  },
+  "nextActions": [
+    "Preserve original descending tipY in a coherently paired sheet/arch prototype; no isolated inner-roof lift or parameter search.",
+    "One distinct gentle ordinary analog trial caps standing steer at.2 with.4/s slew, based on observed70-degree bank/balance fall; keep same sea/pop gates and no state forcing."
+  ],
+  "limits": [
+    "Root reviewed movie via locally decoded frames, with no physics-time playback-rate claim.",
+    "No native convincing-curl or sustained-entry/traversal/exit pass.",
+    "All geometry grid claims are bounded and do not establish full finite-body clearance."
+  ]
+}

@@ -1,0 +1,1642 @@
+{
+  "index.html": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/index.html",
+    "bytes": 1442,
+    "sha256": "60675d1b7e6f739633646d53fd74d07f90d913151f5adb2a65b71fc786372392"
+  },
+  "package-lock.json": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/package-lock.json",
+    "bytes": 42710,
+    "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+  },
+  "package.json": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/package.json",
+    "bytes": 4917,
+    "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+  },
+  "public/assets/audio/bubbles-1.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/bubbles-1.m4a",
+    "bytes": 256855,
+    "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+  },
+  "public/assets/audio/bubbles-2.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/bubbles-2.m4a",
+    "bytes": 198252,
+    "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+  },
+  "public/assets/audio/distant-1.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/distant-1.m4a",
+    "bytes": 883404,
+    "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+  },
+  "public/assets/audio/distant-2.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/distant-2.m4a",
+    "bytes": 912023,
+    "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+  },
+  "public/assets/audio/lipJet-1.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/lipJet-1.m4a",
+    "bytes": 62354,
+    "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+  },
+  "public/assets/audio/lipJet-2.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/lipJet-2.m4a",
+    "bytes": 47086,
+    "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+  },
+  "public/assets/audio/lipRoller-1.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/lipRoller-1.m4a",
+    "bytes": 36688,
+    "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+  },
+  "public/assets/audio/lipRoller-2.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/lipRoller-2.m4a",
+    "bytes": 27855,
+    "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+  },
+  "public/assets/audio/paddle-1.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/paddle-1.m4a",
+    "bytes": 14645,
+    "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+  },
+  "public/assets/audio/paddle-2.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/paddle-2.m4a",
+    "bytes": 13593,
+    "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+  },
+  "public/assets/audio/plunge-1.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/plunge-1.m4a",
+    "bytes": 24612,
+    "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+  },
+  "public/assets/audio/plunge-2.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/plunge-2.m4a",
+    "bytes": 22031,
+    "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+  },
+  "public/assets/audio/roar-1.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/roar-1.m4a",
+    "bytes": 419823,
+    "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+  },
+  "public/assets/audio/roar-2.m4a": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/roar-2.m4a",
+    "bytes": 387857,
+    "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+  },
+  "public/assets/audio/sounds.json": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/audio/sounds.json",
+    "bytes": 3499,
+    "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+  },
+  "public/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+    "bytes": 681062,
+    "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+  },
+  "public/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+    "bytes": 2097202,
+    "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+  },
+  "public/assets/skies/qwantani_sunrise_puresky.jpg": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/skies/qwantani_sunrise_puresky.jpg",
+    "bytes": 357301,
+    "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+  },
+  "public/assets/skies/qwantani_sunrise_puresky_1k.hdr": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/skies/qwantani_sunrise_puresky_1k.hdr",
+    "bytes": 2097202,
+    "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+  },
+  "public/assets/skies/qwantani_sunset_puresky.jpg": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/skies/qwantani_sunset_puresky.jpg",
+    "bytes": 372349,
+    "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+  },
+  "public/assets/skies/qwantani_sunset_puresky_1k.hdr": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/skies/qwantani_sunset_puresky_1k.hdr",
+    "bytes": 2097202,
+    "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+  },
+  "public/assets/skies/skies.json": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/skies/skies.json",
+    "bytes": 2266,
+    "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+  },
+  "public/assets/surfers/surfer1.glb": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/surfers/surfer1.glb",
+    "bytes": 1007368,
+    "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+  },
+  "public/assets/surfers/surfer2.glb": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/surfers/surfer2.glb",
+    "bytes": 1595524,
+    "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+  },
+  "public/assets/surfers/surfer3.glb": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/surfers/surfer3.glb",
+    "bytes": 1545008,
+    "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+  },
+  "public/assets/surfers/surfer4.glb": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/surfers/surfer4.glb",
+    "bytes": 1229872,
+    "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+  },
+  "public/assets/surfers/surfers.json": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/assets/surfers/surfers.json",
+    "bytes": 1061,
+    "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+  },
+  "public/barrels/pad19-a20-l12.bin": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+    "bytes": 149848,
+    "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+  },
+  "public/barrels/pad19-a30-l12.bin": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+    "bytes": 163264,
+    "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+  },
+  "public/barrels/pad19-a45-l12.bin": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+    "bytes": 168424,
+    "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+  },
+  "public/barrels/periodic-padang19s-l12.bin": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+    "bytes": 181852,
+    "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+  },
+  "public/barrels/periodic-point21-a15-l12.bin": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a15-l12.bin",
+    "bytes": 106500,
+    "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+  },
+  "public/barrels/periodic-point21-a23-l12.bin": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a23-l12.bin",
+    "bytes": 128172,
+    "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+  },
+  "public/barrels/periodic-point21-a30-l12.bin": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a30-l12.bin",
+    "bytes": 173576,
+    "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+  },
+  "public/barrels/periodic-reef42-l12.bin": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-reef42-l12.bin",
+    "bytes": 193180,
+    "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+  },
+  "public/lessons/pool-s2-caught.sea": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/lessons/pool-s2-caught.sea",
+    "bytes": 2180693,
+    "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+  },
+  "public/lessons/pool-s2-pocket.sea": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/lessons/pool-s2-pocket.sea",
+    "bytes": 2176894,
+    "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+  },
+  "public/lessons/pool-s2-waiting.sea": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/public/lessons/pool-s2-waiting.sea",
+    "bytes": 2232988,
+    "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+  },
+  "src/audio/AudioEngine.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/audio/AudioEngine.ts",
+    "bytes": 13692,
+    "sha256": "84bbcc4efa28f55af533236257eae50ec86d8807c44e92450f226581d1b132ec"
+  },
+  "src/audio/GameSound.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/audio/GameSound.ts",
+    "bytes": 4255,
+    "sha256": "8c7fb1cb960e56d753c74cdae396f8f1cd510dff50369acbb47ea36e43403edd"
+  },
+  "src/audio/SoundBank.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/audio/SoundBank.ts",
+    "bytes": 5731,
+    "sha256": "ea2e2b9aa57950c1786a0642fdd38a1065fa8ad13ee15047cfd2a81583eec164"
+  },
+  "src/audio/audioState.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/audio/audioState.ts",
+    "bytes": 1977,
+    "sha256": "a8e28b447606c75e8802e7e43e58ddb0433ddc1533cb7c58c929f2f5d11df730"
+  },
+  "src/audio/soundManifest.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/audio/soundManifest.ts",
+    "bytes": 4078,
+    "sha256": "ac6ee09f460a7b0eb53cd8070c140851851b48d9c02f2f04e17fcb4c9b31a0d1"
+  },
+  "src/audio/soundMapping.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/audio/soundMapping.ts",
+    "bytes": 14618,
+    "sha256": "50804c02be8fc43ae85582e54da986b3640ad43630636c8c0ff83efd10cf720e"
+  },
+  "src/audio/synth.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/audio/synth.ts",
+    "bytes": 9615,
+    "sha256": "7fe3ff5d35c81302b65479cee211b0ece883c354a9e3094891919d23237ca49b"
+  },
+  "src/audio/variants.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/audio/variants.ts",
+    "bytes": 1349,
+    "sha256": "de959432e84100b2686b052f0baa401e3bae8d005b488e1d43f9f56450b2b084"
+  },
+  "src/controllerCheck.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/controllerCheck.ts",
+    "bytes": 7486,
+    "sha256": "5bce5112c46552008a59fe86a853d26ea1be8c3a99b8d920a99d7ff173062a95"
+  },
+  "src/dev/Autopilot.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/Autopilot.ts",
+    "bytes": 32175,
+    "sha256": "0cdfb3daf9d09ae432b4654f25d4cc16f1289e44a3dd44abda33b96527c75a0a"
+  },
+  "src/dev/bodyFilm.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/bodyFilm.ts",
+    "bytes": 36465,
+    "sha256": "a4eeea77ab058bd1c7415163c9e4af6f0a7c36026133aa6393db229c1591a4fd"
+  },
+  "src/dev/carveMetrics.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/carveMetrics.ts",
+    "bytes": 3730,
+    "sha256": "b3ebaacace59cf83af3ade1526c155d59190d4fe3724b4cc75d0a5bb9e9bdc4d"
+  },
+  "src/dev/characterSheet.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/characterSheet.ts",
+    "bytes": 23781,
+    "sha256": "576a0d074aa1905fc1e021dca2fd0b19b2bbd3a961531b3bf8fb18252a2102c6"
+  },
+  "src/dev/cueMeasures.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/cueMeasures.ts",
+    "bytes": 2227,
+    "sha256": "1b8c275adf42aa45d8bbb85fffa001fa87a87a08879229bc68ba7c96c9545aab"
+  },
+  "src/dev/devStepping.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/devStepping.ts",
+    "bytes": 1650,
+    "sha256": "7c8abca05b930cd10d4778a029ac1ec2c8ae57db76e151d1ecde12bb7ce23740"
+  },
+  "src/dev/heldRider.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/heldRider.ts",
+    "bytes": 3079,
+    "sha256": "af937f640c41dc1a592e277545d28550c56893a33b85dc0df2eee37c16a0f3b1"
+  },
+  "src/dev/jev/answers.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/jev/answers.ts",
+    "bytes": 2478,
+    "sha256": "ee71782c46aef0b053b8aed41488f654296fe53e6449ae739473829f68395903"
+  },
+  "src/dev/jev/motor.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/jev/motor.ts",
+    "bytes": 8877,
+    "sha256": "403456d36af0560f02cd97c292f7fedd94554189aa5c9db93c569c694ed82557"
+  },
+  "src/dev/jev/observe.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/jev/observe.ts",
+    "bytes": 10055,
+    "sha256": "3b2f8b157d02cba71a37d130d673c5a9cbadf530cdda672ccd038e5347b1f22d"
+  },
+  "src/dev/jev/pilot.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/jev/pilot.ts",
+    "bytes": 5988,
+    "sha256": "45c6a58dfa89bd61fd4af38467c140645ebda1990bd286b1f04f8c2641c35174"
+  },
+  "src/dev/jev/questions.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/jev/questions.ts",
+    "bytes": 3704,
+    "sha256": "63f5048f4c5102c85ffba65e9c76f07a041e87fd33ab1718d5bdbea865f99247"
+  },
+  "src/dev/jev/senses.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/jev/senses.ts",
+    "bytes": 1531,
+    "sha256": "0faf56ec65127ea932cdc1c4586bbcf407d15a59ef090482a4084cb549c49d11"
+  },
+  "src/dev/jevRecorder.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/jevRecorder.ts",
+    "bytes": 11409,
+    "sha256": "3baa68a1b39cd934db6bf7601688049ace62a5ffd84bee4a2a7dd30a4ae9fc18"
+  },
+  "src/dev/particleBench.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/particleBench.ts",
+    "bytes": 25711,
+    "sha256": "94d12129a25c3e05e1dc54009d201f27db39dbc08ff4466210dfc7de3db24fa6"
+  },
+  "src/dev/poolStart.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/poolStart.ts",
+    "bytes": 7038,
+    "sha256": "aa3f640b1560eeea537ee0e55db259bf686a8d21898488026f0dc1a271b51245"
+  },
+  "src/dev/rideRecorder.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/rideRecorder.ts",
+    "bytes": 22206,
+    "sha256": "0b505e0e1413498805c34446117c3ae715c4bcf7e5563eef0fd9317c9749e39f"
+  },
+  "src/dev/ridingPoses.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/ridingPoses.ts",
+    "bytes": 15811,
+    "sha256": "3a809d9e7621e162dcccadde48e349c34b123e645d61eb54061b7c1283900faf"
+  },
+  "src/dev/stanceFigure.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/stanceFigure.ts",
+    "bytes": 11605,
+    "sha256": "b4ddbb5b54ee62d2d1c62324a4856244adbda0509080fd51fd5bdb6eb89841c7"
+  },
+  "src/dev/stanceReport.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/stanceReport.ts",
+    "bytes": 7129,
+    "sha256": "01b39c966f670ae9f1cb29b2035c4c7858cf641029f7b31277482037ecff1e6e"
+  },
+  "src/dev/tierParity.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/tierParity.ts",
+    "bytes": 9031,
+    "sha256": "b8f1904c28d1401ac558ccf3009c836d1dcba7bf84e62c858521b1c53dde88aa"
+  },
+  "src/dev/tierParityPage.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/tierParityPage.ts",
+    "bytes": 16271,
+    "sha256": "95cf5394468a08e161a5767fc9640b1b30fa1310cf1cfb9cb01c48ad0e835351"
+  },
+  "src/dev/tierParityWorker.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/tierParityWorker.ts",
+    "bytes": 4533,
+    "sha256": "044ea13816a0083c1b5804e1bc1ba4ad10c3c0f5035c2a23c7cba8a01c9dafc7"
+  },
+  "src/dev/waterSheet.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/dev/waterSheet.ts",
+    "bytes": 31281,
+    "sha256": "06ee3d0546f5081fdff44b899b8613d3597744ccea67866db4be69dc2a7f2dba"
+  },
+  "src/devTools.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/devTools.ts",
+    "bytes": 852,
+    "sha256": "e56a647be24485b22d073874f2aec11ab3c1f400552d9146a4092bc9f91e0915"
+  },
+  "src/game/Bindings.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Bindings.ts",
+    "bytes": 9283,
+    "sha256": "05f7086ceb824aefcdcd7d199645364f4d5435ab18951e2ec172e930f8354cdd"
+  },
+  "src/game/Controls.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Controls.ts",
+    "bytes": 11972,
+    "sha256": "66047ba082c2ad9845d66bf6da1195902ac082b087f5832c9440f3c7eac464a0"
+  },
+  "src/game/Graphics.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Graphics.ts",
+    "bytes": 8753,
+    "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42"
+  },
+  "src/game/InputAxes.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/InputAxes.ts",
+    "bytes": 849,
+    "sha256": "22b1b8ed042ddfbe8e839341f0356703f03cd9c68c706530f1802faa9a5ddad9"
+  },
+  "src/game/Logbook.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Logbook.ts",
+    "bytes": 3811,
+    "sha256": "decc142b8cb766f09a9dd8f66405d1db46d5013e92230aa3ed0572fc19bfa600"
+  },
+  "src/game/OnlinePlay.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/OnlinePlay.ts",
+    "bytes": 4787,
+    "sha256": "7987022133d8fcec513bc40966256f28bd0fc205a6a0a672fb0ce9553136de66"
+  },
+  "src/game/PhysicalMode.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/PhysicalMode.ts",
+    "bytes": 41940,
+    "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+  },
+  "src/game/RideTracker.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/RideTracker.ts",
+    "bytes": 5880,
+    "sha256": "cf8f2990ab41adcdaa2f6bef10d8c8b8431c6d3fdecc213c0750bfacfc7b538c"
+  },
+  "src/game/Settings.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Settings.ts",
+    "bytes": 19014,
+    "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618"
+  },
+  "src/game/Sticks.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/Sticks.ts",
+    "bytes": 3737,
+    "sha256": "d80370fe5507f4b9d3192915201f6ceea5610560ef7698fe6196b8631e9e7ee3"
+  },
+  "src/game/StillFrameGate.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/StillFrameGate.ts",
+    "bytes": 1400,
+    "sha256": "7295e2fe116a006f860d1effab869197cbf61903d0b0e386a7511870a4e42733"
+  },
+  "src/game/SurfConditions.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/SurfConditions.ts",
+    "bytes": 10444,
+    "sha256": "f69da1da985f0caf1f519568d6cc1cea8c4a7629d5dcca1b0ae47d984d92b6f9"
+  },
+  "src/game/SurfZoneHost.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/SurfZoneHost.ts",
+    "bytes": 8020,
+    "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424"
+  },
+  "src/game/SurfZoneWorkerCore.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/SurfZoneWorkerCore.ts",
+    "bytes": 9863,
+    "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+  },
+  "src/game/SurferChoice.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/SurferChoice.ts",
+    "bytes": 3888,
+    "sha256": "87fbdc397b32fd6e88051ab21f2138027527833363d5844b85ec8fb70cc6ee74"
+  },
+  "src/game/WorkerSurfZone.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/WorkerSurfZone.ts",
+    "bytes": 8319,
+    "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+  },
+  "src/game/frameLimit.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/frameLimit.ts",
+    "bytes": 880,
+    "sha256": "00ffb220e144581f0974f1eb20dbb14ea5ca669a4c42b6d37f17fed13db4ce90"
+  },
+  "src/game/hints.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/hints.ts",
+    "bytes": 6015,
+    "sha256": "07f0b969a0b063f53c525ce736861813aad59ff6f5bac2e16eeb053afb7d629f"
+  },
+  "src/game/pocketReflex.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/pocketReflex.ts",
+    "bytes": 3295,
+    "sha256": "2e6bd57cac901031b091e71a0edd0742d607609165fd47b666b0b54ef5f28c64"
+  },
+  "src/game/rideAnalysis.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/rideAnalysis.ts",
+    "bytes": 12746,
+    "sha256": "d6be2ce5f0ad37af8505b410500ce2f73eafff641260c3a6cd1bccbd1c58284a"
+  },
+  "src/game/school/SchoolSession.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/school/SchoolSession.ts",
+    "bytes": 2445,
+    "sha256": "5b8e8f4714218803483629dc612e9a2fd48feabaffde967a3bba4be472a29445"
+  },
+  "src/game/school/lessonFlow.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/school/lessonFlow.ts",
+    "bytes": 4465,
+    "sha256": "0b99fb82c9734e769e2d3ae18084a16e6a86016846ef1348144345a7638e35f9"
+  },
+  "src/game/school/lessonWave.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/school/lessonWave.ts",
+    "bytes": 4402,
+    "sha256": "42efd9c9fd61adee7b3f07346e74351fa9d54639bb3836d4c0e8430cb8649ce4"
+  },
+  "src/game/school/lessonWaves.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/school/lessonWaves.ts",
+    "bytes": 1235,
+    "sha256": "d7a80f5e0ac652123f63b56440e1b709a11fa9b62ba582c3d71d50eb7f882ce6"
+  },
+  "src/game/school/lessons.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/school/lessons.ts",
+    "bytes": 13658,
+    "sha256": "afc39e839fba5482f38921dccbeec34d9b0d8703dcf2190acd968056af21304d"
+  },
+  "src/game/school/schoolProgress.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/school/schoolProgress.ts",
+    "bytes": 1305,
+    "sha256": "fb05f97dddc509b30338d591c7df079b995a7e5568b1c6df17d501d28764eb93"
+  },
+  "src/game/snapshotTrack.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/snapshotTrack.ts",
+    "bytes": 5730,
+    "sha256": "b2becaa523808f2c4d63b759ce2f17889e379f36455902b474989dffa87f8aca"
+  },
+  "src/game/steam/SteamControllerDriver.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/steam/SteamControllerDriver.ts",
+    "bytes": 6246,
+    "sha256": "eeb907965aa9b9bb678cba0a76cfb9c60cf58e913e0fd4706958cc7e2939c419"
+  },
+  "src/game/steam/testReports.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/steam/testReports.ts",
+    "bytes": 818,
+    "sha256": "2858e6ce4c511d42c27b2e8ad57b0f239892f9e101f0e64a2726d8973fb15d8b"
+  },
+  "src/game/steam/tritonProtocol.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/steam/tritonProtocol.ts",
+    "bytes": 6573,
+    "sha256": "ae20d3e26804636be5420c236f2d25abe5944b65b9c732b160a4f26d8fd656f1"
+  },
+  "src/game/steam/webHid.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/steam/webHid.ts",
+    "bytes": 1573,
+    "sha256": "3c12fe9d02bac985e6aa79fc5df345e68045941f1777d676fdfa725ec1991bd8"
+  },
+  "src/game/surfZoneWorker.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/surfZoneWorker.ts",
+    "bytes": 827,
+    "sha256": "2f04572a34cc6f5a1a236d2c44f6ef878d03e1db229e7545f5f33e9daa5f84c6"
+  },
+  "src/game/timeScale.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/timeScale.ts",
+    "bytes": 550,
+    "sha256": "c0afba8db1d0c974b5be424894a3ce032033c99733edc15ba769b6885ad780ec"
+  },
+  "src/game/waveLab/FlyInput.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveLab/FlyInput.ts",
+    "bytes": 8852,
+    "sha256": "c7816bfe5924ab26793ee9d5fc198b68b2b24b5fbd276fd0900adc3acc86b0c4"
+  },
+  "src/game/waveLab/WaveLab.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveLab/WaveLab.ts",
+    "bytes": 6352,
+    "sha256": "a0afcaf01d7a7205117188e2d5a816da3573bab3baf27f105f61c9cd4536f6c3"
+  },
+  "src/game/waveLab/crestTracker.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveLab/crestTracker.ts",
+    "bytes": 4241,
+    "sha256": "6d52f0fcf850d0a2d2fa069d11f18d10fcac19bfe0cd8e33c2e27f33d87903a5"
+  },
+  "src/game/waveLab/labClock.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveLab/labClock.ts",
+    "bytes": 1444,
+    "sha256": "309311231783007de9c44f1e7ce6fc0659bbe8e4b6fd24543409a3b873f58984"
+  },
+  "src/game/waveLab/labSettings.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveLab/labSettings.ts",
+    "bytes": 5278,
+    "sha256": "907b2076b33c96ee0e80d6c26c550f32db71078fbf421c269fb40a43020be4f5"
+  },
+  "src/game/waveLab/viewProbe.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveLab/viewProbe.ts",
+    "bytes": 2086,
+    "sha256": "62adcbc9cd2c472c85c8160d17f1852211ccbd0e5ddc4e14c76b9dff449f8506"
+  },
+  "src/game/waveLab/waveInfo.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveLab/waveInfo.ts",
+    "bytes": 2837,
+    "sha256": "543945795a1ef2247ab83b808fecb0de4e1b874c5e3ea9b19303cc5b903fc61b"
+  },
+  "src/game/waveScore.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveScore.ts",
+    "bytes": 3238,
+    "sha256": "8a8f4e7ceb6edff295ed9f894ccaa0bd904421d9ad2e270a7c024a9dfc151bb0"
+  },
+  "src/gpuCheck.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/gpuCheck.ts",
+    "bytes": 12809,
+    "sha256": "0db53fa3bb42c5d65c011885a2e90d1c72139bf1de498be4d15ce2b5b7d85d8c"
+  },
+  "src/main.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/main.ts",
+    "bytes": 56712,
+    "sha256": "e88b0f82571f74ffcf8ad1d902ba21a5f0bf62293077617f316994b1c4c82ce5"
+  },
+  "src/net/ClockSync.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/ClockSync.ts",
+    "bytes": 1625,
+    "sha256": "f15461a67af796c16ce6f58b17c66b6f322476a48fb6ee669f6a8e303e187652"
+  },
+  "src/net/NetClient.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/NetClient.ts",
+    "bytes": 4979,
+    "sha256": "7f35ebe23e368c333142c5b00027d7b05459ad7f6b948c75cd62daa607cf5c82"
+  },
+  "src/net/OnlineController.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/OnlineController.ts",
+    "bytes": 9246,
+    "sha256": "355ae33388e52d296b6abe9f2e9733cc98c6a3e1b7179d7576c0f82ba95f1288"
+  },
+  "src/net/OnlinePacer.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/OnlinePacer.ts",
+    "bytes": 2391,
+    "sha256": "946542493284a9f1a5834c03b40bef9e9986d78167e09872f026f3bb3a62b6c6"
+  },
+  "src/net/RemoteSurfers.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/RemoteSurfers.ts",
+    "bytes": 11652,
+    "sha256": "1f896c2f275db28ccd23d3a4f8f44cfb08fd2e81be98a39612aa79a644c0bcb7"
+  },
+  "src/net/buildId.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/buildId.ts",
+    "bytes": 265,
+    "sha256": "bb1a440c9ce8a453c7fd7629b209e49f031d7331149bf5f45a1dd55510838e1d"
+  },
+  "src/net/ownPose.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/ownPose.ts",
+    "bytes": 2675,
+    "sha256": "b3cf3b2d340cb5090404785429955881c0007a67dbb5778c4cafab836b415c71"
+  },
+  "src/net/poseCodec.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/poseCodec.ts",
+    "bytes": 8523,
+    "sha256": "6d4e9ca4b832efe6515ae7d7886c056c1d16a417eff816f6d5241c32928cefdf"
+  },
+  "src/net/protocol.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/protocol.ts",
+    "bytes": 9427,
+    "sha256": "275427bbf5918a9ac431b26a3a8dc10b0103ba0ec72d129050ced5a8514b819c"
+  },
+  "src/net/roomCode.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/roomCode.ts",
+    "bytes": 1573,
+    "sha256": "05ca9a5e1960f137ef19e07b49854f21818b05367da146c162ffd20e65ea9ca6"
+  },
+  "src/net/roomSea.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/roomSea.ts",
+    "bytes": 1547,
+    "sha256": "4a050e84305bc6df83235ee8f9029b448b410ea3085ba1a63279d8df77fcc025"
+  },
+  "src/net/spawn.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/net/spawn.ts",
+    "bytes": 2352,
+    "sha256": "9ab74ead004751fc5070944de9e80abe38d4ff6fb8c7bd9078f4bca578371d4b"
+  },
+  "src/physics/AttachedRider.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/AttachedRider.ts",
+    "bytes": 135460,
+    "sha256": "3fc5c9c86a7e2c148dabd2c22bbd6c4ebde6416bdc2dad82661a15c43596ac0d"
+  },
+  "src/physics/BoardBody.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardBody.ts",
+    "bytes": 55109,
+    "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+  },
+  "src/physics/BoardRecovery.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardRecovery.ts",
+    "bytes": 13882,
+    "sha256": "9b5161d0528f384e11b7968144734c858ca1eba481259b82b291d7640f003d2f"
+  },
+  "src/physics/Breath.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/Breath.ts",
+    "bytes": 1341,
+    "sha256": "eb953c2bf7607305e211ec768acc4e2ee644bb185ef924255364dbcaac8e26ed"
+  },
+  "src/physics/BumpWater.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BumpWater.ts",
+    "bytes": 1716,
+    "sha256": "19929143358e0d7ff8132f28c12b852e01d0acf6fa159e08e5edfa39009c2ccd"
+  },
+  "src/physics/DetachedSurfer.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/DetachedSurfer.ts",
+    "bytes": 30945,
+    "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd"
+  },
+  "src/physics/Leash.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/Leash.ts",
+    "bytes": 4335,
+    "sha256": "a98744574a47996440838bd89a44ccc3cdbe782a10a4b371ca5c38f9c3cbc21b"
+  },
+  "src/physics/MinimumJerkTrack.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/MinimumJerkTrack.ts",
+    "bytes": 2659,
+    "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb"
+  },
+  "src/physics/PhysicalBodyWaterField.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PhysicalBodyWaterField.ts",
+    "bytes": 4861,
+    "sha256": "ed7b7052a68325d7ef5ccad745725d0bfdce9a542f3829c630ec4bb1863c7078"
+  },
+  "src/physics/PhysicalSurfWater.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PhysicalSurfWater.ts",
+    "bytes": 26311,
+    "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+  },
+  "src/physics/PlaneWater.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PlaneWater.ts",
+    "bytes": 2414,
+    "sha256": "116bd2e95cd9e91b35818c8cdf5dcfda65acad43a3648e997c5f133ab3fc9e75"
+  },
+  "src/physics/RideSession.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/RideSession.ts",
+    "bytes": 13831,
+    "sha256": "57818ef317fd0616d53a07d631304dff303a8904f488d7ddd96693859ca1bd2e"
+  },
+  "src/physics/RiderFall.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/RiderFall.ts",
+    "bytes": 2159,
+    "sha256": "fbce898b14e9b9a5229aec39440ad8540830191bf0b1103cba7af0bd49c77c53"
+  },
+  "src/physics/SurfWater.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/SurfWater.ts",
+    "bytes": 4064,
+    "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840"
+  },
+  "src/physics/SurfWaterBodyField.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/SurfWaterBodyField.ts",
+    "bytes": 1744,
+    "sha256": "e418d2ccd7d6106a0bf6dd0bc8ac24d12347ae27b40c5ce4cd4de63fcb2d55f9"
+  },
+  "src/physics/SwellWater.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/SwellWater.ts",
+    "bytes": 2763,
+    "sha256": "492a38d3f158a4990982e2764ac5ed086f0b595cc75564d53affbbf0adc72280"
+  },
+  "src/physics/boardReference.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardReference.ts",
+    "bytes": 1317,
+    "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032"
+  },
+  "src/physics/boardShape.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/boardShape.ts",
+    "bytes": 7008,
+    "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2"
+  },
+  "src/physics/eddies.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/eddies.ts",
+    "bytes": 2907,
+    "sha256": "f2a9033f2fa19a31c67f5b6197bbc7f922a2a0a43f194fd09eadcf81d97cd57f"
+  },
+  "src/physics/finForces.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/finForces.ts",
+    "bytes": 6071,
+    "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc"
+  },
+  "src/physics/hullForces.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/hullForces.ts",
+    "bytes": 8926,
+    "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149"
+  },
+  "src/physics/legSpring.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/legSpring.ts",
+    "bytes": 5593,
+    "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c"
+  },
+  "src/physics/riderPosture.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/riderPosture.ts",
+    "bytes": 9003,
+    "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734"
+  },
+  "src/physics/rollModel.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/rollModel.ts",
+    "bytes": 14802,
+    "sha256": "93d8a8f4f027fffa873c5fd59d53d6f178f3743635bd95c3b47694855cfa1a29"
+  },
+  "src/physics/takeOffCue.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/takeOffCue.ts",
+    "bytes": 2242,
+    "sha256": "2ca345e82f21464c74f7f8889520af25f912752cf8f6f8fb4554c3efe95cf293"
+  },
+  "src/physics/testing/BoreWater.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/testing/BoreWater.ts",
+    "bytes": 3846,
+    "sha256": "609aebcd7886d0e5fc98398999bafb847b0582feb0999c764f279b966da8bb8d"
+  },
+  "src/physics/testing/FaceWater.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/testing/FaceWater.ts",
+    "bytes": 4225,
+    "sha256": "808c12aa722ed29fc039769593478da15e9023f84cea036f959bff1a78c7e162"
+  },
+  "src/physics/waveFrame.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/waveFrame.ts",
+    "bytes": 11626,
+    "sha256": "1fc4cca2787e2a9064f779f3905fa762dd37e0664a34e08565c94d28bbaff6a2"
+  },
+  "src/scene/BoardMesh.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/BoardMesh.ts",
+    "bytes": 9992,
+    "sha256": "711433cea5b63eae199df9936e6bdd7524257f07b42f588c614e1447c49bb328"
+  },
+  "src/scene/BubblePoints.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/BubblePoints.ts",
+    "bytes": 1442,
+    "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a"
+  },
+  "src/scene/CausticMap.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/CausticMap.ts",
+    "bytes": 8575,
+    "sha256": "289df2375c532a4ec9b72ffbe7396ddc977e6473277ccc5bb6abec3fde891380"
+  },
+  "src/scene/Environment.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/Environment.ts",
+    "bytes": 2350,
+    "sha256": "9b9e887f60140cce988b67d19cc6a58abf99f28ae191aa9bb0b6ab21eabf67c3"
+  },
+  "src/scene/FarFieldOcean.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/FarFieldOcean.ts",
+    "bytes": 12090,
+    "sha256": "33874ac524e8b86c5a585a81a258bc08d0972ac102d9faccbcbc8f898435f19b"
+  },
+  "src/scene/FftChop.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/FftChop.ts",
+    "bytes": 7491,
+    "sha256": "6939107ec1ddb046e08b5e0ab2659a7eb15a43cd81e7c174411afb5b149858fd"
+  },
+  "src/scene/FlatSurfaceSource.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/FlatSurfaceSource.ts",
+    "bytes": 500,
+    "sha256": "2fbe9ebc7c41930d9fd2eea4800d0a950c164e1b1890dfabe2927661f2823ad6"
+  },
+  "src/scene/FlyCamera.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/FlyCamera.ts",
+    "bytes": 4320,
+    "sha256": "6c0ff6468a4b803caa097b299f3e05498dfc79c11ceba5bba9beb45eb5f592da"
+  },
+  "src/scene/LipSheetMesh.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/LipSheetMesh.ts",
+    "bytes": 11711,
+    "sha256": "690908f042039936935d8aa298b317185d76764498c0bfb688c3f9bed9c93ac1"
+  },
+  "src/scene/PhotoSky.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/PhotoSky.ts",
+    "bytes": 8311,
+    "sha256": "5a3342e571f91f6d3e12a82cd68dd60257ace3de884f21068d65f88825a52f84"
+  },
+  "src/scene/PhysicalSurfaceSource.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/PhysicalSurfaceSource.ts",
+    "bytes": 3054,
+    "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003"
+  },
+  "src/scene/PoolScenery.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/PoolScenery.ts",
+    "bytes": 5271,
+    "sha256": "63e800c1c22a345d782a825078ea60b7b476dd6140c628b9a24663fe91015a59"
+  },
+  "src/scene/RemoteSurferViews.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/RemoteSurferViews.ts",
+    "bytes": 9064,
+    "sha256": "38ef6eb4572798fa11bac6a9d71f586b384d6825fd4fd592522b6a57fe08586a"
+  },
+  "src/scene/ShadowRig.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/ShadowRig.ts",
+    "bytes": 9235,
+    "sha256": "5fb6e8b3eacef2247f035a8dea0d45e315148afcdc626b99317a12ba6e7207fb"
+  },
+  "src/scene/SpectatorCamera.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/SpectatorCamera.ts",
+    "bytes": 8677,
+    "sha256": "ab2a5c2fa98db396c4f17740af7932afffe7d1e5a5f84d660c88f4b532b9f42d"
+  },
+  "src/scene/SpotSeabed.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/SpotSeabed.ts",
+    "bytes": 4309,
+    "sha256": "11a745e51cf33cb1ef30319b28336e7e563f041bffa3230bdea4ccff7e0a7f8a"
+  },
+  "src/scene/SprayPoints.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/SprayPoints.ts",
+    "bytes": 6701,
+    "sha256": "8ad09adf3838a093a91aa3ccbdc72ef25dfee280a7aebed67ad628f9215af991"
+  },
+  "src/scene/SurfboardGeometry.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/SurfboardGeometry.ts",
+    "bytes": 2993,
+    "sha256": "fe55ed0267da5b8a2a5316433437c739d025ce49fb5b7f877ed3263422a62b4a"
+  },
+  "src/scene/Surfer.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/Surfer.ts",
+    "bytes": 9357,
+    "sha256": "84a2ccda09bb01217015f0daf3465123ff8cbb076e96527ff39e5f17c3effd0c"
+  },
+  "src/scene/WaterSurface.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/WaterSurface.ts",
+    "bytes": 39192,
+    "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+  },
+  "src/scene/__snapshots__/waterLooks.test.ts.snap": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/__snapshots__/waterLooks.test.ts.snap",
+    "bytes": 31437,
+    "sha256": "12c619fffeea5d02a37a008ebcd080714f614630aaca24ce35a96d9403a52468"
+  },
+  "src/scene/barrel/SweptBarrel.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.ts",
+    "bytes": 6980,
+    "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+  },
+  "src/scene/barrel/SweptBarrelMesh.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+    "bytes": 30437,
+    "sha256": "3f232ce4e085ee62570daad821b777702394fbe5b772c3feda0c046f4b7489d8"
+  },
+  "src/scene/barrel/barrelFallback.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelFallback.ts",
+    "bytes": 1174,
+    "sha256": "cf2c4981ef25869fe7dcffdaba0fa9c91b3c1161a18db203673b059093c293ba"
+  },
+  "src/scene/barrel/barrelMask.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMask.ts",
+    "bytes": 2396,
+    "sha256": "7e779278be9cad38d3fad90d484c64603c0500f1280ba8bafe05feb35c588c45"
+  },
+  "src/scene/barrel/barrelMaskGlsl.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMaskGlsl.ts",
+    "bytes": 2142,
+    "sha256": "82a029625f3b9c48680166ccd16cb75028f1cc269a3e4690cf3a168b2f47f44b"
+  },
+  "src/scene/barrel/barrelWater.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelWater.ts",
+    "bytes": 5755,
+    "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+  },
+  "src/scene/barrel/fallbackRows.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/fallbackRows.ts",
+    "bytes": 8788,
+    "sha256": "44c5919261a5a30df67c61919101bd6b2375b131efad195e1eb9b40f3a7a8ad8"
+  },
+  "src/scene/board/LeashCord.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/board/LeashCord.ts",
+    "bytes": 3781,
+    "sha256": "162c7965237c5ebf68ed3e6d0cd1ab91fe2e61f6624e3ffb396f036b63cfc1f5"
+  },
+  "src/scene/board/boardDesigns.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/board/boardDesigns.ts",
+    "bytes": 4506,
+    "sha256": "2e6401b2b3a7961ce06ca81cfff8fb771645cc2ef0ac95938776f3c9fea7159a"
+  },
+  "src/scene/board/finGeometry.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/board/finGeometry.ts",
+    "bytes": 1082,
+    "sha256": "6accebf5cb9700e1896a1ca2726e5a5b1f1a162e828df71ad1f4c46be225a1fe"
+  },
+  "src/scene/causticMath.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/causticMath.ts",
+    "bytes": 3634,
+    "sha256": "d8ff368712f5d4508a925656913c48de1f266379fbd5e07847e8916b503b3c21"
+  },
+  "src/scene/character/SkinnedSurfer.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/SkinnedSurfer.ts",
+    "bytes": 7264,
+    "sha256": "c306fc9966ccfef1567224125598fe03e3ec985f9e4ecc8b6419bb0f9b71fee6"
+  },
+  "src/scene/character/SurferPreview.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/SurferPreview.ts",
+    "bytes": 5302,
+    "sha256": "56e88f82029f9dfe4f61878540e79186886d438517df60c63d7a3c889d5a3f91"
+  },
+  "src/scene/character/SurferView.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/SurferView.ts",
+    "bytes": 3604,
+    "sha256": "7c6d6dd97b97e573c2d3376b03d3651cc28bbed314f2be9424373cf9a2dea081"
+  },
+  "src/scene/character/outfits.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/outfits.ts",
+    "bytes": 7128,
+    "sha256": "d320111e5c1d95697457799005f7931f66da25b530a122469836aa076ea4f986"
+  },
+  "src/scene/character/surferMaterial.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/surferMaterial.ts",
+    "bytes": 3853,
+    "sha256": "192e67d4a3eb2a0cd324b4d7e008de2f1d2e9673afaec0de83d05a314322da2e"
+  },
+  "src/scene/character/testSurferScene.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/character/testSurferScene.ts",
+    "bytes": 1569,
+    "sha256": "82443e8f09aabbc2bcf3f35e3feee84e6f103ed7d90892731f649211469fda13"
+  },
+  "src/scene/fftChopMath.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/fftChopMath.ts",
+    "bytes": 7201,
+    "sha256": "18dd410ab5a4fb927c0acc268202dd618bc422c3eca826a363e0722ec938e240"
+  },
+  "src/scene/foamPattern.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/foamPattern.ts",
+    "bytes": 10598,
+    "sha256": "02550a3b3e9b6f22fded53fbee8efd975aaf216deabe78ef4b74983c703ce9ce"
+  },
+  "src/scene/gridGeometry.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/gridGeometry.ts",
+    "bytes": 2444,
+    "sha256": "b1e8967460722e7d5390a97d59469fbb46a102b0e1f416c8227761efa8a81b2c"
+  },
+  "src/scene/rig/HumanoidRig.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/HumanoidRig.ts",
+    "bytes": 70831,
+    "sha256": "b6282cf4854959a4779a58540dc0a4b85b59422e9e65deac1818237f766fb5fa"
+  },
+  "src/scene/rig/armSwing.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/armSwing.ts",
+    "bytes": 7187,
+    "sha256": "c66519a9084ecd95c59f0fe780d09ab084a38506d23927d7dd8a12c2bf792a2d"
+  },
+  "src/scene/rig/bodyInertia.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/bodyInertia.ts",
+    "bytes": 16289,
+    "sha256": "bef14ba00c00a92d9f11d5cd91094dd3e51945b514e4b0cf7555df0aef3283ee"
+  },
+  "src/scene/rig/breathing.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/breathing.ts",
+    "bytes": 3918,
+    "sha256": "d59498ce39ceeb3ebed4c827c5829f330a2b057390af2c3801b9239b83fc6af1"
+  },
+  "src/scene/rig/glbSkeleton.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/glbSkeleton.ts",
+    "bytes": 2299,
+    "sha256": "6d32f794b6c0375c9cf32c7aae8e674bcea8ddbf76bb1d503311a17cb6391541"
+  },
+  "src/scene/rig/humanoidBones.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/humanoidBones.ts",
+    "bytes": 1629,
+    "sha256": "1003b861e5f0b22f59caa1f43a2a8c261e0b2d68e96e57b07af8f282d0b7eae1"
+  },
+  "src/scene/rig/orientBone.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/orientBone.ts",
+    "bytes": 1848,
+    "sha256": "d0c4457f95b02b011171d7c373a23395f05f6a212774dac849dd08301768de61"
+  },
+  "src/scene/rig/pointInertia.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/pointInertia.ts",
+    "bytes": 8260,
+    "sha256": "6f618025a9a36ef86aacf0988296a0d6eab5616fde65efdb8b9a01eaa435bbc2"
+  },
+  "src/scene/rig/posedBody.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/posedBody.ts",
+    "bytes": 1808,
+    "sha256": "f97ed577bc6f722057496e5a303dab8bf3405276a9df66fe06e5cd4f36a1f44a"
+  },
+  "src/scene/rig/posturePoints.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/posturePoints.ts",
+    "bytes": 4071,
+    "sha256": "6090aa6ec5459177f3b651a6c45426e6a413bd25c3600c491814f85c6f798006"
+  },
+  "src/scene/rig/riderMotion.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/riderMotion.ts",
+    "bytes": 4760,
+    "sha256": "14b11c70e4ad365ad29cc8c14e10251e060351a96050bf5912d34f9208f9f286"
+  },
+  "src/scene/rig/riderVisualState.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/riderVisualState.ts",
+    "bytes": 4069,
+    "sha256": "0d9f9337315f6a73b3d0e7ac7c2a69315794947e62a6a006b89a955e38a3a960"
+  },
+  "src/scene/rig/stanceBlend.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/stanceBlend.ts",
+    "bytes": 3016,
+    "sha256": "cf130b85a20a120e59d7bd8d036b5810d578a15ecb12a2be35779f8578dfbca3"
+  },
+  "src/scene/rig/stanceGauge.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/stanceGauge.ts",
+    "bytes": 12732,
+    "sha256": "5abeb65a02bddd2e58ab521158fc59f15ba58c38795fb3eb432ff7675f0a0e2e"
+  },
+  "src/scene/rig/stanceMap.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/stanceMap.ts",
+    "bytes": 29406,
+    "sha256": "e944a73543e63746f0e7492a1435d91602d244f49f1fcddc8a3cd14eb3843c24"
+  },
+  "src/scene/rig/testHumanoid.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/testHumanoid.ts",
+    "bytes": 2084,
+    "sha256": "0d79630c64e827cc8ec13653c263b4103480b1d9a4d633c589eb1b85408ae999"
+  },
+  "src/scene/rig/twoBoneIk.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/rig/twoBoneIk.ts",
+    "bytes": 1690,
+    "sha256": "962a0ef644ceea761ed5406201be39ed885e5cc97f76b54251bd75d66da48d28"
+  },
+  "src/scene/water/churnTexture.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/churnTexture.ts",
+    "bytes": 4462,
+    "sha256": "0a3206ce7654aaae06919916ec109bddb2104acff14b8d2e7a80fd6992aa2045"
+  },
+  "src/scene/water/cubicSurface.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/cubicSurface.ts",
+    "bytes": 2927,
+    "sha256": "c396930d9ff5def978e9a1657931a5c3c49e7cee1c41c577d6cdfbb2c2caee18"
+  },
+  "src/scene/water/mist.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/mist.ts",
+    "bytes": 876,
+    "sha256": "eb40707acfb34e514f9c4394bef0bcfe9204293a758652a99ccd80ceee34d418"
+  },
+  "src/scene/water/richLip.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richLip.ts",
+    "bytes": 17301,
+    "sha256": "29741392cc5faedbfdcddb7c6fd794c57b27c897e595023ba74ccb62b5f262c3"
+  },
+  "src/scene/water/richPatch.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richPatch.ts",
+    "bytes": 4670,
+    "sha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435"
+  },
+  "src/scene/water/richSpray.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richSpray.ts",
+    "bytes": 3595,
+    "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d"
+  },
+  "src/scene/water/richWaterGlsl.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richWaterGlsl.ts",
+    "bytes": 8059,
+    "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416"
+  },
+  "src/scene/water/rippleTexture.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/rippleTexture.ts",
+    "bytes": 7451,
+    "sha256": "ab9f8deb2f901165f267e35d4928270320ebfb04846026b7a565a7391de80667"
+  },
+  "src/scene/water/specular.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/specular.ts",
+    "bytes": 1368,
+    "sha256": "324a52352633b8b3834f27c3113045fc6a356f48933ea4f36d937238602dc5e6"
+  },
+  "src/scene/water/streaks.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/streaks.ts",
+    "bytes": 4931,
+    "sha256": "f156b6c35aad7d240a6a9d1bbf330016257db253757e7470e74723a815208262"
+  },
+  "src/scene/water/tubeCarve.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/tubeCarve.ts",
+    "bytes": 7767,
+    "sha256": "5b8ccfed406bee44877e9791f78223931234a4d52a03c1c4cf30cc9461639ce4"
+  },
+  "src/scene/water/waterLook.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/waterLook.ts",
+    "bytes": 109,
+    "sha256": "26c6766f0b6818381db4bd016a9c077f1ea13a7483964f97ec541795c48b8529"
+  },
+  "src/scene/waterChop.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/waterChop.ts",
+    "bytes": 2208,
+    "sha256": "4a486370db15aead8214a01d7d48975e7bd6d13a20d0cd4c15525ee5a6860fad"
+  },
+  "src/scene/waterOptics.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/waterOptics.ts",
+    "bytes": 13592,
+    "sha256": "3b235ece7102e835f467126158f961c45cdaaff5dbb32ce2b28544a26159ad07"
+  },
+  "src/style.css": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/style.css",
+    "bytes": 4888,
+    "sha256": "4a74e5a9bf012384eb70f6d943f062fa0229eed942d52cbfe8fe37603e1e43b9"
+  },
+  "src/ui/App.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/App.ts",
+    "bytes": 54971,
+    "sha256": "de453426e165d82706bc285e3c73c64b7326adb3f3494ab735a5630efa7770e1"
+  },
+  "src/ui/LessonCard.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/LessonCard.ts",
+    "bytes": 3932,
+    "sha256": "ea3d2b3760a75e0b91fc410e7b4d7b95e3ac5bc58cee7a26f4350525acc5a045"
+  },
+  "src/ui/LogbookScreen.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/LogbookScreen.ts",
+    "bytes": 3446,
+    "sha256": "126f165c4ddced6b081c85415111d9a85fc8f3dfa314fa9482f398b0baa1ca8f"
+  },
+  "src/ui/MainMenu.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/MainMenu.ts",
+    "bytes": 5302,
+    "sha256": "064f75574ddeef5662eb8646c64ee82269ad9e308e26f5444bdf0817ab4a1052"
+  },
+  "src/ui/MenuInput.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/MenuInput.ts",
+    "bytes": 4274,
+    "sha256": "d3edd591d1186ee5e8c96c3562cc188f3725d33c369e02b05fb9a671a83f81ec"
+  },
+  "src/ui/MultiplayerScreen.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/MultiplayerScreen.ts",
+    "bytes": 6065,
+    "sha256": "eb16f958a7d0f1b48f244289298dc4c294478d4569e7842b3c965a283f9cec48"
+  },
+  "src/ui/NameTags.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/NameTags.ts",
+    "bytes": 3382,
+    "sha256": "7bdee4e2773baa99379fcb4f1208384e91f342821a170b657f338c5d2324efbd"
+  },
+  "src/ui/OnlineHud.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/OnlineHud.ts",
+    "bytes": 4418,
+    "sha256": "67f87dd70ee91e949e1f89f919bb6663fc13ce1c5e557c8cd20eb566ce7f90ac"
+  },
+  "src/ui/PauseMenu.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/PauseMenu.ts",
+    "bytes": 6310,
+    "sha256": "041b329c73aa41a90f41cd1150847540fba02b00b2f773525a05f9be143106af"
+  },
+  "src/ui/PhysicsReadoutPanel.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/PhysicsReadoutPanel.ts",
+    "bytes": 529,
+    "sha256": "812133fb998a2f8f44598f3fd9a0107ef3c4186a471fe7f5a5f4b0822131f7aa"
+  },
+  "src/ui/RideEndCard.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/RideEndCard.ts",
+    "bytes": 4122,
+    "sha256": "f1b4f1f453bb993635b8433c2a99e32c91e5a6f869f00c2f08bcd58894c97e22"
+  },
+  "src/ui/RideHud.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/RideHud.ts",
+    "bytes": 10406,
+    "sha256": "f926b4dbe98ef9172378d2a631e369ac12e032792335a84c85bc8ac3c283956a"
+  },
+  "src/ui/SchoolScreen.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/SchoolScreen.ts",
+    "bytes": 2687,
+    "sha256": "bdf1722e1d52ba8fa43a367824ab1eeddde526824870d160dff652cffab12929"
+  },
+  "src/ui/ScreenStack.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/ScreenStack.ts",
+    "bytes": 1481,
+    "sha256": "8781481377605c4d0ce577bbb15dede179261e04304863e109607a018f83bf51"
+  },
+  "src/ui/SettingsScreen.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/SettingsScreen.ts",
+    "bytes": 9020,
+    "sha256": "f6d022a3237feb12d7475c6aa853afbab9bfc68f9eb163eb396b1788ce601cba"
+  },
+  "src/ui/SoundCheck.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/SoundCheck.ts",
+    "bytes": 3648,
+    "sha256": "37551eef983b7b71f2d09e79afa5f2807a06bcabbe3fd43f1df0da5955c8dc9f"
+  },
+  "src/ui/SurfScreen.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/SurfScreen.ts",
+    "bytes": 7508,
+    "sha256": "4ff834a2665af185fef70f7282db94f721d5e0c9bfb9c8d0def04fa38c1471d6"
+  },
+  "src/ui/SurferCard.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/SurferCard.ts",
+    "bytes": 5277,
+    "sha256": "ee598f8cc2cdf1562d4e9ed706d7f394384de25d7c4f65793c3bea821319a933"
+  },
+  "src/ui/WaveLabScreen.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/WaveLabScreen.ts",
+    "bytes": 15973,
+    "sha256": "f8e6c1f539bcea1e5386f0a47f1a602185b192d21d05dfb282045de1cf01b03a"
+  },
+  "src/ui/accessibility.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/accessibility.ts",
+    "bytes": 1031,
+    "sha256": "9fa988dc28e889208aa43240078f6dc9d453256851fac7f1481fd800dcc713d6"
+  },
+  "src/ui/dom.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/dom.ts",
+    "bytes": 1304,
+    "sha256": "a7b8ff68cc957a04b3c2529eee8509147dfd692fd16072fc4539d6442f010ad7"
+  },
+  "src/ui/icons.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/icons.ts",
+    "bytes": 2193,
+    "sha256": "6fcc247bb14ce3920d16578f8e9e5aaf17a1977bbcc6f94ba398fd190d25eb29"
+  },
+  "src/ui/labPanelModel.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/labPanelModel.ts",
+    "bytes": 4623,
+    "sha256": "e8dc724c7576351e9e21ea43b2a07379e1d9cef240b499062ea174ad2a2d1047"
+  },
+  "src/ui/lessonDiagrams.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/lessonDiagrams.ts",
+    "bytes": 4404,
+    "sha256": "d8583f11d56c4192cc06723e94157cccb236677db05f297d4b2579f74e220bbf"
+  },
+  "src/ui/oncePerFlight.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/oncePerFlight.ts",
+    "bytes": 503,
+    "sha256": "e72767fbab24c1ae3b2ebb98ac7d388252ce4124abe56bc1218e78346c3f6540"
+  },
+  "src/ui/ridePrompt.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/ridePrompt.ts",
+    "bytes": 1198,
+    "sha256": "b864ecd3755040fa03d2ac15860573a761f037fa1287e04687463695003479d2"
+  },
+  "src/ui/schoolModel.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/schoolModel.ts",
+    "bytes": 3447,
+    "sha256": "1f51fd1f89919eedfa743716967ed5ffdd748ac69d692c08eceebb847c869b15"
+  },
+  "src/ui/settingsModel.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/settingsModel.ts",
+    "bytes": 12177,
+    "sha256": "7eb2ec326f93b48039b263871b449769ea27ef6468c6eee94e460bd3654e8de2"
+  },
+  "src/ui/spatialNav.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/spatialNav.ts",
+    "bytes": 1358,
+    "sha256": "2decc0c64de2a3e03ad457482db1199268f00cdc1b61bb91687bef85d34d71c3"
+  },
+  "src/ui/strings.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/strings.ts",
+    "bytes": 25504,
+    "sha256": "52a264b509f229871384639499306df5fea50777ed2c1400efbb1ac6090863b6"
+  },
+  "src/ui/surfHeight.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/surfHeight.ts",
+    "bytes": 3159,
+    "sha256": "e5e475b14f1cd3660253e844722c52a0ca84c32249006e195f07f04ccb73e596"
+  },
+  "src/ui/ui.css": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/ui.css",
+    "bytes": 34930,
+    "sha256": "958e109c0dc341597fa653aac2d0ca533a90a444ffec0227629fae570a2b8f19"
+  },
+  "src/ui/units.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/ui/units.ts",
+    "bytes": 1267,
+    "sha256": "b7b3393a63e25e562aa50e513aadd2bb55a64e58c6403b1378194517fb8428f0"
+  },
+  "src/wave/AdvectionStencil.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AdvectionStencil.ts",
+    "bytes": 2316,
+    "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54"
+  },
+  "src/wave/AerationField.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/AerationField.ts",
+    "bytes": 13174,
+    "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+  },
+  "src/wave/Bathymetry.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+    "bytes": 18386,
+    "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54"
+  },
+  "src/wave/BoussinesqSolver.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/BoussinesqSolver.ts",
+    "bytes": 38627,
+    "sha256": "c1d87564677e35ece932831139426e31f19b69490d961dccaf8b8e665e3e0910"
+  },
+  "src/wave/Breaking.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Breaking.ts",
+    "bytes": 12851,
+    "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3"
+  },
+  "src/wave/BubbleCloud.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/BubbleCloud.ts",
+    "bytes": 5786,
+    "sha256": "d8660d57adbe0215ea3602af7a1278637a8619d182fd28d6179a4fbd3010a502"
+  },
+  "src/wave/CrestKinematics.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/CrestKinematics.ts",
+    "bytes": 5019,
+    "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d"
+  },
+  "src/wave/FarFieldProfile.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/FarFieldProfile.ts",
+    "bytes": 7291,
+    "sha256": "526b8972ed5aec1e300daf4b927bbb927e0c9a9df8b5442ed6217065f1c18c4d"
+  },
+  "src/wave/FoamField.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/FoamField.ts",
+    "bytes": 8686,
+    "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d"
+  },
+  "src/wave/Overturn.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Overturn.ts",
+    "bytes": 10648,
+    "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29"
+  },
+  "src/wave/PlungingLip.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/PlungingLip.ts",
+    "bytes": 66195,
+    "sha256": "222aec07a816290880138d270e3960b34e4925b1fb2010ca047382820ce89b0c"
+  },
+  "src/wave/Refraction.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Refraction.ts",
+    "bytes": 5965,
+    "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b"
+  },
+  "src/wave/Rideability.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Rideability.ts",
+    "bytes": 4715,
+    "sha256": "276e10b559f660d34de3887fa38a651521419f7dff5b2e03a69c37eb24265c4f"
+  },
+  "src/wave/SeaState.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+    "bytes": 8739,
+    "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7"
+  },
+  "src/wave/SeaStateBoundary.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaStateBoundary.ts",
+    "bytes": 5460,
+    "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c"
+  },
+  "src/wave/ShallowWaterSolver.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver.ts",
+    "bytes": 33545,
+    "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980"
+  },
+  "src/wave/SideFeed.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SideFeed.ts",
+    "bytes": 10038,
+    "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd"
+  },
+  "src/wave/SprayCloud.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SprayCloud.ts",
+    "bytes": 25478,
+    "sha256": "43fb50e67f430eeefe062bd5125a6b2e35725a806c68b0c6ea7a5ae8dd530f74"
+  },
+  "src/wave/StormSwell.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/StormSwell.ts",
+    "bytes": 5863,
+    "sha256": "f13b70386b369aa11f11c990dcacd4caeb467f9f1a699ad57a26dd3eeb3b46eb"
+  },
+  "src/wave/SurfMeter.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfMeter.ts",
+    "bytes": 3170,
+    "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c"
+  },
+  "src/wave/SurfZoneRunner.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneRunner.ts",
+    "bytes": 40621,
+    "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+  },
+  "src/wave/SurfZoneSimulation.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SurfZoneSimulation.ts",
+    "bytes": 71099,
+    "sha256": "18e7928601d7208d5f7ff1a15a34995f7e63ebeec497dbe7bf7527b06d15948a"
+  },
+  "src/wave/SwellReadout.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SwellReadout.ts",
+    "bytes": 2110,
+    "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3"
+  },
+  "src/wave/TubeShape.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/TubeShape.ts",
+    "bytes": 1069,
+    "sha256": "4c89a5ac14c84ff91f01d41217c589517dbf741d2db081d087ee82790fb2c405"
+  },
+  "src/wave/barrel/BreakingFront.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/BreakingFront.ts",
+    "bytes": 39920,
+    "sha256": "fbca6428e3455933fe80c7cc2bf1cd05121615b23241c82aeb1992e33358931c"
+  },
+  "src/wave/barrel/ProfileLibrary.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+    "bytes": 19503,
+    "sha256": "51e3d15ce21a13e4fa50280d9d06027f969bca5b46681454bf39ddcc7060f8cf"
+  },
+  "src/wave/barrel/SweptCrash.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/SweptCrash.ts",
+    "bytes": 28953,
+    "sha256": "dc783fe2e9f2af737de5f3faa5fd6054d1800ab7ae58f90bd691fb45e32789da"
+  },
+  "src/wave/barrel/barrelLibrary.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibrary.ts",
+    "bytes": 2173,
+    "sha256": "d0a15a5d25e44520b50322349ec0c77a4e4bf1b80c770353bc16a3c33588fcf7"
+  },
+  "src/wave/barrel/barrelLibraryIndex.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibraryIndex.ts",
+    "bytes": 1662,
+    "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8"
+  },
+  "src/wave/barrel/barrelSpots.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+    "bytes": 9578,
+    "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+  },
+  "src/wave/barrel/caseFromLibrary.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/caseFromLibrary.ts",
+    "bytes": 9123,
+    "sha256": "3261f0208e71e7d80c03d9f6b9b5ba4d831dacc3dcb01aaa4c9244c19bc4640b"
+  },
+  "src/wave/barrel/crashCurve.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crashCurve.ts",
+    "bytes": 15266,
+    "sha256": "0c67238b1b68b2dc60fff93ba3f62f0ea49e591c0701ed1e6d1070542975e1fb"
+  },
+  "src/wave/barrel/crestOnset.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestOnset.ts",
+    "bytes": 4651,
+    "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3"
+  },
+  "src/wave/barrel/crestRays.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+    "bytes": 14454,
+    "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+  },
+  "src/wave/barrel/frontRecords.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+    "bytes": 1776,
+    "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+  },
+  "src/wave/barrel/heldOverturn.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/heldOverturn.ts",
+    "bytes": 4886,
+    "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44"
+  },
+  "src/wave/barrel/lipSheet.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+    "bytes": 15981,
+    "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+  },
+  "src/wave/barrel/nodeBarrelCases.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/nodeBarrelCases.ts",
+    "bytes": 498,
+    "sha256": "feb3e71cc206a2bd0b6bc1eccf727abeb89fdac36286e3df6ab90c6d437a4bd0"
+  },
+  "src/wave/barrel/profileFormat.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+    "bytes": 2251,
+    "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+  },
+  "src/wave/barrel/rolledCurl.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/rolledCurl.ts",
+    "bytes": 5449,
+    "sha256": "78ff57e175da1dd4acfc840f93bfe5dd67e7ec5aff9c0bcef3d0f66ff8a61ae3"
+  },
+  "src/wave/barrel/sliceClock.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+    "bytes": 12756,
+    "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+  },
+  "src/wave/barrel/sweptContact.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+    "bytes": 29165,
+    "sha256": "eb13808a5549a8e74a225a96e17a739cd15b3997ab7b9f475ffe2baa8d402236"
+  },
+  "src/wave/barrel/sweptLoft.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+    "bytes": 60788,
+    "sha256": "3a45525b9e5c302e3c94d46162f174f7acae3cd51230506c7b4804d833899860"
+  },
+  "src/wave/barrel/toyCase.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/toyCase.ts",
+    "bytes": 5444,
+    "sha256": "42031fd435cbd1decbcb67a6c3df48858482dbc2ddb380476eabb1ffbc6f885d"
+  },
+  "src/wave/breakingAge.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/breakingAge.ts",
+    "bytes": 2861,
+    "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992"
+  },
+  "src/wave/dispersion.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+    "bytes": 3285,
+    "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+  },
+  "src/wave/gpu/GpuBoussinesq.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/GpuBoussinesq.ts",
+    "bytes": 23863,
+    "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+  },
+  "src/wave/gpu/boussinesqWgsl.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/boussinesqWgsl.ts",
+    "bytes": 38276,
+    "sha256": "1b9f973616605f8e3d71e99d599f73497839f3d66bdbfc0bed320545518f173f"
+  },
+  "src/wave/gpu/webgpu-env.d.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/webgpu-env.d.ts",
+    "bytes": 40,
+    "sha256": "039706dee4c12a5f855fe20b669865a5af1da6e9add02e461a188821aa7a36d1"
+  },
+  "src/wave/ledgePeel.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/ledgePeel.ts",
+    "bytes": 3349,
+    "sha256": "83485e2cadc99750badf833fa9e4d6d54a3404557092d781615b91cd2f75b93b"
+  },
+  "src/wave/particleBudget.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/particleBudget.ts",
+    "bytes": 2109,
+    "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363"
+  },
+  "src/wave/particleSources.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/particleSources.ts",
+    "bytes": 788,
+    "sha256": "76e2b38a5329a8f5b36d9373513d52cb42a92361b996287ac74d4e5458c96cb0"
+  },
+  "src/wave/particleTestSupport.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/particleTestSupport.ts",
+    "bytes": 2109,
+    "sha256": "31ff0524c9172aebc86b246939c2a7db70f77892f576ce30aaa8a2cd0294da15"
+  },
+  "src/wave/pool.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+    "bytes": 11917,
+    "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c"
+  },
+  "src/wave/probes/fastFrontDump.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/probes/fastFrontDump.ts",
+    "bytes": 6953,
+    "sha256": "6a1aafb4727afa8e6473115edc7e0c12e2b3858f2f37d724c8d75914b4564791"
+  },
+  "src/wave/random.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+    "bytes": 424,
+    "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e"
+  },
+  "src/wave/shallowWaterTestSupport.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/shallowWaterTestSupport.ts",
+    "bytes": 1664,
+    "sha256": "cd22e4eb0f5cb1a8ba94f3dababcc883898732ad92131f0d1a164fd906c61a64"
+  },
+  "src/wave/sizeReport.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/sizeReport.ts",
+    "bytes": 7995,
+    "sha256": "07314a1761121fb7020780e876fb1126456a0012613a61f042df38967f1d678e"
+  },
+  "src/wave/surfForecast.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfForecast.ts",
+    "bytes": 3914,
+    "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5"
+  },
+  "src/wave/surfZoneState.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/surfZoneState.ts",
+    "bytes": 3955,
+    "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+  },
+  "src/wave/tubeTable.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/tubeTable.ts",
+    "bytes": 6876,
+    "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc"
+  },
+  "src/wave/warmStart.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/warmStart.ts",
+    "bytes": 6238,
+    "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d"
+  },
+  "tsconfig.json": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/tsconfig.json",
+    "bytes": 550,
+    "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+  },
+  "vite.config.ts": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/vite.config.ts",
+    "bytes": 1169,
+    "sha256": "9cbc9a7527a2e4529a8630d6fffc59f4bb4e8291bf7ed49aade006fe1950d230"
+  }
+}

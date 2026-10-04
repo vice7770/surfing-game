@@ -1,0 +1,19 @@
+# Whole-curl canvas stream-start preparation
+
+Prepared source only, with the exact 49-file frozen fixed-view build copied byte-for-byte. Build ID remains `tube-whole-curl-descending-20261004-513ad9d39`. No build, native capture, Chrome, server, port management or production change is performed here.
+
+Two terminal first failures remain unchanged in their original scratch directories and are copied/hash-referenced here. The original `tube-whole-curl-native` attempt completed 1047 advances to 553.173058749449, then failed the qualified front 48 selection gate. The subsequent `tube-whole-curl-fixed-view` attempt reached the same time, preserved a complete target inventory with zero front 48 rows, then failed with `MediaRecorder start timeout`: no manual canvas frame had yet been requested, no bytes/frames/artifacts existed, tracks stopped and owned resources closed. Each owner preserved user ports 4310/4311 open.
+
+This repair supplies the first actual settled canvas frame immediately after `recorder.start()`, inside the startup promise body, before awaiting the asynchronous `onstart` event. It performs a normal draw and `requestFrame()` in that same page evaluation, retains observation 0 and its request/wall timestamps, and counts it as request 1. The outer duplicate initial request is removed. There remain exactly 61 manual requests: one settled frame, then 60 ordinary single 1/60 advances with worker drain, `mode.update(1/60)`, rendering and video request. PNGs remain at steps 18/30/60. No MIME/format retry, alternate recorder, pose/time search, source or target substitution is added.
+
+Fixed seed/sea/graphics, rider:false, 1047 settle, camera, PR1 diagnostic output and held clear drawing are unchanged. The front 48 / original requested sigma 32.379207311 inventory and nullable diagnostic source policy are unchanged. Missing or unqualified target coverage is separate from artifact completion and cannot be a tube pass. The globally indexed drawn loft must remain finite. Extra normal draws immediately before PNG encoding/video request protect the default non-preserved WebGL drawing buffer and add no physics steps.
+
+One clip <=16 MiB, PNGs <=48 MiB combined (<=8 MiB each), report <=2 MiB, owner/log <=128 KiB/1 MiB, whole owner 180 s / command 168 s / cleanup 7 s are preserved. Wall encoding and manual request timestamps do not establish fixed physics playback speed, decoded frame count, 60 FPS, pixel fidelity or tube quality. Recorder/runtime/clock/geometry/camera failures are retained exactly and end the single invocation. Cleanup owns only GET 4290 and the fresh Node/Chrome group on CDP 9700, independently proves closure and removes only its own Chrome profile. User ports 4310/4311 are never managed and must stay open.
+
+`node handshake-source-check.mjs` tests only the extracted real startup functions with a mock recorder whose `onstart` waits for its first frame; it proves request ordering/counting, not actual recorder capability or pixels. It also checks the analogous Big-menu startup source. `python3 verify-stream-source.py` performs syntax, preserved-source, dry-owner, copied-build, production-hash and both-original-work checks. These offline checks start no native/browser/server resources. `preparation.json` retains source hashes, two exact failures, build hashes, whole candidate production diff/pin and check receipts.
+
+Root owns the single finite future launch:
+
+`python3 /private/tmp/tube-whole-curl-stream-start-20261004/run.py --run --arm candidate --out /private/tmp/tube-whole-curl-stream-start-20261004/native-first`
+
+That command is documented, not executed here. The separate Big-menu owner uses 4291/9701 and must wait for this owner to terminate; its first-standing initial request is likewise counted once and remains bounded to 240 advances / 241 requests.

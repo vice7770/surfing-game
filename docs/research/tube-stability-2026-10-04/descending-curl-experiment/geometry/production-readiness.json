@@ -1,0 +1,87 @@
+{
+  "schema": "rolled-curl-production-ready-for-native/v1",
+  "adopted": false,
+  "goalComplete": false,
+  "crownDrop": 0.25,
+  "sourceAndTestFiles": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/rolledCurl.ts",
+      "bytes": 5449,
+      "sha256": "78ff57e175da1dd4acfc840f93bfe5dd67e7ec5aff9c0bcef3d0f66ff8a61ae3"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/rolledCurl.test.ts",
+      "bytes": 11504,
+      "sha256": "0a3a075443dfffb297a4cb7cb8f6bf0bc263364ab3a57b754714327d74cc6ac0"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2173,
+      "sha256": "d0a15a5d25e44520b50322349ec0c77a4e4bf1b80c770353bc16a3c33588fcf7"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibrary.test.ts",
+      "bytes": 4306,
+      "sha256": "2cb8b61cf45997ee48ad9d4158f449a1c581e31ca1df1945c9a2b2842c6ea19c"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 19503,
+      "sha256": "51e3d15ce21a13e4fa50280d9d06027f969bca5b46681454bf39ddcc7060f8cf"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crashCurve.ts",
+      "bytes": 15266,
+      "sha256": "0c67238b1b68b2dc60fff93ba3f62f0ea49e591c0701ed1e6d1070542975e1fb"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crashCurve.test.ts",
+      "bytes": 14707,
+      "sha256": "93ecc0d466227cbec335672f6f9082f57c5bc7b82ddb6bb1df159bb945783b7a"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60788,
+      "sha256": "3a45525b9e5c302e3c94d46162f174f7acae3cd51230506c7b4804d833899860"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.test.ts",
+      "bytes": 72180,
+      "sha256": "bf4db2be984c3db4d98a826faff41d291fdb1418d737c33050bb7f68061774cb"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "eb13808a5549a8e74a225a96e17a739cd15b3997ab7b9f475ffe2baa8d402236"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.test.ts",
+      "bytes": 26417,
+      "sha256": "070e102892246e76095165a83da973001cfc023d400632a3f82c873545af2f65"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PhysicalSurfWater.test.ts",
+      "bytes": 29063,
+      "sha256": "e93c6af2769119f076234b288ac0b4fd72c799dcb0b955c16d1cdfe3815f09bf"
+    }
+  ],
+  "checks": {
+    "finalFocusedTests": {
+      "passed": 190,
+      "failed": 0,
+      "suites": 12,
+      "seconds": 5.54,
+      "command": "vitest run src/wave/barrel/{rolledCurl,barrelLibrary,ProfileLibrary,crashCurve,sweptLoft,sweptLoftClearRoof,sweptContact,lipSheet,heldOverturn,SweptCrash,everySpot}.test.ts src/physics/PhysicalSurfWater.test.ts"
+    },
+    "strictTypecheck": "tsc --noEmit passed before final test-only fixture string change",
+    "diffCheck": "git diff --check passed",
+    "crossCaseQueries": 135
+  },
+  "limits": [
+    "Generous1.6m-gap/.6m-width target FAILED.",
+    "No native moving appearance/body/rideability validation by this agent.",
+    "Inherited crossings remain; no clean->crossed or count increases in bounded grids.",
+    "AuthoredTD is a settling event, not moved-tip collision."
+  ],
+  "noProductionWritesRemain": true
+}
