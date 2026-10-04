@@ -1,0 +1,1753 @@
+{
+  "schema": "rejected-experiment-compressed-evidence/v1",
+  "kind": "taper",
+  "status": "REJECTED_UNADOPTED_NO_RETRY_NO_NATIVE",
+  "canonicalRuntimeCheckpoint": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+  "payloads": [
+    {
+      "originalRelativePath": "README.md",
+      "storedPath": "evidence/README.md.gz",
+      "storedBytes": 2296,
+      "storedSha256": "0690cb15e39772bba27170bd6ee244202831c8ae9d5034d9404a50b31a2a7f3f",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 4539,
+      "expandedSha256": "f7b0e510b67f72f1c89a62879431ea610ead16e6332fa82e3f6c76ffdf671bd0",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/README.md",
+          "bytes": 4539,
+          "sha256": "f7b0e510b67f72f1c89a62879431ea610ead16e6332fa82e3f6c76ffdf671bd0"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "freeze-source.py",
+      "storedPath": "evidence/freeze-source.py.txt.gz",
+      "storedBytes": 1961,
+      "storedSha256": "2ec0cf59dda40e7efcffa0840a68c0add02ed0a761317e1154056e502168781d",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 4280,
+      "expandedSha256": "4332e433186d3fd9643e0f9bcca05c1e2c20fd5e94b944768a88ae3377435faf",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/freeze-source.py",
+          "bytes": 4280,
+          "sha256": "4332e433186d3fd9643e0f9bcca05c1e2c20fd5e94b944768a88ae3377435faf"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "freeze.json",
+      "storedPath": "evidence/freeze.json.gz",
+      "storedBytes": 586,
+      "storedSha256": "a744885a63e37309859bc08a80dec7d878a098f3b37921113aedbc6546da50a3",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 1608,
+      "expandedSha256": "607b0a5faa4585da628451265a7aa39bd6be53fa7c9a693439ee194b17cb1ee7",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/freeze.json",
+          "bytes": 1608,
+          "sha256": "607b0a5faa4585da628451265a7aa39bd6be53fa7c9a693439ee194b17cb1ee7"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "gate.py",
+      "storedPath": "evidence/gate.py.txt.gz",
+      "storedBytes": 1351,
+      "storedSha256": "1214d0886890709594e12f7af8c0ea46e1b00c3529b7e77416bc8f9b3206b642",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 3022,
+      "expandedSha256": "472471e356257f8e9c472f65b8121c459aaabec68a69aa9d07fca46a0eece1ea",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/gate.py",
+          "bytes": 3022,
+          "sha256": "472471e356257f8e9c472f65b8121c459aaabec68a69aa9d07fca46a0eece1ea"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "inputs.json",
+      "storedPath": "evidence/inputs.json.gz",
+      "storedBytes": 9735,
+      "storedSha256": "c63342e1d009b772a2b2d4ef07c1f9c8d88c159a1112a2a7080f925bd645f4cd",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 64702,
+      "expandedSha256": "5c73bf054c347582a01d2a7a418960ed527ba4e855f6b06d7af412b1117f168b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/inputs.json",
+          "bytes": 64702,
+          "sha256": "5c73bf054c347582a01d2a7a418960ed527ba4e855f6b06d7af412b1117f168b"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "load-observed.mjs",
+      "storedPath": "evidence/load-observed.mjs.txt.gz",
+      "storedBytes": 1259,
+      "storedSha256": "4c00b90496b13973069346aecc45e1545e237c3657cda8635fcfae6d4f06e9de",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 2982,
+      "expandedSha256": "2efa485c6724b180ea89b14226c2c38936d93644da19d8221c447abd0b717224",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/load-observed.mjs",
+          "bytes": 2982,
+          "sha256": "2efa485c6724b180ea89b14226c2c38936d93644da19d8221c447abd0b717224"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "probe.mjs",
+      "storedPath": "evidence/probe.mjs.txt.gz",
+      "storedBytes": 5946,
+      "storedSha256": "dc2652ffbf1f38bc99f136baf857001ee3515550ab107a91039d997f2bbf0521",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 16915,
+      "expandedSha256": "99cd9c822f89ed5a1fcd88686e1bc7c1bd24b473bef7224bbed7dd8877eb9912",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/probe.mjs",
+          "bytes": 16915,
+          "sha256": "99cd9c822f89ed5a1fcd88686e1bc7c1bd24b473bef7224bbed7dd8877eb9912"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "ready.json",
+      "storedPath": "evidence/ready.json.gz",
+      "storedBytes": 6542,
+      "storedSha256": "133791a38c5cec28051f67efcbaacff8488e01f68935e2aa03352fe9fb9c89b8",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 31596,
+      "expandedSha256": "20e62cf2bb5e44f8ebf86563fafa0274a87b545d08135e5033d8dcb712006dbe",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/ready.json",
+          "bytes": 31596,
+          "sha256": "20e62cf2bb5e44f8ebf86563fafa0274a87b545d08135e5033d8dcb712006dbe"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "root-first/after-pins.json",
+      "storedPath": "evidence/root-first/after-pins.json.gz",
+      "storedBytes": 5820,
+      "storedSha256": "24571b9da7cb5641389d3d7bfe75d75e065b0f73284b3063d150bdfa4db7533a",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 28600,
+      "expandedSha256": "57fc286704407ef1926c368755143e62aedbf6eb17a5084de45dd1a3489cb641",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/root-first/after-pins.json",
+          "bytes": 28600,
+          "sha256": "57fc286704407ef1926c368755143e62aedbf6eb17a5084de45dd1a3489cb641"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "root-first/before-pins.json",
+      "storedPath": "evidence/root-first/before-pins.json.gz",
+      "storedBytes": 5820,
+      "storedSha256": "24571b9da7cb5641389d3d7bfe75d75e065b0f73284b3063d150bdfa4db7533a",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 28600,
+      "expandedSha256": "57fc286704407ef1926c368755143e62aedbf6eb17a5084de45dd1a3489cb641",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/root-first/before-pins.json",
+          "bytes": 28600,
+          "sha256": "57fc286704407ef1926c368755143e62aedbf6eb17a5084de45dd1a3489cb641"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "root-first/command-0.log",
+      "storedPath": "evidence/root-first/command-0.log.gz",
+      "storedBytes": 20,
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/root-first/command-0.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "root-first/command-1.log",
+      "storedPath": "evidence/root-first/command-1.log.gz",
+      "storedBytes": 20,
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/root-first/command-1.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "root-first/command-2.log",
+      "storedPath": "evidence/root-first/command-2.log.gz",
+      "storedBytes": 226,
+      "storedSha256": "755902613c374f1505ce0af44ebc6b2116b798606caeb15ed14b12d02e8f3b44",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 294,
+      "expandedSha256": "e132089c0e1fc8ea4a34b2be5d7ec45a04059fc7a084c1ee113aeadf02caca1c",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/root-first/command-2.log",
+          "bytes": 294,
+          "sha256": "e132089c0e1fc8ea4a34b2be5d7ec45a04059fc7a084c1ee113aeadf02caca1c"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "root-first/command-3.log",
+      "storedPath": "evidence/root-first/command-3.log.gz",
+      "storedBytes": 540,
+      "storedSha256": "e23aafa46e5f7d6ca5e83125873be3ea25b268abf267e3f09bbd2f1deac6f70d",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 819,
+      "expandedSha256": "7bfa965aa82ede1554afad6cbc1c797f32deab3f312b81a54b954c9cc7938a58",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/root-first/command-3.log",
+          "bytes": 819,
+          "sha256": "7bfa965aa82ede1554afad6cbc1c797f32deab3f312b81a54b954c9cc7938a58"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "root-first/terminal.json",
+      "storedPath": "evidence/root-first/terminal.json.gz",
+      "storedBytes": 834,
+      "storedSha256": "d12cbd769182ff87be1ffe10bd2a91fa7b9226fa4d9da0682b96c571ec5c3010",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 3241,
+      "expandedSha256": "78fd582253e4201cfca80ff25754508452bb6cb6cd487a933abb7ece9e83597e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/root-first/terminal.json",
+          "bytes": 3241,
+          "sha256": "78fd582253e4201cfca80ff25754508452bb6cb6cd487a933abb7ece9e83597e"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "run-first/report.json",
+      "storedPath": "evidence/run-first/report.json.gz",
+      "storedBytes": 194437,
+      "storedSha256": "9f134b9d35264a1e9008771a2a438d261b571ffcb07cb97bf553c90cd3c9a822",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 960837,
+      "expandedSha256": "83f896a90a68a3c1163d0c07abce9fb71443d334f771a4a226aaf3a8c3d633a4",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/run-first/report.json",
+          "bytes": 960837,
+          "sha256": "83f896a90a68a3c1163d0c07abce9fb71443d334f771a4a226aaf3a8c3d633a4"
+        }
+      ]
+    },
+    {
+      "originalRelativePath": "run-first/terminal.json",
+      "storedPath": "evidence/run-first/terminal.json.gz",
+      "storedBytes": 293,
+      "storedSha256": "0f58a975c3f46d033a601528d11e65cc5a5fec10042869d38c4f7e432264cd29",
+      "encoding": "gzip-generated-mtime0",
+      "expandedBytes": 403,
+      "expandedSha256": "f46c5aa4abd25bac5dce9683c07d579dc76c534791d32beff27c3767e993ea1b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-taper-incidence-20261004/run-first/terminal.json",
+          "bytes": 403,
+          "sha256": "f46c5aa4abd25bac5dce9683c07d579dc76c534791d32beff27c3767e993ea1b"
+        }
+      ]
+    }
+  ],
+  "reusedInputs": [
+    {
+      "storedPath": "../underside-source-cause/evidence/compiled.json.gz",
+      "storedBytes": 253,
+      "storedSha256": "9b52275d1bb274fc11be1b69d8e6aa7bfa470a4620437cc0208c7e27bef9d01d",
+      "aliasEncoding": "gzip-generated",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-underside-cause-20261004/compiled.json",
+          "bytes": 340,
+          "sha256": "12e0d8825e4549c0bb583d80bc7d28ac6801f0bae7f188f20f5baf40dd10b8a3"
+        }
+      ]
+    },
+    {
+      "storedPath": "../underside-source-cause/evidence/compiled/compare.mjs.txt.gz",
+      "storedBytes": 35484,
+      "storedSha256": "d2357033e011588d918db639134d451647e025c7cdb6d19fac77f918b1fe83e7",
+      "aliasEncoding": "gzip-generated",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-underside-cause-20261004/compiled/compare.mjs",
+          "bytes": 119364,
+          "sha256": "fc962c83f26832dd58f3c9fb1f6f426098640633573aab55b53699072f9602c6"
+        }
+      ]
+    },
+    {
+      "storedPath": "../underside-source-cause/evidence/inputs.json.gz",
+      "storedBytes": 10212,
+      "storedSha256": "9fce659e0476dc5e68e6d67b4776721978bb893ee7372aae091514b68c51b754",
+      "aliasEncoding": "gzip-generated",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-underside-cause-20261004/inputs.json",
+          "bytes": 66457,
+          "sha256": "71fd3f4624d3264309364b2b208730ee1e8054d9795ed4b4329546a3d23edbd1"
+        }
+      ]
+    },
+    {
+      "storedPath": "../underside-source-cause/evidence/ready.json.gz",
+      "storedBytes": 6339,
+      "storedSha256": "43a0f36d78004911bccf63c2a963f540a6c58e2f1a2f2ee2fdf309dc2474a80a",
+      "aliasEncoding": "gzip-generated",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-underside-cause-20261004/ready.json",
+          "bytes": 30989,
+          "sha256": "998c2180092d1ff8bf4c70a215b9f7870cad352867a208b4fd445cbfa4957a5b"
+        }
+      ]
+    },
+    {
+      "storedPath": "../tiny-underside-cleanup/evidence/compiled.json.gz",
+      "storedBytes": 424,
+      "storedSha256": "c7b50a376ac0c0c0ed59e9053d6bc8b4257ef4f07b4ce66dc2693be4bfc4a5de",
+      "aliasEncoding": "gzip-generated",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tiny-underside-cleanup-20261004/compiled.json",
+          "bytes": 972,
+          "sha256": "59c71796fc893b9ac6a65ffdeeb93dac56cfceeab3f0b93e6d57338103558f28"
+        }
+      ]
+    },
+    {
+      "storedPath": "../tiny-underside-cleanup/evidence/inputs.json.gz",
+      "storedBytes": 9378,
+      "storedSha256": "86278ac94944696f26a7025b6d511ef2d96cd71287182b02342cbc6e60f477f8",
+      "aliasEncoding": "gzip-generated",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tiny-underside-cleanup-20261004/inputs.json",
+          "bytes": 63497,
+          "sha256": "cb86929b678007513a121d039cff979269a7c6cce8d2d4e1e758d3fbc0bdfb64"
+        }
+      ]
+    },
+    {
+      "storedPath": "../tiny-underside-cleanup/evidence/ready.json.gz",
+      "storedBytes": 7996,
+      "storedSha256": "ae27d9d8d6cafb335bbd399b8d12a1657e77967dc0eb4ea140d82ca70e560d1f",
+      "aliasEncoding": "gzip-generated",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tiny-underside-cleanup-20261004/ready.json",
+          "bytes": 37394,
+          "sha256": "9aa8072c37d9180ea6e768074cdbf560ccb714d0ae89d05845fde782075fb61a"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-drawnIndices.bin.gz",
+      "storedBytes": 19301,
+      "storedSha256": "0403cc958727570b941565b612aef768faf6bdb8238a3d2421f096d9aa0ae24c",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-drawnIndices.bin.gz",
+          "bytes": 19301,
+          "sha256": "0403cc958727570b941565b612aef768faf6bdb8238a3d2421f096d9aa0ae24c"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-drawnPositions.bin.gz",
+      "storedBytes": 39242,
+      "storedSha256": "fb16a678d32ac7ee65fd38ed3e3edd89159e26f25b4e9220a86c9fcc516f0bd2",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-drawnPositions.bin.gz",
+          "bytes": 39242,
+          "sha256": "fb16a678d32ac7ee65fd38ed3e3edd89159e26f25b4e9220a86c9fcc516f0bd2"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-front.bin.gz",
+      "storedBytes": 199,
+      "storedSha256": "d65b469655965f0b28385bfff1167842bbeca93d8f42a0833b7179ed29b2be6f",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-front.bin.gz",
+          "bytes": 199,
+          "sha256": "d65b469655965f0b28385bfff1167842bbeca93d8f42a0833b7179ed29b2be6f"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceAnchorVX.bin.gz",
+      "storedBytes": 24,
+      "storedSha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceAnchorVX.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceAnchorVZ.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFront.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipGap.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipTransportAlong.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipTransportUp.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceAnchorVX.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceAnchorVZ.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFront.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipGap.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipTransportAlong.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipTransportUp.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceAnchorVX.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceAnchorVZ.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFront.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipGap.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipTransportAlong.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipTransportUp.bin.gz",
+          "bytes": 24,
+          "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceCollapse.bin.gz",
+      "storedBytes": 110,
+      "storedSha256": "297831ec0cf2c1732f36c6fd38cdbfc69050535e73821187b6f7a76fe5f535f0",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceCollapse.bin.gz",
+          "bytes": 110,
+          "sha256": "297831ec0cf2c1732f36c6fd38cdbfc69050535e73821187b6f7a76fe5f535f0"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceFade.bin.gz",
+      "storedBytes": 27,
+      "storedSha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFade.bin.gz",
+          "bytes": 27,
+          "sha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFade.bin.gz",
+          "bytes": 27,
+          "sha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFade.bin.gz",
+          "bytes": 27,
+          "sha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceFormed.bin.gz",
+      "storedBytes": 75,
+      "storedSha256": "81c368f4f7bfabce76443a80a3c04453cdbc6393753f334b04ee241cf37efe11",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFormed.bin.gz",
+          "bytes": 75,
+          "sha256": "81c368f4f7bfabce76443a80a3c04453cdbc6393753f334b04ee241cf37efe11"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceJoined.bin.gz",
+      "storedBytes": 24,
+      "storedSha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceJoined.bin.gz",
+          "bytes": 24,
+          "sha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceJoined.bin.gz",
+          "bytes": 24,
+          "sha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceJoined.bin.gz",
+          "bytes": 24,
+          "sha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceLife.bin.gz",
+      "storedBytes": 114,
+      "storedSha256": "81b683885a85cf11751f575cba23de9bbde1935b3249f113afa7c0e65c6fc1bd",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceLife.bin.gz",
+          "bytes": 114,
+          "sha256": "81b683885a85cf11751f575cba23de9bbde1935b3249f113afa7c0e65c6fc1bd"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceMouth.bin.gz",
+      "storedBytes": 97,
+      "storedSha256": "29609e6e6eb71c10d06010391399478a6677b9b06d484b8460c27e2f6e752d79",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceMouth.bin.gz",
+          "bytes": 97,
+          "sha256": "29609e6e6eb71c10d06010391399478a6677b9b06d484b8460c27e2f6e752d79"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+      "storedBytes": 23,
+      "storedSha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+          "bytes": 23,
+          "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-slicePhase.bin.gz",
+          "bytes": 23,
+          "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceOverturned.bin.gz",
+          "bytes": 23,
+          "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-slicePhase.bin.gz",
+          "bytes": 23,
+          "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceOverturned.bin.gz",
+          "bytes": 23,
+          "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd"
+        },
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-slicePhase.bin.gz",
+          "bytes": 23,
+          "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceRayX.bin.gz",
+      "storedBytes": 117,
+      "storedSha256": "10cfa924f99c3271329d6dd02b86b866047fbd6f8e6380cb76f5c63e6b75f77a",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRayX.bin.gz",
+          "bytes": 117,
+          "sha256": "10cfa924f99c3271329d6dd02b86b866047fbd6f8e6380cb76f5c63e6b75f77a"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceRayZ.bin.gz",
+      "storedBytes": 111,
+      "storedSha256": "ea95443fc2e8e9861df9867e93722273340b537e92629a8e6598570ae72d120a",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRayZ.bin.gz",
+          "bytes": 111,
+          "sha256": "ea95443fc2e8e9861df9867e93722273340b537e92629a8e6598570ae72d120a"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceRestClimb.bin.gz",
+      "storedBytes": 111,
+      "storedSha256": "03c8eb7e223a038c7f4cf58045f317f89284c5853f453a62fa2527411f382048",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRestClimb.bin.gz",
+          "bytes": 111,
+          "sha256": "03c8eb7e223a038c7f4cf58045f317f89284c5853f453a62fa2527411f382048"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceRestEnd.bin.gz",
+      "storedBytes": 114,
+      "storedSha256": "e67ee681529ae7085a6922a2d60f56a54b60ac18203e6f568d1c5bf212c9b275",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRestEnd.bin.gz",
+          "bytes": 114,
+          "sha256": "e67ee681529ae7085a6922a2d60f56a54b60ac18203e6f568d1c5bf212c9b275"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceRestHold.bin.gz",
+      "storedBytes": 110,
+      "storedSha256": "2ea7c394233899b8240f5ca344fe0ca7a37b229a3126398a391eb4c31745b1fa",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRestHold.bin.gz",
+          "bytes": 110,
+          "sha256": "2ea7c394233899b8240f5ca344fe0ca7a37b229a3126398a391eb4c31745b1fa"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceSigma.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "44922f28350e19430a7411758d66c4c105d800908970a6b1984214f754e2440a",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceSigma.bin.gz",
+          "bytes": 135,
+          "sha256": "44922f28350e19430a7411758d66c4c105d800908970a6b1984214f754e2440a"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceTau.bin.gz",
+      "storedBytes": 115,
+      "storedSha256": "e1f239d5b7890d8d22b3c0b294c18a2e9a0224b1261144854592d7f84b322e3e",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTau.bin.gz",
+          "bytes": 115,
+          "sha256": "e1f239d5b7890d8d22b3c0b294c18a2e9a0224b1261144854592d7f84b322e3e"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceTipAlong.bin.gz",
+      "storedBytes": 115,
+      "storedSha256": "f0abce3c4e669f018114d709086e28bb8414440292b457e8062612716396489b",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipAlong.bin.gz",
+          "bytes": 115,
+          "sha256": "f0abce3c4e669f018114d709086e28bb8414440292b457e8062612716396489b"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceTipUp.bin.gz",
+      "storedBytes": 118,
+      "storedSha256": "8e06ec39308fab63ffae3916a6aa4c92bbee963318db4528bdcbe4247a247cca",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipUp.bin.gz",
+          "bytes": 118,
+          "sha256": "8e06ec39308fab63ffae3916a6aa4c92bbee963318db4528bdcbe4247a247cca"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceTipX.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "a717d7dd571e4253d149666c3eb91d3f63e3b6fde02be75dbce66d36e0e2bfe9",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipX.bin.gz",
+          "bytes": 135,
+          "sha256": "a717d7dd571e4253d149666c3eb91d3f63e3b6fde02be75dbce66d36e0e2bfe9"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceTipY.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "13cf650f58a625e114bd92949f1fb259ebd9aa1b0cc0a92bb29be663763b027e",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipY.bin.gz",
+          "bytes": 135,
+          "sha256": "13cf650f58a625e114bd92949f1fb259ebd9aa1b0cc0a92bb29be663763b027e"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceTipZ.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "dbce926632bba5304ca00aadd00c81b0b72c9aa924ab67ba7def2bad409d59da",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipZ.bin.gz",
+          "bytes": 135,
+          "sha256": "dbce926632bba5304ca00aadd00c81b0b72c9aa924ab67ba7def2bad409d59da"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceToeClimb.bin.gz",
+      "storedBytes": 112,
+      "storedSha256": "4e7ce1a082952a660e829d4ebe202815df0c3705ded1d8cd14df1b86aa74a4a8",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceToeClimb.bin.gz",
+          "bytes": 112,
+          "sha256": "4e7ce1a082952a660e829d4ebe202815df0c3705ded1d8cd14df1b86aa74a4a8"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-sliceWeight.bin.gz",
+      "storedBytes": 62,
+      "storedSha256": "6f428b3a49e73ac7de7a67581acb957e02bb25a57b6bfe2a8159d245984304ce",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceWeight.bin.gz",
+          "bytes": 62,
+          "sha256": "6f428b3a49e73ac7de7a67581acb957e02bb25a57b6bfe2a8159d245984304ce"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-0-surface.bin.gz",
+      "storedBytes": 434149,
+      "storedSha256": "09d414915f2f284ad7dc3cc96aabd772d881fee56ca638ecf86dbbe6557e3b8b",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-surface.bin.gz",
+          "bytes": 434149,
+          "sha256": "09d414915f2f284ad7dc3cc96aabd772d881fee56ca638ecf86dbbe6557e3b8b"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-drawnIndices.bin.gz",
+      "storedBytes": 19296,
+      "storedSha256": "857a2415fd31790b5d53adce64851e74e487f216bf981d29ba36695cdcf707a4",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-drawnIndices.bin.gz",
+          "bytes": 19296,
+          "sha256": "857a2415fd31790b5d53adce64851e74e487f216bf981d29ba36695cdcf707a4"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-drawnPositions.bin.gz",
+      "storedBytes": 39243,
+      "storedSha256": "3acfb401c7c208e33aacb23965a31944b48501b44f50c6c23fc91ae762d96ee6",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-drawnPositions.bin.gz",
+          "bytes": 39243,
+          "sha256": "3acfb401c7c208e33aacb23965a31944b48501b44f50c6c23fc91ae762d96ee6"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-front.bin.gz",
+      "storedBytes": 198,
+      "storedSha256": "bf3b5661da7b943bd2c1e6b8ad9adbe2b02c169bc1589fcdef5ec23163423ea2",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-front.bin.gz",
+          "bytes": 198,
+          "sha256": "bf3b5661da7b943bd2c1e6b8ad9adbe2b02c169bc1589fcdef5ec23163423ea2"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceCollapse.bin.gz",
+      "storedBytes": 113,
+      "storedSha256": "d703e76aed308ce6095d73822d2ef19dbfcdb3e060f34044650ebc31f837d0f5",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceCollapse.bin.gz",
+          "bytes": 113,
+          "sha256": "d703e76aed308ce6095d73822d2ef19dbfcdb3e060f34044650ebc31f837d0f5"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceFormed.bin.gz",
+      "storedBytes": 75,
+      "storedSha256": "4f8534fb817423ef1999316c27179187793ba59d404875ccec8eb7bc40b1ed9e",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFormed.bin.gz",
+          "bytes": 75,
+          "sha256": "4f8534fb817423ef1999316c27179187793ba59d404875ccec8eb7bc40b1ed9e"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceLife.bin.gz",
+      "storedBytes": 115,
+      "storedSha256": "f5c69cfcae6884c45b60fe95e7ff09663ef179450da6126f6decb2f25e4b305b",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceLife.bin.gz",
+          "bytes": 115,
+          "sha256": "f5c69cfcae6884c45b60fe95e7ff09663ef179450da6126f6decb2f25e4b305b"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceMouth.bin.gz",
+      "storedBytes": 90,
+      "storedSha256": "1e4ef92320ae7f255cfd4c13dd82ef07102eb245fe5de20dce31e7054c5ea7d1",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceMouth.bin.gz",
+          "bytes": 90,
+          "sha256": "1e4ef92320ae7f255cfd4c13dd82ef07102eb245fe5de20dce31e7054c5ea7d1"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceRayX.bin.gz",
+      "storedBytes": 117,
+      "storedSha256": "29997f09931441a9b2f8b9657b911d648c6596db34786ec87ae3d1c32e5933ec",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRayX.bin.gz",
+          "bytes": 117,
+          "sha256": "29997f09931441a9b2f8b9657b911d648c6596db34786ec87ae3d1c32e5933ec"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceRayZ.bin.gz",
+      "storedBytes": 112,
+      "storedSha256": "ddfca954b0cc2f0f48cd235c82daafc809567eeaeccb0cc67b1d6c97429260d3",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRayZ.bin.gz",
+          "bytes": 112,
+          "sha256": "ddfca954b0cc2f0f48cd235c82daafc809567eeaeccb0cc67b1d6c97429260d3"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceRestClimb.bin.gz",
+      "storedBytes": 112,
+      "storedSha256": "878431127bfc5285e89dea042a16dd114ffec63bdae11af60d7e74c63c08b8f1",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRestClimb.bin.gz",
+          "bytes": 112,
+          "sha256": "878431127bfc5285e89dea042a16dd114ffec63bdae11af60d7e74c63c08b8f1"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceRestEnd.bin.gz",
+      "storedBytes": 114,
+      "storedSha256": "d52a3f80cd1e844d8424e36dabeb6c3913a980b1cf53db63103cd5c4a1c72b44",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRestEnd.bin.gz",
+          "bytes": 114,
+          "sha256": "d52a3f80cd1e844d8424e36dabeb6c3913a980b1cf53db63103cd5c4a1c72b44"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceRestHold.bin.gz",
+      "storedBytes": 110,
+      "storedSha256": "59368b394e4bcf5d9ec58270503f0499ceeed948314ccbf51cf3cb70daad0319",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRestHold.bin.gz",
+          "bytes": 110,
+          "sha256": "59368b394e4bcf5d9ec58270503f0499ceeed948314ccbf51cf3cb70daad0319"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceSigma.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "05e1c4fa10dcda7d52a04bc890b6fe25235a02cd63b4d69a8466ec91bfc649ea",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceSigma.bin.gz",
+          "bytes": 135,
+          "sha256": "05e1c4fa10dcda7d52a04bc890b6fe25235a02cd63b4d69a8466ec91bfc649ea"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceTau.bin.gz",
+      "storedBytes": 115,
+      "storedSha256": "c4be7a22d5c050c9fee245605522d90f370cd338ff7ee49fe737b0de7f6a867c",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTau.bin.gz",
+          "bytes": 115,
+          "sha256": "c4be7a22d5c050c9fee245605522d90f370cd338ff7ee49fe737b0de7f6a867c"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceTipAlong.bin.gz",
+      "storedBytes": 116,
+      "storedSha256": "23795079556a9f5a4faee3ce71125d6fc642bfbc76e0419a03b459ad76b9bc29",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipAlong.bin.gz",
+          "bytes": 116,
+          "sha256": "23795079556a9f5a4faee3ce71125d6fc642bfbc76e0419a03b459ad76b9bc29"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceTipUp.bin.gz",
+      "storedBytes": 117,
+      "storedSha256": "185c26d75e0999b39242b6b355d5a237459a3103fbc8a4d320eb56d7a6caa6b8",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipUp.bin.gz",
+          "bytes": 117,
+          "sha256": "185c26d75e0999b39242b6b355d5a237459a3103fbc8a4d320eb56d7a6caa6b8"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceTipX.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "717a1470b318487c085b50b5c892059e38172c45e8f5d4db133e9779e5238902",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipX.bin.gz",
+          "bytes": 135,
+          "sha256": "717a1470b318487c085b50b5c892059e38172c45e8f5d4db133e9779e5238902"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceTipY.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "9f4082de9ed881196d9d1f3a441d70a002f26b4b7cd761aacf9f51662a06e4f1",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipY.bin.gz",
+          "bytes": 135,
+          "sha256": "9f4082de9ed881196d9d1f3a441d70a002f26b4b7cd761aacf9f51662a06e4f1"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceTipZ.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "ea813871a4215f83e701cd438cbfc990ba61bd36bb1e0ff074fa3ff7770ff17e",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipZ.bin.gz",
+          "bytes": 135,
+          "sha256": "ea813871a4215f83e701cd438cbfc990ba61bd36bb1e0ff074fa3ff7770ff17e"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceToeClimb.bin.gz",
+      "storedBytes": 112,
+      "storedSha256": "afb34f7fbf65bcd085d7cd59eedccc53879cd17d9436bf442e677f798c565672",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceToeClimb.bin.gz",
+          "bytes": 112,
+          "sha256": "afb34f7fbf65bcd085d7cd59eedccc53879cd17d9436bf442e677f798c565672"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-sliceWeight.bin.gz",
+      "storedBytes": 62,
+      "storedSha256": "86d0a4d63553ba4511b5bfa41d9d6a70001661a5ce773ac279fbef00a6b523a2",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceWeight.bin.gz",
+          "bytes": 62,
+          "sha256": "86d0a4d63553ba4511b5bfa41d9d6a70001661a5ce773ac279fbef00a6b523a2"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-1-surface.bin.gz",
+      "storedBytes": 434217,
+      "storedSha256": "b103df3359a42a319e0b49d0df69dc42b700ad42b3a937709afe4c18044d19b6",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-surface.bin.gz",
+          "bytes": 434217,
+          "sha256": "b103df3359a42a319e0b49d0df69dc42b700ad42b3a937709afe4c18044d19b6"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-drawnIndices.bin.gz",
+      "storedBytes": 19293,
+      "storedSha256": "94bb2fba1f4d69e1b3bb8531213d7e20e1b637aaced51b83251f5a9a0e65870f",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-drawnIndices.bin.gz",
+          "bytes": 19293,
+          "sha256": "94bb2fba1f4d69e1b3bb8531213d7e20e1b637aaced51b83251f5a9a0e65870f"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-drawnPositions.bin.gz",
+      "storedBytes": 39267,
+      "storedSha256": "29edef9e339575c820cb47b7f4918586547c228300878e94d3ea0704ad919285",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-drawnPositions.bin.gz",
+          "bytes": 39267,
+          "sha256": "29edef9e339575c820cb47b7f4918586547c228300878e94d3ea0704ad919285"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-front.bin.gz",
+      "storedBytes": 199,
+      "storedSha256": "9bbe664a62c61072b3fe9ce2db55c1709418b5b65420558cbbc280b911f88c9b",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-front.bin.gz",
+          "bytes": 199,
+          "sha256": "9bbe664a62c61072b3fe9ce2db55c1709418b5b65420558cbbc280b911f88c9b"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceCollapse.bin.gz",
+      "storedBytes": 111,
+      "storedSha256": "8e933494a79aa7f59f2e57d989eeac8a431229c4a2ef6eba38bc304b431d59ea",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceCollapse.bin.gz",
+          "bytes": 111,
+          "sha256": "8e933494a79aa7f59f2e57d989eeac8a431229c4a2ef6eba38bc304b431d59ea"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceFormed.bin.gz",
+      "storedBytes": 75,
+      "storedSha256": "210566808d22ea31aab61d379ff2b884f4220e14c29398c9e9e3ce52e6edbf9d",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFormed.bin.gz",
+          "bytes": 75,
+          "sha256": "210566808d22ea31aab61d379ff2b884f4220e14c29398c9e9e3ce52e6edbf9d"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceLife.bin.gz",
+      "storedBytes": 114,
+      "storedSha256": "2a335d137d83275d8cc7e8f8e3339abe62bd9dd5541969014fe6c75a94b6777a",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceLife.bin.gz",
+          "bytes": 114,
+          "sha256": "2a335d137d83275d8cc7e8f8e3339abe62bd9dd5541969014fe6c75a94b6777a"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceMouth.bin.gz",
+      "storedBytes": 94,
+      "storedSha256": "f6425c7f73fa4a598a88592d1237d12f2dc180abc03f2b0301996dc66b4115c4",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceMouth.bin.gz",
+          "bytes": 94,
+          "sha256": "f6425c7f73fa4a598a88592d1237d12f2dc180abc03f2b0301996dc66b4115c4"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceRayX.bin.gz",
+      "storedBytes": 117,
+      "storedSha256": "7d577519098eaf0d510521f2d06fae8b87457477e5d93f89f474d3704ad0eaf3",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRayX.bin.gz",
+          "bytes": 117,
+          "sha256": "7d577519098eaf0d510521f2d06fae8b87457477e5d93f89f474d3704ad0eaf3"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceRayZ.bin.gz",
+      "storedBytes": 110,
+      "storedSha256": "3f269c9f307cf0a41154c2ef42fb13d4399d9d8b09b18630332bf06e3014bb86",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRayZ.bin.gz",
+          "bytes": 110,
+          "sha256": "3f269c9f307cf0a41154c2ef42fb13d4399d9d8b09b18630332bf06e3014bb86"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceRestClimb.bin.gz",
+      "storedBytes": 111,
+      "storedSha256": "b1f0f86d168f8f2ac6f7c587d64aeba72bf95920213b9b74e4cf755a5c3330eb",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRestClimb.bin.gz",
+          "bytes": 111,
+          "sha256": "b1f0f86d168f8f2ac6f7c587d64aeba72bf95920213b9b74e4cf755a5c3330eb"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceRestEnd.bin.gz",
+      "storedBytes": 114,
+      "storedSha256": "90fdafd44f41082eb4109eb27b0b8f6365e08887b9f4e9c58178d71bc859a63e",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRestEnd.bin.gz",
+          "bytes": 114,
+          "sha256": "90fdafd44f41082eb4109eb27b0b8f6365e08887b9f4e9c58178d71bc859a63e"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceRestHold.bin.gz",
+      "storedBytes": 110,
+      "storedSha256": "4a21945f406ed462f6c8475abbc7aaf51d3c0b5c6780ad2f4dfd87fd486011cd",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRestHold.bin.gz",
+          "bytes": 110,
+          "sha256": "4a21945f406ed462f6c8475abbc7aaf51d3c0b5c6780ad2f4dfd87fd486011cd"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceSigma.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "d409ce77f8645ca54f3da81b29de6411e104aa3390d85f6440e8a57a5aff2ee1",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceSigma.bin.gz",
+          "bytes": 135,
+          "sha256": "d409ce77f8645ca54f3da81b29de6411e104aa3390d85f6440e8a57a5aff2ee1"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceTau.bin.gz",
+      "storedBytes": 115,
+      "storedSha256": "3b8afe727d50c72aa359ee4c53c12a3773cf61317860369370d1590ff1acaddc",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTau.bin.gz",
+          "bytes": 115,
+          "sha256": "3b8afe727d50c72aa359ee4c53c12a3773cf61317860369370d1590ff1acaddc"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceTipAlong.bin.gz",
+      "storedBytes": 115,
+      "storedSha256": "1e9e53893b66cff325c80ed819ce8fad04c678096e617829b9dfee0d965d1b83",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipAlong.bin.gz",
+          "bytes": 115,
+          "sha256": "1e9e53893b66cff325c80ed819ce8fad04c678096e617829b9dfee0d965d1b83"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceTipUp.bin.gz",
+      "storedBytes": 117,
+      "storedSha256": "f4c628e96f55fd45cbfcb11c9156c6311af13d25d39c8107ac71fc7b6f7f1e5c",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipUp.bin.gz",
+          "bytes": 117,
+          "sha256": "f4c628e96f55fd45cbfcb11c9156c6311af13d25d39c8107ac71fc7b6f7f1e5c"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceTipX.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "eff90453c26b760abca303a4111869ebf5f5477667e8eb5e86521c46ff880f9f",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipX.bin.gz",
+          "bytes": 135,
+          "sha256": "eff90453c26b760abca303a4111869ebf5f5477667e8eb5e86521c46ff880f9f"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceTipY.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "de42f8648fcb47ff71294ceec91ed02b0c3251a6b5414f1bdf5451a3de3229d7",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipY.bin.gz",
+          "bytes": 135,
+          "sha256": "de42f8648fcb47ff71294ceec91ed02b0c3251a6b5414f1bdf5451a3de3229d7"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceTipZ.bin.gz",
+      "storedBytes": 135,
+      "storedSha256": "0853261554ba49c7534deed61803497ac1793f267d70d8cd9dedc200e41714db",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipZ.bin.gz",
+          "bytes": 135,
+          "sha256": "0853261554ba49c7534deed61803497ac1793f267d70d8cd9dedc200e41714db"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceToeClimb.bin.gz",
+      "storedBytes": 112,
+      "storedSha256": "e7914387cd65f0f10e376f5c89a0c82ed6eb2ee917d603992bdf004b9ffaf30b",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceToeClimb.bin.gz",
+          "bytes": 112,
+          "sha256": "e7914387cd65f0f10e376f5c89a0c82ed6eb2ee917d603992bdf004b9ffaf30b"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-sliceWeight.bin.gz",
+      "storedBytes": 63,
+      "storedSha256": "6e7c85c6fe12a7e9afc7076f4c5af1a6a311c4acf4dfc1904c5b2dd3bae0dc28",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceWeight.bin.gz",
+          "bytes": 63,
+          "sha256": "6e7c85c6fe12a7e9afc7076f4c5af1a6a311c4acf4dfc1904c5b2dd3bae0dc28"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/fields/frame-2-surface.bin.gz",
+      "storedBytes": 434031,
+      "storedSha256": "0426a68a46fbfc7271a50860140ac48ee4ff3301d4a6f9a9f686587018721c78",
+      "aliasEncoding": "identity",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-surface.bin.gz",
+          "bytes": 434031,
+          "sha256": "0426a68a46fbfc7271a50860140ac48ee4ff3301d4a6f9a9f686587018721c78"
+        }
+      ]
+    },
+    {
+      "storedPath": "../live-big-capture/evidence/root-run/capture/report.json.gz",
+      "storedBytes": 84311,
+      "storedSha256": "5ea70c9ba1cf9862a4bdc0db788a7e350f79b924653b728a47ace1a967a47e4c",
+      "aliasEncoding": "gzip-generated",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/report.json",
+          "bytes": 605120,
+          "sha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988"
+        }
+      ]
+    }
+  ],
+  "gitReferences": [
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/physics/PhysicalSurfWater.ts",
+      "gitBlob": "22dcb767192eca43d0e78de91fe1f9453b9a5e00",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PhysicalSurfWater.ts",
+          "bytes": 26311,
+          "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/scene/barrel/barrelMask.ts",
+      "gitBlob": "30595369cb5c9471b58769a3c0ef3558849fa269",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMask.ts",
+          "bytes": 2329,
+          "sha256": "628393be4f679e41b4cf2254c419de487122a728de44d7ee14934082e5a9a025"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/scene/water/cubicSurface.ts",
+      "gitBlob": "e836081694dd959a440509777a219aa6515263a4",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/cubicSurface.ts",
+          "bytes": 2927,
+          "sha256": "c396930d9ff5def978e9a1657931a5c3c49e7cee1c41c577d6cdfbb2c2caee18"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/Bathymetry.ts",
+      "gitBlob": "3b75ba2f8377a5d5a782e6c2b70e607e731f1f65",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/Bathymetry.ts",
+          "bytes": 18386,
+          "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/SeaState.ts",
+      "gitBlob": "4c82f19b5e0b34f1389a74e1aff415fb4e0d4025",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/SeaState.ts",
+          "bytes": 8739,
+          "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/barrel/ProfileLibrary.ts",
+      "gitBlob": "21af2d67c9b335d1efa324f0e912a40b4ce2d9b6",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+          "bytes": 17189,
+          "sha256": "75e0bd4c3a77a04dd31f3a9e93f9d3753ff161917317674a912da4b405af8929"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/barrel/barrelSpots.ts",
+      "gitBlob": "b236aa2f6cc95c02aa8b1a82e2a8c8fbba6244e3",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelSpots.ts",
+          "bytes": 9578,
+          "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/barrel/crestRays.ts",
+      "gitBlob": "f1541ca7b6024cadf5971fdcac549ccc6b1fa591",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/crestRays.ts",
+          "bytes": 14454,
+          "sha256": "47f299f0e08d460af6abf1f7e62bca1cdd3aa943e525d885833ad793940a99a2"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/barrel/frontRecords.ts",
+      "gitBlob": "90c6b679dd0b1b9196f46ac12eb180c4606271f0",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/frontRecords.ts",
+          "bytes": 1776,
+          "sha256": "6324b260ab8c386f20ac8c0911125c7b7bb0c6c220bde3f18275d01716f4a0b7"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/barrel/lipSheet.ts",
+      "gitBlob": "953770aeff0cb6aa5e05ed581558254bc51ce845",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+          "bytes": 15981,
+          "sha256": "dae6a7e07c322bfa58ed6be3cd062946bd16146dd42734c3e3425fed8f1470bf"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/barrel/profileFormat.ts",
+      "gitBlob": "4ece4a1d601e9b413536213b2b6eefcf47346483",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+          "bytes": 2251,
+          "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/barrel/sliceClock.ts",
+      "gitBlob": "79e48491414e707f6f5a9b35cddea6725c4612e1",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sliceClock.ts",
+          "bytes": 12756,
+          "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/barrel/sweptContact.ts",
+      "gitBlob": "8c6796bc4000e147a8b43c951e933e1e42af649c",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+          "bytes": 29165,
+          "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/barrel/sweptLoft.ts",
+      "gitBlob": "8345c1e983db70f82b9a7ad2dd43e7d8597f2a01",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+          "bytes": 60183,
+          "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/dispersion.ts",
+      "gitBlob": "09867670796a46731fe146c2f45b93a88bf625dd",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/dispersion.ts",
+          "bytes": 3285,
+          "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/pool.ts",
+      "gitBlob": "62bd3bfc4386b2a154077c6b27eca8378e5228cc",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/pool.ts",
+          "bytes": 11917,
+          "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "src/wave/random.ts",
+      "gitBlob": "85a28f719f8e01259a7a7f43c379ac92cc65f829",
+      "originalAliases": [
+        {
+          "path": "/Users/regina/Desktop/Projects/surfing-game/src/wave/random.ts",
+          "bytes": 424,
+          "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "public/barrels/pad19-a20-l12.bin",
+      "gitBlob": "96e88042e8a9eb9f34fbacd488284fda586afa15",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/public/barrels/pad19-a20-l12.bin",
+          "bytes": 149848,
+          "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "public/barrels/pad19-a30-l12.bin",
+      "gitBlob": "db9db58257c703b39772408aaf15c587b1b2af35",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/public/barrels/pad19-a30-l12.bin",
+          "bytes": 163264,
+          "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "public/barrels/pad19-a45-l12.bin",
+      "gitBlob": "261cd6847b164400f36569df78a8b5d94f97014a",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/public/barrels/pad19-a45-l12.bin",
+          "bytes": 168424,
+          "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+        }
+      ]
+    },
+    {
+      "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+      "repositoryPath": "public/barrels/periodic-padang19s-l12.bin",
+      "gitBlob": "0fa39c77fa5aa460e48dc3bdb0c112a32d36d2d2",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-profile-phase-probe-20261004/baseline/public/barrels/periodic-padang19s-l12.bin",
+          "bytes": 181852,
+          "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+        }
+      ]
+    }
+  ],
+  "externalIdentityReferences": [
+    {
+      "bytes": 87249,
+      "sha256": "ee4fb0640a85e6737a812e2077ecdba8dd3e2f816ba4eb70674a62d51227443b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-tiny-underside-cleanup-20261004/compiled/baseline.mjs",
+          "bytes": 87249,
+          "sha256": "ee4fb0640a85e6737a812e2077ecdba8dd3e2f816ba4eb70674a62d51227443b"
+        }
+      ],
+      "availability": "Identity-only original path; not required for default archive verification. --originals requires its continued availability.",
+      "existingAuthorityManifest": "../tiny-underside-cleanup/manifest.json"
+    }
+  ],
+  "authorityLinks": [
+    {
+      "path": "../underside-source-cause/manifest.json",
+      "bytes": 134238,
+      "sha256": "9810709d04cdb1520739940475fd6b316497d69be59d9441db61f558f964ff24"
+    },
+    {
+      "path": "../tiny-underside-cleanup/manifest.json",
+      "bytes": 122233,
+      "sha256": "3093db62f8eb30f883b2d61f54fb3f8d3a8bb1ba2e6e84ad748555092737ef93"
+    },
+    {
+      "path": "../live-big-capture/manifest.json",
+      "bytes": 474400,
+      "sha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341"
+    },
+    {
+      "path": "../../performance-2026-10-04/feed-components-cache-cpu/manifest.json",
+      "bytes": 39185,
+      "sha256": "747995165ed592b2030396b0a7f46c8dcb15e501f9d37b1027c5c18ee8edee4d"
+    }
+  ],
+  "closureAuthorities": [
+    "freeze.json",
+    "inputs.json",
+    "ready.json",
+    "root-first/after-pins.json",
+    "root-first/before-pins.json",
+    "root-first/terminal.json",
+    "run-first/terminal.json"
+  ],
+  "generatedRecords": [
+    {
+      "path": "README.md",
+      "bytes": 5068,
+      "sha256": "84f3a9943e1886a94976a00f278d431944581bdd85fbbfa97e6246208c417522"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 2156,
+      "sha256": "d50f9f63c52c5b40ba868babf03931bac38ca7be77ff9a960123c9548eb58ad2"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 7454,
+      "sha256": "ef8d558b4e25a27df7e5fa787078ccc27dfe1cb5c19ddc0e1b97ea05831e70af"
+    },
+    {
+      "path": "archive.py.txt.gz",
+      "bytes": 9707,
+      "sha256": "8e25b9713229f8b6fdde403bdf355d42de9b4a0e6cfe74ccc4c4723eee22dc83"
+    }
+  ],
+  "scope": "Actual first gate/raw reports and source provenance only. Verifier checks archive bytes and stored JSON arithmetic, never imports/builds/reruns numerical code. External identities are availability-qualified; default success is not standalone experiment reproducibility.",
+  "storedPayloadCount": 17,
+  "storedPayloadBytes": 237686,
+  "largeCompiledModulesCopied": false,
+  "originalCaptureBecameSuccessful": false
+}

@@ -1,0 +1,25 @@
+{
+  "status": "REJECTED_COMPLETE_PATH_COST",
+  "pairs": 32,
+  "ticksPerSample": 8,
+  "meanSavingPerStepMs": -0.1058414648437509,
+  "medianSavingPerStepMs": -0.11376831250001374,
+  "positivePairs": 8,
+  "heuristicLower95Ms": -0.20471199038568028,
+  "orderMeans": {
+    "AB": -0.10706706250000408,
+    "BA": -0.10461586718749771
+  },
+  "meanCompletePerStepMs": {
+    "baseline": 9.463368171874993,
+    "candidate": 9.569209636718744
+  },
+  "stagePairedMeanPerStepMs": {
+    "foam": 0.17972871484371566,
+    "airSources": 0.007173660156293948,
+    "air": -0.33963333984377186,
+    "water": 0.015466316406225644
+  },
+  "nativeRun": false,
+  "adopted": false
+}

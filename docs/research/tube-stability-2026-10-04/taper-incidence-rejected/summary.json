@@ -1,0 +1,60 @@
+{
+  "status": "REJECT_AS_NEXT_MAJOR_FIX_IN_THIS_CAPTURE",
+  "originalCaptureValid": false,
+  "geometryCandidateImplemented": false,
+  "frames": [
+    {
+      "frame": 0,
+      "seaTime": 327.8077132243035,
+      "sourceSections": 28,
+      "fullyFormed": 9,
+      "fullyWeightedControlled": 4,
+      "controlledSupportMeters": 3.9227867126464844,
+      "capDominatedFraction": 0.12499987844428129,
+      "eligibleSupportMeters": 0,
+      "cutRuns": 0,
+      "sealEvents": 0,
+      "sourceGapMedianMeters": 0.7159917366343738,
+      "actualDrawnGapMedianMeters": 0.7000852858980979
+    },
+    {
+      "frame": 1,
+      "seaTime": 327.82437989097014,
+      "sourceSections": 28,
+      "fullyFormed": 9,
+      "fullyWeightedControlled": 4,
+      "controlledSupportMeters": 3.929856300354004,
+      "capDominatedFraction": 0.12499996966573827,
+      "eligibleSupportMeters": 0,
+      "cutRuns": 0,
+      "sealEvents": 0,
+      "sourceGapMedianMeters": 0.7039292629529442,
+      "actualDrawnGapMedianMeters": 0.7014701130776071
+    },
+    {
+      "frame": 2,
+      "seaTime": 327.8410465576368,
+      "sourceSections": 28,
+      "fullyFormed": 9,
+      "fullyWeightedControlled": 4,
+      "controlledSupportMeters": 3.937429904937744,
+      "capDominatedFraction": 0.12499980320655839,
+      "eligibleSupportMeters": 0,
+      "cutRuns": 0,
+      "sealEvents": 0,
+      "sourceGapMedianMeters": 0.7191176259108373,
+      "actualDrawnGapMedianMeters": 0.7042780611768689
+    }
+  ],
+  "decision": {
+    "proposedEligibleSupportMetersSummedAcrossThreeStates": 0,
+    "controlledSupportMetersSummedAcrossThreeStates": 11.790072917938232,
+    "capDominatedSupportMetersSummedAcrossThreeStates": 1.4737577438354492,
+    "threeStatesAreNotIndependentWaves": true,
+    "criterion": "Candidate-worthy only if actual short-policy eligibility exists,>=20% controlled source support is cap-dominated(<0.5 at both ends), and every retained frame has a controlled run with no fully weighted interior",
+    "decision": "REJECT_AS_NEXT_MAJOR_FIX_IN_THIS_CAPTURE",
+    "visibleCausationProved": false,
+    "prematureRetirementProved": false,
+    "noTaperImplemented": true
+  }
+}
