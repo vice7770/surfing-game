@@ -726,7 +726,8 @@ export class PhysicalMode {
       // Swept barrels draw the jet; foam and spray draw the splash water. Extra splash ribbons form detached white bands.
       this.lipSheet.update(host.snapshot.lip, this.swept ? 0 : host.snapshot.lipCount, host.init.dx);
       this.bubbles.update({ positions: host.snapshot.bubbles, count: host.snapshot.bubbleCount });
-      this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount });
+      // Surface foam and spray show the swept whitewater; opaque foam balls obscure its opening.
+      this.spray.update({ particles: host.snapshot.spray, count: host.snapshot.sprayCount }, !this.swept);
       this.visualHost = host;
       this.visualStatus = status;
       this.visualSprayLook = this.spray.look;

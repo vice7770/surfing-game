@@ -1,0 +1,122 @@
+[
+  {
+    "archive": "source/v1-highest.py",
+    "source": "/private/tmp/tube-thinner-roof-20261004/prototype.py",
+    "sourceBytes": 14654,
+    "sourceSha256": "51d0cb9aa8ca2df1ccc442ff00baf5299fab31a3698f77a7c937ddc47fa2cef0"
+  },
+  {
+    "archive": "evidence/v1-highest-report.json.gz",
+    "source": "/private/tmp/tube-thinner-roof-20261004/report.json",
+    "sourceBytes": 913993,
+    "sourceSha256": "a068b310e1580058477a8c06c1590ce3dc7d7d477dd78d175e52c0364c4d5fcf"
+  },
+  {
+    "archive": "evidence/v1-highest-problems.json",
+    "source": "/private/tmp/tube-thinner-roof-20261004/problem-frames.json",
+    "sourceBytes": 5368,
+    "sourceSha256": "dec4c61445f6bc55bc3cf17ee9d64e971e5823311d112975b33bc14288335a58"
+  },
+  {
+    "archive": "evidence/v1-highest-table.txt",
+    "source": "/private/tmp/tube-thinner-roof-20261004/table.txt",
+    "sourceBytes": 1184,
+    "sourceSha256": "a5a3bf798cb4b14d68dbdec5ca7333feb17ac1786019988219368c39b30c1a12"
+  },
+  {
+    "archive": "source/v2-nearest-top.py",
+    "source": "/private/tmp/tube-thinner-roof-20261004/nearest-top/prototype.py",
+    "sourceBytes": 14954,
+    "sourceSha256": "27b6a4f790be3787e96fc307ffba188643a3a00b8eb6540e8dc1e79d378a1c61"
+  },
+  {
+    "archive": "evidence/v2-nearest-top-report.json.gz",
+    "source": "/private/tmp/tube-thinner-roof-20261004/nearest-top/report.json",
+    "sourceBytes": 914153,
+    "sourceSha256": "f6139fa87eec842f495c54e1938bc21c5c389d6bcc13acd681debaba9a20d80a"
+  },
+  {
+    "archive": "evidence/v2-nearest-top-comparison.json",
+    "source": "/private/tmp/tube-thinner-roof-20261004/nearest-top/comparison.json",
+    "sourceBytes": 935,
+    "sourceSha256": "37d287c98b2c7aa0a486365c9215a78ded90fd3bb126df9e3b9495f86cfba1ef"
+  },
+  {
+    "archive": "evidence/v2-nearest-top-table.txt",
+    "source": "/private/tmp/tube-thinner-roof-20261004/nearest-top/table.txt",
+    "sourceBytes": 1184,
+    "sourceSha256": "a5a3bf798cb4b14d68dbdec5ca7333feb17ac1786019988219368c39b30c1a12"
+  },
+  {
+    "archive": "source/v3-nonincident-contour.py",
+    "source": "/private/tmp/tube-thinner-roof-20261004/contour-ceiling/prototype.py",
+    "sourceBytes": 17092,
+    "sourceSha256": "0f419dae188426f2a72205b1b64211215ff0258522654fccad9ca15bee3594df"
+  },
+  {
+    "archive": "evidence/v3-nonincident-contour-report.json.gz",
+    "source": "/private/tmp/tube-thinner-roof-20261004/contour-ceiling/report.json",
+    "sourceBytes": 1389580,
+    "sourceSha256": "5a09bbe25a659ebb3f109285f5f90219e3ef4ec043431b68537aba686d767075"
+  },
+  {
+    "archive": "evidence/v3-nonincident-contour-problems.json",
+    "source": "/private/tmp/tube-thinner-roof-20261004/contour-ceiling/problem-frames-and-stop.json",
+    "sourceBytes": 6842,
+    "sourceSha256": "db2026ef0aeece007f88d3dc6d554fa66ffff94752d237587c59b8c062df599d"
+  },
+  {
+    "archive": "evidence/v3-nonincident-contour-table.txt",
+    "source": "/private/tmp/tube-thinner-roof-20261004/contour-ceiling/table.txt",
+    "sourceBytes": 1184,
+    "sourceSha256": "519c9e9ce2d23890c8deee3708d354173cbab7c277d268a66327d439585555b7"
+  },
+  {
+    "archive": "source/measurement_functions.py",
+    "source": "/private/tmp/tube-thinner-roof-20261004/measurement_functions.py",
+    "sourceBytes": 2654,
+    "sourceSha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+  },
+  {
+    "archive": "source/load-cases.ts",
+    "source": "/private/tmp/tube-thinner-roof-20261004/load-cases.ts",
+    "sourceBytes": 3293,
+    "sourceSha256": "bace19e675790042084918c6eaf76a54c4a5af16b3f3959a8f6fb5c8f7399a4b"
+  },
+  {
+    "archive": "source/load-cases.mjs",
+    "source": "/private/tmp/tube-thinner-roof-20261004/load-cases.mjs",
+    "sourceBytes": 6960,
+    "sourceSha256": "060b199b4ea75b8ddd9437da0230dc9f8a73f307c768ac2d95918e86f2f877f0"
+  },
+  {
+    "archive": "source/air-measurement-original.py",
+    "source": "/private/tmp/tube-opening-shape-20261004/measure.py",
+    "sourceBytes": 10813,
+    "sourceSha256": "c6f6207f68383016829c8b43734e9a181ebda9a01c7d209d7735d2015c5d5763"
+  },
+  {
+    "archive": "inputs/air-baseline.json.gz",
+    "source": "/private/tmp/tube-opening-shape-20261004/receipt.json",
+    "sourceBytes": 194702,
+    "sourceSha256": "20f3f4acb52cf7732683b04cc27a96709364fbb386b33d9fa0fe3e65ab76f409"
+  },
+  {
+    "archive": "inputs/captured-polylines.json.gz",
+    "source": "/private/tmp/tube-lip-attribution-20261004/native-first/report.json",
+    "originalSourceSha256": "b3a498dd6afe77bde1429b0d1b0aefb434f6304c0bb9d728b37dc865c69373c9",
+    "extraction": "selection.sourceRow and every complete selection.initialCrossSections entry; all 5 original 81-point xyz polylines retained."
+  },
+  {
+    "archive": "inputs/case-frame-index.json.gz",
+    "source": "/private/tmp/tube-thinner-roof-20261004/eligible-cases.json",
+    "sourceSha256": "ecee538fc85d492507e8609a996285fa377d8cb1cd8f08b4f7a88d09eb4cb6dc",
+    "extraction": "All 293 eligible frames, all 8 case/asset records, with exact per-frame Float32 byte offsets/hashes. Payloads reference existing repository .bin assets."
+  },
+  {
+    "archive": "evidence/v2-nearest-top-problems.json",
+    "source": "evidence/v2-nearest-top-report.json.gz",
+    "sourceUncompressedSha256": "f6139fa87eec842f495c54e1938bc21c5c389d6bcc13acd681debaba9a20d80a",
+    "extraction": "Exact retained frame records with new crossing pairs or negative after-roof separation; no geometry recomputation."
+  }
+]

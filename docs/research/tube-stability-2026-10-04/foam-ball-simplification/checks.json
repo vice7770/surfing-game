@@ -1,0 +1,20 @@
+{
+  "commands": [
+    {
+      "command": "npm test -- src/scene/SprayPoints.test.ts src/wave/SprayCloud.test.ts",
+      "exitCode": 0,
+      "testFilesPassed": 2,
+      "testsPassed": 28
+    },
+    {
+      "command": "npx tsc -b --pretty false",
+      "exitCode": 0
+    },
+    {
+      "command": "BUILD_ID=tube-no-foam-balls-20261004 npx vite build --outDir /private/tmp/tube-no-foam-balls-20261004/dist",
+      "exitCode": 0,
+      "buildId": "tube-no-foam-balls-20261004"
+    }
+  ],
+  "scope": "Focused renderer filter and existing spray dynamics checks; no full-suite or FPS claim."
+}

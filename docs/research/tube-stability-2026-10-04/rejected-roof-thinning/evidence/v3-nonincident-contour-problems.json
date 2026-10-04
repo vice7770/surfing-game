@@ -1,0 +1,324 @@
+{
+  "complete": true,
+  "stopPrototype": true,
+  "reason": "Nearest original nonincident ceiling still introduces new crossings in previously clean Point frames; no further trial or production change.",
+  "newPairFrames": [
+    {
+      "id": "periodic-padang19s-l12",
+      "frame": 165,
+      "tau": 0.7249999999997669,
+      "onset": 1,
+      "coreBeforePairs": 0,
+      "coreAfterPairs": 2,
+      "fullBeforePairs": 0,
+      "fullAfterPairs": 2,
+      "newPairs": [
+        [
+          [
+            68,
+            69
+          ],
+          [
+            71,
+            72
+          ]
+        ],
+        [
+          [
+            68,
+            69
+          ],
+          [
+            72,
+            73
+          ]
+        ]
+      ],
+      "removedPairs": [],
+      "beforeFullCrossings": [],
+      "afterFullCrossings": [
+        {
+          "q": 0.6355101095481276,
+          "y": 0.11101555300518759,
+          "segments": [
+            [
+              68,
+              69
+            ],
+            [
+              71,
+              72
+            ]
+          ]
+        },
+        {
+          "q": 0.6379970623531402,
+          "y": 0.12671884342329243,
+          "segments": [
+            [
+              68,
+              69
+            ],
+            [
+              72,
+              73
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "periodic-point21-a15-l12",
+      "frame": 87,
+      "tau": 0.42500000000018545,
+      "onset": 1,
+      "coreBeforePairs": 0,
+      "coreAfterPairs": 1,
+      "fullBeforePairs": 0,
+      "fullAfterPairs": 1,
+      "newPairs": [
+        [
+          [
+            76,
+            77
+          ],
+          [
+            78,
+            79
+          ]
+        ]
+      ],
+      "removedPairs": [],
+      "beforeFullCrossings": [],
+      "afterFullCrossings": [
+        {
+          "q": 0.40083689769592434,
+          "y": 0.21080560529120837,
+          "segments": [
+            [
+              76,
+              77
+            ],
+            [
+              78,
+              79
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "periodic-point21-a15-l12",
+      "frame": 96,
+      "tau": 0.6500000000002046,
+      "onset": 1,
+      "coreBeforePairs": 0,
+      "coreAfterPairs": 1,
+      "fullBeforePairs": 0,
+      "fullAfterPairs": 1,
+      "newPairs": [
+        [
+          [
+            67,
+            68
+          ],
+          [
+            69,
+            70
+          ]
+        ]
+      ],
+      "removedPairs": [],
+      "beforeFullCrossings": [],
+      "afterFullCrossings": [
+        {
+          "q": 0.6108683848211623,
+          "y": 0.1327139344428896,
+          "segments": [
+            [
+              67,
+              68
+            ],
+            [
+              69,
+              70
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "periodic-point21-a23-l12",
+      "frame": 117,
+      "tau": 0.7250000000002466,
+      "onset": 1,
+      "coreBeforePairs": 2,
+      "coreAfterPairs": 3,
+      "fullBeforePairs": 2,
+      "fullAfterPairs": 3,
+      "newPairs": [
+        [
+          [
+            80,
+            81
+          ],
+          [
+            82,
+            83
+          ]
+        ]
+      ],
+      "removedPairs": [],
+      "beforeFullCrossings": [
+        {
+          "q": 0.6899800298872525,
+          "y": 0.28639063078473065,
+          "segments": [
+            [
+              80,
+              81
+            ],
+            [
+              84,
+              85
+            ]
+          ]
+        },
+        {
+          "q": 0.6900554430016839,
+          "y": 0.28644508167781224,
+          "segments": [
+            [
+              81,
+              82
+            ],
+            [
+              84,
+              85
+            ]
+          ]
+        }
+      ],
+      "afterFullCrossings": [
+        {
+          "q": 0.6972713793628694,
+          "y": 0.29147348507054005,
+          "segments": [
+            [
+              80,
+              81
+            ],
+            [
+              82,
+              83
+            ]
+          ]
+        },
+        {
+          "q": 0.6895217343431487,
+          "y": 0.3230735498709087,
+          "segments": [
+            [
+              80,
+              81
+            ],
+            [
+              84,
+              85
+            ]
+          ]
+        },
+        {
+          "q": 0.6894736046017637,
+          "y": 0.32302302909310354,
+          "segments": [
+            [
+              81,
+              82
+            ],
+            [
+              84,
+              85
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "periodic-point21-a23-l12",
+      "frame": 120,
+      "tau": 0.800000000000253,
+      "onset": 1,
+      "coreBeforePairs": 0,
+      "coreAfterPairs": 1,
+      "fullBeforePairs": 0,
+      "fullAfterPairs": 1,
+      "newPairs": [
+        [
+          [
+            66,
+            67
+          ],
+          [
+            68,
+            69
+          ]
+        ]
+      ],
+      "removedPairs": [],
+      "beforeFullCrossings": [],
+      "afterFullCrossings": [
+        {
+          "q": 0.8425461720071262,
+          "y": 0.15843426244769918,
+          "segments": [
+            [
+              66,
+              67
+            ],
+            [
+              68,
+              69
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "newlyCrossedPreviouslyCleanFrames": 4,
+  "coreBeforeCrossedFrameCount": 8,
+  "coreAfterCrossedFrameCount": 12,
+  "fullBeforeCrossedFrameCount": 10,
+  "fullAfterCrossedFrameCount": 14,
+  "interpretationCorrection": "V3 prototype metadata keys nonpositiveOriginalVertexSeparations/framesWithOriginalNonpositiveVertexSeparation refer only to selected positive ceilings; their empty/zero values do not establish original roof order. Use before.negativeRoofSeparationSampleCount: original periodic Padang153/160 still fail roof order before and after.",
+  "sourceHashChecks": [
+    {
+      "file": "/private/tmp/tube-lip-attribution-20261004/native-first/report.json",
+      "matchesReceipt": true
+    },
+    {
+      "file": "/private/tmp/tube-opening-shape-20261004/measure.py",
+      "matchesReceipt": true
+    },
+    {
+      "file": "/private/tmp/tube-thinner-roof-20261004/contour-ceiling/eligible-cases.json",
+      "matchesReceipt": true
+    },
+    {
+      "file": "/private/tmp/tube-thinner-roof-20261004/contour-ceiling/measurement_functions.py",
+      "matchesReceipt": true
+    },
+    {
+      "file": "/private/tmp/tube-thinner-roof-20261004/contour-ceiling/prototype.py",
+      "matchesReceipt": true
+    },
+    {
+      "file": "/private/tmp/tube-thinner-roof-20261004/contour-ceiling/load-cases.ts",
+      "matchesReceipt": true
+    },
+    {
+      "file": "/private/tmp/tube-thinner-roof-20261004/contour-ceiling/load-cases.mjs",
+      "matchesReceipt": true
+    }
+  ]
+}

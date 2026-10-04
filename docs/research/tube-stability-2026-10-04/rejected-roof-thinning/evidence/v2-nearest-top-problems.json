@@ -1,0 +1,776 @@
+{
+  "schema": "v2-problems-extracted-from-exact-receipt/v1",
+  "sourceReceipt": "v2-nearest-top-report.json.gz",
+  "sourceUncompressedSha256": "f6139fa87eec842f495c54e1938bc21c5c389d6bcc13acd681debaba9a20d80a",
+  "extraction": "Exact retained frame records with new crossing pairs or negative after-roof separation; no geometry recomputation.",
+  "frames": [
+    {
+      "id": "periodic-padang19s-l12",
+      "frame": 153,
+      "tau": 0.424999999999784,
+      "prototype": {
+        "overturned": true,
+        "onset": 0.7103871829894629,
+        "lipThroatReach": 0.028697967529296875,
+        "crestHeightAboveToe": 0.2969599962234497,
+        "raisedPoints": [
+          {
+            "point": 72,
+            "raise": 2.308982674622187e-05
+          },
+          {
+            "point": 73,
+            "raise": 0.001973444797709199
+          },
+          {
+            "point": 74,
+            "raise": 0.0048406203794827355
+          },
+          {
+            "point": 75,
+            "raise": 0.00734595792264015
+          },
+          {
+            "point": 76,
+            "raise": 0.009119839834441491
+          },
+          {
+            "point": 77,
+            "raise": 0.010895887781581215
+          },
+          {
+            "point": 78,
+            "raise": 0.012672832062588981
+          },
+          {
+            "point": 79,
+            "raise": 0.014446713974390322
+          },
+          {
+            "point": 80,
+            "raise": 0.016335319157947115
+          },
+          {
+            "point": 81,
+            "raise": 0.017860883172443102
+          },
+          {
+            "point": 82,
+            "raise": 0.018806497725828118
+          },
+          {
+            "point": 83,
+            "raise": 0.01983681785183904
+          },
+          {
+            "point": 84,
+            "raise": 0.02119845954305565
+          },
+          {
+            "point": 85,
+            "raise": 0.019037716353286903
+          },
+          {
+            "point": 86,
+            "raise": 0.011962454013591348
+          },
+          {
+            "point": 87,
+            "raise": 0.003951461311194704
+          }
+        ],
+        "missingTopAtInnerVertices": [],
+        "nonpositiveOriginalVertexSeparations": [
+          {
+            "point": 65,
+            "separation": -0.0023892385885119494
+          },
+          {
+            "point": 66,
+            "separation": -0.0048556155525147915
+          },
+          {
+            "point": 67,
+            "separation": -0.00771237993612886
+          },
+          {
+            "point": 68,
+            "separation": -0.01087237978354097
+          },
+          {
+            "point": 69,
+            "separation": -0.01362761771306395
+          },
+          {
+            "point": 70,
+            "separation": -0.009527870733290922
+          },
+          {
+            "point": 71,
+            "separation": -0.005279891509959028
+          }
+        ],
+        "minVertexRoofSeparationBefore": 6.50063157081604e-05,
+        "minVertexRoofSeparationAfter": 4.1916488961929455e-05,
+        "maxRaise": 0.02119845954305565,
+        "allXExact": true,
+        "outerCrestToLipExact": true,
+        "throatToToeExact": true,
+        "lipAndThroatExact": true
+      },
+      "before": {
+        "maxGap": 0.09261490144125717,
+        "maxGapQ": 0.4213123714687071,
+        "maxGapAffineOneSidedLimit": 0.09261494279210931,
+        "usefulWidthThreshold": 0.19999999999999998,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": [],
+        "cavityRangeQ": [
+          0.393402099609375,
+          0.4221000671386719
+        ],
+        "minimumSampledVerticalRoofSeparation": -0.013627361826380219,
+        "negativeRoofSeparationSampleCount": 24,
+        "firstNegativeRoofSeparation": {
+          "q": 0.4213123834173197,
+          "separation": -3.33603071001054e-07
+        }
+      },
+      "after": {
+        "maxGap": 0.0926232522845367,
+        "maxGapQ": 0.42131168547217496,
+        "maxGapAffineOneSidedLimit": 0.0926232788816523,
+        "usefulWidthThreshold": 0.19999999999999998,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": [],
+        "cavityRangeQ": [
+          0.393402099609375,
+          0.4221000671386719
+        ],
+        "minimumSampledVerticalRoofSeparation": -0.013627361826380219,
+        "negativeRoofSeparationSampleCount": 24,
+        "firstNegativeRoofSeparation": {
+          "q": 0.42131169673410435,
+          "separation": -3.3216191264173744e-07
+        }
+      },
+      "change": {
+        "maxGapGain": 8.350843279533726e-06,
+        "usefulWidthGain": 0,
+        "newCrossingSegmentPairs": [],
+        "removedCrossingSegmentPairs": [],
+        "existingCrossingPairCount": 1,
+        "afterCrossingPairCount": 1
+      },
+      "beforeCrossings": [
+        {
+          "q": 0.4213123734173197,
+          "y": 0.1778784273350462,
+          "segments": [
+            [
+              62,
+              63
+            ],
+            [
+              71,
+              72
+            ]
+          ]
+        }
+      ],
+      "afterCrossings": [
+        {
+          "q": 0.42131168673410435,
+          "y": 0.17788779169774502,
+          "segments": [
+            [
+              62,
+              63
+            ],
+            [
+              71,
+              72
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "periodic-padang19s-l12",
+      "frame": 160,
+      "tau": 0.599999999999774,
+      "prototype": {
+        "overturned": true,
+        "onset": 1,
+        "lipThroatReach": 0.05030059814453125,
+        "crestHeightAboveToe": 0.29580000415444374,
+        "raisedPoints": [
+          {
+            "point": 66,
+            "raise": 4.5097994002679664e-05
+          },
+          {
+            "point": 67,
+            "raise": 0.0014387614363314243
+          },
+          {
+            "point": 68,
+            "raise": 0.0037795137069378676
+          },
+          {
+            "point": 69,
+            "raise": 0.007745830774028073
+          },
+          {
+            "point": 70,
+            "raise": 0.012533206591814644
+          },
+          {
+            "point": 71,
+            "raise": 0.015581696460682179
+          },
+          {
+            "point": 72,
+            "raise": 0.01839358582597085
+          },
+          {
+            "point": 73,
+            "raise": 0.021211349280885833
+          },
+          {
+            "point": 74,
+            "raise": 0.02287673608567309
+          },
+          {
+            "point": 75,
+            "raise": 0.023042710398190794
+          },
+          {
+            "point": 76,
+            "raise": 0.02524124340488644
+          },
+          {
+            "point": 77,
+            "raise": 0.027022682245403648
+          },
+          {
+            "point": 78,
+            "raise": 0.028799999919202596
+          },
+          {
+            "point": 79,
+            "raise": 0.030364767105566515
+          },
+          {
+            "point": 80,
+            "raise": 0.031700645431618865
+          },
+          {
+            "point": 81,
+            "raise": 0.03320729534844963
+          },
+          {
+            "point": 82,
+            "raise": 0.03491931267339608
+          },
+          {
+            "point": 83,
+            "raise": 0.03663922177106958
+          },
+          {
+            "point": 84,
+            "raise": 0.0383518835297766
+          },
+          {
+            "point": 85,
+            "raise": 0.03373965401140833
+          },
+          {
+            "point": 86,
+            "raise": 0.020875912684000852
+          },
+          {
+            "point": 87,
+            "raise": 0.006800003951601553
+          }
+        ],
+        "missingTopAtInnerVertices": [],
+        "nonpositiveOriginalVertexSeparations": [
+          {
+            "point": 65,
+            "separation": -0.0029595956119180533
+          }
+        ],
+        "minVertexRoofSeparationBefore": 0.00018039197601071866,
+        "minVertexRoofSeparationAfter": 0.000135293982008039,
+        "maxRaise": 0.0383518835297766,
+        "allXExact": true,
+        "outerCrestToLipExact": true,
+        "throatToToeExact": true,
+        "lipAndThroatExact": true
+      },
+      "before": {
+        "maxGap": 0.11565843527490721,
+        "maxGapQ": 0.5624008278710938,
+        "maxGapAffineOneSidedLimit": 0.1156584356346729,
+        "usefulWidthThreshold": 0.19999999999999998,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": [],
+        "cavityRangeQ": [
+          0.5124015808105469,
+          0.5627021789550781
+        ],
+        "minimumSampledVerticalRoofSeparation": -0.0029594974042932154,
+        "negativeRoofSeparationSampleCount": 3,
+        "firstNegativeRoofSeparation": {
+          "q": 0.5624008278710938,
+          "separation": -0.0029594974042932154
+        }
+      },
+      "after": {
+        "maxGap": 0.11565843527490721,
+        "maxGapQ": 0.5624008278710938,
+        "maxGapAffineOneSidedLimit": 0.1156584356346729,
+        "usefulWidthThreshold": 0.19999999999999998,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": [],
+        "cavityRangeQ": [
+          0.5124015808105469,
+          0.5627021789550781
+        ],
+        "minimumSampledVerticalRoofSeparation": -0.0029594974042932154,
+        "negativeRoofSeparationSampleCount": 3,
+        "firstNegativeRoofSeparation": {
+          "q": 0.5624008278710938,
+          "separation": -0.0029594974042932154
+        }
+      },
+      "change": {
+        "maxGapGain": 0.0,
+        "usefulWidthGain": 0,
+        "newCrossingSegmentPairs": [],
+        "removedCrossingSegmentPairs": [],
+        "existingCrossingPairCount": 1,
+        "afterCrossingPairCount": 1
+      },
+      "beforeCrossings": [
+        {
+          "q": 0.5624008178710938,
+          "y": 0.15650039763129941,
+          "segments": [
+            [
+              63,
+              64
+            ],
+            [
+              65,
+              66
+            ]
+          ]
+        }
+      ],
+      "afterCrossings": [
+        {
+          "q": 0.5624008178710938,
+          "y": 0.15650039763129941,
+          "segments": [
+            [
+              63,
+              64
+            ],
+            [
+              65,
+              66
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "periodic-point21-a15-l12",
+      "frame": 96,
+      "tau": 0.6500000000002046,
+      "prototype": {
+        "overturned": true,
+        "onset": 1,
+        "lipThroatReach": 0.09460067749023438,
+        "crestHeightAboveToe": 0.32526999711990356,
+        "raisedPoints": [
+          {
+            "point": 65,
+            "raise": 0.0008870047898066106
+          },
+          {
+            "point": 66,
+            "raise": 0.005668677593141158
+          },
+          {
+            "point": 67,
+            "raise": 0.017544281712429433
+          },
+          {
+            "point": 68,
+            "raise": 0.03712120141696047
+          },
+          {
+            "point": 69,
+            "raise": 0.03283973016196817
+          },
+          {
+            "point": 70,
+            "raise": 0.026561883414958742
+          },
+          {
+            "point": 71,
+            "raise": 0.038206134621523294
+          },
+          {
+            "point": 72,
+            "raise": 0.04321636493159173
+          },
+          {
+            "point": 73,
+            "raise": 0.04310713267408639
+          },
+          {
+            "point": 74,
+            "raise": 0.042946583739368716
+          },
+          {
+            "point": 75,
+            "raise": 0.04215003370751287
+          },
+          {
+            "point": 76,
+            "raise": 0.04116894703796836
+          },
+          {
+            "point": 77,
+            "raise": 0.04034627727733171
+          },
+          {
+            "point": 78,
+            "raise": 0.03954551858473415
+          },
+          {
+            "point": 79,
+            "raise": 0.03857869445346296
+          },
+          {
+            "point": 80,
+            "raise": 0.03756882238688408
+          },
+          {
+            "point": 81,
+            "raise": 0.03714999556541443
+          },
+          {
+            "point": 82,
+            "raise": 0.03673067769488772
+          },
+          {
+            "point": 83,
+            "raise": 0.03626180601532228
+          },
+          {
+            "point": 84,
+            "raise": 0.03803381034576059
+          },
+          {
+            "point": 85,
+            "raise": 0.03359743844727261
+          },
+          {
+            "point": 86,
+            "raise": 0.021476523930054545
+          },
+          {
+            "point": 87,
+            "raise": 0.007266165956481309
+          }
+        ],
+        "missingTopAtInnerVertices": [],
+        "nonpositiveOriginalVertexSeparations": [],
+        "minVertexRoofSeparationBefore": 0.011353661309524615,
+        "minVertexRoofSeparationAfter": 0.01046665651971801,
+        "maxRaise": 0.04321636493159173,
+        "allXExact": true,
+        "outerCrestToLipExact": true,
+        "throatToToeExact": true,
+        "lipAndThroatExact": true
+      },
+      "before": {
+        "maxGap": 0.07981777169638526,
+        "maxGapQ": 0.6239013571875,
+        "maxGapAffineOneSidedLimit": 0.07981780605854291,
+        "usefulWidthThreshold": 0.19999999999999998,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": [],
+        "cavityRangeQ": [
+          0.5293006896972656,
+          0.6239013671875
+        ],
+        "minimumSampledVerticalRoofSeparation": 5.002175135215836e-08,
+        "negativeRoofSeparationSampleCount": 0,
+        "firstNegativeRoofSeparation": null
+      },
+      "after": {
+        "maxGap": 0.11044628419384489,
+        "maxGapQ": 0.569580068125,
+        "maxGapAffineOneSidedLimit": 0.11044628539674557,
+        "usefulWidthThreshold": 0.19999999999999998,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": [],
+        "cavityRangeQ": [
+          0.5293006896972656,
+          0.6239013671875
+        ],
+        "minimumSampledVerticalRoofSeparation": 4.611380202690363e-08,
+        "negativeRoofSeparationSampleCount": 0,
+        "firstNegativeRoofSeparation": null
+      },
+      "change": {
+        "maxGapGain": 0.030628512497459626,
+        "usefulWidthGain": 0,
+        "newCrossingSegmentPairs": [
+          [
+            [
+              67,
+              68
+            ],
+            [
+              70,
+              71
+            ]
+          ]
+        ],
+        "removedCrossingSegmentPairs": [],
+        "existingCrossingPairCount": 0,
+        "afterCrossingPairCount": 1
+      },
+      "beforeCrossings": [],
+      "afterCrossings": [
+        {
+          "q": 0.6085727657373264,
+          "y": 0.160872228369069,
+          "segments": [
+            [
+              67,
+              68
+            ],
+            [
+              70,
+              71
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "periodic-reef42-l12",
+      "frame": 70,
+      "tau": -1.275000000000098,
+      "prototype": {
+        "overturned": true,
+        "onset": 0.4601178599021183,
+        "lipThroatReach": 0.026201248168945312,
+        "crestHeightAboveToe": 0.3689900040626526,
+        "raisedPoints": [
+          {
+            "point": 65,
+            "raise": 0.00010349159856306327
+          },
+          {
+            "point": 66,
+            "raise": 0.0006619172007039758
+          },
+          {
+            "point": 67,
+            "raise": 0.0016787355000388085
+          },
+          {
+            "point": 68,
+            "raise": 0.0026511006150947863
+          },
+          {
+            "point": 69,
+            "raise": 0.0034569787055788483
+          },
+          {
+            "point": 70,
+            "raise": 0.00433661316998886
+          },
+          {
+            "point": 71,
+            "raise": 0.0052153891456814625
+          },
+          {
+            "point": 72,
+            "raise": 0.006112657283921655
+          },
+          {
+            "point": 73,
+            "raise": 0.0074480721899854935
+          },
+          {
+            "point": 74,
+            "raise": 0.008776038020906915
+          },
+          {
+            "point": 75,
+            "raise": 0.010111452712711681
+          },
+          {
+            "point": 76,
+            "raise": 0.011349235573852862
+          },
+          {
+            "point": 77,
+            "raise": 0.0125642488160023
+          },
+          {
+            "point": 78,
+            "raise": 0.013496455795892709
+          },
+          {
+            "point": 79,
+            "raise": 0.013837144437444274
+          },
+          {
+            "point": 80,
+            "raise": 0.014393255791750326
+          },
+          {
+            "point": 81,
+            "raise": 0.015088463119477778
+          },
+          {
+            "point": 82,
+            "raise": 0.015782808249689965
+          },
+          {
+            "point": 83,
+            "raise": 0.01647945393315471
+          },
+          {
+            "point": 84,
+            "raise": 0.016909797372062906
+          },
+          {
+            "point": 85,
+            "raise": 0.013746856969288327
+          },
+          {
+            "point": 86,
+            "raise": 0.007838223451695355
+          },
+          {
+            "point": 87,
+            "raise": 0.002353400188669113
+          }
+        ],
+        "missingTopAtInnerVertices": [],
+        "nonpositiveOriginalVertexSeparations": [],
+        "minVertexRoofSeparationBefore": 0.0028790285643096186,
+        "minVertexRoofSeparationAfter": 0.0027755369657465542,
+        "maxRaise": 0.016909797372062906,
+        "allXExact": true,
+        "outerCrestToLipExact": true,
+        "throatToToeExact": true,
+        "lipAndThroatExact": true
+      },
+      "before": {
+        "maxGap": 0.050124064153909124,
+        "maxGapQ": -1.0637989144189453,
+        "maxGapAffineOneSidedLimit": 0.05012436286528865,
+        "usefulWidthThreshold": 0.19999999999999998,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": [],
+        "cavityRangeQ": [
+          -1.0900001525878906,
+          -1.0637989044189453
+        ],
+        "minimumSampledVerticalRoofSeparation": 3.1446669140205996e-07,
+        "negativeRoofSeparationSampleCount": 0,
+        "firstNegativeRoofSeparation": null
+      },
+      "after": {
+        "maxGap": 0.050124075457951396,
+        "maxGapQ": -1.0637989144189453,
+        "maxGapAffineOneSidedLimit": 0.05012436286528865,
+        "usefulWidthThreshold": 0.19999999999999998,
+        "usefulWidth": 0,
+        "usefulWidthIntervals": [],
+        "cavityRangeQ": [
+          -1.0900001525878906,
+          -1.0637989044189453
+        ],
+        "minimumSampledVerticalRoofSeparation": 3.0316264913038404e-07,
+        "negativeRoofSeparationSampleCount": 0,
+        "firstNegativeRoofSeparation": null
+      },
+      "change": {
+        "maxGapGain": 1.1304042271675918e-08,
+        "usefulWidthGain": 0,
+        "newCrossingSegmentPairs": [
+          [
+            [
+              86,
+              87
+            ],
+            [
+              88,
+              89
+            ]
+          ]
+        ],
+        "removedCrossingSegmentPairs": [
+          [
+            [
+              80,
+              81
+            ],
+            [
+              88,
+              89
+            ]
+          ]
+        ],
+        "existingCrossingPairCount": 1,
+        "afterCrossingPairCount": 1
+      },
+      "beforeCrossings": [
+        {
+          "q": -1.0871537945293295,
+          "y": 0.008703687275904544,
+          "segments": [
+            [
+              80,
+              81
+            ],
+            [
+              88,
+              89
+            ]
+          ]
+        }
+      ],
+      "afterCrossings": [
+        {
+          "q": -1.089945228351288,
+          "y": 0.01166179610182683,
+          "segments": [
+            [
+              86,
+              87
+            ],
+            [
+              88,
+              89
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

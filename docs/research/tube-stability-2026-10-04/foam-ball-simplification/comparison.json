@@ -1,0 +1,53 @@
+{
+  "complete": true,
+  "browserErrors": [
+    [],
+    []
+  ],
+  "fixedInputsEqual": {
+    "settings": true,
+    "overrides": true,
+    "graphics": true,
+    "target": true,
+    "cameraHypothesis": true
+  },
+  "initialConfigEqual": true,
+  "selectionEqual": true,
+  "frames": [
+    {
+      "index": 0,
+      "seaTime": 553.4730587494489,
+      "clockEqual": true,
+      "barrelMetricsEqual": true,
+      "runTraceEqual": true,
+      "snapshotCountsEqual": true,
+      "sourceKindCountsEqual": true,
+      "sourceCountEqual": true,
+      "candidateKind2Count": 0,
+      "retainedKindCountsEqual": true,
+      "candidateDrawCount": 4199,
+      "baselineDrawCount": 5120,
+      "candidateNormalEqualsBaselineNoRollers": true,
+      "candidateNormalSha256": "4a7e24b23090aefc906891a9cc31b91c80f9c1c5257365e0658d854251fffd8f",
+      "baselineNoRollersSha256": "4a7e24b23090aefc906891a9cc31b91c80f9c1c5257365e0658d854251fffd8f"
+    },
+    {
+      "index": 1,
+      "seaTime": 553.673058749449,
+      "clockEqual": true,
+      "barrelMetricsEqual": true,
+      "runTraceEqual": true,
+      "snapshotCountsEqual": true,
+      "sourceKindCountsEqual": true,
+      "sourceCountEqual": true,
+      "candidateKind2Count": 0,
+      "retainedKindCountsEqual": true,
+      "candidateDrawCount": 4172,
+      "baselineDrawCount": 5120,
+      "candidateNormalEqualsBaselineNoRollers": true,
+      "candidateNormalSha256": "60a9d8fcf1427451987c4555f4d040e4f49a8d2a4fcebde6bce596deac67c738",
+      "baselineNoRollersSha256": "60a9d8fcf1427451987c4555f4d040e4f49a8d2a4fcebde6bce596deac67c738"
+    }
+  ],
+  "physicalStateEqualityClaim": false
+}

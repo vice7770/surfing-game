@@ -1,0 +1,16 @@
+{
+  "surfZoneWorker-": {
+    "baseline": "surfZoneWorker-C_Oi2eP6.js",
+    "candidate": "surfZoneWorker-C_Oi2eP6.js",
+    "baselineHash": "d54a31ec949add36b01b347cd592ed3049cc0f0a4b0dd2118b46a7a26b031995",
+    "candidateHash": "d54a31ec949add36b01b347cd592ed3049cc0f0a4b0dd2118b46a7a26b031995",
+    "byteIdentical": true
+  },
+  "WorkerSurfZone-": {
+    "baseline": "WorkerSurfZone-dU0qsLsl.js",
+    "candidate": "WorkerSurfZone-EFe5pM8e.js",
+    "baselineHash": "192cb5e6708a791a38746adf058655c4c676af75390b8cb5be8898b659926a0d",
+    "candidateHash": "0b5e4f75336d50dfad6402425bc71ebd19b5787871b0b2aac657a2e3202c92b7",
+    "byteIdentical": false
+  }
+}

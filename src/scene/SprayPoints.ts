@@ -124,7 +124,8 @@ export class SprayPoints {
     return this.currentLook;
   }
 
-  update(spray: RenderableSpray): void {
+  /** Swept waves can use their surface foam without the opaque roller sprites; spray and tube bursts still draw. */
+  update(spray: RenderableSpray, foamBalls = true): void {
     const positions = this.positions.array as Float32Array;
     const looks = this.looks.array as Float32Array;
     const kinds = this.kinds.array as Float32Array;
@@ -133,7 +134,7 @@ export class SprayPoints {
     for (let k = 0; k < spray.count && drawn < this.capacity; k += 1) {
       const o = k * SPRAY_STRIDE;
       const kind = spray.particles[o + 5];
-      if (kind >= 2 && !rich) continue;
+      if ((kind >= 2 && !rich) || (kind === 2 && !foamBalls)) continue;
       positions[drawn * 3] = spray.particles[o];
       positions[drawn * 3 + 1] = spray.particles[o + 1];
       positions[drawn * 3 + 2] = spray.particles[o + 2];

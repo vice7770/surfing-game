@@ -1,0 +1,268 @@
+[
+  {
+    "id": "periodic-padang19s-l12",
+    "frame": 153,
+    "tau": 0.424999999999784,
+    "onset": 0.7103871829894629,
+    "beforeMaxGap": 0.09261490144125717,
+    "afterMaxGap": 0.0926232522845367,
+    "change": {
+      "maxGapGain": 8.350843279533726e-06,
+      "usefulWidthGain": 0,
+      "newCrossingSegmentPairs": [],
+      "removedCrossingSegmentPairs": [],
+      "existingCrossingPairCount": 1,
+      "afterCrossingPairCount": 1
+    },
+    "beforeCrossings": [
+      {
+        "q": 0.4213123734173197,
+        "y": 0.1778784273350462,
+        "segments": [
+          [
+            62,
+            63
+          ],
+          [
+            71,
+            72
+          ]
+        ]
+      }
+    ],
+    "afterCrossings": [
+      {
+        "q": 0.42131168673410435,
+        "y": 0.17788779169774502,
+        "segments": [
+          [
+            62,
+            63
+          ],
+          [
+            71,
+            72
+          ]
+        ]
+      }
+    ],
+    "nonpositiveOriginalVertexSeparations": [
+      {
+        "point": 65,
+        "separation": -0.0023892385885119494
+      },
+      {
+        "point": 66,
+        "separation": -0.0048556155525147915
+      },
+      {
+        "point": 67,
+        "separation": -0.00771237993612886
+      },
+      {
+        "point": 68,
+        "separation": -0.01087237978354097
+      },
+      {
+        "point": 69,
+        "separation": -0.01362761771306395
+      },
+      {
+        "point": 70,
+        "separation": -0.009527870733290922
+      },
+      {
+        "point": 71,
+        "separation": -0.005279891509959028
+      }
+    ],
+    "negativeRoofBefore": 24,
+    "negativeRoofAfter": 24,
+    "negativeRoofExample": {
+      "q": 0.42131169673410435,
+      "separation": -3.3216191264173744e-07
+    }
+  },
+  {
+    "id": "periodic-padang19s-l12",
+    "frame": 160,
+    "tau": 0.599999999999774,
+    "onset": 1,
+    "beforeMaxGap": 0.11565843527490721,
+    "afterMaxGap": 0.11565843527490721,
+    "change": {
+      "maxGapGain": 0.0,
+      "usefulWidthGain": 0,
+      "newCrossingSegmentPairs": [],
+      "removedCrossingSegmentPairs": [],
+      "existingCrossingPairCount": 1,
+      "afterCrossingPairCount": 1
+    },
+    "beforeCrossings": [
+      {
+        "q": 0.5624008178710938,
+        "y": 0.15650039763129941,
+        "segments": [
+          [
+            63,
+            64
+          ],
+          [
+            65,
+            66
+          ]
+        ]
+      }
+    ],
+    "afterCrossings": [
+      {
+        "q": 0.5624008178710938,
+        "y": 0.15650039763129941,
+        "segments": [
+          [
+            63,
+            64
+          ],
+          [
+            65,
+            66
+          ]
+        ]
+      }
+    ],
+    "nonpositiveOriginalVertexSeparations": [
+      {
+        "point": 65,
+        "separation": -0.0029595956119180533
+      }
+    ],
+    "negativeRoofBefore": 3,
+    "negativeRoofAfter": 3,
+    "negativeRoofExample": {
+      "q": 0.5624008278710938,
+      "separation": -0.0029594974042932154
+    }
+  },
+  {
+    "id": "periodic-point21-a15-l12",
+    "frame": 96,
+    "tau": 0.6500000000002046,
+    "onset": 1,
+    "beforeMaxGap": 0.07981777169638526,
+    "afterMaxGap": 0.11044628419384489,
+    "change": {
+      "maxGapGain": 0.030628512497459626,
+      "usefulWidthGain": 0,
+      "newCrossingSegmentPairs": [
+        [
+          [
+            67,
+            68
+          ],
+          [
+            70,
+            71
+          ]
+        ]
+      ],
+      "removedCrossingSegmentPairs": [],
+      "existingCrossingPairCount": 0,
+      "afterCrossingPairCount": 1
+    },
+    "beforeCrossings": [],
+    "afterCrossings": [
+      {
+        "q": 0.6085727657373264,
+        "y": 0.160872228369069,
+        "segments": [
+          [
+            67,
+            68
+          ],
+          [
+            70,
+            71
+          ]
+        ]
+      }
+    ],
+    "nonpositiveOriginalVertexSeparations": [],
+    "negativeRoofBefore": 0,
+    "negativeRoofAfter": 0,
+    "negativeRoofExample": null
+  },
+  {
+    "id": "periodic-reef42-l12",
+    "frame": 70,
+    "tau": -1.275000000000098,
+    "onset": 0.4601178599021183,
+    "beforeMaxGap": 0.050124064153909124,
+    "afterMaxGap": 0.050124075457951396,
+    "change": {
+      "maxGapGain": 1.1304042271675918e-08,
+      "usefulWidthGain": 0,
+      "newCrossingSegmentPairs": [
+        [
+          [
+            86,
+            87
+          ],
+          [
+            88,
+            89
+          ]
+        ]
+      ],
+      "removedCrossingSegmentPairs": [
+        [
+          [
+            80,
+            81
+          ],
+          [
+            88,
+            89
+          ]
+        ]
+      ],
+      "existingCrossingPairCount": 1,
+      "afterCrossingPairCount": 1
+    },
+    "beforeCrossings": [
+      {
+        "q": -1.0871537945293295,
+        "y": 0.008703687275904544,
+        "segments": [
+          [
+            80,
+            81
+          ],
+          [
+            88,
+            89
+          ]
+        ]
+      }
+    ],
+    "afterCrossings": [
+      {
+        "q": -1.089945228351288,
+        "y": 0.01166179610182683,
+        "segments": [
+          [
+            86,
+            87
+          ],
+          [
+            88,
+            89
+          ]
+        ]
+      }
+    ],
+    "nonpositiveOriginalVertexSeparations": [],
+    "negativeRoofBefore": 0,
+    "negativeRoofAfter": 0,
+    "negativeRoofExample": null
+  }
+]

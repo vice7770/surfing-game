@@ -1,0 +1,23 @@
+{
+  "originalReport": "/private/tmp/tube-thinner-roof-20261004/report.json",
+  "originalReportSha256": "a068b310e1580058477a8c06c1590ce3dc7d7d477dd78d175e52c0364c4d5fcf",
+  "revisedReport": "/private/tmp/tube-thinner-roof-20261004/nearest-top/report.json",
+  "revisedReportSha256": "f6139fa87eec842f495c54e1938bc21c5c389d6bcc13acd681debaba9a20d80a",
+  "originalSourcesUnchangedAgainstReceipt": true,
+  "allFiveActualSectionsExactEqual": true,
+  "allEightCasesAnd293AirCrossingMetricsExactEqual": true,
+  "geometryChanges": [
+    {
+      "id": "periodic-padang19s-l12",
+      "frame": 168,
+      "changedRaises": [
+        {
+          "point": 66,
+          "before": 0.015121682337960421,
+          "after": 0.008077500388026237
+        }
+      ]
+    }
+  ],
+  "conclusion": "Nearest higher outer-top crossing changes one vertex raise but does not fix either crossing pair; both candidates are unsuitable for unconditional adoption."
+}

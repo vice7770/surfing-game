@@ -1,0 +1,14 @@
+[
+  {
+    "candidateOriginal": "/private/tmp/tube-no-foam-balls-20261004/native-first/normal-0.png",
+    "retained": "baseline/no-rollers-0.png",
+    "sha256": "4a7e24b23090aefc906891a9cc31b91c80f9c1c5257365e0658d854251fffd8f",
+    "bytes": 2727989
+  },
+  {
+    "candidateOriginal": "/private/tmp/tube-no-foam-balls-20261004/native-first/normal-1.png",
+    "retained": "baseline/no-rollers-1.png",
+    "sha256": "60a9d8fcf1427451987c4555f4d040e4f49a8d2a4fcebde6bce596deac67c738",
+    "bytes": 2510874
+  }
+]

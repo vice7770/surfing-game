@@ -1,0 +1,129 @@
+{
+  "schema": "rejected-roof-thinning-archive/v1",
+  "complete": true,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 2405,
+      "sha256": "eecfa14f6e0b33fc977ce7c5e17bbda7b7e442adf180b05d5d1fc117f004c82a"
+    },
+    {
+      "path": "archive-origins.json",
+      "bytes": 5055,
+      "sha256": "bfdbfd7a2eaf91e1ad7f4bd343561b3a9c444e75b1a86820112c275aef010de0"
+    },
+    {
+      "path": "evidence/v1-highest-problems.json",
+      "bytes": 5368,
+      "sha256": "dec4c61445f6bc55bc3cf17ee9d64e971e5823311d112975b33bc14288335a58"
+    },
+    {
+      "path": "evidence/v1-highest-report.json.gz",
+      "bytes": 171438,
+      "sha256": "24684ee478ffa63690341bcb6bafc1dbea94d2250cecc56e64df929bd6b57942",
+      "uncompressedBytes": 913993,
+      "uncompressedSha256": "a068b310e1580058477a8c06c1590ce3dc7d7d477dd78d175e52c0364c4d5fcf"
+    },
+    {
+      "path": "evidence/v1-highest-table.txt",
+      "bytes": 1184,
+      "sha256": "a5a3bf798cb4b14d68dbdec5ca7333feb17ac1786019988219368c39b30c1a12"
+    },
+    {
+      "path": "evidence/v2-nearest-top-problems.json",
+      "bytes": 935,
+      "sha256": "37d287c98b2c7aa0a486365c9215a78ded90fd3bb126df9e3b9495f86cfba1ef"
+    },
+    {
+      "path": "evidence/v2-nearest-top-report.json.gz",
+      "bytes": 171495,
+      "sha256": "a79fa7366aae45903bfbffa252d0f30cdce467fea944bd6bd1f54741b6eff923",
+      "uncompressedBytes": 914153,
+      "uncompressedSha256": "f6139fa87eec842f495c54e1938bc21c5c389d6bcc13acd681debaba9a20d80a"
+    },
+    {
+      "path": "evidence/v2-nearest-top-table.txt",
+      "bytes": 1184,
+      "sha256": "a5a3bf798cb4b14d68dbdec5ca7333feb17ac1786019988219368c39b30c1a12"
+    },
+    {
+      "path": "evidence/v3-nonincident-contour-problems.json",
+      "bytes": 6842,
+      "sha256": "db2026ef0aeece007f88d3dc6d554fa66ffff94752d237587c59b8c062df599d"
+    },
+    {
+      "path": "evidence/v3-nonincident-contour-report.json.gz",
+      "bytes": 253838,
+      "sha256": "216ee96b6ff81d836f426932427fa0e24a0a7cbcc2660404957e94addcb916f9",
+      "uncompressedBytes": 1389580,
+      "uncompressedSha256": "5a09bbe25a659ebb3f109285f5f90219e3ef4ec043431b68537aba686d767075"
+    },
+    {
+      "path": "evidence/v3-nonincident-contour-table.txt",
+      "bytes": 1184,
+      "sha256": "519c9e9ce2d23890c8deee3708d354173cbab7c277d268a66327d439585555b7"
+    },
+    {
+      "path": "inputs/air-baseline.json.gz",
+      "bytes": 37127,
+      "sha256": "f3b025f61a470b731b963ea0d9c369d7121a2b4031f5e204156308c4f3b400c8",
+      "uncompressedBytes": 194702,
+      "uncompressedSha256": "20f3f4acb52cf7732683b04cc27a96709364fbb386b33d9fa0fe3e65ab76f409"
+    },
+    {
+      "path": "inputs/captured-polylines.json.gz",
+      "bytes": 11188,
+      "sha256": "9209ec5559e879955756db49ed66cf54c82fab3b076bcca3c649f950729ecf94",
+      "uncompressedBytes": 24838,
+      "uncompressedSha256": "4393da0633def6a9c79000c4cf87cf20eeba582bb9d81e60e81cf7a2aa78263b"
+    },
+    {
+      "path": "inputs/case-frame-index.json.gz",
+      "bytes": 23816,
+      "sha256": "47e1302e19fceaa701146e5f2033d0d40c5d7190dce24a7a98477190cef7afa1",
+      "uncompressedBytes": 75642,
+      "uncompressedSha256": "793b238187b0c16c87069c0df6360758fd73d4c085902d3b7ce9fe73b4cc54d4"
+    },
+    {
+      "path": "replay.py",
+      "bytes": 5281,
+      "sha256": "0a924ab0369779aa2057f59035e3eaacdf98bffbe4ad822c86e04c5a2f3420ff"
+    },
+    {
+      "path": "source/air-measurement-original.py",
+      "bytes": 10813,
+      "sha256": "c6f6207f68383016829c8b43734e9a181ebda9a01c7d209d7735d2015c5d5763"
+    },
+    {
+      "path": "source/load-cases.mjs",
+      "bytes": 6960,
+      "sha256": "060b199b4ea75b8ddd9437da0230dc9f8a73f307c768ac2d95918e86f2f877f0"
+    },
+    {
+      "path": "source/load-cases.ts",
+      "bytes": 3293,
+      "sha256": "bace19e675790042084918c6eaf76a54c4a5af16b3f3959a8f6fb5c8f7399a4b"
+    },
+    {
+      "path": "source/measurement_functions.py",
+      "bytes": 2654,
+      "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+    },
+    {
+      "path": "source/v1-highest.py",
+      "bytes": 14654,
+      "sha256": "51d0cb9aa8ca2df1ccc442ff00baf5299fab31a3698f77a7c937ddc47fa2cef0"
+    },
+    {
+      "path": "source/v2-nearest-top.py",
+      "bytes": 14954,
+      "sha256": "27b6a4f790be3787e96fc307ffba188643a3a00b8eb6540e8dc1e79d378a1c61"
+    },
+    {
+      "path": "source/v3-nonincident-contour.py",
+      "bytes": 17092,
+      "sha256": "0f419dae188426f2a72205b1b64211215ff0258522654fccad9ca15bee3594df"
+    }
+  ],
+  "totalBytesExcludingManifest": 768760
+}

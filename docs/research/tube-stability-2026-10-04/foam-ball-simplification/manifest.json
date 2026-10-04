@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 3356,
+      "sha256": "86aecb2c31496968909df20c6ff43a4b146a8b971d21371935193a1423d15a98"
+    },
+    {
+      "file": "baseline/launcher.json",
+      "bytes": 11781,
+      "sha256": "6d453f00094da7343f0e495f4a8d2388694f39f00101255cf1403ff555d2cc6d"
+    },
+    {
+      "file": "baseline/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "baseline/native.mjs",
+      "bytes": 25126,
+      "sha256": "a6ccf51e7c5c4a577e1e4910e8cd71ce069fbc43ba6aa7d05a4f9330c5120882"
+    },
+    {
+      "file": "baseline/no-rollers-0.png",
+      "bytes": 2727989,
+      "sha256": "4a7e24b23090aefc906891a9cc31b91c80f9c1c5257365e0658d854251fffd8f"
+    },
+    {
+      "file": "baseline/no-rollers-1.png",
+      "bytes": 2510874,
+      "sha256": "60a9d8fcf1427451987c4555f4d040e4f49a8d2a4fcebde6bce596deac67c738"
+    },
+    {
+      "file": "baseline/normal-0.png",
+      "bytes": 2476616,
+      "sha256": "1b52fac6d5c1c4a1340c73a1eecbdb17119a4b773b926311c690c53b46152f4e"
+    },
+    {
+      "file": "baseline/normal-1.png",
+      "bytes": 2252587,
+      "sha256": "ee48681c241b0db61440fffbdc09437622eae7d3e4bcb4cc74bddc4a7b9754bf"
+    },
+    {
+      "file": "baseline/owner.json",
+      "bytes": 2758,
+      "sha256": "1b7ef3583484c067482d7bc4648d900363a00c3e0915fab16702f585f1401813"
+    },
+    {
+      "file": "baseline/ray-faces.mjs",
+      "bytes": 5770,
+      "sha256": "b6dd37e64884c900dfb209720896b0be295f883ec15f0a86f23a30a54d811828"
+    },
+    {
+      "file": "baseline/report.json",
+      "bytes": 98439,
+      "sha256": "af10e5ea597c73ebafe505da50a049fd76a3f7eeea62406df6e9e8b1e4c975b2"
+    },
+    {
+      "file": "baseline/run.py",
+      "bytes": 6669,
+      "sha256": "fc3163522466d050a7eaf4974b40b47a93d29acab7ad0bd2f9a2a9c17d0003ce"
+    },
+    {
+      "file": "candidate/launcher.json",
+      "bytes": 11340,
+      "sha256": "f12b56daf409f946df75eca81d4ce45416960bafda9045d897fa2db635a98dd0"
+    },
+    {
+      "file": "candidate/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "candidate/native.mjs",
+      "bytes": 25356,
+      "sha256": "9f9c5154b089dac65ec8b38c2bbac5d57fd02ea4d1d6350935c36201942e29f7"
+    },
+    {
+      "file": "candidate/owner.json",
+      "bytes": 2735,
+      "sha256": "ec29e8ac2b6f485308319aeab20af37940807319a2c6d7139e968d21320707a1"
+    },
+    {
+      "file": "candidate/ray-faces.mjs",
+      "bytes": 5770,
+      "sha256": "b6dd37e64884c900dfb209720896b0be295f883ec15f0a86f23a30a54d811828"
+    },
+    {
+      "file": "candidate/report.json",
+      "bytes": 98189,
+      "sha256": "9b19b2294a05b67aa6cb59c44fa583faee62ac347a5a6023f0fb5e5efdd21ee4"
+    },
+    {
+      "file": "candidate/run.py",
+      "bytes": 6613,
+      "sha256": "d94260341985bc555d27904519a5ae5d27f6c2e14d6050541d77823da02ccd18"
+    },
+    {
+      "file": "candidate-png-references.json",
+      "bytes": 507,
+      "sha256": "4f806c63e85a92877016220f8a0065c9a6c18c8a1c7603b21359042606f0377d"
+    },
+    {
+      "file": "checks.json",
+      "bytes": 588,
+      "sha256": "98634a595aeebd6935410f6a6327900ccb17a6f94f9687ba79347d948320a4e3"
+    },
+    {
+      "file": "comparison.json",
+      "bytes": 1623,
+      "sha256": "1cdfb79a8e5907bd357a57abf98902be4ec3fd5be7c412f79b1a9e6dd5891667"
+    },
+    {
+      "file": "verify.py",
+      "bytes": 2730,
+      "sha256": "91589f54361ba94ca8d0c66ed3d6c520f7c540bd872341775af5f75ef7175254"
+    },
+    {
+      "file": "visual-review.md",
+      "bytes": 1071,
+      "sha256": "dbcee3f9d9661c95f2d42e4db92d2ce1f2bb9e7ea27b745bb32275d04aad41a2"
+    },
+    {
+      "file": "worker-comparison.json",
+      "bytes": 652,
+      "sha256": "80c84c92d172b13d254e95ddf5e8a4fb73df82e9c739718b91825b402ab72b87"
+    }
+  ],
+  "scope": "Every retained file except this manifest itself; original image provenance checked against native receipts by verify.py."
+}

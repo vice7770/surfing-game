@@ -1,0 +1,46 @@
+{
+  "complete": true,
+  "archive": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/rejected-roof-thinning",
+  "repository": "/Users/regina/Desktop/Projects/surfing-game",
+  "output": "/private/tmp/tube-thinning-archive-replay-20261004",
+  "archiveManifestSha256": "d17105fe936e248c07fca4615c6ea299a212d8821313329e6f07db84f753cb07",
+  "eligibleFrameCount": 293,
+  "comparisonScope": "Exact numeric/profile structures actualSections/cases/aggregate; dynamic source file paths/hashes are regenerated and excluded from equality.",
+  "trials": [
+    {
+      "trial": "v1-highest",
+      "allFiveCapturedSectionsExact": true,
+      "allEightCasesAnd293FrameRecordsExact": true,
+      "aggregate": {
+        "eligibleFrames": 293,
+        "framesWithNewCrossings": 2,
+        "framesWithAfterCrossings": 9
+      },
+      "report": "/private/tmp/tube-thinning-archive-replay-20261004/v1-highest/report.json"
+    },
+    {
+      "trial": "v2-nearest-top",
+      "allFiveCapturedSectionsExact": true,
+      "allEightCasesAnd293FrameRecordsExact": true,
+      "aggregate": {
+        "eligibleFrames": 293,
+        "framesWithNewCrossings": 2,
+        "framesWithAfterCrossings": 9
+      },
+      "report": "/private/tmp/tube-thinning-archive-replay-20261004/v2-nearest-top/report.json"
+    },
+    {
+      "trial": "v3-nonincident-contour",
+      "allFiveCapturedSectionsExact": true,
+      "allEightCasesAnd293FrameRecordsExact": true,
+      "aggregate": {
+        "eligibleFrames": 293,
+        "framesWithNewCrossings": 5,
+        "framesWithAfterCrossings": 12,
+        "framesWithNewFullContourCrossings": 5,
+        "framesWithAfterFullContourCrossings": 14
+      },
+      "report": "/private/tmp/tube-thinning-archive-replay-20261004/v3-nonincident-contour/report.json"
+    }
+  ]
+}
