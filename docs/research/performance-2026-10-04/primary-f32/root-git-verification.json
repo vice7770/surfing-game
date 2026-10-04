@@ -1,0 +1,79 @@
+{
+  "command": [
+    "python3",
+    "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/primary-f32/verify.py",
+    "--git"
+  ],
+  "startedAt": "2026-10-04T11:25:21.155097+00:00",
+  "elapsedSeconds": 1.298517332994379,
+  "exitCode": 0,
+  "result": {
+    "status": "passed",
+    "counts": {
+      "payloads": 224,
+      "aliases": 285,
+      "gitReferences": 616,
+      "localPayloads": 210,
+      "externalDeduplicatedPayloads": 14,
+      "localCompressedBytes": 10544386,
+      "allReferencedCompressedBytes": 10615920
+    },
+    "physicalPinClosures": 15032,
+    "virtualIdentityRecords": 72,
+    "relativeOutputRecordsSeparatelyBound": 22,
+    "immutableGitBlobChecks": 616,
+    "gitAuthorityNotReadWithoutFlag": false,
+    "costArithmetic": {
+      "meanMsPerStep": 0.687289886718732,
+      "heuristicLower95Ms": 0.4411111163684483,
+      "sampleVariance": 0.5048228818923594,
+      "pairs": 32,
+      "positivePairs": 29
+    },
+    "nativeRawArithmetic": {
+      "AB-baseline": {
+        "callbacks": 2711,
+        "drawnFrames": 2711,
+        "precedingCallbackIntervalWeightMs": 90366.29999999999,
+        "renderedFps": 30,
+        "physicsStepsPerWallSecond": 48.35,
+        "pipelineTotalP50": 19.8,
+        "lastBin": 90,
+        "rawPublications": 4369
+      },
+      "AB-candidate": {
+        "callbacks": 10792,
+        "drawnFrames": 5398,
+        "precedingCallbackIntervalWeightMs": 90002.79999999999,
+        "renderedFps": 60,
+        "physicsStepsPerWallSecond": 59.69,
+        "pipelineTotalP50": 15.5,
+        "lastBin": 88,
+        "rawPublications": 5372
+      },
+      "BA-candidate": {
+        "callbacks": 10843,
+        "drawnFrames": 5422,
+        "precedingCallbackIntervalWeightMs": 90398.7,
+        "renderedFps": 60,
+        "physicsStepsPerWallSecond": 59.56,
+        "pipelineTotalP50": 15.7,
+        "lastBin": 90,
+        "rawPublications": 5383
+      },
+      "BA-baseline": {
+        "callbacks": 10847,
+        "drawnFrames": 5424,
+        "precedingCallbackIntervalWeightMs": 90441.29999999999,
+        "renderedFps": 60,
+        "physicsStepsPerWallSecond": 58.84,
+        "pipelineTotalP50": 16,
+        "lastBin": 90,
+        "rawPublications": 5321
+      }
+    },
+    "historicalAncestryQualification": "All primary-F32 frozen input/output pins are durable and verified. Borrowed older JSON is retained exactly by its frozen input pin; nested historical capture compilation fields are preserved metadata, not additional live input authority. Expired canonical dist paths are not fabricated or rebuilt. No full ancestral capture replay is claimed.",
+    "scope": "Archive bytes/active frozen pin closure/retained arithmetic and optional immutable Git only. No helper imports, replay, CPU benchmark, build, API/network/browser/native execution; no two-order causal gain, stable60 physics, moving quality or adoption claim."
+  },
+  "stderr": ""
+}

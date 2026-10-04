@@ -1,0 +1,226 @@
+{
+  "schema": "primary-f32-archive-outcome/v1",
+  "runtimeCheckpoint": "0b17d603cb8d7b06bc60a56e599f06f4f362afd5",
+  "canonicalDefault": "Original F64; precision experiment remains virtual/private and unadopted.",
+  "cpu": {
+    "sourceReady": {
+      "originalPath": "/private/tmp/surf-primary-f32-v3-20261004/ready.json",
+      "bytes": 139978,
+      "sha256": "da1f6dc0a5e992045a809ee7fa4550466a0296e7218c4b6f3710a36b3e8c681e"
+    },
+    "proof": {
+      "originalPath": "/private/tmp/surf-primary-f32-v3-20261004/proof-first/report.json",
+      "bytes": 206623,
+      "sha256": "9eef97980c3efc2b98d8856c8e18ae4730fe80479233d61c1893ca92952804a3"
+    },
+    "proofCases": 24,
+    "proofBodyMs": 7214.371958000001,
+    "cost": {
+      "originalPath": "/private/tmp/surf-primary-f32-v3-20261004/cost-first/report.json",
+      "bytes": 65965,
+      "sha256": "1ecd2c5fe28b8ebfe9a7149f6277d907c5b75cdd7e773b893872dc0edda82556"
+    },
+    "costBodyMs": 9723.781709,
+    "costStatistics": {
+      "pairs": 32,
+      "positivePairs": 29,
+      "meanSavingPerStepMs": 0.687289886718732,
+      "medianSavingPerStepMs": 0.6339088749999746,
+      "sampleVariance": 0.5048228818923594,
+      "heuristicLower95Ms": 0.4411111163684483,
+      "orderMeans": {
+        "AB": 0.8332083359374884,
+        "BA": 0.5413714374999756
+      },
+      "thresholdMs": 0.1,
+      "pass": true,
+      "caution": "Serial fixed ABBA CPU mock pairs; heuristic lower bound is not a causal/native/FPS confidence claim."
+    },
+    "scope": "Held SET1 complete Core/Runner/GpuBoussinesq memory/queue mock, not evolving WGSL/driver/native/renderer. Construction/spinup/decode/comparison/hash/file IO excluded from cost."
+  },
+  "native": {
+    "ready": {
+      "originalPath": "/private/tmp/surf-primary-f32-native-v4-20261004/ready.json",
+      "bytes": 185304,
+      "sha256": "88693431bae5ab2c453c2749f765ff7ff76285634e89acf0740faedba409336a"
+    },
+    "bindings": {
+      "originalPath": "/private/tmp/surf-primary-f32-native-v4-20261004/bindings.json",
+      "bytes": 1762,
+      "sha256": "9ca21c1aa9193060da905b0260d0b5830ebe5c10f4c6aea458b3883caed73334"
+    },
+    "firstFourArmReport": {
+      "originalPath": "/private/tmp/surf-primary-f32-native-v4-20261004/fps-first/report.json",
+      "bytes": 24584,
+      "sha256": "e791727051221ba4663fcb8b007406d8b1cd6414fe7edb292d682f44fdfd7566"
+    },
+    "independentDriver": {
+      "originalPath": "/private/tmp/surf-primary-f32-native-v4-20261004/fps-first.native-driver.json",
+      "bytes": 3028,
+      "sha256": "f3ee70a1d7fc97bd941e3c52e17c91d2176df8144ef2175e0568cd213edf91ad"
+    },
+    "rootAttribution": {
+      "originalPath": "/private/tmp/surf-primary-f32-native-v4-20261004/root-native-attribution.json",
+      "bytes": 4446,
+      "sha256": "1c31f828744cc9d55e2a3d3ec50a597b1fded361109aeb46d93b7dc6d0748151"
+    },
+    "executionValid": true,
+    "elapsedSeconds": 489.6262145420187,
+    "fourArmMetrics": [
+      {
+        "id": "AB-baseline",
+        "source": {
+          "path": "/private/tmp/surf-primary-f32-native-v4-20261004/fps-first/AB-baseline/fps.json",
+          "bytes": 100239,
+          "sha256": "3cf612651130f6313fb2fd5526dd6db8bc2530b6d3fc458ad8d6c9cf195d9521"
+        },
+        "renderedFps": 30,
+        "callbackFps": 30,
+        "renderP50": 33.3,
+        "renderP95": 34.1,
+        "renderP99": 34.2,
+        "physicsStepsPerWallSecond": 48.35,
+        "powerAtMachineCapture": "battery",
+        "powerAtSampleEnd": "battery 16%",
+        "initialRefreshHz": 30,
+        "pipelineTotalP50": 19.8,
+        "pipelineTotalP95": 23.9,
+        "stepP50": 16,
+        "packP50": 1.4,
+        "unpackP50": 1,
+        "lastFullBin": {
+          "from": 88,
+          "physicsStepsPerWallSecond": 46.03,
+          "totalP50": 21
+        },
+        "storageSamplingQueries": 0,
+        "storageDTypes": [
+          "Float64Array",
+          "Float64Array"
+        ],
+        "allOriginalConfigMatches": true
+      },
+      {
+        "id": "AB-candidate",
+        "source": {
+          "path": "/private/tmp/surf-primary-f32-native-v4-20261004/fps-first/AB-candidate/fps.json",
+          "bytes": 99022,
+          "sha256": "f292f53730f60f6c4a2e7ebe2d8b32d68567df97c64d056a50d500e72f64349b"
+        },
+        "renderedFps": 60,
+        "callbackFps": 119.9,
+        "renderP50": 16.7,
+        "renderP95": 17.6,
+        "renderP99": 25.1,
+        "physicsStepsPerWallSecond": 59.69,
+        "powerAtMachineCapture": "AC power",
+        "powerAtSampleEnd": "AC 17%",
+        "initialRefreshHz": 30,
+        "pipelineTotalP50": 15.5,
+        "pipelineTotalP95": 18.9,
+        "stepP50": 13.2,
+        "packP50": 0.9,
+        "unpackP50": 0.4,
+        "lastFullBin": {
+          "from": 88,
+          "physicsStepsPerWallSecond": 59.23,
+          "totalP50": 15.9
+        },
+        "storageSamplingQueries": 0,
+        "storageDTypes": [
+          "Float32Array",
+          "Float32Array"
+        ],
+        "allOriginalConfigMatches": true
+      },
+      {
+        "id": "BA-candidate",
+        "source": {
+          "path": "/private/tmp/surf-primary-f32-native-v4-20261004/fps-first/BA-candidate/fps.json",
+          "bytes": 100464,
+          "sha256": "84c00b2b78aba6e769a91e18bdcf2359df48052e7f0236852c192b47272eb130"
+        },
+        "renderedFps": 60,
+        "callbackFps": 119.9,
+        "renderP50": 16.7,
+        "renderP95": 25,
+        "renderP99": 25.6,
+        "physicsStepsPerWallSecond": 59.56,
+        "powerAtMachineCapture": "AC power",
+        "powerAtSampleEnd": "AC 18%",
+        "initialRefreshHz": 120,
+        "pipelineTotalP50": 15.7,
+        "pipelineTotalP95": 18.9,
+        "stepP50": 13.5,
+        "packP50": 1,
+        "unpackP50": 0.4,
+        "lastFullBin": {
+          "from": 88,
+          "physicsStepsPerWallSecond": 54.52,
+          "totalP50": 16.8
+        },
+        "storageSamplingQueries": 0,
+        "storageDTypes": [
+          "Float32Array",
+          "Float32Array"
+        ],
+        "allOriginalConfigMatches": true
+      },
+      {
+        "id": "BA-baseline",
+        "source": {
+          "path": "/private/tmp/surf-primary-f32-native-v4-20261004/fps-first/BA-baseline/fps.json",
+          "bytes": 100585,
+          "sha256": "8ab9640d0b9fab6742b3ff0de908d1121a2e857d46079b3ceb89e4216e7b673d"
+        },
+        "renderedFps": 60,
+        "callbackFps": 119.9,
+        "renderP50": 16.7,
+        "renderP95": 24.9,
+        "renderP99": 25.4,
+        "physicsStepsPerWallSecond": 58.84,
+        "powerAtMachineCapture": "AC power",
+        "powerAtSampleEnd": "AC 20%",
+        "initialRefreshHz": 120,
+        "pipelineTotalP50": 16,
+        "pipelineTotalP95": 19.6,
+        "stepP50": 13.8,
+        "packP50": 1.1,
+        "unpackP50": 0.5,
+        "lastFullBin": {
+          "from": 88,
+          "physicsStepsPerWallSecond": 47.55,
+          "totalP50": 18.9
+        },
+        "storageSamplingQueries": 0,
+        "storageDTypes": [
+          "Float64Array",
+          "Float64Array"
+        ],
+        "allOriginalConfigMatches": true
+      }
+    ],
+    "interpretation": {
+      "twoOrderPerformanceAttributionValid": false,
+      "firstOrderConfounded": "AB baseline battery16%/initial30Hz/render30; following candidate AC17%/render60. A power/refresh transition prevents attributing the difference to F32.",
+      "sameACOrderOnly": "BA candidate/baseline bothrender60; totalp50 15.7/16.0ms, fresh physics59.56/58.84 per wall second, late88s bin54.52/47.55. One AC order is not two independent matched orders or stable60physics.",
+      "sameACOrderObservedPipelineContextDifferenceMs": 0.3000000000000007,
+      "stageQuantilesAdditive": false,
+      "nativeMovingQualityAccepted": false,
+      "runtimeAdopted": false,
+      "timingRetryPerformed": false
+    }
+  },
+  "archiveCounts": {
+    "payloads": 224,
+    "aliases": 285,
+    "gitReferences": 616,
+    "localPayloads": 210,
+    "externalDeduplicatedPayloads": 14,
+    "localCompressedBytes": 10544386,
+    "allReferencedCompressedBytes": 10615920
+  },
+  "offlineVerifier": "Bytes, active frozen pin closure and retained arithmetic only; optional --git checks immutable Git blobs and literal additive entry bytes. No game/helper import/replay or CPU/native benchmark.",
+  "historicalAncestryQualification": "All primary-F32 frozen input/output pins are durable and verified. Borrowed older JSON is retained exactly by its frozen input pin; nested historical capture compilation fields are preserved metadata, not additional live input authority. Expired canonical dist paths are not fabricated or rebuilt. No full ancestral capture replay is claimed.",
+  "movingQuality": "Changing unfrozen moving-quality source excluded; no accepted gate/outcome or future acceptance inferred."
+}
