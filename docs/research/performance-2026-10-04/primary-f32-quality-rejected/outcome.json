@@ -1,0 +1,139 @@
+{
+  "schema": "primary-f32-quality-rejection-outcome/v1",
+  "pairedQualityPassed": false,
+  "nativeArmsCompleted": 2,
+  "ticksPerArm": 3600,
+  "checkpointNumericalComparisonsReached": 0,
+  "firstTimelineDifference": {
+    "tick": 770,
+    "differences": [
+      {
+        "path": "counts.spray",
+        "baseline": 4084,
+        "candidate": 4081
+      }
+    ]
+  },
+  "timelineDifferenceRowCounts": {
+    "counts.spray": 2087,
+    "ride.phase": 1666,
+    "counts.front": 2
+  },
+  "maximumSprayCountGap": {
+    "absolute": 170,
+    "tick": 1393,
+    "baseline": 2831,
+    "candidate": 3001
+  },
+  "frontCountDifferences": [
+    {
+      "tick": 2548,
+      "baseline": 32,
+      "candidate": 33
+    },
+    {
+      "tick": 2598,
+      "baseline": 28,
+      "candidate": 29
+    }
+  ],
+  "riderPhaseDifference": {
+    "firstTick": 1912,
+    "lastTick": 3577,
+    "rows": 1666,
+    "baseline": "prone",
+    "candidate": "fallen"
+  },
+  "bracketMetadata": {
+    "baseline": {
+      "988": {
+        "selectedIndex": 16,
+        "selectedSigma": 6.345573902130127,
+        "lockedSigma": 6.345573902130127,
+        "OPEN": true,
+        "POST": false,
+        "fourthWeight": 1
+      },
+      "1017": {
+        "selectedIndex": 16,
+        "selectedSigma": 6.4425225257873535,
+        "lockedSigma": 6.345573902130127,
+        "OPEN": false,
+        "POST": true,
+        "fourthWeight": 0.6647816896438599
+      }
+    },
+    "candidate": {
+      "988": {
+        "selectedIndex": 17,
+        "selectedSigma": 6.8359198570251465,
+        "lockedSigma": 6.345573902130127,
+        "OPEN": false,
+        "POST": false,
+        "fourthWeight": 0.997197151184082
+      },
+      "1017": {
+        "selectedIndex": 16,
+        "selectedSigma": 6.442526817321777,
+        "lockedSigma": 6.345573902130127,
+        "OPEN": false,
+        "POST": true,
+        "fourthWeight": 0.6647757291793823
+      }
+    }
+  },
+  "landingMetadata": {
+    "baseline": true,
+    "candidate": true
+  },
+  "scalarMetadataQualification": "Typed slice bytes are omitted; scalar eligibility arithmetic is not a fresh typed-word or visual quality proof.",
+  "independentTCPClosedPorts": [
+    4266,
+    9676,
+    4267,
+    9677,
+    4268,
+    9678,
+    4269,
+    9679,
+    4200
+  ],
+  "driverElapsedSeconds": 208.3913752079825,
+  "originalStoredOutputBytes": 207417740,
+  "originalStoredCapBytes": 402653184,
+  "originalRawStateCapBytes": 100663296,
+  "roofDiagnosis": {
+    "selectedPairs": 16,
+    "selectedFrontCounts": {
+      "12": 5,
+      "78": 4,
+      "80": 2,
+      "86": 5
+    },
+    "explicitlyDegeneratePairs": 14,
+    "maximumRetainedWordNormalizedClockGap": 2.918521641622751,
+    "originalRefinementPredicateAvailable": false,
+    "nativeFinCauseProved": false,
+    "geometryRepaired": false,
+    "visualQualityAccepted": false
+  },
+  "archiveScope": {
+    "retainedAliases": 53,
+    "localPayloads": 42,
+    "originalEncodedPNGCount": 3,
+    "omittedArtifactMetadata": 1503,
+    "sharedAuthorityReferences": 824,
+    "directPinClosure": {
+      "sharedPayload": 229,
+      "sharedGitMetadata": 610,
+      "retained": 32,
+      "omittedMetadata": 3006
+    },
+    "fullCaptureDurable": false,
+    "durableGeometryDecoding": false,
+    "omittedPayloadBytesVerifiedHere": false,
+    "sharedGitBlobReadsRepeated": false
+  },
+  "adoptionAccepted": false,
+  "stable60FpsAccepted": false
+}

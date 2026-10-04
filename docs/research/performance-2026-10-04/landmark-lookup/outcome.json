@@ -1,0 +1,53 @@
+{
+  "schema": "landmark-lookup-evidence-outcome/v1",
+  "runtimeAdopted": false,
+  "nativeQualityExecuted": false,
+  "qualityEligible": false,
+  "timingRetryPerformed": false,
+  "cpu": {
+    "firstChecksPassed": true,
+    "firstProofPassed": true,
+    "firstCostPassed": true,
+    "meanSavingPerStepMs": 0.4023099062500055,
+    "heuristicLower95Ms": 0.27214296085627665,
+    "qualification": "Sparse paused F32 fixture/current F64 mockhost replay; most positive cost savings occur empty-contact, not causal active/late101/native FPS evidence."
+  },
+  "native": {
+    "executionValid": true,
+    "fourRenderedFps": [
+      60,
+      60,
+      60,
+      60
+    ],
+    "physicsStepsPerWallSecond": [
+      59.89,
+      59.87,
+      59.7,
+      59.49
+    ],
+    "totalP50": [
+      12.5,
+      15,
+      15.5,
+      13.6
+    ],
+    "renderP95": [
+      24.4,
+      24.8,
+      24.9,
+      17.5
+    ],
+    "conclusion": "Complete pipeline median and render p95 worsen in both candidate orders; physics-rate effect changes sign. No consistent native whole-game gain, stable60Hz physics or moving tube-quality acceptance."
+  },
+  "historicalAncestryQualification": "All active direct frozen inputs and actual CPU/native outputs are durable. Borrowed earlier JSON is exact by its direct input pin, but nested historical capture/source/compilation records remain metadata; expired/overwritten ancestors are not rebuilt or claimed replayable. The held fixture is an older paused F32 SET1 export at b0e003 with omitted NU/RATEH/TKE and fresh body/particles; current replay uses0b17 F64 source and sparse early fronts, not an actual late101-front/WGSL/native proof.",
+  "sourceObservationQualification": "Structured record of the original observed tool result. No separate raw stdout/stderr transcript was saved; this is not a recreated freeze or a measured complete freeze duration.",
+  "counts": {
+    "payloads": 204,
+    "aliases": 227,
+    "immutableGitReferences": 597,
+    "localGzipPayloads": 96,
+    "existingGzipReferences": 108,
+    "localEncodedBytes": 4527691
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "schema": "root-delegated-landmark-archive-first-verification/v1",
+  "command": [
+    "python3",
+    "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/landmark-lookup/verify.py",
+    "--git"
+  ],
+  "startedAt": "2026-10-04T11:58:03.887679+00:00",
+  "valid": true,
+  "scope": "Archive retained identities/arithmetic/immutable Git only; no game/helper replay.",
+  "exitCode": 0,
+  "endedAt": "2026-10-04T11:58:05.390104+00:00",
+  "elapsedSeconds": 1.5023786659585312,
+  "log": "/private/tmp/surf-landmark-lookup-archive-20261004/verify-first.log",
+  "manifestVerified": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/landmark-lookup/manifest.json",
+    "bytes": 449893,
+    "sha256": "9eeecf8f8aee8a57ef0057b96b87d72a4dc52b11990128b095872c74fc81a4d6"
+  },
+  "outcomeVerified": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/landmark-lookup/outcome.json",
+    "bytes": 2066,
+    "sha256": "16880ed6c70e8d7843a47f94e5aa0001ffeca267cb5e90c5230f5dcc331049df"
+  },
+  "retainedLog": {
+    "path": "verification-first.log",
+    "bytes": 2699,
+    "sha256": "39c3dc1cfd948073f1aaded5e5052213d6bd3ec83709065d7cd625fd3c5a0451"
+  },
+  "result": {
+    "status": "passed",
+    "counts": {
+      "payloads": 204,
+      "aliases": 227,
+      "immutableGitReferences": 597,
+      "localGzipPayloads": 96,
+      "existingGzipReferences": 108,
+      "localEncodedBytes": 4527691
+    },
+    "physicalPinClosures": 6250,
+    "virtualIdentityMetadata": 12,
+    "relativeOutputRecordsSeparatelyBound": 22,
+    "immutableGitBlobChecks": 597,
+    "gitAuthorityNotReadWithoutFlag": false,
+    "costArithmetic": {
+      "meanMsPerStep": 0.4023099062500055,
+      "heuristicLower95Ms": 0.27214296085627665,
+      "sampleVariance": 0.14113647374538937,
+      "pairs": 32,
+      "positivePairs": 29,
+      "contactSlicesFirstThree": [
+        19,
+        13,
+        12
+      ],
+      "remainingMeasuredPairContactSlices": 0
+    },
+    "nativeRawArithmetic": {
+      "AB-baseline": {
+        "callbacks": 10850,
+        "drawnFrames": 5427,
+        "precedingCallbackIntervalWeightMs": 90478.8,
+        "renderedFps": 60,
+        "physicsStepsPerWallSecond": 59.89,
+        "pipelineTotalP50": 12.5,
+        "lastBin": 90,
+        "rawPublications": 5419
+      },
+      "AB-candidate": {
+        "callbacks": 10844,
+        "drawnFrames": 5423,
+        "precedingCallbackIntervalWeightMs": 90413.0,
+        "renderedFps": 60,
+        "physicsStepsPerWallSecond": 59.87,
+        "pipelineTotalP50": 15,
+        "lastBin": 90,
+        "rawPublications": 5414
+      },
+      "BA-candidate": {
+        "callbacks": 10842,
+        "drawnFrames": 5421,
+        "precedingCallbackIntervalWeightMs": 90390.9,
+        "renderedFps": 60,
+        "physicsStepsPerWallSecond": 59.7,
+        "pipelineTotalP50": 15.5,
+        "lastBin": 90,
+        "rawPublications": 5396
+      },
+      "BA-baseline": {
+        "callbacks": 10845,
+        "drawnFrames": 5424,
+        "precedingCallbackIntervalWeightMs": 90420.4,
+        "renderedFps": 60,
+        "physicsStepsPerWallSecond": 59.49,
+        "pipelineTotalP50": 13.6,
+        "lastBin": 90,
+        "rawPublications": 5379
+      }
+    },
+    "historicalAncestryQualification": "All active direct frozen inputs and actual CPU/native outputs are durable. Borrowed earlier JSON is exact by its direct input pin, but nested historical capture/source/compilation records remain metadata; expired/overwritten ancestors are not rebuilt or claimed replayable. The held fixture is an older paused F32 SET1 export at b0e003 with omitted NU/RATEH/TKE and fresh body/particles; current replay uses0b17 F64 source and sparse early fronts, not an actual late101-front/WGSL/native proof.",
+    "scope": "Retained identities and original raw callback/publication/bin/pipeline/cost/closure arithmetic plus optional immutable Git only. No game/helper imports, replay, benchmark/build/native retry, consistent FPS gain, stable60 physics, moving quality or runtime adoption claim."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "schema": "primary-f32-quality-rejection-archive-first-verification/v1",
+  "nativeExecuted": false,
+  "helperReplayExecuted": false,
+  "stages": [
+    {
+      "command": [
+        "python3",
+        "/private/tmp/surf-quality-failure-archive-20261004/prepare.py"
+      ],
+      "startedAt": "2026-10-04T11:50:48.625953+00:00",
+      "endedAt": "2026-10-04T11:50:49.077018+00:00",
+      "elapsedSeconds": 0.4509987080236897,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-quality-failure-archive-20261004/prepare-first.log",
+      "nativeExecuted": false,
+      "helperReplayExecuted": false,
+      "exactLogText": "{\"sourceCopied\": 53, \"localPayloads\": 42, \"sharedAuthorities\": 824, \"omittedMetadata\": 1503, \"archive\": \"/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/primary-f32-quality-rejected\", \"verificationExecuted\": false, \"adoptionAccepted\": false}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/primary-f32-quality-rejected/verify.py",
+        "--write-outcome"
+      ],
+      "startedAt": "2026-10-04T11:50:57.485695+00:00",
+      "endedAt": "2026-10-04T11:50:57.879321+00:00",
+      "elapsedSeconds": 0.39353379199746996,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-quality-failure-archive-20261004/derive-first.log",
+      "nativeExecuted": false,
+      "helperReplayExecuted": false,
+      "exactLogText": "{\"valid\": true, \"retainedAliases\": 53, \"localPayloads\": 42, \"sharedAuthorityReferences\": 824, \"omittedArtifactMetadata\": 1503, \"firstDivergenceTick\": 770, \"timelineDifferenceRows\": {\"counts.spray\": 2087, \"ride.phase\": 1666, \"counts.front\": 2}, \"fullCaptureDurable\": false, \"adoptionAccepted\": false, \"stable60FpsAccepted\": false}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/primary-f32-quality-rejected/verify.py"
+      ],
+      "startedAt": "2026-10-04T11:51:11.838242+00:00",
+      "endedAt": "2026-10-04T11:51:12.183943+00:00",
+      "elapsedSeconds": 0.3456451669917442,
+      "exitCode": 0,
+      "log": "/private/tmp/surf-quality-failure-archive-20261004/verify-first.log",
+      "nativeExecuted": false,
+      "helperReplayExecuted": false,
+      "exactLogText": "{\"valid\": true, \"retainedAliases\": 53, \"localPayloads\": 42, \"sharedAuthorityReferences\": 824, \"omittedArtifactMetadata\": 1503, \"firstDivergenceTick\": 770, \"timelineDifferenceRows\": {\"counts.spray\": 2087, \"ride.phase\": 1666, \"counts.front\": 2}, \"fullCaptureDurable\": false, \"adoptionAccepted\": false, \"stable60FpsAccepted\": false}\n"
+    }
+  ]
+}

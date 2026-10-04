@@ -1,0 +1,30 @@
+{
+  "schema": "landmark-lookup-archive-first-prepare/v1",
+  "valid": true,
+  "startedAt": "2026-10-04T11:57:43.986618+00:00",
+  "firstFailure": null,
+  "scope": "Only retained-byte reads/hashes/deterministic compression and immutable Git data; no game/helper imports or replay.",
+  "counts": {
+    "payloads": 204,
+    "aliases": 227,
+    "immutableGitReferences": 597,
+    "localGzipPayloads": 96,
+    "existingGzipReferences": 108,
+    "localEncodedBytes": 4527691
+  },
+  "manifest": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/landmark-lookup/manifest.json",
+    "bytes": 449893,
+    "sha256": "9eeecf8f8aee8a57ef0057b96b87d72a4dc52b11990128b095872c74fc81a4d6"
+  },
+  "outcome": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-04/landmark-lookup/outcome.json",
+    "bytes": 2066,
+    "sha256": "16880ed6c70e8d7843a47f94e5aa0001ffeca267cb5e90c5230f5dcc331049df"
+  },
+  "activeInputsUnchanged": true,
+  "noRuntimeReplay": true,
+  "gitBatchExitCode": 0,
+  "elapsedSeconds": 2.8733998330426402,
+  "endedAt": "2026-10-04T11:57:46.860021+00:00"
+}

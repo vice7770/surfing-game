@@ -1,0 +1,9 @@
+{
+  "schema": "primary-f32-quality-rejection-root-verification/v1",
+  "startedAt": "2026-10-04T11:53:47.705022+00:00",
+  "exitCode": 0,
+  "elapsedSeconds": 0.37281158298719674,
+  "stdout": "{\"valid\": true, \"retainedAliases\": 53, \"localPayloads\": 42, \"sharedAuthorityReferences\": 824, \"omittedArtifactMetadata\": 1503, \"firstDivergenceTick\": 770, \"timelineDifferenceRows\": {\"counts.spray\": 2087, \"ride.phase\": 1666, \"counts.front\": 2}, \"fullCaptureDurable\": false, \"adoptionAccepted\": false, \"stable60FpsAccepted\": false}\n",
+  "stderr": "",
+  "scope": "Retained archive bytes and rejection arithmetic only; no native/game/helper/benchmark replay and no quality/adoption acceptance."
+}
