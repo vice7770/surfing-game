@@ -1,0 +1,1788 @@
+{
+  "schema": "live-big-retained-index/v1",
+  "frames": [
+    {
+      "index": 0,
+      "seaTime": 327.8077132243035,
+      "surfaceRevision": 1050,
+      "frontCount": 6,
+      "tubeCount": 0,
+      "sliceCount": 28,
+      "vertexCount": 3752,
+      "indexCount": 21546,
+      "initialSelection": {
+        "slice": 16,
+        "frontId": 0,
+        "sigma": [
+          6.3455729484558105,
+          6.835921287536621
+        ],
+        "tau": [
+          0.26917022466659546,
+          0.29719895124435425
+        ],
+        "semantics": "Actual published front ID and sigma; per-point material IDs are absent from front records"
+      },
+      "grid": {
+        "xMin": -160,
+        "zMin": -1233.0249111256337,
+        "spacing": 2,
+        "nx": 161,
+        "nz": 633
+      },
+      "maskGrid": {
+        "xMin": -160,
+        "zMin": -1233.0249111256337,
+        "spacing": 1,
+        "nx": 321,
+        "nz": 1265
+      }
+    },
+    {
+      "index": 1,
+      "seaTime": 327.82437989097014,
+      "surfaceRevision": 1051,
+      "frontCount": 6,
+      "tubeCount": 0,
+      "sliceCount": 28,
+      "vertexCount": 3752,
+      "indexCount": 21546,
+      "initialSelection": {
+        "slice": 16,
+        "frontId": 0,
+        "sigma": [
+          6.3455729484558105,
+          6.835921287536621
+        ],
+        "tau": [
+          0.26917022466659546,
+          0.29719895124435425
+        ],
+        "semantics": "Actual published front ID and sigma; per-point material IDs are absent from front records"
+      },
+      "grid": {
+        "xMin": -160,
+        "zMin": -1233.0249111256337,
+        "spacing": 2,
+        "nx": 161,
+        "nz": 633
+      },
+      "maskGrid": {
+        "xMin": -160,
+        "zMin": -1233.0249111256337,
+        "spacing": 1,
+        "nx": 321,
+        "nz": 1265
+      }
+    },
+    {
+      "index": 2,
+      "seaTime": 327.8410465576368,
+      "surfaceRevision": 1052,
+      "frontCount": 6,
+      "tubeCount": 0,
+      "sliceCount": 28,
+      "vertexCount": 3752,
+      "indexCount": 21546,
+      "initialSelection": {
+        "slice": 16,
+        "frontId": 0,
+        "sigma": [
+          6.3455729484558105,
+          6.835921287536621
+        ],
+        "tau": [
+          0.26917022466659546,
+          0.29719895124435425
+        ],
+        "semantics": "Actual published front ID and sigma; per-point material IDs are absent from front records"
+      },
+      "grid": {
+        "xMin": -160,
+        "zMin": -1233.0249111256337,
+        "spacing": 2,
+        "nx": 161,
+        "nz": 633
+      },
+      "maskGrid": {
+        "xMin": -160,
+        "zMin": -1233.0249111256337,
+        "spacing": 1,
+        "nx": 321,
+        "nz": 1265
+      }
+    }
+  ],
+  "fields": [
+    {
+      "label": "frame-0/front",
+      "type": "Float32Array",
+      "elements": 54,
+      "bytes": 216,
+      "retained": true,
+      "sha256": "5c23f12f8f7de60add66f2e31186e658d85d3488de4e9d3d2651bbd30f01acbd",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-front.bin.gz",
+        "bytes": 199,
+        "sha256": "d65b469655965f0b28385bfff1167842bbeca93d8f42a0833b7179ed29b2be6f",
+        "expandedBytes": 216,
+        "expandedSha256": "5c23f12f8f7de60add66f2e31186e658d85d3488de4e9d3d2651bbd30f01acbd"
+      }
+    },
+    {
+      "label": "frame-0/surface",
+      "type": "Float32Array",
+      "elements": 203826,
+      "bytes": 815304,
+      "retained": true,
+      "sha256": "b8cb8a172707850f12cce7756aaf778e2d10105d49044a3423b49898795a6830",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-surface.bin.gz",
+        "bytes": 434149,
+        "sha256": "09d414915f2f284ad7dc3cc96aabd772d881fee56ca638ecf86dbbe6557e3b8b",
+        "expandedBytes": 815304,
+        "expandedSha256": "b8cb8a172707850f12cce7756aaf778e2d10105d49044a3423b49898795a6830"
+      }
+    },
+    {
+      "label": "frame-0/flow",
+      "type": "Float32Array",
+      "elements": 203826,
+      "bytes": 815304,
+      "retained": true,
+      "sha256": "fe800788be04faadb658f35def4d7890164cdfa9a93c02f45abb051d29232e8c",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-flow.bin.gz",
+        "bytes": 749527,
+        "sha256": "8dd1108d87893e7211e4367853a94c9c46d5b4a1d3ab8bf59848c5f59fd9ef28",
+        "expandedBytes": 815304,
+        "expandedSha256": "fe800788be04faadb658f35def4d7890164cdfa9a93c02f45abb051d29232e8c"
+      }
+    },
+    {
+      "label": "frame-0/aeration",
+      "type": "Float32Array",
+      "elements": 203826,
+      "bytes": 815304,
+      "retained": true,
+      "sha256": "3d530ff89b550e4df71def84fe3dbcb1fd5046bc162a360852d7920d080115fd",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-aeration.bin.gz",
+        "bytes": 51443,
+        "sha256": "a1aee3699c52f52e08a3b6e89b7086b3ebda5e8db6365ef964d87dca9cbe3bb3",
+        "expandedBytes": 815304,
+        "expandedSha256": "3d530ff89b550e4df71def84fe3dbcb1fd5046bc162a360852d7920d080115fd"
+      }
+    },
+    {
+      "label": "frame-0/drawnPositions",
+      "type": "Float32Array",
+      "elements": 11256,
+      "bytes": 45024,
+      "retained": true,
+      "sha256": "694328f7b7506114437d6850f425a8c685e068edc5783709e3fbbef4362159a4",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-drawnPositions.bin.gz",
+        "bytes": 39242,
+        "sha256": "fb16a678d32ac7ee65fd38ed3e3edd89159e26f25b4e9220a86c9fcc516f0bd2",
+        "expandedBytes": 45024,
+        "expandedSha256": "694328f7b7506114437d6850f425a8c685e068edc5783709e3fbbef4362159a4"
+      }
+    },
+    {
+      "label": "frame-0/drawnIndices",
+      "type": "Uint32Array",
+      "elements": 21546,
+      "bytes": 86184,
+      "retained": true,
+      "sha256": "59f47a53389444865c61e1e01fbd9b3a8047eaccfc029db2aea0b53ffa87239d",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-drawnIndices.bin.gz",
+        "bytes": 19301,
+        "sha256": "0403cc958727570b941565b612aef768faf6bdb8238a3d2421f096d9aa0ae24c",
+        "expandedBytes": 86184,
+        "expandedSha256": "59f47a53389444865c61e1e01fbd9b3a8047eaccfc029db2aea0b53ffa87239d"
+      }
+    },
+    {
+      "label": "frame-0/mask",
+      "type": "Uint8Array",
+      "elements": 406065,
+      "bytes": 406065,
+      "retained": true,
+      "sha256": "20bf4209e049718f043872caa587a33951e9cd9e3b8378045ea462fe34795f98",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-mask.bin.gz",
+        "bytes": 566,
+        "sha256": "482387a78f0ede913abf9d1e6fab79e647ea5767c40adc86beddf1b53e6f758c",
+        "expandedBytes": 406065,
+        "expandedSha256": "20bf4209e049718f043872caa587a33951e9cd9e3b8378045ea462fe34795f98"
+      }
+    },
+    {
+      "label": "frame-0/sliceFront",
+      "type": "Int32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFront.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-0/sliceSigma",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "22e8ef714d2a0f8202b72129ab10b8b848db7083b5e70423e516ec6ab92d297b",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceSigma.bin.gz",
+        "bytes": 135,
+        "sha256": "44922f28350e19430a7411758d66c4c105d800908970a6b1984214f754e2440a",
+        "expandedBytes": 112,
+        "expandedSha256": "22e8ef714d2a0f8202b72129ab10b8b848db7083b5e70423e516ec6ab92d297b"
+      }
+    },
+    {
+      "label": "frame-0/sliceTau",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "f0bf59827c3ec0783d3be0fb36441e1270a6d69e030b563fe81535f2a73a3fa1",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTau.bin.gz",
+        "bytes": 115,
+        "sha256": "e1f239d5b7890d8d22b3c0b294c18a2e9a0224b1261144854592d7f84b322e3e",
+        "expandedBytes": 112,
+        "expandedSha256": "f0bf59827c3ec0783d3be0fb36441e1270a6d69e030b563fe81535f2a73a3fa1"
+      }
+    },
+    {
+      "label": "frame-0/slicePhase",
+      "type": "Uint8Array",
+      "elements": 28,
+      "bytes": 28,
+      "retained": true,
+      "sha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-slicePhase.bin.gz",
+        "bytes": 23,
+        "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+        "expandedBytes": 28,
+        "expandedSha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a"
+      }
+    },
+    {
+      "label": "frame-0/sliceLife",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "0a0d85121620734258d382e118699a9469acfd1404f6aff31f96ebb78c1c15c1",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceLife.bin.gz",
+        "bytes": 114,
+        "sha256": "81b683885a85cf11751f575cba23de9bbde1935b3249f113afa7c0e65c6fc1bd",
+        "expandedBytes": 112,
+        "expandedSha256": "0a0d85121620734258d382e118699a9469acfd1404f6aff31f96ebb78c1c15c1"
+      }
+    },
+    {
+      "label": "frame-0/sliceCollapse",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "3435ca66f068ff2b81e6553d135f8dffd4343293394568cff2c14b4ac08fe1d7",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceCollapse.bin.gz",
+        "bytes": 110,
+        "sha256": "297831ec0cf2c1732f36c6fd38cdbfc69050535e73821187b6f7a76fe5f535f0",
+        "expandedBytes": 112,
+        "expandedSha256": "3435ca66f068ff2b81e6553d135f8dffd4343293394568cff2c14b4ac08fe1d7"
+      }
+    },
+    {
+      "label": "frame-0/sliceFade",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "43469ce897d6b6e412109b858a9f4f6b8d0d91d6fd5292950ec2ddbdba6a8902",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFade.bin.gz",
+        "bytes": 27,
+        "sha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8",
+        "expandedBytes": 112,
+        "expandedSha256": "43469ce897d6b6e412109b858a9f4f6b8d0d91d6fd5292950ec2ddbdba6a8902"
+      }
+    },
+    {
+      "label": "frame-0/sliceTipGap",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipGap.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-0/sliceRestHold",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "5735d2da193b7e6ad5d2fabb978a069c4f71bae68dde091b5969cc0389b37cb4",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRestHold.bin.gz",
+        "bytes": 110,
+        "sha256": "2ea7c394233899b8240f5ca344fe0ca7a37b229a3126398a391eb4c31745b1fa",
+        "expandedBytes": 112,
+        "expandedSha256": "5735d2da193b7e6ad5d2fabb978a069c4f71bae68dde091b5969cc0389b37cb4"
+      }
+    },
+    {
+      "label": "frame-0/sliceRestEnd",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "757a1256355775907e882f643860715ec0cc65492037e1424fd7cd2d9b6a0967",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRestEnd.bin.gz",
+        "bytes": 114,
+        "sha256": "e67ee681529ae7085a6922a2d60f56a54b60ac18203e6f568d1c5bf212c9b275",
+        "expandedBytes": 112,
+        "expandedSha256": "757a1256355775907e882f643860715ec0cc65492037e1424fd7cd2d9b6a0967"
+      }
+    },
+    {
+      "label": "frame-0/sliceRestClimb",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "1423aedec862cdc14dbc8a3fec1c750b5c4a1bce5e899f703208440160be119b",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRestClimb.bin.gz",
+        "bytes": 111,
+        "sha256": "03c8eb7e223a038c7f4cf58045f317f89284c5853f453a62fa2527411f382048",
+        "expandedBytes": 112,
+        "expandedSha256": "1423aedec862cdc14dbc8a3fec1c750b5c4a1bce5e899f703208440160be119b"
+      }
+    },
+    {
+      "label": "frame-0/sliceToeClimb",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "cbdeb7bb93446f15f70c5e946b5c0acb3b21c343d022aaa78632bc7b05db3149",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceToeClimb.bin.gz",
+        "bytes": 112,
+        "sha256": "4e7ce1a082952a660e829d4ebe202815df0c3705ded1d8cd14df1b86aa74a4a8",
+        "expandedBytes": 112,
+        "expandedSha256": "cbdeb7bb93446f15f70c5e946b5c0acb3b21c343d022aaa78632bc7b05db3149"
+      }
+    },
+    {
+      "label": "frame-0/sliceJoined",
+      "type": "Uint8Array",
+      "elements": 28,
+      "bytes": 28,
+      "retained": true,
+      "sha256": "d4705d87a18d49ee81cfd5d1ace15f8c99e1fec5c340fa6d950fee38bed242d5",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceJoined.bin.gz",
+        "bytes": 24,
+        "sha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d",
+        "expandedBytes": 28,
+        "expandedSha256": "d4705d87a18d49ee81cfd5d1ace15f8c99e1fec5c340fa6d950fee38bed242d5"
+      }
+    },
+    {
+      "label": "frame-0/sliceRayX",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "7791db06f9e3e1e17805a727f9b839aa0816deadc02c610a8ae665c637bb6bd3",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRayX.bin.gz",
+        "bytes": 117,
+        "sha256": "10cfa924f99c3271329d6dd02b86b866047fbd6f8e6380cb76f5c63e6b75f77a",
+        "expandedBytes": 112,
+        "expandedSha256": "7791db06f9e3e1e17805a727f9b839aa0816deadc02c610a8ae665c637bb6bd3"
+      }
+    },
+    {
+      "label": "frame-0/sliceRayZ",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "c78b53c72bbe00ce7e6ff28ed79fcaa9ea795b24ffa293044edd8805d09d8435",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRayZ.bin.gz",
+        "bytes": 111,
+        "sha256": "ea95443fc2e8e9861df9867e93722273340b537e92629a8e6598570ae72d120a",
+        "expandedBytes": 112,
+        "expandedSha256": "c78b53c72bbe00ce7e6ff28ed79fcaa9ea795b24ffa293044edd8805d09d8435"
+      }
+    },
+    {
+      "label": "frame-0/sliceWeight",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "0292ecec21fc2b4a21f07e453b64585af99ff94dcf80732784d091eb7c01edd1",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceWeight.bin.gz",
+        "bytes": 62,
+        "sha256": "6f428b3a49e73ac7de7a67581acb957e02bb25a57b6bfe2a8159d245984304ce",
+        "expandedBytes": 112,
+        "expandedSha256": "0292ecec21fc2b4a21f07e453b64585af99ff94dcf80732784d091eb7c01edd1"
+      }
+    },
+    {
+      "label": "frame-0/sliceOverturned",
+      "type": "Uint8Array",
+      "elements": 28,
+      "bytes": 28,
+      "retained": true,
+      "sha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+        "bytes": 23,
+        "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+        "expandedBytes": 28,
+        "expandedSha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a"
+      }
+    },
+    {
+      "label": "frame-0/sliceTipAlong",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "fa9f409ab87856764ad9d334b3c9277643e5c46e5a2d7109f35269748f962169",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipAlong.bin.gz",
+        "bytes": 115,
+        "sha256": "f0abce3c4e669f018114d709086e28bb8414440292b457e8062612716396489b",
+        "expandedBytes": 112,
+        "expandedSha256": "fa9f409ab87856764ad9d334b3c9277643e5c46e5a2d7109f35269748f962169"
+      }
+    },
+    {
+      "label": "frame-0/sliceTipUp",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "148cf1abb97888b8dc78c733e9c9adefcc03257049fd12a8b13d802fabc59474",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipUp.bin.gz",
+        "bytes": 118,
+        "sha256": "8e06ec39308fab63ffae3916a6aa4c92bbee963318db4528bdcbe4247a247cca",
+        "expandedBytes": 112,
+        "expandedSha256": "148cf1abb97888b8dc78c733e9c9adefcc03257049fd12a8b13d802fabc59474"
+      }
+    },
+    {
+      "label": "frame-0/sliceAnchorVX",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceAnchorVX.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-0/sliceAnchorVZ",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceAnchorVZ.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-0/sliceTipTransportAlong",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipTransportAlong.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-0/sliceTipTransportUp",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipTransportUp.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-0/sliceFormed",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "2b2b3efb56219ee339a67825be880326b5538c4484c76265d1eed5e178dafe55",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFormed.bin.gz",
+        "bytes": 75,
+        "sha256": "81c368f4f7bfabce76443a80a3c04453cdbc6393753f334b04ee241cf37efe11",
+        "expandedBytes": 112,
+        "expandedSha256": "2b2b3efb56219ee339a67825be880326b5538c4484c76265d1eed5e178dafe55"
+      }
+    },
+    {
+      "label": "frame-0/sliceTipX",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "92ef33242f4d6393cfc59b62835a71449bb689c8013d9345452fc0ac9ef836fe",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipX.bin.gz",
+        "bytes": 135,
+        "sha256": "a717d7dd571e4253d149666c3eb91d3f63e3b6fde02be75dbce66d36e0e2bfe9",
+        "expandedBytes": 112,
+        "expandedSha256": "92ef33242f4d6393cfc59b62835a71449bb689c8013d9345452fc0ac9ef836fe"
+      }
+    },
+    {
+      "label": "frame-0/sliceTipY",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "5804438d9d411d769072a6acdfdbb9ea3d6ed44268cd836e9632c4be81e2d3dc",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipY.bin.gz",
+        "bytes": 135,
+        "sha256": "13cf650f58a625e114bd92949f1fb259ebd9aa1b0cc0a92bb29be663763b027e",
+        "expandedBytes": 112,
+        "expandedSha256": "5804438d9d411d769072a6acdfdbb9ea3d6ed44268cd836e9632c4be81e2d3dc"
+      }
+    },
+    {
+      "label": "frame-0/sliceTipZ",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "365aa902d3c100829c93a49de4638ae0d304ae7012cc3eb878cec5661438865a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTipZ.bin.gz",
+        "bytes": 135,
+        "sha256": "dbce926632bba5304ca00aadd00c81b0b72c9aa924ab67ba7def2bad409d59da",
+        "expandedBytes": 112,
+        "expandedSha256": "365aa902d3c100829c93a49de4638ae0d304ae7012cc3eb878cec5661438865a"
+      }
+    },
+    {
+      "label": "frame-0/sliceMouth",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "6f97b511dad80bbf8c647904e37e10bb315c3eed2bc9e75dd3143035696fe11a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceMouth.bin.gz",
+        "bytes": 97,
+        "sha256": "29609e6e6eb71c10d06010391399478a6677b9b06d484b8460c27e2f6e752d79",
+        "expandedBytes": 112,
+        "expandedSha256": "6f97b511dad80bbf8c647904e37e10bb315c3eed2bc9e75dd3143035696fe11a"
+      }
+    },
+    {
+      "label": "frame-0/bed",
+      "type": "Float32Array",
+      "elements": 101913,
+      "bytes": 407652,
+      "retained": true,
+      "sha256": "a79203e3d28da4c52681e4fa3a168e3df39fad488eee30bb555e1361e805eb0c",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-bed.bin.gz",
+        "bytes": 48659,
+        "sha256": "04d467ac2e53b3b05576c1910c1f032a2af7653e9ed0376b655f66cf8d1520ca",
+        "expandedBytes": 407652,
+        "expandedSha256": "a79203e3d28da4c52681e4fa3a168e3df39fad488eee30bb555e1361e805eb0c"
+      }
+    },
+    {
+      "label": "frame-1/front",
+      "type": "Float32Array",
+      "elements": 54,
+      "bytes": 216,
+      "retained": true,
+      "sha256": "05115cbe420cf7e433fdf19573379a48b3720072002e20c00a9832a6b8741ed3",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-front.bin.gz",
+        "bytes": 198,
+        "sha256": "bf3b5661da7b943bd2c1e6b8ad9adbe2b02c169bc1589fcdef5ec23163423ea2",
+        "expandedBytes": 216,
+        "expandedSha256": "05115cbe420cf7e433fdf19573379a48b3720072002e20c00a9832a6b8741ed3"
+      }
+    },
+    {
+      "label": "frame-1/surface",
+      "type": "Float32Array",
+      "elements": 203826,
+      "bytes": 815304,
+      "retained": true,
+      "sha256": "0bceeb1555f4fa33e117b17f37ff4ec7bb07e165aee503e52d5269187facf305",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-surface.bin.gz",
+        "bytes": 434217,
+        "sha256": "b103df3359a42a319e0b49d0df69dc42b700ad42b3a937709afe4c18044d19b6",
+        "expandedBytes": 815304,
+        "expandedSha256": "0bceeb1555f4fa33e117b17f37ff4ec7bb07e165aee503e52d5269187facf305"
+      }
+    },
+    {
+      "label": "frame-1/flow",
+      "type": "Float32Array",
+      "elements": 203826,
+      "bytes": 815304,
+      "retained": true,
+      "sha256": "b9d950c7340e007875aa4170f35ee9820d14b846ffb1f18162d3287c2e0b37c3",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-flow.bin.gz",
+        "bytes": 749714,
+        "sha256": "c18f58e9b20fc05e68fb64371e2fde4cdbc6e690197cd02dce64929dabb03d2c",
+        "expandedBytes": 815304,
+        "expandedSha256": "b9d950c7340e007875aa4170f35ee9820d14b846ffb1f18162d3287c2e0b37c3"
+      }
+    },
+    {
+      "label": "frame-1/aeration",
+      "type": "Float32Array",
+      "elements": 203826,
+      "bytes": 815304,
+      "retained": true,
+      "sha256": "32ad4fc8481dba5efe229264b3c1114fd29fea584ce4ba23419b38e3ae8e8686",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-aeration.bin.gz",
+        "bytes": 51482,
+        "sha256": "d0e5295b68f28ecc29e10e2dd64d62a1afb4ea52f456eb8e88b40ed599df603f",
+        "expandedBytes": 815304,
+        "expandedSha256": "32ad4fc8481dba5efe229264b3c1114fd29fea584ce4ba23419b38e3ae8e8686"
+      }
+    },
+    {
+      "label": "frame-1/drawnPositions",
+      "type": "Float32Array",
+      "elements": 11256,
+      "bytes": 45024,
+      "retained": true,
+      "sha256": "51b4be2358a0715fa1f51cd08f8e2925a0cfa22fb71abc5e1130e0c4de2ee944",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-drawnPositions.bin.gz",
+        "bytes": 39243,
+        "sha256": "3acfb401c7c208e33aacb23965a31944b48501b44f50c6c23fc91ae762d96ee6",
+        "expandedBytes": 45024,
+        "expandedSha256": "51b4be2358a0715fa1f51cd08f8e2925a0cfa22fb71abc5e1130e0c4de2ee944"
+      }
+    },
+    {
+      "label": "frame-1/drawnIndices",
+      "type": "Uint32Array",
+      "elements": 21546,
+      "bytes": 86184,
+      "retained": true,
+      "sha256": "4156075b136e6275e5deedd5560e4bd31b4e564f5d46d4cc5674daa72d4fd398",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-drawnIndices.bin.gz",
+        "bytes": 19296,
+        "sha256": "857a2415fd31790b5d53adce64851e74e487f216bf981d29ba36695cdcf707a4",
+        "expandedBytes": 86184,
+        "expandedSha256": "4156075b136e6275e5deedd5560e4bd31b4e564f5d46d4cc5674daa72d4fd398"
+      }
+    },
+    {
+      "label": "frame-1/mask",
+      "type": "Uint8Array",
+      "elements": 406065,
+      "bytes": 406065,
+      "retained": true,
+      "sha256": "90a5404ce9d379abca1db2039283fe6812dbd6302be9c5d34ed8c36dda4339fc",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-mask.bin.gz",
+        "bytes": 565,
+        "sha256": "f9a0efc7e8d4417648d5795490adf5e0090f9839ed371d417860ae06f4fd6fac",
+        "expandedBytes": 406065,
+        "expandedSha256": "90a5404ce9d379abca1db2039283fe6812dbd6302be9c5d34ed8c36dda4339fc"
+      }
+    },
+    {
+      "label": "frame-1/sliceFront",
+      "type": "Int32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFront.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-1/sliceSigma",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "16a79c23817f5590efed88dbbfc4e46c3787dc74bfb0a925904d02be09d26b45",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceSigma.bin.gz",
+        "bytes": 135,
+        "sha256": "05e1c4fa10dcda7d52a04bc890b6fe25235a02cd63b4d69a8466ec91bfc649ea",
+        "expandedBytes": 112,
+        "expandedSha256": "16a79c23817f5590efed88dbbfc4e46c3787dc74bfb0a925904d02be09d26b45"
+      }
+    },
+    {
+      "label": "frame-1/sliceTau",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b087e678bb41bf5f47195472e736f3fc1481331338431f281860d3b2977dbb08",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTau.bin.gz",
+        "bytes": 115,
+        "sha256": "c4be7a22d5c050c9fee245605522d90f370cd338ff7ee49fe737b0de7f6a867c",
+        "expandedBytes": 112,
+        "expandedSha256": "b087e678bb41bf5f47195472e736f3fc1481331338431f281860d3b2977dbb08"
+      }
+    },
+    {
+      "label": "frame-1/slicePhase",
+      "type": "Uint8Array",
+      "elements": 28,
+      "bytes": 28,
+      "retained": true,
+      "sha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-slicePhase.bin.gz",
+        "bytes": 23,
+        "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+        "expandedBytes": 28,
+        "expandedSha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a"
+      }
+    },
+    {
+      "label": "frame-1/sliceLife",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "a8433af828f07410dd8f85db9b07c153c726f94e44424e065f36faa1d6142128",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceLife.bin.gz",
+        "bytes": 115,
+        "sha256": "f5c69cfcae6884c45b60fe95e7ff09663ef179450da6126f6decb2f25e4b305b",
+        "expandedBytes": 112,
+        "expandedSha256": "a8433af828f07410dd8f85db9b07c153c726f94e44424e065f36faa1d6142128"
+      }
+    },
+    {
+      "label": "frame-1/sliceCollapse",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "de006b597a6c389fc77243e34f985ee80fa2897faa730ec44e703e057faa85b2",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceCollapse.bin.gz",
+        "bytes": 113,
+        "sha256": "d703e76aed308ce6095d73822d2ef19dbfcdb3e060f34044650ebc31f837d0f5",
+        "expandedBytes": 112,
+        "expandedSha256": "de006b597a6c389fc77243e34f985ee80fa2897faa730ec44e703e057faa85b2"
+      }
+    },
+    {
+      "label": "frame-1/sliceFade",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "43469ce897d6b6e412109b858a9f4f6b8d0d91d6fd5292950ec2ddbdba6a8902",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFade.bin.gz",
+        "bytes": 27,
+        "sha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8",
+        "expandedBytes": 112,
+        "expandedSha256": "43469ce897d6b6e412109b858a9f4f6b8d0d91d6fd5292950ec2ddbdba6a8902"
+      }
+    },
+    {
+      "label": "frame-1/sliceTipGap",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipGap.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-1/sliceRestHold",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "162e07cd51ace8520eaf2bf62eefdc7368f8b46aa92f45e50db75bfbf4531a95",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRestHold.bin.gz",
+        "bytes": 110,
+        "sha256": "59368b394e4bcf5d9ec58270503f0499ceeed948314ccbf51cf3cb70daad0319",
+        "expandedBytes": 112,
+        "expandedSha256": "162e07cd51ace8520eaf2bf62eefdc7368f8b46aa92f45e50db75bfbf4531a95"
+      }
+    },
+    {
+      "label": "frame-1/sliceRestEnd",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "f0ff8f642ad47a82d5dc655593b1bd895ed4deddde9607d586a2ce170dca9e03",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRestEnd.bin.gz",
+        "bytes": 114,
+        "sha256": "d52a3f80cd1e844d8424e36dabeb6c3913a980b1cf53db63103cd5c4a1c72b44",
+        "expandedBytes": 112,
+        "expandedSha256": "f0ff8f642ad47a82d5dc655593b1bd895ed4deddde9607d586a2ce170dca9e03"
+      }
+    },
+    {
+      "label": "frame-1/sliceRestClimb",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "8cc0aa226060bd02811d6d4c0086946de29d1e27c1c2a0bd1844475317d9dc41",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRestClimb.bin.gz",
+        "bytes": 112,
+        "sha256": "878431127bfc5285e89dea042a16dd114ffec63bdae11af60d7e74c63c08b8f1",
+        "expandedBytes": 112,
+        "expandedSha256": "8cc0aa226060bd02811d6d4c0086946de29d1e27c1c2a0bd1844475317d9dc41"
+      }
+    },
+    {
+      "label": "frame-1/sliceToeClimb",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "8b2fdd2806135d985eec38ab3dcc1e60affe9e290b65e3463f4ac5f965794ad9",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceToeClimb.bin.gz",
+        "bytes": 112,
+        "sha256": "afb34f7fbf65bcd085d7cd59eedccc53879cd17d9436bf442e677f798c565672",
+        "expandedBytes": 112,
+        "expandedSha256": "8b2fdd2806135d985eec38ab3dcc1e60affe9e290b65e3463f4ac5f965794ad9"
+      }
+    },
+    {
+      "label": "frame-1/sliceJoined",
+      "type": "Uint8Array",
+      "elements": 28,
+      "bytes": 28,
+      "retained": true,
+      "sha256": "d4705d87a18d49ee81cfd5d1ace15f8c99e1fec5c340fa6d950fee38bed242d5",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceJoined.bin.gz",
+        "bytes": 24,
+        "sha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d",
+        "expandedBytes": 28,
+        "expandedSha256": "d4705d87a18d49ee81cfd5d1ace15f8c99e1fec5c340fa6d950fee38bed242d5"
+      }
+    },
+    {
+      "label": "frame-1/sliceRayX",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "1d1d74ac7fc3503212bb7e09a0a01053e0a76c2060d5a61cf0cfafb5f1ec466b",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRayX.bin.gz",
+        "bytes": 117,
+        "sha256": "29997f09931441a9b2f8b9657b911d648c6596db34786ec87ae3d1c32e5933ec",
+        "expandedBytes": 112,
+        "expandedSha256": "1d1d74ac7fc3503212bb7e09a0a01053e0a76c2060d5a61cf0cfafb5f1ec466b"
+      }
+    },
+    {
+      "label": "frame-1/sliceRayZ",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "146c4f27eb24f7246f6bdf7f90e0512e06e208a1c7f86f05ca5211fa7e5cb0b0",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRayZ.bin.gz",
+        "bytes": 112,
+        "sha256": "ddfca954b0cc2f0f48cd235c82daafc809567eeaeccb0cc67b1d6c97429260d3",
+        "expandedBytes": 112,
+        "expandedSha256": "146c4f27eb24f7246f6bdf7f90e0512e06e208a1c7f86f05ca5211fa7e5cb0b0"
+      }
+    },
+    {
+      "label": "frame-1/sliceWeight",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "4effabb6d3a70052cc178d82af33a0bb53390d8b66227045005ce5d3b4bd86d8",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceWeight.bin.gz",
+        "bytes": 62,
+        "sha256": "86d0a4d63553ba4511b5bfa41d9d6a70001661a5ce773ac279fbef00a6b523a2",
+        "expandedBytes": 112,
+        "expandedSha256": "4effabb6d3a70052cc178d82af33a0bb53390d8b66227045005ce5d3b4bd86d8"
+      }
+    },
+    {
+      "label": "frame-1/sliceOverturned",
+      "type": "Uint8Array",
+      "elements": 28,
+      "bytes": 28,
+      "retained": true,
+      "sha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceOverturned.bin.gz",
+        "bytes": 23,
+        "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+        "expandedBytes": 28,
+        "expandedSha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a"
+      }
+    },
+    {
+      "label": "frame-1/sliceTipAlong",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "21a17f90c50c447d00dbc1d4fb319fb6a33769524fdeec7ab9ab01e115f8ebe6",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipAlong.bin.gz",
+        "bytes": 116,
+        "sha256": "23795079556a9f5a4faee3ce71125d6fc642bfbc76e0419a03b459ad76b9bc29",
+        "expandedBytes": 112,
+        "expandedSha256": "21a17f90c50c447d00dbc1d4fb319fb6a33769524fdeec7ab9ab01e115f8ebe6"
+      }
+    },
+    {
+      "label": "frame-1/sliceTipUp",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "57bf99e4215c7500da04482e9b649359baede956aa62dfe929674c440fb05f1a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipUp.bin.gz",
+        "bytes": 117,
+        "sha256": "185c26d75e0999b39242b6b355d5a237459a3103fbc8a4d320eb56d7a6caa6b8",
+        "expandedBytes": 112,
+        "expandedSha256": "57bf99e4215c7500da04482e9b649359baede956aa62dfe929674c440fb05f1a"
+      }
+    },
+    {
+      "label": "frame-1/sliceAnchorVX",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceAnchorVX.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-1/sliceAnchorVZ",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceAnchorVZ.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-1/sliceTipTransportAlong",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipTransportAlong.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-1/sliceTipTransportUp",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipTransportUp.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-1/sliceFormed",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "9028880f70e500892684bd5e179062dfbd6cee5d4f66f05c57546b511b588ba7",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFormed.bin.gz",
+        "bytes": 75,
+        "sha256": "4f8534fb817423ef1999316c27179187793ba59d404875ccec8eb7bc40b1ed9e",
+        "expandedBytes": 112,
+        "expandedSha256": "9028880f70e500892684bd5e179062dfbd6cee5d4f66f05c57546b511b588ba7"
+      }
+    },
+    {
+      "label": "frame-1/sliceTipX",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "0acd6f01af4e726e68040a5820d358ad051324a9a1f4b8eb8b4d5c5e68619499",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipX.bin.gz",
+        "bytes": 135,
+        "sha256": "717a1470b318487c085b50b5c892059e38172c45e8f5d4db133e9779e5238902",
+        "expandedBytes": 112,
+        "expandedSha256": "0acd6f01af4e726e68040a5820d358ad051324a9a1f4b8eb8b4d5c5e68619499"
+      }
+    },
+    {
+      "label": "frame-1/sliceTipY",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "2687f4ee7a25cb5c683a30d783d08c92af12af46d27e7887b6991ea50ee07f0e",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipY.bin.gz",
+        "bytes": 135,
+        "sha256": "9f4082de9ed881196d9d1f3a441d70a002f26b4b7cd761aacf9f51662a06e4f1",
+        "expandedBytes": 112,
+        "expandedSha256": "2687f4ee7a25cb5c683a30d783d08c92af12af46d27e7887b6991ea50ee07f0e"
+      }
+    },
+    {
+      "label": "frame-1/sliceTipZ",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "400cbc94ea0a90b3bf24fec4a00eaaf3ab02fb777801f428e0f2cbebb3153e2b",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTipZ.bin.gz",
+        "bytes": 135,
+        "sha256": "ea813871a4215f83e701cd438cbfc990ba61bd36bb1e0ff074fa3ff7770ff17e",
+        "expandedBytes": 112,
+        "expandedSha256": "400cbc94ea0a90b3bf24fec4a00eaaf3ab02fb777801f428e0f2cbebb3153e2b"
+      }
+    },
+    {
+      "label": "frame-1/sliceMouth",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "fa79cbb73fdb5d5827359a2d0b9b1fe97c4a320d108ff35142bdd9e5778189df",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceMouth.bin.gz",
+        "bytes": 90,
+        "sha256": "1e4ef92320ae7f255cfd4c13dd82ef07102eb245fe5de20dce31e7054c5ea7d1",
+        "expandedBytes": 112,
+        "expandedSha256": "fa79cbb73fdb5d5827359a2d0b9b1fe97c4a320d108ff35142bdd9e5778189df"
+      }
+    },
+    {
+      "label": "frame-2/front",
+      "type": "Float32Array",
+      "elements": 54,
+      "bytes": 216,
+      "retained": true,
+      "sha256": "7d986b3ccefc3b1d68ef837d001c2b6393889be8a5021aba6b2307b515643a61",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-front.bin.gz",
+        "bytes": 199,
+        "sha256": "9bbe664a62c61072b3fe9ce2db55c1709418b5b65420558cbbc280b911f88c9b",
+        "expandedBytes": 216,
+        "expandedSha256": "7d986b3ccefc3b1d68ef837d001c2b6393889be8a5021aba6b2307b515643a61"
+      }
+    },
+    {
+      "label": "frame-2/surface",
+      "type": "Float32Array",
+      "elements": 203826,
+      "bytes": 815304,
+      "retained": true,
+      "sha256": "9d04e83972c568f3cbefc7ed9383662a472daba7cb7178bfff017f8d6a4a5ae7",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-surface.bin.gz",
+        "bytes": 434031,
+        "sha256": "0426a68a46fbfc7271a50860140ac48ee4ff3301d4a6f9a9f686587018721c78",
+        "expandedBytes": 815304,
+        "expandedSha256": "9d04e83972c568f3cbefc7ed9383662a472daba7cb7178bfff017f8d6a4a5ae7"
+      }
+    },
+    {
+      "label": "frame-2/flow",
+      "type": "Float32Array",
+      "elements": 203826,
+      "bytes": 815304,
+      "retained": true,
+      "sha256": "e0ac6b057b1aff3b8f65d707f94a2e08dda0f09fdf1771961653ad544981bc64",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-flow.bin.gz",
+        "bytes": 749647,
+        "sha256": "f7702f3649bdc02a2bcb0daeb3c3347c70812a587c34eed0fb0467e106539676",
+        "expandedBytes": 815304,
+        "expandedSha256": "e0ac6b057b1aff3b8f65d707f94a2e08dda0f09fdf1771961653ad544981bc64"
+      }
+    },
+    {
+      "label": "frame-2/aeration",
+      "type": "Float32Array",
+      "elements": 203826,
+      "bytes": 815304,
+      "retained": true,
+      "sha256": "5fb62bc92c78f49bbf247463a47f1f1896e69faddfc842828461226753dd1e9e",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-aeration.bin.gz",
+        "bytes": 51487,
+        "sha256": "2001db77bd27c814e7addea8ca572ee412708dbc46fee414b80c9d771fce7bfe",
+        "expandedBytes": 815304,
+        "expandedSha256": "5fb62bc92c78f49bbf247463a47f1f1896e69faddfc842828461226753dd1e9e"
+      }
+    },
+    {
+      "label": "frame-2/drawnPositions",
+      "type": "Float32Array",
+      "elements": 11256,
+      "bytes": 45024,
+      "retained": true,
+      "sha256": "3ac87bbe4dd224ce87586d881b5ff6c7d58bcd33b08e6408e0b5369a7e64a706",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-drawnPositions.bin.gz",
+        "bytes": 39267,
+        "sha256": "29edef9e339575c820cb47b7f4918586547c228300878e94d3ea0704ad919285",
+        "expandedBytes": 45024,
+        "expandedSha256": "3ac87bbe4dd224ce87586d881b5ff6c7d58bcd33b08e6408e0b5369a7e64a706"
+      }
+    },
+    {
+      "label": "frame-2/drawnIndices",
+      "type": "Uint32Array",
+      "elements": 21546,
+      "bytes": 86184,
+      "retained": true,
+      "sha256": "001fa52f478aa6c09e1715c1e262d3b3ebf0c113ee8530a7caba746fd002fcf1",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-drawnIndices.bin.gz",
+        "bytes": 19293,
+        "sha256": "94bb2fba1f4d69e1b3bb8531213d7e20e1b637aaced51b83251f5a9a0e65870f",
+        "expandedBytes": 86184,
+        "expandedSha256": "001fa52f478aa6c09e1715c1e262d3b3ebf0c113ee8530a7caba746fd002fcf1"
+      }
+    },
+    {
+      "label": "frame-2/mask",
+      "type": "Uint8Array",
+      "elements": 406065,
+      "bytes": 406065,
+      "retained": true,
+      "sha256": "cc53843597da24aae6d50b64ce6328554f5ccee570463fd990d282a7c6daf8f8",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-mask.bin.gz",
+        "bytes": 564,
+        "sha256": "294e4317a06896def2592fca9413ddcc99840a5052a820fec4107820cc8410cb",
+        "expandedBytes": 406065,
+        "expandedSha256": "cc53843597da24aae6d50b64ce6328554f5ccee570463fd990d282a7c6daf8f8"
+      }
+    },
+    {
+      "label": "frame-2/sliceFront",
+      "type": "Int32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFront.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-2/sliceSigma",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "a5cd9de2df2b69f81f95f4937ebe8109c1432da574447358cacc7708e7abe4c8",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceSigma.bin.gz",
+        "bytes": 135,
+        "sha256": "d409ce77f8645ca54f3da81b29de6411e104aa3390d85f6440e8a57a5aff2ee1",
+        "expandedBytes": 112,
+        "expandedSha256": "a5cd9de2df2b69f81f95f4937ebe8109c1432da574447358cacc7708e7abe4c8"
+      }
+    },
+    {
+      "label": "frame-2/sliceTau",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "8802d7309de66e120de0509ab013ced965df80b4fbe0812da42c4d223df3924b",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTau.bin.gz",
+        "bytes": 115,
+        "sha256": "3b8afe727d50c72aa359ee4c53c12a3773cf61317860369370d1590ff1acaddc",
+        "expandedBytes": 112,
+        "expandedSha256": "8802d7309de66e120de0509ab013ced965df80b4fbe0812da42c4d223df3924b"
+      }
+    },
+    {
+      "label": "frame-2/slicePhase",
+      "type": "Uint8Array",
+      "elements": 28,
+      "bytes": 28,
+      "retained": true,
+      "sha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-slicePhase.bin.gz",
+        "bytes": 23,
+        "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+        "expandedBytes": 28,
+        "expandedSha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a"
+      }
+    },
+    {
+      "label": "frame-2/sliceLife",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "929345f7659331f9fdeaf772958f39ef6b5bd53c90c9dcad944cda63fdf113fd",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceLife.bin.gz",
+        "bytes": 114,
+        "sha256": "2a335d137d83275d8cc7e8f8e3339abe62bd9dd5541969014fe6c75a94b6777a",
+        "expandedBytes": 112,
+        "expandedSha256": "929345f7659331f9fdeaf772958f39ef6b5bd53c90c9dcad944cda63fdf113fd"
+      }
+    },
+    {
+      "label": "frame-2/sliceCollapse",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b267c26f8c240d4ff93955ccb6f85b17815917bf5dccbed0ff601dbd1ebb970a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceCollapse.bin.gz",
+        "bytes": 111,
+        "sha256": "8e933494a79aa7f59f2e57d989eeac8a431229c4a2ef6eba38bc304b431d59ea",
+        "expandedBytes": 112,
+        "expandedSha256": "b267c26f8c240d4ff93955ccb6f85b17815917bf5dccbed0ff601dbd1ebb970a"
+      }
+    },
+    {
+      "label": "frame-2/sliceFade",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "43469ce897d6b6e412109b858a9f4f6b8d0d91d6fd5292950ec2ddbdba6a8902",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFade.bin.gz",
+        "bytes": 27,
+        "sha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8",
+        "expandedBytes": 112,
+        "expandedSha256": "43469ce897d6b6e412109b858a9f4f6b8d0d91d6fd5292950ec2ddbdba6a8902"
+      }
+    },
+    {
+      "label": "frame-2/sliceTipGap",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipGap.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-2/sliceRestHold",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "475fa2aed9ccb50c7770fc07b695137c0ec09d34a2c59bbfc5b6a13d15f39703",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRestHold.bin.gz",
+        "bytes": 110,
+        "sha256": "4a21945f406ed462f6c8475abbc7aaf51d3c0b5c6780ad2f4dfd87fd486011cd",
+        "expandedBytes": 112,
+        "expandedSha256": "475fa2aed9ccb50c7770fc07b695137c0ec09d34a2c59bbfc5b6a13d15f39703"
+      }
+    },
+    {
+      "label": "frame-2/sliceRestEnd",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "27728d8057b923144fabbb52eb77390c4fca9dfabbb70ce25ae87726062cf2bd",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRestEnd.bin.gz",
+        "bytes": 114,
+        "sha256": "90fdafd44f41082eb4109eb27b0b8f6365e08887b9f4e9c58178d71bc859a63e",
+        "expandedBytes": 112,
+        "expandedSha256": "27728d8057b923144fabbb52eb77390c4fca9dfabbb70ce25ae87726062cf2bd"
+      }
+    },
+    {
+      "label": "frame-2/sliceRestClimb",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "a3834cdfa0b1959f4afd46f695b611a91a8e4252ebbc67c493e8a163e6ee8e27",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRestClimb.bin.gz",
+        "bytes": 111,
+        "sha256": "b1f0f86d168f8f2ac6f7c587d64aeba72bf95920213b9b74e4cf755a5c3330eb",
+        "expandedBytes": 112,
+        "expandedSha256": "a3834cdfa0b1959f4afd46f695b611a91a8e4252ebbc67c493e8a163e6ee8e27"
+      }
+    },
+    {
+      "label": "frame-2/sliceToeClimb",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "77cfaddbf6452482402a8f07c3a8cf6a544477558c89be2d81444b42f9f30012",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceToeClimb.bin.gz",
+        "bytes": 112,
+        "sha256": "e7914387cd65f0f10e376f5c89a0c82ed6eb2ee917d603992bdf004b9ffaf30b",
+        "expandedBytes": 112,
+        "expandedSha256": "77cfaddbf6452482402a8f07c3a8cf6a544477558c89be2d81444b42f9f30012"
+      }
+    },
+    {
+      "label": "frame-2/sliceJoined",
+      "type": "Uint8Array",
+      "elements": 28,
+      "bytes": 28,
+      "retained": true,
+      "sha256": "d4705d87a18d49ee81cfd5d1ace15f8c99e1fec5c340fa6d950fee38bed242d5",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceJoined.bin.gz",
+        "bytes": 24,
+        "sha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d",
+        "expandedBytes": 28,
+        "expandedSha256": "d4705d87a18d49ee81cfd5d1ace15f8c99e1fec5c340fa6d950fee38bed242d5"
+      }
+    },
+    {
+      "label": "frame-2/sliceRayX",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "f56212624ec18b267b91e062fb299c2d87d0c3287717b57ee0e28be0ab1b9bd2",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRayX.bin.gz",
+        "bytes": 117,
+        "sha256": "7d577519098eaf0d510521f2d06fae8b87457477e5d93f89f474d3704ad0eaf3",
+        "expandedBytes": 112,
+        "expandedSha256": "f56212624ec18b267b91e062fb299c2d87d0c3287717b57ee0e28be0ab1b9bd2"
+      }
+    },
+    {
+      "label": "frame-2/sliceRayZ",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "6e4cf99f85df1482e53bec135aa9692d66e04b730fecd44a41ef59b62b22ed53",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRayZ.bin.gz",
+        "bytes": 110,
+        "sha256": "3f269c9f307cf0a41154c2ef42fb13d4399d9d8b09b18630332bf06e3014bb86",
+        "expandedBytes": 112,
+        "expandedSha256": "6e4cf99f85df1482e53bec135aa9692d66e04b730fecd44a41ef59b62b22ed53"
+      }
+    },
+    {
+      "label": "frame-2/sliceWeight",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "2ac6df8457826840c38991ef70ff53031bafb434ab1d7e57d848d4127a5c1107",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceWeight.bin.gz",
+        "bytes": 63,
+        "sha256": "6e7c85c6fe12a7e9afc7076f4c5af1a6a311c4acf4dfc1904c5b2dd3bae0dc28",
+        "expandedBytes": 112,
+        "expandedSha256": "2ac6df8457826840c38991ef70ff53031bafb434ab1d7e57d848d4127a5c1107"
+      }
+    },
+    {
+      "label": "frame-2/sliceOverturned",
+      "type": "Uint8Array",
+      "elements": 28,
+      "bytes": 28,
+      "retained": true,
+      "sha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceOverturned.bin.gz",
+        "bytes": 23,
+        "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+        "expandedBytes": 28,
+        "expandedSha256": "22dfc40c154d98ebea12e7f903423d6c49f543265dd67003210b02c013cb637a"
+      }
+    },
+    {
+      "label": "frame-2/sliceTipAlong",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "e9195b261daa8264248563db379a1af43c675c4075b9ee9c9d5c7a47b1d9f517",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipAlong.bin.gz",
+        "bytes": 115,
+        "sha256": "1e9e53893b66cff325c80ed819ce8fad04c678096e617829b9dfee0d965d1b83",
+        "expandedBytes": 112,
+        "expandedSha256": "e9195b261daa8264248563db379a1af43c675c4075b9ee9c9d5c7a47b1d9f517"
+      }
+    },
+    {
+      "label": "frame-2/sliceTipUp",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "ab4356204db15c9c40a4af1df5cc29ad21e73130c039f649c3a0a7f9fd0bfeee",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipUp.bin.gz",
+        "bytes": 117,
+        "sha256": "f4c628e96f55fd45cbfcb11c9156c6311af13d25d39c8107ac71fc7b6f7f1e5c",
+        "expandedBytes": 112,
+        "expandedSha256": "ab4356204db15c9c40a4af1df5cc29ad21e73130c039f649c3a0a7f9fd0bfeee"
+      }
+    },
+    {
+      "label": "frame-2/sliceAnchorVX",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceAnchorVX.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-2/sliceAnchorVZ",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceAnchorVZ.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-2/sliceTipTransportAlong",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipTransportAlong.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-2/sliceTipTransportUp",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipTransportUp.bin.gz",
+        "bytes": 24,
+        "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+        "expandedBytes": 112,
+        "expandedSha256": "b5fdab78d8947eacc864bfeecb4d2100780e5afe1cd8efafb124887913ac49fa"
+      }
+    },
+    {
+      "label": "frame-2/sliceFormed",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "4d7469c682b4c086ac2042ec1dca095fa4ffbdef3b0dbca71736eda532056585",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFormed.bin.gz",
+        "bytes": 75,
+        "sha256": "210566808d22ea31aab61d379ff2b884f4220e14c29398c9e9e3ce52e6edbf9d",
+        "expandedBytes": 112,
+        "expandedSha256": "4d7469c682b4c086ac2042ec1dca095fa4ffbdef3b0dbca71736eda532056585"
+      }
+    },
+    {
+      "label": "frame-2/sliceTipX",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "a9ef8f0f7ea47a78b68dcad14bf8dec735d41d13bde08db1d40b5abc04b8ca12",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipX.bin.gz",
+        "bytes": 135,
+        "sha256": "eff90453c26b760abca303a4111869ebf5f5477667e8eb5e86521c46ff880f9f",
+        "expandedBytes": 112,
+        "expandedSha256": "a9ef8f0f7ea47a78b68dcad14bf8dec735d41d13bde08db1d40b5abc04b8ca12"
+      }
+    },
+    {
+      "label": "frame-2/sliceTipY",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "bb5c52f8f6239ea95e212d1f3c6c09a23e5821a4b3384fb5a4101ec536dba22e",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipY.bin.gz",
+        "bytes": 135,
+        "sha256": "de42f8648fcb47ff71294ceec91ed02b0c3251a6b5414f1bdf5451a3de3229d7",
+        "expandedBytes": 112,
+        "expandedSha256": "bb5c52f8f6239ea95e212d1f3c6c09a23e5821a4b3384fb5a4101ec536dba22e"
+      }
+    },
+    {
+      "label": "frame-2/sliceTipZ",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "1fac5f812a96f4848acfd67127cc60bc045c0d4e39e10c9b43a18604b25887ce",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipZ.bin.gz",
+        "bytes": 135,
+        "sha256": "0853261554ba49c7534deed61803497ac1793f267d70d8cd9dedc200e41714db",
+        "expandedBytes": 112,
+        "expandedSha256": "1fac5f812a96f4848acfd67127cc60bc045c0d4e39e10c9b43a18604b25887ce"
+      }
+    },
+    {
+      "label": "frame-2/sliceMouth",
+      "type": "Float32Array",
+      "elements": 28,
+      "bytes": 112,
+      "retained": true,
+      "sha256": "36a5777ad910dfd9c37bbe53979767be386f1d324168766327249824fec5d45e",
+      "file": {
+        "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceMouth.bin.gz",
+        "bytes": 94,
+        "sha256": "f6425c7f73fa4a598a88592d1237d12f2dc180abc03f2b0301996dc66b4115c4",
+        "expandedBytes": 112,
+        "expandedSha256": "36a5777ad910dfd9c37bbe53979767be386f1d324168766327249824fec5d45e"
+      }
+    }
+  ],
+  "laterExport": {
+    "pausedSeaTime": 328.04104655763683,
+    "outstandingSteps": 0,
+    "snapshotUnchanged": true,
+    "deflated": true,
+    "bytes": 2423908,
+    "sha256": "dd97ed4b53d1aa78eabdb58534a370e26d03cf553fe1bf26fe18d83d9bad48b3",
+    "expandedBytes": 5723732,
+    "expandedSha256": "5ff85c873bb360c5df127084cb01b84fddd26ed971fa3ca19ddf3ece5bd6db18",
+    "distinction": "Committed F32 worker export at paused clock, possibly later than frame four; not the full internal F64 state or a captured-frame replacement",
+    "file": {
+      "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/committed-worker-export.bin.deflate",
+      "bytes": 2423908,
+      "sha256": "dd97ed4b53d1aa78eabdb58534a370e26d03cf553fe1bf26fe18d83d9bad48b3"
+    }
+  },
+  "exportArrayLayout": [
+    [
+      "h",
+      116000
+    ],
+    [
+      "qx",
+      116000
+    ],
+    [
+      "qz",
+      116000
+    ],
+    [
+      "foam.dense",
+      116000
+    ],
+    [
+      "foam.residual",
+      116000
+    ],
+    [
+      "aeration.air",
+      116000
+    ],
+    [
+      "aeration.depth",
+      116000
+    ],
+    [
+      "outerBreak",
+      160
+    ],
+    [
+      "lastThrow",
+      160
+    ],
+    [
+      "lastOnset",
+      160
+    ],
+    [
+      "breakingStrength",
+      116000
+    ],
+    [
+      "breakingAge",
+      116000
+    ],
+    [
+      "plungeHold",
+      116000
+    ],
+    [
+      "predictor.x",
+      116000
+    ],
+    [
+      "predictor.z",
+      116000
+    ]
+  ],
+  "fieldBytes": 9366507,
+  "transportStoredBytes": 6362979
+}

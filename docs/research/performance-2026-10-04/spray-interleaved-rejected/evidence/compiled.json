@@ -1,0 +1,9 @@
+{
+  "schema": "spray-interleaved-compiled/v1",
+  "readySha256": "8b69b0c0c565ad7b9508bf34277d7757f249bb45d8d065e87f3bd718a87b81b1",
+  "output": {
+    "path": "/private/tmp/surf-spray-interleaved-20261004/compiled/cost.mjs",
+    "bytes": 59804,
+    "sha256": "3a698ac71725d62772c9792b100c70545b720c6c51ca907159b39c6efd09a349"
+  }
+}

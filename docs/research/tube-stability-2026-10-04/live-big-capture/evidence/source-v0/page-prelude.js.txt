@@ -1,0 +1,177 @@
+// QA source only: completed ordinary draws, never worker start/advance or a prescribed loft.
+(() => {
+  const api = window.__tubeBigCapture = { armed: false, state: 'unarmed', frames: [], fields: [], hashes: [], drawCalls: 0, publications: 0, failure: null };
+  const assert = (condition, text) => { if (!condition) throw Error(text); };
+  const LOFT_SAMPLES = 134, EXTENSION = 3, FRONT_STRIDE = 9, LIMIT = 32 * 1024 * 1024;
+  const saved = new Map(); let copiedBytes = 0, mark, serial = 0, first, latestStatus, hooked;
+  const sha = async bytes => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), n => n.toString(16).padStart(2, '0')).join('');
+  const copy = (label, typed, keep = true) => {
+    assert(ArrayBuffer.isView(typed), 'Typed field absent: ' + label);
+    const bytes = new Uint8Array(typed.byteLength); bytes.set(new Uint8Array(typed.buffer, typed.byteOffset, typed.byteLength));
+    const row = { label, type: typed.constructor.name, elements: typed.length, bytes: bytes.length, retained: keep };
+    if (keep) { copiedBytes += bytes.length; assert(copiedBytes <= LIMIT, '32 MiB retained field cap'); saved.set(label, bytes); api.fields.push(row); }
+    api.hashes.push(sha(bytes).then(sha256 => { row.sha256 = sha256; return row; })); return row;
+  };
+  const matrix = m => Array.from(m.elements);
+  const camera = c => ({ position: c.position.toArray(), quaternion: c.quaternion.toArray(), up: c.up.toArray(), near: c.near, far: c.far, fov: c.fov,
+    aspect: c.aspect, matrixWorld: matrix(c.matrixWorld), matrixWorldInverse: matrix(c.matrixWorldInverse), projectionMatrix: matrix(c.projectionMatrix) });
+  const range = g => ({ start: g.drawRange.start, count: Number.isFinite(g.drawRange.count) ? g.drawRange.count : 'Infinity', indexCount: g.index?.count });
+  const optical = (d, scene, c) => ({ fog: scene.fog ? { type: scene.fog.constructor.name, color: scene.fog.color.toArray(), density: scene.fog.density } : null,
+    actualHostHeight: d.mode.host.heightAt(c.position.x, c.position.z), actualPredicate: c.position.y < d.mode.host.heightAt(c.position.x, c.position.z) - 0.1,
+    physicalCameraPredicate: d.mode.cameraBelowSurface(), sheetShown: d.mode.barrelMesh.sheetShown, facesOut: d.mode.barrelMesh.facesOut,
+    view: d.mode.barrelMesh.view ?? null, waterLook: d.water.drawnLook, sceneEnvironment: scene.environment?.uuid ?? null,
+    coarseMaterial: { type: d.water.mesh.material.type, side: d.water.mesh.material.side, envMap: d.water.mesh.material.envMap?.uuid ?? null },
+    barrelMaterial: { type: d.mode.barrelMesh.mesh.material.type, side: d.mode.barrelMesh.mesh.material.side, envMap: d.mode.barrelMesh.mesh.material.envMap?.uuid ?? null } });
+  function eligible(loft) {
+    if (!loft || loft.sliceCount < 4) return null;
+    for (let s = 1; s + 2 < loft.sliceCount; s++) {
+      const indices = [s - 1, s, s + 1, s + 2], id = loft.sliceFront[s];
+      if (!indices.every(k => loft.sliceFront[k] === id && loft.slicePhase[k] === 1 && loft.sliceFormed[k] === 1 && loft.sliceWeight[k] === 1 && loft.sliceFade[k] === 1)) continue;
+      if (![s - 1, s, s + 1].every(k => loft.sliceJoined[k] === 1) || loft.sliceMouth[s] < 1 || loft.sliceMouth[s + 1] < 1) continue;
+      return { slice: s, frontId: id, sigma: [loft.sliceSigma[s], loft.sliceSigma[s + 1]], tau: [loft.sliceTau[s], loft.sliceTau[s + 1]],
+        semantics: 'Actual published front ID and sigma; per-point material IDs are absent from front records' };
+    }
+    return null;
+  }
+  function hook(d) {
+    const mesh = d?.mode?.barrelMesh?.mesh;
+    if (!mesh || hooked === mesh) return;
+    if (hooked) throw Error('Barrel mesh ownership replaced during armed capture');
+    hooked = mesh; const original = mesh.onAfterRender;
+    mesh.onAfterRender = function(renderer, scene, c, geometry, material, group) {
+      Reflect.apply(original, this, arguments);
+      mark = { serial, renderer, scene, camera: c, geometry, material, status: d.mode.host.snapshot.status, mesh: this };
+    };
+    api.restoreHook = () => { mesh.onAfterRender = original; };
+  }
+  function capture(d, chosen) {
+    const host = d.mode.host, snapshot = host.snapshot, status = snapshot.status, loft = d.mode.barrelLoft, water = d.water, mesh = d.mode.barrelMesh.mesh;
+    assert(mark?.serial === serial && mark.status === status && mark.mesh === mesh, 'No actual completed barrel draw for current status');
+    assert(water.written?.revision === status && water.source?.revision === status && d.mode.sweptBarrel?.drawn?.revision === status, 'Draw/source/snapshot revision mismatch');
+    assert(d.mode.sweptBarrel.drawn.surfaceRevision === water.surfaceRevision && water.written.time === status.seaTime, 'Drawn water revision/time mismatch');
+    const g = mesh.geometry, n = loft.vertexCount, indexCount = Math.min(g.index.count, g.drawRange.count);
+    assert(g.drawRange.start === 0 && indexCount === loft.indexCount, 'Actual loft draw interval mismatch');
+    const gp = g.attributes.position.array, lp = loft.positions;
+    for (let i = 0; i < 3 * n; i++) assert(Object.is(gp[i], lp[i]), 'Drawn position differs from actual loft');
+    const previous = api.frames.at(-1);
+    if (previous) assert(Math.abs(status.seaTime - previous.seaTime - 1 / 60) < 1e-6, 'A publication was not drawn: five one-step consecutive states unproven');
+    const index = api.frames.length, prefix = 'frame-' + index + '/';
+    const row = { index, wall: performance.now(), seaTime: status.seaTime, status: { ...status }, chosen, camera: camera(mark.camera), optics: optical(d, mark.scene, mark.camera),
+      grid: { ...water.grid }, maskGrid: { ...water.barrelMaskGrid }, surfaceRevision: water.surfaceRevision, frontCount: snapshot.frontCount, tubeCount: snapshot.tubeCount,
+      vertexCount: n, indexCount, sliceCount: loft.sliceCount, drawRange: range(g), sourceDrawRanges: { coarse: range(water.mesh.geometry), rich: range(water.patch.geometry) },
+      matrixWorld: matrix(mesh.matrixWorld), primaryFields: [], retainedFields: [] };
+    const retained = (name, typed) => row.retainedFields.push(copy(prefix + name, typed));
+    retained('front', snapshot.front.subarray(0, snapshot.frontCount * FRONT_STRIDE));
+    for (const name of ['surface', 'flow', 'aeration']) retained(name, snapshot[name]);
+    retained('drawnPositions', gp.subarray(0, 3 * n)); retained('drawnIndices', g.index.array.subarray(0, indexCount));
+    retained('mask', water.uniforms.waterBarrelMask.value.image.data);
+    for (const name of Object.keys(loft).filter(name => name.startsWith('slice') && ArrayBuffer.isView(loft[name]))) retained(name, loft[name].subarray(0, loft.sliceCount));
+    if (index === 0) retained('bed', water.bedData);
+    for (const [name, attr] of Object.entries(g.attributes)) row.primaryFields.push(copy(prefix + 'mesh-' + name, attr.array.subarray(0, n * attr.itemSize), false));
+    row.primaryFields.push(copy(prefix + 'loftIndices', loft.indices.subarray(0, loft.indexCount), false));
+    for (const [name, data] of [['drawnWaterSurface', water.surfaceData], ['drawnWaterFlow', water.flowData], ['drawnWaterAeration', water.aerationData]]) row.primaryFields.push(copy(prefix + name, data, false));
+    api.frames.push(row);
+    if (api.frames.length === 5) { api.state = 'captured-five'; api.armed = false; }
+  }
+  api.arm = () => { assert(api.state === 'unarmed', 'One arm only'); api.state = 'observing'; api.armed = true; first = performance.now(); };
+  api.summary = () => ({ state: api.state, frames: api.frames.length, failure: api.failure, elapsedMs: first === undefined ? 0 : performance.now() - first, drawCalls: api.drawCalls, publications: api.publications, copiedBytes });
+  api.finalize = async () => { await Promise.all(api.hashes); return { ...api.summary(), frames: api.frames, fields: api.fields }; };
+  api.chunk = (label, offset) => { const bytes = saved.get(label); assert(bytes, 'Retained field absent'); const part = bytes.subarray(offset, offset + 65536); return btoa(String.fromCharCode(...part)); };
+  api.exportCommitted = async () => {
+    const d = window.breaklineDiagnostics, h = d.mode.host; assert(document.querySelector('#app').dataset.screen === 'pause' && h.outstandingSteps === 0, 'UI pause and zero pending steps required');
+    const snap = h.snapshot, status = snap.status, time = status.seaTime;
+    const output = await h.exportState();
+    assert(h.snapshot === snap && h.snapshot.status === status && status.seaTime === time && h.outstandingSteps === 0, 'Export changed committed publication');
+    const stored = new Uint8Array(output.bytes); saved.set('committed-worker-export', stored);
+    let bytes = stored;
+    if (output.deflated) bytes = new Uint8Array(await new Response(new Blob([stored]).stream().pipeThrough(new DecompressionStream('deflate'))).arrayBuffer());
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength); assert(view.getUint32(0, true) === 0x53455431, 'SET1 committed export expected');
+    const length = view.getUint32(4, true), header = JSON.parse(new TextDecoder().decode(bytes.subarray(8, 8 + length)));
+    assert(Math.abs(header.solverTime + header.seaTimeOffset - time) < 1e-6, 'Committed export clock differs from paused publication');
+    return { pausedSeaTime: time, outstandingSteps: 0, snapshotUnchanged: true, deflated: output.deflated, bytes: stored.length, sha256: await sha(stored),
+      expandedBytes: bytes.length, expandedSha256: await sha(bytes), header,
+      distinction: 'Committed F32 worker export at paused clock, possibly later than frame four; not the full internal F64 state or a captured-frame replacement' };
+  };
+  const raf = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = callback => raf(time => {
+    serial++; const d = window.breaklineDiagnostics;
+    if (api.armed) { try { hook(d); } catch (e) { api.failure = String(e); api.state = 'failed'; api.armed = false; } }
+    callback(time);
+    if (!api.armed) return;
+    try {
+      if (performance.now() - first >= 90000) { api.state = api.frames.length ? 'incomplete-five' : 'no-eligible-curl'; api.armed = false; return; }
+      if (document.querySelector('#app')?.dataset.screen !== 'ride' || mark?.serial !== serial) return;
+      api.drawCalls++;
+      const status = d.mode.host.snapshot.status;
+      if (status === latestStatus) return;
+      latestStatus = status; api.publications++;
+      const chosen = api.frames.length ? api.frames[0].chosen : eligible(d.mode.barrelLoft);
+      if (chosen) capture(d, chosen);
+    } catch (e) { api.failure = String(e); api.state = 'failed'; api.armed = false; }
+  });
+  // Views are made only after the five ordinary states and UI pause. They use actual held current indexed geometry.
+  api.heldViews = async () => {
+    const d = window.breaklineDiagnostics, host = d.mode.host;
+    assert(api.state === 'captured-five' && document.querySelector('#app').dataset.screen === 'pause' && host.outstandingSteps === 0, 'Complete ordinary capture and drained UI pause required');
+    const snap = host.snapshot, status = snap.status, loft = d.mode.barrelLoft, selected = eligible(loft);
+    if (!selected) return { absent: 'Paused current loft has no eligible fully formed interior slice', views: [] };
+    const mesh = d.mode.barrelMesh.mesh;
+    assert(mesh.matrixWorld.elements.every((v, i) => v === (i % 5 === 0 ? 1 : 0)), 'Actual loft world transform must be identity for direct indexed crossing proof');
+    const g = mesh.geometry, p = g.attributes.position.array, inds = g.index.array, count = Math.min(g.drawRange.count, g.index.count), s = selected.slice;
+    const point = j => { const a = (s * LOFT_SAMPLES + j) * 3, b = ((s + 1) * LOFT_SAMPLES + j) * 3; return [(p[a] + p[b]) / 2, (p[a + 1] + p[b + 1]) / 2, (p[a + 2] + p[b + 2]) / 2]; };
+    const crest = point(EXTENSION + 32), lip = point(EXTENSION + 64), toe = point(EXTENSION + 112), throat = point(EXTENSION + 88);
+    const ray = [loft.sliceRayX[s], loft.sliceRayZ[s]], along = [-ray[1], ray[0]];
+    const crossing = (x, z) => {
+      const hits = [];
+      for (let k = 0; k + 2 < count; k += 3) {
+        const a = inds[k] * 3, b = inds[k + 1] * 3, c = inds[k + 2] * 3;
+        const dx1 = p[b] - p[a], dz1 = p[b + 2] - p[a + 2], dx2 = p[c] - p[a], dz2 = p[c + 2] - p[a + 2], den = dx1 * dz2 - dz1 * dx2;
+        if (Math.abs(den) < 1e-10) continue;
+        const dx = x - p[a], dz = z - p[a + 2], u = (dx * dz2 - dz * dx2) / den, v = (dx1 * dz - dz1 * dx) / den;
+        if (u > 1e-7 && v > 1e-7 && u + v < 1 - 1e-7) hits.push({ y: p[a + 1] + u * (p[b + 1] - p[a + 1]) + v * (p[c + 1] - p[a + 1]), normalYUnnormalized: -den, projectionDenominator: den, sharedEdgeMargin: Math.min(u, v, 1 - u - v), triangleOffset: k, indices: [inds[k], inds[k + 1], inds[k + 2]], barycentric: [1 - u - v, u, v] });
+      }
+      // Strict interiors exclude shared edges. Keep every remaining hit; coincident surfaces must not be merged into an invented three-crossing cavity.
+      hits.sort((a, b) => a.y - b.y); return hits;
+    };
+    const mg = d.water.barrelMaskGrid, mask = d.water.uniforms.waterBarrelMask.value.image.data;
+    const fullMask = (x, z) => {
+      const gx = (x - mg.xMin) / mg.spacing, gz = (z - mg.zMin) / mg.spacing, ix = Math.floor(gx), iz = Math.floor(gz);
+      if (ix < 0 || iz < 0 || ix + 1 >= mg.nx || iz + 1 >= mg.nz) return null;
+      const offsets = [iz * mg.nx + ix, iz * mg.nx + ix + 1, (iz + 1) * mg.nx + ix, (iz + 1) * mg.nx + ix + 1];
+      return offsets.every(k => mask[k] === 255) ? { offsets, texels: offsets.map(k => mask[k]), grid: { ...mg }, active: d.water.uniforms.waterBarrelMaskActive.value } : null;
+    };
+    let cavity;
+    for (let k = 1; k < 32 && !cavity; k++) {
+      const t = k / 32, x = lip[0] * (1 - t) + throat[0] * t, z = lip[2] * (1 - t) + throat[2] * t, hits = crossing(x, z);
+      const covered = fullMask(x, z);
+      if (covered?.active === 1 && hits.length === 3 && hits[0].normalYUnnormalized > 0 && hits[1].normalYUnnormalized < 0 && hits[2].normalYUnnormalized > 0 && hits[1].y - hits[0].y >= 0.25 && hits[2].y - hits[1].y >= 0.002) cavity = { fullMask: covered, gap: hits[1].y - hits[0].y, eye: [x, (hits[0].y + hits[1].y) / 2, z], hits, convention: 'Up/down/up oriented surface crossings at strict triangle interiors with full mask suppression of original water: lower outward face, roof underside, lip outer face. Eye midway in face/underside gap; an actual local air candidate, not a closed-volume/general cavity proof' };
+    }
+    const center = [(crest[0] + lip[0] + throat[0]) / 3, (crest[1] + lip[1] + throat[1]) / 3, (crest[2] + lip[2] + throat[2]) / 3];
+    const height = Math.max(1, crest[1] - toe[1]);
+    const specs = [{ name: 'exterior', eye: [center[0] - ray[0] * 2 * height + along[0] * 2 * height, center[1] + height, center[2] - ray[1] * 2 * height + along[1] * 2 * height], target: center }];
+    if (cavity) specs.push({ name: 'cavity', eye: cavity.eye, target: [cavity.eye[0] + along[0] * 4, cavity.eye[1], cavity.eye[2] + along[1] * 4] });
+    const heldPrimary = () => {
+      const entries = [['positions', g.attributes.position.array.subarray(0, loft.vertexCount * 3)], ['indices', g.index.array.subarray(0, count)],
+        ['mask', d.water.uniforms.waterBarrelMask.value.image.data], ['surface', d.water.surfaceData], ['flow', d.water.flowData], ['aeration', d.water.aerationData]];
+      // Copy every witness synchronously; digest only after all copies are owned.
+      const owned = entries.map(([name, typed]) => [name, new Uint8Array(typed.buffer, typed.byteOffset, typed.byteLength).slice()]);
+      return Promise.all(owned.map(async ([name, bytes]) => ({ name, bytes: bytes.length, sha256: await sha(bytes) })));
+    };
+    const views = [];
+    for (const spec of specs) {
+      const c = d.mode.camera.camera.clone(); c.position.set(...spec.eye); c.lookAt(...spec.target); c.updateMatrixWorld(true);
+      const output = [];
+      for (let repeat = 0; repeat < 2; repeat++) {
+        d.renderView(c);
+        assert(host.snapshot === snap && host.snapshot.status === status && host.outstandingSteps === 0 && status.seaTime === snap.status.seaTime, 'View changed committed physics');
+        const gl = mark.renderer.getContext(); assert(gl.getParameter(gl.FRAMEBUFFER_BINDING) === null, 'Default completed framebuffer required');
+        const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4); gl.readPixels(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        const label = 'held-' + spec.name + '-' + repeat; if (repeat === 0) saved.set(label, pixels);
+        const primary = heldPrimary(), optics = optical(d, mark.scene, c), actualCamera = camera(c);
+        output.push({ repeat, label, bytes: pixels.length, sha256: await sha(pixels), primary: await primary, camera: actualCamera, optics });
+      }
+      views.push({ ...spec, seaTime: status.seaTime, draws: output, repeatEqual: output[0].sha256 === output[1].sha256, primaryEqual: JSON.stringify(output[0].primary) === JSON.stringify(output[1].primary), width: d.canvas.width, height: d.canvas.height });
+    }
+    return { selected, cavity: cavity ?? null, cavityAbsent: !cavity ? 'No strict three-crossing air point found in 31 fixed samples' : null, pausedSeaTime: status.seaTime, views };
+  };
+})();

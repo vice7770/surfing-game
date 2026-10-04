@@ -1,0 +1,40 @@
+// One owned native child, hard bounded. Default is local source-only plan.
+import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { sleep, tcpProof } from '/private/tmp/surf-full-writer-fps-20261004/native-owned.mjs';
+const WORK = '/private/tmp/surf-tube-big-live-capture-20261004';
+const args = Object.fromEntries(process.argv.slice(2).map(s => { const i = s.indexOf('='); assert(s.startsWith('--') && i > 2); return [s.slice(2, i), s.slice(i + 1)]; }));
+assert(Object.keys(args).every(k => ['run', 'out'].includes(k)) && [undefined, 'false', 'true'].includes(args.run));
+const hash = p => createHash('sha256').update(readFileSync(p)).digest('hex');
+if (args.run !== 'true') { console.log(JSON.stringify({ planOnly: true, innerCommand: 'capture.mjs --run=true', childDeadlineSeconds: 170, totalSeconds: 180, ownedPorts: [4240, 9650], retries: 0 })); process.exit(0); }
+assert.equal(hash(join(WORK, 'ready.json')), process.env.TUBE_BIG_CAPTURE_READY_SHA256);
+assert.equal(hash(join(WORK, 'authority.json')), process.env.TUBE_BIG_CAPTURE_AUTHORITY_SHA256);
+const OUT = resolve(args.out ?? join(WORK, 'root-run')); assert(OUT.startsWith(WORK + '/') && !existsSync(OUT)); mkdirSync(OUT);
+const report = { schema: 'actual-big-native-owned-outer/v1', startedAt: new Date().toISOString(), valid: false, complete: false }, start = Date.now();
+const save = () => writeFileSync(join(OUT, 'terminal.json'), JSON.stringify(report, null, 2) + '\n'); save();
+let child, timer, force; const log = createWriteStream(join(OUT, 'stdout.log'), { flags: 'wx' });
+try {
+  report.prePorts = {}; for (const port of [4240, 9650, 4200]) { report.prePorts[port] = await tcpProof(port); assert.equal(report.prePorts[port].closed, true); }
+  const command = [join(WORK, 'capture.mjs'), '--run=true', '--out=' + join(OUT, 'capture')];
+  child = spawn(process.execPath, command, { cwd: WORK, env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
+  child.stdout.pipe(log, { end: false }); child.stderr.pipe(log, { end: false }); report.pid = child.pid; report.command = [process.execPath, ...command]; save();
+  timer = setTimeout(() => { report.deadline = '170-second hard child deadline; no retry'; save(); child.kill('SIGTERM'); }, Math.max(1, 170000 - (Date.now() - start)));
+  force = setTimeout(() => child.kill('SIGKILL'), Math.max(1, 172000 - (Date.now() - start)));
+  report.terminal = await new Promise((yes, no) => { child.once('error', no); child.once('exit', (code, signal) => yes({ code, signal, at: new Date().toISOString() })); }); clearTimeout(timer); clearTimeout(force);
+  assert.equal(report.terminal.code, 0); assert(!report.deadline);
+  const p = join(OUT, 'capture/report.json'); report.captureSha256 = hash(p); const capture = JSON.parse(readFileSync(p)); assert.equal(capture.valid, true);
+  report.complete = !capture.incomplete; report.valid = true;
+} catch (e) { report.firstFailure = String(e); process.exitCode = 1; }
+finally {
+  clearTimeout(timer); clearTimeout(force);
+  if (child?.exitCode === null && child.signalCode === null) { child.kill('SIGTERM'); await sleep(300); if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL'); }
+  const launcherPath = join(OUT, 'capture/launcher.json');
+  if (existsSync(launcherPath)) { const launcher = JSON.parse(readFileSync(launcherPath)); if (launcher.pid && (await tcpProof(9650)).closed !== true) { try { process.kill(launcher.pid, 'SIGTERM'); } catch {} await sleep(300); if ((await tcpProof(9650)).closed !== true) { try { process.kill(launcher.pid, 'SIGKILL'); } catch {} } } }
+  report.postPorts = {}; for (const port of [4240, 9650, 4200]) report.postPorts[port] = await tcpProof(port);
+  report.valid &&= Object.values(report.postPorts).every(p => p.closed === true) && Date.now() - start <= 180000;
+  report.endedAt = new Date().toISOString(); report.elapsedSeconds = (Date.now() - start) / 1000; log.end(); save();
+  console.log(JSON.stringify({ valid: report.valid, complete: report.complete, firstFailure: report.firstFailure, terminal: join(OUT, 'terminal.json') }));
+}

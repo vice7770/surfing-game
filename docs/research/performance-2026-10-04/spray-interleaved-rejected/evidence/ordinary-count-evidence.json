@@ -1,0 +1,25 @@
+{
+  "schema": "spray-interleaved-count-evidence/v1",
+  "records": [
+    {
+      "path": "/private/tmp/surf-full-writer-fps-20261004/root-run/baseline/fps.json",
+      "bytes": 100703,
+      "sha256": "079a7fbf8cf1931a3b86500e75aef72f16021d077401fdaa9a8a44a25a4a63f1",
+      "publishedSprayCount": null,
+      "retainedWorkerSprayStageMsP50": 0.3,
+      "retainedWorkerSprayStageMsP95": 0.5,
+      "countCaution": "Stage timing is worker physics/packing evidence, not page SprayPoints.update or particle-count evidence"
+    },
+    {
+      "path": "/private/tmp/surf-full-writer-fps-20261004/root-run/candidate/fps.json",
+      "bytes": 100676,
+      "sha256": "a47fe8a987a77e931e3bc4e54b81a2d946da017584db9a789a7a2b2d3fc72de0",
+      "publishedSprayCount": null,
+      "retainedWorkerSprayStageMsP50": 0.4,
+      "retainedWorkerSprayStageMsP95": 0.5,
+      "countCaution": "Stage timing is worker physics/packing evidence, not page SprayPoints.update or particle-count evidence"
+    }
+  ],
+  "ordinaryPublishedCountUnavailable": true,
+  "nativeThresholdAtOrdinaryCountUnproven": true
+}

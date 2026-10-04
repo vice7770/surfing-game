@@ -1,0 +1,2 @@
+cost.ts(65,9): error TS7034: Variable 'rows' implicitly has type 'any[]' in some locations where its type cannot be determined.
+cost.ts(73,74): error TS7005: Variable 'rows' implicitly has an 'any[]' type.

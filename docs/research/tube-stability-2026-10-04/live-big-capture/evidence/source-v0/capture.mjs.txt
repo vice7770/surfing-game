@@ -1,0 +1,97 @@
+// Bounded single ordinary native GPU shape capture. Unarmed invocation is a local plan.
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
+import { extname, join, resolve } from 'node:path';
+import { gzipSync, deflateSync, inflateSync } from 'node:zlib';
+import { launch, sleep, tcpProof } from '/private/tmp/surf-full-writer-fps-20261004/native-owned.mjs';
+import { AUDIT_PRELUDE, NativePassiveGuard } from '/private/tmp/surf-full-writer-fps-20261004/passive-guard.mjs';
+const WORK = '/private/tmp/surf-tube-big-live-capture-20261004', PORT = 4240, CDP = 9650, CAP = 20 * 1024 * 1024;
+const args = Object.fromEntries(process.argv.slice(2).map(s => { const i = s.indexOf('='); assert(s.startsWith('--') && i > 2); return [s.slice(2, i), s.slice(i + 1)]; }));
+assert(Object.keys(args).every(k => ['run', 'out'].includes(k)) && [undefined, 'false', 'true'].includes(args.run));
+const json = p => JSON.parse(readFileSync(p, 'utf8')), sha = b => createHash('sha256').update(b).digest('hex');
+const record = p => { const b = readFileSync(p); return { path: p, bytes: b.length, sha256: sha(b) }; };
+const verify = r => { const a = record(r.path); assert.equal(a.bytes, r.bytes, r.path); assert.equal(a.sha256, r.sha256, r.path); };
+const plan = json(join(WORK, 'plan.json')), bindingPath = join(WORK, 'authority.json');
+if (args.run !== 'true') { console.log(JSON.stringify({ planOnly: true, plan, authorityPending: !existsSync(bindingPath), serverStarted: false, chromeStarted: false }, null, 2)); process.exit(0); }
+assert.equal(sha(readFileSync(join(WORK, 'ready.json'))), process.env.TUBE_BIG_CAPTURE_READY_SHA256, 'Reviewed source-ready pin required');
+assert.equal(sha(readFileSync(bindingPath)), process.env.TUBE_BIG_CAPTURE_AUTHORITY_SHA256, 'Reviewed source/build authority pin required');
+const authority = json(bindingPath); assert.equal(authority.pending, false);
+const check = () => { for (const r of [...authority.sourceFiles, ...authority.compiledFiles, ...authority.publicFiles, ...authority.borrowed, ...json(join(WORK, 'ready.json')).artifacts]) verify(r); };
+check();
+const OUT = resolve(args.out ?? join(WORK, 'run')); assert(OUT.startsWith(WORK + '/') && !existsSync(OUT), 'Fresh owned output only'); mkdirSync(OUT, { recursive: true });
+const report = { schema: 'actual-big-native-shape-capture/v1', plan, authority: record(bindingPath), startedAt: new Date().toISOString(), valid: false, incomplete: true, artifacts: [], storedBytes: 0 };
+const save = () => writeFileSync(join(OUT, 'report.json'), JSON.stringify(report, null, 2) + '\n'); save();
+const store = (name, bytes, raw) => { assert(!name.includes('..') && !name.startsWith('/')); const p = join(OUT, name); mkdirSync(resolve(p, '..'), { recursive: true });
+  report.storedBytes += bytes.length; assert(report.storedBytes <= CAP, '20 MiB stored payload cap'); writeFileSync(p, bytes, { flag: 'wx' });
+  const row = { ...record(p), ...(raw ? { expandedBytes: raw.length, expandedSha256: sha(raw) } : {}) }; report.artifacts.push(row); save(); return row; };
+const crcTable = Uint32Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+const chunk = (type, bytes) => { const tag = Buffer.from(type), h = Buffer.alloc(4), t = Buffer.alloc(4); h.writeUInt32BE(bytes.length); let crc = 0xffffffff;
+  for (const v of Buffer.concat([tag, bytes])) crc = crcTable[(crc ^ v) & 255] ^ (crc >>> 8); t.writeUInt32BE((crc ^ 0xffffffff) >>> 0); return Buffer.concat([h, tag, bytes, t]); };
+const png = (rgba, width, height) => { assert.equal(rgba.length, width * height * 4); const h = Buffer.alloc(13); h.writeUInt32BE(width); h.writeUInt32BE(height, 4); h[8] = 8; h[9] = 6;
+  const stride = width * 4, rows = Buffer.alloc((stride + 1) * height); for (let y = 0; y < height; y++) rgba.copy(rows, y * (stride + 1) + 1, (height - y - 1) * stride, (height - y) * stride);
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', h), chunk('IDAT', deflateSync(rows)), chunk('IEND', Buffer.alloc(0))]); };
+let page, server, deadline, guard, ended = false;
+const started = Date.now(), compiled = new Map(authority.compiledFiles.map(r => [r.relativePath, r])), assets = new Map(authority.publicFiles.map(r => [r.relativePath, r]));
+const graphics = { renderScale: 1, nativePixelDensity: true, frameLimit: 60, waterSimulation: 'auto', seaDetail: 'rich', caustics: true, sprayMist: true, oceanView: 'far', foam: 'detailed', waterLook: 'rich', particles: 'high', preset: 'high' };
+const ordinary = { graphics }, screen = name => page.waitFor(`document.querySelector('#app')?.dataset.screen === ${JSON.stringify(name)}`, 90000);
+async function bytes(label, length) { const parts = []; for (let offset = 0; offset < length; offset += 65536) parts.push(Buffer.from(await page.eval(`window.__tubeBigCapture.chunk(${JSON.stringify(label)}, ${offset})`), 'base64')); const b = Buffer.concat(parts); assert.equal(b.length, length); return b; }
+try {
+  report.prePorts = {}; for (const port of [PORT, CDP, 4200]) { report.prePorts[port] = await tcpProof(port); assert.equal(report.prePorts[port].closed, true, 'Owned ports/user play port must be closed'); }
+  server = createServer((request, response) => {
+    try { assert(['GET', 'HEAD'].includes(request.method)); const path = decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname).replace(/^\/+/, '') || 'index.html', pin = compiled.get(path) ?? assets.get(path);
+      if (!pin) { response.writeHead(404); response.end(); if (path !== 'favicon.ico') report.firstServingFailure ??= path; return; }
+      const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.bin': 'application/octet-stream', '.glb': 'model/gltf-binary', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.mp3': 'audio/mpeg', '.hdr': 'application/octet-stream', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
+      response.writeHead(200, { 'Content-Type': mime[extname(pin.path)] ?? 'application/octet-stream', 'Content-Length': statSync(pin.path).size, 'Cache-Control': 'no-store' });
+      if (request.method === 'HEAD') response.end(); else createReadStream(pin.path).pipe(response);
+    } catch (e) { report.firstServingFailure ??= String(e); response.writeHead(500); response.end(); }
+  });
+  await new Promise((yes, no) => { server.once('error', no); server.listen(PORT, '127.0.0.1', yes); });
+  report.servedCompiled = []; for (const r of authority.compiledFiles) { const response = await fetch(`http://127.0.0.1:${PORT}/${r.relativePath}`, { signal: AbortSignal.timeout(2000) }); assert(response.ok); const b = Buffer.from(await response.arrayBuffer()); assert.equal(sha(b), r.sha256); report.servedCompiled.push({ path: r.relativePath, bytes: b.length, sha256: sha(b) }); }
+  process.env.FULL_WRITER_FPS_LAUNCHER_REPORT = join(OUT, 'launcher.json'); process.env.FULL_WRITER_FPS_EXPECTED_WORKER = authority.worker; process.env.FULL_WRITER_FPS_EXPECTED_SOLO_ONE_STEP = '1';
+  guard = new NativePassiveGuard({ output: OUT });
+  page = await launch({ url: `http://127.0.0.1:${PORT}/?diagnostics`, width: 1708, height: 966, port: CDP, args: ['--mute-audio'] });
+  report.browser = await page.eval(`(async () => { const gl = document.createElement('canvas').getContext('webgl2'), ext = gl.getExtension('WEBGL_debug_renderer_info'), adapter = navigator.gpu ? await navigator.gpu.requestAdapter() : null; return { userAgent: navigator.userAgent, webgl: gl.getParameter(ext.UNMASKED_RENDERER_WEBGL), webgpu: adapter ? [adapter.info?.vendor, adapter.info?.architecture].filter(Boolean).join(' · ') : 'unavailable', dpr: devicePixelRatio }; })()`);
+  assert.equal(report.browser.dpr, 2);
+  await page.send('Page.addScriptToEvaluateOnNewDocument', { source: '(() => { let a = 0x5eed; Math.random = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();' });
+  await page.send('Page.addScriptToEvaluateOnNewDocument', { source: AUDIT_PRELUDE });
+  await page.send('Page.addScriptToEvaluateOnNewDocument', { source: readFileSync(join(WORK, 'page-prelude.js'), 'utf8') });
+  const settings = { graphics, detected: { preset: 'high', water: 'accurate', lowPerformance: false, adapter: report.browser.webgl }, gameplay: { showTelemetry: true }, seen: { rideHints: true, lowPerformanceNotice: true } };
+  await page.eval(`localStorage.setItem('breakline.settings.v1', ${JSON.stringify(JSON.stringify(settings))}); location.reload()`); await sleep(800);
+  await page.waitFor("document.querySelector('.screen-menu') && !document.querySelector('.is-scene-pending')", 90000);
+  await guard.observe('menu', page, ordinary, true);
+  await sleep(1500); await page.click('.tile', 'Surf'); await screen('surf'); await sleep(600); await page.click('.spot-card', 'Padang'); await sleep(300); await page.click('.segmented button', 'Big'); await sleep(300); await page.click('.button-primary', 'Paddle out'); await screen('ride');
+  await page.waitFor('window.breaklineDiagnostics?.mode?.ready === true && window.breaklineDiagnostics.mode.host?.port?.audit?.advances >= 1', 90000);
+  await guard.observe('observation-start', page, ordinary);
+  await page.eval('window.__tubeBigCapture.arm()');
+  report.captureStartedAt = new Date().toISOString(); save();
+  for (;;) {
+    report.observation = await page.eval('window.__tubeBigCapture.summary()');
+    if (report.observation.state !== 'observing') break;
+    assert(Date.now() - started < 170000, 'Whole owned command timeout before ninety-second observation finishes'); await sleep(100);
+  }
+  await guard.observe('observation-end', page, ordinary); report.nativeAudit = guard.state;
+  await page.press('Escape'); await screen('pause'); await page.waitFor('window.breaklineDiagnostics.mode.host.outstandingSteps === 0', 5000);
+  const finalized = await page.eval('window.__tubeBigCapture.finalize()'); report.capture = finalized;
+  for (const r of finalized.fields) { const b = await bytes(r.label, r.bytes); assert.equal(sha(b), r.sha256); r.file = store('fields/' + r.label.replace(/\//g, '-') + '.bin.gz', gzipSync(b), b); }
+  report.export = await page.eval('window.__tubeBigCapture.exportCommitted()');
+  const stateBytes = await bytes('committed-worker-export', report.export.bytes); assert.equal(sha(stateBytes), report.export.sha256); report.export.file = store('committed-worker-export.bin' + (report.export.deflated ? '.deflate' : ''), stateBytes);
+  const expanded = report.export.deflated ? inflateSync(stateBytes) : stateBytes; assert.equal(sha(expanded), report.export.expandedSha256);
+  if (finalized.state === 'captured-five') {
+    report.heldViews = await page.eval('window.__tubeBigCapture.heldViews()');
+    for (const view of report.heldViews.views) { const draw = view.draws[0], rgba = await bytes(draw.label, draw.bytes); assert.equal(sha(rgba), draw.sha256); draw.file = store('held-' + view.name + '.png', png(rgba, view.width, view.height)); }
+  }
+  await page.eval('window.__tubeBigCapture.restoreHook?.()');
+  assert(!report.firstServingFailure, 'Source-required static asset unavailable'); check(); report.authorityUnchangedAfter = true;
+  report.valid = finalized.state === 'captured-five' || finalized.state === 'no-eligible-curl'; report.incomplete = finalized.state !== 'captured-five';
+  if (!report.valid) throw Error(finalized.failure ?? finalized.state);
+} catch (e) { report.firstFailure = String(e); process.exitCode = 1; }
+finally {
+  if (page) { try { await page.close(); } catch (e) { report.closeFailure = String(e); } }
+  if (server) { server.closeAllConnections(); await new Promise(yes => server.close(yes)); }
+  report.postPorts = {}; for (const port of [PORT, CDP, 4200]) report.postPorts[port] = await tcpProof(port);
+  report.valid &&= Object.values(report.postPorts).every(p => p.closed === true) && !report.closeFailure && Date.now() - started <= 180000;
+  report.endedAt = new Date().toISOString(); report.elapsedSeconds = (Date.now() - started) / 1000; save();
+  console.log(JSON.stringify({ valid: report.valid, incomplete: report.incomplete, firstFailure: report.firstFailure, report: join(OUT, 'report.json') }));
+}

@@ -1,0 +1,12 @@
+{
+  "schema": "spray-interleaved-rejected-archive-ready/v1",
+  "status": "FROZEN_REJECTED_USEFULNESS",
+  "manifestSha256": "dae7a5596f0d0b8f780e7decb02995224f8f958b97ee30a5c669845f19334f67",
+  "verificationSha256": "2146be8b1ae55b68c23d22ffd590b20bd33f6121f59fe17a11fb0eb86ed1c8f4",
+  "productionEdits": false,
+  "experimentExecutionDuringArchive": false,
+  "payloads": 48,
+  "originalAliases": 69,
+  "externalReferences": 77,
+  "storedPayloadBytes": 546611
+}

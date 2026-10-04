@@ -1,0 +1,178 @@
+from pathlib import Path
+from hashlib import sha256
+from datetime import datetime, timezone
+import gzip
+import json
+import shutil
+import subprocess
+
+REPO = Path('/Users/regina/Desktop/Projects/surfing-game')
+WORK = Path('/private/tmp/surf-spray-interleaved-20261004')
+PREP = Path('/private/tmp/surf-spray-interleaved-archive-20261004')
+DEST = REPO / 'docs/research/performance-2026-10-04/spray-interleaved-rejected'
+COMMIT = 'b0e003b8670c9d0be83bc9bb24c30b5382a54499'
+assert not DEST.exists(), 'Archive must be new'
+DEST.mkdir(parents=True)
+
+def digest(raw):
+    return sha256(raw).hexdigest()
+
+def write_json(path, value):
+    path.write_text(json.dumps(value, indent=2) + '\n')
+
+payloads = []
+by_content = {}
+alias_lookup = {}
+
+def add(source, relative, expected=None):
+    raw = source.read_bytes()
+    pin = {'path': str(source), 'bytes': len(raw), 'sha256': digest(raw)}
+    if expected is not None:
+        assert all(pin[k] == expected[k] for k in ('path', 'bytes', 'sha256')), source
+    identity = (pin['bytes'], pin['sha256'])
+    if identity in by_content:
+        entry = by_content[identity]
+    else:
+        relative = str(relative)
+        if relative.endswith(('.ts', '.js', '.mjs', '.py')):
+            relative += '.txt'
+        compressed = len(raw) >= 1200 and not relative.endswith('.log')
+        if compressed:
+            relative += '.gz'
+        stored = gzip.compress(raw, compresslevel=6, mtime=0) if compressed else raw
+        target = DEST / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(stored)
+        entry = {'storedPath': relative, 'encoding': 'gzip-generated-mtime0' if compressed else 'identity',
+                 'storedBytes': len(stored), 'storedSha256': digest(stored),
+                 'expandedBytes': len(raw), 'expandedSha256': digest(raw), 'originalAliases': []}
+        by_content[identity] = entry
+        payloads.append(entry)
+    if pin not in entry['originalAliases']:
+        entry['originalAliases'].append(pin)
+    alias_lookup[(pin['path'], pin['bytes'], pin['sha256'])] = entry
+    return pin
+
+ready_raw = (WORK / 'ready.json').read_bytes()
+assert digest(ready_raw) == '8b69b0c0c565ad7b9508bf34277d7757f249bb45d8d065e87f3bd718a87b81b1'
+ready = json.loads(ready_raw)
+for source in sorted(WORK.rglob('*')):
+    if source.is_file() and 'node_modules' not in source.parts:
+        add(source, Path('evidence') / source.relative_to(WORK))
+
+# Preserve the historical identities at paths subsequently overwritten by v1.
+preservation = json.loads((WORK / 'source-v0/manifest.json').read_text())
+assert len(preservation['files']) == 20
+for frozen in preservation['files']:
+    key = (frozen['path'], frozen['bytes'], frozen['sha256'])
+    record = alias_lookup[key]
+    original = {'path': frozen['original'], 'bytes': frozen['bytes'], 'sha256': frozen['sha256']}
+    if original not in record['originalAliases']:
+        record['originalAliases'].append(original)
+    alias_lookup[(original['path'], original['bytes'], original['sha256'])] = record
+
+live_base = REPO / 'docs/research/tube-stability-2026-10-04/live-big-capture'
+live_manifest = json.loads((live_base / 'manifest.json').read_text())
+live_external = {(x['originalPath'], x['bytes'], x['sha256']): x for x in live_manifest['externalReferences']}
+live_alias = {}
+for record in live_manifest['payloads']:
+    for pin in record['originalAliases']:
+        live_alias[(pin['path'], pin['bytes'], pin['sha256'])] = record
+
+external = []
+canonical = [pin for pin in ready['inputs'] if pin['path'].startswith(str(REPO / 'src') + '/')]
+assert len(canonical) == 75
+for pin in canonical:
+    old = live_external[(pin['path'], pin['bytes'], pin['sha256'])]
+    verification = old['verification']
+    assert verification['kind'] == 'git' and verification['commit'] == COMMIT
+    external.append({'originalPath': pin['path'], 'bytes': pin['bytes'], 'sha256': pin['sha256'],
+                     'verification': verification, 'role': 'Exact committed canonical import closure; not duplicated'})
+
+small_dependency_pins = [pin for pin in ready['inputs'] if pin['path'].startswith(str(REPO) + '/') and pin not in canonical]
+supplements = [pin for pin in json.loads((WORK / 'root-cpu-v1/pins.json').read_text())
+               if pin.get('role') == 'actual Three ESM runtime supplement']
+assert len(supplements) == 2
+for pin in small_dependency_pins + supplements:
+    source = Path(pin['path'])
+    add(source, Path('evidence/dependencies') / source.relative_to(REPO), expected=pin)
+
+def archived_reference(original, role):
+    record = live_alias[(original['path'], original['bytes'], original['sha256'])]
+    source = live_base / record['storedPath']
+    stored = source.read_bytes()
+    assert len(stored) == record['storedBytes'] and digest(stored) == record['storedSha256']
+    raw = gzip.decompress(stored) if record['encoding'].startswith('gzip') else stored
+    assert len(raw) == original['bytes'] and digest(raw) == original['sha256']
+    external.append({'originalPath': original['path'], 'bytes': original['bytes'], 'sha256': original['sha256'],
+                     'verification': {'kind': 'archive', 'repositoryRelativePath': str(source.relative_to(REPO)),
+                                      'encoding': record['encoding'], 'storedBytes': record['storedBytes'],
+                                      'storedSha256': record['storedSha256']}, 'role': role})
+    return raw
+
+canonical_info = json.loads((WORK / 'canonical-source-inputs.json').read_text())
+archived_reference(canonical_info['reusedRootAuthority'], 'Existing exact source-authority alias; no recopy')
+capture_pin = {'path': '/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/report.json',
+               'bytes': 605120, 'sha256': '46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988'}
+capture = json.loads(archived_reference(capture_pin, 'Separate actual drawn-count observation from failed native capture'))
+frames = capture['capture']['frames']
+assert len(frames) == 3 and not capture['valid']
+observed = {'schema': 'spray-interleaved-independent-count-supplement/v1', 'sourceReport': capture_pin,
+            'sourceCaptureValid': False, 'captureFailure': capture['firstFailure'],
+            'frames': [{'index': f['index'], 'seaTime': f['seaTime'], 'surfaceRevision': f['surfaceRevision'],
+                        'drawnStatusSpray': f['status']['spray']} for f in frames],
+            'scope': 'Three actually drawn Big states only. Separate from finite synthetic cost inputs and original unknown-count preparation. No FPS or complete capture acceptance.'}
+assert all(f['drawnStatusSpray'] == 4096 for f in observed['frames'])
+write_json(DEST / 'observed-count-supplement.json', observed)
+
+report_raw = (WORK / 'cost-first.json').read_bytes()
+assert len(report_raw) == 174272 and digest(report_raw) == '5bc66bc5f10336e11b9237db33957268cef8eaf6b8bfa818477e5ef8506c8048'
+report = json.loads(report_raw)
+summary = {'schema': 'spray-interleaved-rejection-summary/v1', 'decision': 'REJECT_USEFULNESS',
+           'nativePixelGate': 'NOT_RUN', 'fpsGate': 'NOT_RUN', 'adopted': False,
+           'thresholdMs': 0.1, 'report': {'path': str(WORK / 'cost-first.json'), 'bytes': len(report_raw), 'sha256': digest(report_raw)},
+           'conditions': [{k: v for k, v in case.items() if k != 'rows'} for case in report['results']],
+           'measuredPairs': report['measuredPairs'], 'elapsedMs': report['elapsedMs'],
+           'scope': 'One whole-update CPU experiment; synthetic fields. Logical NaN parity only, not universal raw NaN payload parity. No worker-cadence or FPS causality claim.'}
+write_json(DEST / 'results-summary.json', summary)
+shutil.copyfile(PREP / 'README.md', DEST / 'README.md')
+shutil.copyfile(PREP / 'verify.py', DEST / 'verify.py')
+shutil.copyfile(PREP / 'archive.py', DEST / 'archive.py.txt')
+
+authority_paths = [str(WORK / p) for p in ['ready.json', 'canonical-source-inputs.json', 'compiled.json',
+              'root-cpu/pins.json', 'root-cpu/terminal.json', 'root-cpu-v1/pins.json', 'root-cpu-v1/terminal.json',
+              'root-cost-first/terminal.json', 'source-v0/ready.json', 'source-v0/manifest.json',
+              'source-v0/canonical-source-inputs.json', 'source-v0/root-cpu/pins.json', 'source-v0/root-cpu/terminal.json']]
+authorities = [{'path': path, 'bytes': Path(path).stat().st_size, 'sha256': digest(Path(path).read_bytes())}
+               for path in authority_paths]
+generated = []
+for relative in ['README.md', 'verify.py', 'archive.py.txt', 'results-summary.json', 'observed-count-supplement.json']:
+    raw = (DEST / relative).read_bytes()
+    generated.append({'path': relative, 'bytes': len(raw), 'sha256': digest(raw)})
+manifest = {'schema': 'spray-interleaved-rejected-archive/v1', 'createdUtc': datetime.now(timezone.utc).isoformat(),
+            'status': 'REJECT_USEFULNESS', 'canonicalRuntimeCommit': COMMIT,
+            'payloads': sorted(payloads, key=lambda x: x['storedPath']), 'externalReferences': external,
+            'closureAuthorities': authorities, 'generatedRecords': generated,
+            'originalPayloadAliasCount': sum(len(x['originalAliases']) for x in payloads),
+            'storedPayloadBytes': sum(x['storedBytes'] for x in payloads),
+            'uniquePayloadCount': len(payloads), 'canonicalGitReferences': len(canonical),
+            'scope': 'Compatibility PASS after preserved first strict FAIL; one CPU cost gate rejected usefulness. No native/FPS/adoption. Existing adjacent capture supplies three-state count only.'}
+write_json(DEST / 'manifest.json', manifest)
+completed = subprocess.run(['python3', str(DEST / 'verify.py'), '--external', '--output', str(DEST / 'verification.json')],
+                           capture_output=True, text=True)
+assert completed.returncode == 0, completed.stdout + completed.stderr
+verification = json.loads(completed.stdout)
+archive_ready = {'schema': 'spray-interleaved-rejected-archive-ready/v1', 'status': 'FROZEN_REJECTED_USEFULNESS',
+                 'manifestSha256': digest((DEST / 'manifest.json').read_bytes()),
+                 'verificationSha256': digest((DEST / 'verification.json').read_bytes()),
+                 'productionEdits': False, 'experimentExecutionDuringArchive': False,
+                 'payloads': len(payloads), 'originalAliases': manifest['originalPayloadAliasCount'],
+                 'externalReferences': len(external), 'storedPayloadBytes': manifest['storedPayloadBytes']}
+write_json(DEST / 'ready.json', archive_ready)
+sums = []
+for file in sorted(DEST.rglob('*')):
+    if file.is_file() and file.name != 'SHA256SUMS':
+        sums.append(digest(file.read_bytes()) + '  ' + str(file.relative_to(DEST)))
+(DEST / 'SHA256SUMS').write_text('\n'.join(sums) + '\n')
+print(json.dumps({'archive': str(DEST), 'readySha256': digest((DEST / 'ready.json').read_bytes()),
+                  **archive_ready, 'verification': verification}, indent=2))

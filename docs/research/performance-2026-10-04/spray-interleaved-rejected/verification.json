@@ -1,0 +1,67 @@
+{
+  "schema": "spray-interleaved-rejected-archive-verification/v1",
+  "valid": true,
+  "manifestSha256": "dae7a5596f0d0b8f780e7decb02995224f8f958b97ee30a5c669845f19334f67",
+  "uniquePayloadsVerified": 48,
+  "originalAliasesVerified": 69,
+  "closurePinsResolved": 732,
+  "externalReferences": 77,
+  "externalIdentitiesVerified": 77,
+  "strictFirstFailPreserved": true,
+  "typeOnlyRepairVerified": true,
+  "portableTestsPassed": 9,
+  "costConditionsDerived": 8,
+  "measuredPairsVerified": 768,
+  "derived": [
+    {
+      "count": 64,
+      "look": "rich",
+      "pairedMedianSavingMs": 0.0002499999999940883,
+      "positivePairs": 85
+    },
+    {
+      "count": 64,
+      "look": "classic",
+      "pairedMedianSavingMs": 0.00012499999999704414,
+      "positivePairs": 76
+    },
+    {
+      "count": 512,
+      "look": "rich",
+      "pairedMedianSavingMs": 0.0019580000000019027,
+      "positivePairs": 95
+    },
+    {
+      "count": 512,
+      "look": "classic",
+      "pairedMedianSavingMs": -0.00016700000000469117,
+      "positivePairs": 34
+    },
+    {
+      "count": 4096,
+      "look": "rich",
+      "pairedMedianSavingMs": 0.01047900000000368,
+      "positivePairs": 96
+    },
+    {
+      "count": 4096,
+      "look": "classic",
+      "pairedMedianSavingMs": -8.350000001655644e-05,
+      "positivePairs": 24
+    },
+    {
+      "count": 5120,
+      "look": "rich",
+      "pairedMedianSavingMs": 0.013042000000012877,
+      "positivePairs": 96
+    },
+    {
+      "count": 5120,
+      "look": "classic",
+      "pairedMedianSavingMs": -8.400000001529406e-05,
+      "positivePairs": 28
+    }
+  ],
+  "decision": "REJECT_USEFULNESS",
+  "scope": "Archive hash/alias/closure and existing report arithmetic only; no game, module, test, benchmark, simulation or native execution."
+}

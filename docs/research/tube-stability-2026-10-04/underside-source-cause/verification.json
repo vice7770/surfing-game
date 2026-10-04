@@ -1,0 +1,84 @@
+{
+  "schema": "underside-source-byte-count-verification/v1",
+  "pass": true,
+  "externalRequested": true,
+  "storedPayloads": 16,
+  "originalAliases": 17,
+  "storedPayloadBytes": 470617,
+  "externalReferencesChecked": 125,
+  "parentManifestsChecked": 3,
+  "closureReferenceChecks": 258,
+  "fieldIdentityChecks": 93,
+  "storedGeometryCountConsistencyChecks": 120,
+  "freshReusedBuildsReported": 6,
+  "formedOpenSections": 12,
+  "cleanSections": 9,
+  "crossingSections": [
+    {
+      "frame": 0,
+      "slice": 16,
+      "seaTime": 327.8077132243035,
+      "footRatio": 0.1916442154512457,
+      "coreSegmentPair": [
+        74,
+        77
+      ],
+      "sameTimePrimitiveCrossingCounts": [
+        0,
+        0
+      ],
+      "contributorEndpointCrossingCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "stageEvidence": "Cross-case blended profile crosses; primitive same-time interpolations clean"
+    },
+    {
+      "frame": 1,
+      "slice": 17,
+      "seaTime": 327.82437989097014,
+      "footRatio": 0.19229707776387125,
+      "coreSegmentPair": [
+        71,
+        74
+      ],
+      "sameTimePrimitiveCrossingCounts": [
+        0,
+        1
+      ],
+      "contributorEndpointCrossingCounts": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "stageEvidence": "At least one source contributing endpoint already crosses"
+    },
+    {
+      "frame": 2,
+      "slice": 18,
+      "seaTime": 327.8410465576368,
+      "footRatio": 0.19294879077102636,
+      "coreSegmentPair": [
+        69,
+        72
+      ],
+      "sameTimePrimitiveCrossingCounts": [
+        1,
+        1
+      ],
+      "contributorEndpointCrossingCounts": [
+        0,
+        1,
+        0,
+        1
+      ],
+      "stageEvidence": "At least one source contributing endpoint already crosses"
+    }
+  ],
+  "scope": "Byte/hash/alias and arithmetic on stored report only; no helper, renderer, numerical comparison, physics or FPS rerun.",
+  "manifestSha256": "9810709d04cdb1520739940475fd6b316497d69be59d9441db61f558f964ff24",
+  "verificationDate": "2026-10-04"
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "spray-interleaved-root-cost-terminal/v1",
+  "startedAt": "2026-10-04T06:29:01.407812+00:00",
+  "beforePins": 126,
+  "wholeProcessBoundSeconds": 20,
+  "valid": true,
+  "command": [
+    "node",
+    "/private/tmp/surf-spray-interleaved-20261004/compiled/cost.mjs",
+    "--output",
+    "/private/tmp/surf-spray-interleaved-20261004/cost-first.json"
+  ],
+  "pid": 41352,
+  "code": 0,
+  "output": {
+    "path": "/private/tmp/surf-spray-interleaved-20261004/root-cost-first/command.log",
+    "bytes": 220,
+    "sha256": "9ae360f2625b0581966efca1bd970a1550d0948d2d051999b9a4888dd326499f"
+  },
+  "afterPins": 126,
+  "endedAt": "2026-10-04T06:29:01.797924+00:00"
+}

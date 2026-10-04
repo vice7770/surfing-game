@@ -1,0 +1,31 @@
+{
+  "schema": "spray-interleaved-independent-count-supplement/v1",
+  "sourceReport": {
+    "path": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/report.json",
+    "bytes": 605120,
+    "sha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988"
+  },
+  "sourceCaptureValid": false,
+  "captureFailure": "Error: Error: A publication was not drawn: five one-step consecutive states unproven",
+  "frames": [
+    {
+      "index": 0,
+      "seaTime": 327.8077132243035,
+      "surfaceRevision": 1050,
+      "drawnStatusSpray": 4096
+    },
+    {
+      "index": 1,
+      "seaTime": 327.82437989097014,
+      "surfaceRevision": 1051,
+      "drawnStatusSpray": 4096
+    },
+    {
+      "index": 2,
+      "seaTime": 327.8410465576368,
+      "surfaceRevision": 1052,
+      "drawnStatusSpray": 4096
+    }
+  ],
+  "scope": "Three actually drawn Big states only. Separate from finite synthetic cost inputs and original unknown-count preparation. No FPS or complete capture acceptance."
+}

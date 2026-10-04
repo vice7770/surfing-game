@@ -1,0 +1,490 @@
+{
+  "schema": "spray-interleaved-rejection-summary/v1",
+  "decision": "REJECT_USEFULNESS",
+  "nativePixelGate": "NOT_RUN",
+  "fpsGate": "NOT_RUN",
+  "adopted": false,
+  "thresholdMs": 0.1,
+  "report": {
+    "path": "/private/tmp/surf-spray-interleaved-20261004/cost-first.json",
+    "bytes": 174272,
+    "sha256": "5bc66bc5f10336e11b9237db33957268cef8eaf6b8bfa818477e5ef8506c8048"
+  },
+  "conditions": [
+    {
+      "syntheticSourceCount": 64,
+      "actualDrawnCount": 64,
+      "look": "rich",
+      "unchangedActiveUploadBytes": 1536,
+      "baseline": {
+        "n": 96,
+        "median": 0.0009375000000062528,
+        "mean": 0.01210806250000059,
+        "p95": 0.006332999999983713,
+        "min": 0.0006249999999852207,
+        "max": 0.9984999999999786
+      },
+      "candidate": {
+        "n": 96,
+        "median": 0.0006460000000032551,
+        "mean": 0.000954416666670177,
+        "p95": 0.002207999999995991,
+        "min": 0.0004160000000013042,
+        "max": 0.0050420000000030996
+      },
+      "pairedSaving": {
+        "n": 96,
+        "median": 0.0002499999999940883,
+        "mean": 0.011153645833330414,
+        "p95": 0.005248999999992066,
+        "min": -0.0025420000000053733,
+        "max": 0.9944589999999778
+      },
+      "positivePairs": 85,
+      "orderStrata": [
+        {
+          "order": "AB",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0.0003125000000068212,
+            "mean": 0.02176656249999868,
+            "p95": 0.005249999999989541,
+            "min": 8.299999998939711e-05,
+            "max": 0.9944589999999778
+          }
+        },
+        {
+          "order": "BA",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0.00014649999998539442,
+            "mean": 0.0005407291666621461,
+            "p95": 0.00491600000000858,
+            "min": -0.0025420000000053733,
+            "max": 0.005582999999973026
+          }
+        }
+      ],
+      "allActiveAndInactiveOutputWordsExact": true,
+      "sourceImmutable": true,
+      "ownedBuffersPersistent": true,
+      "shaderBytesExact": true
+    },
+    {
+      "syntheticSourceCount": 64,
+      "actualDrawnCount": 26,
+      "look": "classic",
+      "unchangedActiveUploadBytes": 624,
+      "baseline": {
+        "n": 96,
+        "median": 0.000541499999997086,
+        "mean": 0.000809937499999395,
+        "p95": 0.0019580000000019027,
+        "min": 0.0004160000000013042,
+        "max": 0.013542000000001053
+      },
+      "candidate": {
+        "n": 96,
+        "median": 0.0003955000000104292,
+        "mean": 0.0009262083333316795,
+        "p95": 0.0035829999999918982,
+        "min": 0.0002499999999940883,
+        "max": 0.01520800000000122
+      },
+      "pairedSaving": {
+        "n": 96,
+        "median": 0.00012499999999704414,
+        "mean": -0.00011627083333228445,
+        "p95": 0.0010830000000225937,
+        "min": -0.014666000000005397,
+        "max": 0.013208999999989146
+      },
+      "positivePairs": 76,
+      "orderStrata": [
+        {
+          "order": "AB",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0.00016700000000469117,
+            "mean": -0.0002647083333329192,
+            "p95": 0.0010830000000225937,
+            "min": -0.014666000000005397,
+            "max": 0.002292000000011285
+          }
+        },
+        {
+          "order": "BA",
+          "pairedSaving": {
+            "n": 48,
+            "median": 8.300000000360797e-05,
+            "mean": 3.2166666668350295e-05,
+            "p95": 0.00041699999999877946,
+            "min": -0.003916999999972859,
+            "max": 0.013208999999989146
+          }
+        }
+      ],
+      "allActiveAndInactiveOutputWordsExact": true,
+      "sourceImmutable": true,
+      "ownedBuffersPersistent": true,
+      "shaderBytesExact": true
+    },
+    {
+      "syntheticSourceCount": 512,
+      "actualDrawnCount": 512,
+      "look": "rich",
+      "unchangedActiveUploadBytes": 12288,
+      "baseline": {
+        "n": 96,
+        "median": 0.003124999999982947,
+        "mean": 0.0032031145833328147,
+        "p95": 0.00508299999998485,
+        "min": 0.0016249999999899956,
+        "max": 0.034583999999995285
+      },
+      "candidate": {
+        "n": 96,
+        "median": 0.0007499999999822649,
+        "mean": 0.0009236145833340833,
+        "p95": 0.002083999999996422,
+        "min": 0.0004999999999881766,
+        "max": 0.0023339999999905103
+      },
+      "pairedSaving": {
+        "n": 96,
+        "median": 0.0019580000000019027,
+        "mean": 0.0022794999999987318,
+        "p95": 0.00329200000001606,
+        "min": -4.199999997922532e-05,
+        "max": 0.032250000000004775
+      },
+      "positivePairs": 95,
+      "orderStrata": [
+        {
+          "order": "AB",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0.0021870000000063783,
+            "mean": 0.0020824374999991826,
+            "p95": 0.0032090000000266627,
+            "min": 0.0009579999999971278,
+            "max": 0.00333299999999781
+          }
+        },
+        {
+          "order": "BA",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0.0018959999999879074,
+            "mean": 0.0024765624999982805,
+            "p95": 0.004209000000003016,
+            "min": -4.199999997922532e-05,
+            "max": 0.032250000000004775
+          }
+        }
+      ],
+      "allActiveAndInactiveOutputWordsExact": true,
+      "sourceImmutable": true,
+      "ownedBuffersPersistent": true,
+      "shaderBytesExact": true
+    },
+    {
+      "syntheticSourceCount": 512,
+      "actualDrawnCount": 206,
+      "look": "classic",
+      "unchangedActiveUploadBytes": 4944,
+      "baseline": {
+        "n": 96,
+        "median": 0.001125000000001819,
+        "mean": 0.011474843750000593,
+        "p95": 0.001999999999981128,
+        "min": 0.0009999999999763531,
+        "max": 0.9797919999999749
+      },
+      "candidate": {
+        "n": 96,
+        "median": 0.0015625000000056843,
+        "mean": 0.0018676666666692654,
+        "p95": 0.00354200000003857,
+        "min": 0.0009580000000255495,
+        "max": 0.028750000000002274
+      },
+      "pairedSaving": {
+        "n": 96,
+        "median": -0.00016700000000469117,
+        "mean": 0.009607177083331328,
+        "p95": 0.00041699999997035775,
+        "min": -0.027708999999987327,
+        "max": 0.9787499999999909
+      },
+      "positivePairs": 34,
+      "orderStrata": [
+        {
+          "order": "AB",
+          "pairedSaving": {
+            "n": 48,
+            "median": -4.100000001017179e-05,
+            "mean": -0.0001909375000005061,
+            "p95": 0.0005840000000034706,
+            "min": -0.0020420000000171967,
+            "max": 0.0008330000000000837
+          }
+        },
+        {
+          "order": "BA",
+          "pairedSaving": {
+            "n": 48,
+            "median": -0.000292000000030157,
+            "mean": 0.01940529166666316,
+            "p95": 0.00020800000004328467,
+            "min": -0.027708999999987327,
+            "max": 0.9787499999999909
+          }
+        }
+      ],
+      "allActiveAndInactiveOutputWordsExact": true,
+      "sourceImmutable": true,
+      "ownedBuffersPersistent": true,
+      "shaderBytesExact": true
+    },
+    {
+      "syntheticSourceCount": 4096,
+      "actualDrawnCount": 4096,
+      "look": "rich",
+      "unchangedActiveUploadBytes": 98304,
+      "baseline": {
+        "n": 96,
+        "median": 0.012208999999984371,
+        "mean": 0.014226989583334534,
+        "p95": 0.030666999999994005,
+        "min": 0.011958000000049651,
+        "max": 0.04816700000003493
+      },
+      "candidate": {
+        "n": 96,
+        "median": 0.001979499999976042,
+        "mean": 0.0023194583333345045,
+        "p95": 0.0037499999999681677,
+        "min": 0.0013749999999959073,
+        "max": 0.017457999999976437
+      },
+      "pairedSaving": {
+        "n": 96,
+        "median": 0.01047900000000368,
+        "mean": 0.011907531250000028,
+        "p95": 0.028583999999966636,
+        "min": 0.006123999999999796,
+        "max": 0.04516700000004903
+      },
+      "positivePairs": 96,
+      "orderStrata": [
+        {
+          "order": "AB",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0.010604499999999462,
+            "mean": 0.012414083333336379,
+            "p95": 0.028583999999966636,
+            "min": 0.006123999999999796,
+            "max": 0.04516700000004903
+          }
+        },
+        {
+          "order": "BA",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0.010020499999995991,
+            "mean": 0.01140097916666368,
+            "p95": 0.01737500000001546,
+            "min": 0.006624999999928605,
+            "max": 0.041166999999973086
+          }
+        }
+      ],
+      "allActiveAndInactiveOutputWordsExact": true,
+      "sourceImmutable": true,
+      "ownedBuffersPersistent": true,
+      "shaderBytesExact": true
+    },
+    {
+      "syntheticSourceCount": 4096,
+      "actualDrawnCount": 1639,
+      "look": "classic",
+      "unchangedActiveUploadBytes": 39336,
+      "baseline": {
+        "n": 96,
+        "median": 0.007082999999965978,
+        "mean": 0.007928354166664894,
+        "p95": 0.008832999999981439,
+        "min": 0.006957999999997355,
+        "max": 0.046041999999999916
+      },
+      "candidate": {
+        "n": 96,
+        "median": 0.0072499999999990905,
+        "mean": 0.008099729166672157,
+        "p95": 0.009041000000024724,
+        "min": 0.007000000000005002,
+        "max": 0.06174999999996089
+      },
+      "pairedSaving": {
+        "n": 96,
+        "median": -8.350000001655644e-05,
+        "mean": -0.0001713750000072641,
+        "p95": 0.0012910000000374566,
+        "min": -0.05424999999996771,
+        "max": 0.038457999999991443
+      },
+      "positivePairs": 24,
+      "orderStrata": [
+        {
+          "order": "AB",
+          "pairedSaving": {
+            "n": 48,
+            "median": -8.300000001781882e-05,
+            "mean": 0.000630270833327747,
+            "p95": 0.0012910000000374566,
+            "min": -0.0036670000000640357,
+            "max": 0.038457999999991443
+          }
+        },
+        {
+          "order": "BA",
+          "pairedSaving": {
+            "n": 48,
+            "median": -0.00012499999999704414,
+            "mean": -0.0009730208333422752,
+            "p95": 0.0005409999999415049,
+            "min": -0.05424999999996771,
+            "max": 0.011790999999959695
+          }
+        }
+      ],
+      "allActiveAndInactiveOutputWordsExact": true,
+      "sourceImmutable": true,
+      "ownedBuffersPersistent": true,
+      "shaderBytesExact": true
+    },
+    {
+      "syntheticSourceCount": 5120,
+      "actualDrawnCount": 5120,
+      "look": "rich",
+      "unchangedActiveUploadBytes": 122880,
+      "baseline": {
+        "n": 96,
+        "median": 0.015249999999980446,
+        "mean": 0.016679239583331434,
+        "p95": 0.021374999999977717,
+        "min": 0.014916999999968539,
+        "max": 0.052833000000021
+      },
+      "candidate": {
+        "n": 96,
+        "median": 0.0024589999999875545,
+        "mean": 0.0028267812499975045,
+        "p95": 0.004916999999977634,
+        "min": 0.0019159999999942556,
+        "max": 0.010874999999998636
+      },
+      "pairedSaving": {
+        "n": 96,
+        "median": 0.013042000000012877,
+        "mean": 0.013852458333333928,
+        "p95": 0.018792000000019016,
+        "min": 0.00437499999998181,
+        "max": 0.050499999999999545
+      },
+      "positivePairs": 96,
+      "orderStrata": [
+        {
+          "order": "AB",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0.013209000000017568,
+            "mean": 0.014330770833339557,
+            "p95": 0.018792000000019016,
+            "min": 0.005832999999995536,
+            "max": 0.050499999999999545
+          }
+        },
+        {
+          "order": "BA",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0.012541999999996278,
+            "mean": 0.0133741458333283,
+            "p95": 0.017875000000003638,
+            "min": 0.00437499999998181,
+            "max": 0.043834000000003925
+          }
+        }
+      ],
+      "allActiveAndInactiveOutputWordsExact": true,
+      "sourceImmutable": true,
+      "ownedBuffersPersistent": true,
+      "shaderBytesExact": true
+    },
+    {
+      "syntheticSourceCount": 5120,
+      "actualDrawnCount": 2048,
+      "look": "classic",
+      "unchangedActiveUploadBytes": 49152,
+      "baseline": {
+        "n": 96,
+        "median": 0.008833000000038282,
+        "mean": 0.010699177083334158,
+        "p95": 0.017707999999970525,
+        "min": 0.00866600000000517,
+        "max": 0.06595799999996643
+      },
+      "candidate": {
+        "n": 96,
+        "median": 0.008915999999999258,
+        "mean": 0.01026907291666627,
+        "p95": 0.011291000000028362,
+        "min": 0.00874999999996362,
+        "max": 0.07237500000002228
+      },
+      "pairedSaving": {
+        "n": 96,
+        "median": -8.400000001529406e-05,
+        "mean": 0.0004301041666678884,
+        "p95": 0.008790999999973792,
+        "min": -0.06345800000002555,
+        "max": 0.05716599999993832
+      },
+      "positivePairs": 28,
+      "orderStrata": [
+        {
+          "order": "AB",
+          "pairedSaving": {
+            "n": 48,
+            "median": 0,
+            "mean": 0.0003367708333297988,
+            "p95": 0.008790999999973792,
+            "min": -0.06345800000002555,
+            "max": 0.03929199999993216
+          }
+        },
+        {
+          "order": "BA",
+          "pairedSaving": {
+            "n": 48,
+            "median": -0.00012500000002546585,
+            "mean": 0.000523437500005978,
+            "p95": 0.0016660000000001673,
+            "min": -0.028915999999981068,
+            "max": 0.05716599999993832
+          }
+        }
+      ],
+      "allActiveAndInactiveOutputWordsExact": true,
+      "sourceImmutable": true,
+      "ownedBuffersPersistent": true,
+      "shaderBytesExact": true
+    }
+  ],
+  "measuredPairs": 768,
+  "elapsedMs": 159.88025,
+  "scope": "One whole-update CPU experiment; synthetic fields. Logical NaN parity only, not universal raw NaN payload parity. No worker-cadence or FPS causality claim."
+}

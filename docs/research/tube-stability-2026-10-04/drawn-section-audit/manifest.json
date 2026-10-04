@@ -1,0 +1,1121 @@
+{
+  "schema": "drawn-section-audit-archive/v1",
+  "outcome": "one bounded offline audit completed; original native five-frame capture remains failed",
+  "payloads": [
+    {
+      "storedPath": "evidence/audit.ts.txt.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 5923,
+      "storedSha256": "9a5299756983b471ef0e70975b9e05f2002766905ea741f610c8feda410dfabd",
+      "expandedBytes": 16364,
+      "expandedSha256": "ccd8677288ddd166185edefdcfbab38738bbc2817f54b96020631db62c2d9956",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/audit.ts",
+          "bytes": 16364,
+          "sha256": "ccd8677288ddd166185edefdcfbab38738bbc2817f54b96020631db62c2d9956"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/inputs.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 4639,
+      "storedSha256": "e73b27f721cabb733f65d322722f961445c6d6d599e7491cc17d17a46962befd",
+      "expandedBytes": 29124,
+      "expandedSha256": "71fc758e30af66cbf0732b6e58210d85ae54a4815efb500b96020e18009d1bd1",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+          "bytes": 29124,
+          "sha256": "71fc758e30af66cbf0732b6e58210d85ae54a4815efb500b96020e18009d1bd1"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/proposal.md.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1738,
+      "storedSha256": "f782856236e1673e8347df23fedf60498dbe6549d32fcb81080388f976aecaa0",
+      "expandedBytes": 3371,
+      "expandedSha256": "738de50fa06ce96ea114b8578a80f77d8b2abbb7b552491e00e2ab0bea9b1043",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/proposal.md",
+          "bytes": 3371,
+          "sha256": "738de50fa06ce96ea114b8578a80f77d8b2abbb7b552491e00e2ab0bea9b1043"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/ready.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 3150,
+      "storedSha256": "8803b1184abe0418ebcb5896a9c8c181baad11d83eb627b6b16d92221b0531ee",
+      "expandedBytes": 14107,
+      "expandedSha256": "cbfe80e092ceab41e7f2e69d948c5112aa70bea240d681973381e0f4312b8515",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+          "bytes": 14107,
+          "sha256": "cbfe80e092ceab41e7f2e69d948c5112aa70bea240d681973381e0f4312b8515"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-terminal/command-0.log.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 20,
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/root-terminal/command-0.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-terminal/command-1.log.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 288,
+      "storedSha256": "645a244f0d253b9bca6d5628ee620ead6e50d2bc287cfdfdf5d0e6c47b1fb319",
+      "expandedBytes": 363,
+      "expandedSha256": "63b7582af4eca77364f26ae822fc97f58e0b0f31b429a864742c64496cdee11e",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/root-terminal/command-1.log",
+          "bytes": 363,
+          "sha256": "63b7582af4eca77364f26ae822fc97f58e0b0f31b429a864742c64496cdee11e"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-terminal/command-2.log.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 273,
+      "storedSha256": "6b96a5abfd179a4c040860bfa9e546799ac2576669c0f16db6f3a85dc3e78b6b",
+      "expandedBytes": 349,
+      "expandedSha256": "68299cc94c91b50d26e71b877e32a17330b24472e6b36eca0cb1f9410f9eb359",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/root-terminal/command-2.log",
+          "bytes": 349,
+          "sha256": "68299cc94c91b50d26e71b877e32a17330b24472e6b36eca0cb1f9410f9eb359"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/root-terminal/terminal.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 578,
+      "storedSha256": "732a03d9bacee809cd685bc2b969b05be3fd9dc42973571a7a8e8e288b81ddc7",
+      "expandedBytes": 1911,
+      "expandedSha256": "2cbfd1a56c33f3b104e55970e3db104e89fe8b1d47bababc7e2c45143e038e9b",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/root-terminal/terminal.json",
+          "bytes": 1911,
+          "sha256": "2cbfd1a56c33f3b104e55970e3db104e89fe8b1d47bababc7e2c45143e038e9b"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/run-first/report.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 1213636,
+      "storedSha256": "0159b8746622dca1c338ed98581d11c93f8c946064731bdacf753393c588a965",
+      "expandedBytes": 9242991,
+      "expandedSha256": "b849e0c84102fecd3a7200b454bb00a1fd06b289449ada35b384baedb426acc5",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json",
+          "bytes": 9242991,
+          "sha256": "b849e0c84102fecd3a7200b454bb00a1fd06b289449ada35b384baedb426acc5"
+        }
+      ]
+    },
+    {
+      "storedPath": "evidence/run-first/terminal.json.gz",
+      "storage": "gzip-mtime0",
+      "storedBytes": 253,
+      "storedSha256": "608d5e98ff639819eb2297614c8c6d46b02fc5bbfcf4ee77487b7ee3fb9e8fe6",
+      "expandedBytes": 345,
+      "expandedSha256": "e8631662d9abe29a889cbe940988d6c8e3f1d19884fe9a6e855ba4406998cc39",
+      "originalAliases": [
+        {
+          "path": "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/terminal.json",
+          "bytes": 345,
+          "sha256": "e8631662d9abe29a889cbe940988d6c8e3f1d19884fe9a6e855ba4406998cc39"
+        }
+      ]
+    }
+  ],
+  "externalReferences": [
+    {
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 28551,
+      "sha256": "01780b06d8bb01a992c4b9368be903d626cf5d5d915b917bf8898e73007e1479",
+      "verification": {
+        "kind": "git",
+        "repository": "/Users/regina/Desktop/Projects/surfing-game",
+        "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+        "relativePath": "src/scene/barrel/SweptBarrelMesh.ts"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json"
+      ]
+    },
+    {
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e",
+      "verification": {
+        "kind": "git",
+        "repository": "/Users/regina/Desktop/Projects/surfing-game",
+        "commit": "b0e003b8670c9d0be83bc9bb24c30b5382a54499",
+        "relativePath": "src/wave/barrel/sweptLoft.ts"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-profile-phase-probe-20261004/checks/terminal.json",
+      "bytes": 1466,
+      "sha256": "acd5e212f7d9003dd1d7abe98d3fd91af1e37a090c1f7cb9438d262e1ba710af",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/profile-phase/evidence/checks/terminal.json.gz",
+        "encoding": "gzip",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/profile-phase/manifest.json",
+        "archiveManifestSha256": "c03ea6dde4eac8065a84ae417be10db6216389fd751705bd19531d2d2972e2e9",
+        "originalAliasPath": "/private/tmp/surf-profile-phase-probe-20261004/checks/terminal.json"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-profile-phase-probe-20261004/checks/vitest.json",
+      "bytes": 3391,
+      "sha256": "5e3a1411e4a5c8dc83eff1f1b60490d5c75d46b3fc8248455704e88ec095822a",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/profile-phase/evidence/checks/vitest.json.gz",
+        "encoding": "gzip",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/profile-phase/manifest.json",
+        "archiveManifestSha256": "c03ea6dde4eac8065a84ae417be10db6216389fd751705bd19531d2d2972e2e9",
+        "originalAliasPath": "/private/tmp/surf-profile-phase-probe-20261004/checks/vitest.json"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-profile-phase-probe-20261004/geometry.test.ts",
+      "bytes": 2873,
+      "sha256": "78485e27912ac28c10f8ec0a6ef8db82651b8cade29b3a992f05b5c7bfee4e26",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/profile-phase/evidence/geometry.test.ts.txt.gz",
+        "encoding": "gzip",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/profile-phase/manifest.json",
+        "archiveManifestSha256": "c03ea6dde4eac8065a84ae417be10db6216389fd751705bd19531d2d2972e2e9",
+        "originalAliasPath": "/private/tmp/surf-profile-phase-probe-20261004/geometry.test.ts"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-profile-phase-probe-20261004/geometry.ts",
+      "bytes": 6908,
+      "sha256": "1ecb16fd7365fdec68a72144dee7212cb902cc166a5b0c71c4bcc53de706d0a4",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/profile-phase/evidence/geometry.ts.txt.gz",
+        "encoding": "gzip",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/profile-phase/manifest.json",
+        "archiveManifestSha256": "c03ea6dde4eac8065a84ae417be10db6216389fd751705bd19531d2d2972e2e9",
+        "originalAliasPath": "/private/tmp/surf-profile-phase-probe-20261004/geometry.ts"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-drawnIndices.bin.gz",
+      "bytes": 19301,
+      "sha256": "0403cc958727570b941565b612aef768faf6bdb8238a3d2421f096d9aa0ae24c",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-drawnIndices.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-drawnIndices.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-drawnPositions.bin.gz",
+      "bytes": 39242,
+      "sha256": "fb16a678d32ac7ee65fd38ed3e3edd89159e26f25b4e9220a86c9fcc516f0bd2",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-drawnPositions.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-drawnPositions.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-front.bin.gz",
+      "bytes": 199,
+      "sha256": "d65b469655965f0b28385bfff1167842bbeca93d8f42a0833b7179ed29b2be6f",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-front.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-front.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFade.bin.gz",
+      "bytes": 27,
+      "sha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceFade.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFade.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFormed.bin.gz",
+      "bytes": 75,
+      "sha256": "81c368f4f7bfabce76443a80a3c04453cdbc6393753f334b04ee241cf37efe11",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceFormed.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFormed.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceFront.bin.gz",
+      "bytes": 24,
+      "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceAnchorVX.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipTransportUp.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceJoined.bin.gz",
+      "bytes": 24,
+      "sha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceJoined.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceJoined.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceMouth.bin.gz",
+      "bytes": 97,
+      "sha256": "29609e6e6eb71c10d06010391399478a6677b9b06d484b8460c27e2f6e752d79",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceMouth.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceMouth.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+      "bytes": 23,
+      "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-slicePhase.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-slicePhase.bin.gz",
+      "bytes": 23,
+      "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-slicePhase.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRayX.bin.gz",
+      "bytes": 117,
+      "sha256": "10cfa924f99c3271329d6dd02b86b866047fbd6f8e6380cb76f5c63e6b75f77a",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceRayX.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRayX.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRayZ.bin.gz",
+      "bytes": 111,
+      "sha256": "ea95443fc2e8e9861df9867e93722273340b537e92629a8e6598570ae72d120a",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceRayZ.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceRayZ.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceSigma.bin.gz",
+      "bytes": 135,
+      "sha256": "44922f28350e19430a7411758d66c4c105d800908970a6b1984214f754e2440a",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceSigma.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceSigma.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTau.bin.gz",
+      "bytes": 115,
+      "sha256": "e1f239d5b7890d8d22b3c0b294c18a2e9a0224b1261144854592d7f84b322e3e",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceTau.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceTau.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceWeight.bin.gz",
+      "bytes": 62,
+      "sha256": "6f428b3a49e73ac7de7a67581acb957e02bb25a57b6bfe2a8159d245984304ce",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceWeight.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-0-sliceWeight.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-drawnIndices.bin.gz",
+      "bytes": 19296,
+      "sha256": "857a2415fd31790b5d53adce64851e74e487f216bf981d29ba36695cdcf707a4",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-drawnIndices.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-drawnIndices.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-drawnPositions.bin.gz",
+      "bytes": 39243,
+      "sha256": "3acfb401c7c208e33aacb23965a31944b48501b44f50c6c23fc91ae762d96ee6",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-drawnPositions.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-drawnPositions.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-front.bin.gz",
+      "bytes": 198,
+      "sha256": "bf3b5661da7b943bd2c1e6b8ad9adbe2b02c169bc1589fcdef5ec23163423ea2",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-front.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-front.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFade.bin.gz",
+      "bytes": 27,
+      "sha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceFade.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFade.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFormed.bin.gz",
+      "bytes": 75,
+      "sha256": "4f8534fb817423ef1999316c27179187793ba59d404875ccec8eb7bc40b1ed9e",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-sliceFormed.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFormed.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceFront.bin.gz",
+      "bytes": 24,
+      "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceAnchorVX.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipTransportUp.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceJoined.bin.gz",
+      "bytes": 24,
+      "sha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceJoined.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceJoined.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceMouth.bin.gz",
+      "bytes": 90,
+      "sha256": "1e4ef92320ae7f255cfd4c13dd82ef07102eb245fe5de20dce31e7054c5ea7d1",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-sliceMouth.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceMouth.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceOverturned.bin.gz",
+      "bytes": 23,
+      "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-slicePhase.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-slicePhase.bin.gz",
+      "bytes": 23,
+      "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-slicePhase.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRayX.bin.gz",
+      "bytes": 117,
+      "sha256": "29997f09931441a9b2f8b9657b911d648c6596db34786ec87ae3d1c32e5933ec",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-sliceRayX.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRayX.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRayZ.bin.gz",
+      "bytes": 112,
+      "sha256": "ddfca954b0cc2f0f48cd235c82daafc809567eeaeccb0cc67b1d6c97429260d3",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-sliceRayZ.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceRayZ.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceSigma.bin.gz",
+      "bytes": 135,
+      "sha256": "05e1c4fa10dcda7d52a04bc890b6fe25235a02cd63b4d69a8466ec91bfc649ea",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-sliceSigma.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceSigma.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTau.bin.gz",
+      "bytes": 115,
+      "sha256": "c4be7a22d5c050c9fee245605522d90f370cd338ff7ee49fe737b0de7f6a867c",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-sliceTau.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceTau.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceWeight.bin.gz",
+      "bytes": 62,
+      "sha256": "86d0a4d63553ba4511b5bfa41d9d6a70001661a5ce773ac279fbef00a6b523a2",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-1-sliceWeight.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-1-sliceWeight.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-drawnIndices.bin.gz",
+      "bytes": 19293,
+      "sha256": "94bb2fba1f4d69e1b3bb8531213d7e20e1b637aaced51b83251f5a9a0e65870f",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-drawnIndices.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-drawnIndices.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-drawnPositions.bin.gz",
+      "bytes": 39267,
+      "sha256": "29edef9e339575c820cb47b7f4918586547c228300878e94d3ea0704ad919285",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-drawnPositions.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-drawnPositions.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-front.bin.gz",
+      "bytes": 199,
+      "sha256": "9bbe664a62c61072b3fe9ce2db55c1709418b5b65420558cbbc280b911f88c9b",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-front.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-front.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFade.bin.gz",
+      "bytes": 27,
+      "sha256": "b1c75b572fb15866d2c4c0dad9f67104651864bea33b9c08f73e612fbabb23e8",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceFade.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFade.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFormed.bin.gz",
+      "bytes": 75,
+      "sha256": "210566808d22ea31aab61d379ff2b884f4220e14c29398c9e9e3ce52e6edbf9d",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-sliceFormed.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFormed.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceFront.bin.gz",
+      "bytes": 24,
+      "sha256": "3a1ec448cba03f19b587d8458068e3b23badc7198a344d771fa5df6fd3373cb1",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceAnchorVX.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTipTransportUp.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceJoined.bin.gz",
+      "bytes": 24,
+      "sha256": "16dca9a082f21b4a16a857ac717c539e700cba6535059118875b3b456bf7152d",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceJoined.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceJoined.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceMouth.bin.gz",
+      "bytes": 94,
+      "sha256": "f6425c7f73fa4a598a88592d1237d12f2dc180abc03f2b0301996dc66b4115c4",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-sliceMouth.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceMouth.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceOverturned.bin.gz",
+      "bytes": 23,
+      "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-slicePhase.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-slicePhase.bin.gz",
+      "bytes": 23,
+      "sha256": "695e36f1fe2a2ff0d9be308c130f6d03b30cd8e313fac585bf6311cfb264ffdd",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-0-sliceOverturned.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-slicePhase.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRayX.bin.gz",
+      "bytes": 117,
+      "sha256": "7d577519098eaf0d510521f2d06fae8b87457477e5d93f89f474d3704ad0eaf3",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-sliceRayX.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRayX.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRayZ.bin.gz",
+      "bytes": 110,
+      "sha256": "3f269c9f307cf0a41154c2ef42fb13d4399d9d8b09b18630332bf06e3014bb86",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-sliceRayZ.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceRayZ.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceSigma.bin.gz",
+      "bytes": 135,
+      "sha256": "d409ce77f8645ca54f3da81b29de6411e104aa3390d85f6440e8a57a5aff2ee1",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-sliceSigma.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceSigma.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTau.bin.gz",
+      "bytes": 115,
+      "sha256": "3b8afe727d50c72aa359ee4c53c12a3773cf61317860369370d1590ff1acaddc",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-sliceTau.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceTau.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceWeight.bin.gz",
+      "bytes": 63,
+      "sha256": "6e7c85c6fe12a7e9afc7076f4c5af1a6a311c4acf4dfc1904c5b2dd3bae0dc28",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/fields/frame-2-sliceWeight.bin.gz",
+        "encoding": "identity",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/fields/frame-2-sliceWeight.bin.gz"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/report.json",
+      "bytes": 605120,
+      "sha256": "46167994db8c914e2b7be44032e440d74585624dbcc3e68b49cfdcf4ca495988",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/capture/report.json.gz",
+        "encoding": "gzip",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/capture/report.json"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json"
+      ]
+    },
+    {
+      "originalPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/terminal.json",
+      "bytes": 1136,
+      "sha256": "2bd9c7bdd6314555df6fbcc413222c84fc5b56854a2ca0fe835b561d0a4dff92",
+      "verification": {
+        "kind": "path",
+        "path": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/evidence/root-run/terminal.json.gz",
+        "encoding": "gzip",
+        "archiveManifest": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/live-big-capture/manifest.json",
+        "archiveManifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+        "originalAliasPath": "/private/tmp/surf-tube-big-live-capture-20261004/root-run/terminal.json"
+      },
+      "referencedBy": [
+        "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+        "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json"
+      ]
+    }
+  ],
+  "closureAuthorities": [
+    "/private/tmp/surf-big-drawn-section-audit-20261004/inputs.json",
+    "/private/tmp/surf-big-drawn-section-audit-20261004/ready.json",
+    "/private/tmp/surf-big-drawn-section-audit-20261004/root-terminal/terminal.json",
+    "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/report.json",
+    "/private/tmp/surf-big-drawn-section-audit-20261004/run-first/terminal.json"
+  ],
+  "scope": "Original byte identities and arithmetic on stored report only; no metric recomputation, geometry-helper rerun, simulation, rendering or FPS.",
+  "generatedRecords": [
+    {
+      "path": "README.md",
+      "bytes": 6512,
+      "sha256": "e054a5cb76fe6fb682006c9541aecb68ed4e6bd1e6ccf8e047fb6bd53491ad4d"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 8433,
+      "sha256": "db7793983074a2760709f087eaec25eb1a9b7c14b6be69a201ed1edd03afbfe1"
+    }
+  ]
+}

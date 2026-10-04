@@ -1,0 +1,89 @@
+{
+  "schema": "drawn-section-byte-arithmetic-verification/v1",
+  "pass": true,
+  "externalRequested": true,
+  "storedPayloads": 10,
+  "originalAliases": 10,
+  "storedPayloadBytes": 1230498,
+  "externalReferencesChecked": 53,
+  "parentManifestsChecked": 2,
+  "closureReferenceChecks": 156,
+  "decodedFieldIdentityChecks": 45,
+  "sections": 84,
+  "formedOpenSections": 12,
+  "excludedSections": 72,
+  "frames": [
+    {
+      "index": 0,
+      "seaTime": 327.8077132243035,
+      "sections": 28,
+      "excluded": 24,
+      "formedOpen": 4,
+      "properProjectedCrossings": 1,
+      "crossedSlice": 16,
+      "wholeSegmentPair": [
+        77,
+        80
+      ],
+      "coreSegmentPair": [
+        74,
+        77
+      ],
+      "invertedUndersideFaceSections": 0,
+      "formedOpenAdjacentJacobianReversals": 0,
+      "formedOpenOpposingQuadNormals": 2,
+      "opposingRays": 0,
+      "negativeRowAdvanceVertices": 0,
+      "maximumStoredTransverseResidual": 1.4753486084373435e-05
+    },
+    {
+      "index": 1,
+      "seaTime": 327.82437989097014,
+      "sections": 28,
+      "excluded": 24,
+      "formedOpen": 4,
+      "properProjectedCrossings": 1,
+      "crossedSlice": 17,
+      "wholeSegmentPair": [
+        74,
+        77
+      ],
+      "coreSegmentPair": [
+        71,
+        74
+      ],
+      "invertedUndersideFaceSections": 0,
+      "formedOpenAdjacentJacobianReversals": 0,
+      "formedOpenOpposingQuadNormals": 0,
+      "opposingRays": 0,
+      "negativeRowAdvanceVertices": 0,
+      "maximumStoredTransverseResidual": 1.337876371287905e-05
+    },
+    {
+      "index": 2,
+      "seaTime": 327.8410465576368,
+      "sections": 28,
+      "excluded": 24,
+      "formedOpen": 4,
+      "properProjectedCrossings": 1,
+      "crossedSlice": 18,
+      "wholeSegmentPair": [
+        72,
+        75
+      ],
+      "coreSegmentPair": [
+        69,
+        72
+      ],
+      "invertedUndersideFaceSections": 0,
+      "formedOpenAdjacentJacobianReversals": 0,
+      "formedOpenOpposingQuadNormals": 3,
+      "opposingRays": 0,
+      "negativeRowAdvanceVertices": 0,
+      "maximumStoredTransverseResidual": 1.3501771263690898e-05
+    }
+  ],
+  "scope": "Byte/hash and arithmetic on already stored report; no helper/metric recomputation, physics, rendering or FPS.",
+  "manifestSha256": "31572c6d740ab3bbb4a0803bd47b415660910d499f00c119d1ebf3c2169258a4",
+  "verificationDate": "2026-10-04"
+}

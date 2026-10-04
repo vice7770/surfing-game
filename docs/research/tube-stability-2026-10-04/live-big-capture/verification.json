@@ -1,0 +1,18 @@
+{
+  "schema": "live-big-archive-byte-verification/v1",
+  "pass": true,
+  "externalRequested": true,
+  "storedPayloads": 111,
+  "originalAliases": 145,
+  "storedPayloadBytes": 6635432,
+  "closureReferenceChecks": 1476,
+  "externalReferencesChecked": 607,
+  "capturedFrames": 3,
+  "retainedFields": 106,
+  "transportArtifacts": 107,
+  "exportFloatWords": 1392480,
+  "exportSeaTime": 328.04104655763683,
+  "scope": "Byte/hash/type-length/record/revision/SET1 clock identities only; no physical or render replay.",
+  "manifestSha256": "b5e94ad7e0b3766f07328877b742f2c1601325615203526d23c9487a9b882341",
+  "verificationDate": "2026-10-04"
+}

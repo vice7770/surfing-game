@@ -1,0 +1,24 @@
+{
+  "schema": "spray-interleaved-cpu-terminal/v1",
+  "readySha256": "b6704c3b1b9a3e62f3ffa52bbca9c233ff83f6e2b1f701d59715aa8fd362b892",
+  "startedAt": "2026-10-04T06:23:49.086998+00:00",
+  "beforePins": 104,
+  "commands": [
+    {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-p",
+        "tsconfig.qa.json"
+      ],
+      "startedAt": "2026-10-04T06:23:49.103690+00:00",
+      "endedAt": "2026-10-04T06:23:51.033472+00:00",
+      "code": 2,
+      "output": "/private/tmp/surf-spray-interleaved-20261004/root-cpu/command-0.log",
+      "bytes": 206,
+      "sha256": "83a8fd060510c46b8cc9caf34a076f9cf9bc55cd3f0b9b7ac8cbb81178266395"
+    }
+  ],
+  "valid": false,
+  "endedAt": "2026-10-04T06:23:51.033854+00:00"
+}
