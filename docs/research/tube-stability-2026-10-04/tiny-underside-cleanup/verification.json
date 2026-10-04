@@ -1,0 +1,15 @@
+{
+  "schema": "tiny-underside-byte-verification/v1",
+  "pass": true,
+  "externalRequested": true,
+  "storedPayloads": 35,
+  "originalAliases": 37,
+  "storedPayloadBytes": 69101,
+  "externalReferencesChecked": 118,
+  "parentManifestsChecked": 4,
+  "closureReferenceChecks": 752,
+  "compressedAndExpandedFieldIdentitiesChecked": 96,
+  "localLinksChecked": 23,
+  "inertSourceAliases": true,
+  "scope": "Bytes/hashes/aliases, declared reference closure and local links only; no tests, helper, renderer, metric, cost, simulation, native or FPS rerun."
+}
