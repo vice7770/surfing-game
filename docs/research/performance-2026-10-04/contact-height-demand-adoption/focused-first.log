@@ -1,0 +1,9 @@
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+
+ Test Files  7 passed (7)
+      Tests  178 passed (178)
+   Start at  03:20:56
+   Duration  81.82s (tests 98%, import 1%, transform 1%)
+

@@ -1,0 +1,159 @@
+{
+  "schema": "contact-height-fps-source-check-terminal/v1",
+  "startedAt": "2026-10-04T02:04:27.055489+00:00",
+  "stage": "TERMINAL",
+  "steps": [
+    {
+      "index": 1,
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "--check",
+        "survey.mjs"
+      ],
+      "envOverride": {},
+      "startedAt": "2026-10-04T02:04:27.055806+00:00",
+      "pid": 54039,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T02:04:27.088004+00:00",
+      "durationSeconds": 0.03221849998226389,
+      "log": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/checks/survey.mjs.syntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "index": 2,
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "--check",
+        "native-owned.mjs"
+      ],
+      "envOverride": {},
+      "startedAt": "2026-10-04T02:04:27.088260+00:00",
+      "pid": 54042,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T02:04:27.114732+00:00",
+      "durationSeconds": 0.026475374994333833,
+      "log": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/checks/native-owned.mjs.syntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "index": 3,
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "--check",
+        "passive-guard.mjs"
+      ],
+      "envOverride": {},
+      "startedAt": "2026-10-04T02:04:27.114971+00:00",
+      "pid": 54043,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T02:04:27.140987+00:00",
+      "durationSeconds": 0.02604049997171387,
+      "log": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/checks/passive-guard.mjs.syntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "index": 4,
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "--check",
+        "pair.mjs"
+      ],
+      "envOverride": {},
+      "startedAt": "2026-10-04T02:04:27.141224+00:00",
+      "pid": 54044,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T02:04:27.166553+00:00",
+      "durationSeconds": 0.02533920796122402,
+      "log": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/checks/pair.mjs.syntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "index": 5,
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "pair.mjs",
+        "--run=false"
+      ],
+      "envOverride": {},
+      "startedAt": "2026-10-04T02:04:27.166825+00:00",
+      "pid": 54045,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T02:04:27.255555+00:00",
+      "durationSeconds": 0.08875120803713799,
+      "log": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/checks/pair-local-plan.json",
+        "bytes": 6572,
+        "sha256": "4b563bae6142a0fd6b5e006dd5bb83a7cc64d11280647c4deca0ceffb1361bc1"
+      }
+    },
+    {
+      "index": 6,
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "survey.mjs",
+        "/private/tmp/contact-height-demand-fps-20261004/checks/baseline-plan-unused-output.json",
+        "--plan=true",
+        "--url=http://127.0.0.1:4216/?diagnostics",
+        "--dir=/private/tmp/contact-height-demand-build-20261004/baseline/dist",
+        "--features=true",
+        "--only=High (baseline)",
+        "--spot=Padang",
+        "--swell=Big",
+        "--warmSeconds=5",
+        "--rideSeconds=90",
+        "--gpuTiming=false",
+        "--diagnosticGpu=false",
+        "--edition=single-step-publication",
+        "--width=1708",
+        "--height=966",
+        "--cdp=9626",
+        "--commit=ef60d3cee120d6b157fe94386d923b6b4392205b"
+      ],
+      "envOverride": {
+        "CONTACT_FPS_EXPECTED_WORKER": "assets/surfZoneWorker-C17EHetv.js"
+      },
+      "startedAt": "2026-10-04T02:04:27.256000+00:00",
+      "pid": 54046,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T02:04:27.294392+00:00",
+      "durationSeconds": 0.038401708006858826,
+      "log": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/checks/baseline-survey-plan.json",
+        "bytes": 3589,
+        "sha256": "fc7974140cb00fbadc6ec6f87e4428569d2c8916298e6473d64bcb3bf8390c43"
+      }
+    }
+  ],
+  "firstFailure": null,
+  "inputRecords": 575,
+  "readyBefore": {
+    "path": "/private/tmp/contact-height-demand-fps-20261004/ready.json",
+    "bytes": 3715,
+    "sha256": "7176fb1eca5c2974294cb16d5a27e5c84749b5a0b76e5b2c5614b84b0678825a"
+  },
+  "noRetry": true,
+  "endedAt": "2026-10-04T02:04:27.323957+00:00",
+  "inputHashesUnchanged": true,
+  "allSixPassed": true,
+  "networkServerBrowserGpuFpsStarted": false,
+  "sourceEdits": false,
+  "productionEdits": false
+}

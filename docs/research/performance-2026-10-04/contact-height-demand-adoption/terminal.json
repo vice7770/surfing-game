@@ -1,0 +1,62 @@
+{
+  "schema": "contact-height-production-checks/v1",
+  "startedUtc": "2026-10-04T02:20:51.930851+00:00",
+  "wrapperPid": 59094,
+  "cwd": "/Users/regina/Desktop/Projects/surfing-game",
+  "head": "258be36a50f0f84a017d7161902f97e3f9a11aaa",
+  "buildIdOverride": null,
+  "commands": [
+    {
+      "phase": "strict",
+      "argv": [
+        "./node_modules/.bin/tsc",
+        "--noEmit"
+      ],
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game",
+      "startedUtc": "2026-10-04T02:20:51.931620+00:00",
+      "log": "strict-first.log",
+      "pid": 59096,
+      "exit": 0,
+      "endedUtc": "2026-10-04T02:20:56.532028+00:00"
+    },
+    {
+      "phase": "focused",
+      "argv": [
+        "./node_modules/.bin/vitest",
+        "run",
+        "--maxWorkers",
+        "1",
+        "src/wave/barrel/sweptLoft.test.ts",
+        "src/wave/barrel/sweptContact.test.ts",
+        "src/wave/barrel/ordinaryContact.test.ts",
+        "src/physics/PhysicalSurfWater.test.ts",
+        "src/wave/SurfZoneRunner.test.ts",
+        "src/game/WorkerSurfZone.test.ts",
+        "src/game/SurfZoneHost.test.ts"
+      ],
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game",
+      "startedUtc": "2026-10-04T02:20:56.532494+00:00",
+      "log": "focused-first.log",
+      "pid": 59126,
+      "exit": 0,
+      "endedUtc": "2026-10-04T02:22:18.633368+00:00"
+    },
+    {
+      "phase": "build",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game",
+      "startedUtc": "2026-10-04T02:22:18.634479+00:00",
+      "log": "build-first.log",
+      "pid": 59457,
+      "exit": 0,
+      "endedUtc": "2026-10-04T02:22:24.328174+00:00"
+    }
+  ],
+  "status": "passed",
+  "sourceInputsUnchanged": true,
+  "endedUtc": "2026-10-04T02:22:24.330021+00:00"
+}

@@ -1,0 +1,114 @@
+{
+  "schema": "contact-height-production-check-freeze/v1",
+  "session": 66165,
+  "status": "passed",
+  "strictExit": 0,
+  "focused": {
+    "files": 7,
+    "tests": 178,
+    "exit": 0
+  },
+  "buildExit": 0,
+  "records": [
+    {
+      "path": "build-first.log",
+      "bytes": 1328,
+      "sha256": "e9537138a73e19a57c5cd2224ecd5d05c08cb496d40579412902b3076a994be8"
+    },
+    {
+      "path": "build-output-manifest.json",
+      "bytes": 2038,
+      "sha256": "c0d6c7d7614ec8102d1ecf58d1404f6d17c9001aec6ed4c0581c5be4d3f176a9"
+    },
+    {
+      "path": "checks.py",
+      "bytes": 2883,
+      "sha256": "fd4b258376b37050e061eae9ae8ecb8c82a6c1afb69b504a1523b2029f12d4ed"
+    },
+    {
+      "path": "focused-first.log",
+      "bytes": 196,
+      "sha256": "271eb8f6271178812172e8c505e44c942581619d24044884f7c147c6b9d10cd7"
+    },
+    {
+      "path": "source-after.json",
+      "bytes": 1797,
+      "sha256": "1457a9193d4e8aa5f2631723daa86c5c5cc242f0baf9daf8844d77ddad905db7"
+    },
+    {
+      "path": "source-before/index.html",
+      "bytes": 1442,
+      "sha256": "60675d1b7e6f739633646d53fd74d07f90d913151f5adb2a65b71fc786372392"
+    },
+    {
+      "path": "source-before/package-lock.json",
+      "bytes": 42710,
+      "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+    },
+    {
+      "path": "source-before/package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "path": "source-before/src/game/SurfZoneWorkerCore.ts",
+      "bytes": 7117,
+      "sha256": "284675cc587b9f12c70ae518d1a8c4f128396482883f549989fc69b327437a69"
+    },
+    {
+      "path": "source-before/src/physics/PhysicalSurfWater.test.ts",
+      "bytes": 26137,
+      "sha256": "1eb4caab9b5f53396b0917f13a0d55d4753815d8013d63573d9dabcf78273f85"
+    },
+    {
+      "path": "source-before/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+    },
+    {
+      "path": "source-before/src/wave/SurfZoneRunner.ts",
+      "bytes": 39955,
+      "sha256": "48892eea1be50a39708376662908511900ad02ef8d24f3fc361e69260372130f"
+    },
+    {
+      "path": "source-before/src/wave/barrel/ordinaryContact.test.ts",
+      "bytes": 7880,
+      "sha256": "2903dfdac9a3c0eb5343338ccb889e95691a87ce4dd1f95bc1bf3e9f3745c569"
+    },
+    {
+      "path": "source-before/src/wave/barrel/sweptContact.ts",
+      "bytes": 29165,
+      "sha256": "45ea76c0e8fe4219b633e5ee65042ed0b578bf4b164329c834725041547e42ba"
+    },
+    {
+      "path": "source-before/src/wave/barrel/sweptLoft.ts",
+      "bytes": 60183,
+      "sha256": "b67be715acd5b325347f04a226cb484c6bbda223ffee28f8bb55124397e4932e"
+    },
+    {
+      "path": "source-before/tsconfig.json",
+      "bytes": 550,
+      "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+    },
+    {
+      "path": "source-before/vite.config.ts",
+      "bytes": 1169,
+      "sha256": "9cbc9a7527a2e4529a8630d6fffc59f4bb4e8291bf7ed49aade006fe1950d230"
+    },
+    {
+      "path": "source-before.json",
+      "bytes": 1797,
+      "sha256": "1457a9193d4e8aa5f2631723daa86c5c5cc242f0baf9daf8844d77ddad905db7"
+    },
+    {
+      "path": "strict-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "terminal.json",
+      "bytes": 1806,
+      "sha256": "106cb135d688a854a134ba945e5ba239073bcb63cca50207697276be33b9166f"
+    }
+  ]
+}

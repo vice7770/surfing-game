@@ -1,0 +1,306 @@
+{
+  "schema": "contact-height-fps-preparation/v1",
+  "stage": "source-ready and bound; checks/dryplans/hardware await parent review",
+  "directory": "/private/tmp/contact-height-demand-fps-20261004",
+  "ownedArtifacts": [
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/native-owned.mjs",
+      "bytes": 5514,
+      "sha256": "cecc2283896183dbde2d8dc7edbd3a9c8270eaac313c9cd0c2ed3f8e38c99e9e"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/passive-guard.mjs",
+      "bytes": 9501,
+      "sha256": "19be1fa0c1ea4985530d9843db5ee587770f653d7f7d1966ce3f528a047f6851"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/pair.mjs",
+      "bytes": 13019,
+      "sha256": "1c76ea1f01c97c1022b0fa0a297bab851c5c8d19f9fb0589ac673e6be5680edb"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/derive-survey.py",
+      "bytes": 6099,
+      "sha256": "f2fa1cdefeb5ea43e7b88d7c59a7ff5589bf23c7ff23c79e3fad16da2d27ce07"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/survey.mjs",
+      "bytes": 37750,
+      "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/survey.patch",
+      "bytes": 7933,
+      "sha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/derivation.json",
+      "bytes": 7601,
+      "sha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/public-assets.json",
+      "bytes": 10729,
+      "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/bindings.json",
+      "bytes": 1809,
+      "sha256": "285b0e80dd21bf2954086dfad20a135cf733a24865c554e90589dd8a2d478cdc"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/plan.json",
+      "bytes": 5171,
+      "sha256": "24fdb9b91aef1acd59b94b75e13f2e2101345bf9f07b6299f3daccf342f63091"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/README.md",
+      "bytes": 3645,
+      "sha256": "b1fc068785b31da1cd352873b7ddd2f59327ba520fe4b94d6885a442ed32bc60"
+    }
+  ],
+  "borrowedSourceAuthorities": [
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/fps-survey.mjs",
+      "bytes": 38839,
+      "sha256": "84e580b651e8ec1dcd028599d1c931b5d96a4e50c1299f9cdf38ee78dbf5d5cd"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "path": "/private/tmp/contact-lazy-height-20261004-v3/adapter.mjs",
+      "bytes": 24247,
+      "sha256": "04ca5dbc3a9c5587383b7e31cc3d1476d7a0ee77fc507e72a2576dec36d1326d"
+    }
+  ],
+  "bindings": {
+    "schema": "contact-height-fps-bindings/v1",
+    "pending": false,
+    "buildReady": {
+      "path": "/private/tmp/contact-height-demand-build-20261004/ready.json",
+      "bytes": 7342,
+      "sha256": "66c56ee8490cfcfa5694152318ad82f64b039cc4bd13212bbcf963098ff2b02c"
+    },
+    "sourceManifest": {
+      "path": "/private/tmp/contact-height-demand-build-20261004/source-manifest.json",
+      "bytes": 636512,
+      "sha256": "c0ef921641eedab6d9ef619c23301ca7cc2ec2e0483d739483b5a4ca0cb76697"
+    },
+    "buildTerminal": {
+      "path": "/private/tmp/contact-height-demand-build-20261004/build-terminal.json",
+      "bytes": 977,
+      "sha256": "af08824285e5c4eb7cd15dc83d4b37006019dbaee05acb4b17c5691b60f02ee5"
+    },
+    "manifestSchema": {
+      "path": "/private/tmp/contact-height-demand-build-20261004/manifest-schema.json",
+      "bytes": 3208,
+      "sha256": "828bb29f1df99cfccbac316d12df6a96eacd4c296cb3763563e67bc8697d75de"
+    },
+    "arms": {
+      "baseline": {
+        "path": "/private/tmp/contact-height-demand-build-20261004/baseline/build-manifest.json",
+        "bytes": 4430,
+        "sha256": "88208a3d01644085d1d91c35fbfb20630b2abad6b8a1d5a03ac3df10b72ee8cb"
+      },
+      "candidate": {
+        "path": "/private/tmp/contact-height-demand-build-20261004/candidate/build-manifest.json",
+        "bytes": 6793,
+        "sha256": "392bc5ec560f30fc9b0d2560e8ebb2f204dcbceaa703471e245c907608946248"
+      }
+    },
+    "publicAssets": {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/public-assets.json",
+      "bytes": 10729,
+      "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+    },
+    "scope": "Source/build/asset bindings only; no syntax/dryplan/server/browser/hardware run. Exact source authority and compiled row verification is implemented by pair.mjs.",
+    "literalBuildId": "68e263250-qa-contact-height"
+  },
+  "publicAssetSummary": {
+    "files": 38,
+    "bytes": 24249385,
+    "copied": false,
+    "mutated": false,
+    "fetched": false
+  },
+  "derivationSummary": {
+    "exactGuardedOperations": 11,
+    "original": {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/fps-survey.mjs",
+      "bytes": 38839,
+      "sha256": "84e580b651e8ec1dcd028599d1c931b5d96a4e50c1299f9cdf38ee78dbf5d5cd"
+    },
+    "derived": {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/survey.mjs",
+      "bytes": 37750,
+      "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+    },
+    "preservedBlocks": [
+      {
+        "label": "all original numerical statistics",
+        "bytes": 5953,
+        "sha256": "1dc0461f5199ef9c9b92887525001fd84e8c8bb8f36d27d795af231a2ef1af63",
+        "sourceBytesIdentical": true
+      },
+      {
+        "label": "original passive sample",
+        "bytes": 4742,
+        "sha256": "dc7e658201f0719618e0f8659e641de6faa74540cbcb1dc1704d1165baa39891",
+        "sourceBytesIdentical": true
+      },
+      {
+        "label": "original settings/menu load",
+        "bytes": 890,
+        "sha256": "781d684cdb55b435669f22f9b4f5af2f2acfd4dc665d095ecfb8621c05aa1e9f",
+        "sourceBytesIdentical": true
+      },
+      {
+        "label": "original ordinary menu-to-ride route and quit",
+        "bytes": 674,
+        "sha256": "85cdb3287cd129e03c45f5129053b005ab7fbb709987cf2464f22d538271c979",
+        "sourceBytesIdentical": true
+      }
+    ]
+  },
+  "compiledSummary": {
+    "baseline": {
+      "manifest": {
+        "path": "/private/tmp/contact-height-demand-build-20261004/baseline/build-manifest.json",
+        "bytes": 4430,
+        "sha256": "88208a3d01644085d1d91c35fbfb20630b2abad6b8a1d5a03ac3df10b72ee8cb"
+      },
+      "files": 11,
+      "worker": "assets/surfZoneWorker-C17EHetv.js",
+      "client": "assets/index-CirSKWVs.js"
+    },
+    "candidate": {
+      "manifest": {
+        "path": "/private/tmp/contact-height-demand-build-20261004/candidate/build-manifest.json",
+        "bytes": 6793,
+        "sha256": "392bc5ec560f30fc9b0d2560e8ebb2f204dcbceaa703471e245c907608946248"
+      },
+      "files": 11,
+      "worker": "assets/surfZoneWorker-gVTILj2Q.js",
+      "client": "assets/index-D6H6fMwF.js"
+    },
+    "buildId": "68e263250-qa-contact-height"
+  },
+  "proposedCheckCommands": [
+    {
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "--check",
+        "survey.mjs"
+      ],
+      "log": "checks/survey.mjs.syntax.log"
+    },
+    {
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "--check",
+        "native-owned.mjs"
+      ],
+      "log": "checks/native-owned.mjs.syntax.log"
+    },
+    {
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "--check",
+        "passive-guard.mjs"
+      ],
+      "log": "checks/passive-guard.mjs.syntax.log"
+    },
+    {
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "--check",
+        "pair.mjs"
+      ],
+      "log": "checks/pair.mjs.syntax.log"
+    },
+    {
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "argv": [
+        "node",
+        "pair.mjs",
+        "--run=false"
+      ],
+      "log": "checks/pair-local-plan.json",
+      "scope": "local disk hashes/plan only; no server/network/Chrome"
+    },
+    {
+      "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+      "env": {
+        "CONTACT_FPS_EXPECTED_WORKER": "assets/surfZoneWorker-C17EHetv.js"
+      },
+      "argv": [
+        "node",
+        "survey.mjs",
+        "/private/tmp/contact-height-demand-fps-20261004/checks/baseline-plan-unused-output.json",
+        "--plan=true",
+        "--url=http://127.0.0.1:4216/?diagnostics",
+        "--dir=/private/tmp/contact-height-demand-build-20261004/baseline/dist",
+        "--features=true",
+        "--only=High (baseline)",
+        "--spot=Padang",
+        "--swell=Big",
+        "--warmSeconds=5",
+        "--rideSeconds=90",
+        "--gpuTiming=false",
+        "--diagnosticGpu=false",
+        "--edition=single-step-publication",
+        "--width=1708",
+        "--height=966",
+        "--cdp=9626",
+        "--commit=ef60d3cee120d6b157fe94386d923b6b4392205b"
+      ],
+      "log": "checks/baseline-survey-plan.json",
+      "scope": "original survey plan branch only; verify=false so no server/fetch/Chrome"
+    }
+  ],
+  "proposedHardwareCommand": {
+    "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+    "env": {
+      "CONTACT_HEIGHT_FPS_READY_SHA256": "<exact-parent-reviewed-ready-hash>"
+    },
+    "argv": [
+      "node",
+      "pair.mjs",
+      "--run=true",
+      "--out=/private/tmp/contact-height-demand-fps-20261004/run"
+    ],
+    "condition": "only after approved source checks and separately granted soleGPU lease"
+  },
+  "checks": {
+    "syntax": "NOT_RUN",
+    "dryplans": "NOT_RUN",
+    "server": "NOT_RUN",
+    "browser": "NOT_RUN",
+    "GPU": "NOT_RUN",
+    "FPS": "NOT_RUN",
+    "productionEdits": "NONE",
+    "GitMutation": "NONE"
+  },
+  "sourceScopeBlockers": [],
+  "executionBlockers": [
+    "Parent has not reviewed final ready hash",
+    "No syntax/dryplan checks have run",
+    "No hardware lease granted"
+  ],
+  "notes": [
+    "One disclosed page bootstrap0x5eed; no worker override",
+    "No viewport fitting/emulation resizing",
+    "No profiler/GPUtimer/contact observer/Ydrain",
+    "Native sampled actual CSS may differ from prior canonical FPS; B must exactly match A actual tuple/settings",
+    "Metrics/statistics functions remain original byte spans",
+    "No moving-quality/adoption or steady60 freshHz inference from this preparation",
+    "Live preflight verifies borrowed source pins as well as owned artifacts, including the actual imported rootCDP Page/sleep source. No checks executed."
+  ]
+}

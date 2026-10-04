@@ -1,0 +1,63 @@
+{
+  "schema": "contact-height-production-check-archive/v1",
+  "records": [
+    {
+      "path": "checks.py",
+      "bytes": 2883,
+      "sha256": "fd4b258376b37050e061eae9ae8ecb8c82a6c1afb69b504a1523b2029f12d4ed",
+      "original": "/private/tmp/contact-height-demand-adoption-20261004/checks.py"
+    },
+    {
+      "path": "terminal.json",
+      "bytes": 1806,
+      "sha256": "106cb135d688a854a134ba945e5ba239073bcb63cca50207697276be33b9166f",
+      "original": "/private/tmp/contact-height-demand-adoption-20261004/terminal.json"
+    },
+    {
+      "path": "strict-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": "/private/tmp/contact-height-demand-adoption-20261004/strict-first.log"
+    },
+    {
+      "path": "focused-first.log",
+      "bytes": 196,
+      "sha256": "271eb8f6271178812172e8c505e44c942581619d24044884f7c147c6b9d10cd7",
+      "original": "/private/tmp/contact-height-demand-adoption-20261004/focused-first.log"
+    },
+    {
+      "path": "build-first.log",
+      "bytes": 1328,
+      "sha256": "e9537138a73e19a57c5cd2224ecd5d05c08cb496d40579412902b3076a994be8",
+      "original": "/private/tmp/contact-height-demand-adoption-20261004/build-first.log"
+    },
+    {
+      "path": "source-before.json",
+      "bytes": 1797,
+      "sha256": "1457a9193d4e8aa5f2631723daa86c5c5cc242f0baf9daf8844d77ddad905db7",
+      "original": "/private/tmp/contact-height-demand-adoption-20261004/source-before.json"
+    },
+    {
+      "path": "source-after.json",
+      "bytes": 1797,
+      "sha256": "1457a9193d4e8aa5f2631723daa86c5c5cc242f0baf9daf8844d77ddad905db7",
+      "original": "/private/tmp/contact-height-demand-adoption-20261004/source-after.json"
+    },
+    {
+      "path": "freeze-manifest.json",
+      "bytes": 3515,
+      "sha256": "4f04b7a9e0e008f4fda51a3378128be9b8715ec96e29b9b3b1dd67b8983c71ae",
+      "original": "/private/tmp/contact-height-demand-adoption-20261004/freeze-manifest.json"
+    },
+    {
+      "path": "build-output-manifest.json",
+      "bytes": 2038,
+      "sha256": "c0d6c7d7614ec8102d1ecf58d1404f6d17c9001aec6ed4c0581c5be4d3f176a9",
+      "original": "/private/tmp/contact-height-demand-adoption-20261004/build-output-manifest.json"
+    }
+  ],
+  "sourceInputsVerified": 12,
+  "runtimeSource": "exact candidate already retained in ../contact-height-demand-prototype/",
+  "productionTests": "tracked src/physics/PhysicalSurfWater.test.ts and src/wave/barrel/ordinaryContact.test.ts",
+  "noRerun": true
+}

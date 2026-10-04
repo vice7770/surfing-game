@@ -1,0 +1,318 @@
+{
+  "schema": "contact-height-passive-fps-derived-summary/v1",
+  "rawReportSha256": "9a4068b92fd08354c8d25e09db99399eb57805ef2ee429c0553ea38697ae6248",
+  "valid": true,
+  "incomplete": false,
+  "startedAt": "2026-10-04T02:05:51.366Z",
+  "endedAt": "2026-10-04T02:09:48.873Z",
+  "scope": "One serial passive baseline then candidate; descriptive retained statistics, no replay or new measurement",
+  "arms": {
+    "baseline": {
+      "rawFpsSha256": "5cf55d26021f0d825381cf263031f0b0a15ae4687c38706414edddbde1aa591b",
+      "metrics": {
+        "renderedFps": 60,
+        "renderedFrameMsP50": 16.7,
+        "renderedFrameMsP95": 24.9,
+        "renderedFrameMsP99": 25.9,
+        "renderedFrameMsMax": 34.2,
+        "renderedDrawCalls": 54,
+        "renderedTrianglesP50": 1149579,
+        "freshSnapshotsPerSecond": 56.77,
+        "simulationSecondsPerWallSecond": 0.946,
+        "physicsAdvanceSeconds": 85.166667,
+        "freshSnapshots": 5111,
+        "physicsStepDeltaDistribution": {
+          "1": 5110
+        },
+        "duplicatePublicationEvents": 0,
+        "backwardsPublicationEvents": 0,
+        "nonIntegralPhysicsStepDeltas": 0,
+        "snapshotIntervalMsP50": 17,
+        "snapshotIntervalMsP95": 23.1,
+        "snapshotIntervalMsP99": 27.6,
+        "snapshotIntervalMsMax": 41.4,
+        "mainThreadMsP50": 0.6,
+        "mainThreadMsP95": 3.9
+      },
+      "pipelineMsP50": {
+        "water": 6,
+        "contact": 1.1,
+        "total": 16.7
+      },
+      "pipelineMsP95": {
+        "water": 10.3,
+        "contact": 3.5,
+        "total": 22.6
+      },
+      "observed": {
+        "viewport": "1708 \u00d7 879",
+        "browserDpr": 2,
+        "renderPixelRatio": 1.75,
+        "renderSpacing": 2,
+        "maxBatchSteps": 1,
+        "compute": "gpu"
+      },
+      "canvas": "2989 \u00d7 1538",
+      "selectedCompleteWallBins": [
+        {
+          "wallFrom": 78,
+          "wallTo": 80,
+          "snapshots": 96,
+          "freshSnapshotsPerSecond": 47.74,
+          "pipelineMsP50": {
+            "water": 5.7,
+            "contact": 3.2,
+            "total": 19.9
+          }
+        },
+        {
+          "wallFrom": 80,
+          "wallTo": 82,
+          "snapshots": 87,
+          "freshSnapshotsPerSecond": 43.57,
+          "pipelineMsP50": {
+            "water": 6.4,
+            "contact": 4.2,
+            "total": 22.1
+          }
+        },
+        {
+          "wallFrom": 82,
+          "wallTo": 84,
+          "snapshots": 84,
+          "freshSnapshotsPerSecond": 41.96,
+          "pipelineMsP50": {
+            "water": 6.8,
+            "contact": 3.7,
+            "total": 22.2
+          }
+        },
+        {
+          "wallFrom": 84,
+          "wallTo": 86,
+          "snapshots": 99,
+          "freshSnapshotsPerSecond": 49.54,
+          "pipelineMsP50": {
+            "water": 5.8,
+            "contact": 2.1,
+            "total": 18.9
+          }
+        },
+        {
+          "wallFrom": 86,
+          "wallTo": 88,
+          "snapshots": 92,
+          "freshSnapshotsPerSecond": 45.77,
+          "pipelineMsP50": {
+            "water": 6.1,
+            "contact": 2.3,
+            "total": 20.3
+          }
+        },
+        {
+          "wallFrom": 88,
+          "wallTo": 90,
+          "snapshots": 95,
+          "freshSnapshotsPerSecond": 47.57,
+          "pipelineMsP50": {
+            "water": 6.1,
+            "contact": 2.9,
+            "total": 20.4
+          }
+        }
+      ],
+      "excludedPartialWallBin": {
+        "from": 90,
+        "snapshots": 1,
+        "freshSnapshotsPerSecond": 0
+      },
+      "process": {
+        "pid": 54560,
+        "startedAt": "2026-10-04T02:05:51.368Z",
+        "endedAt": "2026-10-04T02:07:49.747Z",
+        "elapsedSeconds": 118.379,
+        "terminal": {
+          "code": 0,
+          "signal": null,
+          "at": "2026-10-04T02:07:49.674Z"
+        },
+        "authorityUnchangedAfter": true,
+        "cdpClosure": {
+          "closed": true,
+          "reason": "ECONNREFUSED"
+        },
+        "serverClosure": {
+          "closed": true,
+          "reason": "ECONNREFUSED"
+        },
+        "port4200End": {
+          "closed": true,
+          "reason": "ECONNREFUSED"
+        }
+      }
+    },
+    "candidate": {
+      "rawFpsSha256": "8a024ffc90c3da2abfeb1d157daa0692213b638a6cf6c1a5d51f5cdae9d76f01",
+      "metrics": {
+        "renderedFps": 60,
+        "renderedFrameMsP50": 16.7,
+        "renderedFrameMsP95": 25,
+        "renderedFrameMsP99": 26.1,
+        "renderedFrameMsMax": 32.8,
+        "renderedDrawCalls": 54,
+        "renderedTrianglesP50": 1149421,
+        "freshSnapshotsPerSecond": 57.87,
+        "simulationSecondsPerWallSecond": 0.965,
+        "physicsAdvanceSeconds": 87.266667,
+        "freshSnapshots": 5237,
+        "physicsStepDeltaDistribution": {
+          "1": 5236
+        },
+        "duplicatePublicationEvents": 0,
+        "backwardsPublicationEvents": 0,
+        "nonIntegralPhysicsStepDeltas": 0,
+        "snapshotIntervalMsP50": 16.8,
+        "snapshotIntervalMsP95": 22,
+        "snapshotIntervalMsP99": 25.1,
+        "snapshotIntervalMsMax": 54.3,
+        "mainThreadMsP50": 0.6,
+        "mainThreadMsP95": 4.2
+      },
+      "pipelineMsP50": {
+        "water": 5.7,
+        "contact": 0.5,
+        "total": 16.5
+      },
+      "pipelineMsP95": {
+        "water": 9.9,
+        "contact": 1.6,
+        "total": 21.5
+      },
+      "observed": {
+        "viewport": "1708 \u00d7 879",
+        "browserDpr": 2,
+        "renderPixelRatio": 1.75,
+        "renderSpacing": 2,
+        "maxBatchSteps": 1,
+        "compute": "gpu"
+      },
+      "canvas": "2989 \u00d7 1538",
+      "selectedCompleteWallBins": [
+        {
+          "wallFrom": 78,
+          "wallTo": 80,
+          "snapshots": 106,
+          "freshSnapshotsPerSecond": 52.87,
+          "pipelineMsP50": {
+            "water": 5.6,
+            "contact": 1.5,
+            "total": 17.6
+          }
+        },
+        {
+          "wallFrom": 80,
+          "wallTo": 82,
+          "snapshots": 96,
+          "freshSnapshotsPerSecond": 48.14,
+          "pipelineMsP50": {
+            "water": 5.9,
+            "contact": 1.9,
+            "total": 19.6
+          }
+        },
+        {
+          "wallFrom": 82,
+          "wallTo": 84,
+          "snapshots": 96,
+          "freshSnapshotsPerSecond": 47.96,
+          "pipelineMsP50": {
+            "water": 6.6,
+            "contact": 1.3,
+            "total": 20.1
+          }
+        },
+        {
+          "wallFrom": 84,
+          "wallTo": 86,
+          "snapshots": 118,
+          "freshSnapshotsPerSecond": 59.02,
+          "pipelineMsP50": {
+            "water": 5.5,
+            "contact": 0.9,
+            "total": 16.5
+          }
+        },
+        {
+          "wallFrom": 86,
+          "wallTo": 88,
+          "snapshots": 113,
+          "freshSnapshotsPerSecond": 56.5,
+          "pipelineMsP50": {
+            "water": 5.3,
+            "contact": 1.2,
+            "total": 17
+          }
+        },
+        {
+          "wallFrom": 88,
+          "wallTo": 90,
+          "snapshots": 96,
+          "freshSnapshotsPerSecond": 48.03,
+          "pipelineMsP50": {
+            "water": 6,
+            "contact": 1.5,
+            "total": 20
+          }
+        }
+      ],
+      "excludedPartialWallBin": {
+        "from": 90,
+        "snapshots": 23,
+        "freshSnapshotsPerSecond": 47.31
+      },
+      "process": {
+        "pid": 55141,
+        "startedAt": "2026-10-04T02:07:49.747Z",
+        "endedAt": "2026-10-04T02:09:48.873Z",
+        "elapsedSeconds": 119.126,
+        "terminal": {
+          "code": 0,
+          "signal": null,
+          "at": "2026-10-04T02:09:48.802Z"
+        },
+        "authorityUnchangedAfter": true,
+        "cdpClosure": {
+          "closed": true,
+          "reason": "ECONNREFUSED"
+        },
+        "serverClosure": {
+          "closed": true,
+          "reason": "ECONNREFUSED"
+        },
+        "port4200End": {
+          "closed": true,
+          "reason": "ECONNREFUSED"
+        }
+      }
+    }
+  },
+  "timelineAuthority": "simulationTimeline is two-second wall-time bins relative to each arm first publication; absolute seaTimeBins not emitted with diagnosticGpuProfile=false; exact sea-clock matching is unavailable",
+  "selectedCompleteWallBinFromSeconds": [
+    78,
+    80,
+    82,
+    84,
+    86,
+    88
+  ],
+  "limits": [
+    "No steady60Hz physics guarantee",
+    "One A-then-B pair; environment/order sensitive",
+    "Component quantiles are not additive request latency",
+    "No moving-tube/visual/default-adoption acceptance"
+  ],
+  "comparison": {
+    "freshSnapshotsHzDelta": 1.1,
+    "realtimeProgressDelta": 0.019
+  }
+}

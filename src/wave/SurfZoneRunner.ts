@@ -18,7 +18,7 @@ import type { ParticleLevel } from './particleBudget';
 import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
 import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
-import { SweptContact } from './barrel/sweptContact';
+import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } from './barrel/sweptContact';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SurfZoneSimulation, sweptBarrelOn, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
@@ -28,6 +28,7 @@ export { surfZoneSea } from './SurfZoneSimulation';
 
 /** Fixed simulation step, s: the game's physics rate. */
 export const SURF_ZONE_STEP = 1 / 60;
+const WORKER_CONTACT_OWNER = Symbol('private worker contact owner');
 /** A snapshot's lip parcel: x, y, z, world column, index along its strip, the strip's launch time, the parcel's age (plan P7), its volume, m³, and its kind: 0 a jet's water, 1 a splash-up's (G9). */
 export const LIP_STRIDE = 9;
 
@@ -300,6 +301,8 @@ export class SurfZoneRunner {
   readonly session?: RideSession;
   /** The swept barrel's contact at a swept spot, given the barrel files (the Padang Padang spec, Part B, PR 4). */
   readonly contact?: SweptContact;
+  private readonly contactQueries?: SweptSurfaceQueries;
+  private readonly ordinaryContactOwner?: OrdinaryContactOwner;
   /** The contact's last update, ms. */
   contactMs = 0;
   private readonly contactRecords = new Float32Array(FRONT_CAPACITY * FRONT_STRIDE);
@@ -341,7 +344,7 @@ export class SurfZoneRunner {
   private readonly axis = new Vector3();
 
   /** `'warm'` leaves the spin-up, and seating the board and rider, to `spinUp` (the worker spins up on its GPU). */
-  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up') {
+  constructor(readonly config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up', internal?: typeof WORKER_CONTACT_OWNER) {
     // At a swept spot the cases run the crash in every sea (PR 5), and the rider's contact with a board or rider (PR 4).
     const slope = BARREL_SLOPE[config.spot];
     const library = options.barrelCases && sweptBarrelOn(config) && slope !== undefined ? libraryFromBytes(options.barrelCases) : undefined;
@@ -359,8 +362,16 @@ export class SurfZoneRunner {
     this.focus = this.simulation.breakPoint();
     this.breaker = this.simulation.iribarren();
     this.breakDepth = this.simulation.spot.depthAt(this.focus.x, this.focus.z) + config.tide;
-    if (library && (options.rider || options.board || options.contact) && this.simulation.front) this.contact = new SweptContact(library, slope!);
-    this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contact, renderSpacing);
+    if (library && (options.rider || options.board || options.contact) && this.simulation.front) {
+      if (internal === WORKER_CONTACT_OWNER && config.spot === 'padang' && this.simulation.solver instanceof BoussinesqSolver) {
+        this.ordinaryContactOwner = SweptContact.forOrdinaryWorker(library, slope!);
+        this.contactQueries = this.ordinaryContactOwner.queries;
+      } else {
+        this.contact = new SweptContact(library, slope!);
+        this.contactQueries = this.contact;
+      }
+    }
+    this.water = PhysicalSurfWater.forSimulation(this.simulation, this.contactQueries, renderSpacing);
     this.lineup = new Vector3(this.focus.x, 0, this.focus.z - LINEUP_OFFSET);
     this.rideLineup = new Vector3(this.focus.x + (options.spawnAlong ?? 0), 0, this.focus.z - (options.spawnOut ?? RIDE_LINEUP_OFFSET));
     if (options.rider) {
@@ -372,6 +383,11 @@ export class SurfZoneRunner {
       this.board = new BoardBody();
     }
     if (start === 'spun-up') this.seat();
+  }
+
+  /** Only WorkerCore retains this runner; replies never publish the owner or query backend. */
+  static forWorker(config: SurfZoneConfig, options: SurfZoneRunnerOptions = {}, start: SurfZoneStart = 'spun-up'): SurfZoneRunner {
+    return new SurfZoneRunner(config, options, start, WORKER_CONTACT_OWNER);
   }
 
   /** Spin a `'warm'`-built surf zone up (on its device when it has one), then seat the board and rider on it. */
@@ -487,13 +503,14 @@ export class SurfZoneRunner {
    * advisor's ruling 3).
    */
   private updateContact(): void {
-    const { contact, simulation } = this;
-    if (!contact || !simulation.front) return;
+    const { contact, simulation, contactQueries, ordinaryContactOwner } = this;
+    if (!contactQueries || !simulation.front) return;
     const start = performance.now();
     const count = writeFrontRecords(simulation.front.points, this.contactRecords);
     // The solver has finished all water mutations; the contact only reads heights for this synchronous build.
-    this.water.withSurfaceNodeCache(() => {
-      contact.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
+    if (ordinaryContactOwner) ordinaryContactOwner.updateFromPlainSurface(this.contactRecords, count, this.config.tide, this.water);
+    else this.water.withSurfaceNodeCache(() => {
+      contact!.update(this.contactRecords, count, this.config.tide, (x, z) => this.water.plainSurfaceAt(x, z));
     });
     this.contactMs = performance.now() - start;
   }
@@ -525,7 +542,7 @@ export class SurfZoneRunner {
       session.step(SURF_ZONE_STEP, this.water, ridden);
       // At a swept spot the lip strikes through the contact; its parcels' strips are off, so they would strike from
       // where nothing is drawn (the advisor's ruling 4).
-      if (!this.contact) session.strike(this.simulation.lip);
+      if (!this.contactQueries) session.strike(this.simulation.lip);
       if (session.surfer.active) this.knock = Math.max(this.knock, session.surfer.lastContacts.board.length());
       this.boardMs = performance.now() - start;
       const lost = session.board.outsideDomain || (session.surfer.active && session.surfer.outsideDomain)

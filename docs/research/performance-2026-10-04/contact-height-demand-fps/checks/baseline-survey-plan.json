@@ -1,0 +1,105 @@
+{
+  "planOnly": true,
+  "url": "http://127.0.0.1:4216/?diagnostics",
+  "ordinary": {
+    "method": "Original ordinary Surf/Padang/Big route; five-second warmup then90s passive sample; idle input; native viewport observed rather than resized",
+    "diagnosticGpuProfile": false,
+    "timingComparableToPassiveBaseline": true,
+    "fixedPhysicsStepSeconds": 0.016666666666666666,
+    "expectedConfig": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "expectedMaxBatchSteps": 1,
+    "expectedBrowserDpr": 2,
+    "expectedRenderPixelRatio": 1.75,
+    "graphics": {
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high",
+      "preset": "high"
+    },
+    "normalMode": "production pixel normals",
+    "nativeReferencePending": true,
+    "runtimeOverrides": [
+      {
+        "realm": "page only",
+        "target": "Math.random",
+        "initialState": 24301,
+        "method": "original survey INSTRUMENT Mulberry32"
+      }
+    ],
+    "workerRngOverride": false,
+    "pipelineMetricSemantics": "Original survey statistics retained. Last-step stage quantiles are not request latency or additive headroom; rendered cadence, fresh publications and sea-time progress are separate."
+  },
+  "artifact": {
+    "root": "/private/tmp/contact-height-demand-build-20261004/baseline/dist",
+    "sha256": "64a5edaedd1b18bac4fb2f028d3c6a1582e0ca9a7d33ea38779df69b87995c72",
+    "entry": "assets/index-CirSKWVs.js",
+    "worker": "assets/surfZoneWorker-C17EHetv.js",
+    "files": [
+      {
+        "file": "index.html",
+        "sha256": "fc8c7b3478976a98243459a1ee7e7beca247b143f88139f7991d9795132faaaf"
+      },
+      {
+        "file": "assets/WorkerSurfZone-BMMxhQi4.js",
+        "sha256": "a7711f64ce3ab2d7301d95a255fb5b5769c0ba2d81d31a4ab079d44fd9d727ca"
+      },
+      {
+        "file": "assets/devStepping-CnD5b-PB.js",
+        "sha256": "12e60cba8d37fb20cf91d5ab14dca8312d538033f3906f688067202b617e77fd"
+      },
+      {
+        "file": "assets/index-CirSKWVs.js",
+        "sha256": "d36764d11bf679133192cf99d9944fb0664b143bf08a3b0aa765b8317c6c4262"
+      },
+      {
+        "file": "assets/index-DA8NEfOT.css",
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+      },
+      {
+        "file": "assets/jevRecorder-BlJkMjes.js",
+        "sha256": "fc73e7774d3892cfc4c76c8595dec6b26ae21a76f63bc4c5012af3164946573a"
+      },
+      {
+        "file": "assets/particleBench-DigrGcpO.js",
+        "sha256": "5030ee4049bb0e40866327d6342c90af176769f38bd2fd66daa78eb132cb2989"
+      },
+      {
+        "file": "assets/rideRecorder-B4mhEu_A.js",
+        "sha256": "8400be681acb0859dfbf26bddab21b15ab6ccfc6a2464aa84d4842b04ffb74a9"
+      },
+      {
+        "file": "assets/surfZoneWorker-C17EHetv.js",
+        "sha256": "f713d7fed51e8f5593b3dfa9b8858bcb9185b28e0e914f1a34ee37da62161017"
+      },
+      {
+        "file": "assets/waterSheet-DuwtUt36.js",
+        "sha256": "d7609f4f65144920febcb1737f6e04acd4dd394101658dd7d97c9248763d82f5"
+      }
+    ],
+    "verified": []
+  },
+  "chromeStarted": false,
+  "servedVerification": "Deferred to the scheduled live run"
+}

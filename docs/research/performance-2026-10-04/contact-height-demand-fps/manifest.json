@@ -1,0 +1,511 @@
+{
+  "schema": "contact-height-fps-archive/v1",
+  "originalDirectory": "/private/tmp/contact-height-demand-fps-20261004",
+  "records": [
+    {
+      "archivedPath": "source/README.prepared.md",
+      "encoding": "identity",
+      "storedBytes": 3645,
+      "storedSha256": "b1fc068785b31da1cd352873b7ddd2f59327ba520fe4b94d6885a442ed32bc60",
+      "expandedBytes": 3645,
+      "expandedSha256": "b1fc068785b31da1cd352873b7ddd2f59327ba520fe4b94d6885a442ed32bc60",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/README.md",
+          "bytes": 3645,
+          "sha256": "b1fc068785b31da1cd352873b7ddd2f59327ba520fe4b94d6885a442ed32bc60"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/bindings.json",
+      "encoding": "identity",
+      "storedBytes": 1809,
+      "storedSha256": "285b0e80dd21bf2954086dfad20a135cf733a24865c554e90589dd8a2d478cdc",
+      "expandedBytes": 1809,
+      "expandedSha256": "285b0e80dd21bf2954086dfad20a135cf733a24865c554e90589dd8a2d478cdc",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/bindings.json",
+          "bytes": 1809,
+          "sha256": "285b0e80dd21bf2954086dfad20a135cf733a24865c554e90589dd8a2d478cdc"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/derivation.json",
+      "encoding": "identity",
+      "storedBytes": 7601,
+      "storedSha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421",
+      "expandedBytes": 7601,
+      "expandedSha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/derivation.json",
+          "bytes": 7601,
+          "sha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/derive-survey.py",
+      "encoding": "identity",
+      "storedBytes": 6099,
+      "storedSha256": "f2fa1cdefeb5ea43e7b88d7c59a7ff5589bf23c7ff23c79e3fad16da2d27ce07",
+      "expandedBytes": 6099,
+      "expandedSha256": "f2fa1cdefeb5ea43e7b88d7c59a7ff5589bf23c7ff23c79e3fad16da2d27ce07",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/derive-survey.py",
+          "bytes": 6099,
+          "sha256": "f2fa1cdefeb5ea43e7b88d7c59a7ff5589bf23c7ff23c79e3fad16da2d27ce07"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/native-owned.mjs",
+      "encoding": "identity",
+      "storedBytes": 5514,
+      "storedSha256": "cecc2283896183dbde2d8dc7edbd3a9c8270eaac313c9cd0c2ed3f8e38c99e9e",
+      "expandedBytes": 5514,
+      "expandedSha256": "cecc2283896183dbde2d8dc7edbd3a9c8270eaac313c9cd0c2ed3f8e38c99e9e",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/native-owned.mjs",
+          "bytes": 5514,
+          "sha256": "cecc2283896183dbde2d8dc7edbd3a9c8270eaac313c9cd0c2ed3f8e38c99e9e"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/pair.mjs",
+      "encoding": "identity",
+      "storedBytes": 13019,
+      "storedSha256": "1c76ea1f01c97c1022b0fa0a297bab851c5c8d19f9fb0589ac673e6be5680edb",
+      "expandedBytes": 13019,
+      "expandedSha256": "1c76ea1f01c97c1022b0fa0a297bab851c5c8d19f9fb0589ac673e6be5680edb",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/pair.mjs",
+          "bytes": 13019,
+          "sha256": "1c76ea1f01c97c1022b0fa0a297bab851c5c8d19f9fb0589ac673e6be5680edb"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/passive-guard.mjs",
+      "encoding": "identity",
+      "storedBytes": 9501,
+      "storedSha256": "19be1fa0c1ea4985530d9843db5ee587770f653d7f7d1966ce3f528a047f6851",
+      "expandedBytes": 9501,
+      "expandedSha256": "19be1fa0c1ea4985530d9843db5ee587770f653d7f7d1966ce3f528a047f6851",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/passive-guard.mjs",
+          "bytes": 9501,
+          "sha256": "19be1fa0c1ea4985530d9843db5ee587770f653d7f7d1966ce3f528a047f6851"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/plan.json",
+      "encoding": "identity",
+      "storedBytes": 5171,
+      "storedSha256": "24fdb9b91aef1acd59b94b75e13f2e2101345bf9f07b6299f3daccf342f63091",
+      "expandedBytes": 5171,
+      "expandedSha256": "24fdb9b91aef1acd59b94b75e13f2e2101345bf9f07b6299f3daccf342f63091",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/plan.json",
+          "bytes": 5171,
+          "sha256": "24fdb9b91aef1acd59b94b75e13f2e2101345bf9f07b6299f3daccf342f63091"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/preparation-manifest.json",
+      "encoding": "identity",
+      "storedBytes": 10876,
+      "storedSha256": "19322e12acc1439b88f927cc5973592c924be30f28def3a94d67cb44e933f5c8",
+      "expandedBytes": 10876,
+      "expandedSha256": "19322e12acc1439b88f927cc5973592c924be30f28def3a94d67cb44e933f5c8",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/preparation-manifest.json",
+          "bytes": 10876,
+          "sha256": "19322e12acc1439b88f927cc5973592c924be30f28def3a94d67cb44e933f5c8"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/public-assets.json",
+      "encoding": "identity",
+      "storedBytes": 10729,
+      "storedSha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830",
+      "expandedBytes": 10729,
+      "expandedSha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/public-assets.json",
+          "bytes": 10729,
+          "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/ready.json",
+      "encoding": "identity",
+      "storedBytes": 3715,
+      "storedSha256": "7176fb1eca5c2974294cb16d5a27e5c84749b5a0b76e5b2c5614b84b0678825a",
+      "expandedBytes": 3715,
+      "expandedSha256": "7176fb1eca5c2974294cb16d5a27e5c84749b5a0b76e5b2c5614b84b0678825a",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/ready.json",
+          "bytes": 3715,
+          "sha256": "7176fb1eca5c2974294cb16d5a27e5c84749b5a0b76e5b2c5614b84b0678825a"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/survey.mjs",
+      "encoding": "identity",
+      "storedBytes": 37750,
+      "storedSha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759",
+      "expandedBytes": 37750,
+      "expandedSha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/survey.mjs",
+          "bytes": 37750,
+          "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+        }
+      ]
+    },
+    {
+      "archivedPath": "source/survey.patch",
+      "encoding": "identity",
+      "storedBytes": 7933,
+      "storedSha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af",
+      "expandedBytes": 7933,
+      "expandedSha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/survey.patch",
+          "bytes": 7933,
+          "sha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af"
+        }
+      ]
+    },
+    {
+      "archivedPath": "checks/run-authorized.py",
+      "encoding": "identity",
+      "storedBytes": 4504,
+      "storedSha256": "81b0cdd7295af4efafeaa78cb90e0d55090e2eba3cd4cbd635c1fea84277787d",
+      "expandedBytes": 4504,
+      "expandedSha256": "81b0cdd7295af4efafeaa78cb90e0d55090e2eba3cd4cbd635c1fea84277787d",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/run-authorized.py",
+          "bytes": 4504,
+          "sha256": "81b0cdd7295af4efafeaa78cb90e0d55090e2eba3cd4cbd635c1fea84277787d"
+        }
+      ]
+    },
+    {
+      "archivedPath": "checks/start.json",
+      "encoding": "identity",
+      "storedBytes": 414,
+      "storedSha256": "ec1ed3c6afc8114c286f1c53a822fa174dfef40353bd1f1cbbf4d95947aebe4e",
+      "expandedBytes": 414,
+      "expandedSha256": "ec1ed3c6afc8114c286f1c53a822fa174dfef40353bd1f1cbbf4d95947aebe4e",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/start.json",
+          "bytes": 414,
+          "sha256": "ec1ed3c6afc8114c286f1c53a822fa174dfef40353bd1f1cbbf4d95947aebe4e"
+        }
+      ]
+    },
+    {
+      "archivedPath": "checks/terminal.json",
+      "encoding": "identity",
+      "storedBytes": 5095,
+      "storedSha256": "f284102967baa427bdd64a10a12c3035f879a1b68ce14e0d9fa65ffc21a951bd",
+      "expandedBytes": 5095,
+      "expandedSha256": "f284102967baa427bdd64a10a12c3035f879a1b68ce14e0d9fa65ffc21a951bd",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/terminal.json",
+          "bytes": 5095,
+          "sha256": "f284102967baa427bdd64a10a12c3035f879a1b68ce14e0d9fa65ffc21a951bd"
+        }
+      ]
+    },
+    {
+      "archivedPath": "checks/verification-proof.json",
+      "encoding": "identity",
+      "storedBytes": 3413,
+      "storedSha256": "d364710927863b73e29d021dc462606f59a1fba38a949ef51efb197cd2d29ab6",
+      "expandedBytes": 3413,
+      "expandedSha256": "d364710927863b73e29d021dc462606f59a1fba38a949ef51efb197cd2d29ab6",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/verification-proof.json",
+          "bytes": 3413,
+          "sha256": "d364710927863b73e29d021dc462606f59a1fba38a949ef51efb197cd2d29ab6"
+        }
+      ]
+    },
+    {
+      "archivedPath": "checks/pair-local-plan.json",
+      "encoding": "identity",
+      "storedBytes": 6572,
+      "storedSha256": "4b563bae6142a0fd6b5e006dd5bb83a7cc64d11280647c4deca0ceffb1361bc1",
+      "expandedBytes": 6572,
+      "expandedSha256": "4b563bae6142a0fd6b5e006dd5bb83a7cc64d11280647c4deca0ceffb1361bc1",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/pair-local-plan.json",
+          "bytes": 6572,
+          "sha256": "4b563bae6142a0fd6b5e006dd5bb83a7cc64d11280647c4deca0ceffb1361bc1"
+        }
+      ]
+    },
+    {
+      "archivedPath": "checks/baseline-survey-plan.json",
+      "encoding": "identity",
+      "storedBytes": 3589,
+      "storedSha256": "fc7974140cb00fbadc6ec6f87e4428569d2c8916298e6473d64bcb3bf8390c43",
+      "expandedBytes": 3589,
+      "expandedSha256": "fc7974140cb00fbadc6ec6f87e4428569d2c8916298e6473d64bcb3bf8390c43",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/baseline-survey-plan.json",
+          "bytes": 3589,
+          "sha256": "fc7974140cb00fbadc6ec6f87e4428569d2c8916298e6473d64bcb3bf8390c43"
+        }
+      ]
+    },
+    {
+      "archivedPath": "checks/inputs.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 31516,
+      "storedSha256": "4de2948a6622a8296c934398bf18f3e82bba8dd85d736be09fc27a01319409f5",
+      "expandedBytes": 119964,
+      "expandedSha256": "10b5300ac3af23f422c4a1d4373e59d33a28d1210ff7d8d87fe83b56f61e2980",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/inputs-before.json",
+          "bytes": 119964,
+          "sha256": "10b5300ac3af23f422c4a1d4373e59d33a28d1210ff7d8d87fe83b56f61e2980"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/inputs-after.json",
+          "bytes": 119964,
+          "sha256": "10b5300ac3af23f422c4a1d4373e59d33a28d1210ff7d8d87fe83b56f61e2980"
+        }
+      ]
+    },
+    {
+      "archivedPath": "checks/syntax-empty.log",
+      "encoding": "identity",
+      "storedBytes": 0,
+      "storedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expandedBytes": 0,
+      "expandedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/survey.mjs.syntax.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/native-owned.mjs.syntax.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/passive-guard.mjs.syntax.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/checks/pair.mjs.syntax.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "archivedPath": "run/report.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 4974,
+      "storedSha256": "8afbd92595054a301e1ef778966ba278cce531ade525a64c3a91077748b805ba",
+      "expandedBytes": 15558,
+      "expandedSha256": "9a4068b92fd08354c8d25e09db99399eb57805ef2ee429c0553ea38697ae6248",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/run/report.json",
+          "bytes": 15558,
+          "sha256": "9a4068b92fd08354c8d25e09db99399eb57805ef2ee429c0553ea38697ae6248"
+        }
+      ]
+    },
+    {
+      "archivedPath": "run/baseline/fps.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 8347,
+      "storedSha256": "aabeca6753b9c7928e6cda179a154b84ef52271b2e15cba892503afd75322dae",
+      "expandedBytes": 99356,
+      "expandedSha256": "5cf55d26021f0d825381cf263031f0b0a15ae4687c38706414edddbde1aa591b",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/run/baseline/fps.json",
+          "bytes": 99356,
+          "sha256": "5cf55d26021f0d825381cf263031f0b0a15ae4687c38706414edddbde1aa591b"
+        }
+      ]
+    },
+    {
+      "archivedPath": "run/baseline/native-audit.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 1779,
+      "storedSha256": "4f9dc7bdd4e595fb00a8554739fe30d2301dd50dbc43be695e963a9a9fb2975f",
+      "expandedBytes": 25423,
+      "expandedSha256": "dddeaf28ce2e38d01d7925296bc0d84d951ac2a7f0b5699f106d81db68f3b233",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/run/baseline/native-audit.json",
+          "bytes": 25423,
+          "sha256": "dddeaf28ce2e38d01d7925296bc0d84d951ac2a7f0b5699f106d81db68f3b233"
+        }
+      ]
+    },
+    {
+      "archivedPath": "run/baseline/launcher.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 2309,
+      "storedSha256": "e56aff38bf4700d4ec61cf2e3976337f09185097ddf3979ef9505de6f254c8de",
+      "expandedBytes": 11782,
+      "expandedSha256": "3530269a5fbc81f958c74654a1f8a78971923ed46ce2b55d146849664f7fb57f",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/run/baseline/launcher.json",
+          "bytes": 11782,
+          "sha256": "3530269a5fbc81f958c74654a1f8a78971923ed46ce2b55d146849664f7fb57f"
+        }
+      ]
+    },
+    {
+      "archivedPath": "run/baseline/stdout.log.gz",
+      "encoding": "gzip",
+      "storedBytes": 699,
+      "storedSha256": "19b328a91df9fc3cded0a888490682e385e3feb6195e64a7aead12715de3e2f2",
+      "expandedBytes": 1156,
+      "expandedSha256": "ca46feaf70996d7fbbdbcfd413c3bfcb97d4fa1265e4915f634cfb91513cf092",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/run/baseline/stdout.log",
+          "bytes": 1156,
+          "sha256": "ca46feaf70996d7fbbdbcfd413c3bfcb97d4fa1265e4915f634cfb91513cf092"
+        }
+      ]
+    },
+    {
+      "archivedPath": "run/candidate/fps.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 8232,
+      "storedSha256": "2d5c6aabc8d434abfe32e94402066da9c2641cdadcc3abec38a529e3bfde88cb",
+      "expandedBytes": 99337,
+      "expandedSha256": "8a024ffc90c3da2abfeb1d157daa0692213b638a6cf6c1a5d51f5cdae9d76f01",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/run/candidate/fps.json",
+          "bytes": 99337,
+          "sha256": "8a024ffc90c3da2abfeb1d157daa0692213b638a6cf6c1a5d51f5cdae9d76f01"
+        }
+      ]
+    },
+    {
+      "archivedPath": "run/candidate/native-audit.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 1779,
+      "storedSha256": "41359d9f6d8e24b4364b31da45b287a420f7568e9988d6dec1501efea578c7fa",
+      "expandedBytes": 25379,
+      "expandedSha256": "fd132bf2c43c4c6a6797e88b0c09a93ae1d89be82fafd565354a3127008a563a",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/run/candidate/native-audit.json",
+          "bytes": 25379,
+          "sha256": "fd132bf2c43c4c6a6797e88b0c09a93ae1d89be82fafd565354a3127008a563a"
+        }
+      ]
+    },
+    {
+      "archivedPath": "run/candidate/launcher.json.gz",
+      "encoding": "gzip",
+      "storedBytes": 2232,
+      "storedSha256": "29d560daef9ad780086e1c47dffe8db98584e54896202e70b062f65614a9f5e0",
+      "expandedBytes": 11497,
+      "expandedSha256": "31ddd5ac9b9cd034b5c000654fac489d46be6395799462d7cc06218e68cd36d3",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/run/candidate/launcher.json",
+          "bytes": 11497,
+          "sha256": "31ddd5ac9b9cd034b5c000654fac489d46be6395799462d7cc06218e68cd36d3"
+        }
+      ]
+    },
+    {
+      "archivedPath": "run/candidate/stdout.log.gz",
+      "encoding": "gzip",
+      "storedBytes": 697,
+      "storedSha256": "8b858c2a3da9dd3847805a8b4081cb7d44334c98b0ba1da813facfa4aaa2e3fc",
+      "expandedBytes": 1156,
+      "expandedSha256": "b56cab0f7f688be918ce5d6ee48a612400cc9065e7e650447b54644edcff7528",
+      "originals": [
+        {
+          "path": "/private/tmp/contact-height-demand-fps-20261004/run/candidate/stdout.log",
+          "bytes": 1156,
+          "sha256": "b56cab0f7f688be918ce5d6ee48a612400cc9065e7e650447b54644edcff7528"
+        }
+      ]
+    }
+  ],
+  "derivedFiles": [
+    {
+      "path": "README.md",
+      "bytes": 5738,
+      "sha256": "0b1e715542f93cd3b75503cbd2b484ab3400b563d38e20774e6e1a2ead915dc5"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 8644,
+      "sha256": "925786d97da52e4432bf1153ae1b14d1f68fef640373fbd6b2c353a345a7b538"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 916,
+      "sha256": "8c65da5a3161e9fc8917a6f6d719bc44a7cfeb64ed5c65af967bcd4617ac3407"
+    }
+  ],
+  "externalAuthorities": {
+    "compiledBuildArchive": "../contact-height-demand-build/manifest.json",
+    "sourceClosure": "../contact-height-demand-build/source/source-manifest.json.gz",
+    "baselineBuildManifest": "../contact-height-demand-build/build/baseline-manifest.json",
+    "candidateBuildManifest": "../contact-height-demand-build/build/candidate-manifest.json",
+    "normalPrototype": "../contact-normal-demand-prototype/manifest.json",
+    "heightPrototype": "../contact-height-demand-prototype/manifest.json",
+    "integration": "../contact-height-demand-integration/manifest.json",
+    "borrowedSourcePins": "source/preparation-manifest.json borrowedSourceAuthorities (original survey/CDP Git sources; prior v3 adapter authority)",
+    "publicAssets": "source/public-assets.json:38 shared readonly Git assets;24,249,385B; not copied"
+  },
+  "verification": {
+    "allStoredAndExpandedBytesMatchOriginals": true,
+    "deduplicatedAliases": "Four empty syntax logs share one exact empty payload; byte-identical before/after575input inventories share one gzip payload",
+    "originalFilesMutated": false,
+    "benchmarkOrTestRerun": false,
+    "GitMutation": false
+  }
+}

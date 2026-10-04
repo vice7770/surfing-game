@@ -1,5 +1,15 @@
 import { LANDMARK, type ProfileLibrary } from './ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+import type { OwnedPlainSurface, PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
+
+/** The physical water needs answers, not mutable contact geometry. */
+export type SweptSurfaceQueries = Pick<SweptContact, 'query' | 'floorAt'>;
+/** Internal ordinary-worker owner; neither object publishes a raw contact or loft. */
+export interface OrdinaryContactOwner {
+  readonly queries: SweptSurfaceQueries;
+  updateFromPlainSurface(records: Float32Array, count: number, stillLevel: number, water: PhysicalSurfWater): void;
+}
+const ORDINARY_QUERY_NORMALS = Symbol('ordinary query normals');
 
 /**
  * The contact's constants (the Padang Padang spec, Part B, PR 4):
@@ -105,7 +115,9 @@ export class SweptContact {
    */
   readonly stats = { queries: 0, hits: 0, anomalies: 0, quads: 0, overlaps: 0 };
   last: LoftResult | undefined;
-  private readonly loft: SweptLoft;
+  private readonly loft: Pick<SweptLoft, 'build'>;
+  private readonly prepareRow?: (row: number) => void;
+  private readonly prepareNormal?: (vertex: number) => void;
   private readonly bucket: number;
   /** Per vertex, its along-ray coordinate on its own slice's ray, and (a joined slice's next) on the previous slice's. */
   private own = new Float32Array(0);
@@ -148,9 +160,38 @@ export class SweptContact {
   private sideB = 0;
   private found = 0;
 
-  constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}) {
-    this.loft = new SweptLoft(library, slope, { contact: true });
+  constructor(library: ProfileLibrary, slope: number, options: ContactOptions = {}, internal?: typeof ORDINARY_QUERY_NORMALS) {
+    if (internal === ORDINARY_QUERY_NORMALS) {
+      const queryLoft = SweptLoft.forContactQueries(library, slope);
+      this.loft = queryLoft;
+      this.prepareRow = queryLoft.prepareRow;
+      this.prepareNormal = queryLoft.prepareNormal;
+    } else this.loft = new SweptLoft(library, slope, { contact: true });
     this.bucket = options.bucket ?? CONTACT.bucket;
+  }
+
+  /** Internal worker construction, never a posted option or public lazy-output mode. */
+  static forOrdinaryWorker(library: ProfileLibrary, slope: number): OrdinaryContactOwner {
+    const contact = new SweptContact(library, slope, {}, ORDINARY_QUERY_NORMALS);
+    const queries = Object.freeze({
+      query: contact.query.bind(contact),
+      floorAt: contact.floorAt.bind(contact),
+    });
+    let owned: OwnedPlainSurface | undefined;
+    let source: PhysicalSurfWater | undefined;
+    return Object.freeze({
+      queries,
+      updateFromPlainSurface(records: Float32Array, count: number, stillLevel: number, water: PhysicalSurfWater): void {
+        if (count === 0) {
+          contact.update(records, count, stillLevel, () => stillLevel);
+          return;
+        }
+        if (source !== water) { source = water; owned = water.createOwnedPlainSurface(); }
+        // Full h/bed/x copies and owned node-cache invalidation are part of each live preparation's work.
+        owned!.capture();
+        contact.update(records, count, stillLevel, owned!.heightAt);
+      },
+    });
   }
 
   /** Loft the fronts over the water (`heightAt`, uncarved) and index the strips for this step's queries. */
@@ -348,6 +389,9 @@ export class SweptContact {
     // quad holding q is always in q's bucket).
     const b = Math.floor((q - this.stripLow[s]) / this.bucket);
     if (!(b >= 0 && b < this.stripBuckets[s])) return 0;
+    // XZ-only misses and holding tests need no height. Every triangle below can read these two final Y rows.
+    this.prepareRow?.(s);
+    this.prepareRow?.(s + 1);
     const k = this.stripFirst[s] + b;
     const end = this.bucketStart[k + 1];
     this.stats.quads += end - this.bucketStart[k];
@@ -430,6 +474,7 @@ export class SweptContact {
     for (let m = 0; m < 3; m += 1) {
       const v = this.at[3 * k + m];
       const w = this.weights[3 * k + m];
+      this.prepareNormal?.(v);
       nx += w * loft.normals[3 * v];
       ny += w * loft.normals[3 * v + 1];
       nz += w * loft.normals[3 * v + 2];

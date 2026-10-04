@@ -1,0 +1,107 @@
+{
+  "original": {
+    "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/fps-survey.mjs",
+    "bytes": 38839,
+    "sha256": "84e580b651e8ec1dcd028599d1c931b5d96a4e50c1299f9cdf38ee78dbf5d5cd"
+  },
+  "derived": {
+    "path": "/private/tmp/contact-height-demand-fps-20261004/survey.mjs",
+    "bytes": 37750,
+    "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+  },
+  "operations": [
+    {
+      "label": "native launcher import",
+      "exactMatches": 1,
+      "before": "import { launch, sleep } from './cdp.mjs';",
+      "after": "import { launch, sleep } from './native-owned.mjs';\nimport { AUDIT_PRELUDE, NativePassiveGuard, ordinaryNativePlan } from './passive-guard.mjs';"
+    },
+    {
+      "label": "ordinary observed-native plan",
+      "exactMatches": 1,
+      "before": "function ordinaryPlan() {\n  if (!BASELINE) return undefined;\n  if (!BASELINE_RIDE) throw new Error('Baseline needs one High (baseline) / Ride \u00b7 Padang result');\n  const url = new URL(PAGE_URL);\n  if ([...url.searchParams.keys()].some((key) => key !== 'diagnostics') || !url.searchParams.has('diagnostics')) {\n    throw new Error('Ordinary comparison URL must contain only ?diagnostics');\n  }\n  if (!args.dir || !args.features || args.only !== 'High (baseline)' || args.spot !== 'Padang' || SWELL !== 'Big'\n      || GPU_TIMERS !== GPU_DIAGNOSTIC || RIDE_SECONDS !== (GPU_DIAGNOSTIC ? 60 : 90) || Number(args.warmSeconds ?? 5) !== 5) {\n    throw new Error('Use the ordinary High/Padang/Big route with five-second warmup and passive90s, or --diagnosticGpu=true --gpuTiming=true --rideSeconds=60');\n  }\n  if (`${WIDTH} \u00d7 ${HEIGHT}` !== BASELINE.browser.viewport) throw new Error('Requested CSS viewport differs from baseline');\n  return { method: `Ordinary menu \u2192 Surf \u2192 Padang \u2192 Big \u2192 Paddle out; idle rider; five-second warmup and ${RIDE_SECONDS}-second ${GPU_DIAGNOSTIC ? 'GPU diagnostic' : 'passive'} sample`,\n    diagnosticGpuProfile: GPU_DIAGNOSTIC,\n    timingComparableToPassiveBaseline: !GPU_DIAGNOSTIC,\n    edition: EDITION, fixedPhysicsStepSeconds: FIXED_STEP_SECONDS,\n    expectedMaxBatchSteps: EDITION === 'catchup-batch2' ? 2 : undefined,\n    pipelineMetricSemantics: 'Physics/device/step timings describe the final step of a batch; batch spans the advance loop; snapshot/summary occur once per publication; total is (batch+snapshot+summary)/batchSteps, not full request latency. Independent stage quantiles must not be summed.',\n    baseline: resolve(args.baseline), expectedConfig: BASELINE_RIDE.config, expectedViewport: BASELINE.browser.viewport,\n    expectedBrowserDpr: BASELINE.browser.devicePixelRatio, expectedCanvas: BASELINE_RIDE.canvas,\n    expectedRenderPixelRatio: 1.75, graphics: { ...PRESET_VALUES.high, preset: 'high' },\n    normalMode: 'production pixel normals (no waterNormals flag)', runtimeOverrides: [],\n    sourceAudit: qualityMetadata(args.qualityBase) };\n}\n\n",
+      "after": "function ordinaryPlan() {\n  return ordinaryNativePlan({ args, pageUrl: PAGE_URL, swell: SWELL, gpuTimers: GPU_TIMERS, gpuDiagnostic: GPU_DIAGNOSTIC, rideSeconds: RIDE_SECONDS, preset: PRESET_VALUES.high, edition: EDITION });\n}\n\n"
+    },
+    {
+      "label": "read-only guard instance",
+      "exactMatches": 1,
+      "before": "const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');",
+      "after": "const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');\nconst passiveGuard = new NativePassiveGuard({ output: dirname(resolve(OUT)), baseline: BASELINE });"
+    },
+    {
+      "label": "exclude menu practice worker from sampled publications",
+      "exactMatches": 1,
+      "before": "if (perf.sampling) perf.snapshots.push({ wall: performance.now(), sea: status.seaTime, pipeline: status.pipelineMs });",
+      "after": "if (perf.sampling && this === window.breaklineDiagnostics?.mode?.host?.port && document.querySelector('#app')?.dataset.screen === 'ride') perf.snapshots.push({ wall: performance.now(), sea: status.seaTime, pipeline: status.pipelineMs });"
+    },
+    {
+      "label": "native worker start observation",
+      "exactMatches": 1,
+      "before": "await page.send('Page.addScriptToEvaluateOnNewDocument', { source: INSTRUMENT });",
+      "after": "await page.send('Page.addScriptToEvaluateOnNewDocument', { source: INSTRUMENT });\nawait page.send('Page.addScriptToEvaluateOnNewDocument', { source: AUDIT_PRELUDE });"
+    },
+    {
+      "label": "record initial native dimensions without requiring canonical pixels",
+      "exactMatches": 1,
+      "before": "if (ordinary && (browser.viewport !== ordinary.expectedViewport || browser.devicePixelRatio !== ordinary.expectedBrowserDpr)) {\n  throw new Error(`Ordinary viewport/DPR mismatch before gameplay: ${browser.viewport} / ${browser.devicePixelRatio}`);\n}",
+      "after": "if (browser.devicePixelRatio !== 2) throw new Error(`Initial native DPR differs: ${browser.devicePixelRatio}`);"
+    },
+    {
+      "label": "outer finalizer-visible metadata binding",
+      "exactMatches": 1,
+      "before": "let save = () => {};\ntry {",
+      "after": "let save = () => {};\nlet run;\ntry {"
+    },
+    {
+      "label": "assign outer metadata binding without shadowing",
+      "exactMatches": 1,
+      "before": "const run = { date: new Date().toISOString(),",
+      "after": "run = { date: new Date().toISOString(),"
+    },
+    {
+      "label": "guard before and after exact original passive sample",
+      "exactMatches": 1,
+      "before": "  await sleep(warmMs);\n  const stats = await sample(seconds);",
+      "after": "  await sleep(warmMs);\n  await passiveGuard.observe('sample-start', page, ordinary);\n  const stats = await sample(seconds);\n  await passiveGuard.observe('sample-end', page, ordinary);"
+    },
+    {
+      "label": "record menu reference before ordinary route",
+      "exactMatches": 1,
+      "before": "      await load(graphics);\n      await sleep(1500);",
+      "after": "      await load(graphics);\n      await passiveGuard.observe('menu', page, ordinary, true);\n      await sleep(1500);"
+    },
+    {
+      "label": "guarded finalizer including early failure before metadata",
+      "exactMatches": 1,
+      "before": "} finally {\n  save();\n  await page.close();\n}",
+      "after": "} finally {\n  if (run) {\n    run.nativeAudit = passiveGuard.finish(run);\n    run.valid = run.nativeAudit.valid;\n    save();\n  } else {\n    passiveGuard.state.firstFailure ??= { phase: 'before-survey-metadata', message: 'Early operation failed; original command stderr and launcher evidence retained by serial driver' };\n    passiveGuard.save();\n  }\n  await page.close();\n}\n"
+    }
+  ],
+  "preserved": [
+    {
+      "label": "all original numerical statistics",
+      "bytes": 5953,
+      "sha256": "1dc0461f5199ef9c9b92887525001fd84e8c8bb8f36d27d795af231a2ef1af63",
+      "sourceBytesIdentical": true
+    },
+    {
+      "label": "original passive sample",
+      "bytes": 4742,
+      "sha256": "dc7e658201f0719618e0f8659e641de6faa74540cbcb1dc1704d1165baa39891",
+      "sourceBytesIdentical": true
+    },
+    {
+      "label": "original settings/menu load",
+      "bytes": 890,
+      "sha256": "781d684cdb55b435669f22f9b4f5af2f2acfd4dc665d095ecfb8621c05aa1e9f",
+      "sourceBytesIdentical": true
+    },
+    {
+      "label": "original ordinary menu-to-ride route and quit",
+      "bytes": 674,
+      "sha256": "85cdb3287cd129e03c45f5129053b005ab7fbb709987cf2464f22d538271c979",
+      "sourceBytesIdentical": true
+    }
+  ],
+  "execution": "NOT_RUN; text derivation only"
+}

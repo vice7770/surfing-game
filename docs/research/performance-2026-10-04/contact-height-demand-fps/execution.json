@@ -1,0 +1,15 @@
+{
+  "schema": "contact-height-fps-execution-reference/v1",
+  "command": "CONTACT_HEIGHT_FPS_READY_SHA256=7176fb1eca5c2974294cb16d5a27e5c84749b5a0b76e5b2c5614b84b0678825a node pair.mjs --run=true --out=/private/tmp/contact-height-demand-fps-20261004/run",
+  "cwd": "/private/tmp/contact-height-demand-fps-20261004",
+  "execSession": 56059,
+  "exitCode": 0,
+  "startedAt": "2026-10-04T02:05:51.366Z",
+  "endedAt": "2026-10-04T02:09:48.873Z",
+  "pairTerminalStdout": "{\"valid\":true,\"incomplete\":false,\"report\":\"/private/tmp/contact-height-demand-fps-20261004/run/report.json\"}\n",
+  "pairPid": "not independently recorded; retained report pins both actual survey child PIDs",
+  "cleanup": "Retained per-arm CDP/server/4200 ECONNREFUSED proofs; no borrowed process cleanup; user5173 untouched",
+  "noRetries": true,
+  "runtimeSourceChanged": false,
+  "productionAdoption": "not applied at archive preparation"
+}

@@ -79,7 +79,7 @@ export class SurfZoneWorkerCore {
       const { config, options, sea } = request;
       if (this.createDevice && (config.compute ?? 'auto') === 'auto') {
         // The device first, so the spin-up runs on the GPU too (several times faster than the CPU).
-        const runner = new SurfZoneRunner(config, options, 'warm');
+        const runner = SurfZoneRunner.forWorker(config, options, 'warm');
         const createDevice = this.createDevice;
         return (async () => {
           await runner.useDevice(createDevice);
@@ -93,7 +93,7 @@ export class SurfZoneWorkerCore {
           this.ready(runner);
         })();
       }
-      const runner = new SurfZoneRunner(config, options);
+      const runner = SurfZoneRunner.forWorker(config, options);
       if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
       runner.setSprayLook(this.sprayLook);
       runner.setSprayEnabled(this.sprayEnabled);

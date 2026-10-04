@@ -126,6 +126,48 @@ describe('scoped surface-node cache', () => {
   });
 });
 
+describe('owned plain surface generations', () => {
+  it('owns height, bed and shifted coordinates before deferred reads and invalidates cached nodes on capture', () => {
+    const solver = new ShallowWaterSolver({
+      nx: 7, xMin: 1_000_000.125, dx: 0.7,
+      zEdges: new Float64Array([-7, -6.8, -5.4, -2, 0.1, 4, 11]),
+    }, () => 3, { waterLevel: 0.375 });
+    for (let i = 0; i < solver.h.length; i += 1) {
+      solver.h[i] = [0, 0.01, 0.01000000001, 0.1, 2.345678901][i % 5];
+      solver.bed[i] = -3.125 + 0.031 * Math.sin(i * 0.49);
+    }
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 18, nodeSpacing: 0.9 });
+    const reads = vi.spyOn(solver, 'sampleCentered');
+    const owned = water.createOwnedPlainSurface();
+    owned.capture();
+    expect(Object.isFrozen(owned)).toBe(true);
+    expect(Object.keys(owned).sort()).toEqual(['capture', 'heightAt']);
+    const x = solver.xCenters[0] + 2.01, z = -3.125;
+    const previous = water.plainSurfaceAt(x, z);
+    reads.mockClear();
+
+    // The captured provider has not sampled a node when the live fields/window change.
+    solver.h.fill(13.125); solver.bed.fill(-8.375);
+    for (let i = 0; i < solver.xCenters.length; i += 1) solver.xCenters[i] += 1.4;
+    expect(Object.is(owned.heightAt(x, z), previous)).toBe(true);
+    const firstReads = reads.mock.calls.length;
+    expect(firstReads).toBeGreaterThan(0);
+    expect(reads.mock.contexts.every((receiver) => receiver !== solver)).toBe(true);
+    expect(Object.is(owned.heightAt(x, z), previous)).toBe(true);
+    owned.heightAt(x + 0.001, z + 0.001); // Different cubic weights, same node stencil.
+    expect(reads.mock.calls.length).toBe(firstReads);
+
+    const current = water.plainSurfaceAt(x, z);
+    expect(Object.is(current, previous)).toBe(false);
+    owned.capture(); reads.mockClear();
+    expect(Object.is(owned.heightAt(x, z), current)).toBe(true);
+    expect(reads.mock.calls.length).toBeGreaterThan(0);
+    const freshReads = reads.mock.calls.length;
+    expect(Object.is(owned.heightAt(x, z), current)).toBe(true);
+    expect(reads.mock.calls.length).toBe(freshReads);
+  });
+});
+
 describe('PhysicalSurfWater', () => {
   it('tallies its own pushes on the water for the network, but not remote ones (spec N1)', () => {
     const { water } = channel();

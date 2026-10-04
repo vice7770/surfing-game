@@ -230,6 +230,19 @@ interface Sample {
  */
 export class SweptLoft {
   private readonly result: LoftResult;
+  private normalDemand = false;
+  /** Exact double initial recipes; only the private ordinary query backend defers Y. */
+  private initialX = new Float64Array(0);
+  private initialZ = new Float64Array(0);
+  private targetY = new Float64Array(0);
+  private initialBlend = new Float64Array(0);
+  private sealBlend = new Float64Array(0);
+  private sealApplies = new Uint8Array(0);
+  private heightReady = new Uint8Array(0);
+  private rowHeightAt?: (x: number, z: number) => number;
+  private normalReady = new Uint8Array(0);
+  private normalFirst = new Int32Array(0);
+  private normalLast = new Int32Array(0);
   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
   /** Per front, its slices' σ, before and after refinement. */
   private base = new Float64Array(2 * MAX_SLICES + 8);
@@ -296,9 +309,42 @@ export class SweptLoft {
     };
   }
 
+  /** Internal query backend only: no mutable LoftResult escapes the worker owner. */
+  static forContactQueries(library: ProfileLibrary, slope: number): {
+    build: SweptLoft['build']; prepareRow(row: number): void; prepareNormal(vertex: number): void;
+  } {
+    const loft = new SweptLoft(library, slope, { contact: true });
+    loft.normalDemand = true;
+    const vertices = loft.result.positions.length / 3;
+    loft.initialX = new Float64Array(vertices);
+    loft.initialZ = new Float64Array(vertices);
+    loft.targetY = new Float64Array(vertices);
+    loft.initialBlend = new Float64Array(vertices);
+    loft.sealBlend = new Float64Array(MAX_SLICES + 1);
+    loft.sealApplies = new Uint8Array(vertices);
+    loft.heightReady = new Uint8Array(MAX_SLICES + 1);
+    loft.normalReady = new Uint8Array(loft.result.positions.length / 3);
+    loft.normalFirst = new Int32Array(MAX_SLICES + 1);
+    loft.normalLast = new Int32Array(MAX_SLICES + 1);
+    return {
+      build: loft.build.bind(loft),
+      prepareRow: loft.prepareRow.bind(loft),
+      prepareNormal: loft.prepareNormal.bind(loft),
+    };
+  }
+
   /** Loft the records' fronts over the water (`heightAt`). */
   build(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): LoftResult {
     const r = this.result;
+    if (this.normalDemand) {
+      this.heightReady.fill(0);
+      this.sealBlend.fill(1);
+      this.sealApplies.fill(0);
+      this.rowHeightAt = count > 0 ? heightAt : undefined;
+      this.normalReady.fill(0);
+      this.normalFirst.fill(-1);
+      this.normalLast.fill(-1);
+    }
     r.vertexCount = 0;
     r.indexCount = 0;
     r.sliceCount = 0;
@@ -745,7 +791,12 @@ export class SweptLoft {
         const pz = az + along * nz;
         const e = w * (1 - pin);
         r.positions[3 * v] = px;
-        if (e === 1) {
+        if (this.normalDemand) {
+          this.initialX[v] = px;
+          this.initialZ[v] = pz;
+          this.targetY[v] = stillLevel + above;
+          this.initialBlend[v] = e;
+        } else if (e === 1) {
           r.positions[3 * v + 1] = stillLevel + above;
         } else {
           const h = heightAt(px, pz);
@@ -764,7 +815,7 @@ export class SweptLoft {
       }
       const tip = 3 * (slice * LOFT_SAMPLES + E + LANDMARK.lip);
       r.sliceTipX[slice] = r.positions[tip];
-      r.sliceTipY[slice] = r.positions[tip + 1];
+      r.sliceTipY[slice] = this.normalDemand ? Number.NaN : r.positions[tip + 1];
       r.sliceTipZ[slice] = r.positions[tip + 2];
       r.sliceCount += 1;
     }
@@ -838,7 +889,10 @@ export class SweptLoft {
   /** A run of consecutive slices: its normals, and its strips joined. */
   private finishRun(firstSlice: number, lastSlice: number): void {
     const r = this.result;
-    this.normals(firstSlice, lastSlice);
+    if (this.normalDemand) {
+      this.normalFirst.fill(firstSlice, firstSlice, lastSlice + 1);
+      this.normalLast.fill(lastSlice, firstSlice, lastSlice + 1);
+    } else this.normals(firstSlice, lastSlice);
     // Each slice's tube's mouth: the nearest slice of the run without an underside on either side, or the run's end.
     let open = r.sliceSigma[firstSlice];
     for (let s = firstSlice; s <= lastSlice; s += 1) {
@@ -886,18 +940,22 @@ export class SweptLoft {
           const weight = u * u * (3 - 2 * u);
           const mask = Math.min(1, Math.max(0, distance / LOFT.band));
           r.sliceWeight[s] *= weight;
+          if (this.normalDemand) this.sealBlend[s] = weight;
           for (let j = 0; j < LOFT_SAMPLES; j += 1) {
             const v = s * LOFT_SAMPLES + j;
             if (weight < 1 && r.lift[v] > 0) {
-              const water = heightAt(r.positions[3 * v], r.positions[3 * v + 2]);
-              r.positions[3 * v + 1] = water + weight * (r.positions[3 * v + 1] - water);
+              if (this.normalDemand) this.sealApplies[v] = 1;
+              else {
+                const water = heightAt(r.positions[3 * v], r.positions[3 * v + 2]);
+                r.positions[3 * v + 1] = water + weight * (r.positions[3 * v + 1] - water);
+              }
               r.lift[v] *= weight;
               r.sheetWeight[v] *= weight;
               r.throat[4 * v + 3] *= weight;
             }
             r.mask[v] *= mask;
           }
-          r.sliceTipY[s] = r.positions[3 * (s * LOFT_SAMPLES + E + LANDMARK.lip) + 1];
+          if (!this.normalDemand) r.sliceTipY[s] = r.positions[3 * (s * LOFT_SAMPLES + E + LANDMARK.lip) + 1];
         }
       }
       this.finishRun(first, last);
@@ -1076,7 +1134,79 @@ export class SweptLoft {
     return true;
   }
 
+  /** Materialize the original initial F32 Y store, then its separate cut-seal F32 store, once for this row. */
+  private prepareRow(row: number): void {
+    if (this.heightReady[row] === 1) return;
+    const r = this.result;
+    const heightAt = this.rowHeightAt;
+    if (!(row >= 0 && row < r.sliceCount) || !heightAt) throw new Error('Contact height row is outside its captured generation');
+    const weight = this.sealBlend[row];
+    for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+      const v = row * LOFT_SAMPLES + j;
+      const o = 3 * v;
+      const e = this.initialBlend[v];
+      if (e === 1) r.positions[o + 1] = this.targetY[v];
+      else {
+        const h = heightAt(this.initialX[v], this.initialZ[v]);
+        r.positions[o + 1] = e === 0 ? h : h + e * (this.targetY[v] - h);
+      }
+      if (this.sealApplies[v] === 1) {
+        const water = heightAt(r.positions[o], r.positions[o + 2]);
+        r.positions[o + 1] = water + weight * (r.positions[o + 1] - water);
+      }
+    }
+    r.sliceTipY[row] = r.positions[3 * (row * LOFT_SAMPLES + E + LANDMARK.lip) + 1];
+    this.heightReady[row] = 1;
+  }
+
   /** Each vertex's normal: across the profile × along the front, by central differences (one-sided at the edges). */
+  private prepareNormal(vertex: number): void {
+    if (this.normalReady[vertex] === 1) return;
+    const s = Math.floor(vertex / LOFT_SAMPLES);
+    const j = vertex % LOFT_SAMPLES;
+    const firstSlice = this.normalFirst[s];
+    const lastSlice = this.normalLast[s];
+    if (!(vertex >= 0 && vertex < this.result.vertexCount && firstSlice >= 0 && lastSlice >= firstSlice)) {
+      throw new Error('A selected contact normal is outside its captured final run');
+    }
+    const { positions: p, normals } = this.result;
+    const sBack = Math.max(firstSlice, s - 1);
+    const sAhead = Math.min(lastSlice, s + 1);
+    this.prepareRow(s);
+    this.prepareRow(sBack);
+    this.prepareRow(sAhead);
+    const jBack = Math.max(0, j - 1);
+    const jAhead = Math.min(LOFT_SAMPLES - 1, j + 1);
+    const a0 = 3 * (s * LOFT_SAMPLES + jBack);
+    const a1 = 3 * (s * LOFT_SAMPLES + jAhead);
+    const b0 = 3 * (sBack * LOFT_SAMPLES + j);
+    const b1 = 3 * (sAhead * LOFT_SAMPLES + j);
+    const ax = p[a1] - p[a0];
+    const ay = p[a1 + 1] - p[a0 + 1];
+    const az = p[a1 + 2] - p[a0 + 2];
+    const bx = p[b1] - p[b0];
+    const by = p[b1 + 1] - p[b0 + 1];
+    const bz = p[b1 + 2] - p[b0 + 2];
+    let cx = ay * bz - az * by;
+    let cy = az * bx - ax * bz;
+    let cz = ax * by - ay * bx;
+    const length = Math.sqrt(cx * cx + cy * cy + cz * cz);
+    if (length > 1e-12) {
+      cx /= length;
+      cy /= length;
+      cz /= length;
+    } else {
+      cx = 0;
+      cy = 1;
+      cz = 0;
+    }
+    const o = 3 * vertex;
+    normals[o] = cx;
+    normals[o + 1] = cy;
+    normals[o + 2] = cz;
+    this.normalReady[vertex] = 1;
+  }
+
   private normals(firstSlice: number, lastSlice: number): void {
     const { positions: p, normals } = this.result;
     for (let s = firstSlice; s <= lastSlice; s += 1) {

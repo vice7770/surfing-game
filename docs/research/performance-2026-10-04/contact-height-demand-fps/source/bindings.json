@@ -1,0 +1,43 @@
+{
+  "schema": "contact-height-fps-bindings/v1",
+  "pending": false,
+  "buildReady": {
+    "path": "/private/tmp/contact-height-demand-build-20261004/ready.json",
+    "bytes": 7342,
+    "sha256": "66c56ee8490cfcfa5694152318ad82f64b039cc4bd13212bbcf963098ff2b02c"
+  },
+  "sourceManifest": {
+    "path": "/private/tmp/contact-height-demand-build-20261004/source-manifest.json",
+    "bytes": 636512,
+    "sha256": "c0ef921641eedab6d9ef619c23301ca7cc2ec2e0483d739483b5a4ca0cb76697"
+  },
+  "buildTerminal": {
+    "path": "/private/tmp/contact-height-demand-build-20261004/build-terminal.json",
+    "bytes": 977,
+    "sha256": "af08824285e5c4eb7cd15dc83d4b37006019dbaee05acb4b17c5691b60f02ee5"
+  },
+  "manifestSchema": {
+    "path": "/private/tmp/contact-height-demand-build-20261004/manifest-schema.json",
+    "bytes": 3208,
+    "sha256": "828bb29f1df99cfccbac316d12df6a96eacd4c296cb3763563e67bc8697d75de"
+  },
+  "arms": {
+    "baseline": {
+      "path": "/private/tmp/contact-height-demand-build-20261004/baseline/build-manifest.json",
+      "bytes": 4430,
+      "sha256": "88208a3d01644085d1d91c35fbfb20630b2abad6b8a1d5a03ac3df10b72ee8cb"
+    },
+    "candidate": {
+      "path": "/private/tmp/contact-height-demand-build-20261004/candidate/build-manifest.json",
+      "bytes": 6793,
+      "sha256": "392bc5ec560f30fc9b0d2560e8ebb2f204dcbceaa703471e245c907608946248"
+    }
+  },
+  "publicAssets": {
+    "path": "/private/tmp/contact-height-demand-fps-20261004/public-assets.json",
+    "bytes": 10729,
+    "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+  },
+  "scope": "Source/build/asset bindings only; no syntax/dryplan/server/browser/hardware run. Exact source authority and compiled row verification is implemented by pair.mjs.",
+  "literalBuildId": "68e263250-qa-contact-height"
+}

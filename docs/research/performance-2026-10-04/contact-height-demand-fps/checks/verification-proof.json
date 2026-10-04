@@ -1,0 +1,81 @@
+{
+  "schema": "contact-height-fps-source-verification-proof/v1",
+  "ready": {
+    "path": "/private/tmp/contact-height-demand-fps-20261004/ready.json",
+    "bytes": 3715,
+    "sha256": "7176fb1eca5c2974294cb16d5a27e5c84749b5a0b76e5b2c5614b84b0678825a"
+  },
+  "preparation": {
+    "path": "/private/tmp/contact-height-demand-fps-20261004/preparation-manifest.json",
+    "bytes": 10876,
+    "sha256": "19322e12acc1439b88f927cc5973592c924be30f28def3a94d67cb44e933f5c8"
+  },
+  "terminal": {
+    "path": "/private/tmp/contact-height-demand-fps-20261004/checks/terminal.json",
+    "bytes": 5095,
+    "sha256": "f284102967baa427bdd64a10a12c3035f879a1b68ce14e0d9fa65ffc21a951bd"
+  },
+  "evidence": [
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/run-authorized.py",
+      "bytes": 4504,
+      "sha256": "81b0cdd7295af4efafeaa78cb90e0d55090e2eba3cd4cbd635c1fea84277787d"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/start.json",
+      "bytes": 414,
+      "sha256": "ec1ed3c6afc8114c286f1c53a822fa174dfef40353bd1f1cbbf4d95947aebe4e"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/terminal.json",
+      "bytes": 5095,
+      "sha256": "f284102967baa427bdd64a10a12c3035f879a1b68ce14e0d9fa65ffc21a951bd"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/inputs-before.json",
+      "bytes": 119964,
+      "sha256": "10b5300ac3af23f422c4a1d4373e59d33a28d1210ff7d8d87fe83b56f61e2980"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/inputs-after.json",
+      "bytes": 119964,
+      "sha256": "10b5300ac3af23f422c4a1d4373e59d33a28d1210ff7d8d87fe83b56f61e2980"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/survey.mjs.syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/native-owned.mjs.syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/passive-guard.mjs.syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/pair.mjs.syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/pair-local-plan.json",
+      "bytes": 6572,
+      "sha256": "4b563bae6142a0fd6b5e006dd5bb83a7cc64d11280647c4deca0ceffb1361bc1"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/checks/baseline-survey-plan.json",
+      "bytes": 3589,
+      "sha256": "fc7974140cb00fbadc6ec6f87e4428569d2c8916298e6473d64bcb3bf8390c43"
+    }
+  ],
+  "allSixPassed": true,
+  "actualCommands": 6,
+  "inputRecords": 575,
+  "inputHashesUnchanged": true,
+  "firstFailure": null,
+  "scope": "Exactly four Node syntax commands, one local pair plan and one baseline survey plan, sequentially conditional on prior exit0. No retries or source modifications; no network/server/browser/GPU/FPS/production/Git operations. Hardware remains unauthorized until separate root lease."
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "contact-height-fps-source-check-terminal/v1",
+  "startedAt": "2026-10-04T02:04:27.055489+00:00",
+  "stage": "RUNNING",
+  "steps": [],
+  "firstFailure": null,
+  "inputRecords": 575,
+  "readyBefore": {
+    "path": "/private/tmp/contact-height-demand-fps-20261004/ready.json",
+    "bytes": 3715,
+    "sha256": "7176fb1eca5c2974294cb16d5a27e5c84749b5a0b76e5b2c5614b84b0678825a"
+  },
+  "noRetry": true
+}

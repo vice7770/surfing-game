@@ -1,0 +1,65 @@
+{
+  "schema": "contact-height-production-build-outputs/v1",
+  "head": "258be36a50f0f84a017d7161902f97e3f9a11aaa",
+  "buildId": {
+    "build": "258be36a5"
+  },
+  "compiledOnly": true,
+  "outputs": [
+    {
+      "path": "dist/build.json",
+      "bytes": 21,
+      "sha256": "77a667f98a4e3e0270d0c25c48949a6f9ff9723dc0c33450cee8f0405e3a8917"
+    },
+    {
+      "path": "dist/index.html",
+      "bytes": 1626,
+      "sha256": "1a8e220c91031e670be25301f31190e71d58025fcac7d9b80fce843d3160ca7e"
+    },
+    {
+      "path": "dist/assets/surfZoneWorker-gVTILj2Q.js",
+      "bytes": 442029,
+      "sha256": "3ff6e3c5c867322bac1caf0ca07bcd8bbe5f8d5c48d974a4b734ca89b5f24d88"
+    },
+    {
+      "path": "dist/assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "path": "dist/assets/devStepping-C4ssK5Wh.js",
+      "bytes": 320,
+      "sha256": "a329c5fbfa79d22e4ed9cf65b0286a25c994ca3cab5fe38bbcbfe4c10cd76053"
+    },
+    {
+      "path": "dist/assets/particleBench-BKUUa6eD.js",
+      "bytes": 10708,
+      "sha256": "af093ceea52672799f6cf256154a51ed4ca59792882637629a58eb42fb790cc1"
+    },
+    {
+      "path": "dist/assets/waterSheet-B7Sm1p0h.js",
+      "bytes": 11689,
+      "sha256": "391e62655a6c692d34b8d81eb7291726e837201e256f15eb14e495a614e7edfd"
+    },
+    {
+      "path": "dist/assets/jevRecorder-Dv6Lvk7z.js",
+      "bytes": 15917,
+      "sha256": "c5675710261c5f47272ca070d3245066380af245955f69be5a4bd60ff2b99e52"
+    },
+    {
+      "path": "dist/assets/rideRecorder-B2XCzEbD.js",
+      "bytes": 41108,
+      "sha256": "8b40d9c21027ae8948f1e9ac5a3d18fd69a389a84138f2ae3d4f4e4e16b4e4e3"
+    },
+    {
+      "path": "dist/assets/index-D9C8GqAy.js",
+      "bytes": 582425,
+      "sha256": "22cdfce0581af131f682c5993cd0ae0c8cb77775e47248c79b914ec08cd4489e"
+    },
+    {
+      "path": "dist/assets/WorkerSurfZone-Ciaa3tIB.js",
+      "bytes": 853217,
+      "sha256": "8b6cd5ea2af5bcc22b84747e8a2cd283f6e3c7732a3f2c0b70c52da7fa9576cf"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "contact-height-passive-fps-plan/v1",
+  "stage": "source-only reviewed-binding preparation; syntax/dryplan/hardware not executed",
+  "purpose": "One serial ordinary baseline/candidate passive cadence pair for the exact demanded-contact-height candidate; no source adoption or throughput result yet",
+  "directory": "/private/tmp/contact-height-demand-fps-20261004",
+  "runtimeBaseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "documentationHeadAtBuildPreparation": "68e263250c55cd0a3b45878da605849ae28bdd92",
+  "buildDirectory": "/private/tmp/contact-height-demand-build-20261004",
+  "commonBuildId": "68e263250-qa-contact-height",
+  "arms": [
+    { "name": "baseline", "port": 4216, "cdp": 9626, "url": "http://127.0.0.1:4216/?diagnostics", "manifest": "/private/tmp/contact-height-demand-build-20261004/baseline/build-manifest.json" },
+    { "name": "candidate", "port": 4217, "cdp": 9627, "url": "http://127.0.0.1:4217/?diagnostics", "manifest": "/private/tmp/contact-height-demand-build-20261004/candidate/build-manifest.json", "condition": "only after baseline command, source/native/runtime guards and owned cleanup are all valid" }
+  ],
+  "schedule": { "warmSeconds": 5, "passiveSampleSeconds": 90, "hardOverallSecondsPerArmIncludingCommandAndCleanup": 180, "commandAbortAtSeconds": 175, "reservedCleanupSeconds": 5, "retries": 0 },
+  "route": "Exact original survey High feature row: ordinary menu → Surf → Padang → Big → Paddle out; idle rider; Escape/Quit only after sample",
+  "window": { "initialRequest": { "size": [1708, 966], "position": [60, 60] }, "nativeDpr": 2, "subsequentSizing": "none", "reference": "loaded High menu actual inner/outer/canvas/backing/client and Browser bounds dimensions; stable through sample-start/sample-end", "candidate": "must match retained baseline actual reference and graphics exactly", "noCanonicalCssDimensionsClaim": true },
+  "expectedConfig": { "spot": "padang", "seed": 8761, "significantHeight": 3.8, "peakPeriod": 18, "directionDegrees": 0, "spreading": 150, "tide": 0, "windSpeed": 0, "stage": 2, "compute": "auto", "dx": 2, "fineSpacing": 1, "componentCount": 64 },
+  "runtime": { "backend": "gpu", "physicsCells": 116000, "fixedStepSeconds": 0.016666666666666666, "maxBatchSteps": 1, "actualAdvanceSteps": 1, "renderSpacing": 2, "maskSpacing": 1, "barrelCases": 4, "rider": true },
+  "graphics": { "preset": "high", "renderScale": 1, "nativePixelDensity": true, "frameLimit": 60, "waterSimulation": "auto", "seaDetail": "rich", "caustics": true, "sprayMist": true, "oceanView": "far", "foam": "detailed", "waterLook": "rich", "particles": "high", "pixelRatio": 1.75, "vertexNormals": false },
+  "allowedBootstrap": { "realm": "page only", "target": "Math.random", "method": "exact original survey INSTRUMENT Mulberry32", "initialState": 24301, "hex": "0x5eed", "workerRngOverride": false },
+  "observationalAdditions": ["Actual Worker constructor URL/start metadata and cheap unchanged-postMessage idle/one-step guards", "Sample publication listener excludes menu practice worker and requires actual Ride host.port identity", "Read-only page metadata at loaded menu/sample-start/sample-end", "Source/build/public asset hashes outside sample; exact served compiled hashes before Chrome"],
+  "unchangedSourceBlocks": ["numerical statistics", "passive sample", "settings/menu load", "ordinary menu-to-ride and quit route"],
+  "forbidden": ["fitViewport", "Browser.setWindowBounds", "device metrics/emulation resizing", "recording.resize", "keyboard ride input", "pocket reflex", "worker RNG override", "fast-forward/fixed synthetic stepping", "profiler", "GPU timer query", "contact observer/commands", "counterfactual geometry", "contact.last/Y force drain", "production changes", "retry", "port4200 opening"],
+  "assets": { "binding": "public-assets.json", "files": 38, "bytes": 24249385, "root": "/Users/regina/Desktop/Projects/surfing-game/public", "serving": "shared pinned per-file read-only whitelist; no assets copied; API/dev paths unavailable; unknown source asset fails immediately" },
+  "failure": "First failed guard/command/static resource stops; preserve original stdout, FPS/failure rows and native/launcher evidence. Candidate is prohibited after invalid baseline. SIGTERM followed by SIGKILL only for observed owned child/Chrome PID; verify CDP/server refusal and port4200 still closed.",
+  "proposedChecksBeforeHardware": ["Root-reviewed sequential Node syntax checks for owned .mjs files", "Root-reviewed local plan only; no server/Chrome/network", "Freeze any correction as a new readiness authority before separate sole GPU lease"],
+  "limits": ["No syntax/dryplan/server/browser/GPU run in this preparation", "One sequential pair is environment/order sensitive; no repeated statistical acceptance", "60 displayed frames do not establish60 fresh physical publications or realtime progress", "Pipeline component quantiles and passive main work are not additive full-request latency", "This pair does not prove moving tube quality, contact lifecycle or default adoption", "Native actual dimensions are matched A/B rather than the earlier canonical FPS CSS size"]
+}
