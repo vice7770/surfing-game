@@ -1,0 +1,32 @@
+{
+  "complete": true,
+  "resourcesStarted": false,
+  "extractedOwnerChecks": {
+    "verify_copy": true,
+    "verify_production_inputs": true,
+    "verify_sources": true
+  },
+  "assets": 50,
+  "productionInputs": 327,
+  "preparation": {
+    "file": "/private/tmp/tube-opening-inventory-20261004/preparation.json",
+    "bytes": 18502,
+    "sha256": "80c731b88d1915429bb51fd76424f660d2eddb04de072be09cc49c9d3d378aec"
+  },
+  "native": {
+    "file": "/private/tmp/tube-opening-inventory-20261004/native.mjs",
+    "bytes": 8923,
+    "sha256": "0afbe858e143332ad2d7407b4348f1ad6bc4a9081fa6cfc68257068ddcd2aff0"
+  },
+  "owner": {
+    "file": "/private/tmp/tube-opening-inventory-20261004/run.py",
+    "bytes": 19525,
+    "sha256": "47895e5cb466fafa19d2a6fbbece69e292dca92c3609cbfe01c6b1babb37b111"
+  },
+  "collector": {
+    "file": "/private/tmp/tube-opening-inventory-20261004/inventory.mjs",
+    "bytes": 5037,
+    "sha256": "bf72e101bd151132681ef74de7b8b09f26d9654de4e19aaed2bc56c4b95060ce"
+  },
+  "nativeOutputStillAbsent": true
+}

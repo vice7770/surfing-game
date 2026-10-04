@@ -1,0 +1,28 @@
+{
+  "sourceOnlyPlan": true,
+  "arm": "candidate",
+  "dist": "/private/tmp/tube-opening-inventory-20261004/dist",
+  "wholeSeconds": 180,
+  "commandSeconds": 168,
+  "cleanupSeconds": 7,
+  "maximumPhysicsAdvances": 1,
+  "snapshots": 2,
+  "maximumPngs": 2,
+  "maximumUniqueArtifacts": 3,
+  "maximumPngBytesEach": 12582912,
+  "maximumPngBytesTotal": 25165824,
+  "maximumReportBytes": 33554432,
+  "maximumGeometryJsonBytes": 16777216,
+  "noMovie": true,
+  "noPopupSteeringPlacementOrReset": true,
+  "ports": [
+    4294,
+    9704
+  ],
+  "userPorts": [
+    4310,
+    4311,
+    4312
+  ],
+  "resourcesStarted": false
+}

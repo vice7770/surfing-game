@@ -1,0 +1,46 @@
+{
+  "schema": "opening-inventory-archive-review/v1",
+  "nativeSessionReportedByRoot": 64244,
+  "entryOrSpawnFixAccepted": false,
+  "nativeReviewAttribution": "/root reviewed original finite capture and raw/drawn geometry; archive made no new numerical/native run.",
+  "initialPositionEvidence": {
+    "eligiblePairs": 13,
+    "front": 79,
+    "crestDistanceMetres": [
+      146.9582818985898,
+      147.43199873314006
+    ],
+    "boardForwardProjectionMetres": [
+      -146.636558387086,
+      -145.107108342001
+    ],
+    "allRejectedBehindCrest": true,
+    "nearestAnyFrontReportedByRoot": {
+      "front": 56,
+      "approximateDistanceMetres": 82.6,
+      "phase": "pre/unformed",
+      "approximateTauSeconds": -0.312
+    }
+  },
+  "attributedCompletedOfflineAnalysis": {
+    "worker": "/root/tube_directed_entry",
+    "causalConclusion": "analysis/causal-conclusion.json.gz",
+    "exactColumns": "analysis/exact-global-columns.json.gz",
+    "rowEligibilityRetained": true,
+    "playerFaceAndDistanceGatesRemoved": true,
+    "fixedTallestColumnBudgetPerSnapshot": 24,
+    "initialEligiblePairs": 13,
+    "initialCoarseIntervalsAtLeast1_23": 284,
+    "initialStrictConnectedColumns": 24,
+    "initialMaximumSampledExactHeightMetres": 1.792661715616084,
+    "distanceOfInitialMaximumMetres": 148.882279513255,
+    "afterStepStrictConnectedColumns": 23,
+    "afterStepMaximumSampledExactHeightMetres": 1.7898784007035362,
+    "heightIsPositiveSampledEvidenceOnly": true,
+    "openingWidthBodyFitEntryOrExhaustiveMaximumEstablished": false,
+    "historicalAuditPrecedesWorldSnapshot": true,
+    "nextTrialRecommendation": "One independent normal valid manual popup before a qualified local opening, with unchanged target gates and no spawn/source relocation."
+  },
+  "archivalNumericalOrNativeRerun": false,
+  "productionSourceOrAdoptionChanged": false
+}

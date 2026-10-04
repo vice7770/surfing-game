@@ -1,0 +1,18 @@
+{
+  "recipe": {
+    "file": "/private/tmp/tube-analytic-c-profile-20261004/recipe.md",
+    "bytes": 6611,
+    "sha256": "7ee1a95ed82caae8700d4facb98e2ec603f24d9823a5b4b6b29765f53495918c"
+  },
+  "prototype": {
+    "file": "/private/tmp/tube-analytic-c-profile-20261004/prototype.py",
+    "bytes": 9443,
+    "sha256": "fe21c5e7077157ca6917120d9452efbcb1c928212406d80792638fa6a57c95ed"
+  },
+  "evaluator": {
+    "file": "/private/tmp/tube-analytic-c-profile-20261004/evaluate.py",
+    "bytes": 9432,
+    "sha256": "e3615cd1b40892433762a73b354c36b592a7f4ee8d0b9e5e64d9f54a02c5e1e7"
+  },
+  "declaredBeforeEvaluation": true
+}

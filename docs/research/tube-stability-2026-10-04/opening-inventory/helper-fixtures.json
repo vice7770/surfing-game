@@ -1,0 +1,47 @@
+{
+  "passed": 10,
+  "failed": 0,
+  "resourcesStarted": false,
+  "checks": [
+    {
+      "name": "one connected indexed contour gives exactly floor/roof/top",
+      "passed": true
+    },
+    {
+      "name": "disconnected covering sheets do not become one opening",
+      "passed": true
+    },
+    {
+      "name": "five crossings stay ambiguous",
+      "passed": true
+    },
+    {
+      "name": "three crossings without head height are rejected",
+      "passed": true
+    },
+    {
+      "name": "actual opening qualifies in closing phase and locks its front",
+      "passed": true
+    },
+    {
+      "name": "temporary first-standing head-height deficit does not lose geometric mouth",
+      "passed": true
+    },
+    {
+      "name": "locked front disappears: retain loss, never retarget other front",
+      "passed": true
+    },
+    {
+      "name": "heading sign turns toward positive x and initial prone steering is rate limited",
+      "passed": true
+    },
+    {
+      "name": "heading sign negative x and yaw damping oppose increasing positive yaw",
+      "passed": true
+    },
+    {
+      "name": "zero remaining detector budget is an incomplete scan, not absence proof",
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "productionInputs": 327,
+  "copiedAssets": 50,
+  "contentsUnchanged": true,
+  "originalDiagnosticsStillUnchanged": true,
+  "passedMockGroups": 18,
+  "checks": {
+    "helper-fixtures.json": {
+      "passed": 10,
+      "receipt": {
+        "file": "/private/tmp/tube-opening-inventory-20261004/helper-fixtures.json",
+        "bytes": 1209,
+        "sha256": "ea561cddff7d752baf6071e7097126b53d22fa4bb1ba20ed51e3de4eadaf69b2"
+      }
+    },
+    "inventory-fixtures.json": {
+      "passed": 5,
+      "receipt": {
+        "file": "/private/tmp/tube-opening-inventory-20261004/inventory-fixtures.json",
+        "bytes": 30073,
+        "sha256": "94f7228e947eeffa8cf729ac8d721f0395dfca2f8eba7011a6e6a638c3bfa382"
+      }
+    },
+    "owner-fixtures.json": {
+      "passed": 3,
+      "receipt": {
+        "file": "/private/tmp/tube-opening-inventory-20261004/owner-fixtures.json",
+        "bytes": 788,
+        "sha256": "bc02bbba739b229526e221edaaf8bef428ee8965a19f265050b52799d24214ec"
+      }
+    }
+  },
+  "dryPlan": {
+    "file": "/private/tmp/tube-opening-inventory-20261004/dry-plan.json",
+    "bytes": 609,
+    "sha256": "5d01d592f544f11e38b02a42c6e062ca3cfbd381d25068163a5f3089699a1343"
+  },
+  "exactOneNoopInputSourceChecked": true,
+  "fullActiveGeometryAndSliceEncoding": true,
+  "noPortProbeByPreparation": true,
+  "goalComplete": false
+}

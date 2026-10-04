@@ -1,0 +1,235 @@
+{
+  "schema": "analytic-c-profile-input-references/v1",
+  "scope": "Exact referenced captures, immutable historical dependencies and public asset hashes; no repeated input bundles or source reconstruction.",
+  "caseAssets": [
+    {
+      "case": "pad19-a20-l12",
+      "repositoryRelative": "public/barrels/pad19-a20-l12.bin",
+      "originalAssetReceipt": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+        "bytes": 149848,
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      },
+      "rawFrameCount": 145
+    },
+    {
+      "case": "pad19-a30-l12",
+      "repositoryRelative": "public/barrels/pad19-a30-l12.bin",
+      "originalAssetReceipt": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      "rawFrameCount": 158
+    },
+    {
+      "case": "pad19-a45-l12",
+      "repositoryRelative": "public/barrels/pad19-a45-l12.bin",
+      "originalAssetReceipt": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      "rawFrameCount": 163
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "repositoryRelative": "public/barrels/periodic-padang19s-l12.bin",
+      "originalAssetReceipt": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+        "bytes": 181852,
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      },
+      "rawFrameCount": 176
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "repositoryRelative": "public/barrels/periodic-point21-a15-l12.bin",
+      "originalAssetReceipt": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a15-l12.bin",
+        "bytes": 106500,
+        "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+      },
+      "rawFrameCount": 103
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "repositoryRelative": "public/barrels/periodic-point21-a23-l12.bin",
+      "originalAssetReceipt": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a23-l12.bin",
+        "bytes": 128172,
+        "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+      },
+      "rawFrameCount": 124
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "repositoryRelative": "public/barrels/periodic-point21-a30-l12.bin",
+      "originalAssetReceipt": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a30-l12.bin",
+        "bytes": 173576,
+        "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+      },
+      "rawFrameCount": 168
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "repositoryRelative": "public/barrels/periodic-reef42-l12.bin",
+      "originalAssetReceipt": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-reef42-l12.bin",
+        "bytes": 193180,
+        "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+      },
+      "rawFrameCount": 187
+    }
+  ],
+  "sourceReceiptsExactlyAsRecorded": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    }
+  ],
+  "priorArchivedReferences": {
+    "../rejected-descending-facet/prototype.py": {
+      "transportReceipt": {
+        "bytes": 11815,
+        "sha256": "f75b758185b37f97ed5583176273ce62d83fb991e83681e5cf049c9354c5ac96"
+      },
+      "decodedReceipt": {
+        "bytes": 11815,
+        "sha256": "f75b758185b37f97ed5583176273ce62d83fb991e83681e5cf049c9354c5ac96"
+      },
+      "encoding": "identity",
+      "sameAsOriginalPath": "/private/tmp/tube-descending-facet-profile-20261004/prototype.py"
+    },
+    "../descending-curl-experiment/geometry/measurement_functions.py": {
+      "transportReceipt": {
+        "bytes": 2654,
+        "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+      },
+      "decodedReceipt": {
+        "bytes": 2654,
+        "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+      },
+      "encoding": "identity",
+      "sameAsOriginalPath": "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/measurement_functions.py"
+    },
+    "../rejected-descending-facet/baseline/receipt.json": {
+      "transportReceipt": {
+        "bytes": 2015,
+        "sha256": "ac41208d789d804375b943b01b2aa8e09175f46df16ccaa321fb80e98117d424"
+      },
+      "decodedReceipt": {
+        "bytes": 2015,
+        "sha256": "ac41208d789d804375b943b01b2aa8e09175f46df16ccaa321fb80e98117d424"
+      },
+      "encoding": "identity",
+      "sameAsOriginalPath": "/private/tmp/tube-rejected-live-source-verification-20261004/receipt.json"
+    },
+    "../rejected-descending-facet/baseline/restoration.json": {
+      "transportReceipt": {
+        "bytes": 1899,
+        "sha256": "5e26e73b57bab5adef44acb556ae0b63af970e182ae8b447863ffa670c744ddb"
+      },
+      "decodedReceipt": {
+        "bytes": 1899,
+        "sha256": "5e26e73b57bab5adef44acb556ae0b63af970e182ae8b447863ffa670c744ddb"
+      },
+      "encoding": "identity",
+      "sameAsOriginalPath": "/private/tmp/tube-rejected-live-source-verification-20261004/restoration.json"
+    },
+    "../rejected-roof-thinning/inputs/captured-polylines.json.gz": {
+      "transportReceipt": {
+        "bytes": 11188,
+        "sha256": "9209ec5559e879955756db49ed66cf54c82fab3b076bcca3c649f950729ecf94"
+      },
+      "decodedReceipt": {
+        "bytes": 24838,
+        "sha256": "4393da0633def6a9c79000c4cf87cf20eeba582bb9d81e60e81cf7a2aa78263b"
+      },
+      "encoding": "gzip"
+    },
+    "../rejected-descending-facet/input-references.json": {
+      "transportReceipt": {
+        "bytes": 8261,
+        "sha256": "0ac4f39f197d2b805d6706c9e4245c7081144b7de413e09157d5775bb77b60f4"
+      },
+      "decodedReceipt": {
+        "bytes": 8261,
+        "sha256": "0ac4f39f197d2b805d6706c9e4245c7081144b7de413e09157d5775bb77b60f4"
+      },
+      "encoding": "identity"
+    },
+    "../rejected-descending-facet/evaluate.py": {
+      "transportReceipt": {
+        "bytes": 16315,
+        "sha256": "3b0c0d6b4d97470edf7448c2ba8fe8eb68bc7ece07b464f6f8ac80e6240a0183"
+      },
+      "decodedReceipt": {
+        "bytes": 16315,
+        "sha256": "3b0c0d6b4d97470edf7448c2ba8fe8eb68bc7ece07b464f6f8ac80e6240a0183"
+      },
+      "encoding": "identity"
+    }
+  },
+  "immutableDependenciesExactlyAsRecorded": [
+    {
+      "file": "/private/tmp/tube-descending-facet-profile-20261004/prototype.py",
+      "bytes": 11815,
+      "sha256": "f75b758185b37f97ed5583176273ce62d83fb991e83681e5cf049c9354c5ac96"
+    },
+    {
+      "file": "/private/tmp/tube-whole-curl-profile-20261004/descending-lip/measurement_functions.py",
+      "bytes": 2654,
+      "sha256": "9a1f3a6f965619996b8e4c8b63f3fb451f4e84c46b7a798c5e2668433f56929e"
+    },
+    {
+      "file": "/private/tmp/tube-rejected-live-source-verification-20261004/receipt.json",
+      "bytes": 2015,
+      "sha256": "ac41208d789d804375b943b01b2aa8e09175f46df16ccaa321fb80e98117d424"
+    },
+    {
+      "file": "/private/tmp/tube-rejected-live-source-verification-20261004/restoration.json",
+      "bytes": 1899,
+      "sha256": "5e26e73b57bab5adef44acb556ae0b63af970e182ae8b447863ffa670c744ddb"
+    }
+  ],
+  "currentLiveSourceComparison": false,
+  "numericFiguresAreNativeEvidence": false
+}

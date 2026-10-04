@@ -1,0 +1,22 @@
+{
+  "causal-conclusion.json": {
+    "bytes": 7062,
+    "sha256": "641a193fa67aa04859adcf3172a71053d5eae71524892a360fb104252a535542"
+  },
+  "inventory-analysis.json": {
+    "bytes": 295239,
+    "sha256": "c5d11b13b36ce729295d7ca37725366fa0bb397528d7303d045668ed11c09d3e"
+  },
+  "inventory_analysis.py": {
+    "bytes": 10662,
+    "sha256": "70842970226306c37dcc1a2a00d1d0542d1ec3214f6ef93ed246a15be72e635c"
+  },
+  "exact-global-columns.json": {
+    "bytes": 92366,
+    "sha256": "abdd67a56a45507350ece79805c23673cc5134b7a12e80752f894502ee36f62f"
+  },
+  "exact_global_columns.mjs": {
+    "bytes": 5375,
+    "sha256": "bc720d125644271c2d2a57548e56a6c51dd950ed269e7fb65598347731321e1d"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "passed": 3,
+  "failed": 0,
+  "resourcesStarted": false,
+  "sourceSha256": "47895e5cb466fafa19d2a6fbbece69e292dca92c3609cbfe01c6b1babb37b111",
+  "checks": [
+    "exact packed typed bytes/count/hash",
+    "world/index/raw-record bounds and corruption rejection",
+    "separate face-rejection count agreement"
+  ],
+  "mockGeometryResult": {
+    "vertices": 268,
+    "indices": 798,
+    "slices": 2,
+    "rawFrontRecords": 2,
+    "typedArrays": 13,
+    "eligiblePairs": 1,
+    "facePassed": 1,
+    "rejectionCounts": {
+      "invalidWaveNormal": 0,
+      "zeroOrInvalidAverageRay": 0,
+      "normalDotBelow": 0,
+      "boardBehindCrest": 0,
+      "boardBeyondForwardFace": 0
+    }
+  },
+  "scope": "Extracted pure owner checks over mocks only; no live physics or process/network proof"
+}

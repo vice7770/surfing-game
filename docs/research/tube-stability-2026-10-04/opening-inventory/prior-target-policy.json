@@ -1,0 +1,74 @@
+{
+  "version": "tube-directed-entry/v4-frozen",
+  "pilot": {
+    "style": "line",
+    "waitOutside": 5,
+    "rise": 1,
+    "lineDegrees": 60,
+    "giveUp": 30,
+    "stall": false
+  },
+  "target": {
+    "minimumWeight": 0.5,
+    "maximumOpenLife": 1,
+    "closingStarts": 0.8,
+    "maximumBoardAheadOfCrest": 14,
+    "maximumTargetDistance": 40,
+    "minimumWaveNormalDot": 0.5,
+    "maximumExactColumns": 24,
+    "maximumCoarseColumnsPerRow": 2,
+    "nominalCrouchedHeadTopAboveBoard": 1.13,
+    "deckAllowance": 0.1,
+    "headingGain": 0.35,
+    "yawDamping": 0.25,
+    "maximumAbsoluteSteer": 0.2,
+    "steerSlewPerSecond": 0.4,
+    "maximumSingleSelectorMilliseconds": 1000
+  },
+  "input": {
+    "paddle": "unchanged production Autopilot.next",
+    "steer": "target heading error / 0.35 - 0.25 * actual heading yaw rate; cap 0.2 and slew 0.4/s from first target, including prone",
+    "popup": "one pulse while prone in first ordinary go with qualified target, cue OR valid ahead[0,8]m, faceFraction>=0.35 and shorewardSpeed>=2m/s",
+    "crouch": "1 on earliest input whose published phase is standing",
+    "compress": 0,
+    "trim": 0,
+    "pocketReflex": false
+  },
+  "selector": {
+    "geometry": "actual active drawn indexed loft",
+    "candidates": "joined same-front row pairs, formed>0, weight>=0.5, phase1, finite life[0,1), fade1; midpoint contour intervals with 3 strict crossings then exact indexed shortlist",
+    "demand": "Geometric target: nominal crouched head TOP1.13m already includes reference radius, plus0.1m explicit deck allowance, retained while ordinary crouch settles. Standing: separately record actual published head centre+radius-boardY plus deck allowance and height deficit. Actual witness/clearance judgement uses actual body only.",
+    "lock": "first qualified front ID, choose nearest qualified candidate air column on that front thereafter; no cross-front retarget; terminate when locked target is lost",
+    "scope": "Candidate air column on one connected mesh component with nominal vertical head height; no validated mouth/corridor, reachable passage, air-volume connectivity, prepared posture or full body fit. Record interval world width/head diameter and sliceMouth formed-boundary sigma distance; actual published-body witness remains entry gate."
+  },
+  "finite": {
+    "maximumSteps": 1800,
+    "maximumPhysicalSeconds": 30,
+    "detectorMilliseconds": 20000,
+    "wholeSeconds": 180,
+    "commandSeconds": 168,
+    "cleanupSeconds": 7
+  },
+  "movie": {
+    "trigger": "standing and drawn loft indices>0 and (qualified actual candidate air column within15m OR partial/contained witness)",
+    "maximumAdvances": 240,
+    "maximumRequests": 241,
+    "maximumBytes": 16777216
+  },
+  "ports": [
+    4293,
+    9703
+  ],
+  "userPorts": [
+    4310,
+    4311,
+    4312
+  ],
+  "noPlacementResetOrForcedState": true,
+  "beforeFreezeCorrections": [
+    "Nominal1.13m is a head TOP including reference radius, not a centre; no doubled radius",
+    "Keep actual phase1 closing-life[0.8,1) openings eligible while exact geometry has clearance",
+    "Lock and retain nominally usable geometric target while actual head settles; record actual standing demand/deficit without claiming prepared pose or entry.",
+    "Candidate is an exact indexed air column; no validated mouth or corridor. Width vs head diameter and formed-run boundary sigma distance are logged. Selector per-call1s or remaining total20s budget, whichever smaller."
+  ]
+}

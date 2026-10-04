@@ -1,0 +1,89 @@
+{
+  "schema": "analytic-C/frozen-first-trial",
+  "complete": true,
+  "frozenRecipeUntuned": true,
+  "consumerReady": false,
+  "nativeAdopted": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/README.md",
+      "bytes": 3478,
+      "sha256": "bdbb632edbe2b4bbfef98f9fd8e0a400ee0573c75f05ba408b9680329738211e"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/captured-profile-comparison.png",
+      "bytes": 143047,
+      "sha256": "ab3209328ee8941a5ec98e5f14f4bb4133055d023206d3a862a19eae5cb276af"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/causal-diagnostics.json",
+      "bytes": 273000,
+      "sha256": "5740865b9da24a32d5ab706138177e5790d4a67f3c11dbff0693746b2389e22b"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/diagnostics.py",
+      "bytes": 5966,
+      "sha256": "a04faee0b7a8770a2a2f6e2221cb1bdc006f04c7b180448166915372e6eab6d4"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/evaluate.py",
+      "bytes": 9432,
+      "sha256": "e3615cd1b40892433762a73b354c36b592a7f4ee8d0b9e5e64d9f54a02c5e1e7"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/evaluation-output.jsonl",
+      "bytes": 10543,
+      "sha256": "21a007d85994e68546c3f0782df7dc207815a44efadbd160ba27cbf3d9639cdd"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/evaluation-start.json",
+      "bytes": 620,
+      "sha256": "f18808544b826b2ce5bb865b27fcaf289e242bffbf210f3572482b7eecc5fc4f"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/failure-profile-comparison.png",
+      "bytes": 94380,
+      "sha256": "44c4c452c49ee35c70ab1078fd682fa287b5e5455c1e2a7d1dcffbc368a52086"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/failure-profiles.json",
+      "bytes": 90414,
+      "sha256": "a59dd885eec9200b6f50da512828bd8d9b55dbe6dd11d4c1820c41b41441a50a"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/integration-and-next-scope.md",
+      "bytes": 8557,
+      "sha256": "c1372071c2e4b8782b330c68f1035745a21b8d390279252271de03d8d7ae559f"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/plot.py",
+      "bytes": 3861,
+      "sha256": "360c245adb71f28275cac7dfe5277050b49d23a09f7e5640280177f16e784509"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/prototype.py",
+      "bytes": 9443,
+      "sha256": "fe21c5e7077157ca6917120d9452efbcb1c928212406d80792638fa6a57c95ed"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/recipe.md",
+      "bytes": 6611,
+      "sha256": "7ee1a95ed82caae8700d4facb98e2ec603f24d9823a5b4b6b29765f53495918c"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/report.json",
+      "bytes": 16346149,
+      "sha256": "bf9c3ff2f959f2f38728a5a1a99a8e7ff6b12c3e1ebaba4c1e1a4ec21ccc7c77"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/report.json.gz",
+      "bytes": 1052143,
+      "sha256": "6c904722e8d3b41e1f3b2466f70f3b1a7fad156f5343eaaf39020b01eaa13618"
+    },
+    {
+      "file": "/private/tmp/tube-analytic-c-profile-20261004/summary.json",
+      "bytes": 64537,
+      "sha256": "4687882c8dd4aebdd3fd45197c96659f120b1d5555f4f854a4a0c062699bc181"
+    }
+  ]
+}
