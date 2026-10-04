@@ -1,0 +1,4 @@
+{
+  "failure": "First focusedsuite discovered8 newly created archivaltest copies through read-onlydocs symlink. Each archivalcopy is intentionallypartialsource and failedmissingdependencies. Real src233/234 tests ran; onlyknownReefinversion failed.",
+  "remedy": "Exclude docs/** in repeatcommand, no consumer/geometry assertion or source changes."
+}

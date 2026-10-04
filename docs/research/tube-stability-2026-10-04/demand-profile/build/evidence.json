@@ -1,0 +1,14 @@
+{
+  "schema": "demand-profile-build-evidence/v1",
+  "rootToolSession": 97665,
+  "terminalExitCode": 0,
+  "stdoutAuthority": "Root terminal tool result; no stdoutlogfilewaspersisted.",
+  "receipt": "build-result.json.gz",
+  "sourcePins": 604,
+  "outputAssetPins": 49,
+  "sourceUnchangedAfterBuild": true,
+  "childDidNotBuild": true,
+  "productionAdopted": false,
+  "nativeObserved": false,
+  "FPSBodyOrShapeAdoptionClaim": false
+}

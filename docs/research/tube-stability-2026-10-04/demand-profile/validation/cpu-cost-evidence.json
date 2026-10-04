@@ -1,0 +1,59 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "scenario": "cold-clock",
+      "rows": 32,
+      "counts": {
+        "oldFullContours": 128,
+        "newFullContours": 0,
+        "newCapOnlyStencils": 0,
+        "newLifecycleQueries": 32
+      },
+      "oldMilliseconds": 11.552458000000115,
+      "newMilliseconds": 2.173334000000068,
+      "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+    },
+    {
+      "scenario": "warm-clock",
+      "rows": 32,
+      "counts": {
+        "oldFullContours": 0,
+        "newFullContours": 0,
+        "newCapOnlyStencils": 0,
+        "newLifecycleQueries": 0
+      },
+      "oldMilliseconds": 0.09566700000004857,
+      "newMilliseconds": 0.46529199999986304,
+      "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+    },
+    {
+      "scenario": "cold-profile",
+      "rows": 32,
+      "counts": {
+        "oldFullContours": 128,
+        "newFullContours": 32,
+        "newCapOnlyStencils": 64,
+        "newLifecycleQueries": 32
+      },
+      "oldMilliseconds": 9.13687499999969,
+      "newMilliseconds": 2.6670829999998205,
+      "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+    },
+    {
+      "scenario": "warm-clock-profile",
+      "rows": 32,
+      "counts": {
+        "oldFullContours": 96,
+        "newFullContours": 32,
+        "newCapOnlyStencils": 64,
+        "newLifecycleQueries": 0
+      },
+      "oldMilliseconds": 6.3191249999999854,
+      "newMilliseconds": 4.189707999999882,
+      "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+    }
+  ],
+  "geometryApproximation": false,
+  "cacheRewrite": false
+}

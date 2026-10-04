@@ -1,0 +1,5 @@
+{
+  "suite": "boundedCDemand.test.ts",
+  "providerAllDomainFirstRun": "Failed: held-frame fixtures were mapped by list position, but asset index places Reef beforePoint and frozen refs place Reef afterPoint. Generated held frame out-of-range; original provider itself threw nonfinite. Actual library equality and cost tests passed. Fix maps fixtures by explicitcase id, no geometry change.",
+  "sourceCorrection": false
+}

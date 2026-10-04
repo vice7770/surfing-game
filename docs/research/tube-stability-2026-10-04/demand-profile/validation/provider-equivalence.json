@@ -1,0 +1,18 @@
+{
+  "complete": true,
+  "counts": {
+    "captured": 5,
+    "frames": 1224,
+    "adjacent": 3648,
+    "phase": 376,
+    "crossCase": 672,
+    "precision": 522
+  },
+  "total": 6447,
+  "fullContourExact": true,
+  "capExact": true,
+  "clocksExact": true,
+  "capStencilQueries": 12894,
+  "capStencilsExact": true,
+  "capturedPadding": "Only preserved outside missing32..112; duplicate crest/toe padding. Real capturedcap separately matches frozen Python."
+}

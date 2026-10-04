@@ -1,0 +1,149 @@
+{
+  "schema": "demand-profile-input-references/v1",
+  "priorArchive": [
+    {
+      "archiveRelative": "../bounded-c-profile/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 87220,
+        "sha256": "f4af8c4104a1aaabaf54d9a6544d0b3c3a762d5e8a465843ea6e7372b5f69c33"
+      },
+      "decoded": {
+        "bytes": 87220,
+        "sha256": "f4af8c4104a1aaabaf54d9a6544d0b3c3a762d5e8a465843ea6e7372b5f69c33"
+      }
+    },
+    {
+      "archiveRelative": "../bounded-c-profile/input-references.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 11988,
+        "sha256": "8ea5024ff9e37e37beac032a2ad1e5b0166a50085a8a6b773b913697881c717b"
+      },
+      "decoded": {
+        "bytes": 11988,
+        "sha256": "8ea5024ff9e37e37beac032a2ad1e5b0166a50085a8a6b773b913697881c717b"
+      }
+    },
+    {
+      "archiveRelative": "../bounded-c-profile/source/final/src/wave/barrel/ProfileLibrary.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 25085,
+        "sha256": "eda47508fd5de1429fbfc13b46161a53cfa9fa35be854921134888a4b1d02e05"
+      },
+      "decoded": {
+        "bytes": 25085,
+        "sha256": "eda47508fd5de1429fbfc13b46161a53cfa9fa35be854921134888a4b1d02e05"
+      },
+      "originalPath": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/ProfileLibrary.ts"
+    },
+    {
+      "archiveRelative": "../bounded-c-profile/source/final/src/wave/barrel/boundedCProfile.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 15484,
+        "sha256": "66ad61ea02ea53e2306e3c5611744b42e2ed20eaa8b02adff45055e0219e8e93"
+      },
+      "decoded": {
+        "bytes": 15484,
+        "sha256": "66ad61ea02ea53e2306e3c5611744b42e2ed20eaa8b02adff45055e0219e8e93"
+      },
+      "originalPath": "/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/boundedCProfile.ts"
+    },
+    {
+      "archiveRelative": "../bounded-c-profile/models/precision-v4-corrected/report.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 1168694,
+        "sha256": "4fa861015a448c17d9c36cd96cc401a82afc89a592d612b597b2560fd1da3222"
+      },
+      "decoded": {
+        "bytes": 18415219,
+        "sha256": "359d48b4062e5cba82e923604e363e93d6c346f889bdde9934ff050e85b982d9"
+      },
+      "originalPath": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/report.json"
+    },
+    {
+      "archiveRelative": "../bounded-c-profile/models/precision-v4-corrected/precision-report.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 241669,
+        "sha256": "b7bf0f61354430882d326952206a40a92e6c71405baefadf1686f0c56ba9b239"
+      },
+      "decoded": {
+        "bytes": 4779569,
+        "sha256": "d6a9819366e2f1d56d33cd1736cc4a13eeaf5dbac19ca5a796e2f66ed21e64ae"
+      },
+      "originalPath": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/precision-report.json"
+    },
+    {
+      "archiveRelative": "../bounded-c-profile/models/precision-v4-corrected/port-reference.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 401762,
+        "sha256": "bc8df1fa21a0edb6cdfebd57efb1e803b32e7599f3335c24b8f6adc66a9bcb25"
+      },
+      "decoded": {
+        "bytes": 3354876,
+        "sha256": "d576b82c2f257974f56f9773510e50838505eeaf246aeb004488152f6a0dbb55"
+      },
+      "originalPath": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/port-reference.json"
+    },
+    {
+      "archiveRelative": "../bounded-c-profile/consumers/history/tube-bounded-c-final-mesh-canonical-receipt-20261004.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 5570,
+        "sha256": "300e79189f13a46af162e05da701fa1a6343459e90ac572c9a84591a03fd758a"
+      },
+      "decoded": {
+        "bytes": 22325,
+        "sha256": "2b79dead008cbdf5cfa8dff164712bc5ffa1790302ff4b84c01ae9ec1cafeac2"
+      },
+      "originalPath": "/private/tmp/tube-bounded-c-final-mesh-canonical-receipt-20261004.json"
+    },
+    {
+      "archiveRelative": "../bounded-c-profile/consumers/receipts/v4-final-focused-result.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3161,
+        "sha256": "996e117b26c67a4da3dda17876ef7d8debac70c1712fb14c5e4b3c453e5a98c6"
+      },
+      "decoded": {
+        "bytes": 3161,
+        "sha256": "996e117b26c67a4da3dda17876ef7d8debac70c1712fb14c5e4b3c453e5a98c6"
+      },
+      "originalPath": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-focused-result.json"
+    },
+    {
+      "archiveRelative": "../bounded-c-profile/consumers/receipts/v4-final-focused-validation.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 3148,
+        "sha256": "081bf700a79b704e528d19194b1d542583cad50d05fa25304fa11cb54160a16f"
+      },
+      "decoded": {
+        "bytes": 3148,
+        "sha256": "081bf700a79b704e528d19194b1d542583cad50d05fa25304fa11cb54160a16f"
+      },
+      "originalPath": "/private/tmp/tube-bounded-c-consumers-20261004/v4-final-focused-validation.json"
+    }
+  ],
+  "baselineArchive": "../bounded-c-profile",
+  "priorRawInputAuthority": "../bounded-c-profile/input-references.json",
+  "derivedCompactFixtureNotDuplicated": {
+    "originalPath": "/private/tmp/tube-bounded-c-demand-profile-20261004/validation-domain.json",
+    "bytes": 426688,
+    "sha256": "e2b649d516c6f6adeea234bcf5baef08de7146a7c6e8d7f8eb2a9911de818bbe",
+    "fromArchive": "../bounded-c-profile/models/precision-v4-corrected/report.json.gz",
+    "recipe": "Select actual=params/rawPolyline/afterPolyline, phaseGrid=case/params, crossCaseGridAll=cases/share/params. json.dumps(separators=(comma,colon),allow_nan=False)+newline. No geometry calculation."
+  },
+  "originalCaseDumpNotDuplicated": {
+    "originalPath": "/private/tmp/tube-monotone-inner-profile-20261004/eligible-cases.json",
+    "bytes": 1505981,
+    "sha256": "ecee538fc85d492507e8609a996285fa377d8cb1cd8f08b4f7a88d09eb4cb6dc",
+    "reconstruction": "Eight pinned BRL2 assets plus prior load-cases source/module and frame index; raw dump is checked only in original-scratch mode."
+  },
+  "fullSourceAndDistNotDuplicated": "Build result pins604 source/config/input files and49 output assets; original-scratch verifier checks each immutable file. Portable mode checks record semantics and matching archivedownedfiles, not a runtime rebuild."
+}

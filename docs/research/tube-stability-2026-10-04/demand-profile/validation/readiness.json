@@ -1,0 +1,170 @@
+{
+  "schema": "bounded-C-exact-demand-profile/readiness-v1",
+  "complete": true,
+  "source": "/private/tmp/tube-bounded-c-demand-profile-20261004/source",
+  "baseline": "/private/tmp/tube-bounded-c-profile-20261004/source",
+  "sourceReady": true,
+  "frozenAfterValidation": true,
+  "ownershipOnly": [
+    "src/wave/barrel/boundedCProfile.ts",
+    "src/wave/barrel/ProfileLibrary.ts",
+    "src/wave/barrel/boundedCDemand.test.ts"
+  ],
+  "changed": {
+    "src/wave/barrel/boundedCProfile.ts": {
+      "before": "66ad61ea02ea53e2306e3c5611744b42e2ed20eaa8b02adff45055e0219e8e93",
+      "after": "e64b4329cc7474eda740cdfb0ace852763969ddbafcd22b9295a0f244f3c1e98"
+    },
+    "src/wave/barrel/ProfileLibrary.ts": {
+      "before": "eda47508fd5de1429fbfc13b46161a53cfa9fa35be854921134888a4b1d02e05",
+      "after": "1b3f5e919ab8d142a5bdc7266dd79f4a5cd2b959d158bd1215e5815ce43ef7f0"
+    }
+  },
+  "new": {
+    "src/wave/barrel/boundedCDemand.test.ts": "4ec80015b37a1c9e752bfdeea29902d032c3e3b5e8ef790cf494566c93ea6a84"
+  },
+  "baselineAll559SourceFilesUnchanged": true,
+  "allOtherCopiedSourceFilesUnchanged": true,
+  "fullNumericalSamplerBodyByteIdentical": true,
+  "shapeCoefficientsChanged": false,
+  "precisionGateChanged": false,
+  "cacheRewrite": false,
+  "currentContourAuthoritative": true,
+  "capVelocityStillEagerInPublicProfileAtButCapOnlyStencils": true,
+  "changes": [
+    "Exact final-carrier parameter-only lifecycle path for profileTimes and cold profileAt; same event cache/bisection arithmetic.",
+    "Earlier/later cap transport uses identical moving-carrier/F32 roof/cap arithmetic and dt; no unused inner/root/floor construction.",
+    "Current full profile validation still calls original sampleBoundedC, without RAW fallback; legacyraw APIs unchanged."
+  ],
+  "validation": {
+    "provider": {
+      "complete": true,
+      "counts": {
+        "captured": 5,
+        "frames": 1224,
+        "adjacent": 3648,
+        "phase": 376,
+        "crossCase": 672,
+        "precision": 522
+      },
+      "total": 6447,
+      "fullContourExact": true,
+      "capExact": true,
+      "clocksExact": true,
+      "capStencilQueries": 12894,
+      "capStencilsExact": true,
+      "capturedPadding": "Only preserved outside missing32..112; duplicate crest/toe padding. Real capturedcap separately matches frozen Python."
+    },
+    "library": {
+      "complete": true,
+      "queries": 4914,
+      "contourExact": true,
+      "fullLookupIncludingVelocityExact": true,
+      "clocksExact": true,
+      "pointAndSheetMetadataExact": true
+    },
+    "blendedPrecisionLibrary": {
+      "complete": true,
+      "blended": 180,
+      "precisionQueries": 522,
+      "fullLookupAndF32ContourExact": true,
+      "clockExact": true
+    },
+    "cpuCost": {
+      "complete": true,
+      "results": [
+        {
+          "scenario": "cold-clock",
+          "rows": 32,
+          "counts": {
+            "oldFullContours": 128,
+            "newFullContours": 0,
+            "newCapOnlyStencils": 0,
+            "newLifecycleQueries": 32
+          },
+          "oldMilliseconds": 11.552458000000115,
+          "newMilliseconds": 2.173334000000068,
+          "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+        },
+        {
+          "scenario": "warm-clock",
+          "rows": 32,
+          "counts": {
+            "oldFullContours": 0,
+            "newFullContours": 0,
+            "newCapOnlyStencils": 0,
+            "newLifecycleQueries": 0
+          },
+          "oldMilliseconds": 0.09566700000004857,
+          "newMilliseconds": 0.46529199999986304,
+          "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+        },
+        {
+          "scenario": "cold-profile",
+          "rows": 32,
+          "counts": {
+            "oldFullContours": 128,
+            "newFullContours": 32,
+            "newCapOnlyStencils": 64,
+            "newLifecycleQueries": 32
+          },
+          "oldMilliseconds": 9.13687499999969,
+          "newMilliseconds": 2.6670829999998205,
+          "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+        },
+        {
+          "scenario": "warm-clock-profile",
+          "rows": 32,
+          "counts": {
+            "oldFullContours": 96,
+            "newFullContours": 32,
+            "newCapOnlyStencils": 64,
+            "newLifecycleQueries": 0
+          },
+          "oldMilliseconds": 6.3191249999999854,
+          "newMilliseconds": 4.189707999999882,
+          "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+        }
+      ],
+      "geometryApproximation": false,
+      "cacheRewrite": false
+    }
+  },
+  "focusedTests": {
+    "commandLog": "/private/tmp/tube-bounded-c-demand-profile-20261004/focused-final.log",
+    "files": 15,
+    "passed": 237,
+    "failed": 1,
+    "total": 238,
+    "soleFailure": "Known Reef roof43/upperRoot81 neighboring-age mesh inversion0.0003114571531508403m, unchanged.",
+    "knownFailureByteIdentical": true,
+    "knownFailureSHA256": "2b79dead008cbdf5cfa8dff164712bc5ffa1790302ff4b84c01ae9ec1cafeac2",
+    "strictTSExit": 0,
+    "strictTSLog": "/private/tmp/tube-bounded-c-demand-profile-20261004/strict-tsc-final-source.log"
+  },
+  "CPUInterpretation": "Counts are exact spy evidence from four fixed32-query CPU batches. Timings are one finite batch each, sensitive to JIT/load/order; warm-clock baseline was faster, and no runtime/native/browser FPS prediction is claimed. Both public query contracts remain exact.",
+  "remainingCosts": [
+    "One full bounded contour/root guard solve remains for each uncached actual contour query.",
+    "Public profileAt still computes cap velocity even when its caller uses only fluid/geometry; its stencils now avoid roots.",
+    "Both library Maps remain FIFO64; event cache128; no measured runtime miss rates.",
+    "An uncached lifecycle still uses original impact bisection35 complete roofs.",
+    "Exact per-query sheet distances/sky and weighted current void/prospective impact metrics remain necessary; no raw per-case tables substituted."
+  ],
+  "limits": [
+    "The existing0.311mm Reef3D inversion remains; this cost repair cannot justify all-case adoption.",
+    "Native sealing/retirement and real rider entry unproven.",
+    "No browser/native benchmark, build, ports, servers or Git actions.",
+    "New comparison test imports the immutable fullv4source in /private/tmp; intended isolated verification fixture, not standalone portable productiontest."
+  ],
+  "firstHarnessFailures": [
+    "FrozenPython report JSON includesInfinity: generated compact finite validation-domain.json instead.",
+    "Held fixture list order disagreed with assetindex: corrected explicitcase-id matching. Originalprovider failed in the erroneous fixture; no geometry adjustment.",
+    "Readonly docs symlink acquired partialarchivaltests fromroot; firstcombinedrun discovered8 archivalimportfailures. Repeated with docs/** excluded; archivalbytes unchanged.",
+    "New result writer used literal\\n in oneJSON: repaired newline only, no assertions/geometry changed."
+  ],
+  "patch": {
+    "path": "/private/tmp/tube-bounded-c-demand-profile-20261004/demand-profile.patch",
+    "sha256": "3b6271f3bb288091f604ab947e10af00323672c038cfa11be3fc068f5f8e4b0d"
+  },
+  "noFurtherSourceWrites": true
+}

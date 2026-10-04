@@ -1,0 +1,112 @@
+{
+  "schema": "bounded-C-static-cost-audit/v1",
+  "source": "/private/tmp/tube-bounded-c-profile-20261004/source",
+  "sourcePins": {
+    "src/wave/barrel/ProfileLibrary.ts": "eda47508fd5de1429fbfc13b46161a53cfa9fa35be854921134888a4b1d02e05",
+    "src/wave/barrel/boundedCProfile.ts": "66ad61ea02ea53e2306e3c5611744b42e2ed20eaa8b02adff45055e0219e8e93",
+    "src/wave/barrel/sweptLoft.ts": "0c5d8a314d5f2aad6f2c75ccfe30d3c746618bd44182f44a23e5a646a49c2df3",
+    "src/wave/barrel/crashCurve.ts": "dd56577045075b1b040434f3477df964f8ba7f80886dc4429b25d76f7196f1e8",
+    "src/wave/barrel/SweptCrash.ts": "f32bbb4e4b25e0df80734912d62058fc45e4824555d930819f942bf6c42ebff4",
+    "src/wave/barrel/lipSheet.ts": "b932aadcaa5fa6e1d1eb067bece4bb658e35e3dfa52c56d688634b8408fd453e",
+    "src/wave/barrel/sweptContact.ts": "9d17bdbbbcfdebbab1bc46bc31b5ffae5935010d6e7b347b190b841a6ecc7c46",
+    "src/wave/barrel/crestRays.ts": "499b17168bddda89f8b9fe4087edf91c327fe9b1ad73e56df1d214e15633ea61",
+    "src/scene/barrel/SweptBarrel.ts": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+  },
+  "readOnly": true,
+  "runtimeBenchmarkPerformed": false,
+  "timingEvidence": {
+    "candidateRequestIntervalMeanMilliseconds": 366.4,
+    "baselineRequestIntervalMeanMilliseconds": 39.498,
+    "ratio": 9.27641905919287,
+    "interpretation": "Recorded movie request intervals include neutral worker step, draw update, indexed-column observation, CDP, multiple renders and recorder. This is not FPS or measured function attribution. Initial front/launch counts and chosen fronts differ."
+  },
+  "findings": [
+    {
+      "id": "eager-boundary-derivative",
+      "sites": [
+        "ProfileLibrary.ts:417-426",
+        "boundedCProfile.ts:108-136"
+      ],
+      "detail": "Every uncached analyticAt builds current and both finite-difference full contours. Library calls sampleBoundedC with velocity=false, so provider optional fixed-parameter recursion is NOT the runtime cause; equivalent redundant work is in library analyticShape(seconds +/- dt), including moving carrier. Each resolved full sample solves 60 guards, 120 arc bounds and 60 face bounds."
+    },
+    {
+      "id": "clock-query-builds-profile",
+      "sites": [
+        "ProfileLibrary.ts:295-301",
+        "ProfileLibrary.ts:409-415",
+        "sweptLoft.ts:436,457,543",
+        "CrashCurve.ts:308",
+        "SweptCrash.ts:231,279,340"
+      ],
+      "detail": "profileTimes, documented without building profile, calls full analyticAt at authoredTD. On a cold parameter key it builds final carrier once for lifecycle then current plus two derivative samples: four full contours and a 35-roof impact solve if provider event cache misses. Even a warm clock cache/query miss rebuilds three contours solely to return scalar clocks."
+    },
+    {
+      "id": "FIFO-working-set-churn",
+      "sites": [
+        "ProfileLibrary.ts:193-194,413-414,431-432",
+        "boundedCProfile.ts:60-68",
+        "sweptLoft.ts:378-389,428-463,523-568"
+      ],
+      "detail": "Query and lifecycle Maps cap64, FIFO insertion eviction; hits do not refresh. Survey all fronts precedes refinements/planning and loft rows; observed142-149 output rows already exceed64, although distinct parameter key count is not recorded. Continuous footHeight/depth and time make exact keys numerous. Clock eviction may cause repeated final root+event work; provider event Map128 separately keys exact final geometry. No cache miss rate measured."
+    },
+    {
+      "id": "drawing-sheet-unused-transport",
+      "sites": [
+        "sweptLoft.ts:606,692,723-739",
+        "lipSheet.ts:327-334"
+      ],
+      "detail": "Drawing takes fluidAlong/up, and writes cap transport0; frameBlend sheet reads only final contour/sheetExists. Adjacent immediate frameBlend should normally hit the same query, so do not count it as another guaranteed full rebuild. It still copies256 floats and brackets again."
+    },
+    {
+      "id": "physics-current-and-prospective",
+      "sites": [
+        "CrashCurve.ts:167,246-263,318-327",
+        "SweptCrash.ts:231-255,302-320"
+      ],
+      "detail": "Each live physics point queries current contour and prospective impact contour, then computes current/projected void and impact jet area. Prospective impact area is age-independent at fixed exact parameters, but is recomputed in each slice; it must remain separate from current void/live-water weighting. jetMotion queries full profiles twice just to read byte-preserved crest32, even though pointAt32 already has exact lightweight path."
+    },
+    {
+      "id": "necessary-direct-sheet-work",
+      "sites": [
+        "lipSheet.ts:230-270,327-334",
+        "sweptLoft.ts:692-694"
+      ],
+      "detail": "New shape correctly derives sheet thickness/sky/throat from actual blended contour rather than raw per-case tables. This adds per-row nearest-segment work; cannot replace it with stale raw tables or nominal T without changing visuals. Exact per-query derived result reuse is possible, not measured dominant here."
+    }
+  ],
+  "minimalOpportunities": [
+    {
+      "priority": 1,
+      "change": "Separate exact lifecycle computation from full contour construction, retaining identical final carrier interpolation, parameter blend, event arithmetic and scales. profileTimes returns this clock entry directly. No broad cache rewrite required.",
+      "invariants": "authored clock, actual impact, clear .4TD, collapse .3TD, raw mode unchanged; exact event key semantics."
+    },
+    {
+      "priority": 2,
+      "change": "For boundary finite derivative evaluate only current roof and cap at earlier/later moving carrier queries, not inner offset/root/floor. Keep exact g/T/precision branch, F32 roof normal/cap arithmetic, dt and scale rounding.",
+      "invariants": "Identical metric lip64 and tipAlong/up. Root construction cannot affect cap64; preserve current full contour validation and do not introduce arbitrary RAW fallback."
+    },
+    {
+      "priority": 3,
+      "change": "Optionally use geometry-only demand API for drawing/sheet/crash, preserving public velocity-bearing profileAt contract and upgrading cached query on actual transport demand.",
+      "invariants": "Never publish fake zero/stale cap velocity. Contact needs actual cap transport; drawing and analytic jet flow use fluid metadata."
+    },
+    {
+      "priority": 4,
+      "change": "Use existing pointAt32 for CrashCurve.jetMotion crest stencils; retain exact metric F32 point semantics/clock stencil. Cache prospective overturn result only at exact provider parameters, independently from current weighted void.",
+      "invariants": "Current air/contact/seam calculations still use each current contour and live water; conservative water budget remains prospective."
+    },
+    {
+      "priority": 5,
+      "change": "Reuse per-row bracket/clock/query result between survey/refinement/planning and drawing/contact consumers, or exact bounded cache covering active working set.",
+      "invariants": "No time quantization, cross-case grid approximation or hold/raw semantics change. Separate page/worker libraries cannot share mutable query caches."
+    }
+  ],
+  "excluded": [
+    "No source edits",
+    "No runtime benchmark",
+    "No browser/ports/build/Git",
+    "No cache misses empirically measured",
+    "No attribution of complete9.28x timing delta to one function"
+  ],
+  "followupAuthorizedByRoot": "Isolated minimal exact clock + cap-only derivative repair, new /private/tmp/tube-bounded-c-demand-profile-20261004 only; golden/domain/cost/consumer validation before root build."
+}

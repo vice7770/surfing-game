@@ -1,0 +1,3 @@
+The candidate adds a substantial static work multiplier before any GPU draw. Every uncached query constructs three complete contours; clock-only queries also follow that path. The optional recursive provider velocity flag is disabled by ProfileLibrary, but the library itself builds both full derivative stencils. The minimum compatible repair is an exact scalar lifecycle path plus cap-only moving-carrier stencils. Both can preserve all F32 positions, finite derivative values and clocks.
+
+See audit.json for exact call sites, cold/warm work counts and limits. Recorded366.4ms versus39.498ms request intervals are composite diagnostic timings, not isolated FPS or proven per-function attribution.

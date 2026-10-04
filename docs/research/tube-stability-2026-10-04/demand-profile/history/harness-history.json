@@ -1,0 +1,35 @@
+{
+  "schema": "demand-profile-harness-history/v1",
+  "geometryOrAssertionTuning": false,
+  "failures": [
+    {
+      "order": 1,
+      "failure": "Initial test collection: frozen Python report contains JSON Infinity, invalid for JavaScript JSON.parse.",
+      "remedy": "Extract finite actual/phase/crosscase fields into compactvalidation-domain.json; exact frozen input fields retained.",
+      "originalStdoutLogFile": null,
+      "evidence": "Observed tool output; readiness firstHarnessFailures records it. No fabricatedstdoutlog."
+    },
+    {
+      "order": 2,
+      "failure": "Held raw fixtures mapped by list position; assetindex places Reef beforePoint while oldreferences place Reef afterPoint. Original provider throws nonfinite on wrong/empty raw input.",
+      "remedy": "Match raw cases to reference rows by explicitcase id.",
+      "receipt": "first-fixture-failure.json",
+      "originalStdoutLogFile": null,
+      "evidence": "Tool output and exact retainedreceipt; old/new real library equality and cost tests passed in that attempt."
+    },
+    {
+      "order": 3,
+      "failure": "Combined suite discovers8 partial archivaltest files through the readonlydocs symlink; archivalimports failmissing dependencies. Actualsrc233/234checksrun with soleknownReeffailure.",
+      "remedy": "Final command excludes docs/**.",
+      "receipt": "archival-discovery-failure.json",
+      "log": "focused-consumer-provider.log.gz"
+    },
+    {
+      "order": 4,
+      "failure": "One library-blend result writer appends literal\\n after JSON.",
+      "remedy": "Write actual newline. Comparison assertions and geometry unchanged.",
+      "receipt": "library-blend-precision-equivalence-before-newline.json",
+      "repairedResult": "../validation/library-blend-precision-equivalence.json"
+    }
+  ]
+}

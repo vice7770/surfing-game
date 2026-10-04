@@ -1,0 +1,51 @@
+{
+  "schema": "demand-profile-packaging-verification/v1",
+  "portable": {
+    "verified": true,
+    "mode": "portable",
+    "checks": {
+      "payloads": 34,
+      "gzipPayloads": 5,
+      "priorReferences": 33,
+      "originalPayloads": 0,
+      "originalBaselineSource": 0,
+      "originalBuildSourcePins": 0,
+      "originalBuildAssets": 0,
+      "patchFilesReconstructed": 3
+    },
+    "manifest": {
+      "bytes": 15854,
+      "sha256": "ac99c56e206a3fea346b4855c640e09a147a60aa210bbe4be647e6df84dd6b12"
+    },
+    "recordedTests": "237 passed / 1 byte-identical known Reef failure",
+    "rootBuild": "terminal exit0; 604 source/input pins and49 output assets",
+    "geometryOrTestOrBuildOrNativeRerun": false,
+    "nativeFPSBodyShapeOrAdoptionClaim": false
+  },
+  "originalScratch": {
+    "verified": true,
+    "mode": "original-scratch",
+    "checks": {
+      "payloads": 34,
+      "gzipPayloads": 5,
+      "priorReferences": 33,
+      "originalPayloads": 38,
+      "originalBaselineSource": 559,
+      "originalBuildSourcePins": 604,
+      "originalBuildAssets": 49,
+      "patchFilesReconstructed": 3
+    },
+    "manifest": {
+      "bytes": 15854,
+      "sha256": "ac99c56e206a3fea346b4855c640e09a147a60aa210bbe4be647e6df84dd6b12"
+    },
+    "recordedTests": "237 passed / 1 byte-identical known Reef failure",
+    "rootBuild": "terminal exit0; 604 source/input pins and49 output assets",
+    "geometryOrTestOrBuildOrNativeRerun": false,
+    "nativeFPSBodyShapeOrAdoptionClaim": false
+  },
+  "sourceBuildAssetsHelpersOrPortsMutated": false,
+  "onlyArchiveSubtreeWritten": "docs/research/tube-stability-2026-10-04/demand-profile",
+  "noNumericalTestBuildNativeRerun": true,
+  "readmeAndManifestFrozen": true
+}

@@ -1,0 +1,8 @@
+{
+  "complete": true,
+  "queries": 4914,
+  "contourExact": true,
+  "fullLookupIncludingVelocityExact": true,
+  "clocksExact": true,
+  "pointAndSheetMetadataExact": true
+}

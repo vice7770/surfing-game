@@ -1,0 +1,232 @@
+--- a/src/wave/barrel/boundedCProfile.ts
++++ b/src/wave/barrel/boundedCProfile.ts
+@@ -2,6 +2,7 @@
+ export type Vec2 = [number, number];
+ export interface BoundedCParameters { crest: Vec2; toe: Vec2; incoming: Vec2; outgoing: Vec2; authoredTD: number; tau: number }
+ export interface BoundedCEvent { seal: number; cap: Vec2; fraction: number }
++export interface BoundedCLifecycle { impactEvent: BoundedCEvent; impactTau: number; retiredTau: number; fullyFormedTau: number }
+ export interface BoundedCMetadata {
+   impactEvent: BoundedCEvent;
+   model: 'bounded-analytic-C/v4';
+@@ -104,6 +105,22 @@
+  for(let i=1;i<=4;i++)points.push(mix(U,V0,i/4));for(let i=1;i<=4;i++){const a=3*Math.PI/2+spanL*i/4;points.push(add(V0,mul([Math.sin(a)+1,-Math.cos(a)],R)));}return {points,E,R,D};
+ }
+ export function ulp32(v:number):number{const f=new Float32Array([v]),u=new Uint32Array(f.buffer);u[0]++;return f[0]-Math.fround(v);}
++/** Exact event arithmetic only: clocks do not require the inner sheet, bounded root or floor contour. */
++export function boundedCLifecycle(z:BoundedCParameters):BoundedCLifecycle{
++ const ev=event(ordinary(z)),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction;
++ return {impactEvent:ev,impactTau:impact,retiredTau:impact+.3*TD,fullyFormedTau:.4*TD};
++}
++/** The same F32 cap64 as the full contour, without constructing its unrelated inner root/floor. */
++export function boundedCCap(z:BoundedCParameters,lifecycle?:BoundedCEvent):Vec2{
++ const o=ordinary(z),ev=lifecycle??event(o),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction,post=z.tau>=impact;
++ const g=smooth(z.tau/(.4*TD)),remaining=post?1-smooth((z.tau-impact)/(.3*TD)):1,s=post?ev.seal:smooth((z.tau-TD)/(.3*TD));
++ const ulp=ulp32(Math.max(...z.crest.map(Math.abs),...z.toe.map(Math.abs))),requested=o.B*(post?remaining**2:g*g),loopScale=post?Math.min(remaining*o.W,remaining**2*o.H):Math.min(g*o.W,g*o.H),collapsed=requested<8*ulp||loopScale<=64*ulp,T=collapsed?0:Math.max(requested,8*ulp);
++ const {P,last}=roof(o,post?1:g,s,T,post?ev.cap:undefined,remaining);
++ if(collapsed)return round(P[28]);
++ const n:Vec2=[-last[1],last[0]],centre=sub(P[28],mul(n,T/2));let phi=Math.atan2(-last[1],-n[1]);if(phi<0)phi+=2*Math.PI;if(!(phi>0&&phi<=Math.PI))throw Error('cap minimum domain');
++ const a=phi*4/4,cap=add(centre,mul(add(mul(n,Math.cos(a)),mul(last,Math.sin(a))),T/2));
++ return round(post?ev.cap:cap);
++}
+ /** Writes only owned33..111. Domain failures throw; caller may explicitly choose raw library mode, never silently fall back. */
+ export function sampleBoundedC(z:BoundedCParameters,profile:Float32Array,velocity=true, lifecycle?:BoundedCEvent):BoundedCMetadata{
+  const o=ordinary(z),ev=lifecycle ?? event(o),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction,retired=impact+.3*TD,post=z.tau>=impact;
+--- a/src/wave/barrel/ProfileLibrary.ts
++++ b/src/wave/barrel/ProfileLibrary.ts
+@@ -1,4 +1,4 @@
+-import { boundedCParameters, blendBoundedCParameters, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent } from './boundedCProfile';
++import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, boundedCCap, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent } from './boundedCProfile';
+ import { GRAVITY } from '../dispersion';
+ 
+ /**
+@@ -191,7 +191,7 @@
+   private readonly analyticEarlier = new Float32Array(FLOATS);
+   private readonly analyticLater = new Float32Array(FLOATS);
+   private readonly analyticQueries = new Map<string, { profile: Float32Array; lookup: ProfileLookup }>();
+-  private readonly analyticClocks = new Map<string, { impact: number; retired: number; event: BoundedCEvent }>();
++  private readonly analyticClocks = new Map<string, { impact: number; retired: number; clear: number; event: BoundedCEvent }>();
+ 
+   constructor(readonly cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C' } = {}) {
+     const groups = new Map<number, BarrelCase[]>();
+@@ -297,8 +297,8 @@
+   } {
+     const b = this.bracket(query);
+     if (this.options.geometry === 'bounded-C') {
+-      const lookup = this.analyticAt({ ...query, seconds: b.touchdown * b.unit }, b, this.analyticPoint);
+-      return { scale: lookup.scale, clamped: lookup.clamped, touchdownSeconds: lookup.touchdownSeconds, frameSeconds: lookup.frameSeconds, clearSeconds: lookup.clearSeconds, collapseSeconds: lookup.collapseSeconds };
++      const clock = this.analyticClock(query, b);
++      return { scale: b.scale, clamped: b.clamped, touchdownSeconds: clock.impact * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: clock.clear * b.unit, collapseSeconds: (clock.retired - clock.impact) * b.unit };
+     }
+     return {
+       scale: b.scale, clamped: b.clamped, touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: b.clear * b.unit,
+@@ -381,7 +381,7 @@
+   }
+ 
+   /** Parameters blend before construction; all analytic hold modes share the same evolving geometry. */
+-  private analyticShape(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): BoundedCMetadata {
++  private analyticParameters(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array) {
+     const tau = query.seconds / b.unit;
+     // The raw carrier/outside geometry settles at the authored event. The analytic roof keeps evolving to actual impact.
+     const carrier = Math.min(tau, b.touchdown);
+@@ -394,6 +394,11 @@
+       parameters = blendBoundedCParameters(lower, upper, b.weight);
+       for (let i = 0; i < FLOATS; i++) out[i] += b.weight * (this.analyticOther[i] - out[i]);
+     }
++    return parameters;
++  }
++
++  private analyticShape(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): BoundedCMetadata {
++    const parameters = this.analyticParameters(query, b, out);
+     const clockKey = [query.slope, query.footHeight, query.footDepth].join(',');
+     const meta = sampleBoundedC(parameters, out, false, this.analyticClocks.get(clockKey)?.event);
+     meta.lengthScale = b.scale; meta.timeScale = b.unit;
+@@ -401,27 +406,39 @@
+     return meta;
+   }
+ 
++  /** Lifecycle uses the identical final carrier/parameter blend; it does not construct a full contour. */
++  private analyticClock(query: Omit<ProfileQuery, 'seconds'>, b: ReturnType<ProfileLibrary['bracket']>) {
++    const key = [query.slope, query.footHeight, query.footDepth].join(',');
++    let clock = this.analyticClocks.get(key);
++    if (!clock) {
++      const parameters = this.analyticParameters({ ...query, seconds: b.touchdown * b.unit }, b, this.scratch);
++      const final = boundedCLifecycle(parameters);
++      clock = { impact: final.impactTau, retired: final.retiredTau, clear: final.fullyFormedTau, event: final.impactEvent };
++      if (this.analyticClocks.size >= 64) this.analyticClocks.delete(this.analyticClocks.keys().next().value!);
++      this.analyticClocks.set(key, clock);
++    }
++    return clock;
++  }
++
++  /** F32 stage order matches analyticShape: raw carrier, parameters, ND cap, then metric cap. */
++  private analyticCap(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, raw: Float32Array, event: BoundedCEvent) {
++    const cap = boundedCCap(this.analyticParameters(query, b, raw), event);
++    return [Math.fround(cap[0] * b.scale), Math.fround(cap[1] * b.scale)];
++  }
++
+   private analyticAt(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): ProfileLookup {
+     const key = [query.slope, query.footHeight, query.footDepth, query.seconds].join(',');
+     const cached = this.analyticQueries.get(key);
+     if (cached) { out.set(cached.profile); return cached.lookup; }
+-    const clockKey = [query.slope, query.footHeight, query.footDepth].join(',');
+-    let clock = this.analyticClocks.get(clockKey);
+-    if (!clock) {
+-      const final = this.analyticShape({ ...query, seconds: b.touchdown * b.unit }, b, this.scratch);
+-      clock = { impact: final.impactTau, retired: final.retiredTau, event: final.impactEvent };
+-      if (this.analyticClocks.size >= 64) this.analyticClocks.delete(this.analyticClocks.keys().next().value!);
+-      this.analyticClocks.set(clockKey, clock);
+-    }
++    const clock = this.analyticClock(query, b);
+     const meta = this.analyticShape(query, b, out);
+     meta.impactTau = clock.impact; meta.retiredTau = clock.retired;
+     // Full query finite derivative includes moving anchors and parameter carrier, unlike the provider's fixed-parameter derivative.
+     const dt = Math.max(1e-8, 1e-5 * b.touchdown * b.unit);
+-    const earlier = this.analyticEarlier, later = this.analyticLater;
+-    this.analyticShape({ ...query, seconds: query.seconds - dt }, b, earlier);
+-    this.analyticShape({ ...query, seconds: query.seconds + dt }, b, later);
+-    const tipAlong = (later[2 * LANDMARK.lip] - earlier[2 * LANDMARK.lip]) / (2 * dt);
+-    const tipUp = (later[2 * LANDMARK.lip + 1] - earlier[2 * LANDMARK.lip + 1]) / (2 * dt);
++    const earlier = this.analyticCap({ ...query, seconds: query.seconds - dt }, b, this.analyticEarlier, clock.event);
++    const later = this.analyticCap({ ...query, seconds: query.seconds + dt }, b, this.analyticLater, clock.event);
++    const tipAlong = (later[0] - earlier[0]) / (2 * dt);
++    const tipUp = (later[1] - earlier[1]) / (2 * dt);
+     meta.capBoundaryVelocity = [tipAlong * b.unit / b.scale, tipUp * b.unit / b.scale];
+     const phase = query.seconds < 0 ? 'pre' : query.seconds <= meta.impactTau * b.unit ? 'open' : 'post';
+     const lookup: ProfileLookup = { caseId: b.weight < .5 ? b.lower.id : b.upper.id, clamped: b.clamped, scale: b.scale, phase,
+--- a/src/wave/barrel/boundedCDemand.test.ts
++++ b/src/wave/barrel/boundedCDemand.test.ts
+@@ -0,0 +1,94 @@
++import { readFileSync, writeFileSync } from 'node:fs';
++import { describe, expect, it, vi } from 'vitest';
++import * as provider from './boundedCProfile';
++import { ProfileLibrary, type BarrelCase } from './ProfileLibrary';
++import { decodeCase } from './profileFormat';
++import { readBarrelCases } from './nodeBarrelCases';
++import { GRAVITY } from '../dispersion';
++import * as originalProvider from '/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/boundedCProfile';
++import { ProfileLibrary as OriginalLibrary } from '/private/tmp/tube-bounded-c-profile-20261004/source/src/wave/barrel/ProfileLibrary';
++
++type P = provider.BoundedCParameters;
++type Z = { A:number[]; T:number[]; ct:number[]; tt:number[]; TD:number; tau:number };
++const W='/private/tmp/tube-bounded-c-demand-profile-20261004';
++const frozen='/private/tmp/tube-bounded-c-precision-v4-fixed-20261004';
++const cases=readBarrelCases().map(decodeCase);
++const report=JSON.parse(readFileSync(W+'/validation-domain.json','utf8')) as {
++ actual:{params:Z;rawPolyline:{point:number;q:number;y:number}[];afterPolyline:{point:number;q:number;y:number}[]}[];
++ phaseGrid:{case:string;params:Z}[];crossCaseGridAll:{cases:string[];share:number;params:Z}[];
++};
++const refs=JSON.parse(readFileSync('/private/tmp/tube-monotone-inner-profile-20261004/eligible-cases.json','utf8')) as {cases:{id:string;held:{tau:number}}[]};
++const precision=JSON.parse(readFileSync(frozen+'/port-reference.json','utf8')) as {rawBlocks:Record<string,number[]>;precision522:{block:string;params:P}[]};
++const asParams=(z:Z):P=>({crest:z.A as provider.Vec2,toe:z.T as provider.Vec2,incoming:z.ct as provider.Vec2,outgoing:z.tt as provider.Vec2,authoredTD:z.TD,tau:z.tau});
++const frame=(c:BarrelCase,f:number)=>c.frames.slice(256*f,256*(f+1));
++const blend=(a:Float32Array,b:Float32Array,w:number)=>Float32Array.from(a,(v,i)=>v+w*(b[i]-v));
++const held=new Map<string,Float32Array>();
++for(let i=0;i<cases.length;i++) {const c=cases[i],ref=refs.cases.find(r=>r.id===c.id)!;held.set(c.id,frame(c,Math.round((ref.held.tau-c.tauStart)/c.tauStep)));}
++function equalArray(a:Float32Array,b:Float32Array,label:string){for(let i=0;i<a.length;i++)if(!Object.is(a[i],b[i]))throw Error(`${label}: F32 ${i}: ${a[i]} != ${b[i]}`);}
++
++describe('exact lifecycle and demand cap evaluation',()=>{
++ it('matches original contour, cap and clocks on all6447 frozen queries without changing shape coefficients',()=>{
++  const counts={captured:0,frames:0,adjacent:0,phase:0,crossCase:0,precision:0};
++  function check(raw:Float32Array,z:P,label:string){
++   const before=raw.slice(),a=raw.slice(),b=raw.slice(),old=originalProvider.sampleBoundedC(z,a,false),now=provider.sampleBoundedC(z,b,false);
++   equalArray(a,b,label);expect(now).toEqual(old);
++   const clock=provider.boundedCLifecycle(z);expect(clock.impactEvent).toEqual(old.impactEvent);expect(clock.impactTau).toBe(old.impactTau);expect(clock.retiredTau).toBe(old.retiredTau);expect(clock.fullyFormedTau).toBe(old.fullyFormedTau);
++   expect(provider.boundedCCap(z,clock.impactEvent),label).toEqual([a[128],a[129]]);
++   const dt=1e-5*z.authoredTD;for(const tau of [z.tau-dt,z.tau+dt]){const exact=raw.slice();originalProvider.sampleBoundedC({...z,tau},exact,false,clock.impactEvent);expect(provider.boundedCCap({...z,tau},clock.impactEvent),label+' stencil').toEqual([exact[128],exact[129]]);}
++   equalArray(raw,before,'input readonly');
++  }
++  for(const [k,r] of report.actual.entries()){
++   // Captured source has only32..112. Degenerate duplicate endpoint padding is explicit; compare the real cap also.
++   const raw=new Float32Array(256);for(let i=0;i<128;i++){const end=i<32?r.params.A:r.params.T;raw[2*i]=end[0];raw[2*i+1]=end[1];}for(const p of r.rawPolyline){raw[2*p.point]=p.q;raw[2*p.point+1]=p.y;}
++   check(raw,asParams(r.params),`capture${k}`);const cap=r.afterPolyline.find(p=>p.point===64)!;
++   expect(provider.boundedCCap(asParams(r.params))).toEqual([Math.fround(cap.q),Math.fround(cap.y)]);counts.captured++;
++  }
++  for(const c of cases){const n=c.frames.length/256;for(let f=0;f<n;f++){const a=frame(c,f),za=provider.boundedCParameters(a,c.touchdown,c.tauStart+f*c.tauStep);check(a,za,c.id+'/'+f);counts.frames++;if(f+1<n){const b=frame(c,f+1),zb=provider.boundedCParameters(b,c.touchdown,c.tauStart+(f+1)*c.tauStep);for(const w of [.25,.5,.75]){check(blend(a,b,w),provider.blendBoundedCParameters(za,zb,w),c.id+'/'+f+'@'+w);counts.adjacent++;}}}}
++  for(const r of report.phaseGrid){check(held.get(r.case)!,asParams(r.params),'phase '+r.case);counts.phase++;}
++  for(const r of report.crossCaseGridAll){check(blend(held.get(r.cases[0])!,held.get(r.cases[1])!,r.share),asParams(r.params),'case blend '+r.cases.join('/'));counts.crossCase++;}
++  for(const r of precision.precision522){check(new Float32Array(precision.rawBlocks[r.block]),r.params,'precision '+r.block);counts.precision++;}
++  expect(counts).toEqual({captured:5,frames:1224,adjacent:3648,phase:376,crossCase:672,precision:522});
++  writeFileSync(W+'/provider-equivalence.json',JSON.stringify({complete:true,counts,total:Object.values(counts).reduce((a,b)=>a+b,0),fullContourExact:true,capExact:true,clocksExact:true,capStencilQueries:12894,capStencilsExact:true,capturedPadding:'Only preserved outside missing32..112; duplicate crest/toe padding. Real capturedcap separately matches frozen Python.'},null,2)+'\n');
++ },60000);
++ it('matches moving-carrier F32 contour, velocity and clock queries through every asset age plus frozen precision queries',()=>{
++  const old=new OriginalLibrary(cases,{geometry:'bounded-C'}),now=new ProfileLibrary(cases,{geometry:'bounded-C'}),a=new Float32Array(256),b=new Float32Array(256);let queries=0;
++  for(const c of cases){const q={slope:c.slope,footHeight:c.nonlinearity*7,footDepth:7},unit=Math.sqrt(7/GRAVITY),times=old.profileTimes(q);expect(now.profileTimes(q)).toEqual(times);
++   const ages=Array.from({length:c.frames.length/256},(_,f)=>(c.tauStart+f*c.tauStep)*unit);
++   for(let f=0;f+1<c.frames.length/256;f++)for(const t of [.25,.5,.75])ages.push((c.tauStart+(f+t)*c.tauStep)*unit);
++   ages.push(0,.4*c.touchdown*unit,c.touchdown*unit,times.touchdownSeconds,times.touchdownSeconds+times.collapseSeconds);
++   for(const seconds of ages){const query={...q,seconds,hold:'drawing' as const},lo=old.profileAt(query,a),ln=now.profileAt(query,b);equalArray(a,b,c.id);expect(ln).toEqual(lo);queries++;}
++  }
++  // Exact retained factory failure queries, including held and final retirement stencils.
++  for(const q of [{slope:.0526316,footHeight:1.4000000000000001,footDepth:7,seconds:.8498481232858845},{slope:.0526316,footHeight:Math.fround(1.4),footDepth:7,seconds:.8498481438477785}]){const lo=old.profileAt(q,a),ln=now.profileAt(q,b);equalArray(a,b,'retirement');expect(ln).toEqual(lo);expect(now.profileTimes(q)).toEqual(old.profileTimes(q));queries++;}
++  for(const c of cases){const q={slope:c.slope,footHeight:c.nonlinearity*7,footDepth:7},times=old.profileTimes(q);for(const t of [0,.1,.4,1]){const seconds=times.touchdownSeconds+t*times.collapseSeconds,query={...q,seconds},point=new Float64Array(2),other=new Float64Array(2);for(const i of [32,64,88,112]){old.pointAt(query,i,point);now.pointAt(query,i,other);expect(other).toEqual(point);}const target={lower:c,upper:c,weight:0,scale:1,lowerFrame:0,lowerNext:0,lowerShare:0,upperFrame:0,upperNext:0,upperShare:0};expect(now.frameBlend(query,{...target})).toEqual(old.frameBlend(query,{...target}));}}
++  writeFileSync(W+'/library-equivalence.json',JSON.stringify({complete:true,queries,contourExact:true,fullLookupIncludingVelocityExact:true,clocksExact:true,pointAndSheetMetadataExact:true},null,2)+'\n');
++ },60000);
++ it('preserves actual adjacent-case blends and all precision-query library clocks/cap transport',()=>{
++  const old=new OriginalLibrary(cases,{geometry:'bounded-C'}),now=new ProfileLibrary(cases,{geometry:'bounded-C'}),a=new Float32Array(256),b=new Float32Array(256);let blended=0,precisionQueries=0;
++  function check(q:{slope:number;footHeight:number;footDepth:number;seconds:number}){const lo=old.profileAt(q,a),ln=now.profileAt(q,b);equalArray(a,b,'additional library query');expect(ln).toEqual(lo);expect(now.profileTimes(q)).toEqual(old.profileTimes(q));}
++  const groups=new Map<number,BarrelCase[]>();for(const c of cases){const g=groups.get(c.slope)??[];g.push(c);groups.set(c.slope,g);}
++  for(const group of groups.values()){group.sort((a,b)=>a.nonlinearity-b.nonlinearity);for(let i=0;i+1<group.length;i++)for(const w of [.25,.5,.75]){
++   const q={slope:group[i].slope,footHeight:7*(group[i].nonlinearity+w*(group[i+1].nonlinearity-group[i].nonlinearity)),footDepth:7},TD=group[i].touchdown+w*(group[i+1].touchdown-group[i].touchdown),times=old.profileTimes(q),unit=Math.sqrt(times.scale/GRAVITY);
++   for(const age of [0,.1,.25,.4,.8,1,1.15,1.5]){check({...q,seconds:age*TD*unit});blended++;}
++   for(const seconds of [times.touchdownSeconds-1e-6*unit,times.touchdownSeconds,times.touchdownSeconds+1e-6*unit,times.touchdownSeconds+times.collapseSeconds]){check({...q,seconds});blended++;}
++  }}
++  for(const r of precision.precision522){let q:{slope:number;footHeight:number;footDepth:number};if(r.block.startsWith('exact-factory-'))q={slope:.0526316,footHeight:Number(r.block.slice('exact-factory-'.length)),footDepth:7};else {const c=cases.find(c=>c.id===r.block)!;q={slope:c.slope,footHeight:7*c.nonlinearity,footDepth:7};}const unit=Math.sqrt(old.profileTimes(q).scale/GRAVITY);check({...q,seconds:r.params.tau*unit});precisionQueries++;}
++  expect(blended).toBe(180);expect(precisionQueries).toBe(522);
++  writeFileSync(W+'/library-blend-precision-equivalence.json',JSON.stringify({complete:true,blended,precisionQueries,fullLookupAndF32ContourExact:true,clockExact:true},null,2)+'\n');
++ },60000);
++ it('removes full contour work from scalar clocks and both cap derivative stencils, with bounded CPU evidence',()=>{
++  const full=vi.spyOn(provider,'sampleBoundedC'),caps=vi.spyOn(provider,'boundedCCap'),clocks=vi.spyOn(provider,'boundedCLifecycle'),oldFull=vi.spyOn(originalProvider,'sampleBoundedC');
++  const rows=Array.from({length:32},(_,i)=>({slope:cases[0].slope,footHeight:1.45+.6*i/31,footDepth:7}));const results:unknown[]=[];
++  try{for(const scenario of ['cold-clock','warm-clock','cold-profile','warm-clock-profile']){
++   const old=new OriginalLibrary(cases,{geometry:'bounded-C'}),now=new ProfileLibrary(cases,{geometry:'bounded-C'}),a=new Float32Array(256),b=new Float32Array(256);
++   if(scenario.startsWith('warm'))for(const q of rows){old.profileTimes(q);now.profileTimes(q);}
++   full.mockClear();caps.mockClear();clocks.mockClear();oldFull.mockClear();
++   const startOld=performance.now();for(const q of rows)if(scenario.endsWith('clock'))old.profileTimes(q);else old.profileAt({...q,seconds:.4},a);const oldMs=performance.now()-startOld;
++   const startNow=performance.now();for(const q of rows)if(scenario.endsWith('clock'))now.profileTimes(q);else now.profileAt({...q,seconds:.4},b);const nowMs=performance.now()-startNow;
++   const count={oldFullContours:oldFull.mock.calls.length,newFullContours:full.mock.calls.length,newCapOnlyStencils:caps.mock.calls.length,newLifecycleQueries:clocks.mock.calls.length};
++   if(scenario.endsWith('clock')){expect(count.newFullContours).toBe(0);expect(count.newCapOnlyStencils).toBe(0);}else {expect(count.newFullContours).toBe(32);expect(count.newCapOnlyStencils).toBe(64);expect(count.oldFullContours).toBe(scenario==='cold-profile'?128:96);}
++   results.push({scenario,rows:32,counts:count,oldMilliseconds:oldMs,newMilliseconds:nowMs,timingClaim:'One bounded CPU batch, not native/browserFPS; no timing threshold'});
++  }}finally{vi.restoreAllMocks();}
++  writeFileSync(W+'/cpu-cost-evidence.json',JSON.stringify({complete:true,results,geometryApproximation:false,cacheRewrite:false},null,2)+'\n');
++ });
++});
