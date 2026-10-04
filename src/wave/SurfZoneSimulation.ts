@@ -534,7 +534,7 @@ export class SurfZoneSimulation {
   readonly stepCosts = { water: 0, breaking: 0, front: 0, lip: 0, foam: 0, airSources: 0, aeration: 0 };
   /** Most offshore breaking cell per column last step (Infinity when none). */
   private readonly outerBreak: Float64Array;
-  /** The first pass only records the spin-up's bores; onsets count from the next step. */
+  /** The first pass records the warm field's bores; onsets count from the next step. */
   private onsetsArmed = false;
   /** When each column last started a wave that could throw a lip, s. */
   private lastThrow!: Float64Array;
@@ -641,34 +641,22 @@ export class SurfZoneSimulation {
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
     if (start === 'spun-up') {
-      while (this.spinUpLeft() > 0) this.solver.step(this.spinUpStep());
-      this.breaking.update(0);
+      while (this.spinUpLeft() > 0) this.step(this.spinUpStep());
     }
   }
 
   /**
    * Spin a `'warm'`-built surf zone up: on its device when it has one (the GPU
    * is several times faster), else on the CPU. A failing device is dropped and
-   * the CPU finishes from where it stopped.
+   * the CPU finishes from where it stopped. Fronts, lip water, foam and air
+   * advance with every water step, just as they do after the rider joins.
    */
   async spinUp(): Promise<void> {
+    // Startup advances only its requested intervals, never a staged future water step.
+    await this.discardWaterPrefetch();
     while (this.spinUpLeft() > 0) {
-      const dt = this.spinUpStep();
-      const { device } = this;
-      if (!device) {
-        this.solver.step(dt);
-        continue;
-      }
-      try {
-        await device.step(dt);
-      } catch (error) {
-        console.warn('Surf zone device failed during the spin-up; finishing it on the CPU.', error);
-        device.dispose();
-        this.device = undefined;
-        this.solver.step(dt);
-      }
+      await this.stepAsync(this.spinUpStep());
     }
-    this.breaking.update(0);
   }
 
   private spinUpLeft(): number {

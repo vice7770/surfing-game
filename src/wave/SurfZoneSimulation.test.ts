@@ -426,18 +426,118 @@ describe('SurfZoneSimulation', () => {
       expect(Array.from(a.solver.qx)).toEqual(Array.from(b.solver.qx));
       expect(Array.from(a.solver.qz)).toEqual(Array.from(b.solver.qz));
     };
+    const sameSea = (a: SurfZoneSimulation, b: SurfZoneSimulation) => {
+      sameWater(a, b);
+      expect(a.exportState()).toEqual(b.exportState());
+      expect(a.breaking.strength).toEqual(b.breaking.strength);
+      expect(a.whitewaterStrength).toEqual(b.whitewaterStrength);
+      expect(a.aeration.turbulence).toEqual(b.aeration.turbulence);
+      expect(a.lipImpacts).toEqual(b.lipImpacts);
+      expect(a.frontPauses).toBe(b.frontPauses);
+      expect(a.crash?.counts).toEqual(b.crash?.counts);
+    };
+
+    it('warms the complete swept sea to the same state as ordinary requested steps, including device feedback and fallback', async () => {
+      // Big's swell, on the small test grid: real front/jet evolution, not a seated rider or a native GPU proof.
+      const config: SurfZoneConfig = { ...small, ...PADANG_SWELLS.big, spot: 'padang', seed: 1, spinUpPeriods: 2 };
+      const library = libraryFromBytes(readBarrelCases('padang'));
+      const duration = config.spinUpPeriods! * config.peakPeriod;
+      const reference = new SurfZoneSimulation(config, 'warm', library);
+      while (reference.solver.time < duration - 1e-9) {
+        reference.step(Math.min(reference.solver.maxStableStep(), duration - reference.solver.time));
+      }
+      expect(reference.solver.time).toBe(duration);
+      expect(reference.front!.exportState().tracks.some(({ footHeight }) => footHeight !== null)).toBe(true);
+      expect(reference.front!.points.length).toBeGreaterThan(0);
+      expect(reference.crash!.counts.throws).toBeGreaterThan(0);
+      expect(reference.crash!.counts.crashes).toBeGreaterThan(0);
+      expect(reference.foam.dense.some((value) => value > 0)).toBe(true);
+      expect(reference.aeration.air.some((value) => value > 0)).toBe(true);
+      sameSea(new SurfZoneSimulation(config, 'spun-up', library), reference);
+      for (const failAt of [Infinity, 11]) {
+        const warm = new SurfZoneSimulation(config, 'warm', library);
+        let calls = 0;
+        let disposed = 0;
+        let landed = 0;
+        let carriedPlunge = 0;
+        const waterStarts: number[] = [];
+        const incomingImpacts: number[] = [];
+        const stable: boolean[] = [];
+        const tell = warm.lip.onLand!;
+        warm.lip.onLand = (...args) => { landed += args[2]; tell(...args); };
+        const prepareStep = vi.fn(async () => undefined);
+        warm.device = {
+          step: async (dt) => {
+            calls += 1;
+            waterStarts.push(warm.solver.time);
+            incomingImpacts.push(warm.lipImpacts.length);
+            stable.push(dt <= warm.solver.maxStableStep());
+            if ((warm.solver as BoussinesqSolver).plungeHold.some((value) => value > 0)) carriedPlunge += 1;
+            if (calls === failAt) throw new Error('device lost before this water interval');
+            warm.solver.step(dt);
+          },
+          prepareStep,
+          dispose: () => { disposed += 1; },
+        };
+        warm.enableSoloWaterPrefetch();
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        try { await warm.spinUp(); } finally { warn.mockRestore(); }
+        expect(calls).toBeGreaterThan(10);
+        expect(stable.every(Boolean)).toBe(true);
+        expect(incomingImpacts.every((count) => count === 0)).toBe(true);
+        expect(landed).toBeGreaterThan(0);
+        expect(prepareStep).not.toHaveBeenCalled();
+        expect(warm.hasWaterPrefetch).toBe(false);
+        expect(disposed).toBe(failAt === Infinity ? 0 : 1);
+        expect(warm.device === undefined).toBe(failAt !== Infinity);
+        if (failAt === Infinity) expect(carriedPlunge).toBeGreaterThan(0);
+        sameSea(warm, reference);
+        // Spin-up is idempotent at the boundary: no new water request or feedback interval after handover.
+        const state = warm.exportState();
+        const costs = { ...warm.stepCosts };
+        const completedCalls = calls;
+        await warm.spinUp();
+        expect(calls).toBe(completedCalls);
+        expect(warm.exportState()).toEqual(state);
+        expect(warm.stepCosts).toEqual(costs);
+        expect(waterStarts.every((time, k) => k === 0 || time > waterStarts[k - 1])).toBe(true);
+        expect(waterStarts.every((time) => time < duration)).toBe(true);
+      }
+    });
+
+    it('does not step a zero-duration startup or consume a staged future-water interval', async () => {
+      const simulation = new SurfZoneSimulation({ ...small, spot: 'padang', spinUpPeriods: 0 }, 'warm');
+      const state = simulation.exportState();
+      const step = vi.fn(async () => {});
+      const commit = vi.fn(() => true);
+      const discard = vi.fn();
+      const prepareStep = vi.fn(async () => ({ commit, discard }));
+      simulation.device = { step, prepareStep, dispose() {} };
+      simulation.enableSoloWaterPrefetch();
+      simulation.prefetchWater(1 / 60);
+      await prepareStep.mock.results[0].value;
+      expect(simulation.hasWaterPrefetch).toBe(true);
+      await simulation.spinUp();
+      expect(prepareStep).toHaveBeenCalledExactlyOnceWith(1 / 60);
+      expect(discard).toHaveBeenCalledTimes(1);
+      expect(commit).not.toHaveBeenCalled();
+      expect(step).not.toHaveBeenCalled();
+      expect(simulation.hasWaterPrefetch).toBe(false);
+      expect(simulation.exportState()).toEqual(state);
+      expect(simulation.seaTime).toBe(simulation.plan.warmStartSeaTime);
+    });
 
     it('builds warm, then spins up to the same sea as a build that spins up at once', async () => {
       const eager = new SurfZoneSimulation({ ...small, spot: 'point' });
       const warm = new SurfZoneSimulation({ ...small, spot: 'point' }, 'warm');
       expect(warm.solver.time).toBe(0);
       await warm.spinUp();
-      sameWater(warm, eager);
+      sameSea(warm, eager);
       for (let step = 0; step < 30; step += 1) {
         eager.step(1 / 60);
         warm.step(1 / 60);
       }
-      sameWater(warm, eager);
+      sameSea(warm, eager);
       expect(Array.from(warm.breaking.strength)).toEqual(Array.from(eager.breaking.strength));
       expect(Array.from(warm.foam.dense)).toEqual(Array.from(eager.foam.dense));
     });
@@ -459,7 +559,7 @@ describe('SurfZoneSimulation', () => {
       await warm.spinUp();
       expect(steps.length).toBeGreaterThan(20);
       expect(overshoots).toBe(0);
-      sameWater(warm, eager);
+      sameSea(warm, eager);
     });
 
     it('finishes the spin-up on the CPU when its device fails partway', async () => {
@@ -484,7 +584,7 @@ describe('SurfZoneSimulation', () => {
       }
       expect(disposed).toBe(true);
       expect(warm.device).toBeUndefined();
-      sameWater(warm, eager);
+      sameSea(warm, eager);
     });
   });
 

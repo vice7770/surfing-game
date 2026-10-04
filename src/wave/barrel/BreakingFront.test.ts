@@ -105,6 +105,31 @@ describe('the breaking front as lines', () => {
     expect(front.points).toHaveLength(0);
   });
 
+  it('retains two columns’ foot and sizing history through startup instead of starting unsized below the foot', () => {
+    const warm = new BreakingFront(1, TIMING);
+    const cold = new BreakingFront(1, TIMING);
+    for (const [time, z, depth] of [[0, 10, 7], [0.1, 11, 5.5], [0.2, 12, 4.8]]) {
+      const crests = line([0, 1], z, 0, depth, 0);
+      warm.update(crests, crests.length, time);
+      if (depth === 4.8) cold.update(crests, crests.length, time);
+    }
+    expect(warm.exportState().tracks.map(({ footHeight, refHeight }) => [footHeight, refHeight])).toEqual([[FOOT, FOOT], [FOOT, FOOT]]);
+    expect(cold.exportState().tracks.map(({ footHeight, refHeight }) => [footHeight, refHeight])).toEqual([[null, null], [null, null]]);
+    expect(cold.unsized).toBe(2);
+    for (const [time, z, depth] of [[0.3, 13, JOIN], [0.4, 14, 2.2]]) {
+      const crests = line([0, 1], z, 0, depth, 0.5);
+      warm.update(crests, crests.length, time);
+      cold.update(crests, crests.length, time);
+    }
+    expect(warm.points).toHaveLength(2);
+    expect(fronts(warm)).toBe(1);
+    expect(warm.points.map(({ footHeight, footDepth, joined }) => [footHeight, footDepth, joined])).toEqual([[FOOT, 7, 0.3], [FOOT, 7, 0.3]]);
+    const thrown = 0.3 + ((JOIN - THROW) / (JOIN - 2.2)) * 0.1;
+    for (const point of warm.points) expect(point.thrown).toBeCloseTo(thrown, 12);
+    expect(cold.points).toHaveLength(0);
+    expect(cold.exportState().tracks.every(({ footHeight }) => footHeight === null)).toBe(true);
+  });
+
   it('links an oblique straight crest into one front, σ its arc length from the −x end', () => {
     const front = new BreakingFront(1, TIMING);
     joinAt(front, range(0, 20), 10, 0.5, 1);
