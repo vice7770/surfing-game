@@ -116,6 +116,78 @@ describe('the swept barrel at a spot', () => {
     water.dispose();
   });
 
+  it('rebuilds the roof and water mask when the drawing hold changes on the same snapshot', async () => {
+    const water = new WaterSurface(source);
+    const barrel = new SweptBarrel(water, async () => library());
+    barrel.setHoldClearDrawing(false);
+    barrel.setSpot('padang');
+    await barrel.ready;
+    const front = straightFront(21), revision = {};
+    for (let k = 0; k < 21; k++) front[k * FRONT_STRIDE + FRONT_FIELD.tau] = 0.35;
+    const update = vi.spyOn(barrel.mesh, 'update');
+    const mask = vi.spyOn(water, 'setBarrelMask');
+    barrel.draw(front, 21, 0, revision);
+    const baseline = barrel.lastLoft!.positions.slice(0, 3 * barrel.lastLoft!.vertexCount);
+    const baselineMask = ((water.materialUniforms.waterBarrelMask.value as DataTexture).image.data as Uint8Array).slice();
+    barrel.setHoldClearDrawing(true);
+    barrel.draw(front, 21, 0, revision);
+    const held = barrel.lastLoft!.positions.slice(0, 3 * barrel.lastLoft!.vertexCount);
+    expect(held).not.toEqual(baseline);
+    expect(update).toHaveBeenCalledTimes(2);
+    expect(mask).toHaveBeenCalledTimes(2);
+    barrel.setHoldClearDrawing(true);
+    barrel.draw(front, 21, 0, revision);
+    expect(update).toHaveBeenCalledTimes(2);
+    expect(mask).toHaveBeenCalledTimes(2);
+    barrel.setSpot(undefined);
+    barrel.setSpot('padang'); // cached library path retains the selected drawing hold
+    barrel.draw(front, 21, 0, revision);
+    expect(barrel.lastLoft!.positions.subarray(0, held.length)).toEqual(held);
+    barrel.setHoldClearDrawing(false);
+    barrel.draw(front, 21, 0, revision);
+    expect(barrel.lastLoft!.positions.subarray(0, baseline.length)).toEqual(baseline);
+    expect((water.materialUniforms.waterBarrelMask.value as DataTexture).image.data).toEqual(baselineMask);
+    barrel.dispose(); water.dispose();
+  });
+
+  it('uses the selected drawing hold when an asynchronous library load finishes', async () => {
+    const water = new WaterSurface(source);
+    let resolve!: (loaded: ProfileLibrary) => void;
+    const barrel = new SweptBarrel(water, () => new Promise((r) => { resolve = r; }));
+    barrel.setHoldClearDrawing(false);
+    barrel.setSpot('padang');
+    barrel.setHoldClearDrawing(true);
+    resolve(library());
+    await barrel.ready;
+    const front = straightFront(21);
+    for (let k = 0; k < 21; k++) front[k * FRONT_STRIDE + FRONT_FIELD.tau] = 0.35;
+    barrel.draw(front, 21, 0);
+    const loadedHeld = barrel.lastLoft!.positions.slice(0, 3 * barrel.lastLoft!.vertexCount);
+    barrel.setHoldClearDrawing(false);
+    barrel.draw(front, 21, 0);
+    expect(barrel.lastLoft!.positions.subarray(0, loadedHeld.length)).not.toEqual(loadedHeld);
+    barrel.setHoldClearDrawing(true);
+    barrel.draw(front, 21, 0);
+    expect(barrel.lastLoft!.positions.subarray(0, loadedHeld.length)).toEqual(loadedHeld);
+    barrel.dispose(); water.dispose();
+  });
+
+  it('draws the clear roof by default on the first loaded snapshot', async () => {
+    const water = new WaterSurface(source);
+    const barrel = new SweptBarrel(water, async () => library());
+    barrel.setSpot('padang'); await barrel.ready;
+    const front = straightFront(21), revision = {};
+    for (let k = 0; k < 21; k++) front[k * FRONT_STRIDE + FRONT_FIELD.tau] = 0.35;
+    barrel.draw(front, 21, 0, revision);
+    const held = barrel.lastLoft!.positions.slice(0, 3 * barrel.lastLoft!.vertexCount);
+    expect(barrel.holdsClearDrawing).toBe(true);
+    barrel.setHoldClearDrawing(false); barrel.draw(front, 21, 0, revision);
+    expect(barrel.lastLoft!.positions.subarray(0, held.length)).not.toEqual(held);
+    barrel.setHoldClearDrawing(true); barrel.draw(front, 21, 0, revision);
+    expect(barrel.lastLoft!.positions.subarray(0, held.length)).toEqual(held);
+    barrel.dispose(); water.dispose();
+  });
+
   it('draws nothing and masks nothing until its library has loaded, or with no front', async () => {
     const water = new WaterSurface(source);
     let resolve!: (loaded: ProfileLibrary) => void;

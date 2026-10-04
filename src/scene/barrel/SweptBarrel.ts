@@ -27,6 +27,7 @@ export class SweptBarrel {
   private resolveReady!: () => void;
   private mask = new Uint8Array(0);
   private look?: WaterLook;
+  private holdClearDrawing = true;
   private drawn?: {
     loft: SweptLoft; revision: unknown; surfaceRevision: number; front: Float32Array; count: number; stillLevel: number;
     look: WaterLook; maskGrid: SurfaceGrid; view: SweptBarrelView | undefined; sheetShown: boolean; facesOut: boolean;
@@ -54,7 +55,7 @@ export class SweptBarrel {
     this.spot = on ? spot : undefined;
     this.water.setBarrelEnabled(on);
     const library = on ? this.libraries.get(spot) : undefined;
-    this.loft = on && library ? new SweptLoft(library, BARREL_SLOPE[spot]!) : undefined;
+    this.loft = on && library ? new SweptLoft(library, BARREL_SLOPE[spot]!, { holdClearDrawing: this.holdClearDrawing }) : undefined;
     if (!on) {
       this.lastLoft = undefined;
       this.mesh.update(undefined);
@@ -66,9 +67,24 @@ export class SweptBarrel {
     this.load(spot).then((loaded) => {
       this.libraries.set(spot, loaded);
       this.loading.delete(spot);
-      if (this.spot === spot) this.loft = new SweptLoft(loaded, BARREL_SLOPE[spot]!);
+      if (this.spot === spot) this.loft = new SweptLoft(loaded, BARREL_SLOPE[spot]!, { holdClearDrawing: this.holdClearDrawing });
       this.resolveReady();
     }, (error: unknown) => console.warn('The barrel library did not load; the swept barrel stays off.', error));
+  }
+
+  /** Keep the last clear roof shape; changing the drawing hold rebuilds geometry and its water mask together. */
+  setHoldClearDrawing(enabled: boolean): void {
+    if (enabled === this.holdClearDrawing) return;
+    this.holdClearDrawing = enabled;
+    this.drawn = undefined;
+    const library = this.spot !== undefined ? this.libraries.get(this.spot) : undefined;
+    this.loft = library && this.spot !== undefined
+      ? new SweptLoft(library, BARREL_SLOPE[this.spot]!, { holdClearDrawing: enabled })
+      : undefined;
+  }
+
+  get holdsClearDrawing(): boolean {
+    return this.holdClearDrawing;
   }
 
   /** Loft the front over the drawn water; an explicit snapshot revision permits reuse between display frames. */

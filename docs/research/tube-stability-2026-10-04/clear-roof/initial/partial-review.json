@@ -1,0 +1,121 @@
+{
+  "nativeComplete": false,
+  "firstFailure": "AssertionError [ERR_ASSERTION]: PNG total cap\n    at png (file:///private/tmp/tube-clear-roof-ab-20261004/native.mjs:41:3)\n    at file:///private/tmp/tube-clear-roof-ab-20261004/native.mjs:171:62",
+  "completePngPairs": 9,
+  "allRecordedPairsSameSnapshot": true,
+  "selection": {
+    "front": 48,
+    "sigma": 1.960245966911316,
+    "sourceRow": {
+      "row": 80,
+      "front": 48,
+      "sigma": 1.960245966911316,
+      "tau": 0.49946317076683044,
+      "life": 0.8363848924636841,
+      "phase": 1,
+      "formed": 1,
+      "weight": 0.8802873492240906,
+      "fade": 1,
+      "overturned": 1,
+      "ray": [
+        -0.13406549394130707,
+        0.9909724593162537
+      ]
+    },
+    "sourceNeighbor": {
+      "row": 81,
+      "front": 48,
+      "sigma": 2.454566717147827,
+      "tau": 0.5229056477546692,
+      "life": 0.8733274340629578,
+      "phase": 1,
+      "formed": 1,
+      "weight": 0.9990211725234985,
+      "fade": 1,
+      "overturned": 1,
+      "ray": [
+        -0.1338350474834442,
+        0.9910036325454712
+      ]
+    },
+    "eye": [
+      115.0510092228651,
+      2.1907723426818846,
+      -7.553235799074173
+    ],
+    "target": [
+      125.1618320569396,
+      1.0907723426818847,
+      -7.699039548635483
+    ],
+    "eyeWaterHeight": -0.28881375048770375,
+    "shoulder": -1,
+    "camera": {
+      "position": [
+        115.0510092228651,
+        2.1907723426818846,
+        -7.553235799074173
+      ],
+      "quaternion": [
+        -0.03856629040531077,
+        -0.7009603360284076,
+        -0.03801415258774215,
+        0.7111414576315679
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "matrixWorld": [
+        0.014419063035955637,
+        -6.938893903907228e-18,
+        0.9998960399067321,
+        0,
+        0.10813375952750315,
+        0.9941351308948182,
+        -0.0015593496050723132,
+        0,
+        -0.9940317805138895,
+        0.10814500229202789,
+        0.01433449711863033,
+        0,
+        115.0510092228651,
+        2.1907723426818846,
+        -7.553235799074173,
+        1
+      ],
+      "near": 0.1,
+      "far": 3000,
+      "fov": 52,
+      "aspect": 1.9431171786120591
+    }
+  },
+  "physicalClock": {
+    "steps": 1080,
+    "baseSeaTime": 535.7230587494499,
+    "seaTime": 553.7230587494489
+  },
+  "closure": {
+    "valid": true,
+    "closedPorts": {
+      "4263": true,
+      "9673": true
+    },
+    "remainingOwnedPids": []
+  },
+  "visualReview": "Pair04A/B inspected: recognizable small cavity, narrow roof stripes, these PNGs identical. This younger selected section does not visibly exercise the traced roof hold. No adoption."
+}

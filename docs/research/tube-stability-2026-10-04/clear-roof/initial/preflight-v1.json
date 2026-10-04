@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-04T14:14:48.251071+00:00",
+  "tool": "321620",
+  "exitCode": 1,
+  "firstFailure": "Both fresh owned ports must be closed",
+  "resourcesStarted": false,
+  "occupiedPort": 4262,
+  "unrelatedPid": 65509,
+  "replacementPorts": [
+    4263,
+    9673
+  ]
+}

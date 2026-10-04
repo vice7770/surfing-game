@@ -1,0 +1,74 @@
+{
+  "initialRequest": {
+    "size": [
+      1708,
+      966
+    ],
+    "position": [
+      60,
+      60
+    ]
+  },
+  "resizeOverrides": [],
+  "ownedChromeClosed": true,
+  "preSpawnPort": {
+    "closed": true,
+    "reason": "ECONNREFUSED"
+  },
+  "startedAt": "2026-10-04T14:21:20.215Z",
+  "pid": 80294,
+  "profile": "/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-8SlizH",
+  "spawnargs": [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "--remote-debugging-port=9674",
+    "--user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-8SlizH",
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--disable-extensions",
+    "--disable-backgrounding-occluded-windows",
+    "--disable-renderer-backgrounding",
+    "--disable-background-timer-throttling",
+    "--autoplay-policy=no-user-gesture-required",
+    "--window-size=1708,966",
+    "--window-position=60,60",
+    "--app=about:blank",
+    "--mute-audio"
+  ],
+  "stderr": "\nDevTools listening on ws://127.0.0.1:9674/devtools/browser/e8794c63-29dd-45ca-b8d1-96230b4f998f\nTrying to load the allocator multiple times. This is *not* supported.\n[80294:13308957:1004/152123.223247:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR\n[80294:13308957:1004/152123.223452:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR\n[80294:13308957:1004/152123.227048:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR\nCreated TensorFlow Lite XNNPACK delegate for CPU.\n[80420:13310757:1004/152139.581570:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake-all --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2\n[80420:13310757:1004/152139.582685:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 315241, parent pid: 80294\n[80420:13310757:1004/152139.585013:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 3298119680B (3.072GiB) / 994610155520B (926.303GiB)\n[80420:13310757:1004/152139.585048:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 3298119680B (3.072GiB) / 994610155520B (926.303GiB)\n[80420:13310757:1004/152139.585137:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log\n[80422:13310761:1004/152139.596851:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --crash-handler --database=/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/Crashpad --url=https://clients2.google.com/cr/report --annotation=prod=Update4 --annotation=ver=156.0.8067.0 --handshake-fd=6 --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2\n[80422:13310761:1004/152139.597499:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 315241, parent pid: 1\n[80422:13310761:1004/152139.600372:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 3298119680B (3.072GiB) / 994610155520B (926.303GiB)\n[80422:13310761:1004/152139.600466:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 3298119680B (3.072GiB) / 994610155520B (926.303GiB)\n[80422:13310761:1004/152139.600605:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log\n[80420:13310757:1004/152139.601265:VERBOSE1:chrome/updater/crash_reporter.cc:123] Crash handler launched and ready.\n[80420:13310757:1004/152139.602111:VERBOSE1:chrome/updater/crash_client.cc:108] Found 0 completed crash reports\n[80420:13310757:1004/152139.602212:VERBOSE1:chrome/updater/crash_client.cc:132] Found 0 pending crash reports\n[80420:13310757:1004/152139.602353:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/RLZ/Crashpad/settings.dat: No such file or directory (2)\n[80420:13310757:1004/152139.602417:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/ChromeForTesting/Crashpad/settings.dat: No such file or directory (2)\n[80420:13310757:1004/152139.602425:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/Chrome-headless/Crashpad/settings.dat: No such file or directory (2)\n[80420:13310757:1004/152139.602435:VERBOSE1:chrome/updater/updater.cc:105] Crash reporting initialized.\n[80420:13310769:1004/152139.602816:VERBOSE1:chrome/updater/app/app_wakeall.cc:58] Launching `/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake`\n[80423:13310773:1004/152139.612315:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2\n[80423:13310773:1004/152139.612985:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 315241, parent pid: 80420\n[80423:13310773:1004/152139.615301:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 3298107392B (3.072GiB) / 994610155520B (926.303GiB)\n[80423:13310773:1004/152139.615345:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 3298107392B (3.072GiB) / 994610155520B (926.303GiB)\n[80423:13310773:1004/152139.615434:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log\n[80425:13310779:1004/152139.629290:VERBOSE1:chrome/updater/updater.cc:364] Version: 156.0.8067.0, opt, ARM_64, command line: /Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --crash-handler --database=/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/Crashpad --url=https://clients2.google.com/cr/report --annotation=prod=Update4 --annotation=ver=156.0.8067.0 --handshake-fd=6 --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2\n[80425:13310779:1004/152139.630070:VERBOSE1:chrome/updater/updater.cc:367] OS version: 26.6.2, arch: arm64, System uptime (seconds): 315241, parent pid: 1\n[80425:13310779:1004/152139.632287:VERBOSE1:chrome/updater/updater.cc:372] Available disk space in install directory (/Users/regina/Library/Application Support/Google/GoogleUpdater): 3298107392B (3.072GiB) / 994610155520B (926.303GiB)\n[80425:13310779:1004/152139.632372:VERBOSE1:chrome/updater/updater.cc:376] Available disk space in temporary directory (/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/): 3298107392B (3.072GiB) / 994610155520B (926.303GiB)\n[80425:13310779:1004/152139.632560:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS START event to the history log\n[80423:13310773:1004/152139.633414:VERBOSE1:chrome/updater/crash_reporter.cc:123] Crash handler launched and ready.\n[80423:13310773:1004/152139.634731:VERBOSE1:chrome/updater/crash_client.cc:108] Found 0 completed crash reports\n[80423:13310773:1004/152139.634871:VERBOSE1:chrome/updater/crash_client.cc:132] Found 0 pending crash reports\n[80423:13310773:1004/152139.635004:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/RLZ/Crashpad/settings.dat: No such file or directory (2)\n[80423:13310773:1004/152139.635070:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/ChromeForTesting/Crashpad/settings.dat: No such file or directory (2)\n[80423:13310773:1004/152139.635080:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/regina/Library/Application Support/Google/Chrome-headless/Crashpad/settings.dat: No such file or directory (2)\n[80423:13310773:1004/152139.635092:VERBOSE1:chrome/updater/updater.cc:105] Crash reporting initialized.\n[80423:13310773:1004/152139.635295:VERBOSE1:chrome/updater/ipc/update_service_internal_proxy_mojo.cc:61] Run\n[80294:13308957:1004/152148.931221:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT\n[80423:13310773:1004/152157.009932:VERBOSE1:chrome/updater/app/app.cc:52] Shutdown: 0\n[80423:13310773:1004/152157.010348:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log\n[80423:13310773:1004/152157.010372:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--wake) returned 0.\n[80420:13310769:1004/152157.168854:VERBOSE1:chrome/updater/app/app_wakeall.cc:68] `/Users/regina/Library/Application Support/Google/GoogleUpdater/156.0.8067.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake` exited 0\n[80420:13310757:1004/152157.169276:VERBOSE1:chrome/updater/app/app.cc:52] Shutdown: 0\n[80420:13310757:1004/152157.169586:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log\n[80420:13310757:1004/152157.169614:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--wake-all) returned 0.\n[80425:13310779:1004/152207.018887:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log\n[80425:13310779:1004/152207.018952:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--crash-handler) returned 0.\n[80422:13310761:1004/152207.021296:VERBOSE2:chrome/updater/event_history.cc:266] Emitted a UPDATER_PROCESS END event to the history log\n[80422:13310761:1004/152207.021460:VERBOSE1:chrome/updater/updater.cc:409] UpdaterMain (--crash-handler) returned 0.\n",
+  "aboutblank": {
+    "inner": [
+      1708,
+      879
+    ],
+    "outer": [
+      1708,
+      966
+    ],
+    "dpr": 2,
+    "screen": [
+      1728,
+      1117,
+      1728,
+      978
+    ]
+  },
+  "aboutblankBounds": {
+    "bounds": {
+      "left": 20,
+      "top": 41,
+      "width": 1708,
+      "height": 966,
+      "windowState": "normal"
+    }
+  },
+  "exit": {
+    "at": "2026-10-04T14:22:08.655Z",
+    "code": 0,
+    "signal": null
+  },
+  "portProof": {
+    "closed": true,
+    "reason": "ECONNREFUSED"
+  },
+  "closedAt": "2026-10-04T14:22:08.713Z"
+}

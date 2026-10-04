@@ -168,6 +168,8 @@ export interface LoftOptions {
   contact?: boolean;
   /** Measure the lip as a sheet (`sheetAcross`), which only the drawing shades: on by default, off in contact mode. */
   sheet?: boolean;
+  /** Hold each drawn case at its last clear profile, with the existing touchdown/collapse clock. Off by default; ignored in contact mode. */
+  holdClearDrawing?: boolean;
 }
 
 const MAX_SLICES = Math.floor(LOFT.budget / LOFT_SAMPLES);
@@ -272,6 +274,7 @@ export class SweptLoft {
 
   private readonly contact: boolean;
   private readonly measureSheet: boolean;
+  private readonly holdClearDrawing: boolean;
   /** A slice's lip thickness per profile point, m, and its far side's view of the sky (`sheetAcross`). */
   private readonly sheets: SheetLookup = { across: new Float32Array(PROFILE_POINTS), back: new Float32Array(PROFILE_POINTS) };
   /** A slice's throat views per profile point (`throatViews`). */
@@ -285,6 +288,7 @@ export class SweptLoft {
   constructor(private readonly library: ProfileLibrary, private readonly slope: number, options: LoftOptions = {}) {
     this.contact = options.contact ?? false;
     this.measureSheet = options.sheet ?? !this.contact;
+    this.holdClearDrawing = !this.contact && (options.holdClearDrawing ?? false);
     this.rayPlan = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
     this.query = { slope, footHeight: 0, footDepth: 0, seconds: 0 };
     const vertices = (MAX_SLICES + 1) * LOFT_SAMPLES;
@@ -592,12 +596,13 @@ export class SweptLoft {
       const nz = this.plannedRayZ[k];
       const tau = s.tau;
       // The drawing keeps the touchdown frame, the visual event; the contact also holds each blended case at its own
-      // last clear frame, never self-crossing (the advisor, 2026-09-30). Both clocks run on.
+      // last clear frame, never self-crossing (the advisor, 2026-09-30). The clear-profile drawing option uses that hold;
+      // both clocks run on.
       const query = this.query;
       query.footHeight = s.footHeight;
       query.footDepth = s.footDepth;
       query.seconds = tau;
-      query.hold = this.contact ? 'contact' : 'drawing';
+      query.hold = this.contact || this.holdClearDrawing ? 'contact' : 'drawing';
       const lookup = this.library.profileAt(query, profile);
       const touchdown = lookup.touchdownSeconds;
       const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
@@ -683,7 +688,7 @@ export class SweptLoft {
       let formed = 0;
       let lipThickness = 0;
       if (this.measureSheet && w > 0) {
-        query.hold = 'drawing';
+        query.hold = this.holdClearDrawing ? 'contact' : 'drawing';
         formed = sheetTablesLookup(this.library.frameBlend(query, this.blend), this.sheets);
         if (formed > 0) {
           throatViews(profile, this.inside);
