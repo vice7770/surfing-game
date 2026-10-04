@@ -1,0 +1,78 @@
+{
+  "schema": "descending-tip-offline-receipts/v1",
+  "result": "rejected",
+  "productionEdited": false,
+  "recipeChangedAfterEvaluation": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/README.md",
+      "bytes": 8696,
+      "sha256": "6ae2cd5c88119aab115e141afe2aa07a3162d3bcd73bc7c8107ebc58cedf01df"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/captured-profile-comparison.png",
+      "bytes": 124736,
+      "sha256": "523d3043456b89f0909d8f1c394918ceba998a70f4ac9d3b86525b69a53876cc"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/diagnostic-output.json",
+      "bytes": 1319,
+      "sha256": "7ac9f23afdd3409e892893f637e3f26ed98a199bd2521a0c29f6de3477c310b9"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/diagnostics.py",
+      "bytes": 9847,
+      "sha256": "462f14f24e7e40ac45374076eb81607aacf291cd307a513d66b708f883b9320b"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/evaluate.py",
+      "bytes": 13871,
+      "sha256": "3cf4cdaf515f915b9dd6fae5c4f3a1c05949902e322424c562acf9db7e9eeb96"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/evaluation-output.jsonl",
+      "bytes": 12783,
+      "sha256": "fd222c17b2c25196f0adcef101b05c66c498338321c25b1649b36612a29df55b"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/evaluation-start.json",
+      "bytes": 3270,
+      "sha256": "9ba0f48938e4ce1a137b08176c580b58a49b5b335bb36535caf2e02b2a741ef7"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/failure-profiles.json",
+      "bytes": 76344,
+      "sha256": "c2f971e023e484d1f19fc93b8f0f939dea102d6296b31f9899207b0d15732786"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/prototype.py",
+      "bytes": 9675,
+      "sha256": "5ee6ef9c3a3a42186201abf8ee9b6b595fa7e99ec5d3203678d00a7bfa8df8da"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/recipe.md",
+      "bytes": 6348,
+      "sha256": "c674d349d73202d086381b21b10985a6976c5846f53f09a1656cc9824b8b3277"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/report.json",
+      "bytes": 2765619,
+      "sha256": "b837bb6506a9903e1e2d4886cf8866d6c217ffbb1b18859f39aec68ad72f5e93"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/report.json.gz",
+      "bytes": 438619,
+      "sha256": "49d2e5fa5717ec621d91523d06d703902e1b4e7f66ddc4f809b68ac12d9d91d8"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/review.json",
+      "bytes": 8740,
+      "sha256": "caa6fcd66b1ff255752d4cdf1cf7201a2ddcff62682f412cb1280f47a97a3f58"
+    },
+    {
+      "file": "/private/tmp/tube-descending-tip-profile-20261004/summary.json",
+      "bytes": 272219,
+      "sha256": "bfdbf9e40aeb55325df41500c6e48ca4d54140b540c3ad6f06253e61263d903b"
+    }
+  ]
+}

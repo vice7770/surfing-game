@@ -1,0 +1,398 @@
+{
+  "schema": "descending-tip-failure-attribution/v1",
+  "geometryRecipeUnchanged": true,
+  "recipeDocumentUnchanged": true,
+  "invalidDomainGroups": [
+    {
+      "case": "pad19-a20-l12",
+      "frames": [
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131
+      ],
+      "count": 14,
+      "phaseCounts": {
+        "preTD": 14
+      },
+      "allNonpositiveFloorBasisDepth": true,
+      "d0Range": [
+        -0.05454574405272339,
+        -0.008112505905883582
+      ]
+    },
+    {
+      "case": "pad19-a30-l12",
+      "frames": [
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133
+      ],
+      "count": 19,
+      "phaseCounts": {
+        "preTD": 19
+      },
+      "allNonpositiveFloorBasisDepth": true,
+      "d0Range": [
+        -0.08121509692647497,
+        -0.005369179685407108
+      ]
+    },
+    {
+      "case": "pad19-a45-l12",
+      "frames": [
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137
+      ],
+      "count": 26,
+      "phaseCounts": {
+        "preTD": 26
+      },
+      "allNonpositiveFloorBasisDepth": true,
+      "d0Range": [
+        -0.08356140906022541,
+        -0.008809214766577755
+      ]
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frames": [
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167
+      ],
+      "count": 21,
+      "phaseCounts": {
+        "preTD": 21
+      },
+      "allNonpositiveFloorBasisDepth": true,
+      "d0Range": [
+        -0.07634946684066685,
+        -0.0074518579279763825
+      ]
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "frames": [
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91
+      ],
+      "count": 18,
+      "phaseCounts": {
+        "preTD": 18
+      },
+      "allNonpositiveFloorBasisDepth": true,
+      "d0Range": [
+        -0.05104308730379972,
+        -0.003805043982282555
+      ]
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "frames": [
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        112
+      ],
+      "count": 21,
+      "phaseCounts": {
+        "preTD": 21
+      },
+      "allNonpositiveFloorBasisDepth": true,
+      "d0Range": [
+        -0.06139335974960606,
+        -0.005483462820396301
+      ]
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "frames": [
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149
+      ],
+      "count": 27,
+      "phaseCounts": {
+        "preTD": 27
+      },
+      "allNonpositiveFloorBasisDepth": true,
+      "d0Range": [
+        -0.08002336095670556,
+        -0.008518671664263039
+      ]
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "frames": [
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139
+      ],
+      "count": 11,
+      "phaseCounts": {
+        "preTD": 11
+      },
+      "allNonpositiveFloorBasisDepth": true,
+      "d0Range": [
+        -0.031666484388932624,
+        -0.006943480222841941
+      ]
+    }
+  ],
+  "allInvalidAreNegativeFloorBasisDepth": true,
+  "exactF32AnchorAndRestPreservation": true,
+  "newDiscreteZeroEdgeFrames": [],
+  "newDiscreteZeroEdgeInterpolationSamples": [],
+  "crossingFrameDetails": [
+    {
+      "case": "pad19-a20-l12",
+      "frame": 137,
+      "maturity": 0.9680279908839761,
+      "thickness": 0.0005181074285343398,
+      "d0": 0.022397117450167814,
+      "originalPairs": 0,
+      "newPairs": 1,
+      "pairsBeforeF32Rounding": 1,
+      "unblendedInternalTargetPairCount": 0,
+      "maximumSampledCurvature": 372.81887441264263
+    },
+    {
+      "case": "pad19-a20-l12",
+      "frame": 138,
+      "maturity": 0.9412864459339504,
+      "thickness": 0.0005100321874415746,
+      "d0": 0.022739445839299155,
+      "originalPairs": 0,
+      "newPairs": 1,
+      "pairsBeforeF32Rounding": 1,
+      "unblendedInternalTargetPairCount": 0,
+      "maximumSampledCurvature": 378.60317258935453
+    },
+    {
+      "case": "pad19-a30-l12",
+      "frame": 135,
+      "maturity": 0.999980723285172,
+      "thickness": 8.013131451804017e-07,
+      "d0": 0.0009986064231487513,
+      "originalPairs": 0,
+      "newPairs": 22,
+      "pairsBeforeF32Rounding": 22,
+      "unblendedInternalTargetPairCount": 26,
+      "maximumSampledCurvature": 238860.9668958674
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "frame": 173,
+      "maturity": 0.9502686187990524,
+      "thickness": 0.0006728320890343971,
+      "d0": 0.029980592249871832,
+      "originalPairs": 0,
+      "newPairs": 3,
+      "pairsBeforeF32Rounding": 3,
+      "unblendedInternalTargetPairCount": 0,
+      "maximumSampledCurvature": 286.96540110258684
+    }
+  ],
+  "captured": [
+    {
+      "row": 124,
+      "originalBodyWidth": 0.3821557581606425,
+      "candidateBodyWidth": 1.3496360272546597,
+      "candidateGenerousWidth": 0.5281050671080433,
+      "capturedInner70_80ActualDistanceRange": [
+        0.10130915625080272,
+        0.10187936832365228
+      ],
+      "attachment82Turn": 70.03620556703576,
+      "root36Distance": 0.36573550700426805
+    },
+    {
+      "row": 125,
+      "originalBodyWidth": 0.4756260090670583,
+      "candidateBodyWidth": 1.420496041414233,
+      "candidateGenerousWidth": 0.47393773503057446,
+      "capturedInner70_80ActualDistanceRange": [
+        0.1307790697437551,
+        0.13137096786641467
+      ],
+      "attachment82Turn": 64.59090744033915,
+      "root36Distance": 0.395330627529959
+    },
+    {
+      "row": 126,
+      "originalBodyWidth": 0.48442798727413416,
+      "candidateBodyWidth": 1.4172774575962481,
+      "candidateGenerousWidth": 0,
+      "capturedInner70_80ActualDistanceRange": [
+        0.1982292046340561,
+        0.19897562339828878
+      ],
+      "attachment82Turn": 52.388137288405886,
+      "root36Distance": 0.4003430472427784
+    },
+    {
+      "row": 127,
+      "originalBodyWidth": 0.5422453370763012,
+      "candidateBodyWidth": 1.4470376279473354,
+      "candidateGenerousWidth": 0,
+      "capturedInner70_80ActualDistanceRange": [
+        0.2030962894413269,
+        0.20391618455238447
+      ],
+      "attachment82Turn": 51.78153136383412,
+      "root36Distance": 0.4020793859506996
+    },
+    {
+      "row": 128,
+      "originalBodyWidth": 0.5780050627929938,
+      "candidateBodyWidth": 1.4739069732621513,
+      "candidateGenerousWidth": 0.2727042068014922,
+      "capturedInner70_80ActualDistanceRange": [
+        0.1968857267412981,
+        0.19777380969836025
+      ],
+      "attachment82Turn": 52.563116103059336,
+      "root36Distance": 0.3957235130689467
+    }
+  ],
+  "diagnosticSource": {
+    "file": "/private/tmp/tube-descending-tip-profile-20261004/diagnostics.py",
+    "bytes": 9847,
+    "sha256": "462f14f24e7e40ac45374076eb81607aacf291cd307a513d66b708f883b9320b"
+  },
+  "nextActionProposal": "Do not integrate this recipe. If another offline trial is authorized, replace the quarter ellipse with a crest-to-lip Hermite centreline that accepts arbitrary anchor direction and ends at the preserved floor tangent. Construct its paired underside from the same discretized outer facets with a global representability/curvature bound, rather than independently sampled continuous offsets. Keep original64 XY and all-frame scope; no per-frame exceptions. This requires a new explicit recipe and new full evidence, not coefficient tuning of this rejected trial."
+}

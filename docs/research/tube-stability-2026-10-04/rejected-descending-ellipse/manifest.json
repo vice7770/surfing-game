@@ -1,0 +1,221 @@
+{
+  "schema": "rejected-descending-ellipse-archive/v1",
+  "result": "rejected",
+  "candidateAdopted": false,
+  "productionEditedByArchiveTask": false,
+  "numericalOrNativeRerunByArchiveTask": false,
+  "scope": "Exact artifact bytes and gzip transport with stored rejection receipt consistency; no acceptance certification.",
+  "originalScratch": "/private/tmp/tube-descending-tip-profile-20261004",
+  "originalScratchFileCount": 17,
+  "originalScratchBytes": 3808476,
+  "originalScratchUnchangedAtArchiveCopy": true,
+  "files": {
+    "README.md": {
+      "transportReceipt": {
+        "bytes": 4578,
+        "sha256": "9c34a76c22f90cd155ba0bdf27559d76d41ed0164a37203d854df5f5ff449414"
+      }
+    },
+    "captured-profile-comparison.png": {
+      "transportReceipt": {
+        "bytes": 124736,
+        "sha256": "523d3043456b89f0909d8f1c394918ceba998a70f4ac9d3b86525b69a53876cc"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/captured-profile-comparison.png",
+      "originalReceipt": {
+        "bytes": 124736,
+        "sha256": "523d3043456b89f0909d8f1c394918ceba998a70f4ac9d3b86525b69a53876cc"
+      },
+      "encoding": "identity"
+    },
+    "diagnostic-output.json": {
+      "transportReceipt": {
+        "bytes": 1319,
+        "sha256": "7ac9f23afdd3409e892893f637e3f26ed98a199bd2521a0c29f6de3477c310b9"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/diagnostic-output.json",
+      "originalReceipt": {
+        "bytes": 1319,
+        "sha256": "7ac9f23afdd3409e892893f637e3f26ed98a199bd2521a0c29f6de3477c310b9"
+      },
+      "encoding": "identity"
+    },
+    "diagnostics.py": {
+      "transportReceipt": {
+        "bytes": 9847,
+        "sha256": "462f14f24e7e40ac45374076eb81607aacf291cd307a513d66b708f883b9320b"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/diagnostics.py",
+      "originalReceipt": {
+        "bytes": 9847,
+        "sha256": "462f14f24e7e40ac45374076eb81607aacf291cd307a513d66b708f883b9320b"
+      },
+      "encoding": "identity"
+    },
+    "evaluate.py": {
+      "transportReceipt": {
+        "bytes": 13871,
+        "sha256": "3cf4cdaf515f915b9dd6fae5c4f3a1c05949902e322424c562acf9db7e9eeb96"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/evaluate.py",
+      "originalReceipt": {
+        "bytes": 13871,
+        "sha256": "3cf4cdaf515f915b9dd6fae5c4f3a1c05949902e322424c562acf9db7e9eeb96"
+      },
+      "encoding": "identity"
+    },
+    "evaluation-output.jsonl": {
+      "transportReceipt": {
+        "bytes": 12783,
+        "sha256": "fd222c17b2c25196f0adcef101b05c66c498338321c25b1649b36612a29df55b"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/evaluation-output.jsonl",
+      "originalReceipt": {
+        "bytes": 12783,
+        "sha256": "fd222c17b2c25196f0adcef101b05c66c498338321c25b1649b36612a29df55b"
+      },
+      "encoding": "identity"
+    },
+    "evaluation-start.json": {
+      "transportReceipt": {
+        "bytes": 3270,
+        "sha256": "9ba0f48938e4ce1a137b08176c580b58a49b5b335bb36535caf2e02b2a741ef7"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/evaluation-start.json",
+      "originalReceipt": {
+        "bytes": 3270,
+        "sha256": "9ba0f48938e4ce1a137b08176c580b58a49b5b335bb36535caf2e02b2a741ef7"
+      },
+      "encoding": "identity"
+    },
+    "failure-profiles.json.gz": {
+      "transportReceipt": {
+        "bytes": 20159,
+        "sha256": "af16eba797111ff447e701812a534faca8940da721a6d39ba3cf98c4add01f66"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/failure-profiles.json",
+      "originalReceipt": {
+        "bytes": 76344,
+        "sha256": "c2f971e023e484d1f19fc93b8f0f939dea102d6296b31f9899207b0d15732786"
+      },
+      "encoding": "gzip"
+    },
+    "input-references.json": {
+      "transportReceipt": {
+        "bytes": 8295,
+        "sha256": "ead98464885582f8383f5a87dbf523336d7544c22a8d2e394d70598bc41244b9"
+      }
+    },
+    "original-README.md.gz": {
+      "transportReceipt": {
+        "bytes": 4093,
+        "sha256": "52ff68286da5a692fe81e62e0e2732861d83eb40fce1b8c2a7ca24070f279d06"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/README.md",
+      "originalReceipt": {
+        "bytes": 8696,
+        "sha256": "6ae2cd5c88119aab115e141afe2aa07a3162d3bcd73bc7c8107ebc58cedf01df"
+      },
+      "encoding": "gzip"
+    },
+    "original-manifest.json": {
+      "transportReceipt": {
+        "bytes": 2987,
+        "sha256": "998ae74628e66d433034694e456df2d9535b467386eb54a913074756eceef715"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/manifest.json",
+      "originalReceipt": {
+        "bytes": 2987,
+        "sha256": "998ae74628e66d433034694e456df2d9535b467386eb54a913074756eceef715"
+      },
+      "encoding": "identity"
+    },
+    "prototype.py": {
+      "transportReceipt": {
+        "bytes": 9675,
+        "sha256": "5ee6ef9c3a3a42186201abf8ee9b6b595fa7e99ec5d3203678d00a7bfa8df8da"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/prototype.py",
+      "originalReceipt": {
+        "bytes": 9675,
+        "sha256": "5ee6ef9c3a3a42186201abf8ee9b6b595fa7e99ec5d3203678d00a7bfa8df8da"
+      },
+      "encoding": "identity"
+    },
+    "recipe.md": {
+      "transportReceipt": {
+        "bytes": 6348,
+        "sha256": "c674d349d73202d086381b21b10985a6976c5846f53f09a1656cc9824b8b3277"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/recipe.md",
+      "originalReceipt": {
+        "bytes": 6348,
+        "sha256": "c674d349d73202d086381b21b10985a6976c5846f53f09a1656cc9824b8b3277"
+      },
+      "encoding": "identity"
+    },
+    "report.json.gz": {
+      "transportReceipt": {
+        "bytes": 438619,
+        "sha256": "49d2e5fa5717ec621d91523d06d703902e1b4e7f66ddc4f809b68ac12d9d91d8"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/report.json",
+      "originalReceipt": {
+        "bytes": 2765619,
+        "sha256": "b837bb6506a9903e1e2d4886cf8866d6c217ffbb1b18859f39aec68ad72f5e93"
+      },
+      "encoding": "gzip",
+      "compressedOriginal": "/private/tmp/tube-descending-tip-profile-20261004/report.json.gz"
+    },
+    "review.json": {
+      "transportReceipt": {
+        "bytes": 8740,
+        "sha256": "caa6fcd66b1ff255752d4cdf1cf7201a2ddcff62682f412cb1280f47a97a3f58"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/review.json",
+      "originalReceipt": {
+        "bytes": 8740,
+        "sha256": "caa6fcd66b1ff255752d4cdf1cf7201a2ddcff62682f412cb1280f47a97a3f58"
+      },
+      "encoding": "identity"
+    },
+    "scratch-inventory.json": {
+      "transportReceipt": {
+        "bytes": 2616,
+        "sha256": "49f307ad67c6074b6253701aeb65362bb637ff5eed44b295a59d34e7704b396c"
+      }
+    },
+    "summary.json.gz": {
+      "transportReceipt": {
+        "bytes": 41137,
+        "sha256": "84da66b1480a507cc0859f9321208bf1969af39d7b0ad9e120ccd3271bf702c5"
+      },
+      "original": "/private/tmp/tube-descending-tip-profile-20261004/summary.json",
+      "originalReceipt": {
+        "bytes": 272219,
+        "sha256": "bfdbf9e40aeb55325df41500c6e48ca4d54140b540c3ad6f06253e61263d903b"
+      },
+      "encoding": "gzip"
+    },
+    "verify.py": {
+      "transportReceipt": {
+        "bytes": 6053,
+        "sha256": "b522d48a5fe69a3c4339c50d88c308d1f1af8c9b1379c04426843aca6ce046e7"
+      }
+    }
+  },
+  "referenceManifest": "input-references.json",
+  "totalsExcludingManifest": {
+    "files": 18,
+    "archiveBytes": 719126,
+    "exactOriginalPayloadFiles": 14,
+    "exactOriginalPayloadBytes": 3316454
+  },
+  "notDuplicated": [
+    "raw report.json",
+    "generated bytecode",
+    "all-profile generation outputs",
+    "previous archived input polylines/frame metadata/helpers",
+    "committed raw case assets"
+  ]
+}
