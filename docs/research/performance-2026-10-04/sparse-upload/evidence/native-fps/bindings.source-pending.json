@@ -1,0 +1,6 @@
+{
+  "schema": "sparse-upload-fps-bindings/v1",
+  "pending": true,
+  "scope": "Complete source extracted and reviewed before strict/build. Compiled arm binding deferred; no hardware allowed.",
+  "literalBuildId": "6f321d704-qa-sparse-upload"
+}

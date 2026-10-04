@@ -1,0 +1,10 @@
+{
+  "phase": "bind-launch",
+  "command": [
+    "python3",
+    "bind-launch.py"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+  "startedAt": "2026-10-04T03:24:57.044320+00:00",
+  "pid": 82133
+}

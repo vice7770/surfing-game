@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "pair.mjs",
+    "--run=true",
+    "--out=/private/tmp/surf-sparse-upload-fps-20261004/run"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+  "env": {
+    "SPARSE_FPS_LAUNCH_READY_SHA256": "8fe13545396f21781dc296cc1dfd49b1bcefe15359d0597fc03db3fd841bdc91"
+  },
+  "start": "2026-10-04T03:35:00.216190+00:00",
+  "pins": 1204,
+  "pid": 84919
+}

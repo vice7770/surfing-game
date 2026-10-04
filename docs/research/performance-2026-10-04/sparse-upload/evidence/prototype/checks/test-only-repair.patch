@@ -1,0 +1,86 @@
+--- first/parity.test.ts
++++ repaired/parity.test.ts
+@@ -1,3 +1,4 @@
++import { Buffer } from 'node:buffer';
+ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+ import { BoussinesqSolver as OriginalSolver } from './original/src/wave/BoussinesqSolver';
+ import { GpuBoussinesq as OriginalDevice } from './original/src/wave/gpu/GpuBoussinesq';
+@@ -19,6 +20,20 @@
+ 
+ const DT = 1 / 60;
+ const live: { dispose(): void }[] = [];
++/** Same complete byte ranges as the former Uint8Array deep comparisons; diagnose only an actual mismatch. */
++function expectBytes(actual: ArrayBufferView, expected: ArrayBufferView, label: string): void {
++  const a = Buffer.from(actual.buffer, actual.byteOffset, actual.byteLength);
++  const b = Buffer.from(expected.buffer, expected.byteOffset, expected.byteLength);
++  if (a.length !== b.length) throw new Error(`${label}: byte lengths ${a.length} !== ${b.length}`);
++  if (a.equals(b)) return;
++  let at = 0;
++  while (at < a.length && a[at] === b[at]) at += 1;
++  throw new Error(`${label}: byte ${at} actual ${a[at]} !== expected ${b[at]}, offsets ${actual.byteOffset}/${expected.byteOffset}`);
++}
++function expectByteArrays(actual: readonly ArrayBufferView[], expected: readonly ArrayBufferView[], label: string): void {
++  expect(actual.length).toBe(expected.length);
++  for (let i = 0; i < actual.length; i += 1) expectBytes(actual[i], expected[i], `${label}[${i}]`);
++}
+ beforeEach(() => {
+   vi.stubGlobal('GPUBufferUsage', { STORAGE: 1, COPY_DST: 2, COPY_SRC: 4, MAP_READ: 8, UNIFORM: 16 });
+   vi.stubGlobal('GPUShaderStage', { COMPUTE: 1 });
+@@ -57,7 +72,7 @@
+ 
+ function sameWater(p: Awaited<ReturnType<typeof pair>>): void {
+   for (const key of ['h', 'qx', 'qz'] as const) {
+-    expect(new Uint8Array(p.candidate[key].buffer)).toEqual(new Uint8Array(p.original[key].buffer));
++    expectBytes(new Uint8Array(p.candidate[key].buffer), new Uint8Array(p.original[key].buffer), `water.${key}`);
+   }
+   expect(p.candidate.time).toBe(p.original.time);
+   for (let i = 0; i < p.identities.length; i += 1) {
+@@ -72,8 +87,8 @@
+   await p.sparse.step(DT);
+   expect(p.b.inputs.length).toBe(p.a.inputs.length);
+   expect(p.b.readbacks.length).toBe(p.a.readbacks.length);
+-  for (let i = inputAt; i < p.a.inputs.length; i += 1) expect(p.b.inputs[i]).toEqual(p.a.inputs[i]);
+-  for (let i = readbackAt; i < p.a.readbacks.length; i += 1) expect(p.b.readbacks[i]).toEqual(p.a.readbacks[i]);
++  for (let i = inputAt; i < p.a.inputs.length; i += 1) expectBytes(p.b.inputs[i], p.a.inputs[i], `input[${i}]`);
++  for (let i = readbackAt; i < p.a.readbacks.length; i += 1) expectBytes(p.b.readbacks[i], p.a.readbacks[i], `readback[${i}]`);
+   sameWater(p);
+   return { full: p.a.takeWaterWrites(), sparse: p.b.takeWaterWrites() };
+ }
+@@ -95,7 +110,7 @@
+       p.candidate.h[40 + k] += 0.003;
+       await p.full.step(DT); await device.step(DT);
+       expect(p.b.takeWaterWrites()).toEqual([{ offset: 0, bytes: 3 * p.candidate.h.length * 4 }]);
+-      expect(p.b.inputs).toEqual(p.a.inputs);
++      expectByteArrays(p.b.inputs, p.a.inputs, 'generic inputs');
+       sameWater(p);
+     }
+   });
+@@ -169,7 +184,7 @@
+     expect(b.launch(cell, { x: 5, z: 4 }, 3, 0.3, 3, undefined, undefined, 2.8))
+       .toBe(a.launch(cell, { x: 5, z: 4 }, 3, 0.3, 3, undefined, undefined, 2.8));
+     for (let frame = 0; frame < 180; frame += 1) { a.step(DT); b.step(DT); }
+-    for (const key of ['h', 'qx', 'qz'] as const) expect(new Uint8Array(candidate[key].buffer)).toEqual(new Uint8Array(original[key].buffer));
++    for (const key of ['h', 'qx', 'qz'] as const) expectBytes(new Uint8Array(candidate[key].buffer), new Uint8Array(original[key].buffer), `periodic.${key}`);
+     expect(b.exportState()).toEqual(a.exportState());
+     expect(a.landings).toBeGreaterThan(0);
+   });
+@@ -238,8 +253,8 @@
+     expect(() => a.importState(partial)).toThrow(); expect(() => b.importState(partial)).toThrow();
+     await full.step(DT); await sparse.step(DT);
+     expect(gb.takeWaterWrites()).toEqual([{ offset: 0, bytes: 3 * b.solver.h.length * 4 }]);
+-    expect(gb.inputs).toEqual(ga.inputs); expect(gb.readbacks).toEqual(ga.readbacks);
+-    for (const key of ['h', 'qx', 'qz'] as const) expect(new Uint8Array(a.solver[key].buffer)).toEqual(new Uint8Array(b.solver[key].buffer));
++    expectByteArrays(gb.inputs, ga.inputs, 'import inputs'); expectByteArrays(gb.readbacks, ga.readbacks, 'import readbacks');
++    for (const key of ['h', 'qx', 'qz'] as const) expectBytes(new Uint8Array(b.solver[key].buffer), new Uint8Array(a.solver[key].buffer), `import.${key}`);
+   });
+ 
+   it('retains full uploads for diagnostic no-readback/custom kernels and the first normal step after them', async () => {
+@@ -279,7 +294,7 @@
+     const aa = new Float32Array(2 * 7 * 9); const ab = new Float32Array(aa.length);
+     const grid = { xMin: -6, zMin: -12, spacing: 2, nx: 7, nz: 9 };
+     a.writeUniformSnapshot(sa, fa, aa, grid); b.writeUniformSnapshot(sb, fb, ab, grid);
+-    expect(sb).toEqual(sa); expect(fb).toEqual(fa); expect(ab).toEqual(aa);
++    expectBytes(sb, sa, 'snapshot.surface'); expectBytes(fb, fa, 'snapshot.flow'); expectBytes(ab, aa, 'snapshot.aeration');
+   });
+ 
+   it('preserves signed zero/infinity conversion and retains full repacking of NaN payloads', async () => {

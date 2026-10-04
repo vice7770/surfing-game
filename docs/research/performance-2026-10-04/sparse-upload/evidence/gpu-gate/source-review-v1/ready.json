@@ -1,0 +1,116 @@
+{
+  "baseline": "6f321d704269f9f1afc73750ab2b1f4a86f61122",
+  "candidatePatchSha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe",
+  "sourceAuthoritySha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66",
+  "protocolReadySha256": "2fc3de7524760b3b7e03fea27f43fd294c24ace17317b19f85f2d53d7cfe743b",
+  "schema": "sparse-upload-real-gpu-prepared/v1",
+  "executed": false,
+  "inputs": [
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/worker-entry.ts",
+      "bytes": 28386,
+      "sha256": "92a52226c55cbc0547cab2e0986a91c290f4f8ce4307406b87d4bb5ce8414fb5"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/page-entry.ts",
+      "bytes": 777,
+      "sha256": "7b9bc3902ef4254d3f62f81c0040c988329572e676e7444ec601aec122ae49bd"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/numeric.ts",
+      "bytes": 4619,
+      "sha256": "8f16b909d68b933de7762b1b24895fd3e3ffadb5aacba7c8c51cd4980e723d1f"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/numeric.test.ts",
+      "bytes": 2034,
+      "sha256": "ec4d01f9962db8cc890bbbcc819646e43cbb6475c63ef470b988740deaa09ebe"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/vitest.config.ts",
+      "bytes": 189,
+      "sha256": "486d5d3b4dd050797d5a918643327f3d1ce2627ad41dee6ee800efc3aa51e02f"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/tsconfig.json",
+      "bytes": 271,
+      "sha256": "fd80b1521968fc82e9479774304f73cf7900c6f995659b40d508ac5e7daefca4"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/index.html",
+      "bytes": 224,
+      "sha256": "6559846335d8ae6736f3e318535006503fe582c0f0e72644ff68c699bf9105ee"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/build.mjs",
+      "bytes": 1996,
+      "sha256": "ba63db016cf55907334243d2b08fb50420018d9116381ca80f4e7ecf38305736"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/device-gate.mjs",
+      "bytes": 11690,
+      "sha256": "3d4f828a9ad1270a694229d2a104d213f5e5cd5b502f6fdd10ca9b59f5545931"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/plan.md",
+      "bytes": 8062,
+      "sha256": "3ab538500952d59065ce826e252ea797955e743d023fddc1346d197afaf06085"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/fixture-authority.json",
+      "bytes": 2483,
+      "sha256": "c97d458d9abf46083d2c400139a57036738cbfe6d69398aed302c439171b66e4"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/freeze.py",
+      "bytes": 2260,
+      "sha256": "18388a866590fc1c392ad2fe68968a11ce1c999104d9071f8e09833c25280fee"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/prepare-launch.py",
+      "bytes": 2104,
+      "sha256": "e28f780d935e5924a97b3ba3160c24333cd93ff62cf431e4c836a22c29292bec"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/proposal.md",
+      "bytes": 4721,
+      "sha256": "59719098e251d31d79933a821bd79b70a494b1f2a7fe96835027d8c363919f19"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/candidate.patch",
+      "bytes": 15178,
+      "sha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/source-authority.json",
+      "bytes": 48392,
+      "sha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/ready.json",
+      "bytes": 2272,
+      "sha256": "2fc3de7524760b3b7e03fea27f43fd294c24ace17317b19f85f2d53d7cfe743b"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/completion.json",
+      "bytes": 3138,
+      "sha256": "8e6f5b0c29f2d28893a418579b52d9a435cbf70b71e2a7c0c915119d7c06b53a"
+    }
+  ],
+  "operation": "Source review first; four pure helper tests, strict, bundle only after CPU lease; one separate bounded GPU parity/cost lease after compiled review.",
+  "fixtureServedBytesMustBeCheckedBeforeChrome": true,
+  "runtimeFilesBoundBySourceAuthority": 295,
+  "bounds": {
+    "operationMs": 90000,
+    "deviceMs": 10000,
+    "costMs": 20000,
+    "fixtures": 2,
+    "parityStepsEach": 180,
+    "ordinaryParitySteps": 2,
+    "warmupPairedSteps": 4,
+    "costPairedRows": 24,
+    "AB": 12,
+    "BA": 12,
+    "dt": 0.016666666666666666
+  }
+}

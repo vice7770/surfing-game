@@ -1,0 +1,5 @@
+{
+  "extends": "./original/tsconfig.json",
+  "compilerOptions": { "types": ["@webgpu/types", "node"] },
+  "include": ["./original/src", "./candidate/src", "./parity.test.ts", "./memoryGpu.ts", "./vitest.config.ts"]
+}

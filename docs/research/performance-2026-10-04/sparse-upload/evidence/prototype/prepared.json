@@ -1,0 +1,43 @@
+{
+  "baseline": "6f321d704269f9f1afc73750ab2b1f4a86f61122",
+  "patchSha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe",
+  "sourceAuthoritySha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66",
+  "changed": [
+    "src/game/surfZoneWorker.ts",
+    "src/physics/PhysicalSurfWater.ts",
+    "src/wave/PlungingLip.ts",
+    "src/wave/ShallowWaterSolver.ts",
+    "src/wave/SurfZoneSimulation.ts",
+    "src/wave/gpu/GpuBoussinesq.ts",
+    "src/wave/gpu/cpuWaterEdits.ts",
+    "src/wave/warmStart.ts"
+  ],
+  "originalFiles": 147,
+  "candidateFiles": 148,
+  "preparedFocusedTests": 15,
+  "executedChecks": [],
+  "hardwareRun": false,
+  "scope": "Isolated source prototype only; no GPU parity or speed result",
+  "symlinks": [
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/original/node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/original/public",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/public"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/candidate/node_modules",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/node_modules"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/candidate/public",
+      "target": "/Users/regina/Desktop/Projects/surfing-game/public"
+    }
+  ]
+}

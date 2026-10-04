@@ -1,0 +1,341 @@
+--- a/src/game/surfZoneWorker.ts
++++ b/src/game/surfZoneWorker.ts
+@@ -5,7 +5,7 @@
+ /** Web Worker entry: the physical surf zone runs here, off the main thread (plan §3.2, P4a). */
+ const scope = self as unknown as DedicatedWorkerGlobalScope;
+ // Stage 2 water steps on the GPU where WebGPU allows (plan P6), else on the CPU.
+-const core = new SurfZoneWorkerCore((reply, transfer) => scope.postMessage(reply, transfer), (solver) => GpuBoussinesq.create(solver));
++const core = new SurfZoneWorkerCore((reply, transfer) => scope.postMessage(reply, transfer), (solver) => GpuBoussinesq.createForWorker(solver));
+ scope.onmessage = (event: MessageEvent<SurfZoneRequest>) => {
+   const pending = core.handle(event.data);
+   // A failure inside an async step reaches the page's onerror like a synchronous one.
+--- a/src/physics/PhysicalSurfWater.ts
++++ b/src/physics/PhysicalSurfWater.ts
+@@ -2,6 +2,7 @@
+ import { createContactHit, tubeState, type SweptSurfaceQueries } from '../wave/barrel/sweptContact';
+ import { waveNumber } from '../wave/dispersion';
+ import type { ShallowWaterSolver } from '../wave/ShallowWaterSolver';
++import { markCpuWaterCell } from '../wave/gpu/cpuWaterEdits';
+ import type { SurfZoneSimulation } from '../wave/SurfZoneSimulation';
+ import type { SurfWater, WaterSample } from './SurfWater';
+ 
+@@ -421,6 +422,7 @@
+       const share = this.weights[c] / wet;
+       solver.qx[i] -= (impulseX * share) / mass;
+       solver.qz[i] -= (impulseZ * share) / mass;
++      markCpuWaterCell(solver, i);
+     }
+   }
+ 
+--- a/src/wave/PlungingLip.ts
++++ b/src/wave/PlungingLip.ts
+@@ -4,6 +4,7 @@
+ import { AERATION } from './AerationField';
+ import { LH82_AREA, REEF_OVERTURN, jetRelativeSpeed, overturn, overturnParameter, reefOverturn, type OverturnShape, type TubeGeometry } from './Overturn';
+ import type { ShallowWaterSolver } from './ShallowWaterSolver';
++import { markCpuWaterCell } from './gpu/cpuWaterEdits';
+ import { TUBE_STRIDE, carveAt } from './tubeTable';
+ 
+ /** Parcels along one column's jet: the sheet's resolution across its thickness of flight (numerical). */
+@@ -641,10 +642,14 @@
+         this.unplacedMomentum += wanted - taken;
+       }
+       if (!(carried > 0)) continue;
+-      for (const index of rings.slice(0, reached).flat()) q[index] -= (sign * taken * Math.max(0, sign * q[index])) / carried;
++      for (const index of rings.slice(0, reached).flat()) {
++        q[index] -= (sign * taken * Math.max(0, sign * q[index])) / carried;
++        markCpuWaterCell(this.solver, index);
++      }
+     }
+     window.forEach((index, n) => {
+       h[index] -= share * weights[n];
++      markCpuWaterCell(this.solver, index);
+     });
+     return thrown;
+   }
+@@ -1206,6 +1211,7 @@
+     solver.h[cell] += volume / area;
+     solver.qx[cell] += momentumX / area;
+     solver.qz[cell] += momentumZ / area;
++    markCpuWaterCell(solver, cell);
+     return true;
+   }
+ 
+--- a/src/wave/ShallowWaterSolver.ts
++++ b/src/wave/ShallowWaterSolver.ts
+@@ -1,4 +1,5 @@
+ import { GRAVITY } from './dispersion';
++import { invalidateCpuWater } from './gpu/cpuWaterEdits';
+ 
+ export type DepthFunction = (x: number, z: number) => number;
+ 
+@@ -333,6 +334,7 @@
+   /** Advance by dt seconds, sub-stepping as the CFL condition requires. */
+   step(dt: number): void {
+     if (!(dt > 0) || !Number.isFinite(dt)) return;
++    invalidateCpuWater(this);
+     const substeps = cflSubsteps(dt, this.maxStableStep());
+     const sub = dt / substeps;
+     for (let s = 0; s < substeps; s += 1) {
+@@ -428,6 +430,7 @@
+     if (shift === 0) return;
+     const { nx, nz } = this;
+     if (Math.abs(shift) >= nx) throw new RangeError(`Cannot shift ${shift} columns in a ${nx}-column window`);
++    invalidateCpuWater(this);
+     // The edges move: their columns get the spot's seabed back before they slide inside.
+     this.levelOpenEdges(false);
+     for (let ix = 0; ix < nx; ix += 1) this.xCenters[ix] += shift * this.dx;
+--- a/src/wave/SurfZoneSimulation.ts
++++ b/src/wave/SurfZoneSimulation.ts
+@@ -1,5 +1,6 @@
+ import { PADANG, REEF, createSpot, padangForeFootZ, padangReefAt, reefLedgeAt, smoothstep, type SpotName, type SurfSpot } from './Bathymetry';
+ import { BoussinesqSolver, madsenSorensenWaveNumber } from './BoussinesqSolver';
++import { invalidateCpuWater } from './gpu/cpuWaterEdits';
+ import { BreakingModel, PeelTracker, breakerDepthFor, type PeelEstimate } from './Breaking';
+ import { GRAVITY, shallowWaterWaveNumber, shoalingCoefficient, waveKinematics } from './dispersion';
+ import { SETS_OVER_TYPICAL, komarGaughan } from './surfForecast';
+@@ -717,6 +718,7 @@
+     const { solver } = this;
+     if (state.nx !== solver.nx || state.nz !== solver.nz) throw new Error(`A sea state from another tank (${state.nx}×${state.nz}, not ${solver.nx}×${solver.nz})`);
+     const arrays = this.stateArrays();
++    invalidateCpuWater(solver);
+     for (const [name, values] of Object.entries(state.arrays)) {
+       const target = arrays[name];
+       if (!target || target.length !== values.length) throw new Error(`A sea state from another tank: ${name} does not fit`);
+--- a/src/wave/gpu/GpuBoussinesq.ts
++++ b/src/wave/gpu/GpuBoussinesq.ts
+@@ -2,6 +2,7 @@
+ import { SeaStateBoundary } from '../SeaStateBoundary';
+ import { SideFeed } from '../SideFeed';
+ import { PERIODIC, WALL, cflSubsteps } from '../ShallowWaterSolver';
++import { releaseCpuWaterEdits, trackCpuWaterEdits, type CpuWaterEdits } from './cpuWaterEdits';
+ import { COMPONENT_STRIDE, FIELD, FIELD_COUNT, PARAM_WORDS, ROW_STRIDE, STEP_KERNELS, boussinesqWgsl } from './boussinesqWgsl';
+ 
+ const WORKGROUP = 64;
+@@ -191,6 +192,8 @@
+   private version = -1;
+   private plungeVersion = -1;
+   private disposed = false;
++  /** Present only for the worker-exclusive factory; public/generic devices still upload every field. */
++  private cpuEdits?: CpuWaterEdits;
+   /** Wall time of the last frame's device work, ms. */
+   lastStepMs = 0;
+   /** Diagnostics: the kernels each substep runs, and whether a frame reads its result back. */
+@@ -279,13 +282,23 @@
+     return new GpuBoussinesq(solver, device, module);
+   }
+ 
++  /** @internal WorkerCore exclusively retains its solver; replies and exported state never expose these arrays. */
++  static async createForWorker(solver: BoussinesqSolver, gpu: GPU | undefined = globalThis.navigator?.gpu): Promise<GpuBoussinesq | undefined> {
++    const device = await GpuBoussinesq.create(solver, gpu);
++    if (device) device.cpuEdits = trackCpuWaterEdits(solver);
++    return device;
++  }
++
+   /** Advance the solver by dt seconds on the device, sub-stepping as the CFL condition requires. */
+   async step(dt: number): Promise<void> {
+     if (this.disposed || !(dt > 0) || !Number.isFinite(dt)) return;
+     const started = performance.now();
+     const { solver, device, n } = this;
+     const layout = solver.deviceLayout();
++    const normalReadback = this.cpuEdits !== undefined && this.readback && this.kernels.length === STEP_KERNELS.length
++      && this.kernels.every((kernel, i) => kernel === STEP_KERNELS[i]);
+     if (layout.version !== this.version) {
++      this.cpuEdits?.invalidate();
+       this.writeLayout(layout);
+       this.version = layout.version;
+     } else if (solver.plungeVersion !== this.plungeVersion) {
+@@ -294,11 +307,28 @@
+       device.queue.writeBuffer(this.fields, FIELD.HOLD * n * 4, this.field);
+     }
+     this.plungeVersion = solver.plungeVersion;
+-    DEVICE_UPLOAD.forEach((index, k) => {
+-      const source = index === FIELD.H ? solver.h : index === FIELD.QX ? solver.qx : solver.qz;
+-      this.upload.set(source, k * n);
+-    });
+-    device.queue.writeBuffer(this.fields, FIELD.H * n * 4, this.upload);
++    const ranges = normalReadback ? this.cpuEdits?.prepare() ?? -1 : -1;
++    // Any exception/failed submission leaves the next step on the original full path.
++    this.cpuEdits?.invalidate();
++    if (ranges < 0) {
++      DEVICE_UPLOAD.forEach((index, k) => {
++        const source = index === FIELD.H ? solver.h : index === FIELD.QX ? solver.qx : solver.qz;
++        this.upload.set(source, k * n);
++      });
++      device.queue.writeBuffer(this.fields, FIELD.H * n * 4, this.upload);
++    } else {
++      for (let range = 0; range < ranges; range += 1) {
++        const start = this.cpuEdits!.ranges[2 * range];
++        const end = this.cpuEdits!.ranges[2 * range + 1];
++        for (let k = 0; k < DEVICE_UPLOAD.length; k += 1) {
++          const source = k === 0 ? solver.h : k === 1 ? solver.qx : solver.qz;
++          const offset = k * n;
++          for (let i = start; i < end; i += 1) this.upload[offset + i] = source[i];
++          // TypedArray dataOffset and size are elements; the GPU buffer offset is bytes.
++          device.queue.writeBuffer(this.fields, (DEVICE_UPLOAD[k] * n + start) * 4, this.upload, offset + start, end - start);
++        }
++      }
++    }
+     if (this.zone) {
+       packComponents(this.zone.boundary, solver.time, solver.xCenters[0], this.components);
+       device.queue.writeBuffer(this.sea, 0, this.components);
+@@ -361,8 +391,12 @@
+       const view = back.subarray(k * n, (k + 1) * n);
+       readbackTarget(solver, index).set(view);
+     });
++    // Scan the existing mapped view before unmapping, without a payload or view allocation.
++    // NaNs retain full conversion: widening/repacking may canonicalize their original F32 payload.
++    const resident = normalReadback && this.cpuEdits?.readbackIsExact(back, DEVICE_UPLOAD.length * n);
+     this.staging.unmap();
+     solver.adoptDeviceStep(dt);
++    if (resident) this.cpuEdits!.adoptReadback();
+     this.diagnostics.unpack = performance.now() - phase;
+     this.lastStepMs = performance.now() - started;
+   }
+@@ -390,6 +424,7 @@
+   dispose(): void {
+     if (this.disposed) return;
+     this.disposed = true;
++    if (this.cpuEdits) releaseCpuWaterEdits(this.solver, this.cpuEdits);
+     this.device.destroy();
+   }
+ }
+--- /dev/null
++++ b/src/wave/gpu/cpuWaterEdits.ts
+@@ -0,0 +1,118 @@
++import type { ShallowWaterSolver } from '../ShallowWaterSolver';
++
++/** At most 24 small writes (three fields per range); otherwise keep the original single full upload. */
++export const MAX_WATER_RANGES = 8;
++/** Extra unchanged cells included while joining nearby rows count toward this limit too. */
++export const MAX_WATER_SHARE = 0.25;
++
++const owners = new WeakMap<ShallowWaterSolver, CpuWaterEdits>();
++
++/**
++ * @internal One worker-owned device's CPU coupling edits. Generic devices never install this tracker.
++ * It records cells, not intermediate numbers: packing happens only after all original F64 mutations.
++ */
++export class CpuWaterEdits {
++  private readonly low: Int32Array;
++  private readonly high: Int32Array;
++  /** Reused [start,end) pairs; no per-step range objects or array allocations. */
++  readonly ranges = new Int32Array(MAX_WATER_RANGES * 2);
++  private full = true;
++  private covered = 0;
++
++  constructor(private readonly solver: ShallowWaterSolver) {
++    this.low = new Int32Array(solver.nz);
++    this.high = new Int32Array(solver.nz);
++  }
++
++  invalidate(): void { this.full = true; }
++
++  mark(index: number): void {
++    if (this.full) return;
++    const { nx, nz } = this.solver;
++    if (!Number.isInteger(index) || index < 0 || index >= nx * nz) {
++      this.invalidate();
++      return;
++    }
++    const row = Math.floor(index / nx);
++    const column = index - row * nx;
++    const previous = Math.max(0, this.high[row] - this.low[row]);
++    this.low[row] = Math.min(this.low[row], column);
++    this.high[row] = Math.max(this.high[row], column + 1);
++    this.covered += this.high[row] - this.low[row] - previous;
++    if (this.covered > nx * nz * MAX_WATER_SHARE) this.invalidate();
++  }
++
++  /** -1 means full, zero means the GPU already holds every final CPU input, otherwise ranges are ready. */
++  prepare(): number {
++    if (this.full || owners.get(this.solver) !== this) return -1;
++    if (this.covered === 0) return 0;
++    const { nx, nz } = this.solver;
++    let count = 0;
++    let packed = 0;
++    let start = -1;
++    let end = -1;
++    for (let row = 0; row < nz; row += 1) {
++      if (this.low[row] >= this.high[row]) continue;
++      const nextStart = row * nx + this.low[row];
++      const nextEnd = row * nx + this.high[row];
++      // Joining consecutive/nearby rows avoids one WebGPU command per lip parcel.
++      if (start >= 0 && nextStart - end <= nx) {
++        end = nextEnd;
++        continue;
++      }
++      if (start >= 0) {
++        this.ranges[2 * count] = start;
++        this.ranges[2 * count + 1] = end;
++        packed += end - start;
++        count += 1;
++        if (count === MAX_WATER_RANGES) return -1;
++      }
++      start = nextStart;
++      end = nextEnd;
++    }
++    this.ranges[2 * count] = start;
++    this.ranges[2 * count + 1] = end;
++    packed += end - start;
++    count += 1;
++    return packed > nx * nz * MAX_WATER_SHARE ? -1 : count;
++  }
++
++  /** The mapped view must be scanned before unmap; no NaN payload may bypass the old conversion. */
++  readbackIsExact(back: Float32Array, count: number): boolean {
++    for (let i = 0; i < count; i += 1) {
++      if (Number.isNaN(back[i])) return false;
++    }
++    return true;
++  }
++
++  /** Only after normal readback, unmap and adoptDeviceStep all succeeded. */
++  adoptReadback(): void {
++    this.low.fill(this.solver.nx);
++    this.high.fill(0);
++    this.covered = 0;
++    this.full = false;
++  }
++}
++
++/** @internal Called only by GpuBoussinesq.createForWorker, never by the generic public factory. */
++export function trackCpuWaterEdits(solver: ShallowWaterSolver): CpuWaterEdits {
++  owners.get(solver)?.invalidate();
++  const edits = new CpuWaterEdits(solver);
++  owners.set(solver, edits);
++  return edits;
++}
++
++export function releaseCpuWaterEdits(solver: ShallowWaterSolver, edits: CpuWaterEdits): void {
++  edits.invalidate();
++  if (owners.get(solver) === edits) owners.delete(solver);
++}
++
++/** After an unchanged coupling write; a generic/CPU-owned solver has no tracker. */
++export function markCpuWaterCell(solver: ShallowWaterSolver, index: number): void {
++  owners.get(solver)?.mark(index);
++}
++
++/** A CPU step, warm start, import or window shift may change a whole field, including before an exception. */
++export function invalidateCpuWater(solver: ShallowWaterSolver): void {
++  owners.get(solver)?.invalidate();
++}
+--- a/src/wave/warmStart.ts
++++ b/src/wave/warmStart.ts
+@@ -1,6 +1,7 @@
+ import { groupSpeed } from './dispersion';
+ import type { SeaState } from './SeaState';
+ import type { ShallowWaterSolver } from './ShallowWaterSolver';
++import { invalidateCpuWater } from './gpu/cpuWaterEdits';
+ 
+ export interface WarmStartOptions {
+   /** Cross-shore line where the sea state is specified (the relaxation zone's inner edge), m. */
+@@ -102,6 +103,7 @@
+  * (`transformedSea`), capped at γh, so the spin-up only has to settle the nonlinear shape.
+  */
+ export function warmStart(solver: ShallowWaterSolver, sea: SeaState, options: WarmStartOptions): void {
++  invalidateCpuWater(solver);
+   const { referenceZ, seaTime } = options;
+   const gamma = options.breakerIndex ?? 0.78;
+   const components = sea.components;

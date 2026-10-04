@@ -1,0 +1,40 @@
+{
+  "schema": "sparse-upload-fps-bindings/v1",
+  "pending": false,
+  "buildReady": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/ready.json",
+    "bytes": 9290,
+    "sha256": "bf7f13608bda60b91baed425cf4b94deaaed6644672de6dc94d4d0da5aad9341"
+  },
+  "sourceManifest": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/source-manifest.json",
+    "bytes": 494343,
+    "sha256": "fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66"
+  },
+  "buildTerminal": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/build-terminal.json",
+    "bytes": 965,
+    "sha256": "cf56307bc20303e56ad3e13cb35f06e0986401c1626945a5086f88846617d2c9"
+  },
+  "arms": {
+    "baseline": {
+      "arm": "baseline",
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/baseline/build-manifest.json",
+      "bytes": 4360,
+      "sha256": "dd42579ae83344394bcf32d5ff814c3737691aafb72d788b76234b2c1026faef"
+    },
+    "candidate": {
+      "arm": "candidate",
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/candidate/build-manifest.json",
+      "bytes": 6700,
+      "sha256": "4454a8a140dff527aa2b8ec774fefb2ef9d2bca00bcb3d1791a43e2e95617997"
+    }
+  },
+  "publicAssets": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/public-assets.json",
+    "bytes": 10729,
+    "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+  },
+  "scope": "Actual completed source/compiled arm byte binding. Does not grant hardware lease.",
+  "literalBuildId": "6f321d704-qa-sparse-upload"
+}

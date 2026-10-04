@@ -1,0 +1,79 @@
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { sampleCubicSurface } from '@baseline/cubicSurface';
+import { sampleCubicHeight } from '@candidate/cubicSurface';
+import { SweptLoft, BARREL_SLOPE, type LoftResult } from '@canonical/src/wave/barrel/sweptLoft';
+import { FRONT_FIELD, FRONT_STRIDE } from '@canonical/src/wave/barrel/frontRecords';
+import { libraryFromBytes } from '@canonical/src/wave/barrel/barrelLibrary';
+import { rasterizeBarrelMask } from '@canonical/src/scene/barrel/barrelMask';
+import type { SurfaceGrid } from '@canonical/src/scene/WaterSurface';
+const ROOT = '/Users/regina/Desktop/Projects/surfing-game';
+const WORK = '/private/tmp/render-height-only-20261004';
+const pins: { assets: { path: string; bytes: number; sha256: string }[] } = JSON.parse(readFileSync(`${WORK}/inputs.json`, 'utf8'));
+const digest = (raw: Uint8Array) => createHash('sha256').update(raw).digest('hex');
+function input(path: string): Buffer {
+  const pin = pins.assets.find((row) => row.path === path);
+  if (!pin) throw new Error(`Unpinned fixture/case ${path}`);
+  const raw = readFileSync(path);
+  if (raw.length !== pin.bytes || digest(raw) !== pin.sha256) throw new Error(`Changed fixture/case ${path}`);
+  return raw;
+}
+export interface Fixture { name: string; front: Float32Array; count: number; surface: Float32Array; grid: SurfaceGrid; still: number }
+export function fixture(at: 10 | 20): Fixture {
+  const raw = JSON.parse(input(`${ROOT}/docs/research/tube-stability-2026-10-03/fixtures/at-${at}.json`).toString());
+  const surface = Float32Array.from(raw.surfaceData as number[]);
+  if (surface.length !== 2 * raw.waterGrid.nx * raw.waterGrid.nz || !surface.every(Number.isFinite)) throw new Error(`Invalid at-${at} height fixture`);
+  const front = Float32Array.from(raw.front as (number | null)[], (v) => v === null ? Number.NaN : v);
+  if (front.length !== raw.frontCount * FRONT_STRIDE) throw new Error('Front count/stride differs');
+  for (let k = 0; k < raw.frontCount; k++) for (const field of ['x', 'z', 'front', 'sigma', 'tau', 'footHeight', 'footDepth'] as const) {
+    if (!Number.isFinite(front[k * FRONT_STRIDE + FRONT_FIELD[field]])) throw new Error(`Invalid front ${k}/${field}`);
+  }
+  return { name: `at-${at}`, front, count: raw.frontCount, surface, grid: raw.waterGrid, still: raw.config.tide };
+}
+export function library() {
+  return libraryFromBytes(['pad19-a20-l12', 'pad19-a30-l12', 'pad19-a45-l12', 'periodic-padang19s-l12']
+    .map((name) => new Uint8Array(input(`${ROOT}/public/barrels/${name}.bin`))));
+}
+export function sampler(f: Fixture, arm: 'before' | 'after'): (x: number, z: number) => number {
+  return arm === 'before' ? (x, z) => sampleCubicSurface(f.surface, f.grid, x, z).height : (x, z) => sampleCubicHeight(f.surface, f.grid, x, z);
+}
+export function drawing() { return new SweptLoft(library(), BARREL_SLOPE.padang!); }
+type Numeric = Float32Array | Int32Array | Uint8Array | Uint32Array;
+function prefix(key: string, r: LoftResult): number {
+  if (key === 'indices') return r.indexCount;
+  if (key === 'positions' || key === 'normals') return 3 * r.vertexCount;
+  if (key === 'throat') return 4 * r.vertexCount;
+  if (['mask', 'lift', 'sheet', 'sheetWeight', 'sheetBack'].includes(key)) return r.vertexCount;
+  return r.sliceCount;
+}
+export function equalActive(a: LoftResult, b: LoftResult): void {
+  for (const key of Object.keys(a)) {
+    const left = a[key as keyof LoftResult]; const right = b[key as keyof LoftResult];
+    if (ArrayBuffer.isView(left)) {
+      if (!ArrayBuffer.isView(right) || left.constructor !== right.constructor) throw new Error(`Array kind differs: ${key}`);
+      const x = left as Numeric; const y = right as Numeric; const n = prefix(key, a);
+      const xb = new Uint8Array(x.buffer, x.byteOffset, n * x.BYTES_PER_ELEMENT);
+      const yb = new Uint8Array(y.buffer, y.byteOffset, n * y.BYTES_PER_ELEMENT);
+      for (let i = 0; i < xb.length; i++) if (xb[i] !== yb[i]) throw new Error(`Active byte differs: ${key}/${i}`);
+    } else if (!Object.is(left, right)) throw new Error(`Scalar differs: ${key}`);
+  }
+}
+export function finiteGeometry(r: LoftResult): void {
+  for (let i = 0; i < 3 * r.vertexCount; i++) if (!Number.isFinite(r.positions[i]) || !Number.isFinite(r.normals[i])) throw new Error(`Nonfinite active geometry ${i}`);
+}
+export function mask(r: LoftResult, f: Fixture, out = new Uint8Array(f.grid.nx * f.grid.nz)): Uint8Array { rasterizeBarrelMask(r, f.grid, out); return out; }
+export function equalMask(a: Uint8Array, b: Uint8Array): void {
+  if (a.length !== b.length) throw new Error('Mask dimensions differ');
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) throw new Error(`Mask byte differs ${i}`);
+}
+export function fullParity(f: Fixture) {
+  const before = drawing(); const after = drawing(); const a: number[] = []; const b: number[] = [];
+  const old = sampler(f, 'before'); const next = sampler(f, 'after');
+  const ra = before.build(f.front, f.count, f.still, (x, z) => { const h = old(x, z); a.push(x, z, h); return h; });
+  const rb = after.build(f.front, f.count, f.still, (x, z) => { const h = next(x, z); b.push(x, z, h); return h; });
+  if (a.length !== b.length) throw new Error('Callback counts differ');
+  for (let i = 0; i < a.length; i++) if (!Object.is(a[i], b[i])) throw new Error(`Ordered callback differs ${i}`);
+  finiteGeometry(ra); finiteGeometry(rb); equalActive(ra, rb); equalMask(mask(ra, f), mask(rb, f));
+  if (ra.indexCount === 0 || ra.vertexCount === 0) throw new Error('Retained drawing unexpectedly empty');
+  return { fixture: f.name, callbackCount: a.length / 3, vertexCount: ra.vertexCount, indexCount: ra.indexCount, restSamples: ra.restSamples, allActiveArraysExact: true, orderedCallbacksExact: true, maskExact: true };
+}

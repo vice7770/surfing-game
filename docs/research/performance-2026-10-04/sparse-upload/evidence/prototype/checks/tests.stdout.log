@@ -1,0 +1,13 @@
+
+ RUN  v5.0.1 /private/tmp/surf-sparse-upload-20261004
+
+ ❯ parity.test.ts (15 tests | 2 failed) 48275ms
+   ❯ worker-exclusive sparse upload: protocol/CPU mutation parity, not WGSL emulation (15)
+     × packs actual two-axis jet withdrawal and subsequent landing at open boundaries 16760ms
+     × packs actual two-axis jet withdrawal and subsequent landing at wall boundaries 17179ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 13 passed (15)
+   Start at  03:36:36
+   Duration  48.94s (tests 99%, transform 1%)
+

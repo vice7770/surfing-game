@@ -1,4 +1,5 @@
 import { BoussinesqSolver, type BoussinesqDeviceLayout } from '../BoussinesqSolver';
+import type { PreparedWaterStep } from '../SurfZoneSimulation';
 import { SeaStateBoundary } from '../SeaStateBoundary';
 import { SideFeed } from '../SideFeed';
 import { PERIODIC, WALL, cflSubsteps } from '../ShallowWaterSolver';
@@ -191,6 +192,12 @@ export class GpuBoussinesq {
   private version = -1;
   private plungeVersion = -1;
   private disposed = false;
+  /** At most one future result owns the mapped staging buffer. */
+  private preparing = false;
+  private privateOwnerUsed = false;
+  /** Unsupported diagnostics after speculation retire this private device at the next requested step, never now. */
+  private privateUnusable = false;
+  private discardPrepared?: () => void;
   /** Wall time of the last frame's device work, ms. */
   lastStepMs = 0;
   /** Diagnostics: the kernels each substep runs, and whether a frame reads its result back. */
@@ -281,92 +288,168 @@ export class GpuBoussinesq {
 
   /** Advance the solver by dt seconds on the device, sub-stepping as the CFL condition requires. */
   async step(dt: number): Promise<void> {
-    if (this.disposed || !(dt > 0) || !Number.isFinite(dt)) return;
-    const started = performance.now();
-    const { solver, device, n } = this;
-    const layout = solver.deviceLayout();
-    if (layout.version !== this.version) {
-      this.writeLayout(layout);
-      this.version = layout.version;
-    } else if (solver.plungeVersion !== this.plungeVersion) {
-      // A cell entered or left the plunge zone: the mask reads only whether its hold is running.
-      this.field.set(solver.plungeHold);
-      device.queue.writeBuffer(this.fields, FIELD.HOLD * n * 4, this.field);
-    }
-    this.plungeVersion = solver.plungeVersion;
-    DEVICE_UPLOAD.forEach((index, k) => {
-      const source = index === FIELD.H ? solver.h : index === FIELD.QX ? solver.qx : solver.qz;
-      this.upload.set(source, k * n);
-    });
-    device.queue.writeBuffer(this.fields, FIELD.H * n * 4, this.upload);
-    if (this.zone) {
-      packComponents(this.zone.boundary, solver.time, solver.xCenters[0], this.components);
-      device.queue.writeBuffer(this.sea, 0, this.components);
-    }
-    if (this.zone?.feed && this.feedSlots > 0) {
-      // Only the time block changes from frame to frame.
-      packSideTimes(this.zone.feed, solver.time, this.feedPacked);
-      device.queue.writeBuffer(this.feedBuffer, 0, this.feedPacked, 0, this.zone.feed.deviceShape().components * 3);
-    }
-    let phase = performance.now();
-    this.diagnostics.pack = phase - started;
-    const substeps = cflSubsteps(dt, solver.maxStableStep());
-    let end = performance.now();
-    this.diagnostics.cfl = end - phase;
-    phase = end;
-    const sub = dt / substeps;
-    const cells = Math.ceil(n / WORKGROUP);
-    for (let s = 0; s < substeps; s += 1) {
-      writeParams(solver, layout, this.zone, sub, (s + 1) * sub, this.paramBytes);
-      device.queue.writeBuffer(this.params, 0, this.paramBytes);
-      const encoder = device.createCommandEncoder();
-      const pass = encoder.beginComputePass();
-      pass.setBindGroup(0, this.bindGroup);
-      for (const kernel of this.kernels) {
-        if (kernel === 'relax' && !this.zone) continue;
-        if (kernel === 'relaxSides' && !(this.feedSlots > 0)) continue;
-        pass.setPipeline(this.pipelines.get(kernel)!);
-        const groups = kernel === 'rows' ? Math.ceil(solver.nz / WORKGROUP)
-          : kernel === 'columns' ? Math.ceil(solver.nx / WORKGROUP)
-            : kernel === 'relax' ? Math.ceil((this.zone!.rows * solver.nx) / WORKGROUP)
-              : kernel === 'relaxSides' ? Math.ceil(this.feedSlots / WORKGROUP)
-              : cells;
-        pass.dispatchWorkgroups(groups);
-      }
-      pass.end();
-      if (s === substeps - 1 && this.readback) {
-        DEVICE_READBACK.forEach((index, k) => encoder.copyBufferToBuffer(this.fields, index * n * 4, this.staging, k * n * 4, n * 4));
-      }
-      device.queue.submit([encoder.finish()]);
-    }
-    this.lastSubsteps = substeps;
-    this.diagnostics.substeps = substeps;
-    end = performance.now();
-    this.diagnostics.encode = end - phase;
-    phase = end;
-    if (!this.readback) {
-      await device.queue.onSubmittedWorkDone();
-      this.diagnostics.map = performance.now() - phase;
-      this.diagnostics.unpack = 0;
-      solver.time += dt;
-      this.lastStepMs = performance.now() - started;
-      return;
-    }
-    await this.staging.mapAsync(GPUMapMode.READ);
-    end = performance.now();
-    this.diagnostics.map = end - phase;
-    phase = end;
-    const back = new Float32Array(this.staging.getMappedRange());
-    DEVICE_READBACK.forEach((index, k) => {
-      const view = back.subarray(k * n, (k + 1) * n);
-      readbackTarget(solver, index).set(view);
-    });
-    this.staging.unmap();
-    solver.adoptDeviceStep(dt);
-    this.diagnostics.unpack = performance.now() - phase;
-    this.lastStepMs = performance.now() - started;
+    await this.runWaterStep(dt, false);
   }
 
+  /** Internal solo-worker preparation: all GPU work/readback, with one mapped result held until an actual advance. */
+  async prepareStep(dt: number): Promise<PreparedWaterStep | undefined> {
+    if (this.privateOwnerUsed && !this.canonicalReadback()) this.privateUnusable = true;
+    if (!this.prefetchEligible() || !(dt > 0) || !Number.isFinite(dt)) return undefined;
+    this.privateOwnerUsed = true;
+    return this.runWaterStep(dt, true);
+  }
+
+  private canonicalReadback(): boolean {
+    return this.readback && this.kernels.length === STEP_KERNELS.length && this.kernels.every((kernel, i) => kernel === STEP_KERNELS[i]);
+  }
+
+  private prefetchEligible(): boolean { return !this.disposed && !this.privateUnusable && this.canonicalReadback(); }
+
+  private async runWaterStep(dt: number, deferred: boolean): Promise<PreparedWaterStep | undefined> {
+    if (this.privateUnusable) throw new Error('Private water prefetch device no longer supports canonical readback');
+    if (this.disposed || !(dt > 0) || !Number.isFinite(dt)) return;
+    if (this.preparing) throw new Error('A private water result still owns the device staging buffer');
+    if (deferred) this.preparing = true;
+    let mapped = false;
+    try {
+      const started = performance.now();
+      const { solver, device, n } = this;
+      const layout = solver.deviceLayout();
+      const sourceTime = solver.time, sourceVersion = layout.version, sourcePlunge = solver.plungeVersion;
+      const diagnostics = deferred ? { substeps: 0, pack: 0, cfl: 0, encode: 0, map: 0, unpack: 0 } : this.diagnostics;
+      const readback = this.readback;
+      if (layout.version !== this.version) {
+        this.writeLayout(layout);
+        this.version = layout.version;
+      } else if (solver.plungeVersion !== this.plungeVersion) {
+        // A cell entered or left the plunge zone: the mask reads only whether its hold is running.
+        this.field.set(solver.plungeHold);
+        device.queue.writeBuffer(this.fields, FIELD.HOLD * n * 4, this.field);
+      }
+      this.plungeVersion = solver.plungeVersion;
+      DEVICE_UPLOAD.forEach((index, k) => {
+        const source = index === FIELD.H ? solver.h : index === FIELD.QX ? solver.qx : solver.qz;
+        this.upload.set(source, k * n);
+      });
+      device.queue.writeBuffer(this.fields, FIELD.H * n * 4, this.upload);
+      if (this.zone) {
+        packComponents(this.zone.boundary, solver.time, solver.xCenters[0], this.components);
+        device.queue.writeBuffer(this.sea, 0, this.components);
+      }
+      if (this.zone?.feed && this.feedSlots > 0) {
+        // Only the time block changes from frame to frame.
+        packSideTimes(this.zone.feed, solver.time, this.feedPacked);
+        device.queue.writeBuffer(this.feedBuffer, 0, this.feedPacked, 0, this.zone.feed.deviceShape().components * 3);
+      }
+      let phase = performance.now();
+      diagnostics.pack = phase - started;
+      const substeps = cflSubsteps(dt, solver.maxStableStep());
+      let end = performance.now();
+      diagnostics.cfl = end - phase;
+      phase = end;
+      const sub = dt / substeps;
+      const cells = Math.ceil(n / WORKGROUP);
+      for (let s = 0; s < substeps; s += 1) {
+        writeParams(solver, layout, this.zone, sub, (s + 1) * sub, this.paramBytes);
+        device.queue.writeBuffer(this.params, 0, this.paramBytes);
+        const encoder = device.createCommandEncoder();
+        const pass = encoder.beginComputePass();
+        pass.setBindGroup(0, this.bindGroup);
+        for (const kernel of this.kernels) {
+          if (kernel === 'relax' && !this.zone) continue;
+          if (kernel === 'relaxSides' && !(this.feedSlots > 0)) continue;
+          pass.setPipeline(this.pipelines.get(kernel)!);
+          const groups = kernel === 'rows' ? Math.ceil(solver.nz / WORKGROUP)
+            : kernel === 'columns' ? Math.ceil(solver.nx / WORKGROUP)
+              : kernel === 'relax' ? Math.ceil((this.zone!.rows * solver.nx) / WORKGROUP)
+                : kernel === 'relaxSides' ? Math.ceil(this.feedSlots / WORKGROUP)
+                : cells;
+          pass.dispatchWorkgroups(groups);
+        }
+        pass.end();
+        if (s === substeps - 1 && readback) {
+          DEVICE_READBACK.forEach((index, k) => encoder.copyBufferToBuffer(this.fields, index * n * 4, this.staging, k * n * 4, n * 4));
+        }
+        device.queue.submit([encoder.finish()]);
+      }
+      if (!deferred) this.lastSubsteps = substeps;
+      diagnostics.substeps = substeps;
+      end = performance.now();
+      diagnostics.encode = end - phase;
+      phase = end;
+      if (!readback) {
+        await device.queue.onSubmittedWorkDone();
+        diagnostics.map = performance.now() - phase;
+        diagnostics.unpack = 0;
+        solver.time += dt;
+        this.lastStepMs = performance.now() - started;
+        return;
+      }
+      await this.staging.mapAsync(GPUMapMode.READ);
+      mapped = true;
+      end = performance.now();
+      diagnostics.map = end - phase;
+      phase = end;
+      const back = new Float32Array(this.staging.getMappedRange());
+      if (deferred && this.disposed) {
+        this.staging.unmap(); mapped = false; this.preparing = false; this.version = -1; this.plungeVersion = -1;
+        return undefined;
+      }
+      if (deferred) {
+        const readyMs = end - started;
+        let active = true;
+        const discard = () => {
+          if (!active) return;
+          active = false;
+          if (this.disposed || !this.canonicalReadback()) this.privateUnusable = true;
+          this.staging.unmap(); mapped = false;
+          this.preparing = false;
+          this.discardPrepared = undefined;
+          // GPU carried strength/age/predictor fields already moved forward: a discarded result must rebase all of them.
+          this.version = -1; this.plungeVersion = -1;
+        };
+        this.discardPrepared = discard;
+        return Object.freeze({
+          commit: () => {
+            if (!active) return false;
+            if (!this.prefetchEligible()) {
+              this.privateUnusable = true; discard();
+              throw new Error('Private water prefetch device no longer supports canonical readback');
+            }
+            if (solver.time !== sourceTime || solver.deviceLayout().version !== sourceVersion || solver.plungeVersion !== sourcePlunge) {
+              discard(); return false;
+            }
+            const unpackStart = performance.now();
+            DEVICE_READBACK.forEach((index, k) => readbackTarget(solver, index).set(back.subarray(k * n, (k + 1) * n)));
+            this.staging.unmap(); mapped = false;
+            active = false; this.preparing = false; this.discardPrepared = undefined;
+            solver.adoptDeviceStep(dt);
+            diagnostics.unpack = performance.now() - unpackStart;
+            Object.assign(this.diagnostics, diagnostics);
+            this.lastSubsteps = substeps;
+            this.lastStepMs = readyMs + diagnostics.unpack;
+            return true;
+          },
+          discard,
+        });
+      }
+      DEVICE_READBACK.forEach((index, k) => {
+        const view = back.subarray(k * n, (k + 1) * n);
+        readbackTarget(solver, index).set(view);
+      });
+      this.staging.unmap(); mapped = false;
+      solver.adoptDeviceStep(dt);
+      diagnostics.unpack = performance.now() - phase;
+      this.lastStepMs = performance.now() - started;
+    } catch (error) {
+      if (deferred) {
+        if (mapped) this.staging.unmap();
+        this.preparing = false; this.discardPrepared = undefined;
+        this.version = -1; this.plungeVersion = -1;
+      }
+      throw error;
+    }
+  }
 
   /** Bed, still depth and slopes, zone weights, the carried breaking and predictor state and the plunge zone (after a window shift). */
   private writeLayout(layout: BoussinesqDeviceLayout): void {
@@ -390,6 +473,8 @@ export class GpuBoussinesq {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    if (this.privateOwnerUsed) this.privateUnusable = true;
+    this.discardPrepared?.();
     this.device.destroy();
   }
 }

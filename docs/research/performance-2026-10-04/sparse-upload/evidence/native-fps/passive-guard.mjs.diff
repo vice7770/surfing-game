@@ -1,0 +1,19 @@
+--- /private/tmp/contact-height-demand-fps-20261004/passive-guard.mjs
++++ /private/tmp/surf-sparse-upload-fps-20261004/passive-guard.mjs
+@@ -43,7 +43,7 @@
+ }
+ 
+ export class NativePassiveGuard {
+-  constructor({ output, baseline }) { this.output = output; this.baseline = baseline; this.expectedWorkerPath = process.env.CONTACT_FPS_EXPECTED_WORKER; if (!this.expectedWorkerPath) throw Error('Compiled worker binding missing'); this.state = { observations: [], valid: false, workerRngOverride: false, resizeOverrides: [], runtimeQueries: 'page read-only only' }; mkdirSync(output, { recursive: true }); }
++  constructor({ output, baseline }) { this.output = output; this.baseline = baseline; this.expectedWorkerPath = process.env.SPARSE_FPS_EXPECTED_WORKER; if (!this.expectedWorkerPath) throw Error('Compiled worker binding missing'); this.state = { observations: [], valid: false, workerRngOverride: false, resizeOverrides: [], runtimeQueries: 'page read-only only' }; mkdirSync(output, { recursive: true }); }
+   save() { writeFileSync(join(this.output, 'native-audit.json'), JSON.stringify(this.state, null, 2) + '\n'); }
+   async observe(phase, page, ordinary, first = false) {
+     const actual = await page.eval(`(() => {
+@@ -64,6 +64,7 @@
+     const tuple = { inner: actual.inner, outer: actual.outer, dpr: actual.dpr, canvas: actual.canvas, canvasClient: actual.canvasClient, bounds: { width: bounds.width, height: bounds.height, windowState: bounds.windowState } };
+     const fail = (message) => { this.state.firstFailure ??= { phase, message }; this.save(); throw Error(message); };
+     if (actual.dpr !== 2 || !actual.canvas || actual.canvas[0] !== Math.floor(actual.inner[0] * 1.75) || actual.canvas[1] !== Math.floor(actual.inner[1] * 1.75)) fail('Native High backing/DPR differs');
++    if (actual.inner[0] !== 1708 || actual.inner[1] !== 879 || actual.canvas[0] !== 2989 || actual.canvas[1] !== 1538) fail('Predeclared native CSS/backing tuple differs; no resize or fallback');
+     for (const [key, value] of Object.entries(ordinary.graphics)) if (actual.graphics?.[key] !== value) fail('Graphics.' + key + ' differs');
+     if (first) {
+       this.state.nativeReference = tuple; this.state.menuResizeEvents = actual.resizeEvents;

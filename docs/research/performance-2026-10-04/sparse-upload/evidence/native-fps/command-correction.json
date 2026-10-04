@@ -1,0 +1,86 @@
+{
+  "schema": "sparse-native-fps-strict-command-correction/v1",
+  "stage": "Prepared companion only; corrected commands unexecuted",
+  "scope": "Only TypeScript CLI argument tokenization changes; all original source/ready/proposal/harness/build/runtime files remain unchanged",
+  "directory": "/private/tmp/surf-sparse-upload-fps-20261004",
+  "originalReady": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/ready.json",
+    "bytes": 9290,
+    "sha256": "bf7f13608bda60b91baed425cf4b94deaaed6644672de6dc94d4d0da5aad9341"
+  },
+  "firstCompletion": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/checks/completion.json",
+    "bytes": 615,
+    "sha256": "11ad4487f9e049bf51e554bc370fd649911d9a98b0f14a06dc43e072e41d4c83"
+  },
+  "firstStrictTerminal": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/checks/baseline-strict.terminal.json",
+    "bytes": 358,
+    "sha256": "943c45d48a49125888c78c70d0403e92feae71b84fee53f1a32f96155e627670"
+  },
+  "firstStdout": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/checks/baseline-strict.stdout.log",
+    "bytes": 74,
+    "sha256": "09874fc63c4c1c38b52b75363b32f2dee9a33edc69e9af66e98a7847c4943c4c"
+  },
+  "firstStderr": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/checks/baseline-strict.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "failure": "TS5023 Unknown compiler option --project=baseline/tsconfig.json; baseline exited1 before type analysis. Candidate/build were unexecuted.",
+  "correction": "TypeScript requires --project followed by a separate path argv token. No compiler options, source or coverage removed.",
+  "correctedStrictCommands": [
+    {
+      "arm": "baseline",
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "argv": [
+        "node",
+        "baseline/node_modules/typescript/bin/tsc",
+        "--project",
+        "baseline/tsconfig.json",
+        "--noEmit"
+      ]
+    },
+    {
+      "arm": "candidate",
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "argv": [
+        "node",
+        "candidate/node_modules/typescript/bin/tsc",
+        "--project",
+        "candidate/tsconfig.json",
+        "--noEmit"
+      ]
+    }
+  ],
+  "unchangedFollowingBuild": {
+    "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+    "argv": [
+      "node",
+      "build-only.mjs"
+    ],
+    "env": {
+      "BUILD_ID": "6f321d704-qa-sparse-upload",
+      "SPARSE_FPS_READY_SHA256": "bf7f13608bda60b91baed425cf4b94deaaed6644672de6dc94d4d0da5aad9341"
+    }
+  },
+  "order": "baseline strict then candidate strict then build, stop first failure; no correction/retry without new root review",
+  "historicalSourceProof": {
+    "inputCount": 1137,
+    "unchanged": true,
+    "before": {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/checks/source-before.json",
+      "bytes": 246588,
+      "sha256": "933e77985b1a2e6feb1c1cdd2e1c294c75180e968d0a624bba1679208c7fdbe5"
+    },
+    "after": {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/checks/source-after-build.json",
+      "bytes": 246588,
+      "sha256": "a24833c160090df7766c0c0282003b900aefd9b5cac0cdff1ba713ef75d55c45"
+    }
+  },
+  "runtimePatchUnchanged": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe",
+  "checksOrBuildsExecutedByCompanion": false,
+  "requires": "Separate root reviewed CPU lease; companion grants no command/hardware authority"
+}

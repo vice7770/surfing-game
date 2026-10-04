@@ -1,0 +1,35 @@
+# Sparse CPU-water upload: held, not adopted
+
+Sparse upload remains unadopted. The ordinary native pair improved fresh updates59.08→59.92Hz and simulation/wall progress0.985→0.999, but displayed frame p95 worsened17.6→24.8ms. The single fixed-order pair does not establish a broadly better gameplay result. Root selected the separate prefetch direction and requested no composition experiment. Production is unchanged by this candidate.
+
+| Ordinary native90s metric | Accepted6f3 baseline | Sparse-only candidate |
+| --- | ---: | ---: |
+| Actual rendered FPS | 60 | 60 |
+| Fresh one-step updates/s | 59.08 | 59.92 |
+| Simulation seconds/wall second | 0.985 | 0.999 |
+| Display interval p50/p95, ms | 16.7 /17.6 | 16.7 /24.8 |
+| Display interval p99/max, ms | 25.2 /41.1 | 25.3 /41.7 |
+| Snapshot interval p95/p99/max, ms | 20 /23.6 /78.1 | 19.4 /26.6 /41.9 |
+| Last-step pipeline total p50/p95, ms | 16.3 /19.6 | 16.2 /18.4 |
+| Device pack p50/p95, ms | 1 /1.2 | 0.5 /0.6 |
+| Water p50, ms | 6.1 | 6.8 |
+
+The untouched successful survey statistics/menu/sample/quit route was reused. Each arm used ordinary menu→Surf→Padang→Big→Paddle out,5s warmup then90s idle, High/Rich/high particles and frame cap60. CSS1708×879, browserDPR2, backing2989×1538, effective1.75, production pixel normals,64 sea components, default dx2/fine1/render2 and independent mask1 were verified. Actual start ridertrue/four cases/undefined renderSpacing, ordinary seed8761,Hs3.8,T18,direction0,spreading150 and one-step idle requests were guarded. All compiled files were hash-verified before Chrome. Baseline HTTP4219/CDP9629 and candidate4220/9630 ran serially; TCP closure and port4200 closed were verified. Root wrapper ended2026-10-04T03:38:55.793545Z, exit0; all1204 input pins were unchanged.
+
+This is one A-then-B comparison: thermal, CPU scheduling, GPU queue and phase drift remain. The timeline columns are **wall-time bins**, not matched sea phases. Do not subtract independent stage quantiles or treat their sum as request latency. Raw rAF is distinct from actual rendered60FPS. No visual/moving-tube acceptance or causality is inferred from this trial. [Native summary](native-summary.json) retains all relevant metrics and late complete wall bins, derived only from the archived original outputs.
+
+The source candidate is accepted commit `6f321d704269f9f1afc73750ab2b1f4a86f61122` plus exactly eight paths in [candidate.patch](evidence/prototype/candidate.patch), SHA `63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe`. It adds an ordinary-worker-only dirty tracker for final CPU h/qx/qz coupling writes, coalesced upload ranges and a measured eligibility NaN scan. Public/generic GPU creation retains full upload; init, layout/window changes, import/restore, dense/fragmented changes, CPU stepping, unsupported/custom kernels and readbackfalse fall back to full upload. It does not alter solver arithmetic, shader kernels or material physics. The full550/551 source/config/package file authority and common explicit BUILD_ID `6f321d704-qa-sparse-upload` are retained as metadata; source and binaries are referenced by hash rather than copied here.
+
+Before the native gate, a real-GPU gate passed: both small open/wall fixtures completed180 paired steps with actual reaction/lip withdrawal/landing/window/restore cases, comparing the nine raw mapped F32 fields, F64 state/clocks and serialized/public outputs. Two own ordinary Runner/device arms then completed24 balanced adjacent AB/BA paired worker advances from the same retained controlled F32 handover. Complete timed `advanceAsync(1)+fill(reusedbuffers)` included dirty marking/range work/NaN scan, GPU packing/commands/map/unpack and all real post-water stages; it excluded postMessage and rendering. The paired median saving was0.600ms, mean0.658ms,19/24 positive. AB/BA medians both0.600ms; means0.667/0.650ms. One of the five negative rows is a timer-precision tie. These are paired differences, not differences of independent quantiles. [Order derivation](evidence/gpu-gate/run/derived.json) and [raw GPU result](evidence/gpu-gate/run/result.json.gz) retain exact rows and authority.
+
+That fixture was captured on1bcc and imported into accepted6f3, not an ordinary historical replay. Export-omitted RATEH/NU were initialized identically; rider/particle streams were fresh, import reset turbulence, and the F32 handover discarded original F64 precision. Detailed lifecycle/state checks were outside cost rows; direct views/reused snapshots and failure-only messages limited allocation between pairs. The GPU result does not establish native cadence; the separate native result above is the relevant mixed outcome.
+
+Failures and corrections remain historical evidence:
+
+- First sparse CPU suite:13/15 passed; two180-frame landing fixtures timed out while Vitest compared bulk arrays byte-by-byte. The only QA correction replaced that comparison with native exact byte-range equality, preserving the same frames, tolerances, assertions and timeouts. Corrected15/15 and strict TypeScript passed. Both test versions and logs are retained.
+- An unexecuted GPU source-review version double-popped already finished validation scopes. Its narrow QA-only correction and original source/ready remain; subsequent four helper tests, strict, bundle, syntax/dry and real GPU gate passed.
+- First native build-check command failed before type analysis because TypeScript rejected `--project=…`. The original readiness/proposal/failure were retained. A companion changed only argv tokenization to `--project`,path; corrected two strict checks, matched builds, compiled binding, four syntax and unarmed pair passed. Original placeholder bindings SHA `36d2059e…` remains an explicit alias/history before intentional rebinding. No failed measurement was silently treated as passing.
+
+[manifest.json](manifest.json) maps every original path/hash/byte count to its lossless stored payload or byte-identical alias. Large text/JSON is deterministic gzip with mtime0; decompressed bytes are exact originals. Test evidence is stored as `.test.ts.txt` (optionally gzipped) so repository discovery cannot execute it. [External authority](external-authority.json.gz) pins canonical accepted/prototype source, compiled assets, shared dependencies/public whitelist and the already committed [controlled fixture](../../performance-2026-10-03/rich-patch-half-metre/v2/baseline-held-source.json.gz); there is no full source, binary or asset clone. External original paths remain explicit, including transient tmp paths. The durable fixture path is also retained in its raw authority; no fixture payload is duplicated.
+
+`archive.py` copied existing evidence only. `derive-native.py` performed pure postprocessing, and `verify.py` independently checks stored/decompressed/original bytes and alias accounting. No checks, build, simulation, GPU, browser or measurement was rerun during archival. No shared index or production file was edited, and no commit was made by this archive task.

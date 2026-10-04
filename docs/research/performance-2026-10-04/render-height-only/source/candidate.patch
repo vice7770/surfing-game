@@ -1,0 +1,67 @@
+--- a/src/scene/water/cubicSurface.ts
++++ b/src/scene/water/cubicSurface.ts
+@@ -37,6 +37,44 @@
+   return { height, slopeX: hx / grid.spacing, slopeZ: hz / grid.spacing };
+ }
+ 
++/**
++ * Height-only CPU mirror for the Rich barrel. The weights, clamped node indices
++ * and sixteen additions match sampleCubicSurface; no slope work or temporary
++ * arrays are needed when the caller only reads height.
++ */
++export function sampleCubicHeight(data: Float32Array, grid: SurfaceGrid, x: number, z: number): number {
++  const gx = (x - grid.xMin) / grid.spacing;
++  const gz = (z - grid.zMin) / grid.spacing;
++  const i0 = Math.floor(gx);
++  const j0 = Math.floor(gz);
++  const tx = gx - i0;
++  const tz = gz - j0;
++  const tx2 = tx * tx;
++  const tx3 = tx2 * tx;
++  const tz2 = tz * tz;
++  const tz3 = tz2 * tz;
++  const wx0 = (-tx3 + 2 * tx2 - tx) / 2;
++  const wx1 = (3 * tx3 - 5 * tx2 + 2) / 2;
++  const wx2 = (-3 * tx3 + 4 * tx2 + tx) / 2;
++  const wx3 = (tx3 - tx2) / 2;
++  const wz0 = (-tz3 + 2 * tz2 - tz) / 2;
++  const wz1 = (3 * tz3 - 5 * tz2 + 2) / 2;
++  const wz2 = (-3 * tz3 + 4 * tz2 + tz) / 2;
++  const wz3 = (tz3 - tz2) / 2;
++  let height = 0;
++  for (let j = 0; j < 4; j += 1) {
++    const row = Math.min(grid.nz - 1, Math.max(0, j0 + j - 1));
++    const wz = j === 0 ? wz0 : j === 1 ? wz1 : j === 2 ? wz2 : wz3;
++    for (let i = 0; i < 4; i += 1) {
++      const column = Math.min(grid.nx - 1, Math.max(0, i0 + i - 1));
++      const value = data[(row * grid.nx + column) * 2];
++      const wx = i === 0 ? wx0 : i === 1 ? wx1 : i === 2 ? wx2 : wx3;
++      height += wz * wx * value;
++    }
++  }
++  return height;
++}
++
+ /** GLSL twin of `sampleCubicSurface` over the water's height texture: (height, dη/dx, dη/dz). */
+ export const waterCubicPars = /* glsl */ `
+ vec4 waterCatmullRom( float t ) {
+--- a/src/scene/barrel/SweptBarrel.ts
++++ b/src/scene/barrel/SweptBarrel.ts
+@@ -3,7 +3,7 @@
+ import type { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
+ import { BARREL_SLOPE, SweptLoft, type LoftResult } from '../../wave/barrel/sweptLoft';
+ import { SWEPT_BARREL } from '../../wave/SurfZoneSimulation';
+-import { sampleCubicSurface } from '../water/cubicSurface';
++import { sampleCubicHeight } from '../water/cubicSurface';
+ import type { WaterLook } from '../water/waterLook';
+ import { sampleSurfaceHeight, type SurfaceGrid, type WaterSurface } from '../WaterSurface';
+ import { rasterizeBarrelMask } from './barrelMask';
+@@ -90,7 +90,7 @@
+       && was.count === count && was.stillLevel === stillLevel && was.look === look && was.maskGrid === maskGrid && was.view === mesh.view
+       && was.sheetShown === mesh.sheetShown && was.facesOut === mesh.facesOut) return;
+     const heightAt = look === 'rich'
+-      ? (x: number, z: number) => sampleCubicSurface(surfaceData, grid, x, z).height
++      ? (x: number, z: number) => sampleCubicHeight(surfaceData, grid, x, z)
+       : (x: number, z: number) => sampleSurfaceHeight(surfaceData, grid, x, z);
+     const loft = this.loft.build(front, count, stillLevel, heightAt);
+     if (this.mask.length !== maskGrid.nx * maskGrid.nz) this.mask = new Uint8Array(maskGrid.nx * maskGrid.nz);

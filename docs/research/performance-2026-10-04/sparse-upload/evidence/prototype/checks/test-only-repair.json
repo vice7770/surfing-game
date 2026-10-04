@@ -1,0 +1,12 @@
+{
+  "scope": "Unexecuted source-only exact-byte comparator repair; unchanged runtime, frame counts, case counts and timeouts",
+  "changedQA": [
+    "parity.test.ts"
+  ],
+  "patchSha256": "7b9eed3af3ec5936a585bb42d07234b7eefa83f088340b93e7d51f8896afb069",
+  "originalReadySha256": "e34272e81e72f25606de7401ebbb76521c6408ab8057b9ae51ddf46e797ddaf0",
+  "runtimeSourceAuthoritySha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66",
+  "runtimeCandidatePatchSha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe",
+  "newReadySha256": "2fc3de7524760b3b7e03fea27f43fd294c24ace17317b19f85f2d53d7cfe743b",
+  "executed": false
+}

@@ -1,0 +1,28 @@
+import { describe, it, expect } from 'vitest';
+import { bytePair, comparePairs, exactTree, stats, verifyStateWords } from './numeric';
+
+describe('real GPU gate: exact cheap helpers, no device/simulation', () => {
+  it('compares the actual nonzero-offset byte range and preserves signed zero differences', () => {
+    const a = new Float32Array([99, 0, 1, 99]), b = new Float32Array([99, -0, 1, 99]);
+    expect(() => comparePairs([bytePair(a.subarray(1, 3), b.subarray(1, 3), 'offset')])).toThrow('word 0');
+    expect(() => comparePairs([bytePair(a.subarray(2, 3), b.subarray(2, 3), 'equal')])).not.toThrow();
+  });
+  it('retains distinct NaN payload words, rather than comparing floating NaNs', () => {
+    const a = new Uint32Array([0x7fc00001]), b = new Uint32Array([0x7fc00002]);
+    expect(() => exactTree(new Float32Array(a.buffer), new Float32Array(b.buffer), 'payload')).toThrow();
+  });
+  it('validates recorded SET1 data against actual header offsets and rejects a shifted decoded field', () => {
+    const header = new TextEncoder().encode(JSON.stringify({ arrays: [['h', 2], ['lastThrow', 1]] }));
+    const start = 8 + Math.ceil(header.length / 4) * 4, raw = new Uint8Array(start + 12), v = new DataView(raw.buffer);
+    v.setUint32(0, 0x53455431, true); v.setUint32(4, header.length, true); raw.set(header, 8);
+    const field = new Float32Array(raw.buffer, start); field.set([1, -0, -Infinity]);
+    expect(() => verifyStateWords(raw, { h: field.subarray(0, 2), lastThrow: field.subarray(2) })).not.toThrow();
+    expect(() => verifyStateWords(raw, { h: field.subarray(1, 3), lastThrow: field.subarray(2) })).toThrow('offset/word');
+  });
+  it('reports paired savings as statistics of the adjacent differences', () => {
+    const original = [10, 30, 12, 40], candidate = [9, 35, 8, 41];
+    const paired = stats(original.map((v, i) => v - candidate[i]));
+    expect(paired.median).toBe(0); expect(paired.mean).toBe(-.25);
+    expect(paired.median).not.toBe(stats(original).median - stats(candidate).median);
+  });
+});

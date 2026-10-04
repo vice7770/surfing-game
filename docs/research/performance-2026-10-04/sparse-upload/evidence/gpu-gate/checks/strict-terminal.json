@@ -1,0 +1,25 @@
+{
+  "phase": "strict",
+  "command": [
+    "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/tsc",
+    "-p",
+    "/private/tmp/surf-sparse-upload-20261004/gpu-gate/tsconfig.json"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-20261004/gpu-gate",
+  "startedUtc": "2026-10-04T03:07:28.689968+00:00",
+  "readySha256": "bd36df908c340104d1bdd9469a42fdc2195bbce7f083acba634d790eed720829",
+  "pid": 75919,
+  "endedUtc": "2026-10-04T03:07:31.733339+00:00",
+  "exitCode": 0,
+  "sourceInputsUnchanged": true,
+  "stdout": {
+    "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/strict-stdout.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr": {
+    "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/strict-stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

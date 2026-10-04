@@ -1,0 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { WORK, sha256 } from './canonical-resolver.mjs';
+export function assertHarness() {
+  const raw = readFileSync(resolve(WORK, 'harness-ready.json')); const sha = sha256(raw);
+  if (process.env.HEIGHT_ONLY_HARNESS_READY_SHA256 !== sha) throw new Error('Reviewed harness readiness SHA is required');
+  const ready = JSON.parse(raw);
+  for (const row of ready.records) {
+    const bytes = readFileSync(resolve(WORK, row.path));
+    if (bytes.length !== row.bytes || sha256(bytes) !== row.sha256) throw new Error(`Changed harness input ${row.path}`);
+  }
+  return { ...ready, sha256: sha };
+}

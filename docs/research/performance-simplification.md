@@ -4,6 +4,10 @@ Continuation of the merged long run on `claude/wave-pool`, starting at `0cccd955
 
 ## Current live result: Padang Big on the M5 Pro
 
+The latest [ordinary native GPU-overlap comparison](performance-2026-10-04/water-prefetch/README.md) reaches **59.98 fresh physics snapshots/s** and **1.000 simulation seconds/wall second**, against 58.25 and 0.971 in its adjacent baseline. Both draw 60 FPS; rendered interval p95 improves 25.0→17.5 ms and the complete recorded pipeline p50/p95 improves 16.6/20.9→12.1/17.0 ms. High graphics, Rich water, particles and the fixed physics step remain unchanged. The exact five-file candidate is adopted with portable lifecycle regressions: strict typing, all 92 focused tests and the production build pass, and the compiled worker is byte-identical to the measured candidate. Its independent native replay preserves mapped packets and committed state exactly across 48 paired calls. This single idle-rider sequence does not establish moving-tube or interactive ride quality.
+
+The separately tested [sparse-upload candidate](performance-2026-10-04/sparse-upload/README.md) remains unadopted. Its ordinary pair increases fresh updates 59.08→59.92 Hz, but rendered interval p95 worsens 17.6→24.8 ms and p99 worsens 25.2→25.3 ms. The modest packing saving and mixed rendering result do not justify its additional mutation tracking, or an untested combination with GPU overlap. Its source, failed check and repair, successful native parity/cost gate and full ordinary FPS evidence are retained in the archive.
+
 ### Later continuation on the tube-stability checkpoint
 
 The source checkpoint `1bcc7c0c` now shares a continuous crest-ray plan across drawing, contact and crash placement. The retained [moving geometry checks](tube-stability-2026-10-03/README.md) remove the reproduced across-front ray reversals; they do not establish acceptable cavity shape, seam coverage or rider behavior. The earlier unresolved-front statements below describe the first performance pass.
@@ -35,6 +39,8 @@ The isolated [height-demand contact prototype](performance-2026-10-04/contact-he
 The separately retained [Compress force ledger](performance-2026-10-04/compress-force-ledger-retained/README.md) passes 864 exact observed-versus-control state comparisons across eight rider cases. It preserves the first rail-edge contact failures and signed assistance work without tuning the model. A diagnostic phase collision made the raw yaw summaries empty; the separate derivation from retained step indexes confirms lower-speed detachment and higher-speed yaw swing remain. This trace supports later investigation, not a causal fix or closed energy proof. A separate [support-edge source audit](performance-2026-10-04/compress-support-edge-source-audit.md) identifies additional torque terms absent from the rejected-contact board solve, with continuity and physical-policy limits kept explicit.
 
 The isolated [viscosity/update GPU fusion](performance-2026-10-04/viscous-update-fusion/README.md) preserves all nine mapped fields in six hardware cases and 24 paired complete water steps. Its paired median saving is only 0.10 ms on a supplied 116,000-cell synthetic fixture, with order sensitivity and a large baseline outlier. It remains unadopted; this is not ordinary FPS evidence. The archive retains the first TypeScript failure, the first browser-launch failure, their separate QA repairs and the successful numerical gate.
+
+The isolated [Rich height-only sampler](performance-2026-10-04/render-height-only/README.md) preserves ordered height reads and every active drawing/mask byte on two retained fixtures, but complete loft-plus-mask paired median savings are only 0.034/0.057 ms and both marginal p95 timings worsen. The duplicated coefficient implementation is rejected; production keeps the shared height-and-slope sampler, and no ordinary FPS run followed this CPU gate.
 
 ### Earlier accepted performance pass
 

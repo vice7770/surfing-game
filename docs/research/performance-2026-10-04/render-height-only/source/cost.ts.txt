@@ -1,0 +1,41 @@
+import { performance } from 'node:perf_hooks';
+import { createHash } from 'node:crypto';
+import { fixture, drawing, sampler, fullParity, mask, equalMask, equalActive, finiteGeometry } from './workload';
+export const COST_PLAN = Object.freeze({ pairsPerFixture: 24, warmPairsPerFixture: 4, fixtures: [10, 20], hardMs: 15000, timedScope: 'Complete accepted drawing loft build plus mask rasterization; parsing, library creation, parity comparisons and hashing outside timers', forbidden: 'No solver steps, browser, GPU, frame/render/FPS or worker-snapshot claim' });
+const percentile = (values: number[], p: number) => { const sorted = [...values].sort((a, b) => a - b); return sorted[Math.max(0, Math.ceil(p * sorted.length) - 1)]; };
+const median = (values: number[]) => { const sorted = [...values].sort((a, b) => a - b); const n = sorted.length; return n % 2 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2; };
+export function runCost() {
+  const begun = performance.now();
+  const rows: { fixture: string; pair: number; order: string; before: number; after: number; saving: number }[] = [];
+  const parity = [];
+  for (const at of [10, 20] as const) {
+    const f = fixture(at); parity.push(fullParity(f));
+    const inputHash = () => createHash('sha256').update(new Uint8Array(f.front.buffer)).update(new Uint8Array(f.surface.buffer)).update(JSON.stringify(f.grid)).digest('hex');
+    const initialHash = inputHash();
+    const before = drawing(); const after = drawing(); const old = sampler(f, 'before'); const next = sampler(f, 'after');
+    const oldMask = new Uint8Array(f.grid.nx * f.grid.nz); const newMask = new Uint8Array(oldMask.length);
+    let oldResult = before.build(f.front, f.count, f.still, old); let newResult = after.build(f.front, f.count, f.still, next);
+    const run = (arm: 'before' | 'after') => {
+      if (arm === 'before') { oldResult = before.build(f.front, f.count, f.still, old); mask(oldResult, f, oldMask); }
+      else { newResult = after.build(f.front, f.count, f.still, next); mask(newResult, f, newMask); }
+    };
+    for (let warm = 0; warm < COST_PLAN.warmPairsPerFixture; warm++) { run('before'); run('after'); }
+    for (let pair = 0; pair < COST_PLAN.pairsPerFixture; pair++) {
+      if (performance.now() - begun > COST_PLAN.hardMs) throw new Error('15 s complete cost bound exceeded; no retry');
+      const order: ('before' | 'after')[] = pair % 2 ? ['after', 'before'] : ['before', 'after'];
+      const durations = { before: 0, after: 0 };
+      for (const arm of order) { const start = performance.now(); run(arm); durations[arm] = performance.now() - start; }
+      finiteGeometry(oldResult); finiteGeometry(newResult); equalActive(oldResult, newResult); equalMask(oldMask, newMask);
+      rows.push({ fixture: f.name, pair, order: order.join('/'), ...durations, saving: durations.before - durations.after });
+    }
+    if (initialHash !== inputHash()) throw new Error('Frozen numerical inputs mutated');
+  }
+  const summaries = ['at-10', 'at-20'].map((name) => {
+    const selected = rows.filter((row) => row.fixture === name); const savings = selected.map((row) => row.saving);
+    return { fixture: name, pairs: selected.length, beforeMedian: median(selected.map((row) => row.before)), afterMedian: median(selected.map((row) => row.after)), pairedMedianSaving: median(savings), beforeP95: percentile(selected.map((row) => row.before), .95), afterP95: percentile(selected.map((row) => row.after), .95), positivePairs: savings.filter((value) => value > 0).length,
+      orderStrata: ['before/after', 'after/before'].map((order) => ({ order, pairedMedianSaving: median(selected.filter((row) => row.order === order).map((row) => row.saving)) })) };
+  });
+  if (performance.now() - begun > COST_PLAN.hardMs) throw new Error('15 s complete cost bound exceeded; no retry');
+  return { schema: 'render-height-only-cost/v1', valid: true, plan: COST_PLAN, parity, rows, summaries, elapsedMs: performance.now() - begun,
+    limitations: 'Two cropped Hs4m/T10s mixed-sea 1 m rendering fixtures, not ordinary current dx2/render2 or moving/FPS evidence. No allocation profiler, GC attribution or worker snapshot-stall claim.' };
+}

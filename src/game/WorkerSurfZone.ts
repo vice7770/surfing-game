@@ -111,7 +111,12 @@ export class WorkerSurfZone extends SnapshotSampler implements SurfZoneHost {
       };
     });
     const { sea } = host;
-    port.postMessage({ type: 'start', config, options, ...(sea ? { sea } : {}) }, sea ? [sea.buffer] : []);
+    // Only the actual default offline one-step Padang host grants this internal capability.
+    // Room catch-up and recorded seas supply host options and retain the ordinary device path.
+    const soloOneStep = host.maxQueuedSteps === undefined && host.maxBatchSteps === undefined && sea === undefined
+      && config.spot === 'padang' && (config.compute ?? 'auto') === 'auto' && Boolean(options.barrelCases?.length)
+      && Boolean(options.rider || options.board || options.contact);
+    port.postMessage({ type: 'start', config, options, ...(sea ? { sea } : {}), ...(soloOneStep ? { soloOneStep: true as const } : {}) }, sea ? [sea.buffer] : []);
   }
 
   /** Steps asked for that no snapshot shows yet: queued, and in the worker now. */

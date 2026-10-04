@@ -1,0 +1,71 @@
+{
+  "scope": "Exact first prepared source, no runtime changes; existing checks logs remain at original paths",
+  "records": [
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/candidate.patch",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/candidate.patch",
+      "sha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe",
+      "bytes": 15178
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/source-authority.json",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/source-authority.json",
+      "sha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66",
+      "bytes": 48392
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/prepared.json",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/prepared.json",
+      "sha256": "ef032b84cc0219ddaf9e99fdee966166c07362e62a413dcd70ba619fabba494a",
+      "bytes": 1576
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/proposal.md",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/proposal.md",
+      "sha256": "61face80eee613a5dcf6890217542ce7d38cfb3e28b5fb175737718d94dc4a46",
+      "bytes": 8903
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/parity.test.ts",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/parity.test.ts",
+      "sha256": "f290b606a971c0050279eae0ce8bff5d76c0a095468c2e147d6e30f8bf32a79b",
+      "bytes": 18771
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/memoryGpu.ts",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/memoryGpu.ts",
+      "sha256": "1d6f8de546cf898b9ea8bcfe642d4a6b5a2adeec8490990fffe76760d460147c",
+      "bytes": 3810
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/vitest.config.ts",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/vitest.config.ts",
+      "sha256": "022561236907cfadca8a618f32109ff7b8b4a288dd128e53a3f54c8c468cfb7a",
+      "bytes": 180
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/tsconfig.qa.json",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/tsconfig.qa.json",
+      "sha256": "0549d7212403ed38ed563a013315aa914336beaf78beff3b6b7d5654bf29e80d",
+      "bytes": 217
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/prepare.py",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/prepare.py",
+      "sha256": "f55a4cb4a16ad050f4d2cf082bf6b7e40baaceb6640d81d8c0eb202210b1a830",
+      "bytes": 11693
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/freeze-prepared.py",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/freeze-prepared.py",
+      "sha256": "7b76db90398aa54e4e6b63502c2f1d6e4142e664063d4459759624fe4f51896a",
+      "bytes": 3072
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/ready.json",
+      "frozenPath": "/private/tmp/surf-sparse-upload-20261004/checks/first-failure-source/ready.json",
+      "sha256": "e34272e81e72f25606de7401ebbb76521c6408ab8057b9ae51ddf46e797ddaf0",
+      "bytes": 2272
+    }
+  ]
+}

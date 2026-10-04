@@ -1,0 +1,131 @@
+{
+  "schema": "sparse-upload-build-arm/v1",
+  "arm": "baseline",
+  "status": "passed",
+  "scope": "QA client/worker bundling only; no serving, browser, GPU, FPS or adoption",
+  "runtimeBaseline": "6f321d704269f9f1afc73750ab2b1f4a86f61122",
+  "documentationHeadAtPreparation": null,
+  "buildId": "6f321d704-qa-sparse-upload",
+  "node": "v23.10.0",
+  "versions": [
+    {
+      "name": "vite",
+      "version": "8.3.1",
+      "sha256": "fd3af4eaf4eecb2069f3e2715d6aaa2137d084a8a95097389523f52213c08094"
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "name": "three",
+      "version": "0.186.1",
+      "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de"
+    },
+    {
+      "name": "mp4-muxer",
+      "version": "5.2.2",
+      "sha256": "5a19419fcffe782336185d5764d1b179ccdaae1c91ca767a496adddd2a6bbad0"
+    },
+    {
+      "name": "@webgpu/types",
+      "version": "0.1.74",
+      "sha256": "c58597e365f42b61a165210e49e90a864730ee4716473de67d36dfa42519ec99"
+    },
+    {
+      "name": "@types/node",
+      "version": "22.20.4",
+      "sha256": "f24c6b704fa4fdb2633cd4787fb0533cdca3cd15ab4a02b031c6c2e462cd380a"
+    },
+    {
+      "name": "@types/three",
+      "version": "0.186.0",
+      "sha256": "b0253caeb8b99b6a64150e6279cc4bbf30e61610683bdf39f8db2667d6103626"
+    }
+  ],
+  "readySha256": "bf7f13608bda60b91baed425cf4b94deaaed6644672de6dc94d4d0da5aad9341",
+  "sourceManifest": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/source-manifest.json",
+    "bytes": 494343,
+    "sha256": "fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66"
+  },
+  "literalSourceFiles": 550,
+  "literalSourceBytes": 4869306,
+  "overlaysApplied": [],
+  "inlineBuildFlags": {
+    "root": "/private/tmp/surf-sparse-upload-fps-20261004/baseline",
+    "configFile": "/private/tmp/surf-sparse-upload-fps-20261004/baseline/vite.config.ts",
+    "configLoader": "runner",
+    "cacheDir": "/private/tmp/surf-sparse-upload-fps-20261004/baseline/.cache/vite-build",
+    "build": {
+      "outDir": "/private/tmp/surf-sparse-upload-fps-20261004/baseline/dist",
+      "copyPublicDir": false,
+      "emptyOutDir": false
+    },
+    "worker": {},
+    "optimizeDeps": {}
+  },
+  "outputRoot": "/private/tmp/surf-sparse-upload-fps-20261004/baseline/dist",
+  "clientEntry": "assets/index-9NNz954J.js",
+  "surfZoneWorker": "assets/surfZoneWorker-gVTILj2Q.js",
+  "outputRecords": [
+    {
+      "path": "assets/devStepping-C4ssK5Wh.js",
+      "bytes": 320,
+      "sha256": "a329c5fbfa79d22e4ed9cf65b0286a25c994ca3cab5fe38bbcbfe4c10cd76053"
+    },
+    {
+      "path": "assets/index-9NNz954J.js",
+      "bytes": 582442,
+      "sha256": "59e54bc509e58523fdccef73dd6993d1c299388521f019a629eb1493a6d15e3a"
+    },
+    {
+      "path": "assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "path": "assets/jevRecorder-CRRjjJKw.js",
+      "bytes": 15917,
+      "sha256": "bc8d58d1f9717d7952a5fed67cbf8cad0d4fddaf9068dd243b7d5d830b023436"
+    },
+    {
+      "path": "assets/particleBench-BKUUa6eD.js",
+      "bytes": 10708,
+      "sha256": "af093ceea52672799f6cf256154a51ed4ca59792882637629a58eb42fb790cc1"
+    },
+    {
+      "path": "assets/rideRecorder-BVvkU-el.js",
+      "bytes": 41108,
+      "sha256": "b4b5295d579ea8ffd27a244d425d11d932f22a800ea700c9caf2ac3b3f3e613b"
+    },
+    {
+      "path": "assets/surfZoneWorker-gVTILj2Q.js",
+      "bytes": 442029,
+      "sha256": "3ff6e3c5c867322bac1caf0ca07bcd8bbe5f8d5c48d974a4b734ca89b5f24d88"
+    },
+    {
+      "path": "assets/waterSheet-B7Sm1p0h.js",
+      "bytes": 11689,
+      "sha256": "391e62655a6c692d34b8d81eb7291726e837201e256f15eb14e495a614e7edfd"
+    },
+    {
+      "path": "assets/WorkerSurfZone-Ciaa3tIB.js",
+      "bytes": 853217,
+      "sha256": "8b6cd5ea2af5bcc22b84747e8a2cd283f6e3c7732a3f2c0b70c52da7fa9576cf"
+    },
+    {
+      "path": "build.json",
+      "bytes": 38,
+      "sha256": "149474becf37ed6889f03c0459792b764dd7bace22797404714ac98932fa6e68"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1626,
+      "sha256": "c3fa554dcd001703ac7af79f6c7d1496692b0a5963bf597cadae08c95328d25f"
+    }
+  ],
+  "publicAssetCopies": false,
+  "servingOrHardwareStarted": false
+}

@@ -1,0 +1,13 @@
+import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { WORK, canonicalResolver, assertInputs, sha256 } from './canonical-resolver.mjs';
+import { assertHarness } from './harness-guard.mjs';
+const authority = assertHarness(); assertInputs();
+const { rolldown } = await import(pathToFileURL('/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs').href);
+const out = resolve(WORK, 'compiled'); mkdirSync(out, { recursive: true });
+const build = await rolldown({ input: resolve(WORK, 'cost.ts'), platform: 'node', plugins: [canonicalResolver()], external: ['three', /^node:/] });
+try { await build.write({ file: resolve(out, 'cost.mjs'), format: 'esm' }); } finally { await build.close(); }
+assertInputs(); assertHarness();
+const bytes = readFileSync(resolve(out, 'cost.mjs'));
+writeFileSync(resolve(WORK, 'compiled.json'), JSON.stringify({ schema: 'render-height-only-compiled/v1', harnessReadySha256: authority.sha256, files: [{ path: resolve(out, 'cost.mjs'), bytes: bytes.length, sha256: sha256(bytes) }] }, null, 2) + '\n');

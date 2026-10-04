@@ -1,0 +1,20 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  parity.test.ts > worker-exclusive sparse upload: protocol/CPU mutation parity, not WGSL emulation > packs actual two-axis jet withdrawal and subsequent landing at open boundaries
+ FAIL  parity.test.ts > worker-exclusive sparse upload: protocol/CPU mutation parity, not WGSL emulation > packs actual two-axis jet withdrawal and subsequent landing at wall boundaries
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ parity.test.ts:139:5
+    137|
+    138|   for (const boundary of ['open', 'wall'] as const) {
+    139|     it(`packs actual two-axis jet withdrawal and subsequent landing at…
+       |     ^
+    140|       const p = await pair(boundary);
+    141|       const a = new OriginalLip(p.original, 256);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

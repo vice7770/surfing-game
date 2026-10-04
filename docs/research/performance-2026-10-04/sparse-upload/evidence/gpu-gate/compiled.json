@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "readySha256": "bd36df908c340104d1bdd9469a42fdc2195bbce7f083acba634d790eed720829",
+  "files": [
+    {
+      "name": "index.html",
+      "bytes": 224,
+      "sha256": "6559846335d8ae6736f3e318535006503fe582c0f0e72644ff68c699bf9105ee"
+    },
+    {
+      "name": "page.js",
+      "bytes": 788,
+      "sha256": "ed534cc711742c3ea2e39875fc479820554c0d13dc4265a0d317de56ca578234"
+    },
+    {
+      "name": "worker.js",
+      "bytes": 2020236,
+      "sha256": "aa1ecd06f3ed285ab35473c24cf4b09202427c275e53aee6cc3bf5f27e7d05f0"
+    }
+  ]
+}

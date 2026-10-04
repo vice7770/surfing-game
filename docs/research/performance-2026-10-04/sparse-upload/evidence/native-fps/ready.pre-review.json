@@ -1,0 +1,250 @@
+{
+  "schema": "sparse-upload-native-fps-prepared/v1",
+  "stage": "source-ready; strict/build/syntax/dryplan/hardware unexecuted",
+  "directory": "/private/tmp/surf-sparse-upload-fps-20261004",
+  "baseline": "6f321d704269f9f1afc73750ab2b1f4a86f61122",
+  "runtimePatch": {
+    "path": "/private/tmp/surf-sparse-upload-20261004/candidate.patch",
+    "bytes": 15178,
+    "sha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe"
+  },
+  "preparedArtifacts": [
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/derive-owned.py",
+      "bytes": 6381,
+      "sha256": "2dd7fb3fafef4c68fabebf46de99fe69c901bad5ffdf21c9995219e7c5a51329"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/prepare-source.py",
+      "bytes": 7183,
+      "sha256": "3211e13509fded55a7c9d67b28c490fb717281cd5026b2116838d14e91f90a74"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/freeze-source.py",
+      "bytes": 4177,
+      "sha256": "1013628c6df8168f72e923cee3a00cc1f6260a0110c34a664ee1dedbf952fd71"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/native-owned.mjs",
+      "bytes": 5603,
+      "sha256": "0e78f075e87d4144d5f78eccb7caf470617231e7004735d84cb4f7c366c460ac"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/native-owned.mjs.diff",
+      "bytes": 2158,
+      "sha256": "819ba87ba7d59979c7785666505f9e351c60864c23a2ed2a165892eccf0267c7"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/passive-guard.mjs",
+      "bytes": 9696,
+      "sha256": "7dd07afdc027193ef171d228c543bf534c72eb9067c4c81d731162e4a2555085"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/passive-guard.mjs.diff",
+      "bytes": 2250,
+      "sha256": "3a733ba8eff19a280a8b1973d53164bd892d0b131b235f3a43df3bbdf402df66"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/pair.mjs",
+      "bytes": 13063,
+      "sha256": "163eb5152248b195c29278b4f7ba3543fbf0659568dd6412c42d2206ade15ec5"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/pair.mjs.diff",
+      "bytes": 5853,
+      "sha256": "b696df90d33b8e6ffdef793b5b2a182151983f9831d77aa20569dab95581a41e"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/build-only.mjs",
+      "bytes": 6577,
+      "sha256": "bfd2b7bd2921e9f433b017f580f18ab0f1a65d8a90b888c74c472d794154e197"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/build-only.mjs.diff",
+      "bytes": 2145,
+      "sha256": "b9c1ae4d5e57cd0e3ee56ffaa6c0c3f51a327e994511f7d9f79e9e70c8f3df64"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/bind-launch.py",
+      "bytes": 2941,
+      "sha256": "89f09bf143f8e517067a0f7f0fbd34616a1f9a20c0404ad05273ce8cc452c2fe"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/survey.mjs",
+      "bytes": 37750,
+      "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/survey.patch",
+      "bytes": 7933,
+      "sha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/derivation.json",
+      "bytes": 7601,
+      "sha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/derivation-owned.json",
+      "bytes": 10071,
+      "sha256": "d54a818b623b5fa9297e3f9f3add19dc6477c9a31e12c91e2b51a71136992bd9"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/public-assets.json",
+      "bytes": 10729,
+      "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/bindings.json",
+      "bytes": 243,
+      "sha256": "36d2059e1b886dd1c50c05410dc978f3ffc2499e1a031e0ff517034b6f7794f1"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/plan.json",
+      "bytes": 5702,
+      "sha256": "c793c0b29e1a8717e71f977b635bddf196bd6c100017246d2804c105fd3ae372"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/source-manifest.json",
+      "bytes": 494343,
+      "sha256": "fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/dependency-authority.json",
+      "bytes": 2679,
+      "sha256": "59ebb63ba50c986b89070108f43174ddb6e884024ef62d87c050c6874175bf1f"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/compiled-reuse-assessment.json",
+      "bytes": 12460,
+      "sha256": "4fc286b5ae1f3aa5ef026dd08d175f1951a0f4752a53cc5c0b12575c9aa2df4c"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/extraction-terminal.json",
+      "bytes": 715,
+      "sha256": "9a5e4c393db2fbf5c2710f362e668ce98af85854e2aefa3c77b84837504ab40a"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/README.md",
+      "bytes": 3855,
+      "sha256": "6c6d1cdfb8ecd20328fbe5ab5168df8325c46787c8e5d95f57c2c0d846ef0c38"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/proposal.md",
+      "bytes": 3650,
+      "sha256": "76a2779c7d088be013289bc13efa27c5f3c815fdb6ff176f92997d971c9227da"
+    }
+  ],
+  "borrowedSourceAuthorities": [
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/survey.mjs",
+      "bytes": 37750,
+      "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/native-owned.mjs",
+      "bytes": 5514,
+      "sha256": "cecc2283896183dbde2d8dc7edbd3a9c8270eaac313c9cd0c2ed3f8e38c99e9e"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/passive-guard.mjs",
+      "bytes": 9501,
+      "sha256": "19be1fa0c1ea4985530d9843db5ee587770f653d7f7d1966ce3f528a047f6851"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/pair.mjs",
+      "bytes": 13019,
+      "sha256": "1c76ea1f01c97c1022b0fa0a297bab851c5c8d19f9fb0589ac673e6be5680edb"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/derivation.json",
+      "bytes": 7601,
+      "sha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/public-assets.json",
+      "bytes": 10729,
+      "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/run/report.json",
+      "bytes": 15558,
+      "sha256": "9a4068b92fd08354c8d25e09db99399eb57805ef2ee429c0553ea38697ae6248"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/build-only.mjs",
+      "bytes": 6580,
+      "sha256": "73fdd0ef458fae8b71282799a69d5bdbafdb745fb9bb17e873318115c2789dca"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/candidate.patch",
+      "bytes": 15178,
+      "sha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/source-authority.json",
+      "bytes": 48392,
+      "sha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66"
+    }
+  ],
+  "sourceAuthority": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/source-manifest.json",
+    "bytes": 494343,
+    "sha256": "fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66"
+  },
+  "baselineSourceRoot": "/private/tmp/surf-sparse-upload-fps-20261004/baseline",
+  "candidateSourceRoot": "/private/tmp/surf-sparse-upload-fps-20261004/candidate",
+  "completeArmFileCounts": [
+    550,
+    551
+  ],
+  "changedPaths": [
+    "src/game/surfZoneWorker.ts",
+    "src/physics/PhysicalSurfWater.ts",
+    "src/wave/PlungingLip.ts",
+    "src/wave/ShallowWaterSolver.ts",
+    "src/wave/SurfZoneSimulation.ts",
+    "src/wave/gpu/GpuBoussinesq.ts",
+    "src/wave/gpu/cpuWaterEdits.ts",
+    "src/wave/warmStart.ts"
+  ],
+  "sourceScopeBlockers": {
+    "buildSource": []
+  },
+  "proposedBuild": {
+    "commonBuildId": "6f321d704-qa-sparse-upload",
+    "mechanism": "Existing vite.config.ts BUILD_ID environment override in both arms; no source change",
+    "command": "env BUILD_ID=6f321d704-qa-sparse-upload SPARSE_FPS_READY_SHA256=<reviewed-ready-sha> node build-only.mjs",
+    "publicAssetCopies": false,
+    "configLoader": "runner",
+    "perArmOwnedCache": true
+  },
+  "pending": {
+    "strict": true,
+    "build": true,
+    "compiledBindings": true,
+    "syntax": true,
+    "dryplan": true,
+    "rootCompiledReview": true,
+    "hardwareLease": true
+  },
+  "executed": {
+    "sourceExtractionAndLocalByteVerification": true,
+    "gameImport": false,
+    "strict": false,
+    "build": false,
+    "syntax": false,
+    "dryplan": false,
+    "server": false,
+    "browser": false,
+    "GPU": false,
+    "FPS": false,
+    "productionEdits": false,
+    "GitMutations": false
+  }
+}

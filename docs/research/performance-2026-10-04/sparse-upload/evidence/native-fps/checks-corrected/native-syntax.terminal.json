@@ -1,0 +1,13 @@
+{
+  "phase": "native-syntax",
+  "command": [
+    "node",
+    "--check",
+    "native-owned.mjs"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+  "startedAt": "2026-10-04T03:24:57.087880+00:00",
+  "pid": 82134,
+  "exitCode": 0,
+  "endedAt": "2026-10-04T03:24:57.112076+00:00"
+}

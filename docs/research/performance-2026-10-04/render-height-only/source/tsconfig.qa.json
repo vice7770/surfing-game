@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "ESNext", "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"], "strict": true, "noEmit": true,
+    "skipLibCheck": true, "allowImportingTsExtensions": true, "resolveJsonModule": true,
+    "verbatimModuleSyntax": true, "noUnusedLocals": true, "noUnusedParameters": true,
+    "typeRoots": ["/Users/regina/Desktop/Projects/surfing-game/node_modules/@types"],
+    "types": ["node"],
+    "rootDirs": ["./candidate/src", "./baseline/src", "./existing/src", "/Users/regina/Desktop/Projects/surfing-game/src"],
+    "paths": {
+      "@baseline/cubicSurface": ["./baseline/src/scene/water/cubicSurface.ts"],
+      "@candidate/cubicSurface": ["./candidate/src/scene/water/cubicSurface.ts"],
+      "@canonical/*": ["/Users/regina/Desktop/Projects/surfing-game/*"],
+      "vitest": ["/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/dist/index.d.ts"]
+    }
+  },
+  "include": ["height-parity.test.ts", "workload.ts", "cost.ts", "candidate/src/scene/barrel/SweptBarrel.ts", "/Users/regina/Desktop/Projects/surfing-game/src/wave/gpu/webgpu-env.d.ts"]
+}

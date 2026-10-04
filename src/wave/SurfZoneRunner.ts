@@ -453,14 +453,24 @@ export class SurfZoneRunner {
     this.batchSteps = steps;
   }
 
+  /** Internal initialization from the ordinary solo worker, never a graphics/user setting. */
+  enableSoloWaterPrefetch(): boolean {
+    if (!this.ordinaryContactOwner || this.config.spot !== 'padang' || !this.simulation.device?.prepareStep) return false;
+    this.simulation.enableSoloWaterPrefetch();
+    return true;
+  }
+
   /** `advance` with the water stepped on the simulation's device, when it has one (plan P6). */
   async advanceAsync(steps: number, input: RideRequest = IDLE, reactions?: ArrayLike<number>): Promise<void> {
     const batchStart = performance.now();
+    if ((reactions !== undefined || steps !== 1) && this.simulation.hasWaterPrefetch) await this.simulation.discardWaterPrefetch();
     this.applyRemote(reactions);
     for (let step = 0; step < steps; step += 1) {
       const start = performance.now();
       await this.simulation.stepAsync(SURF_ZONE_STEP);
       this.afterWater(step, input);
+      // Synchronous pack/CFL/encode/submit is real current CPU work: include it in step and batch wall times.
+      if (steps === 1 && reactions === undefined) this.simulation.prefetchWater(SURF_ZONE_STEP);
       this.pipelineStepMs = performance.now() - start;
     }
     this.batchMs = performance.now() - batchStart;

@@ -1,0 +1,25 @@
+{
+  "source": {
+    "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/source.json.gz",
+    "durableAlias": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/rich-patch-half-metre/v2/baseline-held-source.json.gz",
+    "bytes": 17543451,
+    "sha256": "10b2651ef6b7f2a6a701ec98f0e266fe411a3c2e2e3ada8190ddd1fea1ca2783",
+    "jsonBytes": 70059127,
+    "jsonSha256": "c4e6987fdeb7a53aad9316efe299aa56b0118d297390ee3981c727bec04c0d4c",
+    "captureRef": "1bcc7c0c9",
+    "captureWorkerSha256": "eb1a337b66c0eea19035241aee1c46a129a039548e21916d428a6a1a50d2d3c5"
+  },
+  "sourceMetadata": [
+    { "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-held/report.json", "bytes": 361427, "sha256": "b4ebf747f023c7f3790747bd059fef179f31b1c71cf4ce6253c4e630d76413dd" },
+    { "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-fps.json", "bytes": 389383, "sha256": "528df2bb48ec60f8362c5c8e77c54e4110081b3b456a2f7091bfc5ed81d205fc" },
+    { "path": "/private/tmp/rich-patch-quality-v2-20261003/baseline-adapter-meta.json", "bytes": 4684, "sha256": "f70dc637e04618042d8719340a37ee56f7a75171ae673afa89c0225a72aba3c9" }
+  ],
+  "cases": [
+    { "url": "/barrels/pad19-a20-l12.bin", "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin", "bytes": 149848, "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37" },
+    { "url": "/barrels/pad19-a30-l12.bin", "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin", "bytes": 163264, "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041" },
+    { "url": "/barrels/pad19-a45-l12.bin", "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin", "bytes": 168424, "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af" },
+    { "url": "/barrels/periodic-padang19s-l12.bin", "path": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin", "bytes": 181852, "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab" }
+  ],
+  "authorityOrigin": "/Users/regina/Desktop/Projects/surfing-game/docs/research/performance-2026-10-03/crest-ray-preparation/guard-manifest.json",
+  "scope": "Pins reused from retained reviewed authority. No source decompression, material scan or numerical step was performed while preparing this manifest. Future launcher and worker verify exact bytes."
+}

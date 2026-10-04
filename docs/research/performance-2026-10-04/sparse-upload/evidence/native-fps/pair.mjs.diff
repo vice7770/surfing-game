@@ -1,0 +1,54 @@
+--- /private/tmp/contact-height-demand-fps-20261004/pair.mjs
++++ /private/tmp/surf-sparse-upload-fps-20261004/pair.mjs
+@@ -7,8 +7,8 @@
+ import { extname, join, resolve } from 'node:path';
+ import { sleep, tcpProof } from './native-owned.mjs';
+ 
+-const WORK = '/private/tmp/contact-height-demand-fps-20261004';
+-const BUILD = '/private/tmp/contact-height-demand-build-20261004';
++const WORK = '/private/tmp/surf-sparse-upload-fps-20261004';
++const BUILD = '/private/tmp/surf-sparse-upload-fps-20261004';
+ const args = Object.fromEntries(process.argv.slice(2).map((arg) => { const at = arg.indexOf('='); assert(arg.startsWith('--') && at > 2, 'Use --name=value'); return [arg.slice(2, at), arg.slice(at + 1)]; }));
+ assert(Object.keys(args).every((key) => ['run', 'out'].includes(key)) && [undefined, 'false', 'true'].includes(args.run), 'Only run/out may vary');
+ const json = (path) => JSON.parse(readFileSync(path, 'utf8'));
+@@ -24,12 +24,12 @@
+   verify(bindings.buildReady.path, bindings.buildReady); verify(bindings.sourceManifest.path, bindings.sourceManifest);
+   verify(bindings.buildTerminal.path, bindings.buildTerminal); assert.equal(json(bindings.buildTerminal.path).status, 'passed');
+   const source = json(bindings.sourceManifest.path), armSource = source.arms.find((row) => row.arm === name);
+-  assert(armSource && armSource.files.length === 246, 'Exact literal source closure absent');
++  assert(armSource && armSource.files.length === armSource.fileCount && armSource.fileCount > 246, 'Complete accepted source authority absent');
+   for (const row of armSource.files) verify(join(armSource.root, row.path), row);
+   const pin = bindings.arms[name]; verify(pin.path, pin);
+   const manifest = json(pin.path);
+-  assert.equal(manifest.schema, 'contact-height-build-arm/v1'); assert.equal(manifest.status, 'passed'); assert.equal(manifest.arm, name);
+-  assert.equal(manifest.runtimeBaseline, source.baseline); assert.equal(manifest.buildId, '68e263250-qa-contact-height');
++  assert.equal(manifest.schema, 'sparse-upload-build-arm/v1'); assert.equal(manifest.status, 'passed'); assert.equal(manifest.arm, name);
++  assert.equal(manifest.runtimeBaseline, source.baseline); assert.equal(manifest.buildId, '6f321d704-qa-sparse-upload');
+   assert.equal(manifest.readySha256, bindings.buildReady.sha256); assert.equal(manifest.sourceManifest.sha256, bindings.sourceManifest.sha256);
+   assert.equal(manifest.outputRoot, join(BUILD, name, 'dist')); assert.equal(manifest.publicAssetCopies, false);
+   assert.equal(manifest.inlineBuildFlags.configLoader, 'runner'); assert.equal(manifest.inlineBuildFlags.build.copyPublicDir, false); assert.equal(manifest.inlineBuildFlags.build.emptyOutDir, false);
+@@ -52,12 +52,12 @@
+   console.log(JSON.stringify({ planOnly: true, plan, local, chromeStarted: false, serverStarted: false }, null, 2));
+   process.exit(0);
+ }
+-const readyPath = join(WORK, 'ready.json'); assert.equal(hash(readFileSync(readyPath)), process.env.CONTACT_HEIGHT_FPS_READY_SHA256, 'Reviewed harness-ready pin required');
++const readyPath = join(WORK, 'launch-ready.json'); assert.equal(hash(readFileSync(readyPath)), process.env.SPARSE_FPS_LAUNCH_READY_SHA256, 'Reviewed harness-ready pin required');
+ for (const row of [...json(readyPath).artifacts, ...json(readyPath).borrowedSourceAuthorities]) verify(row.path, row);
+ const OUT = resolve(args.out ?? join(WORK, 'run')); assert(OUT.startsWith(WORK + '/') && !existsSync(OUT), 'Fresh owned output required'); mkdirSync(OUT, { recursive: true });
+-const report = { schema: 'contact-height-passive-pair/v1', plan, valid: false, incomplete: true, startedAt: new Date().toISOString(), arms: [] };
++const report = { schema: 'sparse-upload-passive-pair/v1', plan, valid: false, incomplete: true, startedAt: new Date().toISOString(), arms: [] };
+ const save = () => write(join(OUT, 'report.json'), report); save();
+-const slots = [{ name: 'baseline', port: 4216, cdp: 9626 }, { name: 'candidate', port: 4217, cdp: 9627 }];
++const slots = [{ name: 'baseline', port: 4219, cdp: 9629 }, { name: 'candidate', port: 4220, cdp: 9630 }];
+ 
+ async function runArm(slot, baselinePath) {
+   const started = Date.now(), authority = armAuthority(slot.name), { manifest, publicAssets } = authority;
+@@ -96,7 +96,7 @@
+     const fps = join(root, 'fps.json');
+     const command = [join(WORK, 'survey.mjs'), fps, `--url=http://127.0.0.1:${slot.port}/?diagnostics`, `--dir=${manifest.outputRoot}`, '--features=true', '--only=High (baseline)', '--spot=Padang', '--swell=Big', '--warmSeconds=5', '--rideSeconds=90', '--gpuTiming=false', '--diagnosticGpu=false', '--edition=single-step-publication', '--width=1708', '--height=966', `--cdp=${slot.cdp}`, `--commit=${manifest.runtimeBaseline}`, ...(baselinePath ? [`--baseline=${baselinePath}`] : [])];
+     commandLog = createWriteStream(join(root, 'stdout.log'), { flags: 'wx' });
+-    child = spawn(process.execPath, command, { cwd: WORK, env: { ...process.env, CONTACT_FPS_LAUNCHER_REPORT: join(root, 'launcher.json'), CONTACT_FPS_EXPECTED_WORKER: manifest.surfZoneWorker }, stdio: ['ignore', 'pipe', 'pipe'] });
++    child = spawn(process.execPath, command, { cwd: WORK, env: { ...process.env, SPARSE_FPS_LAUNCHER_REPORT: join(root, 'launcher.json'), SPARSE_FPS_EXPECTED_WORKER: manifest.surfZoneWorker }, stdio: ['ignore', 'pipe', 'pipe'] });
+     child.stdout.pipe(commandLog, { end: false }); child.stderr.pipe(commandLog, { end: false }); row.command = [process.execPath, ...command]; row.pid = child.pid; save();
+     const remaining = Math.max(1, 175000 - (Date.now() - started));
+     const hardDeadline = new Promise((_, reject) => { deadline = setTimeout(() => { row.hardDeadline = '175s command abort; remaining5s reserved for owned cleanup'; child.kill('SIGTERM'); reject(Error('Hard arm command deadline; no retry')); }, remaining); });

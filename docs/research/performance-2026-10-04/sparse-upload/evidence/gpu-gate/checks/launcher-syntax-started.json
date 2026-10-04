@@ -1,0 +1,12 @@
+{
+  "phase": "launcher-syntax",
+  "command": [
+    "node",
+    "--check",
+    "/private/tmp/surf-sparse-upload-20261004/gpu-gate/device-gate.mjs"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-20261004/gpu-gate",
+  "startedUtc": "2026-10-04T03:07:59.112953+00:00",
+  "readySha256": "bd36df908c340104d1bdd9469a42fdc2195bbce7f083acba634d790eed720829",
+  "pid": 76084
+}

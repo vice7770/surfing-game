@@ -1,0 +1,18 @@
+{
+  "command": [
+    "node",
+    "run-cost.mjs",
+    "--run=true",
+    "--out=/private/tmp/render-height-only-20261004/cost/report.json"
+  ],
+  "cwd": "/private/tmp/render-height-only-20261004",
+  "env": {
+    "HEIGHT_ONLY_HARNESS_READY_SHA256": "47cf6f0ba67efba69773322fef20a2d369a286d56ce2d78a62138b4f97538f05"
+  },
+  "pid": 80825,
+  "start": "2026-10-04T03:21:28.492699+00:00",
+  "end": "2026-10-04T03:21:28.878753+00:00",
+  "exit": 0,
+  "sourcesUnchanged": true,
+  "pins": 121
+}

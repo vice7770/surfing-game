@@ -1,0 +1,126 @@
+[
+  {
+    "index": 1,
+    "command": [
+      "node",
+      "--check",
+      "canonical-resolver.mjs"
+    ],
+    "env": {
+      "HEIGHT_ONLY_HARNESS_READY_SHA256": "47cf6f0ba67efba69773322fef20a2d369a286d56ce2d78a62138b4f97538f05"
+    },
+    "pid": 80079,
+    "startUtc": "2026-10-04T03:19:32.117107+00:00",
+    "terminalUtc": "2026-10-04T03:19:32.144866+00:00",
+    "exitCode": 0,
+    "stdout": "01.stdout.log",
+    "stderr": "01.stderr.log"
+  },
+  {
+    "index": 2,
+    "command": [
+      "node",
+      "--check",
+      "build-cost.mjs"
+    ],
+    "env": {
+      "HEIGHT_ONLY_HARNESS_READY_SHA256": "47cf6f0ba67efba69773322fef20a2d369a286d56ce2d78a62138b4f97538f05"
+    },
+    "pid": 80080,
+    "startUtc": "2026-10-04T03:19:32.145213+00:00",
+    "terminalUtc": "2026-10-04T03:19:32.168497+00:00",
+    "exitCode": 0,
+    "stdout": "02.stdout.log",
+    "stderr": "02.stderr.log"
+  },
+  {
+    "index": 3,
+    "command": [
+      "node",
+      "--test",
+      "source-contract.test.mjs"
+    ],
+    "env": {
+      "HEIGHT_ONLY_HARNESS_READY_SHA256": "47cf6f0ba67efba69773322fef20a2d369a286d56ce2d78a62138b4f97538f05"
+    },
+    "pid": 80081,
+    "startUtc": "2026-10-04T03:19:32.168916+00:00",
+    "terminalUtc": "2026-10-04T03:19:32.246118+00:00",
+    "exitCode": 0,
+    "stdout": "03.stdout.log",
+    "stderr": "03.stderr.log"
+  },
+  {
+    "index": 4,
+    "command": [
+      "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/tsc",
+      "-p",
+      "tsconfig.qa.json",
+      "--pretty",
+      "false"
+    ],
+    "env": {
+      "HEIGHT_ONLY_HARNESS_READY_SHA256": "47cf6f0ba67efba69773322fef20a2d369a286d56ce2d78a62138b4f97538f05"
+    },
+    "pid": 80083,
+    "startUtc": "2026-10-04T03:19:32.246522+00:00",
+    "terminalUtc": "2026-10-04T03:19:33.541579+00:00",
+    "exitCode": 0,
+    "stdout": "04.stdout.log",
+    "stderr": "04.stderr.log"
+  },
+  {
+    "index": 5,
+    "command": [
+      "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/vitest",
+      "run",
+      "--config",
+      "vitest.config.ts",
+      "--maxWorkers=1",
+      "--reporter=json",
+      "--outputFile=checks/vitest.json"
+    ],
+    "env": {
+      "HEIGHT_ONLY_HARNESS_READY_SHA256": "47cf6f0ba67efba69773322fef20a2d369a286d56ce2d78a62138b4f97538f05"
+    },
+    "pid": 80089,
+    "startUtc": "2026-10-04T03:19:33.542102+00:00",
+    "terminalUtc": "2026-10-04T03:19:35.545234+00:00",
+    "exitCode": 0,
+    "stdout": "05.stdout.log",
+    "stderr": "05.stderr.log"
+  },
+  {
+    "index": 6,
+    "command": [
+      "node",
+      "build-cost.mjs"
+    ],
+    "env": {
+      "HEIGHT_ONLY_HARNESS_READY_SHA256": "47cf6f0ba67efba69773322fef20a2d369a286d56ce2d78a62138b4f97538f05"
+    },
+    "pid": 80096,
+    "startUtc": "2026-10-04T03:19:35.545685+00:00",
+    "terminalUtc": "2026-10-04T03:19:35.628052+00:00",
+    "exitCode": 0,
+    "stdout": "06.stdout.log",
+    "stderr": "06.stderr.log"
+  },
+  {
+    "index": 7,
+    "command": [
+      "node",
+      "run-cost.mjs",
+      "--run=false"
+    ],
+    "env": {
+      "HEIGHT_ONLY_HARNESS_READY_SHA256": "47cf6f0ba67efba69773322fef20a2d369a286d56ce2d78a62138b4f97538f05"
+    },
+    "pid": 80097,
+    "startUtc": "2026-10-04T03:19:35.628492+00:00",
+    "terminalUtc": "2026-10-04T03:19:35.663553+00:00",
+    "exitCode": 0,
+    "stdout": "07.stdout.log",
+    "stderr": "07.stderr.log"
+  }
+]

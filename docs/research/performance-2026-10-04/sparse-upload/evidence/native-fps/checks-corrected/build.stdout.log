@@ -1,0 +1,40 @@
+START proposed build arm=baseline BUILD_ID=6f321d704-qa-sparse-upload
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 249 modules transformed.
+rendering chunks...
+computing gzip size...
+baseline/dist/build.json                           0.03 kB │ gzip:   0.05 kB
+baseline/dist/index.html                           1.62 kB │ gzip:   0.62 kB
+baseline/dist/assets/surfZoneWorker-gVTILj2Q.js  442.02 kB
+baseline/dist/assets/index-DA8NEfOT.css           33.21 kB │ gzip:   7.32 kB
+baseline/dist/assets/devStepping-C4ssK5Wh.js       0.32 kB │ gzip:   0.25 kB
+baseline/dist/assets/particleBench-BKUUa6eD.js    10.70 kB │ gzip:   4.44 kB
+baseline/dist/assets/waterSheet-B7Sm1p0h.js       11.68 kB │ gzip:   5.35 kB
+baseline/dist/assets/jevRecorder-CRRjjJKw.js      15.91 kB │ gzip:   6.65 kB
+baseline/dist/assets/rideRecorder-BVvkU-el.js     41.10 kB │ gzip:  13.40 kB
+baseline/dist/assets/index-9NNz954J.js           582.44 kB │ gzip: 160.72 kB
+baseline/dist/assets/WorkerSurfZone-Ciaa3tIB.js  853.21 kB │ gzip: 264.23 kB
+
+✓ built in 253ms
+TERMINAL build arm=baseline manifestSha256=dd42579ae83344394bcf32d5ff814c3737691aafb72d788b76234b2c1026faef
+START proposed build arm=candidate BUILD_ID=6f321d704-qa-sparse-upload
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 250 modules transformed.
+rendering chunks...
+computing gzip size...
+candidate/dist/build.json                           0.03 kB │ gzip:   0.05 kB
+candidate/dist/index.html                           1.62 kB │ gzip:   0.62 kB
+candidate/dist/assets/surfZoneWorker-BaI5kidc.js  444.26 kB
+candidate/dist/assets/index-DA8NEfOT.css           33.21 kB │ gzip:   7.32 kB
+candidate/dist/assets/devStepping-gbvGx2tS.js       0.32 kB │ gzip:   0.25 kB
+candidate/dist/assets/particleBench-CjkB3AbX.js    10.70 kB │ gzip:   4.44 kB
+candidate/dist/assets/waterSheet-NziPhfUb.js       11.68 kB │ gzip:   5.35 kB
+candidate/dist/assets/jevRecorder-BtWwGazc.js      15.91 kB │ gzip:   6.65 kB
+candidate/dist/assets/rideRecorder-Pq1Gld4u.js     41.10 kB │ gzip:  13.39 kB
+candidate/dist/assets/index-CTdGG0Bw.js           582.44 kB │ gzip: 160.72 kB
+candidate/dist/assets/WorkerSurfZone-DVQo_9jm.js  853.39 kB │ gzip: 264.34 kB
+
+✓ built in 215ms
+TERMINAL build arm=candidate manifestSha256=4454a8a140dff527aa2b8ec774fefb2ef9d2bca00bcb3d1791a43e2e95617997

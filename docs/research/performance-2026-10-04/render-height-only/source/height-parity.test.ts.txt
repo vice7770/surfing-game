@@ -1,0 +1,50 @@
+import { describe, it, expect } from 'vitest';
+import { sampleCubicSurface as old } from '@baseline/cubicSurface';
+import { sampleCubicSurface as unchanged, sampleCubicHeight, waterCubicPars } from '@candidate/cubicSurface';
+import { waterCubicPars as oldGlsl } from '@baseline/cubicSurface';
+import { fixture, fullParity } from './workload';
+function check(data: Float32Array, grid: { xMin: number; zMin: number; spacing: number; nx: number; nz: number }, x: number, z: number): void {
+  const a = old(data, grid, x, z).height; const b = sampleCubicHeight(data, grid, x, z);
+  if (!Object.is(a, b)) throw new Error(`Height differs at (${x},${z}): ${a} vs ${b}`);
+}
+describe('height-only parity', () => {
+  it('retains exact heights on mixed fields, shifted grids, all edges and degenerate dimensions', () => {
+    const dims = [[1, 1], [1, 7], [6, 1], [2, 2], [9, 7]];
+    let checked = 0;
+    for (const [nx, nz] of dims) for (const spacing of [1, 2, 0.7]) {
+      const grid = { xMin: -23.125, zMin: 13.75, spacing, nx, nz };
+      const data = new Float32Array(2 * nx * nz);
+      for (let i = 0; i < nx * nz; i++) { data[2 * i] = ((i * 31 % 23) - 11) / 7; data[2 * i + 1] = Number.NaN; }
+      for (const gx of [-100, -1, -Number.EPSILON, 0, 0.125, 0.5, 1, nx - 1.00000001, nx - 1, nx - 0.9, nx + 100]) {
+        for (const gz of [-100, -1, -Number.EPSILON, 0, 0.37, 0.5, 1, nz - 1.00000001, nz - 1, nz - 0.9, nz + 100]) {
+          check(data, grid, grid.xMin + gx * spacing, grid.zMin + gz * spacing); checked++;
+        }
+      }
+    }
+    expect(checked).toBe(1815);
+  });
+  it('preserves nonfinite and zero-weight-node behavior instead of sanitizing it', () => {
+    const grid = { xMin: -2, zMin: 5, spacing: 2, nx: 4, nz: 4 };
+    for (const value of [0, -0, NaN, Infinity, -Infinity]) for (const at of [0, 2, 10, 30]) {
+      const data = new Float32Array(32).fill(0); data[at] = value;
+      for (const x of [-1e300, -Infinity, NaN, -2, 0, 0.5, 4, Infinity, 1e300]) for (const z of [-Infinity, NaN, 5, 7, 7.5, 11, Infinity]) check(data, grid, x, z);
+    }
+    check(new Float32Array(0), grid, 0, 7);
+  });
+  it('keeps all public height and slope outputs and the GLSL unchanged', () => {
+    const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 5, nz: 5 };
+    const data = Float32Array.from({ length: 50 }, (_, i) => (i % 2 ? NaN : Math.sin(i) * 4));
+    for (const x of [-1, 0, 0.25, 1, 2.125, 4, 5]) for (const z of [-1, 0, 0.63, 2, 4, 5]) {
+      const a = old(data, grid, x, z); const b = unchanged(data, grid, x, z);
+      for (const key of ['height', 'slopeX', 'slopeZ'] as const) expect(Object.is(a[key], b[key])).toBe(true);
+    }
+    expect(waterCubicPars).toBe(oldGlsl);
+  });
+  it('keeps every ordered callback, active drawing array, normal and mask byte on both retained states', () => {
+    for (const at of [10, 20] as const) {
+      const result = fullParity(fixture(at));
+      expect(result.callbackCount).toBeGreaterThan(1000);
+      expect(result.allActiveArraysExact && result.orderedCallbacksExact && result.maskExact).toBe(true);
+    }
+  });
+});

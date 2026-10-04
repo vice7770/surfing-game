@@ -1,0 +1,24 @@
+{
+  "phase": "launcher-dry",
+  "command": [
+    "node",
+    "/private/tmp/surf-sparse-upload-20261004/gpu-gate/device-gate.mjs"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-20261004/gpu-gate",
+  "startedUtc": "2026-10-04T03:08:02.434164+00:00",
+  "readySha256": "bd36df908c340104d1bdd9469a42fdc2195bbce7f083acba634d790eed720829",
+  "pid": 76098,
+  "endedUtc": "2026-10-04T03:08:02.482540+00:00",
+  "exitCode": 0,
+  "sourceInputsUnchanged": true,
+  "stdout": {
+    "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-dry-stdout.log",
+    "bytes": 620,
+    "sha256": "b8e10540b2213007de6ba3d8c888b7b8766c35ef96c9762b34f00a7f0bed676a"
+  },
+  "stderr": {
+    "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-dry-stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

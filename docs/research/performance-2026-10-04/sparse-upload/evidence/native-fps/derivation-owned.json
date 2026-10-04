@@ -1,0 +1,268 @@
+{
+  "stage": "text-only; derived modules unexecuted",
+  "records": [
+    {
+      "name": "survey.mjs",
+      "original": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/survey.mjs",
+        "bytes": 37750,
+        "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+      },
+      "derived": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/survey.mjs",
+        "bytes": 37750,
+        "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+      },
+      "byteIdentical": true
+    },
+    {
+      "name": "survey.patch",
+      "original": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/survey.patch",
+        "bytes": 7933,
+        "sha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af"
+      },
+      "derived": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/survey.patch",
+        "bytes": 7933,
+        "sha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af"
+      },
+      "byteIdentical": true
+    },
+    {
+      "name": "derivation.json",
+      "original": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/derivation.json",
+        "bytes": 7601,
+        "sha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421"
+      },
+      "derived": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/derivation.json",
+        "bytes": 7601,
+        "sha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421"
+      },
+      "byteIdentical": true
+    },
+    {
+      "name": "public-assets.json",
+      "original": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/public-assets.json",
+        "bytes": 10729,
+        "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+      },
+      "derived": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/public-assets.json",
+        "bytes": 10729,
+        "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+      },
+      "byteIdentical": true
+    },
+    {
+      "name": "native-owned.mjs",
+      "original": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/native-owned.mjs",
+        "bytes": 5514,
+        "sha256": "cecc2283896183dbde2d8dc7edbd3a9c8270eaac313c9cd0c2ed3f8e38c99e9e"
+      },
+      "derived": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/native-owned.mjs",
+        "bytes": 5603,
+        "sha256": "0e78f075e87d4144d5f78eccb7caf470617231e7004735d84cb4f7c366c460ac"
+      },
+      "changes": [
+        {
+          "label": "launcher evidence environment",
+          "exactMatches": 1,
+          "before": "CONTACT_FPS_LAUNCHER_REPORT",
+          "after": "SPARSE_FPS_LAUNCHER_REPORT"
+        },
+        {
+          "label": "owned profile label",
+          "exactMatches": 1,
+          "before": "breakline-contact-height-fps-",
+          "after": "breakline-sparse-upload-fps-"
+        },
+        {
+          "label": "retain selected actual sole page",
+          "exactMatches": 1,
+          "before": "const pages = list.filter((entry) => entry.type === 'page');",
+          "after": "evidence.lastTargetInventory = list;\n        const pages = list.filter((entry) => entry.type === 'page');"
+        },
+        {
+          "label": "retain target before connecting",
+          "exactMatches": 1,
+          "before": "page = await Page.connect(target.webSocketDebuggerUrl);",
+          "after": "evidence.selectedTarget = target; save();\n    page = await Page.connect(target.webSocketDebuggerUrl);"
+        }
+      ]
+    },
+    {
+      "name": "passive-guard.mjs",
+      "original": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/passive-guard.mjs",
+        "bytes": 9501,
+        "sha256": "19be1fa0c1ea4985530d9843db5ee587770f653d7f7d1966ce3f528a047f6851"
+      },
+      "derived": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/passive-guard.mjs",
+        "bytes": 9696,
+        "sha256": "7dd07afdc027193ef171d228c543bf534c72eb9067c4c81d731162e4a2555085"
+      },
+      "changes": [
+        {
+          "label": "worker binding environment",
+          "exactMatches": 1,
+          "before": "CONTACT_FPS_EXPECTED_WORKER",
+          "after": "SPARSE_FPS_EXPECTED_WORKER"
+        },
+        {
+          "label": "predeclared exact native tuple guard",
+          "exactMatches": 1,
+          "before": "fail('Native High backing/DPR differs');",
+          "after": "fail('Native High backing/DPR differs');\n    if (actual.inner[0] !== 1708 || actual.inner[1] !== 879 || actual.canvas[0] !== 2989 || actual.canvas[1] !== 1538) fail('Predeclared native CSS/backing tuple differs; no resize or fallback');"
+        }
+      ]
+    },
+    {
+      "name": "pair.mjs",
+      "original": {
+        "path": "/private/tmp/contact-height-demand-fps-20261004/pair.mjs",
+        "bytes": 13019,
+        "sha256": "1c76ea1f01c97c1022b0fa0a297bab851c5c8d19f9fb0589ac673e6be5680edb"
+      },
+      "derived": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/pair.mjs",
+        "bytes": 13063,
+        "sha256": "163eb5152248b195c29278b4f7ba3543fbf0659568dd6412c42d2206ade15ec5"
+      },
+      "changes": [
+        {
+          "label": "owned FPS directory",
+          "exactMatches": 1,
+          "before": "/private/tmp/contact-height-demand-fps-20261004",
+          "after": "/private/tmp/surf-sparse-upload-fps-20261004"
+        },
+        {
+          "label": "owned build directory",
+          "exactMatches": 1,
+          "before": "/private/tmp/contact-height-demand-build-20261004",
+          "after": "/private/tmp/surf-sparse-upload-fps-20261004"
+        },
+        {
+          "label": "complete accepted source rather than older import closure",
+          "exactMatches": 1,
+          "before": "armSource && armSource.files.length === 246, 'Exact literal source closure absent'",
+          "after": "armSource && armSource.files.length === armSource.fileCount && armSource.fileCount > 246, 'Complete accepted source authority absent'"
+        },
+        {
+          "label": "build arm schema",
+          "exactMatches": 1,
+          "before": "contact-height-build-arm/v1",
+          "after": "sparse-upload-build-arm/v1"
+        },
+        {
+          "label": "same existing explicit BUILD_ID",
+          "exactMatches": 1,
+          "before": "68e263250-qa-contact-height",
+          "after": "6f321d704-qa-sparse-upload"
+        },
+        {
+          "label": "compiled launch-ready artifact",
+          "exactMatches": 1,
+          "before": "const readyPath = join(WORK, 'ready.json');",
+          "after": "const readyPath = join(WORK, 'launch-ready.json');"
+        },
+        {
+          "label": "reviewed launch binding environment",
+          "exactMatches": 1,
+          "before": "CONTACT_HEIGHT_FPS_READY_SHA256",
+          "after": "SPARSE_FPS_LAUNCH_READY_SHA256"
+        },
+        {
+          "label": "experiment report schema",
+          "exactMatches": 1,
+          "before": "contact-height-passive-pair/v1",
+          "after": "sparse-upload-passive-pair/v1"
+        },
+        {
+          "label": "baseline ports",
+          "exactMatches": 1,
+          "before": "port: 4216, cdp: 9626",
+          "after": "port: 4219, cdp: 9629"
+        },
+        {
+          "label": "candidate ports",
+          "exactMatches": 1,
+          "before": "port: 4217, cdp: 9627",
+          "after": "port: 4220, cdp: 9630"
+        },
+        {
+          "label": "launcher report environment",
+          "exactMatches": 1,
+          "before": "CONTACT_FPS_LAUNCHER_REPORT",
+          "after": "SPARSE_FPS_LAUNCHER_REPORT"
+        },
+        {
+          "label": "worker binding environment",
+          "exactMatches": 1,
+          "before": "CONTACT_FPS_EXPECTED_WORKER",
+          "after": "SPARSE_FPS_EXPECTED_WORKER"
+        }
+      ]
+    },
+    {
+      "name": "build-only.mjs",
+      "original": {
+        "path": "/private/tmp/contact-height-demand-build-20261004/build-only.mjs",
+        "bytes": 6580,
+        "sha256": "73fdd0ef458fae8b71282799a69d5bdbafdb745fb9bb17e873318115c2789dca"
+      },
+      "derived": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/build-only.mjs",
+        "bytes": 6577,
+        "sha256": "bfd2b7bd2921e9f433b017f580f18ab0f1a65d8a90b888c74c472d794154e197"
+      },
+      "changes": [
+        {
+          "label": "owned directory",
+          "exactMatches": 1,
+          "before": "/private/tmp/contact-height-demand-build-20261004",
+          "after": "/private/tmp/surf-sparse-upload-fps-20261004"
+        },
+        {
+          "label": "common existing BUILD_ID",
+          "exactMatches": 1,
+          "before": "68e263250-qa-contact-height",
+          "after": "6f321d704-qa-sparse-upload"
+        },
+        {
+          "label": "prepared ready binding environment",
+          "exactMatches": 1,
+          "before": "CONTACT_HEIGHT_BUILD_READY_SHA256",
+          "after": "SPARSE_FPS_READY_SHA256"
+        },
+        {
+          "label": "ready stage",
+          "exactMatches": 1,
+          "before": "source-ready; strict/build/hardware unexecuted",
+          "after": "source-ready; strict/build/syntax/dryplan/hardware unexecuted"
+        },
+        {
+          "label": "build terminal schema",
+          "exactMatches": 1,
+          "before": "contact-height-two-arm-build-terminal/v1",
+          "after": "sparse-upload-two-arm-build-terminal/v1"
+        },
+        {
+          "label": "arm schema",
+          "exactMatches": 1,
+          "before": "contact-height-build-arm/v1",
+          "after": "sparse-upload-build-arm/v1"
+        }
+      ]
+    }
+  ],
+  "survey": "byte-identical inherited successful native survey; all numerical statistics, settings/load, passive sample and menu/ride/quit preserved",
+  "nativeGuardDelta": "Only add requested exact native CSS/backing tuple; no resizing or setup repair",
+  "launcherDelta": "Environment/profile label and retain actual sole-page inventory/selection; no route/timing changes"
+}

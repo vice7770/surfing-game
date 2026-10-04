@@ -1,0 +1,12 @@
+{
+  "valid": true,
+  "scope": "Archive byte/decompression/alias and external-reference verification only; no new measurement",
+  "originalFiles": 208,
+  "uniquePayloads": 158,
+  "exactDuplicateOriginalAliases": 50,
+  "storedEvidenceBytes": 1000287,
+  "expandedUniqueBytes": 3160296,
+  "externalByteReferencesVerified": 1487,
+  "markdownLinksVerified": 7,
+  "manifestSha256": "efcecb182463d5eddc98841847376bd133ccce6922cb8c1301da71943c244076"
+}

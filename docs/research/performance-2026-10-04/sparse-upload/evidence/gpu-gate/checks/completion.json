@@ -1,0 +1,270 @@
+{
+  "scope": "Four synthetic helper tests +strict +standalone three-asset bundle +launcher binding/syntax/unarmed dry only; no Chrome/GPU/cost or source edits",
+  "preparedReadySha256": "bd36df908c340104d1bdd9469a42fdc2195bbce7f083acba634d790eed720829",
+  "compiledSha256": "cc0adc4526681356789bb64f8eb9890408276d33ebb93157c3ed0486c1958bf1",
+  "launchReadySha256": "f1f78ae5631a4b2e5ae630adc5731d1db9fd92ad9ed0c36dee98c2a39af14683",
+  "runtimePatchSha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe",
+  "sourceAuthoritySha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66",
+  "phases": {
+    "tests": {
+      "startedUtc": "2026-10-04T03:07:19.052980+00:00",
+      "endedUtc": "2026-10-04T03:07:19.424520+00:00",
+      "pid": 75861,
+      "exitCode": 0,
+      "sourceInputsUnchanged": true
+    },
+    "strict": {
+      "startedUtc": "2026-10-04T03:07:28.689968+00:00",
+      "endedUtc": "2026-10-04T03:07:31.733339+00:00",
+      "pid": 75919,
+      "exitCode": 0,
+      "sourceInputsUnchanged": true
+    },
+    "bundle": {
+      "startedUtc": "2026-10-04T03:07:40.423259+00:00",
+      "endedUtc": "2026-10-04T03:07:40.589015+00:00",
+      "pid": 75973,
+      "exitCode": 0,
+      "sourceInputsUnchanged": true
+    },
+    "prepare-launch": {
+      "startedUtc": "2026-10-04T03:07:56.191411+00:00",
+      "endedUtc": "2026-10-04T03:07:56.241148+00:00",
+      "pid": 76040,
+      "exitCode": 0,
+      "sourceInputsUnchanged": true
+    },
+    "launcher-syntax": {
+      "startedUtc": "2026-10-04T03:07:59.112953+00:00",
+      "endedUtc": "2026-10-04T03:07:59.148858+00:00",
+      "pid": 76084,
+      "exitCode": 0,
+      "sourceInputsUnchanged": true
+    },
+    "launcher-dry": {
+      "startedUtc": "2026-10-04T03:08:02.434164+00:00",
+      "endedUtc": "2026-10-04T03:08:02.482540+00:00",
+      "pid": 76098,
+      "exitCode": 0,
+      "sourceInputsUnchanged": true
+    }
+  },
+  "records": [
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/ready.json",
+      "bytes": 5850,
+      "sha256": "bd36df908c340104d1bdd9469a42fdc2195bbce7f083acba634d790eed720829"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/compiled.json",
+      "bytes": 559,
+      "sha256": "cc0adc4526681356789bb64f8eb9890408276d33ebb93157c3ed0486c1958bf1"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/launch-ready.json",
+      "bytes": 65780,
+      "sha256": "f1f78ae5631a4b2e5ae630adc5731d1db9fd92ad9ed0c36dee98c2a39af14683"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/bundle-inputs-after.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/bundle-inputs-before.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/bundle-started.json",
+      "bytes": 337,
+      "sha256": "1b5efeba008e0319df6512597f8a7726d8b33aca732dbe2aca0b0bc215d3dbbe"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/bundle-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/bundle-stdout.log",
+      "bytes": 441,
+      "sha256": "d5149b6cbbc0833ac6ad7330659c6c4bbadf4a91ee1cc49b0044083bf145934b"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/bundle-terminal.json",
+      "bytes": 851,
+      "sha256": "afd788b4d5d6dbed910eaa114d239872960389a5adf1700791b3c01e4bc58ee6"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-dry-inputs-after.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-dry-inputs-before.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-dry-started.json",
+      "bytes": 349,
+      "sha256": "e7f65b3eb8df558dbcc65c8dbef1fcf521d26bd84d58e5b8d8b13ce75775d0d8"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-dry-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-dry-stdout.log",
+      "bytes": 620,
+      "sha256": "b8e10540b2213007de6ba3d8c888b7b8766c35ef96c9762b34f00a7f0bed676a"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-dry-terminal.json",
+      "bytes": 875,
+      "sha256": "80a908993663de7d532a433e6066fe7c09b167a7f3b8461fa460b9173758d2ad"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-syntax-inputs-after.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-syntax-inputs-before.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-syntax-started.json",
+      "bytes": 367,
+      "sha256": "ef408876beb02f6b6dc2aaf4f62427f2c3a0abe521b94ef5241024800bee55d9"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-syntax-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-syntax-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/launcher-syntax-terminal.json",
+      "bytes": 897,
+      "sha256": "ac29a53a1fd86cb70b997bbf76eb94dbb41c2826a20235bff25678952fde7e1b"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/prepare-launch-inputs-after.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/prepare-launch-inputs-before.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/prepare-launch-started.json",
+      "bytes": 356,
+      "sha256": "9a1dba5bed9f1ecce820b5c3ae3db045aae4bfc9b68eb5470fc445026e4605ae"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/prepare-launch-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/prepare-launch-stdout.log",
+      "bytes": 137,
+      "sha256": "f7acfa0ea512e1e5ba5190f0e9a0359ff01bf6532f5f9139debb4822268b986c"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/prepare-launch-terminal.json",
+      "bytes": 886,
+      "sha256": "d7492f5794ca39b49c3272ef7fb94167e188fea0185e4ecd9047c92ab81071fe"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/run-check.py",
+      "bytes": 3459,
+      "sha256": "91e43ff01c9ec947b3203055b399c1c4ca7b5a73c3fd6eebf4795df6df72e640"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/strict-inputs-after.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/strict-inputs-before.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/strict-started.json",
+      "bytes": 412,
+      "sha256": "f90a8cca505818c8c208e6a00cbee415cb698fa3a96fb0e4b06e7384ae491923"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/strict-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/strict-stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/strict-terminal.json",
+      "bytes": 924,
+      "sha256": "3ea26d467e08f161ae4ffca7fb4dd53c4ec28d345aaec9e02b275023284826cc"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/tests-inputs-after.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/tests-inputs-before.json",
+      "bytes": 64054,
+      "sha256": "d0d7e733876afeb69eca2c9f8879771801835cf3c35da8dff155e6ff5efebb4d"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/tests-started.json",
+      "bytes": 449,
+      "sha256": "89efc72f9cea0da7b1adf0d9d3cb315528639449c68985037a1a752eea9689bb"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/tests-stderr.log",
+      "bytes": 375,
+      "sha256": "b4acd4f819050212c4fe3b3ed8416421330f7ff8c72cb9bb667c335f3e24a94e"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/tests-stdout.log",
+      "bytes": 210,
+      "sha256": "6066c082c3a5c8fad129aaee98e1e4a4e9c9b91bbb6f07215eb0530f9fc968af"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/tests-terminal.json",
+      "bytes": 963,
+      "sha256": "cef38b6ba0ec2e77caca5c5062d0c2699e3f99cec3179b39a3a52126eda2a5fe"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/dist/index.html",
+      "bytes": 224,
+      "sha256": "6559846335d8ae6736f3e318535006503fe582c0f0e72644ff68c699bf9105ee"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/dist/page.js",
+      "bytes": 788,
+      "sha256": "ed534cc711742c3ea2e39875fc479820554c0d13dc4265a0d317de56ca578234"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/dist/worker.js",
+      "bytes": 2020236,
+      "sha256": "aa1ecd06f3ed285ab35473c24cf4b09202427c275e53aee6cc3bf5f27e7d05f0"
+    }
+  ],
+  "hardwareRun": false
+}

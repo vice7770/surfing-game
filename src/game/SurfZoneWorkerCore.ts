@@ -9,7 +9,7 @@ import type { SurfZoneInit, SurfZoneSnapshot } from './SurfZoneHost';
 /** Main thread → worker. `buffers` come back filled in the next snapshot. */
 export type SurfZoneRequest =
   /** `sea`: an encoded sea handed over by another player (spec N1), taken over before the device attaches. */
-  | { type: 'start'; config: SurfZoneConfig; options?: SurfZoneRunnerOptions; sea?: Uint8Array }
+  | { type: 'start'; config: SurfZoneConfig; options?: SurfZoneRunnerOptions; sea?: Uint8Array; /** Internal default offline host capability. */ soloOneStep?: true }
   | { type: 'exportState'; id: number }
   /** Take this encoded sea in place of the running one (spec L2: a lesson restarts on the same wave). */
   | { type: 'restore'; sea: Uint8Array }
@@ -53,6 +53,10 @@ export class SurfZoneWorkerCore {
   private particleLevel: ParticleLevel = 'high';
   /** A device step under way: an export waits for it, so it never sees half a step. */
   private stepping?: Promise<void>;
+  /** The capability belongs to this runner/start generation, never to a public graphics setting. */
+  private soloRunner?: SurfZoneRunner;
+  private generation = 0;
+  private retirement?: Promise<void>;
 
   constructor(
     private readonly post: (reply: SurfZoneReply, transfer: Transferable[]) => void,
@@ -77,35 +81,61 @@ export class SurfZoneWorkerCore {
     }
     if (request.type === 'start') {
       const { config, options, sea } = request;
+      const generation = ++this.generation;
+      const previous = this.soloRunner;
+      this.soloRunner = undefined;
+      const retirement = previous ? this.retireSolo(previous) : this.retirement;
+      if (previous) this.retirement = retirement;
+      if (previous) this.runner = undefined;
       if (this.createDevice && (config.compute ?? 'auto') === 'auto') {
         // The device first, so the spin-up runs on the GPU too (several times faster than the CPU).
         const runner = SurfZoneRunner.forWorker(config, options, 'warm');
         const createDevice = this.createDevice;
         return (async () => {
+          if (retirement) await retirement;
+          if (this.retirement === retirement) this.retirement = undefined;
+          if (generation !== this.generation) return;
           await runner.useDevice(createDevice);
+          if (generation !== this.generation) { runner.simulation.device?.dispose(); return; }
           await runner.spinUp();
+          if (generation !== this.generation) { runner.simulation.device?.dispose(); return; }
           if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
           // Only a ready sea takes steps and exports.
           runner.setSprayLook(this.sprayLook);
           runner.setSprayEnabled(this.sprayEnabled);
           runner.setParticleLevel(this.particleLevel);
           this.runner = runner;
+          if (request.soloOneStep && !sea && config.spot === 'padang' && runner.enableSoloWaterPrefetch()) this.soloRunner = runner;
           this.ready(runner);
         })();
       }
-      const runner = SurfZoneRunner.forWorker(config, options);
-      if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
-      runner.setSprayLook(this.sprayLook);
-      runner.setSprayEnabled(this.sprayEnabled);
-      runner.setParticleLevel(this.particleLevel);
-      this.runner = runner;
-      this.ready(runner);
+      const startCpu = () => {
+        if (this.retirement === retirement) this.retirement = undefined;
+        if (generation !== this.generation) return;
+        const runner = SurfZoneRunner.forWorker(config, options);
+        if (sea) runner.simulation.importState(decodeSurfZoneState(sea));
+        runner.setSprayLook(this.sprayLook);
+        runner.setSprayEnabled(this.sprayEnabled);
+        runner.setParticleLevel(this.particleLevel);
+        this.runner = runner;
+        this.ready(runner);
+      };
+      if (retirement) return retirement.then(startCpu);
+      startCpu();
       return;
     }
     const { runner } = this;
     if (!runner) return;
     if (request.type === 'exportState') return this.exportState(runner, request.id);
     if (request.type === 'restore') return this.restore(runner, request.sea);
+    if (runner === this.soloRunner) {
+      const generation = this.generation;
+      return this.queueSolo(async () => {
+        if (generation !== this.generation || runner !== this.runner) return;
+        await runner.advanceAsync(request.steps, request.input, request.reactions);
+        if (generation === this.generation && runner === this.runner) this.reply(runner, request.buffers);
+      });
+    }
     if (runner.simulation.device) {
       const step = runner.advanceAsync(request.steps, request.input, request.reactions).then(() => this.reply(runner, request.buffers));
       this.stepping = step.finally(() => {
@@ -118,6 +148,22 @@ export class SurfZoneWorkerCore {
     this.reply(runner, request.buffers);
   }
 
+  /** Serialize only the private solo runner's advances/restores; generic request handling remains unchanged. */
+  private queueSolo(work: () => Promise<void>): Promise<void> {
+    const previous = this.stepping;
+    const step = (async () => { if (previous) await previous; await work(); })();
+    const settled = step.finally(() => { if (this.stepping === settled) this.stepping = undefined; });
+    this.stepping = settled;
+    return settled;
+  }
+
+  private async retireSolo(runner: SurfZoneRunner): Promise<void> {
+    await this.stepping;
+    await runner.simulation.discardWaterPrefetch();
+    runner.simulation.device?.dispose();
+    runner.simulation.device = undefined;
+  }
+
   /** This sea, encoded and compressed, for a player joining late (spec N1), once any step under way is done. */
   private async exportState(runner: SurfZoneRunner, id: number): Promise<void> {
     await this.stepping;
@@ -127,6 +173,14 @@ export class SurfZoneWorkerCore {
 
   /** A restore waits for any step under way, so it never lands halfway through one. */
   private async restore(runner: SurfZoneRunner, sea: Uint8Array): Promise<void> {
+    if (runner === this.soloRunner) {
+      const generation = this.generation;
+      return this.queueSolo(async () => {
+        if (generation !== this.generation || runner !== this.runner) return;
+        await runner.simulation.discardWaterPrefetch();
+        runner.simulation.importState(decodeSurfZoneState(sea));
+      });
+    }
     await this.stepping;
     runner.simulation.importState(decodeSurfZoneState(sea));
   }

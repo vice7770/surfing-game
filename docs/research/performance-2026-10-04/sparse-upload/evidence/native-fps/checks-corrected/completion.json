@@ -1,0 +1,160 @@
+{
+  "terminals": [
+    {
+      "phase": "baseline-strict",
+      "command": [
+        "node",
+        "baseline/node_modules/typescript/bin/tsc",
+        "--project",
+        "baseline/tsconfig.json",
+        "--noEmit"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:24:47.893669+00:00",
+      "pid": 82083,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T03:24:52.000364+00:00"
+    },
+    {
+      "phase": "candidate-strict",
+      "command": [
+        "node",
+        "candidate/node_modules/typescript/bin/tsc",
+        "--project",
+        "candidate/tsconfig.json",
+        "--noEmit"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:24:52.001478+00:00",
+      "pid": 82098,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T03:24:56.331643+00:00"
+    },
+    {
+      "phase": "build",
+      "command": [
+        "node",
+        "build-only.mjs"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:24:56.332179+00:00",
+      "env": {
+        "BUILD_ID": "6f321d704-qa-sparse-upload",
+        "SPARSE_FPS_READY_SHA256": "bf7f13608bda60b91baed425cf4b94deaaed6644672de6dc94d4d0da5aad9341"
+      },
+      "pid": 82102,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T03:24:57.020200+00:00"
+    },
+    {
+      "phase": "bind-launch",
+      "command": [
+        "python3",
+        "bind-launch.py"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:24:57.044320+00:00",
+      "pid": 82133,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T03:24:57.085336+00:00"
+    },
+    {
+      "phase": "native-syntax",
+      "command": [
+        "node",
+        "--check",
+        "native-owned.mjs"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:24:57.087880+00:00",
+      "pid": 82134,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T03:24:57.112076+00:00"
+    },
+    {
+      "phase": "guard-syntax",
+      "command": [
+        "node",
+        "--check",
+        "passive-guard.mjs"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:24:57.112461+00:00",
+      "pid": 82135,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T03:24:57.136635+00:00"
+    },
+    {
+      "phase": "survey-syntax",
+      "command": [
+        "node",
+        "--check",
+        "survey.mjs"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:24:57.137100+00:00",
+      "pid": 82136,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T03:24:57.162996+00:00"
+    },
+    {
+      "phase": "pair-syntax",
+      "command": [
+        "node",
+        "--check",
+        "pair.mjs"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:24:57.163376+00:00",
+      "pid": 82137,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T03:24:57.187925+00:00"
+    },
+    {
+      "phase": "unarmed-pair",
+      "command": [
+        "node",
+        "pair.mjs",
+        "--run=false"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:24:57.188275+00:00",
+      "pid": 82138,
+      "exitCode": 0,
+      "endedAt": "2026-10-04T03:24:57.293428+00:00"
+    }
+  ],
+  "allNinePhasesPassed": true,
+  "sourceInputCount": 1138,
+  "sourceInputsUnchangedExceptApprovedCompiledBinding": true,
+  "approvedCompiledBindingChanges": [
+    {
+      "before": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/bindings.json",
+        "bytes": 243,
+        "sha256": "36d2059e1b886dd1c50c05410dc978f3ffc2499e1a031e0ff517034b6f7794f1"
+      },
+      "after": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/bindings.json",
+        "bytes": 1537,
+        "sha256": "44f631fa06460b82e8d4656be04e051adcbc659dbc09cfe99a4156cfbe8030e6"
+      }
+    }
+  ],
+  "oldPlaceholderPreserved": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/bindings.source-pending.json",
+    "bytes": 243,
+    "sha256": "36d2059e1b886dd1c50c05410dc978f3ffc2499e1a031e0ff517034b6f7794f1"
+  },
+  "ready": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/ready.json",
+    "bytes": 9290,
+    "sha256": "bf7f13608bda60b91baed425cf4b94deaaed6644672de6dc94d4d0da5aad9341"
+  },
+  "compiledReady": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/launch-ready.json",
+    "bytes": 5283,
+    "sha256": "8fe13545396f21781dc296cc1dfd49b1bcefe15359d0597fc03db3fd841bdc91"
+  },
+  "noServerChromeNetworkGPU": true
+}

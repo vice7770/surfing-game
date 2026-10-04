@@ -1,0 +1,21 @@
+import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { assertHarness } from './harness-guard.mjs';
+import { WORK, assertInputs, sha256 } from './canonical-resolver.mjs';
+const ready = assertHarness(); assertInputs();
+const compiled = JSON.parse(readFileSync(`${WORK}/compiled.json`, 'utf8'));
+if (compiled.harnessReadySha256 !== ready.sha256 || compiled.files.length !== 1) throw new Error('Compiled source authority differs');
+for (const row of compiled.files) { const raw = readFileSync(row.path); if (raw.length !== row.bytes || sha256(raw) !== row.sha256) throw new Error('Compiled cost bundle differs'); }
+if (!process.argv.includes('--run=true')) {
+  process.stdout.write(JSON.stringify({ status: 'unarmed plan only', pairs: 24, warmPairs: 4, fixtures: [10, 20], hardMs: 15000, compiled, scope: 'complete loft + mask only; no solver/browser/GPU/FPS' }) + '\n');
+} else {
+  const out = process.argv.find((value) => value.startsWith('--out='))?.slice(6);
+  if (!out) throw new Error('Fresh output path required');
+  const startUtc = new Date().toISOString(); let result;
+  try { const { runCost } = await import(pathToFileURL(compiled.files[0].path).href); result = runCost(); assertInputs(); assertHarness(); }
+  catch (error) { result = { schema: 'render-height-only-cost/v1', valid: false, firstFailure: String(error) }; process.exitCode = 1; }
+  result = { ...result, startUtc, terminalUtc: new Date().toISOString(), harnessReadySha256: ready.sha256, compiled };
+  mkdirSync(dirname(out), { recursive: true }); writeFileSync(out, JSON.stringify(result, null, 2) + '\n');
+  process.stdout.write(JSON.stringify({ valid: result.valid, firstFailure: result.firstFailure, summaries: result.summaries, elapsedMs: result.elapsedMs }) + '\n');
+}

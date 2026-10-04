@@ -1,0 +1,138 @@
+{
+  "schema": "sparse-upload-fps-launch-ready/v1",
+  "stage": "Compiled/local binding; source check/dry plan and sole hardware review still required",
+  "artifacts": [
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/native-owned.mjs",
+      "bytes": 5603,
+      "sha256": "0e78f075e87d4144d5f78eccb7caf470617231e7004735d84cb4f7c366c460ac"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/passive-guard.mjs",
+      "bytes": 9696,
+      "sha256": "7dd07afdc027193ef171d228c543bf534c72eb9067c4c81d731162e4a2555085"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/pair.mjs",
+      "bytes": 13063,
+      "sha256": "163eb5152248b195c29278b4f7ba3543fbf0659568dd6412c42d2206ade15ec5"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/survey.mjs",
+      "bytes": 37750,
+      "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/plan.json",
+      "bytes": 5702,
+      "sha256": "c793c0b29e1a8717e71f977b635bddf196bd6c100017246d2804c105fd3ae372"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/public-assets.json",
+      "bytes": 10729,
+      "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/bindings.json",
+      "bytes": 1537,
+      "sha256": "44f631fa06460b82e8d4656be04e051adcbc659dbc09cfe99a4156cfbe8030e6"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/source-manifest.json",
+      "bytes": 494343,
+      "sha256": "fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/dependency-authority.json",
+      "bytes": 2679,
+      "sha256": "59ebb63ba50c986b89070108f43174ddb6e884024ef62d87c050c6874175bf1f"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/build-terminal.json",
+      "bytes": 965,
+      "sha256": "cf56307bc20303e56ad3e13cb35f06e0986401c1626945a5086f88846617d2c9"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/ready.json",
+      "bytes": 9290,
+      "sha256": "bf7f13608bda60b91baed425cf4b94deaaed6644672de6dc94d4d0da5aad9341"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/derivation-owned.json",
+      "bytes": 10071,
+      "sha256": "d54a818b623b5fa9297e3f9f3add19dc6477c9a31e12c91e2b51a71136992bd9"
+    }
+  ],
+  "borrowedSourceAuthorities": [
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/survey.mjs",
+      "bytes": 37750,
+      "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/native-owned.mjs",
+      "bytes": 5514,
+      "sha256": "cecc2283896183dbde2d8dc7edbd3a9c8270eaac313c9cd0c2ed3f8e38c99e9e"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/passive-guard.mjs",
+      "bytes": 9501,
+      "sha256": "19be1fa0c1ea4985530d9843db5ee587770f653d7f7d1966ce3f528a047f6851"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/pair.mjs",
+      "bytes": 13019,
+      "sha256": "1c76ea1f01c97c1022b0fa0a297bab851c5c8d19f9fb0589ac673e6be5680edb"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/derivation.json",
+      "bytes": 7601,
+      "sha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/public-assets.json",
+      "bytes": 10729,
+      "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-fps-20261004/run/report.json",
+      "bytes": 15558,
+      "sha256": "9a4068b92fd08354c8d25e09db99399eb57805ef2ee429c0553ea38697ae6248"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/build-only.mjs",
+      "bytes": 6580,
+      "sha256": "73fdd0ef458fae8b71282799a69d5bdbafdb745fb9bb17e873318115c2789dca"
+    },
+    {
+      "path": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/candidate.patch",
+      "bytes": 15178,
+      "sha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/source-authority.json",
+      "bytes": 48392,
+      "sha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66"
+    }
+  ],
+  "compiledArms": {
+    "baseline": {
+      "arm": "baseline",
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/baseline/build-manifest.json",
+      "bytes": 4360,
+      "sha256": "dd42579ae83344394bcf32d5ff814c3737691aafb72d788b76234b2c1026faef"
+    },
+    "candidate": {
+      "arm": "candidate",
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/candidate/build-manifest.json",
+      "bytes": 6700,
+      "sha256": "4454a8a140dff527aa2b8ec774fefb2ef9d2bca00bcb3d1791a43e2e95617997"
+    }
+  },
+  "noHardwareLaunched": true
+}

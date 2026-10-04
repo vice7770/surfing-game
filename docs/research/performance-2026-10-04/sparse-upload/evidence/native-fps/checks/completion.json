@@ -1,0 +1,22 @@
+{
+  "terminals": [
+    {
+      "phase": "baseline-strict",
+      "command": [
+        "node",
+        "baseline/node_modules/typescript/bin/tsc",
+        "--project=baseline/tsconfig.json",
+        "--noEmit"
+      ],
+      "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+      "startedAt": "2026-10-04T03:22:17.117225+00:00",
+      "pid": 81180,
+      "exitCode": 1,
+      "endedAt": "2026-10-04T03:22:17.169045+00:00"
+    }
+  ],
+  "sourceInputsUnchanged": true,
+  "sourceInputCount": 1137,
+  "strictBuildPassed": false,
+  "next": "Only bind/syntax/unarmed checks if strict/build all passed; no hardware"
+}

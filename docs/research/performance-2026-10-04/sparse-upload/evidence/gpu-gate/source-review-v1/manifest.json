@@ -1,0 +1,23 @@
+{
+  "scope": "Unexecuted source review before terminal error-scope skip correction; no tests/build/GPU run",
+  "records": [
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/ready.json",
+      "storedPath": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/source-review-v1/ready.json",
+      "bytes": 4524,
+      "sha256": "b11a330ef9ddb61f67c179d69b371a98ad71acc1846fe4c0b6ca07260bffcf92"
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/worker-entry.ts",
+      "storedPath": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/source-review-v1/worker-entry.ts",
+      "bytes": 28386,
+      "sha256": "92a52226c55cbc0547cab2e0986a91c290f4f8ce4307406b87d4bb5ce8414fb5"
+    },
+    {
+      "originalPath": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/proposal.md",
+      "storedPath": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/source-review-v1/proposal.md",
+      "bytes": 4721,
+      "sha256": "59719098e251d31d79933a821bd79b70a494b1f2a7fe96835027d8c363919f19"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+import { readFileSync, existsSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+export const WORK = dirname(fileURLToPath(import.meta.url));
+export const inputs = JSON.parse(readFileSync(resolve(WORK, 'inputs.json'), 'utf8'));
+const original = JSON.parse(readFileSync(resolve(WORK, 'ready.json'), 'utf8'));
+const records = new Map([...inputs.canonicalSources, ...inputs.assets, ...inputs.packages,
+  ...original.records.map((row) => ({ ...row, path: resolve(WORK, row.path) }))].map((row) => [row.path, row]));
+export const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+export function checkedFile(path) {
+  const pin = records.get(path);
+  if (!pin) throw new Error(`Unpinned borrowed/source input: ${path}`);
+  const raw = readFileSync(path);
+  if (raw.length !== pin.bytes || sha256(raw) !== pin.sha256) throw new Error(`Changed input: ${path}`);
+  return raw;
+}
+export function assertInputs() { for (const path of records.keys()) checkedFile(path); }
+function file(path) {
+  const exact = [path, `${path}.ts`, `${path}.tsx`, `${path}.json`, resolve(path, 'index.ts')].find((path) => existsSync(path) && statSync(path).isFile());
+  if (!exact) throw new Error(`Unresolved canonical relative import: ${path}`);
+  return exact;
+}
+export function canonicalResolver() {
+  return {
+    name: 'height-only-exact-canonical-resolver', enforce: 'pre',
+    resolveId(specifier, importer) {
+      if (specifier === '@baseline/cubicSurface') return resolve(WORK, 'baseline/src/scene/water/cubicSurface.ts');
+      if (specifier === '@candidate/cubicSurface') return resolve(WORK, 'candidate/src/scene/water/cubicSurface.ts');
+      if (specifier.startsWith('@canonical/')) return file(resolve(inputs.root, specifier.slice('@canonical/'.length)));
+      if (!importer || !specifier.startsWith('.')) return null;
+      const id = importer.split('?')[0];
+      let source = id;
+      for (const arm of ['baseline', 'candidate', 'existing']) {
+        const prefix = resolve(WORK, arm) + '/';
+        if (id.startsWith(prefix)) source = resolve(inputs.root, id.slice(prefix.length));
+      }
+      if (!source.startsWith(resolve(inputs.root, 'src') + '/')) return null;
+      const target = file(resolve(dirname(source), specifier));
+      // Exercise the unchanged public sampler/GLSL through the existing tests as well.
+      if (target === resolve(inputs.root, 'src/scene/water/cubicSurface.ts')) return resolve(WORK, 'candidate/src/scene/water/cubicSurface.ts');
+      return target;
+    },
+    load(id) {
+      const path = id.split('?')[0];
+      if (path.startsWith(resolve(inputs.root, 'src') + '/') || records.has(path)) checkedFile(path);
+      return null;
+    },
+  };
+}

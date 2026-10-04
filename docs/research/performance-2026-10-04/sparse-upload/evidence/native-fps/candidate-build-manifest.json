@@ -1,0 +1,188 @@
+{
+  "schema": "sparse-upload-build-arm/v1",
+  "arm": "candidate",
+  "status": "passed",
+  "scope": "QA client/worker bundling only; no serving, browser, GPU, FPS or adoption",
+  "runtimeBaseline": "6f321d704269f9f1afc73750ab2b1f4a86f61122",
+  "documentationHeadAtPreparation": null,
+  "buildId": "6f321d704-qa-sparse-upload",
+  "node": "v23.10.0",
+  "versions": [
+    {
+      "name": "vite",
+      "version": "8.3.1",
+      "sha256": "fd3af4eaf4eecb2069f3e2715d6aaa2137d084a8a95097389523f52213c08094"
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "name": "three",
+      "version": "0.186.1",
+      "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de"
+    },
+    {
+      "name": "mp4-muxer",
+      "version": "5.2.2",
+      "sha256": "5a19419fcffe782336185d5764d1b179ccdaae1c91ca767a496adddd2a6bbad0"
+    },
+    {
+      "name": "@webgpu/types",
+      "version": "0.1.74",
+      "sha256": "c58597e365f42b61a165210e49e90a864730ee4716473de67d36dfa42519ec99"
+    },
+    {
+      "name": "@types/node",
+      "version": "22.20.4",
+      "sha256": "f24c6b704fa4fdb2633cd4787fb0533cdca3cd15ab4a02b031c6c2e462cd380a"
+    },
+    {
+      "name": "@types/three",
+      "version": "0.186.0",
+      "sha256": "b0253caeb8b99b6a64150e6279cc4bbf30e61610683bdf39f8db2667d6103626"
+    }
+  ],
+  "readySha256": "bf7f13608bda60b91baed425cf4b94deaaed6644672de6dc94d4d0da5aad9341",
+  "sourceManifest": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/source-manifest.json",
+    "bytes": 494343,
+    "sha256": "fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66"
+  },
+  "literalSourceFiles": 551,
+  "literalSourceBytes": 4876383,
+  "overlaysApplied": [
+    {
+      "stage": "sparse-only",
+      "path": "src/game/surfZoneWorker.ts",
+      "source": "/private/tmp/surf-sparse-upload-20261004/candidate/src/game/surfZoneWorker.ts",
+      "bytes": 836,
+      "sha256": "5d9befdc85f7890df069be6828b57c42b642bf8a7eaaa30476969ce52ba002f1"
+    },
+    {
+      "stage": "sparse-only",
+      "path": "src/physics/PhysicalSurfWater.ts",
+      "source": "/private/tmp/surf-sparse-upload-20261004/candidate/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26408,
+      "sha256": "eab41ade0bc2d18fd333bd128dfc632bd350580cfba016be5c7fadb709e1d5ab"
+    },
+    {
+      "stage": "sparse-only",
+      "path": "src/wave/PlungingLip.ts",
+      "source": "/private/tmp/surf-sparse-upload-20261004/candidate/src/wave/PlungingLip.ts",
+      "bytes": 66365,
+      "sha256": "fce989ec87c94153d5fad700644e484152aa60bb77b7833354d4623e41860700"
+    },
+    {
+      "stage": "sparse-only",
+      "path": "src/wave/ShallowWaterSolver.ts",
+      "source": "/private/tmp/surf-sparse-upload-20261004/candidate/src/wave/ShallowWaterSolver.ts",
+      "bytes": 33663,
+      "sha256": "d482fd39592e76bd9175270a017031ac0f1feee48d44a126ce4aca2451a3310b"
+    },
+    {
+      "stage": "sparse-only",
+      "path": "src/wave/SurfZoneSimulation.ts",
+      "source": "/private/tmp/surf-sparse-upload-20261004/candidate/src/wave/SurfZoneSimulation.ts",
+      "bytes": 65454,
+      "sha256": "f53a7ee9a73accaeffb380b032f7aec965e0bc485ca776eb37b29f5db88a114a"
+    },
+    {
+      "stage": "sparse-only",
+      "path": "src/wave/gpu/GpuBoussinesq.ts",
+      "source": "/private/tmp/surf-sparse-upload-20261004/candidate/src/wave/gpu/GpuBoussinesq.ts",
+      "bytes": 21756,
+      "sha256": "e537ec87c9fb81451e63933eb8a35b8d3907280f044ddf2ac79aaf4eecc03da5"
+    },
+    {
+      "stage": "sparse-only",
+      "path": "src/wave/gpu/cpuWaterEdits.ts",
+      "source": "/private/tmp/surf-sparse-upload-20261004/candidate/src/wave/gpu/cpuWaterEdits.ts",
+      "bytes": 4282,
+      "sha256": "13aacbaa3a81c25d1e4c2a8623fceb893edf4397fee05d5ba626d4c2e788a864"
+    },
+    {
+      "stage": "sparse-only",
+      "path": "src/wave/warmStart.ts",
+      "source": "/private/tmp/surf-sparse-upload-20261004/candidate/src/wave/warmStart.ts",
+      "bytes": 6326,
+      "sha256": "9d2068f1eec4e90b71784a142d66d7421384968b4e3c95febfc88e902acf41bf"
+    }
+  ],
+  "inlineBuildFlags": {
+    "root": "/private/tmp/surf-sparse-upload-fps-20261004/candidate",
+    "configFile": "/private/tmp/surf-sparse-upload-fps-20261004/candidate/vite.config.ts",
+    "configLoader": "runner",
+    "cacheDir": "/private/tmp/surf-sparse-upload-fps-20261004/candidate/.cache/vite-build",
+    "build": {
+      "outDir": "/private/tmp/surf-sparse-upload-fps-20261004/candidate/dist",
+      "copyPublicDir": false,
+      "emptyOutDir": false
+    },
+    "worker": {},
+    "optimizeDeps": {}
+  },
+  "outputRoot": "/private/tmp/surf-sparse-upload-fps-20261004/candidate/dist",
+  "clientEntry": "assets/index-CTdGG0Bw.js",
+  "surfZoneWorker": "assets/surfZoneWorker-BaI5kidc.js",
+  "outputRecords": [
+    {
+      "path": "assets/devStepping-gbvGx2tS.js",
+      "bytes": 320,
+      "sha256": "4724a251ace59576abab9c7645f9546b54958d1b6b540809de2d96688869e509"
+    },
+    {
+      "path": "assets/index-CTdGG0Bw.js",
+      "bytes": 582442,
+      "sha256": "10fc5c67380c0c35ad7ed5129ce9b36156665666a062dee29f66ba012e6e4de0"
+    },
+    {
+      "path": "assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "path": "assets/jevRecorder-BtWwGazc.js",
+      "bytes": 15917,
+      "sha256": "4059f1bc2171e7bdab2dab1a88592bd790a0195b7ee3f4deab55e1fab5a1d2e9"
+    },
+    {
+      "path": "assets/particleBench-CjkB3AbX.js",
+      "bytes": 10708,
+      "sha256": "16e6869630cb821444263091e1850fbacf9ffbcce571ecdbbcaecb986212c038"
+    },
+    {
+      "path": "assets/rideRecorder-Pq1Gld4u.js",
+      "bytes": 41108,
+      "sha256": "5b15f867910c701c81a32b456323e60758fb725a29225b941cd49c078ecdfba4"
+    },
+    {
+      "path": "assets/surfZoneWorker-BaI5kidc.js",
+      "bytes": 444265,
+      "sha256": "bf597c16fefc241ce0c6e73ce803aca7d667101990744c93a9a655d0f9459a74"
+    },
+    {
+      "path": "assets/waterSheet-NziPhfUb.js",
+      "bytes": 11689,
+      "sha256": "14ffff217ead05469f48b9a2e89e3aeb9eacade04c08bc9aae0f05a5348e2598"
+    },
+    {
+      "path": "assets/WorkerSurfZone-DVQo_9jm.js",
+      "bytes": 853393,
+      "sha256": "c0a43972fe7a042cf8b0ede689dec1f8972863a0bb0b6ad2f72475216263944d"
+    },
+    {
+      "path": "build.json",
+      "bytes": 38,
+      "sha256": "149474becf37ed6889f03c0459792b764dd7bace22797404714ac98932fa6e68"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1626,
+      "sha256": "2f4e56dae505ea502a495e1578f6aba10ea73de12bfebb8061564b8db2b446a7"
+    }
+  ],
+  "publicAssetCopies": false,
+  "servingOrHardwareStarted": false
+}

@@ -1,0 +1,21 @@
+{
+  "stage": "source-preparation-complete",
+  "baseline": "6f321d704269f9f1afc73750ab2b1f4a86f61122",
+  "completeBaselineFiles": 550,
+  "candidateAdditionalFiles": 1,
+  "candidateChangedOrAddedFiles": 8,
+  "archiveBytes": 5314560,
+  "archiveSha256": "803038e7772d71ad60ccc7c94bebd5d8f9a63d18895e60c7bf0f4d8ba0473f9a",
+  "sourceManifest": {
+    "path": "/private/tmp/surf-sparse-upload-fps-20261004/source-manifest.json",
+    "bytes": 494343,
+    "sha256": "fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66"
+  },
+  "compiledReuse": "declined",
+  "sourceImportsExecuted": false,
+  "checks": false,
+  "build": false,
+  "network": false,
+  "GitMutations": false,
+  "publicOrDependenciesCopied": false
+}

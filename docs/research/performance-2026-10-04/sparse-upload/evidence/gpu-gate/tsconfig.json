@@ -1,0 +1,6 @@
+{
+  "extends": "../original/tsconfig.json",
+  "compilerOptions": { "types": ["node", "@webgpu/types"] },
+  "include": ["worker-entry.ts", "page-entry.ts", "numeric.ts", "numeric.test.ts", "vitest.config.ts", "../original/src/wave/gpu/webgpu-env.d.ts"],
+  "exclude": []
+}

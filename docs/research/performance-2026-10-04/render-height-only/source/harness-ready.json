@@ -1,0 +1,102 @@
+{
+  "schema": "render-height-only-harness-ready/v1",
+  "status": "SOURCE_ONLY_UNEXECUTED",
+  "sourceReadySha256": "946917d2443a7a62ec4650a5ecddebf037605bcc666cdd77848f1f4966f9a38f",
+  "baseGitRef": "3062582964f6f910d2e1d51afd0b14243abee2c5",
+  "root": "/private/tmp/render-height-only-20261004",
+  "records": [
+    {
+      "path": "ready.json",
+      "bytes": 1794,
+      "sha256": "946917d2443a7a62ec4650a5ecddebf037605bcc666cdd77848f1f4966f9a38f"
+    },
+    {
+      "path": "canonical-resolver.mjs",
+      "bytes": 2805,
+      "sha256": "d2ffdc32e12579930197c4132563826dbc5b7f727edbe977a438ecacd2313a37"
+    },
+    {
+      "path": "harness-guard.mjs",
+      "bytes": 672,
+      "sha256": "bdc54bcf3ae807211b3933e870885438066f43d63381e82fc0243af311c7dce1"
+    },
+    {
+      "path": "source-contract.test.mjs",
+      "bytes": 1879,
+      "sha256": "98e438d189d3672c22c0d6d4f4eb60265a9db22e16a32b842b022c84860b6572"
+    },
+    {
+      "path": "height-parity.test.ts",
+      "bytes": 3078,
+      "sha256": "08d652555ca67bb82684651986d33f6156880db3e78f3ee979c432c52e9ca432"
+    },
+    {
+      "path": "workload.ts",
+      "bytes": 5820,
+      "sha256": "e0d34f428dac49ecd34c51accffca47f66c64997ee46d615fe1bcc6da79f2989"
+    },
+    {
+      "path": "cost.ts",
+      "bytes": 4188,
+      "sha256": "81311341d94840b5c8add26991894e772de75328ce50906821a10e76b6abfe67"
+    },
+    {
+      "path": "vitest.config.ts",
+      "bytes": 892,
+      "sha256": "35837383f43bf5d10a4069c0bc27c43f2034f6d45f8091c4dceff8a4a9263400"
+    },
+    {
+      "path": "tsconfig.qa.json",
+      "bytes": 1135,
+      "sha256": "e45d216eebabbfe7f4a952741c62ec53ba90a6b0941c8f49214db6ad91e85608"
+    },
+    {
+      "path": "build-cost.mjs",
+      "bytes": 1152,
+      "sha256": "1091538abcc8cdf785c871858dc81ecddbf4209a05ea6551019bf998603b991c"
+    },
+    {
+      "path": "run-cost.mjs",
+      "bytes": 1845,
+      "sha256": "2216b727e85d296142745832a562ea357c16e17e0507b2b9d743dc2652282e2f"
+    },
+    {
+      "path": "inputs.json",
+      "bytes": 24988,
+      "sha256": "65bbcd1d72eefbfc0d4993d16edfb7ca1e4cb644db7cbcd50100ff6ded997746"
+    },
+    {
+      "path": "harness-plan.md",
+      "bytes": 4848,
+      "sha256": "8bd27cd9f530e7acf8fea8d24814803b046df3e0b6e5e0e5dd989ba9e1fef72b"
+    },
+    {
+      "path": "existing/src/scene/water/cubicSurface.test.ts",
+      "bytes": 2832,
+      "sha256": "3c2f9247e789690965aacee576106f961cfb7e6bd6ce490c663b56579b8df4ff"
+    },
+    {
+      "path": "existing/src/scene/WaterSurface.test.ts",
+      "bytes": 11489,
+      "sha256": "539ad0199962bac31bfb043d78a01359a067819064e02353282bdf6087ee0b8f"
+    }
+  ],
+  "dependencies": "80 canonical source files pinned by metadata only; seven asset pins; eight package metadata pins. node_modules read-only target /Users/regina/Desktop/Projects/surfing-game/node_modules.",
+  "expectedChecks": {
+    "literalTests": 2,
+    "newNumericTests": 4,
+    "selectedExistingTests": 4,
+    "commands": 7,
+    "costArmed": false
+  },
+  "cost": {
+    "pairsPerFixture": 24,
+    "fixtures": [
+      10,
+      20
+    ],
+    "warmPairsPerFixture": 4,
+    "hardMs": 15000
+  },
+  "gate": "Root source review and separate explicit cheap-check lease; no imports/checks/build/cost have executed."
+}

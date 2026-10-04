@@ -1,0 +1,24 @@
+{
+  "phase": "prepare-launch",
+  "command": [
+    "python3",
+    "/private/tmp/surf-sparse-upload-20261004/gpu-gate/prepare-launch.py"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-20261004/gpu-gate",
+  "startedUtc": "2026-10-04T03:07:56.191411+00:00",
+  "readySha256": "bd36df908c340104d1bdd9469a42fdc2195bbce7f083acba634d790eed720829",
+  "pid": 76040,
+  "endedUtc": "2026-10-04T03:07:56.241148+00:00",
+  "exitCode": 0,
+  "sourceInputsUnchanged": true,
+  "stdout": {
+    "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/prepare-launch-stdout.log",
+    "bytes": 137,
+    "sha256": "f7acfa0ea512e1e5ba5190f0e9a0359ff01bf6532f5f9139debb4822268b986c"
+  },
+  "stderr": {
+    "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/checks/prepare-launch-stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

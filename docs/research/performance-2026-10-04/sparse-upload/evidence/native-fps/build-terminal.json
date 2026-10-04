@@ -1,0 +1,24 @@
+{
+  "schema": "sparse-upload-two-arm-build-terminal/v1",
+  "status": "passed",
+  "scope": "QA client/worker bundling only; no serving, browser, GPU, FPS or adoption",
+  "baseline": "6f321d704269f9f1afc73750ab2b1f4a86f61122",
+  "commonBuildId": "6f321d704-qa-sparse-upload",
+  "readySha256": "bf7f13608bda60b91baed425cf4b94deaaed6644672de6dc94d4d0da5aad9341",
+  "sourceManifestSha256": "fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66",
+  "armManifests": [
+    {
+      "arm": "baseline",
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/baseline/build-manifest.json",
+      "bytes": 4360,
+      "sha256": "dd42579ae83344394bcf32d5ff814c3737691aafb72d788b76234b2c1026faef"
+    },
+    {
+      "arm": "candidate",
+      "path": "/private/tmp/surf-sparse-upload-fps-20261004/candidate/build-manifest.json",
+      "bytes": 6700,
+      "sha256": "4454a8a140dff527aa2b8ec774fefb2ef9d2bca00bcb3d1791a43e2e95617997"
+    }
+  ],
+  "failure": null
+}

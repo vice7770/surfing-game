@@ -1,0 +1,17 @@
+{
+  "kind": "tests",
+  "command": [
+    "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/vitest",
+    "run",
+    "--config=/private/tmp/surf-sparse-upload-20261004/vitest.config.ts",
+    "--maxWorkers=1"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-20261004",
+  "startedUTC": "2026-10-04T02:41:07.384682+00:00",
+  "pid": 67637,
+  "endedUTC": "2026-10-04T02:41:08.419846+00:00",
+  "exitCode": 0,
+  "sourceInputsUnchanged": true,
+  "stdoutSha256": "7f1f21560158720514fb69bd99e7c5b7f2d6ccce28c8adf08628d66abc885367",
+  "stderrSha256": "b4acd4f819050212c4fe3b3ed8416421330f7ff8c72cb9bb667c335f3e24a94e"
+}

@@ -1,0 +1,121 @@
+--- original/scripts/browser/fps-survey.mjs
++++ owned/survey.mjs
+@@ -12,7 +12,8 @@
+ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+ import { dirname, join, resolve } from 'node:path';
+ import { cpus, loadavg, totalmem } from 'node:os';
+-import { launch, sleep } from './cdp.mjs';
++import { launch, sleep } from './native-owned.mjs';
++import { AUDIT_PRELUDE, NativePassiveGuard, ordinaryNativePlan } from './passive-guard.mjs';
+ 
+ const argv = process.argv.slice(2);
+ const args = Object.fromEntries(argv.filter((a) => a.startsWith('--')).map((a) => {
+@@ -44,6 +45,7 @@
+   'src/scene/water/richWaterGlsl.ts', 'src/scene/water/richSpray.ts', 'src/scene/SprayPoints.ts',
+   'src/scene/BubblePoints.ts', 'src/wave/particleBudget.ts'];
+ const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
++const passiveGuard = new NativePassiveGuard({ output: dirname(resolve(OUT)), baseline: BASELINE });
+ 
+ function qualityMetadata(ref) {
+   if (!ref) return undefined;
+@@ -56,28 +58,7 @@
+ }
+ 
+ function ordinaryPlan() {
+-  if (!BASELINE) return undefined;
+-  if (!BASELINE_RIDE) throw new Error('Baseline needs one High (baseline) / Ride · Padang result');
+-  const url = new URL(PAGE_URL);
+-  if ([...url.searchParams.keys()].some((key) => key !== 'diagnostics') || !url.searchParams.has('diagnostics')) {
+-    throw new Error('Ordinary comparison URL must contain only ?diagnostics');
+-  }
+-  if (!args.dir || !args.features || args.only !== 'High (baseline)' || args.spot !== 'Padang' || SWELL !== 'Big'
+-      || GPU_TIMERS !== GPU_DIAGNOSTIC || RIDE_SECONDS !== (GPU_DIAGNOSTIC ? 60 : 90) || Number(args.warmSeconds ?? 5) !== 5) {
+-    throw new Error('Use the ordinary High/Padang/Big route with five-second warmup and passive90s, or --diagnosticGpu=true --gpuTiming=true --rideSeconds=60');
+-  }
+-  if (`${WIDTH} × ${HEIGHT}` !== BASELINE.browser.viewport) throw new Error('Requested CSS viewport differs from baseline');
+-  return { method: `Ordinary menu → Surf → Padang → Big → Paddle out; idle rider; five-second warmup and ${RIDE_SECONDS}-second ${GPU_DIAGNOSTIC ? 'GPU diagnostic' : 'passive'} sample`,
+-    diagnosticGpuProfile: GPU_DIAGNOSTIC,
+-    timingComparableToPassiveBaseline: !GPU_DIAGNOSTIC,
+-    edition: EDITION, fixedPhysicsStepSeconds: FIXED_STEP_SECONDS,
+-    expectedMaxBatchSteps: EDITION === 'catchup-batch2' ? 2 : undefined,
+-    pipelineMetricSemantics: 'Physics/device/step timings describe the final step of a batch; batch spans the advance loop; snapshot/summary occur once per publication; total is (batch+snapshot+summary)/batchSteps, not full request latency. Independent stage quantiles must not be summed.',
+-    baseline: resolve(args.baseline), expectedConfig: BASELINE_RIDE.config, expectedViewport: BASELINE.browser.viewport,
+-    expectedBrowserDpr: BASELINE.browser.devicePixelRatio, expectedCanvas: BASELINE_RIDE.canvas,
+-    expectedRenderPixelRatio: 1.75, graphics: { ...PRESET_VALUES.high, preset: 'high' },
+-    normalMode: 'production pixel normals (no waterNormals flag)', runtimeOverrides: [],
+-    sourceAudit: qualityMetadata(args.qualityBase) };
++  return ordinaryNativePlan({ args, pageUrl: PAGE_URL, swell: SWELL, gpuTimers: GPU_TIMERS, gpuDiagnostic: GPU_DIAGNOSTIC, rideSeconds: RIDE_SECONDS, preset: PRESET_VALUES.high, edition: EDITION });
+ }
+ 
+ /** Graphics.PRESETS, kept in step by hand (src/game/Graphics.ts). */
+@@ -123,7 +104,7 @@
+         if (data?.snapshot?.status) {
+           const status = data.snapshot.status;
+           if (${GPU_DIAGNOSTIC}) perf.latestSea = status.seaTime;
+-          if (perf.sampling) perf.snapshots.push({ wall: performance.now(), sea: status.seaTime, pipeline: status.pipelineMs });
++          if (perf.sampling && this === window.breaklineDiagnostics?.mode?.host?.port && document.querySelector('#app')?.dataset.screen === 'ride') perf.snapshots.push({ wall: performance.now(), sea: status.seaTime, pipeline: status.pipelineMs });
+         }
+       });
+     }
+@@ -420,8 +401,10 @@
+ }
+ const page = await launch({ url: PAGE_URL, width: WIDTH, height: HEIGHT, port: Number(args.cdp ?? 9333), args: ['--mute-audio'] });
+ let save = () => {};
++let run;
+ try {
+ await page.send('Page.addScriptToEvaluateOnNewDocument', { source: INSTRUMENT });
++await page.send('Page.addScriptToEvaluateOnNewDocument', { source: AUDIT_PRELUDE });
+ 
+ const browser = await page.eval(`(async () => {
+   const gl = document.createElement('canvas').getContext('webgl2');
+@@ -434,14 +417,12 @@
+   };
+ })()`);
+ browser.chrome = sh('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--version']);
+-if (ordinary && (browser.viewport !== ordinary.expectedViewport || browser.devicePixelRatio !== ordinary.expectedBrowserDpr)) {
+-  throw new Error(`Ordinary viewport/DPR mismatch before gameplay: ${browser.viewport} / ${browser.devicePixelRatio}`);
+-}
++if (browser.devicePixelRatio !== 2) throw new Error(`Initial native DPR differs: ${browser.devicePixelRatio}`);
+ // The display's refresh, from an empty page's frames.
+ browser.refreshHz = Math.round(await page.eval(`new Promise((resolve) => { const times = []; const tick = (t) => { times.push(t); if (times.length < 240) requestAnimationFrame(tick); else { const d = times.slice(1).map((x, i) => x - times[i]).sort((a, b) => a - b); resolve(1000 / d[Math.floor(d.length / 2)]); } }; requestAnimationFrame(tick); })`));
+ 
+ const machine = hardware();
+-const run = { date: new Date().toISOString(), url: PAGE_URL, commit: args.commit ?? '', build: args.build ?? 'production (vite build)', artifact, ordinary, loadAverage: loadavg().map((v) => Number(v.toFixed(2))), machine, browser, window: `${WIDTH} × ${HEIGHT}`, frameCap: 'settings limit within display refresh', gpuTiming: GPU_TIMERS ? 'game context' : 'disabled (passive counters)', menuSeconds: MENU_SECONDS, rideSeconds: RIDE_SECONDS, results: [] };
++run = { date: new Date().toISOString(), url: PAGE_URL, commit: args.commit ?? '', build: args.build ?? 'production (vite build)', artifact, ordinary, loadAverage: loadavg().map((v) => Number(v.toFixed(2))), machine, browser, window: `${WIDTH} × ${HEIGHT}`, frameCap: 'settings limit within display refresh', gpuTiming: GPU_TIMERS ? 'game context' : 'disabled (passive counters)', menuSeconds: MENU_SECONDS, rideSeconds: RIDE_SECONDS, results: [] };
+ console.log(JSON.stringify({ machine, browser }, null, 1));
+ mkdirSync(dirname(OUT), { recursive: true });
+ save = () => writeFileSync(OUT, `${JSON.stringify(run, null, 1)}\n`);
+@@ -528,7 +509,9 @@
+ 
+ async function measure(setting, screen, seconds, warmMs) {
+   await sleep(warmMs);
++  await passiveGuard.observe('sample-start', page, ordinary);
+   const stats = await sample(seconds);
++  await passiveGuard.observe('sample-end', page, ordinary);
+   const failures = ordinary ? validateOrdinary(stats) : [];
+   run.results.push({ setting, screen, ...stats, power: powerNow(), ...(ordinary ? {
+     ordinaryConfigMatches: failures.length === 0, baselineComparable: failures.length === 0 && !GPU_DIAGNOSTIC,
+@@ -602,6 +585,7 @@
+     for (const [name, patch] of FEATURES.filter(([name]) => !only || only.includes(name))) {
+       const graphics = { ...PRESET_VALUES.high, ...patch, preset: Object.keys(patch).length ? 'custom' : 'high' };
+       await load(graphics);
++      await passiveGuard.observe('menu', page, ordinary, true);
+       await sleep(1500);
+       await attempt(name, `Ride · ${spot}`, () => ride(name, spot), graphics);
+     }
+@@ -639,6 +623,14 @@
+     }
+   }
+ } finally {
+-  save();
++  if (run) {
++    run.nativeAudit = passiveGuard.finish(run);
++    run.valid = run.nativeAudit.valid;
++    save();
++  } else {
++    passiveGuard.state.firstFailure ??= { phase: 'before-survey-metadata', message: 'Early operation failed; original command stderr and launcher evidence retained by serial driver' };
++    passiveGuard.save();
++  }
+   await page.close();
+ }
++

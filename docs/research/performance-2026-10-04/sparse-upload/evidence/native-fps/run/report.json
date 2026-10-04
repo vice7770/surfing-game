@@ -1,0 +1,444 @@
+{
+  "schema": "sparse-upload-passive-pair/v1",
+  "plan": {
+    "schema": "sparse-upload-passive-fps-plan/v1",
+    "stage": "source-only; no checks/builds/dryplan/server/browser executed",
+    "purpose": "One prospective accepted6f3 versus exact8-path sparse-only native passive pair; no adoption",
+    "directory": "/private/tmp/surf-sparse-upload-fps-20261004",
+    "runtimeBaseline": "6f321d704269f9f1afc73750ab2b1f4a86f61122",
+    "documentationHeadAtBuildPreparation": null,
+    "buildDirectory": "/private/tmp/surf-sparse-upload-fps-20261004",
+    "commonBuildId": "6f321d704-qa-sparse-upload",
+    "arms": [
+      {
+        "name": "baseline",
+        "port": 4219,
+        "cdp": 9629,
+        "url": "http://127.0.0.1:4219/?diagnostics",
+        "manifest": "/private/tmp/surf-sparse-upload-fps-20261004/baseline/build-manifest.json"
+      },
+      {
+        "name": "candidate",
+        "port": 4220,
+        "cdp": 9630,
+        "url": "http://127.0.0.1:4220/?diagnostics",
+        "manifest": "/private/tmp/surf-sparse-upload-fps-20261004/candidate/build-manifest.json",
+        "condition": "only after baseline command, source/native/runtime guards and owned cleanup are all valid"
+      }
+    ],
+    "schedule": {
+      "warmSeconds": 5,
+      "passiveSampleSeconds": 90,
+      "hardOverallSecondsPerArmIncludingCommandAndCleanup": 180,
+      "commandAbortAtSeconds": 175,
+      "reservedCleanupSeconds": 5,
+      "retries": 0
+    },
+    "route": "Exact original survey High feature row: ordinary menu → Surf → Padang → Big → Paddle out; idle rider; Escape/Quit only after sample",
+    "window": {
+      "initialRequest": {
+        "size": [
+          1708,
+          966
+        ],
+        "position": [
+          60,
+          60
+        ]
+      },
+      "nativeDpr": 2,
+      "subsequentSizing": "none",
+      "reference": "Exact predeclared CSS1708x879/browserDPR2/backing2989x1538; stable native inner/outer/client/bounds through sample",
+      "candidate": "must match retained baseline actual reference and graphics exactly",
+      "noCanonicalCssDimensionsClaim": false,
+      "exactCss": [
+        1708,
+        879
+      ],
+      "exactBacking": [
+        2989,
+        1538
+      ]
+    },
+    "expectedConfig": {
+      "spot": "padang",
+      "seed": 8761,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "runtime": {
+      "backend": "gpu",
+      "physicsCells": 116000,
+      "fixedStepSeconds": 0.016666666666666666,
+      "maxBatchSteps": 1,
+      "actualAdvanceSteps": 1,
+      "renderSpacing": 2,
+      "maskSpacing": 1,
+      "barrelCases": 4,
+      "rider": true
+    },
+    "graphics": {
+      "preset": "high",
+      "renderScale": 1,
+      "nativePixelDensity": true,
+      "frameLimit": 60,
+      "waterSimulation": "auto",
+      "seaDetail": "rich",
+      "caustics": true,
+      "sprayMist": true,
+      "oceanView": "far",
+      "foam": "detailed",
+      "waterLook": "rich",
+      "particles": "high",
+      "pixelRatio": 1.75,
+      "vertexNormals": false
+    },
+    "allowedBootstrap": {
+      "realm": "page only",
+      "target": "Math.random",
+      "method": "exact original survey INSTRUMENT Mulberry32",
+      "initialState": 24301,
+      "hex": "0x5eed",
+      "workerRngOverride": false
+    },
+    "observationalAdditions": [
+      "Actual Worker constructor URL/start metadata and cheap unchanged-postMessage idle/one-step guards",
+      "Sample publication listener excludes menu practice worker and requires actual Ride host.port identity",
+      "Read-only page metadata at loaded menu/sample-start/sample-end",
+      "Source/build/public asset hashes outside sample; exact served compiled hashes before Chrome"
+    ],
+    "unchangedSourceBlocks": [
+      "numerical statistics",
+      "passive sample",
+      "settings/menu load",
+      "ordinary menu-to-ride and quit route"
+    ],
+    "forbidden": [
+      "fitViewport",
+      "Browser.setWindowBounds",
+      "device metrics/emulation resizing",
+      "recording.resize",
+      "keyboard ride input",
+      "pocket reflex",
+      "worker RNG override",
+      "fast-forward/fixed synthetic stepping",
+      "profiler",
+      "GPU timer query",
+      "contact observer/commands",
+      "counterfactual geometry",
+      "contact.last/Y force drain",
+      "production changes",
+      "retry",
+      "port4200 opening"
+    ],
+    "assets": {
+      "binding": "public-assets.json",
+      "files": 38,
+      "bytes": 24249385,
+      "root": "/Users/regina/Desktop/Projects/surfing-game/public",
+      "serving": "shared pinned per-file read-only whitelist; no assets copied; API/dev paths unavailable; unknown source asset fails immediately"
+    },
+    "failure": "First failed guard/command/static resource stops; preserve original stdout, FPS/failure rows and native/launcher evidence. Candidate is prohibited after invalid baseline. SIGTERM followed by SIGKILL only for observed owned child/Chrome PID; verify CDP/server refusal and port4200 still closed.",
+    "proposedChecksBeforeHardware": [
+      "Root-reviewed sequential Node syntax checks for owned .mjs files",
+      "Root-reviewed local plan only; no server/Chrome/network",
+      "Freeze any correction as a new readiness authority before separate sole GPU lease"
+    ],
+    "limits": [
+      "No syntax/dryplan/server/browser/GPU run in this preparation",
+      "One sequential pair is environment/order sensitive; no repeated statistical acceptance",
+      "60 displayed frames do not establish60 fresh physical publications or realtime progress",
+      "Pipeline component quantiles and passive main work are not additive full-request latency",
+      "This pair does not prove moving tube quality, contact lifecycle or default adoption",
+      "Exact native tuple is required; different display/window chrome aborts without resizing, retry or substitute tuple."
+    ]
+  },
+  "valid": true,
+  "incomplete": false,
+  "startedAt": "2026-10-04T03:35:00.266Z",
+  "arms": [
+    {
+      "arm": "baseline",
+      "startedAt": "2026-10-04T03:35:00.267Z",
+      "manifest": {
+        "arm": "baseline",
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/baseline/build-manifest.json",
+        "bytes": 4360,
+        "sha256": "dd42579ae83344394bcf32d5ff814c3737691aafb72d788b76234b2c1026faef"
+      },
+      "valid": true,
+      "compiledServed": [
+        {
+          "path": "assets/devStepping-C4ssK5Wh.js",
+          "bytes": 320,
+          "sha256": "a329c5fbfa79d22e4ed9cf65b0286a25c994ca3cab5fe38bbcbfe4c10cd76053"
+        },
+        {
+          "path": "assets/index-9NNz954J.js",
+          "bytes": 582442,
+          "sha256": "59e54bc509e58523fdccef73dd6993d1c299388521f019a629eb1493a6d15e3a"
+        },
+        {
+          "path": "assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "assets/jevRecorder-CRRjjJKw.js",
+          "bytes": 15917,
+          "sha256": "bc8d58d1f9717d7952a5fed67cbf8cad0d4fddaf9068dd243b7d5d830b023436"
+        },
+        {
+          "path": "assets/particleBench-BKUUa6eD.js",
+          "bytes": 10708,
+          "sha256": "af093ceea52672799f6cf256154a51ed4ca59792882637629a58eb42fb790cc1"
+        },
+        {
+          "path": "assets/rideRecorder-BVvkU-el.js",
+          "bytes": 41108,
+          "sha256": "b4b5295d579ea8ffd27a244d425d11d932f22a800ea700c9caf2ac3b3f3e613b"
+        },
+        {
+          "path": "assets/surfZoneWorker-gVTILj2Q.js",
+          "bytes": 442029,
+          "sha256": "3ff6e3c5c867322bac1caf0ca07bcd8bbe5f8d5c48d974a4b734ca89b5f24d88"
+        },
+        {
+          "path": "assets/waterSheet-B7Sm1p0h.js",
+          "bytes": 11689,
+          "sha256": "391e62655a6c692d34b8d81eb7291726e837201e256f15eb14e495a614e7edfd"
+        },
+        {
+          "path": "assets/WorkerSurfZone-Ciaa3tIB.js",
+          "bytes": 853217,
+          "sha256": "8b6cd5ea2af5bcc22b84747e8a2cd283f6e3c7732a3f2c0b70c52da7fa9576cf"
+        },
+        {
+          "path": "build.json",
+          "bytes": 38,
+          "sha256": "149474becf37ed6889f03c0459792b764dd7bace22797404714ac98932fa6e68"
+        },
+        {
+          "path": "index.html",
+          "bytes": 1626,
+          "sha256": "c3fa554dcd001703ac7af79f6c7d1496692b0a5963bf597cadae08c95328d25f"
+        }
+      ],
+      "port4200": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "serverPreSpawn": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "cdpPreSpawn": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "command": [
+        "/opt/homebrew/Cellar/node/23.10.0_1/bin/node",
+        "/private/tmp/surf-sparse-upload-fps-20261004/survey.mjs",
+        "/private/tmp/surf-sparse-upload-fps-20261004/run/baseline/fps.json",
+        "--url=http://127.0.0.1:4219/?diagnostics",
+        "--dir=/private/tmp/surf-sparse-upload-fps-20261004/baseline/dist",
+        "--features=true",
+        "--only=High (baseline)",
+        "--spot=Padang",
+        "--swell=Big",
+        "--warmSeconds=5",
+        "--rideSeconds=90",
+        "--gpuTiming=false",
+        "--diagnosticGpu=false",
+        "--edition=single-step-publication",
+        "--width=1708",
+        "--height=966",
+        "--cdp=9629",
+        "--commit=6f321d704269f9f1afc73750ab2b1f4a86f61122"
+      ],
+      "pid": 84922,
+      "terminal": {
+        "code": 0,
+        "signal": null,
+        "at": "2026-10-04T03:36:58.930Z"
+      },
+      "authorityUnchangedAfter": true,
+      "fps": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/run/baseline/fps.json",
+        "bytes": 99317,
+        "sha256": "4db449c8117f4ac6a0c1d6ae2f061de9379edb79f75864abe0cd347861b22111"
+      },
+      "nativeAudit": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/run/baseline/native-audit.json",
+        "bytes": 25319,
+        "sha256": "32762ae6fc9eda204b1dd6f505d698b38fb1e0edf7b34f9553ef086842c3ff5b"
+      },
+      "launcher": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/run/baseline/launcher.json",
+        "bytes": 14027,
+        "sha256": "d974b862f77a803862bef57d8dc1bf520100286961e04631fd1ba6e61ae38291"
+      },
+      "cdpClosure": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "serverClosure": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "port4200End": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "endedAt": "2026-10-04T03:36:59.027Z",
+      "elapsedSeconds": 118.76
+    },
+    {
+      "arm": "candidate",
+      "startedAt": "2026-10-04T03:36:59.028Z",
+      "manifest": {
+        "arm": "candidate",
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/candidate/build-manifest.json",
+        "bytes": 6700,
+        "sha256": "4454a8a140dff527aa2b8ec774fefb2ef9d2bca00bcb3d1791a43e2e95617997"
+      },
+      "valid": true,
+      "compiledServed": [
+        {
+          "path": "assets/devStepping-gbvGx2tS.js",
+          "bytes": 320,
+          "sha256": "4724a251ace59576abab9c7645f9546b54958d1b6b540809de2d96688869e509"
+        },
+        {
+          "path": "assets/index-CTdGG0Bw.js",
+          "bytes": 582442,
+          "sha256": "10fc5c67380c0c35ad7ed5129ce9b36156665666a062dee29f66ba012e6e4de0"
+        },
+        {
+          "path": "assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "path": "assets/jevRecorder-BtWwGazc.js",
+          "bytes": 15917,
+          "sha256": "4059f1bc2171e7bdab2dab1a88592bd790a0195b7ee3f4deab55e1fab5a1d2e9"
+        },
+        {
+          "path": "assets/particleBench-CjkB3AbX.js",
+          "bytes": 10708,
+          "sha256": "16e6869630cb821444263091e1850fbacf9ffbcce571ecdbbcaecb986212c038"
+        },
+        {
+          "path": "assets/rideRecorder-Pq1Gld4u.js",
+          "bytes": 41108,
+          "sha256": "5b15f867910c701c81a32b456323e60758fb725a29225b941cd49c078ecdfba4"
+        },
+        {
+          "path": "assets/surfZoneWorker-BaI5kidc.js",
+          "bytes": 444265,
+          "sha256": "bf597c16fefc241ce0c6e73ce803aca7d667101990744c93a9a655d0f9459a74"
+        },
+        {
+          "path": "assets/waterSheet-NziPhfUb.js",
+          "bytes": 11689,
+          "sha256": "14ffff217ead05469f48b9a2e89e3aeb9eacade04c08bc9aae0f05a5348e2598"
+        },
+        {
+          "path": "assets/WorkerSurfZone-DVQo_9jm.js",
+          "bytes": 853393,
+          "sha256": "c0a43972fe7a042cf8b0ede689dec1f8972863a0bb0b6ad2f72475216263944d"
+        },
+        {
+          "path": "build.json",
+          "bytes": 38,
+          "sha256": "149474becf37ed6889f03c0459792b764dd7bace22797404714ac98932fa6e68"
+        },
+        {
+          "path": "index.html",
+          "bytes": 1626,
+          "sha256": "2f4e56dae505ea502a495e1578f6aba10ea73de12bfebb8061564b8db2b446a7"
+        }
+      ],
+      "port4200": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "serverPreSpawn": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "cdpPreSpawn": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "command": [
+        "/opt/homebrew/Cellar/node/23.10.0_1/bin/node",
+        "/private/tmp/surf-sparse-upload-fps-20261004/survey.mjs",
+        "/private/tmp/surf-sparse-upload-fps-20261004/run/candidate/fps.json",
+        "--url=http://127.0.0.1:4220/?diagnostics",
+        "--dir=/private/tmp/surf-sparse-upload-fps-20261004/candidate/dist",
+        "--features=true",
+        "--only=High (baseline)",
+        "--spot=Padang",
+        "--swell=Big",
+        "--warmSeconds=5",
+        "--rideSeconds=90",
+        "--gpuTiming=false",
+        "--diagnosticGpu=false",
+        "--edition=single-step-publication",
+        "--width=1708",
+        "--height=966",
+        "--cdp=9630",
+        "--commit=6f321d704269f9f1afc73750ab2b1f4a86f61122",
+        "--baseline=/private/tmp/surf-sparse-upload-fps-20261004/run/baseline/fps.json"
+      ],
+      "pid": 85643,
+      "terminal": {
+        "code": 0,
+        "signal": null,
+        "at": "2026-10-04T03:38:55.645Z"
+      },
+      "authorityUnchangedAfter": true,
+      "fps": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/run/candidate/fps.json",
+        "bytes": 99417,
+        "sha256": "9c50fa3a13eb82e6edc695e801075f318214123b972acf1c72f597a55b809745"
+      },
+      "nativeAudit": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/run/candidate/native-audit.json",
+        "bytes": 25423,
+        "sha256": "1a46ce1785588a2ab87f485aa63633358e424a1840eb7f46aadea203f2af67e7"
+      },
+      "launcher": {
+        "path": "/private/tmp/surf-sparse-upload-fps-20261004/run/candidate/launcher.json",
+        "bytes": 13710,
+        "sha256": "788b09b612afe0d119b3ea8855b2b7fdb0a7a5804af4a4852cbee519b2838122"
+      },
+      "cdpClosure": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "serverClosure": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "port4200End": {
+        "closed": true,
+        "reason": "ECONNREFUSED"
+      },
+      "endedAt": "2026-10-04T03:38:55.736Z",
+      "elapsedSeconds": 116.708
+    }
+  ],
+  "endedAt": "2026-10-04T03:38:55.737Z"
+}

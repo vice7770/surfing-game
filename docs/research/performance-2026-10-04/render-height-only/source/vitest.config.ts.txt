@@ -1,0 +1,15 @@
+import { defineConfig } from '/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/dist/config.js';
+// @ts-expect-error QA-only .mjs resolver has deliberately no generated declaration file.
+import { canonicalResolver, assertInputs } from './canonical-resolver.mjs';
+// @ts-expect-error QA-only .mjs guard has no generated declaration file.
+import { assertHarness } from './harness-guard.mjs';
+assertHarness(); assertInputs();
+export default defineConfig({
+  plugins: [canonicalResolver()],
+  cacheDir: '/private/tmp/render-height-only-20261004/.cache/vite',
+  test: {
+    include: ['height-parity.test.ts', 'existing/src/scene/water/cubicSurface.test.ts', 'existing/src/scene/WaterSurface.test.ts'],
+    testNamePattern: /height-only parity|equals the board physics|clamps nodes at the grid|flips the per-pixel normal|patches every shader chunk/,
+    testTimeout: 30_000,
+  },
+});

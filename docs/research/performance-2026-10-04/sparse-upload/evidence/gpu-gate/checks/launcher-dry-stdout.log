@@ -1,0 +1,13 @@
+{
+  "armed": false,
+  "readySha256": "bd36df908c340104d1bdd9469a42fdc2195bbce7f083acba634d790eed720829",
+  "launchReadySha256": "f1f78ae5631a4b2e5ae630adc5731d1db9fd92ad9ed0c36dee98c2a39af14683",
+  "command": "SPARSE_READY_SHA256=<reviewed program> SPARSE_LAUNCH_READY_SHA256=<reviewed launcher> node device-gate.mjs --run=true --out=<fresh absolute dir>",
+  "ports": {
+    "server": 4219,
+    "cdp": 9629,
+    "keepClosed": 4200
+  },
+  "hardSeconds": 90,
+  "sequence": "two actual-body/lip180-step exact-nine-field cases + controlled SET1 import/restore, then only if valid24balanced whole runner advance+fill pairs"
+}

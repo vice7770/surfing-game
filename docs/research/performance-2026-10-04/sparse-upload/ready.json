@@ -1,0 +1,68 @@
+{
+  "schema": "sparse-upload-archive-ready/v1",
+  "status": "Lossless archive independently verified; root review pending",
+  "decision": "HOLD / sparse unadopted; no composition trial",
+  "manifest": {
+    "path": "manifest.json",
+    "bytes": 107936,
+    "sha256": "efcecb182463d5eddc98841847376bd133ccce6922cb8c1301da71943c244076"
+  },
+  "verification": {
+    "path": "verification.json",
+    "bytes": 444,
+    "sha256": "0244c422774096e0dc7ea3db1b79fb54fc3cbfb885655fd7b199819460610b89"
+  },
+  "archiveArtifacts": [
+    {
+      "path": "README.md",
+      "bytes": 7036,
+      "sha256": "8c51a2f2e77f5c1924cfb732aa60c4952b9f90c7bcd4e10af0e4871a9e3ccab0"
+    },
+    {
+      "path": "archive.py",
+      "bytes": 5042,
+      "sha256": "fd0264028b0da9c75acb391cf08871fc235286d523f15353e02d7e0bf84113f2"
+    },
+    {
+      "path": "derive-native.py",
+      "bytes": 2255,
+      "sha256": "e10e5d13170a140951bbc27ba43e38084abfb9d1d7a085ae14758471a56508cf"
+    },
+    {
+      "path": "external-authority.json.gz",
+      "bytes": 113903,
+      "sha256": "e2147db0945948d7f96eab3193a753c0846aa2c93dc9061585afef0b6078d16d"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 107936,
+      "sha256": "efcecb182463d5eddc98841847376bd133ccce6922cb8c1301da71943c244076"
+    },
+    {
+      "path": "native-summary.json",
+      "bytes": 16807,
+      "sha256": "406d314310bdb99be4442f2ccbb0bfcd0fa0f6c61d25adb152028ac3b1946cba"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 444,
+      "sha256": "0244c422774096e0dc7ea3db1b79fb54fc3cbfb885655fd7b199819460610b89"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 3608,
+      "sha256": "76710e08f9ffb65eec86a4d97788dfe2bcf2acd165217dedcc13d0df64157ac5"
+    }
+  ],
+  "storedEvidence": {
+    "payloads": 158,
+    "originalFiles": 208,
+    "exactAliasOriginals": 50,
+    "storedBytes": 1000287,
+    "expandedUniqueBytes": 3160296
+  },
+  "noNewRuntimeOperation": true,
+  "productionEdits": false,
+  "sharedIndexEdits": false,
+  "GitMutation": false
+}

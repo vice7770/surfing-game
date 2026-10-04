@@ -1,0 +1,11 @@
+--- a/gpu-gate/worker-entry.ts
++++ b/gpu-gate/worker-entry.ts
+@@ -314,7 +314,7 @@
+     stage('FIXTURE_INTAKE'); const input = await fixture(); report.fixture = input.authority; stage('FIXTURE_PINNED', input.authority);
+     for (const boundary of ['open', 'wall'] as const) { stage(`PARITY_${boundary}`); const result = await smallFixture(boundary); report.parity!.push(result); stage(`PARITY_${boundary}_PASSED`, result); }
+     stage('ORDINARY_MATCHED_STATE_COST'); report.cost = await ordinaryCost(input); healthy();
+-    for (const device of devices) { const error = await device.device.popErrorScope(); if (error) throw Error(`Device validation: ${error.message}`); }
++    for (const device of devices) { if (finishedDevices.has(device)) continue; const error = await device.device.popErrorScope(); if (error) throw Error(`Device validation: ${error.message}`); }
+     report.valid = true; stage('PASSED');
+   } catch (error) { report.failure = { name: error instanceof Error ? error.name : 'unknown', message: String(error), stack: error instanceof Error ? error.stack : null }; stage('FIRST_FAILURE', report.failure); }
+   finally { closing = true; for (const device of devices) device.dispose(); report.cleanup = { devicesDisposed: devices.length, ownedWorker: true, noRAFOrDrawing: true }; scope.postMessage({ kind: 'result', ...report }); }

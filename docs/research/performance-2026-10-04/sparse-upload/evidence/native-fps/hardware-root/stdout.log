@@ -1,0 +1,3 @@
+{"stage":"START","arm":"baseline","pid":84922,"server":4219,"cdp":9629,"sourceManifest":"fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66","compiledManifest":"dd42579ae83344394bcf32d5ff814c3737691aafb72d788b76234b2c1026faef"}
+{"stage":"START","arm":"candidate","pid":85643,"server":4220,"cdp":9630,"sourceManifest":"fab86bd508c318970db415ea083d917b75cce1358e3d61abf0f0b8831be95b66","compiledManifest":"4454a8a140dff527aa2b8ec774fefb2ef9d2bca00bcb3d1791a43e2e95617997"}
+{"valid":true,"incomplete":false,"report":"/private/tmp/surf-sparse-upload-fps-20261004/run/report.json"}

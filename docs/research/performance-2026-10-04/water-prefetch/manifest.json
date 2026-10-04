@@ -1,0 +1,3902 @@
+{
+  "schema": "water-prefetch-evidence-archive/v1",
+  "decision": "adopted-frozen-five-runtime-files-strict-92-focused-tests-and-production-build-pass",
+  "runtimeBaseline": "6f321d704269f9f1afc73750ab2b1f4a86f61122",
+  "runtimePatchSha256": "62208970993401ccc61361b2f7bdaa209419f8b5b9c32be62b7930e83b1936ab",
+  "originalAliasCount": 323,
+  "losslessPayloadCount": 163,
+  "omitted": "Canonical baseline/candidate source trees, node_modules, public assets, compiled bundles and caches are not copied. Their source/build/readiness manifests remain losslessly archived. All intermediate QA versions, first failures and final results are retained.",
+  "records": [
+    {
+      "storedPath": "payloads/59c274122a7f058ada1a38dce3914520a772a6ad7a6d311e398bb953ad65c9cb.gz",
+      "compression": "gzip",
+      "storedBytes": 131,
+      "storedSha256": "09c6beb52866b61b50c8a22f00d833d706db7b6d2b38ebfcb77e7c17df15c77f",
+      "originalBytes": 165,
+      "originalSha256": "59c274122a7f058ada1a38dce3914520a772a6ad7a6d311e398bb953ad65c9cb",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/.vitest-cache/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json",
+          "group": "prototype",
+          "relativePath": ".vitest-cache/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json",
+          "bytes": 165,
+          "sha256": "59c274122a7f058ada1a38dce3914520a772a6ad7a6d311e398bb953ad65c9cb"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/f6112c2e7215092b063c8c2f72d499088ff583b0bfc8c2cd6e653da1a4c47bab.gz",
+      "compression": "gzip",
+      "storedBytes": 16389,
+      "storedSha256": "751217afa55aa5d6290b8c31db4f063e5dcd34f4ebace1d620be4f56b0231100",
+      "originalBytes": 86812,
+      "originalSha256": "f6112c2e7215092b063c8c2f72d499088ff583b0bfc8c2cd6e653da1a4c47bab",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/baseline-manifest.json",
+          "group": "prototype",
+          "relativePath": "baseline-manifest.json",
+          "bytes": 86812,
+          "sha256": "f6112c2e7215092b063c8c2f72d499088ff583b0bfc8c2cd6e653da1a4c47bab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/baseline-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/baseline-manifest.json",
+          "bytes": 86812,
+          "sha256": "f6112c2e7215092b063c8c2f72d499088ff583b0bfc8c2cd6e653da1a4c47bab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/baseline-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/baseline-manifest.json",
+          "bytes": 86812,
+          "sha256": "f6112c2e7215092b063c8c2f72d499088ff583b0bfc8c2cd6e653da1a4c47bab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/baseline-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/baseline-manifest.json",
+          "bytes": 86812,
+          "sha256": "f6112c2e7215092b063c8c2f72d499088ff583b0bfc8c2cd6e653da1a4c47bab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/baseline-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/baseline-manifest.json",
+          "bytes": 86812,
+          "sha256": "f6112c2e7215092b063c8c2f72d499088ff583b0bfc8c2cd6e653da1a4c47bab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/baseline-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/baseline-manifest.json",
+          "bytes": 86812,
+          "sha256": "f6112c2e7215092b063c8c2f72d499088ff583b0bfc8c2cd6e653da1a4c47bab"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/62208970993401ccc61361b2f7bdaa209419f8b5b9c32be62b7930e83b1936ab.gz",
+      "compression": "gzip",
+      "storedBytes": 6796,
+      "storedSha256": "3592faca9bc7e5949f6e2b271d79ee88aec36129d8a12e12fd502d3d38c0b87b",
+      "originalBytes": 27061,
+      "originalSha256": "62208970993401ccc61361b2f7bdaa209419f8b5b9c32be62b7930e83b1936ab",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/candidate.patch",
+          "group": "prototype",
+          "relativePath": "candidate.patch",
+          "bytes": 27061,
+          "sha256": "62208970993401ccc61361b2f7bdaa209419f8b5b9c32be62b7930e83b1936ab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/candidate.patch",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/candidate.patch",
+          "bytes": 27061,
+          "sha256": "62208970993401ccc61361b2f7bdaa209419f8b5b9c32be62b7930e83b1936ab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/candidate.patch",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/candidate.patch",
+          "bytes": 27061,
+          "sha256": "62208970993401ccc61361b2f7bdaa209419f8b5b9c32be62b7930e83b1936ab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/candidate.patch",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/candidate.patch",
+          "bytes": 27061,
+          "sha256": "62208970993401ccc61361b2f7bdaa209419f8b5b9c32be62b7930e83b1936ab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/candidate.patch",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/candidate.patch",
+          "bytes": 27061,
+          "sha256": "62208970993401ccc61361b2f7bdaa209419f8b5b9c32be62b7930e83b1936ab"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/candidate.patch",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/candidate.patch",
+          "bytes": 27061,
+          "sha256": "62208970993401ccc61361b2f7bdaa209419f8b5b9c32be62b7930e83b1936ab"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/9a6cd2d0dfde07a0606c671e8f89b6b1b1590da37e07fb3ae3337cca28c1d332.gz",
+      "compression": "gzip",
+      "storedBytes": 864,
+      "storedSha256": "b1fced5e1f9028d7c365fcd94193e9610c91e6f7dfaae665c4422e542dad9d0e",
+      "originalBytes": 1729,
+      "originalSha256": "9a6cd2d0dfde07a0606c671e8f89b6b1b1590da37e07fb3ae3337cca28c1d332",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/focused-controls.log",
+          "group": "prototype",
+          "relativePath": "checks-controls/focused-controls.log",
+          "bytes": 1729,
+          "sha256": "9a6cd2d0dfde07a0606c671e8f89b6b1b1590da37e07fb3ae3337cca28c1d332"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/09b14719726f93163dd116c5796a2fc2485d2f28fd98489307ecf7896fb2efff.gz",
+      "compression": "gzip",
+      "storedBytes": 1667,
+      "storedSha256": "5442107f871ee9bcc5db9f655ac137e646982a2aa902bdd76e464ea9d11a9ca3",
+      "originalBytes": 4778,
+      "originalSha256": "09b14719726f93163dd116c5796a2fc2485d2f28fd98489307ecf7896fb2efff",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/freeze-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-controls/freeze-manifest.json",
+          "bytes": 4778,
+          "sha256": "09b14719726f93163dd116c5796a2fc2485d2f28fd98489307ecf7896fb2efff"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/c10c163efa0ca64757149ea3778d69c6dc19d053f4f48692d3149cbec9968513.gz",
+      "compression": "gzip",
+      "storedBytes": 1282,
+      "storedSha256": "5ac75ebeb1fc1fd873740b8ff2edbf67048555df8d4e19e590def183adedc607",
+      "originalBytes": 2925,
+      "originalSha256": "c10c163efa0ca64757149ea3778d69c6dc19d053f4f48692d3149cbec9968513",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/run.py",
+          "group": "prototype",
+          "relativePath": "checks-controls/run.py",
+          "bytes": 2925,
+          "sha256": "c10c163efa0ca64757149ea3778d69c6dc19d053f4f48692d3149cbec9968513"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/ff7d1079c1bb4b74077e3478addbc3328a7debf595f844b043093e7d20187548.gz",
+      "compression": "gzip",
+      "storedBytes": 10148,
+      "storedSha256": "d1a0200201a2277815f658970abef8da9917e69456e9e8d0c1afb16a1397ee15",
+      "originalBytes": 50080,
+      "originalSha256": "ff7d1079c1bb4b74077e3478addbc3328a7debf595f844b043093e7d20187548",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-after.json",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-after.json",
+          "bytes": 50080,
+          "sha256": "ff7d1079c1bb4b74077e3478addbc3328a7debf595f844b043093e7d20187548"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before.json",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before.json",
+          "bytes": 50080,
+          "sha256": "ff7d1079c1bb4b74077e3478addbc3328a7debf595f844b043093e7d20187548"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3.gz",
+      "compression": "gzip",
+      "storedBytes": 2795,
+      "storedSha256": "20d46e3732ebc81918fe006640b7725350b6399bb49fc651e7b0fb8278a9c4a0",
+      "originalBytes": 9863,
+      "originalSha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 9863,
+          "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 9863,
+          "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 9863,
+          "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 9863,
+          "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/candidate/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 9863,
+          "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/source-before/src/game/SurfZoneWorkerCore.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/source-before/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 9863,
+          "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/source-before/src/game/SurfZoneWorkerCore.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/source-before/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 9863,
+          "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/source-before/src/game/SurfZoneWorkerCore.ts",
+          "group": "production-adoption",
+          "relativePath": "source-before/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 9863,
+          "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83.gz",
+      "compression": "gzip",
+      "storedBytes": 2822,
+      "storedSha256": "f0aca59059974bb16a85f856196eeacbaac5d549db4b9916b0115aa3baa1b21f",
+      "originalBytes": 8319,
+      "originalSha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "bytes": 8319,
+          "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "bytes": 8319,
+          "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "bytes": 8319,
+          "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "bytes": 8319,
+          "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/candidate/src/game/WorkerSurfZone.ts",
+          "bytes": 8319,
+          "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/source-before/src/game/WorkerSurfZone.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/source-before/src/game/WorkerSurfZone.ts",
+          "bytes": 8319,
+          "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/source-before/src/game/WorkerSurfZone.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/source-before/src/game/WorkerSurfZone.ts",
+          "bytes": 8319,
+          "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/source-before/src/game/WorkerSurfZone.ts",
+          "group": "production-adoption",
+          "relativePath": "source-before/src/game/WorkerSurfZone.ts",
+          "bytes": 8319,
+          "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8.gz",
+      "compression": "gzip",
+      "storedBytes": 12469,
+      "storedSha256": "09afb22511e84de9d7a1f66981b8cde758a7e9cbb892ff57ad2bc9ad911d8fe6",
+      "originalBytes": 40621,
+      "originalSha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "bytes": 40621,
+          "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "bytes": 40621,
+          "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "bytes": 40621,
+          "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "bytes": 40621,
+          "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/candidate/src/wave/SurfZoneRunner.ts",
+          "bytes": 40621,
+          "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/source-before/src/wave/SurfZoneRunner.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/source-before/src/wave/SurfZoneRunner.ts",
+          "bytes": 40621,
+          "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/source-before/src/wave/SurfZoneRunner.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/source-before/src/wave/SurfZoneRunner.ts",
+          "bytes": 40621,
+          "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/source-before/src/wave/SurfZoneRunner.ts",
+          "group": "production-adoption",
+          "relativePath": "source-before/src/wave/SurfZoneRunner.ts",
+          "bytes": 40621,
+          "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920.gz",
+      "compression": "gzip",
+      "storedBytes": 21277,
+      "storedSha256": "1f68d88c9e992a8ead00431151f31e7b4dee1131b4126753109927b6cf14d59b",
+      "originalBytes": 68993,
+      "originalSha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "bytes": 68993,
+          "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "bytes": 68993,
+          "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "bytes": 68993,
+          "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "bytes": 68993,
+          "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/candidate/src/wave/SurfZoneSimulation.ts",
+          "bytes": 68993,
+          "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/source-before/src/wave/SurfZoneSimulation.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/source-before/src/wave/SurfZoneSimulation.ts",
+          "bytes": 68993,
+          "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/source-before/src/wave/SurfZoneSimulation.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/source-before/src/wave/SurfZoneSimulation.ts",
+          "bytes": 68993,
+          "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/source-before/src/wave/SurfZoneSimulation.ts",
+          "group": "production-adoption",
+          "relativePath": "source-before/src/wave/SurfZoneSimulation.ts",
+          "bytes": 68993,
+          "sha256": "5b511f7b2a4f5d3e4f5d43cc374bca9afaaf93ec0ac41efee43c5b302509d920"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094.gz",
+      "compression": "gzip",
+      "storedBytes": 6888,
+      "storedSha256": "28f39625d410fda5178d793e15d870c8b0f472d22ede81bb2e936b3c10a24589",
+      "originalBytes": 23863,
+      "originalSha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "bytes": 23863,
+          "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "bytes": 23863,
+          "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "bytes": 23863,
+          "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "bytes": 23863,
+          "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/candidate/src/wave/gpu/GpuBoussinesq.ts",
+          "bytes": 23863,
+          "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/source-before/src/wave/gpu/GpuBoussinesq.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/source-before/src/wave/gpu/GpuBoussinesq.ts",
+          "bytes": 23863,
+          "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/source-before/src/wave/gpu/GpuBoussinesq.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/source-before/src/wave/gpu/GpuBoussinesq.ts",
+          "bytes": 23863,
+          "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/source-before/src/wave/gpu/GpuBoussinesq.ts",
+          "group": "production-adoption",
+          "relativePath": "source-before/src/wave/gpu/GpuBoussinesq.ts",
+          "bytes": 23863,
+          "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/9591b378d8d91c7e09c456c2d8de4ace1e1e4d52b5ce2da6c7ec30cfc23e5030.gz",
+      "compression": "gzip",
+      "storedBytes": 4087,
+      "storedSha256": "97ebad4306ee2ee24b76f42cf19a3342a0aa13e9759b7b72d3842d9a8dded153",
+      "originalBytes": 14039,
+      "originalSha256": "9591b378d8d91c7e09c456c2d8de4ace1e1e4d52b5ce2da6c7ec30cfc23e5030",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/mapped-result.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/mapped-result.test.ts",
+          "bytes": 14039,
+          "sha256": "9591b378d8d91c7e09c456c2d8de4ace1e1e4d52b5ce2da6c7ec30cfc23e5030"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/mapped-result.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/mapped-result.test.ts",
+          "bytes": 14039,
+          "sha256": "9591b378d8d91c7e09c456c2d8de4ace1e1e4d52b5ce2da6c7ec30cfc23e5030"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/mapped-result.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/mapped-result.test.ts",
+          "bytes": 14039,
+          "sha256": "9591b378d8d91c7e09c456c2d8de4ace1e1e4d52b5ce2da6c7ec30cfc23e5030"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/mapped-result.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/mapped-result.test.ts",
+          "bytes": 14039,
+          "sha256": "9591b378d8d91c7e09c456c2d8de4ace1e1e4d52b5ce2da6c7ec30cfc23e5030"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/mapped-result.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/mapped-result.test.ts",
+          "bytes": 14039,
+          "sha256": "9591b378d8d91c7e09c456c2d8de4ace1e1e4d52b5ce2da6c7ec30cfc23e5030"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/mapped-result.test.ts",
+          "group": "prototype",
+          "relativePath": "mapped-result.test.ts",
+          "bytes": 14039,
+          "sha256": "9591b378d8d91c7e09c456c2d8de4ace1e1e4d52b5ce2da6c7ec30cfc23e5030"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/4cdd7f8ebca7919009d1082840904741e8b0baaa4fa3bfdcf870e47158e5e719.gz",
+      "compression": "gzip",
+      "storedBytes": 907,
+      "storedSha256": "b1b056fe31fb3704c977eb446bcc912edd99d74376e322c3ca3df2b68a7ded58",
+      "originalBytes": 1758,
+      "originalSha256": "4cdd7f8ebca7919009d1082840904741e8b0baaa4fa3bfdcf870e47158e5e719",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/plan-controls.md",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/plan-controls.md",
+          "bytes": 1758,
+          "sha256": "4cdd7f8ebca7919009d1082840904741e8b0baaa4fa3bfdcf870e47158e5e719"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/plan-controls.md",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/plan-controls.md",
+          "bytes": 1758,
+          "sha256": "4cdd7f8ebca7919009d1082840904741e8b0baaa4fa3bfdcf870e47158e5e719"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/plan-controls.md",
+          "group": "prototype",
+          "relativePath": "plan-controls.md",
+          "bytes": 1758,
+          "sha256": "4cdd7f8ebca7919009d1082840904741e8b0baaa4fa3bfdcf870e47158e5e719"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/583170ca0cf1ff5576850f59ab8de34d846bf3dc00f3ff06e6fae113080be453.gz",
+      "compression": "gzip",
+      "storedBytes": 1470,
+      "storedSha256": "6bb61af4fe2947ecbbe86d15ce75a8371b5d51cd65bac0e4b72673e08d510bab",
+      "originalBytes": 2827,
+      "originalSha256": "583170ca0cf1ff5576850f59ab8de34d846bf3dc00f3ff06e6fae113080be453",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/plan-corrected.md",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/plan-corrected.md",
+          "bytes": 2827,
+          "sha256": "583170ca0cf1ff5576850f59ab8de34d846bf3dc00f3ff06e6fae113080be453"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/plan-corrected.md",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/plan-corrected.md",
+          "bytes": 2827,
+          "sha256": "583170ca0cf1ff5576850f59ab8de34d846bf3dc00f3ff06e6fae113080be453"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/plan-corrected.md",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/plan-corrected.md",
+          "bytes": 2827,
+          "sha256": "583170ca0cf1ff5576850f59ab8de34d846bf3dc00f3ff06e6fae113080be453"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/plan-corrected.md",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/plan-corrected.md",
+          "bytes": 2827,
+          "sha256": "583170ca0cf1ff5576850f59ab8de34d846bf3dc00f3ff06e6fae113080be453"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/plan-corrected.md",
+          "group": "prototype",
+          "relativePath": "plan-corrected.md",
+          "bytes": 2827,
+          "sha256": "583170ca0cf1ff5576850f59ab8de34d846bf3dc00f3ff06e6fae113080be453"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/03588e0318906798a6d8c026c774a184cc9256754c025c50dea9dc9498bd1414.gz",
+      "compression": "gzip",
+      "storedBytes": 1172,
+      "storedSha256": "a6d12918a8b3a07f73613238e18ec06f957364aa2bbd564dfd9ae3bf5ec165ce",
+      "originalBytes": 2248,
+      "originalSha256": "03588e0318906798a6d8c026c774a184cc9256754c025c50dea9dc9498bd1414",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/plan-lifecycle.md",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/plan-lifecycle.md",
+          "bytes": 2248,
+          "sha256": "03588e0318906798a6d8c026c774a184cc9256754c025c50dea9dc9498bd1414"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/plan-lifecycle.md",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/plan-lifecycle.md",
+          "bytes": 2248,
+          "sha256": "03588e0318906798a6d8c026c774a184cc9256754c025c50dea9dc9498bd1414"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/plan-lifecycle.md",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/plan-lifecycle.md",
+          "bytes": 2248,
+          "sha256": "03588e0318906798a6d8c026c774a184cc9256754c025c50dea9dc9498bd1414"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/plan-lifecycle.md",
+          "group": "prototype",
+          "relativePath": "plan-lifecycle.md",
+          "bytes": 2248,
+          "sha256": "03588e0318906798a6d8c026c774a184cc9256754c025c50dea9dc9498bd1414"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/b4ef55c33f4a9cc35fa3d799ab172afeea161468aa0cb06b96666b6acbc01bad.gz",
+      "compression": "gzip",
+      "storedBytes": 2665,
+      "storedSha256": "7b6a3aea317243e9fb0315b5afbaef4c45d843a329ee1058012db4ae82d22f7b",
+      "originalBytes": 5342,
+      "originalSha256": "b4ef55c33f4a9cc35fa3d799ab172afeea161468aa0cb06b96666b6acbc01bad",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/plan.md",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/plan.md",
+          "bytes": 5342,
+          "sha256": "b4ef55c33f4a9cc35fa3d799ab172afeea161468aa0cb06b96666b6acbc01bad"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/plan.md",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/plan.md",
+          "bytes": 5342,
+          "sha256": "b4ef55c33f4a9cc35fa3d799ab172afeea161468aa0cb06b96666b6acbc01bad"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/plan.md",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/plan.md",
+          "bytes": 5342,
+          "sha256": "b4ef55c33f4a9cc35fa3d799ab172afeea161468aa0cb06b96666b6acbc01bad"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/plan.md",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/plan.md",
+          "bytes": 5342,
+          "sha256": "b4ef55c33f4a9cc35fa3d799ab172afeea161468aa0cb06b96666b6acbc01bad"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/plan.md",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/plan.md",
+          "bytes": 5342,
+          "sha256": "b4ef55c33f4a9cc35fa3d799ab172afeea161468aa0cb06b96666b6acbc01bad"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/plan.md",
+          "group": "prototype",
+          "relativePath": "plan.md",
+          "bytes": 5342,
+          "sha256": "b4ef55c33f4a9cc35fa3d799ab172afeea161468aa0cb06b96666b6acbc01bad"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/0cb6dff63e67f737b28db2488591dccc09a770f3e38afd23de5831db77a7537c.gz",
+      "compression": "gzip",
+      "storedBytes": 7309,
+      "storedSha256": "b01273bb313c2504406b6ad689e111a632ff444ac654fc9e9220b9a2c137f2ba",
+      "originalBytes": 26541,
+      "originalSha256": "0cb6dff63e67f737b28db2488591dccc09a770f3e38afd23de5831db77a7537c",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/prefetch.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/prefetch.test.ts",
+          "bytes": 26541,
+          "sha256": "0cb6dff63e67f737b28db2488591dccc09a770f3e38afd23de5831db77a7537c"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/1b80994beed148297aca257279e2995ecfd15e0fe6a186681c463a9ab4437c20.gz",
+      "compression": "gzip",
+      "storedBytes": 1459,
+      "storedSha256": "ac4b0f85f60b82c2e61823341c8bfa2cf02f0d1124c76ebe04bfd02da0ed7902",
+      "originalBytes": 2977,
+      "originalSha256": "1b80994beed148297aca257279e2995ecfd15e0fe6a186681c463a9ab4437c20",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/prepare.mjs",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/prepare.mjs",
+          "bytes": 2977,
+          "sha256": "1b80994beed148297aca257279e2995ecfd15e0fe6a186681c463a9ab4437c20"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/prepare.mjs",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/prepare.mjs",
+          "bytes": 2977,
+          "sha256": "1b80994beed148297aca257279e2995ecfd15e0fe6a186681c463a9ab4437c20"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/prepare.mjs",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/prepare.mjs",
+          "bytes": 2977,
+          "sha256": "1b80994beed148297aca257279e2995ecfd15e0fe6a186681c463a9ab4437c20"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/prepare.mjs",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/prepare.mjs",
+          "bytes": 2977,
+          "sha256": "1b80994beed148297aca257279e2995ecfd15e0fe6a186681c463a9ab4437c20"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/prepare.mjs",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/prepare.mjs",
+          "bytes": 2977,
+          "sha256": "1b80994beed148297aca257279e2995ecfd15e0fe6a186681c463a9ab4437c20"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/prepare.mjs",
+          "group": "prototype",
+          "relativePath": "prepare.mjs",
+          "bytes": 2977,
+          "sha256": "1b80994beed148297aca257279e2995ecfd15e0fe6a186681c463a9ab4437c20"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/0b468637731083919359fc90e3de94717a9d166a6abe9d0cd0bdb01c9486e48a.gz",
+      "compression": "gzip",
+      "storedBytes": 617,
+      "storedSha256": "f642db9c5ceebd8dfb1a919f2a7ae408f3a850b468a2604a72f4b05b83678001",
+      "originalBytes": 1306,
+      "originalSha256": "0b468637731083919359fc90e3de94717a9d166a6abe9d0cd0bdb01c9486e48a",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/qa-controls.patch",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/qa-controls.patch",
+          "bytes": 1306,
+          "sha256": "0b468637731083919359fc90e3de94717a9d166a6abe9d0cd0bdb01c9486e48a"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/qa-controls.patch",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/qa-controls.patch",
+          "bytes": 1306,
+          "sha256": "0b468637731083919359fc90e3de94717a9d166a6abe9d0cd0bdb01c9486e48a"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/qa-controls.patch",
+          "group": "prototype",
+          "relativePath": "qa-controls.patch",
+          "bytes": 1306,
+          "sha256": "0b468637731083919359fc90e3de94717a9d166a6abe9d0cd0bdb01c9486e48a"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/7f7f3b69daad1f287e721d64e6fa548359838abe3a9a8f97937ba4579ed94152.gz",
+      "compression": "gzip",
+      "storedBytes": 835,
+      "storedSha256": "c8bf673a5d9c128c7d1219ba4232641058f66ffe0c99d2e09a3b09536b34bf23",
+      "originalBytes": 1983,
+      "originalSha256": "7f7f3b69daad1f287e721d64e6fa548359838abe3a9a8f97937ba4579ed94152",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/qa-lifecycle.patch",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/qa-lifecycle.patch",
+          "bytes": 1983,
+          "sha256": "7f7f3b69daad1f287e721d64e6fa548359838abe3a9a8f97937ba4579ed94152"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/qa-lifecycle.patch",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/qa-lifecycle.patch",
+          "bytes": 1983,
+          "sha256": "7f7f3b69daad1f287e721d64e6fa548359838abe3a9a8f97937ba4579ed94152"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/qa-lifecycle.patch",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/qa-lifecycle.patch",
+          "bytes": 1983,
+          "sha256": "7f7f3b69daad1f287e721d64e6fa548359838abe3a9a8f97937ba4579ed94152"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/qa-lifecycle.patch",
+          "group": "prototype",
+          "relativePath": "qa-lifecycle.patch",
+          "bytes": 1983,
+          "sha256": "7f7f3b69daad1f287e721d64e6fa548359838abe3a9a8f97937ba4579ed94152"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/50e2b9d33d26e6051e67aa357f5482dd24fc4e49f7cca422a88ed34e78b2d003.gz",
+      "compression": "gzip",
+      "storedBytes": 2438,
+      "storedSha256": "0583081210ebae17755224b73eb546ec09a6aea18986ff207a38bb6e944ef2f0",
+      "originalBytes": 6898,
+      "originalSha256": "50e2b9d33d26e6051e67aa357f5482dd24fc4e49f7cca422a88ed34e78b2d003",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/qa-repair.patch",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/qa-repair.patch",
+          "bytes": 6898,
+          "sha256": "50e2b9d33d26e6051e67aa357f5482dd24fc4e49f7cca422a88ed34e78b2d003"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/qa-repair.patch",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/qa-repair.patch",
+          "bytes": 6898,
+          "sha256": "50e2b9d33d26e6051e67aa357f5482dd24fc4e49f7cca422a88ed34e78b2d003"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/qa-repair.patch",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/qa-repair.patch",
+          "bytes": 6898,
+          "sha256": "50e2b9d33d26e6051e67aa357f5482dd24fc4e49f7cca422a88ed34e78b2d003"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/qa-repair.patch",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/qa-repair.patch",
+          "bytes": 6898,
+          "sha256": "50e2b9d33d26e6051e67aa357f5482dd24fc4e49f7cca422a88ed34e78b2d003"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/qa-repair.patch",
+          "group": "prototype",
+          "relativePath": "qa-repair.patch",
+          "bytes": 6898,
+          "sha256": "50e2b9d33d26e6051e67aa357f5482dd24fc4e49f7cca422a88ed34e78b2d003"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/278e00f59fcd8cd7841fc44648812f708bd97abea948beb95890127a0b5fad6d.gz",
+      "compression": "gzip",
+      "storedBytes": 2769,
+      "storedSha256": "41de90a765afacf0f41b1496af0177d6d0c0f9bb63f4183570c7fe8d3d2d2502",
+      "originalBytes": 7127,
+      "originalSha256": "278e00f59fcd8cd7841fc44648812f708bd97abea948beb95890127a0b5fad6d",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/ready-controls.json",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/ready-controls.json",
+          "bytes": 7127,
+          "sha256": "278e00f59fcd8cd7841fc44648812f708bd97abea948beb95890127a0b5fad6d"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/ready-controls.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/ready-controls.json",
+          "bytes": 7127,
+          "sha256": "278e00f59fcd8cd7841fc44648812f708bd97abea948beb95890127a0b5fad6d"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/ready-controls.json",
+          "group": "prototype",
+          "relativePath": "ready-controls.json",
+          "bytes": 7127,
+          "sha256": "278e00f59fcd8cd7841fc44648812f708bd97abea948beb95890127a0b5fad6d"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/526f27c2db7af312e6efac20b2df449c50668f5bfc23e3ea24f94ccdc9f650eb.gz",
+      "compression": "gzip",
+      "storedBytes": 1970,
+      "storedSha256": "7fa8f57576ee83573aa282e4d6ec3c33a60d42695d1a93d014c19f4bdc8c00cd",
+      "originalBytes": 4613,
+      "originalSha256": "526f27c2db7af312e6efac20b2df449c50668f5bfc23e3ea24f94ccdc9f650eb",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/ready-corrected.json",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/ready-corrected.json",
+          "bytes": 4613,
+          "sha256": "526f27c2db7af312e6efac20b2df449c50668f5bfc23e3ea24f94ccdc9f650eb"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/ready-corrected.json",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/ready-corrected.json",
+          "bytes": 4613,
+          "sha256": "526f27c2db7af312e6efac20b2df449c50668f5bfc23e3ea24f94ccdc9f650eb"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/ready-corrected.json",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/ready-corrected.json",
+          "bytes": 4613,
+          "sha256": "526f27c2db7af312e6efac20b2df449c50668f5bfc23e3ea24f94ccdc9f650eb"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/ready-corrected.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/ready-corrected.json",
+          "bytes": 4613,
+          "sha256": "526f27c2db7af312e6efac20b2df449c50668f5bfc23e3ea24f94ccdc9f650eb"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/ready-corrected.json",
+          "group": "prototype",
+          "relativePath": "ready-corrected.json",
+          "bytes": 4613,
+          "sha256": "526f27c2db7af312e6efac20b2df449c50668f5bfc23e3ea24f94ccdc9f650eb"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/b41ce6e9c61e410d702ade9edcf4513073d3ae75a92a83b61f6fde790198dfc7.gz",
+      "compression": "gzip",
+      "storedBytes": 2368,
+      "storedSha256": "2da3ea76bb2345c058743b05b572fc9333510785e7d49087ad7b3623321c2019",
+      "originalBytes": 5834,
+      "originalSha256": "b41ce6e9c61e410d702ade9edcf4513073d3ae75a92a83b61f6fde790198dfc7",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/ready-lifecycle.json",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/ready-lifecycle.json",
+          "bytes": 5834,
+          "sha256": "b41ce6e9c61e410d702ade9edcf4513073d3ae75a92a83b61f6fde790198dfc7"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/ready-lifecycle.json",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/ready-lifecycle.json",
+          "bytes": 5834,
+          "sha256": "b41ce6e9c61e410d702ade9edcf4513073d3ae75a92a83b61f6fde790198dfc7"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/ready-lifecycle.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/ready-lifecycle.json",
+          "bytes": 5834,
+          "sha256": "b41ce6e9c61e410d702ade9edcf4513073d3ae75a92a83b61f6fde790198dfc7"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/ready-lifecycle.json",
+          "group": "prototype",
+          "relativePath": "ready-lifecycle.json",
+          "bytes": 5834,
+          "sha256": "b41ce6e9c61e410d702ade9edcf4513073d3ae75a92a83b61f6fde790198dfc7"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/666d7980e8207c2fe1e610ca38ff6f647a6f0b4ba83467086907003af1b26cca.gz",
+      "compression": "gzip",
+      "storedBytes": 155,
+      "storedSha256": "5241a58d38358c1af6ef6af51dd285e2ab44703cc9757029a3284ea4d7c0f0ef",
+      "originalBytes": 185,
+      "originalSha256": "666d7980e8207c2fe1e610ca38ff6f647a6f0b4ba83467086907003af1b26cca",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/tsconfig.prefetch.json",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/tsconfig.prefetch.json",
+          "bytes": 185,
+          "sha256": "666d7980e8207c2fe1e610ca38ff6f647a6f0b4ba83467086907003af1b26cca"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/tsconfig.prefetch.json",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/tsconfig.prefetch.json",
+          "bytes": 185,
+          "sha256": "666d7980e8207c2fe1e610ca38ff6f647a6f0b4ba83467086907003af1b26cca"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/tsconfig.prefetch.json",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/tsconfig.prefetch.json",
+          "bytes": 185,
+          "sha256": "666d7980e8207c2fe1e610ca38ff6f647a6f0b4ba83467086907003af1b26cca"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/tsconfig.prefetch.json",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/tsconfig.prefetch.json",
+          "bytes": 185,
+          "sha256": "666d7980e8207c2fe1e610ca38ff6f647a6f0b4ba83467086907003af1b26cca"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/tsconfig.prefetch.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/tsconfig.prefetch.json",
+          "bytes": 185,
+          "sha256": "666d7980e8207c2fe1e610ca38ff6f647a6f0b4ba83467086907003af1b26cca"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/tsconfig.prefetch.json",
+          "group": "prototype",
+          "relativePath": "tsconfig.prefetch.json",
+          "bytes": 185,
+          "sha256": "666d7980e8207c2fe1e610ca38ff6f647a6f0b4ba83467086907003af1b26cca"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/f1c80ba967ecdd7457d559e04f2e963b3ca143075309115d5b84545558ed92d3.gz",
+      "compression": "gzip",
+      "storedBytes": 210,
+      "storedSha256": "5e2cfc812029fce3a2f68559022f218919f656330bafcc8b2e3fa859cf7ea01a",
+      "originalBytes": 270,
+      "originalSha256": "f1c80ba967ecdd7457d559e04f2e963b3ca143075309115d5b84545558ed92d3",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/source-before/vitest.prefetch.config.ts",
+          "group": "prototype",
+          "relativePath": "checks-controls/source-before/vitest.prefetch.config.ts",
+          "bytes": 270,
+          "sha256": "f1c80ba967ecdd7457d559e04f2e963b3ca143075309115d5b84545558ed92d3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/vitest.prefetch.config.ts",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/vitest.prefetch.config.ts",
+          "bytes": 270,
+          "sha256": "f1c80ba967ecdd7457d559e04f2e963b3ca143075309115d5b84545558ed92d3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/vitest.prefetch.config.ts",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/vitest.prefetch.config.ts",
+          "bytes": 270,
+          "sha256": "f1c80ba967ecdd7457d559e04f2e963b3ca143075309115d5b84545558ed92d3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/vitest.prefetch.config.ts",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/vitest.prefetch.config.ts",
+          "bytes": 270,
+          "sha256": "f1c80ba967ecdd7457d559e04f2e963b3ca143075309115d5b84545558ed92d3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/vitest.prefetch.config.ts",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/vitest.prefetch.config.ts",
+          "bytes": 270,
+          "sha256": "f1c80ba967ecdd7457d559e04f2e963b3ca143075309115d5b84545558ed92d3"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/vitest.prefetch.config.ts",
+          "group": "prototype",
+          "relativePath": "vitest.prefetch.config.ts",
+          "bytes": 270,
+          "sha256": "f1c80ba967ecdd7457d559e04f2e963b3ca143075309115d5b84545558ed92d3"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.gz",
+      "compression": "gzip",
+      "storedBytes": 20,
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/strict-controls.log",
+          "group": "prototype",
+          "relativePath": "checks-controls/strict-controls.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/strict-corrected.log",
+          "group": "prototype",
+          "relativePath": "checks-corrected/strict-corrected.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/strict-first.log",
+          "group": "prototype",
+          "relativePath": "checks-first/strict-first.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/strict-lifecycle.log",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/strict-lifecycle.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/strict-scoped.log",
+          "group": "prototype",
+          "relativePath": "checks-scoped/strict-scoped.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/build-syntax.stderr.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/build-syntax.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/build-syntax.stdout.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/build-syntax.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/bundle.stderr.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/bundle.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/launcher-syntax.stderr.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/launcher-syntax.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/launcher-syntax.stdout.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/launcher-syntax.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/strict.stderr.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/strict.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/strict.stdout.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/strict.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/unarmed-plan.stderr.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/unarmed-plan.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/baseline-strict.stderr.log",
+          "group": "fps",
+          "relativePath": "checks-first/baseline-strict.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/baseline-strict.stdout.log",
+          "group": "fps",
+          "relativePath": "checks-first/baseline-strict.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/candidate-strict.stderr.log",
+          "group": "fps",
+          "relativePath": "checks-first/candidate-strict.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/candidate-strict.stdout.log",
+          "group": "fps",
+          "relativePath": "checks-first/candidate-strict.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/guard-syntax.stderr.log",
+          "group": "fps",
+          "relativePath": "checks-first/guard-syntax.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/guard-syntax.stdout.log",
+          "group": "fps",
+          "relativePath": "checks-first/guard-syntax.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/native-syntax.stderr.log",
+          "group": "fps",
+          "relativePath": "checks-first/native-syntax.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/native-syntax.stdout.log",
+          "group": "fps",
+          "relativePath": "checks-first/native-syntax.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/pair-syntax.stderr.log",
+          "group": "fps",
+          "relativePath": "checks-first/pair-syntax.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/pair-syntax.stdout.log",
+          "group": "fps",
+          "relativePath": "checks-first/pair-syntax.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/survey-syntax.stderr.log",
+          "group": "fps",
+          "relativePath": "checks-first/survey-syntax.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/survey-syntax.stdout.log",
+          "group": "fps",
+          "relativePath": "checks-first/survey-syntax.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/unarmed-pair-plan.stderr.log",
+          "group": "fps",
+          "relativePath": "checks-first/unarmed-pair-plan.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/hardware-root/stderr.log",
+          "group": "fps",
+          "relativePath": "hardware-root/stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/strict.stderr.log",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/strict.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/strict.stdout.log",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/strict.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/portable-focused.stderr.log",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/portable-focused.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/strict.stderr.log",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/strict.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/strict.stdout.log",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/strict.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/strict.stderr.log",
+          "group": "production-adoption",
+          "relativePath": "strict.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/f7f473d6c8b642017acd03a962cb3122389c3ee7eb4cf659aed2822ad5d76c5e.gz",
+      "compression": "gzip",
+      "storedBytes": 565,
+      "storedSha256": "3256fee9fad1bdebce483f712f818378f40600ec0097bba9266bb4d7bf7b74cd",
+      "originalBytes": 1438,
+      "originalSha256": "f7f473d6c8b642017acd03a962cb3122389c3ee7eb4cf659aed2822ad5d76c5e",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-controls/terminal.json",
+          "group": "prototype",
+          "relativePath": "checks-controls/terminal.json",
+          "bytes": 1438,
+          "sha256": "f7f473d6c8b642017acd03a962cb3122389c3ee7eb4cf659aed2822ad5d76c5e"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/0fa0ecd8a629683f8b20fdb23149d4c26b39a85c5a651115c5b50977e2a64b65.gz",
+      "compression": "gzip",
+      "storedBytes": 876,
+      "storedSha256": "aeb7bee3463f320bd7aa3b45c5c39e47ae65048cc5bba55416f6adc7066ed02e",
+      "originalBytes": 1858,
+      "originalSha256": "0fa0ecd8a629683f8b20fdb23149d4c26b39a85c5a651115c5b50977e2a64b65",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/focused-corrected.log",
+          "group": "prototype",
+          "relativePath": "checks-corrected/focused-corrected.log",
+          "bytes": 1858,
+          "sha256": "0fa0ecd8a629683f8b20fdb23149d4c26b39a85c5a651115c5b50977e2a64b65"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/b9b190c3370d168a237988c9e091facfb46597f3e9f2b72ac05d4ad1b2c91695.gz",
+      "compression": "gzip",
+      "storedBytes": 1360,
+      "storedSha256": "ae8d55021aab9b64b5a5fe75288eec269ade81e6ad0727b1a32fd98d11a4e9ed",
+      "originalBytes": 3780,
+      "originalSha256": "b9b190c3370d168a237988c9e091facfb46597f3e9f2b72ac05d4ad1b2c91695",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/freeze-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-corrected/freeze-manifest.json",
+          "bytes": 3780,
+          "sha256": "b9b190c3370d168a237988c9e091facfb46597f3e9f2b72ac05d4ad1b2c91695"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/430c628d5ff77ba78ad3b14095840852e575406a48d75725b6ae987ca7e32704.gz",
+      "compression": "gzip",
+      "storedBytes": 1283,
+      "storedSha256": "fcaba90b994e0eeb5bf42af8d4c9dfd677f7d10329e022b52948a03518c20931",
+      "originalBytes": 2933,
+      "originalSha256": "430c628d5ff77ba78ad3b14095840852e575406a48d75725b6ae987ca7e32704",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/run.py",
+          "group": "prototype",
+          "relativePath": "checks-corrected/run.py",
+          "bytes": 2933,
+          "sha256": "430c628d5ff77ba78ad3b14095840852e575406a48d75725b6ae987ca7e32704"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/23372e321790a5ae9a7008ed28aad74d18b9b0373fb4bf2c348e6257b40c4eaa.gz",
+      "compression": "gzip",
+      "storedBytes": 9838,
+      "storedSha256": "2995c35ff6e07ea36f9cb49eb25af56919766e52e4b2492534596f580399db9f",
+      "originalBytes": 49223,
+      "originalSha256": "23372e321790a5ae9a7008ed28aad74d18b9b0373fb4bf2c348e6257b40c4eaa",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-after.json",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-after.json",
+          "bytes": 49223,
+          "sha256": "23372e321790a5ae9a7008ed28aad74d18b9b0373fb4bf2c348e6257b40c4eaa"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before.json",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before.json",
+          "bytes": 49223,
+          "sha256": "23372e321790a5ae9a7008ed28aad74d18b9b0373fb4bf2c348e6257b40c4eaa"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/3c84330b560aafe17513f544ed2e580533c37c57344bc0fd84844a9858acec6b.gz",
+      "compression": "gzip",
+      "storedBytes": 7040,
+      "storedSha256": "3d82a52ec1c33b45bf8faa2b209eacbb6fdf85a546f67369d4bd6635c849ed8e",
+      "originalBytes": 25324,
+      "originalSha256": "3c84330b560aafe17513f544ed2e580533c37c57344bc0fd84844a9858acec6b",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/source-before/prefetch.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-corrected/source-before/prefetch.test.ts",
+          "bytes": 25324,
+          "sha256": "3c84330b560aafe17513f544ed2e580533c37c57344bc0fd84844a9858acec6b"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/82e80dba9770fdf47a13440a5d91f75a94963b96d0466b08a3e936786fdffaaf.gz",
+      "compression": "gzip",
+      "storedBytes": 565,
+      "storedSha256": "9e8712f3f49d698445aefffafd76f00af4689c291d1754b2092c01c251795bc3",
+      "originalBytes": 1441,
+      "originalSha256": "82e80dba9770fdf47a13440a5d91f75a94963b96d0466b08a3e936786fdffaaf",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-corrected/terminal.json",
+          "group": "prototype",
+          "relativePath": "checks-corrected/terminal.json",
+          "bytes": 1441,
+          "sha256": "82e80dba9770fdf47a13440a5d91f75a94963b96d0466b08a3e936786fdffaaf"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/c62ff059e69aa6cd16d1bc8f8e42e7c38d71078fd1e998c1a4e4b7d664d7dd90.gz",
+      "compression": "gzip",
+      "storedBytes": 1301,
+      "storedSha256": "76c09d2d79bba151cb4d6c2c55e0d75ba8c45570f731ac8158dee6e15f202c1c",
+      "originalBytes": 3762,
+      "originalSha256": "c62ff059e69aa6cd16d1bc8f8e42e7c38d71078fd1e998c1a4e4b7d664d7dd90",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/focused-first.log",
+          "group": "prototype",
+          "relativePath": "checks-first/focused-first.log",
+          "bytes": 3762,
+          "sha256": "c62ff059e69aa6cd16d1bc8f8e42e7c38d71078fd1e998c1a4e4b7d664d7dd90"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/807aa9ae2a84693ffd0cbd48c0233737f04ec8cb25fdd6ab7ddc6d92a884d33a.gz",
+      "compression": "gzip",
+      "storedBytes": 1248,
+      "storedSha256": "6ac414e2e8048ecd90809b824557762c810b42f166fd4f6f07bb20929486c1b9",
+      "originalBytes": 3428,
+      "originalSha256": "807aa9ae2a84693ffd0cbd48c0233737f04ec8cb25fdd6ab7ddc6d92a884d33a",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/freeze-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-first/freeze-manifest.json",
+          "bytes": 3428,
+          "sha256": "807aa9ae2a84693ffd0cbd48c0233737f04ec8cb25fdd6ab7ddc6d92a884d33a"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/a0a4198d023c858810a3cdcccf4468262b56f934027a8e1dfbd3ede00764eac7.gz",
+      "compression": "gzip",
+      "storedBytes": 1277,
+      "storedSha256": "2ba8702b18baea925b832165515385b2ae598232d5c49e681df5966508849899",
+      "originalBytes": 2877,
+      "originalSha256": "a0a4198d023c858810a3cdcccf4468262b56f934027a8e1dfbd3ede00764eac7",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/run.py",
+          "group": "prototype",
+          "relativePath": "checks-first/run.py",
+          "bytes": 2877,
+          "sha256": "a0a4198d023c858810a3cdcccf4468262b56f934027a8e1dfbd3ede00764eac7"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/3a65b98f90d8f2d1ac4d26c10eb97da4e7e79accbef98f539e020bf3583930fc.gz",
+      "compression": "gzip",
+      "storedBytes": 9725,
+      "storedSha256": "c3efdbbbbcd9a6f0a5ce0d0fa4ccbd3d9a24d4b6b51da90dd1af319e57d61d6e",
+      "originalBytes": 48931,
+      "originalSha256": "3a65b98f90d8f2d1ac4d26c10eb97da4e7e79accbef98f539e020bf3583930fc",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-after.json",
+          "group": "prototype",
+          "relativePath": "checks-first/source-after.json",
+          "bytes": 48931,
+          "sha256": "3a65b98f90d8f2d1ac4d26c10eb97da4e7e79accbef98f539e020bf3583930fc"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before.json",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before.json",
+          "bytes": 48931,
+          "sha256": "3a65b98f90d8f2d1ac4d26c10eb97da4e7e79accbef98f539e020bf3583930fc"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/289b7bdbae330d021fd237054800ac6bb1be8b9d009e6486a887571d74c50bf1.gz",
+      "compression": "gzip",
+      "storedBytes": 6272,
+      "storedSha256": "3ce26124907f4d86f5c4597428b151fd4b3e7bff0473461192128fd74d89b1af",
+      "originalBytes": 21833,
+      "originalSha256": "289b7bdbae330d021fd237054800ac6bb1be8b9d009e6486a887571d74c50bf1",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/prefetch.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/prefetch.test.ts",
+          "bytes": 21833,
+          "sha256": "289b7bdbae330d021fd237054800ac6bb1be8b9d009e6486a887571d74c50bf1"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/d5252da9f84dfc58d32c8dbb841ca1c7e37b93b26bb96ec768ac98e4da269c59.gz",
+      "compression": "gzip",
+      "storedBytes": 1463,
+      "storedSha256": "aa76f804d7b2f8089af6f2b28f852240984f9f6abedb778eafeafe90484c41dd",
+      "originalBytes": 3390,
+      "originalSha256": "d5252da9f84dfc58d32c8dbb841ca1c7e37b93b26bb96ec768ac98e4da269c59",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/source-before/ready.json",
+          "group": "prototype",
+          "relativePath": "checks-first/source-before/ready.json",
+          "bytes": 3390,
+          "sha256": "d5252da9f84dfc58d32c8dbb841ca1c7e37b93b26bb96ec768ac98e4da269c59"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/ready.json",
+          "group": "prototype",
+          "relativePath": "ready.json",
+          "bytes": 3390,
+          "sha256": "d5252da9f84dfc58d32c8dbb841ca1c7e37b93b26bb96ec768ac98e4da269c59"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/47abecf6cde06e4d804768e4a4459d54e995317895acfc1268091727e4012379.gz",
+      "compression": "gzip",
+      "storedBytes": 564,
+      "storedSha256": "072f25b2e97cee410720218561cb3de04c793cd59278b64793656d880189db2d",
+      "originalBytes": 1429,
+      "originalSha256": "47abecf6cde06e4d804768e4a4459d54e995317895acfc1268091727e4012379",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-first/terminal.json",
+          "group": "prototype",
+          "relativePath": "checks-first/terminal.json",
+          "bytes": 1429,
+          "sha256": "47abecf6cde06e4d804768e4a4459d54e995317895acfc1268091727e4012379"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/06d2d6a24bfece2e170b0eacdbfcc8909c947a055868ad8a494409dfafef66f1.gz",
+      "compression": "gzip",
+      "storedBytes": 865,
+      "storedSha256": "b4b1ecce83deb17318cd98e2b3d15bc11948be83d1e48fddcac3b68e172300aa",
+      "originalBytes": 1730,
+      "originalSha256": "06d2d6a24bfece2e170b0eacdbfcc8909c947a055868ad8a494409dfafef66f1",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/focused-lifecycle.log",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/focused-lifecycle.log",
+          "bytes": 1730,
+          "sha256": "06d2d6a24bfece2e170b0eacdbfcc8909c947a055868ad8a494409dfafef66f1"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/626cd0b131c971d5ced61ede8b0a983b52883220079757a2cf6f7678c78e7eaf.gz",
+      "compression": "gzip",
+      "storedBytes": 1512,
+      "storedSha256": "d67679433ce7106293eab907fd67e6a54736afe18b964e233dabf6269548ecff",
+      "originalBytes": 4282,
+      "originalSha256": "626cd0b131c971d5ced61ede8b0a983b52883220079757a2cf6f7678c78e7eaf",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/freeze-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/freeze-manifest.json",
+          "bytes": 4282,
+          "sha256": "626cd0b131c971d5ced61ede8b0a983b52883220079757a2cf6f7678c78e7eaf"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/c369fccd64613decb7febabc766d6a77320a1c2c9ad8116f9c9dfab3411cc597.gz",
+      "compression": "gzip",
+      "storedBytes": 1284,
+      "storedSha256": "f035bbd9f2071919a5b5f7f00a3da226fecbb1f656bda00da28cedff4e037be5",
+      "originalBytes": 2933,
+      "originalSha256": "c369fccd64613decb7febabc766d6a77320a1c2c9ad8116f9c9dfab3411cc597",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/run.py",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/run.py",
+          "bytes": 2933,
+          "sha256": "c369fccd64613decb7febabc766d6a77320a1c2c9ad8116f9c9dfab3411cc597"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/6e8338e7cf95aaf33154c4b9c6ee19ba699a20213de95c26d11a4311c7a522ef.gz",
+      "compression": "gzip",
+      "storedBytes": 9993,
+      "storedSha256": "c507b7ce8f11aee59a3d5f2ab97271505434f858e7e533774a820ddfa4a49866",
+      "originalBytes": 49653,
+      "originalSha256": "6e8338e7cf95aaf33154c4b9c6ee19ba699a20213de95c26d11a4311c7a522ef",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-after.json",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-after.json",
+          "bytes": 49653,
+          "sha256": "6e8338e7cf95aaf33154c4b9c6ee19ba699a20213de95c26d11a4311c7a522ef"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before.json",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before.json",
+          "bytes": 49653,
+          "sha256": "6e8338e7cf95aaf33154c4b9c6ee19ba699a20213de95c26d11a4311c7a522ef"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/77452f7aee7601e23810a98631b8c09eb4dbd4f601958f743c7185da42fa2a13.gz",
+      "compression": "gzip",
+      "storedBytes": 7308,
+      "storedSha256": "bcb3a8e758a63ecc3c08e818abf1acd6cf9558dcfca5b0921abcb55e5e8ed90e",
+      "originalBytes": 26131,
+      "originalSha256": "77452f7aee7601e23810a98631b8c09eb4dbd4f601958f743c7185da42fa2a13",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/source-before/prefetch.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/source-before/prefetch.test.ts",
+          "bytes": 26131,
+          "sha256": "77452f7aee7601e23810a98631b8c09eb4dbd4f601958f743c7185da42fa2a13"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/06315412db1d3298a844e570cc665ca1a9122f221dc3dd7b130aa474492af7b5.gz",
+      "compression": "gzip",
+      "storedBytes": 569,
+      "storedSha256": "47d07ee913cf6a255b574c5e0ebed1fd069300909a2a7d85757580fe02676a64",
+      "originalBytes": 1441,
+      "originalSha256": "06315412db1d3298a844e570cc665ca1a9122f221dc3dd7b130aa474492af7b5",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-lifecycle/terminal.json",
+          "group": "prototype",
+          "relativePath": "checks-lifecycle/terminal.json",
+          "bytes": 1441,
+          "sha256": "06315412db1d3298a844e570cc665ca1a9122f221dc3dd7b130aa474492af7b5"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/315b86c791e4dbcac6a75e7c5b16e82e5a5806738f262cd5dcae0b8b1a6a9149.gz",
+      "compression": "gzip",
+      "storedBytes": 432,
+      "storedSha256": "b2ed34031676128b9c5659026dc59e29461b1a5d2126e6e802abde08a320df34",
+      "originalBytes": 577,
+      "originalSha256": "315b86c791e4dbcac6a75e7c5b16e82e5a5806738f262cd5dcae0b8b1a6a9149",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/focused-scoped.log",
+          "group": "prototype",
+          "relativePath": "checks-scoped/focused-scoped.log",
+          "bytes": 577,
+          "sha256": "315b86c791e4dbcac6a75e7c5b16e82e5a5806738f262cd5dcae0b8b1a6a9149"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/02524a6c6fd260328e5c0d45edde5694904d7479f324a14d049235ee2ee8e843.gz",
+      "compression": "gzip",
+      "storedBytes": 1820,
+      "storedSha256": "84c74572c831851893bb5e98986a160d29067b2727ce1d3ca062d898f6058fd9",
+      "originalBytes": 5263,
+      "originalSha256": "02524a6c6fd260328e5c0d45edde5694904d7479f324a14d049235ee2ee8e843",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/freeze-manifest.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/freeze-manifest.json",
+          "bytes": 5263,
+          "sha256": "02524a6c6fd260328e5c0d45edde5694904d7479f324a14d049235ee2ee8e843"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/026ed890e83d187669a0b0faae9c1ba63990d3f09604c6ab0f1eebb13fb60515.gz",
+      "compression": "gzip",
+      "storedBytes": 1280,
+      "storedSha256": "1294dc1550515a9912bbe54184b89502bbcedbd25a232cf9ef6ff5a232ce2f11",
+      "originalBytes": 2909,
+      "originalSha256": "026ed890e83d187669a0b0faae9c1ba63990d3f09604c6ab0f1eebb13fb60515",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/run.py",
+          "group": "prototype",
+          "relativePath": "checks-scoped/run.py",
+          "bytes": 2909,
+          "sha256": "026ed890e83d187669a0b0faae9c1ba63990d3f09604c6ab0f1eebb13fb60515"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/93e42470f98c66e4fec50dade253377868770851b36caa2d8e5eb0246f5c2104.gz",
+      "compression": "gzip",
+      "storedBytes": 10301,
+      "storedSha256": "dfb0d54cb53aa4285315b600f64c2b8040c72a0edc8581eeb54885cd5a663409",
+      "originalBytes": 50500,
+      "originalSha256": "93e42470f98c66e4fec50dade253377868770851b36caa2d8e5eb0246f5c2104",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-after.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-after.json",
+          "bytes": 50500,
+          "sha256": "93e42470f98c66e4fec50dade253377868770851b36caa2d8e5eb0246f5c2104"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before.json",
+          "bytes": 50500,
+          "sha256": "93e42470f98c66e4fec50dade253377868770851b36caa2d8e5eb0246f5c2104"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/938ff54d33322e4e0bf37cf988b04f65ec70f4add0187d9e494b0b80ef2c3c39.gz",
+      "compression": "gzip",
+      "storedBytes": 936,
+      "storedSha256": "1bd081f9937bf3f0970c452da3ef0e96d2eedcaa898be229726eeab066d9dff8",
+      "originalBytes": 1736,
+      "originalSha256": "938ff54d33322e4e0bf37cf988b04f65ec70f4add0187d9e494b0b80ef2c3c39",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/plan-scoped.md",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/plan-scoped.md",
+          "bytes": 1736,
+          "sha256": "938ff54d33322e4e0bf37cf988b04f65ec70f4add0187d9e494b0b80ef2c3c39"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/plan-scoped.md",
+          "group": "prototype",
+          "relativePath": "plan-scoped.md",
+          "bytes": 1736,
+          "sha256": "938ff54d33322e4e0bf37cf988b04f65ec70f4add0187d9e494b0b80ef2c3c39"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/ea7c11c6990584a1070da8de6d29d6c1c0082cd8a74aaf5bd4af1a77c4331d3b.gz",
+      "compression": "gzip",
+      "storedBytes": 7309,
+      "storedSha256": "731739773dca2060e6252370c69ce033848bfb1fd392b3153417203eb72c5b87",
+      "originalBytes": 26420,
+      "originalSha256": "ea7c11c6990584a1070da8de6d29d6c1c0082cd8a74aaf5bd4af1a77c4331d3b",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/prefetch.test.ts",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/prefetch.test.ts",
+          "bytes": 26420,
+          "sha256": "ea7c11c6990584a1070da8de6d29d6c1c0082cd8a74aaf5bd4af1a77c4331d3b"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/prefetch.test.ts",
+          "group": "prototype",
+          "relativePath": "prefetch.test.ts",
+          "bytes": 26420,
+          "sha256": "ea7c11c6990584a1070da8de6d29d6c1c0082cd8a74aaf5bd4af1a77c4331d3b"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/c82a8dd1487678341bbcb73f7ca4cb7c98de0d74813c2bc63c5ec713ddccb6d9.gz",
+      "compression": "gzip",
+      "storedBytes": 300,
+      "storedSha256": "5c16e168dacc78a152676c7cce1f738739ed570e61b9bc9b41bb2d7f289e5a0f",
+      "originalBytes": 547,
+      "originalSha256": "c82a8dd1487678341bbcb73f7ca4cb7c98de0d74813c2bc63c5ec713ddccb6d9",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/qa-scoped.patch",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/qa-scoped.patch",
+          "bytes": 547,
+          "sha256": "c82a8dd1487678341bbcb73f7ca4cb7c98de0d74813c2bc63c5ec713ddccb6d9"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/qa-scoped.patch",
+          "group": "prototype",
+          "relativePath": "qa-scoped.patch",
+          "bytes": 547,
+          "sha256": "c82a8dd1487678341bbcb73f7ca4cb7c98de0d74813c2bc63c5ec713ddccb6d9"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/d11828939a49df002e6b91e242c73534843b7f1c1f9106bdb7366cbe3a94230f.gz",
+      "compression": "gzip",
+      "storedBytes": 3213,
+      "storedSha256": "3b1f662af9a931e502627deb0c5bff896e46441b0807b48e4a65f48d68c8034f",
+      "originalBytes": 8461,
+      "originalSha256": "d11828939a49df002e6b91e242c73534843b7f1c1f9106bdb7366cbe3a94230f",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/source-before/ready-scoped.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/source-before/ready-scoped.json",
+          "bytes": 8461,
+          "sha256": "d11828939a49df002e6b91e242c73534843b7f1c1f9106bdb7366cbe3a94230f"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/ready-scoped.json",
+          "group": "prototype",
+          "relativePath": "ready-scoped.json",
+          "bytes": 8461,
+          "sha256": "d11828939a49df002e6b91e242c73534843b7f1c1f9106bdb7366cbe3a94230f"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/0b17ad4f79c336457fa51b3fed39dcedd1f570fe2e8798b0ef0130a640ef73f5.gz",
+      "compression": "gzip",
+      "storedBytes": 562,
+      "storedSha256": "c75ffc5fd24974fea26db15dab8aa533e76ceb5e192198f7090748bcd7076067",
+      "originalBytes": 1432,
+      "originalSha256": "0b17ad4f79c336457fa51b3fed39dcedd1f570fe2e8798b0ef0130a640ef73f5",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/checks-scoped/terminal.json",
+          "group": "prototype",
+          "relativePath": "checks-scoped/terminal.json",
+          "bytes": 1432,
+          "sha256": "0b17ad4f79c336457fa51b3fed39dcedd1f570fe2e8798b0ef0130a640ef73f5"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/ae6fa3831896eda2287064f02410e795972ecb172cb3727bdc56a473d83c82b2.gz",
+      "compression": "gzip",
+      "storedBytes": 879,
+      "storedSha256": "9f52c220e46ddf366c28134243a6e22b70a13eed71f1573994fd2cf347617ec7",
+      "originalBytes": 1886,
+      "originalSha256": "ae6fa3831896eda2287064f02410e795972ecb172cb3727bdc56a473d83c82b2",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/build.mjs",
+          "group": "prototype",
+          "relativePath": "gpu-replay/build.mjs",
+          "bytes": 1886,
+          "sha256": "ae6fa3831896eda2287064f02410e795972ecb172cb3727bdc56a473d83c82b2"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/build.mjs",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/build.mjs",
+          "bytes": 1886,
+          "sha256": "ae6fa3831896eda2287064f02410e795972ecb172cb3727bdc56a473d83c82b2"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/5a037280da589169063820c8135f973b7442eda0396c70c6441f0fc1b8280294.gz",
+      "compression": "gzip",
+      "storedBytes": 370,
+      "storedSha256": "86e74d947e9cb8f275d0fbfe965530608972fbe59d2b0208eeeec4fc73ab1068",
+      "originalBytes": 550,
+      "originalSha256": "5a037280da589169063820c8135f973b7442eda0396c70c6441f0fc1b8280294",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/bundle.stdout.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/bundle.stdout.log",
+          "bytes": 550,
+          "sha256": "5a037280da589169063820c8135f973b7442eda0396c70c6441f0fc1b8280294"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/cf1283bbf750409d24f15dd9fc898ede03aa9f331ba6be3f0e2b070e9474c1eb.gz",
+      "compression": "gzip",
+      "storedBytes": 1204,
+      "storedSha256": "2946254872f7e677dfb32791a5c3fd9f5477fbd373763dd39d1326ff4c80fa6b",
+      "originalBytes": 5637,
+      "originalSha256": "cf1283bbf750409d24f15dd9fc898ede03aa9f331ba6be3f0e2b070e9474c1eb",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/freeze-manifest.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/freeze-manifest.json",
+          "bytes": 5637,
+          "sha256": "cf1283bbf750409d24f15dd9fc898ede03aa9f331ba6be3f0e2b070e9474c1eb"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/7e7e30095ca770578d39a33bb2f123dfebf6de0d7523d13ab985b08a95e259ab.gz",
+      "compression": "gzip",
+      "storedBytes": 1436,
+      "storedSha256": "ef62f06882d290aa0433227a4aa4ede0c88eea452eaedc186d56d534ed8bfc30",
+      "originalBytes": 3206,
+      "originalSha256": "7e7e30095ca770578d39a33bb2f123dfebf6de0d7523d13ab985b08a95e259ab",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/run.py",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/run.py",
+          "bytes": 3206,
+          "sha256": "7e7e30095ca770578d39a33bb2f123dfebf6de0d7523d13ab985b08a95e259ab"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/eb097ec5b2e15dc4a47bcd328a61baa279f06c695aa8c9ff9b95c739bcfdb32d.gz",
+      "compression": "gzip",
+      "storedBytes": 10710,
+      "storedSha256": "6fb6439090e8de8babe0a6fdd64c9c512c1f08d4da7e8296300cb5b51e784aee",
+      "originalBytes": 64929,
+      "originalSha256": "eb097ec5b2e15dc4a47bcd328a61baa279f06c695aa8c9ff9b95c739bcfdb32d",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-after.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-after.json",
+          "bytes": 64929,
+          "sha256": "eb097ec5b2e15dc4a47bcd328a61baa279f06c695aa8c9ff9b95c739bcfdb32d"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before.json",
+          "bytes": 64929,
+          "sha256": "eb097ec5b2e15dc4a47bcd328a61baa279f06c695aa8c9ff9b95c739bcfdb32d"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/32855b90cc0b12918734fdc5b63daa7bb63b89389ac9cf9df0594eda5d8a7e76.gz",
+      "compression": "gzip",
+      "storedBytes": 4144,
+      "storedSha256": "b3614e4d8ed267ef9cbfa1043b26f133d7912190687bcc1556fc1d11f8bfff9c",
+      "originalBytes": 10844,
+      "originalSha256": "32855b90cc0b12918734fdc5b63daa7bb63b89389ac9cf9df0594eda5d8a7e76",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/device-gate.mjs",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/device-gate.mjs",
+          "bytes": 10844,
+          "sha256": "32855b90cc0b12918734fdc5b63daa7bb63b89389ac9cf9df0594eda5d8a7e76"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/device-gate.mjs",
+          "group": "prototype",
+          "relativePath": "gpu-replay/device-gate.mjs",
+          "bytes": 10844,
+          "sha256": "32855b90cc0b12918734fdc5b63daa7bb63b89389ac9cf9df0594eda5d8a7e76"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/09db110e32b9fa842426eee3d8f34b00c5a944a4a6e8d38df6241abcc2b50adb.gz",
+      "compression": "gzip",
+      "storedBytes": 191,
+      "storedSha256": "e8b74d463a0aa42e5d676e541af36e87263ef412870183c8c38bd3a5ef124655",
+      "originalBytes": 232,
+      "originalSha256": "09db110e32b9fa842426eee3d8f34b00c5a944a4a6e8d38df6241abcc2b50adb",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/index.html",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/index.html",
+          "bytes": 232,
+          "sha256": "09db110e32b9fa842426eee3d8f34b00c5a944a4a6e8d38df6241abcc2b50adb"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/index.html",
+          "group": "prototype",
+          "relativePath": "gpu-replay/index.html",
+          "bytes": 232,
+          "sha256": "09db110e32b9fa842426eee3d8f34b00c5a944a4a6e8d38df6241abcc2b50adb"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/b4fac3f63bd773ad81dbf09217facd4efced94e1bbce6b7b078dd34c04c43765.gz",
+      "compression": "gzip",
+      "storedBytes": 874,
+      "storedSha256": "6e9b67888ae97e370fd8e43f5f74f25d17e60acc3e1baea0f346219cec2c8e48",
+      "originalBytes": 2290,
+      "originalSha256": "b4fac3f63bd773ad81dbf09217facd4efced94e1bbce6b7b078dd34c04c43765",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/numeric.ts",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/numeric.ts",
+          "bytes": 2290,
+          "sha256": "b4fac3f63bd773ad81dbf09217facd4efced94e1bbce6b7b078dd34c04c43765"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/numeric.ts",
+          "group": "prototype",
+          "relativePath": "gpu-replay/numeric.ts",
+          "bytes": 2290,
+          "sha256": "b4fac3f63bd773ad81dbf09217facd4efced94e1bbce6b7b078dd34c04c43765"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/5a121c0b6b6ef2da659d4fbb9fbef438fd9b3c715cd592c4563a40a8f92e4174.gz",
+      "compression": "gzip",
+      "storedBytes": 411,
+      "storedSha256": "a8b8273c98b1b3f929fcc743df85ca16670509f8f95dcd0aca237a9b1ef2366f",
+      "originalBytes": 771,
+      "originalSha256": "5a121c0b6b6ef2da659d4fbb9fbef438fd9b3c715cd592c4563a40a8f92e4174",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/page-entry.ts",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/page-entry.ts",
+          "bytes": 771,
+          "sha256": "5a121c0b6b6ef2da659d4fbb9fbef438fd9b3c715cd592c4563a40a8f92e4174"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/page-entry.ts",
+          "group": "prototype",
+          "relativePath": "gpu-replay/page-entry.ts",
+          "bytes": 771,
+          "sha256": "5a121c0b6b6ef2da659d4fbb9fbef438fd9b3c715cd592c4563a40a8f92e4174"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/42e673e78d11b8ced4a0161d1ca362e3b54fcd810df35f9fd49680cd154f3a58.gz",
+      "compression": "gzip",
+      "storedBytes": 3212,
+      "storedSha256": "6632d9e77a1390887905b3a35a78950c42c67d2217f9114f3c671eb8c08f6248",
+      "originalBytes": 6638,
+      "originalSha256": "42e673e78d11b8ced4a0161d1ca362e3b54fcd810df35f9fd49680cd154f3a58",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/plan.md",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/plan.md",
+          "bytes": 6638,
+          "sha256": "42e673e78d11b8ced4a0161d1ca362e3b54fcd810df35f9fd49680cd154f3a58"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/plan.md",
+          "group": "prototype",
+          "relativePath": "gpu-replay/plan.md",
+          "bytes": 6638,
+          "sha256": "42e673e78d11b8ced4a0161d1ca362e3b54fcd810df35f9fd49680cd154f3a58"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/2f0e9277f3e8a47d0e7c8ff225a278d16827ce258923c82faab77f876d78032f.gz",
+      "compression": "gzip",
+      "storedBytes": 27141,
+      "storedSha256": "920a73c718c55a4eb8295717ca15bdabfa4e434992f40737f20b07ddcffb1133",
+      "originalBytes": 104336,
+      "originalSha256": "2f0e9277f3e8a47d0e7c8ff225a278d16827ce258923c82faab77f876d78032f",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/ready.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/ready.json",
+          "bytes": 104336,
+          "sha256": "2f0e9277f3e8a47d0e7c8ff225a278d16827ce258923c82faab77f876d78032f"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/ready.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/ready.json",
+          "bytes": 104336,
+          "sha256": "2f0e9277f3e8a47d0e7c8ff225a278d16827ce258923c82faab77f876d78032f"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/e60971b818e23d3f3022d0cb1840907936090668c40a3ec2145821ddd4789b39.gz",
+      "compression": "gzip",
+      "storedBytes": 25037,
+      "storedSha256": "0e9a87fa4379aef5fde9c3ad981d5f2907836ce7d2607c168e15a3fcddaf8fc9",
+      "originalBytes": 97587,
+      "originalSha256": "e60971b818e23d3f3022d0cb1840907936090668c40a3ec2145821ddd4789b39",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/source-authority.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/source-authority.json",
+          "bytes": 97587,
+          "sha256": "e60971b818e23d3f3022d0cb1840907936090668c40a3ec2145821ddd4789b39"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/source-authority.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/source-authority.json",
+          "bytes": 97587,
+          "sha256": "e60971b818e23d3f3022d0cb1840907936090668c40a3ec2145821ddd4789b39"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/a3927fa79d09988948aead02f40df28974a8a851bcf854697bc18cf148ba9344.gz",
+      "compression": "gzip",
+      "storedBytes": 189,
+      "storedSha256": "4344e6d72785229e1eb81cfc8e2d5fb7dffb84c80e2889ca6730b1c836350159",
+      "originalBytes": 255,
+      "originalSha256": "a3927fa79d09988948aead02f40df28974a8a851bcf854697bc18cf148ba9344",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/tsconfig.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/tsconfig.json",
+          "bytes": 255,
+          "sha256": "a3927fa79d09988948aead02f40df28974a8a851bcf854697bc18cf148ba9344"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/tsconfig.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/tsconfig.json",
+          "bytes": 255,
+          "sha256": "a3927fa79d09988948aead02f40df28974a8a851bcf854697bc18cf148ba9344"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/7d845a915fd1e5b4922ee07a2f31ea320e51ebdedcb36344917ebb45918d8264.gz",
+      "compression": "gzip",
+      "storedBytes": 8727,
+      "storedSha256": "a198b2b1c519e35c1781af5173b7675b5546f6ff14f48b9fc19fbe0c6c2ff97a",
+      "originalBytes": 27756,
+      "originalSha256": "7d845a915fd1e5b4922ee07a2f31ea320e51ebdedcb36344917ebb45918d8264",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/source-before/worker-entry.ts",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/source-before/worker-entry.ts",
+          "bytes": 27756,
+          "sha256": "7d845a915fd1e5b4922ee07a2f31ea320e51ebdedcb36344917ebb45918d8264"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/worker-entry.ts",
+          "group": "prototype",
+          "relativePath": "gpu-replay/worker-entry.ts",
+          "bytes": 27756,
+          "sha256": "7d845a915fd1e5b4922ee07a2f31ea320e51ebdedcb36344917ebb45918d8264"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/894ac565d48744ad6f03e884329ad194ab1ca313831b0740f7b5dbbd9d1b1438.gz",
+      "compression": "gzip",
+      "storedBytes": 901,
+      "storedSha256": "3402a559b8c63cdc3416294896c84bd883bf39f8ebdf71bf2c7a5ae5baf62def",
+      "originalBytes": 3415,
+      "originalSha256": "894ac565d48744ad6f03e884329ad194ab1ca313831b0740f7b5dbbd9d1b1438",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/terminal.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/terminal.json",
+          "bytes": 3415,
+          "sha256": "894ac565d48744ad6f03e884329ad194ab1ca313831b0740f7b5dbbd9d1b1438"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/cc333d226952bc7b853f1b0de1ff8d51bd55aeb2ce8379351f2173d6253a3c74.gz",
+      "compression": "gzip",
+      "storedBytes": 403,
+      "storedSha256": "4669d11126b4daf436bb9f11fdeac3201f7a6f58b18b52ba4addaa0a88af6d98",
+      "originalBytes": 563,
+      "originalSha256": "cc333d226952bc7b853f1b0de1ff8d51bd55aeb2ce8379351f2173d6253a3c74",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/checks-first/unarmed-plan.stdout.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/checks-first/unarmed-plan.stdout.log",
+          "bytes": 563,
+          "sha256": "cc333d226952bc7b853f1b0de1ff8d51bd55aeb2ce8379351f2173d6253a3c74"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/56f1274356566bb03ad683798946f7d1e54a91099fba24512eab420bf78ad2dd.gz",
+      "compression": "gzip",
+      "storedBytes": 396,
+      "storedSha256": "3ab0708359b0b8497ef86a07066f65dbccb58828ed4f898e5343eaa0d0723c90",
+      "originalBytes": 680,
+      "originalSha256": "56f1274356566bb03ad683798946f7d1e54a91099fba24512eab420bf78ad2dd",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/compiled.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/compiled.json",
+          "bytes": 680,
+          "sha256": "56f1274356566bb03ad683798946f7d1e54a91099fba24512eab420bf78ad2dd"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/9897d648b0191b44e868a5ff529103693b459fd74338fde0febf9b48f3c328fb.gz",
+      "compression": "gzip",
+      "storedBytes": 238,
+      "storedSha256": "c6a237ae9c712b0063b2b6283337f230cdad18b96147a7679fc86f44f2524b21",
+      "originalBytes": 361,
+      "originalSha256": "9897d648b0191b44e868a5ff529103693b459fd74338fde0febf9b48f3c328fb",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-first/console.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-first/console.log",
+          "bytes": 361,
+          "sha256": "9897d648b0191b44e868a5ff529103693b459fd74338fde0febf9b48f3c328fb"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/86df6307975d11742c494dc415cc8354a8598f350018c694ca89f6041303b12e.gz",
+      "compression": "gzip",
+      "storedBytes": 500,
+      "storedSha256": "b810c1ce1910f9783a9873ecde6f0cab4bc73674cb326637dbd8d910d36a530f",
+      "originalBytes": 1372,
+      "originalSha256": "86df6307975d11742c494dc415cc8354a8598f350018c694ca89f6041303b12e",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-first/freeze-manifest.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-first/freeze-manifest.json",
+          "bytes": 1372,
+          "sha256": "86df6307975d11742c494dc415cc8354a8598f350018c694ca89f6041303b12e"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/f56cdb6c51fae378308520139fb229a926152b5d7e11f19d9660dbbd58efcb4f.gz",
+      "compression": "gzip",
+      "storedBytes": 1267,
+      "storedSha256": "7d3a4f268f12d5b6b2bce600a995ad5075713015b4f47ef7c6c20d0519b29f98",
+      "originalBytes": 2770,
+      "originalSha256": "f56cdb6c51fae378308520139fb229a926152b5d7e11f19d9660dbbd58efcb4f",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-first/run.py",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-first/run.py",
+          "bytes": 2770,
+          "sha256": "f56cdb6c51fae378308520139fb229a926152b5d7e11f19d9660dbbd58efcb4f"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/1e2e626c5c4a1800db2ef3b2bf208246cf352f8b58a97ea54f1ff24cd2e48472.gz",
+      "compression": "gzip",
+      "storedBytes": 10934,
+      "storedSha256": "7ae7459ab88b1847fdbd6899238b324f9d2e5128d021adaf11500f19aeaaf0d5",
+      "originalBytes": 65695,
+      "originalSha256": "1e2e626c5c4a1800db2ef3b2bf208246cf352f8b58a97ea54f1ff24cd2e48472",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-first/source-after.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-first/source-after.json",
+          "bytes": 65695,
+          "sha256": "1e2e626c5c4a1800db2ef3b2bf208246cf352f8b58a97ea54f1ff24cd2e48472"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-first/source-before.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-first/source-before.json",
+          "bytes": 65695,
+          "sha256": "1e2e626c5c4a1800db2ef3b2bf208246cf352f8b58a97ea54f1ff24cd2e48472"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-native/source-after.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-native/source-after.json",
+          "bytes": 65695,
+          "sha256": "1e2e626c5c4a1800db2ef3b2bf208246cf352f8b58a97ea54f1ff24cd2e48472"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-native/source-before.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-native/source-before.json",
+          "bytes": 65695,
+          "sha256": "1e2e626c5c4a1800db2ef3b2bf208246cf352f8b58a97ea54f1ff24cd2e48472"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/df8870bad70a20ccf24e21dd0016be393a01b6d684aac29fbab8f8034402e389.gz",
+      "compression": "gzip",
+      "storedBytes": 556,
+      "storedSha256": "c13a04e558935f18ccf1a6f2f3bbd16a98358991902c030fd36b22814bec385b",
+      "originalBytes": 928,
+      "originalSha256": "df8870bad70a20ccf24e21dd0016be393a01b6d684aac29fbab8f8034402e389",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-first/terminal.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-first/terminal.json",
+          "bytes": 928,
+          "sha256": "df8870bad70a20ccf24e21dd0016be393a01b6d684aac29fbab8f8034402e389"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/3d9486c8624defdbb410240f7bd3414e63879e0155b0b43222c29fd345044ab5.gz",
+      "compression": "gzip",
+      "storedBytes": 452,
+      "storedSha256": "49b8201af20c20a33361cad5d4f8adbf3bb81bb285f80d0338512ca17a981096",
+      "originalBytes": 1557,
+      "originalSha256": "3d9486c8624defdbb410240f7bd3414e63879e0155b0b43222c29fd345044ab5",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-native/console.log",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-native/console.log",
+          "bytes": 1557,
+          "sha256": "3d9486c8624defdbb410240f7bd3414e63879e0155b0b43222c29fd345044ab5"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/18f3ca89c3c8ac542becc34c88252df6d11718e1d98167a3c09c6ce300b65f8f.gz",
+      "compression": "gzip",
+      "storedBytes": 493,
+      "storedSha256": "cae7cd864f9800ad43bdf1a1b95bc429897878e79a0a357f700fb9f7fd6dc7b1",
+      "originalBytes": 1374,
+      "originalSha256": "18f3ca89c3c8ac542becc34c88252df6d11718e1d98167a3c09c6ce300b65f8f",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-native/freeze-manifest.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-native/freeze-manifest.json",
+          "bytes": 1374,
+          "sha256": "18f3ca89c3c8ac542becc34c88252df6d11718e1d98167a3c09c6ce300b65f8f"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/db5ec13deb2cf3a65a69e273b393ed75f34b35a93ee3e49bb0d8cb9a6e3465ee.gz",
+      "compression": "gzip",
+      "storedBytes": 1263,
+      "storedSha256": "36793bff07fe47743b3e523537ed5fd3136ecee810cff23334eaee1c75409e99",
+      "originalBytes": 2762,
+      "originalSha256": "db5ec13deb2cf3a65a69e273b393ed75f34b35a93ee3e49bb0d8cb9a6e3465ee",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-native/run.py",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-native/run.py",
+          "bytes": 2762,
+          "sha256": "db5ec13deb2cf3a65a69e273b393ed75f34b35a93ee3e49bb0d8cb9a6e3465ee"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/2224d1324eace3fee6e7f45e2c76b606af7fb20bde377c8b3663e78e377bf6e2.gz",
+      "compression": "gzip",
+      "storedBytes": 556,
+      "storedSha256": "1907ab2f28ca565aff74d61c2c0f9739065389a1a0252d79e32b90ea8b578e72",
+      "originalBytes": 925,
+      "originalSha256": "2224d1324eace3fee6e7f45e2c76b606af7fb20bde377c8b3663e78e377bf6e2",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-20261004/gpu-replay/hardware-native/terminal.json",
+          "group": "prototype",
+          "relativePath": "gpu-replay/hardware-native/terminal.json",
+          "bytes": 925,
+          "sha256": "2224d1324eace3fee6e7f45e2c76b606af7fb20bde377c8b3663e78e377bf6e2"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/7365eae30c939ae3d4033cd2fdd40934cbce5dd09366a819b7eeeee266681736.gz",
+      "compression": "gzip",
+      "storedBytes": 1820,
+      "storedSha256": "fb218cce323cf61ef2f357b207c90476e43fe2f857130293b5db7b9c2b977fa1",
+      "originalBytes": 4359,
+      "originalSha256": "7365eae30c939ae3d4033cd2fdd40934cbce5dd09366a819b7eeeee266681736",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/baseline/build-manifest.json",
+          "group": "fps",
+          "relativePath": "baseline/build-manifest.json",
+          "bytes": 4359,
+          "sha256": "7365eae30c939ae3d4033cd2fdd40934cbce5dd09366a819b7eeeee266681736"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/cbfc602ccf2517cbe2954f483a844787c0dce185e521455318f174070f0122c4.gz",
+      "compression": "gzip",
+      "storedBytes": 566,
+      "storedSha256": "ba83f21646dfafdc674fc811f8e047ea9f547b97bfd57b38d096d3189e60f167",
+      "originalBytes": 1407,
+      "originalSha256": "cbfc602ccf2517cbe2954f483a844787c0dce185e521455318f174070f0122c4",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/bindings.json",
+          "group": "fps",
+          "relativePath": "bindings.json",
+          "bytes": 1407,
+          "sha256": "cbfc602ccf2517cbe2954f483a844787c0dce185e521455318f174070f0122c4"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/71ef7f27702578ea2ad2bd6dcb5b97df29fa0a402a6937147078f15f8b46938d.gz",
+      "compression": "gzip",
+      "storedBytes": 1651,
+      "storedSha256": "927b669331c673fe1e44b7c03b34ba1049dfce17667239245ea8d40263627f03",
+      "originalBytes": 4279,
+      "originalSha256": "71ef7f27702578ea2ad2bd6dcb5b97df29fa0a402a6937147078f15f8b46938d",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/build-driver.patch",
+          "group": "fps",
+          "relativePath": "build-driver.patch",
+          "bytes": 4279,
+          "sha256": "71ef7f27702578ea2ad2bd6dcb5b97df29fa0a402a6937147078f15f8b46938d"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/0d54e079e5a1f6981a3dc3ac3c1ab2af3bfdfb443eb2918ad90712e32bd97bd5.gz",
+      "compression": "gzip",
+      "storedBytes": 2575,
+      "storedSha256": "ceffd313e32cad46a6622b5c5138aa5c4674319386e975ffb78577922c25c413",
+      "originalBytes": 7666,
+      "originalSha256": "0d54e079e5a1f6981a3dc3ac3c1ab2af3bfdfb443eb2918ad90712e32bd97bd5",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/build-only.mjs",
+          "group": "fps",
+          "relativePath": "build-only.mjs",
+          "bytes": 7666,
+          "sha256": "0d54e079e5a1f6981a3dc3ac3c1ab2af3bfdfb443eb2918ad90712e32bd97bd5"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/fcd70f46255ea861975d43504a5b0599b666e02deac4c11e7f36342af679a070.gz",
+      "compression": "gzip",
+      "storedBytes": 531,
+      "storedSha256": "378dddf80de6853e6769decacb8859f66ed2618290446b88f39b6fcd0a220057",
+      "originalBytes": 958,
+      "originalSha256": "fcd70f46255ea861975d43504a5b0599b666e02deac4c11e7f36342af679a070",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/build-terminal.json",
+          "group": "fps",
+          "relativePath": "build-terminal.json",
+          "bytes": 958,
+          "sha256": "fcd70f46255ea861975d43504a5b0599b666e02deac4c11e7f36342af679a070"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/38c6158096282b60ac47c86b126b0e965778a24073aa0929d2f3fdd30122c3e5.gz",
+      "compression": "gzip",
+      "storedBytes": 2179,
+      "storedSha256": "0663e6d4cedcecc5790c685f962814374ab80e4596d6e8d6d017b1d452150077",
+      "originalBytes": 5877,
+      "originalSha256": "38c6158096282b60ac47c86b126b0e965778a24073aa0929d2f3fdd30122c3e5",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/candidate/build-manifest.json",
+          "group": "fps",
+          "relativePath": "candidate/build-manifest.json",
+          "bytes": 5877,
+          "sha256": "38c6158096282b60ac47c86b126b0e965778a24073aa0929d2f3fdd30122c3e5"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/ff10e58eaf2d0312e5e517b071d160fb7a5f23693eaeabad3b65e2ee834e2e62.gz",
+      "compression": "gzip",
+      "storedBytes": 1338,
+      "storedSha256": "84583adbaad5221bc282b6aa1375dd2f4918a79caa083b29ccf0e33c3fed4ace",
+      "originalBytes": 4674,
+      "originalSha256": "ff10e58eaf2d0312e5e517b071d160fb7a5f23693eaeabad3b65e2ee834e2e62",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/compiled-outputs.json",
+          "group": "fps",
+          "relativePath": "checks-first/compiled-outputs.json",
+          "bytes": 4674,
+          "sha256": "ff10e58eaf2d0312e5e517b071d160fb7a5f23693eaeabad3b65e2ee834e2e62"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/40781541951729a8050684a7361cedd541ad4f26bf64703023210877995248fa.gz",
+      "compression": "gzip",
+      "storedBytes": 2197,
+      "storedSha256": "7b1d3ca429d66c4c5c62b73b2d67b4ccc980329d30fbb952044382157317d558",
+      "originalBytes": 10367,
+      "originalSha256": "40781541951729a8050684a7361cedd541ad4f26bf64703023210877995248fa",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/freeze-manifest.json",
+          "group": "fps",
+          "relativePath": "checks-first/freeze-manifest.json",
+          "bytes": 10367,
+          "sha256": "40781541951729a8050684a7361cedd541ad4f26bf64703023210877995248fa"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/a6e14026d9cb37f7ea72e7e6fe16710a71e2bd1c921fa9ca4140bd1a5c575177.gz",
+      "compression": "gzip",
+      "storedBytes": 264,
+      "storedSha256": "8d3b0f6ac6db9924c9004771b853e948f413453d5f2aa8378f6cd7278c43cf27",
+      "originalBytes": 720,
+      "originalSha256": "a6e14026d9cb37f7ea72e7e6fe16710a71e2bd1c921fa9ca4140bd1a5c575177",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/matched-build.stderr.log",
+          "group": "fps",
+          "relativePath": "checks-first/matched-build.stderr.log",
+          "bytes": 720,
+          "sha256": "a6e14026d9cb37f7ea72e7e6fe16710a71e2bd1c921fa9ca4140bd1a5c575177"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/d5cfdceeb08f87ed0a7815869fd8a86d65d5f31c3ec23070c8607b9f698d691a.gz",
+      "compression": "gzip",
+      "storedBytes": 841,
+      "storedSha256": "24126ece0389f08e5bf113b293ff71d533d97385a671c5dff073f3c6a10ba093",
+      "originalBytes": 2486,
+      "originalSha256": "d5cfdceeb08f87ed0a7815869fd8a86d65d5f31c3ec23070c8607b9f698d691a",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/matched-build.stdout.log",
+          "group": "fps",
+          "relativePath": "checks-first/matched-build.stdout.log",
+          "bytes": 2486,
+          "sha256": "d5cfdceeb08f87ed0a7815869fd8a86d65d5f31c3ec23070c8607b9f698d691a"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/298b23e16067eea8de832739a73b403fc25494745c419911eee08a54f13a16cd.gz",
+      "compression": "gzip",
+      "storedBytes": 1552,
+      "storedSha256": "2e966cbf2138f3a4e5f6174d2f41c4a9db0246bbe5c531926dd07a48d2e6ec6e",
+      "originalBytes": 3651,
+      "originalSha256": "298b23e16067eea8de832739a73b403fc25494745c419911eee08a54f13a16cd",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/run.py",
+          "group": "fps",
+          "relativePath": "checks-first/run.py",
+          "bytes": 3651,
+          "sha256": "298b23e16067eea8de832739a73b403fc25494745c419911eee08a54f13a16cd"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/9ca84f6c553cc1aa9153e6ee648f1c53693d9ce5defc3c8cde168ad3918c76e7.gz",
+      "compression": "gzip",
+      "storedBytes": 59776,
+      "storedSha256": "91716021cc8b8a8ef15cf321aa168c3d7f20018ae0f64e311c7441629351bf48",
+      "originalBytes": 237336,
+      "originalSha256": "9ca84f6c553cc1aa9153e6ee648f1c53693d9ce5defc3c8cde168ad3918c76e7",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/source-after.json",
+          "group": "fps",
+          "relativePath": "checks-first/source-after.json",
+          "bytes": 237336,
+          "sha256": "9ca84f6c553cc1aa9153e6ee648f1c53693d9ce5defc3c8cde168ad3918c76e7"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/source-before.json",
+          "group": "fps",
+          "relativePath": "checks-first/source-before.json",
+          "bytes": 237336,
+          "sha256": "9ca84f6c553cc1aa9153e6ee648f1c53693d9ce5defc3c8cde168ad3918c76e7"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/bbd0b1285c94680be9ddbfddc230f76514f7d29d6919d9e495c20e2ae7f39c3a.gz",
+      "compression": "gzip",
+      "storedBytes": 1111,
+      "storedSha256": "9a640c514933113e2077b8986440e97c5ea936d70ab5e13f41e055d8e66f2203",
+      "originalBytes": 5088,
+      "originalSha256": "bbd0b1285c94680be9ddbfddc230f76514f7d29d6919d9e495c20e2ae7f39c3a",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/terminal.json",
+          "group": "fps",
+          "relativePath": "checks-first/terminal.json",
+          "bytes": 5088,
+          "sha256": "bbd0b1285c94680be9ddbfddc230f76514f7d29d6919d9e495c20e2ae7f39c3a"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/1743440b34f0509cc2fcde594646b649f9bbfad796be17f6ecad1383a0b31991.gz",
+      "compression": "gzip",
+      "storedBytes": 3960,
+      "storedSha256": "90c04a08e0c94784966554081f8f21f049894a1bb69576c21418fbc174642579",
+      "originalBytes": 10305,
+      "originalSha256": "1743440b34f0509cc2fcde594646b649f9bbfad796be17f6ecad1383a0b31991",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/checks-first/unarmed-pair-plan.stdout.log",
+          "group": "fps",
+          "relativePath": "checks-first/unarmed-pair-plan.stdout.log",
+          "bytes": 10305,
+          "sha256": "1743440b34f0509cc2fcde594646b649f9bbfad796be17f6ecad1383a0b31991"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/1b47f5c3dc004ff03fe8e09bf6e1633d080fcc2c53bb2c3292de9498c6fa6545.gz",
+      "compression": "gzip",
+      "storedBytes": 759,
+      "storedSha256": "082b844758d595d1e6433c48e2924299e6fccaecc2638e3184bea15b8fb3b685",
+      "originalBytes": 2266,
+      "originalSha256": "1b47f5c3dc004ff03fe8e09bf6e1633d080fcc2c53bb2c3292de9498c6fa6545",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/dependency-authority.json",
+          "group": "fps",
+          "relativePath": "dependency-authority.json",
+          "bytes": 2266,
+          "sha256": "1b47f5c3dc004ff03fe8e09bf6e1633d080fcc2c53bb2c3292de9498c6fa6545"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/c9ba8780bded70980a2fbf57cdc78a0589640ecc160ec7f2820851b9e490781c.gz",
+      "compression": "gzip",
+      "storedBytes": 762,
+      "storedSha256": "d45beebaef06eed1133134b4a01ae3a5ca37c9b1c3074f5e8443c8a731a07f88",
+      "originalBytes": 1655,
+      "originalSha256": "c9ba8780bded70980a2fbf57cdc78a0589640ecc160ec7f2820851b9e490781c",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/derivation.json",
+          "group": "fps",
+          "relativePath": "derivation.json",
+          "bytes": 1655,
+          "sha256": "c9ba8780bded70980a2fbf57cdc78a0589640ecc160ec7f2820851b9e490781c"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/8ea0732623201dce3148c1e75bc8b36ab5b3f853ccee194b61e5e68e4f18cc7c.gz",
+      "compression": "gzip",
+      "storedBytes": 63008,
+      "storedSha256": "b156f1befe38915d645bf6287721e200e55d92616490a695ef767a718614ea96",
+      "originalBytes": 249249,
+      "originalSha256": "8ea0732623201dce3148c1e75bc8b36ab5b3f853ccee194b61e5e68e4f18cc7c",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/hardware-root/source-after.json",
+          "group": "fps",
+          "relativePath": "hardware-root/source-after.json",
+          "bytes": 249249,
+          "sha256": "8ea0732623201dce3148c1e75bc8b36ab5b3f853ccee194b61e5e68e4f18cc7c"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/hardware-root/source-before.json",
+          "group": "fps",
+          "relativePath": "hardware-root/source-before.json",
+          "bytes": 249249,
+          "sha256": "8ea0732623201dce3148c1e75bc8b36ab5b3f853ccee194b61e5e68e4f18cc7c"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/a4f46d5875a87f250b343214749dfc5c6bc6f8fa0dc5a0e7fc54ff7b891f3a4c.gz",
+      "compression": "gzip",
+      "storedBytes": 330,
+      "storedSha256": "60a98e0ad61b65982e42aa249d3d3578dd542f34344c5d8a63a1f15bbc27c734",
+      "originalBytes": 488,
+      "originalSha256": "a4f46d5875a87f250b343214749dfc5c6bc6f8fa0dc5a0e7fc54ff7b891f3a4c",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/hardware-root/started.json",
+          "group": "fps",
+          "relativePath": "hardware-root/started.json",
+          "bytes": 488,
+          "sha256": "a4f46d5875a87f250b343214749dfc5c6bc6f8fa0dc5a0e7fc54ff7b891f3a4c"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/0df76f061cd0941e48a642c511d535e1abad78a7987ba23feae86bb2b203c38a.gz",
+      "compression": "gzip",
+      "storedBytes": 336,
+      "storedSha256": "7bbd38a7b10019c293a8467c6487bc609af8a63ebf89095ba6e3e5e4b04c78fe",
+      "originalBytes": 592,
+      "originalSha256": "0df76f061cd0941e48a642c511d535e1abad78a7987ba23feae86bb2b203c38a",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/hardware-root/stdout.log",
+          "group": "fps",
+          "relativePath": "hardware-root/stdout.log",
+          "bytes": 592,
+          "sha256": "0df76f061cd0941e48a642c511d535e1abad78a7987ba23feae86bb2b203c38a"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/4f051d4443062c5ed869ecedc3bc7c03fce875422d04bd8f6ade00ae483ce19a.gz",
+      "compression": "gzip",
+      "storedBytes": 369,
+      "storedSha256": "1513e632f05cbacae78e5f193e4961faeb282cdba207fecfbe0a8871b6d0b524",
+      "originalBytes": 574,
+      "originalSha256": "4f051d4443062c5ed869ecedc3bc7c03fce875422d04bd8f6ade00ae483ce19a",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/hardware-root/terminal.json",
+          "group": "fps",
+          "relativePath": "hardware-root/terminal.json",
+          "bytes": 574,
+          "sha256": "4f051d4443062c5ed869ecedc3bc7c03fce875422d04bd8f6ade00ae483ce19a"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/7600084109b333b9627809c485ff45edc408852bcdc6811d62a2ad12e4397c69.gz",
+      "compression": "gzip",
+      "storedBytes": 4238,
+      "storedSha256": "9fc267669ddc0b9455536269f6717503dffeea8290e1fad08124a33bb39f081a",
+      "originalBytes": 12780,
+      "originalSha256": "7600084109b333b9627809c485ff45edc408852bcdc6811d62a2ad12e4397c69",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/harness.patch",
+          "group": "fps",
+          "relativePath": "harness.patch",
+          "bytes": 12780,
+          "sha256": "7600084109b333b9627809c485ff45edc408852bcdc6811d62a2ad12e4397c69"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/39d49bb2ff716af00de96fa2949ff4ea420e1f3a0cc20ff834954840b2e149f4.gz",
+      "compression": "gzip",
+      "storedBytes": 637,
+      "storedSha256": "c43ad5ecd4ea07ffa3a49881e0735045fac2ce024be6a18af44fe4077b0ae006",
+      "originalBytes": 1576,
+      "originalSha256": "39d49bb2ff716af00de96fa2949ff4ea420e1f3a0cc20ff834954840b2e149f4",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/manifest-schema.json",
+          "group": "fps",
+          "relativePath": "manifest-schema.json",
+          "bytes": 1576,
+          "sha256": "39d49bb2ff716af00de96fa2949ff4ea420e1f3a0cc20ff834954840b2e149f4"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/bbbe03679c2b0ed4a1628050475b453ca2d8f15c3a8e7b3ec385a4296ac2c010.gz",
+      "compression": "gzip",
+      "storedBytes": 2267,
+      "storedSha256": "46b5fd37b70bfdba1dab27b2cc6e197c25cc043c51865d51c944c5bd3a6f36a2",
+      "originalBytes": 5508,
+      "originalSha256": "bbbe03679c2b0ed4a1628050475b453ca2d8f15c3a8e7b3ec385a4296ac2c010",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/native-owned.mjs",
+          "group": "fps",
+          "relativePath": "native-owned.mjs",
+          "bytes": 5508,
+          "sha256": "bbbe03679c2b0ed4a1628050475b453ca2d8f15c3a8e7b3ec385a4296ac2c010"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/652d7f47f41f7e56ae016d6b2d3d59e5f5f43f37e2fda007ae83088789929b37.gz",
+      "compression": "gzip",
+      "storedBytes": 4662,
+      "storedSha256": "6168077cc6827f02ba5f0ecae7886e1bd8580eed4e6c12a3a4b7317154dbdfed",
+      "originalBytes": 13329,
+      "originalSha256": "652d7f47f41f7e56ae016d6b2d3d59e5f5f43f37e2fda007ae83088789929b37",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/pair.mjs",
+          "group": "fps",
+          "relativePath": "pair.mjs",
+          "bytes": 13329,
+          "sha256": "652d7f47f41f7e56ae016d6b2d3d59e5f5f43f37e2fda007ae83088789929b37"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/5dd4820828e2c014f047fec17646dd1d6011b455c05fc73a9279d2d7830735c5.gz",
+      "compression": "gzip",
+      "storedBytes": 3879,
+      "storedSha256": "d7949d8201fadd91db81a17aa328eec0fc5d8df433cfd720c3367657aec241aa",
+      "originalBytes": 10110,
+      "originalSha256": "5dd4820828e2c014f047fec17646dd1d6011b455c05fc73a9279d2d7830735c5",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/passive-guard.mjs",
+          "group": "fps",
+          "relativePath": "passive-guard.mjs",
+          "bytes": 10110,
+          "sha256": "5dd4820828e2c014f047fec17646dd1d6011b455c05fc73a9279d2d7830735c5"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/617e4bc72551840b740fdfabc4739120c54b6f1cd80cdd72c6a4d67741508d10.gz",
+      "compression": "gzip",
+      "storedBytes": 3731,
+      "storedSha256": "b37d84a142a505314965182a2ee442352c44f21c16802e199ae48e3ffad6823b",
+      "originalBytes": 9251,
+      "originalSha256": "617e4bc72551840b740fdfabc4739120c54b6f1cd80cdd72c6a4d67741508d10",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/plan.json",
+          "group": "fps",
+          "relativePath": "plan.json",
+          "bytes": 9251,
+          "sha256": "617e4bc72551840b740fdfabc4739120c54b6f1cd80cdd72c6a4d67741508d10"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/3fe0680c4e77142005cd3fb9755a0bfec603200df9837ee9d74c757b4268a052.gz",
+      "compression": "gzip",
+      "storedBytes": 2146,
+      "storedSha256": "774b831f1d63054150f73d6b2e92029f4bfa401f2961bc816e840a4950ac1b1e",
+      "originalBytes": 4228,
+      "originalSha256": "3fe0680c4e77142005cd3fb9755a0bfec603200df9837ee9d74c757b4268a052",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/plan.md",
+          "group": "fps",
+          "relativePath": "plan.md",
+          "bytes": 4228,
+          "sha256": "3fe0680c4e77142005cd3fb9755a0bfec603200df9837ee9d74c757b4268a052"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830.gz",
+      "compression": "gzip",
+      "storedBytes": 2572,
+      "storedSha256": "6a851a2f927d78fe7274562115014a1952670c0b99a62c2abaa1499f4ebe2d13",
+      "originalBytes": 10729,
+      "originalSha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/public-assets.json",
+          "group": "fps",
+          "relativePath": "public-assets.json",
+          "bytes": 10729,
+          "sha256": "c7eb538dba0c0a583b069b942aeb322fae34fb08cef387bab6fe928e58dc1830"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/327e2530f5eee994ffed316f03db1976ba029a5d082a61a80ab679d3095f2568.gz",
+      "compression": "gzip",
+      "storedBytes": 3792,
+      "storedSha256": "6b9869d54bafe50588d864b9d2c621443773c229981b9b621357df14196a8c28",
+      "originalBytes": 13300,
+      "originalSha256": "327e2530f5eee994ffed316f03db1976ba029a5d082a61a80ab679d3095f2568",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/ready.json",
+          "group": "fps",
+          "relativePath": "ready.json",
+          "bytes": 13300,
+          "sha256": "327e2530f5eee994ffed316f03db1976ba029a5d082a61a80ab679d3095f2568"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/55e58a95aa070a2a72b426caf480313fafd7be3643fcd590fdf71670a47ad0e7.gz",
+      "compression": "gzip",
+      "storedBytes": 8019,
+      "storedSha256": "b457739d9f58b0a60192f987623278e1b2e7c215a4f4a11b1199fff009d373c0",
+      "originalBytes": 100114,
+      "originalSha256": "55e58a95aa070a2a72b426caf480313fafd7be3643fcd590fdf71670a47ad0e7",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/run/baseline/fps.json",
+          "group": "fps",
+          "relativePath": "run/baseline/fps.json",
+          "bytes": 100114,
+          "sha256": "55e58a95aa070a2a72b426caf480313fafd7be3643fcd590fdf71670a47ad0e7"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/c1b96bebfa14086a2b056897aa15dd3ac733e25a4c9adaa5af4dd3bcd9531447.gz",
+      "compression": "gzip",
+      "storedBytes": 2427,
+      "storedSha256": "5643eead959dbda702987771cf586bfe30c4a3cc42b8ad8919d4cefde5228094",
+      "originalBytes": 12917,
+      "originalSha256": "c1b96bebfa14086a2b056897aa15dd3ac733e25a4c9adaa5af4dd3bcd9531447",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/run/baseline/launcher.json",
+          "group": "fps",
+          "relativePath": "run/baseline/launcher.json",
+          "bytes": 12917,
+          "sha256": "c1b96bebfa14086a2b056897aa15dd3ac733e25a4c9adaa5af4dd3bcd9531447"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/ba1b5cfc8a8f7cd5024fb4b44303ed166be11387a2e0cae6c5654b8fda8651aa.gz",
+      "compression": "gzip",
+      "storedBytes": 1805,
+      "storedSha256": "b89a8ef711633fc64c4498c203ff14b3f4aa43eec843f02a150c96298a242c70",
+      "originalBytes": 26359,
+      "originalSha256": "ba1b5cfc8a8f7cd5024fb4b44303ed166be11387a2e0cae6c5654b8fda8651aa",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/run/baseline/native-audit.json",
+          "group": "fps",
+          "relativePath": "run/baseline/native-audit.json",
+          "bytes": 26359,
+          "sha256": "ba1b5cfc8a8f7cd5024fb4b44303ed166be11387a2e0cae6c5654b8fda8651aa"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/1eaa98e8c8523c378a3e79245c0615590679b654698e7abfebe4d8213103fcb0.gz",
+      "compression": "gzip",
+      "storedBytes": 699,
+      "storedSha256": "40eff5f8aef130db2e4bb137d5d91d24a7e69be2249276a31140e665d4df6217",
+      "originalBytes": 1156,
+      "originalSha256": "1eaa98e8c8523c378a3e79245c0615590679b654698e7abfebe4d8213103fcb0",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/run/baseline/stdout.log",
+          "group": "fps",
+          "relativePath": "run/baseline/stdout.log",
+          "bytes": 1156,
+          "sha256": "1eaa98e8c8523c378a3e79245c0615590679b654698e7abfebe4d8213103fcb0"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/4942d7874171b54d8dd201784b60dfff0f47e93b76e6db9bff50d5f545f6fb0e.gz",
+      "compression": "gzip",
+      "storedBytes": 7490,
+      "storedSha256": "43c44434ae80354494f40d85b7423cce27392fac351f66da85b82f9b4ceac827",
+      "originalBytes": 100104,
+      "originalSha256": "4942d7874171b54d8dd201784b60dfff0f47e93b76e6db9bff50d5f545f6fb0e",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/run/candidate/fps.json",
+          "group": "fps",
+          "relativePath": "run/candidate/fps.json",
+          "bytes": 100104,
+          "sha256": "4942d7874171b54d8dd201784b60dfff0f47e93b76e6db9bff50d5f545f6fb0e"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/43f96dbbdbe4fc729fce1118b2905334e98fc05659e7ab9bf831c0d321a2289d.gz",
+      "compression": "gzip",
+      "storedBytes": 2230,
+      "storedSha256": "0fd6aebf31188145aa6f23eb2a73e2857aba8327bc717f68f9754458a1f8946c",
+      "originalBytes": 11485,
+      "originalSha256": "43f96dbbdbe4fc729fce1118b2905334e98fc05659e7ab9bf831c0d321a2289d",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/run/candidate/launcher.json",
+          "group": "fps",
+          "relativePath": "run/candidate/launcher.json",
+          "bytes": 11485,
+          "sha256": "43f96dbbdbe4fc729fce1118b2905334e98fc05659e7ab9bf831c0d321a2289d"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/b34bcd92aa33577d21fd39b287e1762a185ec76822867d280700225da9fa0b66.gz",
+      "compression": "gzip",
+      "storedBytes": 1814,
+      "storedSha256": "1864a952c537dd68202c8e7ecde41419ae26a95c8a3f1a2f4eeb0798bd42313f",
+      "originalBytes": 26435,
+      "originalSha256": "b34bcd92aa33577d21fd39b287e1762a185ec76822867d280700225da9fa0b66",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/run/candidate/native-audit.json",
+          "group": "fps",
+          "relativePath": "run/candidate/native-audit.json",
+          "bytes": 26435,
+          "sha256": "b34bcd92aa33577d21fd39b287e1762a185ec76822867d280700225da9fa0b66"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/2221232d99c11d0866b4513fe6e707e2cf52b466f3f906aa7e575e0edbec2dff.gz",
+      "compression": "gzip",
+      "storedBytes": 696,
+      "storedSha256": "de05b9e5b7e26582d66be967309c893cdc7d13fbcd105b4ecb9259d309761c21",
+      "originalBytes": 1151,
+      "originalSha256": "2221232d99c11d0866b4513fe6e707e2cf52b466f3f906aa7e575e0edbec2dff",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/run/candidate/stdout.log",
+          "group": "fps",
+          "relativePath": "run/candidate/stdout.log",
+          "bytes": 1151,
+          "sha256": "2221232d99c11d0866b4513fe6e707e2cf52b466f3f906aa7e575e0edbec2dff"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/412a0fd8d394fd38ac20e1878eabc830c0801ccb43fbd36fbf7ad3944ae913d7.gz",
+      "compression": "gzip",
+      "storedBytes": 6116,
+      "storedSha256": "f87bec56e2f53266c16c6e517cd5cee45c84fbc9414c27b4016fe5ccaf1bbee9",
+      "originalBytes": 19348,
+      "originalSha256": "412a0fd8d394fd38ac20e1878eabc830c0801ccb43fbd36fbf7ad3944ae913d7",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/run/report.json",
+          "group": "fps",
+          "relativePath": "run/report.json",
+          "bytes": 19348,
+          "sha256": "412a0fd8d394fd38ac20e1878eabc830c0801ccb43fbd36fbf7ad3944ae913d7"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/851d8a086b3ad2e7dfd4b2160e93de299a2f0b095b8135a9b2b9e05c38ba53d2.gz",
+      "compression": "gzip",
+      "storedBytes": 103362,
+      "storedSha256": "7d1a5bfba802bc6173f495ca08496c227af023a02ee002df6af4ae3bbfee600e",
+      "originalBytes": 625380,
+      "originalSha256": "851d8a086b3ad2e7dfd4b2160e93de299a2f0b095b8135a9b2b9e05c38ba53d2",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/source-manifest.json",
+          "group": "fps",
+          "relativePath": "source-manifest.json",
+          "bytes": 625380,
+          "sha256": "851d8a086b3ad2e7dfd4b2160e93de299a2f0b095b8135a9b2b9e05c38ba53d2"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421.gz",
+      "compression": "gzip",
+      "storedBytes": 2909,
+      "storedSha256": "5bc9015f8f211cf0512cbadc598281886b4f028d0234b9c82d356c34450cfa77",
+      "originalBytes": 7601,
+      "originalSha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/survey-original-derivation.json",
+          "group": "fps",
+          "relativePath": "survey-original-derivation.json",
+          "bytes": 7601,
+          "sha256": "06f8aeb6a6a9be70baa3b3c4f970ec96453e7ee3c287db53056b975d908e5421"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af.gz",
+      "compression": "gzip",
+      "storedBytes": 3335,
+      "storedSha256": "5e6a3095fc01cef49b80214624e213ba40ade91ff8b90a5286d1358216ede3e7",
+      "originalBytes": 7933,
+      "originalSha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/survey-original.patch",
+          "group": "fps",
+          "relativePath": "survey-original.patch",
+          "bytes": 7933,
+          "sha256": "47d433fede6c95a8f75156b4be9d550000e49396e277a9d0e9e616f5eada14af"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759.gz",
+      "compression": "gzip",
+      "storedBytes": 12468,
+      "storedSha256": "055d83140143f78102efe3c6dafbae785e949a47f903b2376e0423e24590b2e3",
+      "originalBytes": 37750,
+      "originalSha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-fps-20261004/survey.mjs",
+          "group": "fps",
+          "relativePath": "survey.mjs",
+          "bytes": 37750,
+          "sha256": "de42e548c0bb22c0b7cefa8c0c466b6cffc7052ffd74320cf73b9181f6b94759"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/2fdd55837e20d55a9abc904bcfab14e90efcfefeadad15cdda83c7599df653a8.gz",
+      "compression": "gzip",
+      "storedBytes": 909,
+      "storedSha256": "e1a042088ac8389c4ce558692efd8b6d779702b0802af87f8dd47e66e423b781",
+      "originalBytes": 1888,
+      "originalSha256": "2fdd55837e20d55a9abc904bcfab14e90efcfefeadad15cdda83c7599df653a8",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/prefetch-real-gpu-20261004-first/result.json",
+          "group": "gpu-environment-first",
+          "relativePath": "result.json",
+          "bytes": 1888,
+          "sha256": "2fdd55837e20d55a9abc904bcfab14e90efcfefeadad15cdda83c7599df653a8"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/419c9f7a99af1423517f8d4e93a4c635b6b77ab5512345efa6788ca71e532dae.gz",
+      "compression": "gzip",
+      "storedBytes": 2997,
+      "storedSha256": "39506573dd40336eecae3f5ddf269e228207f1841b0da8f57b7c6b6b18a424d3",
+      "originalBytes": 13909,
+      "originalSha256": "419c9f7a99af1423517f8d4e93a4c635b6b77ab5512345efa6788ca71e532dae",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/prefetch-real-gpu-20261004-native/result.json",
+          "group": "gpu-native",
+          "relativePath": "result.json",
+          "bytes": 13909,
+          "sha256": "419c9f7a99af1423517f8d4e93a4c635b6b77ab5512345efa6788ca71e532dae"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/aefa20025704a849d288a00cfc88aa2807eb065b47c3bbe043e023f0c153c48f.gz",
+      "compression": "gzip",
+      "storedBytes": 1722,
+      "storedSha256": "23f56986f5343ce04a80b9ea41b880ee0fdb911428607cd22d157b920535298d",
+      "originalBytes": 4572,
+      "originalSha256": "aefa20025704a849d288a00cfc88aa2807eb065b47c3bbe043e023f0c153c48f",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/adoption-manifest.json",
+          "group": "production-adoption",
+          "relativePath": "adoption-manifest.json",
+          "bytes": 4572,
+          "sha256": "aefa20025704a849d288a00cfc88aa2807eb065b47c3bbe043e023f0c153c48f"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/afb37a6685ee705712a1204b353ef2a584b3509e99acf6075e877b1bedac9879.gz",
+      "compression": "gzip",
+      "storedBytes": 537,
+      "storedSha256": "d6ee2d3559b0942e78125629330d7a17a62e65eb3ac1ddd541ec7fb26a82e7b7",
+      "originalBytes": 1413,
+      "originalSha256": "afb37a6685ee705712a1204b353ef2a584b3509e99acf6075e877b1bedac9879",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/after.json",
+          "group": "production-adoption",
+          "relativePath": "after.json",
+          "bytes": 1413,
+          "sha256": "afb37a6685ee705712a1204b353ef2a584b3509e99acf6075e877b1bedac9879"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/before.json",
+          "group": "production-adoption",
+          "relativePath": "before.json",
+          "bytes": 1413,
+          "sha256": "afb37a6685ee705712a1204b353ef2a584b3509e99acf6075e877b1bedac9879"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/476eec9d18f2ae45c424a0d2e70e6a772ae2a7f4748dbb5b7646e54da32aa99b.gz",
+      "compression": "gzip",
+      "storedBytes": 539,
+      "storedSha256": "c9446f1b2c08cafd9a3f5d026fb63184e605a94496f7baa8a31bd6050e706ad2",
+      "originalBytes": 1413,
+      "originalSha256": "476eec9d18f2ae45c424a0d2e70e6a772ae2a7f4748dbb5b7646e54da32aa99b",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/after.json",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/after.json",
+          "bytes": 1413,
+          "sha256": "476eec9d18f2ae45c424a0d2e70e6a772ae2a7f4748dbb5b7646e54da32aa99b"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/before.json",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/before.json",
+          "bytes": 1413,
+          "sha256": "476eec9d18f2ae45c424a0d2e70e6a772ae2a7f4748dbb5b7646e54da32aa99b"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/f197032180346060238ba4c264051b6822acab5a3e84a9218d69d74ccf83c47f.gz",
+      "compression": "gzip",
+      "storedBytes": 1012,
+      "storedSha256": "2d98668b6d4b48d228c3e2580d4724491e49a97aab12d35e824c6be86e747ed6",
+      "originalBytes": 3804,
+      "originalSha256": "f197032180346060238ba4c264051b6822acab5a3e84a9218d69d74ccf83c47f",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/freeze-manifest.json",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/freeze-manifest.json",
+          "bytes": 3804,
+          "sha256": "f197032180346060238ba4c264051b6822acab5a3e84a9218d69d74ccf83c47f"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/017ee7580aa745711a4970721a54715cdc5e9be57525acbe3df28c127bfb471d.gz",
+      "compression": "gzip",
+      "storedBytes": 767,
+      "storedSha256": "6e3268748b38793a48ce9270e4a81812542dc1dd866ef2e67e70a44be87bc9bc",
+      "originalBytes": 2080,
+      "originalSha256": "017ee7580aa745711a4970721a54715cdc5e9be57525acbe3df28c127bfb471d",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/portable-focused.stderr.log",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/portable-focused.stderr.log",
+          "bytes": 2080,
+          "sha256": "017ee7580aa745711a4970721a54715cdc5e9be57525acbe3df28c127bfb471d"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/147fe7d35c41c2a2630547f49ffa070ba50d021b98be16438efaface6f8a4ba3.gz",
+      "compression": "gzip",
+      "storedBytes": 486,
+      "storedSha256": "fc5f36ff7255d5d5bafde8fcbbb173a688a76e551173836317067e931535ea61",
+      "originalBytes": 840,
+      "originalSha256": "147fe7d35c41c2a2630547f49ffa070ba50d021b98be16438efaface6f8a4ba3",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/portable-focused.stdout.log",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/portable-focused.stdout.log",
+          "bytes": 840,
+          "sha256": "147fe7d35c41c2a2630547f49ffa070ba50d021b98be16438efaface6f8a4ba3"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/152995a34553b710d79513f771f62f907717ac81999ee366498d981c5e726a4e.gz",
+      "compression": "gzip",
+      "storedBytes": 1114,
+      "storedSha256": "2be1b1d5dfd43b14745e87d2826732e5c5b85a0ac2ce382b3eabe9eb174d0dee",
+      "originalBytes": 2536,
+      "originalSha256": "152995a34553b710d79513f771f62f907717ac81999ee366498d981c5e726a4e",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/run.py",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/run.py",
+          "bytes": 2536,
+          "sha256": "152995a34553b710d79513f771f62f907717ac81999ee366498d981c5e726a4e"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/3c30d92bfde66c7c05264caf65c60ae84a684559487d99205dc52eef6db89c41.gz",
+      "compression": "gzip",
+      "storedBytes": 5217,
+      "storedSha256": "e09993bce7af91b5c55fb19b975a02c37175bbbb9b8f261dc77b86aacb542235",
+      "originalBytes": 17419,
+      "originalSha256": "3c30d92bfde66c7c05264caf65c60ae84a684559487d99205dc52eef6db89c41",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/source-before/src/game/SurfZoneWaterPrefetch.test.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/source-before/src/game/SurfZoneWaterPrefetch.test.ts",
+          "bytes": 17419,
+          "sha256": "3c30d92bfde66c7c05264caf65c60ae84a684559487d99205dc52eef6db89c41"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/2148b39e56ced1f541d79b8784c97af40d2dae248fb473274f0a5b2330c95acb.gz",
+      "compression": "gzip",
+      "storedBytes": 3790,
+      "storedSha256": "0c5ffce880e9cd1d4fee6f76e5b6cd111fa2ec7071f919fc3aa8d3da001b02a3",
+      "originalBytes": 12687,
+      "originalSha256": "2148b39e56ced1f541d79b8784c97af40d2dae248fb473274f0a5b2330c95acb",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/source-before/src/wave/gpu/GpuBoussinesq.prefetch.test.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/source-before/src/wave/gpu/GpuBoussinesq.prefetch.test.ts",
+          "bytes": 12687,
+          "sha256": "2148b39e56ced1f541d79b8784c97af40d2dae248fb473274f0a5b2330c95acb"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/source-before/src/wave/gpu/GpuBoussinesq.prefetch.test.ts",
+          "group": "production-adoption",
+          "relativePath": "source-before/src/wave/gpu/GpuBoussinesq.prefetch.test.ts",
+          "bytes": 12687,
+          "sha256": "2148b39e56ced1f541d79b8784c97af40d2dae248fb473274f0a5b2330c95acb"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/e0a5e739c39e2ed0e081d8c32c6a94465339f90047a3d11dad7ee0fc90972517.gz",
+      "compression": "gzip",
+      "storedBytes": 481,
+      "storedSha256": "94341e53084780942f7fe5a884a11e39b18db3e3a01068689be73d3037696e85",
+      "originalBytes": 1266,
+      "originalSha256": "e0a5e739c39e2ed0e081d8c32c6a94465339f90047a3d11dad7ee0fc90972517",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/terminal.json",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/terminal.json",
+          "bytes": 1266,
+          "sha256": "e0a5e739c39e2ed0e081d8c32c6a94465339f90047a3d11dad7ee0fc90972517"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/a25d3bfcdce67615b3a0f1704a1cca48fe183badc57344e072ba07856ab05a83.gz",
+      "compression": "gzip",
+      "storedBytes": 417,
+      "storedSha256": "fb380d7fa53e1138309397a8ece3ccf4e8f98af61279b1ea1423b61a3ee46514",
+      "originalBytes": 767,
+      "originalSha256": "a25d3bfcdce67615b3a0f1704a1cca48fe183badc57344e072ba07856ab05a83",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-corrected/typing-repair.patch",
+          "group": "production-adoption",
+          "relativePath": "checks-corrected/typing-repair.patch",
+          "bytes": 767,
+          "sha256": "a25d3bfcdce67615b3a0f1704a1cca48fe183badc57344e072ba07856ab05a83"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/eded554322cfd2bbc6e2e1513f4fc7087730a0c25bc8d2184200a02e338190f0.gz",
+      "compression": "gzip",
+      "storedBytes": 538,
+      "storedSha256": "5e623a8bf4bd7540b0b2dd19d249137a5f1b130dcb65bee690367abccaa9fa86",
+      "originalBytes": 1413,
+      "originalSha256": "eded554322cfd2bbc6e2e1513f4fc7087730a0c25bc8d2184200a02e338190f0",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/after.json",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/after.json",
+          "bytes": 1413,
+          "sha256": "eded554322cfd2bbc6e2e1513f4fc7087730a0c25bc8d2184200a02e338190f0"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/before.json",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/before.json",
+          "bytes": 1413,
+          "sha256": "eded554322cfd2bbc6e2e1513f4fc7087730a0c25bc8d2184200a02e338190f0"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/01277e12978f63ee2191b675a8c3f164f52ced89ff308afae6db6d50698abbb9.gz",
+      "compression": "gzip",
+      "storedBytes": 779,
+      "storedSha256": "01514194677d7e673dba1c66a7fa181388e0c6c2eb3921b422a95186669dabb9",
+      "originalBytes": 2074,
+      "originalSha256": "01277e12978f63ee2191b675a8c3f164f52ced89ff308afae6db6d50698abbb9",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/fixture-repair.patch",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/fixture-repair.patch",
+          "bytes": 2074,
+          "sha256": "01277e12978f63ee2191b675a8c3f164f52ced89ff308afae6db6d50698abbb9"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/4466e676924bf8da5b0767a3416289b29c45e9a754066f3c716a8297110762fe.gz",
+      "compression": "gzip",
+      "storedBytes": 975,
+      "storedSha256": "04e6456128495346840e7e95ebdfa63a88f11e161b5959e208d200e470176d54",
+      "originalBytes": 3931,
+      "originalSha256": "4466e676924bf8da5b0767a3416289b29c45e9a754066f3c716a8297110762fe",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/freeze-manifest.json",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/freeze-manifest.json",
+          "bytes": 3931,
+          "sha256": "4466e676924bf8da5b0767a3416289b29c45e9a754066f3c716a8297110762fe"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/7e6ca06cbad1252454965a853bdc371a04e80fdf36d0d97c3de4de1651282a38.gz",
+      "compression": "gzip",
+      "storedBytes": 170,
+      "storedSha256": "5bfefef7c21d325e9e4c483f05648ec39b594e854f002121141c1e209f0ee6c2",
+      "originalBytes": 193,
+      "originalSha256": "7e6ca06cbad1252454965a853bdc371a04e80fdf36d0d97c3de4de1651282a38",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/portable-focused.stdout.log",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/portable-focused.stdout.log",
+          "bytes": 193,
+          "sha256": "7e6ca06cbad1252454965a853bdc371a04e80fdf36d0d97c3de4de1651282a38"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/4ffc336394d54173e9ebfe139136e669079381820adc97aa281d75e0b18835b5.gz",
+      "compression": "gzip",
+      "storedBytes": 1119,
+      "storedSha256": "411d6d12e28ed6909773e28d3efc48494d37e908f852dacd25c6ea134be33501",
+      "originalBytes": 2544,
+      "originalSha256": "4ffc336394d54173e9ebfe139136e669079381820adc97aa281d75e0b18835b5",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/run.py",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/run.py",
+          "bytes": 2544,
+          "sha256": "4ffc336394d54173e9ebfe139136e669079381820adc97aa281d75e0b18835b5"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e.gz",
+      "compression": "gzip",
+      "storedBytes": 5225,
+      "storedSha256": "56692a98820d7b2fc08a42e63206517227c499d9004f241463cccd3a71c84255",
+      "originalBytes": 17570,
+      "originalSha256": "df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/source-before/src/game/SurfZoneWaterPrefetch.test.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/source-before/src/game/SurfZoneWaterPrefetch.test.ts",
+          "bytes": 17570,
+          "sha256": "df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/cc396a7716049427ec63a36dd82aa45d7990e22d573aaa252e813c251f83796c.gz",
+      "compression": "gzip",
+      "storedBytes": 3792,
+      "storedSha256": "28b7ee9fcd7974fc180a2afb1cc81e071d7a7daa6ec7b5adbee4a7c4a57a1dbe",
+      "originalBytes": 12716,
+      "originalSha256": "cc396a7716049427ec63a36dd82aa45d7990e22d573aaa252e813c251f83796c",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/source-before/src/wave/gpu/GpuBoussinesq.prefetch.test.ts",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/source-before/src/wave/gpu/GpuBoussinesq.prefetch.test.ts",
+          "bytes": 12716,
+          "sha256": "cc396a7716049427ec63a36dd82aa45d7990e22d573aaa252e813c251f83796c"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/1dd261bb0a15fdefeae75b6bae99c4d71b27cf3f39a3fd97bd4353f2dc90ca4c.gz",
+      "compression": "gzip",
+      "storedBytes": 471,
+      "storedSha256": "0ec37b76656f6cb192ee2ba165f9954b44fbfaa41c1a0f61eaa808b455bbe80f",
+      "originalBytes": 1228,
+      "originalSha256": "1dd261bb0a15fdefeae75b6bae99c4d71b27cf3f39a3fd97bd4353f2dc90ca4c",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/checks-fixture-corrected/terminal.json",
+          "group": "production-adoption",
+          "relativePath": "checks-fixture-corrected/terminal.json",
+          "bytes": 1228,
+          "sha256": "1dd261bb0a15fdefeae75b6bae99c4d71b27cf3f39a3fd97bd4353f2dc90ca4c"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/ea340e3a9bedc213dfcec65c15c5b52057d37ab05de90acb89fc5772b9a93fc6.gz",
+      "compression": "gzip",
+      "storedBytes": 870,
+      "storedSha256": "cdca0d57cff8106b78704cf81cd8b1e9e03d8111e49ec96b8d707d6e944f0280",
+      "originalBytes": 2904,
+      "originalSha256": "ea340e3a9bedc213dfcec65c15c5b52057d37ab05de90acb89fc5772b9a93fc6",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/freeze-manifest.json",
+          "group": "production-adoption",
+          "relativePath": "freeze-manifest.json",
+          "bytes": 2904,
+          "sha256": "ea340e3a9bedc213dfcec65c15c5b52057d37ab05de90acb89fc5772b9a93fc6"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/36830c9f83bfbe4222e71b7302ce3a1602545d3b698fb2c0bd4d3e47ede10e49.gz",
+      "compression": "gzip",
+      "storedBytes": 8056,
+      "storedSha256": "4134f10d3b093b7f5fc1827b1d2995bb86af2232aa18136f6ce6b48412641d58",
+      "originalBytes": 30848,
+      "originalSha256": "36830c9f83bfbe4222e71b7302ce3a1602545d3b698fb2c0bd4d3e47ede10e49",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/portable-tests.patch",
+          "group": "production-adoption",
+          "relativePath": "portable-tests.patch",
+          "bytes": 30848,
+          "sha256": "36830c9f83bfbe4222e71b7302ce3a1602545d3b698fb2c0bd4d3e47ede10e49"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/380e707f3c179763060809ddca80dcc1b1f594c32b58c32418399412227f77e7.gz",
+      "compression": "gzip",
+      "storedBytes": 989,
+      "storedSha256": "3420e2626637e9f162edce6289d54e88cc737880c431b29fcf4f266dcd35cef7",
+      "originalBytes": 2627,
+      "originalSha256": "380e707f3c179763060809ddca80dcc1b1f594c32b58c32418399412227f77e7",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/compiled.json",
+          "group": "production-adoption",
+          "relativePath": "root-final/compiled.json",
+          "bytes": 2627,
+          "sha256": "380e707f3c179763060809ddca80dcc1b1f594c32b58c32418399412227f77e7"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/41dec1a633b5eea30962f9049a3163653a657ac2c7a8cbceb474dbded9f2dcef.gz",
+      "compression": "gzip",
+      "storedBytes": 165,
+      "storedSha256": "dba5967bd9592e5ebb014192b8b898d4da76d23725b2a4d89c721de2183f81cd",
+      "originalBytes": 208,
+      "originalSha256": "41dec1a633b5eea30962f9049a3163653a657ac2c7a8cbceb474dbded9f2dcef",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/focused-existing-and-new.stderr.log",
+          "group": "production-adoption",
+          "relativePath": "root-final/focused-existing-and-new.stderr.log",
+          "bytes": 208,
+          "sha256": "41dec1a633b5eea30962f9049a3163653a657ac2c7a8cbceb474dbded9f2dcef"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/a3b58c7ef7782d89dd814db941e82b5d76361eab7dbb39556fe5889ebc347c14.gz",
+      "compression": "gzip",
+      "storedBytes": 2248,
+      "storedSha256": "926cd43a7789146af12e748a7fca4c861e37716dd2592afcd8cfad20ab668b5f",
+      "originalBytes": 5307,
+      "originalSha256": "a3b58c7ef7782d89dd814db941e82b5d76361eab7dbb39556fe5889ebc347c14",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/focused-existing-and-new.stdout.log",
+          "group": "production-adoption",
+          "relativePath": "root-final/focused-existing-and-new.stdout.log",
+          "bytes": 5307,
+          "sha256": "a3b58c7ef7782d89dd814db941e82b5d76361eab7dbb39556fe5889ebc347c14"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/351b524197fb492920789369e7f1a271420c757633fbb553b280a181ac4c31a4.gz",
+      "compression": "gzip",
+      "storedBytes": 254,
+      "storedSha256": "6f99689a5c0357ad94f35ee5d25db4b06a6a500bb17b0a946df810c9cafe8ffe",
+      "originalBytes": 360,
+      "originalSha256": "351b524197fb492920789369e7f1a271420c757633fbb553b280a181ac4c31a4",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/production-build.stderr.log",
+          "group": "production-adoption",
+          "relativePath": "root-final/production-build.stderr.log",
+          "bytes": 360,
+          "sha256": "351b524197fb492920789369e7f1a271420c757633fbb553b280a181ac4c31a4"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/ada5a415e3caa165f05b4a737b59905179136becf1c02b0752f5bde02eb2db44.gz",
+      "compression": "gzip",
+      "storedBytes": 483,
+      "storedSha256": "8b7c89c1c07a276bdb67fb6b424838af87645efa718c567ee56d1f335e43919c",
+      "originalBytes": 968,
+      "originalSha256": "ada5a415e3caa165f05b4a737b59905179136becf1c02b0752f5bde02eb2db44",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/production-build.stdout.log",
+          "group": "production-adoption",
+          "relativePath": "root-final/production-build.stdout.log",
+          "bytes": 968,
+          "sha256": "ada5a415e3caa165f05b4a737b59905179136becf1c02b0752f5bde02eb2db44"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/e6ef9d6acf6ebcad8d18101ec74bbb7917eb1cd6253ea45d7697b1f5f028fa94.gz",
+      "compression": "gzip",
+      "storedBytes": 436,
+      "storedSha256": "b3f0539f79b973fb6321f9f13cadf9ae7c58ba268f710ef19c0317da9a6fe4e1",
+      "originalBytes": 1101,
+      "originalSha256": "e6ef9d6acf6ebcad8d18101ec74bbb7917eb1cd6253ea45d7697b1f5f028fa94",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/progress.json",
+          "group": "production-adoption",
+          "relativePath": "root-final/progress.json",
+          "bytes": 1101,
+          "sha256": "e6ef9d6acf6ebcad8d18101ec74bbb7917eb1cd6253ea45d7697b1f5f028fa94"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/4c75cfb78f457eb006756ca299fa035546bf21ca400ef31327951a8b3d38b778.gz",
+      "compression": "gzip",
+      "storedBytes": 28667,
+      "storedSha256": "0dc143748cd395ae194df0c4eb2c1be4c61154512d2c3f3dc0d48f8331e0d70f",
+      "originalBytes": 84468,
+      "originalSha256": "4c75cfb78f457eb006756ca299fa035546bf21ca400ef31327951a8b3d38b778",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/source-after.json",
+          "group": "production-adoption",
+          "relativePath": "root-final/source-after.json",
+          "bytes": 84468,
+          "sha256": "4c75cfb78f457eb006756ca299fa035546bf21ca400ef31327951a8b3d38b778"
+        },
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/source-before.json",
+          "group": "production-adoption",
+          "relativePath": "root-final/source-before.json",
+          "bytes": 84468,
+          "sha256": "4c75cfb78f457eb006756ca299fa035546bf21ca400ef31327951a8b3d38b778"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/4ef0520e7ae3680895197c39ffba0d26cfb40b99f0b3cd267a2d4310dd6f2642.gz",
+      "compression": "gzip",
+      "storedBytes": 103,
+      "storedSha256": "18ccd709c97f1e144035ec2a3128414435fd5e48f64cc0ac404027e4867fba83",
+      "originalBytes": 93,
+      "originalSha256": "4ef0520e7ae3680895197c39ffba0d26cfb40b99f0b3cd267a2d4310dd6f2642",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/started.json",
+          "group": "production-adoption",
+          "relativePath": "root-final/started.json",
+          "bytes": 93,
+          "sha256": "4ef0520e7ae3680895197c39ffba0d26cfb40b99f0b3cd267a2d4310dd6f2642"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/d86234ac11c8ffbe27ec2c5acc04724c055770432eacea7b30466f86e126b112.gz",
+      "compression": "gzip",
+      "storedBytes": 460,
+      "storedSha256": "1404c0e0d92e8bfd335d4cd664fe6d295d030745498a9440eb436593d6b9d656",
+      "originalBytes": 1187,
+      "originalSha256": "d86234ac11c8ffbe27ec2c5acc04724c055770432eacea7b30466f86e126b112",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/terminal.json",
+          "group": "production-adoption",
+          "relativePath": "root-final/terminal.json",
+          "bytes": 1187,
+          "sha256": "d86234ac11c8ffbe27ec2c5acc04724c055770432eacea7b30466f86e126b112"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/9092ed5eeebea6c7b8b7d8abfaff83ba13e9d4880d013c35ff7179a767e6c50c.gz",
+      "compression": "gzip",
+      "storedBytes": 5455,
+      "storedSha256": "7850cc826d68e28e67186f539618fcfdb0c7171e917410165f64b988213b7ecb",
+      "originalBytes": 33836,
+      "originalSha256": "9092ed5eeebea6c7b8b7d8abfaff83ba13e9d4880d013c35ff7179a767e6c50c",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/root-final/tests.json",
+          "group": "production-adoption",
+          "relativePath": "root-final/tests.json",
+          "bytes": 33836,
+          "sha256": "9092ed5eeebea6c7b8b7d8abfaff83ba13e9d4880d013c35ff7179a767e6c50c"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/9e0c75488c0aba6fb72025ddc693e627b742689290dcf011ed333f3b2a984ead.gz",
+      "compression": "gzip",
+      "storedBytes": 1102,
+      "storedSha256": "5e516c2c15e18c51f69dba90b3ef6c4a97e13340420d4fea8d0f121260a32024",
+      "originalBytes": 2519,
+      "originalSha256": "9e0c75488c0aba6fb72025ddc693e627b742689290dcf011ed333f3b2a984ead",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/run.py",
+          "group": "production-adoption",
+          "relativePath": "run.py",
+          "bytes": 2519,
+          "sha256": "9e0c75488c0aba6fb72025ddc693e627b742689290dcf011ed333f3b2a984ead"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/d7b2907e06e4384cb44147989f58cfd9efa692a0b7578eba7e5441072ca8eb41.gz",
+      "compression": "gzip",
+      "storedBytes": 7154,
+      "storedSha256": "b0564437b320f2e5a6bc40d77db3ed794de3252d7cfdc5a982f69b485ceacc58",
+      "originalBytes": 28117,
+      "originalSha256": "d7b2907e06e4384cb44147989f58cfd9efa692a0b7578eba7e5441072ca8eb41",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/runtime-adoption.patch",
+          "group": "production-adoption",
+          "relativePath": "runtime-adoption.patch",
+          "bytes": 28117,
+          "sha256": "d7b2907e06e4384cb44147989f58cfd9efa692a0b7578eba7e5441072ca8eb41"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/ce5bccb51a3e0f9f0a1bb2a1ef5e58409ad9a5145e2c72170fbab5adf058941d.gz",
+      "compression": "gzip",
+      "storedBytes": 5204,
+      "storedSha256": "0eee9aebec0a8ce61ee8467347430d376a180b5ba5bd223bb8464706f98fb276",
+      "originalBytes": 17395,
+      "originalSha256": "ce5bccb51a3e0f9f0a1bb2a1ef5e58409ad9a5145e2c72170fbab5adf058941d",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/source-before/src/game/SurfZoneWaterPrefetch.test.ts",
+          "group": "production-adoption",
+          "relativePath": "source-before/src/game/SurfZoneWaterPrefetch.test.ts",
+          "bytes": 17395,
+          "sha256": "ce5bccb51a3e0f9f0a1bb2a1ef5e58409ad9a5145e2c72170fbab5adf058941d"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/669a527cf82d13568c2de825e59bb15312094e1eff8665ae066e1b175562954b.gz",
+      "compression": "gzip",
+      "storedBytes": 300,
+      "storedSha256": "12d8419e6b05187927ff8c36688d2de979569b681cc1bf8666c9dca28d2f61f3",
+      "originalBytes": 582,
+      "originalSha256": "669a527cf82d13568c2de825e59bb15312094e1eff8665ae066e1b175562954b",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/strict.stdout.log",
+          "group": "production-adoption",
+          "relativePath": "strict.stdout.log",
+          "bytes": 582,
+          "sha256": "669a527cf82d13568c2de825e59bb15312094e1eff8665ae066e1b175562954b"
+        }
+      ]
+    },
+    {
+      "storedPath": "payloads/1f08c7154880db66e2457a54c1600ae9d2fae8208e1a077da9f4d0961d124360.gz",
+      "compression": "gzip",
+      "storedBytes": 353,
+      "storedSha256": "01dfcae541f463e2cc06d070e03842b3404119b3ae36f171d7f879ffa1930186",
+      "originalBytes": 696,
+      "originalSha256": "1f08c7154880db66e2457a54c1600ae9d2fae8208e1a077da9f4d0961d124360",
+      "aliases": [
+        {
+          "originalPath": "/private/tmp/surf-water-prefetch-adoption-20261004/terminal.json",
+          "group": "production-adoption",
+          "relativePath": "terminal.json",
+          "bytes": 696,
+          "sha256": "1f08c7154880db66e2457a54c1600ae9d2fae8208e1a077da9f4d0961d124360"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "operationCommand": [
+    "/opt/homebrew/Cellar/node/23.10.0_1/bin/node",
+    "/private/tmp/surf-sparse-upload-20261004/gpu-gate/device-gate.mjs",
+    "--run=true",
+    "--out=/private/tmp/surf-sparse-upload-20261004/gpu-gate/run"
+  ],
+  "environment": {
+    "SPARSE_READY_SHA256": "bd36df908c340104d1bdd9469a42fdc2195bbce7f083acba634d790eed720829",
+    "SPARSE_LAUNCH_READY_SHA256": "f1f78ae5631a4b2e5ae630adc5731d1db9fd92ad9ed0c36dee98c2a39af14683"
+  },
+  "operationStartedUtc": "2026-10-04T03:08:57.350Z",
+  "operationEndedUtc": "2026-10-04T03:09:02.553Z",
+  "ownedChromePid": 76500,
+  "toolSession": 14168,
+  "toolExitCode": 0,
+  "consoleProvenance": "tool-console.log concatenates the exact observed exec_command/write_stdin output chunks. Tool output combines process streams; it is not a separately sampled Node stderr stream. Chrome stdout/stderr are independently recorded by the reviewed launcher in result.json (16KiB cap each).",
+  "sourceUnchangedAfterOperation": true,
+  "runtimePatchSha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe",
+  "sourceAuthoritySha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66",
+  "records": [
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/run/result.json",
+      "bytes": 28123,
+      "sha256": "2e3412e59efbd554fffe4fdcf934fcfd43f45fde86c42be33c6bb400e42834ad"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/run/tool-console.log",
+      "bytes": 2878,
+      "sha256": "9069175fa5d9d4013ed2abc6381a0cf606cbabf21107abb372427552ab6384eb"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/run/source-after.json",
+      "bytes": 66113,
+      "sha256": "49a6f2f9cc595101c8c1eeafa63f502e2d272bce699393cbea1b59d499fd3dc7"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/run/derived.json",
+      "bytes": 3585,
+      "sha256": "1f6449e6e8464431fc173ca23dbc98fb6b3d659247b24ae5feefde5ea88f503a"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/run/summarize.py",
+      "bytes": 2698,
+      "sha256": "d30a3f87b699094f2d0d9c32523f888258ae8f2bcee4860ffc965e2b97192a0b"
+    }
+  ],
+  "noRerun": true,
+  "notAdopted": true,
+  "noFpsClaim": true
+}

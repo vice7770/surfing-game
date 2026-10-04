@@ -1,0 +1,125 @@
+{
+  "scope": "Pure paired/order summary of retained one controlled real-GPU diagnostic; no new measurement/FPS/adoption",
+  "rawPath": "/private/tmp/surf-sparse-upload-20261004/gpu-gate/run/result.json",
+  "rawSha256": "2e3412e59efbd554fffe4fdcf934fcfd43f45fde86c42be33c6bb400e42834ad",
+  "all": {
+    "count": 24,
+    "pairedSavingMs": {
+      "median": 0.5999999642372131,
+      "mean": 0.6583333238959312,
+      "min": -1.9999999403953552,
+      "max": 4.899999976158142
+    },
+    "positive": 19,
+    "negative": 5,
+    "zero": 0,
+    "originalMs": {
+      "median": 16.44999998807907,
+      "mean": 16.862499989569187,
+      "min": 15.700000047683716,
+      "max": 21.599999964237213
+    },
+    "candidateMs": {
+      "median": 16.05000001192093,
+      "mean": 16.204166665673256,
+      "min": 15.099999964237213,
+      "max": 19.099999964237213
+    },
+    "pairedPackSavingMs": {
+      "median": 0.5,
+      "mean": 0.49583332737286884,
+      "min": 0.3999999165534973,
+      "max": 0.7000000476837158
+    }
+  },
+  "orders": {
+    "AB": {
+      "count": 12,
+      "pairedSavingMs": {
+        "median": 0.5999999642372131,
+        "mean": 0.6666666517655054,
+        "min": -0.10000002384185791,
+        "max": 2.6000000834465027
+      },
+      "positive": 10,
+      "negative": 2,
+      "zero": 0,
+      "originalMs": {
+        "median": 16.399999976158142,
+        "mean": 16.733333319425583,
+        "min": 15.799999952316284,
+        "max": 18.400000035762787
+      },
+      "candidateMs": {
+        "median": 15.799999982118607,
+        "mean": 16.066666667660076,
+        "min": 15.100000023841858,
+        "max": 17.19999998807907
+      },
+      "pairedPackSavingMs": {
+        "median": 0.4999999403953552,
+        "mean": 0.4833333194255829,
+        "min": 0.3999999165534973,
+        "max": 0.7000000476837158
+      }
+    },
+    "BA": {
+      "count": 12,
+      "pairedSavingMs": {
+        "median": 0.5999999940395355,
+        "mean": 0.649999996026357,
+        "min": -1.9999999403953552,
+        "max": 4.899999976158142
+      },
+      "positive": 9,
+      "negative": 3,
+      "zero": 0,
+      "originalMs": {
+        "median": 16.44999998807907,
+        "mean": 16.99166665971279,
+        "min": 15.700000047683716,
+        "max": 21.599999964237213
+      },
+      "candidateMs": {
+        "median": 16.100000023841858,
+        "mean": 16.341666663686436,
+        "min": 15.099999964237213,
+        "max": 19.099999964237213
+      },
+      "pairedPackSavingMs": {
+        "median": 0.5000000298023224,
+        "mean": 0.5083333353201548,
+        "min": 0.3999999761581421,
+        "max": 0.699999988079071
+      }
+    }
+  },
+  "limits": [
+    "One fixed F32 handover phase, fresh rider/particles, no renderer competition/postMessage; not ordinary historical replay.",
+    "19 positive/5 negative use exact stored timer differences: one negative is -5.960464477539063e-8ms and practically a quantized tie.",
+    "Initial/detailed lifecycle allocation before warmup may cause later GC. Small same particle RNG observer overhead included."
+  ],
+  "clock": {
+    "fromTime": 125.83333333332823,
+    "toTime": 126.2333333333282,
+    "fromSea": 401.17437989096595,
+    "toSea": 401.57437989096593,
+    "dt": 0.016666666666666666,
+    "costPhaseMs": 1289.699999988079
+  },
+  "operation": {
+    "started": "2026-10-04T03:08:57.350Z",
+    "ended": "2026-10-04T03:09:02.553Z",
+    "hardSeconds": 90,
+    "chromePid": 76500,
+    "closed": {
+      "4200": true,
+      "4219": true,
+      "9629": true
+    },
+    "chromeExit": {
+      "code": 0,
+      "signal": null
+    }
+  }
+}

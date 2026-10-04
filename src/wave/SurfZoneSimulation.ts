@@ -151,10 +151,20 @@ export function solverStage(spot: SpotName, stage: 1 | 2 | undefined): 1 | 2 {
 /** Swell components the tank's sea is built from, unless the config says otherwise. */
 export const SEA_COMPONENTS = 24;
 
+/** An internal water-only result. Until commit, neither solver arrays nor its logical clock changes. */
+export interface PreparedWaterStep {
+  /** False for a stale source generation; unsupported private diagnostics throw into the normal requested-step fallback. */
+  commit(): boolean;
+  /** Release staging and force the next device step to upload carried state from the committed solver. */
+  discard(): void;
+}
+
 /** The stage 2 water stepped elsewhere (the GPU, plan P6): it advances the solver's own state in place. */
 export interface SolverDevice {
   step(dt: number): Promise<void>;
   dispose(): void;
+  /** Private solo worker capability; other devices and generic callers retain the ordinary step path. */
+  prepareStep?(dt: number): Promise<PreparedWaterStep | undefined>;
   /** Optional timing of its latest step; hosts without a GPU can omit it. */
   readonly diagnostics?: { substeps: number; pack: number; cfl: number; encode: number; map: number; unpack: number };
 }
@@ -759,6 +769,58 @@ export class SurfZoneSimulation {
 
   /** Steps the water on a device instead of the CPU solver, when set (`stepAsync`). */
   device?: SolverDevice;
+  /** Enabled only by WorkerCore's ordinary solo initialization capability. No CPU phase is prefetched. */
+  private waterPrefetchEnabled = false;
+  private waterGeneration = 0;
+  private futureWaterFailure?: { device: SolverDevice; error: unknown };
+  private futureWater?: {
+    device: SolverDevice; dt: number; time: number; version: number; plunge: number; generation: number;
+    ready: Promise<{ ok: true; result: PreparedWaterStep | undefined } | { ok: false; error: unknown }>;
+  };
+
+  enableSoloWaterPrefetch(): void { this.waterPrefetchEnabled = true; }
+  get hasWaterPrefetch(): boolean { return this.futureWater !== undefined; }
+
+  /** Start one future water-only step after the current runner's complete CPU feedback, before its fill/reply. */
+  prefetchWater(dt: number): void {
+    const { device, solver } = this;
+    if (!this.waterPrefetchEnabled || this.futureWater || !device?.prepareStep || !(solver instanceof BoussinesqSolver)) return;
+    const generation = this.waterGeneration;
+    const ready = device.prepareStep(dt).then((result) => {
+      if (generation !== this.waterGeneration) result?.discard();
+      return { ok: true as const, result };
+    }, (error: unknown) => ({ ok: false as const, error }));
+    this.futureWater = { device, dt, time: solver.time, version: solver.deviceLayout().version,
+      plunge: solver.plungeVersion, generation, ready };
+  }
+
+  /** Before a restore, remote push or incompatible request; discard never advances the CPU or falls back speculatively. */
+  async discardWaterPrefetch(): Promise<void> {
+    this.waterGeneration += 1;
+    const future = this.futureWater;
+    this.futureWater = undefined;
+    if (!future) return;
+    const settled = await future.ready;
+    if (settled.ok) settled.result?.discard();
+    else this.futureWaterFailure = { device: future.device, error: settled.error };
+  }
+
+  private async consumeWaterPrefetch(dt: number, device: SolverDevice): Promise<boolean> {
+    const future = this.futureWater!;
+    this.futureWater = undefined;
+    const settled = await future.ready;
+    const solver = this.solver;
+    const matches = future.device === device && future.device === this.device && future.dt === dt
+      && future.generation === this.waterGeneration && future.time === solver.time
+      && solver instanceof BoussinesqSolver && future.version === solver.deviceLayout().version && future.plunge === solver.plungeVersion;
+    if (!matches) {
+      if (settled.ok) settled.result?.discard();
+      else if (future.device === device) throw settled.error;
+      return false;
+    }
+    if (!settled.ok) throw settled.error;
+    return settled.result?.commit() ?? false;
+  }
 
   step(dt: number): void {
     const start = performance.now();
@@ -771,13 +833,19 @@ export class SurfZoneSimulation {
   async stepAsync(dt: number): Promise<void> {
     const { device } = this;
     if (!device) {
+      if (this.futureWater) await this.discardWaterPrefetch();
+      this.futureWaterFailure = undefined;
       this.step(dt);
       return;
     }
     const start = performance.now();
     this.lipImpacts.length = 0;
     try {
-      await device.step(dt);
+      const failure = this.futureWaterFailure;
+      this.futureWaterFailure = undefined;
+      if (failure?.device === device) throw failure.error;
+      const consumed = this.futureWater ? await this.consumeWaterPrefetch(dt, device) : false;
+      if (!consumed) await device.step(dt);
     } catch (error) {
       console.warn('Surf zone device step failed; stepping on the CPU from here.', error);
       device.dispose();

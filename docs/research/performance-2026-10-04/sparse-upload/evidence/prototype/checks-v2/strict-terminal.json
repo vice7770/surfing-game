@@ -1,0 +1,16 @@
+{
+  "kind": "strict",
+  "command": [
+    "/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/tsc",
+    "-p",
+    "/private/tmp/surf-sparse-upload-20261004/tsconfig.qa.json"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-20261004",
+  "startedUTC": "2026-10-04T02:41:17.761840+00:00",
+  "pid": 67691,
+  "endedUTC": "2026-10-04T02:41:20.618791+00:00",
+  "exitCode": 0,
+  "sourceInputsUnchanged": true,
+  "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

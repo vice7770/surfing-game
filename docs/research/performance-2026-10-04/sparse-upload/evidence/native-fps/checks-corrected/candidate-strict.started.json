@@ -1,0 +1,13 @@
+{
+  "phase": "candidate-strict",
+  "command": [
+    "node",
+    "candidate/node_modules/typescript/bin/tsc",
+    "--project",
+    "candidate/tsconfig.json",
+    "--noEmit"
+  ],
+  "cwd": "/private/tmp/surf-sparse-upload-fps-20261004",
+  "startedAt": "2026-10-04T03:24:52.001478+00:00",
+  "pid": 82098
+}

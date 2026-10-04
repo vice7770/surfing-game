@@ -1,0 +1,74 @@
+{
+  "scope": "Corrected15 protocol/CPU mutation tests plus strict TypeScript only; no GPU/WGSL parity, bundle, benchmark or adoption",
+  "readySha256": "2fc3de7524760b3b7e03fea27f43fd294c24ace17317b19f85f2d53d7cfe743b",
+  "runtimePatchSha256": "63e8c90c5c651fa684fccbd994087b8682bb438a98e6bb8ba3c2e5b42650acbe",
+  "sourceAuthoritySha256": "11f1aab08c64d7ab09a5119bf47ef53b7af73f96c2cf72f02aa1b72f8ae1ba66",
+  "firstFailure": "../checks/tests-terminal.json",
+  "records": [
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/run-check.py",
+      "bytes": 2566,
+      "sha256": "dfe84b2e0fa21c23560788bbad6706adb483d635359bd9778091559a8511b133"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/strict-inputs-after.json",
+      "bytes": 55577,
+      "sha256": "04361312e4620a856f1a3030512b978acfa7aa8aba0a5a3e1cc0356651e6a127"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/strict-inputs-before.json",
+      "bytes": 55577,
+      "sha256": "04361312e4620a856f1a3030512b978acfa7aa8aba0a5a3e1cc0356651e6a127"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/strict-started.json",
+      "bytes": 311,
+      "sha256": "bbde3e564bf6b354c959fe73288f4c49c4a1106c5a9a222bd5c7c2a4c5437212"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/strict-terminal.json",
+      "bytes": 583,
+      "sha256": "ff10b960e16b386e248231e74be0def4ad09cca9bd25c6ccfa51233437a90e4a"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/strict.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/strict.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/tests-inputs-after.json",
+      "bytes": 55577,
+      "sha256": "04361312e4620a856f1a3030512b978acfa7aa8aba0a5a3e1cc0356651e6a127"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/tests-inputs-before.json",
+      "bytes": 55577,
+      "sha256": "04361312e4620a856f1a3030512b978acfa7aa8aba0a5a3e1cc0356651e6a127"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/tests-started.json",
+      "bytes": 345,
+      "sha256": "fa743e13518ba09ce36e5b7ca6f64124eb39a062bcc591b3264b23223eaca97b"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/tests-terminal.json",
+      "bytes": 617,
+      "sha256": "9280a5abc84dc7fcbb2ac857118ff89c681add38ada2246ff2513cd7515ff74b"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/tests.stderr.log",
+      "bytes": 375,
+      "sha256": "b4acd4f819050212c4fe3b3ed8416421330f7ff8c72cb9bb667c335f3e24a94e"
+    },
+    {
+      "path": "/private/tmp/surf-sparse-upload-20261004/checks-v2/tests.stdout.log",
+      "bytes": 192,
+      "sha256": "7f1f21560158720514fb69bd99e7c5b7f2d6ccce28c8adf08628d66abc885367"
+    }
+  ]
+}
