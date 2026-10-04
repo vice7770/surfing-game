@@ -1,0 +1,50 @@
+{
+  "verified": true,
+  "portable": {
+    "verified": true,
+    "mode": "portable",
+    "checks": {
+      "payloads": 79,
+      "gzipPayloads": 16,
+      "relativeReferences": 43,
+      "aliases": 14,
+      "patchFilesReconstructed": 12,
+      "originalPayloads": 0,
+      "originalInventoryPins": 0,
+      "originalBuildAssetPins": 0,
+      "repoStaticAssetReferences": 28
+    },
+    "manifest": {
+      "bytes": 38657,
+      "sha256": "bbc26cc817d8771b2c4dad09f85ea34eaa4df1809aac29fd507a3a9efe20a072"
+    },
+    "recordedChecks": "238 seam / 242 combined assertions; 6447 provider,12894 stencil,5616 Library queries",
+    "build": "terminal exit0,21 built +28 static =49; preparation failures retained",
+    "numericNativeBuildOrSourceAdoptionRerun": false,
+    "continuityFPSBodyEntryAcceptance": false
+  },
+  "originalScratch": {
+    "verified": true,
+    "mode": "original-scratch",
+    "checks": {
+      "payloads": 79,
+      "gzipPayloads": 16,
+      "relativeReferences": 43,
+      "aliases": 14,
+      "patchFilesReconstructed": 12,
+      "originalPayloads": 96,
+      "originalInventoryPins": 2312,
+      "originalBuildAssetPins": 130,
+      "repoStaticAssetReferences": 28
+    },
+    "manifest": {
+      "bytes": 38657,
+      "sha256": "bbc26cc817d8771b2c4dad09f85ea34eaa4df1809aac29fd507a3a9efe20a072"
+    },
+    "recordedChecks": "238 seam / 242 combined assertions; 6447 provider,12894 stencil,5616 Library queries",
+    "build": "terminal exit0,21 built +28 static =49; preparation failures retained",
+    "numericNativeBuildOrSourceAdoptionRerun": false,
+    "continuityFPSBodyEntryAcceptance": false
+  },
+  "verificationOnlyNoNumericNativeBuildRerun": true
+}

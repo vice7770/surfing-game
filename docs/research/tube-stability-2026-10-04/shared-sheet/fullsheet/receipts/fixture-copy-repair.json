@@ -1,0 +1,23 @@
+{
+  "scope": "missing exact fixtures only; no geometry or thresholds changed",
+  "copies": [
+    {
+      "path": "public/assets/skies/skies.json",
+      "originalPath": "/private/tmp/tube-bounded-c-profile-20261004/source/public/assets/skies/skies.json",
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    {
+      "path": "public/assets/surfers/surfers.json",
+      "originalPath": "/private/tmp/tube-bounded-c-profile-20261004/source/public/assets/surfers/surfers.json",
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    },
+    {
+      "path": "docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json",
+      "originalPath": "/private/tmp/tube-bounded-c-profile-20261004/source/docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json",
+      "bytes": 188661,
+      "sha256": "d235ee60e763bb2305aace5e9bb7a04269298328fbe87cb10c0b1d0c8ba4d211"
+    }
+  ]
+}

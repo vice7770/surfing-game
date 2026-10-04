@@ -1,0 +1,15 @@
+{
+  "source": "/private/tmp/tube-bounded-c-profile-20261004/report.json",
+  "sourceBytes": 17130974,
+  "sourceSHA256": "36530b9ea8d53d9b8f3b468e134ad5a4b73157e13c7236d2881eb6853122de4f",
+  "input": "/private/tmp/tube-bounded-c-shared-seam-20261004/fixed-query-inputs.json",
+  "inputBytes": 402935,
+  "inputSHA256": "99146b2a8c3862da4278e3b72e62cff8d7213623db75c3cf361240a16a7e2bea",
+  "onlyFiniteRecordedParamsAndHeldIndicesExtracted": true,
+  "noGeometryEvaluationPerformed": true,
+  "queryCounts": {
+    "actual": 5,
+    "phaseGrid": 376,
+    "crossCaseGridAll": 672
+  }
+}

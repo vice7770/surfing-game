@@ -1,0 +1,76 @@
+{
+  "partialCaptureLimitation": "Five captures contain only32..112: upstream0..31 and113..127 unobserved, excluded from bulk guards/crossing/preservation checks; buffer placeholders are not evidence. Full asset/provider queries use all128 points.",
+  "groups": {
+    "captured5-partial32to112": {
+      "attempted": 5,
+      "valid": 5,
+      "failed": 0,
+      "resolved": 5,
+      "maximumRoofEnvelopeChange": 0.14582128074714662,
+      "maximumNormalizedRoofEnvelopeChange": 0.0592632498058784,
+      "maximumMaterialDisplacement": 0.9989545454238555,
+      "maximumNormalizedMaterialDisplacement": 0.397633331868527
+    },
+    "frames1224": {
+      "attempted": 1224,
+      "valid": 1224,
+      "failed": 0,
+      "resolved": 347,
+      "maximumRoofEnvelopeChange": 0.031050879163222578,
+      "maximumNormalizedRoofEnvelopeChange": 0.05928037582686691,
+      "maximumMaterialDisplacement": 1.1617046355147902,
+      "maximumNormalizedMaterialDisplacement": 0.5778093404412296
+    },
+    "adjacent3648": {
+      "attempted": 3648,
+      "valid": 3648,
+      "failed": 0,
+      "resolved": 1028,
+      "maximumRoofEnvelopeChange": 0.03106194104511978,
+      "maximumNormalizedRoofEnvelopeChange": 0.05928086295629979,
+      "maximumMaterialDisplacement": 1.159394731838167,
+      "maximumNormalizedMaterialDisplacement": 0.575565764132176
+    },
+    "phase376": {
+      "attempted": 376,
+      "valid": 376,
+      "failed": 0,
+      "resolved": 248,
+      "maximumRoofEnvelopeChange": 0.031755317231575514,
+      "maximumNormalizedRoofEnvelopeChange": 0.0642820219662857,
+      "maximumMaterialDisplacement": 0.8010972685294598,
+      "maximumNormalizedMaterialDisplacement": 1.0961883074644427
+    },
+    "casePairs672": {
+      "attempted": 672,
+      "valid": 672,
+      "failed": 0,
+      "resolved": 504,
+      "maximumRoofEnvelopeChange": 0.03062957555993369,
+      "maximumNormalizedRoofEnvelopeChange": 0.06416064721882414,
+      "maximumMaterialDisplacement": 0.724818685355039,
+      "maximumNormalizedMaterialDisplacement": 1.0977331645592154
+    },
+    "precision522": {
+      "attempted": 522,
+      "valid": 522,
+      "failed": 0,
+      "resolved": 166,
+      "maximumRoofEnvelopeChange": 0.031755317231575514,
+      "maximumNormalizedRoofEnvelopeChange": 0.0642820219662857,
+      "maximumMaterialDisplacement": 0.7793427199183328,
+      "maximumNormalizedMaterialDisplacement": 1.096608878978373
+    }
+  },
+  "failures": [],
+  "maximumRoofEnvelopeChange": 0.14582128074714662,
+  "maximumMaterialDisplacement": 1.1617046355147902,
+  "maximumRootRadiusReduction": 0.11240395452463625,
+  "limitedRoots": 649,
+  "coalescedStations": 82989,
+  "originalV4CoefficientsUnchanged": true,
+  "geometryPhysicallyEquivalent": false,
+  "fixedProfilePoints": 128,
+  "rowVertices": 134,
+  "vertexBudget": 40000
+}

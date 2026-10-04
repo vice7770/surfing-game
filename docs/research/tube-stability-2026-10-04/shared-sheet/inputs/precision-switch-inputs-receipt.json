@@ -1,0 +1,9 @@
+{
+  "source": "/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/precision-report.json",
+  "sourceBytes": 4779569,
+  "sourceSHA256": "d6a9819366e2f1d56d33cd1736cc4a13eeaf5dbac19ca5a796e2f66ed21e64ae",
+  "output": "/private/tmp/tube-bounded-c-shared-seam-20261004/precision-switch-inputs.json",
+  "outputSHA256": "f83b2a1e53a50efc179e965ec963bfa0a653fcecf1582f7b16d966d1c1240754",
+  "switches": 40,
+  "geometryRerun": false
+}

@@ -1,0 +1,6 @@
+{
+  "stage": "source manifest preparation",
+  "rootInvocationExit": 1,
+  "reason": "Expected optional vitest.config.ts from prior demand copy, but frozen fullsheet copy uses its existing Vite configuration and has no separate Vitest config. No build or native started; source unchanged.",
+  "correction": "Pin all five actual root build/config files and all src/public inputs; do not invent or modify a configuration."
+}

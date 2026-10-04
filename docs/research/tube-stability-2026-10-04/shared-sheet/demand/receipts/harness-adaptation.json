@@ -1,0 +1,32 @@
+{
+  "baselineProviderLibrary": "/private/tmp/tube-bounded-c-shared-seam-20261004/source",
+  "providerComparison": "same coupled bound + pairInnerSheet in both sources, including metadata; partial captures have carrierStart32",
+  "outputsOnlyNewTree": [
+    {
+      "file": "src/wave/barrel/sharedUpperRoot.test.ts",
+      "output": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/fullsheet-query-receipt.json",
+      "priorEnvironmentOverrideRemoved": true
+    },
+    {
+      "file": "src/wave/barrel/sharedUpperRoot.test.ts",
+      "output": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/fullsheet-exact-receipt.json",
+      "priorEnvironmentOverrideRemoved": true
+    },
+    {
+      "file": "src/wave/barrel/sharedUpperRoot.test.ts",
+      "output": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/fullsheet-switch-receipt.json",
+      "priorEnvironmentOverrideRemoved": true
+    },
+    {
+      "file": "src/wave/barrel/boundedCConsumers.test.ts",
+      "output": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/consumer-mesh-receipt.json",
+      "priorEnvironmentOverrideRemoved": true
+    }
+  ],
+  "demandInputs": {
+    "source": "/private/tmp/tube-bounded-c-demand-profile-20261004/validation-domain.json",
+    "copy": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/validation-domain.json",
+    "sha256": "e2b649d516c6f6adeea234bcf5baef08de7146a7c6e8d7f8eb2a9911de818bbe"
+  },
+  "testThresholdOrFixtureGeometryChanged": false
+}

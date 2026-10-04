@@ -1,0 +1,12 @@
+{
+  "integration": "exact demand paths with existing fullsheet sample flag and pairInnerSheet retained",
+  "fullSamplerAndCoupledRootBodyUnchanged": true,
+  "fullSamplerBodySHA256": "e92d355b03fc0409a91394f66be96345cb2ef636bd8961c6f3a97ff1e5db443c",
+  "demandAddedFunctionBytesExact": true,
+  "demandAddedFunctionsSHA256": "0a327b5ef4da3913b8330b1903d87125a09c0b057d338907c4eb49712319c3cd",
+  "shapeCoefficientsGateSamplingProjectionUnchanged": true,
+  "modifiedRuntimeFiles": [
+    "src/wave/barrel/boundedCProfile.ts",
+    "src/wave/barrel/ProfileLibrary.ts"
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "experiment": "complete-inner-sheet shared sampling, isolated and unadopted",
+  "allFrozenSourceBytesUnchangedAfterChecks": true,
+  "original572FilesUnchanged": true,
+  "changedExistingSourceFiles": [
+    "src/wave/barrel/ProfileLibrary.ts",
+    "src/wave/barrel/boundedCProfile.ts",
+    "src/wave/barrel/sweptLoft.ts"
+  ],
+  "addedSourceFiles": [
+    "src/wave/barrel/sharedUpperRoot.ts",
+    "src/wave/barrel/sharedUpperRoot.test.ts"
+  ],
+  "source": [
+    {
+      "path": "src/wave/barrel/boundedCProfile.ts",
+      "bytes": 16513,
+      "sha256": "cc0a33eaaea586723f0f91936df17fba8bac82e7188ff16a27aef283889f3b66"
+    },
+    {
+      "path": "src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 25193,
+      "sha256": "6960b97e28cf12b4328644c9668f40b8cde9c464d8539774aecd039f384f4fa1"
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "bytes": 63917,
+      "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+    },
+    {
+      "path": "src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 3200,
+      "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+    },
+    {
+      "path": "src/wave/barrel/sharedUpperRoot.test.ts",
+      "bytes": 18370,
+      "sha256": "1ad63976c7b953ee259c0ce179063392556b187698de3a3ec06bdde0ff807b5f"
+    }
+  ],
+  "validation": {
+    "passed": 238,
+    "failed": 0,
+    "actualTestFiles": 15,
+    "strictTSExitCode": 0,
+    "separateRuns": true
+  },
+  "fixedQueries": {
+    "captured5-partial32to112": {
+      "attempted": 5,
+      "valid": 5,
+      "failed": 0,
+      "resolved": 5,
+      "maximumRoofEnvelopeChange": 0.14582128074714662,
+      "maximumNormalizedRoofEnvelopeChange": 0.0592632498058784,
+      "maximumMaterialDisplacement": 0.9989545454238555,
+      "maximumNormalizedMaterialDisplacement": 0.397633331868527
+    },
+    "frames1224": {
+      "attempted": 1224,
+      "valid": 1224,
+      "failed": 0,
+      "resolved": 347,
+      "maximumRoofEnvelopeChange": 0.031050879163222578,
+      "maximumNormalizedRoofEnvelopeChange": 0.05928037582686691,
+      "maximumMaterialDisplacement": 1.1617046355147902,
+      "maximumNormalizedMaterialDisplacement": 0.5778093404412296
+    },
+    "adjacent3648": {
+      "attempted": 3648,
+      "valid": 3648,
+      "failed": 0,
+      "resolved": 1028,
+      "maximumRoofEnvelopeChange": 0.03106194104511978,
+      "maximumNormalizedRoofEnvelopeChange": 0.05928086295629979,
+      "maximumMaterialDisplacement": 1.159394731838167,
+      "maximumNormalizedMaterialDisplacement": 0.575565764132176
+    },
+    "phase376": {
+      "attempted": 376,
+      "valid": 376,
+      "failed": 0,
+      "resolved": 248,
+      "maximumRoofEnvelopeChange": 0.031755317231575514,
+      "maximumNormalizedRoofEnvelopeChange": 0.0642820219662857,
+      "maximumMaterialDisplacement": 0.8010972685294598,
+      "maximumNormalizedMaterialDisplacement": 1.0961883074644427
+    },
+    "casePairs672": {
+      "attempted": 672,
+      "valid": 672,
+      "failed": 0,
+      "resolved": 504,
+      "maximumRoofEnvelopeChange": 0.03062957555993369,
+      "maximumNormalizedRoofEnvelopeChange": 0.06416064721882414,
+      "maximumMaterialDisplacement": 0.724818685355039,
+      "maximumNormalizedMaterialDisplacement": 1.0977331645592154
+    },
+    "precision522": {
+      "attempted": 522,
+      "valid": 522,
+      "failed": 0,
+      "resolved": 166,
+      "maximumRoofEnvelopeChange": 0.031755317231575514,
+      "maximumNormalizedRoofEnvelopeChange": 0.0642820219662857,
+      "maximumMaterialDisplacement": 0.7793427199183328,
+      "maximumNormalizedMaterialDisplacement": 1.096608878978373
+    }
+  },
+  "exactPriorReef": {
+    "originalPenetration": 0.0003114571531508403,
+    "currentSignedGap": 0.0034868235708391815
+  },
+  "precisionSwitch": {
+    "measuredSwitches": 40,
+    "activeCollapsedSwitches": 20,
+    "maximumOriginalRoofSwitch": 2.0818616545403845e-06,
+    "maximumPairedRoofSwitch": 0.0024344948211570336,
+    "maximumNormalizedPairedRoofSwitch": 0.002185950369574891,
+    "maximumSampledPairedSwitch": 0.0029810527223973304,
+    "maximumNormalizedSampledPairedSwitch": 0.002676708631135899,
+    "fixedOriginalGateAndControls": true,
+    "sameSamplingInBothStates": true,
+    "limitation": "Roof metric is exact vertical polygon difference on common domain at union breakpoints; whole-contour metric samples vertices/midpoints, not continuous Hausdorff proof."
+  },
+  "limits": [
+    "Not physically equivalent: coupled domain root radius changes; outer33..59 positions are new interpolation stations.",
+    "Per-index displacement is index reassignment evidence, not material displacement.",
+    "Partial captured profiles lack0..31 and113..127; original zero placeholders were not observed geometry; root-only first capture receipt is fixture-limited.",
+    "Sampling jump remains: at7m scale maximum roof switch17.04146mm and sampled whole-contour20.86737mm; original control budget remains unchanged and does not prove final sampled contour continuity.",
+    "No native/visual/FPS/entry/body/source adoption evidence.",
+    "Runtime experimental helper eagerly computes envelope audit; cost not assessed and demand-path optimization remains separate."
+  ],
+  "receipts": [
+    {
+      "path": "complete-sheet-pre-evaluation-freeze.json",
+      "bytes": 1465,
+      "sha256": "1fb0a34396d6d1591c3f31842b4e835e53ae89f57011f0a47de55f6bc95dd141"
+    },
+    {
+      "path": "complete-sheet-commands.json",
+      "bytes": 1907,
+      "sha256": "0264f624d389bf5f4c7924617587649dfe7a98fe9f7735e3e909ce6cfb6d4009"
+    },
+    {
+      "path": "complete-sheet.patch",
+      "bytes": 35920,
+      "sha256": "31910310e72922f0bdae26a1c77c3713bf81e61bcaf6dfd4fa032bea694d05e2"
+    },
+    {
+      "path": "complete-sheet-broader.log",
+      "bytes": 210,
+      "sha256": "2499d6c4b06c9ac7ac0b0419f530b7a5b0efc82182935680046745ef00cebf89"
+    },
+    {
+      "path": "complete-sheet-swept-crash-correct-path.log",
+      "bytes": 218,
+      "sha256": "9f53f647dec4e87caaa9ac8357350c8d50643e3aff3fc475f17902e2ec0ea164"
+    },
+    {
+      "path": "complete-sheet-strict-ts.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "complete-sheet-final-query-receipt.json",
+      "bytes": 2817,
+      "sha256": "5c522e9a71e80295d42e3ed483650c55ef745e314e5f99532010fcf254c93a8e"
+    },
+    {
+      "path": "complete-sheet-final-exact-receipt.json",
+      "bytes": 1535,
+      "sha256": "ddf8e228bfbd89e07381049c091a088c85de7cdfa33368823b7e618bee920c2f"
+    },
+    {
+      "path": "complete-sheet-final-switch-receipt.json",
+      "bytes": 28747,
+      "sha256": "5c6a3e1bc8f7cbc3627a67309bd69284d22a6f0f1f640d38eee72cf1e8b16093"
+    }
+  ]
+}

@@ -1,0 +1,229 @@
+{
+  "schema": "bounded-C/fullsheet-demand-runtime-integration-v1",
+  "complete": true,
+  "readyForRootIsolatedBuildReview": true,
+  "sourceRoot": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/source",
+  "baselineSourceRoot": "/private/tmp/tube-bounded-c-shared-seam-20261004/source",
+  "demandSourceRoot": "/private/tmp/tube-bounded-c-demand-profile-20261004/source",
+  "runtimeOnlyChanges": [
+    "src/wave/barrel/boundedCProfile.ts",
+    "src/wave/barrel/ProfileLibrary.ts"
+  ],
+  "runtimeSourcePins": [
+    {
+      "path": "src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18088,
+      "sha256": "0dba650afc9844df79c1beb61319bddbc257562c0f93ff083fe3838e0cebbd98"
+    },
+    {
+      "path": "src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 26076,
+      "sha256": "ff3c0d2a928d9b17e6d98b372ad3aa7dc80907cfc8a469a36e949bb309ead9c6"
+    }
+  ],
+  "frozenCurrentInputs": 578,
+  "baselineOriginal577FilesUnchanged": true,
+  "allCurrentInputsEqualPreValidationFreeze": true,
+  "fullSamplerRootBodyByteUnchanged": true,
+  "pairInnerSheetSharedProjectionByteUnchanged": true,
+  "validation": {
+    "passed": 242,
+    "failed": 0,
+    "testFiles": 16,
+    "runnerDurationSeconds": 12.23,
+    "strictTSExitCode": 0,
+    "providerQueries": 6447,
+    "capStencilQueries": 12894,
+    "libraryQueries": 5616,
+    "fullsheetGeometryLookupMetadataClocksExact": true,
+    "all40SwitchAndExactReefReceiptsByteEqualBaseline": true
+  },
+  "cpu": {
+    "complete": true,
+    "results": [
+      {
+        "scenario": "cold-clock",
+        "rows": 32,
+        "counts": {
+          "oldFullContours": 128,
+          "newFullContours": 0,
+          "newCapOnlyStencils": 0,
+          "newLifecycleQueries": 32
+        },
+        "oldMilliseconds": 18.8872080000001,
+        "newMilliseconds": 1.7866670000003069,
+        "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+      },
+      {
+        "scenario": "warm-clock",
+        "rows": 32,
+        "counts": {
+          "oldFullContours": 0,
+          "newFullContours": 0,
+          "newCapOnlyStencils": 0,
+          "newLifecycleQueries": 0
+        },
+        "oldMilliseconds": 0.04608300000018062,
+        "newMilliseconds": 0.14308299999993324,
+        "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+      },
+      {
+        "scenario": "cold-profile",
+        "rows": 32,
+        "counts": {
+          "oldFullContours": 128,
+          "newFullContours": 32,
+          "newCapOnlyStencils": 64,
+          "newLifecycleQueries": 32
+        },
+        "oldMilliseconds": 16.500583000000915,
+        "newMilliseconds": 4.740834000000177,
+        "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+      },
+      {
+        "scenario": "warm-clock-profile",
+        "rows": 32,
+        "counts": {
+          "oldFullContours": 96,
+          "newFullContours": 32,
+          "newCapOnlyStencils": 64,
+          "newLifecycleQueries": 0
+        },
+        "oldMilliseconds": 12.339207999999417,
+        "newMilliseconds": 4.175541000000521,
+        "timingClaim": "One bounded CPU batch, not native/browserFPS; no timing threshold"
+      }
+    ],
+    "geometryApproximation": false,
+    "cacheRewrite": false
+  },
+  "limits": [
+    "Five captured inputs only observe32..112; endpoint padding is not bulk/outside evidence, guards omitted consistently for those partialinputs.",
+    "Frozen fullsheet6.4282% roof approximation change and17.04mm roof/20.87mm sampled contour switch at7m scale remain unchanged; no sampled continuity proof.",
+    "Demand-only clock/cap helpers do not bypass validation of the current full contour.",
+    "One CPU batch, not native/browserFPS; warm cached clocks already perform0 full contours in both sources.",
+    "No native/build/browser/server/Git operation, production/body/visual/entry adoption proof."
+  ],
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3384,
+      "sha256": "6877adcabdf6bcdf296387d0b310421b1299586d97b1aeb1b24a9f55b137ced8"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 1272,
+      "sha256": "1cb9a2151840e8b4f4df0af1c208a99fd758227428788ae07c73913d1728de74"
+    },
+    {
+      "path": "baseline-copy.json",
+      "bytes": 158313,
+      "sha256": "af08aa2c86902daad79e8a68e59d98ddbaee5e280a0f8576ca91a14a3afc70ca"
+    },
+    {
+      "path": "pre-validation-freeze.json",
+      "bytes": 96382,
+      "sha256": "3da65b573911ae92b47d984297937e44e908b82f3d21a85ac6994512a5ad5470"
+    },
+    {
+      "path": "post-validation-freeze.json",
+      "bytes": 96271,
+      "sha256": "3969ae0e64169b33b1288aa71fb998ccc2b9c864c9acdc819d129082e3f083c9"
+    },
+    {
+      "path": "integration-source-receipt.json",
+      "bytes": 567,
+      "sha256": "6ea2a476535947aab87875f69df8742c2997f13100aabbb840411894d3ca85b9"
+    },
+    {
+      "path": "harness-adaptation.json",
+      "bytes": 1471,
+      "sha256": "af3f4b2a1ec994d4de5c22bdfc1497200589ebc31dded255bb263612a46d05f6"
+    },
+    {
+      "path": "commands.json",
+      "bytes": 1353,
+      "sha256": "88506eb2008e057a8ef03e510376a95b3a914cdb060ee5dfecf5d09e3739c9fa"
+    },
+    {
+      "path": "fullsheet-demand-runtime.patch",
+      "bytes": 9798,
+      "sha256": "9d26457bf252184f7acf6bdb5cfa333ab5d62085e4b5c530d75894ee06c776df"
+    },
+    {
+      "path": "fullsheet-demand.patch",
+      "bytes": 26408,
+      "sha256": "2ad2fcf25fbab58b4135b9b1bf2fdec9c12b1c8b6bc368124e4635fc6b0e8eda"
+    },
+    {
+      "path": "demand-origin-demand-profile.patch",
+      "bytes": 21629,
+      "sha256": "3b6271f3bb288091f604ab947e10af00323672c038cfa11be3fc068f5f8e4b0d"
+    },
+    {
+      "path": "demand-origin-readiness.json",
+      "bytes": 7338,
+      "sha256": "e7da394b998d29d334526d2df8f20777ac8ffde782d11ecc819372fb171cbed8"
+    },
+    {
+      "path": "demand-origin-validation-domain.json",
+      "bytes": 426688,
+      "sha256": "e2b649d516c6f6adeea234bcf5baef08de7146a7c6e8d7f8eb2a9911de818bbe"
+    },
+    {
+      "path": "validation-domain.json",
+      "bytes": 426688,
+      "sha256": "e2b649d516c6f6adeea234bcf5baef08de7146a7c6e8d7f8eb2a9911de818bbe"
+    },
+    {
+      "path": "focused-and-equivalence.log",
+      "bytes": 45759,
+      "sha256": "e8b70e0d2ec21e41011ea85a1fa2cc24112575836513fff8c23ffa2141f186bd"
+    },
+    {
+      "path": "strict-ts.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "provider-equivalence.json",
+      "bytes": 602,
+      "sha256": "5249da2a1631e979a82a7094e9e04136fe65b37857649856371c73a4a708bcfc"
+    },
+    {
+      "path": "library-equivalence.json",
+      "bytes": 171,
+      "sha256": "f648bfe3083ed47571bafbd8e99deb2719f297c34eadb0b38e26ddc0733a92d7"
+    },
+    {
+      "path": "library-blend-precision-equivalence.json",
+      "bytes": 130,
+      "sha256": "29153142a0a99fa57a2b3bdcdd7f158fff898772b100c71f7d900775bc632c79"
+    },
+    {
+      "path": "cpu-cost-evidence.json",
+      "bytes": 1700,
+      "sha256": "95fac90d1583745905801d22f472efd72774cab20ef42ab7b76daa5d240b449a"
+    },
+    {
+      "path": "fullsheet-query-receipt.json",
+      "bytes": 2817,
+      "sha256": "5c522e9a71e80295d42e3ed483650c55ef745e314e5f99532010fcf254c93a8e"
+    },
+    {
+      "path": "fullsheet-exact-receipt.json",
+      "bytes": 1535,
+      "sha256": "ddf8e228bfbd89e07381049c091a088c85de7cdfa33368823b7e618bee920c2f"
+    },
+    {
+      "path": "fullsheet-switch-receipt.json",
+      "bytes": 28747,
+      "sha256": "5c6a3e1bc8f7cbc3627a67309bd69284d22a6f0f1f640d38eee72cf1e8b16093"
+    },
+    {
+      "path": "consumer-mesh-receipt.json",
+      "bytes": 109,
+      "sha256": "06e7e03977d1ba07ff9a2bd77976afcd1667473a29ad25a2b550f4fc559c5359"
+    }
+  ]
+}

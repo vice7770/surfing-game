@@ -1,0 +1,8 @@
+{
+  "stage": "root postbuild receipt preparation",
+  "rootInvocationExit": 1,
+  "reason": "Postbuild script expected build.json key buildId; actual Vite artifact uses key build. No receipt/copy written by failed invocation; source pins had already verified unchanged.",
+  "buildToolSession": 56250,
+  "buildTerminalExit": 0,
+  "correction": "Validate the actual build field against the pinned buildId without changing assets or rebuilding."
+}

@@ -1,0 +1,46 @@
+{
+  "declaredBeforeEvaluation": true,
+  "revision": "complete-inner-sheet/bothprecisionstates",
+  "files": [
+    {
+      "file": "recipe.md",
+      "bytes": 5123,
+      "sha256": "6dca81971bf9d78f93ab44727a415e431038403944745a284e787e07eadbc6eb"
+    },
+    {
+      "file": "source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 16513,
+      "sha256": "cc0a33eaaea586723f0f91936df17fba8bac82e7188ff16a27aef283889f3b66"
+    },
+    {
+      "file": "source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 25193,
+      "sha256": "6960b97e28cf12b4328644c9668f40b8cde9c464d8539774aecd039f384f4fa1"
+    },
+    {
+      "file": "source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 63917,
+      "sha256": "3f97783f9a29d0b8e3785bb442995706ed3410e0a788c205340c156a0ecad7dc"
+    },
+    {
+      "file": "source/src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 3200,
+      "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+    },
+    {
+      "file": "source/src/wave/barrel/sharedUpperRoot.test.ts",
+      "bytes": 18370,
+      "sha256": "1ad63976c7b953ee259c0ce179063392556b187698de3a3ec06bdde0ff807b5f"
+    },
+    {
+      "file": "fixed-query-inputs.json",
+      "bytes": 402935,
+      "sha256": "99146b2a8c3862da4278e3b72e62cff8d7213623db75c3cf361240a16a7e2bea"
+    },
+    {
+      "file": "precision-switch-inputs.json",
+      "bytes": 297177,
+      "sha256": "f83b2a1e53a50efc179e965ec963bfa0a653fcecf1582f7b16d966d1c1240754"
+    }
+  ]
+}

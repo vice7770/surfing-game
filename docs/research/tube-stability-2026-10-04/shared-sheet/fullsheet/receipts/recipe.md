@@ -1,0 +1,25 @@
+# Complete inner-sheet station revision — declared before evaluation
+
+The copied precision-v4 scalar construction's shape coefficients and cap/lifecycle remain unchanged. This is a new coupled-root/domain and authoritative outer-sampling representation, applied by ProfileLibrary before metric scaling/caching, not a renderer-only lift or thickness repair. The original v4 function mode remains available for its exact golden checks; the experimental library explicitly requests the new root constraint.
+
+Retained captures demonstrate that unchanged v4 root88 lies0.11643–0.15775m behind crest32 in all five rows. The initial throw-only coverage plan is preserved in initial-coverage-plan/; no new numerical evaluation was run for that plan. It cannot serve as a shipped-case repair.
+
+Couple the root circle to the actual forward roof domain. In the existing root turn, U.x=J.x−R(1+sin(beta)). Add the geometric radius constraint R≤(J.x−crest.x)/(1+sin(beta)) to the existing desired/roof/bulk/floor bounds. If the denominator is zero, the root has no backward reach. When this boundary is selected, construct endpoint U.x literally from crest.x, the exact analytic equality, rather than relying on subtractive floating arithmetic. Recompute both root turns, connecting face and floor endpoint from that radius; no vertex-only clamp. This changes root radius/contour where active and is not physically equivalent to v4.
+
+The existing root cut has J.x≥crest.x+.28W: before impact, the ordinary cubic midpoint is at least crest+.375W, mature K at least crest+.855W, and Qtip subtracts at most T≤W/16; after impact the cap stays near the toe. qJ is a convex combination with crest+.28W. Thus the new radius bound is at least .14W, while the required minimum T/2≤W/32; it cannot alone force an unresolved radius. The existing intersection guards remain. A complete F32 current-domain/order check remains and any unexpected failure is reported, never silently discarded.
+
+The first root-only evaluated layout is retained unchanged in root-only-evaluated-source/ with exact failure receipts. It introduced96 proper crossings in6447 queries at roof59/return68 or69. Pair the entire inner+upper-root return68..88 instead. Require actual [X88,X68] inside forward roof[X32,X60] and nonincreasing returnX. The coupled circle bound supplies the upstream root domain; existing sheet offsets supply the cap attachment domain. No clamping, highest preserved-bulk branch or raw fallback.
+
+Keep cap60..68, inner68..80, floorplateau102..112 and outside0..32/112..127 exact to originalv4; root/face/bridge81..101 may change by coupled radius. Reallocate only outer33..59 within the same29-point block:
+
+-33..37: five interior uniform-X stations from crest32 to return88 (sixcells).
+-38..58: exact return88..68 X in reversed order, topY from the original current piecewise-linear roof graph.
+-59: the midpoint between return68 and outercap60 X.
+
+Apply the same layout in BOTH resolved and collapsed states. In collapsed states return68..88 shares currentKX, so these paired stations coalesce; no false sheet/void is introduced and sheetExists remainsfalse. This avoids choosing a different outer station authority only at the precision switch. The unchanged current roof controls/gates remain; the polygon approximation changes. Quantized vertical roof facets retain their highest existing endpoint. Report exact vertical envelope difference at union old/new roof breakpoints, per-index displacement, normalized by currentmax(W,H), and coalescence. On the original40 frozen switchpairs compare union-breakpoint envelopes across bothphase sides plus sampled full-contour distances. These are finite polygon evidence, not an analytic Hausdorff guarantee or physical equivalence.
+
+Five captured inputs only contain32..112. Diagnostic evaluation excludes unavailable0..31 from bulk guards and crosses/compares only observed32..112. Buffer placeholders outside thatdomain are not observations. Full shipped/provider evaluation retains all128 input points and existing bulk guards.
+
+Final projection shares paired pre-F32 worldXZ/live-water datum for top38+k andreturn88-k. Existing end×collapse weight and water convergence stay unchanged. Actual canonical physical diagonals give corresponding top/return triangle footprints; contact uses actual indices.128 profile points/134 rowvertices/40k budget/bins/workerpacket stayfixed. Landmarks32/60/64/80/88/112 retain physical roles; outer interpolation indices change, rootgeometrychanges where domainbound isactive. The model remains isolated and unadopted.
+
+Evaluate the exact prior0.311457153mm Reef witness, all existing focused/legacy consumer checks, fixed provider goldens and full declared original profile groups. New representation tests apply this sampling to the original39+522 goldens and1224+3648 frame/blend queries, retaining failures rather than changing tolerances. Include curved-ray neighboring-row tests and exact common physical triangle/XZ checks. No production, old scratch, native, browser, build, Git or port changes; native and adoption remain root-owned.

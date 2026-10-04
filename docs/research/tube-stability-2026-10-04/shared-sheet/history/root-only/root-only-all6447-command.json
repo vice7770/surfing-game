@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "src/wave/barrel/sharedUpperRoot.test.ts",
+    "-t",
+    "all6447",
+    "--reporter=verbose"
+  ],
+  "exitCode": 1,
+  "elapsedSeconds": 5.045732708007563,
+  "geometryUnchangedFromFirstFreeze": true,
+  "fixtureExtractionOnly": true
+}

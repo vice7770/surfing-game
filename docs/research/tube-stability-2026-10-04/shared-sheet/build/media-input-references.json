@@ -1,0 +1,736 @@
+{
+  "mediaBytesArchived": false,
+  "references": [
+    {
+      "relative": "assets/audio/bubbles-1.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/bubbles-1.m4a",
+        "bytes": 256855,
+        "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/bubbles-1.m4a",
+        "bytes": 256855,
+        "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/bubbles-1.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 256855,
+          "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+        },
+        "decoded": {
+          "bytes": 256855,
+          "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/bubbles-2.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/bubbles-2.m4a",
+        "bytes": 198252,
+        "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/bubbles-2.m4a",
+        "bytes": 198252,
+        "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/bubbles-2.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 198252,
+          "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+        },
+        "decoded": {
+          "bytes": 198252,
+          "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/distant-1.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/distant-1.m4a",
+        "bytes": 883404,
+        "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/distant-1.m4a",
+        "bytes": 883404,
+        "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/distant-1.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 883404,
+          "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+        },
+        "decoded": {
+          "bytes": 883404,
+          "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/distant-2.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/distant-2.m4a",
+        "bytes": 912023,
+        "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/distant-2.m4a",
+        "bytes": 912023,
+        "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/distant-2.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 912023,
+          "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+        },
+        "decoded": {
+          "bytes": 912023,
+          "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/lipJet-1.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/lipJet-1.m4a",
+        "bytes": 62354,
+        "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/lipJet-1.m4a",
+        "bytes": 62354,
+        "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/lipJet-1.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 62354,
+          "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+        },
+        "decoded": {
+          "bytes": 62354,
+          "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/lipJet-2.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/lipJet-2.m4a",
+        "bytes": 47086,
+        "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/lipJet-2.m4a",
+        "bytes": 47086,
+        "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/lipJet-2.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 47086,
+          "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+        },
+        "decoded": {
+          "bytes": 47086,
+          "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/lipRoller-1.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/lipRoller-1.m4a",
+        "bytes": 36688,
+        "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/lipRoller-1.m4a",
+        "bytes": 36688,
+        "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/lipRoller-1.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 36688,
+          "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+        },
+        "decoded": {
+          "bytes": 36688,
+          "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/lipRoller-2.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/lipRoller-2.m4a",
+        "bytes": 27855,
+        "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/lipRoller-2.m4a",
+        "bytes": 27855,
+        "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/lipRoller-2.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 27855,
+          "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+        },
+        "decoded": {
+          "bytes": 27855,
+          "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/paddle-1.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/paddle-1.m4a",
+        "bytes": 14645,
+        "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/paddle-1.m4a",
+        "bytes": 14645,
+        "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/paddle-1.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 14645,
+          "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+        },
+        "decoded": {
+          "bytes": 14645,
+          "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/paddle-2.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/paddle-2.m4a",
+        "bytes": 13593,
+        "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/paddle-2.m4a",
+        "bytes": 13593,
+        "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/paddle-2.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 13593,
+          "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+        },
+        "decoded": {
+          "bytes": 13593,
+          "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/plunge-1.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/plunge-1.m4a",
+        "bytes": 24612,
+        "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/plunge-1.m4a",
+        "bytes": 24612,
+        "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/plunge-1.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 24612,
+          "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+        },
+        "decoded": {
+          "bytes": 24612,
+          "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/plunge-2.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/plunge-2.m4a",
+        "bytes": 22031,
+        "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/plunge-2.m4a",
+        "bytes": 22031,
+        "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/plunge-2.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 22031,
+          "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+        },
+        "decoded": {
+          "bytes": 22031,
+          "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/roar-1.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/roar-1.m4a",
+        "bytes": 419823,
+        "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/roar-1.m4a",
+        "bytes": 419823,
+        "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/roar-1.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 419823,
+          "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+        },
+        "decoded": {
+          "bytes": 419823,
+          "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/roar-2.m4a",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/roar-2.m4a",
+        "bytes": 387857,
+        "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/roar-2.m4a",
+        "bytes": 387857,
+        "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/roar-2.m4a",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 387857,
+          "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+        },
+        "decoded": {
+          "bytes": 387857,
+          "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+        }
+      }
+    },
+    {
+      "relative": "assets/audio/sounds.json",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/audio/sounds.json",
+        "bytes": 3499,
+        "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/audio/sounds.json",
+        "bytes": 3499,
+        "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/audio/sounds.json",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 3499,
+          "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+        },
+        "decoded": {
+          "bytes": 3499,
+          "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+        }
+      }
+    },
+    {
+      "relative": "assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+        "bytes": 681062,
+        "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+        "bytes": 681062,
+        "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 681062,
+          "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+        },
+        "decoded": {
+          "bytes": 681062,
+          "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+        }
+      }
+    },
+    {
+      "relative": "assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+        "bytes": 2097202,
+        "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+        "bytes": 2097202,
+        "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 2097202,
+          "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+        },
+        "decoded": {
+          "bytes": 2097202,
+          "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+        }
+      }
+    },
+    {
+      "relative": "assets/skies/qwantani_sunrise_puresky.jpg",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/skies/qwantani_sunrise_puresky.jpg",
+        "bytes": 357301,
+        "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/skies/qwantani_sunrise_puresky.jpg",
+        "bytes": 357301,
+        "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/skies/qwantani_sunrise_puresky.jpg",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 357301,
+          "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+        },
+        "decoded": {
+          "bytes": 357301,
+          "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+        }
+      }
+    },
+    {
+      "relative": "assets/skies/qwantani_sunrise_puresky_1k.hdr",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/skies/qwantani_sunrise_puresky_1k.hdr",
+        "bytes": 2097202,
+        "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/skies/qwantani_sunrise_puresky_1k.hdr",
+        "bytes": 2097202,
+        "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/skies/qwantani_sunrise_puresky_1k.hdr",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 2097202,
+          "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+        },
+        "decoded": {
+          "bytes": 2097202,
+          "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+        }
+      }
+    },
+    {
+      "relative": "assets/skies/qwantani_sunset_puresky.jpg",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/skies/qwantani_sunset_puresky.jpg",
+        "bytes": 372349,
+        "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/skies/qwantani_sunset_puresky.jpg",
+        "bytes": 372349,
+        "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/skies/qwantani_sunset_puresky.jpg",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 372349,
+          "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+        },
+        "decoded": {
+          "bytes": 372349,
+          "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+        }
+      }
+    },
+    {
+      "relative": "assets/skies/qwantani_sunset_puresky_1k.hdr",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/skies/qwantani_sunset_puresky_1k.hdr",
+        "bytes": 2097202,
+        "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/skies/qwantani_sunset_puresky_1k.hdr",
+        "bytes": 2097202,
+        "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/skies/qwantani_sunset_puresky_1k.hdr",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 2097202,
+          "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+        },
+        "decoded": {
+          "bytes": 2097202,
+          "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+        }
+      }
+    },
+    {
+      "relative": "assets/surfers/surfer1.glb",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/surfers/surfer1.glb",
+        "bytes": 1007368,
+        "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/surfers/surfer1.glb",
+        "bytes": 1007368,
+        "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/surfers/surfer1.glb",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 1007368,
+          "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+        },
+        "decoded": {
+          "bytes": 1007368,
+          "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+        }
+      }
+    },
+    {
+      "relative": "assets/surfers/surfer2.glb",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/surfers/surfer2.glb",
+        "bytes": 1595524,
+        "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/surfers/surfer2.glb",
+        "bytes": 1595524,
+        "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/surfers/surfer2.glb",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 1595524,
+          "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+        },
+        "decoded": {
+          "bytes": 1595524,
+          "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+        }
+      }
+    },
+    {
+      "relative": "assets/surfers/surfer3.glb",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/surfers/surfer3.glb",
+        "bytes": 1545008,
+        "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/surfers/surfer3.glb",
+        "bytes": 1545008,
+        "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/surfers/surfer3.glb",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 1545008,
+          "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+        },
+        "decoded": {
+          "bytes": 1545008,
+          "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+        }
+      }
+    },
+    {
+      "relative": "assets/surfers/surfer4.glb",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/assets/surfers/surfer4.glb",
+        "bytes": 1229872,
+        "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/assets/surfers/surfer4.glb",
+        "bytes": 1229872,
+        "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/assets/surfers/surfer4.glb",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 1229872,
+          "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+        },
+        "decoded": {
+          "bytes": 1229872,
+          "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+        }
+      }
+    },
+    {
+      "relative": "lessons/pool-s2-caught.sea",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/lessons/pool-s2-caught.sea",
+        "bytes": 2180693,
+        "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/lessons/pool-s2-caught.sea",
+        "bytes": 2180693,
+        "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/lessons/pool-s2-caught.sea",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 2180693,
+          "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+        },
+        "decoded": {
+          "bytes": 2180693,
+          "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+        }
+      }
+    },
+    {
+      "relative": "lessons/pool-s2-pocket.sea",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/lessons/pool-s2-pocket.sea",
+        "bytes": 2176894,
+        "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/lessons/pool-s2-pocket.sea",
+        "bytes": 2176894,
+        "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/lessons/pool-s2-pocket.sea",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 2176894,
+          "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+        },
+        "decoded": {
+          "bytes": 2176894,
+          "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+        }
+      }
+    },
+    {
+      "relative": "lessons/pool-s2-waiting.sea",
+      "originalScratchSource": {
+        "file": "/private/tmp/tube-bounded-c-native-20261004/candidate-dist/lessons/pool-s2-waiting.sea",
+        "bytes": 2232988,
+        "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-bounded-c-fullsheet-native-20261004/candidate-complete-dist/lessons/pool-s2-waiting.sea",
+        "bytes": 2232988,
+        "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+      },
+      "assetBytesArchived": false,
+      "repoReference": {
+        "archiveRelative": "../../../../public/lessons/pool-s2-waiting.sea",
+        "encoding": "identity",
+        "transport": {
+          "bytes": 2232988,
+          "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+        },
+        "decoded": {
+          "bytes": 2232988,
+          "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+        }
+      }
+    }
+  ],
+  "compiled21Assets": "Transport not duplicated; original-scratch mode verifies both built and frozen copies. Portable mode verifies their recorded hashes and composition only.",
+  "priorSealArchive": "prior-static-assets-seal.json.gz",
+  "preparationFailuresAreNotBuildFailures": true
+}

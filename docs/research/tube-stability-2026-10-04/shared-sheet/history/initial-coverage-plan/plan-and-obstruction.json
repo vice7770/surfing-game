@@ -1,0 +1,69 @@
+{
+  "stage": "pre-evaluation planning only",
+  "newQueriesOrTestsRun": false,
+  "preparedFiles": [
+    {
+      "path": "recipe.md",
+      "bytes": 2997,
+      "sha256": "d115f50e8e9546b2470def773850fd55dd530b6642265cb0b78fef36c251ec2c"
+    },
+    {
+      "path": "source/src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 2756,
+      "sha256": "6e31a2fb94899275f3335042769cd72be5ff925c377a31faee228f4e22d6f3a6"
+    },
+    {
+      "path": "source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 15635,
+      "sha256": "4d8cb12ab6e8b51d5549333a5c9e952adc653f810f9a1508bfc862328a7e7ce2"
+    },
+    {
+      "path": "source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 25189,
+      "sha256": "4e25369932d1a27e1baede0e1aafad783aba6a5c82a0f23e2e1379ba32c8dfba"
+    },
+    {
+      "path": "source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 63897,
+      "sha256": "0ba7ea132065c6ef077f595baa965bc0805c6470d182cf8fa3402e74a7b84fb1"
+    }
+  ],
+  "retainedOriginalCaptureCoverageObstruction": [
+    {
+      "row": 124,
+      "crestX": 0.0,
+      "root88X": -0.15775246918201447,
+      "root80X": 0.6233463287353516,
+      "cap60X": 1.9034324884414673
+    },
+    {
+      "row": 125,
+      "crestX": 0.0,
+      "root88X": -0.14099836349487305,
+      "root80X": 0.6669508218765259,
+      "cap60X": 2.0417940616607666
+    },
+    {
+      "row": 126,
+      "crestX": 0.0,
+      "root88X": -0.11643030494451523,
+      "root80X": 0.692853569984436,
+      "cap60X": 2.129973888397217
+    },
+    {
+      "row": 127,
+      "crestX": 0.0,
+      "root88X": -0.12027527391910553,
+      "root80X": 0.6985052824020386,
+      "cap60X": 2.1465303897857666
+    },
+    {
+      "row": 128,
+      "crestX": 0.0,
+      "root88X": -0.12261167913675308,
+      "root80X": 0.70343017578125,
+      "cap60X": 2.1613311767578125
+    }
+  ],
+  "structuralRevisionNeeded": "Complete upper-root cannot pair against crest-to-cap roof while unchanged root extends behind crest. A paired-root circle domain bound or a different whole-layout authority is required; no throw-only adoption."
+}

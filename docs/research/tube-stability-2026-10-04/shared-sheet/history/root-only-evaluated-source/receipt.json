@@ -1,0 +1,36 @@
+{
+  "source": [
+    {
+      "path": "recipe.md",
+      "bytes": 4567,
+      "sha256": "314a83f19d94351b34b03870c5ba5b6888c385cb16a2b547082b572c549425bf"
+    },
+    {
+      "path": "source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 16387,
+      "sha256": "50c7d030186bbcf04efba4cd420cc178d81a5facf897c1e1510a51da6b74e644"
+    },
+    {
+      "path": "source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 25195,
+      "sha256": "ca08fad798ccfaf00b84388b64e7ab20f6775c4eb58bbc081c5306bf5263c9a1"
+    },
+    {
+      "path": "source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 63897,
+      "sha256": "0ba7ea132065c6ef077f595baa965bc0805c6470d182cf8fa3402e74a7b84fb1"
+    },
+    {
+      "path": "source/src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 2756,
+      "sha256": "6e31a2fb94899275f3335042769cd72be5ff925c377a31faee228f4e22d6f3a6"
+    },
+    {
+      "path": "source/src/wave/barrel/sharedUpperRoot.test.ts",
+      "bytes": 12811,
+      "sha256": "13cbbb0decea83fbea2bbd9a7f57b03e33f4c80a0f5357389dc69e206116a47d"
+    }
+  ],
+  "outcome": "96/6447 failed, all59/68+59/69; new thin-inner/cap aliasing; not adopted",
+  "capturedFixtureLimitation": "First partial captures incorrectly supplied zero-filled missing bulk guards, retained as input-limited; corrected final inputs omit unavailable guards explicitly."
+}

@@ -1,0 +1,19 @@
+{
+  "complete": true,
+  "counts": {
+    "captured": 5,
+    "frames": 1224,
+    "adjacent": 3648,
+    "phase": 376,
+    "crossCase": 672,
+    "precision": 522
+  },
+  "total": 6447,
+  "fullContourExact": true,
+  "capExact": true,
+  "clocksExact": true,
+  "capStencilQueries": 12894,
+  "capStencilsExact": true,
+  "baseline": "frozen FULLSHEET source",
+  "capturedPadding": "Only32..112 observed; duplicated crest/toe padding is not evidence of bulk/outside. Both providers omit unavailable upstream guards. Full shipped/provider inputs retain all128 points. Real cap separately matches frozen Python."
+}

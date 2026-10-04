@@ -1,0 +1,403 @@
+{
+  "schema": "shared-sheet-relative-input-references/v1",
+  "references": [
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/complete-sheet-strict-ts.log",
+      "role": "fullsheet/receipts/complete-sheet-strict-ts.log",
+      "archiveRelative": "../bounded-c-profile/models/v1/provider-tsc.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/demand-origin-demand-profile.patch",
+      "role": "demand/receipts/demand-origin-demand-profile.patch",
+      "archiveRelative": "../demand-profile/patches/demand-profile.patch",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 21629,
+        "sha256": "3b6271f3bb288091f604ab947e10af00323672c038cfa11be3fc068f5f8e4b0d"
+      },
+      "decoded": {
+        "bytes": 21629,
+        "sha256": "3b6271f3bb288091f604ab947e10af00323672c038cfa11be3fc068f5f8e4b0d"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/demand-origin-readiness.json",
+      "role": "demand/receipts/demand-origin-readiness.json",
+      "archiveRelative": "../demand-profile/validation/readiness.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 7338,
+        "sha256": "e7da394b998d29d334526d2df8f20777ac8ffde782d11ecc819372fb171cbed8"
+      },
+      "decoded": {
+        "bytes": 7338,
+        "sha256": "e7da394b998d29d334526d2df8f20777ac8ffde782d11ecc819372fb171cbed8"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/library-blend-precision-equivalence.json",
+      "role": "demand/receipts/library-blend-precision-equivalence.json",
+      "archiveRelative": "../demand-profile/validation/library-blend-precision-equivalence.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 130,
+        "sha256": "29153142a0a99fa57a2b3bdcdd7f158fff898772b100c71f7d900775bc632c79"
+      },
+      "decoded": {
+        "bytes": 130,
+        "sha256": "29153142a0a99fa57a2b3bdcdd7f158fff898772b100c71f7d900775bc632c79"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/library-equivalence.json",
+      "role": "demand/receipts/library-equivalence.json",
+      "archiveRelative": "../demand-profile/history/library-equivalence-first.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 171,
+        "sha256": "f648bfe3083ed47571bafbd8e99deb2719f297c34eadb0b38e26ddc0733a92d7"
+      },
+      "decoded": {
+        "bytes": 171,
+        "sha256": "f648bfe3083ed47571bafbd8e99deb2719f297c34eadb0b38e26ddc0733a92d7"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/strict-ts.log",
+      "role": "demand/receipts/strict-ts.log",
+      "archiveRelative": "../bounded-c-profile/models/v1/provider-tsc.log",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "decoded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 87220,
+        "sha256": "f4af8c4104a1aaabaf54d9a6544d0b3c3a762d5e8a465843ea6e7372b5f69c33"
+      },
+      "decoded": {
+        "bytes": 87220,
+        "sha256": "f4af8c4104a1aaabaf54d9a6544d0b3c3a762d5e8a465843ea6e7372b5f69c33"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/input-references.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 11988,
+        "sha256": "8ea5024ff9e37e37beac032a2ad1e5b0166a50085a8a6b773b913697881c717b"
+      },
+      "decoded": {
+        "bytes": 11988,
+        "sha256": "8ea5024ff9e37e37beac032a2ad1e5b0166a50085a8a6b773b913697881c717b"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/models/v1/report.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 1085538,
+        "sha256": "241652231d22dbe3de53d1dcfd943db3a5b426fc99b9e183a91e77157b72bb0e"
+      },
+      "decoded": {
+        "bytes": 17130974,
+        "sha256": "36530b9ea8d53d9b8f3b468e134ad5a4b73157e13c7236d2881eb6853122de4f"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/models/precision-v4-corrected/port-reference.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 401762,
+        "sha256": "bc8df1fa21a0edb6cdfebd57efb1e803b32e7599f3335c24b8f6adc66a9bcb25"
+      },
+      "decoded": {
+        "bytes": 3354876,
+        "sha256": "d576b82c2f257974f56f9773510e50838505eeaf246aeb004488152f6a0dbb55"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/models/precision-v4-corrected/precision-report.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 241669,
+        "sha256": "b7bf0f61354430882d326952206a40a92e6c71405baefadf1686f0c56ba9b239"
+      },
+      "decoded": {
+        "bytes": 4779569,
+        "sha256": "d6a9819366e2f1d56d33cd1736cc4a13eeaf5dbac19ca5a796e2f66ed21e64ae"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/consumers/history/tube-bounded-c-final-mesh-canonical-receipt-20261004.json.gz",
+      "encoding": "gzip",
+      "transport": {
+        "bytes": 5570,
+        "sha256": "300e79189f13a46af162e05da701fa1a6343459e90ac572c9a84591a03fd758a"
+      },
+      "decoded": {
+        "bytes": 22325,
+        "sha256": "2b79dead008cbdf5cfa8dff164712bc5ffa1790302ff4b84c01ae9ec1cafeac2"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/source/final/src/wave/barrel/boundedCProfile.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 15484,
+        "sha256": "66ad61ea02ea53e2306e3c5611744b42e2ed20eaa8b02adff45055e0219e8e93"
+      },
+      "decoded": {
+        "bytes": 15484,
+        "sha256": "66ad61ea02ea53e2306e3c5611744b42e2ed20eaa8b02adff45055e0219e8e93"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/source/final/src/wave/barrel/ProfileLibrary.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 25085,
+        "sha256": "eda47508fd5de1429fbfc13b46161a53cfa9fa35be854921134888a4b1d02e05"
+      },
+      "decoded": {
+        "bytes": 25085,
+        "sha256": "eda47508fd5de1429fbfc13b46161a53cfa9fa35be854921134888a4b1d02e05"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/source/final/src/wave/barrel/sweptLoft.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 62544,
+        "sha256": "0c5d8a314d5f2aad6f2c75ccfe30d3c746618bd44182f44a23e5a646a49c2df3"
+      },
+      "decoded": {
+        "bytes": 62544,
+        "sha256": "0c5d8a314d5f2aad6f2c75ccfe30d3c746618bd44182f44a23e5a646a49c2df3"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../bounded-c-profile/source/final/src/wave/barrel/boundedCConsumers.test.ts",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 15023,
+        "sha256": "aaa99f7ddcdaeeb85e2d279f4babcf40b23418065b51c9d9f9f636e94f012f0c"
+      },
+      "decoded": {
+        "bytes": 15023,
+        "sha256": "aaa99f7ddcdaeeb85e2d279f4babcf40b23418065b51c9d9f9f636e94f012f0c"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../demand-profile/manifest.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 15854,
+        "sha256": "ac99c56e206a3fea346b4855c640e09a147a60aa210bbe4be647e6df84dd6b12"
+      },
+      "decoded": {
+        "bytes": 15854,
+        "sha256": "ac99c56e206a3fea346b4855c640e09a147a60aa210bbe4be647e6df84dd6b12"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../demand-profile/input-references.json",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 6335,
+        "sha256": "d9f6baca7c213293be15b4cb880917f23ed32f07f3c806816d25fdbba51a949b"
+      },
+      "decoded": {
+        "bytes": 6335,
+        "sha256": "d9f6baca7c213293be15b4cb880917f23ed32f07f3c806816d25fdbba51a949b"
+      }
+    },
+    {
+      "role": "portable baseline/input authority",
+      "archiveRelative": "../demand-profile/patches/demand-profile.patch",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 21629,
+        "sha256": "3b6271f3bb288091f604ab947e10af00323672c038cfa11be3fc068f5f8e4b0d"
+      },
+      "decoded": {
+        "bytes": 21629,
+        "sha256": "3b6271f3bb288091f604ab947e10af00323672c038cfa11be3fc068f5f8e4b0d"
+      }
+    },
+    {
+      "role": "original read-only shared-sheet design",
+      "archiveRelative": "../bounded-c-profile/design/design.md",
+      "encoding": "identity",
+      "transport": {
+        "bytes": 12351,
+        "sha256": "1606721e95914318d3d5206e37d325bbe051b4826a62b2d83c67930be5537319"
+      },
+      "decoded": {
+        "bytes": 12351,
+        "sha256": "1606721e95914318d3d5206e37d325bbe051b4826a62b2d83c67930be5537319"
+      },
+      "originalPath": "/private/tmp/tube-bounded-c-shared-sheet-design-20261004/design.md"
+    }
+  ],
+  "aliases": [
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/complete-sheet-final-exact-receipt.json",
+      "logicalPath": "fullsheet/receipts/complete-sheet-final-exact-receipt.json",
+      "archivePath": "fullsheet/receipts/complete-sheet-exact-receipt.json",
+      "decoded": {
+        "bytes": 1535,
+        "sha256": "ddf8e228bfbd89e07381049c091a088c85de7cdfa33368823b7e618bee920c2f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/complete-sheet-query-receipt.json",
+      "logicalPath": "fullsheet/receipts/complete-sheet-query-receipt.json",
+      "archivePath": "fullsheet/receipts/complete-sheet-final-query-receipt.json",
+      "decoded": {
+        "bytes": 2817,
+        "sha256": "5c522e9a71e80295d42e3ed483650c55ef745e314e5f99532010fcf254c93a8e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/complete-sheet-switch-receipt.json",
+      "logicalPath": "fullsheet/receipts/complete-sheet-switch-receipt.json",
+      "archivePath": "fullsheet/receipts/complete-sheet-final-switch-receipt.json.gz",
+      "decoded": {
+        "bytes": 28747,
+        "sha256": "5c6a3e1bc8f7cbc3627a67309bd69284d22a6f0f1f640d38eee72cf1e8b16093"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/first-evaluated-source/source/src/wave/barrel/sharedUpperRoot.ts",
+      "logicalPath": "history/first-evaluated-source/source/src/wave/barrel/sharedUpperRoot.ts",
+      "archivePath": "history/initial-coverage-plan/source/src/wave/barrel/sharedUpperRoot.ts",
+      "decoded": {
+        "bytes": 2756,
+        "sha256": "6e31a2fb94899275f3335042769cd72be5ff925c377a31faee228f4e22d6f3a6"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/first-evaluated-source/source/src/wave/barrel/sweptLoft.ts",
+      "logicalPath": "history/first-evaluated-source/source/src/wave/barrel/sweptLoft.ts",
+      "archivePath": "history/initial-coverage-plan/source/src/wave/barrel/sweptLoft.ts",
+      "decoded": {
+        "bytes": 63897,
+        "sha256": "0ba7ea132065c6ef077f595baa965bc0805c6470d182cf8fa3402e74a7b84fb1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/root-only-evaluated-source/recipe.md",
+      "logicalPath": "history/root-only-evaluated-source/recipe.md",
+      "archivePath": "history/first-evaluated-source/recipe.md",
+      "decoded": {
+        "bytes": 4567,
+        "sha256": "314a83f19d94351b34b03870c5ba5b6888c385cb16a2b547082b572c549425bf"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/root-only-evaluated-source/source/src/wave/barrel/ProfileLibrary.ts",
+      "logicalPath": "history/root-only-evaluated-source/source/src/wave/barrel/ProfileLibrary.ts",
+      "archivePath": "history/first-evaluated-source/source/src/wave/barrel/ProfileLibrary.ts",
+      "decoded": {
+        "bytes": 25195,
+        "sha256": "ca08fad798ccfaf00b84388b64e7ab20f6775c4eb58bbc081c5306bf5263c9a1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/root-only-evaluated-source/source/src/wave/barrel/boundedCProfile.ts",
+      "logicalPath": "history/root-only-evaluated-source/source/src/wave/barrel/boundedCProfile.ts",
+      "archivePath": "history/first-evaluated-source/source/src/wave/barrel/boundedCProfile.ts",
+      "decoded": {
+        "bytes": 16387,
+        "sha256": "50c7d030186bbcf04efba4cd420cc178d81a5facf897c1e1510a51da6b74e644"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/root-only-evaluated-source/source/src/wave/barrel/sharedUpperRoot.ts",
+      "logicalPath": "history/root-only-evaluated-source/source/src/wave/barrel/sharedUpperRoot.ts",
+      "archivePath": "history/initial-coverage-plan/source/src/wave/barrel/sharedUpperRoot.ts",
+      "decoded": {
+        "bytes": 2756,
+        "sha256": "6e31a2fb94899275f3335042769cd72be5ff925c377a31faee228f4e22d6f3a6"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-shared-seam-20261004/root-only-evaluated-source/source/src/wave/barrel/sweptLoft.ts",
+      "logicalPath": "history/root-only-evaluated-source/source/src/wave/barrel/sweptLoft.ts",
+      "archivePath": "history/initial-coverage-plan/source/src/wave/barrel/sweptLoft.ts",
+      "decoded": {
+        "bytes": 63897,
+        "sha256": "0ba7ea132065c6ef077f595baa965bc0805c6470d182cf8fa3402e74a7b84fb1"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/fullsheet-exact-receipt.json",
+      "logicalPath": "demand/receipts/fullsheet-exact-receipt.json",
+      "archivePath": "fullsheet/receipts/complete-sheet-exact-receipt.json",
+      "decoded": {
+        "bytes": 1535,
+        "sha256": "ddf8e228bfbd89e07381049c091a088c85de7cdfa33368823b7e618bee920c2f"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/fullsheet-query-receipt.json",
+      "logicalPath": "demand/receipts/fullsheet-query-receipt.json",
+      "archivePath": "fullsheet/receipts/complete-sheet-final-query-receipt.json",
+      "decoded": {
+        "bytes": 2817,
+        "sha256": "5c522e9a71e80295d42e3ed483650c55ef745e314e5f99532010fcf254c93a8e"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/fullsheet-switch-receipt.json",
+      "logicalPath": "demand/receipts/fullsheet-switch-receipt.json",
+      "archivePath": "fullsheet/receipts/complete-sheet-final-switch-receipt.json.gz",
+      "decoded": {
+        "bytes": 28747,
+        "sha256": "5c6a3e1bc8f7cbc3627a67309bd69284d22a6f0f1f640d38eee72cf1e8b16093"
+      }
+    },
+    {
+      "originalPath": "/private/tmp/tube-bounded-c-fullsheet-demand-20261004/validation-domain.json",
+      "logicalPath": "demand/receipts/validation-domain.json",
+      "archivePath": "demand/receipts/demand-origin-validation-domain.json.gz",
+      "decoded": {
+        "bytes": 426688,
+        "sha256": "e2b649d516c6f6adeea234bcf5baef08de7146a7c6e8d7f8eb2a9911de818bbe"
+      }
+    }
+  ],
+  "baselineTreeInputs": "Exact577/578-file baseline/pre/post inventories retained; unchanged modules/assets are not duplicated. Existing bounded-C/demand archives preserve the patch bases and larger query/case authority.",
+  "partialCaptureScope": "32..112 only. Missing bulk/outside is not observed; full shipped/provider inputs remain authoritative.",
+  "assetProvenance": "Root21-file build +28 exact prior static copies =49. Both root receipt preparation failures retained separately; no build/native rerun. Original seal is retained as receipt, not full media/native evidence."
+}

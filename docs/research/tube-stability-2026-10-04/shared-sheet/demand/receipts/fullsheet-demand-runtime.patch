@@ -1,0 +1,135 @@
+--- a/src/wave/barrel/boundedCProfile.ts
++++ b/src/wave/barrel/boundedCProfile.ts
+@@ -2,6 +2,7 @@
+ export type Vec2 = [number, number];
+ export interface BoundedCParameters { crest: Vec2; toe: Vec2; incoming: Vec2; outgoing: Vec2; authoredTD: number; tau: number }
+ export interface BoundedCEvent { seal: number; cap: Vec2; fraction: number }
++export interface BoundedCLifecycle { impactEvent: BoundedCEvent; impactTau: number; retiredTau: number; fullyFormedTau: number }
+ export interface BoundedCMetadata {
+   /** Isolated new polygon sampling experiment; current v4 controls are unchanged. */
+   sharedSheet?: import('./sharedUpperRoot').SharedSheet;
+@@ -113,6 +114,22 @@
+  for(let i=1;i<=4;i++)points.push(mix(U,V0,i/4));for(let i=1;i<=4;i++){const a=3*Math.PI/2+spanL*i/4;points.push(add(V0,mul([Math.sin(a)+1,-Math.cos(a)],R)));}return {points,E,R,D,domainRadius};
+ }
+ export function ulp32(v:number):number{const f=new Float32Array([v]),u=new Uint32Array(f.buffer);u[0]++;return f[0]-Math.fround(v);}
++/** Exact event arithmetic only: clocks do not require the inner sheet, bounded root or floor contour. */
++export function boundedCLifecycle(z:BoundedCParameters):BoundedCLifecycle{
++ const ev=event(ordinary(z)),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction;
++ return {impactEvent:ev,impactTau:impact,retiredTau:impact+.3*TD,fullyFormedTau:.4*TD};
++}
++/** The same F32 cap64 as the full contour, without constructing its unrelated inner root/floor. */
++export function boundedCCap(z:BoundedCParameters,lifecycle?:BoundedCEvent):Vec2{
++ const o=ordinary(z),ev=lifecycle??event(o),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction,post=z.tau>=impact;
++ const g=smooth(z.tau/(.4*TD)),remaining=post?1-smooth((z.tau-impact)/(.3*TD)):1,s=post?ev.seal:smooth((z.tau-TD)/(.3*TD));
++ const ulp=ulp32(Math.max(...z.crest.map(Math.abs),...z.toe.map(Math.abs))),requested=o.B*(post?remaining**2:g*g),loopScale=post?Math.min(remaining*o.W,remaining**2*o.H):Math.min(g*o.W,g*o.H),collapsed=requested<8*ulp||loopScale<=64*ulp,T=collapsed?0:Math.max(requested,8*ulp);
++ const {P,last}=roof(o,post?1:g,s,T,post?ev.cap:undefined,remaining);
++ if(collapsed)return round(P[28]);
++ const n:Vec2=[-last[1],last[0]],centre=sub(P[28],mul(n,T/2));let phi=Math.atan2(-last[1],-n[1]);if(phi<0)phi+=2*Math.PI;if(!(phi>0&&phi<=Math.PI))throw Error('cap minimum domain');
++ const a=phi*4/4,cap=add(centre,mul(add(mul(n,Math.cos(a)),mul(last,Math.sin(a))),T/2));
++ return round(post?ev.cap:cap);
++}
+ /** Writes only owned33..111. Domain failures throw; caller may explicitly choose raw library mode, never silently fall back. */
+ export function sampleBoundedC(z:BoundedCParameters,profile:Float32Array,velocity=true, lifecycle?:BoundedCEvent,sharedRootDomain=false,preservedCarrierStart=0):BoundedCMetadata{
+  const o=ordinary(z),ev=lifecycle ?? event(o),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction,retired=impact+.3*TD,post=z.tau>=impact;
+--- a/src/wave/barrel/ProfileLibrary.ts
++++ b/src/wave/barrel/ProfileLibrary.ts
+@@ -1,4 +1,4 @@
+-import { boundedCParameters, blendBoundedCParameters, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent } from './boundedCProfile';
++import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, boundedCCap, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent } from './boundedCProfile';
+ import { pairInnerSheet } from './sharedUpperRoot';
+ import { GRAVITY } from '../dispersion';
+ 
+@@ -192,7 +192,7 @@
+   private readonly analyticEarlier = new Float32Array(FLOATS);
+   private readonly analyticLater = new Float32Array(FLOATS);
+   private readonly analyticQueries = new Map<string, { profile: Float32Array; lookup: ProfileLookup }>();
+-  private readonly analyticClocks = new Map<string, { impact: number; retired: number; event: BoundedCEvent }>();
++  private readonly analyticClocks = new Map<string, { impact: number; retired: number; clear: number; event: BoundedCEvent }>();
+ 
+   constructor(readonly cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C' } = {}) {
+     const groups = new Map<number, BarrelCase[]>();
+@@ -298,8 +298,8 @@
+   } {
+     const b = this.bracket(query);
+     if (this.options.geometry === 'bounded-C') {
+-      const lookup = this.analyticAt({ ...query, seconds: b.touchdown * b.unit }, b, this.analyticPoint);
+-      return { scale: lookup.scale, clamped: lookup.clamped, touchdownSeconds: lookup.touchdownSeconds, frameSeconds: lookup.frameSeconds, clearSeconds: lookup.clearSeconds, collapseSeconds: lookup.collapseSeconds };
++      const clock = this.analyticClock(query, b);
++      return { scale: b.scale, clamped: b.clamped, touchdownSeconds: clock.impact * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: clock.clear * b.unit, collapseSeconds: (clock.retired - clock.impact) * b.unit };
+     }
+     return {
+       scale: b.scale, clamped: b.clamped, touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: b.clear * b.unit,
+@@ -382,7 +382,7 @@
+   }
+ 
+   /** Parameters blend before construction; all analytic hold modes share the same evolving geometry. */
+-  private analyticShape(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): BoundedCMetadata {
++  private analyticParameters(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array) {
+     const tau = query.seconds / b.unit;
+     // The raw carrier/outside geometry settles at the authored event. The analytic roof keeps evolving to actual impact.
+     const carrier = Math.min(tau, b.touchdown);
+@@ -395,6 +395,11 @@
+       parameters = blendBoundedCParameters(lower, upper, b.weight);
+       for (let i = 0; i < FLOATS; i++) out[i] += b.weight * (this.analyticOther[i] - out[i]);
+     }
++    return parameters;
++  }
++
++  private analyticShape(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): BoundedCMetadata {
++    const parameters = this.analyticParameters(query, b, out);
+     const clockKey = [query.slope, query.footHeight, query.footDepth].join(',');
+     const meta = sampleBoundedC(parameters, out, false, this.analyticClocks.get(clockKey)?.event, true);
+     meta.sharedSheet = pairInnerSheet(out, meta);
+@@ -403,27 +408,39 @@
+     return meta;
+   }
+ 
++  /** Lifecycle uses the identical final carrier/parameter blend; it does not construct a full contour. */
++  private analyticClock(query: Omit<ProfileQuery, 'seconds'>, b: ReturnType<ProfileLibrary['bracket']>) {
++    const key = [query.slope, query.footHeight, query.footDepth].join(',');
++    let clock = this.analyticClocks.get(key);
++    if (!clock) {
++      const parameters = this.analyticParameters({ ...query, seconds: b.touchdown * b.unit }, b, this.scratch);
++      const final = boundedCLifecycle(parameters);
++      clock = { impact: final.impactTau, retired: final.retiredTau, clear: final.fullyFormedTau, event: final.impactEvent };
++      if (this.analyticClocks.size >= 64) this.analyticClocks.delete(this.analyticClocks.keys().next().value!);
++      this.analyticClocks.set(key, clock);
++    }
++    return clock;
++  }
++
++  /** F32 stage order matches analyticShape: raw carrier, parameters, ND cap, then metric cap. */
++  private analyticCap(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, raw: Float32Array, event: BoundedCEvent) {
++    const cap = boundedCCap(this.analyticParameters(query, b, raw), event);
++    return [Math.fround(cap[0] * b.scale), Math.fround(cap[1] * b.scale)];
++  }
++
+   private analyticAt(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): ProfileLookup {
+     const key = [query.slope, query.footHeight, query.footDepth, query.seconds].join(',');
+     const cached = this.analyticQueries.get(key);
+     if (cached) { out.set(cached.profile); return cached.lookup; }
+-    const clockKey = [query.slope, query.footHeight, query.footDepth].join(',');
+-    let clock = this.analyticClocks.get(clockKey);
+-    if (!clock) {
+-      const final = this.analyticShape({ ...query, seconds: b.touchdown * b.unit }, b, this.scratch);
+-      clock = { impact: final.impactTau, retired: final.retiredTau, event: final.impactEvent };
+-      if (this.analyticClocks.size >= 64) this.analyticClocks.delete(this.analyticClocks.keys().next().value!);
+-      this.analyticClocks.set(clockKey, clock);
+-    }
++    const clock = this.analyticClock(query, b);
+     const meta = this.analyticShape(query, b, out);
+     meta.impactTau = clock.impact; meta.retiredTau = clock.retired;
+     // Full query finite derivative includes moving anchors and parameter carrier, unlike the provider's fixed-parameter derivative.
+     const dt = Math.max(1e-8, 1e-5 * b.touchdown * b.unit);
+-    const earlier = this.analyticEarlier, later = this.analyticLater;
+-    this.analyticShape({ ...query, seconds: query.seconds - dt }, b, earlier);
+-    this.analyticShape({ ...query, seconds: query.seconds + dt }, b, later);
+-    const tipAlong = (later[2 * LANDMARK.lip] - earlier[2 * LANDMARK.lip]) / (2 * dt);
+-    const tipUp = (later[2 * LANDMARK.lip + 1] - earlier[2 * LANDMARK.lip + 1]) / (2 * dt);
++    const earlier = this.analyticCap({ ...query, seconds: query.seconds - dt }, b, this.analyticEarlier, clock.event);
++    const later = this.analyticCap({ ...query, seconds: query.seconds + dt }, b, this.analyticLater, clock.event);
++    const tipAlong = (later[0] - earlier[0]) / (2 * dt);
++    const tipUp = (later[1] - earlier[1]) / (2 * dt);
+     meta.capBoundaryVelocity = [tipAlong * b.unit / b.scale, tipUp * b.unit / b.scale];
+     const phase = query.seconds < 0 ? 'pre' : query.seconds <= meta.impactTau * b.unit ? 'open' : 'post';
+     const lookup: ProfileLookup = { caseId: b.weight < .5 ? b.lower.id : b.upper.id, clamped: b.clamped, scale: b.scale, phase,

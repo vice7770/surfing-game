@@ -1,0 +1,472 @@
+--- a/src/wave/barrel/boundedCProfile.ts
++++ b/src/wave/barrel/boundedCProfile.ts
+@@ -3,6 +3,10 @@
+ export interface BoundedCParameters { crest: Vec2; toe: Vec2; incoming: Vec2; outgoing: Vec2; authoredTD: number; tau: number }
+ export interface BoundedCEvent { seal: number; cap: Vec2; fraction: number }
+ export interface BoundedCMetadata {
++  /** Isolated new polygon sampling experiment; current v4 controls are unchanged. */
++  sharedSheet?: import('./sharedUpperRoot').SharedSheet;
++  /** New isolated geometric domain bound, separate from v4's original coefficients. */
++  rootRadiusMaximumFromSheetDomain?: number;
+   impactEvent: BoundedCEvent;
+   model: 'bounded-analytic-C/v4';
+   /** Nondimensional metadata units; profile arrays returned by library are already metric. */
+@@ -92,24 +96,29 @@
+ function faceBound(J:Vec2,O:Vec2,dU:Vec2,cV:Vec2,P:Vec2,Q:Vec2):number{
+  const candidates=[raySegment(J,dU,P,Q),raySegment(O,cV,P,Q)];if(Math.abs(dU[0])>1e-18)for(const X of [P,Q]){const R=(X[0]-J[0])/dU[0];if(R>0){const U=add(J,mul(dU,R)),V=add(O,mul(cV,R));if(V[1]<=X[1]&&X[1]<=U[1])candidates.push(R);}}return Math.min(...candidates);
+ }
+-function root(J:Vec2,vr:Vec2,angle:number,qC:number,yC:number,T:number,P:Vec2[],V:Vec2[],bulk:Float32Array){
++function root(J:Vec2,vr:Vec2,angle:number,qC:number,yC:number,T:number,P:Vec2[],V:Vec2[],bulk:Float32Array,sharedCrest?:number,preservedCarrierStart=0){
+  const slope=Math.tan(angle),u=mul(vr,-1);let beta=Math.atan2(u[1],u[0]);if(beta<0)beta+=2*Math.PI;const spanU=3*Math.PI/2-beta,spanL=Math.PI/2+angle;
+  if(spanU<0||spanL<0)throw Error('root turn domain');const dU:Vec2=[Math.sin(3*Math.PI/2)-Math.sin(beta),-Math.cos(3*Math.PI/2)+Math.cos(beta)],dL:Vec2=[Math.sin(2*Math.PI+angle)+1,-Math.cos(2*Math.PI+angle)],N=J[1]-yC-slope*(J[0]-qC),coef=dU[1]+dL[1]-slope*(dU[0]+dL[0]),O=add(J,[0,-N]),cU:Vec2=[-u[1],u[0]],cV=add(dU,[0,-coef]),cL=add(cV,[1,0]);
+  if(N<=0)throw Error('nonpositive root depth');let R=Math.min(4*T,coef<0?N/-coef:Infinity);
++ const domainReach=1+Math.sin(beta),domainRadius=sharedCrest!==undefined&&domainReach>0?(J[0]-sharedCrest)/domainReach:Infinity;
++ R=Math.min(R,domainRadius);
+  const guards:[Vec2,Vec2][]=[];for(let i=0;i<28;i++){const n:Vec2=[-V[i][1],V[i][0]];guards.push([sub(P[i],mul(n,T/2)),sub(P[i+1],mul(n,T/2))]);}
+- for(let i=0;i<32;i++)guards.push([add(at(bulk,i),[0,-T/2]),add(at(bulk,i+1),[0,-T/2])]);
++ for(let i=preservedCarrierStart;i<32;i++)guards.push([add(at(bulk,i),[0,-T/2]),add(at(bulk,i+1),[0,-T/2])]);
+  for(const [a,b] of guards)R=Math.min(R,arcBound(J,cU,mul(cU,-1),spanU,a,b),arcBound(O,cL,[-1,0],spanL,a,b),faceBound(J,O,dU,cV,a,b));
+- if(!Number.isFinite(R)||R<T/2)throw Error('root thickness domain');const D=N+R*coef;if(D< -1e-12)throw Error('negative root face');const U=add(J,mul(dU,R)),V0=add(U,[0,-D]),E=add(V0,mul(dL,R)),points:Vec2[]=[J];
+- for(let i=1;i<=8;i++)points.push(add(J,mul([Math.sin(beta+spanU*i/8)-Math.sin(beta),-Math.cos(beta+spanU*i/8)+Math.cos(beta)],R)));
+- for(let i=1;i<=4;i++)points.push(mix(U,V0,i/4));for(let i=1;i<=4;i++){const a=3*Math.PI/2+spanL*i/4;points.push(add(V0,mul([Math.sin(a)+1,-Math.cos(a)],R)));}return {points,E,R,D};
++ if(!Number.isFinite(R)||R<T/2)throw Error('root thickness domain');const D=N+R*coef;if(D< -1e-12)throw Error('negative root face');const U=add(J,mul(dU,R));
++ // This is the exact endpoint of the selected circle/domain equality, not a post-hoc vertex clamp.
++ if(sharedCrest!==undefined&&R===domainRadius)U[0]=sharedCrest;
++ const V0=add(U,[0,-D]),E=add(V0,mul(dL,R)),points:Vec2[]=[J];
++ for(let i=1;i<=8;i++)points.push(i===8&&sharedCrest!==undefined?U:add(J,mul([Math.sin(beta+spanU*i/8)-Math.sin(beta),-Math.cos(beta+spanU*i/8)+Math.cos(beta)],R)));
++ for(let i=1;i<=4;i++)points.push(mix(U,V0,i/4));for(let i=1;i<=4;i++){const a=3*Math.PI/2+spanL*i/4;points.push(add(V0,mul([Math.sin(a)+1,-Math.cos(a)],R)));}return {points,E,R,D,domainRadius};
+ }
+ export function ulp32(v:number):number{const f=new Float32Array([v]),u=new Uint32Array(f.buffer);u[0]++;return f[0]-Math.fround(v);}
+ /** Writes only owned33..111. Domain failures throw; caller may explicitly choose raw library mode, never silently fall back. */
+-export function sampleBoundedC(z:BoundedCParameters,profile:Float32Array,velocity=true, lifecycle?:BoundedCEvent):BoundedCMetadata{
++export function sampleBoundedC(z:BoundedCParameters,profile:Float32Array,velocity=true, lifecycle?:BoundedCEvent,sharedRootDomain=false,preservedCarrierStart=0):BoundedCMetadata{
+  const o=ordinary(z),ev=lifecycle ?? event(o),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction,retired=impact+.3*TD,post=z.tau>=impact;
+  const g=smooth(z.tau/(.4*TD)),remaining=post?1-smooth((z.tau-impact)/(.3*TD)):1,s=post?ev.seal:smooth((z.tau-TD)/(.3*TD));
+  const ulp=ulp32(Math.max(...z.crest.map(Math.abs),...z.toe.map(Math.abs))),requested=o.B*(post?remaining**2:g*g),loopScale=post?Math.min(remaining*o.W,remaining**2*o.H):Math.min(g*o.W,g*o.H),collapsed=requested<8*ulp||loopScale<=64*ulp,activeG=g,activeRemain=remaining,T=collapsed?0:Math.max(requested,8*ulp);
+- const {P,c:currentRoof,last}=roof(o,post?1:activeG,s,T,post?ev.cap:undefined,activeRemain),target:Vec2[]=Array.from({length:113},()=>[0,0]);for(let i=0;i<=28;i++)target[32+i]=P[i];let R=0,D=0,envelopeBound=0,connectorLength=0;const envelopeBudget=.001*Math.max(o.W,o.H);
++ const {P,c:currentRoof,last}=roof(o,post?1:activeG,s,T,post?ev.cap:undefined,activeRemain),target:Vec2[]=Array.from({length:113},()=>[0,0]);for(let i=0;i<=28;i++)target[32+i]=P[i];let R=0,D=0,envelopeBound=0,connectorLength=0,domainRadius:number|undefined;const envelopeBudget=.001*Math.max(o.W,o.H);
+  if(collapsed){
+   const K=P[28],angle=post?0:(1-g)*Math.atan2(o.d0[1],o.d0[0]),pv:Vec2=[Math.cos(angle),Math.sin(angle)],slope=Math.tan(angle),yC=post?o.Toe[1]:(1-g)*o.K0[1]+g*o.Toe[1],C:Vec2=[K[0],yC];
+   if(C[1]>K[1])throw Error('zero sheet connector not descending');
+@@ -127,12 +136,13 @@
+   const factor=post?activeRemain:activeG,qJ=(1-factor)*Q[28][0]+factor*(o.A[0]+.28*o.W);if(!(Q[0][0]<=qJ&&qJ<Q[28][0]))throw Error('root cut outside sheet');let e=0;while(!(Q[e][0]<=qJ&&qJ<=Q[e+1][0]))e++;
+   const J=mix(Q[e],Q[e+1],(qJ-Q[e][0])/(Q[e+1][0]-Q[e][0])),chain=[Q[28]];for(let i=27;i>e;i--)chain.push(Q[i]);chain.push(J);const inner=arcSample(chain,12),centre=sub(P[28],mul(N[27],T/2));let phi=Math.atan2(-V[27][1],-N[27][1]);if(phi<0)phi+=2*Math.PI;if(!(phi>0&&phi<=Math.PI))throw Error('cap minimum domain');
+   for(let i=61;i<=68;i++){const a=i<=64?phi*(i-60)/4:phi+(Math.PI-phi)*(i-64)/4;target[i]=add(centre,mul(add(mul(N[27],Math.cos(a)),mul(V[27],Math.sin(a))),T/2));}target[68]=Q[28];if(post)target[64]=ev.cap;for(let i=69;i<=80;i++)target[i]=inner[i-68];
+-  const angle=post?0:(1-activeG)*Math.atan2(o.d0[1],o.d0[0]),pv:Vec2=[Math.cos(angle),Math.sin(angle)],slope=pv[1]/pv[0],qC=P[28][0]-T/2,yC=post?o.Toe[1]:(1-activeG)*o.K0[1]+activeG*o.Toe[1],rr=root(J,V[e],angle,qC,yC,T,P,V,profile);R=rr.R;D=rr.D;for(let i=0;i<=16;i++)target[80+i]=rr.points[i];
++  const angle=post?0:(1-activeG)*Math.atan2(o.d0[1],o.d0[0]),pv:Vec2=[Math.cos(angle),Math.sin(angle)],slope=pv[1]/pv[0],qC=P[28][0]-T/2,yC=post?o.Toe[1]:(1-activeG)*o.K0[1]+activeG*o.Toe[1],rr=root(J,V[e],angle,qC,yC,T,P,V,profile,sharedRootDomain?o.A[0]:undefined,preservedCarrierStart);R=rr.R;D=rr.D;if(sharedRootDomain)domainRadius=rr.domainRadius;for(let i=0;i<=16;i++)target[80+i]=rr.points[i];
+   const F0:Vec2=[qC-T,yC-slope*T],F1:Vec2=[qC+T,yC+slope*T];if(!(rr.E[0]<=F0[0]&&F0[0]<F1[0]&&F1[0]<o.Toe[0]))throw Error('floor plateau domain');const chord=norm(sub(o.Toe,F1)),h0=(1-activeG)*o.he0+activeG*chord/3,h1=(1-activeG)*o.ht0+activeG*chord/3,fc=tail(F1,o.Toe,pv,o.tt,h0,h1);
+   for(let i=97;i<=102;i++)target[i]=mix(rr.E,F0,(i-96)/6);for(let i=103;i<=106;i++)target[i]=mix(F0,F1,(i-102)/4);for(let i=107;i<=112;i++)target[i]=bezier(fc,(i-106)/6);
+  }
+  for(let i=33;i<112;i++){profile[2*i]=target[i][0];profile[2*i+1]=target[i][1];if(!Number.isFinite(profile[2*i]+profile[2*i+1]))throw Error('nonfinite profile');}
+  const cap=at(profile,64),flow=Math.sqrt(2*o.H),meta:BoundedCMetadata={model:'bounded-analytic-C/v4',impactEvent:ev,lengthScale:1,timeScale:1,formation:g,remaining,seal:s,authoredSealTau:TD,impactTau:impact,retiredTau:retired,fullyFormedTau:.4*TD,sheetExists:!collapsed,precisionCollapsed:collapsed&&requested>0,thickness:T,requestedThickness:requested,cap,impactCap:ev.cap,rootRadius:R,rootVerticalLeg:D,precisionEnvelopeBound:envelopeBound,precisionEnvelopeBudget:envelopeBudget,collapsedConnectorLength:connectorLength,capBoundaryVelocity:[0,0],fluidAlong:post?0:last[0]*flow,fluidUp:post?-flow:last[1]*flow,partRanges:{outer:[32,60],cap:[60,68],inner:[68,80],upperRoot:[80,88],face:[88,92],lowerRoot:[92,96],floor:[96,112]}};
+- if(velocity){const dt=1e-5*TD,a=profile.slice(),b=profile.slice();sampleBoundedC({...z,tau:z.tau-dt},a,false,lifecycle);sampleBoundedC({...z,tau:z.tau+dt},b,false,lifecycle);meta.capBoundaryVelocity=[(b[128]-a[128])/(2*dt),(b[129]-a[129])/(2*dt)];}
++ meta.rootRadiusMaximumFromSheetDomain=domainRadius;
++ if(velocity){const dt=1e-5*TD,a=profile.slice(),b=profile.slice();sampleBoundedC({...z,tau:z.tau-dt},a,false,lifecycle,sharedRootDomain,preservedCarrierStart);sampleBoundedC({...z,tau:z.tau+dt},b,false,lifecycle,sharedRootDomain,preservedCarrierStart);meta.capBoundaryVelocity=[(b[128]-a[128])/(2*dt),(b[129]-a[129])/(2*dt)];}
+  return meta;
+ }
+--- a/src/wave/barrel/ProfileLibrary.ts
++++ b/src/wave/barrel/ProfileLibrary.ts
+@@ -1,4 +1,5 @@
+ import { boundedCParameters, blendBoundedCParameters, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent } from './boundedCProfile';
++import { pairInnerSheet } from './sharedUpperRoot';
+ import { GRAVITY } from '../dispersion';
+ 
+ /**
+@@ -395,7 +396,8 @@
+       for (let i = 0; i < FLOATS; i++) out[i] += b.weight * (this.analyticOther[i] - out[i]);
+     }
+     const clockKey = [query.slope, query.footHeight, query.footDepth].join(',');
+-    const meta = sampleBoundedC(parameters, out, false, this.analyticClocks.get(clockKey)?.event);
++    const meta = sampleBoundedC(parameters, out, false, this.analyticClocks.get(clockKey)?.event, true);
++    meta.sharedSheet = pairInnerSheet(out, meta);
+     meta.lengthScale = b.scale; meta.timeScale = b.unit;
+     for (let i = 0; i < FLOATS; i++) out[i] *= b.scale;
+     return meta;
+--- a/src/wave/barrel/sweptLoft.ts
++++ b/src/wave/barrel/sweptLoft.ts
+@@ -238,6 +238,10 @@
+   private initialZ = new Float64Array(0);
+   private targetY = new Float64Array(0);
+   private initialBlend = new Float64Array(0);
++  private sharedSheetRows = new Uint8Array(MAX_SLICES);
++  private sharedSheetX = new Float64Array(21);
++  private sharedSheetZ = new Float64Array(21);
++  private sharedSheetWater = new Float64Array(21);
+   private sealBlend = new Float64Array(0);
+   private sealApplies = new Uint8Array(0);
+   private heightReady = new Uint8Array(0);
+@@ -746,6 +750,8 @@
+       const height = restHeight(profile[2 * LANDMARK.crest + 1], profile[2 * LANDMARK.toe + 1], profile[2 * LAST + 1]);
+       const rampLength = REST.ramp * height;
+       const restSpan = restEnd - restHold;
++      const sharedSheet = lookup.analytic?.sharedSheet !== undefined;
++      this.sharedSheetRows[slice] = sharedSheet ? 1 : 0;
+       for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+         let along: number;
+         let above = 0;
+@@ -807,8 +813,15 @@
+           above = profile[2 * LANDMARK.lip + 1];
+         }
+         const v = slice * LOFT_SAMPLES + j;
+-        const px = ax + along * nx;
+-        const pz = az + along * nz;
++        const profileIndex = j - E;
++        const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
++        const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
++        const px = sharedUnder >= 0 ? this.sharedSheetX[sharedUnder] : ax + along * nx;
++        const pz = sharedUnder >= 0 ? this.sharedSheetZ[sharedUnder] : az + along * nz;
++        if (sharedTop >= 0) {
++          this.sharedSheetX[sharedTop] = px;
++          this.sharedSheetZ[sharedTop] = pz;
++        }
+         const e = w * (1 - pin);
+         r.positions[3 * v] = px;
+         if (this.normalDemand) {
+@@ -819,7 +832,8 @@
+         } else if (e === 1) {
+           r.positions[3 * v + 1] = stillLevel + above;
+         } else {
+-          const h = heightAt(px, pz);
++          const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(px, pz);
++          if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
+           r.positions[3 * v + 1] = e === 0 ? h : h + e * (stillLevel + above - h);
+         }
+         r.positions[3 * v + 2] = pz;
+@@ -1168,13 +1182,18 @@
+     const heightAt = this.rowHeightAt;
+     if (!(row >= 0 && row < r.sliceCount) || !heightAt) throw new Error('Contact height row is outside its captured generation');
+     const weight = this.sealBlend[row];
++    const sharedSheet = this.sharedSheetRows[row] === 1;
+     for (let j = 0; j < LOFT_SAMPLES; j += 1) {
+       const v = row * LOFT_SAMPLES + j;
+       const o = 3 * v;
+       const e = this.initialBlend[v];
+       if (e === 1) r.positions[o + 1] = this.targetY[v];
+       else {
+-        const h = heightAt(this.initialX[v], this.initialZ[v]);
++        const profileIndex = j - E;
++        const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
++        const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
++        const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(this.initialX[v], this.initialZ[v]);
++        if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
+         r.positions[o + 1] = e === 0 ? h : h + e * (this.targetY[v] - h);
+       }
+       if (this.sealApplies[v] === 1) {
+--- /dev/null
++++ b/src/wave/barrel/sharedUpperRoot.ts
+@@ -0,0 +1,64 @@
++import type { BoundedCMetadata } from './boundedCProfile';
++
++export interface SharedSheet {
++  top: [38, 58];
++  underside: [68, 88];
++  /** ND piecewise-linear roof-envelope change; not material-index displacement. */
++  maximumRoofEnvelopeChange: number;
++  coalescedStations: number;
++}
++
++/** Height of the original forward polygon, explicitly completing a quantized vertical facet with its highest endpoint. */
++export function roofHeight(profile: Float32Array, x: number): number {
++  let y = -Infinity;
++  for (let i = 32; i < 60; i += 1) {
++    const a = profile[2 * i], b = profile[2 * (i + 1)];
++    if (b < a) throw new Error('shared upper-root backward roof domain');
++    if (x < a || x > b) continue;
++    const ay = profile[2 * i + 1], by = profile[2 * (i + 1) + 1];
++    y = Math.max(y, a === b ? Math.max(ay, by) : ay + (by - ay) * ((x - a) / (b - a)));
++  }
++  if (!Number.isFinite(y)) throw new Error('shared upper-root missing roof crossing');
++  return y;
++}
++
++/** Exact vertical graph difference on the overlapping domain, at the union of both polygons' breakpoints. */
++export function roofEnvelopeDifference(a: Float32Array, b: Float32Array): number {
++  const left = Math.max(a[64], b[64]), right = Math.min(a[120], b[120]);
++  if (left > right) throw new Error('roof envelope lacks common domain');
++  let maximum = 0;
++  const xs = [left, right];
++  for (const p of [a, b]) for (let i = 32; i <= 60; i += 1) if (p[2 * i] >= left && p[2 * i] <= right) xs.push(p[2 * i]);
++  for (const x of xs) maximum = Math.max(maximum, Math.abs(roofHeight(a, x) - roofHeight(b, x)));
++  return maximum;
++}
++
++/**
++ * New sampling authority for the complete inner-sheet seam, not a change to v4's controls.
++ * Unsupported actual domains fail explicitly. Only outer33..59 is resampled, in both resolved and collapsed states so the precision gate cannot switch sampling authorities.
++ */
++export function pairInnerSheet(profile: Float32Array, _meta: BoundedCMetadata): SharedSheet {
++  const original = profile.slice();
++  const left = original[176], right = original[136];
++  const a = original[64], k = original[120];
++  if (!(a <= left && left <= right && right <= k)) throw new Error('shared upper-root lacks complete outer roof domain');
++  for (let i = 68; i < 88; i += 1) {
++    if (original[2 * i] < original[2 * (i + 1)]) throw new Error('shared upper-root backward return domain');
++  }
++  const sample = (i: number, x: number) => {
++    // Match the stored return X exactly before any later metric/world transform.
++    profile[2 * i] = x;
++    profile[2 * i + 1] = roofHeight(original, profile[2 * i]);
++  };
++  for (let i = 33; i < 38; i += 1) sample(i, a + (left - a) * ((i - 32) / 6));
++  let coalescedStations = 0;
++  for (let i = 38; i <= 58; i += 1) {
++    const j = 126 - i;
++    sample(i, original[2 * j]);
++    if (profile[2 * i + 1] < original[2 * j + 1]) throw new Error('shared upper-root negative paired separation');
++    if (i > 38 && profile[2 * i] === profile[2 * (i - 1)]) coalescedStations += 1;
++  }
++  sample(59, right + (k - right) / 2);
++  const maximumRoofEnvelopeChange = roofEnvelopeDifference(original, profile);
++  return { top: [38, 58], underside: [68, 88], maximumRoofEnvelopeChange, coalescedStations };
++}
+--- /dev/null
++++ b/src/wave/barrel/sharedUpperRoot.test.ts
+@@ -0,0 +1,248 @@
++import { readFileSync, writeFileSync } from 'node:fs';
++import { describe, expect, it } from 'vitest';
++import { boundedCParameters, blendBoundedCParameters, sampleBoundedC, type BoundedCParameters, type Vec2 } from './boundedCProfile';
++import { pairInnerSheet, roofEnvelopeDifference } from './sharedUpperRoot';
++import { readBarrelCases } from './nodeBarrelCases';
++import { decodeCase } from './profileFormat';
++import { ProfileLibrary } from './ProfileLibrary';
++import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
++import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++
++const cases = readBarrelCases().map(decodeCase);
++const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
++const oldReport = JSON.parse(readFileSync('/private/tmp/tube-bounded-c-shared-seam-20261004/fixed-query-inputs.json', 'utf8')) as {
++  actual: PyRow[]; heldIndices: Record<string, number>;
++  phaseGrid: (PyRow & { case: string })[]; crossCaseGridAll: (PyRow & { cases: string[]; share: number })[];
++};
++type PyRow = { params: { A: Vec2; T: Vec2; ct: Vec2; tt: Vec2; TD: number; tau: number }; rawPolyline?: { point: number; q: number; y: number }[] };
++const fromPy = (r: PyRow): BoundedCParameters => ({ crest: r.params.A, toe: r.params.T, incoming: r.params.ct,
++  outgoing: r.params.tt, authoredTD: r.params.TD, tau: r.params.tau });
++const golden = JSON.parse(readFileSync('/private/tmp/tube-bounded-c-precision-v4-fixed-20261004/port-reference.json', 'utf8')) as {
++  rawBlocks: Record<string, number[]>; precision522: { block: string; sample: string; params: BoundedCParameters }[];
++};
++const switches = JSON.parse(readFileSync('/private/tmp/tube-bounded-c-shared-seam-20261004/precision-switch-inputs.json', 'utf8')) as {
++  block: string; label: string; tauSwitch: number; tauPair: [number, number]; params: BoundedCParameters; raw: number[];
++}[];
++const frame = (c: typeof cases[number], f: number) => c.frames.slice(256 * f, 256 * (f + 1));
++const blend = (a: Float32Array, b: Float32Array, t: number) => Float32Array.from(a, (v, i) => v + t * (b[i] - v));
++
++function crossings(p: Float32Array, first = 0, last = 127): Set<string> {
++  const result = new Set<string>();
++  for (let i = first; i < last; i += 1) for (let j = i + 2; j < last; j += 1) {
++    const ax = p[2 * i], ay = p[2 * i + 1], dx = p[2 * i + 2] - ax, dy = p[2 * i + 3] - ay;
++    const bx = p[2 * j], by = p[2 * j + 1], ex = p[2 * j + 2] - bx, ey = p[2 * j + 3] - by;
++    const den = dx * ey - dy * ex;
++    if (Math.abs(den) < 1e-12) continue;
++    const t = ((bx - ax) * ey - (by - ay) * ex) / den, u = ((bx - ax) * dy - (by - ay) * dx) / den;
++    if (t > 1e-9 && t < 1 - 1e-9 && u > 1e-9 && u < 1 - 1e-9) result.add(`${i}/${j}`);
++  }
++  return result;
++}
++
++function records(height: number, center: number, curved: boolean): Float32Array {
++  const data = new Float32Array(9 * FRONT_STRIDE);
++  for (let k = 0; k < 21; k += 1) {
++    const o = k * FRONT_STRIDE;
++    data[o + FRONT_FIELD.x] = k + 0.5; data[o + FRONT_FIELD.z] = -100 + (curved ? 0.02 * (k - 4) ** 2 : 0);
++    data[o + FRONT_FIELD.front] = 1; data[o + FRONT_FIELD.sigma] = k;
++    data[o + FRONT_FIELD.footHeight] = height; data[o + FRONT_FIELD.footDepth] = 7;
++    data[o + FRONT_FIELD.tau] = center + 0.006 * (k - 4); data[o + FRONT_FIELD.throwZ] = data[o + FRONT_FIELD.z];
++  }
++  return data;
++}
++const waters = [() => 0.5, (x: number, z: number) => 0.5 + 0.12 * (z + 100) + 0.03 * (x - 4.5),
++  (x: number, z: number) => 0.5 - 0.09 * (z + 100) + 0.22 * Math.sin(0.8 * (z + 100)) + 0.04 * Math.cos(x)];
++
++function column(loft: LoftResult, strip: number, x: number, z: number): { y: number; segment: number; vertices: number[] }[] {
++  const p = loft.positions, hits: { y: number; segment: number; vertices: number[] }[] = [];
++  let base = 0;
++  for (let s = 0; s < strip; s += 1) if (loft.sliceJoined[s]) base += 6 * (LOFT_SAMPLES - 1);
++  for (let j = 0; j < LOFT_SAMPLES - 1; j += 1) for (const offset of [0, 3]) {
++    const t = base + 6 * j + offset, u = loft.indices[t], v = loft.indices[t + 1], w = loft.indices[t + 2];
++    const ax = p[3 * u], az = p[3 * u + 2], bx = p[3 * v], bz = p[3 * v + 2], cx = p[3 * w], cz = p[3 * w + 2];
++    const area = (bx - ax) * (cz - az) - (bz - az) * (cx - ax);
++    if (Math.abs(area) < 1e-12) continue;
++    const vb = ((x - ax) * (cz - az) - (z - az) * (cx - ax)) / area;
++    const vc = ((bx - ax) * (z - az) - (bz - az) * (x - ax)) / area;
++    if (vb <= 1e-9 || vc <= 1e-9 || vb + vc >= 1 - 1e-9) continue;
++    hits.push({ y: (1 - vb - vc) * p[3 * u + 1] + vb * p[3 * v + 1] + vc * p[3 * w + 1], segment: j - LOFT.extensionSamples, vertices: [u, v, w] });
++  }
++  return hits.sort((a, b) => a.y - b.y);
++}
++
++describe('coupled complete inner-sheet shared sampling experiment', () => {
++  it('evaluates all6447 original/precision queries without new crossings, missing domains or hidden limits', () => {
++    const groups: Record<string, { attempted: number; valid: number; failed: number; resolved: number; maximumRoofEnvelopeChange: number; maximumNormalizedRoofEnvelopeChange: number; maximumMaterialDisplacement: number; maximumNormalizedMaterialDisplacement: number }> = {};
++    const failures: unknown[] = [];
++    let maximumRoofEnvelopeChange = 0, maximumMaterialDisplacement = 0, maximumRootRadiusReduction = 0, coalescedStations = 0, limitedRoots = 0;
++    function check(raw: Float32Array, z: BoundedCParameters, group: string, id: unknown, preservedCarrierStart = 0) {
++      const stats = groups[group] ??= { attempted: 0, valid: 0, failed: 0, resolved: 0, maximumRoofEnvelopeChange: 0, maximumNormalizedRoofEnvelopeChange: 0, maximumMaterialDisplacement: 0, maximumNormalizedMaterialDisplacement: 0 };
++      stats.attempted += 1;
++      const before = raw.slice(), out = raw.slice();
++      try {
++        const original = sampleBoundedC(z, before, false, undefined, false, preservedCarrierStart), meta = sampleBoundedC(z, out, false, undefined, true, preservedCarrierStart);
++        const paired = pairInnerSheet(out, meta);
++        const first = preservedCarrierStart, last = first ? 112 : 127, spatialScale = Math.max(z.toe[0] - z.crest[0], z.crest[1] - z.toe[1]);
++        if (!out.subarray(2 * first, 2 * last + 2).every(Number.isFinite)) throw Error('nonfinite known contour');
++        for (let i = first; i <= last; i += 1) {
++          if (i <= 32 || i >= 102 || i >= 60 && i <= 80) {
++            if (out[2 * i] !== before[2 * i] || out[2 * i + 1] !== before[2 * i + 1]) throw Error(`changed preserved point${i}`);
++          }
++          const displacement = Math.hypot(out[2 * i] - before[2 * i], out[2 * i + 1] - before[2 * i + 1]);
++          maximumMaterialDisplacement = Math.max(maximumMaterialDisplacement, displacement);
++          stats.maximumMaterialDisplacement = Math.max(stats.maximumMaterialDisplacement, displacement);
++          stats.maximumNormalizedMaterialDisplacement = Math.max(stats.maximumNormalizedMaterialDisplacement, displacement / spatialScale);
++        }
++        const oldPairs = crossings(before, first, last), newPairs = [...crossings(out, first, last)].filter(p => !oldPairs.has(p));
++        if (newPairs.length) throw Error(`new proper crossing pairs${newPairs.join(',')}`);
++        if (paired) {
++          if (meta.sheetExists) stats.resolved += 1;
++          for (let i = 38; i <= 58; i += 1) {
++            const j = 126 - i;
++            if (out[2 * i] !== out[2 * j] || out[2 * i + 1] < out[2 * j + 1]) throw Error(`unordered common station${i}/${j}`);
++          }
++          maximumRoofEnvelopeChange = Math.max(maximumRoofEnvelopeChange, paired.maximumRoofEnvelopeChange);
++          stats.maximumRoofEnvelopeChange = Math.max(stats.maximumRoofEnvelopeChange, paired.maximumRoofEnvelopeChange);
++          stats.maximumNormalizedRoofEnvelopeChange = Math.max(stats.maximumNormalizedRoofEnvelopeChange, paired.maximumRoofEnvelopeChange / spatialScale);
++          coalescedStations += paired.coalescedStations;
++          if (meta.rootRadius < original.rootRadius) limitedRoots += 1;
++          maximumRootRadiusReduction = Math.max(maximumRootRadiusReduction, original.rootRadius - meta.rootRadius);
++        }
++        stats.valid += 1;
++      } catch (error) {
++        stats.failed += 1;
++        failures.push({ group, id, knownContour: [preservedCarrierStart, preservedCarrierStart ? 112 : 127], missingBulkNotObserved: preservedCarrierStart === 32, params: z, error: String(error), raw: Array.from(raw), before: Array.from(before), after: Array.from(out) });
++      }
++    }
++    for (const [i, r] of oldReport.actual.entries()) {
++      const raw = new Float32Array(256);
++      for (const v of r.rawPolyline!) { raw[2 * v.point] = v.q; raw[2 * v.point + 1] = v.y; }
++      check(raw, fromPy(r), 'captured5-partial32to112', i, 32);
++    }
++    for (const c of cases) {
++      const n = c.frames.length / 256;
++      for (let f = 0; f < n; f += 1) {
++        const a = frame(c, f), za = boundedCParameters(a, c.touchdown, c.tauStart + f * c.tauStep);
++        check(a, za, 'frames1224', [c.id, f]);
++        if (f + 1 < n) {
++          const b = frame(c, f + 1), zb = boundedCParameters(b, c.touchdown, c.tauStart + (f + 1) * c.tauStep);
++          for (const w of [0.25, 0.5, 0.75]) check(blend(a, b, w), blendBoundedCParameters(za, zb, w), 'adjacent3648', [c.id, f, w]);
++        }
++      }
++    }
++    const held = new Map<string, Float32Array>();
++    for (const c of cases) {
++      const heldIndex = oldReport.heldIndices[c.id];
++      expect(heldIndex).toBeDefined(); held.set(c.id, frame(c, heldIndex));
++    }
++    for (const [i, r] of oldReport.phaseGrid.entries()) check(held.get(r.case)!, fromPy(r), 'phase376', i);
++    for (const [i, r] of oldReport.crossCaseGridAll.entries()) check(blend(held.get(r.cases[0])!, held.get(r.cases[1])!, r.share), fromPy(r), 'casePairs672', i);
++    for (const r of golden.precision522) check(new Float32Array(golden.rawBlocks[r.block]), r.params, 'precision522', [r.block, r.sample]);
++    const receipt = { partialCaptureLimitation: 'Five captures contain only32..112: upstream0..31 and113..127 unobserved, excluded from bulk guards/crossing/preservation checks; buffer placeholders are not evidence. Full asset/provider queries use all128 points.', groups, failures, maximumRoofEnvelopeChange, maximumMaterialDisplacement, maximumRootRadiusReduction, limitedRoots, coalescedStations,
++      originalV4CoefficientsUnchanged: true, geometryPhysicallyEquivalent: false, fixedProfilePoints: 128, rowVertices: LOFT_SAMPLES, vertexBudget: LOFT.budget };
++    if (process.env.SHARED_ROOT_QUERY_RECEIPT) writeFileSync(process.env.SHARED_ROOT_QUERY_RECEIPT, JSON.stringify(receipt, null, 2) + '\n');
++    expect(Object.values(groups).reduce((n, g) => n + g.attempted, 0)).toBe(6447);
++    expect({ count: failures.length, first: failures[0] }).toEqual({ count: 0, first: undefined });
++  }, 30000);
++
++  it('repairs the exact retained Reef column without changing its input/time/water/weights', () => {
++    const old = JSON.parse(readFileSync('/private/tmp/tube-bounded-c-final-mesh-canonical-receipt-20261004.json', 'utf8')) as {
++      failures: { case: string; x: number; z: number; strip: number; penetration: number }[];
++      firstVertices: { inputRecords: number[]; water: number; stillLevel: number };
++    };
++    const failure = old.failures[0], c = cases.find(c => c.id === failure.case)!;
++    const input = new Float32Array(old.firstVertices.inputRecords);
++    const loft = new SweptLoft(library, c.slope).build(input, 9, old.firstVertices.stillLevel, waters[old.firstVertices.water]);
++    const hits = column(loft, failure.strip, failure.x, failure.z);
++    const top = hits.filter(h => h.segment >= 32 && h.segment < 64), under = hits.filter(h => h.segment >= 64 && h.segment < 88);
++    expect(top.length).toBeGreaterThan(0); expect(under.length).toBeGreaterThan(0);
++    const signedGap = Math.min(...top.map(h => h.y)) - Math.max(...under.map(h => h.y));
++    if (process.env.SHARED_ROOT_EXACT_RECEIPT) writeFileSync(process.env.SHARED_ROOT_EXACT_RECEIPT, JSON.stringify({ originalPenetration: failure.penetration,
++      fixedInputRecords: Array.from(input), x: failure.x, z: failure.z, strip: failure.strip, hits, signedGap }, null, 2) + '\n');
++    expect(signedGap).toBeGreaterThanOrEqual(0);
++  });
++
++  it('records all40 unchanged precision switches using union-breakpoint roof envelopes and sampled full-contour distances', () => {
++    const pointDistance = (x: number, y: number, p: Float32Array, i: number) => {
++      const ax = p[2 * i], ay = p[2 * i + 1], dx = p[2 * i + 2] - ax, dy = p[2 * i + 3] - ay;
++      const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy || 1)));
++      return Math.hypot(x - ax - t * dx, y - ay - t * dy);
++    };
++    // Vertices plus edge midpoints against every segment: evidence, not a Hausdorff proof.
++    const sampledDistance = (a: Float32Array, b: Float32Array) => {
++      let d = 0;
++      for (const [p, q] of [[a, b], [b, a]]) for (let i = 32; i <= 112; i += 1) for (const t of i === 112 ? [0] : [0, 0.5]) {
++        const x = p[2 * i] + t * (p[2 * (i + 1)] - p[2 * i]), y = p[2 * i + 1] + t * (p[2 * (i + 1) + 1] - p[2 * i + 1]);
++        let best = Infinity;
++        for (let j = 32; j < 112; j += 1) best = Math.min(best, pointDistance(x, y, q, j));
++        d = Math.max(d, best);
++      }
++      return d;
++    };
++    const rows = switches.map(s => {
++      const original: Float32Array[] = [], paired: Float32Array[] = [], existence: boolean[] = [];
++      for (const tau of s.tauPair) {
++        const before = new Float32Array(s.raw), out = before.slice(), z = { ...s.params, tau };
++        sampleBoundedC(z, before, false);
++        const meta = sampleBoundedC(z, out, false, undefined, true);
++        pairInnerSheet(out, meta); existence.push(meta.sheetExists); original.push(before); paired.push(out);
++        expect([...crossings(out)].filter(p => !crossings(before).has(p))).toEqual([]);
++      }
++      const spatialScale = Math.max(s.params.toe[0] - s.params.crest[0], s.params.crest[1] - s.params.toe[1]);
++      const originalRoofSwitch = roofEnvelopeDifference(original[0], original[1]), pairedRoofSwitch = roofEnvelopeDifference(paired[0], paired[1]);
++      const perSideRoofResampling = paired.map((p, i) => roofEnvelopeDifference(original[i], p));
++      const sampledOriginalSwitch = sampledDistance(original[0], original[1]), sampledPairedSwitch = sampledDistance(paired[0], paired[1]);
++      return { block: s.block, label: s.label, tauSwitch: s.tauSwitch, tauPair: s.tauPair, sheetExists: existence, spatialScale,
++        originalRoofSwitch, pairedRoofSwitch, normalizedPairedRoofSwitch: pairedRoofSwitch / spatialScale,
++        perSideRoofResampling, sampledOriginalSwitch, sampledPairedSwitch, normalizedSampledPairedSwitch: sampledPairedSwitch / spatialScale };
++    });
++    const receipt = { switches: rows, measuredSwitches: rows.length, activeCollapsedSwitches: rows.filter(r => r.sheetExists[0] !== r.sheetExists[1]).length,
++      maximumOriginalRoofSwitch: Math.max(...rows.map(r => r.originalRoofSwitch)), maximumPairedRoofSwitch: Math.max(...rows.map(r => r.pairedRoofSwitch)),
++      maximumNormalizedPairedRoofSwitch: Math.max(...rows.map(r => r.normalizedPairedRoofSwitch)),
++      maximumSampledPairedSwitch: Math.max(...rows.map(r => r.sampledPairedSwitch)), maximumNormalizedSampledPairedSwitch: Math.max(...rows.map(r => r.normalizedSampledPairedSwitch)),
++      fixedOriginalGateAndControls: true, sameSamplingInBothStates: true,
++      limitation: 'Roof metric is exact vertical polygon difference on common domain at union breakpoints; whole-contour metric samples vertices/midpoints, not continuous Hausdorff proof.' };
++    if (process.env.SHARED_SHEET_SWITCH_RECEIPT) writeFileSync(process.env.SHARED_SHEET_SWITCH_RECEIPT, JSON.stringify(receipt, null, 2) + '\n');
++    expect(rows.length).toBe(40);
++    expect(rows.every(r => Number.isFinite(r.pairedRoofSwitch) && Number.isFinite(r.sampledPairedSwitch))).toBe(true);
++  }, 30000);
++
++  it('shares actual paired triangle footprints and deferred projected datum across straight/curved adjacent-age rows', () => {
++    let pairedCells = 0;
++    for (const c of cases) {
++      const q = { slope: c.slope, footHeight: c.nonlinearity * 7, footDepth: 7 }, times = library.profileTimes(q);
++      for (const center of [0.8 * times.clearSeconds, times.clearSeconds, times.touchdownSeconds - 0.03, times.touchdownSeconds + 0.4 * times.collapseSeconds]) {
++        for (const heightAt of waters) for (const curved of [false, true]) {
++          const data = records(q.footHeight, center, curved);
++          const draw = new SweptLoft(library, c.slope).build(data, 9, 0.5, heightAt);
++          const deferred = SweptLoft.forContactQueries(library, c.slope), last = deferred.build(data, 9, 0.5, heightAt);
++          for (let row = 0; row < draw.sliceCount; row += 1) deferred.prepareRow(row);
++          expect(last.positions.subarray(0, 3 * draw.vertexCount)).toEqual(draw.positions.subarray(0, 3 * draw.vertexCount));
++          expect(last.indices.subarray(0, draw.indexCount)).toEqual(draw.indices.subarray(0, draw.indexCount));
++          expect(draw.vertexCount).toBeLessThanOrEqual(LOFT.budget); expect(LOFT_SAMPLES).toBe(134);
++          let base = 0;
++          for (let s = 0; s + 1 < draw.sliceCount; s += 1) {
++            if (!draw.sliceJoined[s]) continue;
++            const p = draw.positions, rootPaired = (row: number) => {
++              for (let k = 0; k < 21; k += 1) {
++                const a = 3 * (row * LOFT_SAMPLES + LOFT.extensionSamples + 38 + k), b = 3 * (row * LOFT_SAMPLES + LOFT.extensionSamples + 88 - k);
++                if (p[a] !== p[b] || p[a + 2] !== p[b + 2]) return false;
++              }
++              return true;
++            };
++            if (rootPaired(s) && rootPaired(s + 1)) for (let k = 0; k < 20; k += 1) {
++              const cells = [38 + k, 87 - k].map(i => [0, 3].map(offset => {
++                const t = base + 6 * (LOFT.extensionSamples + i) + offset;
++                return [draw.indices[t], draw.indices[t + 1], draw.indices[t + 2]].map(v => [p[3 * v], p[3 * v + 2]].join(',')).sort().join('|');
++              }).sort());
++              expect(cells[1]).toEqual(cells[0]);
++              pairedCells += 1;
++            }
++            base += 6 * (LOFT_SAMPLES - 1);
++          }
++        }
++      }
++    }
++    expect(pairedCells).toBeGreaterThan(1000);
++  }, 30000);
++});
