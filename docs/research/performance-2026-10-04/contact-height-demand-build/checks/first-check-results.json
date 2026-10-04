@@ -1,0 +1,52 @@
+[
+  {
+    "log": "/private/tmp/contact-height-demand-build-20261004/checks/baseline-strict-first.log",
+    "cwd": "/private/tmp/contact-height-demand-build-20261004/baseline",
+    "argv": [
+      "./node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.build.json"
+    ],
+    "envOverrides": {},
+    "pid": 51930,
+    "startedAt": "2026-10-04T01:56:28.149549+00:00",
+    "endedAt": "2026-10-04T01:56:30.840404+00:00",
+    "exitCode": 0
+  },
+  {
+    "log": "/private/tmp/contact-height-demand-build-20261004/checks/candidate-strict-first.log",
+    "cwd": "/private/tmp/contact-height-demand-build-20261004/candidate",
+    "argv": [
+      "./node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.build.json"
+    ],
+    "envOverrides": {},
+    "pid": 51934,
+    "startedAt": "2026-10-04T01:56:30.840826+00:00",
+    "endedAt": "2026-10-04T01:56:33.463443+00:00",
+    "exitCode": 0
+  },
+  {
+    "log": "/private/tmp/contact-height-demand-build-20261004/checks/build-first.log",
+    "cwd": "/private/tmp/contact-height-demand-build-20261004",
+    "argv": [
+      "node",
+      "build-only.mjs"
+    ],
+    "envOverrides": {
+      "BUILD_ID": "68e263250-qa-contact-height",
+      "CONTACT_HEIGHT_BUILD_READY_SHA256": "66c56ee8490cfcfa5694152318ad82f64b039cc4bd13212bbcf963098ff2b02c"
+    },
+    "pid": 51939,
+    "startedAt": "2026-10-04T01:56:33.463902+00:00",
+    "endedAt": "2026-10-04T01:56:34.152236+00:00",
+    "exitCode": 0
+  }
+]

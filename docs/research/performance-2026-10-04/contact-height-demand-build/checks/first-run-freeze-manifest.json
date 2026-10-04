@@ -1,0 +1,156 @@
+{
+  "scope": "ONE authorized baseline strict, candidate strict if0, sequential build driver ifboth0; no repair/retry",
+  "readySha256": "66c56ee8490cfcfa5694152318ad82f64b039cc4bd13212bbcf963098ff2b02c",
+  "checks": [
+    {
+      "log": "/private/tmp/contact-height-demand-build-20261004/checks/baseline-strict-first.log",
+      "cwd": "/private/tmp/contact-height-demand-build-20261004/baseline",
+      "argv": [
+        "./node_modules/.bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "tsconfig.build.json"
+      ],
+      "envOverrides": {},
+      "pid": 51930,
+      "startedAt": "2026-10-04T01:56:28.149549+00:00",
+      "endedAt": "2026-10-04T01:56:30.840404+00:00",
+      "exitCode": 0
+    },
+    {
+      "log": "/private/tmp/contact-height-demand-build-20261004/checks/candidate-strict-first.log",
+      "cwd": "/private/tmp/contact-height-demand-build-20261004/candidate",
+      "argv": [
+        "./node_modules/.bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "tsconfig.build.json"
+      ],
+      "envOverrides": {},
+      "pid": 51934,
+      "startedAt": "2026-10-04T01:56:30.840826+00:00",
+      "endedAt": "2026-10-04T01:56:33.463443+00:00",
+      "exitCode": 0
+    },
+    {
+      "log": "/private/tmp/contact-height-demand-build-20261004/checks/build-first.log",
+      "cwd": "/private/tmp/contact-height-demand-build-20261004",
+      "argv": [
+        "node",
+        "build-only.mjs"
+      ],
+      "envOverrides": {
+        "BUILD_ID": "68e263250-qa-contact-height",
+        "CONTACT_HEIGHT_BUILD_READY_SHA256": "66c56ee8490cfcfa5694152318ad82f64b039cc4bd13212bbcf963098ff2b02c"
+      },
+      "pid": 51939,
+      "startedAt": "2026-10-04T01:56:33.463902+00:00",
+      "endedAt": "2026-10-04T01:56:34.152236+00:00",
+      "exitCode": 0
+    }
+  ],
+  "sourceInputsCompared": 502,
+  "sourceInputsChanged": false,
+  "partialArtifactsPreserved": true,
+  "records": [
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/baseline/build-manifest.json",
+      "bytes": 4430,
+      "sha256": "88208a3d01644085d1d91c35fbfb20630b2abad6b8a1d5a03ac3df10b72ee8cb"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/baseline/tsconfig.build.json",
+      "bytes": 138,
+      "sha256": "e4b816f1a4725992ba9499ba8fca607fd6380178e23b921f90404e2a7d1a18ed"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/baseline-strict-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/build-first.log",
+      "bytes": 3121,
+      "sha256": "44c0e28d38075a0636932415c73d81f29f6e824a0ce3cc4ef26b6120446606a3"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/build-only.mjs",
+      "bytes": 6580,
+      "sha256": "73fdd0ef458fae8b71282799a69d5bdbafdb745fb9bb17e873318115c2789dca"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/build-terminal.json",
+      "bytes": 977,
+      "sha256": "af08824285e5c4eb7cd15dc83d4b37006019dbaee05acb4b17c5691b60f02ee5"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/candidate/build-manifest.json",
+      "bytes": 6793,
+      "sha256": "392bc5ec560f30fc9b0d2560e8ebb2f204dcbceaa703471e245c907608946248"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/candidate/tsconfig.build.json",
+      "bytes": 138,
+      "sha256": "e4b816f1a4725992ba9499ba8fca607fd6380178e23b921f90404e2a7d1a18ed"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/candidate-strict-first.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/dependency-authority.json",
+      "bytes": 2690,
+      "sha256": "70472b387bed52c16fc268d19929c8b9d682af27c12691f987b20e73e8516dc2"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/external-asset-needs.json",
+      "bytes": 5968,
+      "sha256": "ffdc37d8af86e5397bf1bf64ea0cb28fb809410b18122fc2a1ef738b0dbd9348"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/first-check-results.json",
+      "bytes": 1537,
+      "sha256": "a57642c1b1b457292e9af347fe42d5607aebec9a1cfdb11429304716d3ad8cbb"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/manifest-schema.json",
+      "bytes": 3208,
+      "sha256": "828bb29f1df99cfccbac316d12df6a96eacd4c296cb3763563e67bc8697d75de"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/plan.md",
+      "bytes": 5701,
+      "sha256": "cd174c0df99dec60e395764273243e6185d0c875de59f533aa2ada15f8a85782"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/prepare-source.mjs",
+      "bytes": 11511,
+      "sha256": "937a3fc8e1435a581e0383c1acb813da90f564d9a6a2d110db97376c8266c9a5"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/ready.json",
+      "bytes": 7342,
+      "sha256": "66c56ee8490cfcfa5694152318ad82f64b039cc4bd13212bbcf963098ff2b02c"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/source-inputs-after.json",
+      "bytes": 104880,
+      "sha256": "43e4d31420d5ed830664063757810fa9445d039853db32cccc6dc8b178dd9bf4"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/source-inputs-before.json",
+      "bytes": 104880,
+      "sha256": "43e4d31420d5ed830664063757810fa9445d039853db32cccc6dc8b178dd9bf4"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/first-run-freeze/source-manifest.json",
+      "bytes": 636512,
+      "sha256": "c0ef921641eedab6d9ef619c23301ca7cc2ec2e0483d739483b5a4ca0cb76697"
+    }
+  ]
+}

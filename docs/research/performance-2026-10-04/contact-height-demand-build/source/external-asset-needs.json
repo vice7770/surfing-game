@@ -1,0 +1,164 @@
+{
+  "schema": "contact-height-build-external-assets/v1",
+  "buildNeedsPublicCopies": false,
+  "publicRoot": "/Users/regina/Desktop/Projects/surfing-game/public",
+  "serving": "Later separate root-reviewed server may provide narrow read-only fallback; no server prepared or started here",
+  "assetServingBlocker": true,
+  "barrelLibrary": {
+    "loaderOrigin": "src/wave/barrel/barrelLibrary.ts:32",
+    "allIndexedCases": [
+      {
+        "url": "barrels/pad19-a20-l12.bin",
+        "origin": "src/wave/barrel/barrelLibraryIndex.ts",
+        "line": 11,
+        "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+        "presentAtPreparation": true
+      },
+      {
+        "url": "barrels/pad19-a30-l12.bin",
+        "origin": "src/wave/barrel/barrelLibraryIndex.ts",
+        "line": 19,
+        "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+        "presentAtPreparation": true
+      },
+      {
+        "url": "barrels/pad19-a45-l12.bin",
+        "origin": "src/wave/barrel/barrelLibraryIndex.ts",
+        "line": 27,
+        "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+        "presentAtPreparation": true
+      },
+      {
+        "url": "barrels/periodic-padang19s-l12.bin",
+        "origin": "src/wave/barrel/barrelLibraryIndex.ts",
+        "line": 35,
+        "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+        "presentAtPreparation": true
+      },
+      {
+        "url": "barrels/periodic-reef42-l12.bin",
+        "origin": "src/wave/barrel/barrelLibraryIndex.ts",
+        "line": 43,
+        "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-reef42-l12.bin",
+        "presentAtPreparation": true
+      },
+      {
+        "url": "barrels/periodic-point21-a15-l12.bin",
+        "origin": "src/wave/barrel/barrelLibraryIndex.ts",
+        "line": 51,
+        "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a15-l12.bin",
+        "presentAtPreparation": true
+      },
+      {
+        "url": "barrels/periodic-point21-a23-l12.bin",
+        "origin": "src/wave/barrel/barrelLibraryIndex.ts",
+        "line": 59,
+        "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a23-l12.bin",
+        "presentAtPreparation": true
+      },
+      {
+        "url": "barrels/periodic-point21-a30-l12.bin",
+        "origin": "src/wave/barrel/barrelLibraryIndex.ts",
+        "line": 67,
+        "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a30-l12.bin",
+        "presentAtPreparation": true
+      }
+    ],
+    "ordinaryPadangCases": [
+      "barrels/pad19-a20-l12.bin",
+      "barrels/pad19-a30-l12.bin",
+      "barrels/pad19-a45-l12.bin",
+      "barrels/periodic-padang19s-l12.bin"
+    ],
+    "need": "Contact/library and drawn tube must load the same unchanged bytes in both arms"
+  },
+  "schoolRecordedSeas": [
+    {
+      "url": "lessons/pool-s2-pocket.sea",
+      "origin": "src/game/school/lessonWaves.ts",
+      "line": 19,
+      "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/lessons/pool-s2-pocket.sea",
+      "presentAtPreparation": true
+    },
+    {
+      "url": "lessons/pool-s2-caught.sea",
+      "origin": "src/game/school/lessonWaves.ts",
+      "line": 20,
+      "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/lessons/pool-s2-caught.sea",
+      "presentAtPreparation": true
+    },
+    {
+      "url": "lessons/pool-s2-waiting.sea",
+      "origin": "src/game/school/lessonWaves.ts",
+      "line": 21,
+      "rootPublicPath": "/Users/regina/Desktop/Projects/surfing-game/public/lessons/pool-s2-waiting.sea",
+      "presentAtPreparation": true
+    }
+  ],
+  "skies": {
+    "manifest": "assets/skies/skies.json",
+    "origin": "src/scene/PhotoSky.ts:102",
+    "children": "assets/ + each manifest entry.hdr and entry.background",
+    "rootManifestPresent": true
+  },
+  "surfers": {
+    "pattern": "assets/surfers/${presetId}.glb",
+    "origin": "src/scene/character/SurferView.ts:46",
+    "selected": "Actual menu/body choice determines required GLB; no substitute model in build intake"
+  },
+  "audio": {
+    "manifest": "assets/audio/sounds.json",
+    "origin": "src/audio/GameSound.ts:92",
+    "children": "assets/audio/ + actual chosen candidate.file/variants from the manifest",
+    "recordingLoaderOrigin": "src/audio/SoundBank.ts:126"
+  },
+  "notAssetFallbacks": [
+    {
+      "from": "vite.config.ts",
+      "line": 32,
+      "expression": "/ws",
+      "kind": "root-path-literal"
+    },
+    {
+      "from": "src/dev/jevRecorder.ts",
+      "line": 44,
+      "expression": "/log",
+      "kind": "root-path-literal"
+    },
+    {
+      "from": "src/dev/jevRecorder.ts",
+      "line": 79,
+      "expression": "/look",
+      "kind": "root-path-literal"
+    },
+    {
+      "from": "src/dev/jevRecorder.ts",
+      "line": 164,
+      "expression": "/upload?name=jev-ride.mp4",
+      "kind": "root-path-literal"
+    },
+    {
+      "from": "src/dev/rideRecorder.ts",
+      "line": 101,
+      "expression": "/log",
+      "kind": "root-path-literal"
+    },
+    {
+      "from": "src/dev/rideRecorder.ts",
+      "line": 250,
+      "expression": "/upload?name=ride.mp4",
+      "kind": "root-path-literal"
+    },
+    {
+      "from": "src/dev/rideRecorder.ts",
+      "line": 392,
+      "expression": "/upload?name=waves.mp4",
+      "kind": "root-path-literal"
+    }
+  ],
+  "notes": [
+    "API/dev recorder paths /ws, /log, /look and /upload are not public static assets.",
+    "No asset bytes were copied, rewritten or fetched. Only existence of narrow source-declared assets was read.",
+    "Complete external public asset identity must be pinned separately before a live A/B; successful bundling is not visual/runtime readiness."
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "schema": "contact-height-build-manifest-schema/v1",
+  "sourceAuthority": {
+    "path": "/private/tmp/contact-height-demand-build-20261004/source-manifest.json",
+    "schema": "contact-height-two-arm-build-source/v1",
+    "arms": "baseline/candidate, each with exact Git blob/base SHA and final per-file bytes/SHA, literalEdges, externalModules, blockers; ordered 5 normal then3 height overlay pins"
+  },
+  "readyAuthority": {
+    "path": "/private/tmp/contact-height-demand-build-20261004/ready.json",
+    "schema": "contact-height-build-ready/v1",
+    "shaFromEnvironment": "CONTACT_HEIGHT_BUILD_READY_SHA256",
+    "commonBuildId": "68e263250-qa-contact-height"
+  },
+  "compiledArmManifests": [
+    {
+      "arm": "baseline",
+      "path": "/private/tmp/contact-height-demand-build-20261004/baseline/build-manifest.json",
+      "schema": "contact-height-build-arm/v1",
+      "statusOnSuccess": "passed",
+      "requiredFields": [
+        "runtimeBaseline",
+        "documentationHeadAtPreparation",
+        "buildId",
+        "readySha256",
+        "sourceManifest",
+        "inlineBuildFlags",
+        "outputRoot",
+        "clientEntry",
+        "surfZoneWorker",
+        "outputRecords",
+        "overlaysApplied",
+        "versions"
+      ],
+      "outputRecord": {
+        "path": "relative to arm/dist",
+        "bytes": "integer exact byte count",
+        "sha256": "lowercase SHA-256"
+      },
+      "outputRoot": "/private/tmp/contact-height-demand-build-20261004/baseline/dist",
+      "surfZoneWorker": "one assets/surfZoneWorker-*.js",
+      "clientEntry": "the single module src from dist/index.html; also present in outputRecords",
+      "buildJson": "dist/build.json must contain {build:common BUILD_ID}"
+    },
+    {
+      "arm": "candidate",
+      "path": "/private/tmp/contact-height-demand-build-20261004/candidate/build-manifest.json",
+      "schema": "contact-height-build-arm/v1",
+      "statusOnSuccess": "passed",
+      "requiredFields": [
+        "runtimeBaseline",
+        "documentationHeadAtPreparation",
+        "buildId",
+        "readySha256",
+        "sourceManifest",
+        "inlineBuildFlags",
+        "outputRoot",
+        "clientEntry",
+        "surfZoneWorker",
+        "outputRecords",
+        "overlaysApplied",
+        "versions"
+      ],
+      "outputRecord": {
+        "path": "relative to arm/dist",
+        "bytes": "integer exact byte count",
+        "sha256": "lowercase SHA-256"
+      },
+      "outputRoot": "/private/tmp/contact-height-demand-build-20261004/candidate/dist",
+      "surfZoneWorker": "one assets/surfZoneWorker-*.js",
+      "clientEntry": "the single module src from dist/index.html; also present in outputRecords",
+      "buildJson": "dist/build.json must contain {build:common BUILD_ID}"
+    }
+  ],
+  "terminal": {
+    "path": "/private/tmp/contact-height-demand-build-20261004/build-terminal.json",
+    "schema": "contact-height-two-arm-build-terminal/v1",
+    "status": "passed or failed; first failure stops subsequent arm",
+    "armManifests": "records path/bytes/SHA for successfully completed arms only"
+  },
+  "artifactBindingState": "BLOCKED until root-approved strict/build succeeds; no compiled files or manifest exists yet"
+}

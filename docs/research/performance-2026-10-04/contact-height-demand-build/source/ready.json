@@ -1,0 +1,206 @@
+{
+  "schema": "contact-height-build-ready/v1",
+  "stage": "source-ready; strict/build/hardware unexecuted",
+  "directory": "/private/tmp/contact-height-demand-build-20261004",
+  "baseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "documentationHeadAtPreparation": "68e263250c55cd0a3b45878da605849ae28bdd92",
+  "sourceAuthority": {
+    "path": "/private/tmp/contact-height-demand-build-20261004/source-manifest.json",
+    "bytes": 636512,
+    "sha256": "c0ef921641eedab6d9ef619c23301ca7cc2ec2e0483d739483b5a4ca0cb76697"
+  },
+  "preparedArtifacts": [
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/prepare-source.mjs",
+      "bytes": 11511,
+      "sha256": "937a3fc8e1435a581e0383c1acb813da90f564d9a6a2d110db97376c8266c9a5"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/build-only.mjs",
+      "bytes": 6580,
+      "sha256": "73fdd0ef458fae8b71282799a69d5bdbafdb745fb9bb17e873318115c2789dca"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/source-manifest.json",
+      "bytes": 636512,
+      "sha256": "c0ef921641eedab6d9ef619c23301ca7cc2ec2e0483d739483b5a4ca0cb76697"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/dependency-authority.json",
+      "bytes": 2690,
+      "sha256": "70472b387bed52c16fc268d19929c8b9d682af27c12691f987b20e73e8516dc2"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/external-asset-needs.json",
+      "bytes": 5968,
+      "sha256": "ffdc37d8af86e5397bf1bf64ea0cb28fb809410b18122fc2a1ef738b0dbd9348"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/manifest-schema.json",
+      "bytes": 3208,
+      "sha256": "828bb29f1df99cfccbac316d12df6a96eacd4c296cb3763563e67bc8697d75de"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/plan.md",
+      "bytes": 5701,
+      "sha256": "cd174c0df99dec60e395764273243e6185d0c875de59f533aa2ada15f8a85782"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/baseline/tsconfig.build.json",
+      "bytes": 138,
+      "sha256": "e4b816f1a4725992ba9499ba8fca607fd6380178e23b921f90404e2a7d1a18ed"
+    },
+    {
+      "path": "/private/tmp/contact-height-demand-build-20261004/candidate/tsconfig.build.json",
+      "bytes": 138,
+      "sha256": "e4b816f1a4725992ba9499ba8fca607fd6380178e23b921f90404e2a7d1a18ed"
+    }
+  ],
+  "overlayApplications": 8,
+  "finalRuntimeFilesChanged": [
+    "src/game/SurfZoneWorkerCore.ts",
+    "src/physics/PhysicalSurfWater.ts",
+    "src/wave/SurfZoneRunner.ts",
+    "src/wave/barrel/sweptContact.ts",
+    "src/wave/barrel/sweptLoft.ts"
+  ],
+  "arms": [
+    {
+      "arm": "baseline",
+      "root": "/private/tmp/contact-height-demand-build-20261004/baseline",
+      "files": 246,
+      "bytes": 2439606,
+      "literalEdges": 901,
+      "externalEdges": 71,
+      "sourceByteHashBookkeeping": "verified all copied bytes; not a syntax/type/runtime check"
+    },
+    {
+      "arm": "candidate",
+      "root": "/private/tmp/contact-height-demand-build-20261004/candidate",
+      "files": 246,
+      "bytes": 2451196,
+      "literalEdges": 902,
+      "externalEdges": 71,
+      "sourceByteHashBookkeeping": "verified all copied bytes; not a syntax/type/runtime check"
+    }
+  ],
+  "dependencyUse": {
+    "nodeModulesTarget": "/Users/regina/Desktop/Projects/surfing-game/node_modules",
+    "readonlyUse": true,
+    "installedVersions": {
+      "vite": "8.3.1",
+      "typescript": "5.9.3",
+      "three": "0.186.1",
+      "mp4-muxer": "5.2.2",
+      "@webgpu/types": "0.1.74",
+      "@types/node": "22.20.4",
+      "@types/three": "0.186.0"
+    }
+  },
+  "proposedBuild": {
+    "commonBuildId": "68e263250-qa-contact-height",
+    "sequentialArms": [
+      "baseline",
+      "candidate"
+    ],
+    "sameFlagsForBoth": {
+      "configLoader": "runner",
+      "cacheDir": "<arm>/.cache/vite-build",
+      "configFile": "<arm>/vite.config.ts (exact baseline blob)",
+      "build": {
+        "copyPublicDir": false,
+        "emptyOutDir": false,
+        "outDir": "<arm>/dist"
+      }
+    },
+    "otherBuildConfig": "Exact baseline Vite config and its default client/worker/minification settings; no tree/shader/compute/graphics changes",
+    "proposedCommands": [
+      {
+        "cwd": "/private/tmp/contact-height-demand-build-20261004/baseline",
+        "argv": [
+          "./node_modules/.bin/tsc",
+          "--noEmit",
+          "--incremental",
+          "false",
+          "-p",
+          "tsconfig.build.json"
+        ],
+        "condition": "only after root approval"
+      },
+      {
+        "cwd": "/private/tmp/contact-height-demand-build-20261004/candidate",
+        "argv": [
+          "./node_modules/.bin/tsc",
+          "--noEmit",
+          "--incremental",
+          "false",
+          "-p",
+          "tsconfig.build.json"
+        ],
+        "condition": "only if approved baseline strict passed"
+      },
+      {
+        "cwd": "/private/tmp/contact-height-demand-build-20261004",
+        "env": {
+          "BUILD_ID": "68e263250-qa-contact-height",
+          "CONTACT_HEIGHT_BUILD_READY_SHA256": "<exact-root-reviewed-ready-hash>"
+        },
+        "argv": [
+          "node",
+          "build-only.mjs"
+        ],
+        "condition": "only if both approved strict commands passed; one sequential baseline/candidate build process"
+      }
+    ],
+    "retry": "None without separate root source review/approval",
+    "expectedArmManifests": [
+      "/private/tmp/contact-height-demand-build-20261004/baseline/build-manifest.json",
+      "/private/tmp/contact-height-demand-build-20261004/candidate/build-manifest.json"
+    ],
+    "expectedTerminal": "/private/tmp/contact-height-demand-build-20261004/build-terminal.json"
+  },
+  "scopeBlockers": {
+    "buildSource": [],
+    "strictAndBuild": [
+      "No strict command or build has been executed; root approval required"
+    ],
+    "compiledBinding": [
+      "No compiled artifact or passing compiled manifest exists yet"
+    ],
+    "staticAssets": [
+      "Root public serving fallback and exact required asset identities must be bound separately; no public copy"
+    ],
+    "liveHardware": [
+      "Separate root-reviewed FPS/hardware lease and visual review required"
+    ]
+  },
+  "scope": {
+    "gitOperations": "read-only tree/blob/HEAD extraction only",
+    "runtimeImports": false,
+    "typecheck": false,
+    "tests": false,
+    "build": false,
+    "benchmark": false,
+    "server": false,
+    "browserGpu": false,
+    "productionEdits": false,
+    "oldPrototypeEdits": false,
+    "publicCopied": false,
+    "fullRepoCopied": false
+  },
+  "sourcePreparationEvidence": {
+    "gitBlobChecks": "Every copied original checked against exact Git SHA-1 blob header/content and SHA-256",
+    "literalGraph": "TypeScript AST static/export/type/dynamic/import.meta URLs plus HTML/CSS edges; 4 dynamic client modules + real surfZoneWorker entry",
+    "sourceAssetExistenceChecks": "Only path existence for source-indexed barrel/lesson/sky manifest; no fetch/asset copy/hash sweep"
+  },
+  "servingAssetNeeds": {
+    "ordinaryPadangCases": [
+      "barrels/pad19-a20-l12.bin",
+      "barrels/pad19-a30-l12.bin",
+      "barrels/pad19-a45-l12.bin",
+      "barrels/periodic-padang19s-l12.bin"
+    ],
+    "barrelCasesIndexed": 8,
+    "schoolSeasIndexed": 3
+  }
+}

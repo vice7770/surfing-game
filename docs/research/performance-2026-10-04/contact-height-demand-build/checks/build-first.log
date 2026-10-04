@@ -1,0 +1,50 @@
+START proposed build arm=baseline BUILD_ID=68e263250-qa-contact-height
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 249 modules transformed.
+rendering chunks...
+computing gzip size...
+baseline/dist/build.json                           0.03 kB │ gzip:   0.05 kB
+baseline/dist/index.html                           1.62 kB │ gzip:   0.62 kB
+baseline/dist/assets/surfZoneWorker-C17EHetv.js  437.21 kB
+baseline/dist/assets/index-DA8NEfOT.css           33.21 kB │ gzip:   7.32 kB
+baseline/dist/assets/devStepping-CnD5b-PB.js       0.32 kB │ gzip:   0.25 kB
+baseline/dist/assets/particleBench-DigrGcpO.js    10.70 kB │ gzip:   4.44 kB
+baseline/dist/assets/waterSheet-DuwtUt36.js       11.68 kB │ gzip:   5.35 kB
+baseline/dist/assets/jevRecorder-BlJkMjes.js      15.91 kB │ gzip:   6.65 kB
+baseline/dist/assets/rideRecorder-B4mhEu_A.js     41.10 kB │ gzip:  13.39 kB
+baseline/dist/assets/index-CirSKWVs.js           582.44 kB │ gzip: 160.71 kB
+baseline/dist/assets/WorkerSurfZone-BMMxhQi4.js  848.57 kB │ gzip: 262.71 kB
+
+✓ built in 264ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+TERMINAL build arm=baseline manifestSha256=88208a3d01644085d1d91c35fbfb20630b2abad6b8a1d5a03ac3df10b72ee8cb
+START proposed build arm=candidate BUILD_ID=68e263250-qa-contact-height
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 249 modules transformed.
+rendering chunks...
+computing gzip size...
+candidate/dist/build.json                           0.03 kB │ gzip:   0.05 kB
+candidate/dist/index.html                           1.62 kB │ gzip:   0.62 kB
+candidate/dist/assets/surfZoneWorker-gVTILj2Q.js  442.02 kB
+candidate/dist/assets/index-DA8NEfOT.css           33.21 kB │ gzip:   7.32 kB
+candidate/dist/assets/devStepping-C4ssK5Wh.js       0.32 kB │ gzip:   0.25 kB
+candidate/dist/assets/particleBench-BKUUa6eD.js    10.70 kB │ gzip:   4.44 kB
+candidate/dist/assets/waterSheet-B7Sm1p0h.js       11.68 kB │ gzip:   5.35 kB
+candidate/dist/assets/jevRecorder-BOcMU1Ll.js      15.91 kB │ gzip:   6.65 kB
+candidate/dist/assets/rideRecorder-CAV0PU41.js     41.10 kB │ gzip:  13.39 kB
+candidate/dist/assets/index-D6H6fMwF.js           582.44 kB │ gzip: 160.71 kB
+candidate/dist/assets/WorkerSurfZone-Ciaa3tIB.js  853.21 kB │ gzip: 264.23 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 216ms
+TERMINAL build arm=candidate manifestSha256=392bc5ec560f30fc9b0d2560e8ebb2f204dcbceaa703471e245c907608946248

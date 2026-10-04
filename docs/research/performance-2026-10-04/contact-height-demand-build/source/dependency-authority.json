@@ -1,0 +1,72 @@
+{
+  "schema": "contact-height-build-dependencies/v1",
+  "node": "v23.10.0",
+  "nodeExecutableFromPath": "/opt/homebrew/bin/node",
+  "nodeModulesTarget": "/Users/regina/Desktop/Projects/surfing-game/node_modules",
+  "use": "Read-only shared dependency links; no install/cache/public copy",
+  "packageRecords": [
+    {
+      "name": "vite",
+      "version": "8.3.1",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/vite/package.json",
+      "bytes": 5082,
+      "sha256": "fd3af4eaf4eecb2069f3e2715d6aaa2137d084a8a95097389523f52213c08094"
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/package.json",
+      "bytes": 3620,
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "name": "three",
+      "version": "0.186.1",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/three/package.json",
+      "bytes": 3672,
+      "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de"
+    },
+    {
+      "name": "mp4-muxer",
+      "version": "5.2.2",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/mp4-muxer/package.json",
+      "bytes": 1495,
+      "sha256": "5a19419fcffe782336185d5764d1b179ccdaae1c91ca767a496adddd2a6bbad0"
+    },
+    {
+      "name": "@webgpu/types",
+      "version": "0.1.74",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@webgpu/types/package.json",
+      "bytes": 740,
+      "sha256": "c58597e365f42b61a165210e49e90a864730ee4716473de67d36dfa42519ec99"
+    },
+    {
+      "name": "@types/node",
+      "version": "22.20.4",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@types/node/package.json",
+      "bytes": 3823,
+      "sha256": "f24c6b704fa4fdb2633cd4787fb0533cdca3cd15ab4a02b031c6c2e462cd380a"
+    },
+    {
+      "name": "@types/three",
+      "version": "0.186.0",
+      "path": "/Users/regina/Desktop/Projects/surfing-game/node_modules/@types/three/package.json",
+      "bytes": 1708,
+      "sha256": "b0253caeb8b99b6a64150e6279cc4bbf30e61610683bdf39f8db2667d6103626"
+    }
+  ],
+  "lockFiles": [
+    {
+      "arm": "baseline",
+      "path": "/private/tmp/contact-height-demand-build-20261004/baseline/package-lock.json",
+      "bytes": 42710,
+      "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+    },
+    {
+      "arm": "candidate",
+      "path": "/private/tmp/contact-height-demand-build-20261004/candidate/package-lock.json",
+      "bytes": 42710,
+      "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+    }
+  ]
+}

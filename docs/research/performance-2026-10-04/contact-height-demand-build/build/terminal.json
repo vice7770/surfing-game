@@ -1,0 +1,24 @@
+{
+  "schema": "contact-height-two-arm-build-terminal/v1",
+  "status": "passed",
+  "scope": "QA client/worker bundling only; no serving, browser, GPU, FPS or adoption",
+  "baseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "commonBuildId": "68e263250-qa-contact-height",
+  "readySha256": "66c56ee8490cfcfa5694152318ad82f64b039cc4bd13212bbcf963098ff2b02c",
+  "sourceManifestSha256": "c0ef921641eedab6d9ef619c23301ca7cc2ec2e0483d739483b5a4ca0cb76697",
+  "armManifests": [
+    {
+      "arm": "baseline",
+      "path": "/private/tmp/contact-height-demand-build-20261004/baseline/build-manifest.json",
+      "bytes": 4430,
+      "sha256": "88208a3d01644085d1d91c35fbfb20630b2abad6b8a1d5a03ac3df10b72ee8cb"
+    },
+    {
+      "arm": "candidate",
+      "path": "/private/tmp/contact-height-demand-build-20261004/candidate/build-manifest.json",
+      "bytes": 6793,
+      "sha256": "392bc5ec560f30fc9b0d2560e8ebb2f204dcbceaa703471e245c907608946248"
+    }
+  ],
+  "failure": null
+}

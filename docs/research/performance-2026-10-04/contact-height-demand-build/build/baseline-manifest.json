@@ -1,0 +1,131 @@
+{
+  "schema": "contact-height-build-arm/v1",
+  "arm": "baseline",
+  "status": "passed",
+  "scope": "QA client/worker bundling only; no serving, browser, GPU, FPS or adoption",
+  "runtimeBaseline": "ef60d3cee120d6b157fe94386d923b6b4392205b",
+  "documentationHeadAtPreparation": "68e263250c55cd0a3b45878da605849ae28bdd92",
+  "buildId": "68e263250-qa-contact-height",
+  "node": "v23.10.0",
+  "versions": [
+    {
+      "name": "vite",
+      "version": "8.3.1",
+      "sha256": "fd3af4eaf4eecb2069f3e2715d6aaa2137d084a8a95097389523f52213c08094"
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "name": "three",
+      "version": "0.186.1",
+      "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de"
+    },
+    {
+      "name": "mp4-muxer",
+      "version": "5.2.2",
+      "sha256": "5a19419fcffe782336185d5764d1b179ccdaae1c91ca767a496adddd2a6bbad0"
+    },
+    {
+      "name": "@webgpu/types",
+      "version": "0.1.74",
+      "sha256": "c58597e365f42b61a165210e49e90a864730ee4716473de67d36dfa42519ec99"
+    },
+    {
+      "name": "@types/node",
+      "version": "22.20.4",
+      "sha256": "f24c6b704fa4fdb2633cd4787fb0533cdca3cd15ab4a02b031c6c2e462cd380a"
+    },
+    {
+      "name": "@types/three",
+      "version": "0.186.0",
+      "sha256": "b0253caeb8b99b6a64150e6279cc4bbf30e61610683bdf39f8db2667d6103626"
+    }
+  ],
+  "readySha256": "66c56ee8490cfcfa5694152318ad82f64b039cc4bd13212bbcf963098ff2b02c",
+  "sourceManifest": {
+    "path": "/private/tmp/contact-height-demand-build-20261004/source-manifest.json",
+    "bytes": 636512,
+    "sha256": "c0ef921641eedab6d9ef619c23301ca7cc2ec2e0483d739483b5a4ca0cb76697"
+  },
+  "literalSourceFiles": 246,
+  "literalSourceBytes": 2439606,
+  "overlaysApplied": [],
+  "inlineBuildFlags": {
+    "root": "/private/tmp/contact-height-demand-build-20261004/baseline",
+    "configFile": "/private/tmp/contact-height-demand-build-20261004/baseline/vite.config.ts",
+    "configLoader": "runner",
+    "cacheDir": "/private/tmp/contact-height-demand-build-20261004/baseline/.cache/vite-build",
+    "build": {
+      "outDir": "/private/tmp/contact-height-demand-build-20261004/baseline/dist",
+      "copyPublicDir": false,
+      "emptyOutDir": false
+    },
+    "worker": {},
+    "optimizeDeps": {}
+  },
+  "outputRoot": "/private/tmp/contact-height-demand-build-20261004/baseline/dist",
+  "clientEntry": "assets/index-CirSKWVs.js",
+  "surfZoneWorker": "assets/surfZoneWorker-C17EHetv.js",
+  "outputRecords": [
+    {
+      "path": "assets/devStepping-CnD5b-PB.js",
+      "bytes": 320,
+      "sha256": "12e60cba8d37fb20cf91d5ab14dca8312d538033f3906f688067202b617e77fd"
+    },
+    {
+      "path": "assets/index-CirSKWVs.js",
+      "bytes": 582443,
+      "sha256": "d36764d11bf679133192cf99d9944fb0664b143bf08a3b0aa765b8317c6c4262"
+    },
+    {
+      "path": "assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "path": "assets/jevRecorder-BlJkMjes.js",
+      "bytes": 15917,
+      "sha256": "fc73e7774d3892cfc4c76c8595dec6b26ae21a76f63bc4c5012af3164946573a"
+    },
+    {
+      "path": "assets/particleBench-DigrGcpO.js",
+      "bytes": 10708,
+      "sha256": "5030ee4049bb0e40866327d6342c90af176769f38bd2fd66daa78eb132cb2989"
+    },
+    {
+      "path": "assets/rideRecorder-B4mhEu_A.js",
+      "bytes": 41108,
+      "sha256": "8400be681acb0859dfbf26bddab21b15ab6ccfc6a2464aa84d4842b04ffb74a9"
+    },
+    {
+      "path": "assets/surfZoneWorker-C17EHetv.js",
+      "bytes": 437218,
+      "sha256": "f713d7fed51e8f5593b3dfa9b8858bcb9185b28e0e914f1a34ee37da62161017"
+    },
+    {
+      "path": "assets/waterSheet-DuwtUt36.js",
+      "bytes": 11689,
+      "sha256": "d7609f4f65144920febcb1737f6e04acd4dd394101658dd7d97c9248763d82f5"
+    },
+    {
+      "path": "assets/WorkerSurfZone-BMMxhQi4.js",
+      "bytes": 848577,
+      "sha256": "a7711f64ce3ab2d7301d95a255fb5b5769c0ba2d81d31a4ab079d44fd9d727ca"
+    },
+    {
+      "path": "build.json",
+      "bytes": 39,
+      "sha256": "c589d5dfc40fcdb3c42b6d646db4f9c4113c53d807a4e5bf577b2bf83eb5b141"
+    },
+    {
+      "path": "index.html",
+      "bytes": 1626,
+      "sha256": "fc8c7b3478976a98243459a1ee7e7beca247b143f88139f7991d9795132faaaf"
+    }
+  ],
+  "publicAssetCopies": false,
+  "servingOrHardwareStarted": false
+}
