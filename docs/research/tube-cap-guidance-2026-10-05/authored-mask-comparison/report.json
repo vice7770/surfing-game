@@ -1,0 +1,2097 @@
+{
+  "schema": "matched-authored-mask-native/v1",
+  "complete": true,
+  "firstFailure": null,
+  "sealSha256": "b22727d355b9b3b8ef78877f92ccbc7496a40a98390f27c4119b3e63706f64e2",
+  "applicationBuild": {
+    "file": "/private/tmp/tube-authored-mask-native-20261005/build.json",
+    "bytes": 11113,
+    "sha256": "7a03efc16e9487351cf982bcc69f21587a7d38de3fa58c3b4d1f176b999bd7ef"
+  },
+  "referenceReport": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+    "bytes": 49054,
+    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+  },
+  "referenceLoft": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+    "bytes": 1219771,
+    "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+  },
+  "opticalAuthority": {
+    "report": {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
+      "bytes": 39508,
+      "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+    },
+    "owner": {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
+      "bytes": 2757,
+      "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+    },
+    "seal": {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/seal.json",
+      "bytes": 20206,
+      "sha256": "e1a89b2b419d876863dc783e7ed393fa479568e92acd8f26506e56f3e43da844"
+    },
+    "build": {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/build.json",
+      "bytes": 10963,
+      "sha256": "dbca284f30c9885ec2ec05159c6f97b0221c81ecb38d1e3048184cca29faec6d"
+    },
+    "sourcePins": [
+      {
+        "file": "/private/tmp/tube-sheet-fill-native-20261005/README.md",
+        "bytes": 5130,
+        "sha256": "6e68c22ba711e83f3fca41c4b42c8718b08e770c45f73c94db3d2149e558a976"
+      },
+      {
+        "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
+        "bytes": 8807,
+        "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+      },
+      {
+        "file": "/private/tmp/tube-sheet-fill-native-20261005/sheet-inspection.mjs",
+        "bytes": 18668,
+        "sha256": "42d1e1e51e139c862b0bf693d81751a418f35d88914a09ef1f07cad6f8715142"
+      },
+      {
+        "file": "/private/tmp/tube-sheet-fill-native-20261005/native.mjs",
+        "bytes": 9638,
+        "sha256": "3228619389962544acba7b49a4134c213a04d5bb1f76d9cd2c0f389b4d4f905f"
+      },
+      {
+        "file": "/private/tmp/tube-sheet-fill-native-20261005/prepare.py",
+        "bytes": 3416,
+        "sha256": "4fd0a80c53dd20741bdff5e567aa26734829f9b3a04984cd7c140ebcb92e76f5"
+      },
+      {
+        "file": "/private/tmp/tube-sheet-fill-native-20261005/run.py",
+        "bytes": 10481,
+        "sha256": "b74ea86e6e434c56376b6f9e50b8111a75b7bc5b8b1d7af0c972fe0e82ee8f52"
+      }
+    ]
+  },
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "policy": {
+    "pairs": [
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      },
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich",
+        "treatment": "authored-mask-plus-sheet-fill-A"
+      }
+    ],
+    "pairOrder": [
+      "original-texture-discard",
+      "authored-support-max",
+      "restored-original-repeat"
+    ],
+    "onlyDiagnosticShaderDifference": "Variant adds the exact final F32 loft.mask scalar attribute sweptMask, matching vSweptMask varying and assignment, and replaces only SWEPT_BARREL_DISCARD with its max(textureMask, vSweptMask) predicate. Baseline shader and attribute set remain original.",
+    "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+    "authoredFadePolicy": "Copy the final authored mask unchanged; retain the same formation/end/rest fades, original texture and screen-space dither.",
+    "fixedCameraSource": "Exact completed cap capture interior and side camera poses and projection; no geometry-derived camera or selector.",
+    "geometryPolicy": "Exact prior full37 active typed bytes and raw-front bytes required; original live attribute/index identities and active bytes remain identical; only variant has one added scalar attribute.",
+    "ordinaryWaterPolicy": "Keep water shader callback/key/source values, mask bytes/image/grid, material, depth/stencil parameters, render ordering and geometry ownership unchanged.",
+    "stencilConsequence": "Coverage bits may change as additionally supported sheet fragments survive; stencil configuration stays identical. Existing depth/stencil resolve overlap with ordinary water.",
+    "baselineRepeatExactPixelsRequired": true,
+    "originalAttributeSetRestoredAfterEveryPair": true,
+    "placement": false,
+    "epochSearch": false,
+    "cameraSearch": false,
+    "qualitySearch": false,
+    "limitations": [
+      "Not exact seam complementarity.",
+      "Does not identify a captured authored-core-1 texture failure.",
+      "Does not certify ride, full body, air volume, radiance or reference-quality tubes."
+    ],
+    "combinedPair": {
+      "index": 4,
+      "treatment": "authored-mask-plus-sheet-fill-A",
+      "order": [
+        "original-texture-discard-and-original-lighting",
+        "authored-support-max-plus-tested-wall-light-A",
+        "restored-original-repeat"
+      ],
+      "onlyAdditionalShaderDifference": "After the exact mask additions, apply exactly the source-pinned completed optical A: remove T from the environment summand; set sweptSkyShare=clamp(vSweptSheetBack,0,1)*sweptSkyTransmission; use sweptSkyShare*sky+(1-sweptSkyShare)*wall. The original direction/TIR gate, safe ray, throat occlusion and Classic remain unchanged.",
+      "BThroatBypass": false,
+      "exactOpticalSourceReverseEqualityRequired": true
+    },
+    "maskOnlyPairsUnchanged": 4
+  },
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 660,
+    "cleanupSeconds": 7,
+    "pngCount": 10,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 125829120,
+    "reportBytes": 2097152
+  },
+  "stepCount": 0,
+  "pairs": [
+    {
+      "complete": true,
+      "camera": "interior",
+      "view": "rich",
+      "seaTime": 276.3293560552737,
+      "stepCount": 0,
+      "fixedPose": {
+        "eye": [
+          74.0625,
+          1.0598396605743825,
+          -68.79456329345703
+        ],
+        "target": [
+          74.1875,
+          1.0626037843906364,
+          -68.7633285522461
+        ],
+        "quaternion": [
+          0.006600678893715275,
+          -0.7881247536647293,
+          0.008452992668955604,
+          0.6154220914250564
+        ],
+        "inheritedUp": [
+          0,
+          1,
+          0
+        ],
+        "projection": [
+          1.0551622229204924,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ],
+        "fov": 52,
+        "aspect": 1.9431171786120591,
+        "near": 0.1,
+        "far": 3000,
+        "zoom": 1
+      },
+      "shaderEvidence": [
+        {
+          "pair": "interior-rich",
+          "variant": "baseline",
+          "view": "rich",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": true,
+          "onlyDeclaredScalarAndPredicateAdded": false,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+          "wallLightAEnabled": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": null,
+          "vertexAddedCharacters": 0,
+          "fragmentAddedCharacters": 0,
+          "waterShaderUntouchedByDiagnostic": true
+        },
+        {
+          "pair": "interior-rich",
+          "variant": "authored-support",
+          "view": "rich",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": false,
+          "onlyDeclaredScalarAndPredicateAdded": true,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+          "wallLightAEnabled": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+          "vertexAddedCharacters": 77,
+          "fragmentAddedCharacters": 45,
+          "waterShaderUntouchedByDiagnostic": true
+        }
+      ],
+      "baselineRepeatPixelsIdentical": true,
+      "attributeEvidence": {
+        "name": "sweptMask",
+        "itemSize": 1,
+        "dtype": "Float32Array",
+        "count": 40134,
+        "usage": 35048,
+        "normalized": false,
+        "activeCopiedWords": 10854,
+        "actualFinalMaskBytesExact": true,
+        "constructorAndUsageFromExistingScalar": true,
+        "requestedUploadRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ],
+        "postRenderUpdateRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ]
+      },
+      "guards": {
+        "exactPriorFull37ActiveWords": true,
+        "exactPriorRawFrontWords": true,
+        "originalDrawAttributesAndIndicesIdentical": true,
+        "onlyDeclaredFinalF32ScalarAttributeAdded": true,
+        "actorBoard8Rider33Unchanged": true,
+        "sameFixedCloneWords": true,
+        "waterMaskBytesImageAndGridIdentical": true,
+        "ordinaryWaterShaderMaterialAndGeometryUnchanged": true,
+        "depthStencilParametersUnchanged": true,
+        "originalShaderCacheViewAndAttributeSetRestored": true,
+        "normalCameraRestored": true,
+        "wallLightMatchesOnlyCompletedAOrOff": true
+      },
+      "interpretation": "Only final authored scalar support is added to the swept discard max. Authored fade/dither remain. Additional coverage may overlap ordinary water, resolved by unchanged depth/stencil. No exact seam complementarity, core1-loss, radiance, skin, air-volume or ride certification.",
+      "baseline": {
+        "file": "interior-rich-original.png",
+        "bytes": 2064927,
+        "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+      },
+      "authoredSupport": {
+        "file": "interior-rich-authored-support.png",
+        "bytes": 1982817,
+        "sha256": "7af9cc34fb0ebdf64da6ba27cab9f93ac5f5331bb3b968b964459b30e1753f74"
+      }
+    },
+    {
+      "complete": true,
+      "camera": "interior",
+      "view": "region",
+      "seaTime": 276.3293560552737,
+      "stepCount": 0,
+      "fixedPose": {
+        "eye": [
+          74.0625,
+          1.0598396605743825,
+          -68.79456329345703
+        ],
+        "target": [
+          74.1875,
+          1.0626037843906364,
+          -68.7633285522461
+        ],
+        "quaternion": [
+          0.006600678893715275,
+          -0.7881247536647293,
+          0.008452992668955604,
+          0.6154220914250564
+        ],
+        "inheritedUp": [
+          0,
+          1,
+          0
+        ],
+        "projection": [
+          1.0551622229204924,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ],
+        "fov": 52,
+        "aspect": 1.9431171786120591,
+        "near": 0.1,
+        "far": 3000,
+        "zoom": 1
+      },
+      "shaderEvidence": [
+        {
+          "pair": "interior-region",
+          "variant": "baseline",
+          "view": "region",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": true,
+          "onlyDeclaredScalarAndPredicateAdded": false,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+          "wallLightAEnabled": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": null,
+          "vertexAddedCharacters": 0,
+          "fragmentAddedCharacters": 0,
+          "waterShaderUntouchedByDiagnostic": true
+        },
+        {
+          "pair": "interior-region",
+          "variant": "authored-support",
+          "view": "region",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": false,
+          "onlyDeclaredScalarAndPredicateAdded": true,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+          "wallLightAEnabled": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+          "vertexAddedCharacters": 77,
+          "fragmentAddedCharacters": 45,
+          "waterShaderUntouchedByDiagnostic": true
+        }
+      ],
+      "baselineRepeatPixelsIdentical": true,
+      "attributeEvidence": {
+        "name": "sweptMask",
+        "itemSize": 1,
+        "dtype": "Float32Array",
+        "count": 40134,
+        "usage": 35048,
+        "normalized": false,
+        "activeCopiedWords": 10854,
+        "actualFinalMaskBytesExact": true,
+        "constructorAndUsageFromExistingScalar": true,
+        "requestedUploadRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ],
+        "postRenderUpdateRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ]
+      },
+      "guards": {
+        "exactPriorFull37ActiveWords": true,
+        "exactPriorRawFrontWords": true,
+        "originalDrawAttributesAndIndicesIdentical": true,
+        "onlyDeclaredFinalF32ScalarAttributeAdded": true,
+        "actorBoard8Rider33Unchanged": true,
+        "sameFixedCloneWords": true,
+        "waterMaskBytesImageAndGridIdentical": true,
+        "ordinaryWaterShaderMaterialAndGeometryUnchanged": true,
+        "depthStencilParametersUnchanged": true,
+        "originalShaderCacheViewAndAttributeSetRestored": true,
+        "normalCameraRestored": true,
+        "wallLightMatchesOnlyCompletedAOrOff": true
+      },
+      "interpretation": "Only final authored scalar support is added to the swept discard max. Authored fade/dither remain. Additional coverage may overlap ordinary water, resolved by unchanged depth/stencil. No exact seam complementarity, core1-loss, radiance, skin, air-volume or ride certification.",
+      "baseline": {
+        "file": "interior-region-original.png",
+        "bytes": 933925,
+        "sha256": "9a6290b0eeda64bd85fb752d89f05d732a31b259f33439f243816397bf255dd3"
+      },
+      "authoredSupport": {
+        "file": "interior-region-authored-support.png",
+        "bytes": 839660,
+        "sha256": "9def6a6222d128bd7b918223e0ae8ce9af2300b431797507db9801fef82dd96a"
+      }
+    },
+    {
+      "complete": true,
+      "camera": "side",
+      "view": "rich",
+      "seaTime": 276.3293560552737,
+      "stepCount": 0,
+      "fixedPose": {
+        "eye": [
+          75.65191820636392,
+          0.8180906549096107,
+          -66.22397584095597
+        ],
+        "target": [
+          74.75,
+          0.8180906549096107,
+          -68.14806801453233
+        ],
+        "quaternion": [
+          0,
+          0.21741787419751346,
+          0,
+          0.9760786177247376
+        ],
+        "inheritedUp": [
+          0,
+          1,
+          0
+        ],
+        "projection": [
+          1.0551622229204924,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ],
+        "fov": 52,
+        "aspect": 1.9431171786120591,
+        "near": 0.1,
+        "far": 3000,
+        "zoom": 1
+      },
+      "shaderEvidence": [
+        {
+          "pair": "side-rich",
+          "variant": "baseline",
+          "view": "rich",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": true,
+          "onlyDeclaredScalarAndPredicateAdded": false,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+          "wallLightAEnabled": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": null,
+          "vertexAddedCharacters": 0,
+          "fragmentAddedCharacters": 0,
+          "waterShaderUntouchedByDiagnostic": true
+        },
+        {
+          "pair": "side-rich",
+          "variant": "authored-support",
+          "view": "rich",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": false,
+          "onlyDeclaredScalarAndPredicateAdded": true,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+          "wallLightAEnabled": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+          "vertexAddedCharacters": 77,
+          "fragmentAddedCharacters": 45,
+          "waterShaderUntouchedByDiagnostic": true
+        }
+      ],
+      "baselineRepeatPixelsIdentical": true,
+      "attributeEvidence": {
+        "name": "sweptMask",
+        "itemSize": 1,
+        "dtype": "Float32Array",
+        "count": 40134,
+        "usage": 35048,
+        "normalized": false,
+        "activeCopiedWords": 10854,
+        "actualFinalMaskBytesExact": true,
+        "constructorAndUsageFromExistingScalar": true,
+        "requestedUploadRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ],
+        "postRenderUpdateRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ]
+      },
+      "guards": {
+        "exactPriorFull37ActiveWords": true,
+        "exactPriorRawFrontWords": true,
+        "originalDrawAttributesAndIndicesIdentical": true,
+        "onlyDeclaredFinalF32ScalarAttributeAdded": true,
+        "actorBoard8Rider33Unchanged": true,
+        "sameFixedCloneWords": true,
+        "waterMaskBytesImageAndGridIdentical": true,
+        "ordinaryWaterShaderMaterialAndGeometryUnchanged": true,
+        "depthStencilParametersUnchanged": true,
+        "originalShaderCacheViewAndAttributeSetRestored": true,
+        "normalCameraRestored": true,
+        "wallLightMatchesOnlyCompletedAOrOff": true
+      },
+      "interpretation": "Only final authored scalar support is added to the swept discard max. Authored fade/dither remain. Additional coverage may overlap ordinary water, resolved by unchanged depth/stencil. No exact seam complementarity, core1-loss, radiance, skin, air-volume or ride certification.",
+      "baseline": {
+        "file": "side-rich-original.png",
+        "bytes": 1446012,
+        "sha256": "2ab8d64d8624506d09989ebb8a4b9690569ce8ccd4634ba869392cb8968d39e8"
+      },
+      "authoredSupport": {
+        "file": "side-rich-authored-support.png",
+        "bytes": 1335491,
+        "sha256": "a985192a782496fdd2820aa6da940222c7d377e671af1813de4ed9869d0c3d7e"
+      }
+    },
+    {
+      "complete": true,
+      "camera": "side",
+      "view": "region",
+      "seaTime": 276.3293560552737,
+      "stepCount": 0,
+      "fixedPose": {
+        "eye": [
+          75.65191820636392,
+          0.8180906549096107,
+          -66.22397584095597
+        ],
+        "target": [
+          74.75,
+          0.8180906549096107,
+          -68.14806801453233
+        ],
+        "quaternion": [
+          0,
+          0.21741787419751346,
+          0,
+          0.9760786177247376
+        ],
+        "inheritedUp": [
+          0,
+          1,
+          0
+        ],
+        "projection": [
+          1.0551622229204924,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ],
+        "fov": 52,
+        "aspect": 1.9431171786120591,
+        "near": 0.1,
+        "far": 3000,
+        "zoom": 1
+      },
+      "shaderEvidence": [
+        {
+          "pair": "side-region",
+          "variant": "baseline",
+          "view": "region",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": true,
+          "onlyDeclaredScalarAndPredicateAdded": false,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+          "wallLightAEnabled": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": null,
+          "vertexAddedCharacters": 0,
+          "fragmentAddedCharacters": 0,
+          "waterShaderUntouchedByDiagnostic": true
+        },
+        {
+          "pair": "side-region",
+          "variant": "authored-support",
+          "view": "region",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": false,
+          "onlyDeclaredScalarAndPredicateAdded": true,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+          "wallLightAEnabled": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+          "vertexAddedCharacters": 77,
+          "fragmentAddedCharacters": 45,
+          "waterShaderUntouchedByDiagnostic": true
+        }
+      ],
+      "baselineRepeatPixelsIdentical": true,
+      "attributeEvidence": {
+        "name": "sweptMask",
+        "itemSize": 1,
+        "dtype": "Float32Array",
+        "count": 40134,
+        "usage": 35048,
+        "normalized": false,
+        "activeCopiedWords": 10854,
+        "actualFinalMaskBytesExact": true,
+        "constructorAndUsageFromExistingScalar": true,
+        "requestedUploadRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ],
+        "postRenderUpdateRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ]
+      },
+      "guards": {
+        "exactPriorFull37ActiveWords": true,
+        "exactPriorRawFrontWords": true,
+        "originalDrawAttributesAndIndicesIdentical": true,
+        "onlyDeclaredFinalF32ScalarAttributeAdded": true,
+        "actorBoard8Rider33Unchanged": true,
+        "sameFixedCloneWords": true,
+        "waterMaskBytesImageAndGridIdentical": true,
+        "ordinaryWaterShaderMaterialAndGeometryUnchanged": true,
+        "depthStencilParametersUnchanged": true,
+        "originalShaderCacheViewAndAttributeSetRestored": true,
+        "normalCameraRestored": true,
+        "wallLightMatchesOnlyCompletedAOrOff": true
+      },
+      "interpretation": "Only final authored scalar support is added to the swept discard max. Authored fade/dither remain. Additional coverage may overlap ordinary water, resolved by unchanged depth/stencil. No exact seam complementarity, core1-loss, radiance, skin, air-volume or ride certification.",
+      "baseline": {
+        "file": "side-region-original.png",
+        "bytes": 668105,
+        "sha256": "7d0e1ad49ba90a92c8082bd14a605ec88c3cb92bdbdaaf97ec96225e9285aa5c"
+      },
+      "authoredSupport": {
+        "file": "side-region-authored-support.png",
+        "bytes": 541363,
+        "sha256": "0bf0ca2dadab1999773123cff1d1278676012018ad7694ee6c4465bb389e7569"
+      }
+    },
+    {
+      "complete": true,
+      "camera": "interior",
+      "view": "rich",
+      "seaTime": 276.3293560552737,
+      "stepCount": 0,
+      "fixedPose": {
+        "eye": [
+          74.0625,
+          1.0598396605743825,
+          -68.79456329345703
+        ],
+        "target": [
+          74.1875,
+          1.0626037843906364,
+          -68.7633285522461
+        ],
+        "quaternion": [
+          0.006600678893715275,
+          -0.7881247536647293,
+          0.008452992668955604,
+          0.6154220914250564
+        ],
+        "inheritedUp": [
+          0,
+          1,
+          0
+        ],
+        "projection": [
+          1.0551622229204924,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ],
+        "fov": 52,
+        "aspect": 1.9431171786120591,
+        "near": 0.1,
+        "far": 3000,
+        "zoom": 1
+      },
+      "treatment": "authored-mask-plus-sheet-fill-A",
+      "shaderEvidence": [
+        {
+          "pair": "interior-rich-combined-A",
+          "variant": "baseline",
+          "view": "rich",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": true,
+          "onlyDeclaredScalarAndPredicateAdded": false,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+          "wallLightAEnabled": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": null,
+          "vertexAddedCharacters": 0,
+          "fragmentAddedCharacters": 0,
+          "waterShaderUntouchedByDiagnostic": true
+        },
+        {
+          "pair": "interior-rich-combined-A",
+          "variant": "authored-support-plus-sheet-fill-A",
+          "view": "rich",
+          "exactlyOneOriginalDiscard": true,
+          "originalShaderByteIdenticalBeforeInjection": true,
+          "baselineShaderUnchanged": false,
+          "onlyDeclaredScalarAndPredicateAdded": false,
+          "retainsOriginalTextureMaskAndDither": true,
+          "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": true,
+          "wallLightAEnabled": true,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "throatOcclusionPreserved": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+          "vertexAddedCharacters": 77,
+          "fragmentAddedCharacters": 103,
+          "waterShaderUntouchedByDiagnostic": true
+        }
+      ],
+      "baselineRepeatPixelsIdentical": true,
+      "attributeEvidence": {
+        "name": "sweptMask",
+        "itemSize": 1,
+        "dtype": "Float32Array",
+        "count": 40134,
+        "usage": 35048,
+        "normalized": false,
+        "activeCopiedWords": 10854,
+        "actualFinalMaskBytesExact": true,
+        "constructorAndUsageFromExistingScalar": true,
+        "requestedUploadRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ],
+        "postRenderUpdateRanges": [
+          {
+            "start": 0,
+            "count": 10854
+          }
+        ]
+      },
+      "guards": {
+        "exactPriorFull37ActiveWords": true,
+        "exactPriorRawFrontWords": true,
+        "originalDrawAttributesAndIndicesIdentical": true,
+        "onlyDeclaredFinalF32ScalarAttributeAdded": true,
+        "actorBoard8Rider33Unchanged": true,
+        "sameFixedCloneWords": true,
+        "waterMaskBytesImageAndGridIdentical": true,
+        "ordinaryWaterShaderMaterialAndGeometryUnchanged": true,
+        "depthStencilParametersUnchanged": true,
+        "originalShaderCacheViewAndAttributeSetRestored": true,
+        "normalCameraRestored": true,
+        "wallLightMatchesOnlyCompletedAOrOff": true
+      },
+      "interpretation": "Exact final authored scalar support plus the source-pinned tested A sky/wall mixture; B throat bypass remains off. Authored fade/dither remain. Additional coverage may overlap ordinary water, resolved by unchanged depth/stencil. No exact seam complementarity, core1-loss, radiance, skin, air-volume or ride certification.",
+      "baseline": {
+        "file": "interior-rich-combined-original.png",
+        "bytes": 2064927,
+        "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+      },
+      "combinedSupport": {
+        "file": "interior-rich-combined-mask-and-sheet-fill-A.png",
+        "bytes": 1979202,
+        "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "interior-rich-original.png",
+      "bytes": 2064927,
+      "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+    },
+    {
+      "file": "interior-rich-authored-support.png",
+      "bytes": 1982817,
+      "sha256": "7af9cc34fb0ebdf64da6ba27cab9f93ac5f5331bb3b968b964459b30e1753f74"
+    },
+    {
+      "file": "interior-region-original.png",
+      "bytes": 933925,
+      "sha256": "9a6290b0eeda64bd85fb752d89f05d732a31b259f33439f243816397bf255dd3"
+    },
+    {
+      "file": "interior-region-authored-support.png",
+      "bytes": 839660,
+      "sha256": "9def6a6222d128bd7b918223e0ae8ce9af2300b431797507db9801fef82dd96a"
+    },
+    {
+      "file": "side-rich-original.png",
+      "bytes": 1446012,
+      "sha256": "2ab8d64d8624506d09989ebb8a4b9690569ce8ccd4634ba869392cb8968d39e8"
+    },
+    {
+      "file": "side-rich-authored-support.png",
+      "bytes": 1335491,
+      "sha256": "a985192a782496fdd2820aa6da940222c7d377e671af1813de4ed9869d0c3d7e"
+    },
+    {
+      "file": "side-region-original.png",
+      "bytes": 668105,
+      "sha256": "7d0e1ad49ba90a92c8082bd14a605ec88c3cb92bdbdaaf97ec96225e9285aa5c"
+    },
+    {
+      "file": "side-region-authored-support.png",
+      "bytes": 541363,
+      "sha256": "0bf0ca2dadab1999773123cff1d1278676012018ad7694ee6c4465bb389e7569"
+    },
+    {
+      "file": "interior-rich-combined-original.png",
+      "bytes": 2064927,
+      "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+    },
+    {
+      "file": "interior-rich-combined-mask-and-sheet-fill-A.png",
+      "bytes": 1979202,
+      "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+    }
+  ],
+  "pngCount": 10,
+  "pngBytes": 13856429,
+  "browserErrors": [],
+  "acceptance": {
+    "visualCause": null,
+    "playability": false,
+    "productionFixAdopted": false
+  },
+  "menuStartup": {
+    "actualDomStartup": true,
+    "actions": [
+      {
+        "query": ".screen-menu button.tile-primary",
+        "label": "Surf",
+        "beforeScreen": "menu"
+      },
+      {
+        "query": ".spot-card",
+        "label": "Padang Padang",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Swell\"] button",
+        "label": "Big",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Tide\"] button",
+        "label": "Mid",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Wind\"] button",
+        "label": "Calm",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Time of day\"] button",
+        "label": "Midday",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".panel-footer button.button-primary",
+        "label": "Paddle out",
+        "beforeScreen": "surf"
+      }
+    ],
+    "rideObserved": false,
+    "popupNotForced": true,
+    "normalSpawnPreserved": true,
+    "normalPhysicalStartup": true,
+    "initialModeClock": 309.3339338005107,
+    "lastAttempt": {
+      "query": ".panel-footer button.button-primary",
+      "label": "Paddle out",
+      "beforeScreen": "surf",
+      "queriedButtonCount": 1,
+      "matchingButtonCount": 1,
+      "queriedButtons": [
+        {
+          "text": "Paddle out",
+          "tag": "BUTTON",
+          "disabled": false,
+          "ariaDisabled": null,
+          "ariaPressed": null
+        }
+      ],
+      "matchingButtons": [
+        {
+          "text": "Paddle out",
+          "tag": "BUTTON",
+          "disabled": false,
+          "ariaDisabled": null,
+          "ariaPressed": null
+        }
+      ],
+      "groupInventory": [
+        {
+          "ariaLabel": "Swell",
+          "buttons": [
+            {
+              "text": "Practice",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Small",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Medium",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Big",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Tide",
+          "buttons": [
+            {
+              "text": "Low",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Mid",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "High",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Wind",
+          "buttons": [
+            {
+              "text": "Offshore",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Calm",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Onshore",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Time of day",
+          "buttons": [
+            {
+              "text": "Dawn",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Midday",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Sunset",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Surfer",
+          "buttons": [
+            {
+              "text": "Woman",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Man",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Look",
+          "buttons": [
+            {
+              "text": "1",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "2",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Outfit",
+          "buttons": [
+            {
+              "text": "Full suit",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Spring suit",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Vest and bikini",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Colour",
+          "buttons": [
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Board",
+          "buttons": [
+            {
+              "text": "Classic",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Sunset fade",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Sea glass",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Midnight",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Coral rail",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        }
+      ],
+      "inventoryTruncated": false
+    },
+    "selectedConditionScopes": [
+      {
+        "group": "Swell",
+        "query": ".choice-row .segmented[aria-label=\"Swell\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Big"
+        ]
+      },
+      {
+        "group": "Tide",
+        "query": ".choice-row .segmented[aria-label=\"Tide\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Mid"
+        ]
+      },
+      {
+        "group": "Wind",
+        "query": ".choice-row .segmented[aria-label=\"Wind\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Calm"
+        ]
+      },
+      {
+        "group": "Time of day",
+        "query": ".choice-row .segmented[aria-label=\"Time of day\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Midday"
+        ]
+      }
+    ],
+    "selectedChoices": [
+      "Padang Padang",
+      "Big",
+      "Mid",
+      "Calm",
+      "Midday"
+    ]
+  },
+  "applicationBuildRequest": {
+    "build": "tube-cap-refinement-20261005",
+    "status": 200,
+    "checkedBeforeReplay": true
+  },
+  "normalMenuBeforeReplay": {
+    "config": {
+      "spot": "padang",
+      "seed": 1212,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "seaTime": 121.89706235760912,
+    "board8": [
+      -50,
+      -0.10116704297955467,
+      -271.09137870490895,
+      0.00382888071652884,
+      -0.000007626733244963776,
+      0.001991877724594239,
+      0.9999906859753355,
+      1
+    ],
+    "rider33": [
+      -50.000610796338464,
+      0.03366584220572663,
+      -271.55415679207744,
+      -50.000610796338464,
+      0.10926105190380475,
+      -271.11415679207744,
+      -50.000610796338464,
+      0.259097703686006,
+      -270.78415679207745,
+      -49.74852869727398,
+      -0.05202979355129218,
+      -271.11496478260074,
+      -50.25185337081161,
+      -0.05403488380135669,
+      -271.1149801374716,
+      -49.84861079633847,
+      -0.06658498325520669,
+      -272.5611567920775,
+      -50.15261079633846,
+      -0.06658498325520669,
+      -272.5611567920775,
+      0,
+      0,
+      1,
+      6.776462269135611e-21,
+      0,
+      -50.0001218489305,
+      -0.06458619603199095,
+      -271.8740831939587,
+      1,
+      0,
+      1,
+      0
+    ]
+  },
+  "replayStartup": {
+    "api": "breaklineDiagnostics.start",
+    "publicStartCalls": 1,
+    "noPlacement": true,
+    "noClockAssignment": true,
+    "diagnosticSeedRestart": true
+  },
+  "initial": {
+    "menu": {
+      "actualDomStartup": true,
+      "actions": [
+        {
+          "query": ".screen-menu button.tile-primary",
+          "label": "Surf",
+          "beforeScreen": "menu"
+        },
+        {
+          "query": ".spot-card",
+          "label": "Padang Padang",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Swell\"] button",
+          "label": "Big",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Tide\"] button",
+          "label": "Mid",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Wind\"] button",
+          "label": "Calm",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Time of day\"] button",
+          "label": "Midday",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".panel-footer button.button-primary",
+          "label": "Paddle out",
+          "beforeScreen": "surf"
+        }
+      ],
+      "rideObserved": true,
+      "popupNotForced": true,
+      "normalSpawnPreserved": true,
+      "normalPhysicalStartup": true,
+      "initialModeClock": 309.3339338005107,
+      "lastAttempt": {
+        "query": ".panel-footer button.button-primary",
+        "label": "Paddle out",
+        "beforeScreen": "surf",
+        "queriedButtonCount": 1,
+        "matchingButtonCount": 1,
+        "queriedButtons": [
+          {
+            "text": "Paddle out",
+            "tag": "BUTTON",
+            "disabled": false,
+            "ariaDisabled": null,
+            "ariaPressed": null
+          }
+        ],
+        "matchingButtons": [
+          {
+            "text": "Paddle out",
+            "tag": "BUTTON",
+            "disabled": false,
+            "ariaDisabled": null,
+            "ariaPressed": null
+          }
+        ],
+        "groupInventory": [
+          {
+            "ariaLabel": "Swell",
+            "buttons": [
+              {
+                "text": "Practice",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Small",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Medium",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Big",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Tide",
+            "buttons": [
+              {
+                "text": "Low",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Mid",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "High",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Wind",
+            "buttons": [
+              {
+                "text": "Offshore",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Calm",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Onshore",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Time of day",
+            "buttons": [
+              {
+                "text": "Dawn",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Midday",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Sunset",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Surfer",
+            "buttons": [
+              {
+                "text": "Woman",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Man",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Look",
+            "buttons": [
+              {
+                "text": "1",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "2",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Outfit",
+            "buttons": [
+              {
+                "text": "Full suit",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Spring suit",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Vest and bikini",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Colour",
+            "buttons": [
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Board",
+            "buttons": [
+              {
+                "text": "Classic",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Sunset fade",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Sea glass",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Midnight",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Coral rail",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          }
+        ],
+        "inventoryTruncated": false
+      },
+      "selectedConditionScopes": [
+        {
+          "group": "Swell",
+          "query": ".choice-row .segmented[aria-label=\"Swell\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Big"
+          ]
+        },
+        {
+          "group": "Tide",
+          "query": ".choice-row .segmented[aria-label=\"Tide\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Mid"
+          ]
+        },
+        {
+          "group": "Wind",
+          "query": ".choice-row .segmented[aria-label=\"Wind\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Calm"
+          ]
+        },
+        {
+          "group": "Time of day",
+          "query": ".choice-row .segmented[aria-label=\"Time of day\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Midday"
+          ]
+        }
+      ],
+      "selectedChoices": [
+        "Padang Padang",
+        "Big",
+        "Mid",
+        "Calm",
+        "Midday"
+      ],
+      "rideClockAtObserver": 121.89706235760912,
+      "outstandingAtObserver": 0,
+      "normalRideView": "front",
+      "pauseButtonInventory": {
+        "query": ".ride-hud button.hud-pause",
+        "count": 1,
+        "buttons": [
+          {
+            "disabled": false,
+            "ariaLabel": "Pause"
+          }
+        ]
+      },
+      "normalHudPaused": true,
+      "activeLabDisabled": true
+    },
+    "config": {
+      "spot": "padang",
+      "seed": 6238,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "seaTime": 276.3293560552737,
+    "compute": "gpu",
+    "canvas": [
+      1708,
+      879
+    ]
+  },
+  "installation": {
+    "installed": true,
+    "seaTime": 276.3293560552737,
+    "stepCount": 0,
+    "exactPriorGeometryRequired": true,
+    "declaredPairs": [
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      },
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich",
+        "treatment": "authored-mask-plus-sheet-fill-A"
+      }
+    ],
+    "cameraSearch": false
+  },
+  "restoration": {
+    "complete": true,
+    "completed": [
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      },
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich",
+        "treatment": "authored-mask-plus-sheet-fill-A"
+      }
+    ],
+    "seaTime": 276.3293560552737,
+    "stepCount": 0,
+    "originalShaderViewCameraRestored": true,
+    "originalAttributeSetRestored": true,
+    "shaderEvidence": [
+      {
+        "pair": "interior-rich",
+        "variant": "baseline",
+        "view": "rich",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": true,
+        "onlyDeclaredScalarAndPredicateAdded": false,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+        "wallLightAEnabled": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": null,
+        "vertexAddedCharacters": 0,
+        "fragmentAddedCharacters": 0,
+        "waterShaderUntouchedByDiagnostic": true
+      },
+      {
+        "pair": "interior-rich",
+        "variant": "authored-support",
+        "view": "rich",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": false,
+        "onlyDeclaredScalarAndPredicateAdded": true,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+        "wallLightAEnabled": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+        "vertexAddedCharacters": 77,
+        "fragmentAddedCharacters": 45,
+        "waterShaderUntouchedByDiagnostic": true
+      },
+      {
+        "pair": "interior-region",
+        "variant": "baseline",
+        "view": "region",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": true,
+        "onlyDeclaredScalarAndPredicateAdded": false,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+        "wallLightAEnabled": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": null,
+        "vertexAddedCharacters": 0,
+        "fragmentAddedCharacters": 0,
+        "waterShaderUntouchedByDiagnostic": true
+      },
+      {
+        "pair": "interior-region",
+        "variant": "authored-support",
+        "view": "region",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": false,
+        "onlyDeclaredScalarAndPredicateAdded": true,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+        "wallLightAEnabled": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+        "vertexAddedCharacters": 77,
+        "fragmentAddedCharacters": 45,
+        "waterShaderUntouchedByDiagnostic": true
+      },
+      {
+        "pair": "side-rich",
+        "variant": "baseline",
+        "view": "rich",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": true,
+        "onlyDeclaredScalarAndPredicateAdded": false,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+        "wallLightAEnabled": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": null,
+        "vertexAddedCharacters": 0,
+        "fragmentAddedCharacters": 0,
+        "waterShaderUntouchedByDiagnostic": true
+      },
+      {
+        "pair": "side-rich",
+        "variant": "authored-support",
+        "view": "rich",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": false,
+        "onlyDeclaredScalarAndPredicateAdded": true,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+        "wallLightAEnabled": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+        "vertexAddedCharacters": 77,
+        "fragmentAddedCharacters": 45,
+        "waterShaderUntouchedByDiagnostic": true
+      },
+      {
+        "pair": "side-region",
+        "variant": "baseline",
+        "view": "region",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": true,
+        "onlyDeclaredScalarAndPredicateAdded": false,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+        "wallLightAEnabled": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": null,
+        "vertexAddedCharacters": 0,
+        "fragmentAddedCharacters": 0,
+        "waterShaderUntouchedByDiagnostic": true
+      },
+      {
+        "pair": "side-region",
+        "variant": "authored-support",
+        "view": "region",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": false,
+        "onlyDeclaredScalarAndPredicateAdded": true,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+        "wallLightAEnabled": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+        "vertexAddedCharacters": 77,
+        "fragmentAddedCharacters": 45,
+        "waterShaderUntouchedByDiagnostic": true
+      },
+      {
+        "pair": "interior-rich-combined-A",
+        "variant": "baseline",
+        "view": "rich",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": true,
+        "onlyDeclaredScalarAndPredicateAdded": false,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": false,
+        "wallLightAEnabled": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": null,
+        "vertexAddedCharacters": 0,
+        "fragmentAddedCharacters": 0,
+        "waterShaderUntouchedByDiagnostic": true
+      },
+      {
+        "pair": "interior-rich-combined-A",
+        "variant": "authored-support-plus-sheet-fill-A",
+        "view": "rich",
+        "exactlyOneOriginalDiscard": true,
+        "originalShaderByteIdenticalBeforeInjection": true,
+        "baselineShaderUnchanged": false,
+        "onlyDeclaredScalarAndPredicateAdded": false,
+        "retainsOriginalTextureMaskAndDither": true,
+        "onlyDeclaredScalarPredicateAndExactSheetFillAAdded": true,
+        "wallLightAEnabled": true,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "throatOcclusionPreserved": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+        "vertexAddedCharacters": 77,
+        "fragmentAddedCharacters": 103,
+        "waterShaderUntouchedByDiagnostic": true
+      }
+    ]
+  },
+  "ownedBrowserClose": true,
+  "elapsedMilliseconds": 178478.031625
+}

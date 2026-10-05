@@ -1,0 +1,14 @@
+{
+  "schema": "tube-comparison-preflight-failure/v1",
+  "rootToolSession": 54599,
+  "exitCode": 1,
+  "reason": "lsof listener identity query for4314 exceeded0.35seconds before owner started",
+  "authoritativeTerminalObserved": true,
+  "subsequentReadOnlyCheck": {
+    "ownerCandidateLiveNativeLogLauncherAbsent": true,
+    "owned4301And9711Closed": true,
+    "protectedPidAndStartRecordsStillPresent": true
+  },
+  "applicationOrNativeCaptureStarted": false,
+  "sameSealedRecipeReinvocationAuthorized": true
+}

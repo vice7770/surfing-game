@@ -1,0 +1,350 @@
+{
+  "schema": "matched-authored-mask-inputs/v1",
+  "preparationOnly": true,
+  "rootExecutionPending": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "applicationBuildId": "tube-cap-refinement-20261005",
+  "applicationDirectory": "/private/tmp/tube-cap-refinement-native-20261005/dist",
+  "referenceReport": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+    "bytes": 49054,
+    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+  },
+  "referenceOwner": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+    "bytes": 3848,
+    "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+  },
+  "referenceLoft": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+    "bytes": 1219771,
+    "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+  },
+  "referenceBuild": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+    "bytes": 15655,
+    "sha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00"
+  },
+  "referenceSeal": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/seal.json",
+    "bytes": 6584,
+    "sha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05"
+  },
+  "referenceSourceFreeze": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+    "bytes": 5973,
+    "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
+  },
+  "borrowedHelperPins": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    }
+  ],
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "fixedCameras": {
+    "side": {
+      "eye": [
+        75.65191820636392,
+        0.8180906549096107,
+        -66.22397584095597
+      ],
+      "target": [
+        74.75,
+        0.8180906549096107,
+        -68.14806801453233
+      ],
+      "quaternion": [
+        0,
+        0.21741787419751346,
+        0,
+        0.9760786177247376
+      ],
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1
+    },
+    "interior": {
+      "eye": [
+        74.0625,
+        1.0598396605743825,
+        -68.79456329345703
+      ],
+      "target": [
+        74.1875,
+        1.0626037843906364,
+        -68.7633285522461
+      ],
+      "quaternion": [
+        0.006600678893715275,
+        -0.7881247536647293,
+        0.008452992668955604,
+        0.6154220914250564
+      ],
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1
+    }
+  },
+  "referenceEpoch": {
+    "step": 0,
+    "seaTime": 276.3293560552737,
+    "kind": "first-eligible-capture"
+  },
+  "referenceCounts": {
+    "slices": 81,
+    "vertices": 10854,
+    "indices": 62244
+  },
+  "protectedPorts": [
+    4312,
+    4313,
+    4314,
+    4315
+  ],
+  "protected4315": {
+    "pid": 87796,
+    "rootSession": "64713"
+  },
+  "ownedPorts": [
+    4301,
+    9711
+  ],
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 660,
+    "cleanupSeconds": 7,
+    "pngCount": 10,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 125829120,
+    "reportBytes": 2097152
+  },
+  "comparison": {
+    "pairs": [
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      },
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich",
+        "treatment": "authored-mask-plus-sheet-fill-A"
+      }
+    ],
+    "pairOrder": [
+      "original-texture-discard",
+      "authored-support-max",
+      "restored-original-repeat"
+    ],
+    "onlyDiagnosticShaderDifference": "Variant adds the exact final F32 loft.mask scalar attribute sweptMask, matching vSweptMask varying and assignment, and replaces only SWEPT_BARREL_DISCARD with its max(textureMask, vSweptMask) predicate. Baseline shader and attribute set remain original.",
+    "authoredPredicate": "if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;",
+    "authoredFadePolicy": "Copy the final authored mask unchanged; retain the same formation/end/rest fades, original texture and screen-space dither.",
+    "fixedCameraSource": "Exact completed cap capture interior and side camera poses and projection; no geometry-derived camera or selector.",
+    "geometryPolicy": "Exact prior full37 active typed bytes and raw-front bytes required; original live attribute/index identities and active bytes remain identical; only variant has one added scalar attribute.",
+    "ordinaryWaterPolicy": "Keep water shader callback/key/source values, mask bytes/image/grid, material, depth/stencil parameters, render ordering and geometry ownership unchanged.",
+    "stencilConsequence": "Coverage bits may change as additionally supported sheet fragments survive; stencil configuration stays identical. Existing depth/stencil resolve overlap with ordinary water.",
+    "baselineRepeatExactPixelsRequired": true,
+    "originalAttributeSetRestoredAfterEveryPair": true,
+    "placement": false,
+    "epochSearch": false,
+    "cameraSearch": false,
+    "qualitySearch": false,
+    "limitations": [
+      "Not exact seam complementarity.",
+      "Does not identify a captured authored-core-1 texture failure.",
+      "Does not certify ride, full body, air volume, radiance or reference-quality tubes."
+    ],
+    "combinedPair": {
+      "index": 4,
+      "treatment": "authored-mask-plus-sheet-fill-A",
+      "order": [
+        "original-texture-discard-and-original-lighting",
+        "authored-support-max-plus-tested-wall-light-A",
+        "restored-original-repeat"
+      ],
+      "onlyAdditionalShaderDifference": "After the exact mask additions, apply exactly the source-pinned completed optical A: remove T from the environment summand; set sweptSkyShare=clamp(vSweptSheetBack,0,1)*sweptSkyTransmission; use sweptSkyShare*sky+(1-sweptSkyShare)*wall. The original direction/TIR gate, safe ray, throat occlusion and Classic remain unchanged.",
+      "BThroatBypass": false,
+      "exactOpticalSourceReverseEqualityRequired": true
+    },
+    "maskOnlyPairsUnchanged": 4
+  },
+  "proposalReference": {
+    "file": "/private/tmp/tube-mask-interpolant-proposal-20261005.patch",
+    "bytes": 17438,
+    "sha256": "52722936a24b713daccee8a94b7d75466537253f359a48e5772a3331c9f7a006"
+  },
+  "matchedMaskReference": {
+    "file": "/private/tmp/tube-mask-support-native-20261005/candidate-first/report.json",
+    "bytes": 33432,
+    "sha256": "c3280de79f4f1d0c448b2c4cf1741e71b3c8c12ddae7f591e128e378440234ee"
+  },
+  "matchedMaskOwnerReference": {
+    "file": "/private/tmp/tube-mask-support-native-20261005/owner.json",
+    "bytes": 2641,
+    "sha256": "cb8fc51bc56376ecfe17e8370047530043b53e691aece2368de460baa476273e"
+  },
+  "opticalSourcePins": [
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/README.md",
+      "bytes": 5130,
+      "sha256": "6e68c22ba711e83f3fca41c4b42c8718b08e770c45f73c94db3d2149e558a976"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
+      "bytes": 8807,
+      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/sheet-inspection.mjs",
+      "bytes": 18668,
+      "sha256": "42d1e1e51e139c862b0bf693d81751a418f35d88914a09ef1f07cad6f8715142"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/native.mjs",
+      "bytes": 9638,
+      "sha256": "3228619389962544acba7b49a4134c213a04d5bb1f76d9cd2c0f389b4d4f905f"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/prepare.py",
+      "bytes": 3416,
+      "sha256": "4fd0a80c53dd20741bdff5e567aa26734829f9b3a04984cd7c140ebcb92e76f5"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/run.py",
+      "bytes": 10481,
+      "sha256": "b74ea86e6e434c56376b6f9e50b8111a75b7bc5b8b1d7af0c972fe0e82ee8f52"
+    }
+  ],
+  "opticalReportReference": {
+    "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
+    "bytes": 39508,
+    "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+  },
+  "opticalOwnerReference": {
+    "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
+    "bytes": 2757,
+    "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+  },
+  "opticalSealReference": {
+    "file": "/private/tmp/tube-sheet-fill-native-20261005/seal.json",
+    "bytes": 20206,
+    "sha256": "e1a89b2b419d876863dc783e7ed393fa479568e92acd8f26506e56f3e43da844"
+  },
+  "opticalBuildReference": {
+    "file": "/private/tmp/tube-sheet-fill-native-20261005/build.json",
+    "bytes": 10963,
+    "sha256": "dbca284f30c9885ec2ec05159c6f97b0221c81ecb38d1e3048184cca29faec6d"
+  }
+}

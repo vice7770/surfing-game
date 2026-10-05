@@ -1,0 +1,18 @@
+{
+  "schema": "matched-authored-mask-preparation/v1",
+  "complete": true,
+  "seal": {
+    "file": "/private/tmp/tube-authored-mask-native-20261005/seal.json",
+    "bytes": 22535,
+    "sha256": "b22727d355b9b3b8ef78877f92ccbc7496a40a98390f27c4119b3e63706f64e2"
+  },
+  "build": {
+    "file": "/private/tmp/tube-authored-mask-native-20261005/build.json",
+    "bytes": 11113,
+    "sha256": "7a03efc16e9487351cf982bcc69f21587a7d38de3fa58c3b4d1f176b999bd7ef"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedChecksOrBuilds": false,
+  "liveSourcesWrittenOrFrozen": false
+}

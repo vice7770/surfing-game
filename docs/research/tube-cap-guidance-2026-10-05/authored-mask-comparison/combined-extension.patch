@@ -1,0 +1,402 @@
+--- /private/tmp/tube-authored-mask-native-20261005/README.md.pre-combined
++++ /private/tmp/tube-authored-mask-native-20261005/README.md
+@@ -1,4 +1,4 @@
+-Source preparation only, 2026-10-05. No syntax check, test, build, preparation, application copy/freeze, browser, listener probe or native capture was executed. Only this new temporary recipe directory was written. Root reviews and executes after the current optical capture releases 4301/9711.
++Source preparation only, 2026-10-05. No syntax check, test, build, preparation, application copy/freeze, browser, listener probe or native capture was executed. Only this new temporary recipe directory was written. Root reviews and executes when its owned 4301/9711 resources are available.
+ 
+ Root sequence:
+ 
+@@ -7,11 +7,11 @@
+ python3 /private/tmp/tube-authored-mask-native-20261005/run.py
+ ```
+ 
+-Preparation copies only the completed sealed cap-refinement application. It does not build or freeze mutable repository files or change prior experiments. The exact completed cap owner/report, full 37-array/raw-front sidecar, build/seal/source freeze, completed matched-mask owner/report, production proposal and three borrowed startup/launcher modules are pinned in inputs.json. Both copied and prior frozen assets/sources are verified before and after execution. The capture runs the cap baseline regardless of subsequent production edits.
++Preparation copies only the completed sealed cap-refinement application. It does not build or freeze mutable repository files or change prior experiments. The exact completed cap owner/report, full 37-array/raw-front sidecar, build/seal/source freeze, completed matched-mask owner/report, production proposal and three borrowed startup/launcher modules are pinned in inputs.json. The completed matched optical report/owner/build/seal and all six optical recipe source files are also pinned as the authority for combined wall-light A. Both copied and prior frozen assets/sources are verified before and after execution. The capture runs the cap baseline regardless of subsequent production edits.
+ 
+ The actual Padang Padang / Big / Mid / Calm / Midday menu and normal HUD pause precede one public seed 6238/component 64/dx 2/fine 1 restart. This is the same predetermined restart as the completed cap capture, with its exact settings and graphics. There are zero physical steps, no actor placement, retry, clock assignment, camera derivation, geometry selector, epoch search or quality search. It requires seaTime 276.3293560552737, 81 rows, 10854 vertices, 62244 indices and the exact full 37 active arrays plus 333 raw-front words throughout. Any mismatch terminates.
+ 
+-Four pairs are declared, in order: fixed cap INTERIOR normal Rich, INTERIOR region, fixed cap SIDE normal Rich, SIDE region. The poses and projection come directly from the completed cap report. Each pair saves `<camera>-<view>-original.png` and `<camera>-<view>-authored-support.png`, then renders an unsaved restored original repeat. All four repeats must be PNG-identical to their pair's original. No scene surface is hidden or recoloured beyond the existing region view.
++The first four mask-only pairs are unchanged: fixed cap INTERIOR normal Rich, INTERIOR region, fixed cap SIDE normal Rich, SIDE region. The poses and projection come directly from the completed cap report. Each pair saves `<camera>-<view>-original.png` and `<camera>-<view>-authored-support.png`, then renders an unsaved restored original repeat. A fifth pair uses the same fixed INTERIOR normal Rich camera and combines the authored mask with tested wall-light A. It saves `interior-rich-combined-original.png` and `interior-rich-combined-mask-and-sheet-fill-A.png`, followed by another unsaved restored original repeat. All five repeats must be PNG-identical to their pair's original. No scene surface is hidden or recoloured beyond the existing region view.
+ 
+ The original callback compiles both variants first. The baseline shader is untouched and has no added attribute. Only the candidate receives one BufferAttribute named `sweptMask`, built with the existing scalar attribute's constructor, capacity and DynamicDrawUsage. Its active Float32 prefix is copied byte-exactly from the final loft.mask; one active update range is requested. The wrapper adds exactly `attribute float sweptMask;`, the matching vertex/fragment `varying float vSweptMask;`, and `vSweptMask = sweptMask;`. It replaces precisely the existing swept discard with:
+ 
+@@ -19,10 +19,12 @@
+ if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;
+ ```
+ 
+-Reversing those fixed additions must reproduce the baseline vertex and fragment strings exactly. The per-pair cache suffix is compilation bookkeeping only. The water shader callbacks, cache functions, explicit shader/define values, mask object/image/array bytes and grid, ordinary-water geometry, original mesh attributes and active draw indices, transforms, visibility, order, depth/stencil parameters and sea clock are guarded across each pair. The actual drawn positions must match final loft.positions. All original 37 arrays, raw fronts, board 8/rider 33 and normal camera words are guarded as well. The original callbacks/cache/view and complete attribute set/identities are restored after every pair; this also removes the region view's otherwise retained `sweptView` attribute when it was absent initially.
++Reversing those fixed additions must reproduce the baseline vertex and fragment strings exactly. In the fifth pair alone, the masked fragment then receives exactly the two A replacements from the completed optical helper: remove `sweptSkyTransmission *` from the environment summand, and use `sweptSkyShare = clamp( vSweptSheetBack, 0.0, 1.0 ) * sweptSkyTransmission` in `sweptSkyShare * sweptSky + ( 1.0 - sweptSkyShare ) * sweptWall`. Reversing these two replacements must reproduce the mask-only fragment string exactly. The original direction/TIR gate, safe nonzero environment ray, throat reflection occlusion multiplier and Classic remain unchanged; B is never enabled. Fifth-pair cache keys are distinct so it compiles its own original baseline and combined variant.
++
++The per-pair cache suffix is compilation bookkeeping only. The water shader callbacks, cache functions, explicit shader/define values, mask object/image/array bytes and grid, ordinary-water geometry, original mesh attributes and active draw indices, transforms, visibility, order, depth/stencil and material lighting parameters and sea clock are guarded across each pair. The actual drawn positions must match final loft.positions. All original 37 arrays, raw fronts, board 8/rider 33 and normal camera words are guarded as well. The original callbacks/cache/view and complete attribute set/identities are restored after every pair, including combined A; this also removes the region view's otherwise retained `sweptView` attribute when it was absent initially.
+ 
+ The max predicate retains the final authored formation, end and resting fades, texture support and the same screen-space dither. Additional authored support can coexist with ordinary water fragments; unchanged depth/stencil resolves their visibility. It does not guarantee exact seam complementarity. Stencil coverage can change as a consequence of additional surviving sheet fragments; stencil configuration is unchanged. Renderer-managed underwater/caustic/patch state returns through normal rendering; whole internal byte equality is not claimed. Post-render buffer update ranges may be cleared by Three.js, so the report distinguishes requested active upload range from the post-render ranges.
+ 
+-Eight PNGs are limited to 12 MiB each/96 MiB total, report 2 MiB, native 635 s, owner 648 s, total 660 s including 7 s cleanup. Owner protects exact listener PID/start/command records for 4312–4315, requires 4315 PID 87796, signals only its freshly started independent process group, independently shuts down its 4301 server and requires 4301/9711 closed. It never stops, reloads or serves a protected preview. Root tool session 64713 is provenance, not an OS identity claim.
++Ten PNGs are limited to 12 MiB each/120 MiB total, report 2 MiB, native 635 s, owner 648 s, total 660 s including 7 s cleanup. Owner protects exact listener PID/start/command records for 4312–4315, requires 4315 PID 87796, signals only its freshly started independent process group, independently shuts down its 4301 server and requires 4301/9711 closed. It never stops, reloads or serves a protected preview. Root tool session 64713 is provenance, not an OS identity claim.
+ 
+-Root must inspect actual images for continuity, residual stipple, overlap and seams. The previous four-ray analysis found changed points with fractional authored masks (about 0.74856 and 0.93620); its captured authored-mask-1 point was unchanged. This recipe makes no prior claim that the captured image loses a fully authored core. Even successful completion proves only this matched rendering comparison and its declared guards. It does not certify aesthetic quality, radiance, air volume, skin/capsule clearance, ordinary ridden entry/travel/exit, reference-quality tubes or production acceptance.
++Root must inspect actual images for continuity, residual stipple, overlap and seams, keeping the four mask-only pairs distinct from combined A. The previous four-ray analysis found changed points with fractional authored masks (about 0.74856 and 0.93620); its captured authored-mask-1 point was unchanged. This recipe makes no prior claim that the captured image loses a fully authored core. A remains a modeled wall-radiance fallback for an unresolved approximate exit, without an actual traced wall hit or energy-conservation proof. Even successful completion proves only this matched rendering comparison and its declared guards. It does not certify aesthetic quality, radiance, air volume, skin/capsule clearance, ordinary ridden entry/travel/exit, reference-quality tubes or production acceptance.
+--- /private/tmp/tube-authored-mask-native-20261005/inputs.json.pre-combined
++++ /private/tmp/tube-authored-mask-native-20261005/inputs.json
+@@ -214,9 +214,9 @@
+     "ownerSeconds": 648,
+     "totalSeconds": 660,
+     "cleanupSeconds": 7,
+-    "pngCount": 8,
++    "pngCount": 10,
+     "pngBytesEach": 12582912,
+-    "pngBytesTotal": 100663296,
++    "pngBytesTotal": 125829120,
+     "reportBytes": 2097152
+   },
+   "comparison": {
+@@ -236,6 +236,11 @@
+       {
+         "camera": "side",
+         "view": "region"
++      },
++      {
++        "camera": "interior",
++        "view": "rich",
++        "treatment": "authored-mask-plus-sheet-fill-A"
+       }
+     ],
+     "pairOrder": [
+@@ -260,7 +265,20 @@
+       "Not exact seam complementarity.",
+       "Does not identify a captured authored-core-1 texture failure.",
+       "Does not certify ride, full body, air volume, radiance or reference-quality tubes."
+-    ]
++    ],
++    "combinedPair": {
++      "index": 4,
++      "treatment": "authored-mask-plus-sheet-fill-A",
++      "order": [
++        "original-texture-discard-and-original-lighting",
++        "authored-support-max-plus-tested-wall-light-A",
++        "restored-original-repeat"
++      ],
++      "onlyAdditionalShaderDifference": "After the exact mask additions, apply exactly the source-pinned completed optical A: remove T from the environment summand; set sweptSkyShare=clamp(vSweptSheetBack,0,1)*sweptSkyTransmission; use sweptSkyShare*sky+(1-sweptSkyShare)*wall. The original direction/TIR gate, safe ray, throat occlusion and Classic remain unchanged.",
++      "BThroatBypass": false,
++      "exactOpticalSourceReverseEqualityRequired": true
++    },
++    "maskOnlyPairsUnchanged": 4
+   },
+   "proposalReference": {
+     "file": "/private/tmp/tube-mask-interpolant-proposal-20261005.patch",
+@@ -276,5 +294,57 @@
+     "file": "/private/tmp/tube-mask-support-native-20261005/owner.json",
+     "bytes": 2641,
+     "sha256": "cb8fc51bc56376ecfe17e8370047530043b53e691aece2368de460baa476273e"
++  },
++  "opticalSourcePins": [
++    {
++      "file": "/private/tmp/tube-sheet-fill-native-20261005/README.md",
++      "bytes": 5130,
++      "sha256": "6e68c22ba711e83f3fca41c4b42c8718b08e770c45f73c94db3d2149e558a976"
++    },
++    {
++      "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
++      "bytes": 8807,
++      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
++    },
++    {
++      "file": "/private/tmp/tube-sheet-fill-native-20261005/sheet-inspection.mjs",
++      "bytes": 18668,
++      "sha256": "42d1e1e51e139c862b0bf693d81751a418f35d88914a09ef1f07cad6f8715142"
++    },
++    {
++      "file": "/private/tmp/tube-sheet-fill-native-20261005/native.mjs",
++      "bytes": 9638,
++      "sha256": "3228619389962544acba7b49a4134c213a04d5bb1f76d9cd2c0f389b4d4f905f"
++    },
++    {
++      "file": "/private/tmp/tube-sheet-fill-native-20261005/prepare.py",
++      "bytes": 3416,
++      "sha256": "4fd0a80c53dd20741bdff5e567aa26734829f9b3a04984cd7c140ebcb92e76f5"
++    },
++    {
++      "file": "/private/tmp/tube-sheet-fill-native-20261005/run.py",
++      "bytes": 10481,
++      "sha256": "b74ea86e6e434c56376b6f9e50b8111a75b7bc5b8b1d7af0c972fe0e82ee8f52"
++    }
++  ],
++  "opticalReportReference": {
++    "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
++    "bytes": 39508,
++    "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
++  },
++  "opticalOwnerReference": {
++    "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
++    "bytes": 2757,
++    "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
++  },
++  "opticalSealReference": {
++    "file": "/private/tmp/tube-sheet-fill-native-20261005/seal.json",
++    "bytes": 20206,
++    "sha256": "e1a89b2b419d876863dc783e7ed393fa479568e92acd8f26506e56f3e43da844"
++  },
++  "opticalBuildReference": {
++    "file": "/private/tmp/tube-sheet-fill-native-20261005/build.json",
++    "bytes": 10963,
++    "sha256": "dbca284f30c9885ec2ec05159c6f97b0221c81ecb38d1e3048184cca29faec6d"
+   }
+ }
+--- /private/tmp/tube-authored-mask-native-20261005/authored-mask-inspection.mjs.pre-combined
++++ /private/tmp/tube-authored-mask-native-20261005/authored-mask-inspection.mjs
+@@ -8,6 +8,14 @@
+   const ATTRIBUTE = 'sweptMask';
+   const DISCARD = 'if ( waterBarrelMaskAt( vWaterWorld.xz ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;';
+   const SUPPORTED_DISCARD = 'if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;';
++  // Exact A statements from the completed, source-pinned matched-sheet-fill capture.
++  const SKY = 'sweptSkyTransmission * PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity';
++  const SKY_ONCE = 'PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity';
++  const BACK = 'vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;';
++  const BACK_FILL = 'float sweptSkyShare = clamp( vSweptSheetBack, 0.0, 1.0 ) * sweptSkyTransmission;\n    vec3 sweptBack = sweptSkyShare * sweptSky + ( 1.0 - sweptSkyShare ) * sweptWall;';
++  const THROAT = 'radiance *= mix( 1.0, sweptLeaves( sweptMirror, sweptTip ) ? 1.0 : 0.0, vSweptThroat.w );';
++  const GATE = 'sweptSkyTransmission = dot( sweptInside, sweptFarInwardN ) < 0.0 && length( sweptOutgoing ) > 0.0 ? 1.0 : 0.0;';
++  const SAFE_RAY = 'sweptSkyRay = sweptSkyTransmission > 0.0 ? sweptOutgoing : -waterV;';
+   const LIFT = 'attribute float sweptLift;';
+   const VARYING = 'varying float vSweptSheet;';
+   const FLOW = 'vWaterFlow = waterFlowAt( position.xz );';
+@@ -28,7 +36,7 @@
+   const geometryWidths = { positions: 3, normals: 3, mask: 1, lift: 1, sheet: 1, sheetWeight: 1, sheetBack: 1, throat: 4 };
+   const stateKeys = ['depthTest', 'depthWrite', 'depthFunc', 'colorWrite', 'side', 'transparent', 'opacity', 'alphaTest',
+     'stencilWrite', 'stencilRef', 'stencilFunc', 'stencilFuncMask', 'stencilWriteMask', 'stencilFail', 'stencilZFail', 'stencilZPass',
+-    'polygonOffset', 'polygonOffsetFactor', 'polygonOffsetUnits'];
++    'polygonOffset', 'polygonOffsetFactor', 'polygonOffsetUnits', 'envMap', 'envMapIntensity', 'roughness', 'metalness', 'ior', 'emissiveIntensity'];
+   const words = camera => [...camera.position.toArray(), ...camera.quaternion.toArray(), ...camera.up.toArray(), ...camera.scale.toArray(),
+     ...camera.matrix.toArray(), ...camera.matrixWorld.toArray(), ...camera.matrixWorldInverse.toArray(),
+     ...camera.projectionMatrix.toArray(), ...camera.projectionMatrixInverse.toArray(),
+@@ -87,7 +95,7 @@
+       && sameBytes(bytes(geometry.index.array, before.count), before.indexBytes), 'Actual draw indices/range changed between variants');
+     must(Object.keys(geometry.attributes).filter(key => key !== ATTRIBUTE).length === before.attributes.length, 'Original draw attribute set changed');
+     for (const item of before.attributes) must(geometry.attributes[item.key] === item.attribute && sameBytes(bytes(item.attribute.array, item.count), item.copy), 'Original draw attribute changed: ' + item.key);
+-    if (variant === 'authored-support') {
++    if (variant === 'authored-support' || variant === 'authored-support-plus-sheet-fill-A') {
+       const a = geometry.getAttribute(ATTRIBUTE), v = mode.barrelLoft.vertexCount;
+       must(a === pairState.attribute && a.itemSize === 1 && a.array instanceof Float32Array && !a.normalized
+         && a.constructor === geometry.getAttribute('sweptLift').constructor && a.usage === geometry.getAttribute('sweptLift').usage && a.count === geometry.getAttribute('sweptLift').count
+@@ -136,13 +144,14 @@
+     must(programKey.call(this) === 'breakline-swept-barrel-rich' + (pairState.view ? '-view-region' : ''), 'Only original Rich shader is declared');
+     const vertex = shader.vertexShader, fragment = shader.fragmentShader;
+     exactlyOne(fragment, DISCARD);
++    for (const statement of [THROAT, GATE, SAFE_RAY]) exactlyOne(fragment, statement);
+     must(!vertex.includes('attribute float sweptMask;') && !vertex.includes('varying float vSweptMask;') && !fragment.includes('varying float vSweptMask;'), 'Sealed original shader already has candidate additions');
+     if (variant === 'baseline') {
+       pairState.baselineVertex ??= vertex; pairState.baselineFragment ??= fragment;
+       must(vertex === pairState.baselineVertex && fragment === pairState.baselineFragment, 'Original shader differs on baseline repeat');
+       must(!owner.mesh.geometry.getAttribute(ATTRIBUTE), 'Original baseline compile has added draw attribute');
+     } else {
+-      must(variant === 'authored-support' && vertex === pairState.baselineVertex && fragment === pairState.baselineFragment, 'Variant must start from byte-identical original shader');
++      must(variant === pairState.supportedVariant && vertex === pairState.baselineVertex && fragment === pairState.baselineFragment, 'Variant must start from byte-identical original shader');
+       exactlyOne(vertex, LIFT); exactlyOne(vertex, VARYING); exactlyOne(vertex, FLOW); exactlyOne(fragment, VARYING);
+       shader.vertexShader = vertex.replace(LIFT, LIFT_SUPPORTED).replace(VARYING, VARYING_SUPPORTED).replace(FLOW, FLOW_SUPPORTED);
+       shader.fragmentShader = fragment.replace(VARYING, VARYING_SUPPORTED).replace(DISCARD, SUPPORTED_DISCARD);
+@@ -150,11 +159,24 @@
+         'Variant vertex must equal original plus exactly one scalar attribute/varying/assignment');
+       must(shader.fragmentShader.replace(VARYING_SUPPORTED, VARYING).replace(SUPPORTED_DISCARD, DISCARD) === fragment,
+         'Variant fragment must equal original plus exactly one varying and one max predicate');
++      if (pairState.combined) {
++        must(pairState.view === undefined && variant === 'authored-support-plus-sheet-fill-A', 'Combined A only applies to the declared normal Rich pair');
++        for (const statement of [SKY, BACK, THROAT, GATE, SAFE_RAY]) exactlyOne(fragment, statement);
++        const maskOnlyFragment = shader.fragmentShader;
++        shader.fragmentShader = maskOnlyFragment.replace(SKY, SKY_ONCE).replace(BACK, BACK_FILL);
++        must(shader.fragmentShader.replace(SKY_ONCE, SKY).replace(BACK_FILL, BACK) === maskOnlyFragment,
++          'Combined variant must equal mask-only shader plus exactly the tested A sky and background statements');
++        for (const statement of [BACK_FILL, THROAT, GATE, SAFE_RAY, SUPPORTED_DISCARD]) exactlyOne(shader.fragmentShader, statement);
++        must(!shader.fragmentShader.includes(SKY) && !shader.fragmentShader.includes(BACK), 'Combined A must replace both original sky/background statements');
++      }
+     }
+     compiled.push({ pair: pairState.id, variant, view: pairState.view ?? 'rich', exactlyOneOriginalDiscard: true,
+       originalShaderByteIdenticalBeforeInjection: true, baselineShaderUnchanged: variant === 'baseline',
+       onlyDeclaredScalarAndPredicateAdded: variant === 'authored-support', retainsOriginalTextureMaskAndDither: true,
+-      authoredPredicate: variant === 'authored-support' ? SUPPORTED_DISCARD : null,
++      onlyDeclaredScalarPredicateAndExactSheetFillAAdded: variant === 'authored-support-plus-sheet-fill-A',
++      wallLightAEnabled: variant === 'authored-support-plus-sheet-fill-A',
++      directionTIRGatePreserved: true, safeNonzeroEnvironmentRayPreserved: true, throatOcclusionPreserved: true, ClassicUntouchedByDiagnostic: true,
++      authoredPredicate: variant !== 'baseline' ? SUPPORTED_DISCARD : null,
+       vertexAddedCharacters: shader.vertexShader.length - vertex.length, fragmentAddedCharacters: shader.fragmentShader.length - fragment.length,
+       waterShaderUntouchedByDiagnostic: true });
+   };
+@@ -162,7 +184,7 @@
+   function setVariant(value) {
+     variant = value;
+     const geometry = owner.mesh.geometry;
+-    if (value === 'authored-support') {
++    if (value === 'authored-support' || value === 'authored-support-plus-sheet-fill-A') {
+       must(!geometry.getAttribute(ATTRIBUTE), 'Only one additive attribute is allowed');
+       const reference = geometry.getAttribute('sweptLift'), vertices = mode.barrelLoft.vertexCount;
+       must(reference.array instanceof Float32Array && reference.itemSize === 1 && reference.count >= vertices && reference.usage === 35048, 'Existing F32 DynamicDrawUsage scalar attribute required');
+@@ -186,13 +208,16 @@
+     for (const key of ['fov', 'aspect', 'near', 'far', 'zoom']) must(Object.is(camera[key], fixed[key]), 'Completed cap projection parameter differs: ' + key);
+     camera.position.fromArray(fixed.eye); camera.quaternion.fromArray(fixed.quaternion); camera.up.fromArray(fixed.inheritedUp); camera.updateMatrixWorld(true); return camera;
+   }
+-  function capture(name, viewLabel) {
++  function capture(name, viewLabel, treatment) {
+     const declaration = declaredPairs[completed.length];
+-    must(active && declaration?.camera === name && declaration.view === viewLabel, 'Exactly the declared ordered fixed-camera/view pairs are allowed');
+-    const id = name + '-' + viewLabel, view = viewLabel === 'region' ? 'region' : undefined;
++    must(active && declaration?.camera === name && declaration.view === viewLabel && declaration.treatment === treatment, 'Exactly the declared ordered fixed-camera/view/treatment pairs are allowed');
++    const combined = treatment === 'authored-mask-plus-sheet-fill-A';
++    must(treatment === undefined || combined, 'Only the declared combined A treatment can extend mask-only pairs');
++    const id = name + '-' + viewLabel + (combined ? '-combined-A' : ''), view = viewLabel === 'region' ? 'region' : undefined;
++    must(!combined || (name === 'interior' && viewLabel === 'rich'), 'Combined A uses only the fixed interior Rich pair');
+     must(viewLabel === 'rich' || viewLabel === 'region', 'Only normal Rich and flat region views are declared');
+     const camera = cloneFixed(name), cameraBefore = words(camera), rawBefore = rawState(), originalDrawingBefore = geometryState(originalGeometry), evidenceStart = compiled.length;
+-    pairState = { id, view };
++    pairState = { id, view, combined, supportedVariant: combined ? 'authored-support-plus-sheet-fill-A' : 'authored-support' };
+     let baselinePNG, authoredPNG, geometry, render, repeatedIdentically, attributeEvidence, pairComplete = false;
+     try {
+       material.onBeforeCompile = diagnosticCompile; material.customProgramCacheKey = diagnosticKey;
+@@ -205,7 +230,7 @@
+       must(owner.view === view, 'Declared view output missing'); verifyRaw(rawBefore);
+       geometry = geometryState(owner.mesh.geometry); render = renderState(); verifyGeometry(geometry);
+       baselinePNG = d.canvas.toDataURL('image/png');
+-      setVariant('authored-support'); d.renderView(camera);
++      setVariant(pairState.supportedVariant); d.renderView(camera);
+       verifyRaw(rawBefore); verifyGeometry(geometry); verifyRenderState(render);
+       must(equalWords(words(camera), cameraBefore), 'Fixed clone changed between variants');
+       const a = pairState.attribute;
+@@ -218,8 +243,8 @@
+       must(equalWords(words(camera), cameraBefore), 'Fixed clone changed on restored repeat');
+       repeatedIdentically = baselinePNG === d.canvas.toDataURL('image/png'); must(repeatedIdentically, 'Restored baseline pixels differ');
+       const evidence = compiled.slice(evidenceStart);
+-      must(evidence.some(value => value.variant === 'baseline') && evidence.some(value => value.variant === 'authored-support'), 'Both pair shaders must compile');
+-      completed.push({ camera: name, view: viewLabel }); pairComplete = true;
++      must(evidence.some(value => value.variant === 'baseline') && evidence.some(value => value.variant === pairState.supportedVariant), 'Both pair shaders must compile');
++      completed.push({ ...declaration }); pairComplete = true;
+     } finally {
+       material.onBeforeCompile = compile; material.customProgramCacheKey = programKey;
+       owner.setView(originalView); variant = 'baseline'; restoreAttributes(); material.needsUpdate = true; d.renderView(originalCamera);
+@@ -228,12 +253,13 @@
+       if (completed.length === declaredPairs.length) active = false;
+     }
+     return { complete: true, camera: name, view: viewLabel, seaTime, stepCount: 0, fixedPose: cameras[name], baselinePNG, authoredPNG,
++      ...(combined ? { treatment } : {}),
+       shaderEvidence: compiled.slice(evidenceStart), baselineRepeatPixelsIdentical: repeatedIdentically, attributeEvidence,
+       guards: { exactPriorFull37ActiveWords: true, exactPriorRawFrontWords: true, originalDrawAttributesAndIndicesIdentical: true,
+         onlyDeclaredFinalF32ScalarAttributeAdded: true, actorBoard8Rider33Unchanged: true, sameFixedCloneWords: true,
+         waterMaskBytesImageAndGridIdentical: true, ordinaryWaterShaderMaterialAndGeometryUnchanged: true, depthStencilParametersUnchanged: true,
+-        originalShaderCacheViewAndAttributeSetRestored: true, normalCameraRestored: true },
+-      interpretation: 'Only final authored scalar support is added to the swept discard max. Authored fade/dither remain. Additional coverage may overlap ordinary water, resolved by unchanged depth/stencil. No exact seam complementarity, core1-loss, radiance, skin, air-volume or ride certification.' };
++        originalShaderCacheViewAndAttributeSetRestored: true, normalCameraRestored: true, wallLightMatchesOnlyCompletedAOrOff: true },
++      interpretation: (combined ? 'Exact final authored scalar support plus the source-pinned tested A sky/wall mixture; B throat bypass remains off. ' : 'Only final authored scalar support is added to the swept discard max. ') + 'Authored fade/dither remain. Additional coverage may overlap ordinary water, resolved by unchanged depth/stencil. No exact seam complementarity, core1-loss, radiance, skin, air-volume or ride certification.' };
+   }
+   window.__authoredMask = { capture, finish() {
+     must(completed.length === declaredPairs.length && !active && material.onBeforeCompile === compile && material.customProgramCacheKey === programKey
+--- /private/tmp/tube-authored-mask-native-20261005/native.mjs.pre-combined
++++ /private/tmp/tube-authored-mask-native-20261005/native.mjs
+@@ -19,7 +19,7 @@
+ assert.deepEqual(inputs.referenceCounts,expected.counts);assert.deepEqual(inputs.overrides,{seed:6238,componentCount:64,dx:2,fineSpacing:1});
+ assert(!existsSync(args.out));mkdirSync(args.out);const OUT=resolve(args.out),started=performance.now();let page,exitCode=0;
+ const report={schema:'matched-authored-mask-native/v1',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
+- referenceReport:inputs.referenceReport,referenceLoft:inputs.referenceLoft,settings:inputs.settings,overrides:inputs.overrides,graphics:inputs.graphics,
++ referenceReport:inputs.referenceReport,referenceLoft:inputs.referenceLoft,opticalAuthority:{report:inputs.opticalReportReference,owner:inputs.opticalOwnerReference,seal:inputs.opticalSealReference,build:inputs.opticalBuildReference,sourcePins:inputs.opticalSourcePins},settings:inputs.settings,overrides:inputs.overrides,graphics:inputs.graphics,
+  policy:inputs.comparison,limits:inputs.limits,stepCount:0,pairs:[],artifacts:[],pngCount:0,pngBytes:0,browserErrors:[],acceptance:{visualCause:null,playability:false,productionFixAdopted:false}};
+ function save(){const bytes=Buffer.from(JSON.stringify(report,null,2)+'\n');assert(bytes.length<=inputs.limits.reportBytes);writeFileSync(join(OUT,'report.json'),bytes);}
+ function png(file,url){assert.equal(typeof url,'string');assert(url.startsWith('data:image/png;base64,')&&!existsSync(join(OUT,file)));
+@@ -45,16 +45,17 @@
+  assert.equal(report.initial.seaTime,expected.epoch.seaTime);assert.equal(report.initial.compute,'gpu');assert.deepEqual(report.initial.canvas,[1708,879]);
+  await page.waitFor('!!breaklineDiagnostics.mode.surfer.skinned',10000);
+  report.installation=await page.eval(`(${installAuthoredMaskInspection.toString()})(${JSON.stringify(expected)},${JSON.stringify(inputs.fixedCameras)},${JSON.stringify(inputs.comparison.pairs)})`);save();
+- for(const {camera:name,view} of inputs.comparison.pairs){
++ for(const {camera:name,view,treatment} of inputs.comparison.pairs){
+   assert(performance.now()-started<inputs.limits.nativeSeconds*1000);
+-  const pair=await page.eval(`__authoredMask.capture(${JSON.stringify(name)},${JSON.stringify(view)})`);
++  const pair=await page.eval(`__authoredMask.capture(${JSON.stringify(name)},${JSON.stringify(view)},${JSON.stringify(treatment)})`);
+   assert(pair.complete&&pair.stepCount===0&&pair.seaTime===expected.epoch.seaTime&&pair.baselineRepeatPixelsIdentical);
+-  assert(Object.values(pair.guards).every(value=>value===true));assert.deepEqual(pair.fixedPose,inputs.fixedCameras[name]);assert.equal(pair.view,view);
+-  const baseline=png(name+'-'+view+'-original.png',pair.baselinePNG), authoredSupport=png(name+'-'+view+'-authored-support.png',pair.authoredPNG);
+-  delete pair.baselinePNG;delete pair.authoredPNG;report.pairs.push({...pair,baseline,authoredSupport});save();
++  assert(Object.values(pair.guards).every(value=>value===true));assert.deepEqual(pair.fixedPose,inputs.fixedCameras[name]);assert.equal(pair.view,view);assert.equal(pair.treatment,treatment);
++  const prefix=name+'-'+view+(treatment?'-combined':''),baseline=png(prefix+'-original.png',pair.baselinePNG);
++  const support=png(prefix+(treatment?'-mask-and-sheet-fill-A':'-authored-support')+'.png',pair.authoredPNG);
++  delete pair.baselinePNG;delete pair.authoredPNG;report.pairs.push({...pair,baseline,...(treatment?{combinedSupport:support}:{authoredSupport:support})});save();
+  }
+  report.restoration=await page.eval('__authoredMask.finish()');assert(report.restoration.complete&&report.restoration.originalShaderViewCameraRestored&&report.restoration.originalAttributeSetRestored);
+- assert.equal(report.pngCount,8);assert.deepEqual(report.browserErrors,[]);report.complete=true;
++ assert.equal(report.pngCount,10);assert.deepEqual(report.browserErrors,[]);report.complete=true;
+ } catch(error) {report.firstFailure=String(error?.stack??error).slice(0,16384);report.complete=false;exitCode=1;}
+ finally {clearTimeout(deadline);if(page)try{await page.close();report.ownedBrowserClose=true;}catch(error){report.ownedBrowserClose=false;report.closeFailure=String(error).slice(0,2048);report.complete=false;exitCode=1;}
+  report.elapsedMilliseconds=performance.now()-started;save();}
+--- /private/tmp/tube-authored-mask-native-20261005/prepare.py.pre-combined
++++ /private/tmp/tube-authored-mask-native-20261005/prepare.py
+@@ -8,11 +8,17 @@
+  b=Path(spec['file']).read_bytes();assert len(b)==spec['bytes'] and hashlib.sha256(b).hexdigest()==spec['sha256'],spec['file'];return b
+ assert not any((W/name).exists()for name in('dist','build.json','seal.json','prepare-result.json','owner.json','candidate-first')),'First-only root preparation'
+ inputs=json.loads((W/'inputs.json').read_bytes())
+-references=[inputs[key]for key in('referenceReport','referenceOwner','referenceLoft','referenceBuild','referenceSeal','referenceSourceFreeze','proposalReference','matchedMaskReference','matchedMaskOwnerReference')]
++references=[inputs[key]for key in('referenceReport','referenceOwner','referenceLoft','referenceBuild','referenceSeal','referenceSourceFreeze','proposalReference','matchedMaskReference','matchedMaskOwnerReference','opticalReportReference','opticalOwnerReference','opticalSealReference','opticalBuildReference')]+inputs['opticalSourcePins']
+ for spec in references+inputs['borrowedHelperPins']:verify(spec)
+ report=json.loads(verify(inputs['referenceReport']));owner=json.loads(verify(inputs['referenceOwner']))
+ assert report['complete'] and report['firstFailure']is None and report['stepCount']==0 and owner['complete'] and owner['exitCode']==0
+ matched=json.loads(verify(inputs['matchedMaskReference']));matched_owner=json.loads(verify(inputs['matchedMaskOwnerReference']));assert matched['complete'] and matched['stepCount']==0 and matched_owner['complete'] and matched_owner['exitCode']==0
++optical=json.loads(verify(inputs['opticalReportReference']));optical_owner=json.loads(verify(inputs['opticalOwnerReference']));optical_seal=json.loads(verify(inputs['opticalSealReference']))
++assert optical['complete'] and optical['firstFailure']is None and optical['stepCount']==0 and optical['pngCount']==6 and len(optical['triples'])==2
++assert optical_owner['complete'] and optical_owner['exitCode']==0 and optical_owner['preExecutionPinsVerified'] and optical_owner['postExecutionPinsVerified'] and all(optical_owner['closedPorts'].values())
++assert optical_seal['complete'] and optical_seal['rootAuthorized'] and optical_owner['sealSha256']==inputs['opticalSealReference']['sha256']==optical['sealSha256']
++assert all(pair['baselineRepeatAfterAPixelsIdentical'] and pair['baselineRepeatAfterBPixelsIdentical'] and all(pair['guards'].values())for pair in optical['triples'])
++assert json.loads(verify(inputs['opticalBuildReference']))['build']==inputs['applicationBuildId']
+ parent=json.loads(verify(inputs['referenceSeal']));assert parent['rootAuthorized'] and parent['complete']
+ build=json.loads(verify(inputs['referenceBuild']));assert build['build']==inputs['applicationBuildId']
+ # Prior frozen assets/sources are authoritative. Current mutable repository files are not frozen or compared here.
+@@ -22,7 +28,7 @@
+ copied={'schema':'matched-authored-mask-build/v1','build':inputs['applicationBuildId'],'operation':'Copy sealed completed cap dist only; no build or live-source freeze.',
+  'assets':[pin(p)for p in sorted((W/'dist').rglob('*'))if p.is_file()],'priorBuild':inputs['referenceBuild']}
+ (W/'build.json').write_text(json.dumps(copied,indent=2)+'\n')
+-names=('inputs.json','README.md','prepare.py','run.py','native.mjs','authored-mask-inspection.mjs')
++names=('inputs.json','README.md','prepare.py','run.py','native.mjs','authored-mask-inspection.mjs','combined-extension.patch')
+ seal={'schema':'matched-authored-mask-seal/v1','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),
+  'helpers':[pin(W/name)for name in names],'borrowedHelpers':inputs['borrowedHelperPins'],'references':references,
+  'priorAssetsAndFrozenSources':build['assets']+build['sources'],'limits':inputs['limits'],'comparison':inputs['comparison']}
+--- /private/tmp/tube-authored-mask-native-20261005/run.py.pre-combined
++++ /private/tmp/tube-authored-mask-native-20261005/run.py
+@@ -26,7 +26,7 @@
+  return [int(words[0])for row in raw.splitlines()if len(words:=row.split())==3 and int(words[1])==pgid and not words[2].startswith('Z')]
+ def validate_result(result):
+  assert result['schema']=='matched-authored-mask-native/v1' and result['complete'] and result['firstFailure']is None and result['ownedBrowserClose']
+- assert not result['browserErrors'] and result['stepCount']==0 and result['pngCount']==8 and len(result['pairs'])==4
++ assert not result['browserErrors'] and result['stepCount']==0 and result['pngCount']==10 and len(result['pairs'])==5
+  assert result['applicationBuildRequest']['build']=='tube-cap-refinement-20261005' and result['applicationBuildRequest']['checkedBeforeReplay']
+  assert result['replayStartup']['publicStartCalls']==1 and result['replayStartup']['noPlacement'] and result['replayStartup']['noClockAssignment']
+  assert result['restoration']['complete'] and result['restoration']['originalShaderViewCameraRestored'] and result['restoration']['originalAttributeSetRestored']
+@@ -36,23 +36,30 @@
+  assert result['initial']['canvas']==[1708,879] and result['initial']['menu']['selectedChoices']==['Padang Padang','Big','Mid','Calm','Midday']
+  expected={'report.json'};pngbytes=0
+  for declaration,pair in zip(inputs['comparison']['pairs'],result['pairs']):
+-  name=declaration['camera'];view=declaration['view']
++  name=declaration['camera'];view=declaration['view'];treatment=declaration.get('treatment');combined=treatment=='authored-mask-plus-sheet-fill-A'
++  assert pair.get('treatment')==treatment
+   assert pair['complete'] and pair['camera']==name and pair['view']==view and pair['fixedPose']==inputs['fixedCameras'][name] and pair['stepCount']==0
+   assert pair['seaTime']==reference['epoch']['seaTime'] and pair['baselineRepeatPixelsIdentical'] and all(pair['guards'].values())
+   assert any(p['variant']=='baseline' and p['baselineShaderUnchanged'] and p['vertexAddedCharacters']==0 and p['fragmentAddedCharacters']==0 for p in pair['shaderEvidence'])
+-  assert any(p['variant']=='authored-support' and p['onlyDeclaredScalarAndPredicateAdded'] and p['originalShaderByteIdenticalBeforeInjection'] and p['authoredPredicate']==inputs['comparison']['authoredPredicate'] for p in pair['shaderEvidence'])
++  support_variant='authored-support-plus-sheet-fill-A'if combined else'authored-support'
++  change_guard='onlyDeclaredScalarPredicateAndExactSheetFillAAdded'if combined else'onlyDeclaredScalarAndPredicateAdded'
++  assert any(p['variant']==support_variant and p[change_guard] and p['wallLightAEnabled']==combined and p['originalShaderByteIdenticalBeforeInjection'] and p['authoredPredicate']==inputs['comparison']['authoredPredicate']for p in pair['shaderEvidence'])
++  assert all(p['directionTIRGatePreserved'] and p['safeNonzeroEnvironmentRayPreserved'] and p['throatOcclusionPreserved'] and p['ClassicUntouchedByDiagnostic']for p in pair['shaderEvidence'])
++  assert all(not p['wallLightAEnabled']for p in pair['shaderEvidence']if p['variant']=='baseline')
+   assert all(p['retainsOriginalTextureMaskAndDither'] and p['waterShaderUntouchedByDiagnostic'] for p in pair['shaderEvidence'])
+   a=pair['attributeEvidence'];assert a['name']=='sweptMask' and a['itemSize']==1 and a['dtype']=='Float32Array' and not a['normalized']
+   assert a['activeCopiedWords']==reference['counts']['vertices'] and a['actualFinalMaskBytesExact'] and a['constructorAndUsageFromExistingScalar']
+   assert a['usage']==35048 and a['requestedUploadRanges']==[{'start':0,'count':reference['counts']['vertices']}]
+-  for key,suffix in (('baseline','original'),('authoredSupport','authored-support')):
+-   artifact=pair[key];assert artifact['file']==name+'-'+view+'-'+suffix+'.png';expected.add(artifact['file'])
++  prefix=name+'-'+view+('-combined'if combined else'')
++  support_key,support_suffix=('combinedSupport','mask-and-sheet-fill-A')if combined else('authoredSupport','authored-support')
++  for key,suffix in (('baseline','original'),(support_key,support_suffix)):
++   artifact=pair[key];assert artifact['file']==prefix+'-'+suffix+'.png';expected.add(artifact['file'])
+    raw=verify({**artifact,'file':str(out/artifact['file'])});assert raw.startswith(b'\x89PNG\r\n\x1a\n') and len(raw)<=inputs['limits']['pngBytesEach'];pngbytes+=len(raw)
+- assert len(result['artifacts'])==8 and pngbytes==result['pngBytes']<=inputs['limits']['pngBytesTotal']
++ assert len(result['artifacts'])==10 and pngbytes==result['pngBytes']<=inputs['limits']['pngBytesTotal']
+  assert (out/'report.json').stat().st_size<=inputs['limits']['reportBytes'] and {p.name for p in out.iterdir()}==expected
+- return {'steps':0,'pngCount':8,'exactPriorFull37RawFrontAndCurrentOriginalDrawingGuardsVerified':True,
+-  'exactFixedInteriorAndSideCamerasVerified':True,'fourRestoredBaselineRepeatsPixelExact':True,
+-  'onlyExactFinalF32ScalarAndMaxPredicateAdded':True,'authoredFadeAndSharedDitherRetained':True,
++ return {'steps':0,'pngCount':10,'exactPriorFull37RawFrontAndCurrentOriginalDrawingGuardsVerified':True,
++  'exactFixedInteriorAndSideCamerasVerified':True,'fiveRestoredBaselineRepeatsPixelExact':True,
++  'firstFourPairsOnlyExactFinalF32ScalarAndMaxPredicateAdded':True,'fifthPairOnlyMaskPlusExactTestedWallLightA':True,'authoredFadeAndSharedDitherRetained':True,
+   'ordinaryWaterShaderMaskDepthStencilParameterGuardsVerified':True,'allOriginalShaderViewAttributeCameraRestorationsVerified':True,
+   'visualCauseCore1LossOrProductionAdoptionClaim':False}
+ sealbytes=(W/'seal.json').read_bytes();seal=json.loads(sealbytes);inputs=json.loads((W/'inputs.json').read_bytes())

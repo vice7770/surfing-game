@@ -1,0 +1,132 @@
+{
+  "schema": "tube-authored-mask-comparison-archive/v1",
+  "actualTerminalOwner": true,
+  "elapsedSeconds": 179.84576529200422,
+  "steps": 0,
+  "pngCount": 10,
+  "allFiveRestoredBaselineRepeatsPixelExact": true,
+  "rootActuallyViewedAllTenImages": true,
+  "scope": "Four mask-only pairs and one combined mask+A interior Rich pair at exact prior fixed geometry/cameras. Some missing pixels reduce, especially side wall/lip; dense partial-fade stipple, grey band and angular contour persist. Combined A replaces black interior strip with modeled green wall background. No ride/reference-quality acceptance.",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 6696,
+      "sha256": "dabb65f642353166108cb0a9dc3ff463402bc3db87918b5cfb163b26755f2e45"
+    },
+    {
+      "file": "authored-mask-inspection.mjs",
+      "bytes": 26195,
+      "sha256": "46bf01d7113700d96502dae2fd1e8821f1220bf89fded3be20f183bb9dbd1ccb"
+    },
+    {
+      "file": "build.json",
+      "bytes": 11113,
+      "sha256": "7a03efc16e9487351cf982bcc69f21587a7d38de3fa58c3b4d1f176b999bd7ef"
+    },
+    {
+      "file": "combined-extension.patch",
+      "bytes": 42196,
+      "sha256": "d234c8687ccaa1e2ed356e87011b88458d1048aaa0c21da10274748e9f0c9355"
+    },
+    {
+      "file": "inputs.json",
+      "bytes": 11001,
+      "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+    },
+    {
+      "file": "interior-region-authored-support.png",
+      "bytes": 839660,
+      "sha256": "9def6a6222d128bd7b918223e0ae8ce9af2300b431797507db9801fef82dd96a"
+    },
+    {
+      "file": "interior-region-original.png",
+      "bytes": 933925,
+      "sha256": "9a6290b0eeda64bd85fb752d89f05d732a31b259f33439f243816397bf255dd3"
+    },
+    {
+      "file": "interior-rich-authored-support.png",
+      "bytes": 1982817,
+      "sha256": "7af9cc34fb0ebdf64da6ba27cab9f93ac5f5331bb3b968b964459b30e1753f74"
+    },
+    {
+      "file": "interior-rich-combined-mask-and-sheet-fill-A.png",
+      "bytes": 1979202,
+      "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+    },
+    {
+      "file": "interior-rich-combined-original.png",
+      "bytes": 2064927,
+      "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+    },
+    {
+      "file": "interior-rich-original.png",
+      "bytes": 2064927,
+      "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+    },
+    {
+      "file": "native.log",
+      "bytes": 62,
+      "sha256": "9a2d9a61032ee5d51018adb94a09ab637a67028694d39e23da10f5dcb22732f4"
+    },
+    {
+      "file": "native.mjs",
+      "bytes": 10013,
+      "sha256": "f50d98a0258b800c43919bd7e35a69466840b011efc91aa7dcc2dcfb5c2cccd3"
+    },
+    {
+      "file": "owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "prepare-result.json",
+      "bytes": 586,
+      "sha256": "137d03ccc4f414593fec107307d9c5c5f0b79fa610deae99593434c6ea4dcf4b"
+    },
+    {
+      "file": "prepare.py",
+      "bytes": 4307,
+      "sha256": "a2683fe86403a134171fa3cb33fe19fc8f1393e9ed91aa5c87ed31d21adeeb0b"
+    },
+    {
+      "file": "report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    },
+    {
+      "file": "root-preflight-failure.json",
+      "bytes": 509,
+      "sha256": "fc59b5ae614068b14f063a19eb45c05f3cf2cf2d0054c51e7d249a046868d256"
+    },
+    {
+      "file": "run.py",
+      "bytes": 10971,
+      "sha256": "43406eefe0e6eec0203cae9a1cf5fa367dd4e645157e48c5d00b7c302963bbee"
+    },
+    {
+      "file": "seal.json",
+      "bytes": 22535,
+      "sha256": "b22727d355b9b3b8ef78877f92ccbc7496a40a98390f27c4119b3e63706f64e2"
+    },
+    {
+      "file": "side-region-authored-support.png",
+      "bytes": 541363,
+      "sha256": "0bf0ca2dadab1999773123cff1d1278676012018ad7694ee6c4465bb389e7569"
+    },
+    {
+      "file": "side-region-original.png",
+      "bytes": 668105,
+      "sha256": "7d0e1ad49ba90a92c8082bd14a605ec88c3cb92bdbdaaf97ec96225e9285aa5c"
+    },
+    {
+      "file": "side-rich-authored-support.png",
+      "bytes": 1335491,
+      "sha256": "a985192a782496fdd2820aa6da940222c7d377e671af1813de4ed9869d0c3d7e"
+    },
+    {
+      "file": "side-rich-original.png",
+      "bytes": 1446012,
+      "sha256": "2ab8d64d8624506d09989ebb8a4b9690569ce8ccd4634ba869392cb8968d39e8"
+    }
+  ]
+}
