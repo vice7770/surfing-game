@@ -1050,14 +1050,17 @@ export class AttachedRider {
    */
   private remap(parts: Float64Array, toUpright: boolean, board: BoardBody): void {
     this.frame(board);
-    const inverseHeading = this.spin.copy(this.bodyFrame).invert();
+    // Entering upright uses the destination's current heading. While lying down,
+    // bodyFrame can still be identity or an older mount's frame. Leaving upright
+    // uses its actual body frame, including bank, to preserve the world points.
+    const inverseFrame = this.spin.copy(toUpright ? this.heading : this.bodyFrame).invert();
     const baseWorld = board.toWorld(this.base, this.baseWorld);
     for (let i = 0; i < RIDER_PARTS.length; i += 1) {
       const part = this.localScratch.set(parts[i * 3], parts[i * 3 + 1], parts[i * 3 + 2]);
       let world: Vector3;
       if (toUpright) {
         world = board.toWorld(part, this.scratch);
-        part.subVectors(world, baseWorld).applyQuaternion(inverseHeading).add(this.base);
+        part.subVectors(world, baseWorld).applyQuaternion(inverseFrame).add(this.base);
       } else {
         world = this.scratch.subVectors(part, this.base).applyQuaternion(this.bodyFrame).add(baseWorld);
         board.toLocal(world, part);
