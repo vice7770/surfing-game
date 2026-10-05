@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TANK_SWELL_LIMITS } from './PhysicalMode';
+import { TANK_SWELL_LIMITS, swellFor } from './PhysicalMode';
 import skyManifest from '../../public/assets/skies/skies.json';
 import { nearestSky, sunElevationFromSlider, type SkyEntry } from '../scene/PhotoSky';
 import {
@@ -20,18 +20,30 @@ describe('surf conditions', () => {
     const settings = physicalSettingsFor('reef', { swell: 'big', tide: 'high', wind: 'onshore', time: 'dawn' }, { stage: 1, compute: 'cpu' });
     expect(settings).toMatchObject({
       spot: 'reef', source: 'buoy', significantHeight: REEF_SWELLS.big.significantHeight, peakPeriod: REEF_SWELLS.big.peakPeriod,
-      directionDegrees: 20, tide: 0.6, windSpeed: 6, stage: 2, compute: 'auto',
+      directionDegrees: 0, tide: 0.6, windSpeed: 6, stage: 2, compute: 'auto',
     });
   });
 
-  it('gives the Reef its own long-period swells from the peak’s side', () => {
+  it('gives the Reef its own long-period swells, square to the beach', () => {
     const settings = physicalSettingsFor('reef', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, water);
-    expect(settings).toMatchObject({ source: 'buoy', significantHeight: REEF_SWELLS.medium.significantHeight, peakPeriod: REEF_SWELLS.medium.peakPeriod, directionDegrees: 20, stage: 2 });
+    expect(settings).toMatchObject({ source: 'buoy', significantHeight: REEF_SWELLS.medium.significantHeight, peakPeriod: REEF_SWELLS.medium.peakPeriod, directionDegrees: 0, stage: 2 });
     expect(physicalSettingsFor('point', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, water).significantHeight).toBe(SWELLS.medium.significantHeight);
     for (const swell of Object.values(REEF_SWELLS)) {
       expect(swell.significantHeight).toBeLessThanOrEqual(TANK_SWELL_LIMITS.height.max);
       expect(swell.peakPeriod).toBeGreaterThanOrEqual(14);
       expect(swell.peakPeriod).toBeLessThanOrEqual(TANK_SWELL_LIMITS.period.max);
+    }
+  });
+
+  it('sends every spot but the Wave Pool its swell refracted: square to the beach and long-crested', () => {
+    // The crest-angle report (docs/research/crest-angle-2026-10-05.md): at the buoy's spread and 10–20°, crests ran across the beach.
+    for (const spot of ['beach', 'point', 'reef', 'canyon', 'padang'] as const) {
+      for (const swell of ['practice', 'small', 'medium', 'big'] as const) {
+        const settings = physicalSettingsFor(spot, { swell, tide: 'mid', wind: 'calm', time: 'midday' }, water);
+        const sea = swellFor(settings);
+        expect(sea.directionDegrees ?? settings.directionDegrees).toBe(0);
+        expect(sea.spreading).toBeGreaterThanOrEqual(100);
+      }
     }
   });
 
@@ -44,7 +56,6 @@ describe('surf conditions', () => {
     });
     // A groundswell refracted into 10 m is long-crested: never below Goda's s_max for long-decay swell (Goda et al. 1978).
     for (const swell of Object.values(PADANG_SWELLS)) expect(swell.spreading).toBeGreaterThanOrEqual(75);
-    expect(physicalSettingsFor('point', { swell: 'medium', tide: 'mid', wind: 'calm', time: 'midday' }, water).spreading).toBeUndefined();
     for (const swell of Object.values(PADANG_SWELLS)) {
       expect(swell.significantHeight).toBeLessThanOrEqual(TANK_SWELL_LIMITS.height.max);
       expect(swell.peakPeriod).toBeGreaterThanOrEqual(16);

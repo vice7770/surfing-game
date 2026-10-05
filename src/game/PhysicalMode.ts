@@ -81,22 +81,39 @@ export interface SwellInput {
 }
 
 /**
+ * Directional spreading of a swell refracted into a surf zone's 5–10 m edge, the cos-2s exponent s: refraction
+ * turns every direction toward the depth contours, narrowing a groundswell past s = 100 by h/L0 ≈ 0.025 (Goda,
+ * Takayama & Suzuki 1978, eq. 17 and fig. 5; docs/research/water-physics/breaking.md). The tank's edge is that
+ * shallow, so its swell arrives this narrow and square to the beach. At the buoy's s = 14–17 (the spread slider's
+ * 0.2–0.3) from 10–20°, crests after the session's opening set ran across the beach
+ * (docs/research/crest-angle-2026-10-05.md). Padang Padang's own value, provisional with it.
+ */
+export const REFRACTED_SPREADING = 150;
+
+/**
  * Practice mode (plan P4f): a narrow-band, narrow-spread groundswell that keeps
  * catchable faces coming. Only the incoming water changes; the solver and every
  * force law are the natural mode's. Ghost riders catch most on the Point in it.
  * Its height gives the Canyon chest-to-head-high faces (1–1.5 m; the riding-the-wave
  * spec's reference wave): at Hs 2 m the faces were 2.2–2.8 m and riders reached
- * 11–12 m/s off the bottom (docs/research/reference-wave.md).
+ * 11–12 m/s off the bottom (docs/research/reference-wave.md). Refracted, it arrives
+ * square to the beach (REFRACTED_SPREADING); it came from 10° at s = 40 until 2026-10-05.
  */
-export const PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1.4, peakPeriod: 12, spreading: 40, bandwidth: 0.08, directionDegrees: 10 };
+export const PRACTICE_SWELL: Readonly<SwellInput> = {
+  significantHeight: 1.4, peakPeriod: 12, spreading: REFRACTED_SPREADING, bandwidth: 0.08, directionDegrees: 0,
+};
 
 /**
  * The Reef's practice groundswell: the Practice swell's narrow band and spread at a
- * Teahupo'o period, from the peak's side, for ~1.5–2 m faces (the Teahupo'o Reef spec).
- * The Reef stays fast when small: its break runs along the ledge at no less than the
- * shelf's celerity (src/wave/ledgePeel.ts). Provisional until the size report calibrates it.
+ * Teahupo'o period, square to the beach, for ~1.5–2 m faces (the Teahupo'o Reef spec);
+ * the ledge's angle carries the obliquity, as Padang Padang's reef does. It came from
+ * 20° at s = 40 until 2026-10-05. The Reef stays fast when small: its break runs along
+ * the ledge at no less than the shelf's celerity (src/wave/ledgePeel.ts). Provisional
+ * until the size report calibrates it.
  */
-export const REEF_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1, peakPeriod: 14, spreading: 40, bandwidth: 0.08, directionDegrees: 20 };
+export const REEF_PRACTICE_SWELL: Readonly<SwellInput> = {
+  significantHeight: 1, peakPeriod: 14, spreading: REFRACTED_SPREADING, bandwidth: 0.08, directionDegrees: 0,
+};
 
 /**
  * Padang Padang's directional spreading, the cos-2s exponent s at its edge: a Southern Ocean groundswell
@@ -104,7 +121,7 @@ export const REEF_PRACTICE_SWELL: Readonly<SwellInput> = { significantHeight: 1,
  * (Goda, Takayama & Suzuki 1978, eq. 17 and fig. 5); the Bukit's tip also filters the directions that wrap round.
  * Provisional (the advisor's ruling, 2026-09-28): swept over 100–250, never below 75.
  */
-export const PADANG_SPREADING = 150;
+export const PADANG_SPREADING = REFRACTED_SPREADING;
 
 /**
  * Padang Padang's practice groundswell: the Practice swell's narrow band and spread at a Padang Padang period,

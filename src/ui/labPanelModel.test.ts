@@ -35,8 +35,8 @@ describe('lab panel model', () => {
   it('says what a storm delivers at the spot, and what the practice swell is', () => {
     const storm = { ...defaultLabSettings().physical, source: 'storm' as const };
     expect(stormArrives(storm, 'metric')).toMatch(/^Arrives at the spot as \d+\.\d m, \d+ s$/);
-    expect(practiceNote('metric', 'canyon')).toBe('A steady 1.4 m groundswell every 12 s, from 10°.');
-    expect(practiceNote('metric', 'reef')).toBe('A steady 1.0 m groundswell every 14 s, from 20°.');
+    expect(practiceNote('metric', 'canyon')).toBe('A steady 1.4 m groundswell every 12 s, from 0°.');
+    expect(practiceNote('metric', 'reef')).toBe('A steady 1.0 m groundswell every 14 s, from 0°.');
   });
 
   it('shows only the sliders of the chosen swell source, with the direction fixed for Practice', () => {
@@ -52,8 +52,8 @@ describe('lab panel model', () => {
   it('shows the direction a spot’s Practice swell really comes from', () => {
     const direction = (spot: 'reef' | 'canyon') => labSliders({ ...defaultLabSettings().physical, source: 'practice', spot, directionDegrees: -30 }, 'metric')
       .find((slider) => slider.key === 'directionDegrees');
-    expect(direction('reef')).toMatchObject({ value: 20, text: '20°' });
-    expect(direction('canyon')).toMatchObject({ value: 10, text: '10°' });
+    expect(direction('reef')).toMatchObject({ value: 0, text: '0°' });
+    expect(direction('canyon')).toMatchObject({ value: 0, text: '0°' });
   });
 
   it('formats every slider’s value for its output', () => {

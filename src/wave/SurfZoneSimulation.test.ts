@@ -775,7 +775,7 @@ describe('SurfZoneSimulation', () => {
   it('seats the Canyon take-off where its bed gathers the swell, from either side', () => {
     const canyon = createSpot('canyon', 1);
     const bed = (x: number, z: number) => tankDepth(canyon, OFFSHORE_DEPTH.canyon, x, z);
-    for (const directionDegrees of [-10, 10, 25]) {
+    for (const directionDegrees of [-10, 0, 10, 25]) {
       const config: SurfZoneConfig = { ...small, spot: 'canyon', alongShore: 160, peakPeriod: 10, directionDegrees };
       const point = takeOffPoint(config);
       const swell = { period: 10, direction: (directionDegrees * Math.PI) / 180 };
