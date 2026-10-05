@@ -1,0 +1,112 @@
+{
+  "schema": "C-retirement-boundary-root-pixel-inspection/v1",
+  "complete": true,
+  "nativeInputs": [
+    {
+      "file": "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first/report.json",
+      "bytes": 9386244,
+      "sha256": "23899d70ad31ddf7211f205ac800053258e17ca21109684e0c1658062698830c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first-owner.json",
+      "bytes": 3323,
+      "sha256": "d1fc43473a857a18d859436d15c814b24daf2c307edf5bb99164701330f0a5aa"
+    }
+  ],
+  "normalAndDiagnosticPNGsInspected": [
+    {
+      "file": "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first/0-initial.png",
+      "bytes": 938974,
+      "sha256": "dd0b3b4e6746cf0fe691e3fed8a42e31dd16733b27548dc5e9ea72fcf2491a90"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first/1-initial-exterior.png",
+      "bytes": 2426971,
+      "sha256": "0dafc3adbe9ce62f18ac43b1e40337b3c828b71484b279936dd30be594fbc63e"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first/2-first-phase2.png",
+      "bytes": 1127197,
+      "sha256": "df35aaf8d3e4ec2ebd9a031c7f21881e7902a3a1b4ac3a7d006ca6f823fdef52"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first/3-first-phase2-water-hidden.png",
+      "bytes": 1111033,
+      "sha256": "88158bae73424b777be0d14602bbbd6adfab953ce8a1adeac86cd59f1431c0ca"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first/4-first-phase2-barrel-hidden.png",
+      "bytes": 1056742,
+      "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first/5-terminal.png",
+      "bytes": 2057975,
+      "sha256": "a3b2983174f4f1d121b408b56b25b91c4e2265ad2d56bac1edc8ae600724e316"
+    }
+  ],
+  "actualMovie": {
+    "file": "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first/moving-C.webm",
+    "bytes": 1709532,
+    "sha256": "6d462075ea63a0f5b4721dd446496002a03dc739214cde730e02ae4b66236103"
+  },
+  "ffprobe": {
+    "file": "/private/tmp/tube-retirement-boundary-root-pixel-review-20261005/ffprobe.json",
+    "bytes": 250,
+    "sha256": "17179721a39aa4fa1e1b3dc4e146e8b0139432531a0924fad98c5033dbecfc16"
+  },
+  "decodeReceipt": {
+    "file": "/private/tmp/tube-retirement-boundary-root-pixel-review-20261005/decode-receipt.json",
+    "bytes": 494,
+    "sha256": "629e4028bcb8f67e9df6d68dabfd494554e936801ed1f6ceb725b85fbfebfdf5"
+  },
+  "encodedFramesCounted": 71,
+  "decodedEncodedFrameIndices": [
+    0,
+    17,
+    35,
+    53,
+    70
+  ],
+  "decodedFramesInspected": [
+    {
+      "file": "/private/tmp/tube-retirement-boundary-root-pixel-review-20261005/movie-frame-01.png",
+      "bytes": 299688,
+      "sha256": "ae79e49322d42283c45c9b04c930b06fa0b406b5041e0bed6800cc12c36ee9bb"
+    },
+    {
+      "file": "/private/tmp/tube-retirement-boundary-root-pixel-review-20261005/movie-frame-02.png",
+      "bytes": 537351,
+      "sha256": "9010a663e30a1c7e88067050a4661a5bddef31fdfdda95be8229da7dfda21f7a"
+    },
+    {
+      "file": "/private/tmp/tube-retirement-boundary-root-pixel-review-20261005/movie-frame-03.png",
+      "bytes": 547769,
+      "sha256": "601fb517033118cf7087730b6ae06943a21a0c94c09edc2d5ee6d4b66d34a38b"
+    },
+    {
+      "file": "/private/tmp/tube-retirement-boundary-root-pixel-review-20261005/movie-frame-04.png",
+      "bytes": 1219091,
+      "sha256": "8af37ea95d21658a1fef65f047b59a1041c77e06f97e46a4ef836efdfb373036"
+    },
+    {
+      "file": "/private/tmp/tube-retirement-boundary-root-pixel-review-20261005/movie-frame-05.png",
+      "bytes": 1307862,
+      "sha256": "47125a4bd8f9e98a52473b3044fc7fa23880fe1cb10ed3d36d71078a1a08b34a"
+    }
+  ],
+  "actualVisualFindings": {
+    "initial": "Same narrow internal view with hard dark wall/roof crease and bright reflective right sheet.",
+    "exterior": "Wave face/lip present but no clear exterior tube entrance from the prescribed single exterior pose.",
+    "firstPhase2": "Roof and wall present; dark crease, narrow wall strips and sky-reflecting right sheet remain.",
+    "diagnosticPair": "Primary-water-hidden retains the crease/strips/reflective sheet. Barrel-hidden removes them within the declared visibility/stencil/fallback scope.",
+    "terminal": "After joined station loss, the preserved camera shows upper water plane/seabed and a folded closing sheet; not accepted as tube quality.",
+    "decodedMovieFrames": "All five actual selected frames inspected. Middle frames retain the crease and reflective sheet; terminal frame retains the failed end view."
+  },
+  "continuousPlaybackInspected": false,
+  "physicalPlaybackRateClaim": false,
+  "FPSClaim": false,
+  "bodyPassageClaim": false,
+  "qualityAccepted": false,
+  "scope": "Six actual PNGs and five decoded movie frames. No all-heightfield exclusion, per-fragment ownership, global no-tubes, or normal causality claim."
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "tube-retirement-and-ordinary-V4-archive-verification/v1",
+  "complete": true,
+  "manifest": {
+    "bytes": 110386,
+    "sha256": "ba11e04dbb8f11f13e09fcbc29ea0a7019f24b96368d3a4046e9fba7662de6e2"
+  },
+  "mode": "stored-decoded-and-originals",
+  "localPayloadFiles": 111,
+  "exactPriorReferences": 24,
+  "storedTreeBytesBeforeOutput": 28396914,
+  "storedPayloadBytes": 28286528,
+  "decodedLocalPayloadBytes": 66601612,
+  "storedByteCap": 31457280,
+  "runtimePostimages": 15,
+  "focusedTests": 14,
+  "fixture": 1,
+  "retirement": {
+    "observations": 71,
+    "advances": 70,
+    "actualPNGs": 6,
+    "actualMovies": 1,
+    "wordSidecars": 2
+  },
+  "ordinaryV4": {
+    "seed": 6238,
+    "steps": 1366,
+    "actualPNGs": 2,
+    "actualMovies": 0,
+    "wordSidecars": 2,
+    "phases": {
+      "prone": 1299,
+      "push": 43,
+      "landing": 23,
+      "fallen": 1
+    },
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 1366,
+      "phase": "fallen",
+      "separation": "lost board",
+      "resets": 0
+    }
+  },
+  "resourcesBuildTestsOrArchivedCodeExecuted": false,
+  "qualityFPSOrAdoptionAcceptance": false
+}

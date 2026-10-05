@@ -1,0 +1,3172 @@
+--- a/src/wave/barrel/boundedCConsumers.test.ts
++++ b/src/wave/barrel/boundedCConsumers.test.ts
+@@ -146,7 +146,7 @@
+       }
+     }
+     }
+-    writeFileSync('/private/tmp/tube-bounded-c-parallel-rays-20261004/consumer-mesh-receipt.json', JSON.stringify({ failures, firstVertices, checkedAir, zeroWeightRowsArePureWaterAndNotClaimedLiftedContours: true }, null, 2) + '\n');
++    if (process.env.CONSUMER_METRICS) writeFileSync(process.env.CONSUMER_METRICS, JSON.stringify({ failures, firstVertices, checkedAir, zeroWeightRowsArePureWaterAndNotClaimedLiftedContours: true }, null, 2) + '\n');
+     expect({ count: failures.length, first: failures[0], maxPenetration: Math.max(0, ...failures.map(f => f.penetration)) }).toEqual({ count: 0, first: undefined, maxPenetration: 0 });
+     expect(checkedAir).toBeGreaterThan(100);
+   }, 30000);
+--- a/src/wave/barrel/carrierSupport.test.ts
++++ b/src/wave/barrel/carrierSupport.test.ts
+@@ -106,7 +106,7 @@
+     }
+     const after = landmarks(new SweptLoft(lib, c.slope, { sheet: false }).build(afterRecords, fixture.after.componentRawRows.length, 0, () => 0), fixture.stationX);
+     // Mandatory raw X15 is itself provider-retired, even though its incident interpolation at the ORIGINAL
+-    // captured station remains live. An exact sampled cut may contain a zero-weight sealed boundary row.
++    // captured station remains live. The adjacent intrinsically dead sample is a zero-lift closure; the positive bracket keeps intrinsic weights.
+     // Classify the actual raw control and test the original fixed station, never a replacement nearby location.
+     const beforeRecords = measuredPacket(fixture.before.componentRawRows);
+     const providerFadeAt15 = (records: Float32Array) => {
+@@ -121,10 +121,10 @@
+     expect([...before.overturned, ...after.overturned].every(v => v === 1)).toBe(true);
+     const fixedWeight = (s: typeof before) => s.weights[0] + s.fraction * (s.weights[1] - s.weights[0]);
+     expect(fixedWeight(before)).toBeGreaterThan(0); expect(fixedWeight(after)).toBeGreaterThan(0);
+-    expect(after.weights[0]).toBe(0); expect(after.weights[1]).toBeGreaterThan(0);
++    expect(after.weights.every(w => w > 0)).toBe(true);
+     expect(after.y[0]).toBeGreaterThan(0);
+     metrics.handoffBoundaryClassification = { originalCapturedFixedX: fixture.stationX, raw15Before, raw15After, before, after,
+-      fixedWeightBefore: fixedWeight(before), fixedWeightAfter: fixedWeight(after), sealedFirstRowZeroRetained: true,
++      fixedWeightBefore: fixedWeight(before), fixedWeightAfter: fixedWeight(after), firstLiveRowNotResealed: true,
+       relocatedStation: false, originalEndpointWeightFailurePreserved: true };
+     const dz = after.z.map((z, i) => z - before.z[i]); for (const z of dz) expect(Math.abs(z)).toBeLessThan(.35);
+     metrics.handoff = { report: fixture.report, before, after, landmarkDeltaZ: dz, rawOldDelta: old.points[0].z - points[0].z, newEndpointDelta: f.points[0].z - points[0].z,
+@@ -209,12 +209,25 @@
+     Object.assign(p[3], { front: 2, x: 200, sigma: 0, tau: age, z: 140 }); Object.assign(p[4], { front: 2, x: 420, sigma: 220, tau: age, z: 140 });
+     const r = packet(p), fresh = new SweptLoft(lib, c.slope, { sheet: false }).build(r, p.length, 0, () => 0), prior = new ParentLoft(priorLib, c.slope, { sheet: false }).build(r, p.length, 0, () => 0);
+     const dead = (l: LoftResult) => Array.from({ length: l.sliceCount }, (_, k) => k).filter(k => l.sliceFront[k] === 1 && collapseFade(l.sliceSigma[k] <= 10 ? age : age + (100 - age) * (l.sliceSigma[k] - 10) / 10, times.touchdownSeconds, times.collapseSeconds) === 0);
+-    expect(prior.clamps).toBeGreaterThan(0); expect(dead(prior).length).toBeGreaterThan(0); expect(dead(fresh)).toEqual([]);
++    expect(prior.clamps).toBeGreaterThan(0); expect(dead(prior).length).toBeGreaterThan(0);
++    const flatDead = dead(fresh); expect(flatDead).toHaveLength(1);
++    for (const row of flatDead) {
++      expect(fresh.sliceFade[row]).toBe(0); expect(fresh.sliceWeight[row]).toBe(0); expect(fresh.sliceFormed[row]).toBe(0);
++      const x = fresh.positions[3 * (row * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest)];
++      const fraction = (x - r[FRONT_STRIDE + FRONT_FIELD.x]) / (r[2 * FRONT_STRIDE + FRONT_FIELD.x] - r[FRONT_STRIDE + FRONT_FIELD.x]);
++      const intrinsicTau = r[FRONT_STRIDE + FRONT_FIELD.tau] + fraction * (r[2 * FRONT_STRIDE + FRONT_FIELD.tau] - r[FRONT_STRIDE + FRONT_FIELD.tau]);
++      expect(fresh.sliceTau[row]).toBe(Math.fround(intrinsicTau));
++      for (let j = 0; j < LOFT_SAMPLES; j += 1) {
++        const v = row * LOFT_SAMPLES + j;
++        expect(fresh.positions[3 * v + 1]).toBe(0); expect(fresh.mask[v]).toBe(0); expect(fresh.lift[v]).toBe(0);
++        expect(fresh.sheetWeight[v]).toBe(0); expect(fresh.throat[4 * v + 3]).toBe(0);
++      }
++    }
+     for (const contact of [false, true]) { const next = new SweptLoft(new ProfileLibrary([tubeCase(.2), tubeCase(.4)]), .05, { contact, sheet: false }).build(r, p.length, 0, () => 0), parent = new ParentLoft(new ParentLibrary([tubeCase(.2), tubeCase(.4)]), .05, { contact, sheet: false }).build(r, p.length, 0, () => 0);
+       expect(next.sliceCount).toBe(parent.sliceCount); expect(next.indexCount).toBe(parent.indexCount); expect(next.clamps).toBe(parent.clamps);
+       for (const key of ['positions', 'normals', 'indices', 'sliceTau', 'sliceJoined', 'sliceWeight', 'sliceAnchorVZ'] as const) expect(new Uint8Array(next[key].buffer)).toEqual(new Uint8Array(parent[key].buffer));
+     }
+-    metrics.budget = { actualBudgetTriggered: true, priorClamps: prior.clamps, priorRevivedDeadRows: dead(prior).length, nextRevivedDeadRows: dead(fresh).length, rawDrawAndContactByteParity: true };
++    metrics.budget = { actualBudgetTriggered: true, priorClamps: prior.clamps, priorRevivedDeadRows: dead(prior).length, nextRevivedDeadRows: flatDead.filter(row => fresh.sliceWeight[row] > 0).length, retainedFlatDeadRows: flatDead.length, deadClockWordUnclamped: true, rawDrawAndContactByteParity: true };
+   }, 20000);
+   it('retires a physically expired stalled dependent component coherently, without water/air or unrelated removal', () => {
+     const p = [point(0, 1), point(1, 9)]; for (const a of p) a.tau = a.jetUntil! + .01;
+--- a/src/wave/barrel/retirementBoundary.fixture.json
++++ b/src/wave/barrel/retirementBoundary.fixture.json
+@@ -0,0 +1,2611 @@
++{
++  "schema": "actual-stable-X-retirement-packets-59-60/v1",
++  "source": {
++    "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/report.json",
++    "bytes": 8731120,
++    "sha256": "87a91ebe2f48455053c857004c5345bda4abdb39be5cb655637d0a76cfbfe4d7"
++  },
++  "sourceWordsRetained": true,
++  "ordinaryFlatCPUSubstrateNotNativeHeightfieldReplay": true,
++  "epochs": [
++    {
++      "movingStep": 59,
++      "step": 59,
++      "seaTime": 362.79004276701426,
++      "front": 120,
++      "locked": {
++        "front": 106,
++        "stationX": 16.25,
++        "initialSigma": 68.67304229736328,
++        "along": 0.6398658752441406,
++        "youngerSign": 1,
++        "stationIdentity": "fixed-Eulerian-solver-column-crest-station",
++        "materialTrajectoryClaim": false
++      },
++      "packetRows": [
++        {
++          "x": 9,
++          "z": -132.32350158691406,
++          "front": 120,
++          "sigma": 0,
++          "tau": 2.035399913787842,
++          "footHeight": 2.602573871612549,
++          "footDepth": 7,
++          "throwZ": -145.58485412597656,
++          "pace": 6.515351295471191
++        },
++        {
++          "x": 11,
++          "z": -131.82318115234375,
++          "front": 120,
++          "sigma": 2.0616295337677,
++          "tau": 1.8374007940292358,
++          "footHeight": 2.6136748790740967,
++          "footDepth": 7,
++          "throwZ": -143.90618896484375,
++          "pace": 6.576138973236084
++        },
++        {
++          "x": 13,
++          "z": -131.51356506347656,
++          "front": 120,
++          "sigma": 4.08545446395874,
++          "tau": 1.6740518808364868,
++          "footHeight": 2.623868703842163,
++          "footDepth": 7,
++          "throwZ": -142.22732543945312,
++          "pace": 6.610039710998535
++        },
++        {
++          "x": 15,
++          "z": -130.5241241455078,
++          "front": 120,
++          "sigma": 6.316821575164795,
++          "tau": 1.512170433998108,
++          "footHeight": 2.6372344493865967,
++          "footDepth": 7,
++          "throwZ": -140.54818725585938,
++          "pace": 6.6289286613464355
++        },
++        {
++          "x": 17,
++          "z": -129.83070373535156,
++          "front": 120,
++          "sigma": 8.433618545532227,
++          "tau": 1.358811378479004,
++          "footHeight": 2.6462104320526123,
++          "footDepth": 7,
++          "throwZ": -138.86865234375,
++          "pace": 6.651371479034424
++        },
++        {
++          "x": 19,
++          "z": -129.43954467773438,
++          "front": 120,
++          "sigma": 10.471510887145996,
++          "tau": 1.210524559020996,
++          "footHeight": 2.658447027206421,
++          "footDepth": 7,
++          "throwZ": -137.1885986328125,
++          "pace": 6.692707538604736
++        },
++        {
++          "x": 21,
++          "z": -128.5137481689453,
++          "front": 120,
++          "sigma": 12.675390243530273,
++          "tau": 1.049038290977478,
++          "footHeight": 2.669858694076538,
++          "footDepth": 7,
++          "throwZ": -135.50782775878906,
++          "pace": 6.6671295166015625
++        },
++        {
++          "x": 23,
++          "z": -127.9958724975586,
++          "front": 120,
++          "sigma": 14.741353034973145,
++          "tau": 0.8767495155334473,
++          "footHeight": 2.676807165145874,
++          "footDepth": 7,
++          "throwZ": -133.82611083984375,
++          "pace": 6.649835109710693
++        },
++        {
++          "x": 25,
++          "z": -128.01144409179688,
++          "front": 120,
++          "sigma": 16.741413116455078,
++          "tau": 0.6861512660980225,
++          "footHeight": 2.686760663986206,
++          "footDepth": 7,
++          "throwZ": -132.1431427001953,
++          "pace": 6.678170680999756
++        },
++        {
++          "x": 27,
++          "z": -127.16117095947266,
++          "front": 120,
++          "sigma": 18.914653778076172,
++          "tau": 0.48784273862838745,
++          "footHeight": 2.6959311962127686,
++          "footDepth": 7,
++          "throwZ": -130.4585723876953,
++          "pace": 6.759154319763184
++        },
++        {
++          "x": 29,
++          "z": -126.72386169433594,
++          "front": 120,
++          "sigma": 20.961904525756836,
++          "tau": 0.3007885217666626,
++          "footHeight": 2.704578161239624,
++          "footDepth": 7,
++          "throwZ": -128.7719268798828,
++          "pace": 6.808996677398682
++        },
++        {
++          "x": 31,
++          "z": -126.8653335571289,
++          "front": 120,
++          "sigma": 22.966899871826172,
++          "tau": 0.10220394283533096,
++          "footHeight": 2.713033437728882,
++          "footDepth": 7,
++          "throwZ": -127.08267974853516,
++          "pace": 6.8366899490356445
++        },
++        {
++          "x": 33,
++          "z": -126.5,
++          "front": 120,
++          "sigma": 24.9999942779541,
++          "tau": -0.08574845641851425,
++          "footHeight": 2.7217957973480225,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 35,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 27.236061096191406,
++          "tau": -0.2051289677619934,
++          "footHeight": 2.7313497066497803,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 37,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 29.236061096191406,
++          "tau": -0.22542476654052734,
++          "footHeight": 2.7421071529388428,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 39,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 31.236061096191406,
++          "tau": -0.2759307026863098,
++          "footHeight": 2.7542970180511475,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 41,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 33.236061096191406,
++          "tau": -0.35793450474739075,
++          "footHeight": 2.7684619426727295,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 43,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 35.236061096191406,
++          "tau": -0.38656488060951233,
++          "footHeight": 2.784355878829956,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 45,
++          "z": -124.5,
++          "front": 120,
++          "sigma": 37.472129821777344,
++          "tau": -0.32345473766326904,
++          "footHeight": 2.8025062084198,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        }
++      ],
++      "oldLoftRows": [
++        {
++          "row": 83,
++          "sliceSigma": 5.758979797363281,
++          "sliceTau": 1.5526407957077026,
++          "sliceFade": 0.035892315208911896,
++          "sliceWeight": 0,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 0,
++          "crest": [
++            14.5,
++            1.760956883430481,
++            -130.771484375
++          ]
++        },
++        {
++          "row": 84,
++          "sliceSigma": 6.316821575164795,
++          "sliceTau": 1.512170433998108,
++          "sliceFade": 0.16301675140857697,
++          "sliceWeight": 0.02072758413851261,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            15,
++            1.8061633110046387,
++            -130.5241241455078
++          ]
++        },
++        {
++          "row": 85,
++          "sliceSigma": 6.846020698547363,
++          "sliceTau": 1.4738306999206543,
++          "sliceFade": 0.28276345133781433,
++          "sliceWeight": 0.11389102786779404,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            15.5,
++            1.9414881467819214,
++            -130.35076904296875
++          ]
++        },
++        {
++          "row": 86,
++          "sliceSigma": 7.37522029876709,
++          "sliceTau": 1.4354908466339111,
++          "sliceFade": 0.40243619680404663,
++          "sliceWeight": 0.28712067008018494,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            16,
++            2.183778762817383,
++            -130.1774139404297
++          ]
++        },
++        {
++          "row": 87,
++          "sliceSigma": 7.904419422149658,
++          "sliceTau": 1.3971511125564575,
++          "sliceFade": 0.5220350623130798,
++          "sliceWeight": 0.49351266026496887,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            16.5,
++            2.4665637016296387,
++            -130.00405883789062
++          ]
++        },
++        {
++          "row": 88,
++          "sliceSigma": 8.433618545532227,
++          "sliceTau": 1.358811378479004,
++          "sliceFade": 0.6415601372718811,
++          "sliceWeight": 0.6415601372718811,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            17,
++            2.6674532890319824,
++            -129.83070373535156
++          ]
++        },
++        {
++          "row": 89,
++          "sliceSigma": 8.94309139251709,
++          "sliceTau": 1.321739673614502,
++          "sliceFade": 0.7575605511665344,
++          "sliceWeight": 0.7575605511665344,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            17.5,
++            2.8243985176086426,
++            -129.73291015625
++          ]
++        },
++        {
++          "row": 90,
++          "sliceSigma": 9.452564239501953,
++          "sliceTau": 1.28466796875,
++          "sliceFade": 0.873462975025177,
++          "sliceWeight": 0.873462975025177,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            18,
++            2.985689401626587,
++            -129.6351318359375
++          ]
++        },
++        {
++          "row": 91,
++          "sliceSigma": 9.962038040161133,
++          "sliceTau": 1.247596263885498,
++          "sliceFade": 0.9892680048942566,
++          "sliceWeight": 0.9892680048942566,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            18.5,
++            3.150294542312622,
++            -129.53733825683594
++          ]
++        },
++        {
++          "row": 92,
++          "sliceSigma": 10.471510887145996,
++          "sliceTau": 1.210524559020996,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            19,
++            3.168537139892578,
++            -129.43954467773438
++          ]
++        },
++        {
++          "row": 93,
++          "sliceSigma": 11.022480964660645,
++          "sliceTau": 1.170153021812439,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            19.5,
++            3.171487808227539,
++            -129.20809936523438
++          ]
++        },
++        {
++          "row": 94,
++          "sliceSigma": 11.573450088500977,
++          "sliceTau": 1.1297814846038818,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            20,
++            3.1744372844696045,
++            -128.97665405273438
++          ]
++        },
++        {
++          "row": 95,
++          "sliceSigma": 12.124420166015625,
++          "sliceTau": 1.0894098281860352,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            20.5,
++            3.177385091781616,
++            -128.7451934814453
++          ]
++        },
++        {
++          "row": 96,
++          "sliceSigma": 12.675390243530273,
++          "sliceTau": 1.049038290977478,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            21,
++            3.192016363143921,
++            -128.5137481689453
++          ]
++        },
++        {
++          "row": 97,
++          "sliceSigma": 13.19188117980957,
++          "sliceTau": 1.005966067314148,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            21.5,
++            3.2081117630004883,
++            -128.38427734375
++          ]
++        },
++        {
++          "row": 98,
++          "sliceSigma": 13.708372116088867,
++          "sliceTau": 0.9628939032554626,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            22,
++            3.228562116622925,
++            -128.2548065185547
++          ]
++        },
++        {
++          "row": 99,
++          "sliceSigma": 14.224862098693848,
++          "sliceTau": 0.9198217391967773,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            22.5,
++            3.2557029724121094,
++            -128.12533569335938
++          ]
++        },
++        {
++          "row": 100,
++          "sliceSigma": 14.741353034973145,
++          "sliceTau": 0.8767495155334473,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            23,
++            3.282811403274536,
++            -127.9958724975586
++          ]
++        },
++        {
++          "row": 101,
++          "sliceSigma": 15.241368293762207,
++          "sliceTau": 0.8290999531745911,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            23.5,
++            3.3138086795806885,
++            -127.99976348876953
++          ]
++        },
++        {
++          "row": 102,
++          "sliceSigma": 15.741382598876953,
++          "sliceTau": 0.7814503908157349,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            24,
++            3.345160961151123,
++            -128.003662109375
++          ]
++        },
++        {
++          "row": 103,
++          "sliceSigma": 16.241397857666016,
++          "sliceTau": 0.7338008284568787,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            24.5,
++            3.3765382766723633,
++            -128.00755310058594
++          ]
++        },
++        {
++          "row": 104,
++          "sliceSigma": 16.741413116455078,
++          "sliceTau": 0.6861512660980225,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            25,
++            3.407649040222168,
++            -128.01144409179688
++          ]
++        },
++        {
++          "row": 105,
++          "sliceSigma": 17.28472328186035,
++          "sliceTau": 0.6365741491317749,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            25.5,
++            3.439758777618408,
++            -127.79887390136719
++          ]
++        },
++        {
++          "row": 106,
++          "sliceSigma": 17.828033447265625,
++          "sliceTau": 0.5869970321655273,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            26,
++            3.471182107925415,
++            -127.5863037109375
++          ]
++        },
++        {
++          "row": 107,
++          "sliceSigma": 18.3713436126709,
++          "sliceTau": 0.537419855594635,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            26.5,
++            3.501885414123535,
++            -127.37374114990234
++          ]
++        },
++        {
++          "row": 108,
++          "sliceSigma": 18.914653778076172,
++          "sliceTau": 0.48784273862838745,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            27,
++            3.531557321548462,
++            -127.16117095947266
++          ]
++        },
++        {
++          "row": 109,
++          "sliceSigma": 19.42646598815918,
++          "sliceTau": 0.44107919931411743,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            27.5,
++            3.5580363273620605,
++            -127.05184173583984
++          ]
++        },
++        {
++          "row": 110,
++          "sliceSigma": 19.938278198242188,
++          "sliceTau": 0.394315630197525,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            28,
++            3.58358097076416,
++            -126.94252014160156
++          ]
++        },
++        {
++          "row": 111,
++          "sliceSigma": 20.450092315673828,
++          "sliceTau": 0.3475520610809326,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            28.5,
++            3.6085267066955566,
++            -126.83319091796875
++          ]
++        },
++        {
++          "row": 112,
++          "sliceSigma": 20.961904525756836,
++          "sliceTau": 0.3007885217666626,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            29,
++            3.632563591003418,
++            -126.72386169433594
++          ]
++        },
++        {
++          "row": 113,
++          "sliceSigma": 21.463153839111328,
++          "sliceTau": 0.25114238262176514,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            29.5,
++            3.6554207801818848,
++            -126.75923156738281
++          ]
++        },
++        {
++          "row": 114,
++          "sliceSigma": 21.964401245117188,
++          "sliceTau": 0.20149622857570648,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            30,
++            3.6748204231262207,
++            -126.79460144042969
++          ]
++        },
++        {
++          "row": 115,
++          "sliceSigma": 22.46565055847168,
++          "sliceTau": 0.15185008943080902,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            30.5,
++            3.6901707649230957,
++            -126.82996368408203
++          ]
++        },
++        {
++          "row": 116,
++          "sliceSigma": 22.966899871826172,
++          "sliceTau": 0.10220394283533096,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            31,
++            3.7024495601654053,
++            -126.8653335571289
++          ]
++        },
++        {
++          "row": 117,
++          "sliceSigma": 23.475173950195312,
++          "sliceTau": 0.05521584302186966,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            31.5,
++            3.7112936973571777,
++            -126.77400207519531
++          ]
++        },
++        {
++          "row": 118,
++          "sliceSigma": 23.983448028564453,
++          "sliceTau": 0.008227743208408356,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 0,
++          "crest": [
++            32,
++            3.718034029006958,
++            -126.68266296386719
++          ]
++        },
++        {
++          "row": 119,
++          "sliceSigma": 24.49172019958496,
++          "sliceTau": -0.03876035660505295,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            32.5,
++            3.7222092151641846,
++            -126.5913314819336
++          ]
++        },
++        {
++          "row": 120,
++          "sliceSigma": 24.9999942779541,
++          "sliceTau": -0.08574845641851425,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            33,
++            3.723845958709717,
++            -126.5
++          ]
++        },
++        {
++          "row": 121,
++          "sliceSigma": 25.559011459350586,
++          "sliceTau": -0.11559358239173889,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            33.5,
++            3.7246129512786865,
++            -126.25
++          ]
++        },
++        {
++          "row": 122,
++          "sliceSigma": 26.118026733398438,
++          "sliceTau": -0.14543871581554413,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            34,
++            3.724950075149536,
++            -126
++          ]
++        },
++        {
++          "row": 123,
++          "sliceSigma": 26.677043914794922,
++          "sliceTau": -0.17528383433818817,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            34.5,
++            3.724461078643799,
++            -125.75
++          ]
++        },
++        {
++          "row": 124,
++          "sliceSigma": 27.236061096191406,
++          "sliceTau": -0.2051289677619934,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            35,
++            3.7231171131134033,
++            -125.5
++          ]
++        },
++        {
++          "row": 125,
++          "sliceSigma": 27.736061096191406,
++          "sliceTau": -0.2102029174566269,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            35.5,
++            3.7255654335021973,
++            -125.5
++          ]
++        },
++        {
++          "row": 126,
++          "sliceSigma": 28.236061096191406,
++          "sliceTau": -0.21527686715126038,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            36,
++            3.728013515472412,
++            -125.5
++          ]
++        },
++        {
++          "row": 127,
++          "sliceSigma": 28.736061096191406,
++          "sliceTau": -0.22035081684589386,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            36.5,
++            3.730421543121338,
++            -125.5
++          ]
++        },
++        {
++          "row": 128,
++          "sliceSigma": 29.236061096191406,
++          "sliceTau": -0.22542476654052734,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            37,
++            3.732821464538574,
++            -125.5
++          ]
++        },
++        {
++          "row": 129,
++          "sliceSigma": 29.736061096191406,
++          "sliceTau": -0.23805125057697296,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            37.5,
++            3.734543800354004,
++            -125.5
++          ]
++        },
++        {
++          "row": 130,
++          "sliceSigma": 30.236061096191406,
++          "sliceTau": -0.2506777346134186,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            38,
++            3.7362146377563477,
++            -125.5
++          ]
++        },
++        {
++          "row": 131,
++          "sliceSigma": 30.736061096191406,
++          "sliceTau": -0.2633042335510254,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            38.5,
++            3.7377068996429443,
++            -125.5
++          ]
++        },
++        {
++          "row": 132,
++          "sliceSigma": 31.236061096191406,
++          "sliceTau": -0.2759307026863098,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            39,
++            3.7389984130859375,
++            -125.5
++          ]
++        },
++        {
++          "row": 133,
++          "sliceSigma": 31.736061096191406,
++          "sliceTau": -0.29643166065216064,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            39.5,
++            3.739426374435425,
++            -125.5
++          ]
++        },
++        {
++          "row": 134,
++          "sliceSigma": 32.236061096191406,
++          "sliceTau": -0.3169326186180115,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            40,
++            3.7397806644439697,
++            -125.5
++          ]
++        },
++        {
++          "row": 135,
++          "sliceSigma": 32.736061096191406,
++          "sliceTau": -0.3374335467815399,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            40.5,
++            3.73952054977417,
++            -125.5
++          ]
++        },
++        {
++          "row": 136,
++          "sliceSigma": 33.236061096191406,
++          "sliceTau": -0.35793450474739075,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            41,
++            3.7390551567077637,
++            -125.5
++          ]
++        },
++        {
++          "row": 137,
++          "sliceSigma": 33.736061096191406,
++          "sliceTau": -0.36509209871292114,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            41.5,
++            3.742128849029541,
++            -125.5
++          ]
++        },
++        {
++          "row": 138,
++          "sliceSigma": 34.236061096191406,
++          "sliceTau": -0.37224969267845154,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            42,
++            3.745148181915283,
++            -125.5
++          ]
++        },
++        {
++          "row": 139,
++          "sliceSigma": 34.736061096191406,
++          "sliceTau": -0.37940728664398193,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            42.5,
++            3.748159885406494,
++            -125.5
++          ]
++        },
++        {
++          "row": 140,
++          "sliceSigma": 35.236061096191406,
++          "sliceTau": -0.38656488060951233,
++          "sliceFade": 1,
++          "sliceWeight": 0.968916654586792,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            43,
++            3.692502021789551,
++            -125.5
++          ]
++        },
++        {
++          "row": 141,
++          "sliceSigma": 35.79507827758789,
++          "sliceTau": -0.3707873523235321,
++          "sliceFade": 1,
++          "sliceWeight": 0.7462619543075562,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            43.5,
++            3.2799935340881348,
++            -125.25
++          ]
++        },
++        {
++          "row": 142,
++          "sliceSigma": 36.354095458984375,
++          "sliceTau": -0.3550097942352295,
++          "sliceFade": 1,
++          "sliceWeight": 0.4211147725582123,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            44,
++            2.6683218479156494,
++            -125
++          ]
++        },
++        {
++          "row": 143,
++          "sliceSigma": 36.91311264038086,
++          "sliceTau": -0.33923226594924927,
++          "sliceFade": 1,
++          "sliceWeight": 0.12763939797878265,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            44.5,
++            2.10906982421875,
++            -124.75
++          ]
++        },
++        {
++          "row": 144,
++          "sliceSigma": 37.472129821777344,
++          "sliceTau": -0.32345473766326904,
++          "sliceFade": 1,
++          "sliceWeight": 0,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            45,
++            1.860193133354187,
++            -124.5
++          ]
++        },
++        {
++          "row": 145,
++          "sliceSigma": 38.03114700317383,
++          "sliceTau": -0.32345473766326904,
++          "sliceFade": 1,
++          "sliceWeight": 0,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            45.5,
++            1.8534878492355347,
++            -124.25
++          ]
++        },
++        {
++          "row": 146,
++          "sliceSigma": 38.59016418457031,
++          "sliceTau": -0.32345473766326904,
++          "sliceFade": 1,
++          "sliceWeight": 0,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            46,
++            1.8447058200836182,
++            -124
++          ]
++        },
++        {
++          "row": 147,
++          "sliceSigma": 38.972129821777344,
++          "sliceTau": -0.32345473766326904,
++          "sliceFade": 1,
++          "sliceWeight": 0,
++          "sliceJoined": 0,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            46.34164047241211,
++            1.837476372718811,
++            -123.82917785644531
++          ]
++        }
++      ],
++      "selectedNativeRows": [
++        {
++          "row": 86,
++          "sliceFront": 120,
++          "sliceSigma": 7.37522029876709,
++          "sliceTau": 1.4354908466339111,
++          "slicePhase": 2,
++          "sliceLife": 1.1560007333755493,
++          "sliceCollapse": 0.3241788446903229,
++          "sliceFade": 0.40243619680404663,
++          "sliceTipGap": 0,
++          "sliceRestHold": 4.9856367111206055,
++          "sliceRestEnd": 6.558940410614014,
++          "sliceRestClimb": 0.31466078758239746,
++          "sliceToeClimb": 1.8237316608428955,
++          "sliceJoined": 1,
++          "sliceRayX": 0,
++          "sliceRayZ": 1,
++          "sliceWeight": 0.28712067008018494,
++          "sliceOverturned": 1,
++          "sliceTipAlong": 0,
++          "sliceTipUp": -7.612909317016602,
++          "sliceAnchorVX": 0,
++          "sliceAnchorVZ": 0,
++          "sliceTipTransportAlong": 0,
++          "sliceTipTransportUp": 0,
++          "sliceFormed": 1,
++          "sliceTipX": 16,
++          "sliceTipY": 1.3903658390045166,
++          "sliceTipZ": -127.75498962402344,
++          "sliceMouth": 1.6162405014038086,
++          "crest": [
++            16,
++            2.183778762817383,
++            -130.1774139404297
++          ],
++          "cap": [
++            16,
++            1.3903658390045166,
++            -127.75498962402344
++          ],
++          "toe": [
++            16,
++            1.3600221872329712,
++            -127.25344848632812
++          ],
++          "floorDatum": [
++            16,
++            1.3903658390045166,
++            -127.75498962402344
++          ]
++        },
++        {
++          "row": 87,
++          "sliceFront": 120,
++          "sliceSigma": 7.904419422149658,
++          "sliceTau": 1.3971511125564575,
++          "slicePhase": 2,
++          "sliceLife": 1.1247780323028564,
++          "sliceCollapse": 0.32427898049354553,
++          "sliceFade": 0.5220350623130798,
++          "sliceTipGap": 0,
++          "sliceRestHold": 4.893858909606934,
++          "sliceRestEnd": 6.46832799911499,
++          "sliceRestClimb": 0.31489378213882446,
++          "sliceToeClimb": 1.8118536472320557,
++          "sliceJoined": 1,
++          "sliceRayX": 0,
++          "sliceRayZ": 1,
++          "sliceWeight": 0.49351266026496887,
++          "sliceOverturned": 1,
++          "sliceTipAlong": 0,
++          "sliceTipUp": -7.615792274475098,
++          "sliceAnchorVX": 0,
++          "sliceAnchorVZ": 0,
++          "sliceTipTransportAlong": 0,
++          "sliceTipTransportUp": 0,
++          "sliceFormed": 1,
++          "sliceTipX": 16.5,
++          "sliceTipY": 1.0394407510757446,
++          "sliceTipZ": -127.58042907714844,
++          "sliceMouth": 2.145439624786377,
++          "crest": [
++            16.5,
++            2.4665637016296387,
++            -130.00405883789062
++          ],
++          "cap": [
++            16.5,
++            1.0394407510757446,
++            -127.58042907714844
++          ],
++          "toe": [
++            16.5,
++            1.0174096822738647,
++            -127.07852172851562
++          ],
++          "floorDatum": [
++            16.5,
++            1.0394407510757446,
++            -127.58042907714844
++          ]
++        }
++      ]
++    },
++    {
++      "movingStep": 60,
++      "step": 60,
++      "seaTime": 362.8067094336809,
++      "front": 120,
++      "locked": {
++        "front": 106,
++        "stationX": 16.25,
++        "initialSigma": 68.67304229736328,
++        "along": 0.6398658752441406,
++        "youngerSign": 1,
++        "stationIdentity": "fixed-Eulerian-solver-column-crest-station",
++        "materialTrajectoryClaim": false
++      },
++      "packetRows": [
++        {
++          "x": 9,
++          "z": -132.2149200439453,
++          "front": 120,
++          "sigma": 0,
++          "tau": 2.052067995071411,
++          "footHeight": 2.602573871612549,
++          "footDepth": 7,
++          "throwZ": -145.58485412597656,
++          "pace": null
++        },
++        {
++          "x": 11,
++          "z": -131.713623046875,
++          "front": 120,
++          "sigma": 2.0618667602539062,
++          "tau": 1.8540620803833008,
++          "footHeight": 2.6136748790740967,
++          "footDepth": 7,
++          "throwZ": -143.90618896484375,
++          "pace": 6.576138973236084
++        },
++        {
++          "x": 13,
++          "z": -131.40341186523438,
++          "front": 120,
++          "sigma": 4.085782051086426,
++          "tau": 1.6907168626785278,
++          "footHeight": 2.623868703842163,
++          "footDepth": 7,
++          "throwZ": -142.22732543945312,
++          "pace": 6.610039710998535
++        },
++        {
++          "x": 15,
++          "z": -130.41363525390625,
++          "front": 120,
++          "sigma": 6.317295551300049,
++          "tau": 1.5288376808166504,
++          "footHeight": 2.6372344493865967,
++          "footDepth": 7,
++          "throwZ": -140.54818725585938,
++          "pace": 6.6289286613464355
++        },
++        {
++          "x": 17,
++          "z": -129.71983337402344,
++          "front": 120,
++          "sigma": 8.43421459197998,
++          "tau": 1.3754782676696777,
++          "footHeight": 2.6462104320526123,
++          "footDepth": 7,
++          "throwZ": -138.86865234375,
++          "pace": 6.651371479034424
++        },
++        {
++          "x": 19,
++          "z": -129.3280487060547,
++          "front": 120,
++          "sigma": 10.47222900390625,
++          "tau": 1.2271836996078491,
++          "footHeight": 2.658447027206421,
++          "footDepth": 7,
++          "throwZ": -137.1885986328125,
++          "pace": 6.692707538604736
++        },
++        {
++          "x": 21,
++          "z": -128.4026336669922,
++          "front": 120,
++          "sigma": 12.675952911376953,
++          "tau": 1.0657055377960205,
++          "footHeight": 2.669858694076538,
++          "footDepth": 7,
++          "throwZ": -135.50782775878906,
++          "pace": 6.6671295166015625
++        },
++        {
++          "x": 23,
++          "z": -127.88501739501953,
++          "front": 120,
++          "sigma": 14.74184799194336,
++          "tau": 0.8934198021888733,
++          "footHeight": 2.676807165145874,
++          "footDepth": 7,
++          "throwZ": -133.82611083984375,
++          "pace": 6.649835109710693
++        },
++        {
++          "x": 25,
++          "z": -127.90006256103516,
++          "front": 120,
++          "sigma": 16.741905212402344,
++          "tau": 0.7028294801712036,
++          "footHeight": 2.686760663986206,
++          "footDepth": 7,
++          "throwZ": -132.1431427001953,
++          "pace": 6.678170680999756
++        },
++        {
++          "x": 27,
++          "z": -127.04901885986328,
++          "front": 120,
++          "sigma": 18.91544532775879,
++          "tau": 0.5044351816177368,
++          "footHeight": 2.6959311962127686,
++          "footDepth": 7,
++          "throwZ": -130.4585723876953,
++          "pace": 6.759154319763184
++        },
++        {
++          "x": 29,
++          "z": -126.55496215820312,
++          "front": 120,
++          "sigma": 20.97556495666504,
++          "tau": 0.3255944848060608,
++          "footHeight": 2.704578161239624,
++          "footDepth": 7,
++          "throwZ": -128.7719268798828,
++          "pace": 6.808996677398682
++        },
++        {
++          "x": 31,
++          "z": -126.47856903076172,
++          "front": 120,
++          "sigma": 22.97702407836914,
++          "tau": 0.15877531468868256,
++          "footHeight": 2.713033437728882,
++          "footDepth": 7,
++          "throwZ": -127.08267974853516,
++          "pace": 6.8366899490356445
++        },
++        {
++          "x": 33,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 25.203590393066406,
++          "tau": -0.0463053323328495,
++          "footHeight": 2.7217957973480225,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 35,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 27.203590393066406,
++          "tau": -0.2051289677619934,
++          "footHeight": 2.7313497066497803,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 37,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 29.203590393066406,
++          "tau": -0.22542476654052734,
++          "footHeight": 2.7421071529388428,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 39,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 31.203590393066406,
++          "tau": -0.2759307026863098,
++          "footHeight": 2.7542970180511475,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 41,
++          "z": -125.5,
++          "front": 120,
++          "sigma": 33.203590393066406,
++          "tau": -0.35793450474739075,
++          "footHeight": 2.7684619426727295,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 43,
++          "z": -124.5,
++          "front": 120,
++          "sigma": 35.439659118652344,
++          "tau": -0.38656488060951233,
++          "footHeight": 2.784355878829956,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        },
++        {
++          "x": 45,
++          "z": -124.5,
++          "front": 120,
++          "sigma": 37.439659118652344,
++          "tau": -0.32345473766326904,
++          "footHeight": 2.8025062084198,
++          "footDepth": 7,
++          "throwZ": null,
++          "pace": null
++        }
++      ],
++      "oldLoftRows": [
++        {
++          "row": 87,
++          "sliceSigma": 6.317295551300049,
++          "sliceTau": 1.5288376808166504,
++          "sliceFade": 0.11157122254371643,
++          "sliceWeight": 0,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            15,
++            1.7762665748596191,
++            -130.41363525390625
++          ]
++        },
++        {
++          "row": 88,
++          "sliceSigma": 6.846525192260742,
++          "sliceTau": 1.4904978275299072,
++          "sliceFade": 0.23133410513401031,
++          "sliceWeight": 0.026711465790867805,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            15.5,
++            1.822533130645752,
++            -130.2401885986328
++          ]
++        },
++        {
++          "row": 89,
++          "sliceSigma": 7.375755310058594,
++          "sliceTau": 1.452157974243164,
++          "sliceFade": 0.35102301836013794,
++          "sliceWeight": 0.13548623025417328,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            16,
++            1.9783998727798462,
++            -130.06674194335938
++          ]
++        },
++        {
++          "row": 90,
++          "sliceSigma": 7.904984951019287,
++          "sliceTau": 1.413818120956421,
++          "sliceFade": 0.4706380367279053,
++          "sliceWeight": 0.32835692167282104,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            16.5,
++            2.242828369140625,
++            -129.89328002929688
++          ]
++        },
++        {
++          "row": 91,
++          "sliceSigma": 8.43421459197998,
++          "sliceTau": 1.3754782676696777,
++          "sliceFade": 0.5901792049407959,
++          "sliceWeight": 0.552853524684906,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            17,
++            2.5467007160186768,
++            -129.71983337402344
++          ]
++        },
++        {
++          "row": 92,
++          "sliceSigma": 8.943717956542969,
++          "sliceTau": 1.338404655456543,
++          "sliceFade": 0.706207275390625,
++          "sliceWeight": 0.706207275390625,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            17.5,
++            2.753647565841675,
++            -129.62188720703125
++          ]
++        },
++        {
++          "row": 93,
++          "sliceSigma": 9.453222274780273,
++          "sliceTau": 1.3013310432434082,
++          "sliceFade": 0.8221372365951538,
++          "sliceWeight": 0.8221372365951538,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            18,
++            2.9141783714294434,
++            -129.52394104003906
++          ]
++        },
++        {
++          "row": 94,
++          "sliceSigma": 9.962725639343262,
++          "sliceTau": 1.2642573118209839,
++          "sliceFade": 0.9379697442054749,
++          "sliceWeight": 0.9379697442054749,
++          "sliceJoined": 1,
++          "slicePhase": 2,
++          "sliceOverturned": 1,
++          "crest": [
++            18.5,
++            3.078226327896118,
++            -129.42599487304688
++          ]
++        },
++        {
++          "row": 95,
++          "sliceSigma": 10.47222900390625,
++          "sliceTau": 1.2271836996078491,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            19,
++            3.168537139892578,
++            -129.3280487060547
++          ]
++        },
++        {
++          "row": 96,
++          "sliceSigma": 11.023159980773926,
++          "sliceTau": 1.1868141889572144,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            19.5,
++            3.171487808227539,
++            -129.09669494628906
++          ]
++        },
++        {
++          "row": 97,
++          "sliceSigma": 11.574090957641602,
++          "sliceTau": 1.14644455909729,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            20,
++            3.1744372844696045,
++            -128.86534118652344
++          ]
++        },
++        {
++          "row": 98,
++          "sliceSigma": 12.125021934509277,
++          "sliceTau": 1.1060750484466553,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            20.5,
++            3.177385091781616,
++            -128.6339874267578
++          ]
++        },
++        {
++          "row": 99,
++          "sliceSigma": 12.675952911376953,
++          "sliceTau": 1.0657055377960205,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            21,
++            3.186553716659546,
++            -128.4026336669922
++          ]
++        },
++        {
++          "row": 100,
++          "sliceSigma": 13.192426681518555,
++          "sliceTau": 1.0226341485977173,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            21.5,
++            3.2026593685150146,
++            -128.27322387695312
++          ]
++        },
++        {
++          "row": 101,
++          "sliceSigma": 13.708900451660156,
++          "sliceTau": 0.9795626401901245,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            22,
++            3.21881365776062,
++            -128.14382934570312
++          ]
++        },
++        {
++          "row": 102,
++          "sliceSigma": 14.225374221801758,
++          "sliceTau": 0.9364912509918213,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            22.5,
++            3.246122121810913,
++            -128.01441955566406
++          ]
++        },
++        {
++          "row": 103,
++          "sliceSigma": 14.74184799194336,
++          "sliceTau": 0.8934198021888733,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            23,
++            3.273080348968506,
++            -127.88501739501953
++          ]
++        },
++        {
++          "row": 104,
++          "sliceSigma": 15.241862297058105,
++          "sliceTau": 0.8457722067832947,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            23.5,
++            3.3038864135742188,
++            -127.88877868652344
++          ]
++        },
++        {
++          "row": 105,
++          "sliceSigma": 15.741876602172852,
++          "sliceTau": 0.7981246709823608,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            24,
++            3.3352341651916504,
++            -127.89253997802734
++          ]
++        },
++        {
++          "row": 106,
++          "sliceSigma": 16.24188995361328,
++          "sliceTau": 0.7504770755767822,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            24.5,
++            3.366575002670288,
++            -127.89630126953125
++          ]
++        },
++        {
++          "row": 107,
++          "sliceSigma": 16.741905212402344,
++          "sliceTau": 0.7028294801712036,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            25,
++            3.39774227142334,
++            -127.90006256103516
++          ]
++        },
++        {
++          "row": 108,
++          "sliceSigma": 17.285289764404297,
++          "sliceTau": 0.6532309055328369,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            25.5,
++            3.429962635040283,
++            -127.68730163574219
++          ]
++        },
++        {
++          "row": 109,
++          "sliceSigma": 17.82867431640625,
++          "sliceTau": 0.6036323308944702,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            26,
++            3.461604595184326,
++            -127.47454071044922
++          ]
++        },
++        {
++          "row": 110,
++          "sliceSigma": 18.372060775756836,
++          "sliceTau": 0.5540337562561035,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            26.5,
++            3.4925472736358643,
++            -127.26177978515625
++          ]
++        },
++        {
++          "row": 111,
++          "sliceSigma": 18.91544532775879,
++          "sliceTau": 0.5044351816177368,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            27,
++            3.5226335525512695,
++            -127.04901885986328
++          ]
++        },
++        {
++          "row": 112,
++          "sliceSigma": 19.43047523498535,
++          "sliceTau": 0.459725022315979,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            27.5,
++            3.548645496368408,
++            -126.92550659179688
++          ]
++        },
++        {
++          "row": 113,
++          "sliceSigma": 19.945505142211914,
++          "sliceTau": 0.4150148332118988,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            28,
++            3.573476791381836,
++            -126.80198669433594
++          ]
++        },
++        {
++          "row": 114,
++          "sliceSigma": 20.460535049438477,
++          "sliceTau": 0.3703046441078186,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            28.5,
++            3.5976333618164062,
++            -126.67847442626953
++          ]
++        },
++        {
++          "row": 115,
++          "sliceSigma": 20.97556495666504,
++          "sliceTau": 0.3255944848060608,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            29,
++            3.6213150024414062,
++            -126.55496215820312
++          ]
++        },
++        {
++          "row": 116,
++          "sliceSigma": 21.475929260253906,
++          "sliceTau": 0.28388968110084534,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            29.5,
++            3.6422691345214844,
++            -126.5358657836914
++          ]
++        },
++        {
++          "row": 117,
++          "sliceSigma": 21.976295471191406,
++          "sliceTau": 0.24218490719795227,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            30,
++            3.6612770557403564,
++            -126.51676940917969
++          ]
++        },
++        {
++          "row": 118,
++          "sliceSigma": 22.476659774780273,
++          "sliceTau": 0.20048010349273682,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            30.5,
++            3.6776225566864014,
++            -126.49766540527344
++          ]
++        },
++        {
++          "row": 119,
++          "sliceSigma": 22.97702407836914,
++          "sliceTau": 0.15877531468868256,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            31,
++            3.6911308765411377,
++            -126.47856903076172
++          ]
++        },
++        {
++          "row": 120,
++          "sliceSigma": 23.53366470336914,
++          "sliceTau": 0.10750515013933182,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            31.5,
++            3.704158067703247,
++            -126.23392486572266
++          ]
++        },
++        {
++          "row": 121,
++          "sliceSigma": 24.090307235717773,
++          "sliceTau": 0.056234993040561676,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 1,
++          "crest": [
++            32,
++            3.7137627601623535,
++            -125.98928833007812
++          ]
++        },
++        {
++          "row": 122,
++          "sliceSigma": 24.646949768066406,
++          "sliceTau": 0.004964829422533512,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 1,
++          "sliceOverturned": 0,
++          "crest": [
++            32.5,
++            3.7208333015441895,
++            -125.74464416503906
++          ]
++        },
++        {
++          "row": 123,
++          "sliceSigma": 25.203590393066406,
++          "sliceTau": -0.0463053323328495,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            33,
++            3.724839925765991,
++            -125.5
++          ]
++        },
++        {
++          "row": 124,
++          "sliceSigma": 25.703590393066406,
++          "sliceTau": -0.08601123839616776,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            33.5,
++            3.726675033569336,
++            -125.5
++          ]
++        },
++        {
++          "row": 125,
++          "sliceSigma": 26.203590393066406,
++          "sliceTau": -0.1257171481847763,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            34,
++            3.726654529571533,
++            -125.5
++          ]
++        },
++        {
++          "row": 126,
++          "sliceSigma": 26.703590393066406,
++          "sliceTau": -0.16542306542396545,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            34.5,
++            3.725630521774292,
++            -125.5
++          ]
++        },
++        {
++          "row": 127,
++          "sliceSigma": 27.203590393066406,
++          "sliceTau": -0.2051289677619934,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            35,
++            3.7231171131134033,
++            -125.5
++          ]
++        },
++        {
++          "row": 128,
++          "sliceSigma": 27.703590393066406,
++          "sliceTau": -0.2102029174566269,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            35.5,
++            3.7255654335021973,
++            -125.5
++          ]
++        },
++        {
++          "row": 129,
++          "sliceSigma": 28.203590393066406,
++          "sliceTau": -0.21527686715126038,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            36,
++            3.728013515472412,
++            -125.5
++          ]
++        },
++        {
++          "row": 130,
++          "sliceSigma": 28.703590393066406,
++          "sliceTau": -0.22035081684589386,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            36.5,
++            3.730421543121338,
++            -125.5
++          ]
++        },
++        {
++          "row": 131,
++          "sliceSigma": 29.203590393066406,
++          "sliceTau": -0.22542476654052734,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            37,
++            3.732821464538574,
++            -125.5
++          ]
++        },
++        {
++          "row": 132,
++          "sliceSigma": 29.703590393066406,
++          "sliceTau": -0.23805125057697296,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            37.5,
++            3.734543800354004,
++            -125.5
++          ]
++        },
++        {
++          "row": 133,
++          "sliceSigma": 30.203590393066406,
++          "sliceTau": -0.2506777346134186,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            38,
++            3.7362146377563477,
++            -125.5
++          ]
++        },
++        {
++          "row": 134,
++          "sliceSigma": 30.703590393066406,
++          "sliceTau": -0.2633042335510254,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            38.5,
++            3.7377068996429443,
++            -125.5
++          ]
++        },
++        {
++          "row": 135,
++          "sliceSigma": 31.203590393066406,
++          "sliceTau": -0.2759307026863098,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            39,
++            3.7389984130859375,
++            -125.5
++          ]
++        },
++        {
++          "row": 136,
++          "sliceSigma": 31.703590393066406,
++          "sliceTau": -0.29643166065216064,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            39.5,
++            3.739426374435425,
++            -125.5
++          ]
++        },
++        {
++          "row": 137,
++          "sliceSigma": 32.203590393066406,
++          "sliceTau": -0.3169326186180115,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            40,
++            3.7397806644439697,
++            -125.5
++          ]
++        },
++        {
++          "row": 138,
++          "sliceSigma": 32.703590393066406,
++          "sliceTau": -0.3374335467815399,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            40.5,
++            3.73952054977417,
++            -125.5
++          ]
++        },
++        {
++          "row": 139,
++          "sliceSigma": 33.203590393066406,
++          "sliceTau": -0.35793450474739075,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            41,
++            3.7390551567077637,
++            -125.5
++          ]
++        },
++        {
++          "row": 140,
++          "sliceSigma": 33.76260757446289,
++          "sliceTau": -0.36509209871292114,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            41.5,
++            3.742128849029541,
++            -125.25
++          ]
++        },
++        {
++          "row": 141,
++          "sliceSigma": 34.321624755859375,
++          "sliceTau": -0.37224969267845154,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            42,
++            3.745148181915283,
++            -125
++          ]
++        },
++        {
++          "row": 142,
++          "sliceSigma": 34.88064193725586,
++          "sliceTau": -0.37940728664398193,
++          "sliceFade": 1,
++          "sliceWeight": 1,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            42.5,
++            3.748159885406494,
++            -124.75
++          ]
++        },
++        {
++          "row": 143,
++          "sliceSigma": 35.439659118652344,
++          "sliceTau": -0.38656488060951233,
++          "sliceFade": 1,
++          "sliceWeight": 0.8960000276565552,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            43,
++            3.5543439388275146,
++            -124.5
++          ]
++        },
++        {
++          "row": 144,
++          "sliceSigma": 35.939659118652344,
++          "sliceTau": -0.3707873523235321,
++          "sliceFade": 1,
++          "sliceWeight": 0.6480000019073486,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            43.5,
++            3.091249942779541,
++            -124.5
++          ]
++        },
++        {
++          "row": 145,
++          "sliceSigma": 36.439659118652344,
++          "sliceTau": -0.3550097942352295,
++          "sliceFade": 1,
++          "sliceWeight": 0.35199999809265137,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            44,
++            2.532170295715332,
++            -124.5
++          ]
++        },
++        {
++          "row": 146,
++          "sliceSigma": 36.939659118652344,
++          "sliceTau": -0.33923226594924927,
++          "sliceFade": 1,
++          "sliceWeight": 0.10400000214576721,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            44.5,
++            2.0599052906036377,
++            -124.5
++          ]
++        },
++        {
++          "row": 147,
++          "sliceSigma": 37.439659118652344,
++          "sliceTau": -0.32345473766326904,
++          "sliceFade": 1,
++          "sliceWeight": 0,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            45,
++            1.860538363456726,
++            -124.5
++          ]
++        },
++        {
++          "row": 148,
++          "sliceSigma": 37.939659118652344,
++          "sliceTau": -0.32345473766326904,
++          "sliceFade": 1,
++          "sliceWeight": 0,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            45.5,
++            1.8603936433792114,
++            -124.5
++          ]
++        },
++        {
++          "row": 149,
++          "sliceSigma": 38.439659118652344,
++          "sliceTau": -0.32345473766326904,
++          "sliceFade": 1,
++          "sliceWeight": 0,
++          "sliceJoined": 1,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            46,
++            1.8600053787231445,
++            -124.5
++          ]
++        },
++        {
++          "row": 150,
++          "sliceSigma": 38.939659118652344,
++          "sliceTau": -0.32345473766326904,
++          "sliceFade": 1,
++          "sliceWeight": 0,
++          "sliceJoined": 0,
++          "slicePhase": 0,
++          "sliceOverturned": 0,
++          "crest": [
++            46.5,
++            1.8593722581863403,
++            -124.5
++          ]
++        }
++      ],
++      "selectedNativeRows": [
++        {
++          "row": 89,
++          "sliceFront": 120,
++          "sliceSigma": 7.375755310058594,
++          "sliceTau": 1.452157974243164,
++          "slicePhase": 2,
++          "sliceLife": 1.1694227457046509,
++          "sliceCollapse": 0.3241788446903229,
++          "sliceFade": 0.35102301836013794,
++          "sliceTipGap": 0,
++          "sliceRestHold": 4.980809688568115,
++          "sliceRestEnd": 6.554113388061523,
++          "sliceRestClimb": 0.31466078758239746,
++          "sliceToeClimb": 1.8182170391082764,
++          "sliceJoined": 1,
++          "sliceRayX": 0,
++          "sliceRayZ": 1,
++          "sliceWeight": 0.13548623025417328,
++          "sliceOverturned": 1,
++          "sliceTipAlong": 0,
++          "sliceTipUp": -7.612909317016602,
++          "sliceAnchorVX": 0,
++          "sliceAnchorVZ": 0,
++          "sliceTipTransportAlong": 0,
++          "sliceTipTransportUp": 0,
++          "sliceFormed": 1,
++          "sliceTipX": 16,
++          "sliceTipY": 1.6385241746902466,
++          "sliceTipZ": -127.6443099975586,
++          "sliceMouth": 1.058459758758545,
++          "crest": [
++            16,
++            1.9783998727798462,
++            -130.06674194335938
++          ],
++          "cap": [
++            16,
++            1.6385241746902466,
++            -127.6443099975586
++          ],
++          "toe": [
++            16,
++            1.6025807857513428,
++            -127.14276885986328
++          ],
++          "floorDatum": [
++            16,
++            1.6385241746902466,
++            -127.6443099975586
++          ]
++        },
++        {
++          "row": 90,
++          "sliceFront": 120,
++          "sliceSigma": 7.904984951019287,
++          "sliceTau": 1.413818120956421,
++          "slicePhase": 2,
++          "sliceLife": 1.1381958723068237,
++          "sliceCollapse": 0.32427898049354553,
++          "sliceFade": 0.4706380367279053,
++          "sliceTipGap": 0,
++          "sliceRestHold": 4.887831211090088,
++          "sliceRestEnd": 6.4623003005981445,
++          "sliceRestClimb": 0.31489378213882446,
++          "sliceToeClimb": 1.8064424991607666,
++          "sliceJoined": 1,
++          "sliceRayX": 0,
++          "sliceRayZ": 1,
++          "sliceWeight": 0.32835692167282104,
++          "sliceOverturned": 1,
++          "sliceTipAlong": 0,
++          "sliceTipUp": -7.615792274475098,
++          "sliceAnchorVX": 0,
++          "sliceAnchorVZ": 0,
++          "sliceTipTransportAlong": 0,
++          "sliceTipTransportUp": 0,
++          "sliceFormed": 1,
++          "sliceTipX": 16.5,
++          "sliceTipY": 1.3104053735733032,
++          "sliceTipZ": -127.46965789794922,
++          "sliceMouth": 1.5876893997192383,
++          "crest": [
++            16.5,
++            2.242828369140625,
++            -129.89328002929688
++          ],
++          "cap": [
++            16.5,
++            1.3104053735733032,
++            -127.46965789794922
++          ],
++          "toe": [
++            16.5,
++            1.281178593635559,
++            -126.9677505493164
++          ],
++          "floorDatum": [
++            16.5,
++            1.3104053735733032,
++            -127.46965789794922
++          ]
++        }
++      ]
++    }
++  ]
++}
+--- a/src/wave/barrel/retirementBoundary.test.ts
++++ b/src/wave/barrel/retirementBoundary.test.ts
+@@ -0,0 +1,80 @@
++import { afterAll, describe, expect, it } from 'vitest';
++import { readFileSync, writeFileSync } from 'node:fs';
++import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
++import { readBarrelCases } from './nodeBarrelCases';
++import { decodeCase } from './profileFormat';
++import { LANDMARK, ProfileLibrary } from './ProfileLibrary';
++import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++import { SweptLoft as ParentLoft } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/sweptLoft';
++import { ProfileLibrary as ParentLibrary } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/ProfileLibrary';
++const cases=readBarrelCases().map(decodeCase), c=cases.find(c=>c.id==='pad19-a30-l12')!, library=new ProfileLibrary(cases,{geometry:'bounded-C'});
++const foot=Math.fround(c.nonlinearity*7), times=library.profileTimes({slope:c.slope,footHeight:foot,footDepth:7}), retired=times.touchdownSeconds+times.collapseSeconds;
++const metrics:Record<string,unknown>={limits:['Actual packet words replayed on an explicitly flat ordinary CPU substrate, not a native heightfield replay.','Existing normal stencil is preserved; residuals are measured, not asserted continuous.','No universal provider root, pixel ownership, continuous roster, new physical lifetime or native acceptance claim.']};
++afterAll(()=>{if(process.env.RETIREMENT_METRICS)writeFileSync(process.env.RETIREMENT_METRICS,JSON.stringify(metrics,null,2)+'\n');});
++type PacketRow={x:number;z:number;front:number;sigma:number;tau:number;footHeight:number;footDepth:number;throwZ:number|null;pace:number|null};
++type NativeRow={row:number;sliceTau:number;sliceFade:number;sliceWeight:number;slicePhase:number;sliceJoined:number;crest:number[]};
++const fixture=JSON.parse(readFileSync(new URL('./retirementBoundary.fixture.json',import.meta.url),'utf8')) as {source:unknown;epochs:{movingStep:number;front:number;locked:{stationX:number};packetRows:PacketRow[];selectedNativeRows:NativeRow[]}[]};
++function packet(xs:number[],ages=xs.map(()=>times.touchdownSeconds),front=1, heights=xs.map(()=>foot),depths=xs.map(()=>7)){
++ const r=new Float32Array(xs.length*FRONT_STRIDE);xs.forEach((x,k)=>r.set([x,40,front,k?x-xs[0]:0,ages[k],heights[k],depths[k],35,4],k*FRONT_STRIDE));return r;
++}
++function measured(rows:PacketRow[]){const r=new Float32Array(rows.length*FRONT_STRIDE);rows.forEach((p,k)=>r.set([p.x,p.z,p.front,p.sigma,p.tau,p.footHeight,p.footDepth,p.throwZ??NaN,p.pace??NaN],k*FRONT_STRIDE));return r;}
++const xAt=(l:{positions:Float32Array},s:number)=>l.positions[3*(s*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest)];
++const roster=(l:{sliceCount:number;positions:Float32Array})=>Array.from({length:l.sliceCount},(_,s)=>xAt(l,s));
++const build=(r:Float32Array,heightAt:(x:number,z:number)=>number=()=>0,options={})=>new SweptLoft(library,c.slope,{sheet:false,...options}).build(r,r.length/FRONT_STRIDE,0,heightAt);
++function rowAt(l:LoftResult,x:number){const row=roster(l).indexOf(x);expect(row,`required original X${x}`).toBeGreaterThanOrEqual(0);return row;}
++function flatSupport(l:LoftResult,s:number,heightAt:(x:number,z:number)=>number){
++ expect(l.sliceFade[s]).toBe(0);expect(l.sliceWeight[s]).toBe(0);expect(l.sliceFormed[s]).toBe(0);
++ for(let j=0;j<LOFT_SAMPLES;j++){const v=s*LOFT_SAMPLES+j;expect(l.positions[3*v+1]).toBe(Math.fround(heightAt(l.positions[3*v],l.positions[3*v+2])));expect(l.lift[v]).toBe(0);expect(l.mask[v]).toBe(0);expect(l.sheetWeight[v]).toBe(0);expect(l.throat[4*v+3]).toBe(0);}
++}
++function honestTopology(l:LoftResult){expect(l.vertexCount).toBeLessThanOrEqual(LOFT.budget);expect(l.rayInvalidIntervals).toBe(0);expect(l.positions.subarray(0,3*l.vertexCount).every(Number.isFinite)).toBe(true);for(let s=0;s+1<l.sliceCount;s++)if(l.sliceJoined[s]){expect(xAt(l,s+1)).toBeGreaterThan(xAt(l,s));expect(l.sliceFade[s]>0||l.sliceFade[s+1]>0,'no intrinsically dead-to-dead strip').toBe(true);}}
++function nextWord(value:number,direction:1|-1){const f=new Float32Array([value]),u=new Uint32Array(f.buffer);u[0]+=direction;return f[0];}
++function normalizedNormal(l:LoftResult,s:number,j:number,back:{positions:Float32Array;row:number},ahead:number){
++ const p=l.positions,a0=3*(s*LOFT_SAMPLES+Math.max(0,j-1)),a1=3*(s*LOFT_SAMPLES+Math.min(LOFT_SAMPLES-1,j+1)),b0=3*(back.row*LOFT_SAMPLES+j),b1=3*(ahead*LOFT_SAMPLES+j);
++ const ax=p[a1]-p[a0],ay=p[a1+1]-p[a0+1],az=p[a1+2]-p[a0+2],bx=p[b1]-back.positions[b0],by=p[b1+1]-back.positions[b0+1],bz=p[b1+2]-back.positions[b0+2];
++ const n=[ay*bz-az*by,az*bx-ax*bz,ax*by-ay*bx],length=Math.hypot(...n);return length>1e-12?n.map(v=>Math.fround(v/length)):[0,1,0];
++}
++describe('sampled C intrinsic retirement closure on ordinary water',()=>{
++ it('removes the measured advancing seal at the original X16.25 without changing packet words or the surviving phase2 intrinsic fade',()=>{
++  const parentLib=new ParentLibrary(cases,{geometry:'bounded-C'}),results=[];
++  for(const epoch of fixture.epochs){const r=measured(epoch.packetRows),before=r.slice(),l=build(r),old=new ParentLoft(parentLib,c.slope,{sheet:false}).build(r,epoch.packetRows.length,0,()=>0);expect(r).toEqual(before);expect(epoch.locked.stationX).toBe(16.25);
++   const rows=[16,16.5].map(x=>{const s=rowAt(l,x),oldS=roster(old).indexOf(x),native=epoch.selectedNativeRows.find(q=>q.crest[0]===x)!;expect(l.sliceJoined[s]).toBe(1);expect(l.slicePhase[s]).toBe(2);expect(l.sliceOverturned[s]).toBe(1);expect(l.sliceFade[s]).toBe(native.sliceFade);expect(l.sliceTau[s]).toBe(native.sliceTau);expect(l.sliceWeight[s]).toBe(native.sliceFade);expect(l.sliceWeight[s]).toBeGreaterThan(native.sliceWeight);expect(old.sliceWeight[oldS]).toBe(native.sliceWeight);return{x,tau:l.sliceTau[s],intrinsicWeight:l.sliceWeight[s],previousSealWeight:old.sliceWeight[oldS],crestY:l.positions[3*(s*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest)+1]};});
++   const first=Array.from(l.sliceJoined.subarray(0,l.sliceCount)).findIndex(Boolean);flatSupport(l,first,()=>0);expect(l.sliceFade[first+1]).toBeGreaterThan(0);honestTopology(l);results.push({movingStep:epoch.movingStep,firstSupportX:xAt(l,first),nextLiveX:xAt(l,first+1),rows,fixedX16_25Weight:(rows[0].intrinsicWeight+rows[1].intrinsicWeight)/2,diagnostics:l.cSampling});
++  }
++  expect(results[1].rows[0].intrinsicWeight-results[0].rows[0].intrinsicWeight).toBe(-0.05141317844390869);expect(results[1].rows[1].intrinsicWeight-results[0].rows[1].intrinsicWeight).toBe(-0.05139702558517456);
++  metrics.actualPackets={source:fixture.source,unchangedX:16.25,flatCPUSubstrate:true,results,weightDeltaAt16_25:results[1].fixedX16_25Weight-results[0].fixedX16_25Weight,noCrossCandidateMatchedStateOrNativeReplayClaim:true};
++ });
++ it('uses the same planned row as a dying raw knot crosses adjacent F32 age words, preserves the next mandatory live row and reports the normal-stencil residual',()=>{
++  let above=Math.fround(retired);if(above<retired)above=nextWord(above,1);const below=nextWord(above,-1);expect(below).toBeLessThan(retired);expect(above).toBeGreaterThanOrEqual(retired);
++  const x=[0,4,8,10,10.5,11,16,20],ages=[retired+.2,retired+.2,retired+.2,below,retired-.05,retired-.1,retired-.1,retired-.1],r=packet(x,ages),q=r.slice();q[3*FRONT_STRIDE+FRONT_FIELD.tau]=above;
++  const old=build(r),now=build(q),oldRow=rowAt(old,10),nowRow=rowAt(now,10),nextOld=rowAt(old,10.5),nextNow=rowAt(now,10.5);expect(old.sliceFade[oldRow]).toBeGreaterThan(0);expect(old.mask[oldRow*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest]).toBe(old.sliceFade[oldRow]);flatSupport(now,nowRow,()=>0);expect(now.sliceJoined[nowRow]).toBe(1);expect(now.sliceWeight[nextNow]).toBe(old.sliceWeight[nextOld]);expect(now.sliceWeight[nextNow]).toBe(now.sliceFade[nextNow]);
++  expect(xAt(old,oldRow-1)).toBeLessThan(10);expect(nowRow).toBe(0);const ahead=nowRow+1,j=LOFT.extensionSamples+LANDMARK.crest;
++  const centralCounterfactual=normalizedNormal(now,nowRow,j,{positions:old.positions,row:oldRow-1},ahead),oneSided=normalizedNormal(now,nowRow,j,{positions:now.positions,row:nowRow},ahead),normal=Array.from(now.normals.subarray(3*(nowRow*LOFT_SAMPLES+j),3*(nowRow*LOFT_SAMPLES+j)+3));expect(normal).toEqual(oneSided);const stencilResidual=oneSided.map((v,i)=>v-centralCounterfactual[i]);expect(stencilResidual.some(v=>v!==0)).toBe(true);
++  metrics.adjacentAgeWords={below,above,retired,rawX:10,unchangedNextRawX:10.5,beforeRoster:roster(old),afterRoster:roster(now),nextWeightBefore:old.sliceWeight[nextOld],nextWeightAfter:now.sliceWeight[nextNow],actualNormalBefore:Array.from(old.normals.subarray(3*(oldRow*LOFT_SAMPLES+j),3*(oldRow*LOFT_SAMPLES+j)+3)),actualNormalAfter:normal,centralCounterfactualAtCurrentPositions:centralCounterfactual,oneSided,stencilResidual,normalContinuityClaim:false};honestTopology(old);honestTopology(now);
++ });
++ it('keeps only immediate supports at left/right retirements, one dead shared node or wider dead islands, and drops the last fully retired component',()=>{
++  const x=Array.from({length:21},(_,k)=>k),near=retired-.02,dead=retired+.005;
++  const patterns=[x.map(v=>v<5?dead:near),x.map(v=>v>15?dead:near),x.map(v=>v===10?dead:near),x.map(v=>v>=8&&v<=12?dead:near),x.map(()=>dead)];
++  const results=patterns.map((ages,k)=>{const l=build(packet(x,ages));honestTopology(l);const supports=roster(l).flatMap((x,s)=>l.sliceFade[s]===0?[{x,row:s}]:[]);for(const {row}of supports)flatSupport(l,row,()=>0);if(k===4){expect(l.sliceCount).toBe(0);expect(l.indexCount).toBe(0);expect(l.cSampling!.retirement.plannedSupports).toBe(0);}else{expect(l.cSampling!.retirement.retainedSupports).toBeGreaterThan(0);expect(l.cSampling!.retirement.retainedSupports).toBeLessThanOrEqual(2);}
++   if(k===2){const s=rowAt(l,10);expect(l.sliceJoined[s-1]).toBe(1);expect(l.sliceJoined[s]).toBe(1);}if(k===3)expect(roster(l)).not.toContain(10);return{pattern:k,supports,roster:roster(l),diagnostics:l.cSampling};});metrics.topology=results;
++ });
++ it('retains the original physical end and overlap seals while retirement masks use the existing intrinsic fade',()=>{
++  const x=Array.from({length:21},(_,k)=>k),ages=x.map(()=>times.touchdownSeconds+times.collapseSeconds/2),r=packet(x,ages),l=build(r);honestTopology(l);
++  const firstRaw=rowAt(l,0),nearEnd=rowAt(l,1),middle=rowAt(l,10);expect(l.sliceWeight[firstRaw]).toBe(0);expect(l.sliceWeight[nearEnd]).toBeLessThan(l.sliceFade[nearEnd]);expect(l.sliceWeight[middle]).toBe(l.sliceFade[middle]);expect(l.mask[middle*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest]).toBe(l.sliceFade[middle]);expect(l.mask[nearEnd*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest]).toBe(l.sliceFade[nearEnd]);
++  const b=packet(x.map(v=>v+10),ages,2),both=new Float32Array(r.length+b.length);both.set(r);both.set(b,r.length);const overlap=build(both);expect(overlap.overlaps).toBeGreaterThan(0);const start=Array.from(overlap.sliceJoined.subarray(0,overlap.sliceCount)).findIndex((v,s)=>v===1&&overlap.sliceFront[s]===2);expect(start).toBeGreaterThan(0);expect(overlap.sliceFade[start]).toBeGreaterThan(0);expect(overlap.sliceWeight[start]).toBe(0);expect(overlap.sliceWeight[start+1]).toBeGreaterThan(0);for(let j=0;j<LOFT_SAMPLES;j++)expect(overlap.mask[start*LOFT_SAMPLES+j]).toBe(0);
++  metrics.physicalAndOverlap={physicalWeights:[l.sliceWeight[firstRaw],l.sliceWeight[nearEnd],l.sliceWeight[middle]],intrinsicMask:l.mask[middle*LOFT_SAMPLES+LOFT.extensionSamples+LANDMARK.crest],overlaps:overlap.overlaps,cutX:xAt(overlap,start),cutFade:overlap.sliceFade[start],cutWeight:overlap.sliceWeight[start]};
++ });
++ it('counts closure rows against the same mandatory-knot cap and seals a truncated prefix if its closing support cannot fit',()=>{
++  const x=Array.from({length:401},(_,k)=>.03+.1*k),ages=x.map((_,k)=>k<400?times.touchdownSeconds:retired+.01),r=packet(x,ages),l=build(r),xx=roster(l);honestTopology(l);expect(l.cSampling!.budgetTruncated).toBe(true);expect(l.cSampling!.retirement.budgetOmittedSupports).toBeGreaterThan(0);expect(l.cSampling!.firstOmittedPlannedX).toBeGreaterThan(xx.at(-1)!);
++  for(let k=0;k<x.length;k++)if(r[FRONT_STRIDE*k]<=xx.at(-1)!)expect(xx).toContain(r[FRONT_STRIDE*k]);const last=l.sliceCount-1;expect(l.sliceFade[last]).toBeGreaterThan(0);expect(l.sliceWeight[last]).toBe(0);expect(l.sliceJoined[last]).toBe(0);for(let j=0;j<LOFT_SAMPLES;j++)expect(l.positions[3*(last*LOFT_SAMPLES+j)+1]).toBe(0);metrics.cap={slices:l.sliceCount,lastX:xx.at(-1),diagnostics:l.cSampling};
++ });
++ it('keeps variable scales, near-coincident mandatory knots and phase1/phase2 neighbors finite, with drawing/eager/lazy exact active recipes and normals',()=>{
++  const x=[0,4,8,10,Math.fround(10+2**-20),10.5,11,16,20],heights=x.map((_,k)=>foot*(.9+.01*k)),depths=x.map((_,k)=>6+.1*k),ages=x.map((_,k)=>{const t=library.profileTimes({slope:c.slope,footHeight:heights[k],footDepth:depths[k]});return k<3?t.touchdownSeconds+t.collapseSeconds+.02:k===3?t.touchdownSeconds+t.collapseSeconds+.001:k===4?t.touchdownSeconds-.01:t.touchdownSeconds+.1*t.collapseSeconds;});const r=packet(x,ages,1,heights,depths),water=(x:number,z:number)=>.03*x+.02*z;
++  const drawing=build(r,water,{holdClearDrawing:true}),eager=build(r,water,{contact:true}),query=SweptLoft.forContactQueries(library,c.slope),lazy=query.build(r,r.length/FRONT_STRIDE,0,water);expect(roster(drawing)).toEqual(roster(eager));expect(roster(lazy)).toEqual(roster(eager));
++  for(const key of ['sliceSigma','sliceTau','sliceJoined','sliceWeight','sliceFade','slicePhase']as const){expect(drawing[key].subarray(0,drawing.sliceCount)).toEqual(eager[key].subarray(0,eager.sliceCount));expect(lazy[key].subarray(0,lazy.sliceCount)).toEqual(eager[key].subarray(0,eager.sliceCount));}
++  for(let s=0;s<lazy.sliceCount;s++)query.prepareRow(s);for(let s=0;s<lazy.sliceCount;s++)if(lazy.sliceJoined[s]||s>0&&lazy.sliceJoined[s-1])for(let j=0;j<LOFT_SAMPLES;j++)query.prepareNormal(s*LOFT_SAMPLES+j);
++  expect(lazy.positions.subarray(0,3*lazy.vertexCount)).toEqual(eager.positions.subarray(0,3*eager.vertexCount));expect(lazy.normals.subarray(0,3*lazy.vertexCount)).toEqual(eager.normals.subarray(0,3*eager.vertexCount));expect(lazy.indices.subarray(0,lazy.indexCount)).toEqual(eager.indices.subarray(0,eager.indexCount));expect(drawing.positions.subarray(0,3*drawing.vertexCount)).toEqual(eager.positions.subarray(0,3*eager.vertexCount));honestTopology(drawing);honestTopology(eager);expect(eager.slicePhase.subarray(0,eager.sliceCount).includes(1)).toBe(true);expect(eager.slicePhase.subarray(0,eager.sliceCount).includes(2)).toBe(true);metrics.variableDemand={roster:roster(eager),diagnostics:eager.cSampling,allActiveEagerLazyPositionsNormalsIndicesExact:true,phase1AndPhase2Present:eager.slicePhase.subarray(0,eager.sliceCount).includes(1)&&eager.slicePhase.subarray(0,eager.sliceCount).includes(2)};
++ });
++ it('preserves complete RAW result words and keys against the frozen stable-X parent',()=>{
++  const raw=new ProfileLibrary(cases),prior=new ParentLibrary(cases),fixtures=[packet([0,4,8,10,16,20],[.3,.4,.5,4,.7,.8]),packet(Array.from({length:401},(_,k)=>.03+.1*k))];for(const r of fixtures)for(const contact of[false,true]){const original=r.slice(),next=new SweptLoft(raw,c.slope,{contact}).build(r,r.length/FRONT_STRIDE,.5,()=>.5),old=new ParentLoft(prior,c.slope,{contact}).build(r,r.length/FRONT_STRIDE,.5,()=>.5);expect(next).toEqual(old);expect(r).toEqual(original);expect(Object.keys(next)).not.toContain('cSampling');}metrics.raw={fixtures:2,modes:2,allWordsAndResultKeysExact:true,inputUnchanged:true};
++ });
++});
+--- a/src/wave/barrel/retirementCapPrefix.test.ts
++++ b/src/wave/barrel/retirementCapPrefix.test.ts
+@@ -0,0 +1,55 @@
++import { afterAll, describe, expect, it } from 'vitest';
++import { writeFileSync } from 'node:fs';
++import { FRONT_STRIDE } from './frontRecords';
++import { readBarrelCases } from './nodeBarrelCases';
++import { decodeCase } from './profileFormat';
++import { LANDMARK, ProfileLibrary } from './ProfileLibrary';
++import { LOFT, LOFT_SAMPLES, SweptLoft, collapseFade, type LoftResult } from './sweptLoft';
++import { SweptLoft as FrozenV1Loft } from '/private/tmp/tube-bounded-c-retirement-boundary-20261005/source/src/wave/barrel/sweptLoft';
++import { ProfileLibrary as FrozenV1Library } from '/private/tmp/tube-bounded-c-retirement-boundary-20261005/source/src/wave/barrel/ProfileLibrary';
++const cases = readBarrelCases().map(decodeCase), c = cases.find(c => c.id === 'pad19-a30-l12')!;
++const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
++const foot = Math.fround(c.nonlinearity * 7);
++const times = library.profileTimes({ slope: c.slope, footHeight: foot, footDepth: 7 });
++const retirement = (h: number, d: number) => { const t = library.profileTimes({ slope: c.slope, footHeight: h, footDepth: d }); return t.touchdownSeconds + t.collapseSeconds; };
++const metrics: Record<string, unknown> = { scope: 'Deterministic CPU real-provider cap regression; no native state, root, continuity or appearance claim.' };
++afterAll(() => { if (process.env.RETIREMENT_CAP_METRICS) writeFileSync(process.env.RETIREMENT_CAP_METRICS, JSON.stringify(metrics, null, 2) + '\n'); });
++function packet(xs: number[], front: number, z: number, ages: number[], heights = xs.map(() => foot), depths = xs.map(() => 7)) {
++  const words = new Float32Array(xs.length * FRONT_STRIDE);
++  xs.forEach((x, k) => words.set([x, z, front, x - xs[0], ages[k], heights[k], depths[k], z - 5, 4], k * FRONT_STRIDE));
++  return words;
++}
++function concat(...parts: Float32Array[]) { const r = new Float32Array(parts.reduce((n, p) => n + p.length, 0)); let at = 0; for (const p of parts) { r.set(p, at); at += p.length; } return r; }
++function build(words: Float32Array) { return new SweptLoft(library, c.slope, { sheet: false }).build(words, words.length / FRONT_STRIDE, 0, () => 0); }
++function xAt(l: LoftResult, row: number) { return l.positions[3 * (row * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest)]; }
++function summary(l: LoftResult) { return { slices: l.sliceCount, vertices: l.vertexCount, rows: Array.from({ length: l.sliceCount }, (_, row) => ({ x: xAt(l, row), front: l.sliceFront[row], fade: l.sliceFade[row], weight: l.sliceWeight[row], joined: l.sliceJoined[row] })), diagnostics: l.cSampling }; }
++
++describe('C retirement cap preserves the first omitted ordered prefix', () => {
++  it('stops after a dangling support rollback despite spare capacity, and cannot replace the first omission with a later interior-only front', () => {
++    // 297 live stations from a constant-clock, 145m physical front, including its ordinary shoulders.
++    const first = packet([0, 145], 1, 40, [times.touchdownSeconds, times.touchdownSeconds]);
++    // One intrinsically live base station; its adjacent dead support cannot fit together with that live row.
++    const second = packet([200, 210, 220], 2, 70, [100, retirement(foot, 7) - .02, 100]);
++    // Fixed off-lattice raw endpoints are individually dead; the actual interpolated provider is live inside.
++    // This is the existing carrier-support depth1/depth9 construction, not a searched station.
++    const depths = [1, 9], heights = depths.map(d => Math.fround(c.nonlinearity * d));
++    const third = packet([300.10, 300.15], 3, 100, heights.map((h, k) => retirement(h, depths[k]) + .01), heights, depths);
++    const endpointFades = [0, 1].map(k => { const o = k * FRONT_STRIDE; const t = library.profileTimes({ slope: c.slope, footHeight: third[o + 5], footDepth: third[o + 6] }); return collapseFade(third[o + 4], t.touchdownSeconds, t.collapseSeconds); });
++    const firstOnly = build(first), secondOnly = build(second), thirdOnly = build(third);
++    const secondLive = Array.from({ length: secondOnly.sliceCount }, (_, s) => s).filter(s => secondOnly.sliceFade[s] > 0);
++    const thirdLive = Array.from({ length: thirdOnly.sliceCount }, (_, s) => s).filter(s => thirdOnly.sliceFade[s] > 0);
++    // Record fixture prerequisites before assertions, so any genuine provider-domain mismatch is retained.
++    metrics.prerequisites = { first: summary(firstOnly), second: summary(secondOnly), third: summary(thirdOnly), endpointFades, secondLiveX: secondLive.map(s => xAt(secondOnly, s)), thirdLiveX: thirdLive.map(s => xAt(thirdOnly, s)) };
++    expect(firstOnly.sliceCount).toBe(297); expect(secondLive.map(s => xAt(secondOnly, s))).toEqual([210]); expect(endpointFades).toEqual([0, 0]); expect(thirdLive.length).toBeGreaterThan(0);
++    const words = concat(first, second, third), before = words.slice(), now = build(words);
++    const old = new FrozenV1Loft(new FrozenV1Library(cases, { geometry: 'bounded-C' }), c.slope, { sheet: false }).build(words, words.length / FRONT_STRIDE, 0, () => 0);
++    metrics.comparison = { frozenV1: summary(old), corrected: summary(now), inputWordsUnchanged: words.every((v, i) => Object.is(v, before[i])), numericalTolerancesAdded: false };
++    expect(words).toEqual(before); expect(now.sliceCount).toBe(297); expect(now.vertexCount).toBeLessThan(LOFT.budget);
++    expect(now.cSampling!.budgetTruncated).toBe(true); expect(now.cSampling!.omittedFronts).toBe(1);
++    expect(now.cSampling!.firstOmittedPlannedX).toBeGreaterThan(200); expect(now.cSampling!.firstOmittedPlannedX).toBeLessThan(210);
++    expect(now.sliceFront.subarray(0, now.sliceCount).every(f => f === 1)).toBe(true);
++    expect(old.cSampling!.omittedFronts).toBe(0); expect(old.cSampling!.firstOmittedPlannedX).toBeGreaterThan(300);
++    // The retained physical front's ending seal stays intact; no reconnection through omitted raw knots.
++    expect(now.sliceWeight[now.sliceCount - 1]).toBe(0); expect(now.sliceJoined[now.sliceCount - 1]).toBe(0);
++  });
++});
+--- a/src/wave/barrel/retirementContact.test.ts
++++ b/src/wave/barrel/retirementContact.test.ts
+@@ -0,0 +1,284 @@
++import { readFileSync, writeFileSync } from 'node:fs';
++import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
++import { Ray, Vector3 } from 'three';
++import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
++import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
++import { FRONT_STRIDE } from './frontRecords';
++import { LANDMARK, ProfileLibrary } from './ProfileLibrary';
++import { readBarrelCases } from './nodeBarrelCases';
++import { decodeCase } from './profileFormat';
++import { createContactHit, SweptContact, type ContactHit } from './sweptContact';
++import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++import { SweptContact as ParentContact } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/sweptContact';
++import { ProfileLibrary as ParentLibrary } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/ProfileLibrary';
++
++const STILL = 0.5;
++const cases = readBarrelCases('padang').map(decodeCase);
++const c = cases.find(value => value.id === 'pad19-a30-l12')!;
++const library = () => new ProfileLibrary(cases, { geometry: 'bounded-C' });
++type PacketRow = { x: number; z: number; front: number; sigma: number; tau: number; footHeight: number; footDepth: number; throwZ: number | null; pace: number | null };
++const captured = JSON.parse(readFileSync(new URL('./retirementBoundary.fixture.json', import.meta.url), 'utf8')) as {
++  sourceWordsRetained: boolean; ordinaryFlatCPUSubstrateNotNativeHeightfieldReplay: boolean;
++  epochs: { movingStep: number; packetRows: PacketRow[] }[];
++};
++const metrics: Record<string, unknown> = {
++  schema: 'bounded-C-retirement-contact-fixtures/v1',
++  actualPacketInput: 'retirementBoundary.fixture.json, selected front component, moving steps 59 and 60',
++  substrate: 'ordinary flat CPU PhysicalSurfWater; not native heightfield/state replay',
++  continuityToleranceApplied: false,
++  queries: [],
++};
++afterAll(() => {
++  if (process.env.RETIREMENT_CONTACT_METRICS) writeFileSync(process.env.RETIREMENT_CONTACT_METRICS, JSON.stringify(metrics, null, 2) + '\n');
++});
++afterEach(() => vi.restoreAllMocks());
++
++function packet(rows: PacketRow[]): Float32Array {
++  const records = new Float32Array(rows.length * FRONT_STRIDE);
++  rows.forEach((row, index) => records.set([row.x, row.z, row.front, row.sigma, row.tau, row.footHeight,
++    row.footDepth, row.throwZ ?? NaN, row.pace ?? NaN], index * FRONT_STRIDE));
++  return records;
++}
++
++/** Controlled parameters and coordinates; ages come from the real Padang provider's own retirement clock. */
++function controlled(): Float32Array {
++  const query = { slope: c.slope, footHeight: Math.fround(c.nonlinearity * 7), footDepth: 7 };
++  const times = library().profileTimes(query), until = times.touchdownSeconds + times.collapseSeconds;
++  const ages = [until + times.collapseSeconds, until + times.collapseSeconds, until - times.collapseSeconds / 2,
++    until - times.collapseSeconds / 2, until + times.collapseSeconds, until + times.collapseSeconds];
++  return packet(ages.map((tau, k) => ({ x: 4 * k + 1, z: -130, front: 1, sigma: 4 * k, tau,
++    footHeight: query.footHeight, footDepth: 7, throwZ: -140, pace: 4 })));
++}
++
++const xAt = (loft: LoftResult, row: number) => loft.positions[3 * row * LOFT_SAMPLES];
++function ghostToLive(loft: LoftResult): number[] {
++  return Array.from({ length: Math.max(0, loft.sliceCount - 1) }, (_, row) => row).filter(row =>
++    loft.sliceJoined[row] === 1 && loft.sliceFade[row] === 0 && loft.sliceWeight[row] === 0 && loft.sliceWeight[row + 1] > 0);
++}
++type Preparation = { normalDemand: boolean; result: LoftResult; heightReady: Uint8Array; normalReady: Uint8Array };
++function contactPair(records: Float32Array) {
++  const solver = new ShallowWaterSolver({ nx: 64, xMin: -8, dx: 1, zEdges: uniformEdges(-170, -60, 110) }, () => 7, { waterLevel: STILL });
++  const water = new PhysicalSurfWater(solver, { peakPeriod: 18, nodeSpacing: 2 });
++  let preparation: Preparation | undefined;
++  const build = SweptLoft.prototype.build;
++  vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) {
++    const result = build.apply(this, args);
++    const state = this as unknown as Preparation;
++    if (state.normalDemand) preparation = state;
++    return result;
++  });
++  const owner = SweptContact.forOrdinaryWorker(library(), c.slope);
++  owner.updateFromPlainSurface(records, records.length / FRONT_STRIDE, STILL, water);
++  const eager = new SweptContact(library(), c.slope);
++  const fullScan = new SweptContact(library(), c.slope, { bucket: Infinity });
++  water.withSurfaceNodeCache(() => {
++    eager.update(records, records.length / FRONT_STRIDE, STILL, (x, z) => water.plainSurfaceAt(x, z));
++    fullScan.update(records, records.length / FRONT_STRIDE, STILL, (x, z) => water.plainSurfaceAt(x, z));
++  });
++  expect(preparation).toBeDefined();
++  const state = preparation!;
++  expect(state.result.indices.subarray(0, state.result.indexCount)).toEqual(eager.last!.indices.subarray(0, eager.last!.indexCount));
++  expect(state.result.sliceJoined.subarray(0, state.result.sliceCount)).toEqual(eager.last!.sliceJoined.subarray(0, eager.last!.sliceCount));
++  function sameHit(a: ContactHit, b: ContactHit) {
++    for (const key of Object.keys(a) as (keyof ContactHit)[]) expect(Object.is(a[key], b[key]), key).toBe(true);
++  }
++  function checkPreparedWords() {
++    for (let row = 0; row < state.result.sliceCount; row++) if (state.heightReady[row]) {
++      const begin = 3 * row * LOFT_SAMPLES, end = begin + 3 * LOFT_SAMPLES;
++      expect(state.result.positions.subarray(begin, end)).toEqual(eager.last!.positions.subarray(begin, end));
++    }
++    for (let vertex = 0; vertex < state.result.vertexCount; vertex++) if (state.normalReady[vertex]) {
++      expect(state.result.normals.subarray(3 * vertex, 3 * vertex + 3)).toEqual(eager.last!.normals.subarray(3 * vertex, 3 * vertex + 3));
++    }
++  }
++  return {
++    eager, fullScan, owner, state,
++    floor(x: number, z: number) {
++      const actual = owner.queries.floorAt(x, z), expected = eager.floorAt(x, z);
++      expect(Object.is(actual, expected)).toBe(true);
++      expect(Object.is(expected, fullScan.floorAt(x, z))).toBe(true);
++      checkPreparedWords();
++      return actual;
++    },
++    query(x: number, y: number, z: number) {
++      const lazy = createContactHit(), expected = createContactHit(), scan = createContactHit();
++      const found = owner.queries.query(x, y, z, lazy);
++      expect(found).toBe(eager.query(x, y, z, expected));
++      expect(found).toBe(fullScan.query(x, y, z, scan));
++      sameHit(lazy, expected); sameHit(lazy, scan); checkPreparedWords();
++      return { found, hit: lazy };
++    },
++  };
++}
++
++/** The actual indexed triangle centroids, strictly inside one retained closure strip in XZ. */
++function triangleSamples(loft: LoftResult, row: number) {
++  const p = loft.positions, selected = new Set([LANDMARK.crest, 48, LANDMARK.lip, LANDMARK.throat, 96, LANDMARK.toe]);
++  const samples: { triangle: number; vertices: number[]; x: number; y: number; z: number }[] = [];
++  for (let t = 0; t < loft.indexCount; t += 3) {
++    const vertices = Array.from(loft.indices.subarray(t, t + 3));
++    if (!vertices.every(v => Math.floor(v / LOFT_SAMPLES) === row || Math.floor(v / LOFT_SAMPLES) === row + 1)) continue;
++    const j = Math.min(...vertices.map(v => v % LOFT_SAMPLES)) - LOFT.extensionSamples;
++    if (!selected.has(j)) continue;
++    const [a, b, c] = vertices;
++    const area = (p[3 * b] - p[3 * a]) * (p[3 * c + 2] - p[3 * a + 2]) - (p[3 * b + 2] - p[3 * a + 2]) * (p[3 * c] - p[3 * a]);
++    if (area === 0) continue;
++    samples.push({ triangle: t / 3, vertices,
++      x: vertices.reduce((sum, v) => sum + p[3 * v], 0) / 3,
++      y: vertices.reduce((sum, v) => sum + p[3 * v + 1], 0) / 3,
++      z: vertices.reduce((sum, v) => sum + p[3 * v + 2], 0) / 3 });
++  }
++  return samples;
++}
++
++/** Independent geometric oracle: Three's ray/triangle intersection over the actual active index buffer. */
++type Fraction = { numerator: bigint; denominator: bigint };
++const EXACT_SCALE = 2 ** 64;
++function exactInteger(value: number): bigint {
++  const scaled = value * EXACT_SCALE;
++  if (!Number.isInteger(scaled)) throw new Error('Fixture coordinate is outside its exact dyadic integer domain');
++  return BigInt(scaled);
++}
++function exactCompare(a: Fraction, b: Fraction): number {
++  const delta = a.numerator * b.denominator - b.numerator * a.denominator;
++  return delta < 0n ? -1 : delta > 0n ? 1 : 0;
++}
++function exactPlaneY(p: Float32Array, vertices: number[], x: number, z: number): Fraction {
++  const [a, b, c] = vertices.map(v => [exactInteger(p[3 * v]), exactInteger(p[3 * v + 1]), exactInteger(p[3 * v + 2])]);
++  const u = b.map((value, i) => value - a[i]), v = c.map((value, i) => value - a[i]);
++  const normal = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
++  let numerator = a[1] * normal[1] - normal[0] * (exactInteger(x) - a[0]) - normal[2] * (exactInteger(z) - a[2]);
++  let denominator = normal[1] * BigInt(EXACT_SCALE);
++  if (denominator < 0n) { numerator = -numerator; denominator = -denominator; }
++  if (denominator === 0n) throw new Error('Vertical triangle has no exact vertical-line height');
++  return { numerator, denominator };
++}
++function indexedCrossings(loft: LoftResult, x: number, z: number) {
++  const p = loft.positions;
++  let top = -Infinity;
++  for (let v = 0; v < loft.vertexCount; v++) top = Math.max(top, p[3 * v + 1]);
++  const ray = new Ray(new Vector3(x, top + 1, z), new Vector3(0, -1, 0));
++  const a = new Vector3(), b = new Vector3(), c = new Vector3(), out = new Vector3();
++  const result: { triangle: number; y: number; minimumVertexY: number; maximumVertexY: number; exact: Fraction }[] = [];
++  for (let t = 0; t < loft.indexCount; t += 3) {
++    a.fromArray(p, 3 * loft.indices[t]); b.fromArray(p, 3 * loft.indices[t + 1]); c.fromArray(p, 3 * loft.indices[t + 2]);
++    if (ray.intersectTriangle(a, b, c, false, out)) result.push({ triangle: t / 3, y: out.y,
++      minimumVertexY: Math.min(a.y, b.y, c.y), maximumVertexY: Math.max(a.y, b.y, c.y),
++      exact: exactPlaneY(p, Array.from(loft.indices.subarray(t, t + 3)), x, z) });
++  }
++  return result.sort((a, b) => exactCompare(a.exact, b.exact));
++}
++
++describe('real Padang C retirement contact boundary', () => {
++  for (const input of [{ label: 'controlled-real-provider', records: controlled() },
++    ...captured.epochs.map(epoch => ({ label: `actual-packet-step-${epoch.movingStep}`, records: packet(epoch.packetRows) }))]) {
++    it(`${input.label}: rejects exact zero closure rays before nudge and keeps positive indexed interiors eager/lazy/full-scan exact`, () => {
++      const before = input.records.slice(), pair = contactPair(input.records), loft = pair.eager.last!;
++      const rows = ghostToLive(loft);
++      expect(rows.length).toBeGreaterThan(0);
++      const evidence: unknown[] = [];
++      for (const row of rows) {
++        expect(loft.sliceFade[row]).toBe(0); expect(loft.sliceWeight[row]).toBe(0);
++        for (let j = 0; j < LOFT_SAMPLES; j++) expect(loft.positions[3 * (row * LOFT_SAMPLES + j) + 1]).toBe(STILL);
++        const x = xAt(loft, row);
++        const z = loft.positions[3 * (row * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.crest) + 2];
++        const ready = pair.state.heightReady.slice(), normals = pair.state.normalReady.slice();
++        expect(pair.floor(x, z)).toBeNaN();
++        for (const y of [STILL - 1, STILL, STILL + 1]) {
++          const result = pair.query(x, y, z);
++          expect(result.found).toBe(false); expect(result.hit).toEqual(createContactHit());
++        }
++        expect(pair.state.heightReady).toEqual(ready); expect(pair.state.normalReady).toEqual(normals);
++        const samples = triangleSamples(loft, row);
++        expect(samples.length).toBeGreaterThan(0);
++        for (const sample of samples) {
++          expect(sample.x).toBeGreaterThan(x); expect(sample.x).toBeLessThan(xAt(loft, row + 1));
++          const floor = pair.floor(sample.x, sample.z);
++          expect(Number.isFinite(floor)).toBe(true);
++          const below = pair.query(sample.x, floor - 1, sample.z);
++          const above = pair.query(sample.x, Math.max(...Array.from(loft.positions.subarray(0, 3 * loft.vertexCount)).filter((_, i) => i % 3 === 1)) + 1, sample.z);
++          expect(below.found).toBe(true); expect(below.hit.inWater).toBe(true);
++          expect(below.hit.floorY).toBe(floor); expect(Number.isFinite(below.hit.life)).toBe(true);
++          expect(above.found).toBe(true); expect(above.hit.inWater).toBe(false);
++          expect(above.hit.ceilingY).toBeNaN(); expect(above.hit.ceilingTopY).toBeNaN();
++          const actualCrossings = indexedCrossings(loft, sample.x, sample.z);
++          expect(actualCrossings.length).toBeGreaterThan(0);
++          expect(actualCrossings.some(crossing => crossing.triangle === sample.triangle)).toBe(true);
++          // No epsilon around thin water/air layers: their actual intersection midpoints define each query.
++          const ys = [actualCrossings[0].y - 1, actualCrossings[actualCrossings.length - 1].y + 1];
++          let coincidentPlanes = 0, unrepresentableMidpoints = 0;
++          for (let i = 1; i < actualCrossings.length; i++) {
++            const a = actualCrossings[i - 1].exact, b = actualCrossings[i].exact;
++            if (exactCompare(a, b) === 0) { coincidentPlanes++; continue; }
++            const midpoint = Number(a.numerator * b.denominator + b.numerator * a.denominator)
++              / Number(2n * a.denominator * b.denominator);
++            const exactMidpoint = { numerator: exactInteger(midpoint), denominator: BigInt(EXACT_SCALE) };
++            if (!(exactCompare(a, exactMidpoint) < 0 && exactCompare(exactMidpoint, b) < 0)) { unrepresentableMidpoints++; continue; }
++            ys.push(midpoint);
++          }
++          const layers: unknown[] = [];
++          for (const y of ys) {
++            const exactY = { numerator: exactInteger(y), denominator: BigInt(EXACT_SCALE) };
++            const aboveCount = actualCrossings.filter(crossing => exactCompare(crossing.exact, exactY) > 0).length;
++            const belowCount = actualCrossings.length - aboveCount;
++            const inWater = (aboveCount & 1) === 1;
++            const answer = pair.query(sample.x, y, sample.z);
++            if (answer.found && answer.hit.inWater !== inWater) metrics.independentOracleFirstFailure = {
++              label: input.label, row, sample, y, aboveCount, belowCount,
++              actualCrossings: actualCrossings.map(({ exact, ...crossing }) => ({ ...crossing, exact: { numerator: String(exact.numerator), denominator: String(exact.denominator) } })), hit: answer.hit,
++            };
++            expect(answer.found).toBe(inWater || belowCount > 0);
++            if (!answer.found) continue;
++            expect(answer.hit.inWater).toBe(inWater);
++            const surfaceIndex = inWater ? belowCount : belowCount - 1;
++            const crossing = actualCrossings[surfaceIndex];
++            // Exact containment in the intersected triangle's actual Y range; no arbitrary continuity bound.
++            expect(answer.hit.surfaceY).toBeGreaterThanOrEqual(crossing.minimumVertexY);
++            expect(answer.hit.surfaceY).toBeLessThanOrEqual(crossing.maximumVertexY);
++            expect(Number.isFinite(answer.hit.ceilingY)).toBe(!inWater && aboveCount >= 2);
++            expect(Number.isFinite(answer.hit.ceilingTopY)).toBe(!inWater && aboveCount >= 2);
++            const f = (sample.x - x) / (xAt(loft, row + 1) - x);
++            expect(answer.hit.life).toBe(loft.sliceLife[row] + f * (loft.sliceLife[row + 1] - loft.sliceLife[row]));
++            layers.push({ y, aboveCount, belowCount, hit: answer.hit,
++              independentRaySurfaceResidual: answer.hit.surfaceY - crossing.y,
++              independentRayFloorResidual: answer.hit.floorY - actualCrossings[0].y });
++          }
++          evidence.push({ row, zeroX: x, triangle: sample.triangle, vertices: sample.vertices, query: sample,
++            positiveInterpolatedWeight: loft.sliceWeight[row + 1] * (sample.x - x) / (xAt(loft, row + 1) - x), floor, below: below.hit, above: above.hit,
++            independentActualIndexCrossings: actualCrossings.map(({ exact, ...crossing }) => ({ ...crossing,
++              exact: { numerator: String(exact.numerator), denominator: String(exact.denominator) } })),
++            coincidentPlanes, unrepresentableMidpoints, layers });
++        }
++      }
++      expect(pair.state.normalReady.some(Boolean)).toBe(true);
++      expect(input.records).toEqual(before);
++      (metrics.queries as unknown[]).push({ label: input.label, slices: loft.sliceCount, retirement: loft.cSampling!.retirement, rows, evidence,
++        allHitFieldsExact: true, actualPreparedPositionsAndSelectedNormalsExact: true, packetWordsUnchanged: true });
++    });
++  }
++
++  it('preserves RAW query/floor fields against the frozen stable-X parent at captured and controlled geometry', () => {
++    let queries = 0, hits = 0;
++    for (const records of [controlled(), ...captured.epochs.map(epoch => packet(epoch.packetRows))]) {
++      const before = records.slice(), next = new SweptContact(new ProfileLibrary(cases), c.slope);
++      const old = new ParentContact(new ParentLibrary(cases), c.slope);
++      next.update(records, records.length / FRONT_STRIDE, STILL, () => STILL);
++      old.update(records, records.length / FRONT_STRIDE, STILL, () => STILL);
++      expect(next.last!).toEqual(old.last!);
++      const loft = next.last!;
++      const xs = [xAt(loft, 0) - 1, ...Array.from({ length: loft.sliceCount - 1 }, (_, row) => (xAt(loft, row) + xAt(loft, row + 1)) / 2), xAt(loft, loft.sliceCount - 1) + 1];
++      for (const x of xs) for (const z of [-150, -140, -135, -130, -125, -120, -100, -60]) {
++        expect(Object.is(next.floorAt(x, z), old.floorAt(x, z))).toBe(true);
++        for (const y of [STILL - 1, STILL, STILL + 1, STILL + 4, STILL + 8]) {
++          const a = createContactHit(), b = createContactHit(), found = next.query(x, y, z, a);
++          expect(found).toBe(old.query(x, y, z, b));
++          for (const key of Object.keys(a) as (keyof ContactHit)[]) expect(Object.is(a[key], b[key]), key).toBe(true);
++          queries++; if (found) hits++;
++        }
++      }
++      expect(records).toEqual(before);
++    }
++    expect(hits).toBeGreaterThan(0);
++    metrics.raw = { fixtures: 3, queries, hits, completeLoftWordsAndMetadataExact: true, queryAndFloorAllFieldsExact: true, packetWordsUnchanged: true };
++  });
++});
+--- a/src/wave/barrel/stableXSampling.test.ts
++++ b/src/wave/barrel/stableXSampling.test.ts
+@@ -8,9 +8,9 @@
+ import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
+ import { SweptLoft as ParentLoft } from '/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptLoft';
+ import { ProfileLibrary as ParentLibrary } from '/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/ProfileLibrary';
+-const W='/private/tmp/tube-bounded-c-stable-x-sampling-20261005', cases=readBarrelCases().map(decodeCase), c=cases.find(c=>c.id==='pad19-a30-l12')!;
++const cases=readBarrelCases().map(decodeCase), c=cases.find(c=>c.id==='pad19-a30-l12')!;
+ const lib=new ProfileLibrary(cases,{geometry:'bounded-C'}), metrics:Record<string,unknown>={};
+-afterAll(()=>writeFileSync(W+'/sampling-result.json',JSON.stringify(metrics,null,2)+'\n'));
++afterAll(()=>{ if (process.env.SAMPLING_METRICS) writeFileSync(process.env.SAMPLING_METRICS,JSON.stringify(metrics,null,2)+'\n'); });
+ function packet(xs:number[],taus=xs.map(()=>.4),zs=xs.map(()=>40),front=1,sigma0=0){
+  const r=new Float32Array(xs.length*FRONT_STRIDE);let sigma=sigma0;
+  xs.forEach((x,k)=>{if(k)sigma+=Math.hypot(x-xs[k-1],zs[k]-zs[k-1]);r.set([x,zs[k],front,sigma,taus[k],c.nonlinearity*7,7,35,4],k*FRONT_STRIDE);});return r;
+--- a/src/wave/barrel/stableXStress.test.ts
++++ b/src/wave/barrel/stableXStress.test.ts
+@@ -1,19 +1,19 @@
+ import { createHash } from 'node:crypto';
+ import { readFileSync, writeFileSync } from 'node:fs';
+ import { afterAll, describe, expect, it } from 'vitest';
+-import { BreakingFront, type FrontPoint } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/BreakingFront';
+-import { CarrierSupport } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/carrierSupport';
+-import type { CrestSample } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/crestOnset';
+-import { FRONT_STRIDE, writeFrontRecords } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/frontRecords';
+-import { ProfileLibrary, LANDMARK } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/ProfileLibrary';
+-import { readBarrelCases } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/nodeBarrelCases';
+-import { decodeCase } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/profileFormat';
+-import { SweptCrash, type CrashSea } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/SweptCrash';
+-import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/sweptLoft';
+-import { advanceClocks, onsetTiming } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/sliceClock';
+-import { PlungingLip } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/PlungingLip';
+-import { ShallowWaterSolver, uniformEdges } from '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/ShallowWaterSolver';
+-const W = '/private/tmp/tube-bounded-c-stable-x-sampling-20261005';
++import { BreakingFront, type FrontPoint } from './BreakingFront';
++import { CarrierSupport } from './carrierSupport';
++import type { CrestSample } from './crestOnset';
++import { FRONT_STRIDE, writeFrontRecords } from './frontRecords';
++import { ProfileLibrary, LANDMARK } from './ProfileLibrary';
++import { readBarrelCases } from './nodeBarrelCases';
++import { decodeCase } from './profileFormat';
++import { SweptCrash, type CrashSea } from './SweptCrash';
++import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++import { advanceClocks, onsetTiming } from './sliceClock';
++import { PlungingLip } from '../PlungingLip';
++import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
++const output = process.env.STRESS_METRICS;
+ const frozen = '/private/tmp/tube-bounded-c-carrier-support-20261004';
+ const cases = readBarrelCases().map(decodeCase), c = cases.find(c => c.id === 'pad19-a30-l12')!;
+ const lib = new ProfileLibrary(cases, { geometry: 'bounded-C' }), carrier = new CarrierSupport(lib, c.slope), timing = onsetTiming(7, 18);
+@@ -36,7 +36,7 @@
+     sampledTarget: 'breaking crest samples at Z40+distance for released0..3; retained/live4..14 sampleZ40', heightAt: 'zero flat CPU substrate',
+     fixedStations: [10.5, 11, 12, 13, 17, 21], mandatorySurvivingPhase2Stations: [13, 17, 21] },
+   limits: ['Synthetic parameter stress from the frozen positive-weight overturned phase2 fixture; not replay of native state or motion.', 'Only handoff DISTANCES are measured capture inputs; other controlled positions, bases, timings and solver substrate are explicitly synthetic.', 'Negative return cases are source-supported hypothetical solver reacquisition within the same match reach, not observed native return.', 'No arbitrary numerical success tolerance: report every clock/XYZ/weight/topology residual; passing identity/lifetime/phase gates is not broad visual continuity proof.', 'No build/native/browser/resource/port/Git/repository/frozen-file mutation or adoption claim.'], trials: snapshots };
+-afterAll(() => { report.complete = snapshots.length === 5; writeFileSync(`${W}/stress-result.json`, JSON.stringify(report, null, 2) + '\n'); });
++afterAll(() => { report.complete = snapshots.length === 5; if (output) writeFileSync(output, JSON.stringify(report, null, 2) + '\n'); });
+ function points(): FrontPoint[] {
+   return Array.from({ length: 15 }, (_, k) => {
+     const tau = k < 5 ? bounds.seconds + .05 : middleAge - .02, thrown = 1 - middleAge + .003 * (10 - k), base = 40 - 4 * tau;
+@@ -101,7 +101,7 @@
+       reference: row ? reference.sliceSigma[row] - reference.sliceSigma[row - 1] : 0,
+       residual: row ? (current.sliceSigma[row] - current.sliceSigma[row - 1]) - (reference.sliceSigma[row] - reference.sliceSigma[row - 1]) : 0 })) },
+     continuityToleranceApplied: false, providerOrContinuousRetirementRootClaim: false });
+-  snapshots.push(trial); writeFileSync(`${W}/stress-result.json`, JSON.stringify(report, null, 2) + '\n');
++  snapshots.push(trial); if (output) writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
+   expect(trial.identityPreserved).toBe(true); expect(trial.sameFrontPreserved).toBe(true); expect(trial.immutablePacePreserved).toBe(true); expect(trial.mandatoryRoofPreserved).toBe(true);
+   expect(current.rayInvalidIntervals).toBe(0); expect(crashResult).toEqual({ throws: 0, volume: 0 }); expect(s.solver.h).toEqual(waterBefore);
+   for (const p of f.points.filter(p => p.id >= 104)) expect(p.z).toBe(p.jetBase! + p.jetPace! * p.tau);

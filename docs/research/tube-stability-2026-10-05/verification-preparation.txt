@@ -1,0 +1,4 @@
+The first portable verifier preparation attempt exited 1 at verify.py's comparison acceptance check:
+ValueError: Comparison acceptance mismatch
+
+The original comparison acceptance object includes the nonempty causalScope explanation string alongside six explicitly false boolean flags. The overly broad any(object.values()) check treated that explanation as an acceptance flag. The final verifier checks the six named original boolean fields individually. No actual evidence, original analysis, recorded result, source or resources were changed. This note preserves the concrete preparation failure; it is not a native/test failure or quality acceptance.

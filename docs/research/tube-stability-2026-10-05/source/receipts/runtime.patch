@@ -1,0 +1,247 @@
+--- a/src/wave/barrel/sweptContact.ts
++++ b/src/wave/barrel/sweptContact.ts
+@@ -119,6 +119,8 @@
+   private readonly prepareRow?: (row: number) => void;
+   private readonly prepareNormal?: (vertex: number) => void;
+   private readonly bucket: number;
++  /** Provider mode, not descriptive loft diagnostics, controls C water-closure contact ownership. */
++  private readonly boundedC: boolean;
+   /** Per vertex, its along-ray coordinate on its own slice's ray, and (a joined slice's next) on the previous slice's. */
+   private own = new Float32Array(0);
+   private prior = new Float32Array(0);
+@@ -170,6 +172,7 @@
+       this.prepareNormal = queryLoft.prepareNormal;
+     } else this.loft = new SweptLoft(library, slope, { contact: true });
+     this.bucket = options.bucket ?? CONTACT.bucket;
++    this.boundedC = library.options.geometry === 'bounded-C';
+   }
+ 
+   /** Internal worker construction, never a posted option or public lazy-output mode. */
+@@ -335,6 +338,10 @@
+       if (sideA < 0) continue;
+       const sideB = (x - p[3 * b]) * loft.sliceRayZ[s + 1] - (z - p[3 * b + 2]) * loft.sliceRayX[s + 1];
+       if (sideB >= 0) continue;
++      // A C closure's exact zero-weight ray is ordinary water. Test before the triangle tie nudge;
++      // positive interiors of a ghost-to-live strip still use their actual indexed crossings.
++      const fraction = sideA - sideB > 0 ? sideA / (sideA - sideB) : 0;
++      if (this.boundedC && !(loft.sliceWeight[s] + fraction * (loft.sliceWeight[s + 1] - loft.sliceWeight[s]) > 0)) continue;
+       // On ray s itself, the strip owns the point, but its edges along the ray are shared with the strip before, whose
+       // triangles' ties may take them: step a nanometre into the strip, along its tangent, so its own triangles do.
+       const nudge = sideA === 0 ? NUDGE : 0;
+@@ -357,8 +364,12 @@
+       if (loft.sliceFront[s] === loft.sliceFront[strip]) continue;
+       const a = s * S;
+       const b = a + S;
+-      if ((x - p[3 * a]) * loft.sliceRayZ[s] - (z - p[3 * a + 2]) * loft.sliceRayX[s] < 0) continue;
+-      if ((x - p[3 * b]) * loft.sliceRayZ[s + 1] - (z - p[3 * b + 2]) * loft.sliceRayX[s + 1] >= 0) continue;
++      const sideA = (x - p[3 * a]) * loft.sliceRayZ[s] - (z - p[3 * a + 2]) * loft.sliceRayX[s];
++      if (sideA < 0) continue;
++      const sideB = (x - p[3 * b]) * loft.sliceRayZ[s + 1] - (z - p[3 * b + 2]) * loft.sliceRayX[s + 1];
++      if (sideB >= 0) continue;
++      const fraction = sideA - sideB > 0 ? sideA / (sideA - sideB) : 0;
++      if (this.boundedC && !(loft.sliceWeight[s] + fraction * (loft.sliceWeight[s + 1] - loft.sliceWeight[s]) > 0)) continue;
+       const q = (x - p[3 * a]) * loft.sliceRayX[s] + (z - p[3 * a + 2]) * loft.sliceRayZ[s];
+       this.ensureBucket(s);
+       const bucket = Math.floor((q - this.stripLow[s]) / this.bucket);
+--- a/src/wave/barrel/sweptLoft.ts
++++ b/src/wave/barrel/sweptLoft.ts
+@@ -60,6 +60,8 @@
+     policy: 'fixed-origin-stored-F32-X-and-raw-knots/v1'; mandatoryRawKnots: number; plannedStations: number;
+     omittedPrecisionStations: number; collapsedShoulders: number; budgetTruncated: boolean;
+     firstOmittedPlannedX: number | null; omittedFronts: number; minimumStoredDeltaX: number; minimumStoredDeltaSigma: number;
++    retirement: { policy: 'one-adjacent-intrinsic-dead-water-row/v1'; plannedSupports: number; retainedSupports: number;
++      omittedDeadStations: number; budgetOmittedSupports: number; budgetClampedDeadStations: number; detachedSupports: number };
+   };
+   /** xyz per vertex, and its normal. */
+   positions: Float32Array;
+@@ -282,7 +284,9 @@
+   private readonly reachFront = new Float64Array(MAX_SLICES + 1);
+   /** Reusable planned sigma samples: x, z, tau, foot height, foot depth, pace (double precision). */
+   private planned = new Float64Array(0);
++  /** Planned C states: 0 omitted, 1 live, 2 intrinsically retired ordinary-water support. RAW uses 0/1. */
+   private plannedLive = new Uint8Array(0);
++  private readonly retirementRow = new Uint8Array(MAX_SLICES + 1);
+   private plannedRayX = new Float64Array(0);
+   private plannedRayZ = new Float64Array(0);
+   private readonly rayPlan: CrestRayPlan;
+@@ -383,12 +387,15 @@
+     r.rayMinAdvance = 0;
+     r.rayInvalidIntervals = 0;
+     const boundedC = this.library.options.geometry === 'bounded-C';
++    if (boundedC) this.retirementRow.fill(0);
+     if (boundedC) r.cSampling = { policy: 'fixed-origin-stored-F32-X-and-raw-knots/v1', mandatoryRawKnots: 0, plannedStations: 0,
+       omittedPrecisionStations: 0, collapsedShoulders: 0, budgetTruncated: false, firstOmittedPlannedX: null,
+-      omittedFronts: 0, minimumStoredDeltaX: Infinity, minimumStoredDeltaSigma: Infinity };
++      omittedFronts: 0, minimumStoredDeltaX: Infinity, minimumStoredDeltaSigma: Infinity,
++      retirement: { policy: 'one-adjacent-intrinsic-dead-water-row/v1', plannedSupports: 0, retainedSupports: 0,
++        omittedDeadStations: 0, budgetOmittedSupports: 0, budgetClampedDeadStations: 0, detachedSupports: 0 } };
+     const fronts = this.fronts(records, count);
+     if (r.cSampling) r.cSampling.mandatoryRawKnots = fronts.reduce((n, f) => n + f.end - f.start, 0);
+-    // The output budget limits live slices, not the length surveyed before faded slices are removed. A 320 m front
++    // The output budget limits retained slices, not the length surveyed before dead stations are removed. A 320 m front
+     // already needs more survey samples than the original fixed scratch buffer; grow these reusable arrays before
+     // writing them, including space for refinement, so its live end is not silently truncated or read as NaN.
+     let samples = 0;
+@@ -398,7 +405,7 @@
+     if (this.base.length < samples) this.base = new Float64Array(Math.max(samples, 2 * this.base.length));
+     if (this.sigmas.length < 2 * samples) this.sigmas = new Float64Array(Math.max(2 * samples, 2 * this.sigmas.length));
+     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
+-    // live ones count.
++    // live ones count in this legacy spacing decision; C closures also count against the final hard prefix cap.
+     let live = 0;
+     let extra = 0;
+     for (const f of fronts) {
+@@ -419,12 +426,19 @@
+         : budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing);
+       if (r.cSampling) r.cSampling.plannedStations += n;
+       this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
++      // C truncation owns the ordered prefix even when a dangling support rollback leaves capacity.
++      if (boundedC && r.cSampling!.budgetTruncated) {
++        r.cSampling!.omittedFronts = fronts.length - frontIndex - 1;
++        break;
++      }
+     }
+     this.measureRayAdvance();
+     this.dropOverlaps();
+     this.sealRuns(heightAt);
+     this.triangulate();
+     if (r.cSampling) {
++      for (let s = 0; s < r.sliceCount; s += 1) if (this.retirementRow[s] === 1
++        && r.sliceJoined[s] !== 1 && !(s > 0 && r.sliceJoined[s - 1] === 1)) r.cSampling.retirement.detachedSupports += 1;
+       if (r.cSampling.minimumStoredDeltaX === Infinity) r.cSampling.minimumStoredDeltaX = 0;
+       if (r.cSampling.minimumStoredDeltaSigma === Infinity) r.cSampling.minimumStoredDeltaSigma = 0;
+     }
+@@ -677,6 +691,63 @@
+   }
+ 
+   /** Sample the planned crest/ray/scale once, preserving the original live-run and budget-clock decisions. */
++  /** C-only closure rows: keep intrinsic clocks; a dead sample never participates in budget clock lowering. */
++  private planCColumns(records: Float32Array, f: Front, n: number, budgeted: boolean): number {
++    const r = this.result, diagnostics = r.cSampling!.retirement;
++    let inRun = false, previousTau = 0;
++    for (let k = 0; k < n; k += 1) {
++      const s = this.sample, sigma = this.sigmas[k];
++      this.atX(records, f, this.cX[k], s);
++      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
++      let tau = s.tau;
++      const intrinsicDead = collapseFade(tau, times.touchdownSeconds, times.collapseSeconds) === 0;
++      if (intrinsicDead) inRun = false;
++      else if (budgeted && inRun) {
++        const bound = times.touchdownSeconds / 4;
++        const clamped = Math.min(previousTau + bound, Math.max(previousTau - bound, tau));
++        if (clamped !== tau) r.clamps += 1;
++        tau = clamped;
++      }
++      const live = !intrinsicDead && collapseFade(tau, times.touchdownSeconds, times.collapseSeconds) > 0;
++      this.plannedLive[k] = intrinsicDead ? 2 : live ? 1 : 0;
++      if (!intrinsicDead && !live) diagnostics.budgetClampedDeadStations += 1;
++      inRun = live;
++      if (live) previousTau = tau;
++      const plan = 6 * k;
++      this.planned[plan] = s.x; this.planned[plan + 1] = s.z; this.planned[plan + 2] = tau;
++      this.planned[plan + 3] = s.footHeight; this.planned[plan + 4] = s.footDepth; this.planned[plan + 5] = s.pace;
++      this.rayPlan.rayAt(sigma, this.plannedRay);
++      this.plannedRayX[k] = this.plannedRay[0]; this.plannedRayZ[k] = this.plannedRay[1];
++    }
++    // An immediate planned neighbor cannot cross or omit an intervening mandatory raw parameter knot.
++    for (let k = 0; k < n; k += 1) if (this.plannedLive[k] === 2) {
++      if ((k > 0 && this.plannedLive[k - 1] === 1) || (k + 1 < n && this.plannedLive[k + 1] === 1)) diagnostics.plannedSupports += 1;
++      else { this.plannedLive[k] = 0; diagnostics.omittedDeadStations += 1; }
++    }
++    let retained = 0, limit = n, lastSelected = -1;
++    for (let k = 0; k < n; k += 1) {
++      if (this.plannedLive[k] === 0) continue;
++      if (r.sliceCount + retained >= MAX_SLICES) {
++        r.cSampling!.budgetTruncated = true;
++        limit = k;
++        // A left support without room for its first live row owns no run or footprint.
++        if (lastSelected >= 0 && this.plannedLive[lastSelected] === 2
++          && !(lastSelected > 0 && this.plannedLive[lastSelected - 1] === 1)) {
++          limit = lastSelected;
++        }
++        r.cSampling!.firstOmittedPlannedX ??= this.cX[limit];
++        break;
++      }
++      retained += 1; lastSelected = k;
++    }
++    for (let k = 0; k < n; k += 1) if (this.plannedLive[k] === 2) {
++      if (k < limit) diagnostics.retainedSupports += 1;
++      else diagnostics.budgetOmittedSupports += 1;
++    }
++    if (this.rayPlan.diagnostics.blend > 0) for (let k = 0; k < limit; k += 1) if (this.plannedLive[k] !== 0) r.rayCorrections += 1;
++    return limit;
++  }
++
+   private planRays(records: Float32Array, f: Front, n: number, budgeted: boolean): number {
+     if (this.plannedLive.length < n) {
+       const capacity = Math.max(n, 2 * this.plannedLive.length);
+@@ -697,6 +768,7 @@
+     const r = this.result;
+     r.rayMaxBlend = Math.max(r.rayMaxBlend, this.rayPlan.diagnostics.blend);
+     r.rayInvalidIntervals += this.rayPlan.diagnostics.invalidIntervals;
++    if (boundedC) return this.planCColumns(records, f, n, budgeted);
+     let live = 0;
+     let inRun = false;
+     let previousTau = 0;
+@@ -706,12 +778,6 @@
+       const s = boundedC ? (this.atX(records, f, this.cX[k], this.sample), this.sample) : this.at(records, f, sigma, this.sample);
+       const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+       let tau = s.tau;
+-      // A C support certificate concerns actual interpolated packet age. Budgeted clock lowering must not
+-      // resurrect an already retired raw interpolation and continue consuming its released carrier coordinates.
+-      if (this.library.options.geometry === 'bounded-C' && budgeted && collapseFade(tau, times.touchdownSeconds, times.collapseSeconds) === 0) {
+-        inRun = false;
+-        continue;
+-      }
+       if (budgeted && inRun) {
+         const bound = times.touchdownSeconds / 4;
+         const clamped = Math.min(previousTau + bound, Math.max(previousTau - bound, tau));
+@@ -747,7 +813,7 @@
+   ): void {
+     const r = this.result;
+     const { profile } = this;
+-    // Runs of live slices: a faded slice is dropped, and the slices either side of it are never joined.
++    // Runs of selected slices: omitted dead stations break the run; C can close it with one flat dead neighbor.
+     let runStart = -1;
+     const closeRun = () => {
+       if (runStart >= 0) this.joinRun(runStart, r.sliceCount - 1);
+@@ -755,7 +821,10 @@
+     };
+     const plannedCount = this.planRays(records, f, n, budgeted);
+     for (let k = 0; k < plannedCount; k += 1) {
+-      if (this.plannedLive[k] !== 1) { closeRun(); continue; }
++      if (this.plannedLive[k] === 0) { closeRun(); continue; }
++      const retirementSupport = this.library.options.geometry === 'bounded-C' && this.plannedLive[k] === 2;
++      // Two neighboring flat supports close separate live islands; no dead-to-dead triangle or air run.
++      if (retirementSupport && k > 0 && this.plannedLive[k - 1] === 2) closeRun();
+       const sigma = this.sigmas[k];
+       const s = this.sample;
+       const plan = 6 * k;
+@@ -779,7 +848,8 @@
+       const lookup = this.library.profileAt(query, profile);
+       const touchdown = lookup.touchdownSeconds;
+       const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
+-      if (wFade === 0) {
++      if (retirementSupport && wFade !== 0) throw new Error('C retirement closure clocks disagree with its profile lookup');
++      if (wFade === 0 && !retirementSupport) {
+         closeRun();
+         continue;
+       }
+@@ -842,7 +912,8 @@
+           anchorVZ = follow[1];
+         }
+       }
+-      const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
++      const maskBand = Math.min(1, Math.max(0, 1 + d / LOFT.band));
++      const maskSlice = this.library.options.geometry === 'bounded-C' ? wFade * maskBand : wFade > 0 ? maskBand : 0;
+       // The forward rest, from the drawn slice in both modes, so the contact and the overlaps follow the drawing.
+       const forward = this.rest;
+       if (w > 0) {
+@@ -870,6 +941,7 @@
+         }
+       }
+       const slice = r.sliceCount;
++      if (this.library.options.geometry === 'bounded-C') this.retirementRow[slice] = retirementSupport ? 1 : 0;
+       r.sliceFormed[slice] = formed;
+       r.sliceFront[slice] = f.id;
+       r.sliceSigma[slice] = sigma;

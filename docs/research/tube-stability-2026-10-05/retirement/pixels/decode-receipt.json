@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/opt/homebrew/bin/ffmpeg",
+    "-v",
+    "error",
+    "-i",
+    "/private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-first/moving-C.webm",
+    "-vf",
+    "select=eq(n\\,0)+eq(n\\,17)+eq(n\\,35)+eq(n\\,53)+eq(n\\,70)",
+    "-vsync",
+    "0",
+    "/private/tmp/tube-retirement-boundary-root-pixel-review-20261005/movie-frame-%02d.png"
+  ],
+  "exitCode": 0,
+  "selectedEncodedFrameIndices": [
+    0,
+    17,
+    35,
+    53,
+    70
+  ],
+  "stderr": ""
+}
