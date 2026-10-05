@@ -1,0 +1,48 @@
+{
+  "schema": "board-raw-normal-root-baseline-contrast/v1",
+  "complete": true,
+  "expectedRegressionFailures": 3,
+  "ordinaryParentWitnessesPassed": 2,
+  "skippedSignAndDownwardCases": 2,
+  "candidateRuntimeUsed": false,
+  "argv": [
+    "/opt/homebrew/bin/node",
+    "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "/private/tmp/tube-board-raw-normal-trial-20261005/vitest.parent-contrast.config.ts",
+    "--testNamePattern",
+    "steep positive-Y face|vertical face|negative-Y overhang|ordinary",
+    "--reporter=json",
+    "--outputFile",
+    "/private/tmp/tube-board-raw-normal-trial-20261005/root-baseline-contrast/tests.json"
+  ],
+  "testExitCode": 1,
+  "elapsedSeconds": 1.95655949995853,
+  "failedTests": [
+    "raw sampled normal in hull water inertia keeps actual inertia and nonzero impulses on the steep positive-Y face normal",
+    "raw sampled normal in hull water inertia keeps actual inertia and nonzero impulses on the vertical face normal",
+    "raw sampled normal in hull water inertia keeps actual inertia and nonzero impulses on the negative-Y overhang with both horizontal components normal"
+  ],
+  "fixture": {
+    "file": "/private/tmp/tube-board-raw-normal-trial-20261005/tests/rawNormalHull.parent-contrast.test.ts",
+    "bytes": 7146,
+    "sha256": "70504674d9a42087a279c4d7ffe1a408f35c740e41f281ab3ae945c4986724d8"
+  },
+  "config": {
+    "file": "/private/tmp/tube-board-raw-normal-trial-20261005/vitest.parent-contrast.config.ts",
+    "bytes": 298,
+    "sha256": "bfec56faf62dea683d93aa23eb2236a566ac9dc29b9e432ebf86be9e702a9488"
+  },
+  "report": {
+    "file": "/private/tmp/tube-board-raw-normal-trial-20261005/root-baseline-contrast/tests.json",
+    "bytes": 6613,
+    "sha256": "3f6f5fa6fede6be9010b046add8e8c050509014e15fa47d6ddd38381f00cfaa0"
+  },
+  "log": {
+    "file": "/private/tmp/tube-board-raw-normal-trial-20261005/root-baseline-contrast/test.log",
+    "bytes": 498,
+    "sha256": "6829f4d635276e40e15969d0a3a880fa3f024f59192c1715209e02426950c80e"
+  },
+  "nativeCauseOrFixAccepted": false
+}

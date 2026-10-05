@@ -1,0 +1,25 @@
+{
+  "schema": "board-raw-normal-root-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "resourcesStarted": false,
+  "actualAppBuildAccepted": true,
+  "actualDiagnosticBuildAccepted": true,
+  "controlledCPUAccepted": true,
+  "helperAcceptance": true,
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/source-readiness.json",
+    "bytes": 3011,
+    "sha256": "6e2f5961b1ab61651c02b8ff6c1565069484da97c7784f645def56432c1f4eb9"
+  },
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-helper-checks.json",
+    "bytes": 1676,
+    "sha256": "57768185659eb539fc1b4552b4086faf6392b96b19f48bc65e5a4f482985871b"
+  },
+  "physicalDifferenceIntentional": true,
+  "exactNativeParityClaim": false,
+  "nativeCauseOrFixAccepted": false,
+  "productionAdoption": false,
+  "authorityDelta": "Direct immediate143 inputs/build/graph and frozen helper closure; root-extracted V4/V6 config/body references replace recursive historical inventories."
+}

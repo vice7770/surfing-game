@@ -1,0 +1,84 @@
+{
+  "schema": "board-water-patches-source-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "sourceDirectory": "/private/tmp/tube-board-water-patches-native-20261005/source",
+  "sourceCount": 588,
+  "applicationSourceCount": 587,
+  "unchangedParentInputs": 586,
+  "runtimeChangedPaths": [
+    "src/physics/AttachedRider.ts",
+    "src/physics/BoardBody.ts"
+  ],
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-pins.json",
+    "bytes": 96409,
+    "sha256": "2a8767e72e24f30439cfee59f016cc35d8bc2511d73f427e2f0ecdd4a0e8028e"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/source-pins.json",
+    "bytes": 96408,
+    "sha256": "ad606b81931f1709113117e0970962cd7e1f2db3af95c714dd9aca1130f287fb"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/source-delta.json",
+    "bytes": 1421,
+    "sha256": "64decffff069a9d256d09a79cb4f98bc9dc5600257b8f26e265344a2e8dc5ee0"
+  },
+  "candidatePreparation": {
+    "file": "/private/tmp/tube-board-water-patches-observer-20261005/readiness.json",
+    "bytes": 5462,
+    "sha256": "7f2546fbc31997630ab9edb11c390714a8f8685cbf119f9f813b3d648c2d3e8b"
+  },
+  "candidateRuntimePins": [
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 381085,
+      "sha256": "bead934617885f5d9ae71adb76e730861c4aaf8e73f0cbe70ef5ab68aa5b98c1"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 56786,
+      "sha256": "86d30504f90266fa74eea1fb6f2ff97b46b568eeecbc6694b1c7305d6d91a3c0"
+    }
+  ],
+  "candidatePatch": {
+    "file": "/private/tmp/tube-board-water-patches-observer-20261005/runtime.patch",
+    "bytes": 234203,
+    "sha256": "7bc42d2b9033fd051d37dd4c269b2d24d852867607cc6023df4f95e0f039de91"
+  },
+  "observerFields": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/observer-fields.json",
+    "bytes": 194721,
+    "sha256": "784391af51ed3e04a2553658e85bf98da1a48481b8ea4dccd30b37b53ec16d28"
+  },
+  "rootCPUResult": {
+    "file": "/private/tmp/tube-board-water-patches-observer-20261005/root-checks/result.json",
+    "bytes": 273501,
+    "sha256": "6c6cefed81604101561c7d0c3a9a0aeec26abfcdc94f9fc0566ca9219a45fc3f"
+  },
+  "rootObserverChecks": {
+    "file": "/private/tmp/tube-board-water-patches-observer-20261005/root-checks/result.json",
+    "bytes": 273501,
+    "sha256": "6c6cefed81604101561c7d0c3a9a0aeec26abfcdc94f9fc0566ca9219a45fc3f"
+  },
+  "rootPayloadBudget": {
+    "file": "/private/tmp/tube-board-water-patches-observer-20261005/root-payload-budget.json",
+    "bytes": 1522,
+    "sha256": "e9fdef0bc2bf41f02f065eff7ac5a8f719619c236ba9595fbfbd75748da191a2"
+  },
+  "rootBaseCopy": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/root-base-copy.json",
+    "bytes": 96902,
+    "sha256": "a94caaffa428607c7d29259071376d3f8850fd427a22a6c086bf99444b49380e"
+  },
+  "buildId": "tube-board-water-patches-20261005",
+  "resourcesStarted": false,
+  "applicationBuildPerformed": false,
+  "diagnosticBuildPerformed": false,
+  "nativeRun": false,
+  "nativeCauseOrFixAccepted": false,
+  "ordinaryStandingAccepted": false,
+  "bodyPassageAccepted": false,
+  "productionAdoption": false
+}

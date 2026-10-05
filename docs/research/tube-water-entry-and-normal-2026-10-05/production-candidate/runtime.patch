@@ -1,0 +1,24 @@
+diff --git a/src/physics/BoardBody.ts b/src/physics/BoardBody.ts
+index f19c3942b..705bf95ff 100644
+--- a/src/physics/BoardBody.ts
++++ b/src/physics/BoardBody.ts
+@@ -824,14 +824,14 @@ export class BoardBody implements BoardContactBody {
+         for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) system[i * 6 + j] += damping * a[i] * a[j];
+       }
+       // The water's inertia answers the patch's motion into the local surface, along
+-      // its normal ν ∝ (−∂η/∂x, 1, −∂η/∂z) (generalized direction [ν, r × ν]), over
++      // its sampled normal ν (generalized direction [ν, r × ν]), over
+       // the patch's projection on it: added mass, water entry and radiation, all
+       // implicit. Planing and sliding along a face move no point into the surface,
+       // so they leave the lift to the pressure.
+-      const slopeNorm = Math.hypot(sample.slopeX, 1, sample.slopeZ);
+-      const ux = -sample.slopeX / slopeNorm;
+-      const uy = 1 / slopeNorm;
+-      const uz = -sample.slopeZ / slopeNorm;
++      // Bounded slopes describe buoyancy's height graph; they lose a fold's actual normal.
++      const ux = sample.normalX;
++      const uy = sample.normalY;
++      const uz = sample.normalZ;
+       this.surfaceNormal[k * 3] = ux;
+       this.surfaceNormal[k * 3 + 1] = uy;
+       this.surfaceNormal[k * 3 + 2] = uz;

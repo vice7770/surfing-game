@@ -1,0 +1,28 @@
+{
+  "schema": "board-raw-normal-source-delta/v1",
+  "source": "/private/tmp/tube-board-raw-normal-native-20261005/source",
+  "sourceCount": 588,
+  "unchangedParentInputs": 587,
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-pins.json",
+    "bytes": 96409,
+    "sha256": "2a8767e72e24f30439cfee59f016cc35d8bc2511d73f427e2f0ecdd4a0e8028e"
+  },
+  "overrides": [
+    {
+      "path": "src/physics/BoardBody.ts",
+      "before": {
+        "path": "src/physics/BoardBody.ts",
+        "bytes": 55693,
+        "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+      },
+      "after": {
+        "path": "src/physics/BoardBody.ts",
+        "bytes": 55644,
+        "sha256": "afd0d5b8074365c228c641139486716f1ca7710ede458203bb47652130439f4a"
+      }
+    }
+  ],
+  "physicalDifferenceIntentional": true,
+  "onlyPhysicsDifference": "Water-inertia direction uses existing raw unit WaterSample.normalXYZ; all143 observer words and all other inputs remain unchanged."
+}

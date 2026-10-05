@@ -1,0 +1,62 @@
+{
+  "complete": true,
+  "sourcePostUnchanged": true,
+  "inputs": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardBody.ts",
+      "bytes": 55079,
+      "sha256": "8e063acc4e8cffb5604476e4190cc872f0808a40a0ba4c10f630acac774169c0"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/BoardWaterNormal.test.ts",
+      "bytes": 5479,
+      "sha256": "ea185cc86531e2b03959a90b634fbc35cd478763779aacb553deec9264142379"
+    }
+  ],
+  "checks": [
+    {
+      "name": "tests",
+      "command": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/vitest.mjs",
+        "run",
+        "src/physics/BoardWaterNormal.test.ts",
+        "src/physics/BoardBody.test.ts",
+        "src/physics/hullForces.test.ts",
+        "src/physics/PhysicalSurfWater.test.ts",
+        "--reporter=json",
+        "--outputFile=/private/tmp/tube-production-normal-checks-20261005/tests.json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 17.556050250015687,
+      "log": {
+        "file": "/private/tmp/tube-production-normal-checks-20261005/tests.log",
+        "bytes": 86,
+        "sha256": "0c035fa038e2a384427978635ffc1b88cfd6d3c50ae2f048cf772b9a0fa5a3dc"
+      },
+      "passed": 59,
+      "failed": 0,
+      "total": 59,
+      "report": {
+        "file": "/private/tmp/tube-production-normal-checks-20261005/tests.json",
+        "bytes": 22199,
+        "sha256": "13159e483fc7f74061e99ffe39e246f4f6a13ad43dafb9879bc4e0de26b3c0b5"
+      }
+    },
+    {
+      "name": "build",
+      "command": [
+        "/opt/homebrew/bin/npm",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 25.224834125023335,
+      "log": {
+        "file": "/private/tmp/tube-production-normal-checks-20261005/build.log",
+        "bytes": 1328,
+        "sha256": "7093436307a8e7be0b09b5d2d8d887c81300f8742d57843b0885a93391000066"
+      }
+    }
+  ]
+}

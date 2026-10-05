@@ -1,0 +1,155 @@
+{
+  "schema": "board-water-patches-root-analysis/v1",
+  "complete": true,
+  "old143All1366StepsExact": true,
+  "noiseSuffixes": [
+    ".workerStepMs",
+    ".detector.elapsedMilliseconds",
+    ".detector.cumulativeMilliseconds",
+    ".cameraFollower.calls",
+    ".cameraFollower.zeroDtCalls",
+    ".cameraFollower.positiveDtCalls",
+    ".clocks.surfaceRevision"
+  ],
+  "new1922RemovedOnlyFromFullOld143Records": true,
+  "all4LoftSnapshotsExact": [
+    {
+      "label": "initial",
+      "arrayCount": 37,
+      "allArrayAndRawFrontWordsExact": true,
+      "epochRawDelta": 1
+    },
+    {
+      "label": "first-pop-up",
+      "arrayCount": 37,
+      "allArrayAndRawFrontWordsExact": true,
+      "epochRawDelta": 1
+    },
+    {
+      "label": "first-landing",
+      "arrayCount": 37,
+      "allArrayAndRawFrontWordsExact": true,
+      "epochRawDelta": 1
+    },
+    {
+      "label": "terminal",
+      "arrayCount": 37,
+      "allArrayAndRawFrontWordsExact": true,
+      "epochRawDelta": 1
+    }
+  ],
+  "availableLandingSamples": 46,
+  "all48PatchAssembliesClosed": true,
+  "radiationLegRateAllocation": 0.009725591010582606,
+  "entryLegRateAllocation": 0.8025657924449785,
+  "combinedWaterLegRateAllocation": 0.8122913834555612,
+  "dominantPatchIndices": [
+    3,
+    2,
+    1,
+    0,
+    27,
+    22,
+    23,
+    18
+  ],
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-board-water-patches-analysis-20261005/analyze.py",
+      "bytes": 10300,
+      "sha256": "9c8fcf116ab37c5f9b671bd7fb31ab414c794dd7f1017156ba1fe5ba36ab7325"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-observer-20261005/observer-fields.json",
+      "bytes": 194721,
+      "sha256": "784391af51ed3e04a2553658e85bf98da1a48481b8ea4dccd30b37b53ec16d28"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-observer-20261005/root-checks/result.json",
+      "bytes": 273501,
+      "sha256": "6c6cefed81604101561c7d0c3a9a0aeec26abfcdc94f9fc0566ca9219a45fc3f"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/candidate-first-owner.json",
+      "bytes": 3487,
+      "sha256": "5636d0663318b4e78b8d8c2f7900cd9594dcd8c7952c43087264fda69d75499f"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/candidate-first/report.json",
+      "bytes": 20849992,
+      "sha256": "d82da8c6e92700b5c4c13072b58888622d33b9fd6b80edd56347b07166aee53a"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/report.json",
+      "bytes": 13390085,
+      "sha256": "1090617ad42398382914fab3184e0db3536194331a5cd9ac734dde927e85629a"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 20210716,
+      "sha256": "ef7609893c690830e7dbde55466073b5f88605416d6a870c966330c8160fd0eb"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/candidate-first/loft-initial.json",
+      "bytes": 1099036,
+      "sha256": "685cb5e28d9c4151019f6d72cf55b4911ec294a2b1868634b5ea42de3301f431"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-initial.json",
+      "bytes": 1099036,
+      "sha256": "1797f8a985ffcb18e606fc62ec32024cf4050c356110346d205032f32731edf0"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/candidate-first/loft-first-pop-up.json",
+      "bytes": 1073481,
+      "sha256": "a5beb80b3f52ea64aa6dda46da89431c726e05887ebad7c359f96336a0ca97fa"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-first-pop-up.json",
+      "bytes": 1073481,
+      "sha256": "c765973bee261604da6bf3a03c1c228f215547f56378b491a6f6c359700bd97b"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/candidate-first/loft-first-landing.json",
+      "bytes": 1496463,
+      "sha256": "2c24b6d30ea606b04b0a66dda8008b1d27e77b11fc64f679b0bf3c124fed7686"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-first-landing.json",
+      "bytes": 1496463,
+      "sha256": "a3188fb4e5e88ba78b95f5d81f39f8be0c621368d6ee93c0116ad02456ecb27c"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1420830,
+      "sha256": "aa96c2afdc929219079abb4698231fe58f7417e84e64081696236a1557e99acd"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1420830,
+      "sha256": "3af7e202255b6db1a0890c5e0a52904d051a0dccc949f6f3368b5ddfa5fc5eb6"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-actual-review-20261005/balance.py",
+      "bytes": 15928,
+      "sha256": "711e3e852dcafef4fd849706c47dc2ea85a03da38f8c2abf533c83583e0eb4d0"
+    }
+  ],
+  "artifacts": {
+    "closures": {
+      "file": "/private/tmp/tube-board-water-patches-analysis-20261005/root-results/all46-patch-assembly-closures.json",
+      "bytes": 31545,
+      "sha256": "71a359a519e67a71647c1fddf189bb457f37eab40d99c38c131a0738124f57e1"
+    },
+    "transition": {
+      "file": "/private/tmp/tube-board-water-patches-analysis-20261005/root-results/transition-water-patches.json",
+      "bytes": 231378,
+      "sha256": "646626653e1fbfc25be731a9ec84b637f475f54f19fdcb65c9c09473df0292e6"
+    }
+  },
+  "limitations": [
+    "Published/latch samples do not retain every leaf.",
+    "Coefficient/history/normal/flow changes are observed operands; an independent physics trial is still required.",
+    "The reduced7x7 neutral landing allocation is algebraic and retains the prior reconstruction assumptions."
+  ]
+}

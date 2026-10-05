@@ -1,0 +1,80 @@
+{
+  "schema": "board-raw-normal-source-preparation-freeze/v1",
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "files": 14,
+  "pins": [
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-prep-20261005/inputs.json",
+      "bytes": 5114,
+      "sha256": "2fe763969091184e631129bc188d31d76466f85b7585d16051ecc81782e938a4"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-prep-20261005/README.md",
+      "bytes": 5789,
+      "sha256": "2c4d2b1025ed987ecc0513e5880f9ee60706bef9fcccd099d3be933ee3c8d20e"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-prep-20261005/pending-readiness.json",
+      "bytes": 1277,
+      "sha256": "ad32b07e1923c8ea8ea1a3f77608c4ed05df3ce4d4e023b1ef7853c2bbf62ceb"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/authority.py",
+      "bytes": 15183,
+      "sha256": "dd0b86629b3ecfddc2d2e5647d3b4be41b6eb60450d6f91b62842d32aeb9ae82"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/autopilot-entry.ts",
+      "bytes": 305,
+      "sha256": "aa5d28a41ea8721ebbc16a20e591b79b378329c8a5d53de1cc686e77ee68048b"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/build-diagnostic.mjs",
+      "bytes": 8653,
+      "sha256": "0fea8b33ca9c9ac7ca33c939b87080f9840b3a25d353fe4ae2d4d25ede06f8fb"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/native.mjs",
+      "bytes": 29276,
+      "sha256": "1725a14f28b50856ced0e98e26a6e2f5455c8803d0a68d97711fc35da0fd9fb5"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/observer-fields.json",
+      "bytes": 17859,
+      "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-helper-checks.py",
+      "bytes": 1355,
+      "sha256": "34605f76247097385cce9c4f389182a588fbcb13fb1fc3631ba2da76a678531f"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-seal.py",
+      "bytes": 3817,
+      "sha256": "60e631b38f2d2d8c514530c5c4379284bb78fa18818054bb35fb6fd86dc8057f"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-source.py",
+      "bytes": 7175,
+      "sha256": "23a6995410d592658c806d1804a3159a0973e8ccaeb2a548f085a83f425c609f"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/run.py",
+      "bytes": 18754,
+      "sha256": "ffc3d3fd0d4b24098bef3da626f7f1d0a0cd041cb9b2a0243160bfa455bcd7b4"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-build-20261005/root-build-run.py",
+      "bytes": 2774,
+      "sha256": "a14632b258dfc1248f14438e0ee072e3d013a2d75485f84232ccb07b36926c29"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-build-20261005/root-complete-build.py",
+      "bytes": 7094,
+      "sha256": "8fc74f01fc44e0dd9d821ed071d9b5329b46546c1c4633c21f1a5264cde38d9d"
+    }
+  ]
+}

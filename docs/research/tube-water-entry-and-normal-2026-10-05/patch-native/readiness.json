@@ -1,0 +1,278 @@
+{
+  "schema": "board-water-patches-preparation-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "preparationFrozen": true,
+  "status": "frozen-actual-root-authority-verified",
+  "sourceOnly": true,
+  "work": "/private/tmp/tube-board-water-patches-native-20261005",
+  "buildId": "tube-board-water-patches-20261005",
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/source-readiness.json",
+    "bytes": 3347,
+    "sha256": "ca11f68af71393dbd0c3045f7644b99b6aa471f4e019e44911b4e8c7f467dbde"
+  },
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/helper-pins.json",
+    "bytes": 25081,
+    "sha256": "15cf66571397c768bddbe2817747044c3c280562ad28431b74774ca1cb8963d0"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceOrBuildWrittenByHelper": false,
+  "actualAppBuildAccepted": true,
+  "actualDiagnosticBuildAccepted": true,
+  "helperAcceptance": true,
+  "executableChecksAccepted": true,
+  "actualNative": false,
+  "sourcePreparationCount": 588,
+  "unchangedParentInputs": 586,
+  "completeBuildSourceCount": 587,
+  "completeBuildAssetCount": 49,
+  "diagnosticModuleInputs": 74,
+  "diagnosticCandidateSourceInputs": 71,
+  "compilerConfigurationInputCount": 1,
+  "compilerWatchedInputCount": 75,
+  "observerFields": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/observer-fields.json",
+    "target": "/private/tmp/tube-board-water-patches-observer-20261005/observer-fields.json",
+    "bytes": 194721,
+    "sha256": "784391af51ed3e04a2553658e85bf98da1a48481b8ea4dccd30b37b53ec16d28",
+    "policy": "exact-literal-frozen2065-field-copy"
+  },
+  "oldFields": 143,
+  "newScopeWords": 2,
+  "newPatchWords": 1920,
+  "totalFields": 2065,
+  "availabilityMarker": "standingTrialAvailable",
+  "oldMarkerSemanticsUnchanged": true,
+  "conditionalRetention": {
+    "oldFields": 143,
+    "scopeFields": 2,
+    "patchFields": 1920,
+    "qualifiedFullFields": 2065,
+    "unqualifiedFullFields": 145,
+    "qualifiedPredicate": "standingTrialAvailable===1 && waterPatchScopeAvailable===1 && waterPatchCount===48",
+    "omitOnlyNewPatchWordsOtherwise": true,
+    "immutableCopy": true,
+    "globalRawStatusAndLossCoverage": true,
+    "sameProjectedRowsInReportAndTrace": true,
+    "compactProneSummaryAndOldLabelsUnchanged": true,
+    "reportCapBytes": 33554432,
+    "traceCapBytes": 25165824,
+    "actualPayloadAcceptance": false
+  },
+  "rootCPUResult": {
+    "file": "/private/tmp/tube-board-water-patches-observer-20261005/root-checks/result.json",
+    "bytes": 273501,
+    "sha256": "6c6cefed81604101561c7d0c3a9a0aeec26abfcdc94f9fc0566ca9219a45fc3f"
+  },
+  "rootObserverChecks": {
+    "file": "/private/tmp/tube-board-water-patches-observer-20261005/root-checks/result.json",
+    "bytes": 273501,
+    "sha256": "6c6cefed81604101561c7d0c3a9a0aeec26abfcdc94f9fc0566ca9219a45fc3f"
+  },
+  "rootPayloadBudget": {
+    "file": "/private/tmp/tube-board-water-patches-observer-20261005/root-payload-budget.json",
+    "bytes": 1522,
+    "sha256": "e9fdef0bc2bf41f02f065eff7ac5a8f719619c236ba9595fbfbd75748da191a2"
+  },
+  "rootSuppliedReceipts": {
+    "rootCompleteBuild": {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/root-complete-build-result.json",
+      "bytes": 187116,
+      "sha256": "6587a9c021418b19ff9a1ddfa24097ca9e58d477b6dcda1d71a84b6e39123450"
+    },
+    "rootDiagnosticBuild": {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/root-diagnostic-build-result.json",
+      "bytes": 38542,
+      "sha256": "a6e4c082dd22a04055c9cba979acaede80a07018b303a10b3f3fa7a8660bde57"
+    },
+    "rootRetentionChecks": {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/root-retention-checks.json",
+      "bytes": 1880,
+      "sha256": "87ca92ef9a9d9cb5a7fa82daaff50e3ee47be0a1628680a1727e8bca34c24787"
+    }
+  },
+  "suppliedReceiptPinsAreHelperAcceptance": false,
+  "prior143AcceptanceInherited": false,
+  "ordinaryRun": {
+    "publicReplayOverrides": {
+      "seed": 6238,
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "maxSteps": 2160,
+    "secondsPerStep": 0.016666666666666666,
+    "noPlacementForcedCueSeedSearchOrRetries": true
+  },
+  "finiteOwner": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "internalNativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "startupWaitMilliseconds": 180000,
+    "rootSealSchema": "board-water-patches-root-seal/v1",
+    "nativeSchema": "board-water-patches-native/v1",
+    "ports": [
+      4301,
+      9711
+    ],
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    }
+  },
+  "movieCapBehavior": {
+    "movingAdvances": 240,
+    "requests": 241,
+    "movieStopsAtCap": true,
+    "ordinaryPhysicsContinues": true,
+    "replayStopUnchanged": true
+  },
+  "diagnosticModuleReferencePolicy": "root-rebuilt-immediate143-parent74-input-graph-against-board-water-patches-source",
+  "diagnosticRetentionPolicy": "Fresh graph74/71/75 reachability, lexical0 allowed; both actual app-worker assets2065; report conditional145/2065 finite.",
+  "generatedOutputPolicy": "Frozen prebuild588 inputs; explicit actual built21 plus cache1 outputs; postbuild source610.",
+  "executableChecks": {
+    "sourceHelperCheck": {
+      "run": true,
+      "passed": true,
+      "receipt": {
+        "file": "/private/tmp/tube-board-water-patches-native-20261005/source-helper-checks.json",
+        "bytes": 3576,
+        "sha256": "f7965890b4a59bf49a6de466c8a424017e1f92da4f2160abf941eb6c298216be"
+      }
+    },
+    "metadataCheck": {
+      "run": true,
+      "passed": true,
+      "receipt": {
+        "file": "/private/tmp/tube-board-water-patches-native-20261005/metadata-check.json",
+        "bytes": 1084,
+        "sha256": "ca7d884802c8a84a82541e38fb833f3887708d6cf7c610182bdc11f391776013"
+      }
+    },
+    "nativeSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "elapsedSeconds": 0.1326732090092264,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-board-water-patches-native-20261005/native.mjs"
+      ],
+      "log": {
+        "file": "/private/tmp/tube-board-water-patches-native-20261005/root-v2-nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "passed": true
+    },
+    "diagnosticWrapperSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "elapsedSeconds": 0.07834295800421387,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-board-water-patches-build-20261005/build-diagnostic.mjs"
+      ],
+      "log": {
+        "file": "/private/tmp/tube-board-water-patches-native-20261005/root-v2-diagnosticWrapperSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "passed": true
+    },
+    "sourceOnlyOwner": {
+      "run": true,
+      "exitCode": 0,
+      "elapsedSeconds": 0.23802229098509997,
+      "argv": [
+        "python3",
+        "/private/tmp/tube-board-water-patches-native-20261005/run.py",
+        "--arm",
+        "candidate"
+      ],
+      "log": {
+        "file": "/private/tmp/tube-board-water-patches-native-20261005/root-v2-sourceOnlyOwner.log",
+        "bytes": 494,
+        "sha256": "af04be2b60951bcebe7e7266fde96536aa8ad916ba6701c03f1913093b3c191e"
+      },
+      "passed": true
+    },
+    "applicationBuild": {
+      "run": true,
+      "passed": true,
+      "exitCode": 0,
+      "receipt": {
+        "file": "/private/tmp/tube-board-water-patches-native-20261005/root-complete-build-result.json",
+        "bytes": 187116,
+        "sha256": "6587a9c021418b19ff9a1ddfa24097ca9e58d477b6dcda1d71a84b6e39123450"
+      }
+    },
+    "diagnosticBuild": {
+      "run": true,
+      "passed": true,
+      "exitCode": 0,
+      "receipt": {
+        "file": "/private/tmp/tube-board-water-patches-native-20261005/root-diagnostic-build-result.json",
+        "bytes": 38542,
+        "sha256": "a6e4c082dd22a04055c9cba979acaede80a07018b303a10b3f3fa7a8660bde57"
+      }
+    },
+    "native": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    }
+  },
+  "claims": {
+    "actualNative": false,
+    "exactInitialReplay": false,
+    "nativeCauseOrFixAccepted": false,
+    "ordinaryStandingAccepted": false,
+    "bodyPassageAccepted": false,
+    "visualAcceptance": false,
+    "FPS": false,
+    "productionAdoption": false
+  },
+  "priorBoardRhsComponentsReadiness": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/readiness.json",
+    "bytes": 9099,
+    "sha256": "b6086d0f4a044487aefbba1e2d6460c965c0e2a2d047146adbc11d594badc713"
+  },
+  "priorBoardRhsComponentsOwner": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first-owner.json",
+    "bytes": 3491,
+    "sha256": "d8564a3ae6500aa7b29d5b3461333beb712dad5600bd11323da8413c6c3a8aaf"
+  },
+  "priorBoardRhsComponentsReport": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/report.json",
+    "bytes": 13390085,
+    "sha256": "1090617ad42398382914fab3184e0db3536194331a5cd9ac734dde927e85629a"
+  },
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/root-complete-build-result.json",
+    "bytes": 187116,
+    "sha256": "6587a9c021418b19ff9a1ddfa24097ca9e58d477b6dcda1d71a84b6e39123450"
+  },
+  "rootDiagnosticBuild": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 38542,
+    "sha256": "a6e4c082dd22a04055c9cba979acaede80a07018b303a10b3f3fa7a8660bde57"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348636,
+    "sha256": "99384fab1f194129dfd5f71829b82660e8ab94fd9b115859c4a435c4160f649d"
+  },
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-board-water-patches-native-20261005/root-helper-checks.json",
+    "bytes": 2473,
+    "sha256": "0cd654f9a908016e1097c206c4494c3a92d909bb32266102274ec18b2f776d1a"
+  }
+}

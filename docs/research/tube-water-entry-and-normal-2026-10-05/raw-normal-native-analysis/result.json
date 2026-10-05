@@ -1,0 +1,189 @@
+{
+  "schema": "board-raw-normal-root-native-analysis/v1",
+  "complete": true,
+  "same1366StepPhaseInputClockAndStopChronology": true,
+  "initialConfigAndControlsExact": true,
+  "bodyWordDifferences": {
+    "boardPose": {
+      "differentWords": 135,
+      "firstDifferenceStep": 1343,
+      "maxAbsoluteDelta": 6.536993168992922e-13,
+      "maxDeltaStep": 1365,
+      "maxDeltaPath": "boardPose[2]"
+    },
+    "riderPoints": {
+      "differentWords": 320,
+      "firstDifferenceStep": 1343,
+      "maxAbsoluteDelta": 6.821210263296962e-13,
+      "maxDeltaStep": 1365,
+      "maxDeltaPath": "riderPoints[17]"
+    },
+    "riderWords": {
+      "differentWords": 78,
+      "firstDifferenceStep": 1343,
+      "maxAbsoluteDelta": 6.536993168992922e-13,
+      "maxDeltaStep": 1365,
+      "maxDeltaPath": "riderWords[7]"
+    },
+    "displayedBoard": {
+      "differentWords": 127,
+      "firstDifferenceStep": 1344,
+      "maxAbsoluteDelta": 6.536993168992922e-13,
+      "maxDeltaStep": 1366,
+      "maxDeltaPath": "displayedBoard.position[2]"
+    },
+    "displayedRiderPoints": {
+      "differentWords": 302,
+      "firstDifferenceStep": 1344,
+      "maxAbsoluteDelta": 6.821210263296962e-13,
+      "maxDeltaStep": 1366,
+      "maxDeltaPath": "displayedRiderPoints[17]"
+    }
+  },
+  "drawnLoftComparisons": [
+    {
+      "label": "initial",
+      "comparison": {
+        "arrays": true,
+        "counts": true,
+        "rawFrontPacket": true,
+        "positionSpace": true,
+        "normalsMeaning": true,
+        "nonmutation": true
+      }
+    },
+    {
+      "label": "first-pop-up",
+      "comparison": {
+        "arrays": true,
+        "counts": true,
+        "rawFrontPacket": true,
+        "positionSpace": true,
+        "normalsMeaning": true,
+        "nonmutation": true
+      }
+    },
+    {
+      "label": "first-landing",
+      "comparison": {
+        "arrays": true,
+        "counts": true,
+        "rawFrontPacket": true,
+        "positionSpace": true,
+        "normalsMeaning": true,
+        "nonmutation": true
+      }
+    },
+    {
+      "label": "terminal",
+      "comparison": {
+        "arrays": true,
+        "counts": true,
+        "rawFrontPacket": true,
+        "positionSpace": true,
+        "normalsMeaning": true,
+        "nonmutation": true
+      }
+    }
+  ],
+  "stop": {
+    "kind": "first-published-fall-or-separation",
+    "step": 1366,
+    "phase": "fallen",
+    "separation": "lost board",
+    "resets": 0
+  },
+  "entry": {
+    "observedStandingOutside": false,
+    "firstPartial": null,
+    "firstConnectedWitnessEntry": null,
+    "containmentWithoutObservedOutside": null,
+    "firstConnectedWitnessExit": null,
+    "maximumConsecutiveContainedSteps": 0,
+    "residenceIntervals": [],
+    "fullBodyClearancePass": false
+  },
+  "rootNativeOwnerSeconds": 322.9864809589926,
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/candidate-first-owner.json",
+      "bytes": 3476,
+      "sha256": "232635c01174cc5dfbb3d3c15903a1c69e5dc28cfc42b82285acfcfb1f067e47"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/candidate-first/report.json",
+      "bytes": 13386379,
+      "sha256": "bbf7fbc34391c4d53f14ee7f140a847f6525fe75d1a59dd16ee471a98e16c9cc"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/report.json",
+      "bytes": 13390085,
+      "sha256": "1090617ad42398382914fab3184e0db3536194331a5cd9ac734dde927e85629a"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/seal.json",
+      "bytes": 180561,
+      "sha256": "55934c7c3d28d3e2924343a3f439b83286f7fd29bf2c7eeab87aa4b44428693d"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-complete-build-result.json",
+      "bytes": 185663,
+      "sha256": "6eb7b63e4b20c7afb78aaf3724a95118675e030cc713fc6449d27d4d7b18c488"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-diagnostic-build-result.json",
+      "bytes": 36289,
+      "sha256": "2c81bfa0144406f12f832ca7cc7d577fa123ce516350d40e2a356b1a2647d6cc"
+    },
+    {
+      "file": "/private/tmp/tube-raw-normal-native-analysis-20261005/analyze.py",
+      "bytes": 3866,
+      "sha256": "540244e6fa5b2acdb38282a31c38ccd7a93472e0bfea16186081e74a8a49c310"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/candidate-first/loft-initial.json",
+      "bytes": 1099036,
+      "sha256": "685cb5e28d9c4151019f6d72cf55b4911ec294a2b1868634b5ea42de3301f431"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-initial.json",
+      "bytes": 1099036,
+      "sha256": "1797f8a985ffcb18e606fc62ec32024cf4050c356110346d205032f32731edf0"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/candidate-first/loft-first-pop-up.json",
+      "bytes": 1073481,
+      "sha256": "a5beb80b3f52ea64aa6dda46da89431c726e05887ebad7c359f96336a0ca97fa"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-first-pop-up.json",
+      "bytes": 1073481,
+      "sha256": "c765973bee261604da6bf3a03c1c228f215547f56378b491a6f6c359700bd97b"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/candidate-first/loft-first-landing.json",
+      "bytes": 1496463,
+      "sha256": "2c24b6d30ea606b04b0a66dda8008b1d27e77b11fc64f679b0bf3c124fed7686"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-first-landing.json",
+      "bytes": 1496463,
+      "sha256": "a3188fb4e5e88ba78b95f5d81f39f8be0c621368d6ee93c0116ad02456ecb27c"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1420830,
+      "sha256": "aa96c2afdc929219079abb4698231fe58f7417e84e64081696236a1557e99acd"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1420830,
+      "sha256": "3af7e202255b6db1a0890c5e0a52904d051a0dccc949f6f3368b5ddfa5fc5eb6"
+    }
+  ],
+  "limitations": [
+    "This known-failure replay still falls before standing; the direction correction is not a fix for this landing or evidence of tube entry.",
+    "The control overlay bypasses production pilot positioning/wait/take-off aiming.",
+    "Folded-direction validity is established by separate controlled regressions; natural tube gameplay is still unverified."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schema": "board-water-patches-root-payload-budget/v1",
+  "complete": true,
+  "policy": "Preserve all143 fields; retain2scope words; retain1920patch words only for marker1/scope1/count48; live state unchanged.",
+  "basis": "Exact1366-step143 capture, every marker1 assumed scope1 and all1920 patch operands assigned widest finite JSON number. Conditional on retained trajectory; actual native cap checks remain required.",
+  "maximumFiniteNumber": -1.7976931348623157e+308,
+  "maximumFiniteNumberJsonBytes": 24,
+  "report": {
+    "prior": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/report.json",
+      "bytes": 13390085,
+      "sha256": "1090617ad42398382914fab3184e0db3536194331a5cd9ac734dde927e85629a"
+    },
+    "full": 202,
+    "trial": 94,
+    "maxBytes": 22171513,
+    "capBytes": 33554432,
+    "marginBytes": 11382919
+  },
+  "trace": {
+    "prior": {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 13116163,
+      "sha256": "b2fba2c5c6384a43fae9b0f80bffd80eb7d4d3ed426431bf31c9927391ccbfde"
+    },
+    "full": 199,
+    "trial": 91,
+    "maxBytes": 21617505,
+    "capBytes": 25165824,
+    "marginBytes": 3548319
+  },
+  "metadata": {
+    "file": "/private/tmp/tube-board-water-patches-observer-20261005/observer-fields.json",
+    "bytes": 194721,
+    "sha256": "784391af51ed3e04a2553658e85bf98da1a48481b8ea4dccd30b37b53ec16d28"
+  },
+  "all143WordsPreserved": true,
+  "actualNativeAccepted": false
+}

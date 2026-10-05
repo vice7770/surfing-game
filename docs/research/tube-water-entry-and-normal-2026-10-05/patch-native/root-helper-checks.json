@@ -1,0 +1,80 @@
+{
+  "schema": "board-water-patches-root-helper-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceHelper": {
+    "run": true,
+    "exitCode": 0,
+    "elapsedSeconds": 1.7238950409810059,
+    "argv": [
+      "python3",
+      "/private/tmp/tube-board-water-patches-native-20261005/root-helper-revisions/projector-selector-v2/check-source.py"
+    ],
+    "log": {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/root-v2-sourceHelper.log",
+      "bytes": 3182,
+      "sha256": "725ae58d1daf140bfb23aee4503de924bd3fa8a6ce387b39c2e618763a1d1fed"
+    }
+  },
+  "metadata": {
+    "run": true,
+    "exitCode": 0,
+    "elapsedSeconds": 0.12959970900556073,
+    "argv": [
+      "python3",
+      "/private/tmp/tube-board-water-patches-native-20261005/metadata-check.py"
+    ],
+    "log": {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/root-v2-metadata.log",
+      "bytes": 1010,
+      "sha256": "6dabea8d922bbcb71a0d04bf30b760a29e6e9c446af3635626b206c8ecb312a5"
+    }
+  },
+  "nativeSyntax": {
+    "run": true,
+    "exitCode": 0,
+    "elapsedSeconds": 0.1326732090092264,
+    "argv": [
+      "/opt/homebrew/bin/node",
+      "--check",
+      "/private/tmp/tube-board-water-patches-native-20261005/native.mjs"
+    ],
+    "log": {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/root-v2-nativeSyntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "diagnosticWrapperSyntax": {
+    "run": true,
+    "exitCode": 0,
+    "elapsedSeconds": 0.07834295800421387,
+    "argv": [
+      "/opt/homebrew/bin/node",
+      "--check",
+      "/private/tmp/tube-board-water-patches-build-20261005/build-diagnostic.mjs"
+    ],
+    "log": {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/root-v2-diagnosticWrapperSyntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "sourceOnlyOwner": {
+    "run": true,
+    "exitCode": 0,
+    "elapsedSeconds": 0.23802229098509997,
+    "argv": [
+      "python3",
+      "/private/tmp/tube-board-water-patches-native-20261005/run.py",
+      "--arm",
+      "candidate"
+    ],
+    "log": {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/root-v2-sourceOnlyOwner.log",
+      "bytes": 494,
+      "sha256": "af04be2b60951bcebe7e7266fde96536aa8ad916ba6701c03f1913093b3c191e"
+    }
+  }
+}

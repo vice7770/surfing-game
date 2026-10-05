@@ -823,12 +823,12 @@ export class BoardBody implements BoardContactBody {
         a[5] = rx * ny - ry * nx;
         for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) system[i * 6 + j] += damping * a[i] * a[j];
       }
-      // The water's inertia answers the patch's motion into the local surface, along
-      // its sampled normal ν (generalized direction [ν, r × ν]), over
+      // The water's inertia answers the patch's motion along the sampled raw unit
+      // surface normal ν (generalized direction [ν, r × ν]), over
       // the patch's projection on it: added mass, water entry and radiation, all
-      // implicit. Planing and sliding along a face move no point into the surface,
+      // implicit. Buoyancy's bounded slopes do not replace steep or overhanging
+      // contact normals here. Planing and sliding move no point into the surface,
       // so they leave the lift to the pressure.
-      // Bounded slopes describe buoyancy's height graph; they lose a fold's actual normal.
       const ux = sample.normalX;
       const uy = sample.normalY;
       const uz = sample.normalZ;
@@ -899,6 +899,16 @@ export class BoardBody implements BoardContactBody {
         for (let j = 0; j < 6; j += 1) s8[i * 8 + j] = system[i * 6 + j];
         r8[i] = rhs[i];
       }
+      // Observer-only copies of existing aggregate primitives; no additional force calculations.
+      rider.observeBoardRhsComponents(
+        totals.bx, totals.by, totals.bz, totals.btx, totals.bty, totals.btz,
+        totals.px, totals.py, totals.pz, totals.ptx, totals.pty, totals.ptz,
+        totals.fx, totals.fy, totals.fz, totals.ftx, totals.fty, totals.ftz,
+        ft[0], ft[1], ft[2], ft[3], ft[4], ft[5],
+        ft[6], ft[7], ft[8], ft[9], ft[10], ft[11],
+        gyro[0], gyro[1], gyro[2], weight, h,
+        waterX, waterY, waterZ, waterTx, waterTy, waterTz,
+      );
       rider.coupleStanding(s8, r8, h);
       solveLinear(s8, r8, 8);
       if (rider.settleStanding(r8, h, this)) {

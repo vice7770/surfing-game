@@ -1,0 +1,77 @@
+{
+  "schema": "board-raw-normal-source-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "sourceDirectory": "/private/tmp/tube-board-raw-normal-native-20261005/source",
+  "sourceCount": 588,
+  "applicationSourceCount": 587,
+  "unchangedParentInputs": 587,
+  "runtimeChangedPaths": [
+    "src/physics/BoardBody.ts"
+  ],
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-pins.json",
+    "bytes": 96409,
+    "sha256": "2a8767e72e24f30439cfee59f016cc35d8bc2511d73f427e2f0ecdd4a0e8028e"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/source-pins.json",
+    "bytes": 96405,
+    "sha256": "cb463a8b007c2ee92cea01abbc4e2c46690eb0f91483c7855f5e752b490bca74"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/source-delta.json",
+    "bytes": 1029,
+    "sha256": "d6a0c7e6db78efab50133090358a4a8d8448df3a5fa3576b9cd8520f87e926fd"
+  },
+  "candidateRuntimePins": [
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55644,
+      "sha256": "afd0d5b8074365c228c641139486716f1ca7710ede458203bb47652130439f4a"
+    }
+  ],
+  "candidateOverride": {
+    "file": "/private/tmp/tube-board-raw-normal-trial-20261005/source/src/physics/BoardBody.ts",
+    "bytes": 55644,
+    "sha256": "afd0d5b8074365c228c641139486716f1ca7710ede458203bb47652130439f4a"
+  },
+  "observerFields": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+  },
+  "rootCPUResult": {
+    "file": "/private/tmp/tube-board-raw-normal-trial-20261005/root-checks-v2/result.json",
+    "bytes": 266808,
+    "sha256": "e6ba00bad927f4a79ba9be1933a2dd6548df8703bc770717fc343c297c4840bb"
+  },
+  "rootBaseCopy": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-base-copy.json",
+    "bytes": 646,
+    "sha256": "08579052fd8c9ade1023d78957d50956e0742f9d8a9954395d0453b90488ebca"
+  },
+  "preparationInputs": {
+    "file": "/private/tmp/tube-board-raw-normal-native-prep-20261005/inputs.json",
+    "bytes": 5114,
+    "sha256": "2fe763969091184e631129bc188d31d76466f85b7585d16051ecc81782e938a4"
+  },
+  "preparationFreeze": {
+    "file": "/private/tmp/tube-board-raw-normal-native-prep-20261005/freeze.json",
+    "bytes": 3036,
+    "sha256": "b6e7107fb91f42b616cb3a30c64c33e20ed386189b5aaf71450c666fc67c49b7"
+  },
+  "replayReference": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/replay-reference.json",
+    "bytes": 13142,
+    "sha256": "6fed8d003e3acf33bd02c64b514114d3c9178a40099cb8e9f6bc8c1032075c31"
+  },
+  "buildId": "tube-board-raw-normal-20261005",
+  "resourcesStarted": false,
+  "applicationBuildPerformed": false,
+  "diagnosticBuildPerformed": false,
+  "nativeRun": false,
+  "physicalDifferenceIntentional": true,
+  "nativeCauseOrFixAccepted": false,
+  "productionAdoption": false
+}

@@ -1,0 +1,69 @@
+{
+  "schema": "board-water-patches-root-retention-checks/v1",
+  "complete": true,
+  "all202OriginalReportRecordsPreserved": true,
+  "checkedPublishedRides": 2732,
+  "selfContainedBrowserClosureExact": true,
+  "immutableControllerInputs": true,
+  "exact1920FieldInventories": 2,
+  "guards": [
+    {
+      "marker": 1,
+      "scope": 1,
+      "count": 48,
+      "qualified": true
+    },
+    {
+      "marker": 0,
+      "scope": 1,
+      "count": 48,
+      "qualified": false
+    },
+    {
+      "marker": 1,
+      "scope": 0,
+      "count": 48,
+      "qualified": false
+    },
+    {
+      "marker": 1,
+      "scope": 1,
+      "count": 47,
+      "qualified": false
+    },
+    {
+      "marker": 0,
+      "scope": 0,
+      "count": 47,
+      "qualified": false
+    }
+  ],
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/contact-retention.mjs",
+      "bytes": 98494,
+      "sha256": "308727ca8bb2828cb89bb73b45811c60b56250e606e111a2f4fb23458b950723"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-observer-20261005/observer-fields.json",
+      "bytes": 194721,
+      "sha256": "784391af51ed3e04a2553658e85bf98da1a48481b8ea4dccd30b37b53ec16d28"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-native-20261005/candidate-first/report.json",
+      "bytes": 13390085,
+      "sha256": "1090617ad42398382914fab3184e0db3536194331a5cd9ac734dde927e85629a"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "bytes": 1053,
+      "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+    },
+    {
+      "file": "/private/tmp/tube-board-water-patches-native-20261005/root-retention-checks.mjs",
+      "bytes": 4801,
+      "sha256": "743aa2e3d55bb7cb531f6e085136a5d2b853108d898624c1a7bb897285d776ac"
+    }
+  ],
+  "nativeAcceptance": false
+}

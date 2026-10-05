@@ -1,0 +1,40 @@
+{
+  "schema": "board-water-patches-source-delta/v1",
+  "source": "/private/tmp/tube-board-water-patches-native-20261005/source",
+  "sourceCount": 588,
+  "unchangedParentInputs": 586,
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-pins.json",
+    "bytes": 96409,
+    "sha256": "2a8767e72e24f30439cfee59f016cc35d8bc2511d73f427e2f0ecdd4a0e8028e"
+  },
+  "overrides": [
+    {
+      "path": "src/physics/AttachedRider.ts",
+      "before": {
+        "path": "src/physics/AttachedRider.ts",
+        "bytes": 159692,
+        "sha256": "85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1"
+      },
+      "after": {
+        "path": "src/physics/AttachedRider.ts",
+        "bytes": 381085,
+        "sha256": "bead934617885f5d9ae71adb76e730861c4aaf8e73f0cbe70ef5ab68aa5b98c1"
+      }
+    },
+    {
+      "path": "src/physics/BoardBody.ts",
+      "before": {
+        "path": "src/physics/BoardBody.ts",
+        "bytes": 55693,
+        "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+      },
+      "after": {
+        "path": "src/physics/BoardBody.ts",
+        "bytes": 56786,
+        "sha256": "86d30504f90266fa74eea1fb6f2ff97b46b568eeecbc6694b1c7305d6d91a3c0"
+      }
+    }
+  ],
+  "onlyPhysicsDifference": "1920 existing perpatch scalar copies plus2 new batch scope words; old143 and physics arithmetic/queries/controls/solves unchanged."
+}

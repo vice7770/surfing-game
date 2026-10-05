@@ -726,6 +726,9 @@ export class BoardBody implements BoardContactBody {
   private substep(h: number, water: SurfWater): void {
     this.updateRotation();
     const { count, arm, normal, point, samples, centerOfMass: c, velocity: v, angularVelocity: w } = this;
+    // BEGIN observer-only water-patch batch begin
+    this.rider?.beginBoardWaterPatchObservation(count);
+    // END observer-only water-patch batch begin
     let wetMin = Infinity;
     let wetMax = -Infinity;
     this.outsidePatches = 0;
@@ -824,14 +827,14 @@ export class BoardBody implements BoardContactBody {
         for (let i = 0; i < 6; i += 1) for (let j = 0; j < 6; j += 1) system[i * 6 + j] += damping * a[i] * a[j];
       }
       // The water's inertia answers the patch's motion into the local surface, along
-      // its sampled normal ν (generalized direction [ν, r × ν]), over
+      // its normal ν ∝ (−∂η/∂x, 1, −∂η/∂z) (generalized direction [ν, r × ν]), over
       // the patch's projection on it: added mass, water entry and radiation, all
       // implicit. Planing and sliding along a face move no point into the surface,
       // so they leave the lift to the pressure.
-      // Bounded slopes describe buoyancy's height graph; they lose a fold's actual normal.
-      const ux = sample.normalX;
-      const uy = sample.normalY;
-      const uz = sample.normalZ;
+      const slopeNorm = Math.hypot(sample.slopeX, 1, sample.slopeZ);
+      const ux = -sample.slopeX / slopeNorm;
+      const uy = 1 / slopeNorm;
+      const uz = -sample.slopeZ / slopeNorm;
       this.surfaceNormal[k * 3] = ux;
       this.surfaceNormal[k * 3 + 1] = uy;
       this.surfaceNormal[k * 3 + 2] = uz;
@@ -841,6 +844,9 @@ export class BoardBody implements BoardContactBody {
       const intoSurface = relative.x * ux + relative.y * uy + relative.z * uz;
       // Water entry (von Kármán): added mass gained this substep meets the patch inelastically.
       const entrained = Math.max(0, addedMass - this.previousAddedMass[k]);
+      // BEGIN observer-only water-patch old added-mass copy
+      const oldAddedMass = this.previousAddedMass[k];
+      // END observer-only water-patch old added-mass copy
       this.previousAddedMass[k] = addedMass;
       this.addedMass[k] = addedMass;
       this.entrained[k] = entrained;
@@ -857,6 +863,20 @@ export class BoardBody implements BoardContactBody {
       waterTy += push * cy;
       waterTz += push * cz;
       const inertia = h * radiation + addedMass + entrained;
+      // BEGIN observer-only water-patch scalar call
+      if (this.rider?.attached) {
+        this.rider.observeBoardWaterPatch(
+          count, k,
+          oldAddedMass, addedMass, entrained, radiation, intoSurface, push, inertia, projection,
+          force.wettedArea, force.deckWettedArea, this.addedMassPerArea[k], this.radiationPerArea[k],
+          ux, uy, uz, cx, cy, cz,
+          rx, ry, rz, nx, ny, nz,
+          patch.position.x, patch.position.y, patch.position.z, relative.x, relative.y, relative.z,
+          sample.flowX, sample.flowY, sample.flowZ, sample.surfaceY, sample.slopeX, sample.slopeZ,
+          sample.normalX, sample.normalY, sample.normalZ, sample.waterDepth,
+        );
+      }
+      // END observer-only water-patch scalar call
       if (inertia > 0) {
         const a = this.direction;
         a[0] = ux;
@@ -899,6 +919,16 @@ export class BoardBody implements BoardContactBody {
         for (let j = 0; j < 6; j += 1) s8[i * 8 + j] = system[i * 6 + j];
         r8[i] = rhs[i];
       }
+      // Observer-only copies of existing aggregate primitives; no additional force calculations.
+      rider.observeBoardRhsComponents(
+        totals.bx, totals.by, totals.bz, totals.btx, totals.bty, totals.btz,
+        totals.px, totals.py, totals.pz, totals.ptx, totals.pty, totals.ptz,
+        totals.fx, totals.fy, totals.fz, totals.ftx, totals.fty, totals.ftz,
+        ft[0], ft[1], ft[2], ft[3], ft[4], ft[5],
+        ft[6], ft[7], ft[8], ft[9], ft[10], ft[11],
+        gyro[0], gyro[1], gyro[2], weight, h,
+        waterX, waterY, waterZ, waterTx, waterTy, waterTz,
+      );
       rider.coupleStanding(s8, r8, h);
       solveLinear(s8, r8, 8);
       if (rider.settleStanding(r8, h, this)) {

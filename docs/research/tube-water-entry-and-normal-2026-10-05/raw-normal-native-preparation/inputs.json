@@ -1,0 +1,111 @@
+{
+  "schema": "board-raw-normal-preparation-inputs/v1",
+  "immediateParent": "/private/tmp/tube-board-rhs-components-native-20261005",
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/source-pins.json",
+    "bytes": 96409,
+    "sha256": "2a8767e72e24f30439cfee59f016cc35d8bc2511d73f427e2f0ecdd4a0e8028e"
+  },
+  "parentCompleteBuild": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-complete-build-result.json",
+    "bytes": 187850,
+    "sha256": "c30e1d87d417745faf1dc3b20d30a6b45838531ab974b8ff863252141335ed11"
+  },
+  "parentDiagnosticBuild": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 38052,
+    "sha256": "3a936ad08d69953a40bffec93916a1c3507d7311357ef29c08ca2216b0fd146d"
+  },
+  "parentNative": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/native.mjs",
+    "bytes": 30105,
+    "sha256": "62050707718086c8c7a30b2964377a41f345a5fd362de562c2e9e5627a06421e"
+  },
+  "parentOwner": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/run.py",
+    "bytes": 37396,
+    "sha256": "3c1e8a493cee0919538d7b21cea0147988d1edaaa317610a537603c0e62bc208"
+  },
+  "observerFields": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+  },
+  "candidateOverride": {
+    "file": "/private/tmp/tube-board-raw-normal-trial-20261005/source/src/physics/BoardBody.ts",
+    "bytes": 55644,
+    "sha256": "afd0d5b8074365c228c641139486716f1ca7710ede458203bb47652130439f4a"
+  },
+  "controlledCPUPath": "/private/tmp/tube-board-raw-normal-trial-20261005/root-checks-v2/result.json",
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "bytes": 3726,
+      "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+      "bytes": 16704,
+      "sha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "bytes": 1053,
+      "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+    }
+  ],
+  "parentAliasWrapper": {
+    "file": "/private/tmp/tube-board-rhs-components-native-20261005/helper-revisions/node-alias-v2/build-diagnostic.mjs",
+    "bytes": 14954,
+    "sha256": "66e857eb3ea4f4381c8e446811260fe5236f977b3fd8de12d05b8b7fb27c2af7"
+  },
+  "parentBuildScripts": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-build-20261005/root-build-run.py",
+      "bytes": 2466,
+      "sha256": "89b91a938e86c4ec0de0138f11d2ec579d8ea6408bde01f3752dfa7365580fa0"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-build-20261005/root-complete-build.py",
+      "bytes": 5359,
+      "sha256": "a2412dc147e8455b62e1799a43c9ccb2b8280f09166d318789e2ad48e1651250"
+    }
+  ],
+  "compilerToolInputs": [
+    {"file": "/opt/homebrew/bin/node", "bytes": 61838736, "sha256": "dad9bfeb954abae3c4af3767909df6ca1b83dc29a61539d2a023605f35afc48e"},
+    {"file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc", "bytes": 45, "sha256": "8d5fa5bd883fec0979fc2004f1fe1d99aef40570155d550eadc0b03b55513bf0"},
+    {"file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/vite/bin/vite.js", "bytes": 2995, "sha256": "de5833362e640673962f16e255bf8738d4380a68601b9af26217eee4e1bac36d"},
+    {"file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs", "bytes": 1642, "sha256": "57122bb7de7bf7116dc1d1866ad367753dee6820d55b81a3656d0c2e6c6f79d8"}
+  ],
+  "rootExecutionPending": true
+}
