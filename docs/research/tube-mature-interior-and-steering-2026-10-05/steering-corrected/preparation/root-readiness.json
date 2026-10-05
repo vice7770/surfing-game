@@ -1,0 +1,23 @@
+{
+  "schema": "c-line-steering-clock-root-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "actualAcceptedCBuildReused": true,
+  "actualAcceptedCDiagnosticReused": true,
+  "referencePrefixThrough": 1372,
+  "physicalClocksExact": true,
+  "surfaceRevisionRelativeIncrementRequired": true,
+  "initialLoft37ArraysRawEqualityRequired": true,
+  "previousAttemptQualifiedAsMetadataFailureBeforeInput": true,
+  "helperAcceptance": true,
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-checks.json",
+    "bytes": 1647,
+    "sha256": "ee81d7da5978bb338384c64ddfe9d8fb4d0f42d9253da6ae4eb694bba3ab61f3"
+  },
+  "gameplayAcceptance": false,
+  "tubePassageAcceptance": false,
+  "productionAdoption": false
+}

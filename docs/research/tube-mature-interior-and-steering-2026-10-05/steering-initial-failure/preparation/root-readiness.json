@@ -1,0 +1,19 @@
+{
+  "schema": "c-line-steering-root-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "actualAcceptedCBuildReused": true,
+  "actualAcceptedCDiagnosticReused": true,
+  "referencePrefixThrough": 1372,
+  "helperAcceptance": true,
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-checks.json",
+    "bytes": 1647,
+    "sha256": "fd94aa49ad658da658025726ab3b17fe8aef06ca5ad34bc8c292ec4ab7af41c1"
+  },
+  "gameplayAcceptance": false,
+  "tubePassageAcceptance": false,
+  "productionAdoption": false
+}

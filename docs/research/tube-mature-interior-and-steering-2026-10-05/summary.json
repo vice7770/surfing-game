@@ -1,0 +1,524 @@
+{
+  "schema": "mature-interior-and-steering-archive-summary/v1",
+  "complete": true,
+  "mature": {
+    "steps": 0,
+    "pngs": 2,
+    "full37Sidecars": 1,
+    "traceRows": 0,
+    "ownerElapsedSeconds": 194.18945487501333,
+    "selectedStoredRow": 37,
+    "inwardStoredRow": 38,
+    "front": 41,
+    "phase": 1,
+    "storedWeight": 1,
+    "eyeClearance": 1.6851134491948006,
+    "nonmutation": {
+      "checked": true,
+      "unchanged": true,
+      "failures": [],
+      "checkedLoftArrays": 37,
+      "checkedRawFrontWords": 351,
+      "checkedBoardWords": 8,
+      "checkedRiderWords": 33,
+      "exactActiveByteComparison": true,
+      "originalCameraPoseAndProjectionChecked": true,
+      "rendererOwnedStateScope": "Alternate renderer patch/underwater/caustic state restored by the normal render; no renderer-internal byte-equality claim",
+      "inspectionRenderAttempted": true,
+      "normalRenderRestored": true,
+      "normalRenderRestoreFailure": null
+    },
+    "exposedMouthAccepted": false,
+    "visualQualityAccepted": false,
+    "playabilityAccepted": false
+  },
+  "initialFailure": {
+    "inputs": 0,
+    "gameplayResult": false,
+    "cacheRevision": {
+      "actual": 4,
+      "reference": 5,
+      "meaning": "Local drawn-surface rewrite generation, incremented when drawing data is rewritten; absolute startup counter is not a physical clock."
+    },
+    "qualifiedOwnerAccepted": false
+  },
+  "corrected": {
+    "stepCount": 1441,
+    "phaseCounts": {
+      "prone": 1299,
+      "push": 43,
+      "landing": 29,
+      "standing": 69,
+      "fallen": 1
+    },
+    "standingIntervals": [
+      {
+        "firstStep": 1372,
+        "lastStep": 1440,
+        "steps": 69
+      }
+    ],
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 1441,
+      "phase": "fallen",
+      "separation": "balance",
+      "resets": 0
+    },
+    "prefixComparison": {
+      "reference": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json",
+        "bytes": 18331566,
+        "sha256": "850e86557f7e3be891b9ff11036bafb5bdaa3364fee78ee99cd814271cda58c2"
+      },
+      "requiredThrough": 1372,
+      "fields": [
+        "input",
+        "seaTime",
+        "physicalSeconds",
+        "clocks",
+        "boardPose",
+        "riderPoints",
+        "riderWords",
+        "displayedBoard",
+        "displayedRiderPoints"
+      ],
+      "initialFields": [
+        "seaTime",
+        "clocks",
+        "boardPose",
+        "riderPoints",
+        "riderWords",
+        "displayedBoard",
+        "displayedRiderPoints"
+      ],
+      "physicalClockKeys": [
+        "workerSeaTime",
+        "visualClock",
+        "waterTime"
+      ],
+      "surfaceRevisionPolicy": "Exact increments relative to each initial revision; absolute values retained, initial offset declared, no counter writes.",
+      "surfaceRevisionInitial": {
+        "actual": 4,
+        "reference": 5,
+        "offset": -1
+      },
+      "revisionRelativeCheckedThrough": 1372,
+      "initialMatched": true,
+      "configMatched": true,
+      "comparedSteps": 1372,
+      "firstStandingStep": 1372,
+      "complete": true,
+      "exactPhysicalAndActorPrefixClaim": true
+    },
+    "initialLoftComparison": {
+      "reference": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/loft-initial.json",
+        "bytes": 1099036,
+        "sha256": "c1f06bbc0311dcbc7c8348e60b32bcccd9af5b0cf15314209580793d50bb0374"
+      },
+      "arrayCount": 37,
+      "countsMatched": true,
+      "rawArraysMatched": true,
+      "arrayRecords": {
+        "indices": {
+          "dtype": "Uint32Array",
+          "littleEndian": true,
+          "count": 55860,
+          "byteLength": 223440,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "25a64109a709337e219241176990f9a97a208f5c84ac9050df2b05b0805bdbb6"
+        },
+        "lift": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 9782,
+          "byteLength": 39128,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "b7364eba1281a736b934e02ec97e6b25785fecd552f61a16d51cf30122d1447e"
+        },
+        "mask": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 9782,
+          "byteLength": 39128,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "b2e62fe0a08425590c0587c2b6397a8649f2a5c9a2caea16a763a8364ad39ec6"
+        },
+        "normals": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 29346,
+          "byteLength": 117384,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "84fd5755a52897dc91dd408ddcd4964ff33f4a4d6cda8a93796855d9157bd45c"
+        },
+        "positions": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 29346,
+          "byteLength": 117384,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "5ebde89602cff2aad87dce7392f9df6ae6490287575c2b762789a9ee226e4ed8"
+        },
+        "sheet": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 9782,
+          "byteLength": 39128,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "9ed1b76c1ce1101b9f895fe3524f9a38b760d21747c547c9336311a910cf5421"
+        },
+        "sheetBack": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 9782,
+          "byteLength": 39128,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "9958e034614b2081b6c887fc484761a67d5f04f195d252a8947a58624ee247c8"
+        },
+        "sheetWeight": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 9782,
+          "byteLength": 39128,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "ed10ce3a81492b51d215d825ee03e4e5a8d06e2898e09b9b0d04dff0a2b275bf"
+        },
+        "sliceAnchorVX": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        "sliceAnchorVZ": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        "sliceCollapse": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "15f82e4c55954e7bd848512e08ac38e33fba855e3d3ae39173543daede9ff273"
+        },
+        "sliceFade": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "e38072c1b9a5517fb6890146989f5eefeb2f31c1eb2e2cb1bd5d85e1f386a7bb"
+        },
+        "sliceFormed": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "5bb5a63e168edbcc2be41b6a1b42a496b7c4ded0497d05296520f19c6aeba120"
+        },
+        "sliceFront": {
+          "dtype": "Int32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "5607f6a6a3016e7b80d35e5feea036eab5faa99a2c758bbea70212a406a31573"
+        },
+        "sliceJoined": {
+          "dtype": "Uint8Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 73,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "fb74dbfa22c124dabf8012ec3b8d72bee06053b971ec7330ae293da2e2227702"
+        },
+        "sliceLife": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "a5079c2aa4714754ca8e055196967de853128139700e48e08d7c1831364480c8"
+        },
+        "sliceMouth": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "7a4d9dc04952bf4667f70437b74eee91a0ddcecef95041c5c144b759c3a8cfa6"
+        },
+        "sliceOverturned": {
+          "dtype": "Uint8Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 73,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "404d059b9c0bed4697415f428672fcf64a899d1410ef5d1d629aa3ac453739e0"
+        },
+        "slicePhase": {
+          "dtype": "Uint8Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 73,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "e918ebdb653583b2f5cdadd94a3250b6a863d61d3daf19fbe84077145f5a5362"
+        },
+        "sliceRayX": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        "sliceRayZ": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "53fe451693731fd85f56201a99ab14fd510b2eda5127e0f1642140a058d231a2"
+        },
+        "sliceRestClimb": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "2ac07828d3a62af36d5af5e204201997752f4fff8ab94ab076a32d39bf1eb125"
+        },
+        "sliceRestEnd": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "a16137cc1979dff13f367be8bc9f10b548746cbd8482c3996ffb5574dc61a233"
+        },
+        "sliceRestHold": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "c050f64900113b1417de4cff4284b7e2b26db23bc943a6bef223bee8ba7cabd4"
+        },
+        "sliceSigma": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "09dbe1efaec0479e21da263ff8da8e24904fb8429331db67343f018fd9751b16"
+        },
+        "sliceTau": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "367027189d07cbca60eaac8631fba577093dcd447ce48d35c8772ffe913efa56"
+        },
+        "sliceTipAlong": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "68945d483cf7e9e4748fc80b2a24d71e4cf8a2d3c47749a18997fa8466618209"
+        },
+        "sliceTipGap": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        "sliceTipTransportAlong": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        "sliceTipTransportUp": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        "sliceTipUp": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "b6cbe554ebc732703c333676f1719e5d0859c6e9f644ab44032aec4a1a3c2a0a"
+        },
+        "sliceTipX": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "b7e265a074f7460de898c71e8d222204053c29aee335f8be855d2f8c76cb548e"
+        },
+        "sliceTipY": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "4d3f0bed2c6950f14efaec7d43a63116442f585a8bb95446d10c2467bb5c01c4"
+        },
+        "sliceTipZ": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "413d030cb5d91a948a0544ceb222eada8febb54d8947d58566e209b5e46a53e4"
+        },
+        "sliceToeClimb": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "710d74d4875ff7c2ad5d96e7d47f8e1d5cedf4ad85214c76e2ce78f019c35f95"
+        },
+        "sliceWeight": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 73,
+          "byteLength": 292,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "d59f9466be4f152dea4bbcb35a83a512e0a5de488580d96a9fb8db7401432936"
+        },
+        "throat": {
+          "dtype": "Float32Array",
+          "littleEndian": true,
+          "count": 39128,
+          "byteLength": 156512,
+          "encoding": "base64-exact-active-typed-array-words",
+          "sha256": "5721b79bd81c369c122faa001ababb36b15128fec2707404427f2a68fe217985"
+        }
+      },
+      "cacheEpochIgnoredOnlyForRawGeometryComparison": true,
+      "complete": true
+    },
+    "firstStandingInputStep": 1373,
+    "firstNonzeroSteeringStep": 1374,
+    "nonzeroStandingSteeringSteps": 68,
+    "entry": {
+      "observedStandingOutside": true,
+      "firstPartial": null,
+      "firstConnectedWitnessEntry": null,
+      "containmentWithoutObservedOutside": null,
+      "firstConnectedWitnessExit": null,
+      "maximumConsecutiveContainedSteps": 0,
+      "residenceIntervals": [],
+      "fullBodyClearancePass": false
+    },
+    "video": {
+      "complete": true,
+      "bytes": 2046167,
+      "mimeType": "video/webm;codecs=vp9",
+      "requestCount": 142,
+      "requestFrameCount": 142,
+      "startStep": 1300,
+      "endStep": 1441,
+      "physicsAdvances": 141,
+      "physicalSeconds": 2.349999999999852,
+      "startSeaTime": 297.99602272193914,
+      "endSeaTime": 300.346022721939,
+      "wallMilliseconds": 30622.399999976158,
+      "tracksStopped": true,
+      "physicalPlaybackRateClaim": false,
+      "encodedFrameCountClaim": false,
+      "file": "pop-up-motion.webm",
+      "sha256": "d1bf4a4e7bbb6275c7aa682a845403a6f642a59e0e67e124d679d10d1524701c"
+    },
+    "normalMenuAcceptance": false,
+    "tubePassageAccepted": false,
+    "gameplayImprovementClaim": false
+  },
+  "formationReference": {
+    "stepCount": 1516,
+    "phaseCounts": {
+      "prone": 1299,
+      "push": 43,
+      "landing": 29,
+      "standing": 144,
+      "fallen": 1
+    },
+    "standingIntervals": [
+      {
+        "firstStep": 1372,
+        "lastStep": 1515,
+        "steps": 144
+      }
+    ],
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 1516,
+      "phase": "fallen",
+      "separation": "lost board",
+      "resets": 0
+    }
+  },
+  "visualReferenceReview": {
+    "review": {
+      "file": "/private/tmp/tube-reference-refresh-20261005/visual-acceptance.md",
+      "bytes": 5170,
+      "sha256": "bdb8c7469765ea684c6b2b9c682ed349f7e414e8bc32a9cdc8ce4b646cbaaca1"
+    },
+    "manifest": {
+      "file": "/private/tmp/tube-reference-refresh-20261005/manifest.json",
+      "bytes": 1981,
+      "sha256": "4539addc4c1a9ee02b340b7f6de082ffcee493947aefe1e4c43d2c51c5b5f0f9"
+    },
+    "originalMov": {
+      "path": "/Users/regina/Desktop/Screen Recording 2026-10-03 at 17.52.10.mov",
+      "bytes": 343985118,
+      "durationSeconds": 33.286667,
+      "width": 3456,
+      "height": 2234
+    },
+    "originalMovCopied": false,
+    "remoteSource": {
+      "url": "https://www.youtube.com/watch?v=N1XOaxIuVT0",
+      "title": "Virtual Surfing PS5 quick review - The BEST SURFING GAME I Have Ever Seen",
+      "requestedStartSeconds": 120,
+      "requestedEndSeconds": 150,
+      "actualRetainedScreenshotsSeconds": [
+        124,
+        149,
+        154
+      ],
+      "extraViewExplicitlyOutsideInterval": [
+        154
+      ],
+      "remoteMediaDownloaded": false
+    },
+    "supplementaryFrameSeconds": 154,
+    "supplementaryFrameOutsideRequestedInterval": true,
+    "visualReferenceOnly": true
+  },
+  "runtimeChanged": false,
+  "performanceAccepted": false
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "c-line-steering-source-freeze/v1",
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "checksRun": false,
+  "nativeRun": false,
+  "files": 11,
+  "pins": [
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/authority.py",
+      "bytes": 8160,
+      "sha256": "ad28eb0111c113a69855c6fff605afe3f119b46d0a15ac1fb69c40d5bb19a8ec"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/bind-inputs.py",
+      "bytes": 823,
+      "sha256": "812438d62b0fc3c3da8827faba1b432d1ff1177b45b414f8e35715189c3e09f1"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/control-policy.mjs",
+      "bytes": 1695,
+      "sha256": "75b38631d5b814d8a3fa4a868d8a4ea11dafdff27637b726a2fb31a6c303b978"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/native.mjs",
+      "bytes": 32239,
+      "sha256": "8022c3984a8afa6beb855e33b7e0f5276cd70d798ab32b0c910c7f8075156b61"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/run.py",
+      "bytes": 20624,
+      "sha256": "d9fd864b01e82c8a0dad4494151d9f5a7db2a5a675078ae2f1a5529cfc424d86"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-checks.py",
+      "bytes": 1342,
+      "sha256": "36e3925a551b33ace12b750303e1dd7b3fb86612f5bd3913bde0240acabd356f"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/root-seal.py",
+      "bytes": 2966,
+      "sha256": "e91fd77c0e83afc189305ead760ebac128be524df3bdf52bf5b63012992f3ff3"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/inputs.template.json",
+      "bytes": 5741,
+      "sha256": "6264e92d74c76cef1c7109dcc177e8dd7a815a98f79966ad546c6228d8143ba4"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/readiness.json",
+      "bytes": 760,
+      "sha256": "06427c7c886bba36aa4e04012989fb295a597bfe47422994de9b89fbf46c8f91"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/README.md",
+      "bytes": 4645,
+      "sha256": "3bc24202d3478f0fe953b2cc99593182f79cfa567df39c01444e5d1e6e7518a1"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/prep/exact-diffs.patch",
+      "bytes": 71501,
+      "sha256": "40ce682564318800bff094a61c8d7f788c722e75fb38dcedc4c868c2d54c82f7"
+    }
+  ]
+}

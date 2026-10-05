@@ -1,0 +1,1366 @@
+{
+  "schema": "mature-interior-and-steering-curated-archive/v1",
+  "complete": true,
+  "output": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-mature-interior-and-steering-2026-10-05",
+  "files": [
+    {
+      "path": "mature-interior/preparation/inputs.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/inputs.json",
+        "bytes": 3787,
+        "sha256": "240441ebebf7fdc9a43d57d6c67c55c7f2f5b217bdd297260544da499fb8cb23"
+      },
+      "archivedBytes": 3787,
+      "archivedSha256": "240441ebebf7fdc9a43d57d6c67c55c7f2f5b217bdd297260544da499fb8cb23",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/preparation/authority.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/authority.py",
+        "bytes": 7422,
+        "sha256": "40f28e077269cc972c515c19d493b498eee76018637e89a89a16cd862a067fed"
+      },
+      "archivedBytes": 7422,
+      "archivedSha256": "40f28e077269cc972c515c19d493b498eee76018637e89a89a16cd862a067fed",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/preparation/native.mjs",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/native.mjs",
+        "bytes": 15820,
+        "sha256": "d63d72ff579e300bd3b56570e80cfcab93b12b3b6f1ec34dbac40fc728fa84c8"
+      },
+      "archivedBytes": 15820,
+      "archivedSha256": "d63d72ff579e300bd3b56570e80cfcab93b12b3b6f1ec34dbac40fc728fa84c8",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/preparation/run.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/run.py",
+        "bytes": 18353,
+        "sha256": "4034aacf86ede42e75b57d1ff4199ecca8ae7ed6bd7eca05013daa71156b48c5"
+      },
+      "archivedBytes": 18353,
+      "archivedSha256": "4034aacf86ede42e75b57d1ff4199ecca8ae7ed6bd7eca05013daa71156b48c5",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/preparation/readiness.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/readiness.json",
+        "bytes": 1125,
+        "sha256": "48caa6736e084060e57482375a4857097c1fa382322300846a294819324d8bdf"
+      },
+      "archivedBytes": 1125,
+      "archivedSha256": "48caa6736e084060e57482375a4857097c1fa382322300846a294819324d8bdf",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/preparation/README.txt",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/README.txt",
+        "bytes": 6355,
+        "sha256": "b861299f745bd9147acc99ed78f9d349c327448f9221dce53eac82d01b8a75d8"
+      },
+      "archivedBytes": 6355,
+      "archivedSha256": "b861299f745bd9147acc99ed78f9d349c327448f9221dce53eac82d01b8a75d8",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/preparation/mature-mouth.mjs",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/mature-mouth.mjs",
+        "bytes": 21511,
+        "sha256": "e4bdb8fb8038672bb501cacb732b8a13f3bb56bea88e6fb3d02a966533919e00"
+      },
+      "archivedBytes": 21511,
+      "archivedSha256": "e4bdb8fb8038672bb501cacb732b8a13f3bb56bea88e6fb3d02a966533919e00",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/preparation/inspection-bridge.mjs",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/inspection-bridge.mjs",
+        "bytes": 3228,
+        "sha256": "0751c8d4a60b5c238edc2a0e6003d69ac30a63e939f027e67ef710b54279d2ee"
+      },
+      "archivedBytes": 3228,
+      "archivedSha256": "0751c8d4a60b5c238edc2a0e6003d69ac30a63e939f027e67ef710b54279d2ee",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/preparation/source-freeze.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/source-freeze.json",
+        "bytes": 2109,
+        "sha256": "317967b5300f87ea9a5a74ef91a3ef33c7bbf3436d0fdb30be648749f1c28c0b"
+      },
+      "archivedBytes": 2109,
+      "archivedSha256": "317967b5300f87ea9a5a74ef91a3ef33c7bbf3436d0fdb30be648749f1c28c0b",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/preparation/seal.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/seal.json",
+        "bytes": 7409,
+        "sha256": "cd0c60471faed114b9841cb2eb78f23b64ab4de145a04d0d8bafcd80d7394323"
+      },
+      "archivedBytes": 7409,
+      "archivedSha256": "cd0c60471faed114b9841cb2eb78f23b64ab4de145a04d0d8bafcd80d7394323",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/root-checks/logs/nativeSyntax.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-helper-logs/nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archivedBytes": 0,
+      "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/root-checks/logs/sourceOnlyOwner.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-helper-logs/sourceOnlyOwner.log",
+        "bytes": 635,
+        "sha256": "9a153b404df81a1c407241b10c66616921d4e63f7258fc13c1c84bf1d77714d7"
+      },
+      "archivedBytes": 635,
+      "archivedSha256": "9a153b404df81a1c407241b10c66616921d4e63f7258fc13c1c84bf1d77714d7",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/root-checks/root-helper-checks.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-helper-checks.json",
+        "bytes": 1289,
+        "sha256": "ee65d93a559f724e48471aa1e7b22b934de8f30ea331d0be3ac22fd0c57a74b2"
+      },
+      "archivedBytes": 1289,
+      "archivedSha256": "ee65d93a559f724e48471aa1e7b22b934de8f30ea331d0be3ac22fd0c57a74b2",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/root-checks/logs/mature-mouth.mjs.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-helper-logs/mature-mouth.mjs.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archivedBytes": 0,
+      "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/root-checks/logs/inspection-bridge.mjs.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-helper-logs/inspection-bridge.mjs.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archivedBytes": 0,
+      "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/root-checks/root-camera-syntax-checks.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-camera-syntax-checks.json",
+        "bytes": 1727,
+        "sha256": "190bc63d143f677f43ead845a002c6681b0c48ce08e251288ea377297c01df42"
+      },
+      "archivedBytes": 1727,
+      "archivedSha256": "190bc63d143f677f43ead845a002c6681b0c48ce08e251288ea377297c01df42",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/capture/report.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/report.json",
+        "bytes": 41583,
+        "sha256": "47c4c82ba86de60adede064625d34a0ef109b81b6c897324eaa00f7e9f548685"
+      },
+      "archivedBytes": 9093,
+      "archivedSha256": "6dac9e0b1ae1df3bd0cc3a51bc3ed4bca0ba66e646ee5a9eb19ee4d1eaad4e07",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/capture/loft-terminal.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1099037,
+        "sha256": "da9eb21977cfd84e2ee3c972633bc47330a99cea91afdc5021e08e424c517b14"
+      },
+      "archivedBytes": 231491,
+      "archivedSha256": "4fda6bafa133d58ada670e17d29b9d8ee4185de0ace417991f865fdb369c1c84",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/capture/normal.png",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/normal.png",
+        "bytes": 2444798,
+        "sha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5"
+      },
+      "archivedBytes": 2444798,
+      "archivedSha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/capture/mature-core.png",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/mature-core.png",
+        "bytes": 1583143,
+        "sha256": "92f15efc11cfe98bdf961f44721dd24ee6f0261cb9019dc8cc520ce59518a479"
+      },
+      "archivedBytes": 1583143,
+      "archivedSha256": "92f15efc11cfe98bdf961f44721dd24ee6f0261cb9019dc8cc520ce59518a479",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/capture/steps.ndjson.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/steps.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archivedBytes": 20,
+      "archivedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/owner.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first-owner.json",
+        "bytes": 5312,
+        "sha256": "c6c5b449b36a3d0cb866deb49c4dfbf6e5f446a39769a359b1a3437761c027fb"
+      },
+      "archivedBytes": 5312,
+      "archivedSha256": "c6c5b449b36a3d0cb866deb49c4dfbf6e5f446a39769a359b1a3437761c027fb",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/owner.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first-owner.log",
+        "bytes": 2072,
+        "sha256": "64ff1d3ac29ef1d60ff60c25008c40bf5581099550b1f2d7ae455e485514d4ca"
+      },
+      "archivedBytes": 2072,
+      "archivedSha256": "64ff1d3ac29ef1d60ff60c25008c40bf5581099550b1f2d7ae455e485514d4ca",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "mature-interior/capture/launcher.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first-launcher.json",
+        "bytes": 12855,
+        "sha256": "38e77df76ea6cb655e17068fcbf1365c71bed542bfbeb0f12c3db41628d67af1"
+      },
+      "archivedBytes": 12855,
+      "archivedSha256": "38e77df76ea6cb655e17068fcbf1365c71bed542bfbeb0f12c3db41628d67af1",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/authority.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/authority.py",
+        "bytes": 8160,
+        "sha256": "ad28eb0111c113a69855c6fff605afe3f119b46d0a15ac1fb69c40d5bb19a8ec"
+      },
+      "archivedBytes": 8160,
+      "archivedSha256": "ad28eb0111c113a69855c6fff605afe3f119b46d0a15ac1fb69c40d5bb19a8ec",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/bind-inputs.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/bind-inputs.py",
+        "bytes": 823,
+        "sha256": "812438d62b0fc3c3da8827faba1b432d1ff1177b45b414f8e35715189c3e09f1"
+      },
+      "archivedBytes": 823,
+      "archivedSha256": "812438d62b0fc3c3da8827faba1b432d1ff1177b45b414f8e35715189c3e09f1",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/control-policy.mjs",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/control-policy.mjs",
+        "bytes": 1695,
+        "sha256": "75b38631d5b814d8a3fa4a868d8a4ea11dafdff27637b726a2fb31a6c303b978"
+      },
+      "archivedBytes": 1695,
+      "archivedSha256": "75b38631d5b814d8a3fa4a868d8a4ea11dafdff27637b726a2fb31a6c303b978",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/native.mjs",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/native.mjs",
+        "bytes": 32239,
+        "sha256": "8022c3984a8afa6beb855e33b7e0f5276cd70d798ab32b0c910c7f8075156b61"
+      },
+      "archivedBytes": 32239,
+      "archivedSha256": "8022c3984a8afa6beb855e33b7e0f5276cd70d798ab32b0c910c7f8075156b61",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/run.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/run.py",
+        "bytes": 20624,
+        "sha256": "d9fd864b01e82c8a0dad4494151d9f5a7db2a5a675078ae2f1a5529cfc424d86"
+      },
+      "archivedBytes": 20624,
+      "archivedSha256": "d9fd864b01e82c8a0dad4494151d9f5a7db2a5a675078ae2f1a5529cfc424d86",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/root-helper-checks.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-checks.py",
+        "bytes": 1342,
+        "sha256": "36e3925a551b33ace12b750303e1dd7b3fb86612f5bd3913bde0240acabd356f"
+      },
+      "archivedBytes": 1342,
+      "archivedSha256": "36e3925a551b33ace12b750303e1dd7b3fb86612f5bd3913bde0240acabd356f",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/root-seal.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-seal.py",
+        "bytes": 2966,
+        "sha256": "e91fd77c0e83afc189305ead760ebac128be524df3bdf52bf5b63012992f3ff3"
+      },
+      "archivedBytes": 2966,
+      "archivedSha256": "e91fd77c0e83afc189305ead760ebac128be524df3bdf52bf5b63012992f3ff3",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/inputs.template.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/inputs.template.json",
+        "bytes": 5741,
+        "sha256": "6264e92d74c76cef1c7109dcc177e8dd7a815a98f79966ad546c6228d8143ba4"
+      },
+      "archivedBytes": 5741,
+      "archivedSha256": "6264e92d74c76cef1c7109dcc177e8dd7a815a98f79966ad546c6228d8143ba4",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/readiness.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/readiness.json",
+        "bytes": 760,
+        "sha256": "06427c7c886bba36aa4e04012989fb295a597bfe47422994de9b89fbf46c8f91"
+      },
+      "archivedBytes": 760,
+      "archivedSha256": "06427c7c886bba36aa4e04012989fb295a597bfe47422994de9b89fbf46c8f91",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/README.md",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/README.md",
+        "bytes": 4645,
+        "sha256": "3bc24202d3478f0fe953b2cc99593182f79cfa567df39c01444e5d1e6e7518a1"
+      },
+      "archivedBytes": 4645,
+      "archivedSha256": "3bc24202d3478f0fe953b2cc99593182f79cfa567df39c01444e5d1e6e7518a1",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/prep/exact-diffs.patch",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/prep/exact-diffs.patch",
+        "bytes": 71501,
+        "sha256": "40ce682564318800bff094a61c8d7f788c722e75fb38dcedc4c868c2d54c82f7"
+      },
+      "archivedBytes": 71501,
+      "archivedSha256": "40ce682564318800bff094a61c8d7f788c722e75fb38dcedc4c868c2d54c82f7",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/inputs.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/inputs.json",
+        "bytes": 5842,
+        "sha256": "7ffed121ee0d91a54079c6fc13fd986e7bb4fa68834c155a08deb1ddd0fdd019"
+      },
+      "archivedBytes": 5842,
+      "archivedSha256": "7ffed121ee0d91a54079c6fc13fd986e7bb4fa68834c155a08deb1ddd0fdd019",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/prep/freeze.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/prep/freeze.json",
+        "bytes": 2427,
+        "sha256": "bc734b8405af0d605a59446a868754eb5a3a65f918672b19c29d2ed95f448473"
+      },
+      "archivedBytes": 2427,
+      "archivedSha256": "bc734b8405af0d605a59446a868754eb5a3a65f918672b19c29d2ed95f448473",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/root-readiness.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-readiness.json",
+        "bytes": 600,
+        "sha256": "09feda6e6c82af1e051e0c710de8071a19056dc206581e1beb1c598a1744a343"
+      },
+      "archivedBytes": 600,
+      "archivedSha256": "09feda6e6c82af1e051e0c710de8071a19056dc206581e1beb1c598a1744a343",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/preparation/seal.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/seal.json",
+        "bytes": 164511,
+        "sha256": "65af1b8ceaa7de949d02dcc29d50b8d4475999e6c75c62fe488cc2ea8489a67a"
+      },
+      "archivedBytes": 164511,
+      "archivedSha256": "65af1b8ceaa7de949d02dcc29d50b8d4475999e6c75c62fe488cc2ea8489a67a",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/root-checks/logs/nativeSyntax.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-logs/nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archivedBytes": 0,
+      "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/root-checks/logs/controlSyntax.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-logs/controlSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archivedBytes": 0,
+      "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/root-checks/logs/sourceOnlyOwner.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-logs/sourceOnlyOwner.log",
+        "bytes": 496,
+        "sha256": "bf193d973b0e0901fc91d95d5bd904cc306d81ff5973f0afd02699b7f0975c29"
+      },
+      "archivedBytes": 496,
+      "archivedSha256": "bf193d973b0e0901fc91d95d5bd904cc306d81ff5973f0afd02699b7f0975c29",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/root-checks/root-helper-checks.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-checks.json",
+        "bytes": 1647,
+        "sha256": "fd94aa49ad658da658025726ab3b17fe8aef06ca5ad34bc8c292ec4ab7af41c1"
+      },
+      "archivedBytes": 1647,
+      "archivedSha256": "fd94aa49ad658da658025726ab3b17fe8aef06ca5ad34bc8c292ec4ab7af41c1",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/capture/report.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first/report.json",
+        "bytes": 162083,
+        "sha256": "155771a98539b1f0b5bd43c4bc8058e244f0ad91f5c0149b01affaf46447020c"
+      },
+      "archivedBytes": 43453,
+      "archivedSha256": "6c9b5a6300414c07151b329c3cceeba8de746d25936ea76da02b4f9a4561551b",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/owner.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first-owner.json",
+        "bytes": 3610,
+        "sha256": "7d790e107b90182dc26c6e00512f775471c6bbab73719cd85ac9e7338814b973"
+      },
+      "archivedBytes": 3610,
+      "archivedSha256": "7d790e107b90182dc26c6e00512f775471c6bbab73719cd85ac9e7338814b973",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/owner.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first-owner.log",
+        "bytes": 2114,
+        "sha256": "e1f0b68079bf3f673140719c024ecfb061688bd650b45aa2658061e592647efb"
+      },
+      "archivedBytes": 2114,
+      "archivedSha256": "e1f0b68079bf3f673140719c024ecfb061688bd650b45aa2658061e592647efb",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/capture/launcher.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first/launcher.json",
+        "bytes": 12371,
+        "sha256": "b1bf4ffdad1ab59ec85bdde45f6e71e3050df7a928a493cf0502f3721f802058"
+      },
+      "archivedBytes": 12371,
+      "archivedSha256": "b1bf4ffdad1ab59ec85bdde45f6e71e3050df7a928a493cf0502f3721f802058",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-initial-failure/root-qualification.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-initial-qualification-20261005/result.json",
+        "bytes": 2220,
+        "sha256": "55af8f04ab7412b463b1ee418959be2963ccb6ac26d384ee20910e4df7130537"
+      },
+      "archivedBytes": 2220,
+      "archivedSha256": "55af8f04ab7412b463b1ee418959be2963ccb6ac26d384ee20910e4df7130537",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/authority.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/authority.py",
+        "bytes": 12008,
+        "sha256": "c597fe134f42f6479116fff6fecc88bb835066d3d1fe51d858f1666e5513a736"
+      },
+      "archivedBytes": 12008,
+      "archivedSha256": "c597fe134f42f6479116fff6fecc88bb835066d3d1fe51d858f1666e5513a736",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/bind-inputs.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/bind-inputs.py",
+        "bytes": 829,
+        "sha256": "1ec29ab9fcd59fdeef4f7c3ff212c19859a29b71437a2e287301cc6737d35e60"
+      },
+      "archivedBytes": 829,
+      "archivedSha256": "1ec29ab9fcd59fdeef4f7c3ff212c19859a29b71437a2e287301cc6737d35e60",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/control-policy.mjs",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/control-policy.mjs",
+        "bytes": 1695,
+        "sha256": "75b38631d5b814d8a3fa4a868d8a4ea11dafdff27637b726a2fb31a6c303b978"
+      },
+      "archivedBytes": 1695,
+      "archivedSha256": "75b38631d5b814d8a3fa4a868d8a4ea11dafdff27637b726a2fb31a6c303b978",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/native.mjs",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/native.mjs",
+        "bytes": 36373,
+        "sha256": "a963d68ffd451dfe131ec8d14f7176e69d04b6e18a80ccaeeab0dd7673d855ad"
+      },
+      "archivedBytes": 36373,
+      "archivedSha256": "a963d68ffd451dfe131ec8d14f7176e69d04b6e18a80ccaeeab0dd7673d855ad",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/run.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/run.py",
+        "bytes": 23939,
+        "sha256": "294833c984e79a83eabfe6f14950c32d0df22a0a7f9aeabb2917e5e75e2c3440"
+      },
+      "archivedBytes": 23939,
+      "archivedSha256": "294833c984e79a83eabfe6f14950c32d0df22a0a7f9aeabb2917e5e75e2c3440",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/root-helper-checks.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-checks.py",
+        "bytes": 1348,
+        "sha256": "364d383edd2897ae946b689728502f509a2fbcf2cdd51e52d369901bb2cc170b"
+      },
+      "archivedBytes": 1348,
+      "archivedSha256": "364d383edd2897ae946b689728502f509a2fbcf2cdd51e52d369901bb2cc170b",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/root-seal.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-seal.py",
+        "bytes": 3297,
+        "sha256": "04a5f4cda34be04893781a3f1158655529e9f6ab312aaf9575c098540e59720a"
+      },
+      "archivedBytes": 3297,
+      "archivedSha256": "04a5f4cda34be04893781a3f1158655529e9f6ab312aaf9575c098540e59720a",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/inputs.template.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/inputs.template.json",
+        "bytes": 7461,
+        "sha256": "9e61eee10d6deef5ad9fa8cdef9fca72926f9b899222b5d7384979af8f28c0c7"
+      },
+      "archivedBytes": 7461,
+      "archivedSha256": "9e61eee10d6deef5ad9fa8cdef9fca72926f9b899222b5d7384979af8f28c0c7",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/readiness.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/readiness.json",
+        "bytes": 1269,
+        "sha256": "e1b5494d1bcb5359c3cc585dc6e94590acc255424b8043bf773942175ef1cd19"
+      },
+      "archivedBytes": 1269,
+      "archivedSha256": "e1b5494d1bcb5359c3cc585dc6e94590acc255424b8043bf773942175ef1cd19",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/README.md",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/README.md",
+        "bytes": 6456,
+        "sha256": "e1d4873e6f81b9d91a56a83e371bd3b9ececd1af9d3b85cad3a013862641f131"
+      },
+      "archivedBytes": 6456,
+      "archivedSha256": "e1d4873e6f81b9d91a56a83e371bd3b9ececd1af9d3b85cad3a013862641f131",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/prep/exact-diffs.patch",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/prep/exact-diffs.patch",
+        "bytes": 63436,
+        "sha256": "a6ddf557cde50417fa13932b4da1dbd330f9730e753b2590345c7fda2fb30602"
+      },
+      "archivedBytes": 63436,
+      "archivedSha256": "a6ddf557cde50417fa13932b4da1dbd330f9730e753b2590345c7fda2fb30602",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/inputs.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/inputs.json",
+        "bytes": 7562,
+        "sha256": "cfcbf3eba4658d0d7c5172643f81e8a4b87413c5fcf8d0223481208c598fe906"
+      },
+      "archivedBytes": 7562,
+      "archivedSha256": "cfcbf3eba4658d0d7c5172643f81e8a4b87413c5fcf8d0223481208c598fe906",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/prep/freeze.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/prep/freeze.json",
+        "bytes": 2424,
+        "sha256": "086e91213680935dc5042922158cb01ad5e9e0dff55aefc7a622a4a987b6d8d4"
+      },
+      "archivedBytes": 2424,
+      "archivedSha256": "086e91213680935dc5042922158cb01ad5e9e0dff55aefc7a622a4a987b6d8d4",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/root-readiness.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-readiness.json",
+        "bytes": 802,
+        "sha256": "9160d895b792e54ce40490e5a534511ceb06829449ae3e50f5da36beb36431db"
+      },
+      "archivedBytes": 802,
+      "archivedSha256": "9160d895b792e54ce40490e5a534511ceb06829449ae3e50f5da36beb36431db",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/preparation/seal.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/seal.json",
+        "bytes": 166735,
+        "sha256": "f65e152e981e5133af2c82286feedf6084bd1395c43d3ce2c58de90287f3a6b5"
+      },
+      "archivedBytes": 166735,
+      "archivedSha256": "f65e152e981e5133af2c82286feedf6084bd1395c43d3ce2c58de90287f3a6b5",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/root-checks/logs/nativeSyntax.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-logs/nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archivedBytes": 0,
+      "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/root-checks/logs/controlSyntax.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-logs/controlSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archivedBytes": 0,
+      "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/root-checks/logs/sourceOnlyOwner.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-logs/sourceOnlyOwner.log",
+        "bytes": 495,
+        "sha256": "1a555fa4356fcb37daed40987efff975fb235d3df3b26b2a41878a2b0ff43d8b"
+      },
+      "archivedBytes": 495,
+      "archivedSha256": "1a555fa4356fcb37daed40987efff975fb235d3df3b26b2a41878a2b0ff43d8b",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/root-checks/root-helper-checks.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-checks.json",
+        "bytes": 1647,
+        "sha256": "ee81d7da5978bb338384c64ddfe9d8fb4d0f42d9253da6ae4eb694bba3ab61f3"
+      },
+      "archivedBytes": 1647,
+      "archivedSha256": "ee81d7da5978bb338384c64ddfe9d8fb4d0f42d9253da6ae4eb694bba3ab61f3",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/report.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/report.json",
+        "bytes": 16001600,
+        "sha256": "0cbe0db1b7eae6f2acdc5186c53ff7653ec962cff077255aef0257adda99b103"
+      },
+      "archivedBytes": 2560612,
+      "archivedSha256": "87e44ed6f8990c0a1654fbb39077678cb62a00a43bca8935d5a2ff82eb857216",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/00-initial.png",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/00-initial.png",
+        "bytes": 2444798,
+        "sha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5"
+      },
+      "archivedBytes": 2444798,
+      "archivedSha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/01-first-pop-up.png",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/01-first-pop-up.png",
+        "bytes": 1910202,
+        "sha256": "2cb9df5e992ca492d3cd3016ddd75be827412de1e87d559cccdb29b4b01dc352"
+      },
+      "archivedBytes": 1910202,
+      "archivedSha256": "2cb9df5e992ca492d3cd3016ddd75be827412de1e87d559cccdb29b4b01dc352",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/02-first-landing.png",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/02-first-landing.png",
+        "bytes": 1911077,
+        "sha256": "44d97e9ea679319a5093129f5e3ad2dd8d053842a4631c1ffd730be2caa6cb33"
+      },
+      "archivedBytes": 1911077,
+      "archivedSha256": "44d97e9ea679319a5093129f5e3ad2dd8d053842a4631c1ffd730be2caa6cb33",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/03-terminal.png",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/03-terminal.png",
+        "bytes": 2071761,
+        "sha256": "c53348c9ecbd51f1883bd5162bad589d86c4d35eb593c73cf4ec30c287afee42"
+      },
+      "archivedBytes": 2071761,
+      "archivedSha256": "c53348c9ecbd51f1883bd5162bad589d86c4d35eb593c73cf4ec30c287afee42",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/pop-up-motion.webm",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/pop-up-motion.webm",
+        "bytes": 2046167,
+        "sha256": "d1bf4a4e7bbb6275c7aa682a845403a6f642a59e0e67e124d679d10d1524701c"
+      },
+      "archivedBytes": 2046167,
+      "archivedSha256": "d1bf4a4e7bbb6275c7aa682a845403a6f642a59e0e67e124d679d10d1524701c",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/steps.ndjson.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/steps.ndjson",
+        "bytes": 15702696,
+        "sha256": "d5e92952ffa573c1bcf9586b7e0a42bccad10d405200ee8da9861a8cf5decc5c"
+      },
+      "archivedBytes": 2489565,
+      "archivedSha256": "9005e4d4ae8d0f4f80e4c4c530d8ced6550c724c2ddcddcdb050aa8bb7b17238",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/loft-initial.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/loft-initial.json",
+        "bytes": 1099036,
+        "sha256": "50a5525efaa6d8bde9b0a598199a57fa5e58702328ecbe779776e8d707ad4740"
+      },
+      "archivedBytes": 231490,
+      "archivedSha256": "56fac5499e8ca5f6db10f6b0594a69a6301cd992231a99dc2090f4d22ea55d6e",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/loft-first-pop-up.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/loft-first-pop-up.json",
+        "bytes": 1073481,
+        "sha256": "c17627e7806261dc398c31d76a40a2ddbef9642fcefea27d9f5d43cca6a40b56"
+      },
+      "archivedBytes": 223609,
+      "archivedSha256": "7bf5f4c137b30391dcaa48a7b66fcc19472c7a7c9013d068db7c7804ca887ad3",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/loft-first-landing.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/loft-first-landing.json",
+        "bytes": 1496463,
+        "sha256": "32f2e203421f243730ee05665db614acccbbdb6bda9722dec19621f864ca7149"
+      },
+      "archivedBytes": 301182,
+      "archivedSha256": "ce408f6261982e775635bc577ee06cd6da607ea644e16a60d7162b6838186a8f",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/loft-terminal.json.gz",
+      "encoding": "gzip",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1945634,
+        "sha256": "b2f286e1f84a9b1fce6aea01ea021d7d307b61d2f37d017133fdcbec51fce5cf"
+      },
+      "archivedBytes": 429988,
+      "archivedSha256": "48065332990e3a2230be32afde76368eb1eb3f47fac297fc421f67538ddc0324",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/owner.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first-owner.json",
+        "bytes": 3608,
+        "sha256": "1aa0b8294d82900917f1fd7e4fbedef6bd88bab2de3a422cb5b30ec15389bdd7"
+      },
+      "archivedBytes": 3608,
+      "archivedSha256": "1aa0b8294d82900917f1fd7e4fbedef6bd88bab2de3a422cb5b30ec15389bdd7",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/owner.log",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first-owner.log",
+        "bytes": 2918,
+        "sha256": "fbd80513dee2907a135ee8c0355f9781267c379b2acc98e9238ced2aa85883c9"
+      },
+      "archivedBytes": 2918,
+      "archivedSha256": "fbd80513dee2907a135ee8c0355f9781267c379b2acc98e9238ced2aa85883c9",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "steering-corrected/capture/launcher.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/candidate-first/launcher.json",
+        "bytes": 12689,
+        "sha256": "c71b8a4c1051d7b4c51a2971e116ef64c6a7becdce5697b2948b6dee1229d676"
+      },
+      "archivedBytes": 12689,
+      "archivedSha256": "c71b8a4c1051d7b4c51a2971e116ef64c6a7becdce5697b2948b6dee1229d676",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "reference-review/oct3-13s.jpg",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-reference-refresh-20261005/oct3-13s.jpg",
+        "bytes": 116550,
+        "sha256": "84ccc30c4284c7cfe1f5c0ef506d9e646606a9d7f055367f90039927a837c3f0"
+      },
+      "archivedBytes": 116550,
+      "archivedSha256": "84ccc30c4284c7cfe1f5c0ef506d9e646606a9d7f055367f90039927a837c3f0",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "reference-review/oct3-18s.jpg",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-reference-refresh-20261005/oct3-18s.jpg",
+        "bytes": 117059,
+        "sha256": "11780a06cbb46256ba7d8f7de4e83091b36b40aa219ebbe16b63dcfc81790c2f"
+      },
+      "archivedBytes": 117059,
+      "archivedSha256": "11780a06cbb46256ba7d8f7de4e83091b36b40aa219ebbe16b63dcfc81790c2f",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "reference-review/oct3-27s.jpg",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-reference-refresh-20261005/oct3-27s.jpg",
+        "bytes": 122374,
+        "sha256": "e58f2ff5aeb3d575ce0b82e48e34496802b7e07c82ac7e3e8c01c06bcd79da78"
+      },
+      "archivedBytes": 122374,
+      "archivedSha256": "e58f2ff5aeb3d575ce0b82e48e34496802b7e07c82ac7e3e8c01c06bcd79da78",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "reference-review/oct3-contact-sheet.jpg",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-reference-refresh-20261005/oct3-contact-sheet.jpg",
+        "bytes": 519343,
+        "sha256": "d2e9f9f18317924f51db2e14c6e52082450ab4f773e6619c13ef820dce8841a0"
+      },
+      "archivedBytes": 519343,
+      "archivedSha256": "d2e9f9f18317924f51db2e14c6e52082450ab4f773e6619c13ef820dce8841a0",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "reference-review/youtube-2m04s.jpg",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-reference-refresh-20261005/youtube-2m04s.jpg",
+        "bytes": 135635,
+        "sha256": "248ec2f091ba708e549a8c049664bd6b50695e366373b34975d59c2912f2cab8"
+      },
+      "archivedBytes": 135635,
+      "archivedSha256": "248ec2f091ba708e549a8c049664bd6b50695e366373b34975d59c2912f2cab8",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "reference-review/youtube-2m29s.jpg",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-reference-refresh-20261005/youtube-2m29s.jpg",
+        "bytes": 116534,
+        "sha256": "e47c00bcd40ea0fe559b14c4c7340ae4224a754bfa6f945d2ae0606781f7ebd6"
+      },
+      "archivedBytes": 116534,
+      "archivedSha256": "e47c00bcd40ea0fe559b14c4c7340ae4224a754bfa6f945d2ae0606781f7ebd6",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "reference-review/youtube-2m34s-extra.jpg",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-reference-refresh-20261005/youtube-2m34s-extra.jpg",
+        "bytes": 117542,
+        "sha256": "42fddb1db744d31c8bdac52117319786aabd3e8bc5702981e3a9de9021d7cd68"
+      },
+      "archivedBytes": 117542,
+      "archivedSha256": "42fddb1db744d31c8bdac52117319786aabd3e8bc5702981e3a9de9021d7cd68",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "reference-review/visual-acceptance.md",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-reference-refresh-20261005/visual-acceptance.md",
+        "bytes": 5170,
+        "sha256": "bdb8c7469765ea684c6b2b9c682ed349f7e414e8bc32a9cdc8ce4b646cbaaca1"
+      },
+      "archivedBytes": 5170,
+      "archivedSha256": "bdb8c7469765ea684c6b2b9c682ed349f7e414e8bc32a9cdc8ce4b646cbaaca1",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "reference-review/manifest.json",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-reference-refresh-20261005/manifest.json",
+        "bytes": 1981,
+        "sha256": "4539addc4c1a9ee02b340b7f6de082ffcee493947aefe1e4c43d2c51c5b5f0f9"
+      },
+      "archivedBytes": 1981,
+      "archivedSha256": "4539addc4c1a9ee02b340b7f6de082ffcee493947aefe1e4c43d2c51c5b5f0f9",
+      "decompressedBytesVerified": true
+    },
+    {
+      "path": "archive-builder.py",
+      "encoding": "identity",
+      "original": {
+        "file": "/private/tmp/tube-c-mature-and-steering-archive-20261005/build.py",
+        "bytes": 26527,
+        "sha256": "db65dd6a4f6570384242197d5e2a05b243b32539d25305bd3da13dc5b94b95e8"
+      },
+      "archivedBytes": 26527,
+      "archivedSha256": "db65dd6a4f6570384242197d5e2a05b243b32539d25305bd3da13dc5b94b95e8",
+      "decompressedBytesVerified": true
+    }
+  ],
+  "derived": {
+    "README.md": {
+      "bytes": 4624,
+      "sha256": "421f39975646c7603c0fe1dd91a3f48b69f91a03b90e20535aeda03b4fbb79d9"
+    },
+    "summary.json": {
+      "bytes": 17993,
+      "sha256": "2acee77936c589a3d30d6ea4d022c6719d437e6a050c1769a3e25975820a9b4f"
+    }
+  },
+  "directPrecedingArchiveManifest": {
+    "file": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-formation-and-gameplay-2026-10-05/manifest.json",
+    "bytes": 86923,
+    "sha256": "b7fa72297280256bc3825ff3abcc3698c843f745619299c23a8f12fdf3255911"
+  },
+  "externalReferences": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+        "bytes": 6474,
+        "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/direct-borrowed-helpers/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "archivedBytes": 6474,
+      "archivedSha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/direct-borrowed-helpers/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "archivedBytes": 7064,
+      "archivedSha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+        "bytes": 4774,
+        "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/direct-borrowed-helpers/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "archivedBytes": 4774,
+      "archivedSha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+        "bytes": 11089,
+        "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/direct-borrowed-helpers/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "archivedBytes": 11089,
+      "archivedSha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+        "bytes": 3726,
+        "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/direct-borrowed-helpers/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "archivedBytes": 3726,
+      "archivedSha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+        "bytes": 4020,
+        "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/direct-borrowed-helpers/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "archivedBytes": 4020,
+      "archivedSha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+        "bytes": 2994,
+        "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/direct-borrowed-helpers/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "archivedBytes": 2994,
+      "archivedSha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+        "bytes": 16704,
+        "sha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/direct-borrowed-helpers/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+      "archivedBytes": 16704,
+      "archivedSha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+        "bytes": 1053,
+        "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/direct-borrowed-helpers/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "archivedBytes": 1053,
+      "archivedSha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/seal.json",
+        "bytes": 178692,
+        "sha256": "fd75570dfbb7224eb4b7b648fcd41c6759c7eb5e94d7e81ed7b5c988edbd6090"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/preparation/seal.json",
+      "archivedBytes": 178692,
+      "archivedSha256": "fd75570dfbb7224eb4b7b648fcd41c6759c7eb5e94d7e81ed7b5c988edbd6090",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/root-complete-build-result.json",
+        "bytes": 181652,
+        "sha256": "f82a41adb1f2f48006587a1cad912d2243d1a4bed93fc28d08dc79a336a6d8f7"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/preparation/root-complete-build-result.json",
+      "archivedBytes": 181652,
+      "archivedSha256": "f82a41adb1f2f48006587a1cad912d2243d1a4bed93fc28d08dc79a336a6d8f7",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/root-diagnostic-build-result.json",
+        "bytes": 35375,
+        "sha256": "a7865f10a887387c397af2298360f18bea882e9f26e5be1582fdcd29d542edf0"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/preparation/root-diagnostic-build-result.json",
+      "archivedBytes": 35375,
+      "archivedSha256": "a7865f10a887387c397af2298360f18bea882e9f26e5be1582fdcd29d542edf0",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/diagnostic-autopilot.mjs",
+        "bytes": 348510,
+        "sha256": "cdf62d8f7cad69477eaaa7eb45c68490f3d4a60542d7bf841e97421a7af76055"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/preparation/diagnostic-autopilot.mjs",
+      "archivedBytes": 348510,
+      "archivedSha256": "cdf62d8f7cad69477eaaa7eb45c68490f3d4a60542d7bf841e97421a7af76055",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json",
+        "bytes": 18331566,
+        "sha256": "850e86557f7e3be891b9ff11036bafb5bdaa3364fee78ee99cd814271cda58c2"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/capture/report.json.gz",
+      "archivedBytes": 3045655,
+      "archivedSha256": "e454d7430370312231d29622f0853fbcac766fb737c291064bc5cc4f69dbc6ae",
+      "encoding": "gzip",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first-owner.json",
+        "bytes": 3457,
+        "sha256": "1e24c8c0b4135f1eef96adb17bef8c03fd1e9ce56df1597761c20ea6ee84c522"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/candidate-first-owner.json",
+      "archivedBytes": 3457,
+      "archivedSha256": "1e24c8c0b4135f1eef96adb17bef8c03fd1e9ce56df1597761c20ea6ee84c522",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/source-readiness.json",
+        "bytes": 3220,
+        "sha256": "26551768d7fd93d480c6d140027e585ddcf872caccf0502e8ee92778b639861b"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/preparation/source-readiness.json",
+      "archivedBytes": 3220,
+      "archivedSha256": "26551768d7fd93d480c6d140027e585ddcf872caccf0502e8ee92778b639861b",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/replay-reference.json",
+        "bytes": 13142,
+        "sha256": "6fed8d003e3acf33bd02c64b514114d3c9178a40099cb8e9f6bc8c1032075c31"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/preparation/replay-reference.json",
+      "archivedBytes": 13142,
+      "archivedSha256": "6fed8d003e3acf33bd02c64b514114d3c9178a40099cb8e9f6bc8c1032075c31",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/observer-fields.json",
+        "bytes": 17859,
+        "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/preparation/observer-fields.json",
+      "archivedBytes": 17859,
+      "archivedSha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8",
+      "encoding": "identity",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/steps.ndjson",
+        "bytes": 18016119,
+        "sha256": "bb46ce5e06fc2dcd4be8253a9c9a7356adbd914ae8f6428b49cee57c6944e6a1"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/capture/steps.ndjson.gz",
+      "archivedBytes": 2970738,
+      "archivedSha256": "077082efe77aa8c259d443eb36322df25adce39c3e3042db3b4a3235cc26fc0e",
+      "encoding": "gzip",
+      "decompressedBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/loft-initial.json",
+        "bytes": 1099036,
+        "sha256": "c1f06bbc0311dcbc7c8348e60b32bcccd9af5b0cf15314209580793d50bb0374"
+      },
+      "archive": "../tube-formation-and-gameplay-2026-10-05/known-failure/capture/loft-initial.json.gz",
+      "archivedBytes": 231490,
+      "archivedSha256": "28d8e2829c5a3508034f2428f21a2ea722261689e7adc22df2e3fb3d2816ddee",
+      "encoding": "gzip",
+      "decompressedBytesVerified": true
+    }
+  ],
+  "correctedTerminalConfirmedByRoot": true,
+  "initialFailedSteeringOwnerAccepted": false,
+  "tubePassageAccepted": false,
+  "visualQualityAccepted": false,
+  "performanceAccepted": false,
+  "originalOctober3MovCopied": false,
+  "reference2m34SupplementaryOutsideRequestedInterval": true,
+  "runtimeTreeCopied": false,
+  "dependenciesCopied": false,
+  "distCopied": false
+}

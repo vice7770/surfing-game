@@ -1,0 +1,185 @@
+{
+  "schema": "c-line-steering-clock-preparation-inputs/v1",
+  "rootBound": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "approvedCandidateSeal": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/seal.json",
+    "bytes": 178692,
+    "sha256": "fd75570dfbb7224eb4b7b648fcd41c6759c7eb5e94d7e81ed7b5c988edbd6090"
+  },
+  "approvedApplicationBuild": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/root-complete-build-result.json",
+    "bytes": 181652,
+    "sha256": "f82a41adb1f2f48006587a1cad912d2243d1a4bed93fc28d08dc79a336a6d8f7"
+  },
+  "approvedDiagnosticBuild": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 35375,
+    "sha256": "a7865f10a887387c397af2298360f18bea882e9f26e5be1582fdcd29d542edf0"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348510,
+    "sha256": "cdf62d8f7cad69477eaaa7eb45c68490f3d4a60542d7bf841e97421a7af76055"
+  },
+  "acceptedReferenceReport": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json",
+    "bytes": 18331566,
+    "sha256": "850e86557f7e3be891b9ff11036bafb5bdaa3364fee78ee99cd814271cda58c2"
+  },
+  "acceptedReferenceTrace": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/steps.ndjson",
+    "bytes": 18016119,
+    "sha256": "bb46ce5e06fc2dcd4be8253a9c9a7356adbd914ae8f6428b49cee57c6944e6a1"
+  },
+  "acceptedReferenceOwner": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first-owner.json",
+    "bytes": 3457,
+    "sha256": "1e24c8c0b4135f1eef96adb17bef8c03fd1e9ce56df1597761c20ea6ee84c522"
+  },
+  "replayReference": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/replay-reference.json",
+    "bytes": 13142,
+    "sha256": "6fed8d003e3acf33bd02c64b514114d3c9178a40099cb8e9f6bc8c1032075c31"
+  },
+  "observerFields": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+  },
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/source-readiness.json",
+    "bytes": 3220,
+    "sha256": "26551768d7fd93d480c6d140027e585ddcf872caccf0502e8ee92778b639861b"
+  },
+  "borrowedHelperPins": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "bytes": 3726,
+      "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+      "bytes": 16704,
+      "sha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "bytes": 1053,
+      "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+    }
+  ],
+  "immediateHarnessPins": [
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/native.mjs",
+      "bytes": 32239,
+      "sha256": "8022c3984a8afa6beb855e33b7e0f5276cd70d798ab32b0c910c7f8075156b61"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/run.py",
+      "bytes": 20624,
+      "sha256": "d9fd864b01e82c8a0dad4494151d9f5a7db2a5a675078ae2f1a5529cfc424d86"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/authority.py",
+      "bytes": 8160,
+      "sha256": "ad28eb0111c113a69855c6fff605afe3f119b46d0a15ac1fb69c40d5bb19a8ec"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-checks.py",
+      "bytes": 1342,
+      "sha256": "36e3925a551b33ace12b750303e1dd7b3fb86612f5bd3913bde0240acabd356f"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-native-20261005/root-seal.py",
+      "bytes": 2966,
+      "sha256": "e91fd77c0e83afc189305ead760ebac128be524df3bdf52bf5b63012992f3ff3"
+    }
+  ],
+  "prefix": {
+    "lastRequiredStep": 1372,
+    "requiredFirstStandingStep": 1372,
+    "rows": [
+      "input",
+      "seaTime",
+      "physicalSeconds",
+      "clocks",
+      "boardPose",
+      "riderPoints",
+      "riderWords",
+      "displayedBoard",
+      "displayedRiderPoints"
+    ],
+    "ridePhaseAlsoExact": true,
+    "physicalClockKeys": [
+      "workerSeaTime",
+      "visualClock",
+      "waterTime"
+    ],
+    "surfaceRevisionPolicy": "Exact increments relative to each initial revision; absolute values retained, initial offset declared, no counter writes.",
+    "initialLoftArrayCount": 37,
+    "initialGeometryRequired": true
+  },
+  "scope": "One post-first-standing input intervention only. Same accepted C source/app/diagnostic bytes; no build, geometry or contact change; no historical helper recursion.",
+  "acceptedReferenceInitialLoft": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/loft-initial.json",
+    "bytes": 1099036,
+    "sha256": "c1f06bbc0311dcbc7c8348e60b32bcccd9af5b0cf15314209580793d50bb0374"
+  },
+  "previousFailedReport": {
+    "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first/report.json",
+    "bytes": 162083,
+    "sha256": "155771a98539b1f0b5bd43c4bc8058e244f0ad91f5c0149b01affaf46447020c"
+  },
+  "previousFailedOwner": {
+    "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first-owner.json",
+    "bytes": 3610,
+    "sha256": "7d790e107b90182dc26c6e00512f775471c6bbab73719cd85ac9e7338814b973"
+  },
+  "cacheCounterSource": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/source/src/scene/WaterSurface.ts",
+    "bytes": 39192,
+    "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+  },
+  "previousFailureQualification": "Terminal rejected before any input: absolute initial surfaceRevision4 versus5. Three physical clocks and initial actor output equal. No gameplay outcome; prior failed output preserved.",
+  "previousFailureRootQualification": {
+    "file": "/private/tmp/tube-c-line-steering-initial-qualification-20261005/result.json",
+    "bytes": 2220,
+    "sha256": "55af8f04ab7412b463b1ee418959be2963ccb6ac26d384ee20910e4df7130537"
+  },
+  "bindingPerformedByRoot": true,
+  "applicationRebuilt": false,
+  "geometryOrPhysicsChanged": false
+}

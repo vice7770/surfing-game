@@ -1,0 +1,53 @@
+{
+  "schema": "c-mature-core-root-syntax-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourcePostUnchanged": true,
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/mature-mouth.mjs",
+      "bytes": 21511,
+      "sha256": "e4bdb8fb8038672bb501cacb732b8a13f3bb56bea88e6fb3d02a966533919e00"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/inspection-bridge.mjs",
+      "bytes": 3228,
+      "sha256": "0751c8d4a60b5c238edc2a0e6003d69ac30a63e939f027e67ef710b54279d2ee"
+    }
+  ],
+  "checks": [
+    {
+      "name": "mature-mouth.mjs",
+      "run": true,
+      "command": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/mature-mouth.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.03944383398629725,
+      "log": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-helper-logs/mature-mouth.mjs.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "inspection-bridge.mjs",
+      "run": true,
+      "command": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/inspection-bridge.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.03683358302805573,
+      "log": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-helper-logs/inspection-bridge.mjs.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ]
+}

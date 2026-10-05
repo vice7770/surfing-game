@@ -1,0 +1,49 @@
+"GET /?diagnostics HTTP/1.1" 200 -
+"GET /assets/index-DA8NEfOT.css HTTP/1.1" 200 -
+"GET /assets/index-DO0JE-CS.js HTTP/1.1" 200 -
+"GET /assets/WorkerSurfZone-JUe_KG8I.js HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/surfers/surfer1.glb HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-BTtrtSmG.js HTTP/1.1" 200 -
+code 404, message Not Found
+"GET /favicon.ico HTTP/1.1" 404 -
+"GET /assets/skies/qwantani_sunset_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/skies/qwantani_sunset_puresky.jpg HTTP/1.1" 200 -
+"GET /?diagnostics HTTP/1.1" 200 -
+"GET /assets/index-DO0JE-CS.js HTTP/1.1" 200 -
+"GET /assets/index-DA8NEfOT.css HTTP/1.1" 200 -
+"GET /assets/WorkerSurfZone-JUe_KG8I.js HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/surfers/surfer1.glb HTTP/1.1" 200 -
+"GET /barrels/pad19-a20-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a45-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a30-l12.bin HTTP/1.1" 200 -
+"GET /barrels/periodic-padang19s-l12.bin HTTP/1.1" 200 -
+"GET /assets/skies/qwantani_sunset_puresky.jpg HTTP/1.1" 200 -
+"GET /assets/skies/qwantani_sunset_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-BTtrtSmG.js HTTP/1.1" 200 -
+"GET /assets/surfers/surfer1.glb HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-BTtrtSmG.js HTTP/1.1" 200 -
+"GET /assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg HTTP/1.1" 200 -
+"GET /assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-BTtrtSmG.js HTTP/1.1" 200 -
+"GET /diagnostic-autopilot.mjs HTTP/1.1" 200 -
+{"progressSteps":120,"phase":"prone","entry":false,"detectorMs":96.30000030994415}
+{"progressSteps":240,"phase":"prone","entry":false,"detectorMs":186.80000013113022}
+{"progressSteps":360,"phase":"prone","entry":false,"detectorMs":332.3000004887581}
+{"progressSteps":480,"phase":"prone","entry":false,"detectorMs":570.800000667572}
+{"progressSteps":600,"phase":"prone","entry":false,"detectorMs":848.600000679493}
+{"progressSteps":720,"phase":"prone","entry":false,"detectorMs":1005.9000010490417}
+{"progressSteps":840,"phase":"prone","entry":false,"detectorMs":1093.6000009179115}
+{"progressSteps":960,"phase":"prone","entry":false,"detectorMs":1172.500000834465}
+{"progressSteps":1080,"phase":"prone","entry":false,"detectorMs":1293.6000009179115}
+{"progressSteps":1200,"phase":"prone","entry":false,"detectorMs":1410.0000007152557}
+{"progressSteps":1320,"phase":"push","entry":false,"detectorMs":1515.3000006079674}
+{"progressSteps":1440,"phase":"standing","entry":false,"detectorMs":2844.10000115633}

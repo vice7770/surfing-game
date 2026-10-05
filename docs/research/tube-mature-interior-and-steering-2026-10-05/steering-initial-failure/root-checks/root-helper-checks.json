@@ -1,0 +1,54 @@
+{
+  "schema": "c-line-steering-root-helper-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "checks": {
+    "nativeSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-c-line-steering-native-20261005/native.mjs"
+      ],
+      "elapsedSeconds": 0.07496999995782971,
+      "log": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-logs/nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "controlSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-c-line-steering-native-20261005/control-policy.mjs"
+      ],
+      "elapsedSeconds": 0.07648420799523592,
+      "log": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-logs/controlSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "sourceOnlyOwner": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "python3",
+        "/private/tmp/tube-c-line-steering-native-20261005/run.py",
+        "--arm",
+        "candidate"
+      ],
+      "elapsedSeconds": 0.23671620798995718,
+      "log": {
+        "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-logs/sourceOnlyOwner.log",
+        "bytes": 496,
+        "sha256": "bf193d973b0e0901fc91d95d5bd904cc306d81ff5973f0afd02699b7f0975c29"
+      }
+    }
+  }
+}

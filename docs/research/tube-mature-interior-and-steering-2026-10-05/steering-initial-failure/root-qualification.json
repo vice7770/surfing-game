@@ -1,0 +1,51 @@
+{
+  "schema": "c-line-steering-initial-root-qualification/v1",
+  "complete": true,
+  "originalOwnerAccepted": false,
+  "nativeGameplayResultAvailable": false,
+  "inputsTaken": 0,
+  "originalFailure": "AssertionError [ERR_ASSERTION]: Exact accepted C initial clocks\n+ actual - expected\n\n  {\n+   surfaceRevision: 4,\n-   surfaceRevision: 5,\n    visualClock: 276.3293560552737,\n    waterTime: 276.3293560552737,\n    workerSeaTime: 276.3293560552737\n  }\n\n    at compareInitialPrefix (file:///private/tmp/tube-c-line-steering-native-20261005/native.mjs:56:220)\n    at file:///private/tmp/tube-c-line-steering-native-20261005/native.mjs:163:101",
+  "report": {
+    "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first/report.json",
+    "bytes": 162083,
+    "sha256": "155771a98539b1f0b5bd43c4bc8058e244f0ad91f5c0149b01affaf46447020c"
+  },
+  "owner": {
+    "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first-owner.json",
+    "bytes": 3610,
+    "sha256": "7d790e107b90182dc26c6e00512f775471c6bbab73719cd85ac9e7338814b973"
+  },
+  "reference": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json",
+    "bytes": 18331566,
+    "sha256": "850e86557f7e3be891b9ff11036bafb5bdaa3364fee78ee99cd814271cda58c2"
+  },
+  "source": {
+    "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/WaterSurface.ts",
+    "bytes": 39192,
+    "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+  },
+  "initialConfigExact": true,
+  "initialPublishedBodyFieldsExact": {
+    "seaTime": true,
+    "boardPose": true,
+    "riderPoints": true,
+    "riderWords": true,
+    "displayedBoard": true,
+    "displayedRiderPoints": true
+  },
+  "physicalAndVisualClockFieldsExact": {
+    "workerSeaTime": true,
+    "visualClock": true,
+    "waterTime": true
+  },
+  "cacheRevision": {
+    "actual": 4,
+    "reference": 5,
+    "meaning": "Local drawn-surface rewrite generation, incremented when drawing data is rewritten; absolute startup counter is not a physical clock."
+  },
+  "directSourceBuildHelpersPostUnchanged": true,
+  "independentResourcesClosed": true,
+  "humanPreviewsPreserved": true,
+  "tubeEntryOrImprovementClaim": false
+}

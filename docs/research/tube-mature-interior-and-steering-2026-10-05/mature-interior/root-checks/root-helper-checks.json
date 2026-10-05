@@ -1,0 +1,42 @@
+{
+  "schema": "c-mature-core-native-root-helper-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourcePostUnchanged": true,
+  "checks": {
+    "nativeSyntax": {
+      "name": "nativeSyntax",
+      "run": true,
+      "command": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/native.mjs"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.038832625024951994,
+      "log": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-helper-logs/nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "sourceOnlyOwner": {
+      "name": "sourceOnlyOwner",
+      "run": true,
+      "command": [
+        "python3",
+        "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/run.py",
+        "--arm",
+        "candidate"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.17999174998840317,
+      "log": {
+        "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/root-helper-logs/sourceOnlyOwner.log",
+        "bytes": 635,
+        "sha256": "9a153b404df81a1c407241b10c66616921d4e63f7258fc13c1c84bf1d77714d7"
+      }
+    }
+  }
+}

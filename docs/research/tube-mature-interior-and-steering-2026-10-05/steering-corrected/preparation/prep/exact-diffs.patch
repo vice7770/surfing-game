@@ -1,0 +1,478 @@
+--- /private/tmp/tube-c-line-steering-native-20261005/authority.py
++++ /private/tmp/tube-c-line-steering-clock-20261005/authority.py
+@@ -1,12 +1,13 @@
+ """Direct accepted C build/diagnostic/reference and this input helper; no historical recursion."""
+ from pathlib import Path
+-import hashlib,json
+-W=Path('/private/tmp/tube-c-line-steering-native-20261005')
++import hashlib,json,base64
++W=Path('/private/tmp/tube-c-line-steering-clock-20261005')
+ P=Path('/private/tmp/tube-c-formation-native-20261005')
+ S=Path('/private/tmp/tube-c-formation-trial-20261005/source')
+ BUILD_ID='tube-c-formation-20261005'
+ LIMITS={'wholeSeconds':660,'commandSeconds':648,'nativeSeconds':635,'startupMilliseconds':180000,'cleanupSeconds':7,'reportBytes':32*1024*1024,'traceBytes':24*1024*1024,'ownedPorts':[4301,9711],'protectedPorts':[4310,4311,4312,4313,4314]}
+ PREFIX_FIELDS=['input','seaTime','physicalSeconds','clocks','boardPose','riderPoints','riderWords','displayedBoard','displayedRiderPoints']
++PHYSICAL_CLOCK_KEYS=['workerSeaTime','visualClock','waterTime']
+ def record(p):
+  p=Path(p);b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ def pin(q):
+@@ -15,8 +16,8 @@
+  return b
+ def load(q):return json.loads(pin(q))
+ def direct_inputs(t):
+- assert t['schema']=='c-line-steering-preparation-inputs/v1' and t['sourceOnly'] is True
+- for key,name in [('approvedCandidateSeal','seal.json'),('approvedApplicationBuild','root-complete-build-result.json'),('approvedDiagnosticBuild','root-diagnostic-build-result.json'),('diagnosticModule','diagnostic-autopilot.mjs'),('acceptedReferenceReport','candidate-first/report.json'),('acceptedReferenceTrace','candidate-first/steps.ndjson'),('acceptedReferenceOwner','candidate-first-owner.json'),('replayReference','replay-reference.json'),('observerFields','observer-fields.json'),('sourceReadiness','source-readiness.json')]:
++ assert t['schema']=='c-line-steering-clock-preparation-inputs/v1' and t['sourceOnly'] is True
++ for key,name in [('approvedCandidateSeal','seal.json'),('approvedApplicationBuild','root-complete-build-result.json'),('approvedDiagnosticBuild','root-diagnostic-build-result.json'),('diagnosticModule','diagnostic-autopilot.mjs'),('acceptedReferenceReport','candidate-first/report.json'),('acceptedReferenceTrace','candidate-first/steps.ndjson'),('acceptedReferenceOwner','candidate-first-owner.json'),('replayReference','replay-reference.json'),('observerFields','observer-fields.json'),('sourceReadiness','source-readiness.json'),('acceptedReferenceInitialLoft','candidate-first/loft-initial.json')]:
+   assert t[key]['file']==str(P/name);pin(t[key])
+  for q in t['borrowedHelperPins']+t['immediateHarnessPins']:pin(q)
+  assert len(t['borrowedHelperPins'])==9 and len(t['immediateHarnessPins'])==5
+@@ -45,28 +46,47 @@
+  assert ref['source']==arm and ref['diagnosticModule']==t['diagnosticModule'] and ref['stepCount']==len(ref['steps'])==1516
+  assert ref['initial']['config']['seed']==6238 and ref['overrides']=={'seed':6238,'componentCount':64,'dx':2,'fineSpacing':1}
+  first=next(row['step']for row in ref['steps']if row['ride']['phase']=='standing');assert first==1372
+- assert t['prefix']=={'lastRequiredStep':1372,'requiredFirstStandingStep':1372,'rows':PREFIX_FIELDS,'ridePhaseAlsoExact':True}
++ assert t['prefix']=={'lastRequiredStep':1372,'requiredFirstStandingStep':1372,'rows':PREFIX_FIELDS,'ridePhaseAlsoExact':True,'physicalClockKeys':PHYSICAL_CLOCK_KEYS,'surfaceRevisionPolicy':'Exact increments relative to each initial revision; absolute values retained, initial offset declared, no counter writes.','initialLoftArrayCount':37,'initialGeometryRequired':True}
++ loft=load(t['acceptedReferenceInitialLoft']);assert loft['schema']=='bounded-C-complete-drawn-loft-words/v1' and loft['label']=='initial' and len(loft['arrays'])==37
++ assert loft['epoch']['step']==0 and loft['epoch']['seaTime']==ref['initialBody']['seaTime'] and loft['epoch']['surfaceRevision']==ref['initialBody']['clocks']['surfaceRevision']
++ assert all(loft['nonmutation'].values()) and loft['arrayIdentitiesAndWordsUnchanged'] is True
++ stub=next(q for q in ref['loftSnapshots']if q['label']=='initial');assert stub['bytes']==t['acceptedReferenceInitialLoft']['bytes'] and stub['sha256']==t['acceptedReferenceInitialLoft']['sha256'] and stub['counts']==loft['counts']
++ for a in loft['arrays'].values():assert len(base64.b64decode(a['data'],validate=True))==a['byteLength']
++ assert t['cacheCounterSource']['file']==str(S/'src/scene/WaterSurface.ts') and t['cacheCounterSource'] in build['sourcePins'];pin(t['cacheCounterSource'])
++ failed=load(t['previousFailedReport']);failed_owner=load(t['previousFailedOwner']);qualified=load(t['previousFailureRootQualification'])
++ assert t['previousFailureRootQualification']['file']=='/private/tmp/tube-c-line-steering-initial-qualification-20261005/result.json'
++ assert qualified['schema']=='c-line-steering-initial-root-qualification/v1' and qualified['complete'] is True and qualified['originalOwnerAccepted'] is False and qualified['nativeGameplayResultAvailable'] is False and qualified['inputsTaken']==0
++ assert qualified['report']==t['previousFailedReport'] and qualified['owner']==t['previousFailedOwner'] and qualified['reference']==t['acceptedReferenceReport']
++ assert qualified['initialConfigExact'] is True and all(qualified['initialPublishedBodyFieldsExact'].values()) and all(qualified['physicalAndVisualClockFieldsExact'].values())
++ assert qualified['directSourceBuildHelpersPostUnchanged'] is True and qualified['independentResourcesClosed'] is True and qualified['humanPreviewsPreserved'] is True and qualified['tubeEntryOrImprovementClaim'] is False
++ assert qualified['source']['bytes']==t['cacheCounterSource']['bytes'] and qualified['source']['sha256']==t['cacheCounterSource']['sha256']
++ assert t['previousFailedReport']['file']=='/private/tmp/tube-c-line-steering-native-20261005/candidate-first/report.json' and t['previousFailedOwner']['file']=='/private/tmp/tube-c-line-steering-native-20261005/candidate-first-owner.json'
++ assert failed['schema']=='c-line-steering-native/v1' and failed['complete'] is False and failed['stepCount']==0 and failed['steps']==[] and failed['chromeClosed'] is True
++ assert 'Exact accepted C initial clocks' in failed['firstFailure'] and failed['initial']['config']==ref['initial']['config']
++ assert all(failed['initialBody']['clocks'][k]==ref['initialBody']['clocks'][k]for k in PHYSICAL_CLOCK_KEYS) and failed['initialBody']['clocks']['surfaceRevision']==4 and ref['initialBody']['clocks']['surfaceRevision']==5
++ assert all(failed['initialBody'][k]==ref['initialBody'][k]for k in ['boardPose','riderPoints','riderWords','displayedBoard','displayedRiderPoints'])
++ assert failed_owner['schema']=='c-line-steering-finite-owner/v1' and failed_owner['complete'] is False and failed_owner['exitCode']==1 and failed_owner['independentClosureValid'] is True and failed_owner['protectedPortsPreserved'] is True
+  assert [json.loads(line)for line in pin(t['acceptedReferenceTrace']).splitlines()]==ref['steps']
+  assert raw['environment']['node']['file']=='/opt/homebrew/bin/node' and raw['environment']['chrome']['file']=='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+  for q in raw['environment'].values():pin(q)
+  return raw,build,d,ref
+ def preparation():
+- f=json.loads((W/'prep/freeze.json').read_text());assert f['schema']=='c-line-steering-source-freeze/v1' and f['sourceOnly'] is True and f['rootExecutionPending'] is True
++ f=json.loads((W/'prep/freeze.json').read_text());assert f['schema']=='c-line-steering-clock-source-freeze/v1' and f['sourceOnly'] is True and f['rootExecutionPending'] is True
+  assert f['files']==len(f['pins'])==len({q['file']for q in f['pins']})
+  for q in f['pins']:assert Path(q['file']).is_relative_to(W);pin(q)
+  return f
+ def sealed(arm):
+  body=(W/'seal.json').read_bytes();assert len(body)<=1024*1024
+- s=json.loads(body);assert s['schema']=='c-line-steering-root-seal/v1' and s['complete'] is True and s['rootAuthorized'] is True and arm=='candidate' and s['limits']==LIMITS
++ s=json.loads(body);assert s['schema']=='c-line-steering-clock-root-seal/v1' and s['complete'] is True and s['rootAuthorized'] is True and arm=='candidate' and s['limits']==LIMITS
+  preparation();assert s['preparationFreeze']==record(W/'prep/freeze.json')
+  t=load(s['preparationInputs']);assert s['preparationInputs']['file']==str(W/'inputs.json') and t['rootBound'] is True
+  raw,build,d,ref=direct_inputs(t)
+- for key in ('approvedCandidateSeal','approvedApplicationBuild','approvedDiagnosticBuild','diagnosticModule','acceptedReferenceReport','acceptedReferenceTrace','acceptedReferenceOwner','replayReference','observerFields','sourceReadiness'):assert s[key]==t[key]
++ for key in ('approvedCandidateSeal','approvedApplicationBuild','approvedDiagnosticBuild','diagnosticModule','acceptedReferenceReport','acceptedReferenceTrace','acceptedReferenceOwner','replayReference','observerFields','sourceReadiness','acceptedReferenceInitialLoft','previousFailedReport','previousFailedOwner','cacheCounterSource','previousFailureRootQualification'):assert s[key]==t[key]
+  assert s['arms']['candidate']==raw['arms']['candidate'] and s['priorV4Report']==raw['priorV4Report'] and s['priorV6Report']==raw['priorV6Report'] and s['environment']==raw['environment']
+  for q in s['helperPins']:assert Path(q['file']).is_relative_to(W);pin(q)
+  assert s['helperPins']==json.loads((W/'prep/freeze.json').read_text())['pins']
+- ready=load(s['helperReadiness']);assert ready['schema']=='c-line-steering-root-readiness/v1' and ready['complete'] is True and ready['resourcesStarted'] is False and ready['portsProbed'] is False
+- checks=load(s['rootHelperChecks']);assert checks['schema']=='c-line-steering-root-helper-checks/v1' and checks['complete'] is True and checks['resourcesStarted'] is False and checks['portsProbed'] is False
++ ready=load(s['helperReadiness']);assert ready['schema']=='c-line-steering-clock-root-readiness/v1' and ready['complete'] is True and ready['resourcesStarted'] is False and ready['portsProbed'] is False
++ checks=load(s['rootHelperChecks']);assert checks['schema']=='c-line-steering-clock-root-helper-checks/v1' and checks['complete'] is True and checks['resourcesStarted'] is False and checks['portsProbed'] is False
+  assert set(checks['checks'])=={'nativeSyntax','controlSyntax','sourceOnlyOwner'}
+  for q in checks['checks'].values():assert q['run'] is True and q['exitCode']==0;pin(q['log'])
+  assert s['applicationRebuilt'] is False and s['geometryOrPhysicsChanged'] is False and s['gameplayAcceptance'] is False and s['tubePassageAcceptance'] is False and s['productionAdoption'] is False
+--- /private/tmp/tube-c-line-steering-native-20261005/bind-inputs.py
++++ /private/tmp/tube-c-line-steering-clock-20261005/bind-inputs.py
+@@ -8,5 +8,5 @@
+  direct_inputs(t)
+  t.update(rootBound=True,resourcesStarted=False,portsProbed=False,bindingPerformedByRoot=True,applicationRebuilt=False,geometryOrPhysicsChanged=False)
+  (W/'inputs.json').write_text(json.dumps(t,indent=2)+'\n')
+- print(json.dumps({'schema':'c-line-steering-root-binding/v1','complete':True,'inputs':record(W/'inputs.json'),'resourcesStarted':False,'portsProbed':False,'nativeRun':False}))
++ print(json.dumps({'schema':'c-line-steering-clock-root-binding/v1','complete':True,'inputs':record(W/'inputs.json'),'resourcesStarted':False,'portsProbed':False,'nativeRun':False}))
+ if __name__=='__main__':main()
+--- /private/tmp/tube-c-line-steering-native-20261005/native.mjs
++++ /private/tmp/tube-c-line-steering-clock-20261005/native.mjs
+@@ -14,7 +14,7 @@
+ import { installFollowerCamera } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs';
+ const OPERAND_METADATA=JSON.parse(readFileSync('/private/tmp/tube-c-formation-native-20261005/observer-fields.json'));const OPERAND_FIELDS=OPERAND_METADATA.allFields;
+ assert.equal(OPERAND_FIELDS.length,143);assert.equal(OPERAND_METADATA.oldFields.length,102);assert.equal(OPERAND_METADATA.newFields.length,41);assert.equal(OPERAND_METADATA.availabilityMarker,'standingTrialAvailable');
+-const WORK='/private/tmp/tube-c-line-steering-native-20261005',PORT=4301,CDP=9711,DT=1/60;
++const WORK='/private/tmp/tube-c-line-steering-clock-20261005',PORT=4301,CDP=9711,DT=1/60;
+ const args=Object.fromEntries(process.argv.slice(2).map(a=>{const i=a.indexOf('=');assert(a.startsWith('--')&&i>2);return[a.slice(2,i),a.slice(i+1)];}));
+ assert.equal(args.run,'true','Only the bounded Python owner may arm');assert.equal(args.arm,'candidate');assert.equal(process.env.BOUNDED_C_OWNER_ARM,'candidate');const seal=JSON.parse(readFileSync(WORK+'/seal.json'));assert.equal(process.env.BOUNDED_C_OWNER_SEAL_SHA,createHash('sha256').update(readFileSync(WORK+'/seal.json')).digest('hex')); 
+ assert.equal(args.url,`http://127.0.0.1:${PORT}/?diagnostics`);
+@@ -27,11 +27,12 @@
+ const EXPECTED_CONFIG={componentCount:64,dx:2,fineSpacing:1,spreading:150};
+ const REFERENCE_BYTES=readFileSync(seal.acceptedReferenceReport.file);assert.equal(REFERENCE_BYTES.length,seal.acceptedReferenceReport.bytes);assert.equal(createHash('sha256').update(REFERENCE_BYTES).digest('hex'),seal.acceptedReferenceReport.sha256);
+ const ACCEPTED_C=JSON.parse(REFERENCE_BYTES);assert.equal(ACCEPTED_C.schema,'c-formation-native/v1');assert.equal(ACCEPTED_C.complete,true);assert.equal(ACCEPTED_C.firstFailure,null);assert.equal(ACCEPTED_C.steps.find(r=>r.ride.phase==='standing').step,1372);
+-const PREFIX_THROUGH=1372,PREFIX_FIELDS=['input','seaTime','physicalSeconds','clocks','boardPose','riderPoints','riderWords','displayedBoard','displayedRiderPoints'],INITIAL_PREFIX_FIELDS=PREFIX_FIELDS.filter(k=>!['input','physicalSeconds'].includes(k));
++const PREFIX_THROUGH=1372,PREFIX_FIELDS=['input','seaTime','physicalSeconds','clocks','boardPose','riderPoints','riderWords','displayedBoard','displayedRiderPoints'],INITIAL_PREFIX_FIELDS=PREFIX_FIELDS.filter(k=>!['input','physicalSeconds'].includes(k)),PHYSICAL_CLOCK_KEYS=['workerSeaTime','visualClock','waterTime'];
++const INITIAL_LOFT_BYTES=readFileSync(seal.acceptedReferenceInitialLoft.file);assert.equal(INITIAL_LOFT_BYTES.length,seal.acceptedReferenceInitialLoft.bytes);assert.equal(createHash('sha256').update(INITIAL_LOFT_BYTES).digest('hex'),seal.acceptedReferenceInitialLoft.sha256);const ACCEPTED_INITIAL_LOFT=JSON.parse(INITIAL_LOFT_BYTES);assert.equal(Object.keys(ACCEPTED_INITIAL_LOFT.arrays).length,37);
+ const GRAPHICS={preset:'custom',renderScale:1,nativePixelDensity:true,frameLimit:60,waterSimulation:'accurate',seaDetail:'rich',
+  caustics:true,sprayMist:true,oceanView:'far',foam:'detailed',waterLook:'rich',particles:'high'};
+ const POLICY={style:'line',waitOutside:5,rise:1,lineDegrees:60,giveUp:30,stall:false};
+-const report={schema:'c-line-steering-native/v1',menuRepair:'Unchanged V4 actual menu/HUD startup followed by explicitly declared public seeded restart for diagnostic comparison',priorV4Report:seal.priorV4Report,priorV6Report:seal.priorV6Report,normalFollowerCameraContract:'Passive public authored follower mirror after normal HUD pause; no manual pose/fly ownership; mirror repeats ordinary height reads',sealSha256:process.env.BOUNDED_C_OWNER_SEAL_SHA,arm:args.arm,complete:false,firstFailure:null,settings:SETTINGS,overrides:REPLAY_OVERRIDES,knownFailureReplay:true,normalMenuAcceptance:false,expectedConfig:EXPECTED_CONFIG,seedPolicy:'Same predeclared public replay of observed V4 seed6238, component64/dx2/fine1 from the root-extracted immutable reference; no seed search or exact startup claim',
++const report={schema:'c-line-steering-clock-native/v1',menuRepair:'Unchanged V4 actual menu/HUD startup followed by explicitly declared public seeded restart for diagnostic comparison',priorV4Report:seal.priorV4Report,priorV6Report:seal.priorV6Report,normalFollowerCameraContract:'Passive public authored follower mirror after normal HUD pause; no manual pose/fly ownership; mirror repeats ordinary height reads',sealSha256:process.env.BOUNDED_C_OWNER_SEAL_SHA,arm:args.arm,complete:false,firstFailure:null,settings:SETTINGS,overrides:REPLAY_OVERRIDES,knownFailureReplay:true,normalMenuAcceptance:false,expectedConfig:EXPECTED_CONFIG,seedPolicy:'Same predeclared public replay of observed V4 seed6238, component64/dx2/fine1 from the root-extracted immutable reference; no seed search or exact startup claim',
+  graphics:GRAPHICS,policy:{...POLICY,trial:'Independent input intervention using the exact accepted C application and diagnostic bytes; no geometry or physical source change',standingSteering:{maximumAbsolute:1,slewRatePerSecond:null,policy:'Production pilotInput.steer verbatim after first output standing; unchanged zero steering before standing',previousMaximumAbsolute:.2,previousSlewRatePerSecond:.4},standingInputOverlay:{crouch:1,compress:1},cue:'One ordinary pulse on first actual positive cue while prone; no fixed83/manual telemetry/pilot-go gate',proneInput:'paddle true, steer zero'},
+  source:seal.arms.candidate,diagnosticModule:seal.diagnosticModule,rootCompleteBuild:seal.arms.candidate.rootBuildManifest,helperReadiness:seal.helperReadiness,schedule:{maxSteps:2160,maxPhysicalSeconds:2160/60,fixedStepSeconds:DT,
+  stop:'First published fall/separation/reset increase, or finite2160step cap; one ordinary fixed step and update(1/60) each iteration',noSettle:true,noPlacements:true,noReset:true,noRetries:true},videoContract:{start:'First actual output push phase (ordinary first-cue pop-up), with no tube-proximity requirement',initialRequestBeforeAwaitStart:true,maximumMovingSteps:240,maximumBytes:16*1024*1024,maximumRequests:241,ordinaryStepsOnly:true,fpsClaim:false,wallTimeEncoding:true},
+@@ -52,9 +53,40 @@
+ report.boardRhsComponentsObserver={sourceReadiness:seal.sourceReadiness,observerOnly:true,physicalDifferenceIntentional:false,oldFields:102,newAggregateCopies:41,totalFields:143,availabilityMarker:'standingTrialAvailable',markerZeroInvalidatesStaleWords:true,markerOneOnlyMeansCoupledTrialCaptured:true,trialMayBeRejectedAndDifferFromRealizedMotion:true,waterAggregateCombinesRadiationAndEntrainment:true,separateHydrodynamicAttributionAvailable:false,causalExplanationAccepted:false,runtimeChangedPaths:[]};
+ report.authorityFlattening={immediateAcceptedCSource:true,replayReference:seal.replayReference,historicalHelperInventoriesLoaded:false,applicationAndDiagnosticBytesUnchanged:true,controlsUnchangedThroughFirstStanding:true,soleIntervention:'standing-production-line-steering',boundsUnchanged:true};
+ report.acceptedReferenceReport=seal.acceptedReferenceReport;report.acceptedReferenceOwner=seal.acceptedReferenceOwner;
+-report.prefixComparison={reference:seal.acceptedReferenceReport,requiredThrough:PREFIX_THROUGH,fields:PREFIX_FIELDS,initialFields:INITIAL_PREFIX_FIELDS,initialMatched:false,configMatched:false,comparedSteps:0,firstStandingStep:null,complete:false,exactPrefixClaim:false};
+-function compareInitialPrefix(actual){assert.deepEqual(report.initial.config,ACCEPTED_C.initial.config,'Exact accepted C config');report.prefixComparison.configMatched=true;for(const key of INITIAL_PREFIX_FIELDS)assert.deepEqual(actual[key],ACCEPTED_C.initialBody[key],'Exact accepted C initial '+key);assert.equal(actual.ride.phase,ACCEPTED_C.initialBody.ride.phase);report.prefixComparison.initialMatched=true;}
+-function comparePrefix(row){if(row.step>PREFIX_THROUGH){assert.equal(report.prefixComparison.complete,true,'Exact prefix must complete before intervention');return;}const ref=ACCEPTED_C.steps[row.step-1];assert.equal(ref.step,row.step);for(const key of PREFIX_FIELDS)assert.deepEqual(row[key],ref[key],'Exact accepted C prefix '+row.step+' '+key);assert.equal(row.ride.phase,ref.ride.phase,'Exact accepted C prefix phase '+row.step);report.prefixComparison.comparedSteps=row.step;if(row.ride.phase==='standing'&&report.prefixComparison.firstStandingStep===null)report.prefixComparison.firstStandingStep=row.step;if(row.step===PREFIX_THROUGH){assert.equal(row.ride.phase,'standing');assert.equal(report.prefixComparison.firstStandingStep,PREFIX_THROUGH);report.prefixComparison.complete=true;report.prefixComparison.exactPrefixClaim=true;}}
++report.previousAttemptQualification={rootQualification:seal.previousFailureRootQualification,report:seal.previousFailedReport,owner:seal.previousFailedOwner,kind:'absolute-initial-cache-revision-metadata-mismatch-before-input',stepCount:0,physicalClocksAndInitialActorsMatched:true,gameplayFailure:false,gameplayResult:false,previousOutputPreserved:true};
++report.prefixComparison={reference:seal.acceptedReferenceReport,requiredThrough:PREFIX_THROUGH,fields:PREFIX_FIELDS,initialFields:INITIAL_PREFIX_FIELDS,physicalClockKeys:PHYSICAL_CLOCK_KEYS,surfaceRevisionPolicy:'Exact increments relative to each initial revision; absolute values retained, initial offset declared, no counter writes.',surfaceRevisionInitial:null,revisionRelativeCheckedThrough:null,initialMatched:false,configMatched:false,comparedSteps:0,firstStandingStep:null,complete:false,exactPhysicalAndActorPrefixClaim:false};
++report.initialLoftComparison={reference:seal.acceptedReferenceInitialLoft,arrayCount:37,countsMatched:false,rawArraysMatched:false,arrayRecords:null,cacheEpochIgnoredOnlyForRawGeometryComparison:true,complete:false};
++function compareClocks(actual,prior,step){
++ const keys=[...PHYSICAL_CLOCK_KEYS,'surfaceRevision'].sort();assert.deepEqual(Object.keys(actual).sort(),keys);assert.deepEqual(Object.keys(prior).sort(),keys);
++ for(const key of PHYSICAL_CLOCK_KEYS)assert.deepEqual(actual[key],prior[key],'Exact physical clock '+step+' '+key);
++ assert(Number.isSafeInteger(actual.surfaceRevision)&&Number.isSafeInteger(prior.surfaceRevision));
++ const pc=report.prefixComparison;
++ if(step===0)pc.surfaceRevisionInitial={actual:actual.surfaceRevision,reference:prior.surfaceRevision,offset:actual.surfaceRevision-prior.surfaceRevision};
++ assert(pc.surfaceRevisionInitial);assert.equal(actual.surfaceRevision-pc.surfaceRevisionInitial.actual,prior.surfaceRevision-pc.surfaceRevisionInitial.reference,'Relative cache revision increment '+step);pc.revisionRelativeCheckedThrough=step;
++}
++function compareInitialPrefix(actual){
++ assert.deepEqual(report.initial.config,ACCEPTED_C.initial.config,'Exact accepted C config');report.prefixComparison.configMatched=true;
++ for(const key of INITIAL_PREFIX_FIELDS.filter(k=>k!=='clocks'))assert.deepEqual(actual[key],ACCEPTED_C.initialBody[key],'Exact accepted C initial '+key);
++ compareClocks(actual.clocks,ACCEPTED_C.initialBody.clocks,0);assert.equal(actual.ride.phase,ACCEPTED_C.initialBody.ride.phase);report.prefixComparison.initialMatched=true;
++}
++function comparePrefix(row){
++ if(row.step>PREFIX_THROUGH){assert.equal(report.prefixComparison.complete,true,'Exact physical/actor prefix must complete before intervention');return;}
++ const ref=ACCEPTED_C.steps[row.step-1];assert.equal(ref.step,row.step);
++ for(const key of PREFIX_FIELDS.filter(k=>k!=='clocks'))assert.deepEqual(row[key],ref[key],'Exact accepted C prefix '+row.step+' '+key);
++ compareClocks(row.clocks,ref.clocks,row.step);assert.equal(row.ride.phase,ref.ride.phase,'Exact accepted C prefix phase '+row.step);report.prefixComparison.comparedSteps=row.step;
++ if(row.ride.phase==='standing'&&report.prefixComparison.firstStandingStep===null)report.prefixComparison.firstStandingStep=row.step;
++ if(row.step===PREFIX_THROUGH){assert.equal(row.ride.phase,'standing');assert.equal(report.prefixComparison.firstStandingStep,PREFIX_THROUGH);report.prefixComparison.complete=true;report.prefixComparison.exactPhysicalAndActorPrefixClaim=true;}
++}
++function compareInitialLoft(actual){
++ const prior=ACCEPTED_INITIAL_LOFT,cmp=report.initialLoftComparison;assert.equal(actual.schema,prior.schema);assert.equal(actual.label,'initial');assert.equal(actual.epoch.step,0);
++ assert.equal(actual.epoch.seaTime,prior.epoch.seaTime);assert.equal(actual.epoch.drawnWaterTime,prior.epoch.drawnWaterTime);assert.equal(actual.epoch.surfaceRevision,report.initialBody.clocks.surfaceRevision);assert.equal(prior.epoch.surfaceRevision,ACCEPTED_C.initialBody.clocks.surfaceRevision);
++ assert.deepEqual(actual.counts,prior.counts);assert.equal(actual.rawBytes,prior.rawBytes);cmp.countsMatched=true;
++ const names=Object.keys(actual.arrays).sort();assert.equal(names.length,37);assert.deepEqual(names,Object.keys(prior.arrays).sort());
++ const records={};
++ for(const name of names){const a=actual.arrays[name],b=prior.arrays[name],metadata=v=>Object.fromEntries(Object.entries(v).filter(([k])=>k!=='data'));assert.deepEqual(metadata(a),metadata(b),'Initial loft metadata '+name);const ab=Buffer.from(a.data,'base64'),bb=Buffer.from(b.data,'base64');assert.equal(ab.length,a.byteLength);assert.equal(bb.length,b.byteLength);assert(ab.equals(bb),'Initial loft raw bytes '+name);const ah=createHash('sha256').update(ab).digest('hex'),bh=createHash('sha256').update(bb).digest('hex');assert.equal(ah,bh);records[name]={...metadata(a),sha256:ah};}
++ cmp.arrayRecords=records;cmp.rawArraysMatched=true;cmp.complete=true;
++}
++
+ report.movieCapBehavior={movingAdvances:240,requests:241,movieStopsAtCap:true,ordinaryPhysicsContinues:true,replayStopUnchanged:true};
+ report.firstContactLoss=null;
+ let ndjsonBytes=0,lastComponent=null,residence=null,consecutive=0,entryOccurred=false,wasContained=false;
+@@ -86,7 +118,7 @@
+ save();
+ async function captureData(label){
+  const c=await page.eval(`__naturalEntry.checkpoint(${JSON.stringify(label)})`),url=c.png;delete c.png;
+- if(c.loftSnapshot){const q=c.loftSnapshot,b=Buffer.from(JSON.stringify(q)),file='loft-'+label+'.json';assert(report.loftSnapshots.length<4&&b.length<=6*1024*1024&&report.snapshotBytes+b.length<=24*1024*1024);writeFileSync(join(OUT,file),b);const stub={file,bytes:b.length,sha256:hash(b),schema:q.schema,label,epoch:q.epoch,counts:q.counts,rawFrontRecordCount:q.rawFrontPacket.recordCount,rawBytes:q.rawBytes,nonmutation:q.nonmutation,arrayManifest:Object.fromEntries(Object.entries(q.arrays).map(([k,v])=>[k,Object.fromEntries(Object.entries(v).filter(([n])=>n!=='data'))]))};report.snapshotBytes+=b.length;report.loftSnapshots.push(stub);c.loftSnapshot=stub;}
++ if(c.loftSnapshot){const q=c.loftSnapshot,b=Buffer.from(JSON.stringify(q)),file='loft-'+label+'.json';assert(report.loftSnapshots.length<4&&b.length<=6*1024*1024&&report.snapshotBytes+b.length<=24*1024*1024);writeFileSync(join(OUT,file),b);const stub={file,bytes:b.length,sha256:hash(b),schema:q.schema,label,epoch:q.epoch,counts:q.counts,rawFrontRecordCount:q.rawFrontPacket.recordCount,rawBytes:q.rawBytes,nonmutation:q.nonmutation,arrayManifest:Object.fromEntries(Object.entries(q.arrays).map(([k,v])=>[k,Object.fromEntries(Object.entries(v).filter(([n])=>n!=='data'))]))};report.snapshotBytes+=b.length;report.loftSnapshots.push(stub);c.loftSnapshot=stub;if(label==='initial')compareInitialLoft(q);}
+  assert(url.startsWith('data:image/png;base64,')&&Buffer.from(url.slice(22),'base64').length<=12*1024*1024,'Bounded checkpoint candidate PNG');
+  return {checkpoint:c,url};
+ }
+@@ -161,7 +193,7 @@
+  await page.eval(`(async()=>{const m=await import('/diagnostic-autopilot.mjs');(${installOrdinaryRider.toString()})(m.Autopilot,m.autopilotView,m.riderPartVolumes,(${createWitnessSampler.toString()}),(${createLoftSnapshotTools.toString()}),(${createOrdinaryControl.toString()}),(${nearestIndexedFormed.toString()}),(${installFollowerCamera.toString()}),${JSON.stringify(POLICY)},(${retainContactDiagnostics.toString()}));return true;})()`);
+  report.initialBody=await page.eval('__naturalEntry.current()');report.replayBodyComparison={seaTime:{prior:PRIOR.initialBody.seaTime,actual:report.initialBody.seaTime,equal:Object.is(PRIOR.initialBody.seaTime,report.initialBody.seaTime)},fields:Object.fromEntries(['boardPose','riderPoints','riderWords','displayedBoard','displayedRiderPoints','clocks'].map(k=>[k,{equal:JSON.stringify(PRIOR.initialBody[k])===JSON.stringify(report.initialBody[k]),prior:PRIOR.initialBody[k],actual:report.initialBody[k]}])),exactInitialReplayClaim:false};report.replayV6InitialComparison={priorReport:seal.priorV6Report,configFields:Object.fromEntries([...new Set([...Object.keys(PRIOR_V6.initial.config),...Object.keys(report.initial.config)])].map(k=>[k,{equal:JSON.stringify(PRIOR_V6.initial.config[k])===JSON.stringify(report.initial.config[k])}])),seaTime:{prior:PRIOR_V6.initialBody.seaTime,actual:report.initialBody.seaTime,equal:Object.is(PRIOR_V6.initialBody.seaTime,report.initialBody.seaTime)},initialBodyFields:Object.fromEntries([...new Set([...Object.keys(PRIOR_V6.initialBody),...Object.keys(report.initialBody)])].filter(k=>k!=='workerStepMs').map(k=>[k,{equal:JSON.stringify(PRIOR_V6.initialBody[k])===JSON.stringify(report.initialBody[k])}])),excludedBodyTimingFields:['workerStepMs'],exactInitialReplayClaim:false,descriptiveOnly:true};report.referenceSphereRadii=await page.eval('__naturalEntry.radii');
+  assert.equal(report.initialBody.ride.phase,'prone','Fresh ordinary prone initialization required');compareInitialPrefix(report.initialBody);save();
+- await capture('initial');
++ await capture('initial');assert.equal(report.initialLoftComparison.complete,true,'Initial37 loft arrays must match before any input');
+  for(let i=0;i<2160;i++){
+   assert(performance.now()-started<635000,'635s internal wall deadline; no continuation/retry');
+   const row=await page.eval('__naturalEntry.step()');assert(!row.noStep,'Ordinary controller must not silently stop at production pilot state');
+@@ -186,7 +218,8 @@
+  report.videoLimitation=report.videoTrigger?'Triggered bounded normal movie; no tube-entry/quality/FPS pass inferred':'No actual push phase observed; no movie trigger, clip or success claim';
+  const lines=readFileSync(join(OUT,'steps.ndjson'));report.artifacts.push({file:'steps.ndjson',bytes:lines.length,sha256:hash(lines)});
+  assert.deepEqual(report.browserErrors,[],'Runtime/shader console errors');
+- assert.equal(report.prefixComparison.complete,true,'All accepted C input/clock/body prefix words through1372 must be exact');
++ assert.equal(report.prefixComparison.complete,true,'All accepted C inputs/physical clocks/actor outputs through1372 must be exact with relative cache revision increments');
++ assert.equal(report.initialLoftComparison.complete,true,'All37 initial loft raw arrays and metadata must match');
+  assert.equal(report.prefixComparison.comparedSteps,PREFIX_THROUGH);
+  report.complete=true;
+ }catch(error){report.firstFailure=String(error?.stack??error);exitCode=1;if(page)try{report.menuFailureEvidence=await page.eval('window.__ordinaryMenuEvidence??null');}catch(e){report.menuFailureEvidenceUnavailable=String(e);}}
+--- /private/tmp/tube-c-line-steering-native-20261005/run.py
++++ /private/tmp/tube-c-line-steering-clock-20261005/run.py
+@@ -3,8 +3,8 @@
+ from pathlib import Path
+ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+ import argparse,datetime,hashlib,json,os,selectors,signal,socket,subprocess,threading,time,shutil,math,base64,struct,re
+-from authority import sealed,pin,load,PREFIX_FIELDS
+-WORK=Path('/private/tmp/tube-c-line-steering-native-20261005');PORTS=(4301,9711);USERS=(4310,4311,4312,4313,4314)
++from authority import sealed,pin,load,PREFIX_FIELDS,PHYSICAL_CLOCK_KEYS
++WORK=Path('/private/tmp/tube-c-line-steering-clock-20261005');PORTS=(4301,9711);USERS=(4310,4311,4312,4313,4314)
+ CANDIDATE_DIST=Path('/private/tmp/tube-c-formation-native-20261005/candidate-complete-dist');BUILD_MANIFEST=Path('/private/tmp/tube-c-formation-native-20261005/root-complete-build-result.json')
+ def validate_camera(e):
+  assert e['policy']=='public-authored-follower-mirror/v1' and e['view'] in ('front','behind','side') and e['activeLab'] is False and e['normalHudPause'] is True
+@@ -56,20 +56,45 @@
+   else:assert s['flightTime']<=cd['maxFlightTime'] and loss['selectedCause']=='balance' and loss['dominantLimit'] is None
+  else:assert n.get('firstContactLoss') is None
+  return True
+-def validate_prefix(n):
+- s=json.loads((WORK/'seal.json').read_text());ref=load(s['acceptedReferenceReport']);pc=n['prefixComparison']
+- assert n['acceptedReferenceReport']==s['acceptedReferenceReport'] and n['acceptedReferenceOwner']==s['acceptedReferenceOwner']
+- assert pc['reference']==s['acceptedReferenceReport'] and pc['requiredThrough']==pc['comparedSteps']==pc['firstStandingStep']==1372
+- assert pc['fields']==PREFIX_FIELDS and pc['complete'] is True and pc['exactPrefixClaim'] is True and pc['initialMatched'] is True and pc['configMatched'] is True
++def validate_prefix(n,out):
++ seal=json.loads((WORK/'seal.json').read_text());ref=load(seal['acceptedReferenceReport']);pc=n['prefixComparison']
++ assert n['acceptedReferenceReport']==seal['acceptedReferenceReport'] and n['acceptedReferenceOwner']==seal['acceptedReferenceOwner']
++ assert pc['reference']==seal['acceptedReferenceReport'] and pc['requiredThrough']==pc['comparedSteps']==pc['firstStandingStep']==pc['revisionRelativeCheckedThrough']==1372
++ assert pc['fields']==PREFIX_FIELDS and pc['physicalClockKeys']==PHYSICAL_CLOCK_KEYS and pc['complete'] is True and pc['exactPhysicalAndActorPrefixClaim'] is True and pc['initialMatched'] is True and pc['configMatched'] is True
++ assert pc['surfaceRevisionPolicy']=='Exact increments relative to each initial revision; absolute values retained, initial offset declared, no counter writes.'
+  initial=[k for k in PREFIX_FIELDS if k not in ('input','physicalSeconds')];assert pc['initialFields']==initial and n['initial']['config']==ref['initial']['config']
+- assert all(n['initialBody'][k]==ref['initialBody'][k]for k in initial) and n['initialBody']['ride']['phase']==ref['initialBody']['ride']['phase']
++ assert all(n['initialBody'][k]==ref['initialBody'][k]for k in initial if k!='clocks') and n['initialBody']['ride']['phase']==ref['initialBody']['ride']['phase']
++ actual_start=n['initialBody']['clocks']['surfaceRevision'];reference_start=ref['initialBody']['clocks']['surfaceRevision']
++ assert type(actual_start) is int and type(reference_start) is int and pc['surfaceRevisionInitial']=={'actual':actual_start,'reference':reference_start,'offset':actual_start-reference_start}
++ def clocks(actual,prior):
++  assert set(actual)==set(prior)==set(PHYSICAL_CLOCK_KEYS)|{'surfaceRevision'}
++  assert all(actual[k]==prior[k]for k in PHYSICAL_CLOCK_KEYS) and type(actual['surfaceRevision']) is int and type(prior['surfaceRevision']) is int
++  assert actual['surfaceRevision']-actual_start==prior['surfaceRevision']-reference_start
++ clocks(n['initialBody']['clocks'],ref['initialBody']['clocks'])
+  assert len(n['steps'])>=1372 and next(r['step']for r in n['steps']if r['ride']['phase']=='standing')==1372
+  for r,prior in zip(n['steps'][:1372],ref['steps'][:1372]):
+-  assert r['step']==prior['step'] and r['ride']['phase']==prior['ride']['phase'] and all(r[k]==prior[k]for k in PREFIX_FIELDS),'Controlled prefix differs at '+str(r['step'])
++  assert r['step']==prior['step'] and r['ride']['phase']==prior['ride']['phase'] and all(r[k]==prior[k]for k in PREFIX_FIELDS if k!='clocks'),'Controlled physical/actor prefix differs at '+str(r['step'])
++  clocks(r['clocks'],prior['clocks'])
+  assert n['source']==ref['source'] and n['diagnosticModule']==ref['diagnosticModule'] and n['settings']==ref['settings'] and n['overrides']==ref['overrides'] and n['graphics']==ref['graphics']
++ prior_loft=load(seal['acceptedReferenceInitialLoft']);stub=next(q for q in n['loftSnapshots']if q['label']=='initial')
++ actual_loft=json.loads(pin({'file':str(out/stub['file']),'bytes':stub['bytes'],'sha256':stub['sha256']}));cmp=n['initialLoftComparison']
++ assert cmp['reference']==seal['acceptedReferenceInitialLoft'] and cmp['arrayCount']==37 and cmp['complete'] is True and cmp['countsMatched'] is True and cmp['rawArraysMatched'] is True and cmp['cacheEpochIgnoredOnlyForRawGeometryComparison'] is True
++ assert actual_loft['schema']==prior_loft['schema']=='bounded-C-complete-drawn-loft-words/v1' and actual_loft['label']==prior_loft['label']=='initial'
++ assert actual_loft['counts']==prior_loft['counts'] and actual_loft['rawBytes']==prior_loft['rawBytes'] and len(actual_loft['arrays'])==len(prior_loft['arrays'])==37 and set(actual_loft['arrays'])==set(prior_loft['arrays'])
++ assert actual_loft['epoch']['step']==prior_loft['epoch']['step']==0 and actual_loft['epoch']['seaTime']==prior_loft['epoch']['seaTime'] and actual_loft['epoch']['drawnWaterTime']==prior_loft['epoch']['drawnWaterTime']
++ assert actual_loft['epoch']['surfaceRevision']==actual_start and prior_loft['epoch']['surfaceRevision']==reference_start
++ records={}
++ for name,a in actual_loft['arrays'].items():
++  b=prior_loft['arrays'][name];metadata=lambda v:{k:value for k,value in v.items()if k!='data'}
++  assert metadata(a)==metadata(b)
++  ab=base64.b64decode(a['data'],validate=True);bb=base64.b64decode(b['data'],validate=True)
++  assert len(ab)==a['byteLength'] and len(bb)==b['byteLength'] and ab==bb,'Initial loft raw array differs '+name
++  records[name]={**metadata(a),'sha256':hashlib.sha256(ab).hexdigest()}
++ assert cmp['arrayRecords']==records
++ q=n['previousAttemptQualification'];assert q['rootQualification']==seal['previousFailureRootQualification'] and q['report']==seal['previousFailedReport'] and q['owner']==seal['previousFailedOwner'] and q['kind']=='absolute-initial-cache-revision-metadata-mismatch-before-input' and q['stepCount']==0 and q['physicalClocksAndInitialActorsMatched'] is True and q['gameplayFailure'] is False and q['gameplayResult'] is False and q['previousOutputPreserved'] is True
+  return True
+ def validate_native(n,out,sealsha):
+- assert n['schema']=='c-line-steering-native/v1' and n['complete'] is True and n['firstFailure'] is None and n['chromeClosed'] is True and n['sealSha256']==sealsha
++ assert n['schema']=='c-line-steering-clock-native/v1' and n['complete'] is True and n['firstFailure'] is None and n['chromeClosed'] is True and n['sealSha256']==sealsha
+  assert n['initial']['menuEvidence']['actualDomStartup'] is True and n['initial']['menuEvidence']['normalSpawnPreserved'] is True and n['initial']['menuEvidence']['rideObserved'] is True and n['initial']['menuEvidence']['selectedChoices']==['Padang Padang','Big','Mid','Calm','Midday']
+  assert n['initial']['menuEvidence']['normalHudPaused'] is True and n['initial']['menuEvidence']['activeLabDisabled'] is True
+  assert n['knownFailureReplay'] is True and n['normalMenuAcceptance'] is False and n['overrides']=={'seed':6238,'componentCount':64,'dx':2,'fineSpacing':1}
+@@ -77,7 +102,7 @@
+  assert n['priorV6Report']['file']=='/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first/report.json' and n['replayV6InitialComparison']['descriptiveOnly'] is True and n['replayV6InitialComparison']['priorReport']==n['priorV6Report']
+  validate_camera(n['initialBody']['cameraFollower'])
+  assert n['initialBody']['ride']['phase']=='prone' and n['schedule']['maxSteps']==2160 and n['schedule']['noPlacements'] is True and n['schedule']['noReset'] is True
+- rows=n['steps'];validate_rows(n);validate_prefix(n)
++ rows=n['steps'];validate_rows(n);validate_prefix(n,out)
+  assert not n['browserErrors'] and 1<=n['pngCount']<=4 and n['pngBytes']<=48*1024*1024
+  assert {'initial','terminal'}<=set(label for c in n['checkpoints'] for label in c['labels'])
+  labels={label for c in n['checkpoints'] for label in c['labels']}
+@@ -140,7 +165,7 @@
+  except (AssertionError,KeyError,FileNotFoundError,json.JSONDecodeError) as e:print(json.dumps({'resourcesStarted':False,'portsProbed':False,'sealFailure':str(e)}));return 2
+  if args.check_seal:print(json.dumps({'sealValid':True,'resourcesStarted':False,'portsProbed':False,'arm':args.arm,'sealSha256':sealsha}));return 0
+  start=time.monotonic();out=WORK/(args.arm+'-first');owner=WORK/(args.arm+'-first-owner.json');log=WORK/(args.arm+'-first-owner.log');assert not out.exists() and not owner.exists() and not log.exists(),'First-only arm: preserve unsuccessful invocation, no overwrite/retry'
+- report={'schema':'c-line-steering-finite-owner/v1','arm':args.arm,'complete':False,'firstFailure':None,'startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'sealSha256':sealsha,'wholeSeconds':660,'commandSeconds':648,'cleanupSeconds':7,'ports':PORTS,'protectedPorts':USERS,'dist':str(DIST),'served':{},'logBytes':0,'nativeGroup':None,'applicationAndDiagnosticBytesUnchanged':True,'geometryOrPhysicsChanged':False,'controlledPrefixRequiredThrough':1372,'bodyEntryClaim':False}
++ report={'schema':'c-line-steering-clock-finite-owner/v1','arm':args.arm,'complete':False,'firstFailure':None,'startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'sealSha256':sealsha,'wholeSeconds':660,'commandSeconds':648,'cleanupSeconds':7,'ports':PORTS,'protectedPorts':USERS,'dist':str(DIST),'served':{},'logBytes':0,'nativeGroup':None,'applicationAndDiagnosticBytesUnchanged':True,'geometryOrPhysicsChanged':False,'controlledPrefixRequiredThrough':1372,'bodyEntryClaim':False}
+  lock=threading.Lock();server=None;proc=None;sel=selectors.DefaultSelector()
+  def save():
+   with lock:b=json.dumps(report,separators=(',',':')).encode()
+--- /private/tmp/tube-c-line-steering-native-20261005/root-helper-checks.py
++++ /private/tmp/tube-c-line-steering-clock-20261005/root-helper-checks.py
+@@ -11,5 +11,5 @@
+  with log.open('wb')as out:result=subprocess.run(argv,stdout=out,stderr=subprocess.STDOUT,cwd=W,timeout=30,env=__import__('os').environ.copy())
+  checks[name]={'run':True,'exitCode':result.returncode,'argv':argv,'elapsedSeconds':time.monotonic()-start,'log':pin(log)}
+  if result.returncode:print(json.dumps(checks));raise SystemExit(result.returncode)
+-receipt={'schema':'c-line-steering-root-helper-checks/v1','complete':True,'resourcesStarted':False,'portsProbed':False,'checks':checks}
++receipt={'schema':'c-line-steering-clock-root-helper-checks/v1','complete':True,'resourcesStarted':False,'portsProbed':False,'checks':checks}
+ (W/'root-helper-checks.json').write_text(json.dumps(receipt,indent=2)+'\n');print(json.dumps({'complete':True,'receipt':pin(W/'root-helper-checks.json')}))
+--- /private/tmp/tube-c-line-steering-native-20261005/root-seal.py
++++ /private/tmp/tube-c-line-steering-clock-20261005/root-seal.py
+@@ -7,16 +7,16 @@
+ freeze=preparation();inputs=load(record(W/'inputs.json'));assert inputs['rootBound'] is True
+ raw,build,d,ref=direct_inputs(inputs)
+ checks_pin=record(W/'root-helper-checks.json');checks=load(checks_pin)
+-assert checks['schema']=='c-line-steering-root-helper-checks/v1' and checks['complete'] is True and checks['resourcesStarted'] is False and checks['portsProbed'] is False
++assert checks['schema']=='c-line-steering-clock-root-helper-checks/v1' and checks['complete'] is True and checks['resourcesStarted'] is False and checks['portsProbed'] is False
+ assert set(checks['checks'])=={'nativeSyntax','controlSyntax','sourceOnlyOwner'}
+ for q in checks['checks'].values():assert q['run'] is True and q['exitCode']==0;pin(q['log'])
+-ready={'schema':'c-line-steering-root-readiness/v1','complete':True,'frozen':True,'resourcesStarted':False,'portsProbed':False,'actualAcceptedCBuildReused':True,'actualAcceptedCDiagnosticReused':True,'referencePrefixThrough':1372,'helperAcceptance':True,'rootHelperChecks':checks_pin,'gameplayAcceptance':False,'tubePassageAcceptance':False,'productionAdoption':False}
++ready={'schema':'c-line-steering-clock-root-readiness/v1','complete':True,'frozen':True,'resourcesStarted':False,'portsProbed':False,'actualAcceptedCBuildReused':True,'actualAcceptedCDiagnosticReused':True,'referencePrefixThrough':1372,'physicalClocksExact':True,'surfaceRevisionRelativeIncrementRequired':True,'initialLoft37ArraysRawEqualityRequired':True,'previousAttemptQualifiedAsMetadataFailureBeforeInput':True,'helperAcceptance':True,'rootHelperChecks':checks_pin,'gameplayAcceptance':False,'tubePassageAcceptance':False,'productionAdoption':False}
+ (W/'root-readiness.json').write_text(json.dumps(ready,indent=2)+'\n')
+ immutable=[record(W/n)for n in ['inputs.json','root-readiness.json','root-helper-checks.json','prep/freeze.json']]+[q['log']for q in checks['checks'].values()]
+ immutable+=inputs['borrowedHelperPins']+inputs['immediateHarnessPins']
+-keys=['approvedCandidateSeal','approvedApplicationBuild','approvedDiagnosticBuild','diagnosticModule','acceptedReferenceReport','acceptedReferenceTrace','acceptedReferenceOwner','replayReference','observerFields','sourceReadiness']
++keys=['approvedCandidateSeal','approvedApplicationBuild','approvedDiagnosticBuild','diagnosticModule','acceptedReferenceReport','acceptedReferenceTrace','acceptedReferenceOwner','replayReference','observerFields','sourceReadiness','acceptedReferenceInitialLoft','previousFailedReport','previousFailedOwner','cacheCounterSource','previousFailureRootQualification']
+ immutable+=[inputs[k]for k in keys]
+ unique={q['file']:q for q in immutable};assert all(unique[q['file']]==q for q in immutable)
+-s={'schema':'c-line-steering-root-seal/v1','complete':True,'rootAuthorized':True,'preparationInputs':record(W/'inputs.json'),'preparationFreeze':record(W/'prep/freeze.json'),'helperReadiness':record(W/'root-readiness.json'),'helperPins':freeze['pins'],'rootHelperChecks':checks_pin,'immutableInputsAndOutputs':list(unique.values()),'environment':raw['environment'],'limits':LIMITS,'arms':{'candidate':raw['arms']['candidate']},'priorV4Report':raw['priorV4Report'],'priorV6Report':raw['priorV6Report'],'applicationRebuilt':False,'geometryOrPhysicsChanged':False,'gameplayAcceptance':False,'tubePassageAcceptance':False,'productionAdoption':False,**{k:inputs[k]for k in keys}}
++s={'schema':'c-line-steering-clock-root-seal/v1','complete':True,'rootAuthorized':True,'preparationInputs':record(W/'inputs.json'),'preparationFreeze':record(W/'prep/freeze.json'),'helperReadiness':record(W/'root-readiness.json'),'helperPins':freeze['pins'],'rootHelperChecks':checks_pin,'immutableInputsAndOutputs':list(unique.values()),'environment':raw['environment'],'limits':LIMITS,'arms':{'candidate':raw['arms']['candidate']},'priorV4Report':raw['priorV4Report'],'priorV6Report':raw['priorV6Report'],'applicationRebuilt':False,'geometryOrPhysicsChanged':False,'gameplayAcceptance':False,'tubePassageAcceptance':False,'productionAdoption':False,**{k:inputs[k]for k in keys}}
+ assert len(json.dumps(s).encode())<=1024*1024
+ (W/'seal.json').write_text(json.dumps(s,indent=2)+'\n');print(json.dumps({'complete':True,'seal':record(W/'seal.json'),'readiness':record(W/'root-readiness.json'),'nativeRun':False}))
+--- /private/tmp/tube-c-line-steering-native-20261005/inputs.template.json
++++ /private/tmp/tube-c-line-steering-clock-20261005/inputs.template.json
+@@ -1,5 +1,5 @@
+ {
+-  "schema": "c-line-steering-preparation-inputs/v1",
++  "schema": "c-line-steering-clock-preparation-inputs/v1",
+   "rootBound": false,
+   "sourceOnly": true,
+   "resourcesStarted": false,
+@@ -103,29 +103,29 @@
+   ],
+   "immediateHarnessPins": [
+     {
+-      "file": "/private/tmp/tube-c-formation-native-20261005/native.mjs",
+-      "bytes": 29282,
+-      "sha256": "38c1cbfab410deb95c21da2660dee772889522bb2104f533ef67f3366bd1e248"
++      "file": "/private/tmp/tube-c-line-steering-native-20261005/native.mjs",
++      "bytes": 32239,
++      "sha256": "8022c3984a8afa6beb855e33b7e0f5276cd70d798ab32b0c910c7f8075156b61"
+     },
+     {
+-      "file": "/private/tmp/tube-c-formation-native-20261005/run.py",
+-      "bytes": 18739,
+-      "sha256": "d263933fcd54a22b9acafc7f51ea4fb4f8ba9c0c78068adbffa69a8be0869d9e"
++      "file": "/private/tmp/tube-c-line-steering-native-20261005/run.py",
++      "bytes": 20624,
++      "sha256": "d9fd864b01e82c8a0dad4494151d9f5a7db2a5a675078ae2f1a5529cfc424d86"
+     },
+     {
+-      "file": "/private/tmp/tube-c-formation-native-20261005/authority.py",
+-      "bytes": 15121,
+-      "sha256": "400489d9e507e02a4ea4ae5ebac4289b0c9214983e3393c191e987b82303ca08"
++      "file": "/private/tmp/tube-c-line-steering-native-20261005/authority.py",
++      "bytes": 8160,
++      "sha256": "ad28eb0111c113a69855c6fff605afe3f119b46d0a15ac1fb69c40d5bb19a8ec"
+     },
+     {
+-      "file": "/private/tmp/tube-c-formation-native-20261005/root-helper-checks.py",
+-      "bytes": 1350,
+-      "sha256": "49e436f03e8c83f5ac7185315197e6bb13e726a7a0052c1d62e3b32af7de8418"
++      "file": "/private/tmp/tube-c-line-steering-native-20261005/root-helper-checks.py",
++      "bytes": 1342,
++      "sha256": "36e3925a551b33ace12b750303e1dd7b3fb86612f5bd3913bde0240acabd356f"
+     },
+     {
+-      "file": "/private/tmp/tube-c-formation-native-20261005/root-seal.py",
+-      "bytes": 3909,
+-      "sha256": "c7141c39dfc2994274e0c97e033495494e5b45729ef21df2de0dae1bc8496e5b"
++      "file": "/private/tmp/tube-c-line-steering-native-20261005/root-seal.py",
++      "bytes": 2966,
++      "sha256": "e91fd77c0e83afc189305ead760ebac128be524df3bdf52bf5b63012992f3ff3"
+     }
+   ],
+   "prefix": {
+@@ -142,7 +142,41 @@
+       "displayedBoard",
+       "displayedRiderPoints"
+     ],
+-    "ridePhaseAlsoExact": true
++    "ridePhaseAlsoExact": true,
++    "physicalClockKeys": [
++      "workerSeaTime",
++      "visualClock",
++      "waterTime"
++    ],
++    "surfaceRevisionPolicy": "Exact increments relative to each initial revision; absolute values retained, initial offset declared, no counter writes.",
++    "initialLoftArrayCount": 37,
++    "initialGeometryRequired": true
+   },
+-  "scope": "One post-first-standing input intervention only. Same accepted C source/app/diagnostic bytes; no build, geometry or contact change; no historical helper recursion."
++  "scope": "One post-first-standing input intervention only. Same accepted C source/app/diagnostic bytes; no build, geometry or contact change; no historical helper recursion.",
++  "acceptedReferenceInitialLoft": {
++    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/loft-initial.json",
++    "bytes": 1099036,
++    "sha256": "c1f06bbc0311dcbc7c8348e60b32bcccd9af5b0cf15314209580793d50bb0374"
++  },
++  "previousFailedReport": {
++    "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first/report.json",
++    "bytes": 162083,
++    "sha256": "155771a98539b1f0b5bd43c4bc8058e244f0ad91f5c0149b01affaf46447020c"
++  },
++  "previousFailedOwner": {
++    "file": "/private/tmp/tube-c-line-steering-native-20261005/candidate-first-owner.json",
++    "bytes": 3610,
++    "sha256": "7d790e107b90182dc26c6e00512f775471c6bbab73719cd85ac9e7338814b973"
++  },
++  "cacheCounterSource": {
++    "file": "/private/tmp/tube-c-formation-trial-20261005/source/src/scene/WaterSurface.ts",
++    "bytes": 39192,
++    "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
++  },
++  "previousFailureQualification": "Terminal rejected before any input: absolute initial surfaceRevision4 versus5. Three physical clocks and initial actor output equal. No gameplay outcome; prior failed output preserved.",
++  "previousFailureRootQualification": {
++    "file": "/private/tmp/tube-c-line-steering-initial-qualification-20261005/result.json",
++    "bytes": 2220,
++    "sha256": "55af8f04ab7412b463b1ee418959be2963ccb6ac26d384ee20910e4df7130537"
++  }
+ }
+--- /private/tmp/tube-c-line-steering-native-20261005/readiness.json
++++ /private/tmp/tube-c-line-steering-clock-20261005/readiness.json
+@@ -1,5 +1,5 @@
+ {
+-  "schema": "c-line-steering-source-readiness/v1",
++  "schema": "c-line-steering-clock-source-readiness/v1",
+   "sourceOnly": true,
+   "rootExecutionPending": true,
+   "checksRun": false,
+@@ -25,5 +25,13 @@
+     4312,
+     4313,
+     4314
+-  ]
++  ],
++  "physicalClocksExact": [
++    "workerSeaTime",
++    "visualClock",
++    "waterTime"
++  ],
++  "surfaceRevisionComparison": "Absolute counter retained; initial offset declared; per-step increments must match.",
++  "initialGeometryComparison": "All37 active initial loft arrays exact raw bytes/hash/count/type and exact counts; epoch-local cache counter compared separately.",
++  "previousFailureQualification": "Previous frozen attempt rejected atstep0 on cache revision4versus5, no gameplay failure/result."
+ }
+--- /private/tmp/tube-c-line-steering-native-20261005/README.md
++++ /private/tmp/tube-c-line-steering-clock-20261005/README.md
+@@ -1,25 +1,31 @@
+-# Controlled production line steering after standing
++# Controlled production line steering with physical clock and raw geometry checks
+ 
+-This is source-only preparation. No binder, syntax checks, build, numerical test, browser, server, port probe, seal or native run was performed during preparation. The root must read and run the concrete helpers below. Gameplay, visual quality and tube passage remain unproved.
++This is source-only preparation. No binder, syntax checks, build, numerical test, browser, server, port probe, seal or native run was performed here. Root owns the actual checks and invocation. Gameplay, visual quality and tube passage remain unproved.
+ 
+-The immediate reference is the completed accepted C formation replay at `/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json`, with its accepted finite owner. It stood at outputs 1372–1515 and fell at 1516 outside the hollow. Its public seeded restart used seed 6238/component 64/dx 2/fine 1. This intervention reuses that exact application dist, source pins and compiled diagnostic module directly. It does not clone source, rebuild assets, change physical contact/geometry or recursively load older helper inventories. The old V4/V6 compact replay reference remains a pinned input solely because the immediate accepted harness uses it.
++The first steering helper at `/private/tmp/tube-c-line-steering-native-20261005` terminated before any input because its absolute initial `surfaceRevision` was 4 while the accepted C reference was 5. All three physical/visual clocks, configuration and initial published/drawn actors matched. Its failed report and owner remain unchanged and rejected. The separate root qualification at `/private/tmp/tube-c-line-steering-initial-qualification-20261005/result.json` is pinned; it records zero inputs and no gameplay result. No failed native run is reclassified as accepted.
+ 
+-The single changed control is standing steering. Prone steer remains 0, paddle remains true while prone, and the first actual positive cue generates the same one pop-up pulse. Push and landing retain zero steering. After the first actual output standing, the helper applies the production `Autopilot({style:'line',waitOutside:5,rise:1,lineDegrees:60,giveUp:30,stall:false})` returned `pilotInput.steer` verbatim in the existing game range−1…1. The previous helper limited it to±.2 and .4/s. Crouch 1/compress 1 and all other inputs are retained while standing; this run does not combine steering and posture interventions. Production pilot state, view, clock, tide 0, worker stepping, update, drawing and follower camera remain the same.
++`WaterSurface.surfaceRevision` is a local drawn-surface rewrite generation, incremented when drawing data changes. Its getter/increment source is pinned from the exact accepted application source. This variant retains every actual absolute revision, declares the initial actual/reference values and their offset, and requires every revision increment relative to that initial value to match the baseline through output 1372. It compares `workerSeaTime`, `visualClock` and `waterTime` exactly. It does not write or normalize a counter/clock, change timing, alter initial actors or omit a physical clock comparison.
+ 
+-The native runner must require exact config and initial physical/published body/drawn body clocks and words. Every input, physical/visual/water clock, board pose, 21 rider point words, 12 rider state words and displayed actor pose/point words through output 1372 must equal the immediate accepted C report. Ride phase must also match at each output, with first standing exactly 1372. Any mismatch preserves the differing row and aborts. The finite owner independently recomputes those comparisons from the sealed reference; a reported green comparison alone is insufficient. The intervention begins only when the next input view actually reports standing; no posture is forced and no body/mesh is placed.
++Before any input, the runner captures the normal initial full loft sidecar. It then compares all 37 active arrays against the accepted C initial sidecar: exact array names, dtype, endianness, count, byteLength, encoding, raw bytes and SHA-256 of decoded raw bytes. Counts and raw-byte total match too. The known reference has 73 slices, 9782 vertices and 55860 indices. The geometry check ignores only the sidecar's epoch-local cache counter; step, sea time and drawn water time remain exact, with absolute counters tied separately to each initial snapshot. The finite owner independently rereads both full sidecars, compares their raw arrays, and recomputes the per-array hash records. It does not accept a reported geometry pass without reading the evidence.
+ 
+-The existing first-fall/recovery/separation/reset stop and 2160-step cap remain. There is one public seeded restart following the actual Padang→Big/Mid/Calm/Midday menu/HUD startup; no retries, seed search, explicit pilot `go`, reset or geometry targeting. Limits remain 660s owner, 648s command, 635s native, 7s cleanup and 180s menu startup wait. Only 4301/9711 are owned. The owner requires 4310/4311 closed and 4312/4313/4314 open before and after, preserving human previews.
++The immediate physical reference is the completed accepted C formation replay at `/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json`, with its accepted finite owner. This variant directly reuses its exact application dist, source pins and compiled diagnostic module. No source clone, rebuild, geometry/contact change or recursive historical helper inventory is added. The old compact V4/V6 replay reference remains pinned solely because the immediate accepted harness uses it.
+ 
+-Media/evidence limits and existing guards are preserved: four 12MiB PNGs within 48MiB total; four complete active 37-array loft sidecars within 6MiB each/24MiB total; one 16MiB WebM triggered at the actual push phase, no more than 240 moving advances/241 manual requests; 32MiB report and 24MiB trace. The actual indexed mesh witness detector and 20s cumulative detector budget remain. Seven published witnesses and reference trunk spheres do not prove whole-body/capsule clearance, air-volume connectivity, visual quality or tube passage. No encoded FPS/playback-rate claim is made.
++The single input intervention is unchanged from the first helper: after the first actual output standing, apply production `pilotInput.steer` verbatim instead of the helper's ±.2 cap and .4/s slew limit. The production line policy remains `{style:'line',waitOutside:5,rise:1,lineDegrees:60,giveUp:30,stall:false}`. Prone steering stays 0 and paddle stays true while prone. The first actual positive cue generates the same one pop-up pulse. Push/landing steering stays 0. Standing crouch 1/compress 1, trim 0 and pocketReflex false are retained, so steering and posture changes are not combined.
+ 
+-`prep/exact-diffs.patch` contains complete diffs of native/owner/helper-check/seal/authority from the immediate accepted C harness, plus the input control change against the original frozen control helper. Authority and seal are replaced with direct receipt binding; no old build command is relabelled as newly executed. Source-only readiness stays pending and distinct from future root-run readiness.
++Configuration and initial published/drawn numeric actor outputs must match. Every serialized public input, physical clock, board pose, rider point/state output and displayed actor output through output 1372 must match the accepted C report, alongside relative cache revision increments. First standing must be exactly 1372. This is comparison of serialized numeric public outputs, not a claim about Float64 signed-zero bit patterns. Initial loft arrays, in contrast, are compared as exact decoded raw bytes. Any divergence preserves its actual row and aborts. The finite owner independently verifies the complete prefix and geometry. No actor or mesh is placed, and no standing posture is forced.
+ 
+-After review, root execution order is:
++Startup preserves the actual Padang→Big/Mid/Calm/Midday menu/HUD sequence and one declared public seeded restart using seed 6238/component 64/dx 2/fine 1. This fresh first-only validation variant qualifies the prior metadata rejection; it does not overwrite or retry the prior output folder. There is no seed search, explicit pilot `go`, settle, private state mutation, reset, geometry targeting or favorable trajectory selection. Stop remains first fall/recovery/separation/reset increase or the original 2160-step cap. Limits remain 660s owner, 648s command, 635s native, 180s startup wait and 7s cleanup.
+ 
+-1. `python3 /private/tmp/tube-c-line-steering-native-20261005/bind-inputs.py`
+-2. `python3 /private/tmp/tube-c-line-steering-native-20261005/root-helper-checks.py`
+-3. `python3 /private/tmp/tube-c-line-steering-native-20261005/root-seal.py --root-accept-preparation`
+-4. `python3 /private/tmp/tube-c-line-steering-native-20261005/run.py --arm candidate --check-seal`
+-5. `python3 /private/tmp/tube-c-line-steering-native-20261005/run.py --arm candidate --run`
++Only 4301/9711 are owned. The owner requires 4310/4311 closed and 4312/4313/4314 open before and after, preserving all human previews. Existing guards and evidence limits remain: four 12MiB PNGs within 48MiB total; four complete 37-array loft sidecars within 6MiB each/24MiB total; one 16MiB WebM triggered at actual push with no more than 240 moving advances/241 requests; 32MiB report and 24MiB trace. Follower camera, checkpoint nonmutation and the 20s cumulative actual mesh witness detector remain. Witnesses/reference trunk spheres do not prove full-body/capsule clearance, air connectivity or tube passage. No encoded FPS/playback rate claim is made.
+ 
+-The owned `candidate-first` output and owner/log paths are first-only and must not exist before the actual native invocation. Failed output is preserved. Future binding/check/seal results do not count as evidence of tube gameplay.
++`prep/exact-diffs.patch` includes all changes against the first steering helper, including native and independent owner clock/geometry validators, direct authority, binder/seal/readiness and input template additions. Root helper check results must use new schemas and newly executed logs. Source-only readiness remains pending and separate from future root readiness; prior successful helper checks are not copied.
++
++Root execution after review:
++
++1. `python3 /private/tmp/tube-c-line-steering-clock-20261005/bind-inputs.py`
++2. `python3 /private/tmp/tube-c-line-steering-clock-20261005/root-helper-checks.py`
++3. `python3 /private/tmp/tube-c-line-steering-clock-20261005/root-seal.py --root-accept-preparation`
++4. `python3 /private/tmp/tube-c-line-steering-clock-20261005/run.py --arm candidate --check-seal`
++5. `python3 /private/tmp/tube-c-line-steering-clock-20261005/run.py --arm candidate --run`
++
++All owned binding/check/seal and `candidate-first` output paths are first-only. Any unsuccessful new invocation remains preserved. A complete evidence wrapper is not by itself evidence of tube gameplay.

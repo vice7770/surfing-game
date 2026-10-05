@@ -1,0 +1,25 @@
+{
+  "schema": "c-mature-core-native-source-freeze/v1",
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "checksRun": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "scope": "Eight fresh helper/metadata files only. No runtime, build, parent, preview, root receipt/seal or actual native output is owned by this preparation.",
+  "pins": [
+    {"file":"/private/tmp/tube-c-mature-mouth-inspection-native-20261005/inputs.json","bytes":3787,"sha256":"240441ebebf7fdc9a43d57d6c67c55c7f2f5b217bdd297260544da499fb8cb23"},
+    {"file":"/private/tmp/tube-c-mature-mouth-inspection-native-20261005/authority.py","bytes":7422,"sha256":"40f28e077269cc972c515c19d493b498eee76018637e89a89a16cd862a067fed"},
+    {"file":"/private/tmp/tube-c-mature-mouth-inspection-native-20261005/native.mjs","bytes":15820,"sha256":"d63d72ff579e300bd3b56570e80cfcab93b12b3b6f1ec34dbac40fc728fa84c8"},
+    {"file":"/private/tmp/tube-c-mature-mouth-inspection-native-20261005/run.py","bytes":18353,"sha256":"4034aacf86ede42e75b57d1ff4199ecca8ae7ed6bd7eca05013daa71156b48c5"},
+    {"file":"/private/tmp/tube-c-mature-mouth-inspection-native-20261005/readiness.json","bytes":1125,"sha256":"48caa6736e084060e57482375a4857097c1fa382322300846a294819324d8bdf"},
+    {"file":"/private/tmp/tube-c-mature-mouth-inspection-native-20261005/README.txt","bytes":6355,"sha256":"b861299f745bd9147acc99ed78f9d349c327448f9221dce53eac82d01b8a75d8"},
+    {"file":"/private/tmp/tube-c-mature-mouth-inspection-native-20261005/mature-mouth.mjs","bytes":21511,"sha256":"e4bdb8fb8038672bb501cacb732b8a13f3bb56bea88e6fb3d02a966533919e00"},
+    {"file":"/private/tmp/tube-c-mature-mouth-inspection-native-20261005/inspection-bridge.mjs","bytes":3228,"sha256":"0751c8d4a60b5c238edc2a0e6003d69ac30a63e939f027e67ef710b54279d2ee"}
+  ],
+  "review": {"sourceOnlyIndependentReview":true,"blockingDriverArtifactCleanupMismatchFound":false,"hudReadyWaitQualified":true,"actualSyntaxAcceptancePending":true},
+  "runtimeOrSourceCopied": false,
+  "buildPerformed": false,
+  "nativeExecuted": false,
+  "qualityAccepted": false,
+  "tubePassageAccepted": false
+}

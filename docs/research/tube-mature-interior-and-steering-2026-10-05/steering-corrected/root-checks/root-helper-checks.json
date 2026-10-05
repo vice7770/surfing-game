@@ -1,0 +1,54 @@
+{
+  "schema": "c-line-steering-clock-root-helper-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "checks": {
+    "nativeSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-c-line-steering-clock-20261005/native.mjs"
+      ],
+      "elapsedSeconds": 0.13069233304122463,
+      "log": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-logs/nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "controlSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-c-line-steering-clock-20261005/control-policy.mjs"
+      ],
+      "elapsedSeconds": 0.07953066600020975,
+      "log": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-logs/controlSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "sourceOnlyOwner": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "python3",
+        "/private/tmp/tube-c-line-steering-clock-20261005/run.py",
+        "--arm",
+        "candidate"
+      ],
+      "elapsedSeconds": 0.29617175000021234,
+      "log": {
+        "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-logs/sourceOnlyOwner.log",
+        "bytes": 495,
+        "sha256": "1a555fa4356fcb37daed40987efff975fb235d3df3b26b2a41878a2b0ff43d8b"
+      }
+    }
+  }
+}

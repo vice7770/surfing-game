@@ -1,0 +1,29 @@
+{
+  "schema": "c-line-steering-source-readiness/v1",
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "checksRun": false,
+  "binderRun": false,
+  "sealWritten": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "nativeRun": false,
+  "sameApplicationAndDiagnosticBytes": true,
+  "intervention": "After first output standing only, production pilotInput.steer verbatim, no helper cap/slew; existing actual-cue/prone0/crouch1/compress1 preserved.",
+  "requiredExactPrefixThroughOutputStep": 1372,
+  "firstStandingExpected": 1372,
+  "gameplayAcceptance": false,
+  "tubePassageAcceptance": false,
+  "productionAdoption": false,
+  "ownedPorts": [
+    4301,
+    9711
+  ],
+  "protectedPorts": [
+    4310,
+    4311,
+    4312,
+    4313,
+    4314
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "schema": "tube-visual-reference-refresh/v1",
+  "date": "2026-10-05",
+  "localSource": {
+    "path": "/Users/regina/Desktop/Screen Recording 2026-10-03 at 17.52.10.mov",
+    "bytes": 343985118,
+    "durationSeconds": 33.286667,
+    "width": 3456,
+    "height": 2234
+  },
+  "remoteSource": {
+    "url": "https://www.youtube.com/watch?v=N1XOaxIuVT0",
+    "title": "Virtual Surfing PS5 quick review - The BEST SURFING GAME I Have Ever Seen",
+    "requestedStartSeconds": 120,
+    "requestedEndSeconds": 150,
+    "actualRetainedScreenshotsSeconds": [
+      124,
+      149,
+      154
+    ],
+    "extraViewExplicitlyOutsideInterval": [
+      154
+    ],
+    "remoteMediaDownloaded": false
+  },
+  "files": [
+    {
+      "name": "oct3-13s.jpg",
+      "bytes": 116550,
+      "sha256": "84ccc30c4284c7cfe1f5c0ef506d9e646606a9d7f055367f90039927a837c3f0"
+    },
+    {
+      "name": "oct3-18s.jpg",
+      "bytes": 117059,
+      "sha256": "11780a06cbb46256ba7d8f7de4e83091b36b40aa219ebbe16b63dcfc81790c2f"
+    },
+    {
+      "name": "oct3-27s.jpg",
+      "bytes": 122374,
+      "sha256": "e58f2ff5aeb3d575ce0b82e48e34496802b7e07c82ac7e3e8c01c06bcd79da78"
+    },
+    {
+      "name": "oct3-contact-sheet.jpg",
+      "bytes": 519343,
+      "sha256": "d2e9f9f18317924f51db2e14c6e52082450ab4f773e6619c13ef820dce8841a0"
+    },
+    {
+      "name": "youtube-2m04s.jpg",
+      "bytes": 135635,
+      "sha256": "248ec2f091ba708e549a8c049664bd6b50695e366373b34975d59c2912f2cab8"
+    },
+    {
+      "name": "youtube-2m29s.jpg",
+      "bytes": 116534,
+      "sha256": "e47c00bcd40ea0fe559b14c4c7340ae4224a754bfa6f945d2ae0606781f7ebd6"
+    },
+    {
+      "name": "youtube-2m34s-extra.jpg",
+      "bytes": 117542,
+      "sha256": "42fddb1db744d31c8bdac52117319786aabd3e8bc5702981e3a9de9021d7cd68"
+    }
+  ],
+  "scope": "Visual inspection only. Local frames sampled every3 seconds plus13/18/27 seconds. Actual YouTube player screenshots inspected. No geometry, physics, gameplay, FPS or completion proof."
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "c-line-steering-clock-source-freeze/v1",
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "checksRun": false,
+  "nativeRun": false,
+  "files": 11,
+  "pins": [
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/authority.py",
+      "bytes": 12008,
+      "sha256": "c597fe134f42f6479116fff6fecc88bb835066d3d1fe51d858f1666e5513a736"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/bind-inputs.py",
+      "bytes": 829,
+      "sha256": "1ec29ab9fcd59fdeef4f7c3ff212c19859a29b71437a2e287301cc6737d35e60"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/control-policy.mjs",
+      "bytes": 1695,
+      "sha256": "75b38631d5b814d8a3fa4a868d8a4ea11dafdff27637b726a2fb31a6c303b978"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/native.mjs",
+      "bytes": 36373,
+      "sha256": "a963d68ffd451dfe131ec8d14f7176e69d04b6e18a80ccaeeab0dd7673d855ad"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/run.py",
+      "bytes": 23939,
+      "sha256": "294833c984e79a83eabfe6f14950c32d0df22a0a7f9aeabb2917e5e75e2c3440"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-helper-checks.py",
+      "bytes": 1348,
+      "sha256": "364d383edd2897ae946b689728502f509a2fbcf2cdd51e52d369901bb2cc170b"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/root-seal.py",
+      "bytes": 3297,
+      "sha256": "04a5f4cda34be04893781a3f1158655529e9f6ab312aaf9575c098540e59720a"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/inputs.template.json",
+      "bytes": 7461,
+      "sha256": "9e61eee10d6deef5ad9fa8cdef9fca72926f9b899222b5d7384979af8f28c0c7"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/readiness.json",
+      "bytes": 1269,
+      "sha256": "e1b5494d1bcb5359c3cc585dc6e94590acc255424b8043bf773942175ef1cd19"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/README.md",
+      "bytes": 6456,
+      "sha256": "e1d4873e6f81b9d91a56a83e371bd3b9ececd1af9d3b85cad3a013862641f131"
+    },
+    {
+      "file": "/private/tmp/tube-c-line-steering-clock-20261005/prep/exact-diffs.patch",
+      "bytes": 63436,
+      "sha256": "a6ddf557cde50417fa13932b4da1dbd330f9730e753b2590345c7fda2fb30602"
+    }
+  ]
+}
