@@ -1,0 +1,276 @@
+{
+  "schema": "landing-frame-replay-archive/v1",
+  "complete": true,
+  "payloads": [
+    {
+      "stored": "capture/report.json.gz",
+      "encoding": "gzip",
+      "storedPin": {
+        "bytes": 1678638,
+        "sha256": "816852379045ef3fb2dd1879b67cb070276c8be1b191c22291f5d0e643887e1a"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/report.json",
+        "bytes": 12501789,
+        "sha256": "a03e780fb5cbbbb2b973930ebf722f13391c55a708850eff73619f65b991c495"
+      },
+      "decodedPin": {
+        "bytes": 12501789,
+        "sha256": "a03e780fb5cbbbb2b973930ebf722f13391c55a708850eff73619f65b991c495"
+      }
+    },
+    {
+      "stored": "receipts/owner.json",
+      "encoding": "identity",
+      "storedPin": {
+        "bytes": 3482,
+        "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first-owner.json",
+        "bytes": 3482,
+        "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+      },
+      "decodedPin": {
+        "bytes": 3482,
+        "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+      }
+    },
+    {
+      "stored": "receipts/seal.json.gz",
+      "encoding": "gzip",
+      "storedPin": {
+        "bytes": 39288,
+        "sha256": "5e820c3b88189ae8a88a1a31f28a0af9709e691baf9a2a3e182a50d022dabe49"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/seal.json",
+        "bytes": 167900,
+        "sha256": "c4d5d59d9c6e1d5405448385dc3c386666497a106a7d96b3419cfe6f1e9006ca"
+      },
+      "decodedPin": {
+        "bytes": 167900,
+        "sha256": "c4d5d59d9c6e1d5405448385dc3c386666497a106a7d96b3419cfe6f1e9006ca"
+      }
+    },
+    {
+      "stored": "receipts/readiness.json",
+      "encoding": "identity",
+      "storedPin": {
+        "bytes": 11256,
+        "sha256": "3a6ffeff68a335a9682582277192ac14707dc1b3630de7b8e5f93245b19b6d7b"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/readiness.json",
+        "bytes": 11256,
+        "sha256": "3a6ffeff68a335a9682582277192ac14707dc1b3630de7b8e5f93245b19b6d7b"
+      },
+      "decodedPin": {
+        "bytes": 11256,
+        "sha256": "3a6ffeff68a335a9682582277192ac14707dc1b3630de7b8e5f93245b19b6d7b"
+      }
+    },
+    {
+      "stored": "receipts/app-build.json.gz",
+      "encoding": "gzip",
+      "storedPin": {
+        "bytes": 36396,
+        "sha256": "32737191b73ffe92f855c75d67f8d1f2015a59f49c8a980f5fa8232115b388d0"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/root-complete-build-result.json",
+        "bytes": 177226,
+        "sha256": "2e5e45728190b4f99bf6509503ca84e42080b2898e99b22752dcf2b93c2cd0bf"
+      },
+      "decodedPin": {
+        "bytes": 177226,
+        "sha256": "2e5e45728190b4f99bf6509503ca84e42080b2898e99b22752dcf2b93c2cd0bf"
+      }
+    },
+    {
+      "stored": "receipts/diagnostic-build.json.gz",
+      "encoding": "gzip",
+      "storedPin": {
+        "bytes": 5497,
+        "sha256": "ff4fa695492e2c77e57a28f2fd5253a8aac78bf2f44b18a5e13316ebd041e8e8"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/root-diagnostic-build-result.json",
+        "bytes": 33725,
+        "sha256": "51086d6bafd90aba4bb85f9e9790e1198adbafc832353385c934a66f7e0dd6c2"
+      },
+      "decodedPin": {
+        "bytes": 33725,
+        "sha256": "51086d6bafd90aba4bb85f9e9790e1198adbafc832353385c934a66f7e0dd6c2"
+      }
+    },
+    {
+      "stored": "receipts/actual-comparison.json",
+      "encoding": "identity",
+      "storedPin": {
+        "bytes": 13053,
+        "sha256": "260a628f8673e7ea6a597e6655c1556e4493a925b125ed328c393336b0d880cc"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/actual-comparison.json",
+        "bytes": 13053,
+        "sha256": "260a628f8673e7ea6a597e6655c1556e4493a925b125ed328c393336b0d880cc"
+      },
+      "decodedPin": {
+        "bytes": 13053,
+        "sha256": "260a628f8673e7ea6a597e6655c1556e4493a925b125ed328c393336b0d880cc"
+      }
+    },
+    {
+      "stored": "capture/02-first-landing.png",
+      "encoding": "identity",
+      "storedPin": {
+        "bytes": 1903210,
+        "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/02-first-landing.png",
+        "bytes": 1903210,
+        "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+      },
+      "decodedPin": {
+        "bytes": 1903210,
+        "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+      }
+    },
+    {
+      "stored": "capture/03-terminal.png",
+      "encoding": "identity",
+      "storedPin": {
+        "bytes": 1961115,
+        "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/03-terminal.png",
+        "bytes": 1961115,
+        "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+      },
+      "decodedPin": {
+        "bytes": 1961115,
+        "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+      }
+    },
+    {
+      "stored": "capture/pop-up-motion.webm",
+      "encoding": "identity",
+      "storedPin": {
+        "bytes": 877721,
+        "sha256": "6408505dd361fecb518010efbb68540128ae3139c25c8610fd8fb808cde6e5ec"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/pop-up-motion.webm",
+        "bytes": 877721,
+        "sha256": "6408505dd361fecb518010efbb68540128ae3139c25c8610fd8fb808cde6e5ec"
+      },
+      "decodedPin": {
+        "bytes": 877721,
+        "sha256": "6408505dd361fecb518010efbb68540128ae3139c25c8610fd8fb808cde6e5ec"
+      }
+    },
+    {
+      "stored": "capture/loft-initial.json.gz",
+      "encoding": "gzip",
+      "storedPin": {
+        "bytes": 233813,
+        "sha256": "0f66f050c16cceacd3cac5412dc62a1d0f7b916daa6ecefd381818bd3a4ebb5b"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/loft-initial.json",
+        "bytes": 1099036,
+        "sha256": "685cb5e28d9c4151019f6d72cf55b4911ec294a2b1868634b5ea42de3301f431"
+      },
+      "decodedPin": {
+        "bytes": 1099036,
+        "sha256": "685cb5e28d9c4151019f6d72cf55b4911ec294a2b1868634b5ea42de3301f431"
+      }
+    },
+    {
+      "stored": "capture/loft-first-pop-up.json.gz",
+      "encoding": "gzip",
+      "storedPin": {
+        "bytes": 227289,
+        "sha256": "424f97ed6804e6ebc71c54d1747b2d070571eb1b80b24e0ac2a92c26635d37fa"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/loft-first-pop-up.json",
+        "bytes": 1073481,
+        "sha256": "a5beb80b3f52ea64aa6dda46da89431c726e05887ebad7c359f96336a0ca97fa"
+      },
+      "decodedPin": {
+        "bytes": 1073481,
+        "sha256": "a5beb80b3f52ea64aa6dda46da89431c726e05887ebad7c359f96336a0ca97fa"
+      }
+    },
+    {
+      "stored": "capture/loft-first-landing.json.gz",
+      "encoding": "gzip",
+      "storedPin": {
+        "bytes": 306149,
+        "sha256": "5105097fedcb5c5de935378f5e1cd7f1ba2cbb60a91a4a6c7d9cede5b4aa657a"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/loft-first-landing.json",
+        "bytes": 1496463,
+        "sha256": "2c24b6d30ea606b04b0a66dda8008b1d27e77b11fc64f679b0bf3c124fed7686"
+      },
+      "decodedPin": {
+        "bytes": 1496463,
+        "sha256": "2c24b6d30ea606b04b0a66dda8008b1d27e77b11fc64f679b0bf3c124fed7686"
+      }
+    },
+    {
+      "stored": "capture/loft-terminal.json.gz",
+      "encoding": "gzip",
+      "storedPin": {
+        "bytes": 311764,
+        "sha256": "4fd799247ab3b0a0c35e79af5b10e4d0e678007ff7062311e458b0c360433cf5"
+      },
+      "original": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1420830,
+        "sha256": "aa96c2afdc929219079abb4698231fe58f7417e84e64081696236a1557e99acd"
+      },
+      "decodedPin": {
+        "bytes": 1420830,
+        "sha256": "aa96c2afdc929219079abb4698231fe58f7417e84e64081696236a1557e99acd"
+      }
+    }
+  ],
+  "priorV6Report": {
+    "stored": "../tube-contact-lighting-2026-10-05/contact/V6/capture/report.json.gz",
+    "storedPin": {
+      "bytes": 1677288,
+      "sha256": "5c0c5a3a1dbde998972c074009ae67325054c72c3dac346830b1830943ad7984"
+    },
+    "decodedPin": {
+      "bytes": 12502746,
+      "sha256": "33fd872c52564b5d061e43ea0d31233f830e1e675ac07876bb068cf68d44c683"
+    }
+  },
+  "storedByteCap": 12582912,
+  "claims": {
+    "knownFailureSolved": false,
+    "bodyTubePassage": false,
+    "normalMenuAcceptance": false,
+    "visualAcceptance": false,
+    "FPS": false
+  },
+  "rootPixelInspection": {
+    "imagesActuallyViewed": [
+      "capture/02-first-landing.png",
+      "capture/03-terminal.png"
+    ],
+    "movieDecodedOrWatched": false,
+    "movieMetadata": {
+      "codec": "vp9",
+      "width": 1708,
+      "height": 879,
+      "encodedFrames": 67
+    }
+  }
+}

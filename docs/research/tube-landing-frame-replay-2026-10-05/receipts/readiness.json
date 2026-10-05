@@ -1,0 +1,301 @@
+{
+  "rootDiagnosticBuild": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/root-diagnostic-build-result.json",
+    "bytes": 33725,
+    "sha256": "51086d6bafd90aba4bb85f9e9790e1198adbafc832353385c934a66f7e0dd6c2"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348510,
+    "sha256": "bff59316dea513f16c2f6557ae5ab141322113ddd67142f150287a23e730b02a"
+  },
+  "diagnosticModuleReferencePolicy": "root-rebuilt-original74-input-graph-against-contact-remap-source",
+  "priorV4Readiness": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/readiness.json",
+    "bytes": 12549,
+    "sha256": "b69df89fd02a7760aa3d3756ef259316612c8b22068e720fcbabe369c2daa464"
+  },
+  "priorV4Owner": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/candidate-first-owner.json",
+    "bytes": 3440,
+    "sha256": "806d8f550c2a26eb8c310de7d59f3c1170d372962f8bfb79418c30fdb84a0a2c"
+  },
+  "priorV4Report": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/candidate-first/report.json",
+    "bytes": 10218530,
+    "sha256": "c411763b4b4c1fb6ff3c592085926f2ddba84e0bd0c2cddb0e4d471255048ead"
+  },
+  "schema": "pop-up-contact-v7-preparation-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "work": "/private/tmp/tube-pop-up-contact-native-v7-20261005",
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/helper-pins.json",
+    "bytes": 5367,
+    "sha256": "9a0612a88c551ca09aaaf531c85d4491f7ca47a064e4f5e477d6e509d370b7a8"
+  },
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/root-complete-build-result.json",
+    "bytes": 177226,
+    "sha256": "2e5e45728190b4f99bf6509503ca84e42080b2898e99b22752dcf2b93c2cd0bf"
+  },
+  "originalDiagnosticEntry": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/autopilot-entry.ts",
+    "bytes": 313,
+    "sha256": "6504ef070fcea923887574369e76c2bb0df639544a17779d1850709ed2226d8c"
+  },
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-landing-remap-fix-20261005/readiness.json",
+    "bytes": 12124,
+    "sha256": "ebd96a5bd8df830c9b2b81b21a74704ab1001c3f04ce56de1d2175582d35b538"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-landing-remap-fix-20261005/source-delta.json",
+    "bytes": 1713,
+    "sha256": "aa7273c9f3322969d51bbeb6917c3e576a1434d5cceae807acb08be2ee3a63cb"
+  },
+  "completeBuildSourceCount": 587,
+  "completeBuildAssetCount": 49,
+  "sourcePreparationCount": 588,
+  "diagnosticModuleInputs": 74,
+  "diagnosticCandidateSourceInputs": 71,
+  "compilerConfigurationInputs": [
+    {
+      "file": "/private/tmp/tube-landing-remap-fix-20261005/source/tsconfig.json",
+      "bytes": 550,
+      "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+    }
+  ],
+  "compilerWatchedInputCount": 75,
+  "originalFailedDiagnosticCompilation": {
+    "file": "/private/tmp/tube-pop-up-contact-build-20261005/diagnostic-first-attempt/failure.json",
+    "bytes": 1264,
+    "sha256": "bd60d8f1720743e948e64f2aeed3f3d6a804abebc92310be739ff89c43867e0f"
+  },
+  "sourceCheck": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/source-helper-checks.json",
+    "bytes": 4475,
+    "sha256": "9c0c72912a386300c9c2c740868a0069c05113fa10e6cc5298e31c653e25c0b1"
+  },
+  "inheritedV4ChecksNotRerun": {
+    "menu": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-v4-checks.json",
+      "bytes": 1980,
+      "sha256": "b200a257abd0132fb2478effd8aa33503d7d1c158fb3f7bc039d64295aac2f93"
+    },
+    "follower": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera-checks.json",
+      "bytes": 4042,
+      "sha256": "9bd33a903b800386a2a23f0a9e6893f1641b512eb21dfa075dbce16738791460"
+    },
+    "ownerAndControl": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/owner-policy-checks.json",
+      "bytes": 3258,
+      "sha256": "aa37406b14d62dd1563483c5639869fdc57dfdfda76e09e92fb8d04e779e98da"
+    },
+    "originalPreparationReadiness": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/readiness.json",
+      "bytes": 5169,
+      "sha256": "ae396c0f31a170ad4aa860d5c1876f8faa9dabd1e56a460ecc36f547ba32d94a"
+    }
+  },
+  "ordinaryRun": {
+    "purpose": "Determine actual effect of landing contact-frame fix on predeclared known-failure seed; successful fix/good tubes unproven",
+    "normalMenuFirst": true,
+    "publicReplayOverrides": {
+      "seed": 6238,
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "seedOnlyAttemptOccurred": false,
+    "allActualConfigFieldsMustMatchV4": true,
+    "initialClockBodyEqualityMeasuredNotAssumed": true,
+    "maxSteps": 2160,
+    "secondsPerStep": 0.016666666666666666,
+    "control": "Unchanged V4 first actual cue pulse and input overlay",
+    "stop": "First published fall/recover/separation/reset increase or horizon",
+    "noPlacementForcedCueSeedSearchOrRetries": true
+  },
+  "diagnosticRetention": {
+    "descriptiveOnly": true,
+    "full": "All non-prone or separation or latched-loss ride and pre-input view copies retain complete contactDiagnostics JSON",
+    "proneNumericTopFields": "All top-level numbers",
+    "proneSampleFields": [
+      "step",
+      "substep",
+      "feasible",
+      "inContact",
+      "flightTime",
+      "postureError",
+      "limit",
+      "supportXMin",
+      "supportXMax",
+      "supportZMin",
+      "supportZMax",
+      "copX",
+      "copZ"
+    ],
+    "proneSamples": [
+      "last",
+      "firstLimited",
+      "firstNonContact"
+    ],
+    "lossLatch": "Complete first finish loss until mount; report.firstContactLoss records first observed latch",
+    "allOtherInputClockBodyDetectorFieldsRetained": true
+  },
+  "evidence": {
+    "checkpointLabels": [
+      "initial",
+      "first-pop-up",
+      "first-landing",
+      "terminal"
+    ],
+    "maximumPNGs": 4,
+    "maximumPNGBytesEach": 12582912,
+    "maximumPNGBytes": 50331648,
+    "movieTrigger": "First actual push output",
+    "maximumMovieAdvances": 240,
+    "maximumMovieRequests": 241,
+    "maximumMovieBytes": 16777216,
+    "maximumSidecars": 4,
+    "maximumSidecarBytesEach": 6291456,
+    "maximumSidecarBytes": 25165824,
+    "maximumDetectorMilliseconds": 20000,
+    "maximumReportBytes": 33554432,
+    "maximumNDJSONBytes": 25165824,
+    "measuredProjection": {
+      "priorRows": 1366,
+      "compactFixtureBytes": 875,
+      "fullFixtureBytes": 2138,
+      "allProneProjection": 20002150.27818448,
+      "diagnosticWindowProjection": 20608390.27818448,
+      "notAGuaranteeForDifferentValuesOrFrontInventory": true
+    }
+  },
+  "finiteOwner": {
+    "wholeSeconds": 300,
+    "commandSeconds": 288,
+    "internalNativeSeconds": 275,
+    "cleanupSeconds": 7,
+    "rootSealSchema": "pop-up-contact-v7-root-seal/v1",
+    "nativeSchema": "pop-up-contact-v7-native/v1",
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    },
+    "protectedStatesFinallyMustMatch": true,
+    "ports": [
+      4299,
+      9709
+    ],
+    "cliCheck": [
+      "python3",
+      "/private/tmp/tube-pop-up-contact-native-v7-20261005/run.py",
+      "--arm",
+      "candidate",
+      "--check-seal"
+    ],
+    "cliRun": [
+      "python3",
+      "/private/tmp/tube-pop-up-contact-native-v7-20261005/run.py",
+      "--arm",
+      "candidate",
+      "--run"
+    ]
+  },
+  "claims": {
+    "actualNative": false,
+    "exactV4InitialReplay": false,
+    "actualLossCause": false,
+    "normalMenuAcceptance": false,
+    "bodyEntry": false,
+    "visualAcceptance": false,
+    "FPS": false,
+    "adoption": false,
+    "frameFixSolvesKnownFailure": false,
+    "exactV6InitialReplay": false
+  },
+  "rootBuildDistModuleOrProductionModifiedByPreparation": false,
+  "priorV5Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/readiness.json",
+    "bytes": 8599,
+    "sha256": "d833920a3d09763c52553a2097d257c0476d9701c08b8e2cb3071dc42293b138"
+  },
+  "priorV5Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/candidate-first-owner.json",
+    "bytes": 3489,
+    "sha256": "424b0013050fdfccd86ee6a1f457e458946cb0dcd8541beebb4306e59359acc6"
+  },
+  "priorV5Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/candidate-first/report.json",
+    "bytes": 11648573,
+    "sha256": "f2260f0889e3e9657778dfa4a95913db440b34e7b4f8b4b3be83c4a6662e3239"
+  },
+  "labelFix": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/label-fix.json",
+    "bytes": 1354,
+    "sha256": "0bad44a7f2d7d77d2e66844669797745ba191bd130bf3b28b1f8887ed2887e80"
+  },
+  "labelChecks": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/label-checks.json",
+    "bytes": 484,
+    "sha256": "509bc417b92e00a5606534caa40e736c72b1f692335d8987cccf64a965f2c708"
+  },
+  "actualNative": false,
+  "newChecksInheritedFromV5NotRerun": {
+    "contact": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/contact-checks.json",
+      "bytes": 2483,
+      "sha256": "629ae8fd3645e845da039d0831b3a930b4f61f9b68caa3116c14df184b3bbe09"
+    },
+    "owner": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/owner-checks.json",
+      "bytes": 2534,
+      "sha256": "d8c42fa3f3abdbeb031f99d59b960193f868e86dd7c40c315b3555bc9f82cf92"
+    },
+    "CPU": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/cpu-validation.json",
+      "bytes": 1874,
+      "sha256": "c852703b505a50239ec749df453970f564348931f95afdf56fc9336b4eaffaad"
+    },
+    "contactMockGroups": 7,
+    "ownerMockGroups": 21
+  },
+  "priorV6Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/readiness.json",
+    "bytes": 9713,
+    "sha256": "601d870c3c1a97f838f5693e706122c8e6aef96a9dfd0ab8e2dde832972a9780"
+  },
+  "priorV6Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first-owner.json",
+    "bytes": 3481,
+    "sha256": "b6ebaf9afd303f9dbbe577f53ba2e2701408f545b6107e2b3a1900ffc8f95d91"
+  },
+  "priorV6Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first/report.json",
+    "bytes": 12502746,
+    "sha256": "33fd872c52564b5d061e43ea0d31233f830e1e675ac07876bb068cf68d44c683"
+  },
+  "priorV6Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/seal.json",
+    "bytes": 173338,
+    "sha256": "11577f905c1ea0215fed9711224733aed74dabc556314a0035e8eb581ecef2e0"
+  },
+  "minimalAdapterChanges": "paths/schemas/rebuilt source/module, descriptive V6 initial comparison and fix-purpose label only",
+  "pairedV6InitialComparison": "All recorded initialBody fields excluding workerStepMs, actual seaTime and all config fields; equality measured, no placement or controls selected from result",
+  "checks": {
+    "adapterNormalization": true,
+    "syntax": true,
+    "sourceOnlyOwner": true,
+    "effectiveSource588": true,
+    "actualAppBuild587Inputs49Assets": true,
+    "rebuiltDiagnostic74Inputs71SourceAnd75CompilerWatched": true,
+    "inheritedV6MockAndLabelChecksNotRerun": true,
+    "noNewMockSuite": true
+  }
+}

@@ -1,0 +1,430 @@
+{
+  "schema": "landing-frame-fix-V7-actual-comparison/v1",
+  "complete": true,
+  "V7Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/report.json",
+    "bytes": 12501789,
+    "sha256": "a03e780fb5cbbbb2b973930ebf722f13391c55a708850eff73619f65b991c495"
+  },
+  "V7Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first-owner.json",
+    "bytes": 3482,
+    "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+  },
+  "V7Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/seal.json",
+    "bytes": 167900,
+    "sha256": "c4d5d59d9c6e1d5405448385dc3c386666497a106a7d96b3419cfe6f1e9006ca"
+  },
+  "V6Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first/report.json",
+    "bytes": 12502746,
+    "sha256": "33fd872c52564b5d061e43ea0d31233f830e1e675ac07876bb068cf68d44c683"
+  },
+  "knownFailureSeed": 6238,
+  "stepCount": 1366,
+  "comparison": {
+    "seaTime": {
+      "commonRows": 1366,
+      "matchingPrefix": 1366,
+      "firstDifferentStep": null,
+      "allEqual": true
+    },
+    "input": {
+      "commonRows": 1366,
+      "matchingPrefix": 1366,
+      "firstDifferentStep": null,
+      "allEqual": true
+    },
+    "boardPose": {
+      "commonRows": 1366,
+      "matchingPrefix": 1342,
+      "firstDifferentStep": 1343,
+      "allEqual": false
+    },
+    "riderPoints": {
+      "commonRows": 1366,
+      "matchingPrefix": 1342,
+      "firstDifferentStep": 1343,
+      "allEqual": false
+    },
+    "riderWords": {
+      "commonRows": 1366,
+      "matchingPrefix": 1342,
+      "firstDifferentStep": 1343,
+      "allEqual": false
+    },
+    "displayedBoard": {
+      "commonRows": 1366,
+      "matchingPrefix": 1343,
+      "firstDifferentStep": 1344,
+      "allEqual": false
+    },
+    "displayedRiderPoints": {
+      "commonRows": 1366,
+      "matchingPrefix": 1343,
+      "firstDifferentStep": 1344,
+      "allEqual": false
+    }
+  },
+  "initialBodyExceptTimingAndFollowerCounters": {
+    "seaTime": true,
+    "seaCounters": true,
+    "riderPoints": true,
+    "riderWords": true,
+    "boardPose": true,
+    "ride": true,
+    "compute": true,
+    "cue": true,
+    "balance": true,
+    "separation": true,
+    "displayedBoard": true,
+    "displayedRiderPoints": true,
+    "clocks": true,
+    "loft": true,
+    "pilot": true
+  },
+  "initialCameraPoseEqual": true,
+  "initialFollowerCalls": {
+    "V6": 1,
+    "V7": 2
+  },
+  "configComparison": {
+    "differences": {},
+    "allFieldsCompared": true
+  },
+  "phaseMetrics": [
+    {
+      "step": 1343,
+      "V6": {
+        "phase": "landing",
+        "phaseTime": 0.012499999999999999,
+        "feasible": false,
+        "postureError": 0.05423325726096997,
+        "flightTime": 0,
+        "limit": "flight",
+        "legExtension": 0.0024270212125445667,
+        "legRate": 0.3492443029927172,
+        "landingPeak": 1.3085227130460413
+      },
+      "V7": {
+        "phase": "landing",
+        "phaseTime": 0.012499999999999999,
+        "feasible": false,
+        "postureError": 0.0029592716619149953,
+        "flightTime": 0,
+        "limit": "flight",
+        "legExtension": 0.0018119725753544813,
+        "legRate": 0.33418359132468045,
+        "landingPeak": 1.3075390987032218
+      }
+    },
+    {
+      "step": 1353,
+      "V6": {
+        "phase": "landing",
+        "phaseTime": 0.1791666666666662,
+        "feasible": true,
+        "postureError": 0.000341602215322605,
+        "flightTime": 0,
+        "limit": "none",
+        "legExtension": -0.009769848189912889,
+        "legRate": 0.1615346948539162,
+        "landingPeak": 2.0914582881950543
+      },
+      "V7": {
+        "phase": "landing",
+        "phaseTime": 0.1791666666666662,
+        "feasible": true,
+        "postureError": 0.0003115907900346501,
+        "flightTime": 0,
+        "limit": "none",
+        "legExtension": -0.010173448386031403,
+        "legRate": 0.12914793384543582,
+        "landingPeak": 2.079881886605963
+      }
+    },
+    {
+      "step": 1356,
+      "V6": {
+        "phase": "landing",
+        "phaseTime": 0.22916666666666602,
+        "feasible": true,
+        "postureError": 0.000394525731179375,
+        "flightTime": 0,
+        "limit": "none",
+        "legExtension": -0.00563547826763422,
+        "legRate": 0.17859291993904014,
+        "landingPeak": 2.0914582881950543
+      },
+      "V7": {
+        "phase": "landing",
+        "phaseTime": 0.22916666666666602,
+        "feasible": true,
+        "postureError": 0.00035768659289842276,
+        "flightTime": 0,
+        "limit": "none",
+        "legExtension": -0.006096675432929022,
+        "legRate": 0.18379693111701,
+        "landingPeak": 2.079881886605963
+      }
+    },
+    {
+      "step": 1357,
+      "V6": {
+        "phase": "landing",
+        "phaseTime": 0.24583333333333263,
+        "feasible": false,
+        "postureError": 0.005720520158042804,
+        "flightTime": 0,
+        "limit": "flight",
+        "legExtension": 0.002352677678411297,
+        "legRate": 0.41644111752418395,
+        "landingPeak": 2.0914582881950543
+      },
+      "V7": {
+        "phase": "landing",
+        "phaseTime": 0.24583333333333263,
+        "feasible": false,
+        "postureError": 0.0067538047018384255,
+        "flightTime": 0,
+        "limit": "flight",
+        "legExtension": 0.003490591938010379,
+        "legRate": 0.506678292629609,
+        "landingPeak": 2.079881886605963
+      }
+    },
+    {
+      "step": 1366,
+      "V6": {
+        "phase": "landing",
+        "phaseTime": 0.3848958333333393,
+        "feasible": false,
+        "postureError": 0.2509080941485283,
+        "flightTime": 0,
+        "limit": "flight",
+        "legExtension": 0.008083090145959648,
+        "legRate": -0.5289066412882921,
+        "landingPeak": 2.0914582881950543
+      },
+      "V7": {
+        "phase": "landing",
+        "phaseTime": 0.3828125000000059,
+        "feasible": false,
+        "postureError": 0.25057804094069314,
+        "flightTime": 0,
+        "limit": "flight",
+        "legExtension": 0.021047954092700216,
+        "legRate": -0.44644362053956305,
+        "landingPeak": 2.079881886605963
+      }
+    }
+  ],
+  "firstContactLoss": {
+    "step": 1366,
+    "seaTime": 299.0960227219391,
+    "physicalSeconds": 22.766666666666666,
+    "ridePhase": "fallen",
+    "separation": "lost board",
+    "diagnostics": {
+      "mount": 1,
+      "step": 1366,
+      "substeps": 7,
+      "elapsedStepSeconds": 0.003645833333333333,
+      "limitedSubsteps": 7,
+      "nonContactSubsteps": 0,
+      "maxFlightTime": 0.4,
+      "recoverableError": 0.25,
+      "last": {
+        "step": 1366,
+        "substep": 7,
+        "seconds": 0.0005208333333333333,
+        "elapsedStepSeconds": 0.003645833333333333,
+        "phase": "landing",
+        "phaseTime": 0.3828125000000059,
+        "phaseDuration": 0.48,
+        "popUpTime": 1.103645833333311,
+        "feasible": false,
+        "inContact": true,
+        "flightTime": 0,
+        "postureError": 0.25057804094069314,
+        "limit": "flight",
+        "recentFlight": 0.10770001049210326,
+        "recentTip": 0.002496174603162642,
+        "recentSlip": 8.895037421783441e-05,
+        "recentImpact": 0.00022387916575398222,
+        "legExtension": 0.021047954092700216,
+        "legRate": -0.44644362053956305,
+        "legRest": 0,
+        "demandX": -1.7082680772841599,
+        "demandY": -0.6231201458287525,
+        "demandZ": -7.435448111240591,
+        "projectedX": 0,
+        "projectedY": 0,
+        "projectedZ": 0,
+        "appliedX": 0,
+        "appliedY": 0,
+        "appliedZ": 0,
+        "peakNormalLoad": 0,
+        "frontShare": 0.6897902103317769,
+        "relativeVelocityX": 0.6577773761647703,
+        "relativeVelocityY": 0.14524456618101655,
+        "relativeVelocityZ": 2.8024945183173218,
+        "supportXMin": -0.13,
+        "supportXMax": 0.13,
+        "supportZMin": -0.649,
+        "supportZMax": 0.10100000000000003,
+        "copX": 0.015614849863401736,
+        "copZ": 0.0028893792861428777
+      },
+      "firstLimited": {
+        "step": 1366,
+        "substep": 1,
+        "seconds": 0.0005208333333333333,
+        "elapsedStepSeconds": 0.0005208333333333333,
+        "phase": "landing",
+        "phaseTime": 0.37968750000000573,
+        "phaseDuration": 0.48,
+        "popUpTime": 1.1005208333333112,
+        "feasible": false,
+        "inContact": true,
+        "flightTime": 0,
+        "postureError": 0.2408477749241475,
+        "limit": "flight",
+        "recentFlight": 0.10624239440906812,
+        "recentTip": 0.002535483633394733,
+        "recentSlip": 9.03511387896935e-05,
+        "recentImpact": 0.0002274047496149062,
+        "legExtension": 0.022445355543128098,
+        "legRate": -0.47455417464219657,
+        "legRest": 0,
+        "demandX": -1.9941599232437928,
+        "demandY": -0.776655404402933,
+        "demandZ": -8.109464869658025,
+        "projectedX": 0,
+        "projectedY": 0,
+        "projectedZ": 0,
+        "appliedX": 0,
+        "appliedY": 0,
+        "appliedZ": 0,
+        "peakNormalLoad": 0,
+        "frontShare": 0.6897902103317769,
+        "relativeVelocityX": 0.6496052138579849,
+        "relativeVelocityY": 0.15484645880636516,
+        "relativeVelocityZ": 2.7923758006014463,
+        "supportXMin": -0.13,
+        "supportXMax": 0.13,
+        "supportZMin": -0.649,
+        "supportZMax": 0.10100000000000003,
+        "copX": 0.01438823608435517,
+        "copZ": -0.003789573200544842
+      },
+      "firstNonContact": null,
+      "loss": {
+        "trigger": "posture-error",
+        "selectedCause": "lost board",
+        "dominantLimit": "flight",
+        "sample": {
+          "step": 1366,
+          "substep": 7,
+          "seconds": 0.0005208333333333333,
+          "elapsedStepSeconds": 0.003645833333333333,
+          "phase": "landing",
+          "phaseTime": 0.3828125000000059,
+          "phaseDuration": 0.48,
+          "popUpTime": 1.103645833333311,
+          "feasible": false,
+          "inContact": true,
+          "flightTime": 0,
+          "postureError": 0.25057804094069314,
+          "limit": "flight",
+          "recentFlight": 0.10770001049210326,
+          "recentTip": 0.002496174603162642,
+          "recentSlip": 8.895037421783441e-05,
+          "recentImpact": 0.00022387916575398222,
+          "legExtension": 0.021047954092700216,
+          "legRate": -0.44644362053956305,
+          "legRest": 0,
+          "demandX": -1.7082680772841599,
+          "demandY": -0.6231201458287525,
+          "demandZ": -7.435448111240591,
+          "projectedX": 0,
+          "projectedY": 0,
+          "projectedZ": 0,
+          "appliedX": 0,
+          "appliedY": 0,
+          "appliedZ": 0,
+          "peakNormalLoad": 0,
+          "frontShare": 0.6897902103317769,
+          "relativeVelocityX": 0.6577773761647703,
+          "relativeVelocityY": 0.14524456618101655,
+          "relativeVelocityZ": 2.8024945183173218,
+          "supportXMin": -0.13,
+          "supportXMax": 0.13,
+          "supportZMin": -0.649,
+          "supportZMax": 0.10100000000000003,
+          "copX": 0.015614849863401736,
+          "copZ": 0.0028893792861428777
+        }
+      },
+      "meanForceX": 0,
+      "meanForceY": 0,
+      "meanForceZ": 0,
+      "peakNormalLoad": 0,
+      "landingPeak": 2.079881886605963,
+      "landingFrontShare": 0.8043027824455111
+    }
+  },
+  "entry": {
+    "observedStandingOutside": false,
+    "firstPartial": null,
+    "firstConnectedWitnessEntry": null,
+    "containmentWithoutObservedOutside": null,
+    "firstConnectedWitnessExit": null,
+    "maximumConsecutiveContainedSteps": 0,
+    "residenceIntervals": [],
+    "fullBodyClearancePass": false
+  },
+  "browserErrors": [],
+  "owner": {
+    "complete": true,
+    "exitCode": 0,
+    "elapsedSeconds": 182.71053575002588,
+    "closedPorts": {
+      "4299": true,
+      "9709": true
+    },
+    "protectedStatesFinally": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    },
+    "sourceBuildHelpersPostUnchanged": true,
+    "remainingOwnedPids": []
+  },
+  "rootPixelInspection": {
+    "viewed": [
+      {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/02-first-landing.png",
+        "bytes": 1903210,
+        "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+      },
+      {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/03-terminal.png",
+        "bytes": 1961115,
+        "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+      }
+    ],
+    "findings": "First landing shows rider beginning to rise on the exterior steep face; terminal shows separation above board. These images do not show a convincing hollow mouth or body passage.",
+    "movieDecodedOrWatched": false
+  },
+  "claims": {
+    "phaseBoundaryContinuityRegressionFixed": true,
+    "knownFailureLandingSolved": false,
+    "normalMenuAcceptance": false,
+    "tubeEntryOrPassage": false,
+    "visualAcceptance": false,
+    "FPS": false
+  }
+}
