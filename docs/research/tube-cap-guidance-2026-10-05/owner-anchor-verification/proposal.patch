@@ -1,0 +1,662 @@
+diff --git a/owned_group_anchor.py b/owned_group_anchor.py
+new file mode 100644
+--- /dev/null
++++ b/owned_group_anchor.py
+@@ -0,0 +1,354 @@
++"""SOURCE-ONLY proposal. Pure identity validation; no OS access or signals.
++
++Inputs must come from the real finite owner and fresh bounded OS reads. Synthetic
++fixtures do not establish any identity of an actual running process.
++"""
++from __future__ import annotations
++from dataclasses import dataclass
++import math
++from typing import Mapping
++
++PROTECTED_PORTS = (4312, 4313, 4314, 4315, 4316)
++OWNED_PORTS = (4301, 9711)
++NOTE_LIMIT = 16
++# Explicit fail-closed proposal caps; never truncate identity strings or rows.
++MAX_MEMBERS = 256
++MAX_COMMAND_CHARS = 65536
++MAX_STARTED_CHARS = 256
++
++
++class AnchorRejected(ValueError):
++    def __init__(self, reason, evidence):
++        self.reason = reason
++        self.evidence = evidence
++        super().__init__(reason)
++
++
++@dataclass(frozen=True)
++class Identity:
++    pid: int
++    pgid: int
++    started: str
++    command: str
++
++
++@dataclass(frozen=True)
++class ProtectedIdentity:
++    pid: int
++    started: str
++    command: str
++
++
++@dataclass(frozen=True)
++class LaunchFacts:
++    """Facts from the actual unreaped Popen object and exact launch invocation.
++
++    alive_before_read/after_read mean proc.poll() is None at those checkpoints.
++    expected_command is the predeclared FULL ps command string for the exact
++    argv, not a substring inferred from whichever row happens to be observed.
++    """
++    popen_pid: int
++    start_new_session: bool
++    expected_command: str
++    alive_before_read: bool
++    alive_after_read: bool
++    owned_ports: tuple = OWNED_PORTS
++
++
++@dataclass(frozen=True)
++class ReadWindow:
++    started: float
++    finished: float
++    now: float
++    deadline: float
++    os_seconds: float = 2.0
++    maximum_age_seconds: float = 2.0
++
++
++@dataclass(frozen=True)
++class Change:
++    kind: str
++    pid: int
++    before: Identity | None
++    current: Identity | None
++
++
++@dataclass(frozen=True)
++class OwnedState:
++    original_leader: Identity
++    # ONLY the most recent successful current read. Exited members do not remain
++    # eligible to anchor a later group. The original leader is separately kept.
++    members: tuple
++    protected_reference: tuple
++    observation_number: int
++    last_read_started: float
++    last_read_finished: float
++    change_count: int = 0
++    change_notes: tuple = ()
++    group_absent: bool = False
++
++
++@dataclass(frozen=True)
++class Observation:
++    state: OwnedState
++    anchor_kind: str
++    anchor_identity: Identity | None
++    current_members: tuple
++    read_started: float
++    read_finished: float
++    checked_at: float
++    deadline: float
++    maximum_age_seconds: float
++
++    @property
++    def group_absent(self):
++        return not self.current_members
++
++
++def identity_evidence(value):
++    if value is None:
++        return None
++    out = {'pid': value.pid, 'started': value.started, 'command': value.command}
++    if isinstance(value, Identity):
++        out['pgid'] = value.pgid
++    return out
++
++
++def state_evidence(state):
++    if state is None:
++        return None
++    return {
++        'originalLeader': identity_evidence(state.original_leader),
++        'previousMembers': [identity_evidence(row) for row in state.members],
++        'observationNumber': state.observation_number,
++        'previousGroupAbsent': state.group_absent,
++        'previousReadStarted': state.last_read_started,
++        'previousReadFinished': state.last_read_finished,
++    }
++
++
++def _reject(reason, previous, current, **extra):
++    # Rows are detached immutable values. Full before/current PID/start/command
++    # evidence is retained, including the offending leader if one is present.
++    raise AnchorRejected(reason, {
++        'previous': state_evidence(previous),
++        'currentMembers': [identity_evidence(row) for row in current],
++        **extra,
++    })
++
++
++def _identity_valid(row, protected=False):
++    wanted = ProtectedIdentity if protected else Identity
++    return (isinstance(row, wanted)
++        and type(row.pid) is int and row.pid > 0
++        and (protected or (type(row.pgid) is int and row.pgid > 0))
++        and isinstance(row.started, str) and 0 < len(row.started) <= MAX_STARTED_CHARS
++        and isinstance(row.command, str) and 0 < len(row.command) <= MAX_COMMAND_CHARS)
++
++
++def _protected(snapshot):
++    if not isinstance(snapshot, Mapping) or set(snapshot) != set(PROTECTED_PORTS):
++        raise AnchorRejected('protected_port_set_differs', {'expectedPorts': list(PROTECTED_PORTS)})
++    result = []
++    for port in PROTECTED_PORTS:
++        rows = tuple(snapshot[port])
++        if (not rows or len(rows) > MAX_MEMBERS
++            or any(not _identity_valid(row, protected=True) for row in rows)
++            or len({row.pid for row in rows}) != len(rows)):
++            raise AnchorRejected('protected_full_identity_required', {'port': port})
++        result.append((port, tuple(sorted(rows, key=lambda row: row.pid))))
++    return tuple(result)
++
++
++def validate_protected_snapshot(reference, observed):
++    """Retain the full port/PID/start/command check; returns detached reference.
++
++    Required at bootstrap against the pinned root authority and again after
++    cleanup, as in the existing finite owner. This helper itself performs no read.
++    """
++    before, now = _protected(reference), _protected(observed)
++    if before != now:
++        raise AnchorRejected('protected_identity_changed', {
++            'before': {port: [identity_evidence(row) for row in rows] for port, rows in before},
++            'current': {port: [identity_evidence(row) for row in rows] for port, rows in now},
++        })
++    return before
++
++
++def _fresh(read, previous, current):
++    values = (read.started, read.finished, read.now, read.deadline,
++        read.os_seconds, read.maximum_age_seconds)
++    if not all(type(value) in (int, float) and math.isfinite(value) for value in values):
++        _reject('finite_read_window_required', previous, current)
++    if (read.os_seconds <= 0 or read.os_seconds > 2
++        or read.maximum_age_seconds <= 0 or read.maximum_age_seconds > 2
++        or not read.started <= read.finished <= read.now < read.deadline
++        or read.finished - read.started > read.os_seconds
++        or read.now - read.finished > read.maximum_age_seconds):
++        _reject('fresh_bounded_read_required', previous, current,
++            readWindow={key: getattr(read, key) for key in ReadWindow.__dataclass_fields__})
++
++
++def observe_owned_group(previous, current, *, launch, read,
++        protected_reference, protected_current=None):
++    """Validate a fresh group anchor BEFORE accepting updated child snapshots.
++
++    current is the COMPLETE non-zombie group read for actual Popen pid=pgid.
++    Bootstrap additionally requires live-before/live-after real Popen facts and
++    exact expected full command. Once initialized, the original leader is
++    immutable. If present, its mismatch fails even if another member matches.
++    If absent, one member from the immediately previous successful observation
++    must match exactly BEFORE current replaces those snapshots.
++
++    No process/clock/port reads, launches, sleeps, retries, mutation or signals.
++    """
++    if not isinstance(current, Mapping) or len(current) > MAX_MEMBERS:
++        raise AnchorRejected('complete_bounded_group_required', {'maximumMembers': MAX_MEMBERS})
++    unsorted_rows = tuple(current.values())
++    if (any(not _identity_valid(row) for row in unsorted_rows)
++        or any(type(pid) is not int or pid != row.pid for pid, row in current.items())):
++        raise AnchorRejected('full_group_identity_required', {})
++    rows = tuple(current[pid] for pid in sorted(current))
++    _fresh(read, previous, rows)
++    if previous is not None and (read.started < previous.last_read_finished
++        or read.finished <= previous.last_read_finished):
++        _reject('new_nonoverlapping_read_required', previous, rows,
++            readStarted=read.started, readFinished=read.finished)
++    if (type(launch.popen_pid) is not int or launch.popen_pid <= 0
++        or launch.start_new_session is not True or launch.owned_ports != OWNED_PORTS
++        or not isinstance(launch.expected_command, str)
++        or not 0 < len(launch.expected_command) <= MAX_COMMAND_CHARS):
++        _reject('exact_actual_launch_contract_required', previous, rows)
++    if any(row.pgid != launch.popen_pid for row in rows):
++        _reject('current_row_outside_owned_group', previous, rows,
++            expectedPgid=launch.popen_pid)
++    protected = _protected(protected_reference)
++    if protected_current is not None:
++        protected = validate_protected_snapshot(protected_reference, protected_current)
++    protected_pids = {row.pid for _, members in protected for row in members}
++    overlap = sorted(protected_pids.intersection(current))
++    if overlap:
++        _reject('owned_group_intersects_protected_pids', previous, rows,
++            protectedPids=overlap)
++
++    if previous is None:
++        if protected_current is None:
++            _reject('bootstrap_full_protected_check_required', previous, rows)
++        leader = current.get(launch.popen_pid)
++        if (launch.alive_before_read is not True or launch.alive_after_read is not True
++            or leader is None or leader.command != launch.expected_command):
++            _reject('bootstrap_exact_live_popen_leader_required', previous, rows,
++                expectedLeader={'pid': launch.popen_pid, 'pgid': launch.popen_pid,
++                    'command': launch.expected_command},
++                actualLeader=identity_evidence(leader),
++                liveBeforeRead=launch.alive_before_read, liveAfterRead=launch.alive_after_read)
++        state = OwnedState(leader, rows, protected, 1, read.started, read.finished)
++        return Observation(state, 'original-leader/bootstrap', leader, rows,
++            read.started, read.finished, read.now, read.deadline, read.maximum_age_seconds)
++
++    if (previous.original_leader.pid != launch.popen_pid
++        or previous.original_leader.pgid != launch.popen_pid
++        or previous.original_leader.command != launch.expected_command
++        or previous.protected_reference != protected):
++        _reject('owner_launch_or_protected_reference_changed', previous, rows,
++            actualLaunch={'pid': launch.popen_pid, 'command': launch.expected_command})
++    if previous.group_absent and rows:
++        _reject('owned_group_reappeared_after_verified_absence', previous, rows)
++
++    if not rows:
++        state = OwnedState(previous.original_leader, (), protected,
++            previous.observation_number + 1, read.started, read.finished, previous.change_count,
++            previous.change_notes, True)
++        return Observation(state, 'absent/non-signallable', None, (),
++            read.started, read.finished, read.now, read.deadline, read.maximum_age_seconds)
++
++    leader = current.get(launch.popen_pid)
++    if leader is not None:
++        if leader != previous.original_leader:
++            _reject('original_leader_identity_changed', previous, rows,
++                originalLeader=identity_evidence(previous.original_leader),
++                currentLeader=identity_evidence(leader))
++        anchor, kind = leader, 'original-leader/exact'
++    else:
++        # Critical order: use ONLY previous snapshots. Never update first.
++        matches = [row for row in previous.members if current.get(row.pid) == row]
++        if not matches:
++            _reject('no_exact_previously_observed_survivor', previous, rows)
++        anchor, kind = min(matches, key=lambda row: row.pid), 'previous-survivor/exact'
++
++    before = {row.pid: row for row in previous.members}
++    notes = list(previous.change_notes)
++    change_count = previous.change_count
++    for pid in sorted(set(before).union(current)):
++        if pid == previous.original_leader.pid:
++            continue
++        old, new = before.get(pid), current.get(pid)
++        if old != new:
++            change_count += 1
++            if len(notes) < NOTE_LIMIT:
++                notes.append(Change('added' if old is None else 'removed' if new is None else 'changed',
++                    pid, old, new))
++    state = OwnedState(previous.original_leader, rows, protected,
++        previous.observation_number + 1, read.started, read.finished, change_count, tuple(notes), False)
++    return Observation(state, kind, anchor, rows,
++        read.started, read.finished, read.now, read.deadline, read.maximum_age_seconds)
++
++
++def authorize_group_signal(observation, *, now, deadline, last_signalled_observation_number):
++    """Pure final freshness check immediately before caller's group signal.
++
++    Caller MUST supply a new group read/observation for EACH TERM or KILL. No
++    cached periodic observation or prior TERM observation may authorize KILL.
++    Caller must persist the returned observation number after each actual signal.
++    This function cannot prove the origin of caller-supplied OS/Popen facts.
++    """
++    if (observation.group_absent or observation.anchor_identity is None
++        or observation.anchor_kind == 'absent/non-signallable'):
++        raise AnchorRejected('absent_group_cannot_authorize_signal', {})
++    if (type(last_signalled_observation_number) is not int
++        or last_signalled_observation_number < 0
++        or observation.state.observation_number <= last_signalled_observation_number):
++        raise AnchorRejected('new_observation_required_for_each_signal', {
++            'observationNumber': observation.state.observation_number,
++            'lastSignalledObservationNumber': last_signalled_observation_number,
++        })
++    if (type(now) not in (int, float) or not math.isfinite(now)
++        or type(deadline) not in (int, float) or not math.isfinite(deadline)
++        or not observation.checked_at <= now < min(deadline, observation.deadline)
++        or now - observation.read_finished > observation.maximum_age_seconds):
++        raise AnchorRejected('fresh_anchor_required_before_signal', {
++            'anchor': identity_evidence(observation.anchor_identity),
++            'readFinished': observation.read_finished, 'signalCheckNow': now,
++            'observationDeadline': observation.deadline, 'signalDeadline': deadline,
++        })
++    return {
++        'pgid': observation.state.original_leader.pgid,
++        'anchorKind': observation.anchor_kind,
++        'anchorIdentity': identity_evidence(observation.anchor_identity),
++        'observationNumber': observation.state.observation_number,
++        'readStarted': observation.read_started,
++        'readFinished': observation.read_finished,
++        'checkedAt': now,
++        'verifiedMembers': [identity_evidence(row) for row in observation.current_members],
++    }
++
++
++def observation_record(observation):
++    """Detached JSON-compatible scalar/identity telemetry; maximum16notes."""
++    state = observation.state
++    return {
++        'originalLeader': identity_evidence(state.original_leader),
++        'anchorKind': observation.anchor_kind,
++        'anchorIdentity': identity_evidence(observation.anchor_identity),
++        'currentIdentities': [identity_evidence(row) for row in observation.current_members],
++        'groupAbsent': observation.group_absent,
++        'observationNumber': state.observation_number,
++        'readStarted': observation.read_started,
++        'readFinished': observation.read_finished,
++        'checkedAt': observation.checked_at,
++        'childChangeCount': state.change_count,
++        'childChangeNotes': [{'kind': note.kind, 'pid': note.pid,
++            'before': identity_evidence(note.before), 'current': identity_evidence(note.current)}
++            for note in state.change_notes],
++        'childChangeNotesTruncated': state.change_count > len(state.change_notes),
++    }
+diff --git a/test_owned_group_anchor.py b/test_owned_group_anchor.py
+new file mode 100644
+--- /dev/null
++++ b/test_owned_group_anchor.py
+@@ -0,0 +1,253 @@
++"""Meaningful SOURCE-ONLY synthetic fixtures. NOT EXECUTED or syntax checked.
++
++No actual OS observations, processes, ports, time, sleeps or signals are used.
++"""
++from dataclasses import replace
++import unittest
++
++from owned_group_anchor import (AnchorRejected, Identity, LaunchFacts,
++    MAX_MEMBERS, NOTE_LIMIT, OwnedState, ProtectedIdentity, ReadWindow,
++    authorize_group_signal, observation_record, observe_owned_group, validate_protected_snapshot)
++
++GROUP = 34930
++COMMAND = '/opt/homebrew/bin/node /private/tmp/new-owner/native.mjs --run=true --url=http://127.0.0.1:4301/?diagnostics --out=/private/tmp/new-owner/candidate-first'
++LEADER = Identity(GROUP, GROUP, 'Mon Oct 5 12:00:00 2026', COMMAND)
++CHILD_A = Identity(34931, GROUP, 'Mon Oct 5 12:00:01 2026', '/Applications/Chrome.app/Contents/MacOS/Chrome --type=renderer --startup')
++CHILD_B = Identity(34932, GROUP, 'Mon Oct 5 12:00:01 2026', '/Applications/Chrome.app/Contents/MacOS/Chrome --type=gpu-process')
++LAUNCH = LaunchFacts(GROUP, True, COMMAND, True, True)
++PROTECTED = {
++    4312: (ProtectedIdentity(92445, 'Sun Oct 4 10:00:00 2026', '/opt/homebrew/bin/node /protected/a/vite'),),
++    4313: (ProtectedIdentity(58298, 'Sun Oct 4 11:00:00 2026', '/opt/homebrew/bin/node /protected/b/vite'),),
++    4314: (ProtectedIdentity(51358, 'Sun Oct 4 12:00:00 2026', '/opt/homebrew/bin/node /protected/c/vite'),),
++    4315: (ProtectedIdentity(87796, 'Sun Oct 4 13:00:00 2026', '/opt/homebrew/bin/node /protected/d/vite'),),
++    4316: (ProtectedIdentity(38617, 'Mon Oct 5 17:35:46 2026', '/fixture/python -m http.server 4316 --bind 127.0.0.1 --directory /protected/latest/dist'),),
++}
++
++
++def rows(*values):
++    return {row.pid: row for row in values}
++
++
++def window(t=10):
++    return ReadWindow(t, t + .1, t + .2, 653)
++
++
++def observe(previous, current, *, launch=LAUNCH, read=None, protected=PROTECTED):
++    return observe_owned_group(previous, current, launch=launch,
++        read=window(10 if previous is None else previous.last_read_finished + .1) if read is None else read,
++        protected_reference=protected,
++        protected_current=protected if previous is None else None)
++
++
++class OwnedGroupAnchorFixtures(unittest.TestCase):
++    def bootstrap(self, *children):
++        return observe(None, rows(LEADER, *children)).state
++
++    def rejected(self, reason, call):
++        with self.assertRaises(AnchorRejected) as caught:
++            call()
++        self.assertEqual(caught.exception.reason, reason)
++        return caught.exception.evidence
++
++    def test_bootstrap_binds_actual_live_popen_and_exact_full_command(self):
++        observation = observe(None, rows(LEADER, CHILD_A))
++        self.assertEqual(observation.state.original_leader, LEADER)
++        self.assertEqual(observation.anchor_kind, 'original-leader/bootstrap')
++        self.assertEqual(observation.state.change_notes, ())
++        for launch in (replace(LAUNCH, alive_before_read=False),
++                replace(LAUNCH, alive_after_read=False), replace(LAUNCH, start_new_session=False)):
++            reason = 'exact_actual_launch_contract_required' if not launch.start_new_session else 'bootstrap_exact_live_popen_leader_required'
++            self.rejected(reason, lambda launch=launch: observe(None, rows(LEADER), launch=launch))
++
++    def test_bootstrap_rejects_missing_leader_and_substring_command_match(self):
++        self.rejected('bootstrap_exact_live_popen_leader_required', lambda: observe(None, rows(CHILD_A)))
++        alien = replace(LEADER, command=COMMAND + ' --different-launch')
++        evidence = self.rejected('bootstrap_exact_live_popen_leader_required', lambda: observe(None, rows(alien)))
++        self.assertEqual(evidence['actualLeader']['command'], alien.command)
++        self.assertEqual(evidence['expectedLeader']['command'], COMMAND)
++
++    def test_leader_anchor_allows_child_argv_update_with_old_current_evidence(self):
++        state = self.bootstrap(CHILD_A, CHILD_B)
++        changed = replace(CHILD_A, command='/Applications/Chrome.app/Contents/MacOS/Chrome --type=renderer --running')
++        current = rows(LEADER, changed, CHILD_B)
++        observation = observe(state, current)
++        self.assertEqual(observation.anchor_kind, 'original-leader/exact')
++        self.assertEqual(observation.state.original_leader, state.original_leader)
++        self.assertEqual(observation.state.change_notes[0].before, CHILD_A)
++        self.assertEqual(observation.state.change_notes[0].current, changed)
++        self.assertEqual({row.pid: row for row in observation.state.members}, current)
++        self.assertEqual({row.pid: row for row in state.members}[CHILD_A.pid], CHILD_A)
++
++    def test_changed_original_leader_fails_even_with_an_exact_survivor(self):
++        state = self.bootstrap(CHILD_A)
++        for changed in (replace(LEADER, command=COMMAND + ' --changed'),
++                replace(LEADER, started='Mon Oct 5 12:01:00 2026')):
++            evidence = self.rejected('original_leader_identity_changed',
++                lambda changed=changed: observe(state, rows(changed, CHILD_A)))
++            self.assertEqual(evidence['originalLeader'], {'pid': GROUP, 'pgid': GROUP, 'started': LEADER.started, 'command': COMMAND})
++            self.assertEqual(evidence['currentLeader']['command'], changed.command)
++            self.assertEqual(evidence['currentLeader']['started'], changed.started)
++
++    def test_absent_leader_requires_previous_survivor_before_child_updates(self):
++        state = self.bootstrap(CHILD_A, CHILD_B)
++        changed = replace(CHILD_B, command=CHILD_B.command + ' --new-state')
++        added = Identity(34933, GROUP, 'Mon Oct 5 12:00:02 2026', '/Chrome --type=utility')
++        observation = observe(state, rows(CHILD_A, changed, added))
++        self.assertEqual(observation.anchor_kind, 'previous-survivor/exact')
++        self.assertEqual(observation.anchor_identity, CHILD_A)
++        next_observation = observe(observation.state, rows(changed, added))
++        self.assertEqual(next_observation.anchor_identity, changed)
++
++    def test_no_refresh_then_anchor_when_all_survivors_change(self):
++        state = self.bootstrap(CHILD_A, CHILD_B)
++        changed_a = replace(CHILD_A, command=CHILD_A.command + ' --changed')
++        changed_b = replace(CHILD_B, command=CHILD_B.command + ' --changed')
++        evidence = self.rejected('no_exact_previously_observed_survivor',
++            lambda: observe(state, rows(changed_a, changed_b)))
++        self.assertEqual(evidence['previous']['previousMembers'][1]['command'], CHILD_A.command)
++        self.assertEqual(evidence['currentMembers'][0]['command'], changed_a.command)
++        self.assertEqual(state.change_count, 0)
++        self.assertEqual(state.change_notes, ())
++
++    def test_pid_reuse_and_new_group_members_do_not_anchor_absent_leader(self):
++        state = self.bootstrap(CHILD_A)
++        reused = replace(CHILD_A, started='Mon Oct 5 12:02:00 2026')
++        self.rejected('no_exact_previously_observed_survivor', lambda: observe(state, rows(reused)))
++        new = Identity(35001, GROUP, 'Mon Oct 5 12:02:00 2026', CHILD_A.command)
++        self.rejected('no_exact_previously_observed_survivor', lambda: observe(state, rows(new)))
++
++    def test_removed_members_are_not_retained_as_future_anchors(self):
++        state = self.bootstrap(CHILD_A, CHILD_B)
++        only_b = observe(state, rows(LEADER, CHILD_B)).state
++        self.assertNotIn(CHILD_A, only_b.members)
++        self.rejected('no_exact_previously_observed_survivor', lambda: observe(only_b, rows(CHILD_A)))
++
++    def test_empty_group_is_non_signallable_absence_and_reappearance_fails(self):
++        state = self.bootstrap(CHILD_A)
++        absent = observe(state, {})
++        self.assertTrue(absent.group_absent)
++        self.assertTrue(absent.state.group_absent)
++        self.assertEqual(absent.state.members, ())
++        self.assertEqual(absent.state.original_leader, LEADER)
++        self.rejected('absent_group_cannot_authorize_signal',
++            lambda: authorize_group_signal(absent, now=10.3, deadline=653,
++                last_signalled_observation_number=0))
++        self.rejected('owned_group_reappeared_after_verified_absence',
++            lambda: observe(absent.state, rows(CHILD_A)))
++
++    def test_child_telemetry_is_bounded16_and_current_snapshot_stays_latest(self):
++        state = self.bootstrap(CHILD_A)
++        for i in range(20):
++            current_child = replace(CHILD_A, command=CHILD_A.command + ' --generation=' + str(i))
++            state = observe(state, rows(LEADER, current_child), read=window(11 + i)).state
++        self.assertEqual(state.change_count, 20)
++        self.assertEqual(len(state.change_notes), NOTE_LIMIT)
++        self.assertEqual(state.members[-1], current_child)
++        self.assertEqual(state.change_notes[-1].current.command, CHILD_A.command + ' --generation=15')
++
++    def test_input_mapping_mutation_cannot_mutate_accepted_snapshot(self):
++        mapping = rows(LEADER, CHILD_A)
++        observation = observe(None, mapping)
++        mapping.clear()
++        self.assertEqual(observation.current_members, (LEADER, CHILD_A))
++        self.assertEqual(observation.state.members, (LEADER, CHILD_A))
++
++    def test_group_scope_protected_overlap_and_exact_protected_cmd_checks(self):
++        state = self.bootstrap(CHILD_A)
++        outsider = replace(CHILD_A, pgid=GROUP + 1)
++        self.rejected('current_row_outside_owned_group', lambda: observe(state, rows(LEADER, outsider)))
++        protected_child = Identity(92445, GROUP, 'Sun Oct 4 10:00:00 2026', '/protected/a/vite')
++        self.rejected('owned_group_intersects_protected_pids', lambda: observe(state, rows(LEADER, protected_child)))
++        for changed_row in (
++                replace(PROTECTED[4312][0], command=PROTECTED[4312][0].command + ' --changed'),
++                replace(PROTECTED[4312][0], started='Sun Oct 4 10:01:00 2026'),
++                replace(PROTECTED[4312][0], pid=99900)):
++            changed = dict(PROTECTED)
++            changed[4312] = (changed_row,)
++            evidence = self.rejected('protected_identity_changed',
++                lambda: validate_protected_snapshot(PROTECTED, changed))
++            self.assertEqual(evidence['before'][4312][0]['pid'], 92445)
++            self.assertNotEqual(evidence['before'][4312][0], evidence['current'][4312][0])
++        self.rejected('exact_actual_launch_contract_required',
++            lambda: observe(state, rows(LEADER), launch=replace(LAUNCH, owned_ports=(4301, 9712))))
++        latest_preview = Identity(38617, GROUP, PROTECTED[4316][0].started, PROTECTED[4316][0].command)
++        self.rejected('owned_group_intersects_protected_pids',
++            lambda: observe(state, rows(LEADER, latest_preview)))
++        missing_latest = {port: identity for port, identity in PROTECTED.items() if port != 4316}
++        self.rejected('protected_port_set_differs',
++            lambda: validate_protected_snapshot(PROTECTED, missing_latest))
++
++    def test_read_deadline_age_and_os_budget_must_be_finite(self):
++        state = self.bootstrap(CHILD_A)
++        for read in (ReadWindow(10, 10.1, 653, 653),
++                ReadWindow(10, 10.1, 12.2, 653), ReadWindow(10, 12.1, 12.2, 653),
++                ReadWindow(10.2, 10.1, 10.3, 653)):
++            self.rejected('fresh_bounded_read_required', lambda read=read: observe(state, rows(LEADER), read=read))
++        self.rejected('finite_read_window_required',
++            lambda: observe(state, rows(LEADER), read=ReadWindow(10, 10.1, float('nan'), 653)))
++
++    def test_signal_requires_fresh_anchored_read_inside_deadline(self):
++        state = self.bootstrap(CHILD_A)
++        observation = observe(state, rows(LEADER, CHILD_A))
++        permission = authorize_group_signal(observation, now=10.5, deadline=653,
++            last_signalled_observation_number=0)
++        self.assertEqual(permission['pgid'], GROUP)
++        self.assertEqual(permission['anchorIdentity']['command'], COMMAND)
++        self.rejected('fresh_anchor_required_before_signal',
++            lambda: authorize_group_signal(observation, now=12.4, deadline=653,
++                last_signalled_observation_number=0))
++        self.rejected('fresh_anchor_required_before_signal',
++            lambda: authorize_group_signal(observation, now=10.5, deadline=10.5,
++                last_signalled_observation_number=0))
++        self.rejected('new_observation_required_for_each_signal',
++            lambda: authorize_group_signal(observation, now=10.6, deadline=653,
++                last_signalled_observation_number=permission['observationNumber']))
++        fresh_observation = observe(observation.state, rows(LEADER, CHILD_A), read=window(10.7))
++        next_permission = authorize_group_signal(fresh_observation, now=11.0, deadline=653,
++            last_signalled_observation_number=permission['observationNumber'])
++        self.assertGreater(next_permission['observationNumber'], permission['observationNumber'])
++
++    def test_survivor_only_signal_requires_real_prior_exact_match(self):
++        state = self.bootstrap(CHILD_A)
++        observation = observe(state, rows(CHILD_A))
++        permission = authorize_group_signal(observation, now=10.5, deadline=653,
++            last_signalled_observation_number=0)
++        self.assertEqual(permission['anchorKind'], 'previous-survivor/exact')
++        self.assertEqual(permission['anchorIdentity']['pid'], CHILD_A.pid)
++
++    def test_complete_group_cap_rejects_without_truncation(self):
++        many = rows(LEADER, *(Identity(40000 + i, GROUP, CHILD_A.started, CHILD_A.command)
++            for i in range(MAX_MEMBERS)))
++        self.rejected('complete_bounded_group_required', lambda: observe(None, many))
++
++    def test_bad_mapping_keys_fail_with_structured_reason_before_sorting(self):
++        malformed = {GROUP: LEADER, str(CHILD_A.pid): CHILD_A}
++        self.rejected('full_group_identity_required', lambda: observe(None, malformed))
++
++    def test_replayed_read_cannot_manufacture_new_observation_number(self):
++        state = self.bootstrap(CHILD_A)
++        self.rejected('new_nonoverlapping_read_required',
++            lambda: observe(state, rows(LEADER, CHILD_A), read=window(10)))
++
++    def test_signal_time_must_follow_completed_anchor_check(self):
++        state = self.bootstrap(CHILD_A)
++        observation = observe(state, rows(LEADER, CHILD_A))
++        self.rejected('fresh_anchor_required_before_signal',
++            lambda: authorize_group_signal(observation, now=observation.read_finished,
++                deadline=653, last_signalled_observation_number=0))
++
++    def test_record_is_detached_json_compatible_identity_evidence(self):
++        state = self.bootstrap(CHILD_A)
++        changed = replace(CHILD_A, command=CHILD_A.command + ' --running')
++        observation = observe(state, rows(LEADER, changed))
++        record = observation_record(observation)
++        self.assertEqual(record['childChangeNotes'][0]['before']['command'], CHILD_A.command)
++        self.assertEqual(record['childChangeNotes'][0]['current']['command'], changed.command)
++        record['currentIdentities'][0]['command'] = 'edited-output-only'
++        record['childChangeNotes'].clear()
++        self.assertEqual(observation.state.original_leader.command, COMMAND)
++        self.assertEqual(len(observation.state.change_notes), 1)
++
++
++if __name__ == '__main__':
++    unittest.main()
+diff --git a/README.md b/README.md
+new file mode 100644
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,40 @@
++# Source-only bounded owner-anchor proposal
++
++This isolated proposal has not been imported, syntax checked, tested or executed. It performs no OS read, process launch, signal, port probe, sleep or retry. No ordinary V5 recipe is created or authorized by this proposal. Root must review before adoption, preparation, freezing or execution.
++
++## Observed failure and limits of evidence
++
++Root reported ordinary V4 handle40957 terminal1 after16.9664s, with0physicalsteps and0PNG during browser startup. The failure message was `Owned PID identity changed`. Existing `remember_owned` asserts unchanged full identity for every recurring child before checking any anchor. The offending before/current row was not recorded. A Chrome child command change is a plausible explanation, but the exact reason is unproved; this proposal does not reclassify the failure as proven benign.
++
++The root closure receipt is `/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json`,49694bytes, SHA256 `360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21`. Root independently verified218pins, group34930absence, ports4301/9711closed and full protected identities preserved. The proposal does not claim another closure observation or audit execution.
++
++Root subsequently created a human-requested immutable latest preview on4316, PID38617, root session59708. Its exact process receipt `/private/tmp/surfing-game-play-3e75550c2-20261005/process.json` is526bytes, SHA256 `d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85`; started `Mon Oct 5 17:35:46 2026`. Future owner integration MUST protect4316 alongside4312–4315 and must never stop, reload or replace that preview. The old V4 receipt predates this extra protected listener and cannot by itself supply the new five-port authority. Root has now freshly verified all five exact PID/start/full commands and listener reads in `/private/tmp/tube-five-protected-preview-identities-20261005.json`,2735bytes, SHA256 `b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28`, schema `root-five-protected-preview-identities/v1`. Future preflight must use that pinned five-port authority and fresh full identities; it must not use the old four-port receipt alone. No OS observation of the preview was performed by this proposal.
++
++## Exact anchor contract
++
++Bootstrap must be tied to the actual just-launched unreaped `Popen` child, with `start_new_session=True`, `pid=pgid`, `proc.poll() is None` both before and after the initial fresh bounded read, and exact predeclared full command equality. The expected command must be declared from the exact launch invocation before reading rows; substring checks and learning the expected command from an arbitrary observed row are forbidden. Actual observed start string is captured in the immutable original leader identity. First read cannot bootstrap from a surviving child, saved PID, prior recipe or reaped leader.
++
++Every nonempty recurring read must satisfy the immutable original leader identity if that leader is present. A changed leader fails even if an unchanged child exists. If the leader is absent, at least one exact member from the immediately previous successful read must still be present BEFORE accepting any updates. A new or changed row alone cannot anchor the group. Only after these checks succeed does the new detached child snapshot replace the prior snapshot. Exited members do not accumulate as stale anchors. Each accepted read must finish later than the preceding read and must not start before that preceding read finished, preventing replay of the same captured rows/timestamps from creating a new observation number.
++
++Child command/start changes inside a freshly anchored group are accepted as current observations, retaining up to16full before/current change records and a total change count. `observation_record` returns detached JSON-compatible current identities, anchor identity and bounded before/current child notes. Anchor failure retains full before/current rows, including the offending leader identity. Group snapshots are bounded to256members and command/start strings to65536/256characters; oversize data fails rather than truncating full identities. These explicit source-only caps require root review against real owner evidence before adoption. Immutable dataclasses and tuples detach accepted snapshots from caller dictionaries.
++
++Empty group is verified absence and never permits signalling. A subsequent nonempty group after verified absence fails. No TERM or KILL is allowed without a NEW successful fresh bounded anchored group read, protected PID intersection check and immediate final freshness/deadline check. The pure signal helper requires the caller's last-signalled observation counter and rejects reuse of that observation or an earlier one; the caller must persist its returned counter after the actual signal. The pure module cannot establish the origin of supplied Popen/read facts or ensure a caller obtains a new read before each signal; root integration must enforce those checkpoints. Full `ps` start strings have finite precision, so this is a bounded identity policy, not proof that same-command PID reuse is impossible.
++
++## Finite owner integration requirements (unexecuted guidance)
++
++Keep existing absolute native640s, owner653s, whole690s including20s cleanup; max3000steps; ports4301/9711only; protected ports4312/4313/4314/4315/4316full PID/start/command authority; OS read timeout2s; periodic poll5s; nonfatal periodic `TimeoutExpired`; required read attempts3within the existing absolute deadline; no retries that start a second native handle. Retain full protected snapshot equality at preflight and after cleanup. Pinned expected protected identities remain root-authoritative, including exact expected PIDs92445/58298/51358/87796/38617; synthetic test fixture identities do not replace authority.
++
++The pure function validates group scope and rejects intersection with any PID from the full pinned protected reference. `validate_protected_snapshot` retains full equality; bootstrap requires it. A periodic observation may use the stored pinned reference without adding extra OS calls. If existing owner invokes an actual fresh protected read at another checkpoint, pass it to the helper and require exact equality. No existing protected check may be omitted.
++
++Caller sequence:
++
++1. Preserve/verify all executable and source/build pins, finite budgets, free owned ports and full protected preflight authority as before.
++2. Launch the ONE actual native `Popen` using the predeclared exact argv, `start_new_session=True`; retain that exact object unreaped until its normal wait/cleanup.
++3. Obtain the first actual complete non-zombie group read with the actual `proc.pid`, bracketed by live Popen checks; call `observe_owned_group(None, ...)`. Persist original leader and full initial observed identities.
++4. At each5s periodic checkpoint, obtain one bounded current read; call with prior accepted state. On timeout, keep old state and record nonfatal observation. On anchor rejection, record `reason` AND structured `evidence` before finite failure/cleanup; never update state first.
++5. Before EACH TERM and KILL, obtain a NEW required bounded group read, validate it against the prior accepted state, then call `authorize_group_signal` immediately before the caller's actual signal within cleanup/whole deadlines, passing the last-signalled observation counter (initially0). Persist the returned counter after signalling, together with anchor kind, exact identity, timestamps and verified member rows. Empty group receives no signal. A failed anchor receives no signal.
++6. Reread group absence, reap the same Popen, close the owned HTTP server, verify full protected identities and closed owned ports, and verify required pins within unchanged absolute ceilings. Record failures without silently extending, retrying the capture or reopening a port.
++
++## Unexecuted fixture coverage
++
++`test_owned_group_anchor.py` contains synthetic fixtures for exact bootstrap/live Popen facts, substring rejection, child argv changes, immutable leader mismatch with an unchanged child, exact previous-survivor anchoring before updates, all-survivor changes, PID start reuse/new children, removed stale members, absence/reappearance,16-note cap with latest snapshot retained, detached input dictionaries, wrong group/protected overlap/full protected command changes, finite read deadlines/age/OS budget, fresh signal permission and oversized complete groups. No test has been executed and no actual process identity is established by these fixtures.

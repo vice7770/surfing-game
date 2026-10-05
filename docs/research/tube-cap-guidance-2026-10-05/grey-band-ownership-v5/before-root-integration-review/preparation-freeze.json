@@ -1,0 +1,280 @@
+{
+  "schema": "grey-band-ownership-source-preparation/v5",
+  "sourceOnly": true,
+  "executionPending": true,
+  "executedChecksImportsPreparationBuildsNativeGitOrPorts": false,
+  "productionFilesWritten": false,
+  "oldSourcesAssetsOrResultsWritten": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/prepare.py",
+      "bytes": 22011,
+      "sha256": "dad993e4a125aeb3a447e2f059ee552a4bd5a4d8c125710b655ff045a48e9e60"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/run.py",
+      "bytes": 24528,
+      "sha256": "4351597845051f630f5d0834f6663153c89c76e3466fa0fcafbc032612e3ca97"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/native.mjs",
+      "bytes": 10273,
+      "sha256": "75ceb45e095d598c145adb7d21f6e2503cdcd0584c385808d23a1f410d8598b8"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/ownership-inspection.mjs",
+      "bytes": 28787,
+      "sha256": "5600c34b450622b03ac1f72c7f0c19e9ea4aca8710ffbb934dc9a0f81faec2c6"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/inputs.json",
+      "bytes": 19388,
+      "sha256": "94afba8b96a380aad586b92baf086ef523a026ef96e65cccb5c62c8ea7694753"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/README.md",
+      "bytes": 9212,
+      "sha256": "3bc2f7da3753421bde9c9eb63e00a4f30deb2fbaf426f205fcb8a2f1456263db"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe-diff.md",
+      "bytes": 2177,
+      "sha256": "29e6455553620ec6e5192c92bacdebe3ecddf25f142e50c60693a9fcbb88c74e"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe.patch",
+      "bytes": 95900,
+      "sha256": "9a2df11641f7803052626b739d31d974f00112ef957deafd5ce37866a2ce272b"
+    }
+  ],
+  "sourceOnlyParent": {
+    "directory": "/private/tmp/tube-grey-band-ownership-native-v4-20261005",
+    "preparationFreeze": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/preparation-freeze.json",
+      "bytes": 7254,
+      "sha256": "a70c91a125eb8ee3b14228853fa4dc543e2c030b2daa0708b77ecd305248ccf3"
+    },
+    "sourceFilesUsedForDirectDiff": [
+      {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/prepare.py",
+        "bytes": 17190,
+        "sha256": "45aeba7f4c82e0e338514a0cea2fd96cf9be8f8b7e9caf3e3bd8e2c6912f3036"
+      },
+      {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/run.py",
+        "bytes": 18741,
+        "sha256": "a115ee365ae6cc5c2edacc105c1110f0946912de3d4a1d617c326c5d4c78668c"
+      },
+      {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/native.mjs",
+        "bytes": 10179,
+        "sha256": "1d922bd64c52cacd5edd8ca569c2ce2b1b3371f18e0e37ff72ccf125aef65c63"
+      },
+      {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/ownership-inspection.mjs",
+        "bytes": 27266,
+        "sha256": "f95d01df89eca30010387d3ec1cf1c559d4b391c7bb6f353de7eef4d8fcd7b58"
+      },
+      {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/inputs.json",
+        "bytes": 14499,
+        "sha256": "37da91be0e9b19d4aa7928a4088fed0ae9ba0380bbca2fbb7a013fccd014b2c2"
+      },
+      {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/README.md",
+        "bytes": 15424,
+        "sha256": "26166c1cf0e4441dce8d32fb0de1d8e906cf11eb9dc3226d0ba2add01cdde754"
+      },
+      {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/recipe-diff.md",
+        "bytes": 1757,
+        "sha256": "523a8b261b308127921428abe68d6593879b9e866f2ed0c4179212f0c2604b83"
+      }
+    ],
+    "originalFailedAttemptUnchangedByThisPreparation": true
+  },
+  "actualPriorWindingFailure": {
+    "owner": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/owner.json",
+      "bytes": 16681,
+      "sha256": "5c3c876f6129b5f5e9856e2ec80af11dc7551a66807803abb81104a0462bd9f2"
+    },
+    "report": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/candidate-first/report.json",
+      "bytes": 31388,
+      "sha256": "19562e9bcf94fe990acd512d7d8d80497e7a3e3fc3b908308a3e040d5b9de64a"
+    },
+    "rootPostFailure": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/root-post-failure-pins-and-closure.json",
+      "bytes": 54257,
+      "sha256": "b1cac33132acca83cbe270d5bf6425226b0963a1d568b384298692ed91111401"
+    },
+    "qualification": "ID V4 actually failed at raw() source-index equality before baseline/probes, terminal1 after48.4627s with0steps/0PNGs. Exact historical facesOut repair reorders actual b/c indices while preserving the source loft indices. No actual ID image/ownership result exists. Independent root227pin/closure audit verifies unchanged failed outputs, absent group34236, owned ports closed and four then-protected previews preserved. V4 remains unchanged."
+  },
+  "protectedIdentityAuthority": {
+    "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+    "bytes": 2735,
+    "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+  },
+  "protected4316": {
+    "pid": 38617,
+    "rootSession": "59708",
+    "processReceipt": {
+      "file": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+      "bytes": 526,
+      "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85"
+    }
+  },
+  "ownerPolicyAmendment": {
+    "moduleSource": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    "moduleStaticFreeze": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+      "bytes": 2410,
+      "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0"
+    },
+    "rootPureTests": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+      "bytes": 511,
+      "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32"
+    },
+    "rootPureTestLog": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
+      "bytes": 3695,
+      "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7"
+    },
+    "copiedModule": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    "rootPureFixtureCount": 20,
+    "rootPureASTChecks": 2,
+    "integrationReviewPending": true,
+    "integrationChecksExecuted": false,
+    "rootReviewAndChecksRequiredBeforePreparation": true,
+    "scope": "Exact root-tested pure helper; fresh integration has no actual OS/native evidence."
+  },
+  "executionPendingOwnerPolicyReview": true,
+  "drawWindingGuard": {
+    "facesOutRequired": true,
+    "exactHistoricalPerTriangleMapping": true,
+    "rawSourceIndexWordsRemainExact": true,
+    "actualDrawPrefixFrozenAcrossProbesAndRepeats": true,
+    "sourceRationaleHistoricalCommit": "6bcae3aa0740cb66187f572a03cc8abbb1981030",
+    "sourceRationalePath": "src/scene/barrel/SweptBarrelMesh.ts",
+    "sourceRationalePin": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/historical-source/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 33396,
+      "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+    },
+    "exactProposedGuard": {
+      "file": "/private/tmp/tube-grey-band-draw-winding-audit-20261005/proposed-exact-draw-winding-guard.mjs",
+      "bytes": 2024,
+      "sha256": "30c0482da77e4f5363480a4e8cffad75ac5d8cd8378b74e5b5a050c757003881"
+    },
+    "actualRuntimeMappingMustBeVerified": true,
+    "qualification": "The audit proposal is unexecuted guard source. Transcript-derived offline expected swaps are not a runtime actual draw-index observation. New native raw() independently checks the exact pinned historical mapping."
+  },
+  "applicationBuildId": "tube-guided-early-crest-20261005",
+  "applicationAuthority": {
+    "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/build.json",
+    "bytes": 41743,
+    "sha256": "8a14b79263e47a3a490c6eb734ada185c98559605ab57754b6faa1de54e67fb8"
+  },
+  "historicalApplicationGameplaySuccessClaim": false,
+  "geometryMaterialCameraAndAcceptanceScopeExpanded": false,
+  "borrowedPureHelperChecksQualification": "Root actual20 synthetic fixtures/two AST parses passed separately. Fresh owner integration and runtime identity are unexecuted and require root review/checks.",
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 680,
+    "cleanupSeconds": 20,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "reportBytes": 2097152
+  },
+  "comparison": {
+    "camera": "interior",
+    "view": "rich",
+    "stages": [
+      "baseline",
+      "owner",
+      "rasterFace",
+      "bodyCos"
+    ],
+    "restoredRepeats": 3,
+    "steps": 0,
+    "ownerDefine": "BREAKLINE_TUBE_GREY_OWNER",
+    "owners": {
+      "loft": 1,
+      "originalWater": 2,
+      "lateRepair": 3,
+      "seabed": 4,
+      "farOcean": 5
+    },
+    "encodedOwnerRGB": {
+      "1": [
+        255,
+        0,
+        255
+      ],
+      "2": [
+        0,
+        255,
+        255
+      ],
+      "3": [
+        255,
+        255,
+        0
+      ],
+      "4": [
+        255,
+        0,
+        0
+      ],
+      "5": [
+        0,
+        0,
+        255
+      ]
+    },
+    "baselineNativePNGHashMustMatchCombinedAuthority": true,
+    "actualFinalMaterialDefinesRequired": true,
+    "allFiveActualCallbacksRequired": true,
+    "all37Raw333MustMatchHistoricalCap": true,
+    "baselineBuildsShareGeometryAssertion": false,
+    "mutableProductionSourcePins": false,
+    "probeDelta": "Only a distinct actual material ID define and final gl_FragColor.rgb assignment after the unchanged final chunk. Body-cos stage additionally copies actual waterViewCos into a scalar; seabed has no water body.",
+    "allOriginalPredicatesAlphaDepthStencilRetained": true,
+    "farOceanOriginalTransparencyAndFadeRetained": true,
+    "mixedIdPixelsRemainAmbiguous": true,
+    "dynamicRepairDelegation": "Suppress intermediate original-water instrumentation while the actual late-repair callback dynamically delegates. Instrument only the final repair shader after its original predicate replacement.",
+    "search": {
+      "seed": false,
+      "epoch": false,
+      "camera": false,
+      "quality": false,
+      "pixels": false
+    },
+    "limitations": [
+      "Encoded unmixed surviving contribution is not an exclusive whole-pixel coverage proof.",
+      "Mixed, blended, MSAA and unmarked pixels remain ambiguous.",
+      "Raster facing differs from body-normal view cosine.",
+      "Preserves final authored fade/dither and tested A lighting; no seam support repair.",
+      "No geometry, force, air-volume, body or playability certification."
+    ]
+  },
+  "localCompletedReadExpiry": "Local OwnedReadExpired before pure acceptance when measured duration>2s or age>2s. No state refresh; periodic records capped observation-only evidence and continues same handle; required reads retry at most3within unchanged deadline. Genuine AnchorRejected is not caught as expiry."
+}

@@ -1,0 +1,20 @@
+{
+  "parentReportedRootHead": "3e75550c2",
+  "gitCommandExecuted": false,
+  "sourceOnlyProposal": true,
+  "originalFilesRemainReadOnly": true,
+  "files": [
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    },
+    {
+      "path": "src/wave/barrel/boundedCCapRefinement.test.ts",
+      "originalPath": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "bytes": 11167,
+      "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+    }
+  ]
+}

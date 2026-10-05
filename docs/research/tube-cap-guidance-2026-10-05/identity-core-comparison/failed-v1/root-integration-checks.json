@@ -1,0 +1,26 @@
+{
+  "schema": "root-leaf-identity-integration-checks/v1",
+  "complete": true,
+  "frozenRecipeSHA256": "d52212e20563ad84418aa024ae64e458316b1fb6eef0a7af8e59e5bb9da9b3d0",
+  "verifiedPinCount": 27,
+  "pythonASTChecks": 3,
+  "javascriptSyntaxChecks": [
+    {
+      "file": "native.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "file": "geometry-inspection.mjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "rootReadOnlySourceReview": "Fresh same-Popen full argv/live-window binding; latest successful state and new required read immediately before each signal, no fallback, counters consumed only after success; all five protected identities; native timer remains through browser close and final save. No concrete defect found.",
+  "independentReview": "/root/shared_leaf_v2_owner_review: narrow read-only review found no new concrete defect; no execution or OS rendering claim.",
+  "nativeExecuted": false,
+  "osIdentityClaim": false,
+  "elapsedSeconds": 0.23317054199287668
+}

@@ -1,0 +1,1489 @@
+{
+  "schema": "tube-grey-band-id-v5-native-failure-archive/v1",
+  "archivedAtUTC": "2026-10-05T17:20:48.472115+00:00",
+  "scope": "Completed failed baseline-authority attempt only; no accepted V5 image, shader probe, visual cause, ownership, playability or quality conclusion.",
+  "actualExecution": {
+    "toolSessionReportedByRoot": 98635,
+    "terminalChunkReportedByRoot": "52ba8b",
+    "exitCode": 1,
+    "ownerComplete": false,
+    "nativeComplete": false,
+    "elapsedSeconds": 134.68203783303034,
+    "nativeElapsedMilliseconds": 132949.793292,
+    "physicalSteps": 0,
+    "savedPNGCount": 0,
+    "savedPNGBytes": 0,
+    "artifacts": [],
+    "firstNativeFailure": "Error: Error: First fixed native baseline differs from completed combined authority; abort without any probe or search\n    at must (<anonymous>:3:52)\n    at Object.capture (<anonymous>:277:7)\n    at Page.eval (file:///private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs:101:33)\n    at async file:///private/tmp/tube-grey-band-ownership-native-v5-20261005/native.mjs:50:16",
+    "installationRecorded": {
+      "installed": true,
+      "stepCount": 0,
+      "seaTime": 276.3293560552737,
+      "exactHistoricalGeometryRequired": true,
+      "legacyLipIndexedGeometryEmpty": true,
+      "legacyLipState": {
+        "meshUUID": "89b768e6-6472-4218-a607-c1775a2b690b",
+        "geometryUUID": "6794d2ad-6796-4d67-ab32-6a8e4094dcfa",
+        "visible": true,
+        "indexPresent": true,
+        "indexCount": 0,
+        "positionCount": 0,
+        "drawRange": {
+          "start": 0,
+          "count": "Infinity"
+        },
+        "nonfiniteRangeEncoding": "String preserves Infinity rather than JSON null"
+      },
+      "declaredMaterials": [
+        {
+          "kind": "loft",
+          "id": 1
+        },
+        {
+          "kind": "originalWater",
+          "id": 2
+        },
+        {
+          "kind": "lateRepair",
+          "id": 3
+        },
+        {
+          "kind": "seabed",
+          "id": 4
+        },
+        {
+          "kind": "farOcean",
+          "id": 5
+        }
+      ],
+      "cameraSearch": false,
+      "epochSearch": false
+    },
+    "firstBaselineEncodedInMemoryPerSource": true,
+    "failedAtBaselineAuthorityBeforeProbes": true,
+    "rejectedBaselineBytesHashPixelsSaved": false,
+    "ownershipConclusion": null,
+    "postExecutionPinsVerified": false,
+    "copiedAndHistoricalSourcePinsPostVerified": false
+  },
+  "historicalOwnerCleanupObservationsOnly": {
+    "ownedGroup": 50808,
+    "groupIdentityAndAbsenceVerified": true,
+    "closedPorts": {
+      "4301": true,
+      "9711": true
+    },
+    "protectedPreserved": true,
+    "cleanupFailures": [],
+    "ownedBrowserClose": true,
+    "launcherOwnedChromeClosed": true,
+    "osReadTimeoutCount": 1,
+    "osReadTimeoutNotes": [
+      {
+        "phase": "periodic-owned-identity",
+        "elapsedSeconds": 18.52042925002752,
+        "command": [
+          "/bin/ps",
+          "-ww",
+          "-axo",
+          "pid=,pgid=,stat=,lstart=,command="
+        ],
+        "timeoutSeconds": 2,
+        "outcome": "Observation only",
+        "kind": "subprocess-timeout"
+      }
+    ],
+    "noOSReadsByArchiver": true
+  },
+  "actualRootSourceChecks": {
+    "receipt": "root-integration-checks.json",
+    "originalFreeze": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/preparation-freeze.json",
+      "bytes": 11755,
+      "sha256": "20bf01452b402ecd7178c62da8405684558b943667d4c077124fce4af303ac45"
+    },
+    "verifiedUniquePins": 55,
+    "pythonASTChecks": 3,
+    "javascriptSyntaxCheckCount": 2,
+    "checksReceiptNativeExecuted": false
+  },
+  "readinessAmendmentHistory": {
+    "originalPendingFreeze": "before-root-integration-review/preparation-freeze.json",
+    "originalPendingInputs": "before-root-integration-review/inputs.json",
+    "failedAmendmentAndRefusedPreparation": "root-readiness-amendment-failure.json",
+    "finalExecutionReadyFreeze": "preparation-freeze.json",
+    "finalExecutionReadyInputs": "inputs.json",
+    "originalRecordsUnchanged": true,
+    "proposalPatchQualification": "Author source diff retained unchanged; root metadata readiness amendment is evidenced by separately preserved before/final inputs and freezes."
+  },
+  "actualPreparation": {
+    "receipt": "prepare-result.json",
+    "complete": true,
+    "executedChecksOrBuilds": false,
+    "resourcesStartedDuringPreparation": false,
+    "provenanceCounts": {
+      "uniqueCommittedReceiptSources": 80,
+      "repositoryDependencies": 2,
+      "externalDiagnosticSources": 1,
+      "additionalOpticalCommittedSources": 7
+    },
+    "historicalBuildId": "tube-guided-early-crest-20261005",
+    "freshBuildClaim": false,
+    "historicalGameplaySuccessClaim": false
+  },
+  "independentLaterRootAudit": {
+    "receipt": "root-post-failure-pins-and-closure.json",
+    "observedAtUTC": "2026-10-05T17:20:33.168628+00:00",
+    "complete": true,
+    "verifiedUniquePinVersions": 893,
+    "currentProductionSourcePinsVerified": 584,
+    "currentBuildAssetsVerified": 49,
+    "ownedGroup": 50808,
+    "ownedGroupAbsent": true,
+    "ownedPortsClosed": {
+      "4301": true,
+      "9711": true
+    },
+    "allFiveProtectedPreviewsPreserved": true,
+    "noSignalsSent": true,
+    "originalResultsUnmodified": true,
+    "priorFailedAuditAttempts": [
+      {
+        "receipt": "root-post-failure-check-first-attempt.json",
+        "schema": "root-idv5-post-failure-check-first-attempt/v1",
+        "actualToolChunk": "add0d6",
+        "exitCode": 1,
+        "failure": "Conflicting pin metadata for preparation-freeze.json across current sealed recipe and earlier source-check receipt",
+        "failedBeforeOSReads": true,
+        "failedBeforeReceiptWrite": true,
+        "noSignalsSent": true,
+        "qualification": "Earlier integration-check receipt pins the pre-root-review freeze, which is preserved separately. The current seal pins the amended preparation freeze. Verify both exact versions separately rather than treating their original shared path as one current authority."
+      },
+      {
+        "receipt": "root-post-failure-check-second-attempt.json",
+        "schema": "root-idv5-post-failure-check-second-attempt/v1",
+        "actualToolChunk": "3523e8",
+        "exitCode": 1,
+        "failure": "Historical repository source pin differs from current source at same original path",
+        "failedBeforeOSReads": true,
+        "failedBeforeClosureReceiptWrite": true,
+        "noSignalsSent": true,
+        "qualification": "Historical source-provenance root paths must be checked against preserved historical-source copies, separately from all current production pins."
+      }
+    ],
+    "qualification": "Separate later root audit verifies distinct original/historical/current pin versions and OS closure at its stated observation time. It does not alter the failed original owner/native post-pin flags or supply rejected image/probe evidence. Archiver copied/hashed receipt only and performed no OS reads."
+  },
+  "originalCopies": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/prepare.py",
+        "bytes": 22011,
+        "sha256": "dad993e4a125aeb3a447e2f059ee552a4bd5a4d8c125710b655ff045a48e9e60"
+      },
+      "stored": {
+        "file": "prepare.py",
+        "bytes": 22011,
+        "sha256": "dad993e4a125aeb3a447e2f059ee552a4bd5a4d8c125710b655ff045a48e9e60"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/run.py",
+        "bytes": 24528,
+        "sha256": "4351597845051f630f5d0834f6663153c89c76e3466fa0fcafbc032612e3ca97"
+      },
+      "stored": {
+        "file": "run.py",
+        "bytes": 24528,
+        "sha256": "4351597845051f630f5d0834f6663153c89c76e3466fa0fcafbc032612e3ca97"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/native.mjs",
+        "bytes": 10273,
+        "sha256": "75ceb45e095d598c145adb7d21f6e2503cdcd0584c385808d23a1f410d8598b8"
+      },
+      "stored": {
+        "file": "native.mjs",
+        "bytes": 10273,
+        "sha256": "75ceb45e095d598c145adb7d21f6e2503cdcd0584c385808d23a1f410d8598b8"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/ownership-inspection.mjs",
+        "bytes": 28787,
+        "sha256": "5600c34b450622b03ac1f72c7f0c19e9ea4aca8710ffbb934dc9a0f81faec2c6"
+      },
+      "stored": {
+        "file": "ownership-inspection.mjs",
+        "bytes": 28787,
+        "sha256": "5600c34b450622b03ac1f72c7f0c19e9ea4aca8710ffbb934dc9a0f81faec2c6"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "stored": {
+        "file": "owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/inputs.json",
+        "bytes": 19634,
+        "sha256": "97887eff1bc65f456b34df49f58cbbc66b24fdf46c5eaa3f41ab0deab4c47bdf"
+      },
+      "stored": {
+        "file": "inputs.json",
+        "bytes": 19634,
+        "sha256": "97887eff1bc65f456b34df49f58cbbc66b24fdf46c5eaa3f41ab0deab4c47bdf"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/preparation-freeze.json",
+        "bytes": 13597,
+        "sha256": "387f328348c8b3149826fa6f7a855426996529d354c4582750ede2f9529df13b"
+      },
+      "stored": {
+        "file": "preparation-freeze.json",
+        "bytes": 13597,
+        "sha256": "387f328348c8b3149826fa6f7a855426996529d354c4582750ede2f9529df13b"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe.patch",
+        "bytes": 95900,
+        "sha256": "9a2df11641f7803052626b739d31d974f00112ef957deafd5ce37866a2ce272b"
+      },
+      "stored": {
+        "file": "recipe.patch",
+        "bytes": 95900,
+        "sha256": "9a2df11641f7803052626b739d31d974f00112ef957deafd5ce37866a2ce272b"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe-diff.md",
+        "bytes": 2177,
+        "sha256": "29e6455553620ec6e5192c92bacdebe3ecddf25f142e50c60693a9fcbb88c74e"
+      },
+      "stored": {
+        "file": "recipe-diff.md",
+        "bytes": 2177,
+        "sha256": "29e6455553620ec6e5192c92bacdebe3ecddf25f142e50c60693a9fcbb88c74e"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/build.json",
+        "bytes": 38453,
+        "sha256": "930c150bd496826b3b0429adb09dd4980f97ba56f76e8dafefd5adb3241e1440"
+      },
+      "stored": {
+        "file": "build.json",
+        "bytes": 38453,
+        "sha256": "930c150bd496826b3b0429adb09dd4980f97ba56f76e8dafefd5adb3241e1440"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/source-provenance.json",
+        "bytes": 86054,
+        "sha256": "52480f9e4e7511fa835c791a67ed7d4fa0ffa306974bd5f25a7ec10a93156b6f"
+      },
+      "stored": {
+        "file": "source-provenance.json",
+        "bytes": 86054,
+        "sha256": "52480f9e4e7511fa835c791a67ed7d4fa0ffa306974bd5f25a7ec10a93156b6f"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/seal.json",
+        "bytes": 45725,
+        "sha256": "eaf91632ab9e2b9c3b6fd8b8fcf04b5449c8a9e5b72a3d89a69b8226ea2da07b"
+      },
+      "stored": {
+        "file": "seal.json",
+        "bytes": 45725,
+        "sha256": "eaf91632ab9e2b9c3b6fd8b8fcf04b5449c8a9e5b72a3d89a69b8226ea2da07b"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/prepare-result.json",
+        "bytes": 1127,
+        "sha256": "a6934cbfe91ddb8a6740612c0e35f7945f01178a26a3128c242f9ed50e499920"
+      },
+      "stored": {
+        "file": "prepare-result.json",
+        "bytes": 1127,
+        "sha256": "a6934cbfe91ddb8a6740612c0e35f7945f01178a26a3128c242f9ed50e499920"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-integration-checks.json",
+        "bytes": 1272,
+        "sha256": "de78622a0295ce3a96a9a49e2d8d06b502bebcedff1fe90273ab7a014fd80ff9"
+      },
+      "stored": {
+        "file": "root-integration-checks.json",
+        "bytes": 1272,
+        "sha256": "de78622a0295ce3a96a9a49e2d8d06b502bebcedff1fe90273ab7a014fd80ff9"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-readiness-amendment-failure.json",
+        "bytes": 599,
+        "sha256": "d42f3b614f4eccec7ad936f9a01b8a2b2ab12ce68854d376881aa09989b3e8e7"
+      },
+      "stored": {
+        "file": "root-readiness-amendment-failure.json",
+        "bytes": 599,
+        "sha256": "d42f3b614f4eccec7ad936f9a01b8a2b2ab12ce68854d376881aa09989b3e8e7"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owner.json",
+        "bytes": 31455,
+        "sha256": "c06b597c0db2195ef5dfb282ff890dd3460e8cdc639292bb141fe16f909fc72b"
+      },
+      "stored": {
+        "file": "owner.json",
+        "bytes": 31455,
+        "sha256": "c06b597c0db2195ef5dfb282ff890dd3460e8cdc639292bb141fe16f909fc72b"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/launcher.json",
+        "bytes": 11908,
+        "sha256": "f9f5653de30408b0952a35bec9b67bf297b08dea9cef81c654abda6ce5f97f4e"
+      },
+      "stored": {
+        "file": "launcher.json",
+        "bytes": 11908,
+        "sha256": "f9f5653de30408b0952a35bec9b67bf297b08dea9cef81c654abda6ce5f97f4e"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/native.log",
+        "bytes": 444,
+        "sha256": "03bebabd445a1ead17277573df0f216960c094e7be0eeb3597aacb22e3093b74"
+      },
+      "stored": {
+        "file": "native.log",
+        "bytes": 444,
+        "sha256": "03bebabd445a1ead17277573df0f216960c094e7be0eeb3597aacb22e3093b74"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-owner-execution.log",
+        "bytes": 28709,
+        "sha256": "4e957a76783b2f9b881f28b67b42be213fef03d6f07957408cd25564908c3453"
+      },
+      "stored": {
+        "file": "root-owner-execution.log",
+        "bytes": 28709,
+        "sha256": "4e957a76783b2f9b881f28b67b42be213fef03d6f07957408cd25564908c3453"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/live.json",
+        "bytes": 9908,
+        "sha256": "834a5b2e8081ac6d0f4b7f7cad077b483e58267b41eb3a42d5f23d51f691f390"
+      },
+      "stored": {
+        "file": "live.json",
+        "bytes": 9908,
+        "sha256": "834a5b2e8081ac6d0f4b7f7cad077b483e58267b41eb3a42d5f23d51f691f390"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/candidate-first/report.json",
+        "bytes": 34703,
+        "sha256": "63d2238a658ab2d9e823fa292d09ccdefbd49e4a32b7819c3cf99234f1dacb86"
+      },
+      "stored": {
+        "file": "candidate-first/report.json",
+        "bytes": 34703,
+        "sha256": "63d2238a658ab2d9e823fa292d09ccdefbd49e4a32b7819c3cf99234f1dacb86"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/before-root-integration-review/inputs.json",
+        "bytes": 19388,
+        "sha256": "94afba8b96a380aad586b92baf086ef523a026ef96e65cccb5c62c8ea7694753"
+      },
+      "stored": {
+        "file": "before-root-integration-review/inputs.json",
+        "bytes": 19388,
+        "sha256": "94afba8b96a380aad586b92baf086ef523a026ef96e65cccb5c62c8ea7694753"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/before-root-integration-review/preparation-freeze.json",
+        "bytes": 11755,
+        "sha256": "20bf01452b402ecd7178c62da8405684558b943667d4c077124fce4af303ac45"
+      },
+      "stored": {
+        "file": "before-root-integration-review/preparation-freeze.json",
+        "bytes": 11755,
+        "sha256": "20bf01452b402ecd7178c62da8405684558b943667d4c077124fce4af303ac45"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/README.md",
+        "bytes": 9212,
+        "sha256": "3bc2f7da3753421bde9c9eb63e00a4f30deb2fbaf426f205fcb8a2f1456263db"
+      },
+      "stored": {
+        "file": "README-original.md",
+        "bytes": 9212,
+        "sha256": "3bc2f7da3753421bde9c9eb63e00a4f30deb2fbaf426f205fcb8a2f1456263db"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+        "bytes": 6474,
+        "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+      },
+      "stored": {
+        "file": "borrowed/native-owned.mjs",
+        "bytes": 6474,
+        "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "stored": {
+        "file": "borrowed/cdp.mjs",
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+        "bytes": 4774,
+        "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+      },
+      "stored": {
+        "file": "borrowed/menu-startup.mjs",
+        "bytes": 4774,
+        "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-post-failure-pins-and-closure.json",
+        "bytes": 261895,
+        "sha256": "e1e37402230d697704c89803403fa6c61292b4f5ba2cb618e356bfdd12b8da33"
+      },
+      "stored": {
+        "file": "root-post-failure-pins-and-closure.json",
+        "bytes": 261895,
+        "sha256": "e1e37402230d697704c89803403fa6c61292b4f5ba2cb618e356bfdd12b8da33"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-post-failure-check-first-attempt.json",
+        "bytes": 621,
+        "sha256": "1f95f4e78d2d4a68ee747e2ad36f2370c29a815d288b283dc4efdf89e8809617"
+      },
+      "stored": {
+        "file": "root-post-failure-check-first-attempt.json",
+        "bytes": 621,
+        "sha256": "1f95f4e78d2d4a68ee747e2ad36f2370c29a815d288b283dc4efdf89e8809617"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-post-failure-check-second-attempt.json",
+        "bytes": 478,
+        "sha256": "7e7085a80dacde2d72cd6dc301e9a85b338be4b3d233970192c43da83f35f69d"
+      },
+      "stored": {
+        "file": "root-post-failure-check-second-attempt.json",
+        "bytes": 478,
+        "sha256": "7e7085a80dacde2d72cd6dc301e9a85b338be4b3d233970192c43da83f35f69d"
+      },
+      "bytesEqualVerified": true
+    }
+  ],
+  "portableInputAuthorities": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+        "bytes": 6474,
+        "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+      },
+      "usedBy": [
+        "inputs.borrowedHelperPins[0]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "borrowed/native-owned.mjs",
+        "bytes": 6474,
+        "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "usedBy": [
+        "inputs.borrowedHelperPins[1]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "borrowed/cdp.mjs",
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+        "bytes": 4774,
+        "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+      },
+      "usedBy": [
+        "inputs.borrowedHelperPins[2]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "borrowed/menu-startup.mjs",
+        "bytes": 4774,
+        "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/build.json",
+        "bytes": 41743,
+        "sha256": "8a14b79263e47a3a490c6eb734ada185c98559605ab57754b6faa1de54e67fb8"
+      },
+      "usedBy": [
+        "inputs.opticalApplicationBuild"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../ordinary-v3-wall-deadline/build.json",
+        "bytes": 41743,
+        "sha256": "8a14b79263e47a3a490c6eb734ada185c98559605ab57754b6faa1de54e67fb8",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/source-freeze.json",
+        "bytes": 19399,
+        "sha256": "d6c7ffd6bd467c5e491140ff3100fac2905c11531fc4983ec0f3a0f2b4114df9"
+      },
+      "usedBy": [
+        "inputs.opticalApplicationFreeze"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../ordinary-v3-wall-deadline/source-freeze.json",
+        "bytes": 19399,
+        "sha256": "d6c7ffd6bd467c5e491140ff3100fac2905c11531fc4983ec0f3a0f2b4114df9",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/seal.json",
+        "bytes": 5517,
+        "sha256": "43f54e0dbe2b55c9e3fd0024372f50c716324769228d97d03d494d9fbe9ef067"
+      },
+      "usedBy": [
+        "inputs.opticalApplicationSeal"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../ordinary-v3-wall-deadline/seal.json",
+        "bytes": 5517,
+        "sha256": "43f54e0dbe2b55c9e3fd0024372f50c716324769228d97d03d494d9fbe9ef067",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/application-build.log",
+        "bytes": 1328,
+        "sha256": "ef1c24e5376c8f3ca28e9fd95b9bfa76bc1487f90f5bda1136e2de7c8da3de6e"
+      },
+      "usedBy": [
+        "inputs.opticalApplicationBuildLog"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../ordinary-v3-wall-deadline/application-build.log",
+        "bytes": 1328,
+        "sha256": "ef1c24e5376c8f3ca28e9fd95b9bfa76bc1487f90f5bda1136e2de7c8da3de6e",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+        "bytes": 49054,
+        "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+      },
+      "usedBy": [
+        "inputs.referenceReport"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../cap/capture/report.json",
+        "bytes": 49054,
+        "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+        "bytes": 3848,
+        "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+      },
+      "usedBy": [
+        "inputs.referenceOwner"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../cap/owner.json",
+        "bytes": 3848,
+        "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1219771,
+        "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+      },
+      "usedBy": [
+        "inputs.referenceLoft"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../cap/capture/loft-terminal.json.gz",
+        "bytes": 266399,
+        "sha256": "a4c17794c24950b13e42c2e50a8326835bee2dfca214cc7bd34c868e7b5f7dc9",
+        "encoding": "gzip",
+        "decodedBytes": 1219771,
+        "decodedSha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237",
+        "decodedBytesEqualVerified": true
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+        "bytes": 66175,
+        "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+      },
+      "usedBy": [
+        "inputs.authoredReport"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../authored-mask-comparison/report.json",
+        "bytes": 66175,
+        "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+        "bytes": 2886,
+        "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+      },
+      "usedBy": [
+        "inputs.authoredOwner"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../authored-mask-comparison/owner.json",
+        "bytes": 2886,
+        "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-authored-mask-native-20261005/seal.json",
+        "bytes": 22535,
+        "sha256": "b22727d355b9b3b8ef78877f92ccbc7496a40a98390f27c4119b3e63706f64e2"
+      },
+      "usedBy": [
+        "inputs.authoredSeal"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../authored-mask-comparison/seal.json",
+        "bytes": 22535,
+        "sha256": "b22727d355b9b3b8ef78877f92ccbc7496a40a98390f27c4119b3e63706f64e2",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/interior-rich-combined-mask-and-sheet-fill-A.png",
+        "bytes": 1979202,
+        "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+      },
+      "usedBy": [
+        "inputs.baselinePNG"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../authored-mask-comparison/interior-rich-combined-mask-and-sheet-fill-A.png",
+        "bytes": 1979202,
+        "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/README.md",
+        "bytes": 7467,
+        "sha256": "a777322f61afe7da7c3f1a8f1df7be8157a0ff450a07207f3ca01e8e315b8679"
+      },
+      "usedBy": [
+        "inputs.readOnlyEvidence[0]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership/README.md",
+        "bytes": 7467,
+        "sha256": "a777322f61afe7da7c3f1a8f1df7be8157a0ff450a07207f3ca01e8e315b8679",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/probe-shader-deltas.mjs",
+        "bytes": 4991,
+        "sha256": "aed2b614c0aad7e6d5534cf9f9dcc58ec0ec64d4be9c5e7b264a50796400aadb"
+      },
+      "usedBy": [
+        "inputs.readOnlyEvidence[1]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership/probe-shader-deltas.mjs",
+        "bytes": 4991,
+        "sha256": "aed2b614c0aad7e6d5534cf9f9dcc58ec0ec64d4be9c5e7b264a50796400aadb",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/proposal.json",
+        "bytes": 12197,
+        "sha256": "f11dde4a6074c64b887f17561efcf455187d2c7027cba23e27a598994daf734e"
+      },
+      "usedBy": [
+        "inputs.readOnlyEvidence[2]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership/proposal.json",
+        "bytes": 12197,
+        "sha256": "f11dde4a6074c64b887f17561efcf455187d2c7027cba23e27a598994daf734e",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/sample-choice.json",
+        "bytes": 1058,
+        "sha256": "0becdc934ddb5db9d6b1e98e3be286118c84fb7ff381b3e4b852b8cb8995b18c"
+      },
+      "usedBy": [
+        "inputs.readOnlyEvidence[3]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership/sample-choice.json",
+        "bytes": 1058,
+        "sha256": "0becdc934ddb5db9d6b1e98e3be286118c84fb7ff381b3e4b852b8cb8995b18c",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/saved-pixel-ray-inspection.json",
+        "bytes": 17779,
+        "sha256": "7252459ee405aad4ec8a8283cc6237885472a08365af4f429d0ef47abda6bd21"
+      },
+      "usedBy": [
+        "inputs.readOnlyEvidence[4]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership/saved-pixel-ray-inspection.json",
+        "bytes": 17779,
+        "sha256": "7252459ee405aad4ec8a8283cc6237885472a08365af4f429d0ef47abda6bd21",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/offline-read.py",
+        "bytes": 4061,
+        "sha256": "b78ee833b4904d45165a0ceeb757f6160860469156781491b3c5e12fddf6eb75"
+      },
+      "usedBy": [
+        "inputs.readOnlyEvidence[5]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership/offline-read.py",
+        "bytes": 4061,
+        "sha256": "b78ee833b4904d45165a0ceeb757f6160860469156781491b3c5e12fddf6eb75",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/offline-source-note.md",
+        "bytes": 457,
+        "sha256": "0a9bd3b1fa06d269548869e92255f6d27ae41ba5b6b35fce794379544bd34208"
+      },
+      "usedBy": [
+        "inputs.readOnlyEvidence[6]"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership/offline-source-note.md",
+        "bytes": 457,
+        "sha256": "0a9bd3b1fa06d269548869e92255f6d27ae41ba5b6b35fce794379544bd34208",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+        "bytes": 2735,
+        "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+      },
+      "usedBy": [
+        "inputs.protectedIdentityAuthority"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../owner-anchor-verification/inputs/root-five-protected-preview-identities.json",
+        "bytes": 2735,
+        "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+        "bytes": 3469,
+        "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+      },
+      "usedBy": [
+        "inputs.historicalOpticalRun.owner"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../ordinary-v3-wall-deadline/owner.json",
+        "bytes": 3469,
+        "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+        "bytes": 42104,
+        "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+      },
+      "usedBy": [
+        "inputs.historicalOpticalRun.report"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../ordinary-v3-wall-deadline/report.json",
+        "bytes": 42104,
+        "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/root-prepare-failure.json",
+        "bytes": 2044,
+        "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf"
+      },
+      "usedBy": [
+        "inputs.priorPreparationFailure.receipt"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership-failures/v2-preparation-failure/root-prepare-failure.json",
+        "bytes": 2044,
+        "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/owner.json",
+        "bytes": 15489,
+        "sha256": "a210ddebe768f0eb58e4831560caf4ecc572b93eef35e2aa61477224cb5a29f7"
+      },
+      "usedBy": [
+        "inputs.priorNativeFailure.owner"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership-failures/v3-native-failure/owner.json",
+        "bytes": 15489,
+        "sha256": "a210ddebe768f0eb58e4831560caf4ecc572b93eef35e2aa61477224cb5a29f7",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/candidate-first/report.json",
+        "bytes": 30186,
+        "sha256": "d702e3d226fc6eb182fe3e2634281594e4e4c5078f0459eeac81492939005b82"
+      },
+      "usedBy": [
+        "inputs.priorNativeFailure.report"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership-failures/v3-native-failure/candidate-first/report.json",
+        "bytes": 30186,
+        "sha256": "d702e3d226fc6eb182fe3e2634281594e4e4c5078f0459eeac81492939005b82",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/root-post-failure-pins-and-closure.json",
+        "bytes": 54427,
+        "sha256": "235816a6057bf3f3a19a14b141010d5518c1912e2f2ad34b18d51d4b927a8dfe"
+      },
+      "usedBy": [
+        "inputs.priorNativeFailure.rootPostFailure"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership-failures/v3-native-failure/root-post-failure-pins-and-closure.json",
+        "bytes": 54427,
+        "sha256": "235816a6057bf3f3a19a14b141010d5518c1912e2f2ad34b18d51d4b927a8dfe",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+        "bytes": 526,
+        "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85"
+      },
+      "usedBy": [
+        "inputs.protected4316.processReceipt"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../owner-anchor-verification/inputs/human-preview4316-process.json",
+        "bytes": 526,
+        "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/owner.json",
+        "bytes": 16681,
+        "sha256": "5c3c876f6129b5f5e9856e2ec80af11dc7551a66807803abb81104a0462bd9f2"
+      },
+      "usedBy": [
+        "inputs.priorWindingFailure.owner"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership-failures/id-v4/owner.json",
+        "bytes": 16681,
+        "sha256": "5c3c876f6129b5f5e9856e2ec80af11dc7551a66807803abb81104a0462bd9f2",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/candidate-first/report.json",
+        "bytes": 31388,
+        "sha256": "19562e9bcf94fe990acd512d7d8d80497e7a3e3fc3b908308a3e040d5b9de64a"
+      },
+      "usedBy": [
+        "inputs.priorWindingFailure.report"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../draw-winding-audit/inputs/failed-IDV4-report.json",
+        "bytes": 31388,
+        "sha256": "19562e9bcf94fe990acd512d7d8d80497e7a3e3fc3b908308a3e040d5b9de64a",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/root-post-failure-pins-and-closure.json",
+        "bytes": 54257,
+        "sha256": "b1cac33132acca83cbe270d5bf6425226b0963a1d568b384298692ed91111401"
+      },
+      "usedBy": [
+        "inputs.priorWindingFailure.rootPostFailure"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../grey-band-ownership-failures/id-v4/root-post-failure-pins-and-closure.json",
+        "bytes": 54257,
+        "sha256": "b1cac33132acca83cbe270d5bf6425226b0963a1d568b384298692ed91111401",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/historical-source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+      },
+      "usedBy": [
+        "inputs.drawWindingGuard.sourceRationalePin"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../identity-core-comparison/failed-v1/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-draw-winding-audit-20261005/proposed-exact-draw-winding-guard.mjs",
+        "bytes": 2024,
+        "sha256": "30c0482da77e4f5363480a4e8cffad75ac5d8cd8378b74e5b5a050c757003881"
+      },
+      "usedBy": [
+        "inputs.drawWindingGuard.exactProposedGuard"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../draw-winding-audit/proposed-exact-draw-winding-guard.mjs",
+        "bytes": 2024,
+        "sha256": "30c0482da77e4f5363480a4e8cffad75ac5d8cd8378b74e5b5a050c757003881",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.moduleSource"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+        "bytes": 2410,
+        "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.moduleStaticFreeze"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../owner-anchor-verification/source-freeze.json",
+        "bytes": 2410,
+        "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+        "bytes": 511,
+        "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.rootPureTests"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../owner-anchor-verification/root-tests.json",
+        "bytes": 511,
+        "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
+        "bytes": 3695,
+        "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.rootPureTestLog"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "../owner-anchor-verification/root-tests.log",
+        "bytes": 3695,
+        "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.copiedModule"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0",
+        "encoding": "exact"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-integration-checks.json",
+        "bytes": 1272,
+        "sha256": "de78622a0295ce3a96a9a49e2d8d06b502bebcedff1fe90273ab7a014fd80ff9"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.rootIntegrationChecks"
+      ],
+      "originalBytesVerifiedByArchiveReads": true,
+      "resolution": {
+        "file": "root-integration-checks.json",
+        "bytes": 1272,
+        "sha256": "de78622a0295ce3a96a9a49e2d8d06b502bebcedff1fe90273ab7a014fd80ff9",
+        "encoding": "exact"
+      }
+    }
+  ],
+  "originalAndExecutionReadyFreezeFileChecks": [
+    {
+      "freeze": "beforeRootReview",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/prepare.py",
+        "bytes": 22011,
+        "sha256": "dad993e4a125aeb3a447e2f059ee552a4bd5a4d8c125710b655ff045a48e9e60"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/prepare.py",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "beforeRootReview",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/run.py",
+        "bytes": 24528,
+        "sha256": "4351597845051f630f5d0834f6663153c89c76e3466fa0fcafbc032612e3ca97"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/run.py",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "beforeRootReview",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/native.mjs",
+        "bytes": 10273,
+        "sha256": "75ceb45e095d598c145adb7d21f6e2503cdcd0584c385808d23a1f410d8598b8"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/native.mjs",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "beforeRootReview",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/ownership-inspection.mjs",
+        "bytes": 28787,
+        "sha256": "5600c34b450622b03ac1f72c7f0c19e9ea4aca8710ffbb934dc9a0f81faec2c6"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/ownership-inspection.mjs",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "beforeRootReview",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/inputs.json",
+        "bytes": 19388,
+        "sha256": "94afba8b96a380aad586b92baf086ef523a026ef96e65cccb5c62c8ea7694753"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/before-root-integration-review/inputs.json",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "beforeRootReview",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/README.md",
+        "bytes": 9212,
+        "sha256": "3bc2f7da3753421bde9c9eb63e00a4f30deb2fbaf426f205fcb8a2f1456263db"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/README.md",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "beforeRootReview",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe-diff.md",
+        "bytes": 2177,
+        "sha256": "29e6455553620ec6e5192c92bacdebe3ecddf25f142e50c60693a9fcbb88c74e"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe-diff.md",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "beforeRootReview",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "beforeRootReview",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe.patch",
+        "bytes": 95900,
+        "sha256": "9a2df11641f7803052626b739d31d974f00112ef957deafd5ce37866a2ce272b"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe.patch",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/prepare.py",
+        "bytes": 22011,
+        "sha256": "dad993e4a125aeb3a447e2f059ee552a4bd5a4d8c125710b655ff045a48e9e60"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/prepare.py",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/run.py",
+        "bytes": 24528,
+        "sha256": "4351597845051f630f5d0834f6663153c89c76e3466fa0fcafbc032612e3ca97"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/run.py",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/native.mjs",
+        "bytes": 10273,
+        "sha256": "75ceb45e095d598c145adb7d21f6e2503cdcd0584c385808d23a1f410d8598b8"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/native.mjs",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/ownership-inspection.mjs",
+        "bytes": 28787,
+        "sha256": "5600c34b450622b03ac1f72c7f0c19e9ea4aca8710ffbb934dc9a0f81faec2c6"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/ownership-inspection.mjs",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/inputs.json",
+        "bytes": 19634,
+        "sha256": "97887eff1bc65f456b34df49f58cbbc66b24fdf46c5eaa3f41ab0deab4c47bdf"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/inputs.json",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/README.md",
+        "bytes": 9212,
+        "sha256": "3bc2f7da3753421bde9c9eb63e00a4f30deb2fbaf426f205fcb8a2f1456263db"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/README.md",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe-diff.md",
+        "bytes": 2177,
+        "sha256": "29e6455553620ec6e5192c92bacdebe3ecddf25f142e50c60693a9fcbb88c74e"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe-diff.md",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe.patch",
+        "bytes": 95900,
+        "sha256": "9a2df11641f7803052626b739d31d974f00112ef957deafd5ce37866a2ce272b"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe.patch",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-integration-checks.json",
+        "bytes": 1272,
+        "sha256": "de78622a0295ce3a96a9a49e2d8d06b502bebcedff1fe90273ab7a014fd80ff9"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-integration-checks.json",
+      "bytesAndSha256Verified": true
+    },
+    {
+      "freeze": "executionReady",
+      "recorded": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-readiness-amendment-failure.json",
+        "bytes": 599,
+        "sha256": "d42f3b614f4eccec7ad936f9a01b8a2b2ab12ce68854d376881aa09989b3e8e7"
+      },
+      "resolvedOriginal": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/root-readiness-amendment-failure.json",
+      "bytesAndSha256Verified": true
+    }
+  ],
+  "generatedFiles": [
+    {
+      "file": "README.md",
+      "bytes": 5897,
+      "sha256": "b19d0d985c13c3279ccbe08b84ace0a53ff6c50b6b0a77449a1529b353c5f717"
+    }
+  ],
+  "omissions": [
+    {
+      "paths": [
+        "dist/",
+        "historical-source/",
+        "historical-dependencies/",
+        "historical-diagnostic/",
+        "__pycache__/"
+      ],
+      "reason": "Avoid duplicate large built assets/recovered source/dependency/cache bytes; exact asset/source pin rosters retained in original build/seal/source-provenance receipts."
+    },
+    {
+      "paths": [
+        "rejected V5 baseline PNG",
+        "rejected baseline native hash/byte count",
+        "owner/rasterFace/bodyCos PNGs",
+        "restored repeats"
+      ],
+      "reason": "Never saved/returned by the failed attempt; no artifact invented."
+    }
+  ],
+  "archiveOperations": {
+    "readsCopiesJSONGzipAndSHA256Only": true,
+    "productionOrParentREADMEWritten": false,
+    "testsImportsRecipeOrNativeBuildsOSPortsGitExecuted": false
+  },
+  "finalizedAtUTC": "2026-10-05T17:21:34.764245+00:00"
+}

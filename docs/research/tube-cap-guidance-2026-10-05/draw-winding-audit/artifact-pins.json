@@ -1,0 +1,76 @@
+{
+  "schema": "saved-offline-audit-artifact-pins-v1",
+  "excludeSelf": true,
+  "artifacts": [
+    {
+      "path": "README.md",
+      "bytes": 3888,
+      "sha256": "13f8d23a62881f86eae638f66a934371ca2c36f12ef9e4f233b92c4a7f7f563f"
+    },
+    {
+      "path": "audit-executed-source.transcript.py",
+      "bytes": 1531,
+      "sha256": "f41a013841b56b07ba7e4c231807a4c4e142c08c7cd7fda9fb61680796021198"
+    },
+    {
+      "path": "audit-log.transcript.json",
+      "bytes": 1061,
+      "sha256": "f45c85938c27250a1064d84ec88b53ce8ff6f042900aa70265ef97350ccc8d49"
+    },
+    {
+      "path": "audit-stdout.transcript.json",
+      "bytes": 691,
+      "sha256": "ed4d0943db8f46cd6a4595d057ae3db95790a10a6a58b813287333ee7de1941a"
+    },
+    {
+      "path": "input-pins.json",
+      "bytes": 2810,
+      "sha256": "3f4dd63df0f8a32800c61db858b516d9d74efe05e5869199fa97077eb3f9f466"
+    },
+    {
+      "path": "inputs/failed-IDV4-ownership-inspection.mjs",
+      "bytes": 27266,
+      "sha256": "f95d01df89eca30010387d3ec1cf1c559d4b391c7bb6f353de7eef4d8fcd7b58"
+    },
+    {
+      "path": "inputs/failed-IDV4-report.json",
+      "bytes": 31388,
+      "sha256": "19562e9bcf94fe990acd512d7d8d80497e7a3e3fc3b908308a3e040d5b9de64a"
+    },
+    {
+      "path": "inputs/historical-SweptBarrelMesh.ts",
+      "bytes": 33396,
+      "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+    },
+    {
+      "path": "inputs/reference-loft-terminal.json",
+      "bytes": 1219771,
+      "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+    },
+    {
+      "path": "inputs/successful-authored-mask-inspection.mjs",
+      "bytes": 26195,
+      "sha256": "46bf01d7113700d96502dae2fd1e8821f1220bf89fded3be20f183bb9dbd1ccb"
+    },
+    {
+      "path": "inputs/successful-authored-mask-report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    },
+    {
+      "path": "inputs/successful-shared-V2-geometry-inspection.mjs",
+      "bytes": 18841,
+      "sha256": "6a2594d3b74174b311d3d706f714fdf7f6bcb0b9a1b388c2718b5d7232b00857"
+    },
+    {
+      "path": "inputs/successful-shared-V2-report.json",
+      "bytes": 42900,
+      "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
+    },
+    {
+      "path": "proposed-exact-draw-winding-guard.mjs",
+      "bytes": 2024,
+      "sha256": "30c0482da77e4f5363480a4e8cffad75ac5d8cd8378b74e5b5a050c757003881"
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "schema": "cap-reach-hold-source-proposal-readiness/v1",
+  "sourceOnly": true,
+  "rootReviewAndExecutionPending": true,
+  "moduleImported": false,
+  "syntaxChecked": false,
+  "typeChecked": false,
+  "bundled": false,
+  "testsExecuted": false,
+  "numericalEvaluationExecuted": false,
+  "nativeExecuted": false,
+  "osProcessOrListenerRead": false,
+  "portsProbed": false,
+  "gitMutated": false,
+  "productionOrFrozenPriorRecipeChanged": false,
+  "noNumericalOutputExists": true,
+  "entry": {
+    "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analyze.ts",
+    "bytes": 15034,
+    "sha256": "28a673fc2560b184a5947370c01345675bab072a31aebd40d5e04e0ac5c17025"
+  },
+  "patch": {
+    "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analysis.patch",
+    "bytes": 37892,
+    "sha256": "a8848cb2b47153beb6fb1424a55444daf7d1f5613ae861a9a5b42caabee00e99"
+  },
+  "files": [
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/README.md",
+      "bytes": 5330,
+      "sha256": "7c470b8f647fe68e4de214b879d19500d281a6b7c49b8ad0126d869dd0e2a74a"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analysis.patch",
+      "bytes": 37892,
+      "sha256": "a8848cb2b47153beb6fb1424a55444daf7d1f5613ae861a9a5b42caabee00e99"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analyze.ts",
+      "bytes": 15034,
+      "sha256": "28a673fc2560b184a5947370c01345675bab072a31aebd40d5e04e0ac5c17025"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 31647,
+      "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 20184,
+      "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/frontRecords.ts",
+      "bytes": 1941,
+      "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 3200,
+      "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 33824,
+      "sha256": "9115f26f35c0e0c4099e377eb91bd259321f0af383cd3da0f3089dab52da3cd4"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 21200,
+      "sha256": "0496e09ac2f16cadad686706cf0e1ababffc27dd4306b996b1c65b59cb0afd0c"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/frontRecords.ts",
+      "bytes": 1941,
+      "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 3200,
+      "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/evidence/earlier-decompose.py",
+      "bytes": 4730,
+      "sha256": "84a580bbbcb100abedd1a3f97a537e166d07a84a54ea4490da4048af6d1cf842"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/evidence/earlier-inspect.py",
+      "bytes": 8660,
+      "sha256": "4ebc99b2ab53086eb7297f8000651f0065fd3307925ae0bd9df943f714f4e105"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/evidence/earlier-provenance.json",
+      "bytes": 5099,
+      "sha256": "a01ebfca96d9ce42f408fc8d48a792ea03a9c4afd415a1e181d0664f772bdd89"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/evidence/fixture-decomposition.json",
+      "bytes": 9975,
+      "sha256": "4ff969177aa66194a30088be9f97e58fb63972c5edcf24908182e4c8e34acaab"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/evidence/inspect-fixture.ts",
+      "bytes": 3687,
+      "sha256": "54eeab659d538c636ebbc50e10f1e307116878f0bd7d2dbb76c8784b01d6e30f"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/evidence/root-fixture-execution.json",
+      "bytes": 1417,
+      "sha256": "8ef3329659c3bca3a67ad70dd3024907840fa621823773dec2fd18d9902a7f2b"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/front-format.ts",
+      "bytes": 251,
+      "sha256": "dc9b09b1b5aeb3227443885786c4ac94d1a252fa548b2158451fc0f78deb1f68"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/input-pins.json",
+      "bytes": 9508,
+      "sha256": "265dade8bfe33a2351300c987e6541fe7cfa0cac9c0f8ffb5a7541ab77449cf4"
+    }
+  ],
+  "limits": {
+    "gridStart": 4.75,
+    "gridEnd": 5.25,
+    "gridStep": 0.015625,
+    "gridCount": 33,
+    "exactHoldPoints": 1,
+    "maximumUniqueSamplePoints": 34,
+    "secantSpan": 0.015625,
+    "reportBytes": 2097152,
+    "output": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/reach-decomposition.json",
+    "noExpansionOrSearch": true
+  },
+  "changedObservationCopies": [
+    "src/wave/barrel/boundedCProfile.ts",
+    "src/wave/barrel/ProfileLibrary.ts"
+  ],
+  "literalArithmeticTraceOnly": true,
+  "unmodifiedProviderCopyComparisonPlanned": true,
+  "expectedVerification": "Zero cap/crest public point/full-profile/reconstructed metric word differences; complete256 provider profile words identical. These checks have NOT run.",
+  "sourcePinChecks": "Copy/hash bookkeeping only; exact source and existing evidence/asset bytes preserved, no game import/calculation/check.",
+  "priorReconstructionQualification": "Earlier17-row source is preserved as method evidence; its old rational saturation is not used.",
+  "holdQualification": "Exact published hold-clock sample and explicit affine inversion residual<=8 binary64ULPs; no extra hold\u00b1h samples. Equal-span hold-side comparisons use bracketing grid intervals with endpoints retained.",
+  "internalProviderQualification": "Ordinary full-profile lookups include their existing internal clock/cap velocity arithmetic;34 declared X observations do not imply34 total internal function calls.",
+  "interpretation": "Finite fixed-resolution secants/term differences only, never derivativekink/globalC1/native/body/passage/FPS proof."
+}

@@ -1,0 +1,328 @@
+{
+  "schema": "leaf-identity-core-comparison-v2-caller-expiry/v1",
+  "sourceOnly": true,
+  "executionPendingOwnerPolicyReview": true,
+  "integrationReviewPending": true,
+  "integrationChecksExecuted": false,
+  "syntaxChecked": false,
+  "moduleImported": false,
+  "preparationExecuted": false,
+  "buildExecuted": false,
+  "nativeExecuted": false,
+  "numericalOrSavedWordAnalysisExecuted": false,
+  "osProcessOrListenerRead": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "gitMutated": false,
+  "productionOrSealedParentChanged": false,
+  "rootFirstReviewRequired": true,
+  "notLaunchReady": true,
+  "parentFailure": {
+    "rootHandle": "47462",
+    "owner": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner.json",
+      "bytes": 57977,
+      "sha256": "ccd0da40b6da29ed5c9a20a388261beb3360f3d267ddbfbe10424c5da67e7e92"
+    },
+    "report": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/candidate-first/report.json",
+      "bytes": 6979,
+      "sha256": "37b85be2db5bdb93f0a7fc11ab890eb134f4c750a0ffeca9eaad00f6045ccb7d"
+    },
+    "rootPostFailurePinsAndClosure": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-post-failure-pins-and-closure.json",
+      "bytes": 147021,
+      "sha256": "6e9145a968147b850076b4fe3a09579c14fe4e93dd38b2020310e9e4fc68116b"
+    },
+    "terminalExitCode": 1,
+    "ownerComplete": false,
+    "firstFailure": "AnchorRejected: fresh_bounded_read_required",
+    "elapsedSeconds": 44.32070841698442,
+    "readWindow": {
+      "started": 410752.776246375,
+      "finished": 410754.835288333,
+      "now": 410754.835310041,
+      "deadline": 411361.745241666,
+      "os_seconds": 2,
+      "maximum_age_seconds": 2
+    },
+    "readDurationSeconds": 2.059041958011221,
+    "firstAttemptRemainsFailed": true,
+    "pngCount": 0,
+    "physicalSteps": 0,
+    "noVisualResult": true,
+    "rootVerifiedPostFailurePins": 690,
+    "rootVerifiedGroupAbsence": 43952,
+    "rootProtectedIdentityPreservationIsHistoricalEvidence": true
+  },
+  "unchangedPolicy": {
+    "limits": {
+      "steps": 0,
+      "nativeSeconds": 635,
+      "ownerSeconds": 648,
+      "totalSeconds": 680,
+      "cleanupSeconds": 20,
+      "pngCount": 8,
+      "pngBytesEach": 12582912,
+      "pngBytesTotal": 100663296,
+      "reportBytes": 2097152,
+      "sidecarBytes": 6291456,
+      "drawInputsBytes": 8388608
+    },
+    "fiveProtectedPorts": [
+      4312,
+      4313,
+      4314,
+      4315,
+      4316
+    ],
+    "ownedPorts": [
+      4301,
+      9711
+    ],
+    "protectedIdentityAuthority": {
+      "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+      "bytes": 2735,
+      "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+    },
+    "exactHelper": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    "geometryObserver": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/geometry-inspection.mjs",
+      "bytes": 18907,
+      "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+    },
+    "applicationBuildId": "tube-guided-passive-telemetry-20261005",
+    "immutablePreparedApplication": {
+      "build": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+        "bytes": 43568,
+        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+      },
+      "sourceFreeze": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+        "bytes": 19549,
+        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+      },
+      "seal": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+        "bytes": 9774,
+        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+      }
+    },
+    "rootCurrentApplicationReceipt": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+      "bytes": 132778,
+      "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+    },
+    "baselineAuthority": {
+      "owner": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/owner.json",
+        "bytes": 15739,
+        "sha256": "015c31d0bf9fecc62935ab919e7a65277f74084b79b80a7a4fe40e26efe7a02c"
+      },
+      "report": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/report.json",
+        "bytes": 42900,
+        "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
+      },
+      "loft": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
+        "bytes": 1204806,
+        "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+      },
+      "build": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/build.json",
+        "bytes": 16556,
+        "sha256": "f945caaa1aba8d283487942e7150a7ed9e0def1b1c2e190b75ea83d6fa3bd705"
+      },
+      "seal": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/seal.json",
+        "bytes": 9461,
+        "sha256": "bc8d8374c629fd7cf74da7abac0609b036242f3a3b0ee53ce8a8a1519e9dd3ee"
+      },
+      "sourceFreeze": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source-freeze.json",
+        "bytes": 6300,
+        "sha256": "e38226f54858e5804065cec68626af7ed2b1e1fbf799f87ecef12f2136825e78"
+      },
+      "drawInputs": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/draw-inputs.json",
+        "bytes": 1696833,
+        "sha256": "0f26472964cb9ee71d3abe267b5e5c1be16aeadb2eaf7bbd6cf3848ce63a4a6f"
+      }
+    },
+    "referenceEpoch": {
+      "step": 0,
+      "seaTime": 276.3293560552737,
+      "kind": "first-eligible-capture"
+    },
+    "fixedCameras": {
+      "side": {
+        "eye": [
+          75.65191820636392,
+          0.8180906549096107,
+          -66.22397584095597
+        ],
+        "target": [
+          74.75,
+          0.8180906549096107,
+          -68.14806801453233
+        ],
+        "quaternion": [
+          0,
+          0.21741787419751346,
+          0,
+          0.9760786177247376
+        ],
+        "inheritedUp": [
+          0,
+          1,
+          0
+        ],
+        "projection": [
+          1.0551622229204924,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ],
+        "fov": 52,
+        "aspect": 1.9431171786120591,
+        "near": 0.1,
+        "far": 3000,
+        "zoom": 1
+      },
+      "interior": {
+        "eye": [
+          74.0625,
+          1.0598396605743825,
+          -68.79456329345703
+        ],
+        "target": [
+          74.1875,
+          1.0626037843906364,
+          -68.7633285522461
+        ],
+        "quaternion": [
+          0.006600678893715275,
+          -0.7881247536647293,
+          0.008452992668955604,
+          0.6154220914250564
+        ],
+        "inheritedUp": [
+          0,
+          1,
+          0
+        ],
+        "projection": [
+          1.0551622229204924,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ],
+        "fov": 52,
+        "aspect": 1.9431171786120591,
+        "near": 0.1,
+        "far": 3000,
+        "zoom": 1
+      }
+    },
+    "comparison": {
+      "pairs": [
+        {
+          "camera": "side",
+          "view": "rich"
+        },
+        {
+          "camera": "side",
+          "view": "region"
+        },
+        {
+          "camera": "interior",
+          "view": "rich"
+        },
+        {
+          "camera": "interior",
+          "view": "region"
+        }
+      ],
+      "geometryOrder": [
+        "preserved-shared-leaf",
+        "identity-core",
+        "restored-preserved-shared-leaf-repeat"
+      ],
+      "oldFull37Exact": true,
+      "candidateActiveCountsMayChange": true,
+      "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Old pre-identity mask equality is not required because the geometry footprint can change.",
+      "currentMaterialPolicy": "Unmodified current compiled authored max-mask and wall-light A on both variants; observer wrapper records exact shader words only.",
+      "targetCorner": {
+        "front": 41,
+        "worldCrestX": 75.625,
+        "coordinateIsSigma": false,
+        "priorMeasuredBendDegrees": 21.479273974306263
+      },
+      "noPlacement": true,
+      "noSteps": true,
+      "noSeedEpochPoseSelectorSearch": true,
+      "globalC1Guarantee": false,
+      "identityCoreOnlyRuntimeGeometryChange": true,
+      "baselineSuppliedCheckpoint": "2f43b943cfb29419a063c6ee31813e4f116c7a7a",
+      "oldFull37Producer": "Completed shared-leaf V2 candidate (pre-identity), not earlier cap-only geometry.",
+      "priorOrdinaryDrawInputsExactFields": [
+        "seaTime",
+        "step",
+        "config",
+        "look",
+        "holdClearDrawing",
+        "slope",
+        "stillLevel",
+        "surfaceRevision",
+        "surfaceGrid",
+        "surface",
+        "rawFrontPacket",
+        "board8",
+        "rider33",
+        "normalCameraWords"
+      ]
+    }
+  },
+  "callerDelta": {
+    "expiredType": "OwnedReadExpired",
+    "classification": "completed owned read duration>OS_SECONDS or age>OS_SECONDS before observe_owned_group",
+    "acceptedStateRefreshOnExpiry": false,
+    "periodic": "observe/log only; same Popen and HTTP server continue",
+    "required": "only TimeoutExpired/OwnedReadExpired retry up to existing3 attempts within unchanged absolute deadline",
+    "genuineAnchorRejectedCaughtAsExpiry": false,
+    "evidence": "all measured ReadWindow fields, duration/age, live-before/after, previous accepted observation number, actual PID, member count and first16 PIDs with explicit omitted count; existing16-note cap"
+  },
+  "preparedInputCopies": "Only recipe/helper/lineage byte copies; no new dist/source tree or prepared outputs. Root first-only prepare.py remains unexecuted.",
+  "geometryAndNativeAuthorityLimit": "No visual, globalC1, body, passage, FPS or new runtime cleanup result. Root source review/checks are pending.",
+  "hashingAndDiffOnly": true
+}

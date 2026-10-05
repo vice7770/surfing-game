@@ -1,0 +1,27 @@
+
+ RUN  v5.0.1 /private/tmp/tube-cap-turn-refinement-checks-20261005
+
+ ❯ src/wave/barrel/boundedCCapRefinement.test.ts (8 tests | 1 failed) 2409ms
+   ❯ bounded local C cap refinement (8)
+     × reduces the actual provider cap bend against its mandatory lattice/clock plan without a saved seed or camera 47ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/boundedCCapRefinement.test.ts > bounded local C cap refinement > reduces the actual provider cap bend against its mandatory lattice/clock plan without a saved seed or camera
+AssertionError: expected 39.616319487321675 to be less than 38.691184242955714
+ ❯ src/wave/barrel/boundedCCapRefinement.test.ts:158:42
+    156|         3 * vertex(row, LANDMARK.lip), 3 * vertex(row, LANDMARK.lip) +…
+    157|     expect(mandatory.length).toBeGreaterThanOrEqual(3); expect(refined…
+    158|     expect(maximumPolylineTurn(refined)).toBeLessThan(maximumPolylineT…
+       |                                          ^
+    159|     expect(draw.vertexCount).toBeLessThanOrEqual(LOFT.budget);
+    160|     // Requested probing/refinement limits remain diagnostic; a measur…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  17:56:35
+   Duration  3.06s (tests 83%, transform 14%, import 2%)
+

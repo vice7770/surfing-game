@@ -1,0 +1,117 @@
+{
+  "schema": "angular-cap-refinement-source-only-proposal/v1",
+  "work": "/private/tmp/tube-cap-turn-refinement-proposal-20261005",
+  "parentReportedRootHead": "3e75550c2",
+  "rootHeadIndependentlyVerified": false,
+  "scope": [
+    "src/wave/barrel/sweptLoft.ts",
+    "src/wave/barrel/boundedCCapRefinement.test.ts"
+  ],
+  "originalHeldSourceEquality": true,
+  "originalSourcesWritten": false,
+  "proposalStatus": "frozen unexecuted source for root review",
+  "angleTrialDegrees": 8,
+  "existingLimitsRetained": {
+    "levels": 3,
+    "minimumSpanMetres": 0.0625,
+    "maximumSagittaMetres": 0.015
+  },
+  "decisionQueries": {
+    "capProbesPerEligibleInterval": 5,
+    "pointQueriesPerEligibleInterval": 10,
+    "additionalAngularQueriesPerDecision": 0
+  },
+  "treeBounds": {
+    "testedIntervalsPerInitialInterval": 7,
+    "capProbes": 35,
+    "pointQueries": 70,
+    "insertions": 7
+  },
+  "additionalCapScratchBytes": 96,
+  "tests": {
+    "priorTestCasesRetained": 4,
+    "newTestCasesProposed": 4,
+    "executed": false,
+    "results": null,
+    "strictTypeScriptExecuted": false
+  },
+  "localReportOnly": "LoftResult.cSampling.capRefinement; no worker packet/serialization change",
+  "limitations": [
+    "No numerical, test, TypeScript, build, native, browser, Git or port execution.",
+    "Saved X74.25 quarter samples are absent; no proof this trial repairs that exact 26.06 degree bend.",
+    "Quarter chord turns are local pre-water/end-projection measurements, not retained mesh/C1 guarantees.",
+    "Depth/spacing/precision/budget limits remain and are reported as unverified or truncated.",
+    "Existing sealed hard prefix can omit later mandatory raw/clock stations in an overflowing refined plan.",
+    "More eligible intervals can split, increasing total queries/rows inside the retained tree and hard caps.",
+    "Generic steep C1 oracle asserts improvement and a remaining >8 degree corner, pending root execution.",
+    "Actual provider planned test compares mandatory lattice/clock plan, not old positional adaptive output."
+  ],
+  "files": [
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "original": {
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      "candidate": {
+        "bytes": 88408,
+        "sha256": "cab60f46d0a77074571fac698fd68548370bb3f6d71e15b846880ac38efb8298"
+      },
+      "originalUnchanged": true
+    },
+    {
+      "path": "src/wave/barrel/boundedCCapRefinement.test.ts",
+      "original": {
+        "bytes": 11167,
+        "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+      },
+      "candidate": {
+        "bytes": 18615,
+        "sha256": "509a35e001290a2242b9577d69787ab3b7788288f0eb887443b8a2a5a40362e0"
+      },
+      "originalUnchanged": true
+    }
+  ],
+  "payloads": [
+    {
+      "path": "baseline.json",
+      "bytes": 719,
+      "sha256": "2b581d63ed6bbe8c936b0b8aba9cc1f3b6971f8312c43627c7ba194f5716d82c"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5200,
+      "sha256": "06b8b178384045e210285eb841866e099adbc2aca4cf380281590f4c01390040"
+    },
+    {
+      "path": "prepare.py",
+      "bytes": 4168,
+      "sha256": "d1294047567646c24cdda4aeb446f02623d7b2efda8102df4c189714ea1f9e91"
+    },
+    {
+      "path": "proposal.patch",
+      "bytes": 18467,
+      "sha256": "86e9f3b209c00f334fad535dfe33cd0462590b8c52188988706046c82439c9eb"
+    },
+    {
+      "path": "baseline/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    },
+    {
+      "path": "baseline/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "bytes": 11167,
+      "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+    },
+    {
+      "path": "candidate/src/wave/barrel/sweptLoft.ts",
+      "bytes": 88408,
+      "sha256": "cab60f46d0a77074571fac698fd68548370bb3f6d71e15b846880ac38efb8298"
+    },
+    {
+      "path": "candidate/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "bytes": 18615,
+      "sha256": "509a35e001290a2242b9577d69787ab3b7788288f0eb887443b8a2a5a40362e0"
+    }
+  ]
+}

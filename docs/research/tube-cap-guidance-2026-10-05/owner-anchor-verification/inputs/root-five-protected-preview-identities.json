@@ -1,0 +1,61 @@
+{
+  "schema": "root-five-protected-preview-identities/v1",
+  "complete": true,
+  "observedAtUTC": "2026-10-05T16:38:18.769062+00:00",
+  "protectedPorts": [
+    4312,
+    4313,
+    4314,
+    4315,
+    4316
+  ],
+  "protectedIdentities": {
+    "4312": {
+      "actualIdentity": {
+        "pid": 92445,
+        "started": "Sun Oct 4 23:17:08 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4312 --bind 127.0.0.1 --directory /private/tmp/tube-coherent-warmup-native-20261004/dist"
+      },
+      "fullIdentityMatchesPreviousRootAuthority": true,
+      "actualListenerVerified": true
+    },
+    "4313": {
+      "actualIdentity": {
+        "pid": 58298,
+        "started": "Mon Oct 5 01:49:12 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4313 --bind 127.0.0.1 --directory /private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-complete-dist"
+      },
+      "fullIdentityMatchesPreviousRootAuthority": true,
+      "actualListenerVerified": true
+    },
+    "4314": {
+      "actualIdentity": {
+        "pid": 51358,
+        "started": "Mon Oct 5 13:02:44 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4314 --bind 127.0.0.1 --directory /private/tmp/tube-c-formation-native-20261005/candidate-complete-dist"
+      },
+      "fullIdentityMatchesPreviousRootAuthority": true,
+      "actualListenerVerified": true
+    },
+    "4315": {
+      "actualIdentity": {
+        "pid": 87796,
+        "started": "Mon Oct 5 15:00:00 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4315 --bind 127.0.0.1 --directory /private/tmp/tube-open-mouth-body-clearance-native-20261005/dist"
+      },
+      "fullIdentityMatchesPreviousRootAuthority": true,
+      "actualListenerVerified": true
+    },
+    "4316": {
+      "actualIdentity": {
+        "pid": 38617,
+        "started": "Mon Oct 5 17:35:46 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4316 --bind 127.0.0.1 --directory /private/tmp/surfing-game-play-3e75550c2-20261005/dist"
+      },
+      "fullIdentityMatchesPreviousRootAuthority": true,
+      "actualListenerVerified": true
+    }
+  },
+  "noSignalsSent": true,
+  "preview4316CodeCheckpoint": "3e75550c228d9efb7ba9182b86353478304fb1c4"
+}

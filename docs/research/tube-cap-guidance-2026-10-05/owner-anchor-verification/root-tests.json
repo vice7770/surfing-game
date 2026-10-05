@@ -1,0 +1,20 @@
+{
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "/private/tmp/tube-owned-group-anchor-proposal-20261005",
+    "-p",
+    "test_owned_group_anchor.py",
+    "-v"
+  ],
+  "exitCode": 0,
+  "seconds": 0.1909282500273548,
+  "verifiedFreezeSHA256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0",
+  "pythonASTChecks": 2,
+  "logBytes": 3695,
+  "logSha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7",
+  "runtimeOSIdentityClaim": false
+}

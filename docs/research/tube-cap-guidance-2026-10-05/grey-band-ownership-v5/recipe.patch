@@ -1,0 +1,995 @@
+--- /private/tmp/tube-grey-band-ownership-native-v4-20261005/prepare.py
++++ /private/tmp/tube-grey-band-ownership-native-v5-20261005/prepare.py
+@@ -1,18 +1,27 @@
+ """Root-only preparation source. Copies immutable V3 assets; never builds or pins mutable production."""
+ from pathlib import Path
+ import hashlib,json,shutil,subprocess
+-W=Path('/private/tmp/tube-grey-band-ownership-native-v4-20261005')
++W=Path('/private/tmp/tube-grey-band-ownership-native-v5-20261005')
+ def pin(p):
+  b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ def verify(spec):
+  b=Path(spec['file']).read_bytes();assert len(b)==spec['bytes'] and hashlib.sha256(b).hexdigest()==spec['sha256'],spec['file'];return b
+ assert not any((W/n).exists()for n in('dist','historical-source','historical-dependencies','historical-diagnostic','source-provenance.json','build.json','seal.json','prepare-result.json','owner.json','candidate-first')),'First-only root preparation'
+ i=json.loads((W/'inputs.json').read_bytes())
++assert i['executionPendingOwnerPolicyReview'] is False and i['ownerPolicyAmendment']['integrationReviewPending'] is False and i['ownerPolicyAmendment']['integrationChecksExecuted'] is True,'Root integration review/checks and refreshed input/freeze required before preparation'
+ reference_names=('opticalApplicationBuild','opticalApplicationFreeze','opticalApplicationSeal','opticalApplicationBuildLog','referenceReport','referenceOwner','referenceLoft','authoredReport','authoredOwner','authoredSeal','baselinePNG')
+ references=[i[k]for k in reference_names]+i['readOnlyEvidence']+[i['protectedIdentityAuthority'],i['historicalOpticalRun']['owner'],i['historicalOpticalRun']['report'],i['priorPreparationFailure']['receipt'],i['priorNativeFailure']['owner'],i['priorNativeFailure']['report'],i['priorNativeFailure']['rootPostFailure']]
++references+=[i['priorWindingFailure'][key]for key in('owner','report','rootPostFailure')]+[i['drawWindingGuard'][key]for key in('sourceRationalePin','exactProposedGuard')]
++references+=[i['ownerPolicyAmendment'][key]for key in('moduleSource','moduleStaticFreeze','rootPureTests','rootPureTestLog','copiedModule')]+[i['protected4316']['processReceipt']]
+ for spec in references+i['borrowedHelperPins']:verify(spec)
++policy_module=i['ownerPolicyAmendment'];assert policy_module['moduleSource']['bytes']==policy_module['copiedModule']['bytes'] and policy_module['moduleSource']['sha256']==policy_module['copiedModule']['sha256']=='f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0'
++module_freeze=json.loads(verify(policy_module['moduleStaticFreeze']));assert module_freeze['schema']=='owned-group-anchor-proposal-static-freeze/v1' and policy_module['moduleSource'] in module_freeze['files']
++pure=json.loads(verify(policy_module['rootPureTests']));assert pure['exitCode']==0 and pure['pythonASTChecks']==2 and pure['verifiedFreezeSHA256']==policy_module['moduleStaticFreeze']['sha256'] and pure['runtimeOSIdentityClaim'] is False
++assert (pure['logBytes'],pure['logSha256'])==(policy_module['rootPureTestLog']['bytes'],policy_module['rootPureTestLog']['sha256'])
++assert i['protectedPorts']==[4312,4313,4314,4315,4316] and i['ownedPorts']==[4301,9711]
+ closure=json.loads(verify(i['protectedIdentityAuthority']))
+-assert closure['schema']=='shared-leaf-independent-post-failure/v1' and closure['complete'] and closure['protectedPreserved'] and closure['ownedGroupAbsent'] and all(closure['closedPorts'].values())
++assert closure['schema']=='root-five-protected-preview-identities/v1' and closure['complete'] and closure['protectedPorts']==i['protectedPorts'] and closure['noSignalsSent']
++assert {int(port):entry['actualIdentity']['pid']for port,entry in closure['protectedIdentities'].items()}=={4312:92445,4313:58298,4314:51358,4315:87796,4316:38617} and all(entry['actualListenerVerified'] and entry['fullIdentityMatchesPreviousRootAuthority']for entry in closure['protectedIdentities'].values())
+ # This independent root OS receipt is an expected-identity authority, not success of this ID recipe.
+ old_run=json.loads(verify(i['historicalOpticalRun']['owner']));old_report=json.loads(verify(i['historicalOpticalRun']['report']))
+ assert not old_run['complete'] and old_run['exitCode']==1 and not old_report['complete'] and old_report['stepCount']==1525 and '640s native deadline' in old_report['firstFailure']
+@@ -32,7 +41,14 @@
+ assert previous_audit['failedOwner']==i['priorNativeFailure']['owner'] and previous_audit['failedReport']==i['priorNativeFailure']['report']
+ assert previous_audit['originalOutputsUnchanged'] and not previous_audit['originalOwnerAndNativeComplete'] and previous_audit['comparisonPNGCount']==0 and previous_audit['physicalSteps']==0
+ assert previous_audit['ownedGroupAbsent'] and previous_audit['protectedPreserved'] and all(previous_audit['closedPorts'].values()) and not previous_audit['signalsSentByThisAudit']
+-# This separate actual post-failure receipt preserves the failed native outcome; it is not a success receipt.
++winding_failure=i['priorWindingFailure'];winding_owner=json.loads(verify(winding_failure['owner']));winding_report=json.loads(verify(winding_failure['report']));winding_audit=json.loads(verify(winding_failure['rootPostFailure']))
++assert winding_owner['schema']=='grey-band-ownership-owner/v4' and not winding_owner['complete'] and winding_owner['exitCode']==1 and winding_owner['protectedPreserved'] and winding_owner['ownedGroupIdentityAndAbsenceVerified'] and all(winding_owner['closedPorts'].values())
++assert winding_report['schema']=='grey-band-ownership-native/v4' and not winding_report['complete'] and winding_report['stepCount']==0 and winding_report['pngCount']==0 and 'Actual loft draw index prefix differs' in winding_report['firstFailure']
++assert winding_audit['schema']=='grey-band-v4-independent-post-failure/v1' and winding_audit['complete'] and winding_audit['actualExecutionExitCode']==1 and winding_audit['failedOwner']==winding_failure['owner'] and winding_audit['failedReport']==winding_failure['report']
++assert winding_audit['originalOutputsUnchanged'] and not winding_audit['originalOwnerAndNativeComplete'] and winding_audit['comparisonPNGCount']==winding_audit['physicalSteps']==0 and winding_audit['ownedGroup']==34236 and winding_audit['ownedGroupAbsent'] and all(winding_audit['ownedPortsClosed'].values()) and winding_audit['noSignalsSentByAudit']
++for port,identity in winding_audit['protectedIdentities'].items():
++ expected=closure['protectedIdentities'][port]['actualIdentity'];assert all(identity[key]==expected[key]for key in('pid','started','command'))
++# Complete on either root audit records independent closure of FAILED attempts, not native success.
+ b=json.loads(verify(i['opticalApplicationBuild']));f=json.loads(verify(i['opticalApplicationFreeze']));s=json.loads(verify(i['opticalApplicationSeal']))
+ assert b['complete'] and b['build']==i['applicationBuildId'] and f['complete'] and f['build']==b['build'] and s['complete'] and s['rootAuthorized'] and s['buildId']==b['build']
+ assert b['applicationBuildLog']==i['opticalApplicationBuildLog']
+@@ -124,7 +140,12 @@
+ legacy_sources={'historicalCommit':commit,'physicalMode':pin(physical_path),'lipSheetMesh':pin(lip_path),
+  'sweptPassesZeroLipCount':True,'richLipInstallsBuiltPositionAndIndex':True,'lipSheetExplicitDrawRangeAssignmentFound':False,
+  'actualRuntimeCountsAndRangeAssertedFromSource':False,'qualification':'Historical source rationale only; the actual runtime index and position counts must independently be0 and actual range/visibility/attributes must remain unchanged.'}
+-provenance={'schema':'grey-band-ownership-source-provenance/v4','complete':True,'applicationBuild':i['opticalApplicationBuild'],'applicationFreeze':i['opticalApplicationFreeze'],'historicalCommit':commit,'sourceProvenancePolicy':policy,'priorPreparationFailure':i['priorPreparationFailure'],'priorNativeFailure':i['priorNativeFailure'],'legacyLipGuardPolicy':legacy_policy,'legacyEmptyGeometrySourceEvidence':legacy_sources,'repositorySources':repository_records,'repositoryDependencySources':dependency_records,'externalDiagnosticSources':external_records,'extraOpticalCommittedSources':extra_records,'counts':{'uniqueCommittedReceiptSources':len(repository_records),'repositoryDependencies':len(dependency_records),'externalDiagnosticSources':len(external_records),'additionalOpticalCommittedSources':len(extra_records)},'mutableProductionSourcesReadOrFrozen':False,'originalV3GameplaySucceeded':False}
++winding_policy=i['drawWindingGuard'];assert winding_policy['sourceRationaleHistoricalCommit']==commit and winding_policy['facesOutRequired'] and winding_policy['exactHistoricalPerTriangleMapping'] and winding_policy['rawSourceIndexWordsRemainExact'] and winding_policy['actualDrawPrefixFrozenAcrossProbesAndRepeats']
++winding_path=W/'historical-source'/winding_policy['sourceRationalePath'];winding_source=winding_path.read_text();winding_pin=pin(winding_path)
++assert (winding_pin['bytes'],winding_pin['sha256'])==(winding_policy['sourceRationalePin']['bytes'],winding_policy['sourceRationalePin']['sha256'])
++assert 'if (this.facesOut) {' in winding_source and 'index[i] = a;' in winding_source and 'index[i + 1] = facing < 0 ? c : b;' in winding_source and 'index[i + 2] = facing < 0 ? b : c;' in winding_source
++winding_sources={'historicalCommit':commit,'renderer':winding_pin,'actualRuntimeWindingAssertedFromSource':False,'qualification':'Pinned historical source rationale only; new browser independently checks every actual active draw triangle against this exact facesOut rule.'}
++provenance={'schema':'grey-band-ownership-source-provenance/v5','complete':True,'applicationBuild':i['opticalApplicationBuild'],'applicationFreeze':i['opticalApplicationFreeze'],'historicalCommit':commit,'sourceProvenancePolicy':policy,'priorPreparationFailure':i['priorPreparationFailure'],'priorNativeFailure':i['priorNativeFailure'],'legacyLipGuardPolicy':legacy_policy,'legacyEmptyGeometrySourceEvidence':legacy_sources,'priorWindingFailure':i['priorWindingFailure'],'drawWindingGuardPolicy':winding_policy,'drawWindingSourceEvidence':winding_sources,'ownerPolicyAmendment':i['ownerPolicyAmendment'],'repositorySources':repository_records,'repositoryDependencySources':dependency_records,'externalDiagnosticSources':external_records,'extraOpticalCommittedSources':extra_records,'counts':{'uniqueCommittedReceiptSources':len(repository_records),'repositoryDependencies':len(dependency_records),'externalDiagnosticSources':len(external_records),'additionalOpticalCommittedSources':len(extra_records)},'mutableProductionSourcesReadOrFrozen':False,'originalV3GameplaySucceeded':False}
+ (W/'source-provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
+ shutil.copytree(app,W/'dist')
+ copied_assets=[pin(p)for p in sorted((W/'dist').rglob('*'))if p.is_file()]
+@@ -134,18 +155,18 @@
+  original=old_assets[Path(spec['file']).relative_to(W/'dist')]
+  assert spec['bytes']==original['bytes'] and spec['sha256']==original['sha256'],'Copied immutable app bytes differ'
+ for spec in b['assets']:verify(spec)
+-copied={'schema':'grey-band-ownership-build/v4','complete':True,'build':i['applicationBuildId'],
++copied={'schema':'grey-band-ownership-build/v5','complete':True,'build':i['applicationBuildId'],
+  'operation':'Copy immutable V3 app assets only; bounded read-only git show reconstructs committed sources; dependencies/external diagnostic copied from direct compiled pins; no build/current source freeze.',
+  'assets':copied_assets, 'priorBuild':i['opticalApplicationBuild'],
+- 'historicalCommit':commit,'sourceProvenance':pin(W/'source-provenance.json'),'reconstructedHistoricalSources':historical,'copiedRepositoryDependencySources':dependencies,'copiedExternalDiagnosticSources':external,'historicalOpticalRun':i['historicalOpticalRun'],'priorPreparationFailure':i['priorPreparationFailure'],'priorNativeFailure':i['priorNativeFailure'],'oldProductionSourceReceiptVerification':True,
++ 'historicalCommit':commit,'sourceProvenance':pin(W/'source-provenance.json'),'reconstructedHistoricalSources':historical,'copiedRepositoryDependencySources':dependencies,'copiedExternalDiagnosticSources':external,'historicalOpticalRun':i['historicalOpticalRun'],'priorPreparationFailure':i['priorPreparationFailure'],'priorNativeFailure':i['priorNativeFailure'],'priorWindingFailure':i['priorWindingFailure'],'drawWindingGuardPolicy':i['drawWindingGuard'],'oldProductionSourceReceiptVerification':True,
+  'mutableProductionSourcePinsRequired':False,'oldAndCurrentGeometryEquivalenceAsserted':False}
+ (W/'build.json').write_text(json.dumps(copied,indent=2)+'\n')
+-names=('inputs.json','README.md','prepare.py','run.py','native.mjs','ownership-inspection.mjs','recipe-diff.md','recipe.patch','preparation-freeze.json')
+-seal={'schema':'grey-band-ownership-seal/v4','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),
++names=('inputs.json','README.md','prepare.py','run.py','native.mjs','ownership-inspection.mjs','recipe-diff.md','recipe.patch','owned_group_anchor.py','preparation-freeze.json')
++seal={'schema':'grey-band-ownership-seal/v5','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),
+  'sourceProvenance':pin(W/'source-provenance.json'),'helpers':[pin(W/n)for n in names],'borrowedHelpers':i['borrowedHelperPins'],'references':references,
+  'immutablePriorAssets':b['assets'],'historicalScratchSources':historical,'repositoryDependencyScratchSources':dependencies,'externalDiagnosticScratchSources':external,'limits':i['limits'],'comparison':i['comparison']}
+ (W/'seal.json').write_text(json.dumps(seal,indent=2)+'\n')
+-result={'schema':'grey-band-ownership-preparation/v4','complete':True,'seal':pin(W/'seal.json'),'build':pin(W/'build.json'),
++result={'schema':'grey-band-ownership-preparation/v5','complete':True,'seal':pin(W/'seal.json'),'build':pin(W/'build.json'),
+  'resourcesStarted':False,'portsProbed':False,'executedChecksOrBuilds':False,'liveSourcesWrittenOrFrozen':False,
+  'sourceProvenance':pin(W/'source-provenance.json'),'historicalSourceRecovery':'Committed repository sources recovered with bounded read-only git show and existing receipt hashes; declared untracked repository dependencies and outside-repository diagnostic sources copied from their exact compiled-source receipts. No build/current source freeze.'}
+ (W/'prepare-result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))
+--- /private/tmp/tube-grey-band-ownership-native-v4-20261005/run.py
++++ /private/tmp/tube-grey-band-ownership-native-v5-20261005/run.py
+@@ -2,10 +2,18 @@
+ from pathlib import Path
+ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+ import hashlib,json,os,signal,socket,subprocess,threading,time
+-W=Path('/private/tmp/tube-grey-band-ownership-native-v4-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
+-EXPECTED_PROTECTED={4312:92445,4313:58298,4314:51358,4315:87796}
++from owned_group_anchor import (Identity,ProtectedIdentity,LaunchFacts,ReadWindow,AnchorRejected,
++ observe_owned_group,authorize_group_signal,validate_protected_snapshot,identity_evidence,observation_record)
++W=Path('/private/tmp/tube-grey-band-ownership-native-v5-20261005');PROTECTED=(4312,4313,4314,4315,4316);OWNED=(4301,9711)
++EXPECTED_PROTECTED={4312:92445,4313:58298,4314:51358,4315:87796,4316:38617}
+ OS_SECONDS=2;IDENTITY_PERIOD=5;REQUIRED_ATTEMPTS=3;NOTE_LIMIT=16;whole_started=time.monotonic()
+ timeout_notes=[];timeout_count=0
++class OwnedReadExpired(TimeoutError):
++ """Completed owned read exceeded the unchanged duration/age budget; no accepted state update."""
++ def __init__(self,evidence):
++  self.evidence=evidence;self.cmd=['/bin/ps','-ww','-axo','pid=,pgid=,stat=,lstart=,command='];self.timeout=OS_SECONDS
++  super().__init__('Completed owned read exceeds 2s duration or age: '+str(evidence))
++
+ def verify(spec):
+  b=Path(spec['file']).read_bytes();assert len(b)==spec['bytes'] and hashlib.sha256(b).hexdigest()==spec['sha256'],spec['file'];return b
+ def free(port):
+@@ -33,30 +41,43 @@
+    assert len(fields)==7,'Full PID/start/command required';rows[int(fields[0])]=fields[0]+' '+' '.join(fields[1:6])+' '+fields[6]
+  assert set(rows)==set(allids)
+  return {port:[rows[pid]for pid in ids]for port,ids in pids.items()}
++def protected_snapshot(rows):
++ result={}
++ for port,lines in rows.items():
++  detached=[]
++  for row in lines:
++   fields=row.split(None,6);assert len(fields)==7,'Full protected PID/start/command required'
++   detached.append(ProtectedIdentity(int(fields[0]),' '.join(fields[1:6]),fields[6]))
++  result[int(port)]=tuple(detached)
++ return result
+ def group_identities(pgid,deadline=None):
+  raw=subprocess.check_output(['/bin/ps','-ww','-axo','pid=,pgid=,stat=,lstart=,command='],text=True,timeout=read_timeout(deadline))
+  result={}
+  for row in raw.splitlines():
+   words=row.split(None,8)
+-  if len(words)==9 and int(words[1])==pgid and not words[2].startswith('Z'):
+-   pid=int(words[0]);result[pid]={'pid':pid,'pgid':pgid,'started':' '.join(words[3:8]),'command':words[8]}
++  if len(words)>=3 and int(words[1])==pgid and not words[2].startswith('Z'):
++   assert len(words)==9,'Complete full owned group identity required'
++   pid=int(words[0]);assert pid not in result,'Duplicate owned PID row'
++   result[pid]={'pid':pid,'pgid':pgid,'started':' '.join(words[3:8]),'command':words[8]}
+  return result
+ def note_timeout(phase,error):
+  global timeout_count
+  timeout_count+=1
+  if len(timeout_notes)<NOTE_LIMIT:
+-  timeout_notes.append({'phase':phase,'elapsedSeconds':time.monotonic()-whole_started,'command':list(error.cmd)if not isinstance(error.cmd,str)else error.cmd,'timeoutSeconds':error.timeout,'outcome':'Observation only'if phase=='periodic-owned-identity'else'Required identity read will retry within its finite budget'})
++  note={'phase':phase,'elapsedSeconds':time.monotonic()-whole_started,'command':list(error.cmd)if not isinstance(error.cmd,str)else error.cmd,'timeoutSeconds':error.timeout,'outcome':'Observation only'if phase=='periodic-owned-identity'else'Required identity read will retry within its finite budget','kind':'completed-owned-read-expired'if isinstance(error,OwnedReadExpired)else'subprocess-timeout'}
++  if isinstance(error,OwnedReadExpired):note['ownedReadExpiryEvidence']=error.evidence
++  timeout_notes.append(note)
+ def required_read(call,phase,deadline):
+  last=None
+  for attempt in range(REQUIRED_ATTEMPTS):
+   if time.monotonic()>=deadline:break
+   try:return call(deadline)
+-  except subprocess.TimeoutExpired as error:
++  except (subprocess.TimeoutExpired,OwnedReadExpired) as error:
+    note_timeout(phase,error);last=error
+    if attempt+1<REQUIRED_ATTEMPTS and time.monotonic()<deadline:time.sleep(min(.1,max(0,deadline-time.monotonic())))
+  raise TimeoutError('Required identity could not be verified: '+phase)from last
+ def validate_result(result):
+- assert result['schema']=='grey-band-ownership-native/v4' and result['complete'] and result['firstFailure']is None and result['ownedBrowserClose']
++ assert result['schema']=='grey-band-ownership-native/v5' and result['complete'] and result['firstFailure']is None and result['ownedBrowserClose']
+  assert not result['browserErrors'] and result['stepCount']==0 and result['pngCount']==4
+  assert result['applicationBuildRequest']['build']==inputs['applicationBuildId'] and result['applicationBuildRequest']['checkedBeforeReplay']
+  assert result['replayStartup']['publicStartCalls']==1 and result['replayStartup']['noPlacement'] and result['replayStartup']['noClockAssignment']
+@@ -113,11 +134,12 @@
+   'wholePixelOwnershipPlayabilityOrProductionFixClaim':False}
+ 
+ sealbytes=(W/'seal.json').read_bytes();seal=json.loads(sealbytes);inputs=json.loads((W/'inputs.json').read_bytes())
+-assert seal['schema']=='grey-band-ownership-seal/v4' and seal['rootAuthorized'] and seal['complete']
+-build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='grey-band-ownership-build/v4' and build['build']==inputs['applicationBuildId']
++assert seal['schema']=='grey-band-ownership-seal/v5' and seal['rootAuthorized'] and seal['complete']
++assert inputs['executionPendingOwnerPolicyReview'] is False and inputs['ownerPolicyAmendment']['integrationReviewPending'] is False and inputs['ownerPolicyAmendment']['integrationChecksExecuted'] is True,'Root-reviewed and checked owner integration required'
++build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='grey-band-ownership-build/v5' and build['build']==inputs['applicationBuildId']
+ def check(deadline=None):
+  assert build['sourceProvenance']==seal['sourceProvenance']
+- provenance=json.loads(verify(seal['sourceProvenance']));assert provenance['complete'] and provenance['schema']=='grey-band-ownership-source-provenance/v4' and provenance['applicationBuild']==inputs['opticalApplicationBuild'] and provenance['applicationFreeze']==inputs['opticalApplicationFreeze'] and provenance['sourceProvenancePolicy']==inputs['sourceProvenancePolicy'] and provenance['priorPreparationFailure']==inputs['priorPreparationFailure'] and provenance['priorNativeFailure']==inputs['priorNativeFailure'] and provenance['legacyLipGuardPolicy']==inputs['legacyLipGuard']
++ provenance=json.loads(verify(seal['sourceProvenance']));assert provenance['complete'] and provenance['schema']=='grey-band-ownership-source-provenance/v5' and provenance['applicationBuild']==inputs['opticalApplicationBuild'] and provenance['applicationFreeze']==inputs['opticalApplicationFreeze'] and provenance['sourceProvenancePolicy']==inputs['sourceProvenancePolicy'] and provenance['priorPreparationFailure']==inputs['priorPreparationFailure'] and provenance['priorNativeFailure']==inputs['priorNativeFailure'] and provenance['legacyLipGuardPolicy']==inputs['legacyLipGuard'] and provenance['priorWindingFailure']==inputs['priorWindingFailure'] and provenance['drawWindingGuardPolicy']==inputs['drawWindingGuard'] and provenance['ownerPolicyAmendment']==inputs['ownerPolicyAmendment']
+  for spec in build['assets']+seal['helpers']+seal['borrowedHelpers']+seal['references']+seal['immutablePriorAssets']+seal['historicalScratchSources']+seal['repositoryDependencyScratchSources']+seal['externalDiagnosticScratchSources']:
+   if deadline is not None and time.monotonic()>=deadline:raise TimeoutError('Finite pin verification budget')
+   verify(spec)
+@@ -125,32 +147,75 @@
+ check(preflight_deadline);assert not (W/'owner.json').exists() and not (W/'candidate-first').exists() and all(free(port)for port in OWNED)
+ before=required_read(identities,'preflight-protected',preflight_deadline)
+ closure=json.loads(verify(inputs['protectedIdentityAuthority']))
+-for port,pid in EXPECTED_PROTECTED.items():
+- identity=closure['protectedIdentities'][str(port)]['actualIdentity'];assert identity['pid']==pid
+- expected=str(pid)+' '+identity['started']+' '+identity['command']
+- assert expected in before[str(port)],'Protected full PID/start/command required '+str(port)
++assert closure['schema']=='root-five-protected-preview-identities/v1' and closure['complete'] and closure['protectedPorts']==list(PROTECTED)
++protected_reference={int(port):(ProtectedIdentity(**entry['actualIdentity']),)for port,entry in closure['protectedIdentities'].items()}
++assert {port:rows[0].pid for port,rows in protected_reference.items()}==EXPECTED_PROTECTED
++protected_before=protected_snapshot(before)
++validate_protected_snapshot(protected_reference,protected_before)
+ started=time.monotonic();owner_deadline=min(started+inputs['limits']['ownerSeconds'],whole_deadline-inputs['limits']['cleanupSeconds']);server=None;proc=None
+-record={'schema':'grey-band-ownership-owner/v4','complete':False,'firstFailure':None,'protectedBefore':before,
++record={'schema':'grey-band-ownership-owner/v5','complete':False,'firstFailure':None,'protectedBefore':before,
+  'protected4315ExpectedPid':87796,'protected4315RootToolSession':'64713','toolSessionOSIdentityClaim':False,
+  'sealSha256':hashlib.sha256(sealbytes).hexdigest(),'preExecutionPinsVerified':True,'postExecutionPinsVerified':False,'copiedAndHistoricalSourcePinsPostVerified':False,'cleanupFailures':[]}
+ record['expectedProtectedPids']=EXPECTED_PROTECTED
++record['protected4316ExpectedPid']=38617;record['protected4316RootToolSession']='59708'
+ record['protectedIdentityAuthority']=inputs['protectedIdentityAuthority']
+ record['historicalOpticalRun']=inputs['historicalOpticalRun']
+ record['priorPreparationFailure']=inputs['priorPreparationFailure']
+ record['priorNativeFailure']=inputs['priorNativeFailure']
++record['priorWindingFailure']=inputs['priorWindingFailure']
++record['drawWindingGuardPolicy']=inputs['drawWindingGuard']
+ record['osObservationPolicy']=inputs['ownerObservationPolicy']
+ record['absoluteBudget']={'wholeSeconds':inputs['limits']['totalSeconds'],'cleanupReservedSeconds':inputs['limits']['cleanupSeconds'],'activeOwnerBudgetSeconds':owner_deadline-started,'maximumNativeOwnerSeconds':inputs['limits']['ownerSeconds'],'preflightBudgetSeconds':20}
+-known_owned={}
+-def remember_owned(deadline=None):
+- current=group_identities(proc.pid,deadline)
+- if current:
+-  if not known_owned:
+-   assert proc.poll() is None and proc.pid in current and str(W/'native.mjs') in current[proc.pid]['command'],'Fresh leader command identity required'
+-  for pid in current.keys()&known_owned.keys():assert current[pid]==known_owned[pid],'Owned PID identity changed'
+-  # A matching recorded survivor proves that this process group has not been recycled, even after its leader exits.
+-  assert not known_owned or any(current.get(pid)==identity for pid,identity in known_owned.items()),'Owned process group lost its recorded identity'
+-  known_owned.update(current)
+- return current
++# Exact argv is declared before any observed process row; same actual Popen remains the owner.
++native_argv=['/opt/homebrew/bin/node',str(W/'native.mjs'),'--run=true','--url=http://127.0.0.1:4301/?diagnostics','--out='+str(W/'candidate-first')]
++expected_native_command=' '.join(native_argv)
++owned_state=None;latest_observation=None;last_signalled_observation_number=0
++record['exactNativeArgv']=native_argv;record['ownedStartNewSession']=True
++record['ownerAnchorPolicyEvidence']=inputs['ownerPolicyAmendment']
++def remember_owned(deadline,phase='periodic-owned-identity'):
++ global owned_state,latest_observation
++ # Bootstrap live checks bracket this actual bounded read, not a saved/synthetic row.
++ assert proc.args==native_argv,'Same actual Popen and exact launch argv required'
++ live_before=proc.poll() is None;read_started=time.monotonic()
++ current=group_identities(proc.pid,deadline);read_finished=time.monotonic();live_after=proc.poll() is None
++ detached={pid:Identity(**row)for pid,row in current.items()}
++ now=time.monotonic()
++ # A subprocess can finish beyond 2s without TimeoutExpired; classify its stale
++ # observation locally BEFORE pure acceptance. Never relax 2s or refresh state.
++ duration=read_finished-read_started;age=now-read_finished
++ if duration>OS_SECONDS or age>OS_SECONDS:
++  raise OwnedReadExpired({'phase':phase,'readStarted':read_started,'readFinished':read_finished,'checkedAt':now,'deadline':deadline,'durationSeconds':duration,'ageSeconds':age,'maximumDurationSeconds':OS_SECONDS,'maximumAgeSeconds':OS_SECONDS,'actualPopenPid':proc.pid,'liveBeforeRead':live_before,'liveAfterRead':live_after,'observedMemberCount':len(current),'observedLeaderPresent':proc.pid in current,'observedMemberSummaries':[{'pid':pid,'pgid':row['pgid'],'startedPrefix':row['started'][:256],'startedCharacters':len(row['started']),'commandPrefix':row['command'][:2048],'commandCharacters':len(row['command']),'fullCommandSHA256':hashlib.sha256(row['command'].encode()).hexdigest()}for pid,row in sorted(current.items())[:16]],'summariesAreUnacceptedPrefixesNotAnchorIdentities':True,'previousAcceptedObservationNumber':owned_state.observation_number if owned_state else 0,'previousOriginalLeader':identity_evidence(owned_state.original_leader)if owned_state else None,'stateRefreshed':False,'anchorDecisionMade':False})
++ launch=LaunchFacts(proc.pid,True,expected_native_command,live_before,live_after,OWNED)
++ window=ReadWindow(read_started,read_finished,now,deadline,OS_SECONDS,OS_SECONDS)
++ try:
++  observed=observe_owned_group(owned_state,detached,launch=launch,read=window,protected_reference=protected_reference,protected_current=protected_before if owned_state is None else None)
++ except AnchorRejected as error:
++  # Preserve full offending before/current evidence; never refresh state on failure.
++  record['ownedAnchorFailure']={'phase':phase,'reason':error.reason,'evidence':error.evidence,'readStarted':read_started,'readFinished':read_finished,'liveBeforeRead':live_before,'liveAfterRead':live_after}
++  raise
++ owned_state=observed.state;latest_observation=observed
++ record['ownedAnchorObservation']=observation_record(observed)
++ record['ownedIdentities']=[identity_evidence(row)for row in observed.current_members]
++ if owned_state.observation_number==1:
++  record['initialOwnedReadFacts']={'actualPopenPid':proc.pid,'startNewSession':True,'exactExpectedCommand':expected_native_command,'liveBeforeRead':live_before,'liveAfterRead':live_after,'readStarted':read_started,'readFinished':read_finished}
++ return observed
++
++def signal_fresh_owned(observed,sig,deadline):
++ global last_signalled_observation_number
++ # ONLY the immediately successful required read can authorize this signal.
++ # No periodic/stale observation, timeout fallback or rejected snapshot is reused.
++ assert observed is latest_observation and observed.state is owned_state and observed.state.observation_number==owned_state.observation_number,'Latest accepted owned observation required immediately before signal'
++ try:
++  permission=authorize_group_signal(observed,now=time.monotonic(),deadline=deadline,last_signalled_observation_number=last_signalled_observation_number)
++ except AnchorRejected as error:
++  record['ownedSignalAnchorFailure']={'reason':error.reason,'evidence':error.evidence};raise
++ assert permission['pgid']==proc.pid
++ label='TERM'if sig==signal.SIGTERM else'KILL'
++ record.setdefault('signalAttempts',[]).append({'signal':label,**permission})
++ os.killpg(proc.pid,sig)
++ # Persist consumption only AFTER the actual signal succeeds.
++ last_signalled_observation_number=permission['observationNumber']
++ record.setdefault('signals',[]).append({'signal':label,**permission})
+ class Handler(SimpleHTTPRequestHandler):
+  def __init__(self,*args,**kw):super().__init__(*args,directory=str(W/'dist'),**kw)
+  def log_message(self,*args):pass
+@@ -160,15 +225,16 @@
+  thread=threading.Thread(target=lambda:server.serve_forever(poll_interval=.1),daemon=True);thread.start()
+  env={**os.environ,'GREY_OWNERSHIP_OWNER_SEAL_SHA':record['sealSha256'],'FULL_WRITER_FPS_LAUNCHER_REPORT':str(W/'launcher.json')}
+  with (W/'native.log').open('wb')as log:
+-  proc=subprocess.Popen(['/opt/homebrew/bin/node',str(W/'native.mjs'),'--run=true','--url=http://127.0.0.1:4301/?diagnostics','--out='+str(W/'candidate-first')],stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=env)
++  proc=subprocess.Popen(native_argv,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=env)
+   record['pid']=proc.pid;record['ownedProcessGroup']=proc.pid;(W/'live.json').write_text(json.dumps(record))
+-  initial_owned=required_read(remember_owned,'initial-owned-leader',min(owner_deadline,time.monotonic()+7));assert proc.pid in initial_owned,'Fresh native leader identity absent'
+-  record['ownedProcessIdentity']=initial_owned[proc.pid];record['ownedIdentities']=list(known_owned.values());last_identity=time.monotonic()
++  initial_owned=required_read(lambda deadline:remember_owned(deadline,'initial-owned-leader'),'initial-owned-leader',min(owner_deadline,time.monotonic()+7))
++  assert initial_owned.anchor_kind=='original-leader/bootstrap' and initial_owned.state.original_leader.pid==proc.pid,'Fresh native leader identity absent'
++  record['ownedProcessIdentity']=identity_evidence(initial_owned.state.original_leader);last_identity=time.monotonic()
+   while proc.poll()is None:
+    if time.monotonic()>=owner_deadline:raise TimeoutError('Finite owner deadline with cleanup reserved')
+    if time.monotonic()-last_identity>=IDENTITY_PERIOD:
+-    try:remember_owned(owner_deadline);record['ownedIdentities']=list(known_owned.values())
+-    except subprocess.TimeoutExpired as error:note_timeout('periodic-owned-identity',error)
++    try:remember_owned(owner_deadline,'periodic-owned-identity')
++    except (subprocess.TimeoutExpired,OwnedReadExpired) as error:note_timeout('periodic-owned-identity',error)
+     # A transient OS observation timeout never closes HTTP, aborts this process, or starts another native handle.
+     last_identity=time.monotonic()
+    time.sleep(min(.2,max(0,owner_deadline-time.monotonic())))
+@@ -183,21 +249,15 @@
+  cleanup=time.monotonic();cleanup_deadline=min(cleanup+inputs['limits']['cleanupSeconds'],whole_deadline)
+  if proc:
+   try:
+-   protected={int(row.split()[0])for group in before.values()for row in group}
+-   owned=required_read(remember_owned,'cleanup-before-TERM',cleanup_deadline)
+-   assert not protected.intersection(owned),'Owned process group intersects protected listener PIDs'
+-   record['ownedMembersBeforeCleanup']=list(owned);record['ownedIdentities']=list(known_owned.values())
+-   if owned:
+-    # The immediately preceding read must carry the original leader or an exact recorded survivor anchor.
+-    record.setdefault('signals',[]).append({'signal':'TERM','verifiedMembers':list(owned),'identityAnchorVerified':True})
+-    os.killpg(proc.pid,signal.SIGTERM);time.sleep(min(.5,max(0,cleanup_deadline-time.monotonic())))
+-    remaining=required_read(remember_owned,'cleanup-before-KILL',cleanup_deadline)
+-    if remaining:
+-     assert not protected.intersection(remaining),'Remaining owned group intersects protected PIDs'
+-     record['signals'].append({'signal':'KILL','verifiedMembers':list(remaining),'identityAnchorVerified':True})
+-     os.killpg(proc.pid,signal.SIGKILL);time.sleep(min(.2,max(0,cleanup_deadline-time.monotonic())))
+-   remaining=required_read(remember_owned,'cleanup-final-group-absence',cleanup_deadline)
+-   record['ownedMembersAfterCleanup']=list(remaining);assert not remaining,'Owned group still present'
++   owned=required_read(lambda deadline:remember_owned(deadline,'cleanup-before-TERM'),'cleanup-before-TERM',cleanup_deadline)
++   record['ownedMembersBeforeCleanup']=[row.pid for row in owned.current_members]
++   if not owned.group_absent:
++    signal_fresh_owned(owned,signal.SIGTERM,cleanup_deadline);time.sleep(min(.5,max(0,cleanup_deadline-time.monotonic())))
++    remaining=required_read(lambda deadline:remember_owned(deadline,'cleanup-before-KILL'),'cleanup-before-KILL',cleanup_deadline)
++    if not remaining.group_absent:
++     signal_fresh_owned(remaining,signal.SIGKILL,cleanup_deadline);time.sleep(min(.2,max(0,cleanup_deadline-time.monotonic())))
++   remaining=required_read(lambda deadline:remember_owned(deadline,'cleanup-final-group-absence'),'cleanup-final-group-absence',cleanup_deadline)
++   record['ownedMembersAfterCleanup']=[row.pid for row in remaining.current_members];assert remaining.group_absent,'Owned group still present'
+    proc.wait(timeout=read_timeout(cleanup_deadline));record['ownedGroupIdentityAndAbsenceVerified']=True
+   except BaseException as error:
+    record['ownedGroupIdentityAndAbsenceVerified']=False
+@@ -208,6 +268,7 @@
+   except BaseException as error:record['cleanupFailures'].append('server: '+type(error).__name__+': '+str(error))
+  try:
+   record['protectedAfter']=required_read(identities,'cleanup-protected',cleanup_deadline)
++  validate_protected_snapshot(protected_reference,protected_snapshot(record['protectedAfter']))
+   record['protectedPreserved']=record['protectedAfter']==before
+  except BaseException as error:record['protectedPreserved']=False;record['cleanupFailures'].append('protected: '+type(error).__name__+': '+str(error))
+  try:record['closedPorts']={str(port):free(port)for port in OWNED}
+--- /private/tmp/tube-grey-band-ownership-native-v4-20261005/native.mjs
++++ /private/tmp/tube-grey-band-ownership-native-v5-20261005/native.mjs
+@@ -6,20 +6,20 @@
+ import { launch } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs';
+ import { prepareMenu } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs';
+ import { installGreyOwnershipInspection } from './ownership-inspection.mjs';
+-const W='/private/tmp/tube-grey-band-ownership-native-v4-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
++const W='/private/tmp/tube-grey-band-ownership-native-v5-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
+ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+ const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const i=arg.indexOf('=');assert(arg.startsWith('--')&&i>2);return[arg.slice(2,i),arg.slice(i+1)];}));
+ assert.equal(args.run,'true');assert.equal(args.url,'http://127.0.0.1:4301/?diagnostics');assert.equal(resolve(args.out),W+'/candidate-first');
+ const sealBytes=readFileSync(W+'/seal.json'), seal=JSON.parse(sealBytes);
+-assert.equal(hash(sealBytes),process.env.GREY_OWNERSHIP_OWNER_SEAL_SHA);assert.equal(seal.schema,'grey-band-ownership-seal/v4');assert(seal.rootAuthorized&&seal.complete);
++assert.equal(hash(sealBytes),process.env.GREY_OWNERSHIP_OWNER_SEAL_SHA);assert.equal(seal.schema,'grey-band-ownership-seal/v5');assert(seal.rootAuthorized&&seal.complete);
+ const readPinned=spec=>{const bytes=readFileSync(spec.file);assert.equal(bytes.length,spec.bytes);assert.equal(hash(bytes),spec.sha256);return bytes;};
+ const reference=JSON.parse(readPinned(inputs.referenceReport)), expected=JSON.parse(readPinned(inputs.referenceLoft));
+ assert(reference.complete&&reference.firstFailure===null&&reference.stepCount===0&&reference.stop.kind==='first-eligible-capture');
+ assert.equal(expected.epoch.seaTime,reference.stop.seaTime);assert.equal(expected.epoch.step,0);assert.equal(Object.keys(expected.arrays).length,37);
+ assert.deepEqual(inputs.referenceCounts,expected.counts);assert.deepEqual(inputs.overrides,{seed:6238,componentCount:64,dx:2,fineSpacing:1});
+ assert(!existsSync(args.out));mkdirSync(args.out);const OUT=resolve(args.out),started=performance.now();let page,exitCode=0;
+-const report={schema:'grey-band-ownership-native/v4',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
+- protectedIdentityAuthority:inputs.protectedIdentityAuthority,historicalOpticalRun:inputs.historicalOpticalRun,priorPreparationFailure:inputs.priorPreparationFailure,priorNativeFailure:inputs.priorNativeFailure,
++const report={schema:'grey-band-ownership-native/v5',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
++ protectedIdentityAuthority:inputs.protectedIdentityAuthority,historicalOpticalRun:inputs.historicalOpticalRun,priorPreparationFailure:inputs.priorPreparationFailure,priorNativeFailure:inputs.priorNativeFailure,priorWindingFailure:inputs.priorWindingFailure,drawWindingGuardPolicy:inputs.drawWindingGuard,
+  opticalAppAuthority:{build:inputs.opticalApplicationBuild,freeze:inputs.opticalApplicationFreeze,seal:inputs.opticalApplicationSeal,baselinePNG:inputs.baselinePNG},
+  referenceReport:inputs.referenceReport,referenceLoft:inputs.referenceLoft,settings:inputs.settings,overrides:inputs.overrides,graphics:inputs.graphics,
+  policy:inputs.comparison,limits:inputs.limits,stepCount:0,artifacts:[],pngCount:0,pngBytes:0,browserErrors:[],acceptance:{ownershipConclusion:null,playability:false,productionFixAdopted:false}};
+@@ -59,6 +59,6 @@
+  report.restoration=await page.eval('__greyOwnership.finish()');assert(report.restoration.complete&&report.restoration.originalShaderCacheDefineViewAndCameraRestored&&report.restoration.originalAttributesNeverModified);
+  assert.equal(report.pngCount,4);assert.deepEqual(report.browserErrors,[]);report.complete=true;
+ } catch(error) {report.firstFailure=String(error?.stack??error).slice(0,16384);report.complete=false;exitCode=1;}
+-finally {clearTimeout(deadline);if(page)try{await page.close();report.ownedBrowserClose=true;}catch(error){report.ownedBrowserClose=false;report.closeFailure=String(error).slice(0,2048);report.complete=false;exitCode=1;}
+- report.elapsedMilliseconds=performance.now()-started;save();}
++finally {if(page)try{await page.close();report.ownedBrowserClose=true;}catch(error){report.ownedBrowserClose=false;report.closeFailure=String(error).slice(0,2048);report.complete=false;exitCode=1;}
++ report.elapsedMilliseconds=performance.now()-started;save();clearTimeout(deadline);}
+ console.log(JSON.stringify({complete:report.complete,steps:0,pngCount:report.pngCount,firstFailure:report.firstFailure}));process.exitCode=exitCode;
+--- /private/tmp/tube-grey-band-ownership-native-v4-20261005/ownership-inspection.mjs
++++ /private/tmp/tube-grey-band-ownership-native-v5-20261005/ownership-inspection.mjs
+@@ -23,6 +23,38 @@
+   const decode = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+   const expectedArrays = Object.fromEntries(Object.entries(expected.arrays).map(([key, value]) => [key, decode(value.data)]));
+   const expectedFront = decode(expected.rawFrontPacket.data);
++  function assertActualDrawWinding(loft) {
++    const geometry = owner.mesh.geometry;
++    const attribute = geometry.index;
++    const count = loft.indexCount;
++    must(Number.isSafeInteger(count) && count >= 0 && count % 3 === 0
++      && geometry.drawRange.start === 0 && geometry.drawRange.count === count
++      && attribute && attribute.itemSize === 1 && attribute.array instanceof Uint32Array
++      && attribute.array.length >= count && attribute.count >= count,
++      'Actual indexed loft draw range/type/capacity differs');
++    const index = attribute.array;
++    const { positions: p, normals: n, indices: from } = loft;
++    for (let i = 0; i < count; i += 3) {
++      const a = from[i];
++      const b = from[i + 1];
++      const c = from[i + 2];
++      must(a < loft.vertexCount && b < loft.vertexCount && c < loft.vertexCount,
++        'Historical triangle index exceeds active vertex prefix at triangle ' + i / 3);
++      const [a3, b3, c3] = [3 * a, 3 * b, 3 * c];
++      const e1x = p[b3] - p[a3];
++      const e1y = p[b3 + 1] - p[a3 + 1];
++      const e1z = p[b3 + 2] - p[a3 + 2];
++      const e2x = p[c3] - p[a3];
++      const e2y = p[c3 + 1] - p[a3 + 1];
++      const e2z = p[c3 + 2] - p[a3 + 2];
++      // Identical arithmetic and < 0 branch to pinned historical renderer lines515–519.
++      const facing = (e1y * e2z - e1z * e2y) * (n[a3] + n[b3] + n[c3]) + (e1z * e2x - e1x * e2z) * (n[a3 + 1] + n[b3 + 1] + n[c3 + 1])
++        + (e1x * e2y - e1y * e2x) * (n[a3 + 2] + n[b3 + 2] + n[c3 + 2]);
++      const flip = owner.facesOut && facing < 0;
++      must(index[i] === a && index[i + 1] === (flip ? c : b) && index[i + 2] === (flip ? b : c),
++        'Actual draw triangle differs from exact existing winding rule at triangle ' + i / 3);
++    }
++  }
+   function raw() {
+     const loft = mode.barrelLoft;
+     must(loft && Object.keys(loft).filter(k => ArrayBuffer.isView(loft[k])).length === 37, 'Actual full37 loft required');
+@@ -39,8 +71,7 @@
+       && same(bytes(a.array, v), bytes(loft.mask, v)), 'Optical app must draw exact final authored F32 mask');
+     const p = owner.mesh.geometry.getAttribute('position');
+     must(p.itemSize === 3 && p.array instanceof Float32Array && same(bytes(p.array, 3 * v), bytes(loft.positions, 3 * v)), 'Actual loft draw positions differ');
+-    must(owner.mesh.geometry.drawRange.start === 0 && owner.mesh.geometry.drawRange.count === loft.indexCount
+-      && same(bytes(owner.mesh.geometry.index.array, loft.indexCount), bytes(loft.indices, loft.indexCount)), 'Actual loft draw index prefix differs');
++    assertActualDrawWinding(loft);
+     return { loft, arrays, front: snapshot.front, actors: [{ key: 'board', array: snapshot.board, count: 8, copy: bytes(snapshot.board, 8) },
+       { key: 'rider', array: snapshot.rider, count: 33, copy: bytes(snapshot.rider, 33) }] };
+   }
+--- /private/tmp/tube-grey-band-ownership-native-v4-20261005/inputs.json
++++ /private/tmp/tube-grey-band-ownership-native-v5-20261005/inputs.json
+@@ -50,7 +50,8 @@
+     4312,
+     4313,
+     4314,
+-    4315
++    4315,
++    4316
+   ],
+   "protected4315": {
+     "pid": 87796,
+@@ -77,7 +78,7 @@
+       "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+     }
+   ],
+-  "schema": "grey-band-ownership-inputs/v4",
++  "schema": "grey-band-ownership-inputs/v5",
+   "preparationOnly": true,
+   "rootExecutionPending": true,
+   "resourcesStarted": false,
+@@ -351,9 +352,9 @@
+     ]
+   },
+   "protectedIdentityAuthority": {
+-    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+-    "bytes": 25763,
+-    "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
++    "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
++    "bytes": 2735,
++    "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+   },
+   "historicalOpticalRun": {
+     "owner": {
+@@ -376,7 +377,10 @@
+     "periodicTimeoutOutcome": "Observation only; keep same native handle/HTTP server and retry at next scheduled poll.",
+     "requiredIdentityOutcome": "Initial/preflight/cleanup identity verification required; never signal unverified groups.",
+     "absoluteWholeSeconds": 680,
+-    "cleanupReserveSeconds": 20
++    "cleanupReserveSeconds": 20,
++    "anchorPolicy": "Exact live actual Popen leader bootstrap; immutable original leader if present, otherwise exact member of the immediately previous accepted read before updates. Child changes recorded after anchor acceptance.",
++    "signalPolicy": "Immediately successful NEW required read per TERM/KILL; latest accepted observation/state identity before authorize, no fallback after timeout/rejection, consume counter after actual signal.",
++    "completedOverbudgetRead": "Local OwnedReadExpired before pure acceptance when measured duration>2s or age>2s. No state refresh; periodic records capped observation-only evidence and continues same handle; required reads retry at most3within unchanged deadline. Genuine AnchorRejected is not caught as expiry."
+   },
+   "sourceProvenancePolicy": {
+     "repositoryDependencyPrefixes": [
+@@ -428,5 +432,86 @@
+       "src/scene/LipSheetMesh.ts"
+     ],
+     "actualRuntimeCountsMustBeVerified": true
+-  }
++  },
++  "protected4316": {
++    "pid": 38617,
++    "rootSession": "59708",
++    "processReceipt": {
++      "file": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
++      "bytes": 526,
++      "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85"
++    }
++  },
++  "priorWindingFailure": {
++    "owner": {
++      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/owner.json",
++      "bytes": 16681,
++      "sha256": "5c3c876f6129b5f5e9856e2ec80af11dc7551a66807803abb81104a0462bd9f2"
++    },
++    "report": {
++      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/candidate-first/report.json",
++      "bytes": 31388,
++      "sha256": "19562e9bcf94fe990acd512d7d8d80497e7a3e3fc3b908308a3e040d5b9de64a"
++    },
++    "rootPostFailure": {
++      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/root-post-failure-pins-and-closure.json",
++      "bytes": 54257,
++      "sha256": "b1cac33132acca83cbe270d5bf6425226b0963a1d568b384298692ed91111401"
++    },
++    "qualification": "ID V4 actually failed at raw() source-index equality before baseline/probes, terminal1 after48.4627s with0steps/0PNGs. Exact historical facesOut repair reorders actual b/c indices while preserving the source loft indices. No actual ID image/ownership result exists. Independent root227pin/closure audit verifies unchanged failed outputs, absent group34236, owned ports closed and four then-protected previews preserved. V4 remains unchanged."
++  },
++  "drawWindingGuard": {
++    "facesOutRequired": true,
++    "exactHistoricalPerTriangleMapping": true,
++    "rawSourceIndexWordsRemainExact": true,
++    "actualDrawPrefixFrozenAcrossProbesAndRepeats": true,
++    "sourceRationaleHistoricalCommit": "6bcae3aa0740cb66187f572a03cc8abbb1981030",
++    "sourceRationalePath": "src/scene/barrel/SweptBarrelMesh.ts",
++    "sourceRationalePin": {
++      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/historical-source/src/scene/barrel/SweptBarrelMesh.ts",
++      "bytes": 33396,
++      "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
++    },
++    "exactProposedGuard": {
++      "file": "/private/tmp/tube-grey-band-draw-winding-audit-20261005/proposed-exact-draw-winding-guard.mjs",
++      "bytes": 2024,
++      "sha256": "30c0482da77e4f5363480a4e8cffad75ac5d8cd8378b74e5b5a050c757003881"
++    },
++    "actualRuntimeMappingMustBeVerified": true,
++    "qualification": "The audit proposal is unexecuted guard source. Transcript-derived offline expected swaps are not a runtime actual draw-index observation. New native raw() independently checks the exact pinned historical mapping."
++  },
++  "ownerPolicyAmendment": {
++    "moduleSource": {
++      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
++      "bytes": 15501,
++      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
++    },
++    "moduleStaticFreeze": {
++      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
++      "bytes": 2410,
++      "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0"
++    },
++    "rootPureTests": {
++      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
++      "bytes": 511,
++      "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32"
++    },
++    "rootPureTestLog": {
++      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
++      "bytes": 3695,
++      "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7"
++    },
++    "copiedModule": {
++      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py",
++      "bytes": 15501,
++      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
++    },
++    "rootPureFixtureCount": 20,
++    "rootPureASTChecks": 2,
++    "integrationReviewPending": true,
++    "integrationChecksExecuted": false,
++    "rootReviewAndChecksRequiredBeforePreparation": true,
++    "scope": "Exact root-tested pure helper; fresh integration has no actual OS/native evidence."
++  },
++  "executionPendingOwnerPolicyReview": true
+ }
+--- /private/tmp/tube-grey-band-ownership-native-v4-20261005/README.md
++++ /private/tmp/tube-grey-band-ownership-native-v5-20261005/README.md
+@@ -1,47 +1,25 @@
+-# Fixed INTERIOR grey-band surviving-drawable diagnostic V4 — SOURCE ONLY
++# Fixed interior grey-band drawable diagnostic V5 — source only
+ 
+-This directory contains a complete, bounded recipe for root review and later execution. It has **not** been checked, prepared, built, run, or used to probe/start ports. No old sealed helper, production source, application asset, or listener is changed by this source preparation. Historical reports and PNGs are pinned references, not copied or represented as new results.
++This fresh recipe is ready for root review. It has not been syntax checked, imported, prepared, built, run, or used to inspect processes or ports. Production, sealed parents, old outputs, and preview listeners are untouched. `prepare.py` and `run.py` refuse execution while the root integration-review/check flags in inputs remain pending. Root must review the actual source diff, run its checks, truthfully update those flags, and refresh the static freeze before preparation.
+ 
+-The declared optical application is the immutable, already-built `/private/tmp/tube-guided-ordinary-v3-native-20261005/dist`, build `tube-guided-early-crest-20261005`. It already includes the final authored-mask max predicate and the adopted wall-light A. The new geometry under development is deliberately unrelated to this diagnostic. The recipe does **not** assert that the old and current builds share geometry. It independently requires the exact old 37 active loft arrays, raw 333 front words, counts, zero-step epoch, fixed camera and first native combined baseline PNG to match at runtime; a mismatch aborts without searching for another epoch, camera, seed, quality or pixel.
++The application remains the immutable historical V3 distribution at `/private/tmp/tube-guided-ordinary-v3-native-20261005/dist`, build `tube-guided-early-crest-20261005`. It contains the authored-mask maximum and wall-light A used by the completed combined optical capture. This is a copy-only recipe: no new application build or diagnostic compilation. The original V3 ordinary run failed its 640s wall deadline after 1,525 rows; complete application build/assets receipts are separate from that failed gameplay result. No equivalence to current production geometry is claimed.
+ 
+-`prepare.py` is root-only: it verifies historical receipts and immutable V3 app assets, then categorizes the exact existing source arrays before copying. Committed repository application/source files are recovered with read-only `git show 6bcae3aa0740cb66187f572a03cc8abbb1981030:<path>` and must match their compiled/production receipt bytes and hashes. Declared repository dependency paths under `node_modules/` are permitted only in `diagnosticCompiledSources`; a bounded Git batch existence read must prove they are absent from that historical commit, and their original dependency bytes are then verified directly against the existing compiled-source receipt before and after copying into **new** historical-dependencies scratch. No dependency Git source or committed hash is invented. Outside-repository diagnostic entries are similarly verified and copied directly into new historical-diagnostic scratch, with no Git provenance. Every Git read has a2s timeout. No repository node_modules file is modified or fetched, and no dependency code is compiled. Additional optical files are recovered from the commit with explicit absence of a prior build-receipt hash. No changed live application source or root dist is compared to old receipts. Interpretation copies are separate from the verified immutable app assets that are served. This preparation performs no build.
++The comparison is unchanged: normal menu Padang Padang / Big / Mid / Calm / Midday, one public seeded diagnostic restart, ordinary paused HUD and inactive lab, outstanding-step drain, 1708×879 canvas, zero physical steps. All 37 historical active loft arrays, raw 333 front words, 81 slices / 10,854 vertices / 62,244 indices, epoch 276.3293560552737, actor words, fixed interior pose and projection remain exact. The four predeclared top-left pixels remain `(1300,360)` and `(1500,400)` for the grey band, `(1400,180)` for the roof, and `(400,450)` for the wall. There is no placement, private pop-up, clock assignment, stepping, seed/camera search, or quality adjustment.
+ 
+-The actual menu and public diagnostic start flow is borrowed from the completed authored-mask owner: Padang Padang / Big / Mid / Calm / Midday, normal paused HUD with inactive lab, one public seeded `start` (6238), outstanding-step drain, existing clear-drawing hold, 1708×879 canvas, original camera clone and zero physical steps. The application build is verified before the replay. There is no placement, clock assignment, stepping, Autopilot import, quality adjustment or search.
++The first new native baseline must match the completed combined mask+A PNG exactly: 1,979,202 bytes, SHA256 `0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6`. This happens before the owner, raster-face and body-cosine probes. A mismatch is a finite failed diagnostic; it does not authorize a different camera, scene, seed or epoch. Four PNGs are saved, in order: `interior-rich-baseline.png`, `interior-rich-owner.png`, `interior-rich-rasterFace.png`, `interior-rich-bodyCos.png`. Three intervening restored baselines must equal the first PNG byte-for-byte and are not saved as extra images.
+ 
+-The fixed sample choice is independently pinned in the prior read-only proposal: grey-band points `(1300,360)` and `(1500,400)`, roof `(1400,180)`, wall `(400,450)`; coordinates are zero-based with top-left origin. The exact completed cap INTERIOR eye/quaternion/up/projection is used. These points were chosen from existing combined/region images before a new shader variant or ray calculation. The offline evidence and exact already-executed computation source are retained as references; they are not rerun here.
++V4 actually failed before baseline/probes: terminal exit1 after 48.4627s, zero steps and zero PNGs, because it required the actual draw indices to equal raw loft indices. The pinned historical renderer intentionally applies its existing `facesOut` repair: preserve a, swap b/c only when the exact triangle cross product dotted with summed vertex normals is negative. V5 replaces only that erroneous drawn-index equality with the exact historical arithmetic and branch, checked independently on every actual active triangle. It still requires `facesOut=true`, safe triangle-aligned active count, drawRange start0/count exact, Uint32 capacity, active vertex bounds, exact historical source-index words, and exact position/mask prefixes. The existing full draw snapshots then freeze the actual repaired index identity and bytes across baseline, probes and repeats. It does not mutate the mesh, normals, winding, or historical source array. The direct historical source and proposed guard pins are retained. Offline expected swap counts are not represented as an actual runtime observation.
+ 
+-`ownership-inspection.mjs` wraps the actual main materials of five groups: swept loft 1, shared ordinary water mesh/patch 2, separate late repair mesh/patch 3, seabed 4 and far ocean 5. It requires five distinct material identities and actual final shader callbacks for all five in every stage. The late repair dynamically invokes the current ordinary-water callback. A delegation-depth guard suppresses intermediate water marking, lets the original repair replace its own discard predicate, then marks only that final repair shader with actual material ID 3. The actual `shader.defines` object and numeric ID must match the final material. Separate shadow/depth materials and other scene drawables are not falsely marked; the untargeted legacy lip must have actual index.count0 and position.count0. Its real range (including default Infinity), visibility, groups and attribute/index identities and words remain unchanged. Installation and capture record that actual state, encoding nonfinite range values as strings so JSON does not silently turn Infinity into null.
++V4 failed sources/results stay unchanged. Its independent root post-failure receipt records 227 verified pins, absent owned group34236, closed4301/9711 and four then-protected full identities; it is a failed-run closure authority, not a successful ID comparison. Earlier failed V2 preparation and V3 legacy guard remain separately qualified. The corrected legacy guard is retained: actual index.count0 and position.count0, with real range (including Infinity), visibility, groups and attribute/index identities and words unchanged. Source rationale is recovered from the same historical6b PhysicalMode/LipSheet code; runtime counts are independently measured and required rather than assumed from source.
+ 
+-Four PNGs are saved, in order:
++Optical behavior is byte-preserved from V4. Five distinct actual material groups remain swept loft1, ordinary water2, dynamically delegated late repair3, seabed4 and far ocean5. Owner colours are magenta/cyan/yellow/red/blue. Raster facing uses the existing `gl_FrontFacing`; body cosine copies the actual existing `dot(waterN,waterV)`. Only the same reversible final RGB/ID-define/cache probe deltas are used. Original shader strings, alpha, discard, mask/dither, depth/stencil, opacity, far-ocean fade, callback and defines-object identities, repair delegation, camera words, texture bytes, transforms and drawing attributes remain guarded. No shader predicate change, hiding, back-face forcing, geometry replacement, support repair or opaque far-ocean override is added. The native deadline now remains active through browser close and final report save.
+ 
+-1. `interior-rich-baseline.png`: unchanged original Rich output, required to match the completed combined mask+A PNG SHA-256 `0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6` and 1,979,202 bytes.
+-2. `interior-rich-owner.png`: final RGB identifies surviving tagged contributions: loft magenta, ordinary water cyan, late repair yellow, seabed red, far ocean blue.
+-3. `interior-rich-rasterFace.png`: final RGB green for `gl_FrontFacing`, red for back-facing fragments.
+-4. `interior-rich-bodyCos.png`: actual `waterViewCos = dot(waterN,waterV)` copied at its existing body path; green/red indicates positive/negative sign, blue encodes clamped magnitude, magenta nonfinite. Seabed blue indicates no water-body cosine.
++Preparation retains the reviewed provenance taxonomy. Committed repository application/source bytes are recovered by bounded read-only `git show` from `6bcae3aa0740cb66187f572a03cc8abbb1981030` and verified against existing production/compiled receipts. Declared `node_modules/` inputs are permitted only in the diagnostic-compiled family; an exact bounded historical-path absence check precedes direct compiled-receipt verification and copying. Outside-repository diagnostic input is copied only from its direct compiled pin with historicalCommit:null. Extra optical source has an explicit absence of a prior build hash. No dependency Git hash, new compilation, fresh build, mutable source equivalence or successful historical gameplay is invented. App copies must match all immutable source asset receipts, which are reverified afterward. The new build/seal must bind identical source-provenance bytes, and the owner checks every executable/provenance pin before and after capture.
+ 
+-Each probe changes only an added per-material ID define, cache suffix and the declared final `gl_FragColor.rgb` output after the unchanged final chunk; body-cos additionally adds one scalar and copies the actual existing dot product. Generated original vertex/fragment strings are compared byte-for-byte before each delta, and reversing the exact delta must reproduce the original fragment string. Shader source hashes, material/mesh UUIDs and actual compile/define guards are reported. Every original shader predicate and alpha computation remains in place. No whole-scene mask/dither disable, false support repair, back-face forcing, depth/stencil bypass, object hiding, geometry replacement, or opaque far-ocean override is present. Original far-ocean transparency and fade are retained.
++The owner copies exact root-tested `owned_group_anchor.py`, SHA256 `f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0`. Its separate root checks passed two AST parses and 20 synthetic fixtures; those do not establish fresh OS identity. The integration declares the exact real Popen argv, brackets the initial measured read with live checks, requires an immutable original leader when present or an exact previously accepted survivor before updates, and records accepted child-command changes only after that anchor is proved. Genuine anchor rejection preserves full offending evidence without updating accepted state. A just-successful NEW required read immediately precedes each TERM/KILL; its observation and state must be the latest accepted objects and number, with no timeout/rejection fallback. Authorization occurs immediately before the signal, and the consumed observation counter is recorded only after a successful actual signal. The pure module remains unchanged.
+ 
+-After **each** of the three probes, the exact original defines object is restored and the fixed baseline is rendered again. Its PNG data URL must equal the first baseline byte-for-byte; restored repeats are not saved as extra PNGs. At the end, all original callback/cache/define identities, ordinary Rich view and normal camera are restored. There are no added/removed attributes. Runtime guards cover exact full37/raw333 historical words, actor board8/rider33, epoch and ownership, actual loft position/index/mask prefixes, all targeted drawing attribute/index bytes/identities and ranges, transforms, mask image/bytes/grid/filter parameters, materials, alpha/blending/depth/stencil properties, and both camera word sets.
++A completed owned process read can exceed2s without raising subprocess.TimeoutExpired. Before pure acceptance, V5 compares actual monotonic duration and age against the unchanged2s limits and raises local `OwnedReadExpired` on excess. No accepted state is refreshed. Periodic subprocess timeouts and local expiry are observation-only: keep the same native handle and HTTP server, then retry at the next scheduled five-second poll. Required initial/preflight/cleanup reads retry at most three times within their existing finite deadline. Genuine `AnchorRejected` is not caught as expiry. At most16 timing notes are retained with an exact total count; completed-expiry evidence includes read windows, deadlines, live facts, previous accepted anchor, and the first16 unaccepted member prefixes plus full command hashes. Those truncated diagnostic prefixes are never accepted identities or signal authority.
+ 
+-The first native baseline PNG comparison is deliberately strict. Identical historical geometry does not establish identical V3 optical output; the image must also match. A mismatch is a finite failed diagnostic, not permission to retry or adjust the scene.
++Only4301 HTTP and9711 native browser are owned. All five protected previews4312–4316 require fresh normalized PID/start/exact full-command matching the direct root-five-protected receipt SHA256 `b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28`. PIDs are92445,58298,51358,87796,38617 respectively. The actual4316 process receipt is also pinned. Fresh preflight and post-cleanup identities must match; unverified groups are never signalled. Required owned-group absence, reap, closed owned ports and sealed post-pins remain mandatory. Native635s, owner maximum648s, whole absolute680s including reserved20s cleanup, each OS read2s, poll5s, four PNGs at most12MiB each and report2MiB are unchanged. The absolute deadline includes bounded preflight and reserves cleanup rather than adding allowances.
+ 
+-`run.py` borrows the completed closed-owner resource discipline. Only root may execute it after review/preparation. It requires protected ports 4312–4315 and the pinned 4315 PID 87796 (root session 64713 is provenance, not an OS identity assertion). It starts only owned4301 HTTP and9711 native browser inside a fresh owned process group, checks full normalized PID/start/exact command identities before and after, closes only its own verified group/server, rechecks sealed inputs afterward and records closed owned ports. Limits are635 native seconds,648 maximum owner seconds,680 absolute total seconds including cleanup, cleanup at most20 seconds, four PNGs at most12MiB each and a2MiB report. No retry or extension. Root should review any changed protected listener expectation before execution; preparation itself does not inspect listeners.
+-
+-An exact primary marker at a predeclared pixel is evidence for an encoded surviving contribution. It is **not exclusive whole-pixel coverage proof**: alpha blending, multiple contributions, MSAA, untagged scene effects and exact accidental colors can make interpretation ambiguous. Mixed or unmarked ID pixels remain ambiguous. Raster facing is separate from body-normal facing; cosine/facing reads need an independently unmixed contribution. The two previous saved rays excluding direct loft hits do not prove another drawable's ownership. This probe establishes no geometry improvement, seam complementarity, physical air volume, full-body clearance, playability or final reference-quality tube. It preserves authored fade/dither and existing mask+A optical behavior, including depth/stencil resolution where authored support overlaps ordinary water.
+-
+-
+-This V4 directory clones only the sealed V3 recipe sources. The actual V3 native16008 exited1 after53.4503s with0steps/0PNGs before probes because the installation guard incorrectly required drawRange.count0. Its owner actually verified owned-group absence, closed4301/9711 and all four protected identities; postExecutionPinsVerified remainedfalse. The separate root post-failure audit verified223 executable-policy pins, absent group30849, both owned ports closed and protected full PID/start/commands, with no signals. It preserves the failed outcome and is pinned as `/private/tmp/tube-grey-band-ownership-native-v3-20261005/root-post-failure-pins-and-closure.json`,54,427bytes,SHA256235816a6057bf3f3a19a14b141010d5518c1912e2f2ad34b18d51d4b927a8dfe. V3 sealed sources/results remain unchanged; no images or ownership result exists from that attempt. The earlier actual V2 preparation failure remains separately qualified.
+-
+-V4 changes only that legacy geometry precondition and its truthful metadata, plus fresh paths/schemas and qualified history. It requires an actual index and position attribute with both counts0, records installation/capture index counts, UUIDs, visible flag and actual draw range, and requires that state to remain identical. The guard is named legacyLipIndexedGeometryEmpty. It does not hide the mesh, set its range or modify attributes. Shader RGB/cos injection, final callbacks/defines/cache, repair delegation, alpha/predicates/depth/stencil/far-opacity behavior, historical baseline before probes, fixed samples/camera, four PNGs and three restored repeats are unchanged. New schemas are grey-band-ownership inputs/build/seal/preparation/native/owner/source-provenance version4. The reviewed robust owner OS/cleanup policy and immutable optical V3 app authority remain unchanged.
+-
+-The historical6b source rationale is direct: the already-pinned PhysicalMode.ts source calls lipSheet.update with count0 when swept is active. Root preparation explicitly recovers LipSheetMesh.ts from that same commit into fresh scratch; it verifies the Rich path installs its built position and index attributes and does not assign drawRange. The returned source-provenance receipt pins both exact recovered files and labels these source facts as rationale, not runtime count measurements. Actual index0/position0 and unchanged range/visibility/attributes are independently required by the browser helper. A default Infinity range is compatible with an empty indexed draw; V4 never assumes an actual count merely from source.
+-
+-The separate expected-protected-identity authority is the actual /private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json,25763bytes,SHA25638922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86. It records root's verified closure of an earlier failed shared-leaf owner, not success of this ID recipe. Its complete/protected/port proof is pinned context. Fresh preflight still requires actual protected4312PID92445,4313PID58298,4314PID51358,4315PID87796 and the exact recorded start/full HTTP command. Full-width ps -ww command= rows split(None,6) normalize only the five start words; the command retains its internal spaces. Fresh after-identities must equal preflight exactly.
+-
+-The immutable optical V3 application has complete build/assets/source receipts and an actual successful build log. The V3 ordinary gameplay owner/report itself was complete:false, terminal1 at the640s diagnostic wall deadline after1525rows. Those actually failed receipts are directly pinned qualified history; no successful ride/native result is inferred from its completed app build. The cap-reference owner and combined optical owner are separate completed zero-step references, and the first new native baseline must independently match the historical combined PNG exactly before ownership probes.
+-
+-The actual optical V3 build/freeze arrays contain15 productionSources and77 diagnosticCompiledSources. The diagnostic array includes74 application/source entries, two repository dependencies, and one outside-repository diagnostic entry. The dependencies are `node_modules/three/build/three.core.js`,1,458,113bytes,SHA2569edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6, and `node_modules/three/build/three.module.js`,662,772bytes,SHA2569052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea. The external entry is `/private/tmp/tube-guided-ordinary-v3-native-20261005/autopilot-entry.ts`,106bytes,SHA25653ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335. Prefix classification happens before any Git source recovery. Only repository app/source entries use exact historical committed bytes. The dependencies and external entry have historicalCommit:null/recoveredFromGit:false; dependency records separately pin the bounded historical-path absence check. The source-provenance receipt binds every original receipt and copy. Build and seal must point to the exact same source-provenance pin/hash. Runtime checks every copied committed source, copied dependency, external entry and app asset; it does not compare changed live repository application sources. A dependency receipt mismatch is a finite preparation failure, never permission to fetch or substitute bytes.
+-
+-Every OS subprocess read has a2s upper bound. Required preflight/initial/cleanup reads retry at most3 times within their finite deadline. Periodic owned identity reads run every5s; TimeoutExpired is observation-only, with at most16 retained notes plus exact total count. It continues the same native handle and HTTP server and retries on the next scheduled poll. An identity mismatch or genuinely missing protected listener remains a failure. Immediately before TERM/KILL a current full group read must match the recorded fresh leader command/start identity or an exact recorded survivor anchor and exclude protected PIDs; unverified groups are never signalled. Final group absence, protected equality, closed4301/9711 and all exact input/provenance pins remain mandatory.
+-
+-The absolute680s whole deadline starts before preflight. Preflight including pin checks is capped20s; active ownership ends at min(ownerStart+648s,wholeDeadline−20s), and periodic reads/sleeps obey that active deadline. Cleanup is capped by min(cleanupStart+20s,wholeDeadline). Thus preflight/owner/cleanup allowances cannot add beyond680s. Native635s remains an upper bound. No new build, old output mutation, mutable source freeze, ordinary-control simulation, compiler, listener/process probe or actual capture was executed by this source preparation.
++This diagnostic may identify an encoded surviving contribution at a selected pixel. Mixed/unmarked colours, alpha blending, MSAA and untagged effects remain ambiguous; it does not prove exclusive whole-pixel ownership, exact triangle provenance, a shader cause, physical closure, body fit, ride success or reference-quality tubes. All execution and acceptance remain pending root review, checks, preparation, native output and actual image review.
+--- /private/tmp/tube-grey-band-ownership-native-v4-20261005/recipe-diff.md
++++ /private/tmp/tube-grey-band-ownership-native-v5-20261005/recipe-diff.md
+@@ -1,12 +1,14 @@
+-# Source-only ID V4 changes from sealed failed ID V3
++# Source-only ID V5 change from failed sealed V4
+ 
+-- Fresh paths and grey-band-ownership */v4 schemas; immutable optical application/build/baseline/camera remain unchanged.
+-- Replace only the incorrect legacy drawRange.count0 precondition with actual index.count0 AND position.count0. Record actual installation/capture legacy geometry state, preserving nonfinite range values as strings. Truthful guard name legacyLipIndexedGeometryEmpty.
+-- Existing full drawable snapshots still guard visibility, range, groups, geometry/material, attributes/index identities/counts/words. New explicit legacy state equality is additional; no hiding, setDrawRange, geometry or material mutation.
+-- Owner validates both counts and exact same installation/capture state.
+-- Historical6b PhysicalMode/LipSheet source rationale is recovered/pinned during root preparation, with no invented old build hash for the additional LipSheet source and no assumption of runtime counts.
+-- Actual failed V3 owner/report and independent root223-pin/closure audit are direct qualified references. Actual V2 preparation failure and separate V3 ordinary deadline failure retain their previous qualification.
+-- Shader RGB/cos delta, original generated shader predicates, final callbacks/defines/cache, repair delegation, alpha/depth/stencil/far-opacity, all37/raw333 guards, fixed samples/camera, exact first baseline PNG, four PNGs and three restored repeats remain unchanged.
+-- Robust OS/680s resource discipline and committed/dependency/external source provenance policy are unchanged.
++- Fresh V5 paths and inputs/build/seal/preparation/native/owner/source-provenance schemas. Same immutable historical V3 application and same fixed geometry/epoch/camera/samples.
++- Replace only raw drawn-index equality with the exact historical facesOut per-triangle mapping. Raw full37/source indices remain exact; actual repaired draw bytes/identity are still frozen across probes and restored baselines. No shader or geometry mutation.
++- Bind failed V4 owner/report and its independent227-pin/closure audit truthfully; retain earlier failed preparation/legacy/native and failed ordinary V3 qualifications.
++- Copy exact f79e pure owner helper and direct root20-fixture/2-AST evidence. Integrate real Popen/live/read windows, immutable leader or previously accepted survivor, accepted child-change notes, and full genuine mismatch evidence.
++- Require immediately successful NEW bounded read and latest accepted observation/state before each TERM/KILL; authorize before signal and consume after successful signal, with no stale or timeout fallback.
++- Local completed-read duration/age expiry is raised BEFORE pure acceptance with no state refresh. Only subprocess.TimeoutExpired/local OwnedReadExpired get periodic observation-only handling or finite required-read retries; genuine anchor rejection remains fatal.
++- Bind all five protected full identities4312–4316, including actual fixed human preview4316. Only4301/9711 are owned; retain635/648/680s, cleanup20s, OS2s, poll5s, retry3, notes16.
++- Keep635s native timer through page.close and final save.
++- Enforce truthful pending integration review/check flags in both preparer and owner. Root must review/check, then update flags and refreeze before preparing.
++- Preserve immutable app copy checks and committed/dependency/external provenance taxonomy. No new build/compiler, mutable production source freeze, imports/checks/native or OS/port execution by this source preparation.
+ 
+-Only new source files/metadata were prepared; no checker, Git read, preparation, compiler, build, native, process or port action was executed. recipe.patch is the exact source diff from immutable V3.
++recipe.patch is the direct source-file diff from current immutable failed V4 files, plus the new exact helper. Historical build/output receipts are references only; no assets/results copied.
+--- /dev/null
++++ /private/tmp/tube-grey-band-ownership-native-v5-20261005/owned_group_anchor.py
+@@ -0,0 +1,354 @@
++"""SOURCE-ONLY proposal. Pure identity validation; no OS access or signals.
++
++Inputs must come from the real finite owner and fresh bounded OS reads. Synthetic
++fixtures do not establish any identity of an actual running process.
++"""
++from __future__ import annotations
++from dataclasses import dataclass
++import math
++from typing import Mapping
++
++PROTECTED_PORTS = (4312, 4313, 4314, 4315, 4316)
++OWNED_PORTS = (4301, 9711)
++NOTE_LIMIT = 16
++# Explicit fail-closed proposal caps; never truncate identity strings or rows.
++MAX_MEMBERS = 256
++MAX_COMMAND_CHARS = 65536
++MAX_STARTED_CHARS = 256
++
++
++class AnchorRejected(ValueError):
++    def __init__(self, reason, evidence):
++        self.reason = reason
++        self.evidence = evidence
++        super().__init__(reason)
++
++
++@dataclass(frozen=True)
++class Identity:
++    pid: int
++    pgid: int
++    started: str
++    command: str
++
++
++@dataclass(frozen=True)
++class ProtectedIdentity:
++    pid: int
++    started: str
++    command: str
++
++
++@dataclass(frozen=True)
++class LaunchFacts:
++    """Facts from the actual unreaped Popen object and exact launch invocation.
++
++    alive_before_read/after_read mean proc.poll() is None at those checkpoints.
++    expected_command is the predeclared FULL ps command string for the exact
++    argv, not a substring inferred from whichever row happens to be observed.
++    """
++    popen_pid: int
++    start_new_session: bool
++    expected_command: str
++    alive_before_read: bool
++    alive_after_read: bool
++    owned_ports: tuple = OWNED_PORTS
++
++
++@dataclass(frozen=True)
++class ReadWindow:
++    started: float
++    finished: float
++    now: float
++    deadline: float
++    os_seconds: float = 2.0
++    maximum_age_seconds: float = 2.0
++
++
++@dataclass(frozen=True)
++class Change:
++    kind: str
++    pid: int
++    before: Identity | None
++    current: Identity | None
++
++
++@dataclass(frozen=True)
++class OwnedState:
++    original_leader: Identity
++    # ONLY the most recent successful current read. Exited members do not remain
++    # eligible to anchor a later group. The original leader is separately kept.
++    members: tuple
++    protected_reference: tuple
++    observation_number: int
++    last_read_started: float
++    last_read_finished: float
++    change_count: int = 0
++    change_notes: tuple = ()
++    group_absent: bool = False
++
++
++@dataclass(frozen=True)
++class Observation:
++    state: OwnedState
++    anchor_kind: str
++    anchor_identity: Identity | None
++    current_members: tuple
++    read_started: float
++    read_finished: float
++    checked_at: float
++    deadline: float
++    maximum_age_seconds: float
++
++    @property
++    def group_absent(self):
++        return not self.current_members
++
++
++def identity_evidence(value):
++    if value is None:
++        return None
++    out = {'pid': value.pid, 'started': value.started, 'command': value.command}
++    if isinstance(value, Identity):
++        out['pgid'] = value.pgid
++    return out
++
++
++def state_evidence(state):
++    if state is None:
++        return None
++    return {
++        'originalLeader': identity_evidence(state.original_leader),
++        'previousMembers': [identity_evidence(row) for row in state.members],
++        'observationNumber': state.observation_number,
++        'previousGroupAbsent': state.group_absent,
++        'previousReadStarted': state.last_read_started,
++        'previousReadFinished': state.last_read_finished,
++    }
++
++
++def _reject(reason, previous, current, **extra):
++    # Rows are detached immutable values. Full before/current PID/start/command
++    # evidence is retained, including the offending leader if one is present.
++    raise AnchorRejected(reason, {
++        'previous': state_evidence(previous),
++        'currentMembers': [identity_evidence(row) for row in current],
++        **extra,
++    })
++
++
++def _identity_valid(row, protected=False):
++    wanted = ProtectedIdentity if protected else Identity
++    return (isinstance(row, wanted)
++        and type(row.pid) is int and row.pid > 0
++        and (protected or (type(row.pgid) is int and row.pgid > 0))
++        and isinstance(row.started, str) and 0 < len(row.started) <= MAX_STARTED_CHARS
++        and isinstance(row.command, str) and 0 < len(row.command) <= MAX_COMMAND_CHARS)
++
++
++def _protected(snapshot):
++    if not isinstance(snapshot, Mapping) or set(snapshot) != set(PROTECTED_PORTS):
++        raise AnchorRejected('protected_port_set_differs', {'expectedPorts': list(PROTECTED_PORTS)})
++    result = []
++    for port in PROTECTED_PORTS:
++        rows = tuple(snapshot[port])
++        if (not rows or len(rows) > MAX_MEMBERS
++            or any(not _identity_valid(row, protected=True) for row in rows)
++            or len({row.pid for row in rows}) != len(rows)):
++            raise AnchorRejected('protected_full_identity_required', {'port': port})
++        result.append((port, tuple(sorted(rows, key=lambda row: row.pid))))
++    return tuple(result)
++
++
++def validate_protected_snapshot(reference, observed):
++    """Retain the full port/PID/start/command check; returns detached reference.
++
++    Required at bootstrap against the pinned root authority and again after
++    cleanup, as in the existing finite owner. This helper itself performs no read.
++    """
++    before, now = _protected(reference), _protected(observed)
++    if before != now:
++        raise AnchorRejected('protected_identity_changed', {
++            'before': {port: [identity_evidence(row) for row in rows] for port, rows in before},
++            'current': {port: [identity_evidence(row) for row in rows] for port, rows in now},
++        })
++    return before
++
++
++def _fresh(read, previous, current):
++    values = (read.started, read.finished, read.now, read.deadline,
++        read.os_seconds, read.maximum_age_seconds)
++    if not all(type(value) in (int, float) and math.isfinite(value) for value in values):
++        _reject('finite_read_window_required', previous, current)
++    if (read.os_seconds <= 0 or read.os_seconds > 2
++        or read.maximum_age_seconds <= 0 or read.maximum_age_seconds > 2
++        or not read.started <= read.finished <= read.now < read.deadline
++        or read.finished - read.started > read.os_seconds
++        or read.now - read.finished > read.maximum_age_seconds):
++        _reject('fresh_bounded_read_required', previous, current,
++            readWindow={key: getattr(read, key) for key in ReadWindow.__dataclass_fields__})
++
++
++def observe_owned_group(previous, current, *, launch, read,
++        protected_reference, protected_current=None):
++    """Validate a fresh group anchor BEFORE accepting updated child snapshots.
++
++    current is the COMPLETE non-zombie group read for actual Popen pid=pgid.
++    Bootstrap additionally requires live-before/live-after real Popen facts and
++    exact expected full command. Once initialized, the original leader is
++    immutable. If present, its mismatch fails even if another member matches.
++    If absent, one member from the immediately previous successful observation
++    must match exactly BEFORE current replaces those snapshots.
++
++    No process/clock/port reads, launches, sleeps, retries, mutation or signals.
++    """
++    if not isinstance(current, Mapping) or len(current) > MAX_MEMBERS:
++        raise AnchorRejected('complete_bounded_group_required', {'maximumMembers': MAX_MEMBERS})
++    unsorted_rows = tuple(current.values())
++    if (any(not _identity_valid(row) for row in unsorted_rows)
++        or any(type(pid) is not int or pid != row.pid for pid, row in current.items())):
++        raise AnchorRejected('full_group_identity_required', {})
++    rows = tuple(current[pid] for pid in sorted(current))
++    _fresh(read, previous, rows)
++    if previous is not None and (read.started < previous.last_read_finished
++        or read.finished <= previous.last_read_finished):
++        _reject('new_nonoverlapping_read_required', previous, rows,
++            readStarted=read.started, readFinished=read.finished)
++    if (type(launch.popen_pid) is not int or launch.popen_pid <= 0
++        or launch.start_new_session is not True or launch.owned_ports != OWNED_PORTS
++        or not isinstance(launch.expected_command, str)
++        or not 0 < len(launch.expected_command) <= MAX_COMMAND_CHARS):
++        _reject('exact_actual_launch_contract_required', previous, rows)
++    if any(row.pgid != launch.popen_pid for row in rows):
++        _reject('current_row_outside_owned_group', previous, rows,
++            expectedPgid=launch.popen_pid)
++    protected = _protected(protected_reference)
++    if protected_current is not None:
++        protected = validate_protected_snapshot(protected_reference, protected_current)
++    protected_pids = {row.pid for _, members in protected for row in members}
++    overlap = sorted(protected_pids.intersection(current))
++    if overlap:
++        _reject('owned_group_intersects_protected_pids', previous, rows,
++            protectedPids=overlap)
++
++    if previous is None:
++        if protected_current is None:
++            _reject('bootstrap_full_protected_check_required', previous, rows)
++        leader = current.get(launch.popen_pid)
++        if (launch.alive_before_read is not True or launch.alive_after_read is not True
++            or leader is None or leader.command != launch.expected_command):
++            _reject('bootstrap_exact_live_popen_leader_required', previous, rows,
++                expectedLeader={'pid': launch.popen_pid, 'pgid': launch.popen_pid,
++                    'command': launch.expected_command},
++                actualLeader=identity_evidence(leader),
++                liveBeforeRead=launch.alive_before_read, liveAfterRead=launch.alive_after_read)
++        state = OwnedState(leader, rows, protected, 1, read.started, read.finished)
++        return Observation(state, 'original-leader/bootstrap', leader, rows,
++            read.started, read.finished, read.now, read.deadline, read.maximum_age_seconds)
++
++    if (previous.original_leader.pid != launch.popen_pid
++        or previous.original_leader.pgid != launch.popen_pid
++        or previous.original_leader.command != launch.expected_command
++        or previous.protected_reference != protected):
++        _reject('owner_launch_or_protected_reference_changed', previous, rows,
++            actualLaunch={'pid': launch.popen_pid, 'command': launch.expected_command})
++    if previous.group_absent and rows:
++        _reject('owned_group_reappeared_after_verified_absence', previous, rows)
++
++    if not rows:
++        state = OwnedState(previous.original_leader, (), protected,
++            previous.observation_number + 1, read.started, read.finished, previous.change_count,
++            previous.change_notes, True)
++        return Observation(state, 'absent/non-signallable', None, (),
++            read.started, read.finished, read.now, read.deadline, read.maximum_age_seconds)
++
++    leader = current.get(launch.popen_pid)
++    if leader is not None:
++        if leader != previous.original_leader:
++            _reject('original_leader_identity_changed', previous, rows,
++                originalLeader=identity_evidence(previous.original_leader),
++                currentLeader=identity_evidence(leader))
++        anchor, kind = leader, 'original-leader/exact'
++    else:
++        # Critical order: use ONLY previous snapshots. Never update first.
++        matches = [row for row in previous.members if current.get(row.pid) == row]
++        if not matches:
++            _reject('no_exact_previously_observed_survivor', previous, rows)
++        anchor, kind = min(matches, key=lambda row: row.pid), 'previous-survivor/exact'
++
++    before = {row.pid: row for row in previous.members}
++    notes = list(previous.change_notes)
++    change_count = previous.change_count
++    for pid in sorted(set(before).union(current)):
++        if pid == previous.original_leader.pid:
++            continue
++        old, new = before.get(pid), current.get(pid)
++        if old != new:
++            change_count += 1
++            if len(notes) < NOTE_LIMIT:
++                notes.append(Change('added' if old is None else 'removed' if new is None else 'changed',
++                    pid, old, new))
++    state = OwnedState(previous.original_leader, rows, protected,
++        previous.observation_number + 1, read.started, read.finished, change_count, tuple(notes), False)
++    return Observation(state, kind, anchor, rows,
++        read.started, read.finished, read.now, read.deadline, read.maximum_age_seconds)
++
++
++def authorize_group_signal(observation, *, now, deadline, last_signalled_observation_number):
++    """Pure final freshness check immediately before caller's group signal.
++
++    Caller MUST supply a new group read/observation for EACH TERM or KILL. No
++    cached periodic observation or prior TERM observation may authorize KILL.
++    Caller must persist the returned observation number after each actual signal.
++    This function cannot prove the origin of caller-supplied OS/Popen facts.
++    """
++    if (observation.group_absent or observation.anchor_identity is None
++        or observation.anchor_kind == 'absent/non-signallable'):
++        raise AnchorRejected('absent_group_cannot_authorize_signal', {})
++    if (type(last_signalled_observation_number) is not int
++        or last_signalled_observation_number < 0
++        or observation.state.observation_number <= last_signalled_observation_number):
++        raise AnchorRejected('new_observation_required_for_each_signal', {
++            'observationNumber': observation.state.observation_number,
++            'lastSignalledObservationNumber': last_signalled_observation_number,
++        })
++    if (type(now) not in (int, float) or not math.isfinite(now)
++        or type(deadline) not in (int, float) or not math.isfinite(deadline)
++        or not observation.checked_at <= now < min(deadline, observation.deadline)
++        or now - observation.read_finished > observation.maximum_age_seconds):
++        raise AnchorRejected('fresh_anchor_required_before_signal', {
++            'anchor': identity_evidence(observation.anchor_identity),
++            'readFinished': observation.read_finished, 'signalCheckNow': now,
++            'observationDeadline': observation.deadline, 'signalDeadline': deadline,
++        })
++    return {
++        'pgid': observation.state.original_leader.pgid,
++        'anchorKind': observation.anchor_kind,
++        'anchorIdentity': identity_evidence(observation.anchor_identity),
++        'observationNumber': observation.state.observation_number,
++        'readStarted': observation.read_started,
++        'readFinished': observation.read_finished,
++        'checkedAt': now,
++        'verifiedMembers': [identity_evidence(row) for row in observation.current_members],
++    }
++
++
++def observation_record(observation):
++    """Detached JSON-compatible scalar/identity telemetry; maximum16notes."""
++    state = observation.state
++    return {
++        'originalLeader': identity_evidence(state.original_leader),
++        'anchorKind': observation.anchor_kind,
++        'anchorIdentity': identity_evidence(observation.anchor_identity),
++        'currentIdentities': [identity_evidence(row) for row in observation.current_members],
++        'groupAbsent': observation.group_absent,
++        'observationNumber': state.observation_number,
++        'readStarted': observation.read_started,
++        'readFinished': observation.read_finished,
++        'checkedAt': observation.checked_at,
++        'childChangeCount': state.change_count,
++        'childChangeNotes': [{'kind': note.kind, 'pid': note.pid,
++            'before': identity_evidence(note.before), 'current': identity_evidence(note.current)}
++            for note in state.change_notes],
++        'childChangeNotesTruncated': state.change_count > len(state.change_notes),
++    }

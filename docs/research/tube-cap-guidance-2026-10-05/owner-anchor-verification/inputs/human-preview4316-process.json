@@ -1,0 +1,11 @@
+{
+  "schema": "fixed-human-preview-process/v1",
+  "observedAtUTC": "2026-10-05T16:36:31.381624+00:00",
+  "port": 4316,
+  "pid": 38617,
+  "started": "Mon Oct 5 17:35:46 2026",
+  "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4316 --bind 127.0.0.1 --directory /private/tmp/surfing-game-play-3e75550c2-20261005/dist",
+  "rootToolSession": 59708,
+  "protectedWhileGoalContinues": true,
+  "mustNotStopReloadOrReplace": true
+}

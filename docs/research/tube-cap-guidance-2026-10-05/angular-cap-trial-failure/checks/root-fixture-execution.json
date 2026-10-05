@@ -1,0 +1,39 @@
+{
+  "schema": "root-angular-fixture-execution/v1",
+  "complete": true,
+  "bundleActualToolSession": 79961,
+  "bundleExitCode": 0,
+  "computationActualToolSession": 11563,
+  "computationExitCode": 0,
+  "source": "inspect-fixture.ts",
+  "unmatchedUnitProviderFixture": true,
+  "rootProductionChanged": false,
+  "nativeOrRideResult": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.ts",
+      "bytes": 3687,
+      "sha256": "54eeab659d538c636ebbc50e10f1e307116878f0bd7d2dbb76c8784b01d6e30f"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/sweptLoft.before.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.mjs",
+      "bytes": 224065,
+      "sha256": "0a0cc932d308d1a3ba800401e2c9c38822061c9ca7dffb3eb6fe22ef96e96b78"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-build.log",
+      "bytes": 96,
+      "sha256": "447012b9a593be5cc45a487c20a774d60b9d240c23edbfec56dfa2a88f3c7840"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/fixture-decomposition.json",
+      "bytes": 9975,
+      "sha256": "4ff969177aa66194a30088be9f97e58fb63972c5edcf24908182e4c8e34acaab"
+    }
+  ]
+}

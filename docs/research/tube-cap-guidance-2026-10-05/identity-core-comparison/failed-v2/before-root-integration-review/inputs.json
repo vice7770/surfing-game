@@ -1,0 +1,461 @@
+{
+  "referenceLoft": {
+    "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
+    "bytes": 1204806,
+    "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+  },
+  "borrowedHelperPins": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    }
+  ],
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "fixedCameras": {
+    "side": {
+      "eye": [
+        75.65191820636392,
+        0.8180906549096107,
+        -66.22397584095597
+      ],
+      "target": [
+        74.75,
+        0.8180906549096107,
+        -68.14806801453233
+      ],
+      "quaternion": [
+        0,
+        0.21741787419751346,
+        0,
+        0.9760786177247376
+      ],
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1
+    },
+    "interior": {
+      "eye": [
+        74.0625,
+        1.0598396605743825,
+        -68.79456329345703
+      ],
+      "target": [
+        74.1875,
+        1.0626037843906364,
+        -68.7633285522461
+      ],
+      "quaternion": [
+        0.006600678893715275,
+        -0.7881247536647293,
+        0.008452992668955604,
+        0.6154220914250564
+      ],
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1
+    }
+  },
+  "referenceEpoch": {
+    "step": 0,
+    "seaTime": 276.3293560552737,
+    "kind": "first-eligible-capture"
+  },
+  "referenceCounts": {
+    "slices": 80,
+    "vertices": 10720,
+    "indices": 61446
+  },
+  "protectedPorts": [
+    4312,
+    4313,
+    4314,
+    4315,
+    4316
+  ],
+  "protected4315": {
+    "pid": 87796,
+    "rootSession": "64713"
+  },
+  "ownedPorts": [
+    4301,
+    9711
+  ],
+  "schema": "leaf-identity-core-inputs/v1",
+  "preparationOnly": true,
+  "rootExecutionPending": true,
+  "applicationBuildId": "tube-guided-passive-telemetry-20261005",
+  "applicationDirectory": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/dist",
+  "authoredAuthority": [
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+      "bytes": 11001,
+      "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    }
+  ],
+  "opticalAuthority": [
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
+      "bytes": 8807,
+      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
+      "bytes": 2757,
+      "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
+      "bytes": 39508,
+      "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+    }
+  ],
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 680,
+    "cleanupSeconds": 20,
+    "pngCount": 8,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 100663296,
+    "reportBytes": 2097152,
+    "sidecarBytes": 6291456,
+    "drawInputsBytes": 8388608
+  },
+  "comparison": {
+    "pairs": [
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      }
+    ],
+    "geometryOrder": [
+      "preserved-shared-leaf",
+      "identity-core",
+      "restored-preserved-shared-leaf-repeat"
+    ],
+    "oldFull37Exact": true,
+    "candidateActiveCountsMayChange": true,
+    "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Old pre-identity mask equality is not required because the geometry footprint can change.",
+    "currentMaterialPolicy": "Unmodified current compiled authored max-mask and wall-light A on both variants; observer wrapper records exact shader words only.",
+    "targetCorner": {
+      "front": 41,
+      "worldCrestX": 75.625,
+      "coordinateIsSigma": false,
+      "priorMeasuredBendDegrees": 21.479273974306263
+    },
+    "noPlacement": true,
+    "noSteps": true,
+    "noSeedEpochPoseSelectorSearch": true,
+    "globalC1Guarantee": false,
+    "identityCoreOnlyRuntimeGeometryChange": true,
+    "baselineSuppliedCheckpoint": "2f43b943cfb29419a063c6ee31813e4f116c7a7a",
+    "oldFull37Producer": "Completed shared-leaf V2 candidate (pre-identity), not earlier cap-only geometry.",
+    "priorOrdinaryDrawInputsExactFields": [
+      "seaTime",
+      "step",
+      "config",
+      "look",
+      "holdClearDrawing",
+      "slope",
+      "stillLevel",
+      "surfaceRevision",
+      "surfaceGrid",
+      "surface",
+      "rawFrontPacket",
+      "board8",
+      "rider33",
+      "normalCameraWords"
+    ]
+  },
+  "ownerObservationPolicy": {
+    "osReadSeconds": 2,
+    "periodicIdentitySeconds": 5,
+    "maximumRecordedTimeoutNotes": 16,
+    "requiredReadAttempts": 3,
+    "periodicTimeoutOutcome": "Observation only; same native process and HTTP server continue, retry at next scheduled poll.",
+    "requiredIdentityOutcome": "Initial/preflight/cleanup identity reads must succeed; no signal against an unverified group.",
+    "anchorPolicy": "Exact live unreaped actual Popen leader bootstrap; immutable original leader if present, otherwise exact member from immediately previous accepted read before updates. Child changes recorded after anchor acceptance.",
+    "signalPolicy": "New successful required read immediately before each TERM/KILL; observation is latest accepted state, no fallback after timeout/rejection, consume returned observation counter only after actual signal.",
+    "completedExpiredReadOutcome": "A completed owned ps read with duration>2s or age>2s is caller OwnedReadExpired before pure observation. Periodic records it without state refresh; required reads retry within unchanged three-attempt finite deadline. Genuine AnchorRejected is never caught as expiry."
+  },
+  "rootCurrentApplicationReceipt": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+    "bytes": 132778,
+    "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+  },
+  "baselineAuthority": {
+    "owner": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/owner.json",
+      "bytes": 15739,
+      "sha256": "015c31d0bf9fecc62935ab919e7a65277f74084b79b80a7a4fe40e26efe7a02c"
+    },
+    "report": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/report.json",
+      "bytes": 42900,
+      "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
+    },
+    "loft": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
+      "bytes": 1204806,
+      "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+    },
+    "build": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/build.json",
+      "bytes": 16556,
+      "sha256": "f945caaa1aba8d283487942e7150a7ed9e0def1b1c2e190b75ea83d6fa3bd705"
+    },
+    "seal": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/seal.json",
+      "bytes": 9461,
+      "sha256": "bc8d8374c629fd7cf74da7abac0609b036242f3a3b0ee53ce8a8a1519e9dd3ee"
+    },
+    "sourceFreeze": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source-freeze.json",
+      "bytes": 6300,
+      "sha256": "e38226f54858e5804065cec68626af7ed2b1e1fbf799f87ecef12f2136825e78"
+    },
+    "drawInputs": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/draw-inputs.json",
+      "bytes": 1696833,
+      "sha256": "0f26472964cb9ee71d3abe267b5e5c1be16aeadb2eaf7bbd6cf3848ce63a4a6f"
+    }
+  },
+  "scenePoseReferenceReport": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+    "bytes": 49054,
+    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+  },
+  "protectedIdentityAuthority": {
+    "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+    "bytes": 2735,
+    "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+  },
+  "identityCoreProposal": {
+    "provenance.json": {
+      "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/provenance.json",
+      "bytes": 3778,
+      "sha256": "d8711d394708f3234b8a568477295528320d39d638213aa86747f0f749ee2b10"
+    },
+    "candidate.patch": {
+      "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/candidate.patch",
+      "bytes": 8145,
+      "sha256": "a705dd4b30f3c7a47b11bcf2e7ed2893c71a099e45f4b70d0db9add2b72030da"
+    }
+  },
+  "candidatePreparedApplication": {
+    "build": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+      "bytes": 43568,
+      "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+    },
+    "sourceFreeze": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+      "bytes": 19549,
+      "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+    },
+    "seal": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+      "bytes": 9774,
+      "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+    }
+  },
+  "knownOwnerDisciplineFailure": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+    "bytes": 49694,
+    "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+  },
+  "executionPendingOwnerPolicyReview": true,
+  "protected4316": {
+    "pid": 38617,
+    "rootSession": "59708",
+    "processReceipt": {
+      "file": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+      "bytes": 526,
+      "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85"
+    }
+  },
+  "ownerPolicyAmendment": {
+    "moduleSource": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    "moduleStaticFreeze": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+      "bytes": 2410,
+      "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0"
+    },
+    "rootPureTests": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+      "bytes": 511,
+      "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32"
+    },
+    "rootPureTestLog": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
+      "bytes": 3695,
+      "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7"
+    },
+    "copiedModule": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    "beforeOwnerPolicyPreservation": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy-preservation.json",
+      "bytes": 5160,
+      "sha256": "8c3282ec574958687e9c9401a2006c8ed21f66930bd97ca67f25a4b82ecc67ba"
+    },
+    "rootPureFixtureCount": 20,
+    "rootPureASTChecks": 2,
+    "integrationReviewPending": true,
+    "integrationChecksExecuted": false,
+    "rootReviewAndChecksRequiredBeforePreparation": true,
+    "scope": "Exact root-tested pure helper reused unchanged; new V2 caller expired-read handling is source-only pending root review/checks. Parent failed native outcome remains failed.",
+    "priorSealedParentIntegrationChecks": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-integration-checks.json",
+      "bytes": 1043,
+      "sha256": "70a96d2792f74a0ec4af857a563c3cbe3875366018ed6d2fd7e46ef3da363d07"
+    }
+  },
+  "priorIdentityCoreNativeFailure": {
+    "parent": "/private/tmp/tube-leaf-identity-core-native-20261005",
+    "rootToolSession": "47462",
+    "owner": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner.json",
+      "bytes": 57977,
+      "sha256": "ccd0da40b6da29ed5c9a20a388261beb3360f3d267ddbfbe10424c5da67e7e92"
+    },
+    "report": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/candidate-first/report.json",
+      "bytes": 6979,
+      "sha256": "37b85be2db5bdb93f0a7fc11ab890eb134f4c750a0ffeca9eaad00f6045ccb7d"
+    },
+    "rootPostFailurePinsAndClosure": {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-post-failure-pins-and-closure.json",
+      "bytes": 147021,
+      "sha256": "6e9145a968147b850076b4fe3a09579c14fe4e93dd38b2020310e9e4fc68116b"
+    },
+    "firstAttemptRemainsFailed": true,
+    "noVisualResult": true
+  }
+}

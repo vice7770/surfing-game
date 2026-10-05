@@ -1,0 +1,740 @@
+--- a/prepare.py
++++ b/prepare.py
+@@ -6,15 +6,22 @@
+  'src/scene/barrel/SweptBarrelMesh.ts','src/scene/barrel/barrelMaskGlsl.ts','src/scene/barrel/SweptBarrel.ts','src/scene/barrel/barrelWater.ts',
+  'src/wave/barrel/boundedCLeafReach.test.ts','src/wave/barrel/boundedCCapRefinement.test.ts','src/wave/barrel/boundedCConsumers.test.ts')
+ CHANGED=('src/wave/barrel/boundedCProfile.ts','src/wave/barrel/boundedCLeafReach.test.ts')
+-HELPERS=('README.md','inputs.json','prepare.py','run.py','native.mjs','geometry-inspection.mjs','measure.py','recipe-diff.md','recipe.patch','preparation-freeze.json')
++HELPERS=('README.md','inputs.json','prepare.py','run.py','native.mjs','geometry-inspection.mjs','measure.py','recipe-diff.md','recipe.patch','owner-policy-amendment.md','owner-policy-amendment.patch','before-owner-policy-preservation.json','owned_group_anchor.py','preparation-freeze.json')
+ def pin(p):
+  b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ def verify(spec):
+  b=Path(spec['file']).read_bytes();assert len(b)==spec['bytes'] and hashlib.sha256(b).hexdigest()==spec['sha256'],spec['file'];return b
+ assert not any((W/n).exists()for n in('dist','source','build.json','source-freeze.json','seal.json','prepare-result.json','owner.json','candidate-first')),'First-only root preparation'
+ i=json.loads((W/'inputs.json').read_bytes());BUILD_ID=i['applicationBuildId']
++assert i['executionPendingOwnerPolicyReview'] is False and i['ownerPolicyAmendment']['integrationReviewPending'] is False and i['ownerPolicyAmendment']['integrationChecksExecuted'] is True,'Root integration review/checks must be completed and current input/freeze metadata amended before preparation'
+ references=[i['rootCurrentApplicationReceipt'],i['scenePoseReferenceReport'],i['protectedIdentityAuthority'],i['knownOwnerDisciplineFailure']]+list(i['candidatePreparedApplication'].values())+list(i['baselineAuthority'].values())+list(i['identityCoreProposal'].values())+i['authoredAuthority']+i['opticalAuthority']
++references+=[i['ownerPolicyAmendment'][key]for key in('moduleSource','moduleStaticFreeze','rootPureTests','rootPureTestLog','copiedModule','beforeOwnerPolicyPreservation')]+[i['protected4316']['processReceipt']]
+ for spec in references+i['borrowedHelperPins']:verify(spec)
++policy=i['ownerPolicyAmendment'];assert policy['moduleSource']['bytes']==policy['copiedModule']['bytes'] and policy['moduleSource']['sha256']==policy['copiedModule']['sha256']=='f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0'
++module_freeze=json.loads(verify(policy['moduleStaticFreeze']));assert module_freeze['schema']=='owned-group-anchor-proposal-static-freeze/v1' and policy['moduleSource'] in module_freeze['files']
++pure=json.loads(verify(policy['rootPureTests']));assert pure['exitCode']==0 and pure['pythonASTChecks']==2 and pure['verifiedFreezeSHA256']==policy['moduleStaticFreeze']['sha256'] and pure['runtimeOSIdentityClaim'] is False
++assert (pure['logBytes'],pure['logSha256'])==(policy['rootPureTestLog']['bytes'],policy['rootPureTestLog']['sha256'])
++assert i['protectedPorts']==[4312,4313,4314,4315,4316] and i['ownedPorts']==[4301,9711]
+ root=json.loads(verify(i['rootCurrentApplicationReceipt']));assert root['schema']=='root-current-tube-application-build/v1' and root['complete'] and root['buildId']==BUILD_ID and not root['nativeResultClaim']
+ assert root['actualNormalBuild']['exitCode']==0 and root['actualNormalBuild']['BUILD_ID']==BUILD_ID and root['actualNormalBuild']['command']==['npm','run','build']
+ authority=json.loads(verify(root['authority']));references.append(root['authority'])
+@@ -54,7 +61,8 @@
+ for family in ('authoredAuthority','opticalAuthority'):
+  records={Path(spec['file']).name:json.loads(verify(spec))for spec in i[family]}
+  assert records['owner.json']['complete'] and records['owner.json']['exitCode']==0 and records['report.json']['complete'] and records['report.json']['firstFailure']is None
+-closure=json.loads(verify(i['protectedIdentityAuthority']));assert closure['schema']=='shared-leaf-independent-post-failure/v1' and closure['complete'] and closure['protectedPreserved']
++closure=json.loads(verify(i['protectedIdentityAuthority']));assert closure['schema']=='root-five-protected-preview-identities/v1' and closure['complete'] and closure['protectedPorts']==i['protectedPorts'] and closure['noSignalsSent']
++assert {int(port):entry['actualIdentity']['pid']for port,entry in closure['protectedIdentities'].items()}=={4312:92445,4313:58298,4314:51358,4315:87796,4316:38617} and all(entry['actualListenerVerified'] and entry['fullIdentityMatchesPreviousRootAuthority']for entry in closure['protectedIdentities'].values())
+ # Selected geometry/optical sources are exact current root-built bytes. Only scalar bound/test may differ from baseline.
+ root_sources={str(Path(spec['file']).relative_to(R)):spec for spec in root['sourcePins']};assert len(root_sources)==584
+ old_sources={entry['relative']:entry['frozen']for entry in bf['files']};assert set(old_sources)==set(SOURCES)
+--- a/run.py
++++ b/run.py
+@@ -2,8 +2,10 @@
+ from pathlib import Path
+ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+ import hashlib,json,os,signal,socket,subprocess,threading,time
+-W=Path('/private/tmp/tube-leaf-identity-core-native-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
+-EXPECTED_PROTECTED={4312:92445,4313:58298,4314:51358,4315:87796}
++from owned_group_anchor import (Identity,ProtectedIdentity,LaunchFacts,ReadWindow,AnchorRejected,
++ observe_owned_group,authorize_group_signal,validate_protected_snapshot,identity_evidence,observation_record)
++W=Path('/private/tmp/tube-leaf-identity-core-native-20261005');PROTECTED=(4312,4313,4314,4315,4316);OWNED=(4301,9711)
++EXPECTED_PROTECTED={4312:92445,4313:58298,4314:51358,4315:87796,4316:38617}
+ OS_SECONDS=2;IDENTITY_PERIOD=5;REQUIRED_ATTEMPTS=3;NOTE_LIMIT=16;whole_started=time.monotonic()
+ timeout_notes=[];timeout_count=0
+ def verify(spec):
+@@ -33,13 +35,24 @@
+    assert len(fields)==7,'Full PID/start/command required';rows[int(fields[0])]=fields[0]+' '+' '.join(fields[1:6])+' '+fields[6]
+  assert set(rows)==set(allids)
+  return {port:[rows[pid]for pid in ids]for port,ids in pids.items()}
++def protected_snapshot(rows):
++ result={}
++ for port,lines in rows.items():
++  detached=[]
++  for row in lines:
++   fields=row.split(None,6);assert len(fields)==7,'Full protected PID/start/command required'
++   detached.append(ProtectedIdentity(int(fields[0]),' '.join(fields[1:6]),fields[6]))
++  result[int(port)]=tuple(detached)
++ return result
+ def group_identities(pgid,deadline=None):
+  raw=subprocess.check_output(['/bin/ps','-ww','-axo','pid=,pgid=,stat=,lstart=,command='],text=True,timeout=read_timeout(deadline))
+  result={}
+  for row in raw.splitlines():
+   words=row.split(None,8)
+-  if len(words)==9 and int(words[1])==pgid and not words[2].startswith('Z'):
+-   pid=int(words[0]);result[pid]={'pid':pid,'pgid':pgid,'started':' '.join(words[3:8]),'command':words[8]}
++  if len(words)>=3 and int(words[1])==pgid and not words[2].startswith('Z'):
++   assert len(words)==9,'Complete full owned group identity required'
++   pid=int(words[0]);assert pid not in result,'Duplicate owned PID row'
++   result[pid]={'pid':pid,'pgid':pgid,'started':' '.join(words[3:8]),'command':words[8]}
+  return result
+ def note_timeout(phase,error):
+  global timeout_count
+@@ -84,6 +97,7 @@
+   'candidateCountEqualityToPriorRequired':False,'globalC1VisualRideOrQualityAcceptance':False}
+ sealbytes=(W/'seal.json').read_bytes();seal=json.loads(sealbytes);inputs=json.loads((W/'inputs.json').read_bytes())
+ assert seal['schema']=='leaf-identity-core-seal/v1' and seal['rootAuthorized'] and seal['complete']
++assert inputs['executionPendingOwnerPolicyReview'] is False and inputs['ownerPolicyAmendment']['integrationReviewPending'] is False and inputs['ownerPolicyAmendment']['integrationChecksExecuted'] is True,'Root-reviewed and checked owner integration required'
+ build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='leaf-identity-core-build/v1' and build['build']==inputs['applicationBuildId']
+ def check(deadline=None):
+  assert build['sourceFreeze']==seal['sourceFreeze'];f=json.loads(verify(seal['sourceFreeze']));assert f['schema']=='leaf-identity-core-source-freeze/v1' and f['complete'] and f['buildId']==inputs['applicationBuildId']
+@@ -94,30 +108,65 @@
+ check(preflight_deadline);assert not (W/'owner.json').exists() and not (W/'candidate-first').exists() and all(free(port)for port in OWNED)
+ before=required_read(identities,'preflight-protected',preflight_deadline)
+ closure=json.loads(verify(inputs['protectedIdentityAuthority']))
+-for port,pid in EXPECTED_PROTECTED.items():
+- identity=closure['protectedIdentities'][str(port)]['actualIdentity'];assert identity['pid']==pid
+- expected=str(pid)+' '+identity['started']+' '+identity['command']
+- assert expected in before[str(port)],'Protected full PID/start/command required '+str(port)
++assert closure['schema']=='root-five-protected-preview-identities/v1' and closure['complete'] and closure['protectedPorts']==list(PROTECTED)
++protected_reference={int(port):(ProtectedIdentity(**entry['actualIdentity']),)for port,entry in closure['protectedIdentities'].items()}
++assert {port:rows[0].pid for port,rows in protected_reference.items()}==EXPECTED_PROTECTED
++protected_before=protected_snapshot(before)
++validate_protected_snapshot(protected_reference,protected_before)
+ started=time.monotonic();owner_deadline=min(started+inputs['limits']['ownerSeconds'],whole_deadline-inputs['limits']['cleanupSeconds']);server=None;proc=None
+ record={'schema':'leaf-identity-core-owner/v1','complete':False,'firstFailure':None,'protectedBefore':before,
+  'protected4315ExpectedPid':87796,'protected4315RootToolSession':'64713','toolSessionOSIdentityClaim':False,
+  'sealSha256':hashlib.sha256(sealbytes).hexdigest(),'preExecutionPinsVerified':True,'postExecutionPinsVerified':False,'copiedAndSelectedLiveSourcePinsPostVerified':False,'cleanupFailures':[]}
+ record['expectedProtectedPids']=EXPECTED_PROTECTED
++record['protected4316ExpectedPid']=38617;record['protected4316RootToolSession']='59708';record['protectedIdentityAuthority']=inputs['protectedIdentityAuthority']
+ record['baselineAuthority']=inputs['baselineAuthority']
+ record['rootCurrentApplicationReceipt']=inputs['rootCurrentApplicationReceipt']
+ record['osObservationPolicy']=inputs['ownerObservationPolicy']
+ record['absoluteBudget']={'wholeSeconds':inputs['limits']['totalSeconds'],'cleanupReservedSeconds':inputs['limits']['cleanupSeconds'],'activeOwnerBudgetSeconds':owner_deadline-started,'maximumNativeOwnerSeconds':inputs['limits']['ownerSeconds'],'preflightBudgetSeconds':20}
+-known_owned={}
+-def remember_owned(deadline=None):
+- current=group_identities(proc.pid,deadline)
+- if current:
+-  if not known_owned:
+-   assert proc.poll() is None and proc.pid in current and str(W/'native.mjs') in current[proc.pid]['command'],'Fresh leader command identity required'
+-  for pid in current.keys()&known_owned.keys():assert current[pid]==known_owned[pid],'Owned PID identity changed'
+-  # A matching recorded survivor proves that this process group has not been recycled, even after its leader exits.
+-  assert not known_owned or any(current.get(pid)==identity for pid,identity in known_owned.items()),'Owned process group lost its recorded identity'
+-  known_owned.update(current)
+- return current
++# Exact argv is declared before any observed process row; same actual Popen remains the owner.
++native_argv=['/opt/homebrew/bin/node',str(W/'native.mjs'),'--run=true','--url=http://127.0.0.1:4301/?diagnostics','--out='+str(W/'candidate-first')]
++expected_native_command=' '.join(native_argv)
++owned_state=None;latest_observation=None;last_signalled_observation_number=0
++record['exactNativeArgv']=native_argv;record['ownedStartNewSession']=True
++record['ownerAnchorPolicyEvidence']=inputs['ownerPolicyAmendment']
++def remember_owned(deadline,phase='periodic-owned-identity'):
++ global owned_state,latest_observation
++ # Bootstrap live checks bracket this actual bounded read, not a saved/synthetic row.
++ assert proc.args==native_argv,'Same actual Popen and exact launch argv required'
++ live_before=proc.poll() is None;read_started=time.monotonic()
++ current=group_identities(proc.pid,deadline);read_finished=time.monotonic();live_after=proc.poll() is None
++ now=time.monotonic();launch=LaunchFacts(proc.pid,True,expected_native_command,live_before,live_after,OWNED)
++ window=ReadWindow(read_started,read_finished,now,deadline,OS_SECONDS,OS_SECONDS)
++ detached={pid:Identity(**row)for pid,row in current.items()}
++ try:
++  observed=observe_owned_group(owned_state,detached,launch=launch,read=window,protected_reference=protected_reference,protected_current=protected_before if owned_state is None else None)
++ except AnchorRejected as error:
++  # Preserve full offending before/current evidence; never refresh state on failure.
++  record['ownedAnchorFailure']={'phase':phase,'reason':error.reason,'evidence':error.evidence,'readStarted':read_started,'readFinished':read_finished,'liveBeforeRead':live_before,'liveAfterRead':live_after}
++  raise
++ owned_state=observed.state;latest_observation=observed
++ record['ownedAnchorObservation']=observation_record(observed)
++ record['ownedIdentities']=[identity_evidence(row)for row in observed.current_members]
++ if owned_state.observation_number==1:
++  record['initialOwnedReadFacts']={'actualPopenPid':proc.pid,'startNewSession':True,'exactExpectedCommand':expected_native_command,'liveBeforeRead':live_before,'liveAfterRead':live_after,'readStarted':read_started,'readFinished':read_finished}
++ return observed
++
++def signal_fresh_owned(observed,sig,deadline):
++ global last_signalled_observation_number
++ # ONLY the immediately successful required read can authorize this signal.
++ # No periodic/stale observation, timeout fallback or rejected snapshot is reused.
++ assert observed is latest_observation and observed.state is owned_state and observed.state.observation_number==owned_state.observation_number,'Latest accepted owned observation required immediately before signal'
++ try:
++  permission=authorize_group_signal(observed,now=time.monotonic(),deadline=deadline,last_signalled_observation_number=last_signalled_observation_number)
++ except AnchorRejected as error:
++  record['ownedSignalAnchorFailure']={'reason':error.reason,'evidence':error.evidence};raise
++ assert permission['pgid']==proc.pid
++ label='TERM'if sig==signal.SIGTERM else'KILL'
++ record.setdefault('signalAttempts',[]).append({'signal':label,**permission})
++ os.killpg(proc.pid,sig)
++ # Persist consumption only AFTER the actual signal succeeds.
++ last_signalled_observation_number=permission['observationNumber']
++ record.setdefault('signals',[]).append({'signal':label,**permission})
+ class Handler(SimpleHTTPRequestHandler):
+  def __init__(self,*args,**kw):super().__init__(*args,directory=str(W/'dist'),**kw)
+  def log_message(self,*args):pass
+@@ -127,14 +176,15 @@
+  thread=threading.Thread(target=lambda:server.serve_forever(poll_interval=.1),daemon=True);thread.start()
+  env={**os.environ,'LEAF_IDENTITY_CORE_OWNER_SEAL_SHA':record['sealSha256'],'FULL_WRITER_FPS_LAUNCHER_REPORT':str(W/'launcher.json')}
+  with (W/'native.log').open('wb')as log:
+-  proc=subprocess.Popen(['/opt/homebrew/bin/node',str(W/'native.mjs'),'--run=true','--url=http://127.0.0.1:4301/?diagnostics','--out='+str(W/'candidate-first')],stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=env)
++  proc=subprocess.Popen(native_argv,stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=env)
+   record['pid']=proc.pid;record['ownedProcessGroup']=proc.pid;(W/'live.json').write_text(json.dumps(record))
+-  initial_owned=required_read(remember_owned,'initial-owned-leader',min(owner_deadline,time.monotonic()+7));assert proc.pid in initial_owned,'Fresh native leader identity absent'
+-  record['ownedProcessIdentity']=initial_owned[proc.pid];record['ownedIdentities']=list(known_owned.values());last_identity=time.monotonic()
++  initial_owned=required_read(lambda deadline:remember_owned(deadline,'initial-owned-leader'),'initial-owned-leader',min(owner_deadline,time.monotonic()+7))
++  assert initial_owned.anchor_kind=='original-leader/bootstrap' and initial_owned.state.original_leader.pid==proc.pid,'Fresh native leader identity absent'
++  record['ownedProcessIdentity']=identity_evidence(initial_owned.state.original_leader);last_identity=time.monotonic()
+   while proc.poll()is None:
+    if time.monotonic()>=owner_deadline:raise TimeoutError('Finite owner deadline with cleanup reserved')
+    if time.monotonic()-last_identity>=IDENTITY_PERIOD:
+-    try:remember_owned(owner_deadline);record['ownedIdentities']=list(known_owned.values())
++    try:remember_owned(owner_deadline,'periodic-owned-identity')
+     except subprocess.TimeoutExpired as error:note_timeout('periodic-owned-identity',error)
+     # A transient OS observation timeout never closes HTTP, aborts this process, or starts another native handle.
+     last_identity=time.monotonic()
+@@ -150,21 +200,15 @@
+  cleanup=time.monotonic();cleanup_deadline=min(cleanup+inputs['limits']['cleanupSeconds'],whole_deadline)
+  if proc:
+   try:
+-   protected={int(row.split()[0])for group in before.values()for row in group}
+-   owned=required_read(remember_owned,'cleanup-before-TERM',cleanup_deadline)
+-   assert not protected.intersection(owned),'Owned process group intersects protected listener PIDs'
+-   record['ownedMembersBeforeCleanup']=list(owned);record['ownedIdentities']=list(known_owned.values())
+-   if owned:
+-    # The immediately preceding read must carry the original leader or an exact recorded survivor anchor.
+-    record.setdefault('signals',[]).append({'signal':'TERM','verifiedMembers':list(owned),'identityAnchorVerified':True})
+-    os.killpg(proc.pid,signal.SIGTERM);time.sleep(min(.5,max(0,cleanup_deadline-time.monotonic())))
+-    remaining=required_read(remember_owned,'cleanup-before-KILL',cleanup_deadline)
+-    if remaining:
+-     assert not protected.intersection(remaining),'Remaining owned group intersects protected PIDs'
+-     record['signals'].append({'signal':'KILL','verifiedMembers':list(remaining),'identityAnchorVerified':True})
+-     os.killpg(proc.pid,signal.SIGKILL);time.sleep(min(.2,max(0,cleanup_deadline-time.monotonic())))
+-   remaining=required_read(remember_owned,'cleanup-final-group-absence',cleanup_deadline)
+-   record['ownedMembersAfterCleanup']=list(remaining);assert not remaining,'Owned group still present'
++   owned=required_read(lambda deadline:remember_owned(deadline,'cleanup-before-TERM'),'cleanup-before-TERM',cleanup_deadline)
++   record['ownedMembersBeforeCleanup']=[row.pid for row in owned.current_members]
++   if not owned.group_absent:
++    signal_fresh_owned(owned,signal.SIGTERM,cleanup_deadline);time.sleep(min(.5,max(0,cleanup_deadline-time.monotonic())))
++    remaining=required_read(lambda deadline:remember_owned(deadline,'cleanup-before-KILL'),'cleanup-before-KILL',cleanup_deadline)
++    if not remaining.group_absent:
++     signal_fresh_owned(remaining,signal.SIGKILL,cleanup_deadline);time.sleep(min(.2,max(0,cleanup_deadline-time.monotonic())))
++   remaining=required_read(lambda deadline:remember_owned(deadline,'cleanup-final-group-absence'),'cleanup-final-group-absence',cleanup_deadline)
++   record['ownedMembersAfterCleanup']=[row.pid for row in remaining.current_members];assert remaining.group_absent,'Owned group still present'
+    proc.wait(timeout=read_timeout(cleanup_deadline));record['ownedGroupIdentityAndAbsenceVerified']=True
+   except BaseException as error:
+    record['ownedGroupIdentityAndAbsenceVerified']=False
+@@ -175,6 +219,7 @@
+   except BaseException as error:record['cleanupFailures'].append('server: '+type(error).__name__+': '+str(error))
+  try:
+   record['protectedAfter']=required_read(identities,'cleanup-protected',cleanup_deadline)
++  validate_protected_snapshot(protected_reference,protected_snapshot(record['protectedAfter']))
+   record['protectedPreserved']=record['protectedAfter']==before
+  except BaseException as error:record['protectedPreserved']=False;record['cleanupFailures'].append('protected: '+type(error).__name__+': '+str(error))
+  try:record['closedPorts']={str(port):free(port)for port in OWNED}
+--- a/native.mjs
++++ b/native.mjs
+@@ -64,6 +64,6 @@
+  report.restoration=await page.eval('__leafIdentityCore.finish()');assert(report.restoration.complete&&Object.values(report.restoration.guards).every(Boolean));
+  assert.equal(report.pngCount,8);assert.deepEqual(report.browserErrors,[]);report.complete=true;
+ } catch(error) {report.firstFailure=String(error?.stack??error).slice(0,16384);report.complete=false;exitCode=1;}
+-finally {clearTimeout(deadline);if(page)try{await page.close();report.ownedBrowserClose=true;}catch(error){report.ownedBrowserClose=false;report.closeFailure=String(error).slice(0,2048);report.complete=false;exitCode=1;}
+- report.elapsedMilliseconds=performance.now()-started;save();}
++finally {if(page)try{await page.close();report.ownedBrowserClose=true;}catch(error){report.ownedBrowserClose=false;report.closeFailure=String(error).slice(0,2048);report.complete=false;exitCode=1;}
++ report.elapsedMilliseconds=performance.now()-started;save();clearTimeout(deadline);}
+ console.log(JSON.stringify({complete:report.complete,steps:0,pngCount:report.pngCount,firstFailure:report.firstFailure}));process.exitCode=exitCode;
+--- a/inputs.json
++++ b/inputs.json
+@@ -166,7 +166,8 @@
+     4312,
+     4313,
+     4314,
+-    4315
++    4315,
++    4316
+   ],
+   "protected4315": {
+     "pid": 87796,
+@@ -293,7 +294,8 @@
+     "requiredReadAttempts": 3,
+     "periodicTimeoutOutcome": "Observation only; same native process and HTTP server continue, retry at next scheduled poll.",
+     "requiredIdentityOutcome": "Initial/preflight/cleanup identity reads must succeed; no signal against an unverified group.",
+-    "knownUnadoptedChildArgvLimitation": "Inherited owner still rejects any recurring child PID/start/command change. Ordinary V4 actually failed this assertion at browser startup without an offending row record. No precise cause or safe replacement is accepted by this recipe; root must review the separate anchor proposal before execution."
++    "anchorPolicy": "Exact live unreaped actual Popen leader bootstrap; immutable original leader if present, otherwise exact member from immediately previous accepted read before updates. Child changes recorded after anchor acceptance.",
++    "signalPolicy": "New successful required read immediately before each TERM/KILL; observation is latest accepted state, no fallback after timeout/rejection, consume returned observation counter only after actual signal."
+   },
+   "rootCurrentApplicationReceipt": {
+     "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+@@ -343,9 +345,9 @@
+     "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+   },
+   "protectedIdentityAuthority": {
+-    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+-    "bytes": 25763,
+-    "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
++    "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
++    "bytes": 2735,
++    "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+   },
+   "identityCoreProposal": {
+     "provenance.json": {
+@@ -381,5 +383,52 @@
+     "bytes": 49694,
+     "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+   },
+-  "executionPendingOwnerPolicyReview": true
++  "executionPendingOwnerPolicyReview": true,
++  "protected4316": {
++    "pid": 38617,
++    "rootSession": "59708",
++    "processReceipt": {
++      "file": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
++      "bytes": 526,
++      "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85"
++    }
++  },
++  "ownerPolicyAmendment": {
++    "moduleSource": {
++      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
++      "bytes": 15501,
++      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
++    },
++    "moduleStaticFreeze": {
++      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
++      "bytes": 2410,
++      "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0"
++    },
++    "rootPureTests": {
++      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
++      "bytes": 511,
++      "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32"
++    },
++    "rootPureTestLog": {
++      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
++      "bytes": 3695,
++      "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7"
++    },
++    "copiedModule": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owned_group_anchor.py",
++      "bytes": 15501,
++      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
++    },
++    "beforeOwnerPolicyPreservation": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy-preservation.json",
++      "bytes": 5160,
++      "sha256": "8c3282ec574958687e9c9401a2006c8ed21f66930bd97ca67f25a4b82ecc67ba"
++    },
++    "rootPureFixtureCount": 20,
++    "rootPureASTChecks": 2,
++    "integrationReviewPending": true,
++    "integrationChecksExecuted": false,
++    "rootReviewAndChecksRequiredBeforePreparation": true,
++    "scope": "Root-tested pure helper copied exactly; integration is source-only and has no actual OS/native evidence. Original ordinary V4 failure cause remains unproved."
++  }
+ }
+--- a/README.md
++++ b/README.md
+@@ -16,10 +16,18 @@
+ 
+ The scalar identity-core bound is C1 in requested delta at fixed positive budget. Raw `.98*W`, height-dependent thickness, tangent and budget branches, and the falling curve still prevent a global C1 trajectory guarantee. Native shape, reference resemblance, complete-body clearance, ordinary ridden entry/travel/exit and FPS acceptance all remain open.
+ 
+-## Root-only execution and owner limitation
++## Root-only execution and owner-policy amendment
+ 
+-The intended root sequence is source review → approved owner-policy follow-up if needed → bounded syntax checks → `prepare.py` → inspect new direct freeze/build/seal → `run.py` → inspect complete owner/report/PNGs → `measure.py`. This recipe has no outcome files, copied runtime or assets yet.
++The intended root sequence is integration source review → bounded syntax/integration checks → truthfully update pending-review/check flags and freeze → `prepare.py` → inspect new direct freeze/build/seal → `run.py` → inspect complete owner/report/PNGs → `measure.py`. Both preparer and owner refuse while `executionPendingOwnerPolicyReview` or `integrationReviewPending` remains true, or `integrationChecksExecuted` remains false. Those source-only flags are still pending here. No preparation/build/seal/native outputs exist for this recipe.
+ 
+-**Do not execute this frozen owner before the separate owner-policy review.** The owner retains the successful shared-leaf V2 discipline, including an assertion that every recurring owned child PID/start/full command remains unchanged. Ordinary V4 actually failed that assertion during browser startup after16.97s, before its first step/image; no offending row was recorded, so the precise cause is unproved. Its independent post-failure root receipt is referenced only as failure/closure evidence, not as an ordinary ride or comparison success. Root is reviewing a separate immutable-leader/recorded-survivor anchor proposal; it is not adopted here.
++The exact before-amendment ten source/freeze files are preserved under `before-owner-policy/`. `before-owner-policy-preservation.json` maps every original pin to its byte-exact preserved copy. The old freeze retains its original bytes and original-path metadata; those original paths now receive this unprepared amendment, so the preserved copies are the authority for its earlier contents. `owner-policy-amendment.patch` is the narrow delta from that preserved draft. Geometry observer and saved-word analysis bytes are unchanged.
+ 
+-The unchanged bounds are 680s absolute total including at most20s cleanup, native635s, active owner648s with cleanup reserved, preflight at most20s, OS reads at most2s and at most3 required attempts, periodic identity observations every5s and16 capped timeout notes. Periodic OS timeouts are observational and do not restart/abort the browser or close HTTP. Preflight/protected/cleanup reads remain required. Fresh leader or exact previously observed survivor identity must be verified before signals. Protected listener PID/start/exact full commands on4312–4315 must match the separate actual root closure authority and remain unchanged;4301/9711 are the only owned ports. The old closure receipt proves an earlier attempt's cleanup, not this new recipe's execution.
++Root's independent pure-helper checks and 20 synthetic fixtures actually passed; direct `root-tests.json` and its 3695-byte log are pinned separately from the original source-only module freeze. The exact copied `owned_group_anchor.py` is SHA256 `f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0`. The old source-only freeze's unexecuted flags describe its original preparation time; they are not overwritten as runtime evidence. Pure tests establish no real OS/process identity and are not an integration/native success.
++
++The owner declares the exact native argv before observing any process row and retains the same actual `Popen(..., start_new_session=True)` object. Its initial actual bounded group read is bracketed by live `proc.poll()` checks. Measured read windows go to the pure helper. Original leader identity remains immutable; after leader exit, an exact member from the immediately previous accepted read must match before current child snapshots are accepted. Anchored child changes retain up to 16 full before/current notes plus total counts. Anchor failures retain structured reason/evidence without first refreshing the previous state.
++
++Every TERM or KILL takes a **new immediately successful required group read**. There is no fallback to a periodic, timed-out or rejected read. The integration explicitly asserts the returned observation is the latest accepted observation and its state is the latest accepted owned state before calling final freshness authorization; this closes the pure API's stale-but-young observation limitation. The signal counter is consumed only after the actual signal succeeds. Empty groups receive no signal. Failed anchors receive no signal. The native635s timer remains active through `page.close()` and final report saving and is cleared afterward.
++
++Ordinary V4 actually failed the old all-recurring-child identity assertion during browser startup after16.97s, before a step/image. No offending row was recorded, so its precise cause remains unproved. Its independent post-failure receipt is reference evidence only. The root-reviewed pure policy changes future identity handling without relabeling that attempt as benign or successful.
++
++The unchanged bounds are 680s absolute total including at most20s cleanup, native635s, active owner648s with cleanup reserved, preflight at most20s, OS reads at most2s and at most3 required attempts, periodic identity observations every5s and16 capped timeout notes. Periodic OS timeouts remain observational and do not restart/abort the browser or close HTTP. Preflight/protected/cleanup reads remain required. Protected listener PID/start/exact full commands on **4312–4316** must match the freshly verified `root-five-protected-preview-identities/v1` authority SHA256 `b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28` and remain unchanged. Port4316 is the immutable human preview PID38617, session59708; it must never be stopped, reloaded or replaced. Only 4301 and 9711 are owned. No new listener/OS/process observation was made by this amendment.
+--- a/recipe-diff.md
++++ b/recipe-diff.md
+@@ -9,3 +9,7 @@
+ - `run.py`: fresh schemas/path/authority and selected-live source qualification; extra prior ordinary draw-input gate. Owner OS/deadline/process identity discipline unchanged and explicitly pending separate review.
+ - `measure.py`: new terminal schemas/path, pre-identity baseline label, world-X75.625 distinction and inherited independent indexed cap/spacing/raw retention analysis.
+ - `README.md`: source-only scope, actual baseline/current authority, owner risk, bounds and limitations. Preparation freeze and diff are metadata only; no old outcome is relabeled as a new run.
++
++## Subsequent owner-policy amendment
++
++`before-owner-policy/` preserves the exact initial frozen recipe. The later narrow diff is `owner-policy-amendment.patch`: exact root-tested pure helper, fresh leader/survivor integration with latest-state signal guard and full evidence, protected4316, native-close timer ordering, truthful pending-review/check gates and direct pure-test/five-port pins. Geometry-inspection.mjs and measure.py remain byte-identical to the initial draft; the planned observation criteria are unchanged.
+diff --git a/owner-policy-amendment.md b/owner-policy-amendment.md
+new file mode 100644
+--- /dev/null
++++ b/owner-policy-amendment.md
+@@ -0,0 +1,15 @@
++# Narrow source-only owner-policy amendment
++
++Root authorized preparation of this unexecuted amendment after its pure module hash/freeze checks, two Python AST checks and 20 synthetic tests passed. Root's independent final pure review found no module change needed, provided integration enforces the latest accepted observation guard. Root integration source/check approval remains pending; preparer/owner flags still refuse execution. No checks, imports, preparation, native, Git or OS/port operations were performed by this worker.
++
++Changes from the preserved pre-owner-policy recipe are confined to owner handling, five protected previews, the native-close deadline and provenance/readiness metadata:
++
++- Copy exact `owned_group_anchor.py` f79e without editing its arithmetic, caps or API.
++- Bind actual predeclared full `Popen` argv, `start_new_session=True`, same `proc.args` and real live-before/live-after initial read facts; measure actual read windows with unchanged 2s limit.
++- Accept child snapshots only after immutable leader or prior-survivor anchoring. Keep latest successful state,16 bounded change notes and full structured mismatch evidence.
++- Obtain a NEW required read immediately before each TERM/KILL; explicitly check returned observation/latest accepted state identity, then authorize freshness/protected scope. No fallback after timeout/rejection; consume observation counter only after actual signal.
++- Convert fresh root authority's five string port keys to integer keys with full `ProtectedIdentity` values. Fresh preflight and final snapshots must exactly match all five PID/start/full-command identities; protect new 4316 listener PID38617 alongside 4312–4315. Owned ports remain 4301/9711.
++- Keep native635/owner648/whole680/cleanup20/OS2/poll5/timeouts unchanged. Move native `clearTimeout` after awaited browser close and final save.
++- Bind exact pure source/static-freeze/actual root test receipt/log and before-draft preservation. Refuse preparation/run until root truthfully resolves pending integration-review/check flags and refreshes preparation freeze.
++
++No comparison geometry, source budget, epoch, camera, shader, material, mask, image names/order, restored repeat, actor, actual query/surface, measurement or acceptance criteria are changed. The source-only root-test references are independent of this not-yet-run integration. Original ordinaryV4 failure remains failed with exact cause unproved.
+diff --git a/owned_group_anchor.py b/owned_group_anchor.py
+new file mode 100644
+--- /dev/null
++++ b/owned_group_anchor.py
+@@ -0,0 +1,354 @@
++"""SOURCE-ONLY proposal. Pure identity validation; no OS access or signals.
++
++Inputs must come from the real finite owner and fresh bounded OS reads. Synthetic
++fixtures do not establish any identity of an actual running process.
++"""
++from __future__ import annotations
++from dataclasses import dataclass
++import math
++from typing import Mapping
++
++PROTECTED_PORTS = (4312, 4313, 4314, 4315, 4316)
++OWNED_PORTS = (4301, 9711)
++NOTE_LIMIT = 16
++# Explicit fail-closed proposal caps; never truncate identity strings or rows.
++MAX_MEMBERS = 256
++MAX_COMMAND_CHARS = 65536
++MAX_STARTED_CHARS = 256
++
++
++class AnchorRejected(ValueError):
++    def __init__(self, reason, evidence):
++        self.reason = reason
++        self.evidence = evidence
++        super().__init__(reason)
++
++
++@dataclass(frozen=True)
++class Identity:
++    pid: int
++    pgid: int
++    started: str
++    command: str
++
++
++@dataclass(frozen=True)
++class ProtectedIdentity:
++    pid: int
++    started: str
++    command: str
++
++
++@dataclass(frozen=True)
++class LaunchFacts:
++    """Facts from the actual unreaped Popen object and exact launch invocation.
++
++    alive_before_read/after_read mean proc.poll() is None at those checkpoints.
++    expected_command is the predeclared FULL ps command string for the exact
++    argv, not a substring inferred from whichever row happens to be observed.
++    """
++    popen_pid: int
++    start_new_session: bool
++    expected_command: str
++    alive_before_read: bool
++    alive_after_read: bool
++    owned_ports: tuple = OWNED_PORTS
++
++
++@dataclass(frozen=True)
++class ReadWindow:
++    started: float
++    finished: float
++    now: float
++    deadline: float
++    os_seconds: float = 2.0
++    maximum_age_seconds: float = 2.0
++
++
++@dataclass(frozen=True)
++class Change:
++    kind: str
++    pid: int
++    before: Identity | None
++    current: Identity | None
++
++
++@dataclass(frozen=True)
++class OwnedState:
++    original_leader: Identity
++    # ONLY the most recent successful current read. Exited members do not remain
++    # eligible to anchor a later group. The original leader is separately kept.
++    members: tuple
++    protected_reference: tuple
++    observation_number: int
++    last_read_started: float
++    last_read_finished: float
++    change_count: int = 0
++    change_notes: tuple = ()
++    group_absent: bool = False
++
++
++@dataclass(frozen=True)
++class Observation:
++    state: OwnedState
++    anchor_kind: str
++    anchor_identity: Identity | None
++    current_members: tuple
++    read_started: float
++    read_finished: float
++    checked_at: float
++    deadline: float
++    maximum_age_seconds: float
++
++    @property
++    def group_absent(self):
++        return not self.current_members
++
++
++def identity_evidence(value):
++    if value is None:
++        return None
++    out = {'pid': value.pid, 'started': value.started, 'command': value.command}
++    if isinstance(value, Identity):
++        out['pgid'] = value.pgid
++    return out
++
++
++def state_evidence(state):
++    if state is None:
++        return None
++    return {
++        'originalLeader': identity_evidence(state.original_leader),
++        'previousMembers': [identity_evidence(row) for row in state.members],
++        'observationNumber': state.observation_number,
++        'previousGroupAbsent': state.group_absent,
++        'previousReadStarted': state.last_read_started,
++        'previousReadFinished': state.last_read_finished,
++    }
++
++
++def _reject(reason, previous, current, **extra):
++    # Rows are detached immutable values. Full before/current PID/start/command
++    # evidence is retained, including the offending leader if one is present.
++    raise AnchorRejected(reason, {
++        'previous': state_evidence(previous),
++        'currentMembers': [identity_evidence(row) for row in current],
++        **extra,
++    })
++
++
++def _identity_valid(row, protected=False):
++    wanted = ProtectedIdentity if protected else Identity
++    return (isinstance(row, wanted)
++        and type(row.pid) is int and row.pid > 0
++        and (protected or (type(row.pgid) is int and row.pgid > 0))
++        and isinstance(row.started, str) and 0 < len(row.started) <= MAX_STARTED_CHARS
++        and isinstance(row.command, str) and 0 < len(row.command) <= MAX_COMMAND_CHARS)
++
++
++def _protected(snapshot):
++    if not isinstance(snapshot, Mapping) or set(snapshot) != set(PROTECTED_PORTS):
++        raise AnchorRejected('protected_port_set_differs', {'expectedPorts': list(PROTECTED_PORTS)})
++    result = []
++    for port in PROTECTED_PORTS:
++        rows = tuple(snapshot[port])
++        if (not rows or len(rows) > MAX_MEMBERS
++            or any(not _identity_valid(row, protected=True) for row in rows)
++            or len({row.pid for row in rows}) != len(rows)):
++            raise AnchorRejected('protected_full_identity_required', {'port': port})
++        result.append((port, tuple(sorted(rows, key=lambda row: row.pid))))
++    return tuple(result)
++
++
++def validate_protected_snapshot(reference, observed):
++    """Retain the full port/PID/start/command check; returns detached reference.
++
++    Required at bootstrap against the pinned root authority and again after
++    cleanup, as in the existing finite owner. This helper itself performs no read.
++    """
++    before, now = _protected(reference), _protected(observed)
++    if before != now:
++        raise AnchorRejected('protected_identity_changed', {
++            'before': {port: [identity_evidence(row) for row in rows] for port, rows in before},
++            'current': {port: [identity_evidence(row) for row in rows] for port, rows in now},
++        })
++    return before
++
++
++def _fresh(read, previous, current):
++    values = (read.started, read.finished, read.now, read.deadline,
++        read.os_seconds, read.maximum_age_seconds)
++    if not all(type(value) in (int, float) and math.isfinite(value) for value in values):
++        _reject('finite_read_window_required', previous, current)
++    if (read.os_seconds <= 0 or read.os_seconds > 2
++        or read.maximum_age_seconds <= 0 or read.maximum_age_seconds > 2
++        or not read.started <= read.finished <= read.now < read.deadline
++        or read.finished - read.started > read.os_seconds
++        or read.now - read.finished > read.maximum_age_seconds):
++        _reject('fresh_bounded_read_required', previous, current,
++            readWindow={key: getattr(read, key) for key in ReadWindow.__dataclass_fields__})
++
++
++def observe_owned_group(previous, current, *, launch, read,
++        protected_reference, protected_current=None):
++    """Validate a fresh group anchor BEFORE accepting updated child snapshots.
++
++    current is the COMPLETE non-zombie group read for actual Popen pid=pgid.
++    Bootstrap additionally requires live-before/live-after real Popen facts and
++    exact expected full command. Once initialized, the original leader is
++    immutable. If present, its mismatch fails even if another member matches.
++    If absent, one member from the immediately previous successful observation
++    must match exactly BEFORE current replaces those snapshots.
++
++    No process/clock/port reads, launches, sleeps, retries, mutation or signals.
++    """
++    if not isinstance(current, Mapping) or len(current) > MAX_MEMBERS:
++        raise AnchorRejected('complete_bounded_group_required', {'maximumMembers': MAX_MEMBERS})
++    unsorted_rows = tuple(current.values())
++    if (any(not _identity_valid(row) for row in unsorted_rows)
++        or any(type(pid) is not int or pid != row.pid for pid, row in current.items())):
++        raise AnchorRejected('full_group_identity_required', {})
++    rows = tuple(current[pid] for pid in sorted(current))
++    _fresh(read, previous, rows)
++    if previous is not None and (read.started < previous.last_read_finished
++        or read.finished <= previous.last_read_finished):
++        _reject('new_nonoverlapping_read_required', previous, rows,
++            readStarted=read.started, readFinished=read.finished)
++    if (type(launch.popen_pid) is not int or launch.popen_pid <= 0
++        or launch.start_new_session is not True or launch.owned_ports != OWNED_PORTS
++        or not isinstance(launch.expected_command, str)
++        or not 0 < len(launch.expected_command) <= MAX_COMMAND_CHARS):
++        _reject('exact_actual_launch_contract_required', previous, rows)
++    if any(row.pgid != launch.popen_pid for row in rows):
++        _reject('current_row_outside_owned_group', previous, rows,
++            expectedPgid=launch.popen_pid)
++    protected = _protected(protected_reference)
++    if protected_current is not None:
++        protected = validate_protected_snapshot(protected_reference, protected_current)
++    protected_pids = {row.pid for _, members in protected for row in members}
++    overlap = sorted(protected_pids.intersection(current))
++    if overlap:
++        _reject('owned_group_intersects_protected_pids', previous, rows,
++            protectedPids=overlap)
++
++    if previous is None:
++        if protected_current is None:
++            _reject('bootstrap_full_protected_check_required', previous, rows)
++        leader = current.get(launch.popen_pid)
++        if (launch.alive_before_read is not True or launch.alive_after_read is not True
++            or leader is None or leader.command != launch.expected_command):
++            _reject('bootstrap_exact_live_popen_leader_required', previous, rows,
++                expectedLeader={'pid': launch.popen_pid, 'pgid': launch.popen_pid,
++                    'command': launch.expected_command},
++                actualLeader=identity_evidence(leader),
++                liveBeforeRead=launch.alive_before_read, liveAfterRead=launch.alive_after_read)
++        state = OwnedState(leader, rows, protected, 1, read.started, read.finished)
++        return Observation(state, 'original-leader/bootstrap', leader, rows,
++            read.started, read.finished, read.now, read.deadline, read.maximum_age_seconds)
++
++    if (previous.original_leader.pid != launch.popen_pid
++        or previous.original_leader.pgid != launch.popen_pid
++        or previous.original_leader.command != launch.expected_command
++        or previous.protected_reference != protected):
++        _reject('owner_launch_or_protected_reference_changed', previous, rows,
++            actualLaunch={'pid': launch.popen_pid, 'command': launch.expected_command})
++    if previous.group_absent and rows:
++        _reject('owned_group_reappeared_after_verified_absence', previous, rows)
++
++    if not rows:
++        state = OwnedState(previous.original_leader, (), protected,
++            previous.observation_number + 1, read.started, read.finished, previous.change_count,
++            previous.change_notes, True)
++        return Observation(state, 'absent/non-signallable', None, (),
++            read.started, read.finished, read.now, read.deadline, read.maximum_age_seconds)
++
++    leader = current.get(launch.popen_pid)
++    if leader is not None:
++        if leader != previous.original_leader:
++            _reject('original_leader_identity_changed', previous, rows,
++                originalLeader=identity_evidence(previous.original_leader),
++                currentLeader=identity_evidence(leader))
++        anchor, kind = leader, 'original-leader/exact'
++    else:
++        # Critical order: use ONLY previous snapshots. Never update first.
++        matches = [row for row in previous.members if current.get(row.pid) == row]
++        if not matches:
++            _reject('no_exact_previously_observed_survivor', previous, rows)
++        anchor, kind = min(matches, key=lambda row: row.pid), 'previous-survivor/exact'
++
++    before = {row.pid: row for row in previous.members}
++    notes = list(previous.change_notes)
++    change_count = previous.change_count
++    for pid in sorted(set(before).union(current)):
++        if pid == previous.original_leader.pid:
++            continue
++        old, new = before.get(pid), current.get(pid)
++        if old != new:
++            change_count += 1
++            if len(notes) < NOTE_LIMIT:
++                notes.append(Change('added' if old is None else 'removed' if new is None else 'changed',
++                    pid, old, new))
++    state = OwnedState(previous.original_leader, rows, protected,
++        previous.observation_number + 1, read.started, read.finished, change_count, tuple(notes), False)
++    return Observation(state, kind, anchor, rows,
++        read.started, read.finished, read.now, read.deadline, read.maximum_age_seconds)
++
++
++def authorize_group_signal(observation, *, now, deadline, last_signalled_observation_number):
++    """Pure final freshness check immediately before caller's group signal.
++
++    Caller MUST supply a new group read/observation for EACH TERM or KILL. No
++    cached periodic observation or prior TERM observation may authorize KILL.
++    Caller must persist the returned observation number after each actual signal.
++    This function cannot prove the origin of caller-supplied OS/Popen facts.
++    """
++    if (observation.group_absent or observation.anchor_identity is None
++        or observation.anchor_kind == 'absent/non-signallable'):
++        raise AnchorRejected('absent_group_cannot_authorize_signal', {})
++    if (type(last_signalled_observation_number) is not int
++        or last_signalled_observation_number < 0
++        or observation.state.observation_number <= last_signalled_observation_number):
++        raise AnchorRejected('new_observation_required_for_each_signal', {
++            'observationNumber': observation.state.observation_number,
++            'lastSignalledObservationNumber': last_signalled_observation_number,
++        })
++    if (type(now) not in (int, float) or not math.isfinite(now)
++        or type(deadline) not in (int, float) or not math.isfinite(deadline)
++        or not observation.checked_at <= now < min(deadline, observation.deadline)
++        or now - observation.read_finished > observation.maximum_age_seconds):
++        raise AnchorRejected('fresh_anchor_required_before_signal', {
++            'anchor': identity_evidence(observation.anchor_identity),
++            'readFinished': observation.read_finished, 'signalCheckNow': now,
++            'observationDeadline': observation.deadline, 'signalDeadline': deadline,
++        })
++    return {
++        'pgid': observation.state.original_leader.pgid,
++        'anchorKind': observation.anchor_kind,
++        'anchorIdentity': identity_evidence(observation.anchor_identity),
++        'observationNumber': observation.state.observation_number,
++        'readStarted': observation.read_started,
++        'readFinished': observation.read_finished,
++        'checkedAt': now,
++        'verifiedMembers': [identity_evidence(row) for row in observation.current_members],
++    }
++
++
++def observation_record(observation):
++    """Detached JSON-compatible scalar/identity telemetry; maximum16notes."""
++    state = observation.state
++    return {
++        'originalLeader': identity_evidence(state.original_leader),
++        'anchorKind': observation.anchor_kind,
++        'anchorIdentity': identity_evidence(observation.anchor_identity),
++        'currentIdentities': [identity_evidence(row) for row in observation.current_members],
++        'groupAbsent': observation.group_absent,
++        'observationNumber': state.observation_number,
++        'readStarted': observation.read_started,
++        'readFinished': observation.read_finished,
++        'checkedAt': observation.checked_at,
++        'childChangeCount': state.change_count,
++        'childChangeNotes': [{'kind': note.kind, 'pid': note.pid,
++            'before': identity_evidence(note.before), 'current': identity_evidence(note.current)}
++            for note in state.change_notes],
++        'childChangeNotesTruncated': state.change_count > len(state.change_notes),
++    }

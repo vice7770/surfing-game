@@ -1,0 +1,24 @@
+{
+  "schema": "grey-band-ownership-preparation/v5",
+  "complete": true,
+  "seal": {
+    "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/seal.json",
+    "bytes": 45725,
+    "sha256": "eaf91632ab9e2b9c3b6fd8b8fcf04b5449c8a9e5b72a3d89a69b8226ea2da07b"
+  },
+  "build": {
+    "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/build.json",
+    "bytes": 38453,
+    "sha256": "930c150bd496826b3b0429adb09dd4980f97ba56f76e8dafefd5adb3241e1440"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedChecksOrBuilds": false,
+  "liveSourcesWrittenOrFrozen": false,
+  "sourceProvenance": {
+    "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/source-provenance.json",
+    "bytes": 86054,
+    "sha256": "52480f9e4e7511fa835c791a67ed7d4fa0ffa306974bd5f25a7ec10a93156b6f"
+  },
+  "historicalSourceRecovery": "Committed repository sources recovered with bounded read-only git show and existing receipt hashes; declared untracked repository dependencies and outside-repository diagnostic sources copied from their exact compiled-source receipts. No build/current source freeze."
+}

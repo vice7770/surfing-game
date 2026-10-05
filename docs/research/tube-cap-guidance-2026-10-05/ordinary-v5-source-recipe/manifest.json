@@ -1,0 +1,859 @@
+{
+  "schema": "tube-source-only-recipe-archive/v1",
+  "archive": "ordinary-v5-source-recipe",
+  "originalScratch": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005",
+  "status": {
+    "rootSourceChecks": {
+      "verifiedUniquePins": 75,
+      "pythonASTChecks": 3,
+      "javascriptSyntaxChecks": 6,
+      "complete": true
+    },
+    "prepareExecuted": false,
+    "nativeExecuted": false,
+    "osIdentityClaim": false,
+    "earlierDraftPendingFlagsPreserved": true
+  },
+  "productionAdoptedByThisArchive": false,
+  "numericalOrRuntimeRerunByThisArchive": false,
+  "payloads": [
+    {
+      "logical": "README.md",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/README.md",
+      "bytes": 7779,
+      "sha256": "44e310c9101262c42384250caa119139c7557a3a704e278b06da0dc15f4cf22b",
+      "storage": {
+        "kind": "copy",
+        "path": "README-original.md"
+      }
+    },
+    {
+      "logical": "before-source-mapping.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-source-mapping.json",
+      "bytes": 10639,
+      "sha256": "9b3aef3606f2fd976c45c3d9378d20bb6bb90ec4d7a6066c6d618c60c722ab86",
+      "storage": {
+        "kind": "copy",
+        "path": "before-source-mapping.json"
+      }
+    },
+    {
+      "logical": "before-v4/README.md",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/README.md",
+      "bytes": 7189,
+      "sha256": "202883f6092ea5ad50d0af710b4e72a6bd4d98bca26bc6923407b2070f850743",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/README.md"
+      }
+    },
+    {
+      "logical": "before-v4/body-mesh.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/body-mesh.mjs"
+      }
+    },
+    {
+      "logical": "before-v4/build.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/build.json",
+      "bytes": 43568,
+      "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/build.json"
+      }
+    },
+    {
+      "logical": "before-v4/control-policy.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/control-policy.mjs"
+      }
+    },
+    {
+      "logical": "before-v4/criteria.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/criteria.mjs"
+      }
+    },
+    {
+      "logical": "before-v4/diagnostic-build.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/diagnostic-build.json",
+      "bytes": 16809,
+      "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/diagnostic-build.json"
+      }
+    },
+    {
+      "logical": "before-v4/inputs.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/inputs.json",
+      "bytes": 7221,
+      "sha256": "2fe31ab0315ec5bd0faeb907588c6a9f773b194d07d257c21a1ecd3f08a215ea",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/inputs.json"
+      }
+    },
+    {
+      "logical": "before-v4/loft-snapshot-tools.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/loft-snapshot-tools.mjs"
+      }
+    },
+    {
+      "logical": "before-v4/native.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/native.mjs",
+      "bytes": 16577,
+      "sha256": "0011a0e8aa896491b40571b838768e8661cf89b512bb1677c47e32b223ab3d7c",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/native.mjs"
+      }
+    },
+    {
+      "logical": "before-v4/prepare.py",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/prepare.py",
+      "bytes": 5419,
+      "sha256": "f4c8625467146a3af29deb4a879d30242646944dcaf85b7ba4e36ed7fc5b4fb0",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/prepare.py"
+      }
+    },
+    {
+      "logical": "before-v4/recipe-source-freeze.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/recipe-source-freeze.json",
+      "bytes": 15835,
+      "sha256": "1d8938ca9fbf6c042ef21cf7c65cf5e82b4efd4330c75988ed2f1edaaa818321",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/recipe-source-freeze.json"
+      }
+    },
+    {
+      "logical": "before-v4/recipe.patch",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/recipe.patch",
+      "bytes": 132974,
+      "sha256": "1513b9a3f8b67d5f32b1d7d41fb1d3f85926274ca1d1a2fea1bc32aceec4360b",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/recipe.patch"
+      }
+    },
+    {
+      "logical": "before-v4/rider-driver.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/rider-driver.mjs",
+      "bytes": 14485,
+      "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/rider-driver.mjs"
+      }
+    },
+    {
+      "logical": "before-v4/root-build-authority.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/root-build-authority.json",
+      "bytes": 11447,
+      "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/root-build-authority.json"
+      }
+    },
+    {
+      "logical": "before-v4/root-current-application-receipt.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/root-current-application-receipt.json",
+      "bytes": 132778,
+      "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257",
+      "storage": {
+        "kind": "reuse",
+        "path": "../passive-guide-and-leaf-verification/fresh-build/root-current-application-receipt.json"
+      }
+    },
+    {
+      "logical": "before-v4/run.py",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/run.py",
+      "bytes": 25010,
+      "sha256": "9f46679cd446b85d50115d7e59dbe320fb9db7012cc38eea8d2bb6b903170e71",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/run.py"
+      }
+    },
+    {
+      "logical": "before-v4/seal.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/seal.json",
+      "bytes": 9774,
+      "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/seal.json"
+      }
+    },
+    {
+      "logical": "before-v4/source-freeze.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/source-freeze.json",
+      "bytes": 19549,
+      "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/source-freeze.json"
+      }
+    },
+    {
+      "logical": "before-v4/source-only-origin.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/source-only-origin.json",
+      "bytes": 10000,
+      "sha256": "e8212221a8a1bbd090b7341979cca4629376e4096e2579fff5a982f431af2d7a",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/source-only-origin.json"
+      }
+    },
+    {
+      "logical": "body-mesh.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/body-mesh.mjs"
+      }
+    },
+    {
+      "logical": "control-policy.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/control-policy.mjs"
+      }
+    },
+    {
+      "logical": "criteria.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/criteria.mjs"
+      }
+    },
+    {
+      "logical": "driver-diff.md",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/driver-diff.md",
+      "bytes": 2661,
+      "sha256": "c556c3032bd74b82f3acd75e687307fb2c52a413d820f92faa1e3cf98c07786f",
+      "storage": {
+        "kind": "copy",
+        "path": "driver-diff.md"
+      }
+    },
+    {
+      "logical": "inputs.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/inputs.json",
+      "bytes": 14751,
+      "sha256": "d27017bccf3d2a5ba2ca8fd196c7f2476956634bd5a47a3a9a200df27505a42f",
+      "storage": {
+        "kind": "copy",
+        "path": "inputs.json"
+      }
+    },
+    {
+      "logical": "loft-snapshot-tools.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/loft-snapshot-tools.mjs"
+      }
+    },
+    {
+      "logical": "native.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+      "bytes": 16930,
+      "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1",
+      "storage": {
+        "kind": "copy",
+        "path": "native.mjs"
+      }
+    },
+    {
+      "logical": "owned_group_anchor.py",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0",
+      "storage": {
+        "kind": "reuse",
+        "path": "../owner-anchor-verification/owned_group_anchor.py"
+      }
+    },
+    {
+      "logical": "prepare.py",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/prepare.py",
+      "bytes": 12581,
+      "sha256": "20efe1f3e1aa5fa8f8ddf8933daab8bba766204e19f197d3868c24ab686c3eae",
+      "storage": {
+        "kind": "copy",
+        "path": "prepare.py"
+      }
+    },
+    {
+      "logical": "readiness.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/readiness.json",
+      "bytes": 4166,
+      "sha256": "561b7f33069a0c56d58d0ca2876c1a57a54c98b6913b3195c7ab886ee224fd3d",
+      "storage": {
+        "kind": "copy",
+        "path": "readiness.json"
+      }
+    },
+    {
+      "logical": "recipe-source-freeze.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/recipe-source-freeze.json",
+      "bytes": 7045,
+      "sha256": "94c4488be7df2c6bcb39b7782462cf31b73a2987ffcfd9b735555481f03b17b1",
+      "storage": {
+        "kind": "copy",
+        "path": "recipe-source-freeze.json"
+      }
+    },
+    {
+      "logical": "recipe.patch",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/recipe.patch",
+      "bytes": 104076,
+      "sha256": "5759f93c78814601e6c4d54476a50a61cdbcfe2f0dc0ef4a0fd0271ffe46d0b2",
+      "storage": {
+        "kind": "copy",
+        "path": "recipe.patch.gz",
+        "compression": "gzip",
+        "encoded": {
+          "bytes": 28236,
+          "sha256": "1ba2df00193a51760969ad1850d56053f40de71e91620790bd559dc1958553ff"
+        }
+      }
+    },
+    {
+      "logical": "rider-driver.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/rider-driver.mjs",
+      "bytes": 14485,
+      "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/rider-driver.mjs"
+      }
+    },
+    {
+      "logical": "root-integration-checks.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-integration-checks.json",
+      "bytes": 1885,
+      "sha256": "c52ee15ccc0e36c3b0309b92bc0d18b1a2546dd3a39152029f0eb9638776823a",
+      "storage": {
+        "kind": "copy",
+        "path": "root-integration-checks.json"
+      }
+    },
+    {
+      "logical": "run.py",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/run.py",
+      "bytes": 30691,
+      "sha256": "c6f2be22f81db02e8d548d32472ce5c06aa1020d305d80488a16b47cbf646ac9",
+      "storage": {
+        "kind": "copy",
+        "path": "run.py"
+      }
+    },
+    {
+      "logical": "source-only-origin.json",
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/source-only-origin.json",
+      "bytes": 2106,
+      "sha256": "95feba1ba184c5ababcf7274ca528dcf2cf7f07b33bd64224b8089025b5f3ad2",
+      "storage": {
+        "kind": "copy",
+        "path": "source-only-origin.json"
+      }
+    }
+  ],
+  "references": [
+    {
+      "logical": "reference:/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+      "original": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+      "bytes": 526,
+      "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85",
+      "storage": {
+        "kind": "reuse",
+        "path": "../owner-anchor-verification/inputs/human-preview4316-process.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-five-protected-preview-identities-20261005.json",
+      "original": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+      "bytes": 2735,
+      "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28",
+      "storage": {
+        "kind": "reuse",
+        "path": "../owner-anchor-verification/inputs/root-five-protected-preview-identities.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "original": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v3-wall-deadline/report.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/steps.ndjson",
+      "original": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 18438314,
+      "sha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v3-wall-deadline/steps.ndjson.gz",
+        "compression": "gzip",
+        "encoded": {
+          "bytes": 2468117,
+          "sha256": "3b800fb89c4dec3d84e8a748b236b74041809f650f954921002bb74928634be2"
+        }
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "original": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v3-wall-deadline/owner.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v3-native-20261005/root-post-failure-pins.json",
+      "original": "/private/tmp/tube-guided-ordinary-v3-native-20261005/root-post-failure-pins.json",
+      "bytes": 43646,
+      "sha256": "6e4a7ca025d044f50d426f3127ad7c3b15535603be57a2c03bd45809bbef03d0",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v3-wall-deadline/root-post-failure-pins.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/README.md",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/README.md",
+      "bytes": 7189,
+      "sha256": "202883f6092ea5ad50d0af710b4e72a6bd4d98bca26bc6923407b2070f850743",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/README.md"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/application-build.log",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/application-build.log",
+      "bytes": 1328,
+      "sha256": "3030332b9efa18b8053ccef1d2ff50865187583a96290d0d99fbe040644294e5",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/application-build.log"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/body-mesh.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/body-mesh.mjs"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+      "bytes": 43568,
+      "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/build.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/candidate-first/report.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/candidate-first/report.json",
+      "bytes": 7256,
+      "sha256": "c61dc548c52838fc1ab8739cad55c109110960ad04f98047a71bb97cb33b870b",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/candidate-first/report.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/control-policy.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/control-policy.mjs"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/criteria.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/criteria.mjs"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.json",
+      "bytes": 16809,
+      "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/diagnostic-build.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.log",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.log",
+      "bytes": 282,
+      "sha256": "2478068a25a69eb395dbfb6bd33ada5b70a6caba996f9ed56f79b532040c6810",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/diagnostic-build.log"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/inputs.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/inputs.json",
+      "bytes": 7221,
+      "sha256": "2fe31ab0315ec5bd0faeb907588c6a9f773b194d07d257c21a1ecd3f08a215ea",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/inputs.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/launcher.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/launcher.json",
+      "bytes": 2362,
+      "sha256": "e1b974c46ad87fa75c198b1d56587bb6e29ea360175997422f3f96f4db78ffae",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/launcher.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/loft-snapshot-tools.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/loft-snapshot-tools.mjs"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.log",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/candidate-first/steps.ndjson"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.mjs",
+      "bytes": 16577,
+      "sha256": "0011a0e8aa896491b40571b838768e8661cf89b512bb1677c47e32b223ab3d7c",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/native.mjs"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/owner.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/owner.json",
+      "bytes": 17385,
+      "sha256": "38197cc967caa3800bcada6c24210b4483f60d80591ee01a73177ca47402aa59",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/owner.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/prepare.py",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/prepare.py",
+      "bytes": 5419,
+      "sha256": "f4c8625467146a3af29deb4a879d30242646944dcaf85b7ba4e36ed7fc5b4fb0",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/prepare.py"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/recipe-source-freeze.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/recipe-source-freeze.json",
+      "bytes": 15835,
+      "sha256": "1d8938ca9fbf6c042ef21cf7c65cf5e82b4efd4330c75988ed2f1edaaa818321",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/recipe-source-freeze.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/recipe.patch",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/recipe.patch",
+      "bytes": 132974,
+      "sha256": "1513b9a3f8b67d5f32b1d7d41fb1d3f85926274ca1d1a2fea1bc32aceec4360b",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/recipe.patch"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/rider-driver.mjs",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/rider-driver.mjs",
+      "bytes": 14485,
+      "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/rider-driver.mjs"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-build-authority.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-build-authority.json",
+      "bytes": 11447,
+      "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/root-build-authority.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+      "bytes": 132778,
+      "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257",
+      "storage": {
+        "kind": "reuse",
+        "path": "../passive-guide-and-leaf-verification/fresh-build/root-current-application-receipt.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+      "bytes": 49694,
+      "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/root-post-failure-pins-and-closure.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/run.py",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/run.py",
+      "bytes": 25010,
+      "sha256": "9f46679cd446b85d50115d7e59dbe320fb9db7012cc38eea8d2bb6b903170e71",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/run.py"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+      "bytes": 9774,
+      "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/seal.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+      "bytes": 19549,
+      "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/source-freeze.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-only-origin.json",
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-only-origin.json",
+      "bytes": 10000,
+      "sha256": "e8212221a8a1bbd090b7341979cca4629376e4096e2579fff5a982f431af2d7a",
+      "storage": {
+        "kind": "reuse",
+        "path": "../ordinary-v4-browser-startup-failure/source-only-origin.json"
+      }
+    },
+    {
+      "logical": "references/tube-guided-ordinary-v5-freeze-writer-20261005.py",
+      "original": "/private/tmp/tube-guided-ordinary-v5-freeze-writer-20261005.py",
+      "bytes": 7173,
+      "sha256": "e80ee1cbd6283aed88e74dd078cce7c80eadf44ad3c66c6b02f958940cb0df6e",
+      "storage": {
+        "kind": "copy",
+        "path": "references/tube-guided-ordinary-v5-freeze-writer-20261005.py"
+      }
+    },
+    {
+      "logical": "references/tube-guided-ordinary-v5-source-writer-20261005.py",
+      "original": "/private/tmp/tube-guided-ordinary-v5-source-writer-20261005.py",
+      "bytes": 13116,
+      "sha256": "1841f6a285835269fd12f70c3c90552cd6cfea1c6cce5467ea481dbec2fa476a",
+      "storage": {
+        "kind": "copy",
+        "path": "references/tube-guided-ordinary-v5-source-writer-20261005.py"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-leaf-identity-core-native-20261005/run.py",
+      "original": "/private/tmp/tube-leaf-identity-core-native-20261005/run.py",
+      "bytes": 19983,
+      "sha256": "57e144cf1468425a4bda9e81c354932bd03c87baa5270529fe21dcdd117b3ebb",
+      "storage": {
+        "kind": "reuse",
+        "path": "../identity-core-comparison/failed-v1/run.py"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+      "original": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0",
+      "storage": {
+        "kind": "reuse",
+        "path": "../owner-anchor-verification/owned_group_anchor.py"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+      "original": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+      "bytes": 511,
+      "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32",
+      "storage": {
+        "kind": "reuse",
+        "path": "../owner-anchor-verification/root-tests.json"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
+      "original": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
+      "bytes": 3695,
+      "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7",
+      "storage": {
+        "kind": "reuse",
+        "path": "../owner-anchor-verification/root-tests.log"
+      }
+    },
+    {
+      "logical": "reference:/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+      "original": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+      "bytes": 2410,
+      "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0",
+      "storage": {
+        "kind": "reuse",
+        "path": "../owner-anchor-verification/source-freeze.json"
+      }
+    },
+    {
+      "logical": "references/cdp.mjs",
+      "original": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+      "storage": {
+        "kind": "copy",
+        "path": "references/cdp.mjs"
+      }
+    },
+    {
+      "logical": "references/follower-camera.mjs",
+      "original": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c",
+      "storage": {
+        "kind": "copy",
+        "path": "references/follower-camera.mjs"
+      }
+    },
+    {
+      "logical": "references/menu-startup.mjs",
+      "original": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a",
+      "storage": {
+        "kind": "copy",
+        "path": "references/menu-startup.mjs"
+      }
+    },
+    {
+      "logical": "references/native-owned.mjs",
+      "original": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2",
+      "storage": {
+        "kind": "copy",
+        "path": "references/native-owned.mjs"
+      }
+    }
+  ],
+  "archiveFiles": [
+    {
+      "logical": "README.md",
+      "bytes": 3171,
+      "sha256": "7e694d05c38385bdcd1f8b07a47b3a7e1d745e3b08d7395c9c1b1235d65296df",
+      "storage": {
+        "kind": "copy",
+        "path": "README.md"
+      }
+    },
+    {
+      "logical": "verify.py",
+      "bytes": 2058,
+      "sha256": "25800ffa8067d66ecfeba5696ce8d4917afef73aade05a7b38b4eebf76c171a7",
+      "storage": {
+        "kind": "copy",
+        "path": "verify.py"
+      }
+    }
+  ],
+  "excluded": [
+    "dist",
+    "node_modules",
+    "__pycache__"
+  ],
+  "scope": "Byte-copy/reference preservation only; original schemas, source paths and historical failures unchanged."
+}

@@ -1,0 +1,517 @@
+{
+  "schema": "identity-core-failed-native-archive/v1",
+  "complete": true,
+  "actualOwnerTerminalExitCode": 1,
+  "actualOwnerToolSession": 47462,
+  "elapsedSeconds": 44.32070841698442,
+  "physicalSteps": 0,
+  "pngCount": 0,
+  "nativeExitCodeRecorded": false,
+  "ownerComplete": false,
+  "nativeComplete": false,
+  "failure": "AnchorRejected: fresh_bounded_read_required",
+  "observedReadDurationSeconds": 2.059041958011221,
+  "rootIndependentPostFailurePinCount": 690,
+  "postFailureReceiptComplete": true,
+  "ownedGroupClosed": true,
+  "allFiveProtectedPreviewsPreserved": true,
+  "noVisualRideOrQualityResult": true,
+  "copyCount": 49,
+  "files": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/README.md",
+        "bytes": 8864,
+        "sha256": "ce73d7d13130cfbcb361bda9ce43b0cb4ceac8600d43b1792685871d62145ca9"
+      },
+      "copy": "README.md",
+      "bytes": 8864,
+      "sha256": "ce73d7d13130cfbcb361bda9ce43b0cb4ceac8600d43b1792685871d62145ca9"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/README.md",
+        "bytes": 6422,
+        "sha256": "0beee8a3c630a2e22995c11f78bf609f1199640a0a1190db72016e9bfe823ab6"
+      },
+      "copy": "before-owner-policy/README.md",
+      "bytes": 6422,
+      "sha256": "0beee8a3c630a2e22995c11f78bf609f1199640a0a1190db72016e9bfe823ab6"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/geometry-inspection.mjs",
+        "bytes": 18907,
+        "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+      },
+      "copy": "before-owner-policy/geometry-inspection.mjs",
+      "bytes": 18907,
+      "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/inputs.json",
+        "bytes": 11707,
+        "sha256": "db3dda90b6836dc699903757c8ee5b27678d847309edf8f1a951a5779e44d3fc"
+      },
+      "copy": "before-owner-policy/inputs.json",
+      "bytes": 11707,
+      "sha256": "db3dda90b6836dc699903757c8ee5b27678d847309edf8f1a951a5779e44d3fc"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/measure.py",
+        "bytes": 8316,
+        "sha256": "65f34556e335fb2ed2485107331f3e4a88df34d495ed1a7691e5ec2f8faab9b4"
+      },
+      "copy": "before-owner-policy/measure.py",
+      "bytes": 8316,
+      "sha256": "65f34556e335fb2ed2485107331f3e4a88df34d495ed1a7691e5ec2f8faab9b4"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/native.mjs",
+        "bytes": 11175,
+        "sha256": "0db1f02f505dcfd54f1647c218f1e3d390a420abe1f13085d6465bf8dc09536a"
+      },
+      "copy": "before-owner-policy/native.mjs",
+      "bytes": 11175,
+      "sha256": "0db1f02f505dcfd54f1647c218f1e3d390a420abe1f13085d6465bf8dc09536a"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/preparation-freeze.json",
+        "bytes": 5542,
+        "sha256": "266d3ed9b72113931df0d95e9133b3b45e23a38a5778cc6b859cbd40d7897877"
+      },
+      "copy": "before-owner-policy/preparation-freeze.json",
+      "bytes": 5542,
+      "sha256": "266d3ed9b72113931df0d95e9133b3b45e23a38a5778cc6b859cbd40d7897877"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/prepare.py",
+        "bytes": 11151,
+        "sha256": "ac040b0a653e56089918a13cb5a92fb61e48234782d633f27f0ba95262685768"
+      },
+      "copy": "before-owner-policy/prepare.py",
+      "bytes": 11151,
+      "sha256": "ac040b0a653e56089918a13cb5a92fb61e48234782d633f27f0ba95262685768"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/recipe-diff.md",
+        "bytes": 1812,
+        "sha256": "be7fb979ab5891d1151db0fbde5cfb1038289926a9d2bedca1ce27d6a01c708e"
+      },
+      "copy": "before-owner-policy/recipe-diff.md",
+      "bytes": 1812,
+      "sha256": "be7fb979ab5891d1151db0fbde5cfb1038289926a9d2bedca1ce27d6a01c708e"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/recipe.patch",
+        "bytes": 86320,
+        "sha256": "9a1bb2e0abab553ff2728728cca019ac36e865be77c0d262db46e63421d927d3"
+      },
+      "copy": "before-owner-policy/recipe.patch",
+      "bytes": 86320,
+      "sha256": "9a1bb2e0abab553ff2728728cca019ac36e865be77c0d262db46e63421d927d3"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/run.py",
+        "bytes": 16349,
+        "sha256": "98fe6d4d0395bdb45fd275943fde36a232d0f04740c9f24fd8f9c3219f99b632"
+      },
+      "copy": "before-owner-policy/run.py",
+      "bytes": 16349,
+      "sha256": "98fe6d4d0395bdb45fd275943fde36a232d0f04740c9f24fd8f9c3219f99b632"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy-preservation.json",
+        "bytes": 5160,
+        "sha256": "8c3282ec574958687e9c9401a2006c8ed21f66930bd97ca67f25a4b82ecc67ba"
+      },
+      "copy": "before-owner-policy-preservation.json",
+      "bytes": 5160,
+      "sha256": "8c3282ec574958687e9c9401a2006c8ed21f66930bd97ca67f25a4b82ecc67ba"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-root-integration-review/inputs.json",
+        "bytes": 13889,
+        "sha256": "28ccdd9678f99e2084b4db96bcc29e8c792ecdd7c62867e0502cc884504a4fc7"
+      },
+      "copy": "before-root-integration-review/inputs.json",
+      "bytes": 13889,
+      "sha256": "28ccdd9678f99e2084b4db96bcc29e8c792ecdd7c62867e0502cc884504a4fc7"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-root-integration-review/preparation-freeze.json",
+        "bytes": 7744,
+        "sha256": "d52212e20563ad84418aa024ae64e458316b1fb6eef0a7af8e59e5bb9da9b3d0"
+      },
+      "copy": "before-root-integration-review/preparation-freeze.json",
+      "bytes": 7744,
+      "sha256": "d52212e20563ad84418aa024ae64e458316b1fb6eef0a7af8e59e5bb9da9b3d0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/build.json",
+        "bytes": 19090,
+        "sha256": "32c43a5d49aaa0086cb7315ec492fda69c87c415f7c45d22d7345b16302ffbaf"
+      },
+      "copy": "build.json",
+      "bytes": 19090,
+      "sha256": "32c43a5d49aaa0086cb7315ec492fda69c87c415f7c45d22d7345b16302ffbaf"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/candidate-first/report.json",
+        "bytes": 6979,
+        "sha256": "37b85be2db5bdb93f0a7fc11ab890eb134f4c750a0ffeca9eaad00f6045ccb7d"
+      },
+      "copy": "candidate-first/report.json",
+      "bytes": 6979,
+      "sha256": "37b85be2db5bdb93f0a7fc11ab890eb134f4c750a0ffeca9eaad00f6045ccb7d"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/geometry-inspection.mjs",
+        "bytes": 18907,
+        "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+      },
+      "copy": "geometry-inspection.mjs",
+      "bytes": 18907,
+      "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/inputs.json",
+        "bytes": 14131,
+        "sha256": "0464f7cf49153e2e0d21c98bc9d93cfd2d52757ec4d288a6609116fa51228318"
+      },
+      "copy": "inputs.json",
+      "bytes": 14131,
+      "sha256": "0464f7cf49153e2e0d21c98bc9d93cfd2d52757ec4d288a6609116fa51228318"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/launcher.json",
+        "bytes": 10818,
+        "sha256": "619a4de95ad2a2215b051900178d3c17522a17fff89127d3c1364684112a6937"
+      },
+      "copy": "launcher.json",
+      "bytes": 10818,
+      "sha256": "619a4de95ad2a2215b051900178d3c17522a17fff89127d3c1364684112a6937"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/live.json",
+        "bytes": 6964,
+        "sha256": "f29ed272a4b9410d08ef0df4b4ce91e5c599970ee231330c27596037901c8d58"
+      },
+      "copy": "live.json",
+      "bytes": 6964,
+      "sha256": "f29ed272a4b9410d08ef0df4b4ce91e5c599970ee231330c27596037901c8d58"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/measure.py",
+        "bytes": 8316,
+        "sha256": "65f34556e335fb2ed2485107331f3e4a88df34d495ed1a7691e5ec2f8faab9b4"
+      },
+      "copy": "measure.py",
+      "bytes": 8316,
+      "sha256": "65f34556e335fb2ed2485107331f3e4a88df34d495ed1a7691e5ec2f8faab9b4"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/native.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "copy": "native.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/native.mjs",
+        "bytes": 11175,
+        "sha256": "f7fe36a4aac29a19df1bae6bb15740c12ee31f223130d5dd46353ce25565773b"
+      },
+      "copy": "native.mjs",
+      "bytes": 11175,
+      "sha256": "f7fe36a4aac29a19df1bae6bb15740c12ee31f223130d5dd46353ce25565773b"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "copy": "owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner-policy-amendment.md",
+        "bytes": 2441,
+        "sha256": "4ff04fa67d095b6c5a9c96b6f7b4b2d9f610811dfe0557e8fa73a93f3256c402"
+      },
+      "copy": "owner-policy-amendment.md",
+      "bytes": 2441,
+      "sha256": "4ff04fa67d095b6c5a9c96b6f7b4b2d9f610811dfe0557e8fa73a93f3256c402"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner-policy-amendment.patch",
+        "bytes": 52122,
+        "sha256": "1c0bfa56d9b1f877570b247b5c0a4ee7a5af57f75251797e7e42ac8031080138"
+      },
+      "copy": "owner-policy-amendment.patch",
+      "bytes": 52122,
+      "sha256": "1c0bfa56d9b1f877570b247b5c0a4ee7a5af57f75251797e7e42ac8031080138"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner.json",
+        "bytes": 57977,
+        "sha256": "ccd0da40b6da29ed5c9a20a388261beb3360f3d267ddbfbe10424c5da67e7e92"
+      },
+      "copy": "owner.json",
+      "bytes": 57977,
+      "sha256": "ccd0da40b6da29ed5c9a20a388261beb3360f3d267ddbfbe10424c5da67e7e92"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/preparation-freeze.json",
+        "bytes": 8692,
+        "sha256": "77fd687206d0378c28021f81075b0dfb4e7a13e56912aa75bf02e10f33655014"
+      },
+      "copy": "preparation-freeze.json",
+      "bytes": 8692,
+      "sha256": "77fd687206d0378c28021f81075b0dfb4e7a13e56912aa75bf02e10f33655014"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/prepare-result.json",
+        "bytes": 808,
+        "sha256": "adc024bc307371740d15e0f7938f0607b9a6886a18fb1864b7edb0aa41f5ca42"
+      },
+      "copy": "prepare-result.json",
+      "bytes": 808,
+      "sha256": "adc024bc307371740d15e0f7938f0607b9a6886a18fb1864b7edb0aa41f5ca42"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/prepare.py",
+        "bytes": 13015,
+        "sha256": "a663995aa9899f89d64c5969cbd314a29ce138df87cc4b374781ede1fdf20c18"
+      },
+      "copy": "prepare.py",
+      "bytes": 13015,
+      "sha256": "a663995aa9899f89d64c5969cbd314a29ce138df87cc4b374781ede1fdf20c18"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/recipe-diff.md",
+        "bytes": 2337,
+        "sha256": "c6b673025a0e3b6c4c444dbfca3f65668e3583085733151531aa42986721bef0"
+      },
+      "copy": "recipe-diff.md",
+      "bytes": 2337,
+      "sha256": "c6b673025a0e3b6c4c444dbfca3f65668e3583085733151531aa42986721bef0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/recipe.patch",
+        "bytes": 124127,
+        "sha256": "9d21edbc07d023ca4975c5f46c7979c45453ae7ede6e403f3b466d90ba2eee68"
+      },
+      "copy": "recipe.patch",
+      "bytes": 124127,
+      "sha256": "9d21edbc07d023ca4975c5f46c7979c45453ae7ede6e403f3b466d90ba2eee68"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-integration-checks.json",
+        "bytes": 1043,
+        "sha256": "70a96d2792f74a0ec4af857a563c3cbe3875366018ed6d2fd7e46ef3da363d07"
+      },
+      "copy": "root-integration-checks.json",
+      "bytes": 1043,
+      "sha256": "70a96d2792f74a0ec4af857a563c3cbe3875366018ed6d2fd7e46ef3da363d07"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-owner-execution.log",
+        "bytes": 52953,
+        "sha256": "ed3a63e1c9cce0e5f23ace0c75d500c2c9e700949c624ca93ab9d4f71af4853f"
+      },
+      "copy": "root-owner-execution.log",
+      "bytes": 52953,
+      "sha256": "ed3a63e1c9cce0e5f23ace0c75d500c2c9e700949c624ca93ab9d4f71af4853f"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-post-failure-pins-and-closure.json",
+        "bytes": 147021,
+        "sha256": "6e9145a968147b850076b4fe3a09579c14fe4e93dd38b2020310e9e4fc68116b"
+      },
+      "copy": "root-post-failure-pins-and-closure.json",
+      "bytes": 147021,
+      "sha256": "6e9145a968147b850076b4fe3a09579c14fe4e93dd38b2020310e9e4fc68116b"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/run.py",
+        "bytes": 19983,
+        "sha256": "57e144cf1468425a4bda9e81c354932bd03c87baa5270529fe21dcdd117b3ebb"
+      },
+      "copy": "run.py",
+      "bytes": 19983,
+      "sha256": "57e144cf1468425a4bda9e81c354932bd03c87baa5270529fe21dcdd117b3ebb"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/seal.json",
+        "bytes": 14344,
+        "sha256": "e342432a742c1b32a886dbb2e51cf4c1d120668cd379ecff9f7d31a15660da2d"
+      },
+      "copy": "seal.json",
+      "bytes": 14344,
+      "sha256": "e342432a742c1b32a886dbb2e51cf4c1d120668cd379ecff9f7d31a15660da2d"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/SweptBarrel.ts",
+        "bytes": 6980,
+        "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+      },
+      "copy": "source/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 6980,
+      "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+      },
+      "copy": "source/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 33396,
+      "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/barrelMaskGlsl.ts",
+        "bytes": 2355,
+        "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+      },
+      "copy": "source/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 2355,
+      "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/barrelWater.ts",
+        "bytes": 5755,
+        "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+      },
+      "copy": "source/src/scene/barrel/barrelWater.ts",
+      "bytes": 5755,
+      "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 31647,
+        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+      },
+      "copy": "source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 31647,
+      "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCCapRefinement.test.ts",
+        "bytes": 11167,
+        "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+      },
+      "copy": "source/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "bytes": 11167,
+      "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16525,
+        "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+      },
+      "copy": "source/src/wave/barrel/boundedCConsumers.test.ts",
+      "bytes": 16525,
+      "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCLeafReach.test.ts",
+        "bytes": 18620,
+        "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
+      },
+      "copy": "source/src/wave/barrel/boundedCLeafReach.test.ts",
+      "bytes": 18620,
+      "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20184,
+        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+      },
+      "copy": "source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 20184,
+      "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      },
+      "copy": "source/src/wave/barrel/lipSheet.ts",
+      "bytes": 19136,
+      "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      "copy": "source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source-freeze.json",
+        "bytes": 7436,
+        "sha256": "9f5b3e7779367489a664445fb0219096bda03c6a10c3a00ee957b5944942cce1"
+      },
+      "copy": "source-freeze.json",
+      "bytes": 7436,
+      "sha256": "9f5b3e7779367489a664445fb0219096bda03c6a10c3a00ee957b5944942cce1"
+    }
+  ],
+  "omittedDerivedAppAssets": "Exact immutable app asset pins are retained in build/receipt; derived dist binaries not duplicated in Git.",
+  "excluded": [
+    "dist",
+    "__pycache__"
+  ]
+}

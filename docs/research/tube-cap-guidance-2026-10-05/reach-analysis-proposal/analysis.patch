@@ -1,0 +1,528 @@
+--- a/candidate/src/wave/barrel/boundedCProfile.ts
++++ b/candidate/src/wave/barrel/boundedCProfile.ts
+@@ -146,15 +146,26 @@
+  return {impactEvent:ev,impactTau:impact,retiredTau:impact+.3*TD,fullyFormedTau:.4*TD};
+ }
+ /** The same F32 cap64 as the full contour, without constructing its unrelated inner root/floor. */
+-export function boundedCCap(z:BoundedCParameters,lifecycle?:BoundedCEvent):Vec2{
++/** Offline observation-only copy: captures the literal cap arithmetic without replacing its rounding. */
++export interface BoundedCCapTrace {
++ parameters?:BoundedCParameters; ordinary?:Ordinary; impactTau?:number; post?:boolean;
++ formation?:number; remaining?:number; seal?:number; ulp?:number; requestedThickness?:number;
++ loopScale?:number; collapsed?:boolean; thickness?:number; roofControls?:Cubic; roofPoints?:Vec2[];
++ last?:Vec2; normal?:Vec2|null; phi?:number|null; unroundedCap?:Vec2; capWords?:Vec2;
++}
++export function boundedCCap(z:BoundedCParameters,lifecycle?:BoundedCEvent,trace?:BoundedCCapTrace):Vec2{
+  const o=ordinary(z),ev=lifecycle??event(o),TD=z.authoredTD,impact=TD+.3*TD*ev.fraction,post=z.tau>=impact;
+  const g=smooth(z.tau/(.4*TD)),remaining=post?1-smooth((z.tau-impact)/(.3*TD)):1,s=post?ev.seal:smooth((z.tau-TD)/(.3*TD));
+  const ulp=ulp32(Math.max(...z.crest.map(Math.abs),...z.toe.map(Math.abs))),requested=o.B*(post?remaining**2:g*g),loopScale=post?Math.min(remaining*o.W,remaining**2*o.H):Math.min(g*o.W,g*o.H),collapsed=requested<8*ulp||loopScale<=64*ulp,T=collapsed?0:Math.max(requested,8*ulp);
+- const {P,last}=roof(o,post?1:g,s,T,post?ev.cap:undefined,remaining);
+- if(collapsed)return round(P[28]);
++ const roofSample=roof(o,post?1:g,s,T,post?ev.cap:undefined,remaining),{P,last}=roofSample;
++ if(trace)Object.assign(trace,{parameters:z,ordinary:o,impactTau:impact,post,formation:g,remaining,seal:s,ulp,
++  requestedThickness:requested,loopScale,collapsed,thickness:T,roofControls:roofSample.c,roofPoints:P,last});
++ if(collapsed){const result=round(P[28]);if(trace)Object.assign(trace,{normal:null,phi:null,unroundedCap:P[28],capWords:result});return result;}
+  const n:Vec2=[-last[1],last[0]],centre=sub(P[28],mul(n,T/2));let phi=Math.atan2(-last[1],-n[1]);if(phi<0)phi+=2*Math.PI;if(!(phi>0&&phi<=Math.PI))throw Error('cap minimum domain');
+  const a=phi*4/4,cap=add(centre,mul(add(mul(n,Math.cos(a)),mul(last,Math.sin(a))),T/2));
+- return round(post?ev.cap:cap);
++ const unrounded=post?ev.cap:cap,result=round(unrounded);
++ if(trace)Object.assign(trace,{normal:n,phi,unroundedCap:unrounded,capWords:result});
++ return result;
+ }
+ /** Writes only owned33..111. Domain failures throw; caller may explicitly choose raw library mode, never silently fall back. */
+ export function sampleBoundedC(z:BoundedCParameters,profile:Float32Array,velocity=true, lifecycle?:BoundedCEvent,sharedRootDomain=false,preservedCarrierStart=0):BoundedCMetadata{
+--- a/candidate/src/wave/barrel/ProfileLibrary.ts
++++ b/candidate/src/wave/barrel/ProfileLibrary.ts
+@@ -1,4 +1,4 @@
+-import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, boundedCCap, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent } from './boundedCProfile';
++import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, boundedCCap, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent, type BoundedCCapTrace } from './boundedCProfile';
+ import { pairInnerSheet } from './sharedUpperRoot';
+ import { GRAVITY } from '../dispersion';
+ 
+@@ -140,12 +140,14 @@
+  * including boundaries. In the fully enabled interior the averaged width is C1 at raw frame knots.
+  * This changes neither the raw case words nor the actual crest/toe coordinates.
+  */
+-export function carrierWidthDelta(c: BarrelCase, tau: number): number {
++/** Offline observation-only copy; null mean/raw marks the original disabled branch, never a fabricated zero. */
++export interface CarrierWidthTrace { position?:number|null; enabled?:number; rawWidth?:number|null; meanWidth?:number|null; adjustment?:number }
++export function carrierWidthDelta(c: BarrelCase, tau: number, trace?:CarrierWidthTrace): number {
+   const count = c.frames.length / FLOATS;
+-  if (count < 3) return 0;
++  if (count < 3) { if(trace)Object.assign(trace,{position:null,enabled:0,rawWidth:null,meanWidth:null,adjustment:0});return 0; }
+   const position = Math.max(0, Math.min(count - 1, (tau - c.tauStart) / c.tauStep));
+   const enabled = ease(position - 1) * ease(count - 2 - position);
+-  if (enabled === 0) return 0;
++  if (enabled === 0) { if(trace)Object.assign(trace,{position,enabled,rawWidth:null,meanWidth:null,adjustment:0});return 0; }
+   const width = (frame: number) => c.frames[frame * FLOATS + 2 * LANDMARK.toe]
+     - c.frames[frame * FLOATS + 2 * LANDMARK.crest];
+   const frame = Math.floor(position), share = position - frame;
+@@ -160,7 +162,9 @@
+     low = end;
+     interval += 1;
+   }
+-  return enabled * (area / 2 - raw);
++  const adjustment=enabled * (area / 2 - raw);
++  if(trace)Object.assign(trace,{position,enabled,rawWidth:raw,meanWidth:area/2,adjustment});
++  return adjustment;
+ }
+ /** A slice whose slope is this far (relative) from every case's is outside the library. */
+ const SLOPE_TOLERANCE = 0.2;
+@@ -515,6 +519,24 @@
+     return clock;
+   }
+ 
++  /** Offline-only trace at the identical bracket/parameter/event path; no provider coefficients or query semantics change. */
++  inspectCapReach(query:ProfileQuery) {
++    if(this.options.geometry!=='bounded-C')throw Error('Bounded-C trace required');
++    const b=this.bracket(query),raw=new Float32Array(FLOATS),parameters=this.analyticParameters(query,b,raw);
++    const clock=this.analyticClock(query,b),trace:BoundedCCapTrace={},cap=boundedCCap(parameters,clock.event,trace);
++    const carrier=Math.min(query.seconds/b.unit,b.touchdown),lower:CarrierWidthTrace={},upper:CarrierWidthTrace={};
++    const lowerDelta=carrierWidthDelta(b.lower,carrier,lower),upperDelta=carrierWidthDelta(b.upper,carrier,upper);
++    return {bracket:{lower:b.lower.id,upper:b.upper.id,weight:b.weight,scale:b.scale,unit:b.unit,
++      authoredHoldTau:b.touchdown,authoredHoldSeconds:b.touchdown*b.unit,frameStep:b.frameStep,clamped:b.clamped},
++      carrier:{queryTau:query.seconds/b.unit,carrierTau:carrier,carrierSeconds:carrier*b.unit,
++        holdTaper:ease((b.touchdown-carrier)/b.frameStep),lower,upper,
++        meanRequestedDeltaBeforeHold:lowerDelta+b.weight*(upperDelta-lowerDelta),
++        exactBlendedRequestedDelta:parameters.leafWidthDelta??0},
++      clocks:{impactTau:clock.impact,retiredTau:clock.retired,fullyFormedTau:clock.clear,event:clock.event},
++      preservedNDWords:[31,32,112,113].map(point=>({point,words:Array.from(raw.subarray(2*point,2*point+2))})),
++      trace,metricCapWords:[Math.fround(cap[0]*b.scale),Math.fround(cap[1]*b.scale)]};
++  }
++
+   /** F32 stage order matches analyticShape: raw carrier, parameters, ND cap, then metric cap. */
+   private analyticCap(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, raw: Float32Array, event: BoundedCEvent) {
+     const cap = boundedCCap(this.analyticParameters(query, b, raw), event);
+--- /dev/null
++++ b/analyze.ts
+@@ -0,0 +1,168 @@
++/** SOURCE-ONLY proposal. Root must review, bundle and execute; this file has not run. */
++import assert from 'node:assert/strict';
++import { readFileSync, writeFileSync, existsSync } from 'node:fs';
++import { createHash } from 'node:crypto';
++import { ProfileLibrary as OriginalLibrary, LANDMARK, PROFILE_POINTS } from './baseline/src/wave/barrel/ProfileLibrary';
++import { ProfileLibrary as ObservedLibrary } from './candidate/src/wave/barrel/ProfileLibrary';
++import { decodeCase } from './baseline/src/wave/barrel/profileFormat';
++import { FRONT_FIELD, FRONT_STRIDE } from './front-format';
++
++const W='/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005';
++const INPUT=W+'/input-pins.json', OUTPUT=W+'/reach-decomposition.json';
++type Pin={file:string;bytes:number;sha256:string};
++const sha=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
++function pinned(pin:Pin):Buffer{const b=readFileSync(pin.file);assert.equal(b.length,pin.bytes,pin.file);assert.equal(sha(b),pin.sha256,pin.file);return b;}
++function finite(value:unknown,path='report'):void{
++  if(typeof value==='number')assert(Number.isFinite(value),'Nonfinite '+path);
++  else if(Array.isArray(value))value.forEach((v,k)=>finite(v,path+'['+k+']'));
++  else if(value!==null&&typeof value==='object')Object.entries(value).forEach(([k,v])=>finite(v,path+'.'+k));
++}
++const inputs=JSON.parse(readFileSync(INPUT,'utf8'));
++const report:Record<string,any>={schema:'bounded-cap-reach-hold-decomposition/v1',complete:false,firstFailure:null,
++  scope:'Fixed generic fixture; literal provider trace and equal-span finite differences only. No native/body/globalC1 inference.',
++  executionAuthority:'Executing tool/agent must be attributed by a separate root receipt.',inputs:[],limits:inputs.limits,rows:[],secants:null,hold:null};
++assert(!existsSync(OUTPUT),'First-only analysis output');
++
++const wordBuffer=new ArrayBuffer(4),wordView=new DataView(wordBuffer);
++function word(value:number):number{assert(Number.isFinite(value));wordView.setFloat32(0,value,true);return wordView.getUint32(0,true);}
++function ordered(value:number):number{const bits=word(value);return bits&0x80000000?0x80000000-(bits&0x7fffffff):0x80000000+bits;}
++function wordComparison(a:number[],b:number[]){
++  assert.equal(a.length,b.length);return a.map((v,k)=>({a:v,b:b[k],aWord:word(v),bWord:word(b[k]),
++    wordExact:word(v)===word(b[k]),absoluteError:Math.abs(v-b[k]),ulpDistance:Math.abs(ordered(v)-ordered(b[k]))}));
++}
++const profileBytes=(v:Float32Array)=>new Uint8Array(v.buffer,v.byteOffset,v.byteLength);
++const scaleTerms=(v:Record<string,number>,scale:number)=>Object.fromEntries(Object.entries(v).map(([k,x])=>[k,x*scale]));
++const sum=(v:Record<string,number>)=>Object.values(v).reduce((s,x)=>s+x,0);
++const differences=(a:Record<string,number>,b:Record<string,number>,span:number)=>Object.fromEntries(
++  Object.keys(a).map(k=>[k,{left:a[k],right:b[k],difference:b[k]-a[k],secant:(b[k]-a[k])/span}]));
++const ulp64=(x:number)=>{assert(x>0&&Number.isFinite(x));const b=new ArrayBuffer(8),d=new DataView(b);d.setFloat64(0,x,true);
++  d.setBigUint64(0,d.getBigUint64(0,true)+1n,true);return d.getFloat64(0,true)-x;};
++
++try{
++  const readiness=JSON.parse(readFileSync(W+'/readiness.json','utf8'));
++  for(const p of readiness.files)pinned(p);
++  for(const m of inputs.copiedExactProviderModules)pinned(m.original);
++  for(const p of inputs.evidence)pinned(p);
++  pinned(inputs.barrelIndex);
++  report.inputs=[{file:INPUT,bytes:readFileSync(INPUT).length,sha256:sha(readFileSync(INPUT))},...inputs.evidence,
++    ...inputs.copiedExactProviderModules.map((m:any)=>m.original),inputs.barrelIndex,...inputs.assets];
++  const saved=JSON.parse(readFileSync(W+'/evidence/fixture-decomposition.json','utf8'));
++  assert.equal(saved.schema,'root-angular-fixture-decomposition/v1');assert.equal(saved.productionChanged,false);
++  const records=new Float32Array(saved.rawFrontPacket);assert.deepEqual(Array.from(records),saved.rawFrontPacket);
++  assert.equal(records.length,9*FRONT_STRIDE);assert(records.every(Number.isFinite));
++  const cases=inputs.assets.map((p:Pin)=>decodeCase(new Uint8Array(pinned(p))));
++  assert.equal(cases.length,8);
++  const original=new OriginalLibrary(cases,{geometry:'bounded-C'}),observed=new ObservedLibrary(cases,{geometry:'bounded-C'});
++  const slope=saved.query.slope,level=0.5,start=4.75,end=5.25,h=1/64;
++  assert.equal(inputs.limits.gridStart,start);assert.equal(inputs.limits.gridEnd,end);
++  assert.equal(inputs.limits.gridStep,h);assert.equal(inputs.limits.gridCount,33);
++  // This fixed fixture has one constant scale/control pair. Do not silently make a nonlinear hold inverse.
++  for(let k=1;k<9;k++)for(const field of ['front','footHeight','footDepth'] as const)
++    assert.equal(records[k*FRONT_STRIDE+FRONT_FIELD[field]],records[FRONT_FIELD[field]],'Constant actual packet '+field);
++  const sample=(x:number)=>{
++    assert(x>=start&&x<=end,'No domain expansion');
++    let k=0;while(k+1<8&&records[(k+1)*FRONT_STRIDE+FRONT_FIELD.x]<x)k++;
++    const a=k*FRONT_STRIDE,b=(k+1)*FRONT_STRIDE,share=(x-records[a])/(records[b]-records[a]);
++    assert(share>=0&&share<=1,'Declared interval only');
++    const field=(offset:number)=>records[a+offset]+share*(records[b+offset]-records[a+offset]);
++    return {x,z:field(FRONT_FIELD.z),sigma:field(FRONT_FIELD.sigma),tau:field(FRONT_FIELD.tau),
++      footHeight:field(FRONT_FIELD.footHeight),footDepth:field(FRONT_FIELD.footDepth),packetLeft:k,share};
++  };
++  const first=sample(start),last=sample(end);assert.equal(first.packetLeft,last.packetLeft,'One affine packet segment');
++  const initialQuery={slope,footHeight:first.footHeight,footDepth:first.footDepth,seconds:first.tau,hold:'drawing' as const};
++  const initial=observed.inspectCapReach(initialQuery),holdSeconds=initial.bracket.authoredHoldSeconds;
++  const a=first.packetLeft*FRONT_STRIDE,b=a+FRONT_STRIDE;
++  const holdX=records[a]+(holdSeconds-records[a+FRONT_FIELD.tau])/(records[b+FRONT_FIELD.tau]-records[a+FRONT_FIELD.tau])*(records[b]-records[a]);
++  assert(holdX>=start&&holdX<=end,'Exact hold must already lie in fixed range');
++  const holdPacket=sample(holdX),inverseResidual=holdPacket.tau-holdSeconds;
++  assert(Math.abs(inverseResidual)<=8*ulp64(holdSeconds),'Hold inversion exceeds declared 8 binary64 ULPs');
++  report.fixture={rawFrontPacket:saved.rawFrontPacket,recordedOriginalQuery:saved.query,recordedOriginalTimes:saved.times,
++    actualInterpolatedControls:{slope,footHeight:first.footHeight,footDepth:first.footDepth},flatWaterLevel:level};
++  report.hold={x:holdX,storedXIfMeshed:Math.fround(holdX),authoredHoldTau:initial.bracket.authoredHoldTau,
++    unit:initial.bracket.unit,authoredHoldSeconds:holdSeconds,packetSegment:[first.packetLeft,first.packetLeft+1],
++    inversePacketAge:holdPacket.tau,inverseResidualSeconds:inverseResidual,inverseResidualULPs:inverseResidual/ulp64(holdSeconds),
++    queryConvention:'Exact published authoredHoldTau*unit clock used for the hold-only sample; inversion residual is explicit. No simulation clock assignment.',
++    equalSpanConvention:'Grid intervals of identical 1/64m span immediately before/after hold. Not invented centred hold±h provider samples.'};
++
++  function inspect(x:number,exactHold=false){
++    const raw=sample(x),query={slope,footHeight:raw.footHeight,footDepth:raw.footDepth,seconds:exactHold?holdSeconds:raw.tau,hold:'drawing' as const};
++    const op=new Float32Array(2*PROFILE_POINTS),cp=new Float32Array(2*PROFILE_POINTS);
++    const originalLookup=original.profileAt(query,op),candidateLookup=observed.profileAt(query,cp);
++    assert.deepEqual(profileBytes(cp),profileBytes(op),'Instrumented complete profile changed');
++    const cap=new Float64Array(2),crest=new Float64Array(2),toe=new Float64Array(2);
++    original.pointAt(query,LANDMARK.lip,cap);original.pointAt(query,LANDMARK.crest,crest);original.pointAt(query,LANDMARK.toe,toe);
++    const observation=observed.inspectCapReach(query),t=observation.trace,o=t.ordinary;
++    assert(o&&t.normal&&t.last&&t.unroundedCap&&t.capWords&&t.phi!==null&&t.phi!==undefined);
++    assert.equal(t.formation,1,'Only mature branch; no fallback');assert.equal(t.post,false,'Pre-impact fixed domain only');
++    assert.equal(t.collapsed,false,'Resolved branch only');assert.equal(t.thickness,o.B,'Actual mature thickness');
++    const staged=observation.metricCapWords,capCheck=wordComparison(staged,Array.from(cap));
++    const capFullCheck=wordComparison(Array.from(cap),Array.from(op.subarray(2*LANDMARK.lip,2*LANDMARK.lip+2)));
++    const crestFullCheck=wordComparison(Array.from(crest),Array.from(op.subarray(2*LANDMARK.crest,2*LANDMARK.crest+2)));
++    assert(capCheck.every(v=>v.wordExact)&&capFullCheck.every(v=>v.wordExact)&&crestFullCheck.every(v=>v.wordExact),'Literal reconstruction/public point/full words differ');
++    assert.equal(originalLookup.touchdownSeconds,candidateLookup.touchdownSeconds);
++    assert.equal(originalLookup.clearSeconds,candidateLookup.clearSeconds);
++    const scale=observation.bracket.scale,T=t.thickness!,n=t.normal,lastDirection=t.last,phi=t.phi;
++    // Terms explain the actual unrounded result; the original cap arithmetic above remains the authority.
++    const zND:Record<string,number>={carrierWidth:.98*o.W,thicknessRetreat:-2*o.B,boundedCorrection:o.leafWidthDelta,
++      normalXOffset:-T/2*n[0],actualArcXTerm:T/2*(n[0]*Math.cos(phi)+lastDirection[0]*Math.sin(phi))};
++    zND.endpointAssemblyRemainder=t.unroundedCap[0]-o.A[0]-sum(zND);
++    const yND:Record<string,number>={toeY:o.Toe[1],openHeight:.60*o.H,fallingHeight:-.80*o.H*t.seal!,
++      normalYOffset:-T/2*n[1],actualArcYTerm:T/2*(n[1]*Math.cos(phi)+lastDirection[1]*Math.sin(phi))};
++    yND.endpointAssemblyRemainder=t.unroundedCap[1]-sum(yND);
++    const unroundedWorld=[x,level+t.unroundedCap[1]*scale,raw.z-o.A[0]*scale+t.unroundedCap[0]*scale];
++    const ordinaryWorldUnstored=[x,level+cap[1],raw.z-crest[0]+cap[0]],world=ordinaryWorldUnstored.map(Math.fround);
++    const termsZ:Record<string,number>={rawCrestZ:raw.z,...scaleTerms(zND,scale),
++      crestMetricStage:o.A[0]*scale-crest[0],capNDWordStage:(t.capWords[0]-t.unroundedCap[0])*scale,
++      capMetricWordStage:cap[0]-t.capWords[0]*scale,worldF32Stage:world[2]-ordinaryWorldUnstored[2]};
++    const termsY:Record<string,number>={waterLevel:level,...scaleTerms(yND,scale),
++      capNDWordStage:(t.capWords[1]-t.unroundedCap[1])*scale,capMetricWordStage:cap[1]-t.capWords[1]*scale,
++      worldF32Stage:world[1]-ordinaryWorldUnstored[1]};
++    termsZ.finalAssemblyRemainder=world[2]-sum(termsZ);termsY.finalAssemblyRemainder=world[1]-sum(termsY);
++    const scalars={rawWidthND:o.W,rawHeightND:o.H,B_ND:o.B,reachBudgetND:Math.min(o.B,(.98-.85)*o.W-2*o.B),
++      meanRequestedDeltaBeforeHoldND:observation.carrier.meanRequestedDeltaBeforeHold,
++      requestedDeltaAfterHoldND:observation.carrier.exactBlendedRequestedDelta,boundedCorrectionND:o.leafWidthDelta,
++      normalX:n[0],normalXOffsetND:-T/2*n[0],holdTaper:observation.carrier.holdTaper,
++      rawWidthMetric:o.W*scale,rawHeightMetric:o.H*scale,B_Metric:o.B*scale,
++      meanRequestedDeltaBeforeHoldMetric:observation.carrier.meanRequestedDeltaBeforeHold*scale,
++      requestedDeltaAfterHoldMetric:observation.carrier.exactBlendedRequestedDelta*scale,boundedCorrectionMetric:o.leafWidthDelta*scale,
++      normalXOffsetMetric:-T/2*n[0]*scale};
++    const row={x,kind:exactHold?'exact-published-hold':'fixed-grid',rawSample:raw,query,
++      bracket:observation.bracket,carrier:observation.carrier,clocks:observation.clocks,scalars,
++      trace:observation.trace,preservedNDWords:observation.preservedNDWords,
++      reconstructed:{ndCapWords:t.capWords,metricCapWords:staged,unroundedWorldCap:unroundedWorld,ordinaryUnstoredWorldCap:ordinaryWorldUnstored,
++        storedWorldCap:world},ordinaryProvider:{metricCapWords:Array.from(cap),metricCrestWords:Array.from(crest),metricToeWords:Array.from(toe),
++        profileSHA256:sha(profileBytes(op)),lookup:{phase:originalLookup.phase,clearSeconds:originalLookup.clearSeconds,
++          impactSeconds:originalLookup.touchdownSeconds,collapseSeconds:originalLookup.collapseSeconds}},
++      verification:{completeInstrumentedProfileWordsExact:true,capCheck,capFullCheck,crestFullCheck},
++      terms:{zND,yND,zMetric:scaleTerms(zND,scale),yMetric:scaleTerms(yND,scale),storedWorldZ:termsZ,storedWorldY:termsY}};
++    finite(row);return row;
++  }
++  const grid=Array.from({length:33},(_,k)=>inspect(start+k*h));report.rows.push(...grid);
++  const holdRow=inspect(holdX,true);report.rows.push(holdRow);assert.equal(report.rows.length,34);
++  function interval(left:typeof holdRow,right:typeof holdRow){
++    const span=right.x-left.x;assert.equal(span,h,'Equal declared span');
++    return {x:[left.x,right.x],span,scalars:differences(left.scalars,right.scalars,span),
++      worldY:differences(left.terms.storedWorldY,right.terms.storedWorldY,span),
++      worldZ:differences(left.terms.storedWorldZ,right.terms.storedWorldZ,span),
++      observedStoredCapSecant:left.reconstructed.storedWorldCap.map((v:number,axis:number)=>(right.reconstructed.storedWorldCap[axis]-v)/span)};
++  }
++  function pair(left:ReturnType<typeof interval>,right:ReturnType<typeof interval>){
++    assert.equal(left.span,right.span);return {left,right,
++      storedCapSecantDifference:right.observedStoredCapSecant.map((v:number,k:number)=>v-left.observedStoredCapSecant[k]),
++      scalarSecantDifferences:Object.fromEntries(Object.keys(left.scalars).map(k=>[k,right.scalars[k].secant-left.scalars[k].secant])),
++      worldZSecantDifferences:Object.fromEntries(Object.keys(left.worldZ).map(k=>[k,right.worldZ[k].secant-left.worldZ[k].secant])),
++      worldYSecantDifferences:Object.fromEntries(Object.keys(left.worldY).map(k=>[k,right.worldY[k].secant-left.worldY[k].secant]))};
++  }
++  const centre=16;assert.equal(grid[centre].x,5);
++  const lower=Math.floor((holdX-start)/h),upper=Math.ceil((holdX-start)/h);
++  assert(lower>=1&&upper+1<grid.length,'Hold equal-span bracket inside fixed grid');
++  report.secants={span:h,x5:pair(interval(grid[centre-1],grid[centre]),interval(grid[centre],grid[centre+1])),
++    authoredHold:pair(interval(grid[lower-1],grid[lower]),interval(grid[upper],grid[upper+1])),
++    authoredHoldGridBracket:[grid[lower].x,grid[upper].x],exactHold:holdRow.x,
++    interpretation:'Equal-span finite differences at one fixed resolution. Hold-side intervals bracket, rather than invent, centred hold±h samples. No derivative discontinuity proof.'};
++  report.complete=true;
++}catch(error){report.firstFailure=error instanceof Error?error.name+': '+error.message:String(error);report.complete=false;}
++finite(report);const bytes=Buffer.from(JSON.stringify(report,null,2)+'\n');assert(bytes.length<=inputs.limits.reportBytes,'Finite JSON report cap');
++writeFileSync(OUTPUT,bytes);console.log(JSON.stringify({complete:report.complete,firstFailure:report.firstFailure,rows:report.rows.length,
++  output:{file:OUTPUT,bytes:bytes.length,sha256:sha(bytes)},noNativeOrDerivativeKinkClaim:true}));
++if(!report.complete)process.exitCode=1;
+--- /dev/null
++++ b/front-format.ts
+@@ -0,0 +1,3 @@
++/** Exact two constant lines extracted from pinned frontRecords.ts; no physics imports. */
++export const FRONT_STRIDE = 9;
++export const FRONT_FIELD = { x: 0, z: 1, front: 2, sigma: 3, tau: 4, footHeight: 5, footDepth: 6, throwZ: 7, pace: 8 } as const;
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,33 @@
++# Equal-span cap reach / authored-hold decomposition — source-only proposal
++
++This new directory contains an unexecuted finite analysis of the root's existing generic cap fixture. No game module or entry script has been imported, evaluated, compiled, syntax/type checked, tested or run. No build, numerical evaluation, native/browser, OS/listener, port or Git action occurred. The frozen angular proposal, identity comparison V2 recipe, private fixture inputs and production remain unchanged.
++
++## Exact inputs and construction
++
++`input-pins.json` pins the actual private 3e fixture's six provider/format modules, source/stdout/execution receipt and eight public assets. Baseline and observation copies are byte-exact initially. The earlier 17-row residual inspector/decomposer and its provenance are copied as attributed source evidence only. That earlier inspector used the preceding rational saturation formula; this proposal does not reuse that obsolete reconstruction.
++
++The only observation-copy patches are in boundedCProfile.ts and ProfileLibrary.ts. Optional trace capture records the **literal current** ordinary/roof/cap arithmetic, including the actual rounded prior roof point, last normal, cap arc arithmetic, ND Float32 cap and metric Float32 stage. The ordinary library output is compared against a separate untouched provider copy. The complete 256 profile words, public point/full cap words, crest words and reconstructed metric cap words must match exactly; ULP/error fields remain in the receipt. There is no independently invented rounded cap approximation.
++
++The saved 81-word Float32 front packet is the fixture authority. Each grid query uses the same packet-field interpolation and actual constant foot controls, including their stored Float32 values. The original recorded unrounded normalization query/times are retained separately. Both current provider copies apply the same actual bracket, case blending, carrier hold and F32 parameter/scale stages.
++
++## Bounded sample set and hold convention
++
++The only declared world-X samples are **33 points from 4.75 through 5.25 at 1/64m**, plus the exact published authored-hold sample. The hold location is a single affine inverse inside the packet segment containing that fixed span, using the current provider's b.touchdown*b.unit. It must already lie in the fixed range. No search, coefficient tuning, span expansion, scene seed/camera or target retargeting exists.
++
++Binary64 inversion can leave a small age residual. The hold-only query uses the exact published authored-hold seconds, records its packet inversion residual and verifies the residual within a predeclared 8 binary64 ULP bound. That is an offline event evaluation, not assignment to a simulation clock. Its exact X and hypothetical stored Float32 X remain separate. No hold±h points are added.
++
++Equal-span 1/64m secants are centred at x=5 using the grid. Near authored hold, the two equal-span grid intervals immediately before/after the hold bracket are compared, and their actual endpoints/bracket are reported. They are **not** described as exact centred hold stencils. The exact hold sample itself is retained separately. Standard full-profile lookup can internally evaluate its existing velocity stencil/event clocks; those ordinary internal evaluations are not additional reported X samples or a new derivative experiment.
++
++Each row records ND/metric raw W/H, B, mean adjustments and requested delta before/after hold taper, bounded correction, normalX/full normal-offset contribution, original carrier/hold/lifecycle clocks and exact cap stages. Additive terms include the actual arc term and explicit assembly/F32 residuals; they explain, rather than replace, the observed provider result. Disabled case-mean observations remain null with their original zero adjustment, not fabricated mean data.
++
++## Planned root execution and limits
++
++The proposal has **no results**. Root should review the complete patch and entry source, then syntax/bundle/check it before one offline execution. A possible root-owned bundle command is:
++
++```
++/Users/regina/Desktop/Projects/surfing-game/node_modules/.bin/esbuild /private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analyze.ts --bundle --platform=node --format=esm --outfile=/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analyze.mjs
++```
++
++Root may then invoke the bundle with its installed Node. The entry writes only new `reach-decomposition.json`, refuses an existing output, limits JSON to 2MiB and rejects nonfinite values, out-of-domain hold, nonconstant packet controls, nonmature/collapsed/post-impact branches or changed provider words. It records an honest incomplete prefix/failure on ordinary assertion failures. There are at most 34 declared observations, with no extra world-X samples. Copied baseline/input bytes are rechecked before evaluation.
++
++Equal-resolution finite secants can locate and attribute a sampled turn. They do not prove a derivative discontinuity, globally C1 geometry, native appearance, body fit, ridden passage or FPS. Root's future execution receipt must attribute actual execution; the script cannot identify its executing agent. `readiness.json` and the unified `analysis.patch` pin the source-only proposal and its scope. No numerical output or executable bundle exists at preparation time.
+--- /dev/null
++++ b/input-pins.json
+@@ -0,0 +1,217 @@
++{
++  "schema": "cap-reach-hold-source-only-inputs/v1",
++  "parentReportedRootHead": "3e75550c2",
++  "independentGitCheck": false,
++  "actualPrivateFixtureRoot": "/private/tmp/tube-cap-turn-refinement-checks-20261005",
++  "copiedExactProviderModules": [
++    {
++      "relative": "src/wave/barrel/ProfileLibrary.ts",
++      "original": {
++        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/ProfileLibrary.ts",
++        "bytes": 31647,
++        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
++      },
++      "baseline": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/ProfileLibrary.ts",
++        "bytes": 31647,
++        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
++      },
++      "candidateBeforeInstrumentation": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/ProfileLibrary.ts",
++        "bytes": 31647,
++        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
++      }
++    },
++    {
++      "relative": "src/wave/barrel/boundedCProfile.ts",
++      "original": {
++        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/boundedCProfile.ts",
++        "bytes": 20184,
++        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
++      },
++      "baseline": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/boundedCProfile.ts",
++        "bytes": 20184,
++        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
++      },
++      "candidateBeforeInstrumentation": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/boundedCProfile.ts",
++        "bytes": 20184,
++        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
++      }
++    },
++    {
++      "relative": "src/wave/barrel/sharedUpperRoot.ts",
++      "original": {
++        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/sharedUpperRoot.ts",
++        "bytes": 3200,
++        "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
++      },
++      "baseline": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/sharedUpperRoot.ts",
++        "bytes": 3200,
++        "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
++      },
++      "candidateBeforeInstrumentation": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/sharedUpperRoot.ts",
++        "bytes": 3200,
++        "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
++      }
++    },
++    {
++      "relative": "src/wave/barrel/profileFormat.ts",
++      "original": {
++        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/profileFormat.ts",
++        "bytes": 2251,
++        "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
++      },
++      "baseline": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/profileFormat.ts",
++        "bytes": 2251,
++        "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
++      },
++      "candidateBeforeInstrumentation": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/profileFormat.ts",
++        "bytes": 2251,
++        "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
++      }
++    },
++    {
++      "relative": "src/wave/barrel/frontRecords.ts",
++      "original": {
++        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/frontRecords.ts",
++        "bytes": 1941,
++        "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
++      },
++      "baseline": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/frontRecords.ts",
++        "bytes": 1941,
++        "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
++      },
++      "candidateBeforeInstrumentation": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/frontRecords.ts",
++        "bytes": 1941,
++        "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
++      }
++    },
++    {
++      "relative": "src/wave/dispersion.ts",
++      "original": {
++        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/dispersion.ts",
++        "bytes": 3285,
++        "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
++      },
++      "baseline": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/dispersion.ts",
++        "bytes": 3285,
++        "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
++      },
++      "candidateBeforeInstrumentation": {
++        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/dispersion.ts",
++        "bytes": 3285,
++        "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
++      }
++    }
++  ],
++  "evidence": [
++    {
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.ts",
++      "bytes": 3687,
++      "sha256": "54eeab659d538c636ebbc50e10f1e307116878f0bd7d2dbb76c8784b01d6e30f"
++    },
++    {
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/fixture-decomposition.json",
++      "bytes": 9975,
++      "sha256": "4ff969177aa66194a30088be9f97e58fb63972c5edcf24908182e4c8e34acaab"
++    },
++    {
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/root-fixture-execution.json",
++      "bytes": 1417,
++      "sha256": "8ef3329659c3bca3a67ad70dd3024907840fa621823773dec2fd18d9902a7f2b"
++    },
++    {
++      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/inspect.py",
++      "bytes": 8660,
++      "sha256": "4ebc99b2ab53086eb7297f8000651f0065fd3307925ae0bd9df943f714f4e105"
++    },
++    {
++      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/decompose.py",
++      "bytes": 4730,
++      "sha256": "84a580bbbcb100abedd1a3f97a537e166d07a84a54ea4490da4048af6d1cf842"
++    },
++    {
++      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/provenance.json",
++      "bytes": 5099,
++      "sha256": "a01ebfca96d9ce42f408fc8d48a792ea03a9c4afd415a1e181d0664f772bdd89"
++    }
++  ],
++  "barrelIndex": {
++    "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/barrelLibraryIndex.ts",
++    "bytes": 1662,
++    "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8"
++  },
++  "assets": [
++    {
++      "asset": "barrels/pad19-a20-l12.bin",
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/pad19-a20-l12.bin",
++      "bytes": 149848,
++      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
++    },
++    {
++      "asset": "barrels/pad19-a30-l12.bin",
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/pad19-a30-l12.bin",
++      "bytes": 163264,
++      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
++    },
++    {
++      "asset": "barrels/pad19-a45-l12.bin",
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/pad19-a45-l12.bin",
++      "bytes": 168424,
++      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
++    },
++    {
++      "asset": "barrels/periodic-padang19s-l12.bin",
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-padang19s-l12.bin",
++      "bytes": 181852,
++      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
++    },
++    {
++      "asset": "barrels/periodic-reef42-l12.bin",
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-reef42-l12.bin",
++      "bytes": 193180,
++      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
++    },
++    {
++      "asset": "barrels/periodic-point21-a15-l12.bin",
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-point21-a15-l12.bin",
++      "bytes": 106500,
++      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
++    },
++    {
++      "asset": "barrels/periodic-point21-a23-l12.bin",
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-point21-a23-l12.bin",
++      "bytes": 128172,
++      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
++    },
++    {
++      "asset": "barrels/periodic-point21-a30-l12.bin",
++      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-point21-a30-l12.bin",
++      "bytes": 173576,
++      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
++    }
++  ],
++  "limits": {
++    "gridStart": 4.75,
++    "gridEnd": 5.25,
++    "gridStep": 0.015625,
++    "gridCount": 33,
++    "exactHoldPoints": 1,
++    "maximumUniqueSamplePoints": 34,
++    "secantSpan": 0.015625,
++    "reportBytes": 2097152,
++    "output": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/reach-decomposition.json",
++    "noExpansionOrSearch": true
++  },
++  "preparedOnly": true,
++  "moduleImportOrCalculationExecuted": false
++}

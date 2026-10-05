@@ -1,0 +1,25 @@
+{
+  "scope": "Offline expected historical facesOut mapping only; no observed runtime index buffer",
+  "fileSha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237",
+  "triangles": 20748,
+  "flipTriangles": 14490,
+  "changedTriangles": 14490,
+  "nonfiniteFacing": 0,
+  "zeroFacing": 6252,
+  "firstDifference": {
+    "triangleSlot": 0,
+    "source": [
+      0,
+      134,
+      1
+    ],
+    "expectedDraw": [
+      0,
+      1,
+      134
+    ],
+    "facing": -0.5127387791032216
+  },
+  "sourcePrefixSha256": "99e6a87e6d7082f77cd93c39a82835081ceb19b748ddc3abd7f86bc8dfdd033b",
+  "expectedDrawPrefixSha256": "824d55580f227ac978c44c0437e65d2a67f747a0232f7ae259a55edbb9aadb9d"
+}

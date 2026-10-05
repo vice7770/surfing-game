@@ -1,0 +1,217 @@
+{
+  "schema": "leaf-identity-core-native/v1",
+  "complete": false,
+  "firstFailure": null,
+  "sealSha256": "e342432a742c1b32a886dbb2e51cf4c1d120668cd379ecff9f7d31a15660da2d",
+  "applicationBuild": {
+    "file": "/private/tmp/tube-leaf-identity-core-native-20261005/build.json",
+    "bytes": 19090,
+    "sha256": "32c43a5d49aaa0086cb7315ec492fda69c87c415f7c45d22d7345b16302ffbaf"
+  },
+  "scenePoseReferenceReport": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+    "bytes": 49054,
+    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+  },
+  "referenceLoft": {
+    "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
+    "bytes": 1204806,
+    "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+  },
+  "baselineAuthority": {
+    "owner": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/owner.json",
+      "bytes": 15739,
+      "sha256": "015c31d0bf9fecc62935ab919e7a65277f74084b79b80a7a4fe40e26efe7a02c"
+    },
+    "report": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/report.json",
+      "bytes": 42900,
+      "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
+    },
+    "loft": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
+      "bytes": 1204806,
+      "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+    },
+    "build": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/build.json",
+      "bytes": 16556,
+      "sha256": "f945caaa1aba8d283487942e7150a7ed9e0def1b1c2e190b75ea83d6fa3bd705"
+    },
+    "seal": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/seal.json",
+      "bytes": 9461,
+      "sha256": "bc8d8374c629fd7cf74da7abac0609b036242f3a3b0ee53ce8a8a1519e9dd3ee"
+    },
+    "sourceFreeze": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source-freeze.json",
+      "bytes": 6300,
+      "sha256": "e38226f54858e5804065cec68626af7ed2b1e1fbf799f87ecef12f2136825e78"
+    },
+    "drawInputs": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/draw-inputs.json",
+      "bytes": 1696833,
+      "sha256": "0f26472964cb9ee71d3abe267b5e5c1be16aeadb2eaf7bbd6cf3848ce63a4a6f"
+    }
+  },
+  "rootCurrentApplicationReceipt": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+    "bytes": 132778,
+    "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+  },
+  "opticalAuthority": [
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
+      "bytes": 8807,
+      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
+      "bytes": 2757,
+      "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
+      "bytes": 39508,
+      "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+    }
+  ],
+  "authoredAuthority": [
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+      "bytes": 11001,
+      "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    }
+  ],
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "policy": {
+    "pairs": [
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      }
+    ],
+    "geometryOrder": [
+      "preserved-shared-leaf",
+      "identity-core",
+      "restored-preserved-shared-leaf-repeat"
+    ],
+    "oldFull37Exact": true,
+    "candidateActiveCountsMayChange": true,
+    "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Old pre-identity mask equality is not required because the geometry footprint can change.",
+    "currentMaterialPolicy": "Unmodified current compiled authored max-mask and wall-light A on both variants; observer wrapper records exact shader words only.",
+    "targetCorner": {
+      "front": 41,
+      "worldCrestX": 75.625,
+      "coordinateIsSigma": false,
+      "priorMeasuredBendDegrees": 21.479273974306263
+    },
+    "noPlacement": true,
+    "noSteps": true,
+    "noSeedEpochPoseSelectorSearch": true,
+    "globalC1Guarantee": false,
+    "identityCoreOnlyRuntimeGeometryChange": true,
+    "baselineSuppliedCheckpoint": "2f43b943cfb29419a063c6ee31813e4f116c7a7a",
+    "oldFull37Producer": "Completed shared-leaf V2 candidate (pre-identity), not earlier cap-only geometry.",
+    "priorOrdinaryDrawInputsExactFields": [
+      "seaTime",
+      "step",
+      "config",
+      "look",
+      "holdClearDrawing",
+      "slope",
+      "stillLevel",
+      "surfaceRevision",
+      "surfaceGrid",
+      "surface",
+      "rawFrontPacket",
+      "board8",
+      "rider33",
+      "normalCameraWords"
+    ]
+  },
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 680,
+    "cleanupSeconds": 20,
+    "pngCount": 8,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 100663296,
+    "reportBytes": 2097152,
+    "sidecarBytes": 6291456,
+    "drawInputsBytes": 8388608
+  },
+  "stepCount": 0,
+  "pairs": [],
+  "artifacts": [],
+  "pngCount": 0,
+  "pngBytes": 0,
+  "browserErrors": [],
+  "acceptance": {
+    "visualCause": null,
+    "playability": false,
+    "productionAdoptionByThisObserver": false,
+    "identityCoreApplicationIsExternalToCapture": true
+  }
+}

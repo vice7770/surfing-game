@@ -1,0 +1,94 @@
+{
+  "schema": "owned-group-anchor-source-only-proposal/v1",
+  "root": "/private/tmp/tube-owned-group-anchor-proposal-20261005",
+  "createdBySubagent": "/root/tube_approach_passive_patch",
+  "scope": "New standalone pure Python identity-anchor source and synthetic fixture files only; no owner recipe adoption",
+  "baselineOwnerSource": {
+    "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/baseline-v4-run.py",
+    "bytes": 25010,
+    "sha256": "9f46679cd446b85d50115d7e59dbe320fb9db7012cc38eea8d2bb6b903170e71",
+    "absoluteOrigin": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/run.py",
+    "copyBytesEqualSourceAtPreservation": true
+  },
+  "rootReportedFailure": {
+    "actualHandle": "40957",
+    "terminalExitCode": 1,
+    "elapsedSeconds": 16.9664,
+    "physicalSteps": 0,
+    "pngCount": 0,
+    "phase": "browserstartup",
+    "message": "Owned PID identity changed",
+    "offendingBeforeCurrentRowRecorded": false,
+    "exactCauseProved": false
+  },
+  "rootReportedIndependentClosureAuthority": {
+    "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/root-v4-post-failure-closure.json",
+    "bytes": 49694,
+    "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21",
+    "absoluteOrigin": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+    "copyBytesEqualSourceAtPreservation": true
+  },
+  "rootFreshFiveProtectedAuthority": {
+    "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/root-five-protected-preview-identities.json",
+    "bytes": 2735,
+    "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28",
+    "absoluteOrigin": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+    "copyBytesEqualSourceAtPreservation": true
+  },
+  "humanLatestPreviewAuthority": {
+    "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/human-preview4316-process.json",
+    "bytes": 526,
+    "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85",
+    "absoluteOrigin": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+    "copyBytesEqualSourceAtPreservation": true
+  },
+  "protectedPorts": [
+    4312,
+    4313,
+    4314,
+    4315,
+    4316
+  ],
+  "ownedPorts": [
+    4301,
+    9711
+  ],
+  "fixtureCountBySourceTextOnly": 20,
+  "syntaxChecked": false,
+  "moduleImported": false,
+  "fixturesExecuted": false,
+  "nativeExecuted": false,
+  "osProcessOrListenerReadByProposal": false,
+  "signalsSent": false,
+  "sealedRecipeEdited": false,
+  "productionOrDistEdited": false,
+  "gitMutated": false,
+  "ordinaryV5RecipeCreated": false,
+  "rootReviewRequiredBeforeAdoptionFreezeOrExecution": true,
+  "independentReview": {
+    "agent": "/root/shared_leaf_v2_owner_review",
+    "abstractContractReviewed": true,
+    "finalFileLevelReview": "pending",
+    "sourceApprovalClaim": false,
+    "qualification": "First bootstrap tied to actual unreaped live Popen; full ps start/cmd identity is finite-precision bounded policy, not absolute PID reuse immunity"
+  },
+  "proposalCapsForRootReview": {
+    "members": 256,
+    "commandCharacters": 65536,
+    "startedCharacters": 256,
+    "childChangeNotes": 16,
+    "oversizePolicy": "reject; never truncate exact identities"
+  },
+  "finiteOwnerPolicyPreservedInIntegrationGuidance": {
+    "nativeSeconds": 640,
+    "ownerSeconds": 653,
+    "totalSeconds": 690,
+    "cleanupSeconds": 20,
+    "maximumSteps": 3000,
+    "osReadSeconds": 2,
+    "periodicReadSeconds": 5,
+    "requiredReadAttempts": 3,
+    "periodicTimeout": "nonfatal observation; no state updates or retries that start another native"
+  },
+  "qualification": "File copying/hashing/diff generation executed only to preserve source artifacts. Proposed module, tests, native harness and OS identity/listener observations were not executed."
+}

@@ -1,0 +1,89 @@
+{
+  "schema": "guided-ordinary-v5-source-readiness/v1",
+  "sourceOnly": true,
+  "candidateImportsSyntaxTestsPreparationBuildsDiagnosticCompilationNativeOSPortsGitProbesExecuted": false,
+  "productionMutations": false,
+  "historicalV4OriginalBytesReverifiedByFileReads": true,
+  "unchangedControlWitnessDriverHelpers": {
+    "control-policy.mjs": {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+    },
+    "body-mesh.mjs": {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    },
+    "criteria.mjs": {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+    },
+    "loft-snapshot-tools.mjs": {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+    },
+    "rider-driver.mjs": {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/rider-driver.mjs",
+      "bytes": 14485,
+      "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5"
+    }
+  },
+  "exactOriginalWitnessValidatorExceptSchema": true,
+  "nativeDifferenceExactlyScratchPathSchemaReadinessAndProvenance": true,
+  "originalV4FailedOwnerAndNativePreserved": {
+    "directory": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005",
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/owner.json",
+      "bytes": 17385,
+      "sha256": "38197cc967caa3800bcada6c24210b4483f60d80591ee01a73177ca47402aa59"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/candidate-first/report.json",
+      "bytes": 7256,
+      "sha256": "c61dc548c52838fc1ab8739cad55c109110960ad04f98047a71bb97cb33b870b"
+    },
+    "launcher": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/launcher.json",
+      "bytes": 2362,
+      "sha256": "e1b974c46ad87fa75c198b1d56587bb6e29ea360175997422f3f96f4db78ffae"
+    },
+    "nativeLog": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "rootPostFailurePinsAndClosure": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+      "bytes": 49694,
+      "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+    },
+    "complete": false,
+    "ownerFirstFailure": "AssertionError: Owned PID identity changed",
+    "nativeFirstFailure": null,
+    "observedReportSteps": 0,
+    "observedPngCount": 0,
+    "causeQualification": "Legacy owner assertion is recorded; exact underlying native/child identity cause remains unproved. Root later closure is independent evidence, not retroactive owner success.",
+    "copiedHistoricalOutputs": false
+  },
+  "existingActualNormalAndDiagnosticBuildAuthorityReused": true,
+  "copiedHistoricalApplicationModuleOrCandidateOutputDuringDraft": false,
+  "exactPureModule": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owned_group_anchor.py",
+    "bytes": 15501,
+    "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+  },
+  "fiveProtectedRootAuthority": {
+    "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+    "bytes": 2735,
+    "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+  },
+  "osReadSeconds": 2,
+  "requiredReadAttempts": 3,
+  "periodicIdentitySeconds": 5,
+  "pendingRootReviewAndChecks": true,
+  "rootMustRefreshInputsAndFreezeAfterChecks": true,
+  "wholeAuthorityPreparationAndRuntimePending": true
+}

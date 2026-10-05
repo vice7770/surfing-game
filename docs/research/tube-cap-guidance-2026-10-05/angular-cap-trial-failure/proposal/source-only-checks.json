@@ -1,0 +1,39 @@
+{
+  "readiness": {
+    "bytes": 4157,
+    "sha256": "18abe8b4de34c48150dce5d5160f747fe7d6b05852e4acba170f1004472a87e3"
+  },
+  "patch": {
+    "bytes": 18467,
+    "sha256": "86e9f3b209c00f334fad535dfe33cd0462590b8c52188988706046c82439c9eb"
+  },
+  "originalHeldSourcesUnchanged": true,
+  "payloadCount": 8,
+  "candidate": [
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "original": {
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      "candidate": {
+        "bytes": 88408,
+        "sha256": "cab60f46d0a77074571fac698fd68548370bb3f6d71e15b846880ac38efb8298"
+      },
+      "originalUnchanged": true
+    },
+    {
+      "path": "src/wave/barrel/boundedCCapRefinement.test.ts",
+      "original": {
+        "bytes": 11167,
+        "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+      },
+      "candidate": {
+        "bytes": 18615,
+        "sha256": "509a35e001290a2242b9577d69787ab3b7788288f0eb887443b8a2a5a40362e0"
+      },
+      "originalUnchanged": true
+    }
+  ],
+  "codeExecuted": false
+}

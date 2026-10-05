@@ -1,0 +1,42 @@
+{
+  "schema": "guided-ordinary-source-preparation/v5",
+  "sourceOnly": true,
+  "temporaryFileSourceWriterExecuted": true,
+  "sourceWriter": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-source-writer-20261005.py",
+    "bytes": 13116,
+    "sha256": "1841f6a285835269fd12f70c3c90552cd6cfea1c6cce5467ea481dbec2fa476a"
+  },
+  "candidateImportsSyntaxTestsPrepareBuildNativeOSPortsGitProbesExecuted": false,
+  "productionEdits": false,
+  "originalFailedV4Untouched": true,
+  "historicalDistDiagnosticModuleOrExecutionOutputsCopied": false,
+  "onlyHistoricalRecipeAndMetadataCopiedToBefore": true,
+  "ownerIntegrationDonor": {
+    "file": "/private/tmp/tube-leaf-identity-core-native-20261005/run.py",
+    "bytes": 19983,
+    "sha256": "57e144cf1468425a4bda9e81c354932bd03c87baa5270529fe21dcdd117b3ebb"
+  },
+  "pureModuleSource": {
+    "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+    "bytes": 15501,
+    "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+  },
+  "normalAndDiagnosticBuildEvidence": "Existing actual V4 terminal0 receipts are referenced exactly, not rerun or relabeled as V5 build execution.",
+  "executionPendingOwnerPolicyReview": true,
+  "integrationReviewPending": true,
+  "integrationChecksExecuted": false,
+  "finalFileOnlyWriter": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-freeze-writer-20261005.py",
+    "bytes": 7173,
+    "sha256": "e80ee1cbd6283aed88e74dd078cce7c80eadf44ad3c66c6b02f958940cb0df6e"
+  },
+  "completedReadExpiryAdditionAuthorizedByRoot": true,
+  "sourceReviews": {
+    "rootIntegrationApprovalPending": true,
+    "independentImmutableAuthoritySourceReviewCompleted": true,
+    "independentExpiryAndSignalSourceReviewCompleted": true,
+    "independentReviewExecutedChecks": false,
+    "reviewQualification": "Peer read-only reviews found no blocking immutable V4 authority or caller expiry/signal issue. Its precision suggestion was applied: detached Identity construction precedes final age sampling/classification/window. Root review and actual integration checks remain pending."
+  }
+}

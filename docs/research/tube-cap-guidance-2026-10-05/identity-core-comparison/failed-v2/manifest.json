@@ -1,0 +1,743 @@
+{
+  "schema": "identity-core-v2-failed-native-archive/v1",
+  "complete": true,
+  "actualOwnerToolSession": 49623,
+  "actualOwnerTerminalExitCode": 1,
+  "elapsedSeconds": 210.1138416659669,
+  "diagnosticStepsRecorded": 0,
+  "pngCount": 0,
+  "ownerComplete": false,
+  "nativeComplete": false,
+  "nativeFirstFailure": "Error: timed out waiting for document.querySelector(\"#app\")?.dataset.screen===\"pause\" && document.querySelector(\"#app\")?.dataset.base===\"ride\" && breaklineDiagnostics.mode.host?.snapshot.status.ride && !breaklineLab.active && breaklineLab.clock.paused\n    at Page.waitFor (file:///private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs:122:51)\n    at async file:///private/tmp/tube-leaf-identity-core-native-v2-20261005/native.mjs:39:2",
+  "failedWaitSeconds": 180,
+  "finalScreenOrHostStateRetained": false,
+  "immediateMenuReturnRideObservedIsNotFinalPageEvidence": true,
+  "callerSyntheticTestsPassed": 6,
+  "periodicLateReadCount": 13,
+  "completedLateReadRejectedWithoutStateUpdate": true,
+  "rootIndependentPostFailurePinCount": 698,
+  "ownedGroup": 47730,
+  "ownedGroupClosed": true,
+  "allFiveProtectedPreviewsPreserved": true,
+  "noVisualRideOrQualityResult": true,
+  "directCopyCount": 35,
+  "reusedPayloadCount": 36,
+  "files": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/README.md",
+        "bytes": 5154,
+        "sha256": "aa76fb58f9fca0a330b7f89a93e6aeba131347b3c957b8d1f447b1e321bfdf79"
+      },
+      "copy": "README.md",
+      "bytes": 5154,
+      "sha256": "aa76fb58f9fca0a330b7f89a93e6aeba131347b3c957b8d1f447b1e321bfdf79"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/before-owner-policy-preservation.json",
+        "bytes": 5160,
+        "sha256": "8c3282ec574958687e9c9401a2006c8ed21f66930bd97ca67f25a4b82ecc67ba"
+      },
+      "copy": "before-owner-policy-preservation.json",
+      "bytes": 5160,
+      "sha256": "8c3282ec574958687e9c9401a2006c8ed21f66930bd97ca67f25a4b82ecc67ba"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/before-root-integration-review/inputs.json",
+        "bytes": 15371,
+        "sha256": "2e29ff4ed3499d61efa28f23381380698080a2048ffc4337ee918900ed5c9c72"
+      },
+      "copy": "before-root-integration-review/inputs.json",
+      "bytes": 15371,
+      "sha256": "2e29ff4ed3499d61efa28f23381380698080a2048ffc4337ee918900ed5c9c72"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/before-root-integration-review/preparation-freeze.json",
+        "bytes": 11147,
+        "sha256": "2c1624821ec0cab3fe2c44fb96157993fab61d61562cf61a179fb61f11921626"
+      },
+      "copy": "before-root-integration-review/preparation-freeze.json",
+      "bytes": 11147,
+      "sha256": "2c1624821ec0cab3fe2c44fb96157993fab61d61562cf61a179fb61f11921626"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/before-root-provenance-fix/preparation-freeze.json",
+        "bytes": 10430,
+        "sha256": "19a73fd9ab762684f2b64a6e795f2a8abc6ee6410c3354b0e7b193602a3cbb09"
+      },
+      "copy": "before-root-provenance-fix/preparation-freeze.json",
+      "bytes": 10430,
+      "sha256": "19a73fd9ab762684f2b64a6e795f2a8abc6ee6410c3354b0e7b193602a3cbb09"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/before-root-provenance-fix/prepare.py",
+        "bytes": 13085,
+        "sha256": "3a27a9dae5a2cd70c49036851fed46310c62c8940a824bb68b56b79b7f1a3329"
+      },
+      "copy": "before-root-provenance-fix/prepare.py",
+      "bytes": 13085,
+      "sha256": "3a27a9dae5a2cd70c49036851fed46310c62c8940a824bb68b56b79b7f1a3329"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/build.json",
+        "bytes": 19273,
+        "sha256": "5fd2bb183d84490854ed58aaacbd90941122ea26b15bb8dc1cd5a1e5f92a26bc"
+      },
+      "copy": "build.json",
+      "bytes": 19273,
+      "sha256": "5fd2bb183d84490854ed58aaacbd90941122ea26b15bb8dc1cd5a1e5f92a26bc"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/candidate-first/report.json",
+        "bytes": 17366,
+        "sha256": "53a150b92afe2864ea1ef78dc14027e1633152f35c94330d69fc5e6b7a17a941"
+      },
+      "copy": "candidate-first/report.json",
+      "bytes": 17366,
+      "sha256": "53a150b92afe2864ea1ef78dc14027e1633152f35c94330d69fc5e6b7a17a941"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/geometry-inspection.mjs",
+        "bytes": 18907,
+        "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+      },
+      "copy": "geometry-inspection.mjs",
+      "bytes": 18907,
+      "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/inputs.json",
+        "bytes": 15616,
+        "sha256": "7379cbddb978726d9e468c3aa17f7799901a7ee479e9849e7fb06a05baee5412"
+      },
+      "copy": "inputs.json",
+      "bytes": 15616,
+      "sha256": "7379cbddb978726d9e468c3aa17f7799901a7ee479e9849e7fb06a05baee5412"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/launcher.json",
+        "bytes": 12253,
+        "sha256": "6dbce851cc8fe10a31f311e7aff435c84ceacfd58f322574b5fe0de490d19eeb"
+      },
+      "copy": "launcher.json",
+      "bytes": 12253,
+      "sha256": "6dbce851cc8fe10a31f311e7aff435c84ceacfd58f322574b5fe0de490d19eeb"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/live.json",
+        "bytes": 7517,
+        "sha256": "833202eeb0f10921b4b1bc0bebdf1647e50e1f27b44d2106ee3fd806486ba152"
+      },
+      "copy": "live.json",
+      "bytes": 7517,
+      "sha256": "833202eeb0f10921b4b1bc0bebdf1647e50e1f27b44d2106ee3fd806486ba152"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/measure.py",
+        "bytes": 8319,
+        "sha256": "bea50a3e1251261008bcea6ab2918aae5b3af71cb43896a26b81363756a5434d"
+      },
+      "copy": "measure.py",
+      "bytes": 8319,
+      "sha256": "bea50a3e1251261008bcea6ab2918aae5b3af71cb43896a26b81363756a5434d"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/native.log",
+        "bytes": 511,
+        "sha256": "78db23433803d2560a80c0a26245d5e789519be0f07e7d013298aad2ea8986b4"
+      },
+      "copy": "native.log",
+      "bytes": 511,
+      "sha256": "78db23433803d2560a80c0a26245d5e789519be0f07e7d013298aad2ea8986b4"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/native.mjs",
+        "bytes": 11178,
+        "sha256": "500a25ce5ed2d75bf2652ff9d141289aff8c36512d37e146d877f4d17aa35e40"
+      },
+      "copy": "native.mjs",
+      "bytes": 11178,
+      "sha256": "500a25ce5ed2d75bf2652ff9d141289aff8c36512d37e146d877f4d17aa35e40"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "copy": "owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/owner-expired-read.patch",
+        "bytes": 65230,
+        "sha256": "b3dbe46c706c27a7587a2f999bc83943474c89bde957babe0b5f12639d45ad78"
+      },
+      "copy": "owner-expired-read.patch",
+      "bytes": 65230,
+      "sha256": "b3dbe46c706c27a7587a2f999bc83943474c89bde957babe0b5f12639d45ad78"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/owner-policy-amendment.md",
+        "bytes": 2441,
+        "sha256": "4ff04fa67d095b6c5a9c96b6f7b4b2d9f610811dfe0557e8fa73a93f3256c402"
+      },
+      "copy": "owner-policy-amendment.md",
+      "bytes": 2441,
+      "sha256": "4ff04fa67d095b6c5a9c96b6f7b4b2d9f610811dfe0557e8fa73a93f3256c402"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/owner-policy-amendment.patch",
+        "bytes": 52122,
+        "sha256": "1c0bfa56d9b1f877570b247b5c0a4ee7a5af57f75251797e7e42ac8031080138"
+      },
+      "copy": "owner-policy-amendment.patch",
+      "bytes": 52122,
+      "sha256": "1c0bfa56d9b1f877570b247b5c0a4ee7a5af57f75251797e7e42ac8031080138"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/owner.json",
+        "bytes": 30233,
+        "sha256": "64d2d18f01afd036659ab3f5ffcc12760732714bcbcc91e891803e2cfdc5d24b"
+      },
+      "copy": "owner.json",
+      "bytes": 30233,
+      "sha256": "64d2d18f01afd036659ab3f5ffcc12760732714bcbcc91e891803e2cfdc5d24b"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/parent-copy.json",
+        "bytes": 22883,
+        "sha256": "2c854255d6677c5e5737196381a5a3cf8dc6385bfae9eeb433e21f95659583f0"
+      },
+      "copy": "parent-copy.json",
+      "bytes": 22883,
+      "sha256": "2c854255d6677c5e5737196381a5a3cf8dc6385bfae9eeb433e21f95659583f0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/preparation-freeze.json",
+        "bytes": 12531,
+        "sha256": "8c53e91651223d5b4dc428f26a0e1a593ae7b0a3c41896276800d5aa3148bf94"
+      },
+      "copy": "preparation-freeze.json",
+      "bytes": 12531,
+      "sha256": "8c53e91651223d5b4dc428f26a0e1a593ae7b0a3c41896276800d5aa3148bf94"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/prepare-result.json",
+        "bytes": 817,
+        "sha256": "e0536b005b89770ae6c5d8d448f69c18153e0933c5d8e38dc9daf99d2a578138"
+      },
+      "copy": "prepare-result.json",
+      "bytes": 817,
+      "sha256": "e0536b005b89770ae6c5d8d448f69c18153e0933c5d8e38dc9daf99d2a578138"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/prepare.py",
+        "bytes": 13266,
+        "sha256": "a777122685ec9014f5d3d4192030e9d2de47e49153db9a4c890cca1da696090d"
+      },
+      "copy": "prepare.py",
+      "bytes": 13266,
+      "sha256": "a777122685ec9014f5d3d4192030e9d2de47e49153db9a4c890cca1da696090d"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/recipe-diff.md",
+        "bytes": 1460,
+        "sha256": "6ab48a0a4a70fd88f3ac37197fcd2e28efc3491ef02cecafdac8f9a33ca09847"
+      },
+      "copy": "recipe-diff.md",
+      "bytes": 1460,
+      "sha256": "6ab48a0a4a70fd88f3ac37197fcd2e28efc3491ef02cecafdac8f9a33ca09847"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/recipe.patch",
+        "bytes": 124127,
+        "sha256": "9d21edbc07d023ca4975c5f46c7979c45453ae7ede6e403f3b466d90ba2eee68"
+      },
+      "copy": "recipe.patch",
+      "bytes": 124127,
+      "sha256": "9d21edbc07d023ca4975c5f46c7979c45453ae7ede6e403f3b466d90ba2eee68"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/root-caller-tests.log",
+        "bytes": 896,
+        "sha256": "d8c1818da3ec7f702141458cbff355cb84b72a4884264b6fdfc49b68ac3f678a"
+      },
+      "copy": "root-caller-tests.log",
+      "bytes": 896,
+      "sha256": "d8c1818da3ec7f702141458cbff355cb84b72a4884264b6fdfc49b68ac3f678a"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/root-caller-tests.py",
+        "bytes": 4384,
+        "sha256": "cc6164aa7b722954c94ac918d69e2ad6e226313dca76f313d3a5d4f46f006b4e"
+      },
+      "copy": "root-caller-tests.py",
+      "bytes": 4384,
+      "sha256": "cc6164aa7b722954c94ac918d69e2ad6e226313dca76f313d3a5d4f46f006b4e"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/root-integration-checks.json",
+        "bytes": 1248,
+        "sha256": "f1570c502ccc8d19114599d9703abfb6ec50d1dcff62612c6f3eb02f27f8bb4e"
+      },
+      "copy": "root-integration-checks.json",
+      "bytes": 1248,
+      "sha256": "f1570c502ccc8d19114599d9703abfb6ec50d1dcff62612c6f3eb02f27f8bb4e"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/root-owner-execution.log",
+        "bytes": 26201,
+        "sha256": "f950cfcc22e8ca55da34b14701803a94c98bf5bf854c8bc6ed134bb1a1c7b934"
+      },
+      "copy": "root-owner-execution.log",
+      "bytes": 26201,
+      "sha256": "f950cfcc22e8ca55da34b14701803a94c98bf5bf854c8bc6ed134bb1a1c7b934"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/root-post-failure-pins-and-closure.json",
+        "bytes": 149967,
+        "sha256": "7384cee1a6f287f0d57a8cebda211f79ea8bab9e90e5f9f9cff233675e299fb9"
+      },
+      "copy": "root-post-failure-pins-and-closure.json",
+      "bytes": 149967,
+      "sha256": "7384cee1a6f287f0d57a8cebda211f79ea8bab9e90e5f9f9cff233675e299fb9"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/run.py",
+        "bytes": 21644,
+        "sha256": "f3eedaf8a191115700155081d8158bc38b836cdbb8783d69f097af7639340d6f"
+      },
+      "copy": "run.py",
+      "bytes": 21644,
+      "sha256": "f3eedaf8a191115700155081d8158bc38b836cdbb8783d69f097af7639340d6f"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/seal.json",
+        "bytes": 15889,
+        "sha256": "27f55d3d4fe4b8fd37d0d2ec73a6951bdbf84900d49d5bb258417d91b3b1ddaf"
+      },
+      "copy": "seal.json",
+      "bytes": 15889,
+      "sha256": "27f55d3d4fe4b8fd37d0d2ec73a6951bdbf84900d49d5bb258417d91b3b1ddaf"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source-freeze.json",
+        "bytes": 7469,
+        "sha256": "73bb620190e7631c6cab5006088ceef1239144b2dedc34112befa44a69d24372"
+      },
+      "copy": "source-freeze.json",
+      "bytes": 7469,
+      "sha256": "73bb620190e7631c6cab5006088ceef1239144b2dedc34112befa44a69d24372"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/v2-provenance.json",
+        "bytes": 10702,
+        "sha256": "ef11a69b187d146fa3ddc6fc75f7ecfd18c9c205856517890f58840865e6325a"
+      },
+      "copy": "v2-provenance.json",
+      "bytes": 10702,
+      "sha256": "ef11a69b187d146fa3ddc6fc75f7ecfd18c9c205856517890f58840865e6325a"
+    }
+  ],
+  "reused": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/README.md",
+        "bytes": 8864,
+        "sha256": "ce73d7d13130cfbcb361bda9ce43b0cb4ceac8600d43b1792685871d62145ca9"
+      },
+      "archived": "identity-core-comparison/failed-v1/README.md",
+      "bytes": 8864,
+      "sha256": "ce73d7d13130cfbcb361bda9ce43b0cb4ceac8600d43b1792685871d62145ca9"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/before-owner-policy-preservation.json",
+        "bytes": 5160,
+        "sha256": "8c3282ec574958687e9c9401a2006c8ed21f66930bd97ca67f25a4b82ecc67ba"
+      },
+      "archived": "identity-core-comparison/failed-v1/before-owner-policy-preservation.json",
+      "bytes": 5160,
+      "sha256": "8c3282ec574958687e9c9401a2006c8ed21f66930bd97ca67f25a4b82ecc67ba"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/build.json",
+        "bytes": 19090,
+        "sha256": "32c43a5d49aaa0086cb7315ec492fda69c87c415f7c45d22d7345b16302ffbaf"
+      },
+      "archived": "identity-core-comparison/failed-v1/build.json",
+      "bytes": 19090,
+      "sha256": "32c43a5d49aaa0086cb7315ec492fda69c87c415f7c45d22d7345b16302ffbaf"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/candidate-first/report.json",
+        "bytes": 6979,
+        "sha256": "37b85be2db5bdb93f0a7fc11ab890eb134f4c750a0ffeca9eaad00f6045ccb7d"
+      },
+      "archived": "identity-core-comparison/failed-v1/candidate-first/report.json",
+      "bytes": 6979,
+      "sha256": "37b85be2db5bdb93f0a7fc11ab890eb134f4c750a0ffeca9eaad00f6045ccb7d"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/geometry-inspection.mjs",
+        "bytes": 18907,
+        "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+      },
+      "archived": "identity-core-comparison/failed-v1/geometry-inspection.mjs",
+      "bytes": 18907,
+      "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/inputs.json",
+        "bytes": 14131,
+        "sha256": "0464f7cf49153e2e0d21c98bc9d93cfd2d52757ec4d288a6609116fa51228318"
+      },
+      "archived": "identity-core-comparison/failed-v1/inputs.json",
+      "bytes": 14131,
+      "sha256": "0464f7cf49153e2e0d21c98bc9d93cfd2d52757ec4d288a6609116fa51228318"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/launcher.json",
+        "bytes": 10818,
+        "sha256": "619a4de95ad2a2215b051900178d3c17522a17fff89127d3c1364684112a6937"
+      },
+      "archived": "identity-core-comparison/failed-v1/launcher.json",
+      "bytes": 10818,
+      "sha256": "619a4de95ad2a2215b051900178d3c17522a17fff89127d3c1364684112a6937"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/measure.py",
+        "bytes": 8316,
+        "sha256": "65f34556e335fb2ed2485107331f3e4a88df34d495ed1a7691e5ec2f8faab9b4"
+      },
+      "archived": "identity-core-comparison/failed-v1/measure.py",
+      "bytes": 8316,
+      "sha256": "65f34556e335fb2ed2485107331f3e4a88df34d495ed1a7691e5ec2f8faab9b4"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/native.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archived": "identity-core-comparison/failed-v1/native.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/native.mjs",
+        "bytes": 11175,
+        "sha256": "f7fe36a4aac29a19df1bae6bb15740c12ee31f223130d5dd46353ce25565773b"
+      },
+      "archived": "identity-core-comparison/failed-v1/native.mjs",
+      "bytes": 11175,
+      "sha256": "f7fe36a4aac29a19df1bae6bb15740c12ee31f223130d5dd46353ce25565773b"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "archived": "identity-core-comparison/failed-v1/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/owner-policy-amendment.md",
+        "bytes": 2441,
+        "sha256": "4ff04fa67d095b6c5a9c96b6f7b4b2d9f610811dfe0557e8fa73a93f3256c402"
+      },
+      "archived": "identity-core-comparison/failed-v1/owner-policy-amendment.md",
+      "bytes": 2441,
+      "sha256": "4ff04fa67d095b6c5a9c96b6f7b4b2d9f610811dfe0557e8fa73a93f3256c402"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/owner-policy-amendment.patch",
+        "bytes": 52122,
+        "sha256": "1c0bfa56d9b1f877570b247b5c0a4ee7a5af57f75251797e7e42ac8031080138"
+      },
+      "archived": "identity-core-comparison/failed-v1/owner-policy-amendment.patch",
+      "bytes": 52122,
+      "sha256": "1c0bfa56d9b1f877570b247b5c0a4ee7a5af57f75251797e7e42ac8031080138"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/owner.json",
+        "bytes": 57977,
+        "sha256": "ccd0da40b6da29ed5c9a20a388261beb3360f3d267ddbfbe10424c5da67e7e92"
+      },
+      "archived": "identity-core-comparison/failed-v1/owner.json",
+      "bytes": 57977,
+      "sha256": "ccd0da40b6da29ed5c9a20a388261beb3360f3d267ddbfbe10424c5da67e7e92"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/preparation-freeze.json",
+        "bytes": 8692,
+        "sha256": "77fd687206d0378c28021f81075b0dfb4e7a13e56912aa75bf02e10f33655014"
+      },
+      "archived": "identity-core-comparison/failed-v1/preparation-freeze.json",
+      "bytes": 8692,
+      "sha256": "77fd687206d0378c28021f81075b0dfb4e7a13e56912aa75bf02e10f33655014"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/prepare-result.json",
+        "bytes": 808,
+        "sha256": "adc024bc307371740d15e0f7938f0607b9a6886a18fb1864b7edb0aa41f5ca42"
+      },
+      "archived": "identity-core-comparison/failed-v1/prepare-result.json",
+      "bytes": 808,
+      "sha256": "adc024bc307371740d15e0f7938f0607b9a6886a18fb1864b7edb0aa41f5ca42"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/prepare.py",
+        "bytes": 13015,
+        "sha256": "a663995aa9899f89d64c5969cbd314a29ce138df87cc4b374781ede1fdf20c18"
+      },
+      "archived": "identity-core-comparison/failed-v1/prepare.py",
+      "bytes": 13015,
+      "sha256": "a663995aa9899f89d64c5969cbd314a29ce138df87cc4b374781ede1fdf20c18"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/recipe-diff.md",
+        "bytes": 2337,
+        "sha256": "c6b673025a0e3b6c4c444dbfca3f65668e3583085733151531aa42986721bef0"
+      },
+      "archived": "identity-core-comparison/failed-v1/recipe-diff.md",
+      "bytes": 2337,
+      "sha256": "c6b673025a0e3b6c4c444dbfca3f65668e3583085733151531aa42986721bef0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/recipe.patch",
+        "bytes": 124127,
+        "sha256": "9d21edbc07d023ca4975c5f46c7979c45453ae7ede6e403f3b466d90ba2eee68"
+      },
+      "archived": "identity-core-comparison/failed-v1/recipe.patch",
+      "bytes": 124127,
+      "sha256": "9d21edbc07d023ca4975c5f46c7979c45453ae7ede6e403f3b466d90ba2eee68"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/root-integration-checks.json",
+        "bytes": 1043,
+        "sha256": "70a96d2792f74a0ec4af857a563c3cbe3875366018ed6d2fd7e46ef3da363d07"
+      },
+      "archived": "identity-core-comparison/failed-v1/root-integration-checks.json",
+      "bytes": 1043,
+      "sha256": "70a96d2792f74a0ec4af857a563c3cbe3875366018ed6d2fd7e46ef3da363d07"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/root-owner-execution.log",
+        "bytes": 52953,
+        "sha256": "ed3a63e1c9cce0e5f23ace0c75d500c2c9e700949c624ca93ab9d4f71af4853f"
+      },
+      "archived": "identity-core-comparison/failed-v1/root-owner-execution.log",
+      "bytes": 52953,
+      "sha256": "ed3a63e1c9cce0e5f23ace0c75d500c2c9e700949c624ca93ab9d4f71af4853f"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/root-post-failure-pins-and-closure.json",
+        "bytes": 147021,
+        "sha256": "6e9145a968147b850076b4fe3a09579c14fe4e93dd38b2020310e9e4fc68116b"
+      },
+      "archived": "identity-core-comparison/failed-v1/root-post-failure-pins-and-closure.json",
+      "bytes": 147021,
+      "sha256": "6e9145a968147b850076b4fe3a09579c14fe4e93dd38b2020310e9e4fc68116b"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/run.py",
+        "bytes": 19983,
+        "sha256": "57e144cf1468425a4bda9e81c354932bd03c87baa5270529fe21dcdd117b3ebb"
+      },
+      "archived": "identity-core-comparison/failed-v1/run.py",
+      "bytes": 19983,
+      "sha256": "57e144cf1468425a4bda9e81c354932bd03c87baa5270529fe21dcdd117b3ebb"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/seal.json",
+        "bytes": 14344,
+        "sha256": "e342432a742c1b32a886dbb2e51cf4c1d120668cd379ecff9f7d31a15660da2d"
+      },
+      "archived": "identity-core-comparison/failed-v1/seal.json",
+      "bytes": 14344,
+      "sha256": "e342432a742c1b32a886dbb2e51cf4c1d120668cd379ecff9f7d31a15660da2d"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/sealed-parent/source-freeze.json",
+        "bytes": 7436,
+        "sha256": "9f5b3e7779367489a664445fb0219096bda03c6a10c3a00ee957b5944942cce1"
+      },
+      "archived": "identity-core-comparison/failed-v1/source-freeze.json",
+      "bytes": 7436,
+      "sha256": "9f5b3e7779367489a664445fb0219096bda03c6a10c3a00ee957b5944942cce1"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/scene/barrel/SweptBarrel.ts",
+        "bytes": 6980,
+        "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 6980,
+      "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 33396,
+      "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/scene/barrel/barrelMaskGlsl.ts",
+        "bytes": 2355,
+        "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 2355,
+      "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/scene/barrel/barrelWater.ts",
+        "bytes": 5755,
+        "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/scene/barrel/barrelWater.ts",
+      "bytes": 5755,
+      "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 31647,
+        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 31647,
+      "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/wave/barrel/boundedCCapRefinement.test.ts",
+        "bytes": 11167,
+        "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "bytes": 11167,
+      "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16525,
+        "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/wave/barrel/boundedCConsumers.test.ts",
+      "bytes": 16525,
+      "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/wave/barrel/boundedCLeafReach.test.ts",
+        "bytes": 18620,
+        "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/wave/barrel/boundedCLeafReach.test.ts",
+      "bytes": 18620,
+      "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20184,
+        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 20184,
+      "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/wave/barrel/lipSheet.ts",
+      "bytes": 19136,
+      "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      "archived": "identity-core-comparison/failed-v1/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    }
+  ],
+  "excludedDerived": [
+    "dist",
+    "__pycache__"
+  ]
+}

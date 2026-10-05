@@ -1,0 +1,217 @@
+{
+  "schema": "cap-reach-hold-source-only-inputs/v1",
+  "parentReportedRootHead": "3e75550c2",
+  "independentGitCheck": false,
+  "actualPrivateFixtureRoot": "/private/tmp/tube-cap-turn-refinement-checks-20261005",
+  "copiedExactProviderModules": [
+    {
+      "relative": "src/wave/barrel/ProfileLibrary.ts",
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 31647,
+        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+      },
+      "baseline": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 31647,
+        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+      },
+      "candidateBeforeInstrumentation": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 31647,
+        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCProfile.ts",
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20184,
+        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+      },
+      "baseline": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20184,
+        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+      },
+      "candidateBeforeInstrumentation": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20184,
+        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sharedUpperRoot.ts",
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/sharedUpperRoot.ts",
+        "bytes": 3200,
+        "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+      },
+      "baseline": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/sharedUpperRoot.ts",
+        "bytes": 3200,
+        "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+      },
+      "candidateBeforeInstrumentation": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/sharedUpperRoot.ts",
+        "bytes": 3200,
+        "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/profileFormat.ts",
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/profileFormat.ts",
+        "bytes": 2251,
+        "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+      },
+      "baseline": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/profileFormat.ts",
+        "bytes": 2251,
+        "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+      },
+      "candidateBeforeInstrumentation": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/profileFormat.ts",
+        "bytes": 2251,
+        "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/frontRecords.ts",
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/frontRecords.ts",
+        "bytes": 1941,
+        "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+      },
+      "baseline": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/barrel/frontRecords.ts",
+        "bytes": 1941,
+        "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+      },
+      "candidateBeforeInstrumentation": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/barrel/frontRecords.ts",
+        "bytes": 1941,
+        "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+      }
+    },
+    {
+      "relative": "src/wave/dispersion.ts",
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/dispersion.ts",
+        "bytes": 3285,
+        "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+      },
+      "baseline": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/baseline/src/wave/dispersion.ts",
+        "bytes": 3285,
+        "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+      },
+      "candidateBeforeInstrumentation": {
+        "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/candidate/src/wave/dispersion.ts",
+        "bytes": 3285,
+        "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.ts",
+      "bytes": 3687,
+      "sha256": "54eeab659d538c636ebbc50e10f1e307116878f0bd7d2dbb76c8784b01d6e30f"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/fixture-decomposition.json",
+      "bytes": 9975,
+      "sha256": "4ff969177aa66194a30088be9f97e58fb63972c5edcf24908182e4c8e34acaab"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/root-fixture-execution.json",
+      "bytes": 1417,
+      "sha256": "8ef3329659c3bca3a67ad70dd3024907840fa621823773dec2fd18d9902a7f2b"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/inspect.py",
+      "bytes": 8660,
+      "sha256": "4ebc99b2ab53086eb7297f8000651f0065fd3307925ae0bd9df943f714f4e105"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/decompose.py",
+      "bytes": 4730,
+      "sha256": "84a580bbbcb100abedd1a3f97a537e166d07a84a54ea4490da4048af6d1cf842"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/provenance.json",
+      "bytes": 5099,
+      "sha256": "a01ebfca96d9ce42f408fc8d48a792ea03a9c4afd415a1e181d0664f772bdd89"
+    }
+  ],
+  "barrelIndex": {
+    "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/barrelLibraryIndex.ts",
+    "bytes": 1662,
+    "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8"
+  },
+  "assets": [
+    {
+      "asset": "barrels/pad19-a20-l12.bin",
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "asset": "barrels/pad19-a30-l12.bin",
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "asset": "barrels/pad19-a45-l12.bin",
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "asset": "barrels/periodic-padang19s-l12.bin",
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "asset": "barrels/periodic-reef42-l12.bin",
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    {
+      "asset": "barrels/periodic-point21-a15-l12.bin",
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    {
+      "asset": "barrels/periodic-point21-a23-l12.bin",
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    {
+      "asset": "barrels/periodic-point21-a30-l12.bin",
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/public/barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    }
+  ],
+  "limits": {
+    "gridStart": 4.75,
+    "gridEnd": 5.25,
+    "gridStep": 0.015625,
+    "gridCount": 33,
+    "exactHoldPoints": 1,
+    "maximumUniqueSamplePoints": 34,
+    "secantSpan": 0.015625,
+    "reportBytes": 2097152,
+    "output": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/reach-decomposition.json",
+    "noExpansionOrSearch": true
+  },
+  "preparedOnly": true,
+  "moduleImportOrCalculationExecuted": false
+}

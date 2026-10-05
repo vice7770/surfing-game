@@ -1,0 +1,10 @@
+{
+  "schema": "root-idv5-post-failure-check-second-attempt/v1",
+  "actualToolChunk": "3523e8",
+  "exitCode": 1,
+  "failure": "Historical repository source pin differs from current source at same original path",
+  "failedBeforeOSReads": true,
+  "failedBeforeClosureReceiptWrite": true,
+  "noSignalsSent": true,
+  "qualification": "Historical source-provenance root paths must be checked against preserved historical-source copies, separately from all current production pins."
+}

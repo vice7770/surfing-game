@@ -1,0 +1,23 @@
+{
+  "schema": "leaf-identity-core-preparation/v1",
+  "complete": true,
+  "build": {
+    "file": "/private/tmp/tube-leaf-identity-core-native-20261005/build.json",
+    "bytes": 19090,
+    "sha256": "32c43a5d49aaa0086cb7315ec492fda69c87c415f7c45d22d7345b16302ffbaf"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source-freeze.json",
+    "bytes": 7436,
+    "sha256": "9f5b3e7779367489a664445fb0219096bda03c6a10c3a00ee957b5944942cce1"
+  },
+  "seal": {
+    "file": "/private/tmp/tube-leaf-identity-core-native-20261005/seal.json",
+    "bytes": 14344,
+    "sha256": "e342432a742c1b32a886dbb2e51cf4c1d120668cd379ecff9f7d31a15660da2d"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedChecksOrBuilds": false,
+  "liveOrdinaryOwnerOrReportRead": false
+}

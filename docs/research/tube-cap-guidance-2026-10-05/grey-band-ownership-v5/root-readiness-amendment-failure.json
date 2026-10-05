@@ -1,0 +1,14 @@
+{
+  "schema": "root-id-v5-readiness-prepare-guard-failure/v1",
+  "complete": true,
+  "rootMetadataAmendmentChunk": "d0c7fd",
+  "rootMetadataAmendmentExitCode": 1,
+  "reason": "Compared full pin including original path against preserved-copy path; actual bytes were unchanged.",
+  "actualPrepareChunk": "c849e0",
+  "actualPrepareExitCode": 1,
+  "prepareFailure": "Enforced pending root review flags remained true; preparation refused before copying any derived output.",
+  "resourcesStarted": false,
+  "nativeExecuted": false,
+  "originalInputsAndFreezePreserved": true,
+  "producedOutputs": false
+}

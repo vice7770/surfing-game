@@ -1,0 +1,670 @@
+--- a/prepare.py
++++ b/prepare.py
+@@ -1,57 +1,86 @@
+-"""Root-only first preparation after a terminal successful selected build. No compiler/runtime starts."""
++"""Root-only first preparation. Copies a complete immutable ordinary V4 app; never builds or starts resources."""
+ from pathlib import Path
+ import hashlib,json,shutil
+-W=Path('/private/tmp/tube-shared-leaf-native-v2-20261005');R=Path('/Users/regina/Desktop/Projects/surfing-game')
+-BUILD_ID='tube-shared-leaf-seek-history-20261005'
++W=Path('/private/tmp/tube-leaf-identity-core-native-20261005');R=Path('/Users/regina/Desktop/Projects/surfing-game')
+ SOURCES=('src/wave/barrel/ProfileLibrary.ts','src/wave/barrel/boundedCProfile.ts','src/wave/barrel/sweptLoft.ts','src/wave/barrel/lipSheet.ts',
+  'src/scene/barrel/SweptBarrelMesh.ts','src/scene/barrel/barrelMaskGlsl.ts','src/scene/barrel/SweptBarrel.ts','src/scene/barrel/barrelWater.ts',
+  'src/wave/barrel/boundedCLeafReach.test.ts','src/wave/barrel/boundedCCapRefinement.test.ts','src/wave/barrel/boundedCConsumers.test.ts')
+-HELPERS=('README.md','inputs.json','prepare.py','run.py','native.mjs','geometry-inspection.mjs','measure.py','recipe.patch','preparation-freeze.json')
++CHANGED=('src/wave/barrel/boundedCProfile.ts','src/wave/barrel/boundedCLeafReach.test.ts')
++HELPERS=('README.md','inputs.json','prepare.py','run.py','native.mjs','geometry-inspection.mjs','measure.py','recipe-diff.md','recipe.patch','preparation-freeze.json')
+ def pin(p):
+  b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+-def verify(s):
+- b=Path(s['file']).read_bytes();assert len(b)==s['bytes'] and hashlib.sha256(b).hexdigest()==s['sha256'],s['file'];return b
++def verify(spec):
++ b=Path(spec['file']).read_bytes();assert len(b)==spec['bytes'] and hashlib.sha256(b).hexdigest()==spec['sha256'],spec['file'];return b
+ assert not any((W/n).exists()for n in('dist','source','build.json','source-freeze.json','seal.json','prepare-result.json','owner.json','candidate-first')),'First-only root preparation'
+-i=json.loads((W/'inputs.json').read_bytes());assert i['applicationBuildId']==BUILD_ID and json.loads((R/'dist/build.json').read_bytes())['build']==BUILD_ID
+-references=[i[k]for k in('referenceReport','referenceOwner','referenceLoft','referenceBuild','referenceSeal','referenceSourceFreeze')]+i['authoredAuthority']+i['opticalAuthority']
+-prior=i['priorFailedAttempt'];assert prior['rootClosureReceipt'],'Root must bind its separate completed post-failure closure receipt first'
+-for name in ('owner','report','sourceFreeze','rootClosureReceipt','build'):references.append(prior[name])
+-references.append(i['applicationBuildEvidence'])
+-for s in references+i['borrowedHelperPins']:verify(s)
+-failed_owner=json.loads(verify(prior['owner']));failed_report=json.loads(verify(prior['report']))
+-assert not failed_owner['complete'] and 'TimeoutExpired' in failed_owner['firstFailure'] and not failed_report['complete'] and failed_report['stepCount']==0 and failed_report['pngCount']==0
+-closure=json.loads(verify(prior['rootClosureReceipt']))
+-assert closure['schema']=='shared-leaf-independent-post-failure/v1' and closure['complete'] and closure['failedOwner']==prior['owner'] and closure['failedReport']==prior['report']
+-assert closure['ownedGroup']==21700 and closure['originalOutputsUnchanged'] and closure['postFailurePinsVerified'] and not closure['signalsSentByThisAudit']
+-assert closure['ownedGroupAbsent'] and closure['protectedPreserved'] and all(closure['closedPorts'].values())
+-prior_freeze=json.loads(verify(prior['sourceFreeze']));assert prior_freeze['complete'] and prior_freeze['buildId']==BUILD_ID
+-expected_live={entry['relative']:entry['live']for entry in prior_freeze['files']}
+-assert set(expected_live)==set(SOURCES)
+-for path in SOURCES:verify(expected_live[path])
+-# The original terminal-success log is borrowed evidence, not a build executed by this fresh recipe.
+-prior_build=json.loads(verify(prior['build']));assert prior_build['build']==BUILD_ID
+-prior_dist=Path(prior['directory'])/'dist';relative_assets={Path(s['file']).relative_to(prior_dist):s for s in prior_build['assets']}
+-current_assets={p.relative_to(R/'dist')for p in (R/'dist').rglob('*')if p.is_file()}
+-assert current_assets==set(relative_assets)
+-for rel,s in relative_assets.items():
+- b=(R/'dist'/rel).read_bytes();assert len(b)==s['bytes'] and hashlib.sha256(b).hexdigest()==s['sha256'],str(rel)
+-
+-
+-for pkey in ('referenceOwner',):
+- o=json.loads(verify(i[pkey]));assert o['complete'] and o['exitCode']==0 and o['protectedPreserved'] and o['postExecutionPinsVerified'] and all(o['closedPorts'].values())
+-r=json.loads(verify(i['referenceReport']));assert r['complete'] and r['firstFailure'] is None and r['stepCount']==0
++i=json.loads((W/'inputs.json').read_bytes());BUILD_ID=i['applicationBuildId']
++references=[i['rootCurrentApplicationReceipt'],i['scenePoseReferenceReport'],i['protectedIdentityAuthority'],i['knownOwnerDisciplineFailure']]+list(i['candidatePreparedApplication'].values())+list(i['baselineAuthority'].values())+list(i['identityCoreProposal'].values())+i['authoredAuthority']+i['opticalAuthority']
++for spec in references+i['borrowedHelperPins']:verify(spec)
++root=json.loads(verify(i['rootCurrentApplicationReceipt']));assert root['schema']=='root-current-tube-application-build/v1' and root['complete'] and root['buildId']==BUILD_ID and not root['nativeResultClaim']
++assert root['actualNormalBuild']['exitCode']==0 and root['actualNormalBuild']['BUILD_ID']==BUILD_ID and root['actualNormalBuild']['command']==['npm','run','build']
++authority=json.loads(verify(root['authority']));references.append(root['authority'])
++assert authority['schema']=='guided-ordinary-root-build-authority/v4' and authority['complete'] and authority['buildId']==BUILD_ID
++assert authority['applicationTerminalExitCode']==authority['diagnosticTerminalExitCode']==0 and authority['rootVerifiedNewProductionBuild'] and authority['rootVerifiedNewDiagnosticBuild']
++assert authority['applicationBuildAssets']==root['assets']
++assert root['actualNormalBuild']['logBytes']==authority['applicationBuildLog']['bytes'] and root['actualNormalBuild']['logSha256']==authority['applicationBuildLog']['sha256']
++# The already executed log is direct borrowed evidence; this preparer never runs a build or diagnostic compiler.
++verify(authority['applicationBuildLog']);references.append(authority['applicationBuildLog'])
++app_build=json.loads(verify(i['candidatePreparedApplication']['build']));app_freeze=json.loads(verify(i['candidatePreparedApplication']['sourceFreeze']));app_seal=json.loads(verify(i['candidatePreparedApplication']['seal']))
++assert app_build['schema']=='guided-ordinary-build/v4' and app_build['complete'] and app_build['build']==BUILD_ID
++assert app_freeze['schema']=='guided-ordinary-source-freeze/v4' and app_freeze['complete'] and app_freeze['build']==BUILD_ID
++assert app_seal['schema']=='guided-ordinary-seal/v4' and app_seal['complete'] and app_seal['rootAuthorized'] and app_seal['buildId']==BUILD_ID
++assert app_build['sourceFreeze']==app_seal['sourceFreeze']==i['candidatePreparedApplication']['sourceFreeze']
++assert app_seal['applicationBuild']==i['candidatePreparedApplication']['build'] and app_build['rootBuildAuthority']==root['authority']
++assert app_build['productionSources']==app_freeze['productionSources'] and app_build['diagnosticCompiledSources']==app_freeze['diagnosticCompiledSources']
++assert app_build['applicationBuildAssets']==root['assets'] and app_build['applicationBuildLog']==authority['applicationBuildLog']
++app=Path(i['applicationDirectory']);root_dist=R/'dist'
++root_assets={Path(spec['file']).relative_to(root_dist):spec for spec in root['assets']};app_assets={Path(spec['file']).relative_to(app):spec for spec in app_build['assets']}
++assert len(root_assets)==len(app_assets)==49 and set(root_assets)==set(app_assets)=={p.relative_to(app)for p in app.rglob('*')if p.is_file()}
++for relative,spec in app_assets.items():
++ original=root_assets[relative];assert (spec['bytes'],spec['sha256'])==(original['bytes'],original['sha256']);verify(spec)
++assert json.loads((app/'build.json').read_bytes())['build']==BUILD_ID
++# No live ordinary owner/report is read. Its complete app preparation is authority, not a ride result.
++base=i['baselineAuthority'];bo=json.loads(verify(base['owner']));br=json.loads(verify(base['report']));bf=json.loads(verify(base['sourceFreeze']));bb=json.loads(verify(base['build']));bs=json.loads(verify(base['seal']));prior=json.loads(verify(base['loft']))
++assert bo['schema']=='shared-leaf-owner/v2' and bo['complete'] and bo['exitCode']==0 and bo['firstFailure']is None
++assert bo['preExecutionPinsVerified'] and bo['postExecutionPinsVerified'] and bo['copiedAndLiveSourcePinsPostVerified'] and bo['protectedPreserved'] and bo['ownedGroupIdentityAndAbsenceVerified'] and not bo['cleanupFailures'] and all(bo['closedPorts'].values())
++assert br['schema']=='shared-leaf-native/v2' and br['complete'] and br['firstFailure']is None and br['stepCount']==0 and br['pngCount']==8 and br['ownedBrowserClose']
++assert bs['schema']=='shared-leaf-seal/v2' and bs['complete'] and bs['rootAuthorized'] and bs['applicationBuild']==base['build'] and bs['sourceFreeze']==base['sourceFreeze']
++assert bo['sealSha256']==br['sealSha256']==base['seal']['sha256'] and bb['sourceFreeze']==base['sourceFreeze']
++assert bf['schema']=='shared-leaf-source-freeze/v2' and bf['complete'] and bf['buildId']==bb['build']
++assert br['sidecar']['bytes']==base['loft']['bytes'] and br['sidecar']['sha256']==base['loft']['sha256'] and prior['available'] and prior['arrayIdentitiesAndWordsUnchanged'] and len(prior['arrays'])==37
++assert prior['counts']==i['referenceCounts']=={'slices':80,'vertices':10720,'indices':61446} and prior['epoch']['step']==0 and prior['epoch']['seaTime']==i['referenceEpoch']['seaTime']
++assert all(pair['baselineRepeatPixelsIdentical'] and all(pair['guards'].values())for pair in br['pairs'])
++assert all(pair['fixedPose']==i['fixedCameras'][pair['camera']]for pair in br['pairs'])
++scene=json.loads(verify(i['scenePoseReferenceReport']));assert scene['complete'] and scene['firstFailure']is None and scene['stepCount']==0 and scene['stop']['seaTime']==prior['epoch']['seaTime']
+ for family in ('authoredAuthority','opticalAuthority'):
+- authority={Path(s['file']).name:json.loads(verify(s))for s in i[family]};assert authority['owner.json']['complete'] and authority['owner.json']['exitCode']==0 and authority['report.json']['complete'] and authority['report.json']['firstFailure'] is None
+-live=[pin(R/p)for p in SOURCES];shutil.copytree(R/'dist',W/'dist');assert json.loads((W/'dist/build.json').read_bytes())['build']==BUILD_ID
++ records={Path(spec['file']).name:json.loads(verify(spec))for spec in i[family]}
++ assert records['owner.json']['complete'] and records['owner.json']['exitCode']==0 and records['report.json']['complete'] and records['report.json']['firstFailure']is None
++closure=json.loads(verify(i['protectedIdentityAuthority']));assert closure['schema']=='shared-leaf-independent-post-failure/v1' and closure['complete'] and closure['protectedPreserved']
++# Selected geometry/optical sources are exact current root-built bytes. Only scalar bound/test may differ from baseline.
++root_sources={str(Path(spec['file']).relative_to(R)):spec for spec in root['sourcePins']};assert len(root_sources)==584
++old_sources={entry['relative']:entry['frozen']for entry in bf['files']};assert set(old_sources)==set(SOURCES)
++proposal=json.loads(verify(i['identityCoreProposal']['provenance.json']));assert proposal['sourceOnly'] and not proposal['appliedToProduction']
++expected_changes={entry['relative']:entry for entry in proposal['candidate']};assert set(expected_changes)==set(CHANGED)
++for relative in SOURCES:
++ spec=root_sources[relative];verify(spec)
++ if relative in CHANGED:
++  expected=expected_changes[relative];assert (spec['bytes'],spec['sha256'])==(expected['bytes'],expected['sha256'])
++ else:
++  old=old_sources[relative];verify(old);assert (spec['bytes'],spec['sha256'])==(old['bytes'],old['sha256']),'Unexpected runtime/optical source change: '+relative
++# Root's direct receipt pins the complete source set. Verify it while held unchanged, without copying a runtime tree.
++for spec in root['sourcePins']:verify(spec)
++live=[root_sources[relative]for relative in SOURCES];shutil.copytree(app,W/'dist')
++copied_assets=[pin(p)for p in sorted((W/'dist').rglob('*'))if p.is_file()];assert len(copied_assets)==49
++for spec in copied_assets:
++ relative=Path(spec['file']).relative_to(W/'dist');old=app_assets[relative];assert (spec['bytes'],spec['sha256'])==(old['bytes'],old['sha256'])
+ frozen=[]
+-for p,s in zip(SOURCES,live):
+- q=W/'source'/p;q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes(verify(s));frozen.append(pin(q))
+-for s in live:verify(s)
+-freeze={'schema':'shared-leaf-source-freeze/v2','complete':True,'buildId':BUILD_ID,'files':[{'relative':p,'live':a,'frozen':b}for p,a,b in zip(SOURCES,live,frozen)],'scope':'Selected source bytes and root-built assets; root command evidence must independently establish terminal successful compilation.'}
+-(W/'source-freeze.json').write_text(json.dumps(freeze,indent=2)+'\n')
+-b={'schema':'shared-leaf-build/v2','build':BUILD_ID,'assets':[pin(p)for p in sorted((W/'dist').rglob('*'))if p.is_file()],'sources':frozen,'liveSources':live,'sourceFreeze':pin(W/'source-freeze.json'),'operation':'Copy exact unchanged root-built dist only; no build or runtime invocation.','applicationBuildEvidence':i['applicationBuildEvidence'],'priorBuiltAssetsReceipt':prior['build'],'allCurrentAssetBytesEqualPriorSuccessfulBuild':True}
++for relative,spec in zip(SOURCES,live):
++ p=W/'source'/relative;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(verify(spec));frozen.append(pin(p))
++for spec in root['sourcePins']+app_build['assets']:verify(spec)
++f={'schema':'leaf-identity-core-source-freeze/v1','complete':True,'buildId':BUILD_ID,'files':[{'relative':p,'live':a,'frozen':b}for p,a,b in zip(SOURCES,live,frozen)],'rootCurrentApplicationReceipt':i['rootCurrentApplicationReceipt'],'rootAllSourcePinsVerifiedAtPreparation':584,'immutableCopiedApplication':i['candidatePreparedApplication'],'onlySelectedScalarBoundAndTestChangedFromPreIdentityBaseline':True,'scope':'Direct complete root build receipt plus selected live/frozen geometry and optical source bytes. No new build/runtime invocation.'}
++(W/'source-freeze.json').write_text(json.dumps(f,indent=2)+'\n')
++b={'schema':'leaf-identity-core-build/v1','complete':True,'build':BUILD_ID,'assets':copied_assets,'sources':frozen,'liveSources':live,'sourceFreeze':pin(W/'source-freeze.json'),'rootCurrentApplicationReceipt':i['rootCurrentApplicationReceipt'],'immutablePreparedApplication':i['candidatePreparedApplication'],'operation':'Copy exact immutable ordinary V4 app assets only; no rebuild/diagnostic compilation.','applicationBuildEvidence':authority['applicationBuildLog'],'baselineAuthority':base}
+ (W/'build.json').write_text(json.dumps(b,indent=2)+'\n')
+-s={'schema':'shared-leaf-seal/v2','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),'sourceFreeze':pin(W/'source-freeze.json'),'helpers':[pin(W/n)for n in HELPERS],'borrowedHelpers':i['borrowedHelperPins'],'references':references,'limits':i['limits'],'comparison':i['comparison'],'priorFailedAttempt':prior}
++s={'schema':'leaf-identity-core-seal/v1','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),'sourceFreeze':pin(W/'source-freeze.json'),'helpers':[pin(W/name)for name in HELPERS],'borrowedHelpers':i['borrowedHelperPins'],'references':references,'limits':i['limits'],'comparison':i['comparison'],'rootCurrentApplicationReceipt':i['rootCurrentApplicationReceipt'],'baselineAuthority':base}
+ (W/'seal.json').write_text(json.dumps(s,indent=2)+'\n')
+-result={'schema':'shared-leaf-preparation/v2','complete':True,'build':pin(W/'build.json'),'sourceFreeze':pin(W/'source-freeze.json'),'seal':pin(W/'seal.json'),'resourcesStarted':False,'portsProbed':False,'executedChecksOrBuilds':False}
++result={'schema':'leaf-identity-core-preparation/v1','complete':True,'build':pin(W/'build.json'),'sourceFreeze':pin(W/'source-freeze.json'),'seal':pin(W/'seal.json'),'resourcesStarted':False,'portsProbed':False,'executedChecksOrBuilds':False,'liveOrdinaryOwnerOrReportRead':False}
+ (W/'prepare-result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))
+--- a/run.py
++++ b/run.py
+@@ -2,7 +2,7 @@
+ from pathlib import Path
+ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+ import hashlib,json,os,signal,socket,subprocess,threading,time
+-W=Path('/private/tmp/tube-shared-leaf-native-v2-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
++W=Path('/private/tmp/tube-leaf-identity-core-native-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
+ EXPECTED_PROTECTED={4312:92445,4313:58298,4314:51358,4315:87796}
+ OS_SECONDS=2;IDENTITY_PERIOD=5;REQUIRED_ATTEMPTS=3;NOTE_LIMIT=16;whole_started=time.monotonic()
+ timeout_notes=[];timeout_count=0
+@@ -56,12 +56,13 @@
+    if attempt+1<REQUIRED_ATTEMPTS and time.monotonic()<deadline:time.sleep(min(.1,max(0,deadline-time.monotonic())))
+  raise TimeoutError('Required identity could not be verified: '+phase)from last
+ def validate_result(result):
+- assert result['schema']=='shared-leaf-native/v2' and result['complete'] and result['firstFailure'] is None and result['ownedBrowserClose']
++ assert result['schema']=='leaf-identity-core-native/v1' and result['complete'] and result['firstFailure'] is None and result['ownedBrowserClose']
+  assert not result['browserErrors'] and result['stepCount']==0 and result['pngCount']==8 and len(result['pairs'])==4
+  assert result['applicationBuildRequest']['build']==inputs['applicationBuildId'] and result['applicationBuildRequest']['checkedBeforeReplay']
+  assert result['replayStartup']['publicStartCalls']==1 and result['replayStartup']['noPlacement'] and result['replayStartup']['noClockAssignment']
+  assert result['restoration']['complete'] and all(result['restoration']['guards'].values())
+  assert result['initial']['seaTime']==inputs['referenceEpoch']['seaTime'] and result['initial']['compute']=='gpu' and result['initial']['canvas']==[1708,879]
++ assert result['priorOrdinaryDrawInputsComparison']['fieldsExact']==['seaTime','step','config','look','holdClearDrawing','slope','stillLevel','surfaceRevision','surfaceGrid','surface','rawFrontPacket','board8','rider33','normalCameraWords'] and result['priorOrdinaryDrawInputsComparison']['currentMaskHeldCommonWithinEachPair'] and not result['priorOrdinaryDrawInputsComparison']['oldMaskEqualityRequired']
+  assert result['installation']['exactRawFrontWords'] and result['installation']['priorActorAndNormalCameraExact'] and result['installation']['currentMaterialUnmodified']
+  assert result['initial']['menu']['selectedChoices']==['Padang Padang','Big','Mid','Calm','Midday']
+  out=W/'candidate-first';expected={'report.json','loft-candidate.json','draw-inputs.json'};pngbytes=0
+@@ -79,30 +80,31 @@
+  assert len(result['artifacts'])==10 and pngbytes==result['pngBytes']<=inputs['limits']['pngBytesTotal']
+  assert (out/'report.json').stat().st_size<=inputs['limits']['reportBytes'] and {p.name for p in out.iterdir()}==expected
+  return {'steps':0,'pngCount':8,'sameExactRawFrontActorAndFixedCamerasVerified':True,'unmodifiedCurrentMaterialBothVariantsVerified':True,
+-  'sameCurrentOrdinarySurfaceAndMaskBytesVerified':True,'preservedCap37AndCurrentCandidate37UploadVerified':True,'fourBaselineRepeatsPixelExact':True,
++  'sameCurrentOrdinarySurfaceAndMaskBytesVerified':True,'savedPriorOrdinarySurfaceAndQueryFieldsExact':True,'preservedSharedLeaf37AndIdentityCore37UploadVerified':True,'fourBaselineRepeatsPixelExact':True,
+   'candidateCountEqualityToPriorRequired':False,'globalC1VisualRideOrQualityAcceptance':False}
+ sealbytes=(W/'seal.json').read_bytes();seal=json.loads(sealbytes);inputs=json.loads((W/'inputs.json').read_bytes())
+-assert seal['schema']=='shared-leaf-seal/v2' and seal['rootAuthorized'] and seal['complete']
+-build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='shared-leaf-build/v2' and build['build']==inputs['applicationBuildId']
++assert seal['schema']=='leaf-identity-core-seal/v1' and seal['rootAuthorized'] and seal['complete']
++build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='leaf-identity-core-build/v1' and build['build']==inputs['applicationBuildId']
+ def check(deadline=None):
+- assert build['sourceFreeze']==seal['sourceFreeze'];verify(seal['sourceFreeze'])
++ assert build['sourceFreeze']==seal['sourceFreeze'];f=json.loads(verify(seal['sourceFreeze']));assert f['schema']=='leaf-identity-core-source-freeze/v1' and f['complete'] and f['buildId']==inputs['applicationBuildId']
+  for spec in build['assets']+build['sources']+build['liveSources']+seal['helpers']+seal['borrowedHelpers']+seal['references']:
+   if deadline is not None and time.monotonic()>=deadline:raise TimeoutError('Finite pin verification budget')
+   verify(spec)
+ whole_deadline=whole_started+inputs['limits']['totalSeconds'];preflight_deadline=min(whole_started+20,whole_deadline-inputs['limits']['cleanupSeconds'])
+ check(preflight_deadline);assert not (W/'owner.json').exists() and not (W/'candidate-first').exists() and all(free(port)for port in OWNED)
+ before=required_read(identities,'preflight-protected',preflight_deadline)
+-closure=json.loads(verify(inputs['priorFailedAttempt']['rootClosureReceipt']))
++closure=json.loads(verify(inputs['protectedIdentityAuthority']))
+ for port,pid in EXPECTED_PROTECTED.items():
+  identity=closure['protectedIdentities'][str(port)]['actualIdentity'];assert identity['pid']==pid
+  expected=str(pid)+' '+identity['started']+' '+identity['command']
+  assert expected in before[str(port)],'Protected full PID/start/command required '+str(port)
+ started=time.monotonic();owner_deadline=min(started+inputs['limits']['ownerSeconds'],whole_deadline-inputs['limits']['cleanupSeconds']);server=None;proc=None
+-record={'schema':'shared-leaf-owner/v2','complete':False,'firstFailure':None,'protectedBefore':before,
++record={'schema':'leaf-identity-core-owner/v1','complete':False,'firstFailure':None,'protectedBefore':before,
+  'protected4315ExpectedPid':87796,'protected4315RootToolSession':'64713','toolSessionOSIdentityClaim':False,
+- 'sealSha256':hashlib.sha256(sealbytes).hexdigest(),'preExecutionPinsVerified':True,'postExecutionPinsVerified':False,'copiedAndLiveSourcePinsPostVerified':False,'cleanupFailures':[]}
++ 'sealSha256':hashlib.sha256(sealbytes).hexdigest(),'preExecutionPinsVerified':True,'postExecutionPinsVerified':False,'copiedAndSelectedLiveSourcePinsPostVerified':False,'cleanupFailures':[]}
+ record['expectedProtectedPids']=EXPECTED_PROTECTED
+-record['priorFailedAttempt']=inputs['priorFailedAttempt']
++record['baselineAuthority']=inputs['baselineAuthority']
++record['rootCurrentApplicationReceipt']=inputs['rootCurrentApplicationReceipt']
+ record['osObservationPolicy']=inputs['ownerObservationPolicy']
+ record['absoluteBudget']={'wholeSeconds':inputs['limits']['totalSeconds'],'cleanupReservedSeconds':inputs['limits']['cleanupSeconds'],'activeOwnerBudgetSeconds':owner_deadline-started,'maximumNativeOwnerSeconds':inputs['limits']['ownerSeconds'],'preflightBudgetSeconds':20}
+ known_owned={}
+@@ -123,7 +125,7 @@
+  if time.monotonic()>=owner_deadline:raise TimeoutError('No active owner time before starting resources')
+  server=ThreadingHTTPServer(('127.0.0.1',4301),Handler);server.daemon_threads=True
+  thread=threading.Thread(target=lambda:server.serve_forever(poll_interval=.1),daemon=True);thread.start()
+- env={**os.environ,'SHARED_LEAF_OWNER_SEAL_SHA':record['sealSha256'],'FULL_WRITER_FPS_LAUNCHER_REPORT':str(W/'launcher.json')}
++ env={**os.environ,'LEAF_IDENTITY_CORE_OWNER_SEAL_SHA':record['sealSha256'],'FULL_WRITER_FPS_LAUNCHER_REPORT':str(W/'launcher.json')}
+  with (W/'native.log').open('wb')as log:
+   proc=subprocess.Popen(['/opt/homebrew/bin/node',str(W/'native.mjs'),'--run=true','--url=http://127.0.0.1:4301/?diagnostics','--out='+str(W/'candidate-first')],stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=env)
+   record['pid']=proc.pid;record['ownedProcessGroup']=proc.pid;(W/'live.json').write_text(json.dumps(record))
+@@ -142,7 +144,7 @@
+  record['observation']=validate_result(json.loads((W/'candidate-first/report.json').read_bytes()))
+  check(owner_deadline)
+  if time.monotonic()>=owner_deadline:raise TimeoutError('Finite active owner budget after post-pins')
+- record['postExecutionPinsVerified']=True;record['copiedAndLiveSourcePinsPostVerified']=True;record['complete']=True
++ record['postExecutionPinsVerified']=True;record['copiedAndSelectedLiveSourcePinsPostVerified']=True;record['complete']=True
+ except BaseException as error:record['firstFailure']=type(error).__name__+': '+str(error);record['complete']=False
+ finally:
+  cleanup=time.monotonic();cleanup_deadline=min(cleanup+inputs['limits']['cleanupSeconds'],whole_deadline)
+--- a/native.mjs
++++ b/native.mjs
+@@ -5,23 +5,23 @@
+ import { createHash } from 'node:crypto';
+ import { launch } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs';
+ import { prepareMenu } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs';
+-import { installSharedLeafInspection } from './geometry-inspection.mjs';
+-const W='/private/tmp/tube-shared-leaf-native-v2-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
++import { installLeafIdentityCoreInspection } from './geometry-inspection.mjs';
++const W='/private/tmp/tube-leaf-identity-core-native-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
+ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+ const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const i=arg.indexOf('=');assert(arg.startsWith('--')&&i>2);return[arg.slice(2,i),arg.slice(i+1)];}));
+ assert.equal(args.run,'true');assert.equal(args.url,'http://127.0.0.1:4301/?diagnostics');assert.equal(resolve(args.out),W+'/candidate-first');
+ const sealBytes=readFileSync(W+'/seal.json'), seal=JSON.parse(sealBytes);
+-assert.equal(hash(sealBytes),process.env.SHARED_LEAF_OWNER_SEAL_SHA);assert.equal(seal.schema,'shared-leaf-seal/v2');assert(seal.rootAuthorized&&seal.complete);
++assert.equal(hash(sealBytes),process.env.LEAF_IDENTITY_CORE_OWNER_SEAL_SHA);assert.equal(seal.schema,'leaf-identity-core-seal/v1');assert(seal.rootAuthorized&&seal.complete);
+ const readPinned=spec=>{const bytes=readFileSync(spec.file);assert.equal(bytes.length,spec.bytes);assert.equal(hash(bytes),spec.sha256);return bytes;};
+-const reference=JSON.parse(readPinned(inputs.referenceReport)), expected=JSON.parse(readPinned(inputs.referenceLoft));
++const reference=JSON.parse(readPinned(inputs.scenePoseReferenceReport)), expected=JSON.parse(readPinned(inputs.referenceLoft)), baselineDrawInputs=JSON.parse(readPinned(inputs.baselineAuthority.drawInputs));
+ assert(reference.complete&&reference.firstFailure===null&&reference.stepCount===0&&reference.stop.kind==='first-eligible-capture');
+ assert.equal(expected.epoch.seaTime,reference.stop.seaTime);assert.equal(expected.epoch.step,0);assert.equal(Object.keys(expected.arrays).length,37);
+ assert.deepEqual(inputs.referenceCounts,expected.counts); // Baseline only; candidate roster may differ.
+ assert.deepEqual(inputs.overrides,{seed:6238,componentCount:64,dx:2,fineSpacing:1});
+ assert(!existsSync(args.out));mkdirSync(args.out);const OUT=resolve(args.out),started=performance.now();let page,exitCode=0;
+-const report={schema:'shared-leaf-native/v2',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
+- referenceReport:inputs.referenceReport,referenceLoft:inputs.referenceLoft,opticalAuthority:inputs.opticalAuthority,authoredAuthority:inputs.authoredAuthority,settings:inputs.settings,overrides:inputs.overrides,graphics:inputs.graphics,
+- policy:inputs.comparison,limits:inputs.limits,stepCount:0,pairs:[],artifacts:[],pngCount:0,pngBytes:0,browserErrors:[],acceptance:{visualCause:null,playability:false,productionFixAdopted:false}};
++const report={schema:'leaf-identity-core-native/v1',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
++ scenePoseReferenceReport:inputs.scenePoseReferenceReport,referenceLoft:inputs.referenceLoft,baselineAuthority:inputs.baselineAuthority,rootCurrentApplicationReceipt:inputs.rootCurrentApplicationReceipt,opticalAuthority:inputs.opticalAuthority,authoredAuthority:inputs.authoredAuthority,settings:inputs.settings,overrides:inputs.overrides,graphics:inputs.graphics,
++ policy:inputs.comparison,limits:inputs.limits,stepCount:0,pairs:[],artifacts:[],pngCount:0,pngBytes:0,browserErrors:[],acceptance:{visualCause:null,playability:false,productionAdoptionByThisObserver:false,identityCoreApplicationIsExternalToCapture:true}};
+ function save(){const bytes=Buffer.from(JSON.stringify(report,null,2)+'\n');assert(bytes.length<=inputs.limits.reportBytes);writeFileSync(join(OUT,'report.json'),bytes);}
+ function png(file,url){assert.equal(typeof url,'string');assert(url.startsWith('data:image/png;base64,')&&!existsSync(join(OUT,file)));
+  const bytes=Buffer.from(url.slice(22),'base64');assert(bytes.length>8&&bytes.length<=inputs.limits.pngBytesEach&&report.pngCount<inputs.limits.pngCount);
+@@ -37,7 +37,7 @@
+  await page.waitFor("document.querySelector('.screen-menu') && !document.querySelector('.is-scene-pending')",45000);
+  report.menuStartup=await page.eval(`(${prepareMenu.toString()})()`);
+  await page.waitFor('document.querySelector("#app")?.dataset.screen==="pause" && document.querySelector("#app")?.dataset.base==="ride" && breaklineDiagnostics.mode.host?.snapshot.status.ride && !breaklineLab.active && breaklineLab.clock.paused',180000);
+- report.applicationBuildRequest=await page.eval(`(async()=>{const r=await fetch('/build.json',{cache:'no-store'});if(!r.ok)throw Error('Build HTTP '+r.status);const json=await r.json();if(json.build!==${JSON.stringify(inputs.applicationBuildId)})throw Error('Unexpected completed cap build');return{build:json.build,status:r.status,checkedBeforeReplay:true};})()`);
++ report.applicationBuildRequest=await page.eval(`(async()=>{const r=await fetch('/build.json',{cache:'no-store'});if(!r.ok)throw Error('Build HTTP '+r.status);const json=await r.json();if(json.build!==${JSON.stringify(inputs.applicationBuildId)})throw Error('Unexpected root-built identity-core application');return{build:json.build,status:r.status,checkedBeforeReplay:true};})()`);
+  report.normalMenuBeforeReplay=await page.eval(`({config:JSON.parse(JSON.stringify(breaklineDiagnostics.mode.config)),seaTime:breaklineDiagnostics.mode.host.snapshot.status.seaTime,board8:Array.from(breaklineDiagnostics.mode.host.snapshot.board.subarray(0,8)),rider33:Array.from(breaklineDiagnostics.mode.host.snapshot.rider.subarray(0,33))})`);
+  report.replayStartup=await page.eval(`(async()=>{const d=breaklineDiagnostics,lab=breaklineLab,root=document.querySelector('#app');if(root.dataset.screen!=='pause'||root.dataset.base!=='ride'||lab.active||!lab.clock.paused)throw Error('Actual menu/HUD hold required');const begin=performance.now();while(d.mode.host.outstandingSteps){if(performance.now()-begin>10000)throw Error('Menu drain timeout');await new Promise(r=>setTimeout(r,2));}await d.start(${JSON.stringify(inputs.settings)},${JSON.stringify(inputs.overrides)},{rider:true,lab:false});if(lab.active||!lab.clock.paused||root.dataset.screen!=='pause'||root.dataset.base!=='ride')throw Error('Public seeded restart must preserve HUD hold');return{api:'breaklineDiagnostics.start',publicStartCalls:1,noPlacement:true,noClockAssignment:true,diagnosticSeedRestart:true};})()`);
+  report.initial=await page.eval(`(async()=>{const d=breaklineDiagnostics,lab=breaklineLab;const begin=performance.now();while(d.mode.host.outstandingSteps){if(performance.now()-begin>10000)throw Error('Replay drain timeout');await new Promise(r=>setTimeout(r,2));}await d.mode.sweptBarrel.ready;if(lab.active||!lab.clock.paused||d.mode.sweptBarrel.holdsClearDrawing!==true)throw Error('Held ordinary drawing required');d.resize(1708,879);d.mode.update(0);d.renderView(d.mode.camera.camera);return{menu:window.__ordinaryMenuEvidence,config:JSON.parse(JSON.stringify(d.mode.config)),seaTime:d.mode.host.snapshot.status.seaTime,compute:d.mode.host.snapshot.status.compute,canvas:[d.canvas.width,d.canvas.height]};})()`);
+@@ -45,20 +45,23 @@
+  assert.deepEqual(report.initial.menu.selectedChoices,['Padang Padang','Big','Mid','Calm','Midday']);assert.deepEqual(report.initial.config,reference.initial.config);
+  assert.equal(report.initial.seaTime,expected.epoch.seaTime);assert.equal(report.initial.compute,'gpu');assert.deepEqual(report.initial.canvas,[1708,879]);
+  await page.waitFor('!!breaklineDiagnostics.mode.surfer.skinned',10000);
+- const installed=await page.eval(`(${installSharedLeafInspection.toString()})(${JSON.stringify(expected)},${JSON.stringify(inputs.fixedCameras)},${JSON.stringify(reference.initialBody)},${JSON.stringify(reference.normal.camera)},${JSON.stringify(inputs.comparison.pairs)})`);
++ const installed=await page.eval(`(${installLeafIdentityCoreInspection.toString()})(${JSON.stringify(expected)},${JSON.stringify(inputs.fixedCameras)},${JSON.stringify(reference.initialBody)},${JSON.stringify(reference.normal.camera)},${JSON.stringify(inputs.comparison.pairs)})`);
++ const commonDrawFields=['seaTime','step','config','look','holdClearDrawing','slope','stillLevel','surfaceRevision','surfaceGrid','surface','rawFrontPacket','board8','rider33','normalCameraWords'];
++ for(const field of commonDrawFields)assert.deepEqual(installed.drawInputs[field],baselineDrawInputs[field],'Exact prior ordinary/query field differs '+field);
++ report.priorOrdinaryDrawInputsComparison={fieldsExact:commonDrawFields,oldMaskEqualityRequired:false,currentMaskHeldCommonWithinEachPair:true,actualAtXQueriesSavedForBothUploadedRosters:true};
+  const writeJSON=(name,value,cap)=>{const bytes=Buffer.from(JSON.stringify(value));assert(bytes.length<=cap);writeFileSync(join(OUT,name),bytes);const item={file:name,bytes:bytes.length,sha256:hash(bytes)};report.artifacts.push(item);return item;};
+  report.sidecar=writeJSON('loft-candidate.json',installed.candidateSnapshot,inputs.limits.sidecarBytes);
+  report.drawInputs=writeJSON('draw-inputs.json',installed.drawInputs,inputs.limits.drawInputsBytes);
+  delete installed.candidateSnapshot;delete installed.drawInputs;report.installation=installed;save();
+  for(const {camera:name,view} of inputs.comparison.pairs){
+   assert(performance.now()-started<inputs.limits.nativeSeconds*1000);
+-  const pair=await page.eval(`__sharedLeaf.capture(${JSON.stringify(name)},${JSON.stringify(view)})`);
++  const pair=await page.eval(`__leafIdentityCore.capture(${JSON.stringify(name)},${JSON.stringify(view)})`);
+   assert(pair.complete&&pair.stepCount===0&&pair.seaTime===expected.epoch.seaTime&&pair.baselineRepeatPixelsIdentical);
+   assert(Object.values(pair.guards).every(value=>value===true));assert.deepEqual(pair.fixedPose,inputs.fixedCameras[name]);
+-  const prefix=name+'-'+view;const baseline=png(prefix+'-preserved-cap.png',pair.baselinePNG),candidate=png(prefix+'-shared-leaf.png',pair.candidatePNG);
++  const prefix=name+'-'+view;const baseline=png(prefix+'-preserved-shared-leaf.png',pair.baselinePNG),candidate=png(prefix+'-identity-core.png',pair.candidatePNG);
+   delete pair.baselinePNG;delete pair.candidatePNG;report.pairs.push({...pair,baseline,candidate});save();
+  }
+- report.restoration=await page.eval('__sharedLeaf.finish()');assert(report.restoration.complete&&Object.values(report.restoration.guards).every(Boolean));
++ report.restoration=await page.eval('__leafIdentityCore.finish()');assert(report.restoration.complete&&Object.values(report.restoration.guards).every(Boolean));
+  assert.equal(report.pngCount,8);assert.deepEqual(report.browserErrors,[]);report.complete=true;
+ } catch(error) {report.firstFailure=String(error?.stack??error).slice(0,16384);report.complete=false;exitCode=1;}
+ finally {clearTimeout(deadline);if(page)try{await page.close();report.ownedBrowserClose=true;}catch(error){report.ownedBrowserClose=false;report.closeFailure=String(error).slice(0,2048);report.complete=false;exitCode=1;}
+--- a/geometry-inspection.mjs
++++ b/geometry-inspection.mjs
+@@ -1,5 +1,5 @@
+ // Root-only matched draw observer. No geometry provider, clock, actor or ordinary-input override.
+-export function installSharedLeafInspection(prior, cameras, priorBody, priorNormal, pairs) {
++export function installLeafIdentityCoreInspection(prior, cameras, priorBody, priorNormal, pairs) {
+   const d=window.breaklineDiagnostics,lab=window.breaklineLab,mode=d?.mode,host=mode?.host,snapshot=host?.snapshot;
+   const carrier=mode?.sweptBarrel,owner=mode?.barrelMesh,mesh=owner?.mesh,material=mesh?.material,normal=mode?.camera.camera;
+   const must=(yes,why)=>{if(!yes)throw Error(why);};
+@@ -27,8 +27,8 @@
+   const count=(l,key)=>key==='indices'?l.indexCount:vw[key]?vw[key]*l.vertexCount:l.sliceCount;
+   const old={...candidate,sliceCount:prior.counts.slices,vertexCount:prior.counts.vertices,indexCount:prior.counts.indices};
+   for(const [k,r]of Object.entries(prior.arrays)){old[k]=decode(r);must(r.count===count(old,k),'Frozen count differs '+k);}
+-  // Use the actual final old words as-is; cSampling here is not claimed to be old producer metadata.
+-  delete old.cSampling;
++  // Preserve actual pre-identity words and its saved planner metadata; never invent an old roster.
++  old.cSampling=prior.cSampling??null;
+   const candidateState=candidateKeys.map(k=>({k,array:candidate[k],n:count(candidate,k),copy:bytes(candidate[k],count(candidate,k))}));
+   const actor=[{a:snapshot.board,n:8,b:bytes(snapshot.board,8)},{a:snapshot.rider,n:33,b:bytes(snapshot.rider,33)}];
+   const status=snapshot.status,raw=snapshot.front,normalWords=words(normal),normalParent=normal.parent,normalView=JSON.stringify(normal.view);
+@@ -62,11 +62,11 @@
+   function rowQueries(l){const records=raw,spans=[];for(let start=0;start<snapshot.frontCount;){let end=start+1;while(end<snapshot.frontCount&&records[9*end+2]===records[9*start+2])end++;if(end-start>=2){const x0=records[9*start],x1=records[9*(end-1)],dx0=records[9*(start+1)]-x0,dz0=records[9*(start+1)+1]-records[9*start+1],dx1=x1-records[9*(end-2)],dz1=records[9*(end-1)+1]-records[9*(end-2)+1];spans.push({id:records[9*start+2],start,end,first:records[9*start+3],last:records[9*(end-1)+3],fromX:Math.fround(x0-1.5*dx0/Math.hypot(dx0,dz0)),toX:Math.fround(x1+1.5*dx1/Math.hypot(dx1,dz1))});}start=end;}
+     return Array.from({length:l.sliceCount},(_,row)=>{const f=spans.find(s=>s.id===l.sliceFront[row]);must(f,'Actual row raw front missing');const sample={},x=l.positions[3*(STRIDE*row+EXT+32)],sigma=carrier.loft.atX(records,f,x,sample);return{row,front:f.id,worldCrestX:x,storedSigma:l.sliceSigma[row],sampledSigma:sigma,query:{slope:carrier.loft.slope,footHeight:sample.footHeight,footDepth:sample.footDepth,seconds:sample.tau,hold:'contact'},rawSample:sample,phase:l.slicePhase[row],weight:l.sliceWeight[row],fade:l.sliceFade[row]};});}
+   const candidateSnapshot={schema:prior.schema,available:true,label:'terminal',epoch:{step:0,seaTime,surfaceRevision,drawnWaterTime:d.water.materialUniforms.waterTime.value},counts:{slices:candidate.sliceCount,vertices:candidate.vertexCount,indices:candidate.indexCount},arrays:Object.fromEntries(candidateKeys.map(k=>[k,encoded(candidate[k],count(candidate,k))])),rawBytes:candidateState.reduce((sum,r)=>sum+r.copy.length,0),rawFrontPacket:prior.rawFrontPacket,arrayIdentitiesAndWordsUnchanged:true,cSampling:candidate.cSampling??null,positionSpace:'world-coordinate-loft-input',globalC1Guarantee:false};
+-  const water=ordinaryState();const drawInputs={schema:'shared-leaf-actual-draw-inputs/v1',seaTime,step:0,config:JSON.parse(JSON.stringify(mode.config)),look:d.water.drawnLook,holdClearDrawing:carrier.holdsClearDrawing,slope:carrier.loft.slope,stillLevel:mode.config.tide,surfaceRevision,surfaceGrid:JSON.parse(surfaceGrid),surface:encoded(surface),ordinaryMask:encoded(water.array),maskProperties:water.properties,maskGrid:water.grid,maskGridSize:water.size,maskActive:water.active,maskPolicy:'Same current candidate footprint texture retained for both geometry uploads; not old historical footprint.',rawFrontPacket:prior.rawFrontPacket,board8:encoded(snapshot.board,8),rider33:encoded(snapshot.rider,33),normalCameraWords:normalWords,priorQueries:rowQueries(old),candidateQueries:rowQueries(candidate)};
++  const water=ordinaryState();const drawInputs={schema:'leaf-identity-core-actual-draw-inputs/v1',seaTime,step:0,config:JSON.parse(JSON.stringify(mode.config)),look:d.water.drawnLook,holdClearDrawing:carrier.holdsClearDrawing,slope:carrier.loft.slope,stillLevel:mode.config.tide,surfaceRevision,surfaceGrid:JSON.parse(surfaceGrid),surface:encoded(surface),ordinaryMask:encoded(water.array),maskProperties:water.properties,maskGrid:water.grid,maskGridSize:water.size,maskActive:water.active,maskPolicy:'Same current candidate footprint texture retained for both geometry uploads; not old historical footprint.',rawFrontPacket:prior.rawFrontPacket,board8:encoded(snapshot.board,8),rider33:encoded(snapshot.rider,33),normalCameraWords:normalWords,priorQueries:rowQueries(old),candidateQueries:rowQueries(candidate)};
+   function restoreAttributes(){for(const k of Object.keys(originalGeometry.attributes))if(!originalAttributes.some(([p])=>p===k))originalGeometry.deleteAttribute(k);for(const [k,a]of originalAttributes)originalGeometry.setAttribute(k,a);}
+-  material.onBeforeCompile=observer;material.customProgramCacheKey=function(){return key.call(this)+'-shared-leaf-observer';};material.needsUpdate=true;
+-  window.__sharedLeaf={capture(name,viewLabel){const declaration=pairs[finished];must(active&&declaration?.camera===name&&declaration.view===viewLabel,'Exactly declared fixed pairs required');const view=viewLabel==='region'?'region':undefined,c=fixed(name),cw=words(c),ev=shaderEvidence.length;pairState={variant:'preserved-cap'};let complete=false,baselinePNG,candidatePNG,repeat,baselineUnderwater,candidateUnderwater;
+-    try{owner.setView(view);if(view==='region'){regionAttribute??=mesh.geometry.getAttribute('sweptView');must(regionAttribute,'Actual region attribute unavailable');mesh.geometry.setAttribute('sweptView',regionAttribute);}choose(old,'old-'+finished);d.renderView(c);verifyPhysics();uploaded(old);const ordinary=ordinaryState();baselineUnderwater=mode.cameraBelowSurface(.1,c.position);baselinePNG=d.canvas.toDataURL('image/png');pairState.variant='shared-leaf';choose(candidate,'candidate-'+finished);d.renderView(c);verifyPhysics();uploaded(candidate);verifyOrdinary(ordinary);candidateUnderwater=mode.cameraBelowSurface(.1,c.position);must(equal(words(c),cw),'Fixed camera words changed');candidatePNG=d.canvas.toDataURL('image/png');pairState.variant='preserved-cap-repeat';choose(old,'repeat-'+finished);d.renderView(c);verifyPhysics();uploaded(old);verifyOrdinary(ordinary);must(equal(words(c),cw),'Repeat fixed camera changed');repeat=baselinePNG===d.canvas.toDataURL('image/png');must(repeat,'Restored old geometry pixels differ');finished++;complete=true;}
++  material.onBeforeCompile=observer;material.customProgramCacheKey=function(){return key.call(this)+'-leaf-identity-core-observer';};material.needsUpdate=true;
++  window.__leafIdentityCore={capture(name,viewLabel){const declaration=pairs[finished];must(active&&declaration?.camera===name&&declaration.view===viewLabel,'Exactly declared fixed pairs required');const view=viewLabel==='region'?'region':undefined,c=fixed(name),cw=words(c),ev=shaderEvidence.length;pairState={variant:'preserved-shared-leaf'};let complete=false,baselinePNG,candidatePNG,repeat,baselineUnderwater,candidateUnderwater;
++    try{owner.setView(view);if(view==='region'){regionAttribute??=mesh.geometry.getAttribute('sweptView');must(regionAttribute,'Actual region attribute unavailable');mesh.geometry.setAttribute('sweptView',regionAttribute);}choose(old,'pre-identity-'+finished);d.renderView(c);verifyPhysics();uploaded(old);const ordinary=ordinaryState();baselineUnderwater=mode.cameraBelowSurface(.1,c.position);baselinePNG=d.canvas.toDataURL('image/png');pairState.variant='identity-core';choose(candidate,'candidate-'+finished);d.renderView(c);verifyPhysics();uploaded(candidate);verifyOrdinary(ordinary);candidateUnderwater=mode.cameraBelowSurface(.1,c.position);must(equal(words(c),cw),'Fixed camera words changed');candidatePNG=d.canvas.toDataURL('image/png');pairState.variant='preserved-shared-leaf-repeat';choose(old,'repeat-'+finished);d.renderView(c);verifyPhysics();uploaded(old);verifyOrdinary(ordinary);must(equal(words(c),cw),'Repeat fixed camera changed');repeat=baselinePNG===d.canvas.toDataURL('image/png');must(repeat,'Restored old geometry pixels differ');finished++;complete=true;}
+     finally{owner.setView(originalView);choose(candidate,'restore-'+finished);restoreAttributes();d.renderView(normal);verifyPhysics();uploaded(candidate);if(!complete)active=false;pairState=null;}
+     return{complete:true,camera:name,view:viewLabel,fixedPose:cameras[name],seaTime,stepCount:0,baselinePNG,candidatePNG,baselineRepeatPixelsIdentical:repeat,baselineCounts:prior.counts,candidateCounts:candidateSnapshot.counts,underwaterClassification:{baseline:baselineUnderwater,candidate:candidateUnderwater},shaderEvidence:shaderEvidence.slice(ev),guards:{sameRawFrontActorClockAndNormalCamera:true,candidate37Immutable:true,old37WordsUploadedExact:true,candidate37WordsUploadedExact:true,onlyExistingTriangleWindingRepair:true,sameFixedCameraWords:true,sameCurrentOrdinarySurfaceAndMaskBytes:true,ordinaryWaterMaterialGeometryDepthStencilPreserved:true,currentUnmodifiedMaterialForBothVariants:true,candidateNormalViewRestored:true},limitations:['Existing current renderer recomputes wall/exit normals and region attributes from each actual uploaded loft.','Current ordinary-water texture mask is held common; changed geometry footprint may change authored-versus-texture support/coverage.','Camera classification follows each selected actual loft; no general visibility or radiance equality claim.']};},finish(){must(active&&finished===pairs.length,'All pairs required');must(compiledByView.has('rich')&&compiledByView.has('region'),'Both actual current shader views must be observed');carrier.draw=originalDraw;carrier.lastLoft=originalLoft;carrier.cameraWater.prepare(candidate,'final-original');owner.setView(originalView);material.onBeforeCompile=compile;material.customProgramCacheKey=key;material.needsUpdate=true;restoreAttributes();d.renderView(normal);restoreAttributes();verifyPhysics();uploaded(candidate);active=false;return{complete:true,completed:pairs,seaTime,stepCount:0,shaderEvidence,guards:{originalDrawFunctionRestored:carrier.draw===originalDraw,originalMaterialCallbacksRestored:material.onBeforeCompile===compile&&material.customProgramCacheKey===key,originalViewAndAttributeSetRestored:owner.view===originalView&&Object.keys(originalGeometry.attributes).length===originalAttributes.length&&originalAttributes.every(([k,a])=>originalGeometry.getAttribute(k)===a),candidateActualGeometryAndOrdinaryCameraRestored:true,physicalActorFrontClockWaterUnchanged:true}};}};
+   verifyPhysics();return{installed:true,seaTime,stepCount:0,exactRawFrontWords:true,priorActorAndNormalCameraExact:true,currentMaterialUnmodified:true,oldCounts:prior.counts,candidateCounts:candidateSnapshot.counts,candidateSnapshot,drawInputs,cameraSearch:false,selectorSearch:false,candidateCountEqualityRequired:false,globalC1Guarantee:false};
+--- a/measure.py
++++ b/measure.py
+@@ -2,7 +2,7 @@
+ from pathlib import Path
+ from collections import Counter
+ import base64,hashlib,json,math,struct
+-W=Path('/private/tmp/tube-shared-leaf-native-v2-20261005');STRIDE,EXT,CAP,CREST,FLOOR=134,3,64,32,104
++W=Path('/private/tmp/tube-leaf-identity-core-native-20261005');STRIDE,EXT,CAP,CREST,FLOOR=134,3,64,32,104
+ TARGET_FRONT,TARGET_WORLD_X=41,75.625
+ 
+ def require(v,why):
+@@ -47,8 +47,8 @@
+  visible=[r for r in records if r['projection']['inFrustum']and r['bendDegrees']is not None]
+  return {'counts':s['counts'],'cSampling':s.get('cSampling'),'targetAtExactWorldCrestX':next((r for r in records if r['worldCrestX']==TARGET_WORLD_X),None),'targetBracketingWorldX':{k:next((r for r in sorted(records,key=lambda q:q['worldCrestX'],reverse=reverse)if (r['worldCrestX']<=TARGET_WORLD_X if reverse else r['worldCrestX']>=TARGET_WORLD_X)),None)for k,reverse in [('lower',True),('upper',False)]},'predeclaredFront41WorldX74To77Rows':records,'maximumEligibleVisibleBendInDeclaredNeighborhood':max(visible,key=lambda q:q['bendDegrees'])if visible else None}
+ def main():
+- owner=json.loads((W/'owner.json').read_bytes());require(owner['schema']=='shared-leaf-owner/v2'and owner['complete']and owner['exitCode']==0 and owner['firstFailure']is None and owner['preExecutionPinsVerified']and owner['postExecutionPinsVerified']and owner['copiedAndLiveSourcePinsPostVerified']and owner['protectedPreserved']and owner['protectedBefore']==owner['protectedAfter']and not owner['cleanupFailures']and not owner['ownedMembersAfterCleanup']and all(owner['closedPorts'].values()),'Not a terminal accepted closed capture')
+- i=json.loads((W/'inputs.json').read_bytes());r=json.loads((W/'candidate-first/report.json').read_bytes());require(r['schema']=='shared-leaf-native/v2'and r['complete']and r['firstFailure']is None and r['ownedBrowserClose']and r['stepCount']==0 and r['sealSha256']==owner['sealSha256'],'Incomplete report')
++ owner=json.loads((W/'owner.json').read_bytes());require(owner['schema']=='leaf-identity-core-owner/v1'and owner['complete']and owner['exitCode']==0 and owner['firstFailure']is None and owner['preExecutionPinsVerified']and owner['postExecutionPinsVerified']and owner['copiedAndSelectedLiveSourcePinsPostVerified']and owner['protectedPreserved']and owner['protectedBefore']==owner['protectedAfter']and not owner['cleanupFailures']and not owner['ownedMembersAfterCleanup']and all(owner['closedPorts'].values()),'Not a terminal accepted closed capture')
++ i=json.loads((W/'inputs.json').read_bytes());r=json.loads((W/'candidate-first/report.json').read_bytes());require(r['schema']=='leaf-identity-core-native/v1'and r['complete']and r['firstFailure']is None and r['ownedBrowserClose']and r['stepCount']==0 and r['sealSha256']==owner['sealSha256'],'Incomplete report')
+  base=verify(i['referenceLoft']);cand=verify(r['sidecar'],W/'candidate-first'/r['sidecar']['file']);ba,ca=load(base),load(cand);require(base['epoch']['seaTime']==cand['epoch']['seaTime']==i['referenceEpoch']['seaTime']and base['epoch']['step']==cand['epoch']['step']==0,'Different fixed epoch');require(decode(base['rawFrontPacket'])[1]==decode(cand['rawFrontPacket'])[1],'Raw packet differs')
+  require(all(p['fixedPose']==i['fixedCameras'][p['camera']]and all(p['guards'].values())and p['baselineRepeatPixelsIdentical']for p in r['pairs']),'Pair guard failure')
+  bm={(ba['sliceFront'][row],vec(ba,row,CREST)[0]):row for row in range(base['counts']['slices'])};cm={(ca['sliceFront'][row],vec(ca,row,CREST)[0]):row for row in range(cand['counts']['slices'])};raw,_=decode(base['rawFrontPacket']);audit=[]
+@@ -56,6 +56,6 @@
+   k=(int(raw[o+2]),raw[o]);old=bm.get(k)
+   if old is None or ba['sliceFade'][old]<=0:continue
+   new=cm.get(k);audit.append({'front':k[0],'rawWorldX':k[1],'rawSigma':raw[o+3],'oldRow':old,'candidateRow':new,'oldPhase':ba['slicePhase'][old],'oldFade':ba['sliceFade'][old],'candidatePhase':ca['slicePhase'][new]if new is not None else None,'candidateFade':ca['sliceFade'][new]if new is not None else None,'tauExact':ba['sliceTau'][old]==ca['sliceTau'][new]if new is not None else None})
+- out={'schema':'shared-leaf-saved-cap-analysis/v2','complete':True,'inputs':[pin(Path(__file__)),pin(W/'owner.json'),pin(W/'candidate-first/report.json'),i['referenceLoft'],r['sidecar'],r['drawInputs']], 'target':{'front':TARGET_FRONT,'worldCrestX':TARGET_WORLD_X,'coordinateIsSigma':False,'priorReported33DegreeCorner':'Baseline direct measurement below is authoritative; do not substitute historical rounded33-degree number.'},'epochAndRawPacketExact':True,'old':inspect(base,ba,i['fixedCameras']['side']),'candidate':inspect(cand,ca,i['fixedCameras']['side']),'priorRetainedPositiveFadeRawAudit':{'records':audit,'missing':[v for v in audit if v['candidateRow']is None]},'limitations':['Actual indexed saved polyline bend and normal-turn only; no shader/pixel silhouette or radiance proof.','World crest X and stored sigma are separate fields; no nearest-sigma substitute for the old world-X corner.','Adaptive stations/counts may differ. A missing exact target is bracketed and reported, not silently moved.','The smoothing map is C1 in delta; remaining raw width/tangent kinks do not guarantee a globally C1 trajectory.','Common current ordinary-water mask is held fixed; altered footprint/authored support can alter overlap and surviving coverage.','Missing prior raw rows are not attributed to budget/retirement without saved cSampling evidence.','No quality, full-body clearance, ordinary ridden entry/travel/exit, reference match or FPS acceptance.']}
++ out={'schema':'leaf-identity-core-saved-cap-analysis/v1','complete':True,'inputs':[pin(Path(__file__)),pin(W/'owner.json'),pin(W/'candidate-first/report.json'),i['referenceLoft'],r['sidecar'],r['drawInputs']], 'target':{'front':TARGET_FRONT,'worldCrestX':TARGET_WORLD_X,'coordinateIsSigma':False,'priorReportedPreIdentityBend':'Baseline direct measurement below is authoritative; historical pre-identity saved bend was approximately21.48degrees, not the earlier33-degree cap-only value.'},'epochAndRawPacketExact':True,'old':inspect(base,ba,i['fixedCameras']['side']),'candidate':inspect(cand,ca,i['fixedCameras']['side']),'priorRetainedPositiveFadeRawAudit':{'records':audit,'missing':[v for v in audit if v['candidateRow']is None]},'limitations':['Actual indexed saved polyline bend and normal-turn only; no shader/pixel silhouette or radiance proof.','World crest X and stored sigma are separate fields; no nearest-sigma substitute for the old world-X corner.','Adaptive stations/counts may differ. A missing exact target is bracketed and reported, not silently moved.','The identity-core map is C1 in delta for fixed positive budget; raw.98 width/B/height/tangent terms and budget branches do not guarantee a globally C1 trajectory.','Common current ordinary-water mask is held fixed; altered footprint/authored support can alter overlap and surviving coverage.','Missing prior raw rows are not attributed to budget/retirement without saved cSampling evidence.','No quality, full-body clearance, ordinary ridden entry/travel/exit, reference match or FPS acceptance.']}
+  print(json.dumps(out,indent=2,allow_nan=False))
+ if __name__=='__main__':main()
+--- a/inputs.json
++++ b/inputs.json
+@@ -1,33 +1,8 @@
+ {
+-  "referenceReport": {
+-    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+-    "bytes": 49054,
+-    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+-  },
+-  "referenceOwner": {
+-    "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+-    "bytes": 3848,
+-    "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+-  },
+   "referenceLoft": {
+-    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+-    "bytes": 1219771,
+-    "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+-  },
+-  "referenceBuild": {
+-    "file": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+-    "bytes": 15655,
+-    "sha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00"
+-  },
+-  "referenceSeal": {
+-    "file": "/private/tmp/tube-cap-refinement-native-20261005/seal.json",
+-    "bytes": 6584,
+-    "sha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05"
+-  },
+-  "referenceSourceFreeze": {
+-    "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+-    "bytes": 5973,
+-    "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
++    "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
++    "bytes": 1204806,
++    "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+   },
+   "borrowedHelperPins": [
+     {
+@@ -183,9 +158,9 @@
+     "kind": "first-eligible-capture"
+   },
+   "referenceCounts": {
+-    "slices": 81,
+-    "vertices": 10854,
+-    "indices": 62244
++    "slices": 80,
++    "vertices": 10720,
++    "indices": 61446
+   },
+   "protectedPorts": [
+     4312,
+@@ -201,11 +176,11 @@
+     4301,
+     9711
+   ],
+-  "schema": "shared-leaf-inputs/v2",
++  "schema": "leaf-identity-core-inputs/v1",
+   "preparationOnly": true,
+   "rootExecutionPending": true,
+-  "applicationBuildId": "tube-shared-leaf-seek-history-20261005",
+-  "applicationDirectory": "/Users/regina/Desktop/Projects/surfing-game/dist",
++  "applicationBuildId": "tube-guided-passive-telemetry-20261005",
++  "applicationDirectory": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/dist",
+   "authoredAuthority": [
+     {
+       "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+@@ -273,56 +248,43 @@
+       }
+     ],
+     "geometryOrder": [
+-      "preserved-cap",
+-      "shared-leaf",
+-      "restored-preserved-cap-repeat"
++      "preserved-shared-leaf",
++      "identity-core",
++      "restored-preserved-shared-leaf-repeat"
+     ],
+     "oldFull37Exact": true,
+     "candidateActiveCountsMayChange": true,
+-    "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Not the prior cap historical footprint mask.",
++    "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Old pre-identity mask equality is not required because the geometry footprint can change.",
+     "currentMaterialPolicy": "Unmodified current compiled authored max-mask and wall-light A on both variants; observer wrapper records exact shader words only.",
+     "targetCorner": {
+       "front": 41,
+       "worldCrestX": 75.625,
+       "coordinateIsSigma": false,
+-      "priorMeasuredBendDegrees": 33.2759
++      "priorMeasuredBendDegrees": 21.479273974306263
+     },
+     "noPlacement": true,
+     "noSteps": true,
+     "noSeedEpochPoseSelectorSearch": true,
+-    "globalC1Guarantee": false
+-  },
+-  "priorFailedAttempt": {
+-    "directory": "/private/tmp/tube-shared-leaf-native-20261005",
+-    "owner": {
+-      "file": "/private/tmp/tube-shared-leaf-native-20261005/owner.json",
+-      "bytes": 2607,
+-      "sha256": "7c53fecb36b28d2b0b90d592fe7c1f609c0b598666635ef96238f74b9d12eea6"
+-    },
+-    "report": {
+-      "file": "/private/tmp/tube-shared-leaf-native-20261005/candidate-first/report.json",
+-      "bytes": 4899,
+-      "sha256": "a32e3e33645fcdb407f3dd5fd7ca62ff155e1d05bb9d6a131e5a0cbdac0408d9"
+-    },
+-    "sourceFreeze": {
+-      "file": "/private/tmp/tube-shared-leaf-native-20261005/source-freeze.json",
+-      "bytes": 6267,
+-      "sha256": "ea5f8d376b76ab982085dce43962e025f04290e09b370f61bf1f12da2c463cce"
+-    },
+-    "nativeHandle": 30897,
+-    "nativeGroup": 21700,
+-    "outcome": "Terminal1 OS-query timeout owner abort before installation/steps/images; original failed receipts retained unchanged.",
+-    "rootClosureReceipt": {
+-      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+-      "bytes": 25763,
+-      "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+-    },
+-    "rootClosureQualification": "Separate actual independent root receipt complete:true; original failed owner/report remain complete:false.",
+-    "build": {
+-      "file": "/private/tmp/tube-shared-leaf-native-20261005/build.json",
+-      "bytes": 15872,
+-      "sha256": "7abf323e2d00d7d8fe5ac141ceb4398dbbb34a88bb8db66b678e9ae176f4a717"
+-    }
++    "globalC1Guarantee": false,
++    "identityCoreOnlyRuntimeGeometryChange": true,
++    "baselineSuppliedCheckpoint": "2f43b943cfb29419a063c6ee31813e4f116c7a7a",
++    "oldFull37Producer": "Completed shared-leaf V2 candidate (pre-identity), not earlier cap-only geometry.",
++    "priorOrdinaryDrawInputsExactFields": [
++      "seaTime",
++      "step",
++      "config",
++      "look",
++      "holdClearDrawing",
++      "slope",
++      "stillLevel",
++      "surfaceRevision",
++      "surfaceGrid",
++      "surface",
++      "rawFrontPacket",
++      "board8",
++      "rider33",
++      "normalCameraWords"
++    ]
+   },
+   "ownerObservationPolicy": {
+     "osReadSeconds": 2,
+@@ -330,11 +292,94 @@
+     "maximumRecordedTimeoutNotes": 16,
+     "requiredReadAttempts": 3,
+     "periodicTimeoutOutcome": "Observation only; same native process and HTTP server continue, retry at next scheduled poll.",
+-    "requiredIdentityOutcome": "Initial/preflight/cleanup identity reads must succeed; no signal against an unverified group."
+-  },
+-  "applicationBuildEvidence": {
+-    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-application-build.log",
+-    "bytes": 1328,
+-    "sha256": "aa356c4bf230738569166bf4942c48f1fdc5a00702090b07fa60d6c6aeda2886"
+-  }
++    "requiredIdentityOutcome": "Initial/preflight/cleanup identity reads must succeed; no signal against an unverified group.",
++    "knownUnadoptedChildArgvLimitation": "Inherited owner still rejects any recurring child PID/start/command change. Ordinary V4 actually failed this assertion at browser startup without an offending row record. No precise cause or safe replacement is accepted by this recipe; root must review the separate anchor proposal before execution."
++  },
++  "rootCurrentApplicationReceipt": {
++    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
++    "bytes": 132778,
++    "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
++  },
++  "baselineAuthority": {
++    "owner": {
++      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/owner.json",
++      "bytes": 15739,
++      "sha256": "015c31d0bf9fecc62935ab919e7a65277f74084b79b80a7a4fe40e26efe7a02c"
++    },
++    "report": {
++      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/report.json",
++      "bytes": 42900,
++      "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
++    },
++    "loft": {
++      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
++      "bytes": 1204806,
++      "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
++    },
++    "build": {
++      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/build.json",
++      "bytes": 16556,
++      "sha256": "f945caaa1aba8d283487942e7150a7ed9e0def1b1c2e190b75ea83d6fa3bd705"
++    },
++    "seal": {
++      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/seal.json",
++      "bytes": 9461,
++      "sha256": "bc8d8374c629fd7cf74da7abac0609b036242f3a3b0ee53ce8a8a1519e9dd3ee"
++    },
++    "sourceFreeze": {
++      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source-freeze.json",
++      "bytes": 6300,
++      "sha256": "e38226f54858e5804065cec68626af7ed2b1e1fbf799f87ecef12f2136825e78"
++    },
++    "drawInputs": {
++      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/draw-inputs.json",
++      "bytes": 1696833,
++      "sha256": "0f26472964cb9ee71d3abe267b5e5c1be16aeadb2eaf7bbd6cf3848ce63a4a6f"
++    }
++  },
++  "scenePoseReferenceReport": {
++    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
++    "bytes": 49054,
++    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
++  },
++  "protectedIdentityAuthority": {
++    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
++    "bytes": 25763,
++    "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
++  },
++  "identityCoreProposal": {
++    "provenance.json": {
++      "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/provenance.json",
++      "bytes": 3778,
++      "sha256": "d8711d394708f3234b8a568477295528320d39d638213aa86747f0f749ee2b10"
++    },
++    "candidate.patch": {
++      "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/candidate.patch",
++      "bytes": 8145,
++      "sha256": "a705dd4b30f3c7a47b11bcf2e7ed2893c71a099e45f4b70d0db9add2b72030da"
++    }
++  },
++  "candidatePreparedApplication": {
++    "build": {
++      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
++      "bytes": 43568,
++      "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
++    },
++    "sourceFreeze": {
++      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
++      "bytes": 19549,
++      "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
++    },
++    "seal": {
++      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
++      "bytes": 9774,
++      "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
++    }
++  },
++  "knownOwnerDisciplineFailure": {
++    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
++    "bytes": 49694,
++    "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
++  },
++  "executionPendingOwnerPolicyReview": true
+ }
+--- a/README.md
++++ b/README.md
+@@ -1,36 +1,25 @@
+-Source-only V2 matched shared-leaf geometry recipe, 2026-10-05. Only this new temporary directory was written. No source application, syntax check, test, build, preparation/freezing, native/browser, simulation, port/process probe or analysis was executed by the preparation agent. Root owns all execution and acceptance.
++# Matched identity-core leaf comparison — source preparation only
+ 
+-Root must first finish its successful tests/build with BUILD_ID=tube-shared-leaf-seek-history-20261005 and verify the build's final guarded source inputs. Then review/syntax-check these recipe sources, run prepare.py, run run.py once, and run measure.py only after owner.json is complete, terminal0 and closed. Preparation copies only that exact root-built dist and freezes eleven selected current geometry/renderer/test sources. It never builds or modifies production. The source/build/seal/prepare receipts do not exist until root actually prepares them.
++No syntax checks, preparation, build, saved-word measurement, browser run, listener probe or native result were executed for this recipe. Root owns all future execution. No production, sealed prior recipe, current asset or protected preview was changed.
+ 
+-The completed cap-refinement full37 sidecar is the preserved geometry baseline: /private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json, SHA256 0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237. Direct completed cap report/owner/build/seal/source-freeze pins establish that baseline. Completed authored-max-mask and combined wall-light A report/owner/input pins come from /private/tmp/tube-authored-mask-native-20261005; completed A-only pins come from /private/tmp/tube-sheet-fill-native-20261005. These are direct context/provenance references, not a recursive ancestry verification framework or an authority to patch an old shader.
++The preserved baseline is the completed **shared-leaf V2 candidate**, checkpoint `2f43b943cfb29419a063c6ee31813e4f116c7a7a`: its exact full37 sidecar has 80 rows, 10,720 vertices and 61,446 indices. It is pre-identity geometry, not the earlier cap-only 81-row loft. Direct completed owner/report/build/seal/freeze and draw-input pins bind it. The older cap report supplies only the already-matched initial ordinary actor/configuration and normal camera. It supplies neither the baseline geometry nor a new ride outcome.
+ 
+-Both geometry variants use the SAME newly built current SweptBarrelMesh/material. The observer calls its actual existing compile callback and verifies current authored max-mask discard, wall-light A's single sky-share gate and unchanged TIR expression. It does not modify any shader string or inject an optical patch. A common per-view program-cache suffix ensures the observer sees compilation; it is bookkeeping only and is identical between geometry variants.
++The candidate app is copied from the immutable, complete ordinary V4 prepared `dist`, build `tube-guided-passive-telemetry-20261005`. The direct root-current application receipt binds the actual successful normal build, 49 assets and 584 current source pins. Preparation verifies that receipt, its actual terminal build-log reference, the immutable ordinary app build/freeze/seal and all copied asset bytes. It does not rebuild or compile. The source freeze retains eleven selected geometry/optical/test files; only `boundedCProfile.ts` and `boundedCLeafReach.test.ts` may differ from the successful shared-leaf V2 freeze, and those two must match the final identity-core proposal bytes. The earlier unapplied proposal's provenance describes its own preparation time; this recipe does not relabel it as the subsequent production application receipt.
+ 
+-The actual Padang Padang / Big / Mid / Calm / Midday menu and HUD hold precede exactly one public diagnostic restart with the existing seed6238/component64/dx2/fine1 settings. There are zero physical steps, no actor placement/private pop-up, retry, seed search, clock assignment, geometry selection, camera derivation, pose/epoch or quality search. Before any paired upload, the fresh current candidate must reproduce seaTime276.3293560552737, the exact frozen333Float32 front words, old board8/rider33 values and old ordinary normal-camera position/quaternion/projection. The seed is a predeclared matched geometry reproduction, not an ordinary-riding reachability or gameplay outcome.
++There is one held public diagnostic restart with the same fixed raw packet and epoch **276.3293560552737**, zero simulation steps, and the exact prior SIDE and INTERIOR camera/projection words. There is no placement, clock assignment, seed/pose/selector search or quality acceptance. The candidate is built by ordinary current drawing. Its complete37 words remain immutable during the observer. Baseline full37 words are decoded unchanged and uploaded through the same current renderer. Actual index upload permits only the existing per-triangle winding repair; source index words and actual repaired draw index words are different contracts.
+ 
+-The candidate is the actual current provider/loft built by the ordinary public draw pipeline over that raw packet and actual drawn water. No compiled numerical oracle or hand-authored cap substitute is used. Its full37 arrays are copied with exact active native typed words; raw packet and planner cSampling are saved with it. draw-inputs.json retains the current actual surface grid/data, ordinary texture mask/grid/properties, actor raw words, tide/look/hold/slope, and per-row queries from the actual existing atX sampler. World crest X and stored sigma are explicit separate fields. Query records do not build a second contour or change any control/clock.
++Each fixed camera has Rich and region pairs: preserved shared leaf → identity core → restored preserved shared leaf. The restored baseline PNG must exactly equal the pair's first PNG. Eight new PNGs are retained; historical PNG equality is not required. The observer does not rewrite any shader statement: both variants use the same current authored max-mask, wall-light A and unchanged TIR predicates, with exact compiled shader words compared per view. Existing current exit/wall normal and region-attribute computation runs on each actual uploaded loft. Material/depth/stencil/ordinary mesh state is preserved.
+ 
+-For each pair a short temporary carrier draw wrapper uploads either the preserved old full37 or actual candidate full37 through the existing SweptBarrelMesh.update. It uses the existing BarrelWater.prepare/query classifier with that selected geometry. Actor/raw front/status/seaTime and the candidate's own37arrays remain exact. The wrapper prevents an ordinary render repeat from overwriting the selected old geometry; final restoration reinstates the original carrier draw function, candidate loft, classifier, material callbacks/cache, original view/attribute set and normal camera, then renders the ordinary view. Existing winding repair and wall/exit/region attribute derivation run unchanged on each selected loft.
++The saved pre-identity draw inputs must exactly match current seaTime, step, configuration, look, held-drawing flag, slope, tide, water revision/grid/surface words, raw packet, board8/rider33 and normal camera words. Actual current `atX` query/carving fields are saved for both uploaded rosters. The current candidate-owned ordinary mask texture bytes/grid are held common within each comparison pair; equality to the old footprint mask is deliberately not claimed. Changed geometry can change authored/texture overlap and surviving coverage. Camera-water classification follows the selected actual loft and is reported separately.
+ 
+-Four fixed pairs are declared in order: SIDE Rich, SIDE region, INTERIOR Rich, INTERIOR region. Detached cameras copy the exact completed cap eye/quaternion/up/projection and projection parameters. Each pair saves `<camera>-<view>-preserved-cap.png` and `<camera>-<view>-shared-leaf.png`, then requires an unsaved restored-preserved-cap repeat to be PNG-identical. After each pair it restores the current candidate normal view. Neither a selector nor camera is fitted to the new geometry. Candidate adaptive row count may legitimately differ; only the old baseline counts must match its own sidecar.
++`measure.py` accepts only a terminal complete, closed, pinned owner/report. It compares the actual indexed cap64 polyline in the declared front41 world-crest-X interval [74,77] under the exact SIDE camera, measures neighboring world and sigma spacing, cap bend/normal turn and retention of previously positive-fade raw stations. The target is **world crest X75.625**, not sigma75.625; a missing exact target is bracketed, not silently moved. The successful pre-identity result measured about21.48° there; the earlier33° cap-only observation is a different geometry. Adaptive candidate row counts may change legitimately. Missing raw rows are reported without inventing a budget/retirement cause.
+ 
+-The SAME current candidate-owned ordinary-water surface AND texture mask bytes remain unchanged across every pair. Ordinary-water object/geometry/material/callback/depth/stencil state is guarded within each fixed-camera pair. This deliberately isolates geometry under a common current footprint texture. It does not reproduce the prior cap geometry's historical ordinary-water footprint mask, and changed geometric footprint/authored mask support may alter overlap, depth/stencil coverage and surviving pixels. Geometry-derived uploaded attributes and camera air/water classification can change and are observed. The region view interpolates ownership colours; it is not exact fragment/triangle provenance.
++The scalar identity-core bound is C1 in requested delta at fixed positive budget. Raw `.98*W`, height-dependent thickness, tangent and budget branches, and the falling curve still prevent a global C1 trajectory guarantee. Native shape, reference resemblance, complete-body clearance, ordinary ridden entry/travel/exit and FPS acceptance all remain open.
+ 
+-measure.py is independent offline saved-word analysis and rejects a nonterminal/incomplete/unclean owner before reading its report. It directly measures joined indexed cap64 polyline bend at front41 WORLD CREST X75.625 (the old approximately33-degree residual corner), along with neighboring world-X spacing, sigma spacing, XZ bend and supplied-normal turn. It reports both old and candidate values, exact target absence/bracketing if adaptive stations change, and a predeclared worldX74..77 side-frustum neighborhood roster/max. It also lists every old positive-fade raw station's retention, tau and phase/fade, using current saved planner diagnostics without inventing a retirement/budget cause. It does not silently substitute a nearby sigma, optimize an image score or demand the candidate have81rows.
++## Root-only execution and owner limitation
+ 
+-The continuous mean and bounded C1 correction map do not guarantee a globally C1 cap trajectory: saturation and remaining raw width, height or tangents can retain kinks; the final common hold taper deliberately restores the old lifecycle event. Completion alone is no silhouette/quality/reference acceptance. Root must inspect the actual fixed camera images and numeric change. There is no full-body containment, actual ordinary tube entry/travel/exit, physical force, radiance, FPS or playability claim.
++The intended root sequence is source review → approved owner-policy follow-up if needed → bounded syntax checks → `prepare.py` → inspect new direct freeze/build/seal → `run.py` → inspect complete owner/report/PNGs → `measure.py`. This recipe has no outcome files, copied runtime or assets yet.
+ 
+-Bounds: eight PNGs12MiB each/96MiB total, one new full37 sidecar6MiB, draw-input sidecar8MiB, report2MiB, zero movie/trace/physics steps. Native635s, owner648s, total680s including cleanup20s. Every OS subprocess read is bounded to2s; periodic ownership reads occur at most once each5s. At most16 timeout notes are retained (total timeout count remains exact). run.py alone owns4301/9711 and signals only its fresh process group. It records exact PID/start/command identities for protected4312–4315, requires existing4315PID87796, verifies their identities after cleanup and independently requires both owned ports closed. Session64713 is provenance only, not an OS identity claim. Protected previews are not reloaded, served or stopped.
++**Do not execute this frozen owner before the separate owner-policy review.** The owner retains the successful shared-leaf V2 discipline, including an assertion that every recurring owned child PID/start/full command remains unchanged. Ordinary V4 actually failed that assertion during browser startup after16.97s, before its first step/image; no offending row was recorded, so the precise cause is unproved. Its independent post-failure root receipt is referenced only as failure/closure evidence, not as an ordinary ride or comparison success. Root is reviewing a separate immutable-leader/recorded-survivor anchor proposal; it is not adopted here.
+ 
+-
+-This new directory corrects only owner observation robustness and fresh path/schema authority. It copies the reviewed recipe sources, not old execution assets or results. geometry-inspection.mjs is byte-identical to the reviewed failed attempt; all fixed poses, raw fronts, source geometry, current optics, four pairs, repeat guards and passive measurements remain unchanged. Schemas for fresh inputs/source-freeze/build/seal/preparation/native/owner and saved analysis are version2; geometric draw-input and complete37 formats remain unchanged.
+-
+-The actual prior attempt is /private/tmp/tube-shared-leaf-native-20261005, root handle30897 terminal1. Its owner aborted after2.728328542s because a0.35s all-process ps read timed out; the same short cleanup group read and protected4313 lsof read also timed out. HTTP4301 was closed early, and the borrowed native launcher later timed out waiting for the menu. The preserved old owner is complete:false and initially reported9711 still open; its report has0steps/0PNG and no installation. This was infrastructure failure before geometry observation, not a geometric or visual result. These owner/report/helper/seal bytes remain unchanged and are directly pinned, never rewritten as success.
+-
+-Root subsequently performed independent OS reads with a5s bound and found group21700 absent,4301/9711 closed and all four protected PID/start/command identities preserved. The borrowed launcher21702 recorded Chrome closure at2026-10-05 15:47:54UTC. This later closure proof is separate from the failed original owner. inputs.priorFailedAttempt.rootClosureReceipt binds the actual /private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json,25763bytes,SHA25638922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86. This independently complete closure proof does not mark the prior failed owner/report complete. Preparation verifies the failed originals, the separate closure proof, and the exact prior selected live source bytes before making fresh V2 source/build/seal receipts.
+-
+-Periodic TimeoutExpired is observation-only: it records a note, continues the same native handle and HTTP server, and retries at the next scheduled poll. It never creates a second launcher, resets a menu, closes HTTP, or converts that timeout alone into firstFailure. Initial/preflight and cleanup identity reads are required, with at most3 finite retry attempts inside their stage deadline. Real missing/recycled identities or mismatches remain failures. Immediately before TERM/KILL, the current group must match the freshly recorded leader command/start identity or an exact recorded survivor anchor and exclude the four protected PIDs. If that identity cannot be verified, the owner sends no signal to the unverified group and reports incomplete cleanup. Final absent-group, protected identities, closed owned ports and exact source-freeze receipt equality/hash remain mandatory for complete:true. Whole-owner elapsed time includes preflight and cleanup and cannot exceed680s.
+-
+-The absolute680s whole-run deadline starts before preflight. Preflight including pin checks is capped20s. Active ownership ends at the earlier of its648s cap or the whole deadline minus20s reserved cleanup; periodic OS reads are additionally bounded by that active deadline. Cleanup uses the earlier of20s after cleanup starts or the whole deadline. Thus20+648+20 cannot accumulate beyond680; the648s owner and635s native values are upper bounds, not additive allowances. Full-width ps -ww command= reads retain the protected listener arguments as well as PID/start, and preflight must match the exact independent closure receipt identities. No Git metadata is pinned or consulted, so an identical-source checkpoint commit is allowed without changing the build ID or selected byte hashes.
+-
+-Application build evidence is the explicitly borrowed successful original /private/tmp/tube-shared-leaf-native-20261005/root-application-build.log,1328bytes,SHA256aa356c4bf230738569166bf4942c48f1fdc5a00702090b07fa60d6c6aeda2886. It is referenced and verified, never copied or reported as a newly executed build. Preparation requires all current dist relative assets and byte/hash values match the exact prior final build receipt before the fresh copy. Root separately verified49/49 assets unchanged and checkpointed/pushed identical tested source as2f43b943cfb29419a063c6ee31813e4f116c7a7a. This prose records root supplied provenance; the recipe does not execute Git or infer source/build equality from a commit ID.
++The unchanged bounds are 680s absolute total including at most20s cleanup, native635s, active owner648s with cleanup reserved, preflight at most20s, OS reads at most2s and at most3 required attempts, periodic identity observations every5s and16 capped timeout notes. Periodic OS timeouts are observational and do not restart/abort the browser or close HTTP. Preflight/protected/cleanup reads remain required. Fresh leader or exact previously observed survivor identity must be verified before signals. Protected listener PID/start/exact full commands on4312–4315 must match the separate actual root closure authority and remain unchanged;4301/9711 are the only owned ports. The old closure receipt proves an earlier attempt's cleanup, not this new recipe's execution.
+--- /dev/null
++++ b/recipe-diff.md
+@@ -0,0 +1,11 @@
++# Direct source-only recipe delta
++
++Parent source recipe: `/private/tmp/tube-shared-leaf-native-v2-20261005`; no parent assets/results were copied. `recipe.patch` compares only its reviewed source names with this fresh recipe.
++
++- `prepare.py`: direct new root-current terminal application receipt plus immutable ordinary V4 prepared assets/freeze/seal; complete pre-identity sharedV2 candidate authority; eleven selected current source pins, with only the scalar bound/test differing by exact proposal bytes. No compiler/Git/runtime calls.
++- `inputs.json`: exact successful80-row baseline, new current app authority, unchanged fixed raw/epoch/cameras and optical contexts, baseline actual draw inputs, independent protected identity authority and independently closed failed ordinaryV4 owner qualification.
++- `native.mjs`: fresh paths/schemas, prior scene-only reference, baseline/full37 and current build metadata, exact prior ordinary draw input checks, eight newly named paired images.
++- `geometry-inspection.mjs`: fresh observer names/schema; old planner metadata retained, baseline full37 decoded exact; same unmodified current shader/material and current mask for both variants. Existing per-triangle winding allowance unchanged.
++- `run.py`: fresh schemas/path/authority and selected-live source qualification; extra prior ordinary draw-input gate. Owner OS/deadline/process identity discipline unchanged and explicitly pending separate review.
++- `measure.py`: new terminal schemas/path, pre-identity baseline label, world-X75.625 distinction and inherited independent indexed cap/spacing/raw retention analysis.
++- `README.md`: source-only scope, actual baseline/current authority, owner risk, bounds and limitations. Preparation freeze and diff are metadata only; no old outcome is relabeled as a new run.

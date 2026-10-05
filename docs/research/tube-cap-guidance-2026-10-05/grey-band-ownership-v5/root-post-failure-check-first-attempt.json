@@ -1,0 +1,10 @@
+{
+  "schema": "root-idv5-post-failure-check-first-attempt/v1",
+  "actualToolChunk": "add0d6",
+  "exitCode": 1,
+  "failure": "Conflicting pin metadata for preparation-freeze.json across current sealed recipe and earlier source-check receipt",
+  "failedBeforeOSReads": true,
+  "failedBeforeReceiptWrite": true,
+  "noSignalsSent": true,
+  "qualification": "Earlier integration-check receipt pins the pre-root-review freeze, which is preserved separately. The current seal pins the amended preparation freeze. Verify both exact versions separately rather than treating their original shared path as one current authority."
+}

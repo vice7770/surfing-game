@@ -1,0 +1,9 @@
+# Identity-core V2: normal-startup wait timeout
+
+Root prepared and executed V2 once after source/syntax checks and six synthetic caller tests passed. Actual owner tool 49623 exited 1 after 210.11 seconds. Native timed out at its retained 180-second wait for the conjunction of paused ordinary ride/HUD, published rider status, disabled lab and paused clock. It retained zero diagnostic steps and zero PNGs, no baseline or geometry comparison. Browser close completed and browserErrors is empty.
+
+The revised guard retained the same process through 13 periodic late reads, including a completed 2.02865-second read rejected before pure acceptance or state refresh. These were observations. No duration/freshness window was widened. Cleanup proved group47730 absent, 4301/9711 closed and all five play previews unchanged. The owner did not reach its ordinary post-pin gate. Root independently verified 698 unique pins and actual closed resources/protected identities afterward; the original owner/native remain failed.
+
+The returned menuStartup object is an immediate shallow copy. Its rideObserved:false does not establish that the page never subsequently reached ride: the asynchronous MutationObserver updates the live window evidence later. This failed recipe does not retain the final screen/host state, so which startup/pause condition failed remains unknown. No physical gameplay bug, takeoff failure or visual conclusion is established.
+
+Direct recorded files are exact copies. Selected source and sealed-parent payloads reuse byte-verified failed-V1 archive copies where available; derived application assets and Python bytecode are not duplicated. Original absolute dependency paths remain evidence, not a portable runner. A root-added preparation provenance fix explicitly reverified the four new failed-parent historical references before execution; the earlier source draft is preserved.

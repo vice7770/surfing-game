@@ -1,0 +1,34 @@
+{
+  "schema": "owned-group-anchor-proposal-input-pins/v1",
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/baseline-v4-run.py",
+      "bytes": 25010,
+      "sha256": "9f46679cd446b85d50115d7e59dbe320fb9db7012cc38eea8d2bb6b903170e71",
+      "absoluteOrigin": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/run.py",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/root-v4-post-failure-closure.json",
+      "bytes": 49694,
+      "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21",
+      "absoluteOrigin": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/root-five-protected-preview-identities.json",
+      "bytes": 2735,
+      "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28",
+      "absoluteOrigin": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/human-preview4316-process.json",
+      "bytes": 526,
+      "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85",
+      "absoluteOrigin": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+      "copyBytesEqualSourceAtPreservation": true
+    }
+  ],
+  "fileCopiesOnlyNoOsProcessOrListenerRead": true
+}

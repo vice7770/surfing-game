@@ -1,0 +1,61 @@
+{
+  "schema": "owned-group-anchor-proposal-static-freeze/v1",
+  "sourceOnly": true,
+  "notExecutableOwnerAuthority": true,
+  "finalFileLevelReviewPending": true,
+  "syntaxChecked": false,
+  "fixturesExecuted": false,
+  "excludeSelf": true,
+  "files": [
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/README.md",
+      "bytes": 8652,
+      "sha256": "e8c356898a03410af105aae1f610ea101306147950bd941a152d26969afcfb93"
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/input-pins.json",
+      "bytes": 1652,
+      "sha256": "0c83e30cc9ba636d574f878c6a6cf73fc7793ccfd281cb7a1a72d286b2406e85"
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/baseline-v4-run.py",
+      "bytes": 25010,
+      "sha256": "9f46679cd446b85d50115d7e59dbe320fb9db7012cc38eea8d2bb6b903170e71"
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/human-preview4316-process.json",
+      "bytes": 526,
+      "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85"
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/root-five-protected-preview-identities.json",
+      "bytes": 2735,
+      "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/inputs/root-v4-post-failure-closure.json",
+      "bytes": 49694,
+      "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/origin.json",
+      "bytes": 3894,
+      "sha256": "acad8b77de0207853703f5a26582a952a1241ecd6d098abd8575d1863b0b33df"
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/proposal.patch",
+      "bytes": 40438,
+      "sha256": "0ed8d5748a95591e16fdf6a78fec990cfd9851de4ba4659e60ae4e1ebf740752"
+    },
+    {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/test_owned_group_anchor.py",
+      "bytes": 15240,
+      "sha256": "525f77ef5927b92ec63599a479109af21b7660d93af09a88ae6adab2876830fd"
+    }
+  ]
+}

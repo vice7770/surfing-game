@@ -1,0 +1,166 @@
+{
+  "schema": "guided-ordinary-recipe-source-freeze/v5",
+  "sourceOnly": true,
+  "candidateRuntimeExecuted": false,
+  "candidateSyntaxTestsBuildsPrepareNativeOSPortsGitProbesExecuted": false,
+  "temporaryFileSourceWriterExecuted": true,
+  "originalV4Untouched": true,
+  "pendingRootIntegrationReviewAndChecks": true,
+  "wholeAuthorityAndExecutionSealPending": true,
+  "copiedHistoricalDistCompiledModuleOrExecutionOutputs": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/README.md",
+      "bytes": 7779,
+      "sha256": "44e310c9101262c42384250caa119139c7557a3a704e278b06da0dc15f4cf22b"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/inputs.json",
+      "bytes": 14751,
+      "sha256": "d27017bccf3d2a5ba2ca8fd196c7f2476956634bd5a47a3a9a200df27505a42f"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/prepare.py",
+      "bytes": 12581,
+      "sha256": "20efe1f3e1aa5fa8f8ddf8933daab8bba766204e19f197d3868c24ab686c3eae"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/run.py",
+      "bytes": 30691,
+      "sha256": "c6f2be22f81db02e8d548d32472ce5c06aa1020d305d80488a16b47cbf646ac9"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+      "bytes": 16930,
+      "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/rider-driver.mjs",
+      "bytes": 14485,
+      "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-source-mapping.json",
+      "bytes": 10639,
+      "sha256": "9b3aef3606f2fd976c45c3d9378d20bb6bb90ec4d7a6066c6d618c60c722ab86"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/driver-diff.md",
+      "bytes": 2661,
+      "sha256": "c556c3032bd74b82f3acd75e687307fb2c52a413d820f92faa1e3cf98c07786f"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/readiness.json",
+      "bytes": 4166,
+      "sha256": "561b7f33069a0c56d58d0ca2876c1a57a54c98b6913b3195c7ab886ee224fd3d"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/source-only-origin.json",
+      "bytes": 2106,
+      "sha256": "95feba1ba184c5ababcf7274ca528dcf2cf7f07b33bd64224b8089025b5f3ad2"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/recipe.patch",
+      "bytes": 104076,
+      "sha256": "5759f93c78814601e6c4d54476a50a61cdbcfe2f0dc0ef4a0fd0271ffe46d0b2"
+    }
+  ],
+  "beforeSourceMapping": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-source-mapping.json",
+    "bytes": 10639,
+    "sha256": "9b3aef3606f2fd976c45c3d9378d20bb6bb90ec4d7a6066c6d618c60c722ab86"
+  },
+  "exactOwnerGuardModule": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owned_group_anchor.py",
+    "bytes": 15501,
+    "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+  },
+  "references": {
+    "rootCurrentApplicationReceipt": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+      "bytes": 132778,
+      "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+    },
+    "immutableV4Application": {
+      "directory": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/dist",
+      "build": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+        "bytes": 43568,
+        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+      },
+      "sourceFreeze": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+        "bytes": 19549,
+        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+      },
+      "seal": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+        "bytes": 9774,
+        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+      },
+      "diagnosticBuild": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.json",
+        "bytes": 16809,
+        "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611"
+      }
+    },
+    "pureModuleStaticFreeze": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+      "bytes": 2410,
+      "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0"
+    },
+    "rootPureTests": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+      "bytes": 511,
+      "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32"
+    },
+    "fiveProtectedRootAuthority": {
+      "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+      "bytes": 2735,
+      "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+    }
+  },
+  "limits": {
+    "steps": 3000,
+    "wallSeconds": 690,
+    "nativeSeconds": 640,
+    "ownerSeconds": 653,
+    "detectorMilliseconds": 120000,
+    "pngCount": 7,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 88080384,
+    "loftBytesEach": 6291456,
+    "loftBytesTotal": 44040192,
+    "traceBytes": 134217728,
+    "reportBytes": 2097152,
+    "observationSeconds": 620,
+    "totalSeconds": 690,
+    "cleanupSeconds": 20
+  },
+  "scope": "Unexecuted V5 scratch source only; exact existing V4 build provenance, unchanged controls/21-witness criteria, f79e owner integration plus strict completed-read expiry classification. No runtime or ride acceptance."
+}

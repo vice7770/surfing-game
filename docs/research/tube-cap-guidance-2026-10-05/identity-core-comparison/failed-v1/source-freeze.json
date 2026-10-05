@@ -1,0 +1,175 @@
+{
+  "schema": "leaf-identity-core-source-freeze/v1",
+  "complete": true,
+  "buildId": "tube-guided-passive-telemetry-20261005",
+  "files": [
+    {
+      "relative": "src/wave/barrel/ProfileLibrary.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 31647,
+        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 31647,
+        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCProfile.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20184,
+        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20184,
+        "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/sweptLoft.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/lipSheet.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/SweptBarrelMesh.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/barrelMaskGlsl.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMaskGlsl.ts",
+        "bytes": 2355,
+        "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/barrelMaskGlsl.ts",
+        "bytes": 2355,
+        "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/SweptBarrel.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrel.ts",
+        "bytes": 6980,
+        "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/SweptBarrel.ts",
+        "bytes": 6980,
+        "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/barrelWater.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelWater.ts",
+        "bytes": 5755,
+        "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/barrelWater.ts",
+        "bytes": 5755,
+        "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCLeafReach.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCLeafReach.test.ts",
+        "bytes": 18620,
+        "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCLeafReach.test.ts",
+        "bytes": 18620,
+        "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCCapRefinement.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCCapRefinement.test.ts",
+        "bytes": 11167,
+        "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCCapRefinement.test.ts",
+        "bytes": 11167,
+        "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+      }
+    },
+    {
+      "relative": "src/wave/barrel/boundedCConsumers.test.ts",
+      "live": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16525,
+        "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+      },
+      "frozen": {
+        "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16525,
+        "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+      }
+    }
+  ],
+  "rootCurrentApplicationReceipt": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+    "bytes": 132778,
+    "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+  },
+  "rootAllSourcePinsVerifiedAtPreparation": 584,
+  "immutableCopiedApplication": {
+    "build": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+      "bytes": 43568,
+      "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+    },
+    "sourceFreeze": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+      "bytes": 19549,
+      "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+    },
+    "seal": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+      "bytes": 9774,
+      "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+    }
+  },
+  "onlySelectedScalarBoundAndTestChangedFromPreIdentityBaseline": true,
+  "scope": "Direct complete root build receipt plus selected live/frozen geometry and optical source bytes. No new build/runtime invocation."
+}

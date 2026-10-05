@@ -1,0 +1,62 @@
+{
+  "schema": "direct-copied-audit-input-pins-v1",
+  "geometryRecomputedForPreservation": false,
+  "inputs": [
+    {
+      "copy": "inputs/reference-loft-terminal.json",
+      "absoluteOrigin": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1219771,
+      "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "copy": "inputs/historical-SweptBarrelMesh.ts",
+      "absoluteOrigin": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/historical-source/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 33396,
+      "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "copy": "inputs/failed-IDV4-ownership-inspection.mjs",
+      "absoluteOrigin": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/ownership-inspection.mjs",
+      "bytes": 27266,
+      "sha256": "f95d01df89eca30010387d3ec1cf1c559d4b391c7bb6f353de7eef4d8fcd7b58",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "copy": "inputs/failed-IDV4-report.json",
+      "absoluteOrigin": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/candidate-first/report.json",
+      "bytes": 31388,
+      "sha256": "19562e9bcf94fe990acd512d7d8d80497e7a3e3fc3b908308a3e040d5b9de64a",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "copy": "inputs/successful-shared-V2-geometry-inspection.mjs",
+      "absoluteOrigin": "/private/tmp/tube-shared-leaf-native-v2-20261005/geometry-inspection.mjs",
+      "bytes": 18841,
+      "sha256": "6a2594d3b74174b311d3d706f714fdf7f6bcb0b9a1b388c2718b5d7232b00857",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "copy": "inputs/successful-shared-V2-report.json",
+      "absoluteOrigin": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/report.json",
+      "bytes": 42900,
+      "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "copy": "inputs/successful-authored-mask-inspection.mjs",
+      "absoluteOrigin": "/private/tmp/tube-authored-mask-native-20261005/authored-mask-inspection.mjs",
+      "bytes": 26195,
+      "sha256": "46bf01d7113700d96502dae2fd1e8821f1220bf89fded3be20f183bb9dbd1ccb",
+      "copyBytesEqualSourceAtPreservation": true
+    },
+    {
+      "copy": "inputs/successful-authored-mask-report.json",
+      "absoluteOrigin": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee",
+      "copyBytesEqualSourceAtPreservation": true
+    }
+  ]
+}

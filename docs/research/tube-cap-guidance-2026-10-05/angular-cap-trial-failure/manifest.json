@@ -1,0 +1,394 @@
+{
+  "schema": "angular-cap-trial-failure-archive/v1",
+  "complete": true,
+  "productionAdopted": false,
+  "productionSourceWrittenByArchive": false,
+  "actualTest": {
+    "schema": "root-angular-candidate-tests/v1",
+    "actualToolSession": 21713,
+    "exitCode": 1,
+    "testFiles": 1,
+    "testsPassed": 7,
+    "testsFailed": 1,
+    "durationSeconds": 3.06,
+    "logBytes": 1390,
+    "logSha256": "2b2dd16c8eeae1609afe6ca6c2accd85489d65a6abec24d84c7f05427c03c2ed",
+    "candidateSourceCopyReceipt": "/private/tmp/tube-cap-turn-refinement-checks-20261005/root-source-copy.json",
+    "rootProductionChanged": false,
+    "failedAssertion": {
+      "case": "actual provider cap bend compared with mandatory lattice/clock plan",
+      "candidateMaximumTurnDegrees": 39.616319487321675,
+      "mandatoryMaximumTurnDegrees": 38.691184242955714,
+      "expectation": "candidate maximum less than mandatory maximum"
+    },
+    "proposalUnchanged": true,
+    "noNativeVisualOrRideClaim": true
+  },
+  "actualFixtureExecution": {
+    "schema": "root-angular-fixture-execution/v1",
+    "complete": true,
+    "bundleActualToolSession": 79961,
+    "bundleExitCode": 0,
+    "computationActualToolSession": 11563,
+    "computationExitCode": 0,
+    "source": "inspect-fixture.ts",
+    "unmatchedUnitProviderFixture": true,
+    "rootProductionChanged": false,
+    "nativeOrRideResult": false,
+    "files": [
+      {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.ts",
+        "bytes": 3687,
+        "sha256": "54eeab659d538c636ebbc50e10f1e307116878f0bd7d2dbb76c8784b01d6e30f"
+      },
+      {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/sweptLoft.before.ts",
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.mjs",
+        "bytes": 224065,
+        "sha256": "0a0cc932d308d1a3ba800401e2c9c38822061c9ca7dffb3eb6fe22ef96e96b78"
+      },
+      {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-build.log",
+        "bytes": 96,
+        "sha256": "447012b9a593be5cc45a487c20a774d60b9d240c23edbfec56dfa2a88f3c7840"
+      },
+      {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/fixture-decomposition.json",
+        "bytes": 9975,
+        "sha256": "4ff969177aa66194a30088be9f97e58fb63972c5edcf24908182e4c8e34acaab"
+      }
+    ]
+  },
+  "copyCount": 21,
+  "files": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/README.md",
+        "bytes": 5200,
+        "sha256": "06b8b178384045e210285eb841866e099adbc2aca4cf380281590f4c01390040"
+      },
+      "stored": "proposal/README.md",
+      "bytes": 5200,
+      "sha256": "06b8b178384045e210285eb841866e099adbc2aca4cf380281590f4c01390040"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/prepare.py",
+        "bytes": 4168,
+        "sha256": "d1294047567646c24cdda4aeb446f02623d7b2efda8102df4c189714ea1f9e91"
+      },
+      "stored": "proposal/prepare.py",
+      "bytes": 4168,
+      "sha256": "d1294047567646c24cdda4aeb446f02623d7b2efda8102df4c189714ea1f9e91"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/baseline.json",
+        "bytes": 719,
+        "sha256": "2b581d63ed6bbe8c936b0b8aba9cc1f3b6971f8312c43627c7ba194f5716d82c"
+      },
+      "stored": "proposal/baseline.json",
+      "bytes": 719,
+      "sha256": "2b581d63ed6bbe8c936b0b8aba9cc1f3b6971f8312c43627c7ba194f5716d82c"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/readiness.json",
+        "bytes": 4157,
+        "sha256": "18abe8b4de34c48150dce5d5160f747fe7d6b05852e4acba170f1004472a87e3"
+      },
+      "stored": "proposal/readiness.json",
+      "bytes": 4157,
+      "sha256": "18abe8b4de34c48150dce5d5160f747fe7d6b05852e4acba170f1004472a87e3"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/source-only-checks.json",
+        "bytes": 1104,
+        "sha256": "f43f25f096eaa47fd1c89b19b599b793fa1a50523925bcbb866c2655af536593"
+      },
+      "stored": "proposal/source-only-checks.json",
+      "bytes": 1104,
+      "sha256": "f43f25f096eaa47fd1c89b19b599b793fa1a50523925bcbb866c2655af536593"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/proposal.patch",
+        "bytes": 18467,
+        "sha256": "86e9f3b209c00f334fad535dfe33cd0462590b8c52188988706046c82439c9eb"
+      },
+      "stored": "proposal/proposal.patch",
+      "bytes": 18467,
+      "sha256": "86e9f3b209c00f334fad535dfe33cd0462590b8c52188988706046c82439c9eb"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/baseline/src/wave/barrel/sweptLoft.ts",
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      "stored": "proposal/baseline/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/baseline/src/wave/barrel/boundedCCapRefinement.test.ts",
+        "bytes": 11167,
+        "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+      },
+      "stored": "proposal/baseline/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "bytes": 11167,
+      "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/candidate/src/wave/barrel/sweptLoft.ts",
+        "bytes": 88408,
+        "sha256": "cab60f46d0a77074571fac698fd68548370bb3f6d71e15b846880ac38efb8298"
+      },
+      "stored": "proposal/candidate/src/wave/barrel/sweptLoft.ts",
+      "bytes": 88408,
+      "sha256": "cab60f46d0a77074571fac698fd68548370bb3f6d71e15b846880ac38efb8298"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-proposal-20261005/candidate/src/wave/barrel/boundedCCapRefinement.test.ts",
+        "bytes": 18615,
+        "sha256": "509a35e001290a2242b9577d69787ab3b7788288f0eb887443b8a2a5a40362e0"
+      },
+      "stored": "proposal/candidate/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "bytes": 18615,
+      "sha256": "509a35e001290a2242b9577d69787ab3b7788288f0eb887443b8a2a5a40362e0"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/root-source-copy.json",
+        "bytes": 280566,
+        "sha256": "ec0df5ba73593fa617081e976a6ded44a688b08826dd06de22e491efd6bf121e"
+      },
+      "stored": "checks/root-source-copy.json",
+      "bytes": 280566,
+      "sha256": "ec0df5ba73593fa617081e976a6ded44a688b08826dd06de22e491efd6bf121e"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/root-tests.json",
+        "bytes": 784,
+        "sha256": "72cbfb2805db09ce366bb887ceb31f0276559bd63ed74dd33b74e5f67a2aef3f"
+      },
+      "stored": "checks/root-tests.json",
+      "bytes": 784,
+      "sha256": "72cbfb2805db09ce366bb887ceb31f0276559bd63ed74dd33b74e5f67a2aef3f"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/root-cap-tests.log",
+        "bytes": 1390,
+        "sha256": "2b2dd16c8eeae1609afe6ca6c2accd85489d65a6abec24d84c7f05427c03c2ed"
+      },
+      "stored": "checks/root-cap-tests.log",
+      "bytes": 1390,
+      "sha256": "2b2dd16c8eeae1609afe6ca6c2accd85489d65a6abec24d84c7f05427c03c2ed"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.ts",
+        "bytes": 3687,
+        "sha256": "54eeab659d538c636ebbc50e10f1e307116878f0bd7d2dbb76c8784b01d6e30f"
+      },
+      "stored": "checks/inspect-fixture.ts",
+      "bytes": 3687,
+      "sha256": "54eeab659d538c636ebbc50e10f1e307116878f0bd7d2dbb76c8784b01d6e30f"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.mjs",
+        "bytes": 224065,
+        "sha256": "0a0cc932d308d1a3ba800401e2c9c38822061c9ca7dffb3eb6fe22ef96e96b78"
+      },
+      "stored": "checks/inspect-fixture.mjs",
+      "bytes": 224065,
+      "sha256": "0a0cc932d308d1a3ba800401e2c9c38822061c9ca7dffb3eb6fe22ef96e96b78"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-build.log",
+        "bytes": 96,
+        "sha256": "447012b9a593be5cc45a487c20a774d60b9d240c23edbfec56dfa2a88f3c7840"
+      },
+      "stored": "checks/inspect-build.log",
+      "bytes": 96,
+      "sha256": "447012b9a593be5cc45a487c20a774d60b9d240c23edbfec56dfa2a88f3c7840"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/fixture-decomposition.json",
+        "bytes": 9975,
+        "sha256": "4ff969177aa66194a30088be9f97e58fb63972c5edcf24908182e4c8e34acaab"
+      },
+      "stored": "checks/fixture-decomposition.json",
+      "bytes": 9975,
+      "sha256": "4ff969177aa66194a30088be9f97e58fb63972c5edcf24908182e4c8e34acaab"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/root-fixture-execution.json",
+        "bytes": 1417,
+        "sha256": "8ef3329659c3bca3a67ad70dd3024907840fa621823773dec2fd18d9902a7f2b"
+      },
+      "stored": "checks/root-fixture-execution.json",
+      "bytes": 1417,
+      "sha256": "8ef3329659c3bca3a67ad70dd3024907840fa621823773dec2fd18d9902a7f2b"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/package.json",
+        "bytes": 4917,
+        "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+      },
+      "stored": "checks/package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/tsconfig.json",
+        "bytes": 550,
+        "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+      },
+      "stored": "checks/tsconfig.json",
+      "bytes": 550,
+      "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/vitest.config.ts",
+        "bytes": 615,
+        "sha256": "213983ab84ca252f35ff586a85742b5354b9de6f69101e00d78ba541f9fe62b4"
+      },
+      "stored": "checks/vitest.config.ts",
+      "bytes": 615,
+      "sha256": "213983ab84ca252f35ff586a85742b5354b9de6f69101e00d78ba541f9fe62b4"
+    }
+  ],
+  "sourcePinVerification": {
+    "scratchCopiesVerified": 584,
+    "explicitCandidateOverridesVerified": 2,
+    "reusedFixtureAssetsVerified": 8,
+    "controlsVerified": 3,
+    "sourceTreesOrFixtureBinariesDuplicated": false,
+    "rootLiveSourceFilesVerifiedOrWritten": false,
+    "verificationOnlyNoGeometryCalculation": true
+  },
+  "reusedFixtureAssets": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    }
+  ],
+  "reusedInputReceipts": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+        "bytes": 132778,
+        "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+      },
+      "archived": "passive-guide-and-leaf-verification/fresh-build/root-current-application-receipt.json",
+      "bytes": 132778,
+      "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+    }
+  ],
+  "reusedSelectedSourceCopies": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/sweptLoft.before.ts",
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      "retained": "proposal/baseline/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    }
+  ],
+  "independentScriptRootPinsVerified": [
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.ts",
+      "bytes": 3687,
+      "sha256": "54eeab659d538c636ebbc50e10f1e307116878f0bd7d2dbb76c8784b01d6e30f"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/src/wave/barrel/sweptLoft.before.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-fixture.mjs",
+      "bytes": 224065,
+      "sha256": "0a0cc932d308d1a3ba800401e2c9c38822061c9ca7dffb3eb6fe22ef96e96b78"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/inspect-build.log",
+      "bytes": 96,
+      "sha256": "447012b9a593be5cc45a487c20a774d60b9d240c23edbfec56dfa2a88f3c7840"
+    },
+    {
+      "file": "/private/tmp/tube-cap-turn-refinement-checks-20261005/fixture-decomposition.json",
+      "bytes": 9975,
+      "sha256": "4ff969177aa66194a30088be9f97e58fb63972c5edcf24908182e4c8e34acaab"
+    }
+  ],
+  "readme": {
+    "stored": "README.md",
+    "bytes": 3400,
+    "sha256": "c47ade1a559bfd78e1f1f7143ac015af0eca8b03a26613a9e64c96e386e04f0b"
+  },
+  "limitations": {
+    "unmatchedUnitProviderFixture": true,
+    "nativeOrRideEvidence": false,
+    "derivativeDiscontinuityEstablished": false,
+    "waterBudgetOrArithmeticLimitCauseEstablished": false,
+    "candidateFailedAssertionRetained": true
+  },
+  "preservationExecutedTestsBuildsGeometryOrOSProbes": false
+}

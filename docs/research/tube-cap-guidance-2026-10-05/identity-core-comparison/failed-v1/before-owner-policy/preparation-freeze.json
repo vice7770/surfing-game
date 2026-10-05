@@ -1,0 +1,148 @@
+{
+  "schema": "leaf-identity-core-recipe-freeze/v1",
+  "sourceOnly": true,
+  "sourceReady": true,
+  "executionPendingOwnerPolicyReview": true,
+  "checksExecuted": false,
+  "prepareExecuted": false,
+  "buildExecuted": false,
+  "nativeExecuted": false,
+  "resourcesStarted": false,
+  "productionOrSealedParentChanged": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/prepare.py",
+      "bytes": 11151,
+      "sha256": "ac040b0a653e56089918a13cb5a92fb61e48234782d633f27f0ba95262685768"
+    },
+    {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/run.py",
+      "bytes": 16349,
+      "sha256": "98fe6d4d0395bdb45fd275943fde36a232d0f04740c9f24fd8f9c3219f99b632"
+    },
+    {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/native.mjs",
+      "bytes": 11175,
+      "sha256": "0db1f02f505dcfd54f1647c218f1e3d390a420abe1f13085d6465bf8dc09536a"
+    },
+    {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/geometry-inspection.mjs",
+      "bytes": 18907,
+      "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
+    },
+    {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/measure.py",
+      "bytes": 8316,
+      "sha256": "65f34556e335fb2ed2485107331f3e4a88df34d495ed1a7691e5ec2f8faab9b4"
+    },
+    {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/inputs.json",
+      "bytes": 11707,
+      "sha256": "db3dda90b6836dc699903757c8ee5b27678d847309edf8f1a951a5779e44d3fc"
+    },
+    {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/README.md",
+      "bytes": 6422,
+      "sha256": "0beee8a3c630a2e22995c11f78bf609f1199640a0a1190db72016e9bfe823ab6"
+    },
+    {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/recipe-diff.md",
+      "bytes": 1812,
+      "sha256": "be7fb979ab5891d1151db0fbde5cfb1038289926a9d2bedca1ce27d6a01c708e"
+    },
+    {
+      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/recipe.patch",
+      "bytes": 86320,
+      "sha256": "9a1bb2e0abab553ff2728728cca019ac36e865be77c0d262db46e63421d927d3"
+    }
+  ],
+  "directAuthorities": {
+    "rootCurrentApplicationReceipt": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+      "bytes": 132778,
+      "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+    },
+    "immutablePreparedApplication": {
+      "build": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+        "bytes": 43568,
+        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+      },
+      "sourceFreeze": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+        "bytes": 19549,
+        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+      },
+      "seal": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+        "bytes": 9774,
+        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+      }
+    },
+    "preIdentityBaselineLoft": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
+      "bytes": 1204806,
+      "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+    },
+    "preIdentityBaselineOwner": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/owner.json",
+      "bytes": 15739,
+      "sha256": "015c31d0bf9fecc62935ab919e7a65277f74084b79b80a7a4fe40e26efe7a02c"
+    },
+    "preIdentityBaselineReport": {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/report.json",
+      "bytes": 42900,
+      "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
+    },
+    "knownOwnerDisciplineFailure": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+      "bytes": 49694,
+      "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+    },
+    "protectedIdentityAuthority": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+      "bytes": 25763,
+      "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+    }
+  },
+  "sourceReview": {
+    "agent": "/root/shared_leaf_v2_owner_review",
+    "scope": "Read-only direct receipt/schema/source delta and fixed geometry/material gates. No checks/execution.",
+    "concreteNewDefectsReported": false,
+    "knownUnapprovedLimitation": "Recurring owned-child command equality; root must adopt reviewed owner policy in a fresh unsealed recipe before execution."
+  },
+  "plannedObservation": {
+    "epoch": {
+      "step": 0,
+      "seaTime": 276.3293560552737,
+      "kind": "first-eligible-capture"
+    },
+    "baselineCounts": {
+      "slices": 80,
+      "vertices": 10720,
+      "indices": 61446
+    },
+    "pairs": [
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      }
+    ],
+    "steps": 0,
+    "pngCount": 8,
+    "globalC1OrQualityOrRideAcceptance": false
+  },
+  "scope": "Fresh reviewed source recipe and direct pins only; no runtime/source tree/assets/results copied."
+}

@@ -1,0 +1,1126 @@
+--- a/run.py
++++ b/run.py
+@@ -4,10 +4,15 @@
+ import hashlib,json,os,signal,socket,subprocess,threading,time
+ from owned_group_anchor import (Identity,ProtectedIdentity,LaunchFacts,ReadWindow,AnchorRejected,
+  observe_owned_group,authorize_group_signal,validate_protected_snapshot,identity_evidence,observation_record)
+-W=Path('/private/tmp/tube-leaf-identity-core-native-20261005');PROTECTED=(4312,4313,4314,4315,4316);OWNED=(4301,9711)
++W=Path('/private/tmp/tube-leaf-identity-core-native-v2-20261005');PROTECTED=(4312,4313,4314,4315,4316);OWNED=(4301,9711)
+ EXPECTED_PROTECTED={4312:92445,4313:58298,4314:51358,4315:87796,4316:38617}
+ OS_SECONDS=2;IDENTITY_PERIOD=5;REQUIRED_ATTEMPTS=3;NOTE_LIMIT=16;whole_started=time.monotonic()
+ timeout_notes=[];timeout_count=0
++class OwnedReadExpired(TimeoutError):
++ """Completed OS read outside duration/age limits; never an accepted anchor observation."""
++ def __init__(self,evidence):
++  self.evidence=evidence
++  super().__init__('Completed owned read expired: duration='+str(evidence['durationSeconds'])+'s age='+str(evidence['ageSeconds'])+'s limit='+str(OS_SECONDS)+'s')
+ def verify(spec):
+  b=Path(spec['file']).read_bytes();assert len(b)==spec['bytes'] and hashlib.sha256(b).hexdigest()==spec['sha256'],spec['file'];return b
+ def free(port):
+@@ -58,13 +63,17 @@
+  global timeout_count
+  timeout_count+=1
+  if len(timeout_notes)<NOTE_LIMIT:
+-  timeout_notes.append({'phase':phase,'elapsedSeconds':time.monotonic()-whole_started,'command':list(error.cmd)if not isinstance(error.cmd,str)else error.cmd,'timeoutSeconds':error.timeout,'outcome':'Observation only'if phase=='periodic-owned-identity'else'Required identity read will retry within its finite budget'})
++  detail={'exception':type(error).__name__,'completedRead':isinstance(error,OwnedReadExpired)}
++  if isinstance(error,OwnedReadExpired):
++   detail.update({'command':['/bin/ps','-ww','-axo','pid=,pgid=,stat=,lstart=,command='],'timeoutSeconds':OS_SECONDS,'evidence':error.evidence})
++  else:detail.update({'command':list(error.cmd)if not isinstance(error.cmd,str)else error.cmd,'timeoutSeconds':error.timeout})
++  timeout_notes.append({'phase':phase,'elapsedSeconds':time.monotonic()-whole_started,**detail,'outcome':'Observation only'if phase=='periodic-owned-identity'else'Required identity read will retry within its finite budget'})
+ def required_read(call,phase,deadline):
+  last=None
+  for attempt in range(REQUIRED_ATTEMPTS):
+   if time.monotonic()>=deadline:break
+   try:return call(deadline)
+-  except subprocess.TimeoutExpired as error:
++  except (subprocess.TimeoutExpired,OwnedReadExpired) as error:
+    note_timeout(phase,error);last=error
+    if attempt+1<REQUIRED_ATTEMPTS and time.monotonic()<deadline:time.sleep(min(.1,max(0,deadline-time.monotonic())))
+  raise TimeoutError('Required identity could not be verified: '+phase)from last
+@@ -135,9 +144,20 @@
+  assert proc.args==native_argv,'Same actual Popen and exact launch argv required'
+  live_before=proc.poll() is None;read_started=time.monotonic()
+  current=group_identities(proc.pid,deadline);read_finished=time.monotonic();live_after=proc.poll() is None
+- now=time.monotonic();launch=LaunchFacts(proc.pid,True,expected_native_command,live_before,live_after,OWNED)
+- window=ReadWindow(read_started,read_finished,now,deadline,OS_SECONDS,OS_SECONDS)
++ launch=LaunchFacts(proc.pid,True,expected_native_command,live_before,live_after,OWNED)
+  detached={pid:Identity(**row)for pid,row in current.items()}
++ now=time.monotonic();window=ReadWindow(read_started,read_finished,now,deadline,OS_SECONDS,OS_SECONDS)
++ duration=read_finished-read_started;age=now-read_finished
++ if duration>OS_SECONDS or age>OS_SECONDS:
++  # Classify ONLY completed-read duration/age expiry before pure observation. No state or identity refresh.
++  # Deadline, leader/survivor, replay, scope and other genuine AnchorRejected failures still fail immediately.
++  pids=sorted(current)
++  raise OwnedReadExpired({'phase':phase,'readWindow':{key:getattr(window,key)for key in ReadWindow.__dataclass_fields__},
++   'durationSeconds':duration,'ageSeconds':age,'durationExpired':duration>OS_SECONDS,'ageExpired':age>OS_SECONDS,
++   'actualPopenPid':proc.pid,'liveBeforeRead':live_before,'liveAfterRead':live_after,
++   'previousAcceptedObservationNumber':None if owned_state is None else owned_state.observation_number,
++   'readGroupMemberCount':len(pids),'readGroupPids':pids[:NOTE_LIMIT],'readGroupPidsOmitted':max(0,len(pids)-NOTE_LIMIT),
++   'pureObservationCalled':False,'acceptedStateRefreshed':False})
+  try:
+   observed=observe_owned_group(owned_state,detached,launch=launch,read=window,protected_reference=protected_reference,protected_current=protected_before if owned_state is None else None)
+  except AnchorRejected as error:
+@@ -185,7 +205,7 @@
+    if time.monotonic()>=owner_deadline:raise TimeoutError('Finite owner deadline with cleanup reserved')
+    if time.monotonic()-last_identity>=IDENTITY_PERIOD:
+     try:remember_owned(owner_deadline,'periodic-owned-identity')
+-    except subprocess.TimeoutExpired as error:note_timeout('periodic-owned-identity',error)
++    except (subprocess.TimeoutExpired,OwnedReadExpired) as error:note_timeout('periodic-owned-identity',error)
+     # A transient OS observation timeout never closes HTTP, aborts this process, or starts another native handle.
+     last_identity=time.monotonic()
+    time.sleep(min(.2,max(0,owner_deadline-time.monotonic())))
+--- a/prepare.py
++++ b/prepare.py
+@@ -1,12 +1,12 @@
+ """Root-only first preparation. Copies a complete immutable ordinary V4 app; never builds or starts resources."""
+ from pathlib import Path
+ import hashlib,json,shutil
+-W=Path('/private/tmp/tube-leaf-identity-core-native-20261005');R=Path('/Users/regina/Desktop/Projects/surfing-game')
++W=Path('/private/tmp/tube-leaf-identity-core-native-v2-20261005');R=Path('/Users/regina/Desktop/Projects/surfing-game')
+ SOURCES=('src/wave/barrel/ProfileLibrary.ts','src/wave/barrel/boundedCProfile.ts','src/wave/barrel/sweptLoft.ts','src/wave/barrel/lipSheet.ts',
+  'src/scene/barrel/SweptBarrelMesh.ts','src/scene/barrel/barrelMaskGlsl.ts','src/scene/barrel/SweptBarrel.ts','src/scene/barrel/barrelWater.ts',
+  'src/wave/barrel/boundedCLeafReach.test.ts','src/wave/barrel/boundedCCapRefinement.test.ts','src/wave/barrel/boundedCConsumers.test.ts')
+ CHANGED=('src/wave/barrel/boundedCProfile.ts','src/wave/barrel/boundedCLeafReach.test.ts')
+-HELPERS=('README.md','inputs.json','prepare.py','run.py','native.mjs','geometry-inspection.mjs','measure.py','recipe-diff.md','recipe.patch','owner-policy-amendment.md','owner-policy-amendment.patch','before-owner-policy-preservation.json','owned_group_anchor.py','preparation-freeze.json')
++HELPERS=('README.md','inputs.json','prepare.py','run.py','native.mjs','geometry-inspection.mjs','measure.py','recipe-diff.md','recipe.patch','owner-policy-amendment.md','owner-policy-amendment.patch','before-owner-policy-preservation.json','owned_group_anchor.py','preparation-freeze.json','owner-expired-read.patch','v2-provenance.json','parent-copy.json')
+ def pin(p):
+  b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ def verify(spec):
+--- a/native.mjs
++++ b/native.mjs
+@@ -6,7 +6,7 @@
+ import { launch } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs';
+ import { prepareMenu } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs';
+ import { installLeafIdentityCoreInspection } from './geometry-inspection.mjs';
+-const W='/private/tmp/tube-leaf-identity-core-native-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
++const W='/private/tmp/tube-leaf-identity-core-native-v2-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
+ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+ const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const i=arg.indexOf('=');assert(arg.startsWith('--')&&i>2);return[arg.slice(2,i),arg.slice(i+1)];}));
+ assert.equal(args.run,'true');assert.equal(args.url,'http://127.0.0.1:4301/?diagnostics');assert.equal(resolve(args.out),W+'/candidate-first');
+--- a/measure.py
++++ b/measure.py
+@@ -2,7 +2,7 @@
+ from pathlib import Path
+ from collections import Counter
+ import base64,hashlib,json,math,struct
+-W=Path('/private/tmp/tube-leaf-identity-core-native-20261005');STRIDE,EXT,CAP,CREST,FLOOR=134,3,64,32,104
++W=Path('/private/tmp/tube-leaf-identity-core-native-v2-20261005');STRIDE,EXT,CAP,CREST,FLOOR=134,3,64,32,104
+ TARGET_FRONT,TARGET_WORLD_X=41,75.625
+ 
+ def require(v,why):
+--- a/inputs.json
++++ b/inputs.json
+@@ -295,7 +295,8 @@
+     "periodicTimeoutOutcome": "Observation only; same native process and HTTP server continue, retry at next scheduled poll.",
+     "requiredIdentityOutcome": "Initial/preflight/cleanup identity reads must succeed; no signal against an unverified group.",
+     "anchorPolicy": "Exact live unreaped actual Popen leader bootstrap; immutable original leader if present, otherwise exact member from immediately previous accepted read before updates. Child changes recorded after anchor acceptance.",
+-    "signalPolicy": "New successful required read immediately before each TERM/KILL; observation is latest accepted state, no fallback after timeout/rejection, consume returned observation counter only after actual signal."
++    "signalPolicy": "New successful required read immediately before each TERM/KILL; observation is latest accepted state, no fallback after timeout/rejection, consume returned observation counter only after actual signal.",
++    "completedExpiredReadOutcome": "A completed owned ps read with duration>2s or age>2s is caller OwnedReadExpired before pure observation. Periodic records it without state refresh; required reads retry within unchanged three-attempt finite deadline. Genuine AnchorRejected is never caught as expiry."
+   },
+   "rootCurrentApplicationReceipt": {
+     "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+@@ -383,7 +384,7 @@
+     "bytes": 49694,
+     "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+   },
+-  "executionPendingOwnerPolicyReview": false,
++  "executionPendingOwnerPolicyReview": true,
+   "protected4316": {
+     "pid": 38617,
+     "rootSession": "59708",
+@@ -415,7 +416,7 @@
+       "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7"
+     },
+     "copiedModule": {
+-      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owned_group_anchor.py",
++      "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/owned_group_anchor.py",
+       "bytes": 15501,
+       "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+     },
+@@ -426,14 +427,35 @@
+     },
+     "rootPureFixtureCount": 20,
+     "rootPureASTChecks": 2,
+-    "integrationReviewPending": false,
+-    "integrationChecksExecuted": true,
++    "integrationReviewPending": true,
++    "integrationChecksExecuted": false,
+     "rootReviewAndChecksRequiredBeforePreparation": true,
+-    "scope": "Root-tested pure helper copied exactly; integration is source-only and has no actual OS/native evidence. Original ordinary V4 failure cause remains unproved.",
+-    "rootIntegrationChecks": {
++    "scope": "Exact root-tested pure helper reused unchanged; new V2 caller expired-read handling is source-only pending root review/checks. Parent failed native outcome remains failed.",
++    "priorSealedParentIntegrationChecks": {
+       "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-integration-checks.json",
+       "bytes": 1043,
+       "sha256": "70a96d2792f74a0ec4af857a563c3cbe3875366018ed6d2fd7e46ef3da363d07"
+     }
++  },
++  "priorIdentityCoreNativeFailure": {
++    "parent": "/private/tmp/tube-leaf-identity-core-native-20261005",
++    "rootToolSession": "47462",
++    "owner": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner.json",
++      "bytes": 57977,
++      "sha256": "ccd0da40b6da29ed5c9a20a388261beb3360f3d267ddbfbe10424c5da67e7e92"
++    },
++    "report": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/candidate-first/report.json",
++      "bytes": 6979,
++      "sha256": "37b85be2db5bdb93f0a7fc11ab890eb134f4c750a0ffeca9eaad00f6045ccb7d"
++    },
++    "rootPostFailurePinsAndClosure": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-post-failure-pins-and-closure.json",
++      "bytes": 147021,
++      "sha256": "6e9145a968147b850076b4fe3a09579c14fe4e93dd38b2020310e9e4fc68116b"
++    },
++    "firstAttemptRemainsFailed": true,
++    "noVisualResult": true
+   }
+ }
+--- a/README.md
++++ b/README.md
+@@ -1,33 +1,27 @@
+-# Matched identity-core leaf comparison — source preparation only
++# Matched identity-core leaf comparison V2 — source only
+ 
+-No syntax checks, preparation, build, saved-word measurement, browser run, listener probe or native result were executed for this recipe. Root owns all future execution. No production, sealed prior recipe, current asset or protected preview was changed.
++This is a new unexecuted recipe copied from the sealed failed `/private/tmp/tube-leaf-identity-core-native-20261005` attempt. No recipe import, syntax/integration check, preparation, build, saved-word calculation, native/browser run or OS/listener observation was performed here. Root owns the first review and all later execution. Pending review/check flags refuse preparation and owner execution; no new dist, source tree, seal, build, owner or native output has been produced.
+ 
+-The preserved baseline is the completed **shared-leaf V2 candidate**, checkpoint `2f43b943cfb29419a063c6ee31813e4f116c7a7a`: its exact full37 sidecar has 80 rows, 10,720 vertices and 61,446 indices. It is pre-identity geometry, not the earlier cap-only 81-row loft. Direct completed owner/report/build/seal/freeze and draw-input pins bind it. The older cap report supplies only the already-matched initial ordinary actor/configuration and normal camera. It supplies neither the baseline geometry nor a new ride outcome.
++## Preserved actual failure
+ 
+-The candidate app is copied from the immutable, complete ordinary V4 prepared `dist`, build `tube-guided-passive-telemetry-20261005`. The direct root-current application receipt binds the actual successful normal build, 49 assets and 584 current source pins. Preparation verifies that receipt, its actual terminal build-log reference, the immutable ordinary app build/freeze/seal and all copied asset bytes. It does not rebuild or compile. The source freeze retains eleven selected geometry/optical/test files; only `boundedCProfile.ts` and `boundedCLeafReach.test.ts` may differ from the successful shared-leaf V2 freeze, and those two must match the final identity-core proposal bytes. The earlier unapplied proposal's provenance describes its own preparation time; this recipe does not relabel it as the subsequent production application receipt.
++Root handle 47462 terminated exit 1. The original owner failed after 44.32070841698442s with `AnchorRejected: fresh_bounded_read_required`. A periodic completed owned-group read took 2.059041958011221s, exceeding the unchanged 2s limit. The real original leader remained exact and live on both sides of that read. An earlier `subprocess.TimeoutExpired` had correctly remained an observation-only event. The parent retained 0 steps and 0 PNGs, so it has no visual comparison result.
+ 
+-There is one held public diagnostic restart with the same fixed raw packet and epoch **276.3293560552737**, zero simulation steps, and the exact prior SIDE and INTERIOR camera/projection words. There is no placement, clock assignment, seed/pose/selector search or quality acceptance. The candidate is built by ordinary current drawing. Its complete37 words remain immutable during the observer. Baseline full37 words are decoded unchanged and uploaded through the same current renderer. Actual index upload permits only the existing per-triangle winding repair; source index words and actual repaired draw index words are different contracts.
++The original owner's cleanup used a fresh accepted TERM observation. Root independently verified 690 post-failure pins, group 43952 absence, closed 4301/9711 and all five protected preview identities. The actual owner, incomplete report, launcher/native logs, integration/preparation/build/seal/source receipts and root closure receipt remain unchanged in the parent and are copied byte-exact into `sealed-parent/` where applicable. `parent-copy.json` pins all 99 parent files, including its assets, source and unsuccessful outputs. This V2 recipe does not relabel the first attempt as complete or benign.
+ 
+-Each fixed camera has Rich and region pairs: preserved shared leaf → identity core → restored preserved shared leaf. The restored baseline PNG must exactly equal the pair's first PNG. Eight new PNGs are retained; historical PNG equality is not required. The observer does not rewrite any shader statement: both variants use the same current authored max-mask, wall-light A and unchanged TIR predicates, with exact compiled shader words compared per view. Existing current exit/wall normal and region-attribute computation runs on each actual uploaded loft. Material/depth/stencil/ordinary mesh state is preserved.
++## Narrow caller change
+ 
+-The saved pre-identity draw inputs must exactly match current seaTime, step, configuration, look, held-drawing flag, slope, tide, water revision/grid/surface words, raw packet, board8/rider33 and normal camera words. Actual current `atX` query/carving fields are saved for both uploaded rosters. The current candidate-owned ordinary mask texture bytes/grid are held common within each comparison pair; equality to the old footprint mask is deliberately not claimed. Changed geometry can change authored/texture overlap and surviving coverage. Camera-water classification follows the selected actual loft and is reported separately.
++`run.py` defines caller-local `OwnedReadExpired`. Immediately before pure observation, it measures the completed read's duration and the age at that invocation. Duration>2s or age>2s raises this exception **before** calling `observe_owned_group`, without refreshing accepted state, latest observation or anchor evidence. Read timing is not inferred from the saved failure or relaxed by tolerance.
+ 
+-`measure.py` accepts only a terminal complete, closed, pinned owner/report. It compares the actual indexed cap64 polyline in the declared front41 world-crest-X interval [74,77] under the exact SIDE camera, measures neighboring world and sigma spacing, cap bend/normal turn and retention of previously positive-fade raw stations. The target is **world crest X75.625**, not sigma75.625; a missing exact target is bracketed, not silently moved. The successful pre-identity result measured about21.48° there; the earlier33° cap-only observation is a different geometry. Adaptive candidate row counts may change legitimately. Missing raw rows are reported without inventing a budget/retirement cause.
++A periodic `OwnedReadExpired`, like `subprocess.TimeoutExpired`, records an observation-only note and continues the **same** Popen and HTTP server. Required reads retry only these two expiry types, up to the existing three attempts and inside the same absolute deadline. A genuine `AnchorRejected` is never caught by that retry/periodic path and remains fatal. Deadline, leader/survivor, replay, scope and protected checks still belong to the unchanged pure helper on nonexpired reads. No failed read authorizes a signal or becomes a fallback anchor.
+ 
+-The scalar identity-core bound is C1 in requested delta at fixed positive budget. Raw `.98*W`, height-dependent thickness, tangent and budget branches, and the falling curve still prevent a global C1 trajectory guarantee. Native shape, reference resemblance, complete-body clearance, ordinary ridden entry/travel/exit and FPS acceptance all remain open.
++Expiry notes retain all measured ReadWindow fields, duration, age, live-before/after facts, previous accepted observation number, actual Popen PID, member count and at most 16 PIDs with an explicit omitted count. The existing 16-note cap and total count remain. These capped notes report an unaccepted read, not an identity proof. Fresh required reads still precede each TERM/KILL, with the latest accepted observation/state assertion and signal counter consumption only after the actual signal succeeds.
+ 
+-## Root-only execution and owner-policy amendment
++`owned_group_anchor.py` remains exact SHA256 `f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0`; its prior root 20 synthetic test results are historical evidence, not a V2 check. The five-port authority remains exact, protecting 4312–4316, including the immutable human preview 4316/PID 38617. Only 4301/9711 are owned. Existing native 635s, active owner 648s, whole 680s, cleanup 20s, OS 2s, poll 5s, three required attempts and image/report caps remain unchanged. The native timer still covers browser close and final save.
+ 
+-The intended root sequence is integration source review → bounded syntax/integration checks → truthfully update pending-review/check flags and freeze → `prepare.py` → inspect new direct freeze/build/seal → `run.py` → inspect complete owner/report/PNGs → `measure.py`. Both preparer and owner refuse while `executionPendingOwnerPolicyReview` or `integrationReviewPending` remains true, or `integrationChecksExecuted` remains false. Those source-only flags are still pending here. No preparation/build/seal/native outputs exist for this recipe.
++## Comparison and authority retained
+ 
+-The exact before-amendment ten source/freeze files are preserved under `before-owner-policy/`. `before-owner-policy-preservation.json` maps every original pin to its byte-exact preserved copy. The old freeze retains its original bytes and original-path metadata; those original paths now receive this unprepared amendment, so the preserved copies are the authority for its earlier contents. `owner-policy-amendment.patch` is the narrow delta from that preserved draft. Geometry observer and saved-word analysis bytes are unchanged.
++The preserved full 37 pre-identity baseline remains the completed shared-leaf V2 candidate at checkpoint `2f43b943cfb29419a063c6ee31813e4f116c7a7a`: 80 rows, 10,720 vertices, 61,446 indices. The immutable candidate application is the existing ordinary V4 build `tube-guided-passive-telemetry-20261005`, already mapped by root to held 3e75550c2 source. V2 reuses the exact application/reference authorities; it does not create a build or change production.
+ 
+-Root's independent pure-helper checks and 20 synthetic fixtures actually passed; direct `root-tests.json` and its 3695-byte log are pinned separately from the original source-only module freeze. The exact copied `owned_group_anchor.py` is SHA256 `f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0`. The old source-only freeze's unexecuted flags describe its original preparation time; they are not overwritten as runtime evidence. Pure tests establish no real OS/process identity and are not an integration/native success.
++The comparison retains epoch 276.3293560552737, zero physical steps, exact prior side/interior cameras, current material/mask, normal actors and four preserved→identity-core→restored pairs, with eight planned PNGs. `geometry-inspection.mjs` is byte-identical. `native.mjs` and `measure.py` change only their WORK path. Measurement/acceptance criteria are unchanged. Neither this source proposal nor the failed parent establishes native appearance, globally C1 geometry, body clearance, ridden passage or FPS.
+ 
+-The owner declares the exact native argv before observing any process row and retains the same actual `Popen(..., start_new_session=True)` object. Its initial actual bounded group read is bracketed by live `proc.poll()` checks. Measured read windows go to the pure helper. Original leader identity remains immutable; after leader exit, an exact member from the immediately previous accepted read must match before current child snapshots are accepted. Anchored child changes retain up to 16 full before/current notes plus total counts. Anchor failures retain structured reason/evidence without first refreshing the previous state.
+-
+-Every TERM or KILL takes a **new immediately successful required group read**. There is no fallback to a periodic, timed-out or rejected read. The integration explicitly asserts the returned observation is the latest accepted observation and its state is the latest accepted owned state before calling final freshness authorization; this closes the pure API's stale-but-young observation limitation. The signal counter is consumed only after the actual signal succeeds. Empty groups receive no signal. Failed anchors receive no signal. The native635s timer remains active through `page.close()` and final report saving and is cleared afterward.
+-
+-Ordinary V4 actually failed the old all-recurring-child identity assertion during browser startup after16.97s, before a step/image. No offending row was recorded, so its precise cause remains unproved. Its independent post-failure receipt is reference evidence only. The root-reviewed pure policy changes future identity handling without relabeling that attempt as benign or successful.
+-
+-The unchanged bounds are 680s absolute total including at most20s cleanup, native635s, active owner648s with cleanup reserved, preflight at most20s, OS reads at most2s and at most3 required attempts, periodic identity observations every5s and16 capped timeout notes. Periodic OS timeouts remain observational and do not restart/abort the browser or close HTTP. Preflight/protected/cleanup reads remain required. Protected listener PID/start/exact full commands on **4312–4316** must match the freshly verified `root-five-protected-preview-identities/v1` authority SHA256 `b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28` and remain unchanged. Port4316 is the immutable human preview PID38617, session59708; it must never be stopped, reloaded or replaced. Only 4301 and 9711 are owned. No new listener/OS/process observation was made by this amendment.
++Only WORK substitutions, caller expired-read handling, pending-review flags and provenance/seal-helper closure change. The complete V2 delta is `owner-expired-read.patch`. The inherited `recipe.patch` and owner-policy documents are unchanged historical parent artifacts. Root must review/check V2, truthfully refresh pending input/freeze flags, run its first-only preparer, then choose whether to execute the finite owner. This directory is not launch-ready.
+--- a/recipe-diff.md
++++ b/recipe-diff.md
+@@ -1,15 +1,11 @@
+-# Direct source-only recipe delta
++# V2 delta against sealed failed identity-core comparison
+ 
+-Parent source recipe: `/private/tmp/tube-shared-leaf-native-v2-20261005`; no parent assets/results were copied. `recipe.patch` compares only its reviewed source names with this fresh recipe.
++- Repoint WORK in run.py, prepare.py, native.mjs and measure.py to the fresh V2 directory; external immutable app/baseline/authority references remain unchanged.
++- Add caller-only OwnedReadExpired for completed owned-read duration or age above the unchanged 2s limit, before pure observation and without accepted-state refresh.
++- Catch only subprocess.TimeoutExpired and OwnedReadExpired on periodic/required paths. Genuine AnchorRejected remains fatal. Three attempts, poll interval, finite deadlines, same process/server and signal freshness are unchanged.
++- Retain complete timing/live/read-count evidence with capped PIDs and notes. No fabricated successful identity or refreshed state is recorded for expiry.
++- Reset pending owner/integration review/check flags; historical parent integration passes are explicitly prior evidence, not approval of this new recipe.
++- Preserve exact pure helper and geometry observer; native/measurement differences are WORK substitutions only. No source coefficient, mask, camera, epoch, control, step, outcome or acceptance change.
++- Add immutable lineage/copy pins and the new patch/provenance to future helper sealing. No preparation/build/source/assets/output/runtime has been created here.
+ 
+-- `prepare.py`: direct new root-current terminal application receipt plus immutable ordinary V4 prepared assets/freeze/seal; complete pre-identity sharedV2 candidate authority; eleven selected current source pins, with only the scalar bound/test differing by exact proposal bytes. No compiler/Git/runtime calls.
+-- `inputs.json`: exact successful80-row baseline, new current app authority, unchanged fixed raw/epoch/cameras and optical contexts, baseline actual draw inputs, independent protected identity authority and independently closed failed ordinaryV4 owner qualification.
+-- `native.mjs`: fresh paths/schemas, prior scene-only reference, baseline/full37 and current build metadata, exact prior ordinary draw input checks, eight newly named paired images.
+-- `geometry-inspection.mjs`: fresh observer names/schema; old planner metadata retained, baseline full37 decoded exact; same unmodified current shader/material and current mask for both variants. Existing per-triangle winding allowance unchanged.
+-- `run.py`: fresh schemas/path/authority and selected-live source qualification; extra prior ordinary draw-input gate. Owner OS/deadline/process identity discipline unchanged and explicitly pending separate review.
+-- `measure.py`: new terminal schemas/path, pre-identity baseline label, world-X75.625 distinction and inherited independent indexed cap/spacing/raw retention analysis.
+-- `README.md`: source-only scope, actual baseline/current authority, owner risk, bounds and limitations. Preparation freeze and diff are metadata only; no old outcome is relabeled as a new run.
+-
+-## Subsequent owner-policy amendment
+-
+-`before-owner-policy/` preserves the exact initial frozen recipe. The later narrow diff is `owner-policy-amendment.patch`: exact root-tested pure helper, fresh leader/survivor integration with latest-state signal guard and full evidence, protected4316, native-close timer ordering, truthful pending-review/check gates and direct pure-test/five-port pins. Geometry-inspection.mjs and measure.py remain byte-identical to the initial draft; the planned observation criteria are unchanged.
++All original parent bytes remain unchanged; its failed owner/report and actual root 690-pin closure are retained separately. Root owns all future review and execution.
+--- /dev/null
++++ b/parent-copy.json
+@@ -0,0 +1,535 @@
++{
++  "schema": "leaf-identity-core-v2-sealed-parent-copy/v1",
++  "parent": "/private/tmp/tube-leaf-identity-core-native-20261005",
++  "work": "/private/tmp/tube-leaf-identity-core-native-v2-20261005",
++  "onlyRecipeCopiedForSourcePreparation": true,
++  "preparedDistOrSourceTreeCopied": false,
++  "parentInputAndOutputPins": [
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/README.md",
++      "bytes": 8864,
++      "sha256": "ce73d7d13130cfbcb361bda9ce43b0cb4ceac8600d43b1792685871d62145ca9"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/__pycache__/owned_group_anchor.cpython-314.pyc",
++      "bytes": 24163,
++      "sha256": "2b6d08b8d64bfa9ce3183153b37611af1176ec00bd588a1253deea2b94ab7d19"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/README.md",
++      "bytes": 6422,
++      "sha256": "0beee8a3c630a2e22995c11f78bf609f1199640a0a1190db72016e9bfe823ab6"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/geometry-inspection.mjs",
++      "bytes": 18907,
++      "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/inputs.json",
++      "bytes": 11707,
++      "sha256": "db3dda90b6836dc699903757c8ee5b27678d847309edf8f1a951a5779e44d3fc"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/measure.py",
++      "bytes": 8316,
++      "sha256": "65f34556e335fb2ed2485107331f3e4a88df34d495ed1a7691e5ec2f8faab9b4"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/native.mjs",
++      "bytes": 11175,
++      "sha256": "0db1f02f505dcfd54f1647c218f1e3d390a420abe1f13085d6465bf8dc09536a"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/preparation-freeze.json",
++      "bytes": 5542,
++      "sha256": "266d3ed9b72113931df0d95e9133b3b45e23a38a5778cc6b859cbd40d7897877"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/prepare.py",
++      "bytes": 11151,
++      "sha256": "ac040b0a653e56089918a13cb5a92fb61e48234782d633f27f0ba95262685768"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/recipe-diff.md",
++      "bytes": 1812,
++      "sha256": "be7fb979ab5891d1151db0fbde5cfb1038289926a9d2bedca1ce27d6a01c708e"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/recipe.patch",
++      "bytes": 86320,
++      "sha256": "9a1bb2e0abab553ff2728728cca019ac36e865be77c0d262db46e63421d927d3"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy/run.py",
++      "bytes": 16349,
++      "sha256": "98fe6d4d0395bdb45fd275943fde36a232d0f04740c9f24fd8f9c3219f99b632"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-owner-policy-preservation.json",
++      "bytes": 5160,
++      "sha256": "8c3282ec574958687e9c9401a2006c8ed21f66930bd97ca67f25a4b82ecc67ba"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-root-integration-review/inputs.json",
++      "bytes": 13889,
++      "sha256": "28ccdd9678f99e2084b4db96bcc29e8c792ecdd7c62867e0502cc884504a4fc7"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/before-root-integration-review/preparation-freeze.json",
++      "bytes": 7744,
++      "sha256": "d52212e20563ad84418aa024ae64e458316b1fb6eef0a7af8e59e5bb9da9b3d0"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/build.json",
++      "bytes": 19090,
++      "sha256": "32c43a5d49aaa0086cb7315ec492fda69c87c415f7c45d22d7345b16302ffbaf"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/candidate-first/report.json",
++      "bytes": 6979,
++      "sha256": "37b85be2db5bdb93f0a7fc11ab890eb134f4c750a0ffeca9eaad00f6045ccb7d"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/WorkerSurfZone-B3XiRq84.js",
++      "bytes": 923190,
++      "sha256": "ec05dcff63f79d9c4819aaee693edce9611bec7a174bbbdb69c0af2f21097d42"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/bubbles-1.m4a",
++      "bytes": 256855,
++      "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/bubbles-2.m4a",
++      "bytes": 198252,
++      "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/distant-1.m4a",
++      "bytes": 883404,
++      "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/distant-2.m4a",
++      "bytes": 912023,
++      "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/lipJet-1.m4a",
++      "bytes": 62354,
++      "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/lipJet-2.m4a",
++      "bytes": 47086,
++      "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/lipRoller-1.m4a",
++      "bytes": 36688,
++      "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/lipRoller-2.m4a",
++      "bytes": 27855,
++      "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/paddle-1.m4a",
++      "bytes": 14645,
++      "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/paddle-2.m4a",
++      "bytes": 13593,
++      "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/plunge-1.m4a",
++      "bytes": 24612,
++      "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/plunge-2.m4a",
++      "bytes": 22031,
++      "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/roar-1.m4a",
++      "bytes": 419823,
++      "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/roar-2.m4a",
++      "bytes": 387857,
++      "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/audio/sounds.json",
++      "bytes": 3499,
++      "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/devStepping-jWGVODeF.js",
++      "bytes": 320,
++      "sha256": "d96c1d774d290e85130491901db1573f1ea4c8f92a941ff46f01f3efc426655e"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/index-BWsFXzb5.js",
++      "bytes": 586204,
++      "sha256": "a2e0ecabbf98689b9212133b7efd60c20fa2f5abeb4ee27c9a87c7e660f1ae6e"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/index-DA8NEfOT.css",
++      "bytes": 33213,
++      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/jevRecorder-gtds63Dh.js",
++      "bytes": 15917,
++      "sha256": "cff65cc2d2afdc19397260119226a562373a4b92b9867b3ece9a2f8498972b73"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/particleBench-DyNRD2zH.js",
++      "bytes": 10708,
++      "sha256": "60405b1bcb8a875eb51d63c78a1ace339b139ee91d5ac3ec382c8d9575c0053e"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/rideRecorder-CzLPgmBM.js",
++      "bytes": 41139,
++      "sha256": "c1ff804dfba3bd0027814f869d5950f570fc4a6e5af2ab4cfd81ac16a935b59a"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
++      "bytes": 681062,
++      "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
++      "bytes": 2097202,
++      "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/skies/qwantani_sunrise_puresky.jpg",
++      "bytes": 357301,
++      "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/skies/qwantani_sunrise_puresky_1k.hdr",
++      "bytes": 2097202,
++      "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/skies/qwantani_sunset_puresky.jpg",
++      "bytes": 372349,
++      "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/skies/qwantani_sunset_puresky_1k.hdr",
++      "bytes": 2097202,
++      "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/skies/skies.json",
++      "bytes": 2266,
++      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/surfZoneWorker-CEBdNrn6.js",
++      "bytes": 502099,
++      "sha256": "b8ea0d84d03d17a77390f35360cfa0077bc8fa6c47913d1d247512124a683a93"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/surfers/surfer1.glb",
++      "bytes": 1007368,
++      "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/surfers/surfer2.glb",
++      "bytes": 1595524,
++      "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/surfers/surfer3.glb",
++      "bytes": 1545008,
++      "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/surfers/surfer4.glb",
++      "bytes": 1229872,
++      "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/surfers/surfers.json",
++      "bytes": 1061,
++      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/assets/waterSheet-fVws607F.js",
++      "bytes": 11689,
++      "sha256": "f8a46a578e2d4e119242855fe7de9465fa3e6894b1959e5826fda1ec774d3d01"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/barrels/pad19-a20-l12.bin",
++      "bytes": 149848,
++      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/barrels/pad19-a30-l12.bin",
++      "bytes": 163264,
++      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/barrels/pad19-a45-l12.bin",
++      "bytes": 168424,
++      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/barrels/periodic-padang19s-l12.bin",
++      "bytes": 181852,
++      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/barrels/periodic-point21-a15-l12.bin",
++      "bytes": 106500,
++      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/barrels/periodic-point21-a23-l12.bin",
++      "bytes": 128172,
++      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/barrels/periodic-point21-a30-l12.bin",
++      "bytes": 173576,
++      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/barrels/periodic-reef42-l12.bin",
++      "bytes": 193180,
++      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/build.json",
++      "bytes": 50,
++      "sha256": "620fa15a89b87592b1fb79df47723883af8c6c840856a853c87cb631f76f02dd"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/index.html",
++      "bytes": 1626,
++      "sha256": "f3647d62faf361ecb1c3f295a0ebd1985972908f6cc2188b7b28d38d68cb2a95"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/lessons/pool-s2-caught.sea",
++      "bytes": 2180693,
++      "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/lessons/pool-s2-pocket.sea",
++      "bytes": 2176894,
++      "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/dist/lessons/pool-s2-waiting.sea",
++      "bytes": 2232988,
++      "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/geometry-inspection.mjs",
++      "bytes": 18907,
++      "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/inputs.json",
++      "bytes": 14131,
++      "sha256": "0464f7cf49153e2e0d21c98bc9d93cfd2d52757ec4d288a6609116fa51228318"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/launcher.json",
++      "bytes": 10818,
++      "sha256": "619a4de95ad2a2215b051900178d3c17522a17fff89127d3c1364684112a6937"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/live.json",
++      "bytes": 6964,
++      "sha256": "f29ed272a4b9410d08ef0df4b4ce91e5c599970ee231330c27596037901c8d58"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/measure.py",
++      "bytes": 8316,
++      "sha256": "65f34556e335fb2ed2485107331f3e4a88df34d495ed1a7691e5ec2f8faab9b4"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/native.log",
++      "bytes": 0,
++      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/native.mjs",
++      "bytes": 11175,
++      "sha256": "f7fe36a4aac29a19df1bae6bb15740c12ee31f223130d5dd46353ce25565773b"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owned_group_anchor.py",
++      "bytes": 15501,
++      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner-policy-amendment.md",
++      "bytes": 2441,
++      "sha256": "4ff04fa67d095b6c5a9c96b6f7b4b2d9f610811dfe0557e8fa73a93f3256c402"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner-policy-amendment.patch",
++      "bytes": 52122,
++      "sha256": "1c0bfa56d9b1f877570b247b5c0a4ee7a5af57f75251797e7e42ac8031080138"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner.json",
++      "bytes": 57977,
++      "sha256": "ccd0da40b6da29ed5c9a20a388261beb3360f3d267ddbfbe10424c5da67e7e92"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/preparation-freeze.json",
++      "bytes": 8692,
++      "sha256": "77fd687206d0378c28021f81075b0dfb4e7a13e56912aa75bf02e10f33655014"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/prepare-result.json",
++      "bytes": 808,
++      "sha256": "adc024bc307371740d15e0f7938f0607b9a6886a18fb1864b7edb0aa41f5ca42"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/prepare.py",
++      "bytes": 13015,
++      "sha256": "a663995aa9899f89d64c5969cbd314a29ce138df87cc4b374781ede1fdf20c18"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/recipe-diff.md",
++      "bytes": 2337,
++      "sha256": "c6b673025a0e3b6c4c444dbfca3f65668e3583085733151531aa42986721bef0"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/recipe.patch",
++      "bytes": 124127,
++      "sha256": "9d21edbc07d023ca4975c5f46c7979c45453ae7ede6e403f3b466d90ba2eee68"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-integration-checks.json",
++      "bytes": 1043,
++      "sha256": "70a96d2792f74a0ec4af857a563c3cbe3875366018ed6d2fd7e46ef3da363d07"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-owner-execution.log",
++      "bytes": 52953,
++      "sha256": "ed3a63e1c9cce0e5f23ace0c75d500c2c9e700949c624ca93ab9d4f71af4853f"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-post-failure-pins-and-closure.json",
++      "bytes": 147021,
++      "sha256": "6e9145a968147b850076b4fe3a09579c14fe4e93dd38b2020310e9e4fc68116b"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/run.py",
++      "bytes": 19983,
++      "sha256": "57e144cf1468425a4bda9e81c354932bd03c87baa5270529fe21dcdd117b3ebb"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/seal.json",
++      "bytes": 14344,
++      "sha256": "e342432a742c1b32a886dbb2e51cf4c1d120668cd379ecff9f7d31a15660da2d"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/SweptBarrel.ts",
++      "bytes": 6980,
++      "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
++      "bytes": 33396,
++      "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/barrelMaskGlsl.ts",
++      "bytes": 2355,
++      "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/scene/barrel/barrelWater.ts",
++      "bytes": 5755,
++      "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/ProfileLibrary.ts",
++      "bytes": 31647,
++      "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCCapRefinement.test.ts",
++      "bytes": 11167,
++      "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
++      "bytes": 16525,
++      "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCLeafReach.test.ts",
++      "bytes": 18620,
++      "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/boundedCProfile.ts",
++      "bytes": 20184,
++      "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/lipSheet.ts",
++      "bytes": 19136,
++      "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source/src/wave/barrel/sweptLoft.ts",
++      "bytes": 84568,
++      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
++    },
++    {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/source-freeze.json",
++      "bytes": 7436,
++      "sha256": "9f5b3e7779367489a664445fb0219096bda03c6a10c3a00ee957b5944942cce1"
++    }
++  ],
++  "copiedRecipeInputs": [
++    "prepare.py",
++    "run.py",
++    "native.mjs",
++    "geometry-inspection.mjs",
++    "measure.py",
++    "inputs.json",
++    "owned_group_anchor.py",
++    "README.md",
++    "recipe-diff.md",
++    "recipe.patch",
++    "owner-policy-amendment.md",
++    "owner-policy-amendment.patch",
++    "before-owner-policy-preservation.json"
++  ],
++  "copiedHistoricalReceipts": [
++    "preparation-freeze.json",
++    "root-integration-checks.json",
++    "prepare-result.json",
++    "build.json",
++    "source-freeze.json",
++    "seal.json",
++    "owner.json",
++    "native.log",
++    "launcher.json",
++    "root-owner-execution.log",
++    "root-post-failure-pins-and-closure.json",
++    "candidate-first/report.json"
++  ],
++  "rootPreparationNotExecuted": true,
++  "parentOriginalsWritten": false
++}
+--- /dev/null
++++ b/v2-provenance.json
+@@ -0,0 +1,328 @@
++{
++  "schema": "leaf-identity-core-comparison-v2-caller-expiry/v1",
++  "sourceOnly": true,
++  "executionPendingOwnerPolicyReview": true,
++  "integrationReviewPending": true,
++  "integrationChecksExecuted": false,
++  "syntaxChecked": false,
++  "moduleImported": false,
++  "preparationExecuted": false,
++  "buildExecuted": false,
++  "nativeExecuted": false,
++  "numericalOrSavedWordAnalysisExecuted": false,
++  "osProcessOrListenerRead": false,
++  "resourcesStarted": false,
++  "portsProbed": false,
++  "gitMutated": false,
++  "productionOrSealedParentChanged": false,
++  "rootFirstReviewRequired": true,
++  "notLaunchReady": true,
++  "parentFailure": {
++    "rootHandle": "47462",
++    "owner": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/owner.json",
++      "bytes": 57977,
++      "sha256": "ccd0da40b6da29ed5c9a20a388261beb3360f3d267ddbfbe10424c5da67e7e92"
++    },
++    "report": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/candidate-first/report.json",
++      "bytes": 6979,
++      "sha256": "37b85be2db5bdb93f0a7fc11ab890eb134f4c750a0ffeca9eaad00f6045ccb7d"
++    },
++    "rootPostFailurePinsAndClosure": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-20261005/root-post-failure-pins-and-closure.json",
++      "bytes": 147021,
++      "sha256": "6e9145a968147b850076b4fe3a09579c14fe4e93dd38b2020310e9e4fc68116b"
++    },
++    "terminalExitCode": 1,
++    "ownerComplete": false,
++    "firstFailure": "AnchorRejected: fresh_bounded_read_required",
++    "elapsedSeconds": 44.32070841698442,
++    "readWindow": {
++      "started": 410752.776246375,
++      "finished": 410754.835288333,
++      "now": 410754.835310041,
++      "deadline": 411361.745241666,
++      "os_seconds": 2,
++      "maximum_age_seconds": 2
++    },
++    "readDurationSeconds": 2.059041958011221,
++    "firstAttemptRemainsFailed": true,
++    "pngCount": 0,
++    "physicalSteps": 0,
++    "noVisualResult": true,
++    "rootVerifiedPostFailurePins": 690,
++    "rootVerifiedGroupAbsence": 43952,
++    "rootProtectedIdentityPreservationIsHistoricalEvidence": true
++  },
++  "unchangedPolicy": {
++    "limits": {
++      "steps": 0,
++      "nativeSeconds": 635,
++      "ownerSeconds": 648,
++      "totalSeconds": 680,
++      "cleanupSeconds": 20,
++      "pngCount": 8,
++      "pngBytesEach": 12582912,
++      "pngBytesTotal": 100663296,
++      "reportBytes": 2097152,
++      "sidecarBytes": 6291456,
++      "drawInputsBytes": 8388608
++    },
++    "fiveProtectedPorts": [
++      4312,
++      4313,
++      4314,
++      4315,
++      4316
++    ],
++    "ownedPorts": [
++      4301,
++      9711
++    ],
++    "protectedIdentityAuthority": {
++      "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
++      "bytes": 2735,
++      "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
++    },
++    "exactHelper": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/owned_group_anchor.py",
++      "bytes": 15501,
++      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
++    },
++    "geometryObserver": {
++      "file": "/private/tmp/tube-leaf-identity-core-native-v2-20261005/geometry-inspection.mjs",
++      "bytes": 18907,
++      "sha256": "9c247aa4fc48293e0df9fc4bdf51a5bb0c3b1fde8bb0869ed645a20074fac7af"
++    },
++    "applicationBuildId": "tube-guided-passive-telemetry-20261005",
++    "immutablePreparedApplication": {
++      "build": {
++        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
++        "bytes": 43568,
++        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
++      },
++      "sourceFreeze": {
++        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
++        "bytes": 19549,
++        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
++      },
++      "seal": {
++        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
++        "bytes": 9774,
++        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
++      }
++    },
++    "rootCurrentApplicationReceipt": {
++      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
++      "bytes": 132778,
++      "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
++    },
++    "baselineAuthority": {
++      "owner": {
++        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/owner.json",
++        "bytes": 15739,
++        "sha256": "015c31d0bf9fecc62935ab919e7a65277f74084b79b80a7a4fe40e26efe7a02c"
++      },
++      "report": {
++        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/report.json",
++        "bytes": 42900,
++        "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
++      },
++      "loft": {
++        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
++        "bytes": 1204806,
++        "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
++      },
++      "build": {
++        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/build.json",
++        "bytes": 16556,
++        "sha256": "f945caaa1aba8d283487942e7150a7ed9e0def1b1c2e190b75ea83d6fa3bd705"
++      },
++      "seal": {
++        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/seal.json",
++        "bytes": 9461,
++        "sha256": "bc8d8374c629fd7cf74da7abac0609b036242f3a3b0ee53ce8a8a1519e9dd3ee"
++      },
++      "sourceFreeze": {
++        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source-freeze.json",
++        "bytes": 6300,
++        "sha256": "e38226f54858e5804065cec68626af7ed2b1e1fbf799f87ecef12f2136825e78"
++      },
++      "drawInputs": {
++        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/draw-inputs.json",
++        "bytes": 1696833,
++        "sha256": "0f26472964cb9ee71d3abe267b5e5c1be16aeadb2eaf7bbd6cf3848ce63a4a6f"
++      }
++    },
++    "referenceEpoch": {
++      "step": 0,
++      "seaTime": 276.3293560552737,
++      "kind": "first-eligible-capture"
++    },
++    "fixedCameras": {
++      "side": {
++        "eye": [
++          75.65191820636392,
++          0.8180906549096107,
++          -66.22397584095597
++        ],
++        "target": [
++          74.75,
++          0.8180906549096107,
++          -68.14806801453233
++        ],
++        "quaternion": [
++          0,
++          0.21741787419751346,
++          0,
++          0.9760786177247376
++        ],
++        "inheritedUp": [
++          0,
++          1,
++          0
++        ],
++        "projection": [
++          1.0551622229204924,
++          0,
++          0,
++          0,
++          0,
++          2.050303841579296,
++          0,
++          0,
++          0,
++          0,
++          -1.000066668888963,
++          -1,
++          0,
++          0,
++          -0.2000066668888963,
++          0
++        ],
++        "fov": 52,
++        "aspect": 1.9431171786120591,
++        "near": 0.1,
++        "far": 3000,
++        "zoom": 1
++      },
++      "interior": {
++        "eye": [
++          74.0625,
++          1.0598396605743825,
++          -68.79456329345703
++        ],
++        "target": [
++          74.1875,
++          1.0626037843906364,
++          -68.7633285522461
++        ],
++        "quaternion": [
++          0.006600678893715275,
++          -0.7881247536647293,
++          0.008452992668955604,
++          0.6154220914250564
++        ],
++        "inheritedUp": [
++          0,
++          1,
++          0
++        ],
++        "projection": [
++          1.0551622229204924,
++          0,
++          0,
++          0,
++          0,
++          2.050303841579296,
++          0,
++          0,
++          0,
++          0,
++          -1.000066668888963,
++          -1,
++          0,
++          0,
++          -0.2000066668888963,
++          0
++        ],
++        "fov": 52,
++        "aspect": 1.9431171786120591,
++        "near": 0.1,
++        "far": 3000,
++        "zoom": 1
++      }
++    },
++    "comparison": {
++      "pairs": [
++        {
++          "camera": "side",
++          "view": "rich"
++        },
++        {
++          "camera": "side",
++          "view": "region"
++        },
++        {
++          "camera": "interior",
++          "view": "rich"
++        },
++        {
++          "camera": "interior",
++          "view": "region"
++        }
++      ],
++      "geometryOrder": [
++        "preserved-shared-leaf",
++        "identity-core",
++        "restored-preserved-shared-leaf-repeat"
++      ],
++      "oldFull37Exact": true,
++      "candidateActiveCountsMayChange": true,
++      "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Old pre-identity mask equality is not required because the geometry footprint can change.",
++      "currentMaterialPolicy": "Unmodified current compiled authored max-mask and wall-light A on both variants; observer wrapper records exact shader words only.",
++      "targetCorner": {
++        "front": 41,
++        "worldCrestX": 75.625,
++        "coordinateIsSigma": false,
++        "priorMeasuredBendDegrees": 21.479273974306263
++      },
++      "noPlacement": true,
++      "noSteps": true,
++      "noSeedEpochPoseSelectorSearch": true,
++      "globalC1Guarantee": false,
++      "identityCoreOnlyRuntimeGeometryChange": true,
++      "baselineSuppliedCheckpoint": "2f43b943cfb29419a063c6ee31813e4f116c7a7a",
++      "oldFull37Producer": "Completed shared-leaf V2 candidate (pre-identity), not earlier cap-only geometry.",
++      "priorOrdinaryDrawInputsExactFields": [
++        "seaTime",
++        "step",
++        "config",
++        "look",
++        "holdClearDrawing",
++        "slope",
++        "stillLevel",
++        "surfaceRevision",
++        "surfaceGrid",
++        "surface",
++        "rawFrontPacket",
++        "board8",
++        "rider33",
++        "normalCameraWords"
++      ]
++    }
++  },
++  "callerDelta": {
++    "expiredType": "OwnedReadExpired",
++    "classification": "completed owned read duration>OS_SECONDS or age>OS_SECONDS before observe_owned_group",
++    "acceptedStateRefreshOnExpiry": false,
++    "periodic": "observe/log only; same Popen and HTTP server continue",
++    "required": "only TimeoutExpired/OwnedReadExpired retry up to existing3 attempts within unchanged absolute deadline",
++    "genuineAnchorRejectedCaughtAsExpiry": false,
++    "evidence": "all measured ReadWindow fields, duration/age, live-before/after, previous accepted observation number, actual PID, member count and first16 PIDs with explicit omitted count; existing16-note cap"
++  },
++  "preparedInputCopies": "Only recipe/helper/lineage byte copies; no new dist/source tree or prepared outputs. Root first-only prepare.py remains unexecuted.",
++  "geometryAndNativeAuthorityLimit": "No visual, globalC1, body, passage, FPS or new runtime cleanup result. Root source review/checks are pending.",
++  "hashingAndDiffOnly": true
++}

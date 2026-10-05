@@ -1,0 +1,29 @@
+{
+  "schema": "root-v5-recipe-integration-checks/v1",
+  "complete": true,
+  "freeze": {
+    "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/preparation-freeze.json",
+    "bytes": 11755,
+    "sha256": "20bf01452b402ecd7178c62da8405684558b943667d4c077124fce4af303ac45"
+  },
+  "verifiedUniquePins": 55,
+  "pythonASTChecks": 3,
+  "javascriptSyntaxChecks": [
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/native.mjs",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v5-20261005/ownership-inspection.mjs",
+      "exitCode": 0,
+      "stderr": ""
+    }
+  ],
+  "rootSourceReview": "Read-only direct review of immutable build reuse, pending gates, exact preserved criteria, strict completed-read expiry before pure state acceptance, genuine mismatch propagation, same-Popen/latest-state/fresh signal handling, five protected identities and timer through close/save. No concrete defect found.",
+  "independentReadOnlyReview": "shared_leaf_v2_owner_review and c_formation_trial: no concrete source defect in reviewed scope. No runtime claim.",
+  "prepareExecuted": false,
+  "nativeExecuted": false,
+  "osIdentityClaim": false,
+  "elapsedSeconds": 0.1987457500072196
+}

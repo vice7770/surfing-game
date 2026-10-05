@@ -1,0 +1,19 @@
+{
+  "schema": "offline-winding-audit-transcript-record-v1",
+  "agent": "/root/tube_approach_passive_patch",
+  "executedBy": "subagent; not root",
+  "executionDate": "2026-10-05",
+  "originalInvocation": "functions.exec -> tools.exec_command -> python3 stdin here-document",
+  "recordOrigin": "Exact calculation source and stdout reconstructed from this agent's already completed tool transcript; no original source/stdout/log files existed at execution time",
+  "recordedExitCode": 0,
+  "recordedToolChunkId": "5d87ae",
+  "recordedStderr": "No stderr was shown in the combined tool output",
+  "sourceRecord": "audit-executed-source.transcript.py",
+  "stdoutRecord": "audit-stdout.transcript.json",
+  "sourceWasRerunForPreservation": false,
+  "savedProposalExecuted": false,
+  "runtimeActualIndexPrefixObserved": false,
+  "rootExecutionClaim": false,
+  "mutationsAtOriginalExecution": false,
+  "derivedResultMeaning": "Expected historical facesOut mapping from exact sidecar Float32 positions/normals and Uint32 source indices; not captured draw-buffer bytes"
+}

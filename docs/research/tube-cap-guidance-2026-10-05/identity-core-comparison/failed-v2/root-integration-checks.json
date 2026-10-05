@@ -1,0 +1,33 @@
+{
+  "schema": "root-leaf-identity-v2-integration-checks/v1",
+  "complete": true,
+  "frozenRecipeSHA256": "2c1624821ec0cab3fe2c44fb96157993fab61d61562cf61a179fb61f11921626",
+  "verifiedUniquePins": 172,
+  "pythonASTChecks": 5,
+  "javascriptSyntaxChecks": [
+    {
+      "file": "native.mjs",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "file": "geometry-inspection.mjs",
+      "exitCode": 0,
+      "stderr": ""
+    }
+  ],
+  "actualCallerTests": {
+    "terminalChunk": "f1e664",
+    "exitCode": 0,
+    "syntheticCasesPassed": 6,
+    "durationSeconds": 0.043,
+    "logBytes": 896,
+    "logSha256": "d8c1818da3ec7f702141458cbff355cb84b72a4884264b6fdfc49b68ac3f678a",
+    "noOSOrNativeClaim": true
+  },
+  "rootReadOnlyReview": "Exact caller completed-duration/age expiry before pure acceptance; timeout-only retry/periodic handling, genuine anchor rejection propagated, no state fallback. Exact same-Popen/latest-state/signal consumption and five protections retained.",
+  "independentReview": "shared_leaf_v2_owner_review found no caller defect; four direct historical references missing from preparation were added by root before checks.",
+  "nativeExecuted": false,
+  "osIdentityClaim": false,
+  "elapsedSeconds": 0.35602979199029505
+}

@@ -1,0 +1,11 @@
+test_completed_age_over_two_seconds_rejected_without_refresh (__main__.Caller.test_completed_age_over_two_seconds_rejected_without_refresh) ... ok
+test_completed_duration_over_two_seconds_rejected_without_refresh (__main__.Caller.test_completed_duration_over_two_seconds_rejected_without_refresh) ... ok
+test_fresh_read_uses_exact_pure_bootstrap (__main__.Caller.test_fresh_read_uses_exact_pure_bootstrap) ... ok
+test_genuine_anchor_rejection_is_never_retried (__main__.Caller.test_genuine_anchor_rejection_is_never_retried) ... ok
+test_required_expiry_retries_and_can_accept_later_fresh_result (__main__.Caller.test_required_expiry_retries_and_can_accept_later_fresh_result) ... ok
+test_required_expiry_stops_at_three_attempts (__main__.Caller.test_required_expiry_stops_at_three_attempts) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.043s
+
+OK

@@ -1,0 +1,21 @@
+{
+  "schema": "root-angular-candidate-tests/v1",
+  "actualToolSession": 21713,
+  "exitCode": 1,
+  "testFiles": 1,
+  "testsPassed": 7,
+  "testsFailed": 1,
+  "durationSeconds": 3.06,
+  "logBytes": 1390,
+  "logSha256": "2b2dd16c8eeae1609afe6ca6c2accd85489d65a6abec24d84c7f05427c03c2ed",
+  "candidateSourceCopyReceipt": "/private/tmp/tube-cap-turn-refinement-checks-20261005/root-source-copy.json",
+  "rootProductionChanged": false,
+  "failedAssertion": {
+    "case": "actual provider cap bend compared with mandatory lattice/clock plan",
+    "candidateMaximumTurnDegrees": 39.616319487321675,
+    "mandatoryMaximumTurnDegrees": 38.691184242955714,
+    "expectation": "candidate maximum less than mandatory maximum"
+  },
+  "proposalUnchanged": true,
+  "noNativeVisualOrRideClaim": true
+}
