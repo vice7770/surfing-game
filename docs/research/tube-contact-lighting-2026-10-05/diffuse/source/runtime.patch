@@ -1,0 +1,73 @@
+--- a/src/scene/barrel/SweptBarrelMesh.ts
++++ b/src/scene/barrel/SweptBarrelMesh.ts
+@@ -151,9 +151,9 @@
+  * R∞ (1 − e^{−2ct})) and is lit from the front as the body is, in the albedo; the light behind it comes through
+  * attenuated by Beer–Lambert on the water's own absorption and scattering, e^{−ct}, as emitted radiance, with no body
+  * gain. Behind it: E_back = F · π L_sky(exit ray) + (1 − F) · E_wall, F the far side's view of the sky through the tube's
+- * opening (`sheetAcross`), L_sky the environment's directional radiance, filtered by the material's roughness. Rich refracts through the
+- * fragment's normal and the slice's mean outer-lip normal; it suppresses that radiance if the ray cannot exit. This
+- * approximation traces the exit point or its offset. Classic retains the diffuse environment background. Ambient
++ * opening (`sheetAcross`), L_sky the environment's directional radiance, filtered by the material's roughness. Rich retains this directional approximation on the outer face, then blends to diffuse up-sky illumination
++ * by the existing inner weight. Its unused inner refractions remain in this minimal appearance trial. The mean-normal
++ * approximation does not trace an exit point or its offset. Classic retains its existing diffuse environment background. Ambient
+  * irradiance retains the painted-sky fallback. E_wall is
+  * the back wall as drawn: its column body (the body's
+  * gain on the reflectance at its depth over the bed) under the sky and sun on its own normal (`WALL_POINT`; the
+@@ -163,7 +163,7 @@
+ function sweptSheetBody(transmission = ''): string {
+   const ray = transmission ? `\n    vec3 sweptSkyRay = -waterV;\n    float sweptSkyTransmission = 1.0;${transmission}` : '';
+   const sky = transmission
+-    ? 'sweptSkyTransmission * PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity'
++    ? 'mix( sweptSkyTransmission * PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity, getIBLIrradiance( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz ), clamp( vSweptThroat.w, 0.0, 1.0 ) )'
+     : 'getIBLIrradiance( -normal )';
+   return /* glsl */ `
+     float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );
+@@ -236,37 +236,26 @@
+       * exp( -${glslVec3(WATER_ABSORPTION)} * ${LIP_GLOW_PATH.toFixed(1)} * vSweptSheet ) * RECIPROCAL_PI;`;
+ 
+ /**
+- * The dark throat (Rich; the spec's item 16; the advisor's rulings, 2026-10-01), once the image-based light is
+- * gathered, on the inner face as far as its weight says (points 64–112 of a slice with an underside):
+- * - its sky light: the sky it sees through the opening (the 2D view factor F_w), the light through the lip (the lip's
+- *   view factor F_l × the sky and sun above the lip through its mean thickness, e^{−ct}), and R∞ of the sky for the
+- *   rest, the tube's own water [the magnitudes provisional]; the ambient light, the same everywhere, as the sky;
+- * - its reflections, only where the mirrored ray leaves the tube (`sweptLeaves`: the advisor's mirrored mouth);
+- * - the sun, where its direction doesn't leave the tube: its direct light through the lip on the slant path
+- *   t / max(0.2, |n_lip · L|), e^{−c path} per channel (red goes first: the green room), and no glint [the path
+- *   provisional]. A low sun down the crest and out of the mouth is unchanged: the light down the tube. With the old
+- *   sky's fill light, the fill is shadowed with it.
++ * Rich interior appearance trial: the lip transmits a diffuse sky fill over its mean thickness. The existing inner
++ * weight blends this approximation into the ordinary outer response. It omits directional inner mirrors and glints,
++ * and absorbs direct diffuse sunlight continuously over the same slant path; no opening visibility is certified.
+  */
+ export const RICH_THROAT = /* glsl */ `
+ #if defined( RE_IndirectSpecular ) && defined( RE_IndirectDiffuse )
+ if ( vSweptThroat.w > 0.0 ) {
++  float sweptInnerWeight = clamp( vSweptThroat.w, 0.0, 1.0 );
+   vec3 sweptThrough = exp( -waterAttenuation * vSweptThroat.z );
+-  vec3 sweptOwn = vSweptThroat.x + max( 0.0, 1.0 - vSweptThroat.x - vSweptThroat.y ) * waterDeepReflectance;
+   vec3 sweptAbove = max( 0.0, waterSunDirection.y ) * waterSunRadiance;
+   #if defined( USE_ENVMAP ) && defined( ENVMAP_TYPE_CUBE_UV )
+     sweptAbove += getIBLIrradiance( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz );
+   #endif
+-  irradiance = mix( irradiance, ( sweptOwn + vSweptThroat.y * sweptThrough ) * irradiance, vSweptThroat.w );
+-  iblIrradiance = mix( iblIrradiance, sweptOwn * iblIrradiance + vSweptThroat.y * sweptThrough * sweptAbove, vSweptThroat.w );
+-  vec2 sweptTip = vec2( dot( vSweptTube.xz - vWaterWorld.xz, vSweptRay.xy ), vSweptTube.y - vWaterWorld.y );
+-  vec3 sweptMirror = ( vec4( reflect( -geometryViewDir, geometryNormal ), 0.0 ) * viewMatrix ).xyz;
+-  radiance *= mix( 1.0, sweptLeaves( sweptMirror, sweptTip ) ? 1.0 : 0.0, vSweptThroat.w );
+-  if ( !sweptLeaves( waterSunDirection, sweptTip ) ) {
+-    vec2 sweptSun = vec2( dot( waterSunDirection.xz, vSweptRay.xy ), waterSunDirection.y );
+-    float sweptSlant = vSweptThroat.z / max( 0.2, abs( dot( vSweptRay.zw, sweptSun ) ) );
+-    reflectedLight.directDiffuse *= mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), vSweptThroat.w );
+-    reflectedLight.directSpecular *= 1.0 - vSweptThroat.w;
+-  }
++  irradiance = mix( irradiance, sweptThrough * irradiance, sweptInnerWeight );
++  iblIrradiance = mix( iblIrradiance, sweptThrough * sweptAbove, sweptInnerWeight );
++  radiance *= 1.0 - sweptInnerWeight;
++  vec2 sweptSun = vec2( dot( waterSunDirection.xz, vSweptRay.xy ), waterSunDirection.y );
++  float sweptSlant = vSweptThroat.z / max( 0.2, abs( dot( vSweptRay.zw, sweptSun ) ) );
++  reflectedLight.directDiffuse *= mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), sweptInnerWeight );
++  reflectedLight.directSpecular *= 1.0 - sweptInnerWeight;
+ }
+ #endif`;
+ 

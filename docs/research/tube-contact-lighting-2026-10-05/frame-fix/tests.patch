@@ -1,0 +1,55 @@
+--- a/src/physics/AttachedRider.test.ts
++++ b/src/physics/AttachedRider.test.ts
+@@ -241,6 +241,52 @@
+ }
+ 
+ describe('pop-up', () => {
++  it.each([
++    { heading: 0, previousHeading: undefined },
++    { heading: 0.23362283028731087, previousHeading: undefined },
++    { heading: Math.PI / 2, previousHeading: undefined },
++    { heading: -Math.PI / 2, previousHeading: undefined },
++    { heading: 0.23362283028731087, previousHeading: -0.8 },
++  ])('keeps nominal world points when landing at $heading after mount $previousHeading', ({ heading, previousHeading }) => {
++    const board = new BoardBody();
++    const yaw = (angle: number) => new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), angle);
++    const place = (angle: number) => board.place(new Vector3(0, board.shape.centerOfMass.y, 0), yaw(angle));
++    place(previousHeading ?? heading);
++    const rider = new AttachedRider(board.shape, { phase: previousHeading === undefined ? 'prone' : 'standing' });
++    board.attach(rider);
++    if (previousHeading !== undefined) {
++      // A fresh prone mount must not reuse the preceding upright mount's heading.
++      rider.phase = 'prone';
++      place(heading);
++      board.attach(rider);
++    }
++    // Read only the nominal frame operands: prepare does not integrate either body.
++    const read = rider as unknown as {
++      target: Vector3; base: Vector3; bodyFrame: Quaternion;
++      parts: Float64Array; phaseTime: number;
++    };
++    const water = new PlaneWater();
++    expect(rider.popUp()).toBe(true);
++    for (let k = 0; k < 172; k++) rider.prepare(1 / 240, board, water);
++    expect(rider.phase).toBe('push');
++    const beforeTarget = read.target.clone();
++    const beforeParts = Array.from({ length: 7 }, (_, i) =>
++      board.toWorld(new Vector3(read.parts[i * 3], read.parts[i * 3 + 1], read.parts[i * 3 + 2]), new Vector3()));
++    const beforePosition = rider.position.clone();
++    const beforeVelocity = rider.velocity.clone();
++    rider.prepare(0.72 - read.phaseTime + Number.EPSILON, board, water);
++    expect(rider.phase).toBe('landing');
++    expect(read.phaseTime).toBe(0);
++    expect(read.target.distanceTo(beforeTarget)).toBeLessThan(1e-12);
++    const baseWorld = board.toWorld(read.base, new Vector3());
++    for (let i = 0; i < 7; i++) {
++      const after = new Vector3(read.parts[i * 3], read.parts[i * 3 + 1], read.parts[i * 3 + 2])
++        .sub(read.base).applyQuaternion(read.bodyFrame).add(baseWorld);
++      expect(after.distanceTo(beforeParts[i])).toBeLessThan(1e-12);
++    }
++    expect(rider.position.equals(beforePosition)).toBe(true);
++    expect(rider.velocity.equals(beforeVelocity)).toBe(true);
++  });
+   const towedProne = (speed: number, water = new PlaneWater()) => {
+     const { board, rider } = mounted('prone');
+     const tow = () => {

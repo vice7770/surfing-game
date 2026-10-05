@@ -1,0 +1,43 @@
+--- a/src/scene/barrel/SweptBarrelMesh.test.ts
++++ b/src/scene/barrel/SweptBarrelMesh.test.ts
+@@ -95,8 +95,8 @@
+       expect(vertex).toContain('vSweptSheetBack = sweptSheetBack;');
+       expect(fragment).toContain('vec3 sweptSky = getAmbientLightIrradiance( ambientLightColor );');
+       if (look === 'rich') {
+-        // Directional radiance replaces diffuse transmission; PI cancels RECIPROCAL_PI once.
+-        expect(fragment).toContain('sweptSkyTransmission * PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity');
++        // Rich retains directional outer transmission and blends the inner sheet to diffuse up-sky illumination.
++        expect(fragment).toContain('mix( sweptSkyTransmission * PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity, getIBLIrradiance( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz ), clamp( vSweptThroat.w, 0.0, 1.0 ) )');
+         expect(fragment).not.toContain('getIBLIrradiance( -normal )');
+         // Rich reuses the existing mean lip normal, transforms it into world axes and refracts air→water→air.
+         expect(fragment).toContain(RICH_SHEET_TRANSMISSION);
+@@ -164,7 +164,7 @@
+     }
+   });
+ 
+-  it('in the Rich look only, lights the lip from behind and darkens the throat (the spec’s item 16); Classic draws neither', () => {
++  it('in the Rich look only, lights the lip from behind and fills the inner throat diffusely; Classic draws neither', () => {
+     const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+     const classic = compiled(swept.mesh.material);
+     for (const name of ['sweptThroat', 'sweptTube', 'sweptRay']) {
+@@ -183,13 +183,16 @@
+     expect(fragment.indexOf(RICH_LIP_GLOW)).toBeGreaterThan(fragment.indexOf(RICH_SHEET_BODY));
+     expect(fragment.indexOf(RICH_LIP_GLOW)).toBeLessThan(fragment.indexOf('float waterCover'));
+     // The throat: once the sky's light and reflections are gathered (and the reflection scaled), before they light it;
+-    // the sun through the lip where its direction doesn't leave the tube, red first, and no glint.
++    // transmitted diffuse fill and continuously absorbed sunlight on the inner face, red first, and no inner glint.
+     expect(fragment).toContain(RICH_THROAT);
+     expect(fragment).toContain('bool sweptLeaves( vec3 direction, vec2 tip ) {');
+-    expect(RICH_THROAT).toContain('if ( !sweptLeaves( waterSunDirection, sweptTip ) ) {');
++    expect(RICH_THROAT).not.toContain('sweptLeaves(');
++    expect(RICH_THROAT).toContain('irradiance = mix( irradiance, sweptThrough * irradiance, sweptInnerWeight );');
++    expect(RICH_THROAT).toContain('iblIrradiance = mix( iblIrradiance, sweptThrough * sweptAbove, sweptInnerWeight );');
++    expect(RICH_THROAT).toContain('radiance *= 1.0 - sweptInnerWeight;');
+     expect(RICH_THROAT).toContain('float sweptSlant = vSweptThroat.z / max( 0.2, abs( dot( vSweptRay.zw, sweptSun ) ) );');
+-    expect(RICH_THROAT).toContain('reflectedLight.directDiffuse *= mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), vSweptThroat.w );');
+-    expect(RICH_THROAT).toContain('reflectedLight.directSpecular *= 1.0 - vSweptThroat.w;');
++    expect(RICH_THROAT).toContain('reflectedLight.directDiffuse *= mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), sweptInnerWeight );');
++    expect(RICH_THROAT).toContain('reflectedLight.directSpecular *= 1.0 - sweptInnerWeight;');
+     expect(fragment.indexOf(RICH_THROAT)).toBeGreaterThan(fragment.indexOf('radiance *= waterReflection;'));
+     expect(fragment.indexOf(RICH_THROAT)).toBeLessThan(fragment.indexOf('#include <lights_fragment_end>'));
+     expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-rich');

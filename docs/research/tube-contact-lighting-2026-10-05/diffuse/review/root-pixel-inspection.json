@@ -1,0 +1,94 @@
+{
+  "schema": "bounded-C-diffuse-interior-root-pixel-inspection/v1",
+  "actualNative": true,
+  "nativeReport": {
+    "file": "/private/tmp/tube-C-diffuse-interior-native-20261005/candidate-first/report.json",
+    "bytes": 9371272,
+    "sha256": "e38212aa6df89aad7b47cabd03709a58bbcf91b02ba5cfd943090596da75f0f8"
+  },
+  "nativeOwner": {
+    "file": "/private/tmp/tube-C-diffuse-interior-native-20261005/candidate-first-owner.json",
+    "bytes": 3343,
+    "sha256": "726cafb16ff1a1421cb254641aec5b8719744df0b75e7ae5b2474a6818e1c4fd"
+  },
+  "inspectedOriginalPNGs": [
+    {
+      "file": "/private/tmp/tube-C-diffuse-interior-native-20261005/candidate-first/0-initial.png",
+      "bytes": 604820,
+      "sha256": "8c5c7fa642268268c882ddcd25ed289870fb7635bd94e81ba8839bf909412ea5"
+    },
+    {
+      "file": "/private/tmp/tube-C-diffuse-interior-native-20261005/candidate-first/1-initial-exterior.png",
+      "bytes": 2426960,
+      "sha256": "6a2dd921808d3407dfce152592336be53d996eb85efc981e524a6e02aee3cbac"
+    },
+    {
+      "file": "/private/tmp/tube-C-diffuse-interior-native-20261005/candidate-first/2-first-phase2.png",
+      "bytes": 855216,
+      "sha256": "c496b6ead755fbea5f0998448c219ba73646a0317cccd99e1c8bc569808e8ba3"
+    },
+    {
+      "file": "/private/tmp/tube-C-diffuse-interior-native-20261005/candidate-first/3-first-phase2-water-hidden.png",
+      "bytes": 838050,
+      "sha256": "7fb0aa12819f86c61f917574a96c6d9772ee51b48c6b6f43c47526095481b0c1"
+    },
+    {
+      "file": "/private/tmp/tube-C-diffuse-interior-native-20261005/candidate-first/4-first-phase2-barrel-hidden.png",
+      "bytes": 1056742,
+      "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b"
+    },
+    {
+      "file": "/private/tmp/tube-C-diffuse-interior-native-20261005/candidate-first/5-terminal.png",
+      "bytes": 2058378,
+      "sha256": "1557e4a51f4405b2aa56b9ed8a64c1d92b2f9ce5fe5a14b833789699b084ead1"
+    }
+  ],
+  "movie": {
+    "file": "/private/tmp/tube-C-diffuse-interior-native-20261005/candidate-first/moving-C.webm",
+    "bytes": 1757666,
+    "sha256": "b432b95cfa4eea6f4f16761083a162e92a30f87df5011a6f49c5ffb4f07ab41d"
+  },
+  "decoder": {
+    "ffprobeExitCode": 0,
+    "encodedFrameCount": 71,
+    "codec": "vp9",
+    "width": 1708,
+    "height": 879,
+    "ffmpegExitCode": 0,
+    "selectedEncodedFrameIndices": [
+      0,
+      35,
+      70
+    ],
+    "decodedFrames": [
+      {
+        "file": "/private/tmp/tube-C-diffuse-interior-root-pixel-review-20261005/frame-01.png",
+        "bytes": 156702,
+        "sha256": "0aac6c3f43e18e04b28b3360fb20c823224ff94a321bc5afc3ab0c552d13bd9c"
+      },
+      {
+        "file": "/private/tmp/tube-C-diffuse-interior-root-pixel-review-20261005/frame-02.png",
+        "bytes": 375993,
+        "sha256": "cf00447db0ae5fc187b2fad44eb4b9042e65b7d4109e9de25ac60ab49b6412fd"
+      },
+      {
+        "file": "/private/tmp/tube-C-diffuse-interior-root-pixel-review-20261005/frame-03.png",
+        "bytes": 1259729,
+        "sha256": "889f5105e9afec30d03bfba100b9eed6af5d9eba9f8fcbaaeebfa742cc2cb301"
+      }
+    ],
+    "physicalPlaybackRateOrFPSClaim": false
+  },
+  "findings": {
+    "initial": "The narrow interior retains a broad smooth gray right sheet and turquoise vertical wall; roof boundary is less black. No body passage shown.",
+    "firstPhase2": "Compared with exact recorded retirementV2 PNG, the recognizable directional sky image disappears and black roof/wall band weakens. Gray right sheet remains broad and flat; vertical wall striping and root geometry remain.",
+    "exterior": "One prescribed exterior pose shows a curling lip without proving a clear entrance.",
+    "visibilityPair": "Hiding primary water retains the changed interior; hiding barrel removes it under the inherited stencil/fallback scope. No broad raster-owner proof.",
+    "terminal": "After honest loft-join loss, folded closing sheets and dither remain; no accepted tube continuation.",
+    "decodedMovieSamples": "Selected frames show the same simplified gray sheet during evolution and folded closure at terminal; no continuous-watch claim."
+  },
+  "appearanceAccepted": false,
+  "tubeEntryAccepted": false,
+  "productionAdoption": false,
+  "FPSClaim": false
+}

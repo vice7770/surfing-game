@@ -1,0 +1,43 @@
+{
+  "schema": "tube-contact-and-diffuse-lighting-archive-verification/v1",
+  "complete": true,
+  "manifest": {
+    "bytes": 57233,
+    "sha256": "fc57c89a119f65f6ada0a36522b7a0d756b44139073d2861cd5e52f1cccdf633"
+  },
+  "mode": "stored-decoded-and-originals",
+  "localPayloadFiles": 88,
+  "exactPriorReferences": 9,
+  "storedTreeBytesBeforeOutput": 16525954,
+  "storedPayloadBytes": 16468721,
+  "decodedLocalPayloadBytes": 60476367,
+  "storedByteCap": 16777216,
+  "V6": {
+    "rows": 1366,
+    "PNGs": 2,
+    "movies": 1,
+    "wordSidecars": 4,
+    "lossTrigger": "posture-error",
+    "flightTime": 0,
+    "inContact": true
+  },
+  "V5": {
+    "ownerExitCode": 1,
+    "complete": false
+  },
+  "diffuse": {
+    "observations": 71,
+    "PNGs": 2,
+    "movies": 1,
+    "exactReferencedWordSidecars": 2
+  },
+  "frameCorrection": {
+    "authoredPassed": 15,
+    "parentPassed": 1,
+    "parentFailed": 4,
+    "productionFocusedPassed": 15,
+    "nativeReplay": false
+  },
+  "resourcesBuildTestsOrArchivedCodeExecuted": false,
+  "qualityFPSOrAdoptionAcceptance": false
+}

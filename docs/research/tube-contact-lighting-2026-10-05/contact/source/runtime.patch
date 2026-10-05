@@ -1,0 +1,209 @@
+--- a/src/physics/AttachedRider.ts
++++ b/src/physics/AttachedRider.ts
+@@ -640,6 +640,59 @@
+ 
+ /** Which limit last bound the contact impulse. */
+ type ContactLimit = 'none' | 'flight' | 'tip' | 'slip' | 'impact';
++
++/** Diagnostic-only observation of existing state at the end of one contact substep. */
++export interface RiderContactSample {
++  step: number; substep: number; seconds: number; elapsedStepSeconds: number;
++  phase: RiderPhase; phaseTime: number; phaseDuration: number; popUpTime: number;
++  feasible: boolean; inContact: boolean; flightTime: number; postureError: number;
++  limit: ContactLimit;
++  recentFlight: number; recentTip: number; recentSlip: number; recentImpact: number;
++  legExtension: number; legRate: number; legRest: number;
++  demandX: number; demandY: number; demandZ: number;
++  projectedX: number; projectedY: number; projectedZ: number;
++  appliedX: number; appliedY: number; appliedZ: number;
++  peakNormalLoad: number; frontShare: number;
++  relativeVelocityX: number; relativeVelocityY: number; relativeVelocityZ: number;
++  supportXMin: number; supportXMax: number; supportZMin: number; supportZMax: number;
++  copX: number; copZ: number;
++}
++
++/** A first, exact `finish` separation branch, latched until the next mount. */
++export interface RiderContactLoss {
++  trigger: 'flight-time' | 'sway-error' | 'posture-error';
++  selectedCause: RiderSeparation;
++  /** The actual cause selector, used only by the posture-error branch. */
++  dominantLimit: Exclude<ContactLimit, 'none'> | null;
++  sample: RiderContactSample;
++}
++
++/** Fixed-size diagnostic state; no trajectory history, additional queries, or physics inputs. */
++export interface RiderContactDiagnostics {
++  mount: number; step: number; substeps: number; elapsedStepSeconds: number;
++  limitedSubsteps: number; nonContactSubsteps: number;
++  maxFlightTime: number; recoverableError: number;
++  last: RiderContactSample | null;
++  firstLimited: RiderContactSample | null;
++  firstNonContact: RiderContactSample | null;
++  loss: RiderContactLoss | null;
++  meanForceX: number; meanForceY: number; meanForceZ: number;
++  peakNormalLoad: number; landingPeak: number; landingFrontShare: number;
++}
++
++function contactSample(): RiderContactSample {
++  return {
++    step: 0, substep: 0, seconds: 0, elapsedStepSeconds: 0,
++    phase: 'prone', phaseTime: 0, phaseDuration: 0, popUpTime: 0,
++    feasible: true, inContact: true, flightTime: 0, postureError: 0, limit: 'none',
++    recentFlight: 0, recentTip: 0, recentSlip: 0, recentImpact: 0,
++    legExtension: 0, legRate: 0, legRest: 0,
++    demandX: 0, demandY: 0, demandZ: 0, projectedX: 0, projectedY: 0, projectedZ: 0,
++    appliedX: 0, appliedY: 0, appliedZ: 0, peakNormalLoad: 0, frontShare: 0,
++    relativeVelocityX: 0, relativeVelocityY: 0, relativeVelocityZ: 0,
++    supportXMin: 0, supportXMax: 0, supportZMin: 0, supportZMax: 0, copX: 0, copZ: 0,
++  };
++}
+ 
+ /** How far back, s, the contact's recent limits count toward a separation's cause. */
+ const CAUSE_MEMORY = 0.2;
+@@ -829,6 +882,18 @@
+   private limit: ContactLimit = 'none';
+   /** Recent time each limit bound the contact (decaying over CAUSE_MEMORY), to name a separation's cause. */
+   private readonly limitTime: Record<Exclude<ContactLimit, 'none'>, number> = { flight: 0, tip: 0, slip: 0, impact: 0 };
++  // Fixed records belong only to observation. No solver or input path reads them.
++  private contactMount = 0;
++  private contactStep = 0;
++  private contactSubsteps = 0;
++  private contactElapsed = 0;
++  private contactLimited = 0;
++  private contactNonContact = 0;
++  private readonly contactLast = contactSample();
++  private readonly contactFirstLimited = contactSample();
++  private readonly contactFirstNonContact = contactSample();
++  private readonly contactLossSample = contactSample();
++  private contactLoss?: { trigger: RiderContactLoss['trigger']; selectedCause: RiderSeparation; dominantLimit: RiderContactLoss['dominantLimit'] };
+   /** The balance shift of the body in the board frame (x across, z along), its rate, and where the centre of pressure falls without the support's limit. */
+   private readonly balance = new Vector3();
+   private readonly balanceRate = new Vector3();
+@@ -1090,6 +1155,10 @@
+ 
+   /** Put the rider in its posture on the board, moving with it. */
+   mount(board: BoardBody): void {
++    this.contactMount++;
++    this.contactStep = this.contactSubsteps = this.contactElapsed = 0;
++    this.contactLimited = this.contactNonContact = 0;
++    this.contactLoss = undefined;
+     this.duck.press = 0;
+     this.duck.knee = 0;
+     this.duck.held = 0;
+@@ -1308,6 +1377,9 @@
+ 
+   /** Called by the board at the start of each step. */
+   beginStep(): void {
++    this.contactStep++;
++    this.contactSubsteps = this.contactElapsed = 0;
++    this.contactLimited = this.contactNonContact = 0;
+     this.markParts();
+     this.lastLipImpulse.set(0, 0, 0);
+     this.reaction.fill(0);
+@@ -2044,6 +2116,9 @@
+ 
+   /** After the board has moved: the rider's own motion and ledgers. */
+   finish(h: number, board: BoardBody): void {
++    // The solver's demand is overwritten by the applied impulse below when limited.
++    // Copy its three primitive words first; never borrow a physics scratch vector.
++    const demandX = this.impulse.x, demandY = this.impulse.y, demandZ = this.impulse.z;
+     const before = this.scratch.copy(this.velocity);
+     // Power of the contact on the board is the same at any point of its line; use the centre of mass.
+     const boardBefore = cross(this.boardSpin, this.arm, this.localScratch).add(this.boardVelocity);
+@@ -2120,10 +2195,65 @@
+     for (const limit of Object.keys(this.limitTime) as (keyof typeof this.limitTime)[]) {
+       this.limitTime[limit] = this.limitTime[limit] * decay + (this.limit === limit ? h : 0);
+     }
++    this.observeContact(h, board, demandX, demandY, demandZ);
+     // Pushed too far off the posture, swayed past recovery, or airborne too long: the rider lets go of the board.
+-    if (this.flightTime > MAX_FLIGHT) this.separate('lost board');
+-    else if (this.upright && Math.hypot(this.sway.x, this.sway.z) > RECOVERABLE_ERROR) this.separate('balance');
+-    else if (this.postureError > RECOVERABLE_ERROR && this.limit !== 'none') this.separate(SEPARATION[this.dominantLimit()]);
++    if (this.flightTime > MAX_FLIGHT) {
++      this.observeLoss('flight-time', 'lost board', null);
++      this.separate('lost board');
++    } else if (this.upright && Math.hypot(this.sway.x, this.sway.z) > RECOVERABLE_ERROR) {
++      this.observeLoss('sway-error', 'balance', null);
++      this.separate('balance');
++    } else if (this.postureError > RECOVERABLE_ERROR && this.limit !== 'none') {
++      const dominant = this.dominantLimit();
++      this.observeLoss('posture-error', SEPARATION[dominant], dominant);
++      this.separate(SEPARATION[dominant]);
++    }
++  }
++
++  private observeContact(h: number, board: BoardBody, demandX: number, demandY: number, demandZ: number): void {
++    this.contactSubsteps++;
++    this.contactElapsed += h;
++    const s = this.contactLast;
++    s.step = this.contactStep; s.substep = this.contactSubsteps; s.seconds = h; s.elapsedStepSeconds = this.contactElapsed;
++    s.phase = this.phase; s.phaseTime = this.phaseTime; s.phaseDuration = this.phaseDuration; s.popUpTime = this.popUpTime;
++    s.feasible = this.feasible; s.inContact = this.inContact; s.flightTime = this.flightTime; s.postureError = this.postureError;
++    s.limit = this.limit;
++    s.recentFlight = this.limitTime.flight; s.recentTip = this.limitTime.tip;
++    s.recentSlip = this.limitTime.slip; s.recentImpact = this.limitTime.impact;
++    s.legExtension = this.leg.extension; s.legRate = this.leg.rate; s.legRest = this.leg.rest;
++    s.demandX = demandX; s.demandY = demandY; s.demandZ = demandZ;
++    s.projectedX = this.projected.x; s.projectedY = this.projected.y; s.projectedZ = this.projected.z;
++    s.appliedX = this.impulse.x; s.appliedY = this.impulse.y; s.appliedZ = this.impulse.z;
++    s.peakNormalLoad = this.stepLoad; s.frontShare = this.contact.frontShare;
++    s.relativeVelocityX = this.velocity.x - board.velocity.x;
++    s.relativeVelocityY = this.velocity.y - board.velocity.y;
++    s.relativeVelocityZ = this.velocity.z - board.velocity.z;
++    s.supportXMin = this.support.xMin; s.supportXMax = this.support.xMax;
++    s.supportZMin = this.support.zMin; s.supportZMax = this.support.zMax;
++    s.copX = this.contact.centreOfPressure.x; s.copZ = this.contact.centreOfPressure.z;
++    if (!this.feasible && this.contactLimited++ === 0) Object.assign(this.contactFirstLimited, s);
++    if (!this.inContact && this.contactNonContact++ === 0) Object.assign(this.contactFirstNonContact, s);
++  }
++
++  private observeLoss(trigger: RiderContactLoss['trigger'], selectedCause: RiderSeparation, dominantLimit: RiderContactLoss['dominantLimit']): void {
++    if (this.contactLoss) return;
++    Object.assign(this.contactLossSample, this.contactLast);
++    this.contactLoss = { trigger, selectedCause, dominantLimit };
++  }
++
++  /** Copies bounded diagnostic records for the ordinary status/snapshot path; no state or water query is performed. */
++  readContactDiagnostics(): RiderContactDiagnostics {
++    return {
++      mount: this.contactMount, step: this.contactStep, substeps: this.contactSubsteps, elapsedStepSeconds: this.contactElapsed,
++      limitedSubsteps: this.contactLimited, nonContactSubsteps: this.contactNonContact,
++      maxFlightTime: MAX_FLIGHT, recoverableError: RECOVERABLE_ERROR,
++      last: this.contactSubsteps ? { ...this.contactLast } : null,
++      firstLimited: this.contactLimited ? { ...this.contactFirstLimited } : null,
++      firstNonContact: this.contactNonContact ? { ...this.contactFirstNonContact } : null,
++      loss: this.contactLoss ? { ...this.contactLoss, sample: { ...this.contactLossSample } } : null,
++      meanForceX: this.contact.force.x, meanForceY: this.contact.force.y, meanForceZ: this.contact.force.z,
++      peakNormalLoad: this.contact.load, landingPeak: this.popUpReport.landingPeak, landingFrontShare: this.popUpReport.frontShare,
++    };
+   }
+ 
+   /** The limit that bound the contact most in the recent past. */
+--- a/src/wave/SurfZoneRunner.ts
++++ b/src/wave/SurfZoneRunner.ts
+@@ -2,7 +2,7 @@
+ import { Vector3 } from 'three';
+ import { withPocketReflex } from '../game/pocketReflex';
+ import { RideAnalyzer, type Maneuver, type RideReport } from '../game/rideAnalysis';
+-import type { PopUpReport, RiderSeparation } from '../physics/AttachedRider';
++import type { PopUpReport, RiderContactDiagnostics, RiderSeparation } from '../physics/AttachedRider';
+ import { BoardBody } from '../physics/BoardBody';
+ import { PhysicalSurfWater } from '../physics/PhysicalSurfWater';
+ import { RideSession, type RideInput, type RiderPlacement } from '../physics/RideSession';
+@@ -220,6 +220,8 @@
+   ride?: {
+     phase: (typeof RIDER_PHASES)[number]; speed: number; boardSpeed: number; cue: boolean; popUp: PopUpReport;
+     separation?: RiderSeparation; resets: number; wave: WaveFrame; live?: Maneuver; report?: RideReport & { id: number };
++    /** Diagnostic-only contact records; descriptive, never a physics input or HUD field. */
++    contactDiagnostics?: RiderContactDiagnostics;
+     /** The rider's balance reserve, 0–1 (0 once fallen). */
+     balance: number;
+     /** Standing, the body's bank on its ankles, rad, toward the board's +x (its left); 0 otherwise (the dev autopilot's flow). */
+@@ -802,6 +804,7 @@
+         boardSpeed: this.session.board.velocity.length(),
+         cue: this.cue,
+         popUp: { ...this.session.rider.popUpReport },
++        contactDiagnostics: this.session.rider.readContactDiagnostics(),
+         separation: this.session.separation,
+         resets: this.rideResets,
+         wave: { ...(this.wave ?? this.gauge!.update(this.water, this.session.board.centerOfMass, this.session.board.velocity, 0, this.peelAngle)) },

@@ -1,0 +1,4 @@
+The first portable-verifier preparation invocation exited 1 with:
+ValueError: Actual capture pin mismatch: report.json
+
+The original capture report lists artifact/sidecar pins, not its own JSON file as an artifact. The final verifier checks report bytes through the archive's stored/decoded manifest pins and checks selected media, NDJSON and word files through the original capture inventory. This preparation correction changes no source, resources, original evidence or capture conclusions. V5 remains an unsuccessful native invocation.

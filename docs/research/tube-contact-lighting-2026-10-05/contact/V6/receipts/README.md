@@ -1,0 +1,3 @@
+# V6 contact replay capture repair
+
+V5 reproduced the observed first pop-up at step1300 with matching initial body/config/time, but its borrowed complete-word snapshot helper rejected the new first-pop-up checkpoint label before landing was observed. Its unsuccessful outputs are preserved. V6 changes only the helper’s four allowed checkpoint labels to initial/first-pop-up/first-landing/terminal. Capture logic, controls, diagnostics, application source, built49assets and rebuilt diagnostic module are reused unchanged. Surface revision differs from V4 by one startup epoch; exact whole simulation history is not claimed. Both human play ports4312/4313 remain protected. The native owner remains first-only and finite.

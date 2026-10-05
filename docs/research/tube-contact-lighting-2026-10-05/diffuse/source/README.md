@@ -1,0 +1,13 @@
+# Diffuse Rich interior appearance trial
+
+This isolated source clones all 588 preparation inputs from retirement-boundary cap-prefix-v2. Only `src/scene/barrel/SweptBarrelMesh.ts` and its existing shader-contract test change. A compact replacement delta references the frozen parent source manifest; 586 inputs remain byte exact. The local `source/node_modules` link references the same installed project tree. The parent source itself had no node_modules symlink.
+
+Rich sheet transmission blends its original directional sky radiance into the existing diffuse up-sky irradiance by clamped inner weight. Ambient light, sheet absorption, weights, sheet-back factor and entry Fresnel remain. The inner throat uses mean-thickness transmitted diffuse fill and continuous sun slant absorption, with inner directional ENV mirrors and direct specular suppressed. Outside the inner weight the existing Rich response remains; Classic retains its shader. Old inner refraction arithmetic remains for the minimal trial, so no GPU savings are claimed. Geometry, normals, attributes, coverage, stencil, roughness, body, crest scatter and lip glow remain unchanged. There are no arbitrary brightness constants.
+
+The material change has no automatic C-only flag: it would affect RAW Rich interior profiles if generally adopted. This trial is isolated to the frozen C provider build. No source changes were applied to the repository or human play builds.
+
+Strict TypeScript and the focused SweptBarrelMesh suite passed with no unexpected failures. Existing Rich/Classic shader-contract expectations were adjusted to the new intended contribution and ordering. This checks assembled source strings and mesh behavior; it does not prove GPU shader compilation or appearance.
+
+Root owns the fresh app build, complete static composition, seal and first native capture. The finite capture must preserve both human servers at 4312 and 4313 and retain the same prescribed state, camera, selection and moving geometry policy as the completed V2 capture. Compare actual geometry/contact/exported words before interpreting pixels, then assess the dark crease and sky curtain separately. Brightened flatter fill, the mesh corner, body/caustic differences or another shadow can remain. No appearance, tube entrance, rider passage, performance or production adoption has been accepted.
+
+`readiness.json`, `source-delta.json`, the two exact patches and CPU receipts freeze this source preparation. `python3 verify.py` verifies all effective parent/delta inputs and payloads without resources. No build or native run has been performed by preparation.
