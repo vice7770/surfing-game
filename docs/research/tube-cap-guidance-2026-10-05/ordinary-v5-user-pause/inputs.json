@@ -1,0 +1,381 @@
+{
+  "schema": "guided-ordinary-native-inputs/v5",
+  "repository": "/Users/regina/Desktop/Projects/surfing-game",
+  "buildId": "tube-guided-passive-telemetry-20261005",
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "pilot": {
+    "style": "tube",
+    "waitOutside": 5,
+    "rise": 1,
+    "lineDegrees": 60,
+    "giveUp": 30,
+    "stall": false
+  },
+  "limits": {
+    "steps": 3000,
+    "wallSeconds": 690,
+    "nativeSeconds": 640,
+    "ownerSeconds": 653,
+    "detectorMilliseconds": 120000,
+    "pngCount": 7,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 88080384,
+    "loftBytesEach": 6291456,
+    "loftBytesTotal": 44040192,
+    "traceBytes": 134217728,
+    "reportBytes": 2097152,
+    "observationSeconds": 620,
+    "totalSeconds": 690,
+    "cleanupSeconds": 20
+  },
+  "criteria": {
+    "minimumBothRowMouthGap": 1.2,
+    "continuousContainedSeconds": 1,
+    "relativeProgressMetres": 3,
+    "standingAfterExitSeconds": 1,
+    "fixedStepSeconds": 0.016666666666666666,
+    "singleAttempt": true,
+    "requireObservedStandingOutsideBeforeEntry": true,
+    "requireObservedPartialBeforeEntry": true
+  },
+  "protectedPorts": [
+    4312,
+    4313,
+    4314,
+    4315,
+    4316
+  ],
+  "protected4315Provenance": {
+    "pid": 87796,
+    "rootSession": 64713
+  },
+  "ownedPorts": [
+    4301,
+    9711
+  ],
+  "productionSources": [
+    "src/dev/Autopilot.ts",
+    "src/dev/TubePilot.ts",
+    "src/wave/SurfZoneRunner.ts",
+    "src/game/PhysicalMode.ts",
+    "src/game/SurfZoneHost.ts",
+    "src/main.ts",
+    "src/wave/barrel/tubeApproach.ts",
+    "src/wave/barrel/sweptContact.ts",
+    "src/wave/barrel/boundedCProfile.ts",
+    "src/wave/barrel/ProfileLibrary.ts",
+    "src/wave/barrel/sweptLoft.ts",
+    "src/wave/barrel/lipSheet.ts",
+    "src/scene/barrel/SweptBarrelMesh.ts",
+    "src/game/snapshotTrack.ts",
+    "src/scene/barrel/barrelMaskGlsl.ts"
+  ],
+  "preparationOnly": true,
+  "resourcesStarted": false,
+  "rootExecutionPending": true,
+  "applicationBuildLog": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/application-build.log",
+    "bytes": 1328,
+    "sha256": "3030332b9efa18b8053ccef1d2ff50865187583a96290d0d99fbe040644294e5"
+  },
+  "priorFailurePreserved": true,
+  "visualWitnessPolicy": {
+    "maximumInterpolationLagSeconds": 0.016666766666666666,
+    "waterClockMustEqualWorker": true,
+    "displayedRenderPoints": 7,
+    "currentModelWitnesses": 14,
+    "unionWitnessCount": 21,
+    "currentPartSpheresReusedInSecondClassifier": true,
+    "normalInterpolationPreserved": true,
+    "renderedPhaseMustBeStandingForSequenceAcceptance": true
+  },
+  "priorCompletedV2Preserved": true,
+  "priorObservation": {
+    "trialDirectory": "/private/tmp/tube-guided-ordinary-v3-native-20261005",
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    "trace": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 18438314,
+      "sha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c"
+    },
+    "rootPostFailurePins": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/root-post-failure-pins.json",
+      "bytes": 43646,
+      "sha256": "6e4a7ca025d044f50d426f3127ad7c3b15535603be57a2c03bd45809bbef03d0"
+    },
+    "copiedHistoricalOutputs": false,
+    "observedSteps": 1525,
+    "observedStandingSamples": 292,
+    "observedGuides": 0,
+    "observedTerminal": "640s native deadline; no extension or retry",
+    "complete": false,
+    "acceptedModelWitnessRide": false,
+    "scope": "Preserved failed V3 run and bounded recorded prefix; no completed ride or retrospective telemetry diagnosis."
+  },
+  "candidateChange": {
+    "scope": "Same exact V4 root-built application and diagnostic controller; only owner anchoring/protected-preview/provenance schema changes in scratch recipe.",
+    "owner": "Root production decision; source-only recipe does not install any production change.",
+    "independentGeometryAndAcceptanceUnchanged": true,
+    "observerClassifierOptimizationsApplied": false,
+    "visualChangesBoundByFreshBuild": false,
+    "tubeSuccessClaim": false,
+    "visualChangesBoundByReusedExactV4Build": true,
+    "freshBuildClaimByV5": false,
+    "driverControlsUnchangedFromV4": true,
+    "sameExactV4ControllerModuleReused": true
+  },
+  "rootBuildAuthority": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-build-authority.json",
+    "bytes": 11447,
+    "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc"
+  },
+  "milestonePolicy": {
+    "labels": [
+      "initial",
+      "first-standing",
+      "first-guide",
+      "first-partial-entry",
+      "body-entry",
+      "intentional-exit",
+      "terminal"
+    ],
+    "selection": "First actual event only; no quality/seed/camera search",
+    "firstStanding": "First current ride.phase standing, irrespective of displayed landing lag",
+    "firstGuide": "First current same-step tubeApproach present",
+    "firstPartialEntry": "First independent current+displayed union classification partial",
+    "entryExit": "Existing independent sequence entry/exit only",
+    "terminalAtFiniteObservationCeiling": true,
+    "terminalUnprovedOnHardDeadline": true
+  },
+  "telemetryPolicy": {
+    "source": "ride.tubeApproachObservation from existing SAME approachNear invocation",
+    "schema": "tube-approach-observation/v1",
+    "passiveOnly": true,
+    "noExtraRouteQueries": true,
+    "controllerReadsTelemetry": false,
+    "detachedScalarOutputOnly": true,
+    "sameSeaTimeAsBodyRequiredOnStanding": true,
+    "classificationDoesNotFeedControls": true,
+    "counterfactualQueries": false
+  },
+  "ownerObservationPolicy": {
+    "osReadSeconds": 2,
+    "periodicIdentitySeconds": 5,
+    "maximumRecordedTimeoutNotes": 16,
+    "requiredReadAttempts": 3,
+    "periodicTimeoutOutcome": "Observation only; same native and HTTP continue, no retry/restart.",
+    "requiredIdentityOutcome": "Required preflight/initial/cleanup identity; no signal against unverified group.",
+    "anchorPolicy": "Exact live actual Popen leader bootstrap; immutable original leader if present, otherwise exact immediately previous accepted survivor BEFORE updates. Fresh required read and latest accepted state for each signal; consume only after actual signal."
+  },
+  "protectedIdentityReference": {
+    "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+    "bytes": 2735,
+    "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+  },
+  "priorV3Preserved": true,
+  "protected4316Provenance": {
+    "pid": 38617,
+    "rootSession": 59708,
+    "processReceipt": {
+      "file": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+      "bytes": 526,
+      "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85"
+    }
+  },
+  "rootCurrentApplicationReceipt": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+    "bytes": 132778,
+    "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+  },
+  "immutableV4Application": {
+    "directory": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/dist",
+    "build": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+      "bytes": 43568,
+      "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+    },
+    "sourceFreeze": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+      "bytes": 19549,
+      "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+    },
+    "seal": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+      "bytes": 9774,
+      "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+    },
+    "diagnosticBuild": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.json",
+      "bytes": 16809,
+      "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611"
+    }
+  },
+  "diagnosticBuildLog": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.log",
+    "bytes": 282,
+    "sha256": "2478068a25a69eb395dbfb6bd33ada5b70a6caba996f9ed56f79b532040c6810"
+  },
+  "borrowedHelperPins": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    }
+  ],
+  "ownerPolicyAmendment": {
+    "moduleSource": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    "moduleStaticFreeze": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+      "bytes": 2410,
+      "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0"
+    },
+    "rootPureTests": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+      "bytes": 511,
+      "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32"
+    },
+    "rootPureTestLog": {
+      "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
+      "bytes": 3695,
+      "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7"
+    },
+    "copiedModule": {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owned_group_anchor.py",
+      "bytes": 15501,
+      "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+    },
+    "rootPureFixtureCount": 20,
+    "rootPureASTChecks": 2,
+    "integrationReviewPending": false,
+    "integrationChecksExecuted": true,
+    "rootReviewAndChecksRequiredBeforePreparation": true,
+    "scope": "Exact root-tested pure module; original75-pin/3AST/6JS recipe checks and subsequent catch-only native syntax check complete. Actual OS/native evidence remains pending."
+  },
+  "executionPendingOwnerPolicyReview": false,
+  "buildReusePolicy": {
+    "normalApplication": "Exact immutable V4 prepared dist; existing root actual terminal0 receipt reused.",
+    "diagnosticModule": "Exact existing V4 compiled module reused; no new diagnostic compilation.",
+    "freshBuildOrCompilationPerformedByV5": false,
+    "historicalOutputsCopied": false
+  },
+  "priorV4Failure": {
+    "directory": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005",
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/owner.json",
+      "bytes": 17385,
+      "sha256": "38197cc967caa3800bcada6c24210b4483f60d80591ee01a73177ca47402aa59"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/candidate-first/report.json",
+      "bytes": 7256,
+      "sha256": "c61dc548c52838fc1ab8739cad55c109110960ad04f98047a71bb97cb33b870b"
+    },
+    "launcher": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/launcher.json",
+      "bytes": 2362,
+      "sha256": "e1b974c46ad87fa75c198b1d56587bb6e29ea360175997422f3f96f4db78ffae"
+    },
+    "nativeLog": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "rootPostFailurePinsAndClosure": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+      "bytes": 49694,
+      "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+    },
+    "complete": false,
+    "ownerFirstFailure": "AssertionError: Owned PID identity changed",
+    "nativeFirstFailure": null,
+    "observedReportSteps": 0,
+    "observedPngCount": 0,
+    "causeQualification": "Legacy owner assertion is recorded; exact underlying native/child identity cause remains unproved. Root later closure is independent evidence, not retroactive owner success.",
+    "copiedHistoricalOutputs": false
+  },
+  "completedOwnedReadExpiryPolicy": {
+    "exception": "OwnedReadExpired",
+    "strictReadDurationSeconds": 2,
+    "strictCompletedReadAgeSeconds": 2,
+    "classificationBeforePureObservation": true,
+    "stateRefreshOnExpiry": false,
+    "periodicOutcome": "Observation only; exact same process and HTTP continue.",
+    "requiredOutcome": "At most3 retries inside original deadline; no signal until successful fresh anchored read.",
+    "genuineAnchorRejectedCaughtAsTimeout": false,
+    "timingNoteLimit": 16,
+    "rowEvidencePerNote": 16,
+    "commandPrefixCharacters": 2048,
+    "commandHashCoversFullString": true,
+    "acceptedIdentityClaimFromExpiredRows": false,
+    "rationale": "Root reported actual sealed identity run failed on completed2.059041958s periodic ps read with unchanged live leader; that failed recipe is preserved separately."
+  },
+  "startupEvidenceAmendment": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-startup-evidence-amendment.json",
+    "bytes": 1649,
+    "sha256": "a9d5beac1147411466981b65df9ea0e024eee0de022ed156ca85b8d544b7a69a"
+  }
+}

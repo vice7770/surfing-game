@@ -1,0 +1,74 @@
+{
+  "schema": "ordinary-startup-failure-state-source-proposal/v1",
+  "sourceOnly": true,
+  "rootReviewChecksApplyAndFreezePending": true,
+  "executedImportsChecksTestsPreparationBuildsNativeOSPortsGit": false,
+  "originalsWritten": false,
+  "exactBaseNative": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+    "bytes": 16930,
+    "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1"
+  },
+  "baseFailureStateLine": 98,
+  "unchangedHeldRideWaitLine": 64,
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+      "bytes": 16930,
+      "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/main.ts",
+      "bytes": 56743,
+      "sha256": "bc228b0d71da661e1758937129e384a3798dae7695f8b1bc0c30d43d4be3fb1d"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/game/PhysicalMode.ts",
+      "bytes": 41940,
+      "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/ui/App.ts",
+      "bytes": 54971,
+      "sha256": "de453426e165d82706bc285e3c73c64b7326adb3f3494ab735a5630efa7770e1"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveLab/WaveLab.ts",
+      "bytes": 6352,
+      "sha256": "a0afcaf01d7a7205117188e2d5a816da3573bab3baf27f105f61c9cd4536f6c3"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/game/waveLab/labClock.ts",
+      "bytes": 1444,
+      "sha256": "309311231783007de9c44f1e7ce6fc0659bbe8e4b6fd24543409a3b873f58984"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/index.html",
+      "bytes": 1442,
+      "sha256": "60675d1b7e6f739633646d53fd74d07f90d913151f5adb2a65b71fc786372392"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    }
+  ],
+  "files": [
+    {
+      "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/failure-state-expression.js",
+      "bytes": 1958,
+      "sha256": "10cf5080964a440ce6131cee89cfa5deae7200a771937796bcbe8550f63c9eeb"
+    },
+    {
+      "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/native-catch.patch",
+      "bytes": 3148,
+      "sha256": "472c9375dbf24709972d8c5ac2bef2ebf8305fad3893f4a4b6b1773af4c16183"
+    },
+    {
+      "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/README.md",
+      "bytes": 3696,
+      "sha256": "1936af9cc15816f457a571deaeef682f5989111dff25c789766110165c15bfea"
+    }
+  ],
+  "changeScope": "One catch failureState expression only; same evaluation/catch/timer/close/save path, fixed controls/physics/acceptance/deadlines. No new runtime success claim."
+}

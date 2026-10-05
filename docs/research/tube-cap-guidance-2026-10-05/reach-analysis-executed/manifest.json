@@ -1,0 +1,113 @@
+{
+  "schema": "tube-cap-reach-analysis-executed-archive/v1",
+  "originalScratch": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005",
+  "files": [
+    {
+      "original": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analyze.mjs",
+      "logical": "analyze.mjs",
+      "bytes": 108096,
+      "sha256": "d7fb73d78e0cc7508d2260b7d6896b926c53b6e3795a2b0d25692067f6ed98fc",
+      "storage": {
+        "path": "analyze.mjs.gz",
+        "compression": "gzip",
+        "encoded": {
+          "bytes": 31335,
+          "sha256": "ad421e8ab927f3f5f90641280ab9a9be8357827a9239f22568e2685c6e736396"
+        }
+      }
+    },
+    {
+      "original": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/reach-decomposition.json",
+      "logical": "reach-decomposition.json",
+      "bytes": 534944,
+      "sha256": "a196e1c272305a9aae5d1b5e6c3f36edb764d9fc0f5d8085cb753b4c8a469e08",
+      "storage": {
+        "path": "reach-decomposition.json.gz",
+        "compression": "gzip",
+        "encoded": {
+          "bytes": 57748,
+          "sha256": "23c45135e14a7cf3df67dbc38689eb28d90725f8269348b8b28ee225c7a0e645"
+        }
+      }
+    },
+    {
+      "original": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/root-analysis.log",
+      "logical": "root-analysis.log",
+      "bytes": 281,
+      "sha256": "99ad884bf1071b16b5614b46d7733c8aeb0ecdccf9c2521d055d686582720894",
+      "storage": {
+        "path": "root-analysis.log"
+      }
+    },
+    {
+      "original": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/root-rolldown-bundle.log",
+      "logical": "root-rolldown-bundle.log",
+      "bytes": 88,
+      "sha256": "a024eb9ab6805f11e2d6e3e9a3e1eea0a40fa05fbbf1e5082e05ec1734c80576",
+      "storage": {
+        "path": "root-rolldown-bundle.log"
+      }
+    },
+    {
+      "original": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/root-bundle.log",
+      "logical": "root-bundle.log",
+      "bytes": 104,
+      "sha256": "d418ec373a9437232d10707ad5eb69863d9b86909c806aac1f8eefc0c8c2ae9e",
+      "storage": {
+        "path": "failed-suggested-esbuild/root-bundle.log"
+      }
+    },
+    {
+      "original": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/root-execution.json",
+      "logical": "root-execution.json",
+      "bytes": 2656,
+      "sha256": "fabfb17e8df99d091904e507f89c095c80349d873f382234cc169d8be8f18a25",
+      "storage": {
+        "path": "root-execution.json"
+      }
+    }
+  ],
+  "sourceArchive": {
+    "path": "../reach-analysis-proposal/manifest.json",
+    "bytes": 20522,
+    "sha256": "702af27ca8ba2fcc3711acf7ad487a9c483b874e9b5e22287c6db1664d58427e",
+    "exactPriorSourcePayloadsReused": true
+  },
+  "archiveFiles": [
+    {
+      "logical": "README.md",
+      "bytes": 3651,
+      "sha256": "bd3fb68334ba5cd2a0282401953e28bbdbef7a2900dc1f8cf0c4dde907651ded",
+      "storage": {
+        "path": "README.md"
+      }
+    },
+    {
+      "logical": "verify.py",
+      "bytes": 2951,
+      "sha256": "416e8eca03388892072af4596bf9369d5b54d3d37e8c5b62a276bb7c460531c5",
+      "storage": {
+        "path": "verify.py"
+      }
+    }
+  ],
+  "actualRootExecution": {
+    "complete": true,
+    "observations": 34,
+    "fixedGridPoints": 33,
+    "exactPublishedHoldPoints": 1,
+    "bundleExitCode": 0,
+    "offlineExitCode": 0,
+    "firstSuggestedCompilerExitCode": 127
+  },
+  "pausedGoalCheckpoint": true,
+  "terminalSmoothingProposalCreated": false,
+  "terminalSmoothingDirectoryAbsentAtPause": true,
+  "newNumericalOrNativeExecutionByThisArchive": false,
+  "productionAdoptedByThisArchive": false,
+  "limits": [
+    "Finite equal-span sample evidence only; no derivative/global C1/native/body/passage/FPS proof.",
+    "Original unsuccessful compiler attempt and hypothetical failure-prefix limitation remain explicit.",
+    "No terminal smoothing candidate or result exists at the pause checkpoint."
+  ]
+}

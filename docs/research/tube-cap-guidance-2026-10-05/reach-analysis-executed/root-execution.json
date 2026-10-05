@@ -1,0 +1,73 @@
+{
+  "schema": "root-cap-reach-hold-execution/v1",
+  "complete": true,
+  "suggestedEsbuildAttempt": {
+    "toolChunk": "4de25c",
+    "exitCode": 127,
+    "qualification": "Suggested compiler absent; no bundle or numerical execution from this attempt. Exact log preserved."
+  },
+  "actualBundle": {
+    "toolChunk": "8ca12a",
+    "exitCode": 0,
+    "compiler": "rolldown",
+    "elapsedSeconds": 0.190677625
+  },
+  "actualOfflineExecution": {
+    "toolChunk": "0f6345",
+    "exitCode": 0,
+    "elapsedSeconds": 0.189470917
+  },
+  "observations": 34,
+  "fixedGridPoints": 33,
+  "exactPublishedHoldPoints": 1,
+  "inputAndProviderWordChecksActuallyPassed": true,
+  "productionChanged": false,
+  "nativeBodyOrDerivativeContinuityClaim": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/readiness.json",
+      "bytes": 7747,
+      "sha256": "5e8c47a5c0e730ce733b43d5527e991b6490d32776fbe543c11a8340965e264a"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/input-pins.json",
+      "bytes": 9508,
+      "sha256": "265dade8bfe33a2351300c987e6541fe7cfa0cac9c0f8ffb5a7541ab77449cf4"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analyze.ts",
+      "bytes": 15034,
+      "sha256": "28a673fc2560b184a5947370c01345675bab072a31aebd40d5e04e0ac5c17025"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analysis.patch",
+      "bytes": 37892,
+      "sha256": "a8848cb2b47153beb6fb1424a55444daf7d1f5613ae861a9a5b42caabee00e99"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/analyze.mjs",
+      "bytes": 108096,
+      "sha256": "d7fb73d78e0cc7508d2260b7d6896b926c53b6e3795a2b0d25692067f6ed98fc"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/root-bundle.log",
+      "bytes": 104,
+      "sha256": "d418ec373a9437232d10707ad5eb69863d9b86909c806aac1f8eefc0c8c2ae9e"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/root-rolldown-bundle.log",
+      "bytes": 88,
+      "sha256": "a024eb9ab6805f11e2d6e3e9a3e1eea0a40fa05fbbf1e5082e05ec1734c80576"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/root-analysis.log",
+      "bytes": 281,
+      "sha256": "99ad884bf1071b16b5614b46d7733c8aeb0ecdccf9c2521d055d686582720894"
+    },
+    {
+      "file": "/private/tmp/tube-cap-reach-hold-analysis-proposal-20261005/reach-decomposition.json",
+      "bytes": 534944,
+      "sha256": "a196e1c272305a9aae5d1b5e6c3f36edb764d9fc0f5d8085cb753b4c8a469e08"
+    }
+  ]
+}

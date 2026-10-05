@@ -1,0 +1,26 @@
+{
+  "schema": "root-ordinary-v5-user-pause-interruption/v1",
+  "userExplicitlyRequestedStop": true,
+  "observedAtUTC": "2026-10-05T17:29:35.118038+00:00",
+  "actualFreshIdentities": {
+    "56060": {
+      "pid": 56060,
+      "ppid": 87956,
+      "pgid": 56060,
+      "started": "Mon Oct 5 18:27:54 2026",
+      "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/run.py"
+    },
+    "56073": {
+      "pid": 56073,
+      "ppid": 56060,
+      "pgid": 56073,
+      "started": "Mon Oct 5 18:27:55 2026",
+      "command": "/opt/homebrew/bin/node /private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs --run=true --url=http://127.0.0.1:4301/?diagnostics --out=/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/candidate-first"
+    }
+  },
+  "readSeconds": 0.0710812920005992,
+  "signal": "SIGINT",
+  "signalledPID": 56060,
+  "nativeGroupNotSignalledByRoot": true,
+  "qualification": "Interrupt exact Python owner so its existing same-Popen fresh-group-identity cleanup runs. No protected preview signalled. Trial is user-interrupted, not a failed geometric result."
+}

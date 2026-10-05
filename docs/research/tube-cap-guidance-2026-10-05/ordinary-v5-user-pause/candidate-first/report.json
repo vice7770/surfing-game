@@ -1,0 +1,233 @@
+{
+  "schema": "guided-ordinary-native/v5",
+  "complete": false,
+  "firstFailure": null,
+  "sealSha256": "d7757e3d7231b6d5a5877a31bd307dc51b9279047f22211e093417b7e7d5a055",
+  "applicationBuild": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/build.json",
+    "bytes": 47501,
+    "sha256": "7e873e6ecfd0d1cabdb570b8a8f242e58e9dd4451fbc01852e258ad813b437c5"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/source-freeze.json",
+    "bytes": 20926,
+    "sha256": "4c9576af74a3bb770a617a293eda692d82b959ef730e1280209c13aa783f298e"
+  },
+  "diagnosticBuild": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/diagnostic-build.json",
+    "bytes": 17639,
+    "sha256": "225b8a10da508c9eb24e2b31e78e9f2e42312d90aae94b9b0906c66fcf819034"
+  },
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "pilot": {
+    "style": "tube",
+    "waitOutside": 5,
+    "rise": 1,
+    "lineDegrees": 60,
+    "giveUp": 30,
+    "stall": false
+  },
+  "limits": {
+    "steps": 3000,
+    "wallSeconds": 690,
+    "nativeSeconds": 640,
+    "ownerSeconds": 653,
+    "detectorMilliseconds": 120000,
+    "pngCount": 7,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 88080384,
+    "loftBytesEach": 6291456,
+    "loftBytesTotal": 44040192,
+    "traceBytes": 134217728,
+    "reportBytes": 2097152,
+    "observationSeconds": 620,
+    "totalSeconds": 690,
+    "cleanupSeconds": 20
+  },
+  "criteria": {
+    "minimumBothRowMouthGap": 1.2,
+    "continuousContainedSeconds": 1,
+    "relativeProgressMetres": 3,
+    "standingAfterExitSeconds": 1,
+    "fixedStepSeconds": 0.016666666666666666,
+    "singleAttempt": true,
+    "requireObservedStandingOutsideBeforeEntry": true,
+    "requireObservedPartialBeforeEntry": true
+  },
+  "priorObservation": {
+    "trialDirectory": "/private/tmp/tube-guided-ordinary-v3-native-20261005",
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    "trace": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 18438314,
+      "sha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c"
+    },
+    "rootPostFailurePins": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/root-post-failure-pins.json",
+      "bytes": 43646,
+      "sha256": "6e4a7ca025d044f50d426f3127ad7c3b15535603be57a2c03bd45809bbef03d0"
+    },
+    "copiedHistoricalOutputs": false,
+    "observedSteps": 1525,
+    "observedStandingSamples": 292,
+    "observedGuides": 0,
+    "observedTerminal": "640s native deadline; no extension or retry",
+    "complete": false,
+    "acceptedModelWitnessRide": false,
+    "scope": "Preserved failed V3 run and bounded recorded prefix; no completed ride or retrospective telemetry diagnosis."
+  },
+  "priorV4Failure": {
+    "directory": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005",
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/owner.json",
+      "bytes": 17385,
+      "sha256": "38197cc967caa3800bcada6c24210b4483f60d80591ee01a73177ca47402aa59"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/candidate-first/report.json",
+      "bytes": 7256,
+      "sha256": "c61dc548c52838fc1ab8739cad55c109110960ad04f98047a71bb97cb33b870b"
+    },
+    "launcher": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/launcher.json",
+      "bytes": 2362,
+      "sha256": "e1b974c46ad87fa75c198b1d56587bb6e29ea360175997422f3f96f4db78ffae"
+    },
+    "nativeLog": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "rootPostFailurePinsAndClosure": {
+      "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+      "bytes": 49694,
+      "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+    },
+    "complete": false,
+    "ownerFirstFailure": "AssertionError: Owned PID identity changed",
+    "nativeFirstFailure": null,
+    "observedReportSteps": 0,
+    "observedPngCount": 0,
+    "causeQualification": "Legacy owner assertion is recorded; exact underlying native/child identity cause remains unproved. Root later closure is independent evidence, not retroactive owner success.",
+    "copiedHistoricalOutputs": false
+  },
+  "candidateChange": {
+    "scope": "Same exact V4 root-built application and diagnostic controller; only owner anchoring/protected-preview/provenance schema changes in scratch recipe.",
+    "owner": "Root production decision; source-only recipe does not install any production change.",
+    "independentGeometryAndAcceptanceUnchanged": true,
+    "observerClassifierOptimizationsApplied": false,
+    "visualChangesBoundByFreshBuild": false,
+    "tubeSuccessClaim": false,
+    "visualChangesBoundByReusedExactV4Build": true,
+    "freshBuildClaimByV5": false,
+    "driverControlsUnchangedFromV4": true,
+    "sameExactV4ControllerModuleReused": true
+  },
+  "rootCurrentApplicationReceipt": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+    "bytes": 132778,
+    "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+  },
+  "buildReusePolicy": {
+    "normalApplication": "Exact immutable V4 prepared dist; existing root actual terminal0 receipt reused.",
+    "diagnosticModule": "Exact existing V4 compiled module reused; no new diagnostic compilation.",
+    "freshBuildOrCompilationPerformedByV5": false,
+    "historicalOutputsCopied": false
+  },
+  "policy": {
+    "ordinaryPublicInputs": true,
+    "publicMenuStartup": true,
+    "diagnosticSeedRestart": true,
+    "normalMenuSeedReachabilityClaim": false,
+    "noPlacement": true,
+    "noRetry": true,
+    "noPilotGo": true,
+    "noPrivateCueClock": true,
+    "noProneSteerZeroOverlay": true,
+    "noPostureCompressionTrimOverlay": true,
+    "tubeGuideForwarded": true,
+    "normalFollowerOnly": true,
+    "singleAttempt": true,
+    "noSeedOrCameraSearch": true,
+    "passiveSameQueryApproachTelemetry": true,
+    "telemetryNeverFeedsControl": true,
+    "firstEventMilestonesOnly": true,
+    "observerClassifierUnoptimized": true,
+    "ordinaryWaterFallbackOnlyUndefinedOutsideAllIndexedCrossings": true,
+    "ordinaryWaterWholeRadiusFootprintRawNodeBound": true,
+    "cavityStillRequiresDefinedLoftAir": true,
+    "authoredSnapshotTrackDelayPreserved": true,
+    "maximumVisualInterpolationLagSeconds": 0.016666766666666666,
+    "displayedPointsAdditionallyClassified": true,
+    "uniqueAcceptanceWitnessCount": 21
+  },
+  "menuSeedReachability": {
+    "evaluated": false,
+    "reason": "One predeclared seed6238 public diagnostic restart after ordinary menu/HUD startup; no menu-seed trajectory search or actor placement."
+  },
+  "phaseMilestones": {},
+  "startupTimings": {},
+  "stepCount": 0,
+  "traceBytes": 0,
+  "checkpoints": [],
+  "artifacts": [],
+  "browserErrors": [],
+  "pngCount": 0,
+  "pngBytes": 0,
+  "loftBytes": 0,
+  "sequence": null,
+  "stop": null,
+  "limitations": [
+    "Acceptance covers seven current published render witnesses, seven current equivalent-volume physics spheres, and seven actual delayed displayed points against current indexed drawing geometry. The second classifier repeats the current spheres; the unique union is21. It does not enclose complete skin or limb segments.",
+    "Connected mesh component and unambiguous columns do not prove connected air volume, shader displacement, rendered visibility, or worker contact-force correctness.",
+    "Cues are recorded controller inputs; their bodyInCavity/fit/progress values are not independent acceptance.",
+    "Fixed-sigma mouth transport and mature1.20m pair are independent geometry observations; no finite full-board swept route proof or FPS/reference-quality acceptance.",
+    "Outside indexed coverage only, the normal host bilinear/carved water field is bounded over each full radius footprint by current raw snapshot nodes. This does not certify the distinct Rich cubic/displaced shader surface or skin/limb segments.",
+    "SnapshotTrack preserves its authored up-to-one-step delay. Displayed points use recorded visualPoseTime; current part spheres and drawn loft use worker seaTime. This conservative joint check is not a historical-water or post-inertia skin reconstruction."
+  ]
+}

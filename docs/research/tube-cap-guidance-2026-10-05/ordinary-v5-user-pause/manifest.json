@@ -1,0 +1,2559 @@
+{
+  "schema": "ordinary-v5-user-pause-administrative-archive/v1",
+  "archivedAtUTC": "2026-10-05T17:33:00.821743+00:00",
+  "goalRemainsPaused": true,
+  "scope": "Exact administrative checkpoint after explicit user interruption; no geometric/startup failure, deadlock, visual, tube-quality or accepted ride result.",
+  "actualInterruption": {
+    "receipt": "root-user-pause-interruption.json",
+    "userExplicitlyRequestedStop": true,
+    "pythonOwnerPID": 56060,
+    "nativeLeaderAndGroup": 56073,
+    "signalToOwner": "SIGINT",
+    "nativeGroupNotSignalledByRoot": true,
+    "toolSession": 38320,
+    "terminalChunk": "75e4e0",
+    "terminalExitCode": 1
+  },
+  "originalResults": {
+    "owner": "owner.json",
+    "ownerComplete": false,
+    "ownerFirstFailure": "KeyboardInterrupt: ",
+    "ownerElapsedSeconds": 101.64416766702197,
+    "nativeReport": "candidate-first/report.json",
+    "nativeComplete": false,
+    "nativeFirstFailure": null,
+    "savedDriverSteps": 0,
+    "savedPNGs": 0,
+    "savedPNGBytes": 0,
+    "traceBytes": 0,
+    "sequence": null,
+    "stop": null,
+    "terminalStartupStateRecorded": false,
+    "postExecutionPinsVerified": false,
+    "copiedAndLiveSourcePinsPostVerified": false,
+    "classification": "User-interrupted incomplete observation; no terminal diagnostic failure inferred."
+  },
+  "ownerCleanupHistoricalObservations": {
+    "cleanupFailures": [],
+    "groupIdentityAndAbsenceVerified": true,
+    "closedPorts": {
+      "4301": true,
+      "9711": true
+    },
+    "protectedPreserved": true,
+    "archiverOSReads": false
+  },
+  "independentLaterRootAudit": {
+    "receipt": "root-user-pause-closure.json",
+    "observedAtUTC": "2026-10-05T17:30:52.684227+00:00",
+    "sourcePinsVerified": 584,
+    "buildAssetPinsVerified": 49,
+    "sealedPinAssertions": 28,
+    "ownerAbsent": true,
+    "ownedGroupAbsent": true,
+    "ownedPortsClosed": true,
+    "allFivePreserved": true,
+    "noSignalsSentByThisAudit": true,
+    "qualification": "Later root audit does not change incomplete owner/native flags or create missing startup/trajectory/image evidence."
+  },
+  "actualSourceChecks": {
+    "earlierIntegrationReceipt": "root-integration-checks.json",
+    "earlierVerifiedUniquePins": 75,
+    "earlierPythonASTChecks": 3,
+    "earlierJavaScriptSyntaxChecks": 6,
+    "amendedNativeReceipt": "root-startup-state-checks.json",
+    "amendedNativeSyntaxExitCode": 0,
+    "runtimeOutcomeClaim": false
+  },
+  "actualPreparation": {
+    "receipt": "prepare-result.json",
+    "complete": true,
+    "copiedHistoricalApplicationAndDiagnosticModule": true,
+    "executedTestsBuildsOrDiagnosticCompilation": false,
+    "freshBuildClaim": false
+  },
+  "unstartedRejectedBaselineProposal": {
+    "directory": "/private/tmp/tube-idv5-rejected-baseline-evidence-proposal-20261005",
+    "absentAtArchiveRead": true,
+    "implementationCompleted": false,
+    "workStoppedAtUserPause": true
+  },
+  "originalCopies": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+        "bytes": 18656,
+        "sha256": "af65642586184083afc5f73aed973b9a3779f46e1fbebc8037b3650f28314d39"
+      },
+      "logical": "native.mjs",
+      "storage": {
+        "kind": "copy",
+        "file": "native.mjs",
+        "bytes": 18656,
+        "sha256": "af65642586184083afc5f73aed973b9a3779f46e1fbebc8037b3650f28314d39",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/inputs.json",
+        "bytes": 15060,
+        "sha256": "0decf9f718ce253af5c50a063a75a40814606db36959c7ea045d4f0012f93664"
+      },
+      "logical": "inputs.json",
+      "storage": {
+        "kind": "copy",
+        "file": "inputs.json",
+        "bytes": 15060,
+        "sha256": "0decf9f718ce253af5c50a063a75a40814606db36959c7ea045d4f0012f93664",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/recipe-source-freeze.json",
+        "bytes": 8296,
+        "sha256": "b715c10423219f68824d88484f7404424ad2a2dbc0eeca64f036e10d16cc267c"
+      },
+      "logical": "recipe-source-freeze.json",
+      "storage": {
+        "kind": "copy",
+        "file": "recipe-source-freeze.json",
+        "bytes": 8296,
+        "sha256": "b715c10423219f68824d88484f7404424ad2a2dbc0eeca64f036e10d16cc267c",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-startup-evidence-amendment.json",
+        "bytes": 1649,
+        "sha256": "a9d5beac1147411466981b65df9ea0e024eee0de022ed156ca85b8d544b7a69a"
+      },
+      "logical": "root-startup-evidence-amendment.json",
+      "storage": {
+        "kind": "copy",
+        "file": "root-startup-evidence-amendment.json",
+        "bytes": 1649,
+        "sha256": "a9d5beac1147411466981b65df9ea0e024eee0de022ed156ca85b8d544b7a69a",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-startup-state-checks.json",
+        "bytes": 1487,
+        "sha256": "df6d729f98f6c6b7f18516ce2a0f7a0d6efbd3a0d23215df598110471a45961b"
+      },
+      "logical": "root-startup-state-checks.json",
+      "storage": {
+        "kind": "copy",
+        "file": "root-startup-state-checks.json",
+        "bytes": 1487,
+        "sha256": "df6d729f98f6c6b7f18516ce2a0f7a0d6efbd3a0d23215df598110471a45961b",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-integration-checks.json",
+        "bytes": 1885,
+        "sha256": "c52ee15ccc0e36c3b0309b92bc0d18b1a2546dd3a39152029f0eb9638776823a"
+      },
+      "logical": "root-integration-checks.json",
+      "storage": {
+        "kind": "copy",
+        "file": "root-integration-checks.json",
+        "bytes": 1885,
+        "sha256": "c52ee15ccc0e36c3b0309b92bc0d18b1a2546dd3a39152029f0eb9638776823a",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/source-freeze.json",
+        "bytes": 20926,
+        "sha256": "4c9576af74a3bb770a617a293eda692d82b959ef730e1280209c13aa783f298e"
+      },
+      "logical": "source-freeze.json",
+      "storage": {
+        "kind": "copy",
+        "file": "source-freeze.json",
+        "bytes": 20926,
+        "sha256": "4c9576af74a3bb770a617a293eda692d82b959ef730e1280209c13aa783f298e",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/build.json",
+        "bytes": 47501,
+        "sha256": "7e873e6ecfd0d1cabdb570b8a8f242e58e9dd4451fbc01852e258ad813b437c5"
+      },
+      "logical": "build.json",
+      "storage": {
+        "kind": "copy",
+        "file": "build.json",
+        "bytes": 47501,
+        "sha256": "7e873e6ecfd0d1cabdb570b8a8f242e58e9dd4451fbc01852e258ad813b437c5",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/diagnostic-build.json",
+        "bytes": 17639,
+        "sha256": "225b8a10da508c9eb24e2b31e78e9f2e42312d90aae94b9b0906c66fcf819034"
+      },
+      "logical": "diagnostic-build.json",
+      "storage": {
+        "kind": "copy",
+        "file": "diagnostic-build.json",
+        "bytes": 17639,
+        "sha256": "225b8a10da508c9eb24e2b31e78e9f2e42312d90aae94b9b0906c66fcf819034",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/seal.json",
+        "bytes": 24520,
+        "sha256": "d7757e3d7231b6d5a5877a31bd307dc51b9279047f22211e093417b7e7d5a055"
+      },
+      "logical": "seal.json",
+      "storage": {
+        "kind": "copy",
+        "file": "seal.json",
+        "bytes": 24520,
+        "sha256": "d7757e3d7231b6d5a5877a31bd307dc51b9279047f22211e093417b7e7d5a055",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/prepare-result.json",
+        "bytes": 974,
+        "sha256": "98a92e3e46b809b33b9d45944a23550782afe95bdea704d59bab31beb1dbc326"
+      },
+      "logical": "prepare-result.json",
+      "storage": {
+        "kind": "copy",
+        "file": "prepare-result.json",
+        "bytes": 974,
+        "sha256": "98a92e3e46b809b33b9d45944a23550782afe95bdea704d59bab31beb1dbc326",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-prepare.log",
+        "bytes": 902,
+        "sha256": "0cdb700086550f9a4e0efcb8cc59905900b22c8e87a45b9f63df9d324e1b93d1"
+      },
+      "logical": "root-prepare.log",
+      "storage": {
+        "kind": "copy",
+        "file": "root-prepare.log",
+        "bytes": 902,
+        "sha256": "0cdb700086550f9a4e0efcb8cc59905900b22c8e87a45b9f63df9d324e1b93d1",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owner.json",
+        "bytes": 38576,
+        "sha256": "44fc61d1011d43312651d81fbca5966451e9cbb91cc4e18b7c51cfeb89b90909"
+      },
+      "logical": "owner.json",
+      "storage": {
+        "kind": "copy",
+        "file": "owner.json",
+        "bytes": 38576,
+        "sha256": "44fc61d1011d43312651d81fbca5966451e9cbb91cc4e18b7c51cfeb89b90909",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/launcher.json",
+        "bytes": 11916,
+        "sha256": "a91ba377fcb2b8bd5a68b40f97e28b616f764ca0c74f026ddb67ffe1a192bf1f"
+      },
+      "logical": "launcher.json",
+      "storage": {
+        "kind": "copy",
+        "file": "launcher.json",
+        "bytes": 11916,
+        "sha256": "a91ba377fcb2b8bd5a68b40f97e28b616f764ca0c74f026ddb67ffe1a192bf1f",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "logical": "native.log",
+      "storage": {
+        "kind": "copy",
+        "file": "native.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-owner-execution.log",
+        "bytes": 35278,
+        "sha256": "e0a348ccb011eeaaa3161eb2c6ba6fbf1e14a7ef208ba4d9bba92390d52adee2"
+      },
+      "logical": "root-owner-execution.log",
+      "storage": {
+        "kind": "copy",
+        "file": "root-owner-execution.log",
+        "bytes": 35278,
+        "sha256": "e0a348ccb011eeaaa3161eb2c6ba6fbf1e14a7ef208ba4d9bba92390d52adee2",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-user-pause-interruption.json",
+        "bytes": 1240,
+        "sha256": "ecd815b1e79d598948d8c70a3786e8139c019041d53d043ef449ad3b732abaef"
+      },
+      "logical": "root-user-pause-interruption.json",
+      "storage": {
+        "kind": "copy",
+        "file": "root-user-pause-interruption.json",
+        "bytes": 1240,
+        "sha256": "ecd815b1e79d598948d8c70a3786e8139c019041d53d043ef449ad3b732abaef",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-user-pause-closure.json",
+        "bytes": 3879,
+        "sha256": "5e50f8034bfb521ee2697cf546ffc5ad49c42af0ea119551270a0fd2b59a1a71"
+      },
+      "logical": "root-user-pause-closure.json",
+      "storage": {
+        "kind": "copy",
+        "file": "root-user-pause-closure.json",
+        "bytes": 3879,
+        "sha256": "5e50f8034bfb521ee2697cf546ffc5ad49c42af0ea119551270a0fd2b59a1a71",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/live.json",
+        "bytes": 8660,
+        "sha256": "89fa5e0fe10bd787f3cd5ad6c319e8a6ccc73b002b05b7e76b37e3cf25e98d9f"
+      },
+      "logical": "live.json",
+      "storage": {
+        "kind": "copy",
+        "file": "live.json",
+        "bytes": 8660,
+        "sha256": "89fa5e0fe10bd787f3cd5ad6c319e8a6ccc73b002b05b7e76b37e3cf25e98d9f",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/candidate-first/report.json",
+        "bytes": 9646,
+        "sha256": "5e55343c3c972a44fe6b19cb3ce54abf949ee96c894c7deacc677faba74386a7"
+      },
+      "logical": "candidate-first/report.json",
+      "storage": {
+        "kind": "copy",
+        "file": "candidate-first/report.json",
+        "bytes": 9646,
+        "sha256": "5e55343c3c972a44fe6b19cb3ce54abf949ee96c894c7deacc677faba74386a7",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/candidate-first/steps.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "logical": "candidate-first/steps.ndjson",
+      "storage": {
+        "kind": "copy",
+        "file": "candidate-first/steps.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/preservation.json",
+        "bytes": 1913,
+        "sha256": "1035294555b2d9990f534fe25f5e510f1e774b610000df5abd2e23a9e4306b23"
+      },
+      "logical": "before-root-startup-evidence/preservation.json",
+      "storage": {
+        "kind": "copy",
+        "file": "before-root-startup-evidence/preservation.json",
+        "bytes": 1913,
+        "sha256": "1035294555b2d9990f534fe25f5e510f1e774b610000df5abd2e23a9e4306b23",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/README.md",
+        "bytes": 3696,
+        "sha256": "1936af9cc15816f457a571deaeef682f5989111dff25c789766110165c15bfea"
+      },
+      "logical": "startup-state-proposal/README.md",
+      "storage": {
+        "kind": "copy",
+        "file": "startup-state-proposal/README.md",
+        "bytes": 3696,
+        "sha256": "1936af9cc15816f457a571deaeef682f5989111dff25c789766110165c15bfea",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/failure-state-expression.js",
+        "bytes": 1958,
+        "sha256": "10cf5080964a440ce6131cee89cfa5deae7200a771937796bcbe8550f63c9eeb"
+      },
+      "logical": "startup-state-proposal/failure-state-expression.js",
+      "storage": {
+        "kind": "copy",
+        "file": "startup-state-proposal/failure-state-expression.js",
+        "bytes": 1958,
+        "sha256": "10cf5080964a440ce6131cee89cfa5deae7200a771937796bcbe8550f63c9eeb",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/native-catch.patch",
+        "bytes": 3148,
+        "sha256": "472c9375dbf24709972d8c5ac2bef2ebf8305fad3893f4a4b6b1773af4c16183"
+      },
+      "logical": "startup-state-proposal/native-catch.patch",
+      "storage": {
+        "kind": "copy",
+        "file": "startup-state-proposal/native-catch.patch",
+        "bytes": 3148,
+        "sha256": "472c9375dbf24709972d8c5ac2bef2ebf8305fad3893f4a4b6b1773af4c16183",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/source-freeze.json",
+        "bytes": 2978,
+        "sha256": "f34d645aa07042e32fa8e48156f712a98b8ec78511a040eeb3373857db182cd3"
+      },
+      "logical": "startup-state-proposal/source-freeze.json",
+      "storage": {
+        "kind": "copy",
+        "file": "startup-state-proposal/source-freeze.json",
+        "bytes": 2978,
+        "sha256": "f34d645aa07042e32fa8e48156f712a98b8ec78511a040eeb3373857db182cd3",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    }
+  ],
+  "exactReusedOriginals": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/README.md",
+        "bytes": 7779,
+        "sha256": "44e310c9101262c42384250caa119139c7557a3a704e278b06da0dc15f4cf22b"
+      },
+      "logical": "before-root-startup-evidence/README.md",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/README-original.md",
+        "bytes": 7779,
+        "sha256": "44e310c9101262c42384250caa119139c7557a3a704e278b06da0dc15f4cf22b",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/inputs.json",
+        "bytes": 14751,
+        "sha256": "d27017bccf3d2a5ba2ca8fd196c7f2476956634bd5a47a3a9a200df27505a42f"
+      },
+      "logical": "before-root-startup-evidence/inputs.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/inputs.json",
+        "bytes": 14751,
+        "sha256": "d27017bccf3d2a5ba2ca8fd196c7f2476956634bd5a47a3a9a200df27505a42f",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/native.mjs",
+        "bytes": 16930,
+        "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1"
+      },
+      "logical": "before-root-startup-evidence/native.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/native.mjs",
+        "bytes": 16930,
+        "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/recipe-source-freeze.json",
+        "bytes": 7045,
+        "sha256": "94c4488be7df2c6bcb39b7782462cf31b73a2987ffcfd9b735555481f03b17b1"
+      },
+      "logical": "before-root-startup-evidence/recipe-source-freeze.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/recipe-source-freeze.json",
+        "bytes": 7045,
+        "sha256": "94c4488be7df2c6bcb39b7782462cf31b73a2987ffcfd9b735555481f03b17b1",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/root-integration-checks.json",
+        "bytes": 1885,
+        "sha256": "c52ee15ccc0e36c3b0309b92bc0d18b1a2546dd3a39152029f0eb9638776823a"
+      },
+      "logical": "before-root-startup-evidence/root-integration-checks.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/root-integration-checks.json",
+        "bytes": 1885,
+        "sha256": "c52ee15ccc0e36c3b0309b92bc0d18b1a2546dd3a39152029f0eb9638776823a",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/README.md",
+        "bytes": 7779,
+        "sha256": "44e310c9101262c42384250caa119139c7557a3a704e278b06da0dc15f4cf22b"
+      },
+      "logical": "source-recipe/README.md",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/README-original.md",
+        "bytes": 7779,
+        "sha256": "44e310c9101262c42384250caa119139c7557a3a704e278b06da0dc15f4cf22b",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/prepare.py",
+        "bytes": 12581,
+        "sha256": "20efe1f3e1aa5fa8f8ddf8933daab8bba766204e19f197d3868c24ab686c3eae"
+      },
+      "logical": "source-recipe/prepare.py",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/prepare.py",
+        "bytes": 12581,
+        "sha256": "20efe1f3e1aa5fa8f8ddf8933daab8bba766204e19f197d3868c24ab686c3eae",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/run.py",
+        "bytes": 30691,
+        "sha256": "c6f2be22f81db02e8d548d32472ce5c06aa1020d305d80488a16b47cbf646ac9"
+      },
+      "logical": "source-recipe/run.py",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/run.py",
+        "bytes": 30691,
+        "sha256": "c6f2be22f81db02e8d548d32472ce5c06aa1020d305d80488a16b47cbf646ac9",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/control-policy.mjs",
+        "bytes": 883,
+        "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+      },
+      "logical": "source-recipe/control-policy.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v1-clock-failure/helpers/control-policy.mjs",
+        "bytes": 883,
+        "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/body-mesh.mjs",
+        "bytes": 17890,
+        "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+      },
+      "logical": "source-recipe/body-mesh.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v1-clock-failure/helpers/body-mesh.mjs",
+        "bytes": 17890,
+        "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/criteria.mjs",
+        "bytes": 5854,
+        "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+      },
+      "logical": "source-recipe/criteria.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v2/criteria.mjs",
+        "bytes": 5854,
+        "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/loft-snapshot-tools.mjs",
+        "bytes": 2995,
+        "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+      },
+      "logical": "source-recipe/loft-snapshot-tools.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v1-clock-failure/helpers/loft-snapshot-tools.mjs",
+        "bytes": 2995,
+        "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/rider-driver.mjs",
+        "bytes": 14485,
+        "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5"
+      },
+      "logical": "source-recipe/rider-driver.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/rider-driver.mjs",
+        "bytes": 14485,
+        "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "logical": "source-recipe/owned_group_anchor.py",
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-source-mapping.json",
+        "bytes": 10639,
+        "sha256": "9b3aef3606f2fd976c45c3d9378d20bb6bb90ec4d7a6066c6d618c60c722ab86"
+      },
+      "logical": "source-recipe/before-source-mapping.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/before-source-mapping.json",
+        "bytes": 10639,
+        "sha256": "9b3aef3606f2fd976c45c3d9378d20bb6bb90ec4d7a6066c6d618c60c722ab86",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/driver-diff.md",
+        "bytes": 2661,
+        "sha256": "c556c3032bd74b82f3acd75e687307fb2c52a413d820f92faa1e3cf98c07786f"
+      },
+      "logical": "source-recipe/driver-diff.md",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/driver-diff.md",
+        "bytes": 2661,
+        "sha256": "c556c3032bd74b82f3acd75e687307fb2c52a413d820f92faa1e3cf98c07786f",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/readiness.json",
+        "bytes": 4166,
+        "sha256": "561b7f33069a0c56d58d0ca2876c1a57a54c98b6913b3195c7ab886ee224fd3d"
+      },
+      "logical": "source-recipe/readiness.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/readiness.json",
+        "bytes": 4166,
+        "sha256": "561b7f33069a0c56d58d0ca2876c1a57a54c98b6913b3195c7ab886ee224fd3d",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/source-only-origin.json",
+        "bytes": 2106,
+        "sha256": "95feba1ba184c5ababcf7274ca528dcf2cf7f07b33bd64224b8089025b5f3ad2"
+      },
+      "logical": "source-recipe/source-only-origin.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/source-only-origin.json",
+        "bytes": 2106,
+        "sha256": "95feba1ba184c5ababcf7274ca528dcf2cf7f07b33bd64224b8089025b5f3ad2",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/recipe.patch",
+        "bytes": 104076,
+        "sha256": "5759f93c78814601e6c4d54476a50a61cdbcfe2f0dc0ef4a0fd0271ffe46d0b2"
+      },
+      "logical": "source-recipe/recipe.patch",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/recipe.patch.gz",
+        "bytes": 28236,
+        "sha256": "1ba2df00193a51760969ad1850d56053f40de71e91620790bd559dc1958553ff",
+        "encoding": "gzip",
+        "decodedBytes": 104076,
+        "decodedSha256": "5759f93c78814601e6c4d54476a50a61cdbcfe2f0dc0ef4a0fd0271ffe46d0b2"
+      },
+      "decodedBytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/README.md",
+        "bytes": 7189,
+        "sha256": "202883f6092ea5ad50d0af710b4e72a6bd4d98bca26bc6923407b2070f850743"
+      },
+      "logical": "before-v4/README.md",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/README.md",
+        "bytes": 7189,
+        "sha256": "202883f6092ea5ad50d0af710b4e72a6bd4d98bca26bc6923407b2070f850743",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/body-mesh.mjs",
+        "bytes": 17890,
+        "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+      },
+      "logical": "before-v4/body-mesh.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v1-clock-failure/helpers/body-mesh.mjs",
+        "bytes": 17890,
+        "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/build.json",
+        "bytes": 43568,
+        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+      },
+      "logical": "before-v4/build.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/build.json",
+        "bytes": 43568,
+        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/control-policy.mjs",
+        "bytes": 883,
+        "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+      },
+      "logical": "before-v4/control-policy.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v1-clock-failure/helpers/control-policy.mjs",
+        "bytes": 883,
+        "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/criteria.mjs",
+        "bytes": 5854,
+        "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+      },
+      "logical": "before-v4/criteria.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v2/criteria.mjs",
+        "bytes": 5854,
+        "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/diagnostic-build.json",
+        "bytes": 16809,
+        "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611"
+      },
+      "logical": "before-v4/diagnostic-build.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/diagnostic-build.json",
+        "bytes": 16809,
+        "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/inputs.json",
+        "bytes": 7221,
+        "sha256": "2fe31ab0315ec5bd0faeb907588c6a9f773b194d07d257c21a1ecd3f08a215ea"
+      },
+      "logical": "before-v4/inputs.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/inputs.json",
+        "bytes": 7221,
+        "sha256": "2fe31ab0315ec5bd0faeb907588c6a9f773b194d07d257c21a1ecd3f08a215ea",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/loft-snapshot-tools.mjs",
+        "bytes": 2995,
+        "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+      },
+      "logical": "before-v4/loft-snapshot-tools.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v1-clock-failure/helpers/loft-snapshot-tools.mjs",
+        "bytes": 2995,
+        "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/native.mjs",
+        "bytes": 16577,
+        "sha256": "0011a0e8aa896491b40571b838768e8661cf89b512bb1677c47e32b223ab3d7c"
+      },
+      "logical": "before-v4/native.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/native.mjs",
+        "bytes": 16577,
+        "sha256": "0011a0e8aa896491b40571b838768e8661cf89b512bb1677c47e32b223ab3d7c",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/prepare.py",
+        "bytes": 5419,
+        "sha256": "f4c8625467146a3af29deb4a879d30242646944dcaf85b7ba4e36ed7fc5b4fb0"
+      },
+      "logical": "before-v4/prepare.py",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/prepare.py",
+        "bytes": 5419,
+        "sha256": "f4c8625467146a3af29deb4a879d30242646944dcaf85b7ba4e36ed7fc5b4fb0",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/recipe-source-freeze.json",
+        "bytes": 15835,
+        "sha256": "1d8938ca9fbf6c042ef21cf7c65cf5e82b4efd4330c75988ed2f1edaaa818321"
+      },
+      "logical": "before-v4/recipe-source-freeze.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/recipe-source-freeze.json",
+        "bytes": 15835,
+        "sha256": "1d8938ca9fbf6c042ef21cf7c65cf5e82b4efd4330c75988ed2f1edaaa818321",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/recipe.patch",
+        "bytes": 132974,
+        "sha256": "1513b9a3f8b67d5f32b1d7d41fb1d3f85926274ca1d1a2fea1bc32aceec4360b"
+      },
+      "logical": "before-v4/recipe.patch",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/recipe.patch",
+        "bytes": 132974,
+        "sha256": "1513b9a3f8b67d5f32b1d7d41fb1d3f85926274ca1d1a2fea1bc32aceec4360b",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/rider-driver.mjs",
+        "bytes": 14485,
+        "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5"
+      },
+      "logical": "before-v4/rider-driver.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/rider-driver.mjs",
+        "bytes": 14485,
+        "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/root-build-authority.json",
+        "bytes": 11447,
+        "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc"
+      },
+      "logical": "before-v4/root-build-authority.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/root-build-authority.json",
+        "bytes": 11447,
+        "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/root-current-application-receipt.json",
+        "bytes": 132778,
+        "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+      },
+      "logical": "before-v4/root-current-application-receipt.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../passive-guide-and-leaf-verification/fresh-build/root-current-application-receipt.json",
+        "bytes": 132778,
+        "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/run.py",
+        "bytes": 25010,
+        "sha256": "9f46679cd446b85d50115d7e59dbe320fb9db7012cc38eea8d2bb6b903170e71"
+      },
+      "logical": "before-v4/run.py",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/run.py",
+        "bytes": 25010,
+        "sha256": "9f46679cd446b85d50115d7e59dbe320fb9db7012cc38eea8d2bb6b903170e71",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/seal.json",
+        "bytes": 9774,
+        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+      },
+      "logical": "before-v4/seal.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/seal.json",
+        "bytes": 9774,
+        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/source-freeze.json",
+        "bytes": 19549,
+        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+      },
+      "logical": "before-v4/source-freeze.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/source-freeze.json",
+        "bytes": 19549,
+        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-v4/source-only-origin.json",
+        "bytes": 10000,
+        "sha256": "e8212221a8a1bbd090b7341979cca4629376e4096e2579fff5a982f431af2d7a"
+      },
+      "logical": "before-v4/source-only-origin.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/source-only-origin.json",
+        "bytes": 10000,
+        "sha256": "e8212221a8a1bbd090b7341979cca4629376e4096e2579fff5a982f431af2d7a",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-cap-guidance-2026-10-05/ordinary-v5-source-recipe/manifest.json",
+        "bytes": 34811,
+        "sha256": "750b4f385b78751404f88f820f4c6e9fef7723f316d995fed9acf50ab2188e6a"
+      },
+      "logical": "source-recipe-parent-manifest.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/manifest.json",
+        "bytes": 34811,
+        "sha256": "750b4f385b78751404f88f820f4c6e9fef7723f316d995fed9acf50ab2188e6a",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/application-build.log",
+        "bytes": 1328,
+        "sha256": "3030332b9efa18b8053ccef1d2ff50865187583a96290d0d99fbe040644294e5"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/application-build.log",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/application-build.log",
+        "bytes": 1328,
+        "sha256": "3030332b9efa18b8053ccef1d2ff50865187583a96290d0d99fbe040644294e5",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+        "bytes": 3469,
+        "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v3-wall-deadline/owner.json",
+        "bytes": 3469,
+        "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+        "bytes": 42104,
+        "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+      },
+      "logical": "reference-evidence/candidate-first/report.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v3-wall-deadline/report.json",
+        "bytes": 42104,
+        "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/steps.ndjson",
+        "bytes": 18438314,
+        "sha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c"
+      },
+      "logical": "reference-evidence/candidate-first/steps.ndjson",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v3-wall-deadline/steps.ndjson.gz",
+        "bytes": 2468117,
+        "sha256": "3b800fb89c4dec3d84e8a748b236b74041809f650f954921002bb74928634be2",
+        "encoding": "gzip",
+        "decodedBytes": 18438314,
+        "decodedSha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c"
+      },
+      "decodedBytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/root-post-failure-pins.json",
+        "bytes": 43646,
+        "sha256": "6e4a7ca025d044f50d426f3127ad7c3b15535603be57a2c03bd45809bbef03d0"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v3-native-20261005/root-post-failure-pins.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v3-wall-deadline/root-post-failure-pins.json",
+        "bytes": 43646,
+        "sha256": "6e4a7ca025d044f50d426f3127ad7c3b15535603be57a2c03bd45809bbef03d0",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-build-authority.json",
+        "bytes": 11447,
+        "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/root-build-authority.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/root-build-authority.json",
+        "bytes": 11447,
+        "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+        "bytes": 2735,
+        "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+      },
+      "logical": "reference-evidence/tmp/tube-five-protected-preview-identities-20261005.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/inputs/root-five-protected-preview-identities.json",
+        "bytes": 2735,
+        "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+        "bytes": 526,
+        "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85"
+      },
+      "logical": "reference-evidence/surfing-game-play-3e75550c2-20261005/process.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/inputs/human-preview4316-process.json",
+        "bytes": 526,
+        "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+        "bytes": 132778,
+        "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../passive-guide-and-leaf-verification/fresh-build/root-current-application-receipt.json",
+        "bytes": 132778,
+        "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+        "bytes": 43568,
+        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/build.json",
+        "bytes": 43568,
+        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+        "bytes": 19549,
+        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/source-freeze.json",
+        "bytes": 19549,
+        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+        "bytes": 9774,
+        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/seal.json",
+        "bytes": 9774,
+        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.json",
+        "bytes": 16809,
+        "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/diagnostic-build.json",
+        "bytes": 16809,
+        "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.log",
+        "bytes": 282,
+        "sha256": "2478068a25a69eb395dbfb6bd33ada5b70a6caba996f9ed56f79b532040c6810"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.log",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/diagnostic-build.log",
+        "bytes": 282,
+        "sha256": "2478068a25a69eb395dbfb6bd33ada5b70a6caba996f9ed56f79b532040c6810",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+        "bytes": 6474,
+        "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+      },
+      "logical": "reference-evidence/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/borrowed/native-owned.mjs",
+        "bytes": 6474,
+        "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "logical": "reference-evidence/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/borrowed/cdp.mjs",
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+        "bytes": 4774,
+        "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+      },
+      "logical": "reference-evidence/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/borrowed/menu-startup.mjs",
+        "bytes": 4774,
+        "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+        "bytes": 4020,
+        "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+      },
+      "logical": "reference-evidence/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/references/follower-camera.mjs",
+        "bytes": 4020,
+        "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "logical": "reference-evidence/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+        "bytes": 2410,
+        "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0"
+      },
+      "logical": "reference-evidence/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/source-freeze.json",
+        "bytes": 2410,
+        "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+        "bytes": 511,
+        "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32"
+      },
+      "logical": "reference-evidence/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/root-tests.json",
+        "bytes": 511,
+        "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
+        "bytes": 3695,
+        "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7"
+      },
+      "logical": "reference-evidence/tube-owned-group-anchor-proposal-20261005/root-tests.log",
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/root-tests.log",
+        "bytes": 3695,
+        "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/owner.json",
+        "bytes": 17385,
+        "sha256": "38197cc967caa3800bcada6c24210b4483f60d80591ee01a73177ca47402aa59"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/owner.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/owner.json",
+        "bytes": 17385,
+        "sha256": "38197cc967caa3800bcada6c24210b4483f60d80591ee01a73177ca47402aa59",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/candidate-first/report.json",
+        "bytes": 7256,
+        "sha256": "c61dc548c52838fc1ab8739cad55c109110960ad04f98047a71bb97cb33b870b"
+      },
+      "logical": "reference-evidence/candidate-first/report.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/candidate-first/report.json",
+        "bytes": 7256,
+        "sha256": "c61dc548c52838fc1ab8739cad55c109110960ad04f98047a71bb97cb33b870b",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/launcher.json",
+        "bytes": 2362,
+        "sha256": "e1b974c46ad87fa75c198b1d56587bb6e29ea360175997422f3f96f4db78ffae"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/launcher.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/launcher.json",
+        "bytes": 2362,
+        "sha256": "e1b974c46ad87fa75c198b1d56587bb6e29ea360175997422f3f96f4db78ffae",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/native.log",
+      "storage": {
+        "kind": "reuse",
+        "file": "../identity-core-comparison/failed-v1/native.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+        "bytes": 49694,
+        "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+      },
+      "logical": "reference-evidence/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/root-post-failure-pins-and-closure.json",
+        "bytes": 49694,
+        "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21",
+        "encoding": "exact"
+      },
+      "bytesEqualVerified": true
+    }
+  ],
+  "portableDirectAuthorities": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/application-build.log",
+        "bytes": 1328,
+        "sha256": "3030332b9efa18b8053ccef1d2ff50865187583a96290d0d99fbe040644294e5"
+      },
+      "usedBy": [
+        "inputs.applicationBuildLog"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/application-build.log",
+        "bytes": 1328,
+        "sha256": "3030332b9efa18b8053ccef1d2ff50865187583a96290d0d99fbe040644294e5",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+        "bytes": 3469,
+        "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+      },
+      "usedBy": [
+        "inputs.priorObservation.owner"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v3-wall-deadline/owner.json",
+        "bytes": 3469,
+        "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+        "bytes": 42104,
+        "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+      },
+      "usedBy": [
+        "inputs.priorObservation.report"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v3-wall-deadline/report.json",
+        "bytes": 42104,
+        "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/steps.ndjson",
+        "bytes": 18438314,
+        "sha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c"
+      },
+      "usedBy": [
+        "inputs.priorObservation.trace"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v3-wall-deadline/steps.ndjson.gz",
+        "bytes": 2468117,
+        "sha256": "3b800fb89c4dec3d84e8a748b236b74041809f650f954921002bb74928634be2",
+        "encoding": "gzip",
+        "decodedBytes": 18438314,
+        "decodedSha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/root-post-failure-pins.json",
+        "bytes": 43646,
+        "sha256": "6e4a7ca025d044f50d426f3127ad7c3b15535603be57a2c03bd45809bbef03d0"
+      },
+      "usedBy": [
+        "inputs.priorObservation.rootPostFailurePins"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v3-wall-deadline/root-post-failure-pins.json",
+        "bytes": 43646,
+        "sha256": "6e4a7ca025d044f50d426f3127ad7c3b15535603be57a2c03bd45809bbef03d0",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-build-authority.json",
+        "bytes": 11447,
+        "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc"
+      },
+      "usedBy": [
+        "inputs.rootBuildAuthority"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/root-build-authority.json",
+        "bytes": 11447,
+        "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-five-protected-preview-identities-20261005.json",
+        "bytes": 2735,
+        "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28"
+      },
+      "usedBy": [
+        "inputs.protectedIdentityReference"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/inputs/root-five-protected-preview-identities.json",
+        "bytes": 2735,
+        "sha256": "b08387d71daf4cd9527ec9b7b1bb78d05bebcbebd009362fc33fd21ee779bd28",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/surfing-game-play-3e75550c2-20261005/process.json",
+        "bytes": 526,
+        "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85"
+      },
+      "usedBy": [
+        "inputs.protected4316Provenance.processReceipt"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/inputs/human-preview4316-process.json",
+        "bytes": 526,
+        "sha256": "d2ffd9b7dffd338d3aea3e472871010803d27b21925d1d63aa8a3f9748079c85",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+        "bytes": 132778,
+        "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+      },
+      "usedBy": [
+        "inputs.rootCurrentApplicationReceipt"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../passive-guide-and-leaf-verification/fresh-build/root-current-application-receipt.json",
+        "bytes": 132778,
+        "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+        "bytes": 43568,
+        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+      },
+      "usedBy": [
+        "inputs.immutableV4Application.build"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/build.json",
+        "bytes": 43568,
+        "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+        "bytes": 19549,
+        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+      },
+      "usedBy": [
+        "inputs.immutableV4Application.sourceFreeze"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/source-freeze.json",
+        "bytes": 19549,
+        "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+        "bytes": 9774,
+        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+      },
+      "usedBy": [
+        "inputs.immutableV4Application.seal"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/seal.json",
+        "bytes": 9774,
+        "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.json",
+        "bytes": 16809,
+        "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611"
+      },
+      "usedBy": [
+        "inputs.immutableV4Application.diagnosticBuild"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/diagnostic-build.json",
+        "bytes": 16809,
+        "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.log",
+        "bytes": 282,
+        "sha256": "2478068a25a69eb395dbfb6bd33ada5b70a6caba996f9ed56f79b532040c6810"
+      },
+      "usedBy": [
+        "inputs.diagnosticBuildLog"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/diagnostic-build.log",
+        "bytes": 282,
+        "sha256": "2478068a25a69eb395dbfb6bd33ada5b70a6caba996f9ed56f79b532040c6810",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+        "bytes": 6474,
+        "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+      },
+      "usedBy": [
+        "inputs.borrowedHelperPins[0]"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/borrowed/native-owned.mjs",
+        "bytes": 6474,
+        "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+      },
+      "usedBy": [
+        "inputs.borrowedHelperPins[1]"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/borrowed/cdp.mjs",
+        "bytes": 7064,
+        "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+        "bytes": 4774,
+        "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+      },
+      "usedBy": [
+        "inputs.borrowedHelperPins[2]"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/borrowed/menu-startup.mjs",
+        "bytes": 4774,
+        "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+        "bytes": 4020,
+        "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+      },
+      "usedBy": [
+        "inputs.borrowedHelperPins[3]"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/references/follower-camera.mjs",
+        "bytes": 4020,
+        "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.moduleSource"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/source-freeze.json",
+        "bytes": 2410,
+        "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.moduleStaticFreeze"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/source-freeze.json",
+        "bytes": 2410,
+        "sha256": "784d61aa41c0dd58b15fd0bdd35c8ebc36fedcf1042c9b51ae8b64256f4b01e0",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.json",
+        "bytes": 511,
+        "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.rootPureTests"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/root-tests.json",
+        "bytes": 511,
+        "sha256": "a6016a173301cb7a6a18fe277bcc83b542037785c7319f0399a53bada45f2f32",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-owned-group-anchor-proposal-20261005/root-tests.log",
+        "bytes": 3695,
+        "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.rootPureTestLog"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../owner-anchor-verification/root-tests.log",
+        "bytes": 3695,
+        "sha256": "f63aa0e54431d72e3b670c3d571ee37d7476a4d2cced2bf98c8beeae33a127d7",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "usedBy": [
+        "inputs.ownerPolicyAmendment.copiedModule"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/owner.json",
+        "bytes": 17385,
+        "sha256": "38197cc967caa3800bcada6c24210b4483f60d80591ee01a73177ca47402aa59"
+      },
+      "usedBy": [
+        "inputs.priorV4Failure.owner"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/owner.json",
+        "bytes": 17385,
+        "sha256": "38197cc967caa3800bcada6c24210b4483f60d80591ee01a73177ca47402aa59",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/candidate-first/report.json",
+        "bytes": 7256,
+        "sha256": "c61dc548c52838fc1ab8739cad55c109110960ad04f98047a71bb97cb33b870b"
+      },
+      "usedBy": [
+        "inputs.priorV4Failure.report"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/candidate-first/report.json",
+        "bytes": 7256,
+        "sha256": "c61dc548c52838fc1ab8739cad55c109110960ad04f98047a71bb97cb33b870b",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/launcher.json",
+        "bytes": 2362,
+        "sha256": "e1b974c46ad87fa75c198b1d56587bb6e29ea360175997422f3f96f4db78ffae"
+      },
+      "usedBy": [
+        "inputs.priorV4Failure.launcher"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/launcher.json",
+        "bytes": 2362,
+        "sha256": "e1b974c46ad87fa75c198b1d56587bb6e29ea360175997422f3f96f4db78ffae",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "usedBy": [
+        "inputs.priorV4Failure.nativeLog"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../identity-core-comparison/failed-v1/native.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+        "bytes": 49694,
+        "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+      },
+      "usedBy": [
+        "inputs.priorV4Failure.rootPostFailurePinsAndClosure"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/root-post-failure-pins-and-closure.json",
+        "bytes": 49694,
+        "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-startup-evidence-amendment.json",
+        "bytes": 1649,
+        "sha256": "a9d5beac1147411466981b65df9ea0e024eee0de022ed156ca85b8d544b7a69a"
+      },
+      "usedBy": [
+        "inputs.startupEvidenceAmendment"
+      ],
+      "storage": {
+        "kind": "copy",
+        "file": "root-startup-evidence-amendment.json",
+        "bytes": 1649,
+        "sha256": "a9d5beac1147411466981b65df9ea0e024eee0de022ed156ca85b8d544b7a69a",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-startup-state-checks.json",
+        "bytes": 1487,
+        "sha256": "df6d729f98f6c6b7f18516ce2a0f7a0d6efbd3a0d23215df598110471a45961b"
+      },
+      "usedBy": [
+        "startupAmendment.checks"
+      ],
+      "storage": {
+        "kind": "copy",
+        "file": "root-startup-state-checks.json",
+        "bytes": 1487,
+        "sha256": "df6d729f98f6c6b7f18516ce2a0f7a0d6efbd3a0d23215df598110471a45961b",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/source-freeze.json",
+        "bytes": 2978,
+        "sha256": "f34d645aa07042e32fa8e48156f712a98b8ec78511a040eeb3373857db182cd3"
+      },
+      "usedBy": [
+        "startupAmendment.proposalFreeze"
+      ],
+      "storage": {
+        "kind": "copy",
+        "file": "startup-state-proposal/source-freeze.json",
+        "bytes": 2978,
+        "sha256": "f34d645aa07042e32fa8e48156f712a98b8ec78511a040eeb3373857db182cd3",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/inputs.json",
+        "bytes": 14751,
+        "sha256": "d27017bccf3d2a5ba2ca8fd196c7f2476956634bd5a47a3a9a200df27505a42f"
+      },
+      "usedBy": [
+        "startupAmendment.before.inputs"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/inputs.json",
+        "bytes": 14751,
+        "sha256": "d27017bccf3d2a5ba2ca8fd196c7f2476956634bd5a47a3a9a200df27505a42f",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/recipe-source-freeze.json",
+        "bytes": 7045,
+        "sha256": "94c4488be7df2c6bcb39b7782462cf31b73a2987ffcfd9b735555481f03b17b1"
+      },
+      "usedBy": [
+        "startupAmendment.before.recipeFreeze"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/recipe-source-freeze.json",
+        "bytes": 7045,
+        "sha256": "94c4488be7df2c6bcb39b7782462cf31b73a2987ffcfd9b735555481f03b17b1",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/native.mjs",
+        "bytes": 16930,
+        "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1"
+      },
+      "usedBy": [
+        "startupAmendment.before.native",
+        "startupChecks.beforeSource"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/native.mjs",
+        "bytes": 16930,
+        "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+        "bytes": 18656,
+        "sha256": "af65642586184083afc5f73aed973b9a3779f46e1fbebc8037b3650f28314d39"
+      },
+      "usedBy": [
+        "startupAmendment.newNative",
+        "startupChecks.native"
+      ],
+      "storage": {
+        "kind": "copy",
+        "file": "native.mjs",
+        "bytes": 18656,
+        "sha256": "af65642586184083afc5f73aed973b9a3779f46e1fbebc8037b3650f28314d39",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/failure-state-expression.js",
+        "bytes": 1958,
+        "sha256": "10cf5080964a440ce6131cee89cfa5deae7200a771937796bcbe8550f63c9eeb"
+      },
+      "usedBy": [
+        "startupChecks.expression"
+      ],
+      "storage": {
+        "kind": "copy",
+        "file": "startup-state-proposal/failure-state-expression.js",
+        "bytes": 1958,
+        "sha256": "10cf5080964a440ce6131cee89cfa5deae7200a771937796bcbe8550f63c9eeb",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/root-integration-checks.json",
+        "bytes": 1885,
+        "sha256": "c52ee15ccc0e36c3b0309b92bc0d18b1a2546dd3a39152029f0eb9638776823a"
+      },
+      "usedBy": [
+        "startupChecks.priorIntegrationChecks"
+      ],
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/root-integration-checks.json",
+        "bytes": 1885,
+        "sha256": "c52ee15ccc0e36c3b0309b92bc0d18b1a2546dd3a39152029f0eb9638776823a",
+        "encoding": "exact"
+      },
+      "originalAndStoredBytesVerified": true
+    }
+  ],
+  "currentRecipeFreezeFileChecks": [
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/README.md",
+        "bytes": 7779,
+        "sha256": "44e310c9101262c42384250caa119139c7557a3a704e278b06da0dc15f4cf22b"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/README-original.md",
+        "bytes": 7779,
+        "sha256": "44e310c9101262c42384250caa119139c7557a3a704e278b06da0dc15f4cf22b",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/inputs.json",
+        "bytes": 15060,
+        "sha256": "0decf9f718ce253af5c50a063a75a40814606db36959c7ea045d4f0012f93664"
+      },
+      "storage": {
+        "kind": "copy",
+        "file": "inputs.json",
+        "bytes": 15060,
+        "sha256": "0decf9f718ce253af5c50a063a75a40814606db36959c7ea045d4f0012f93664",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/prepare.py",
+        "bytes": 12581,
+        "sha256": "20efe1f3e1aa5fa8f8ddf8933daab8bba766204e19f197d3868c24ab686c3eae"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/prepare.py",
+        "bytes": 12581,
+        "sha256": "20efe1f3e1aa5fa8f8ddf8933daab8bba766204e19f197d3868c24ab686c3eae",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/run.py",
+        "bytes": 30691,
+        "sha256": "c6f2be22f81db02e8d548d32472ce5c06aa1020d305d80488a16b47cbf646ac9"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/run.py",
+        "bytes": 30691,
+        "sha256": "c6f2be22f81db02e8d548d32472ce5c06aa1020d305d80488a16b47cbf646ac9",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+        "bytes": 18656,
+        "sha256": "af65642586184083afc5f73aed973b9a3779f46e1fbebc8037b3650f28314d39"
+      },
+      "storage": {
+        "kind": "copy",
+        "file": "native.mjs",
+        "bytes": 18656,
+        "sha256": "af65642586184083afc5f73aed973b9a3779f46e1fbebc8037b3650f28314d39",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/control-policy.mjs",
+        "bytes": 883,
+        "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v1-clock-failure/helpers/control-policy.mjs",
+        "bytes": 883,
+        "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/body-mesh.mjs",
+        "bytes": 17890,
+        "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v1-clock-failure/helpers/body-mesh.mjs",
+        "bytes": 17890,
+        "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/criteria.mjs",
+        "bytes": 5854,
+        "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v2/criteria.mjs",
+        "bytes": 5854,
+        "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/loft-snapshot-tools.mjs",
+        "bytes": 2995,
+        "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v1-clock-failure/helpers/loft-snapshot-tools.mjs",
+        "bytes": 2995,
+        "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/rider-driver.mjs",
+        "bytes": 14485,
+        "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v4-browser-startup-failure/pre-syntax-fix/rider-driver.mjs",
+        "bytes": 14485,
+        "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../grey-band-ownership-v5/owned_group_anchor.py",
+        "bytes": 15501,
+        "sha256": "f79e1098601eb592fe4b0133db40ee9b4ed4999bb238b760b900ba030685fdb0",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-source-mapping.json",
+        "bytes": 10639,
+        "sha256": "9b3aef3606f2fd976c45c3d9378d20bb6bb90ec4d7a6066c6d618c60c722ab86"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/before-source-mapping.json",
+        "bytes": 10639,
+        "sha256": "9b3aef3606f2fd976c45c3d9378d20bb6bb90ec4d7a6066c6d618c60c722ab86",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/driver-diff.md",
+        "bytes": 2661,
+        "sha256": "c556c3032bd74b82f3acd75e687307fb2c52a413d820f92faa1e3cf98c07786f"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/driver-diff.md",
+        "bytes": 2661,
+        "sha256": "c556c3032bd74b82f3acd75e687307fb2c52a413d820f92faa1e3cf98c07786f",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/readiness.json",
+        "bytes": 4166,
+        "sha256": "561b7f33069a0c56d58d0ca2876c1a57a54c98b6913b3195c7ab886ee224fd3d"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/readiness.json",
+        "bytes": 4166,
+        "sha256": "561b7f33069a0c56d58d0ca2876c1a57a54c98b6913b3195c7ab886ee224fd3d",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/source-only-origin.json",
+        "bytes": 2106,
+        "sha256": "95feba1ba184c5ababcf7274ca528dcf2cf7f07b33bd64224b8089025b5f3ad2"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/source-only-origin.json",
+        "bytes": 2106,
+        "sha256": "95feba1ba184c5ababcf7274ca528dcf2cf7f07b33bd64224b8089025b5f3ad2",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/recipe.patch",
+        "bytes": 104076,
+        "sha256": "5759f93c78814601e6c4d54476a50a61cdbcfe2f0dc0ef4a0fd0271ffe46d0b2"
+      },
+      "storage": {
+        "kind": "reuse",
+        "file": "../ordinary-v5-source-recipe/recipe.patch.gz",
+        "bytes": 28236,
+        "sha256": "1ba2df00193a51760969ad1850d56053f40de71e91620790bd559dc1958553ff",
+        "encoding": "gzip",
+        "decodedBytes": 104076,
+        "decodedSha256": "5759f93c78814601e6c4d54476a50a61cdbcfe2f0dc0ef4a0fd0271ffe46d0b2"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-startup-state-checks.json",
+        "bytes": 1487,
+        "sha256": "df6d729f98f6c6b7f18516ce2a0f7a0d6efbd3a0d23215df598110471a45961b"
+      },
+      "storage": {
+        "kind": "copy",
+        "file": "root-startup-state-checks.json",
+        "bytes": 1487,
+        "sha256": "df6d729f98f6c6b7f18516ce2a0f7a0d6efbd3a0d23215df598110471a45961b",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-startup-evidence-amendment.json",
+        "bytes": 1649,
+        "sha256": "a9d5beac1147411466981b65df9ea0e024eee0de022ed156ca85b8d544b7a69a"
+      },
+      "storage": {
+        "kind": "copy",
+        "file": "root-startup-evidence-amendment.json",
+        "bytes": 1649,
+        "sha256": "a9d5beac1147411466981b65df9ea0e024eee0de022ed156ca85b8d544b7a69a",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    },
+    {
+      "recorded": {
+        "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/preservation.json",
+        "bytes": 1913,
+        "sha256": "1035294555b2d9990f534fe25f5e510f1e774b610000df5abd2e23a9e4306b23"
+      },
+      "storage": {
+        "kind": "copy",
+        "file": "before-root-startup-evidence/preservation.json",
+        "bytes": 1913,
+        "sha256": "1035294555b2d9990f534fe25f5e510f1e774b610000df5abd2e23a9e4306b23",
+        "encoding": "exact"
+      },
+      "bytesAndSha256Verified": true
+    }
+  ],
+  "omittedCompiledModule": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 352823,
+    "sha256": "e46021066bb3cec4225133888d3fcc58e2e48d7a8cd35d6dfebce34491a0e04c",
+    "qualification": "Exact prepared copied module omitted; original diagnostic-build/build/seal receipts retain provenance and root closure verifies sealed module pin."
+  },
+  "omissions": [
+    {
+      "paths": [
+        "dist/",
+        "diagnostic-autopilot.mjs",
+        "__pycache__/"
+      ],
+      "reason": "Avoid duplicate built assets/module/cache; exact existing source recipe references and current build/diagnostic/source/seal pin rosters retained."
+    },
+    {
+      "paths": [
+        "terminal startup-state evidence",
+        "trial PNGs",
+        "terminal trajectory/sequence result"
+      ],
+      "reason": "Not recorded before user interruption; no artifact or conclusion invented."
+    }
+  ],
+  "generatedFiles": [
+    {
+      "file": "README.md",
+      "bytes": 4976,
+      "sha256": "d77225777cc762cd9470ff43bde86af825b60d8c3dc9d021fa10b41e92725386"
+    }
+  ],
+  "archiveOperations": {
+    "readsHashesCopiesJSONGzipOnly": true,
+    "testsBuildsNativeOSGitExecuted": false,
+    "productionSourceParentREADMEOrOriginalsWritten": false,
+    "featureOrProposalWorkContinued": false
+  }
+}

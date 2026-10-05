@@ -1,0 +1,101 @@
+{
+  "schema": "root-ordinary-v5-user-pause-closure/v1",
+  "complete": true,
+  "observedAtUTC": "2026-10-05T17:30:52.684227+00:00",
+  "actualOwnerToolSession": 38320,
+  "actualTerminalChunk": "75e4e0",
+  "actualTerminalExitCode": 1,
+  "userInterrupted": true,
+  "nativeResultFirstFailureRemainsNull": true,
+  "noGeometricOrStartupFailureConclusion": true,
+  "sourcePinsVerified": 584,
+  "buildAssetPinsVerified": 49,
+  "sealedPinAssertions": 28,
+  "ownerAbsent": true,
+  "ownedGroupAbsent": true,
+  "ownedPortsClosed": true,
+  "protected": {
+    "4312": {
+      "actualIdentity": {
+        "pid": 92445,
+        "pgid": 92445,
+        "stat": "Ss",
+        "started": "Sun Oct 4 23:17:08 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4312 --bind 127.0.0.1 --directory /private/tmp/tube-coherent-warmup-native-20261004/dist"
+      },
+      "listenerPids": [
+        92445
+      ],
+      "exactFullIdentityPreserved": true
+    },
+    "4313": {
+      "actualIdentity": {
+        "pid": 58298,
+        "pgid": 58298,
+        "stat": "Ss",
+        "started": "Mon Oct 5 01:49:12 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4313 --bind 127.0.0.1 --directory /private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-complete-dist"
+      },
+      "listenerPids": [
+        58298
+      ],
+      "exactFullIdentityPreserved": true
+    },
+    "4314": {
+      "actualIdentity": {
+        "pid": 51358,
+        "pgid": 51358,
+        "stat": "Ss",
+        "started": "Mon Oct 5 13:02:44 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4314 --bind 127.0.0.1 --directory /private/tmp/tube-c-formation-native-20261005/candidate-complete-dist"
+      },
+      "listenerPids": [
+        51358
+      ],
+      "exactFullIdentityPreserved": true
+    },
+    "4315": {
+      "actualIdentity": {
+        "pid": 87796,
+        "pgid": 87796,
+        "stat": "Ss",
+        "started": "Mon Oct 5 15:00:00 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4315 --bind 127.0.0.1 --directory /private/tmp/tube-open-mouth-body-clearance-native-20261005/dist"
+      },
+      "listenerPids": [
+        87796
+      ],
+      "exactFullIdentityPreserved": true
+    },
+    "4316": {
+      "actualIdentity": {
+        "pid": 38617,
+        "pgid": 38617,
+        "stat": "Ss",
+        "started": "Mon Oct 5 17:35:46 2026",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4316 --bind 127.0.0.1 --directory /private/tmp/surfing-game-play-3e75550c2-20261005/dist"
+      },
+      "listenerPids": [
+        38617
+      ],
+      "exactFullIdentityPreserved": true
+    }
+  },
+  "allFivePreserved": true,
+  "noSignalsSentByThisAudit": true,
+  "interruption": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-user-pause-interruption.json",
+    "bytes": 1240,
+    "sha256": "ecd815b1e79d598948d8c70a3786e8139c019041d53d043ef449ad3b732abaef"
+  },
+  "owner": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/owner.json",
+    "bytes": 38576,
+    "sha256": "44fc61d1011d43312651d81fbca5966451e9cbb91cc4e18b7c51cfeb89b90909"
+  },
+  "nativeReport": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/candidate-first/report.json",
+    "bytes": 9646,
+    "sha256": "5e55343c3c972a44fe6b19cb3ce54abf949ee96c894c7deacc677faba74386a7"
+  }
+}

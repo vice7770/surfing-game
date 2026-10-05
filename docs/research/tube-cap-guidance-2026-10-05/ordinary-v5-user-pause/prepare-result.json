@@ -1,0 +1,25 @@
+{
+  "schema": "guided-ordinary-preparation-result/v5",
+  "complete": true,
+  "build": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/build.json",
+    "bytes": 47501,
+    "sha256": "7e873e6ecfd0d1cabdb570b8a8f242e58e9dd4451fbc01852e258ad813b437c5"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/source-freeze.json",
+    "bytes": 20926,
+    "sha256": "4c9576af74a3bb770a617a293eda692d82b959ef730e1280209c13aa783f298e"
+  },
+  "seal": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/seal.json",
+    "bytes": 24520,
+    "sha256": "d7757e3d7231b6d5a5877a31bd307dc51b9279047f22211e093417b7e7d5a055"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedTestsBuildsOrDiagnosticCompilation": false,
+  "existingActualV4BuildAuthorityRequired": true,
+  "copiedHistoricalApplicationAndDiagnosticModule": true,
+  "copiedHistoricalExecutionOutputs": false
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "root-ordinary-v5-before-startup-evidence/v1",
+  "sourceAndPendingMetadataPreserved": true,
+  "files": [
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/inputs.json",
+      "preserved": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/inputs.json",
+      "bytes": 14751,
+      "sha256": "d27017bccf3d2a5ba2ca8fd196c7f2476956634bd5a47a3a9a200df27505a42f"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/recipe-source-freeze.json",
+      "preserved": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/recipe-source-freeze.json",
+      "bytes": 7045,
+      "sha256": "94c4488be7df2c6bcb39b7782462cf31b73a2987ffcfd9b735555481f03b17b1"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+      "preserved": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/native.mjs",
+      "bytes": 16930,
+      "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-integration-checks.json",
+      "preserved": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/root-integration-checks.json",
+      "bytes": 1885,
+      "sha256": "c52ee15ccc0e36c3b0309b92bc0d18b1a2546dd3a39152029f0eb9638776823a"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/README.md",
+      "preserved": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/README.md",
+      "bytes": 7779,
+      "sha256": "44e310c9101262c42384250caa119139c7557a3a704e278b06da0dc15f4cf22b"
+    }
+  ],
+  "noPreparationOrExecution": true
+}

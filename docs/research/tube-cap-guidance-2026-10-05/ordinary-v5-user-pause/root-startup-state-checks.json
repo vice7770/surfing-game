@@ -1,0 +1,31 @@
+{
+  "schema": "root-ordinary-v5-startup-evidence-checks/v1",
+  "complete": true,
+  "actualSourceEditChunk": "f45d0c",
+  "actualNodeSyntaxCheckChunk": "812b41",
+  "syntaxExitCode": 0,
+  "native": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+    "bytes": 18656,
+    "sha256": "af65642586184083afc5f73aed973b9a3779f46e1fbebc8037b3650f28314d39"
+  },
+  "beforeSource": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/native.mjs",
+    "bytes": 16930,
+    "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1"
+  },
+  "expression": {
+    "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/failure-state-expression.js",
+    "bytes": 1958,
+    "sha256": "10cf5080964a440ce6131cee89cfa5deae7200a771937796bcbe8550f63c9eeb"
+  },
+  "priorIntegrationChecks": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/root-integration-checks.json",
+    "bytes": 1885,
+    "sha256": "c52ee15ccc0e36c3b0309b92bc0d18b1a2546dd3a39152029f0eb9638776823a"
+  },
+  "rootReview": "Exact catch-only replacement; scalar predicate/current-host/load-card reads and own data descriptors, no control/clock/settings/criteria/deadline changes. Existing menu evidence copy retained. Original75-pin/3AST/6JS checks remain separate authority.",
+  "prepareExecuted": false,
+  "nativeExecuted": false,
+  "productionEdited": false
+}

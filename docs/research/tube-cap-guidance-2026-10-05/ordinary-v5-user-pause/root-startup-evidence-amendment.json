@@ -1,0 +1,39 @@
+{
+  "schema": "root-ordinary-v5-startup-evidence-amendment/v1",
+  "complete": true,
+  "checks": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/root-startup-state-checks.json",
+    "bytes": 1487,
+    "sha256": "df6d729f98f6c6b7f18516ce2a0f7a0d6efbd3a0d23215df598110471a45961b"
+  },
+  "proposalFreeze": {
+    "file": "/private/tmp/tube-ordinary-startup-state-proposal-20261005/source-freeze.json",
+    "bytes": 2978,
+    "sha256": "f34d645aa07042e32fa8e48156f712a98b8ec78511a040eeb3373857db182cd3"
+  },
+  "before": {
+    "inputs": {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/inputs.json",
+      "bytes": 14751,
+      "sha256": "d27017bccf3d2a5ba2ca8fd196c7f2476956634bd5a47a3a9a200df27505a42f"
+    },
+    "recipeFreeze": {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/recipe-source-freeze.json",
+      "bytes": 7045,
+      "sha256": "94c4488be7df2c6bcb39b7782462cf31b73a2987ffcfd9b735555481f03b17b1"
+    },
+    "native": {
+      "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/before-root-startup-evidence/native.mjs",
+      "bytes": 16930,
+      "sha256": "9382a68d3780cf9118233b283cc131f437df9629fa8e453ed4a52164b7f456f1"
+    }
+  },
+  "newNative": {
+    "file": "/private/tmp/tube-guided-ordinary-v5-telemetry-native-20261005/native.mjs",
+    "bytes": 18656,
+    "sha256": "af65642586184083afc5f73aed973b9a3779f46e1fbebc8037b3650f28314d39"
+  },
+  "unchangedControlsCriteriaAndDeadlines": true,
+  "exactPriorSourceCheckPreserved": true,
+  "noRuntimeResultYet": true
+}
