@@ -1,0 +1,28 @@
+{
+  "schema": "landing-longitudinal-source-delta/v1",
+  "parentSource": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source",
+  "source": "/private/tmp/tube-landing-longitudinal-native-20261005/source",
+  "sourceCount": 588,
+  "unchangedParentInputs": 587,
+  "parentManifest": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-complete-build-result.json",
+    "bytes": 188075,
+    "sha256": "55f34f0651d1a4f45292de2e0a5968e193844616eb819414a9075140a7ba26ab"
+  },
+  "overrides": [
+    {
+      "path": "src/physics/AttachedRider.ts",
+      "before": {
+        "path": "src/physics/AttachedRider.ts",
+        "bytes": 146425,
+        "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+      },
+      "after": {
+        "path": "src/physics/AttachedRider.ts",
+        "bytes": 149572,
+        "sha256": "84bae9817c3135d1999c094152d5184221162c5777bd27663aa3fa57c3aac5d4"
+      }
+    }
+  ],
+  "onlyPhysicsDifference": "Landing-only coherent fore/aft impedance in the unused eighth solve slot; exact38 passive operands and all other source remain unchanged."
+}

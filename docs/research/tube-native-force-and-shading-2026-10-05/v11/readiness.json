@@ -1,0 +1,597 @@
+{
+  "rootDiagnosticBuild": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-diagnostic-build-result.json",
+    "bytes": 36071,
+    "sha256": "b9791156a12145fe2d33ab9b1f6cd3db3dd5007f32d5b2f50226008a4c4119e3"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348734,
+    "sha256": "13d670bc328b914e5db1b7872e3c0123eb24f45874c35d084fc258e27cf2aac5"
+  },
+  "diagnosticModuleReferencePolicy": "root-rebuilt-original74-input-graph-against-contact-operands-source",
+  "priorV4Readiness": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/readiness.json",
+    "bytes": 12549,
+    "sha256": "b69df89fd02a7760aa3d3756ef259316612c8b22068e720fcbabe369c2daa464"
+  },
+  "priorV4Owner": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/candidate-first-owner.json",
+    "bytes": 3440,
+    "sha256": "806d8f550c2a26eb8c310de7d59f3c1170d372962f8bfb79418c30fdb84a0a2c"
+  },
+  "priorV4Report": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/candidate-first/report.json",
+    "bytes": 10218530,
+    "sha256": "c411763b4b4c1fb6ff3c592085926f2ddba84e0bd0c2cddb0e4d471255048ead"
+  },
+  "schema": "pop-up-contact-v11-preparation-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "work": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005",
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/helper-pins.json",
+    "bytes": 9495,
+    "sha256": "06da1b7fd9ca57466c72e848e3415ef5322c278902776a208c03cbb110146604"
+  },
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-complete-build-result.json",
+    "bytes": 188075,
+    "sha256": "55f34f0651d1a4f45292de2e0a5968e193844616eb819414a9075140a7ba26ab"
+  },
+  "originalDiagnosticEntry": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/autopilot-entry.ts",
+    "bytes": 313,
+    "sha256": "6504ef070fcea923887574369e76c2bb0df639544a17779d1850709ed2226d8c"
+  },
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/source-readiness.json",
+    "bytes": 9897,
+    "sha256": "e3a82d06f20784004dc73ec99cc750ada890f58158d19f46602a6570a8c408e6"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source-delta.json",
+    "bytes": 1762,
+    "sha256": "5fb428bad3ebf5d60b07184d0d49bbb540916ac5e71c6f44e85c978f154029e0"
+  },
+  "completeBuildSourceCount": 587,
+  "completeBuildAssetCount": 49,
+  "sourcePreparationCount": 0,
+  "diagnosticModuleInputs": 74,
+  "diagnosticCandidateSourceInputs": 71,
+  "compilerConfigurationInputs": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/tsconfig.json",
+      "bytes": 550,
+      "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+    }
+  ],
+  "compilerWatchedInputCount": 75,
+  "originalFailedDiagnosticCompilation": {
+    "file": "/private/tmp/tube-pop-up-contact-build-20261005/diagnostic-first-attempt/failure.json",
+    "bytes": 1264,
+    "sha256": "bd60d8f1720743e948e64f2aeed3f3d6a804abebc92310be739ff89c43867e0f"
+  },
+  "sourceCheck": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/source-helper-checks.json",
+    "bytes": 3347,
+    "sha256": "88748b674060ca03699a9d37d6fdcabe052d900f54469c2f5701e1d60569b046"
+  },
+  "inheritedV4ChecksNotRerun": {
+    "menu": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-v4-checks.json",
+      "bytes": 1980,
+      "sha256": "b200a257abd0132fb2478effd8aa33503d7d1c158fb3f7bc039d64295aac2f93"
+    },
+    "follower": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera-checks.json",
+      "bytes": 4042,
+      "sha256": "9bd33a903b800386a2a23f0a9e6893f1641b512eb21dfa075dbce16738791460"
+    },
+    "ownerAndControl": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/owner-policy-checks.json",
+      "bytes": 3258,
+      "sha256": "aa37406b14d62dd1563483c5639869fdc57dfdfda76e09e92fb8d04e779e98da"
+    },
+    "originalPreparationReadiness": {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/readiness.json",
+      "bytes": 5169,
+      "sha256": "ae396c0f31a170ad4aa860d5c1876f8faa9dabd1e56a460ecc36f547ba32d94a"
+    }
+  },
+  "ordinaryRun": {
+    "purpose": "Observe actual landing force/projection operands on the same known-failure sequence; no force fix or causal acceptance",
+    "normalMenuFirst": true,
+    "publicReplayOverrides": {
+      "seed": 6238,
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "seedOnlyAttemptOccurred": false,
+    "allActualConfigFieldsMustMatchV4": true,
+    "initialClockBodyEqualityMeasuredNotAssumed": true,
+    "maxSteps": 2160,
+    "secondsPerStep": 0.016666666666666666,
+    "control": "Unchanged V4 first actual cue pulse and input overlay",
+    "stop": "First published fall/recover/separation/reset increase or horizon",
+    "noPlacementForcedCueSeedSearchOrRetries": true
+  },
+  "diagnosticRetention": {
+    "descriptiveOnly": true,
+    "full": "All non-prone or separation or latched-loss ride and pre-input view copies retain complete contactDiagnostics JSON",
+    "proneNumericTopFields": "All top-level numbers",
+    "proneSampleFields": [
+      "step",
+      "substep",
+      "feasible",
+      "inContact",
+      "flightTime",
+      "postureError",
+      "limit",
+      "supportXMin",
+      "supportXMax",
+      "supportZMin",
+      "supportZMax",
+      "copX",
+      "copZ"
+    ],
+    "proneSamples": [
+      "last",
+      "firstLimited",
+      "firstNonContact"
+    ],
+    "lossLatch": "Complete first finish loss until mount; report.firstContactLoss records first observed latch",
+    "allOtherInputClockBodyDetectorFieldsRetained": true
+  },
+  "evidence": {
+    "checkpointLabels": [
+      "initial",
+      "first-pop-up",
+      "first-landing",
+      "terminal"
+    ],
+    "maximumPNGs": 4,
+    "maximumPNGBytesEach": 12582912,
+    "maximumPNGBytes": 50331648,
+    "movieTrigger": "First actual push output",
+    "maximumMovieAdvances": 240,
+    "maximumMovieRequests": 241,
+    "maximumMovieBytes": 16777216,
+    "maximumSidecars": 4,
+    "maximumSidecarBytesEach": 6291456,
+    "maximumSidecarBytes": 25165824,
+    "maximumDetectorMilliseconds": 20000,
+    "maximumReportBytes": 33554432,
+    "maximumNDJSONBytes": 25165824,
+    "measuredProjection": {
+      "priorRows": 1366,
+      "compactFixtureBytes": 875,
+      "fullFixtureBytes": 2138,
+      "allProneProjection": 20002150.27818448,
+      "diagnosticWindowProjection": 20608390.27818448,
+      "notAGuaranteeForDifferentValuesOrFrontInventory": true
+    }
+  },
+  "finiteOwner": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "internalNativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "rootSealSchema": "pop-up-contact-v11-root-seal/v1",
+    "nativeSchema": "pop-up-contact-v11-native/v1",
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    },
+    "protectedStatesFinallyMustMatch": true,
+    "ports": [
+      4301,
+      9711
+    ],
+    "cliCheck": [
+      "python3",
+      "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/run.py",
+      "--arm",
+      "candidate",
+      "--check-seal"
+    ],
+    "cliRun": [
+      "python3",
+      "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/run.py",
+      "--arm",
+      "candidate",
+      "--run"
+    ]
+  },
+  "claims": {
+    "actualNative": false,
+    "exactV4InitialReplay": false,
+    "actualLossCause": false,
+    "normalMenuAcceptance": false,
+    "bodyEntry": false,
+    "visualAcceptance": false,
+    "FPS": false,
+    "adoption": false,
+    "frameFixSolvesKnownFailure": false,
+    "exactV6InitialReplay": false,
+    "operandObserverSolvesKnownFailure": false,
+    "exactV7InitialReplay": false,
+    "exactV8InitialReplay": false,
+    "startupTimeoutCauseKnown": false,
+    "exactV9InitialReplay": false,
+    "forceCauseResolved": false,
+    "exactV10InitialReplay": false
+  },
+  "rootBuildDistModuleOrProductionModifiedByPreparation": false,
+  "priorV5Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/readiness.json",
+    "bytes": 8599,
+    "sha256": "d833920a3d09763c52553a2097d257c0476d9701c08b8e2cb3071dc42293b138"
+  },
+  "priorV5Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/candidate-first-owner.json",
+    "bytes": 3489,
+    "sha256": "424b0013050fdfccd86ee6a1f457e458946cb0dcd8541beebb4306e59359acc6"
+  },
+  "priorV5Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/candidate-first/report.json",
+    "bytes": 11648573,
+    "sha256": "f2260f0889e3e9657778dfa4a95913db440b34e7b4f8b4b3be83c4a6662e3239"
+  },
+  "labelFix": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/label-fix.json",
+    "bytes": 1354,
+    "sha256": "0bad44a7f2d7d77d2e66844669797745ba191bd130bf3b28b1f8887ed2887e80"
+  },
+  "labelChecks": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/label-checks.json",
+    "bytes": 484,
+    "sha256": "509bc417b92e00a5606534caa40e736c72b1f692335d8987cccf64a965f2c708"
+  },
+  "actualNative": false,
+  "newChecksInheritedFromV5NotRerun": {
+    "contact": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/contact-checks.json",
+      "bytes": 2483,
+      "sha256": "629ae8fd3645e845da039d0831b3a930b4f61f9b68caa3116c14df184b3bbe09"
+    },
+    "owner": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/owner-checks.json",
+      "bytes": 2534,
+      "sha256": "d8c42fa3f3abdbeb031f99d59b960193f868e86dd7c40c315b3555bc9f82cf92"
+    },
+    "CPU": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/cpu-validation.json",
+      "bytes": 1874,
+      "sha256": "c852703b505a50239ec749df453970f564348931f95afdf56fc9336b4eaffaad"
+    },
+    "contactMockGroups": 7,
+    "ownerMockGroups": 21
+  },
+  "priorV6Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/readiness.json",
+    "bytes": 9713,
+    "sha256": "601d870c3c1a97f838f5693e706122c8e6aef96a9dfd0ab8e2dde832972a9780"
+  },
+  "priorV6Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first-owner.json",
+    "bytes": 3481,
+    "sha256": "b6ebaf9afd303f9dbbe577f53ba2e2701408f545b6107e2b3a1900ffc8f95d91"
+  },
+  "priorV6Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first/report.json",
+    "bytes": 12502746,
+    "sha256": "33fd872c52564b5d061e43ea0d31233f830e1e675ac07876bb068cf68d44c683"
+  },
+  "priorV6Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/seal.json",
+    "bytes": 173338,
+    "sha256": "11577f905c1ea0215fed9711224733aed74dabc556314a0035e8eb581ecef2e0"
+  },
+  "minimalAdapterChanges": "Post-Paddle-out wait90\u2192180 seconds and failure wait metadata; budgets660/648/635; new workspace/schema/prior actual V10 metadata. Ports4301/9711 and all ordinary replay policies unchanged.",
+  "pairedV6InitialComparison": "All recorded initialBody fields excluding workerStepMs, actual seaTime and all config fields; equality measured, no placement or controls selected from result",
+  "checks": {
+    "adapterNormalization": true,
+    "syntax": true,
+    "sourceOnlyOwner": true,
+    "effectiveSource588": true,
+    "actualAppBuild587Inputs49Assets": true,
+    "rebuiltDiagnostic74Inputs71SourceAnd75CompilerWatched": true,
+    "inheritedV6MockAndLabelChecksNotRerun": true,
+    "noNewMockSuite": true
+  },
+  "priorV7Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/readiness.json",
+    "bytes": 11256,
+    "sha256": "3a6ffeff68a335a9682582277192ac14707dc1b3630de7b8e5f93245b19b6d7b"
+  },
+  "priorV7Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first-owner.json",
+    "bytes": 3482,
+    "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+  },
+  "priorV7Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/report.json",
+    "bytes": 12501789,
+    "sha256": "a03e780fb5cbbbb2b973930ebf722f13391c55a708850eff73619f65b991c495"
+  },
+  "priorV7Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/seal.json",
+    "bytes": 167900,
+    "sha256": "c4d5d59d9c6e1d5405448385dc3c386666497a106a7d96b3419cfe6f1e9006ca"
+  },
+  "pairedV7Sequence": "All observed1366V7 inputs/seaTimes are immutable reference; equality to a future V8 capture must be measured rather than assumed",
+  "metadataIdentityRepair": {
+    "scope": "Ten declared readonly public symlink paths resolved with exact targets/bytes; diagnostic74 unique path-keyed identities, source71 ordered identities and configuration75 remain exact",
+    "preservedPreparation": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/readiness.json",
+      "bytes": 5171,
+      "sha256": "6558ab4dcaa714b877296a03b465198dc3ba45dd234e048a654fa0689ee0f399"
+    },
+    "preservedFirstFreezeFailure": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/freeze-first-failure.json",
+      "bytes": 2564,
+      "sha256": "006cb2cb604b6da4d354792fc3f84584a86e42c5e868de90978a72b6cd6f51b9"
+    },
+    "preservedSecondFreezeFailure": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/freeze-build-aware-failure.json",
+      "bytes": 632,
+      "sha256": "5895066a3a5decb220abae87f069814f4561509d512f9f3edb01d49565bd7d2a"
+    },
+    "buildAwareCheck": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/check-built-final.py",
+      "bytes": 3626,
+      "sha256": "7c5a2ccf9581ae36175bf257fe7d9aedfebe704e4576a3a1da4e34f713b21254"
+    }
+  },
+  "diagnosticReceiptCorrection": {
+    "original": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-diagnostic-build-result-before-schema-correction.json",
+      "bytes": 36065,
+      "sha256": "930034302adc55fadeaeec22cb8f436d145ece0d42f0a23a9478c1a3ac266e47"
+    },
+    "correction": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-diagnostic-schema-correction.json",
+      "bytes": 898,
+      "sha256": "45d1579483c9d9582c2db1cb07a82f395837a2d155dc8137e3db8be90bbb9d79"
+    },
+    "preservedThirdFreezeFailure": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/freeze-built-final-failure.json",
+      "bytes": 668,
+      "sha256": "31b1afbd74ed1724356e9b0a796679f6bc68a61e80938a4554e3c0e3cdcf9bf8"
+    },
+    "moduleUnchanged": true,
+    "schemaOnly": true
+  },
+  "priorV8Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/readiness-built.json",
+    "bytes": 14567,
+    "sha256": "7771da5422d8b116e906f6ab092e6b64d2bf8dfad3103bf1cb9c48e433f56902"
+  },
+  "priorV8Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-first-owner.json",
+    "bytes": 3364,
+    "sha256": "566f699f2102d6d8c019df31ead75c27304a95d11932007d92041c1ea1b79282"
+  },
+  "priorV8Report": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-first/report.json",
+    "bytes": 144538,
+    "sha256": "83f3865a9460059dd49af635b29875fcc08043824e7dde6f69aa78e3a1572de7"
+  },
+  "priorV8Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/seal.json",
+    "bytes": 186144,
+    "sha256": "616220b2a7cdc6bcbf3180414d1a0ff8aabfabb792e9e5f80fa52519c397c7ce"
+  },
+  "applicationBuildReusedVerbatim": true,
+  "diagnosticModuleReusedVerbatim": true,
+  "newSourceTree": false,
+  "newBuild": false,
+  "reusedSourcePreparationCount": 588,
+  "startupPolicy": {
+    "waitMilliseconds": 180000,
+    "earlierMenuWaitMilliseconds": 45000,
+    "waitPredicateUnchanged": true,
+    "choicesUnchanged": true,
+    "failureStatusReadMilliseconds": 3500,
+    "failureScreenshotMilliseconds": 4000,
+    "failureScreenshotUsesExistingPngBudget": true,
+    "priorRidePauseWaitMilliseconds": 90000
+  },
+  "newNumericalChecks": false,
+  "newHelperChecks": {
+    "sourceStructural": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/source-helper-checks.json",
+      "bytes": 3347,
+      "sha256": "88748b674060ca03699a9d37d6fdcabe052d900f54469c2f5701e1d60569b046"
+    },
+    "nativeSyntax": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/native-syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "sourceOnlyOwner": {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/source-only-owner.log",
+      "bytes": 502,
+      "sha256": "82dffad2d732855592dcc1ccd23166ccd3d345b6e2e4ea5e88e3cb2294f3bbed"
+    }
+  },
+  "knownV8Failure": {
+    "startupTimeoutOnly": true,
+    "ordinarySteps": 0,
+    "pngs": 0,
+    "forceEvidence": false,
+    "causeUnknown": true,
+    "menuStartupImmediateCopyIsNotLateUIState": true
+  },
+  "priorV9Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/readiness.json",
+    "bytes": 17028,
+    "sha256": "7fe4d863db9459a4009b225fd4d163ad03012ab87a4f4e08bc050582f5b476f6"
+  },
+  "priorV9Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/candidate-first-owner.json",
+    "bytes": 3514,
+    "sha256": "0f34819f55708ae1a9faf85d563b9b317f1f1d888279610ca83c46d97ac2b686"
+  },
+  "priorV9Report": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/candidate-first/report.json",
+    "bytes": 10904369,
+    "sha256": "0cee6b0fd9419973dc3f00f791226af106fd39c803a3235f2511df74ceeef1cf"
+  },
+  "priorV9Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/seal.json",
+    "bytes": 182029,
+    "sha256": "3dbf5b754c9c104e48062810578952251824bebaddbbf12cd673a891c0a21d24"
+  },
+  "priorV9PrefixReview": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/prior-v9-prefix-review.json",
+    "bytes": 4274,
+    "sha256": "7f8dce789354b8e7a52657303952631616b22c1724ef0dd59f5665eb13ee0e25"
+  },
+  "knownV9Failure": {
+    "nativeComplete": false,
+    "ownerComplete": false,
+    "failure": "335s internal deadline",
+    "ordinarySteps": 1213,
+    "allProne": true,
+    "startupSucceeded": true,
+    "startupFailure": false,
+    "forceCausalEvidence": false,
+    "ownerElapsedSeconds": 338.0176803749637,
+    "cleanupElapsedSeconds": 0.7316286659915932,
+    "independentClosureValid": true,
+    "protectedPortsPreserved": true,
+    "retainedInputsAndSeaTimePrefixEqualCount": 1213,
+    "nonTimingObservationDifferencesRetained": {
+      "row.cameraFollower.calls": 1213,
+      "row.cameraFollower.zeroDtCalls": 1213,
+      "row.clocks.surfaceRevision": 1213
+    },
+    "initialObservationDifferencesRetained": {
+      "initialBody.cameraFollower.calls": 1,
+      "initialBody.cameraFollower.zeroDtCalls": 1,
+      "initialBody.clocks.surfaceRevision": 1
+    },
+    "fullPrivateStateParityClaim": false
+  },
+  "priorV10Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/readiness.json",
+    "bytes": 19126,
+    "sha256": "3c57111b1b0ef177709d9a16437afecf24124cd45c25df2e368ccdf0dfc7efb4"
+  },
+  "priorV10Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/candidate-first-owner.json",
+    "bytes": 3366,
+    "sha256": "46d0e3d94054b407844b03c24df058f853d8d2ab70d2f313ef37335ec91b9508"
+  },
+  "priorV10Report": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/candidate-first/report.json",
+    "bytes": 153690,
+    "sha256": "e2788eb4f5d66a3040f1646c0487a1a3994136066911a72cbef913ecb6246648"
+  },
+  "priorV10Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/seal.json",
+    "bytes": 184725,
+    "sha256": "7ec1285c5717dd0b5098dd3aa5bbef257dc8d4b4e9d032ffae12b95c2c355e0e"
+  },
+  "operandFieldMetadataCopy": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/observer-fields.json",
+    "target": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer-fields.json",
+    "bytes": 689,
+    "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f",
+    "policy": "exact-literal-frozen-V8-operand-list-copy; owner validation metadata only"
+  },
+  "knownV10Failure": {
+    "nativeComplete": false,
+    "ownerComplete": false,
+    "failure": "90-second normal post-Paddle-out ride/HUD-pause wait expired",
+    "ordinarySteps": 0,
+    "forceCausalEvidence": false,
+    "physicsCauseKnown": false,
+    "lateActualStatusReadRetained": true,
+    "failureScreenshotRetained": true,
+    "ownerElapsedSeconds": 127.8336061250302,
+    "cleanupElapsedSeconds": 0.8460913340095431,
+    "independentClosureValid": true,
+    "protectedPortsPreserved": true,
+    "statusReadEvidence": {
+      "screen": "surf",
+      "base": "menu",
+      "loadingText": "Paddling out\u2026",
+      "loadingHidden": false,
+      "alerts": [],
+      "pauseButtonCount": 0,
+      "publicHost": {
+        "present": true,
+        "type": "VM",
+        "outstandingSteps": 0,
+        "status": {
+          "seaTime": 390.25767869184244,
+          "timeToSet": 24.94999999999999,
+          "compute": "gpu",
+          "cells": 41440,
+          "stepMs": 16,
+          "board": null,
+          "ride": null
+        },
+        "boardPose": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "riderWords": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "publicClock": {
+        "labPresent": true,
+        "active": true,
+        "paused": true,
+        "scale": 1
+      }
+    }
+  }
+}

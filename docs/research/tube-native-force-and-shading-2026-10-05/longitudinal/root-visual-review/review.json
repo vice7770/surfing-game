@@ -1,0 +1,36 @@
+{
+  "schema": "landing-longitudinal-root-visual-review/v1",
+  "actualRootSession": 16105,
+  "terminalExitCode": 0,
+  "owner": {
+    "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first-owner.json",
+    "bytes": 3500,
+    "sha256": "def189cd582ba3ad218b577ae766029c7081879b0a90550469e50a1740a4063c"
+  },
+  "report": {
+    "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/report.json",
+    "bytes": 12749798,
+    "sha256": "1e510766433850be7cb10404798e8dbea02184a4fd9dc989f1f9f3eebe64e14c"
+  },
+  "viewedPNGs": [
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/02-first-landing.png",
+      "bytes": 1903484,
+      "sha256": "c624a5de02e009e65747a5707d532d3976758bf8b579166ea03ffdf9e20f3665"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/03-terminal.png",
+      "bytes": 1959427,
+      "sha256": "2b4e7cd3f9708a9e5a86d26c2e7b8f7c3a9cef7b1a831bd387cdf2b41da7adb3"
+    }
+  ],
+  "rootObservations": [
+    "Landing checkpoint shows rider hands on board beside the steep wave face.",
+    "Terminal checkpoint shows rider separated above/beside board; no supported standing."
+  ],
+  "movieViewed": false,
+  "qualityAccepted": false,
+  "ordinaryStandingAccepted": false,
+  "tubeEntryOrPassageAccepted": false,
+  "productionAdoption": false
+}

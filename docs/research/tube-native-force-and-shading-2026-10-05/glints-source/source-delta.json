@@ -1,0 +1,31 @@
+{
+  "schema": "C-inner-water-glints-source-delta/v1",
+  "parentSourceDirectory": "/private/tmp/tube-C-continuous-water-interior-20261005/source",
+  "parentSourceReadiness": {
+    "file": "/private/tmp/tube-C-continuous-water-interior-20261005/readiness.json",
+    "bytes": 9382,
+    "sha256": "0e7ef58a5cb9019dbfd4ce435ae1a92dfbded79a5ce8c08e303c3a8ef74d2910"
+  },
+  "parentSourceDelta": {
+    "file": "/private/tmp/tube-C-continuous-water-interior-20261005/source-delta.json",
+    "bytes": 1451,
+    "sha256": "7d3b637e27fd0ac80bbc2ab990e6cafc89e77673d1a63edf7b80aefe4d34e2fd"
+  },
+  "parentSourcePinsManifest": {
+    "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source-pins.json",
+    "bytes": 96444,
+    "sha256": "5cf0331527e52c14d5a0e5baaaeb5cbb1291345bcee7001a7d97c5be2e06b175"
+  },
+  "sourceCount": 588,
+  "unchangedParentCount": 587,
+  "replacements": [
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 32726,
+      "sha256": "b663d783509482299979cab38d6f021f2ac02bc1eb0bc4ac9c4f1d0478b9d676"
+    }
+  ],
+  "addedPaths": [],
+  "removedPaths": [],
+  "meaning": "Resolve the pinned original 588-file inventory through the sheet-resolution and continuous parent delta chain, then apply this one runtime override; source-pins.json also records all 588 resulting files."
+}

@@ -1,0 +1,16 @@
+--- a/src/scene/barrel/SweptBarrelMesh.ts
++++ b/src/scene/barrel/SweptBarrelMesh.ts
+@@ -273,11 +273,11 @@
+   #endif
+   irradiance = mix( irradiance, sweptThrough * irradiance, sweptInnerWeight );
+   iblIrradiance = mix( iblIrradiance, sweptThrough * sweptAbove, sweptInnerWeight );
+-  radiance *= 1.0 - sweptInnerWeight;
++  radiance *= mix( vec3( 1.0 ), sweptThrough, sweptInnerWeight );
+   vec2 sweptSun = vec2( dot( waterSunDirection.xz, vSweptRay.xy ), waterSunDirection.y );
+   float sweptSlant = vSweptThroat.z / max( 0.2, abs( dot( vSweptRay.zw, sweptSun ) ) );
+   reflectedLight.directDiffuse *= mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), sweptInnerWeight );
+-  reflectedLight.directSpecular *= 1.0 - sweptInnerWeight;
++  reflectedLight.directSpecular *= mix( vec3( 1.0 ), exp( -waterAttenuation * sweptSlant ), sweptInnerWeight );
+   } else {
+   vec3 sweptThrough = exp( -waterAttenuation * vSweptThroat.z );
+   vec3 sweptOwn = vSweptThroat.x + max( 0.0, 1.0 - vSweptThroat.x - vSweptThroat.y ) * waterDeepReflectance;

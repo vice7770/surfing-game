@@ -1,0 +1,1154 @@
+{
+  "schema": "C-inner-rich-roughness-actual-comparison/v1",
+  "complete": true,
+  "inputPins": [
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/report.json",
+      "bytes": 9373701,
+      "sha256": "85a83a64e1ee08eeaf945cbe0e0a093e07792d6ad84a6bb9558265911ea6f9d4"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first-owner.json",
+      "bytes": 3350,
+      "sha256": "6f0d6a11e76b7af33a840e2c0255e33f4157486df516aaa9b54997c120400b1d"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/readiness.json",
+      "bytes": 12403,
+      "sha256": "c9dc47f4b9b4fde740d465e01d21d28d7a3f824adb4c2622346363d4f7b40dcc"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/helper-pins.json",
+      "bytes": 7562,
+      "sha256": "7bee7b8aa3e83997fde19c14abc073892c08be50bcbaa7fa528ddc28c1583b12"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/seal.json",
+      "bytes": 184910,
+      "sha256": "e5556b0620d681a0ec52dd88c3398e0115ef5149a49518de53f73183fc3dfc06"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/report.json",
+      "bytes": 9372046,
+      "sha256": "634606b882547d71d7f735fbd645967570b3aec512d52a4dd6666620416267b2"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first-owner.json",
+      "bytes": 3341,
+      "sha256": "88376592f8feaced2d630582ed46d2a99e3aacbec3686e3565b2ce88815515d4"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/readiness.json",
+      "bytes": 10740,
+      "sha256": "53ffc46d74b51bf9bf2d265b35d4e51a854592b82451790b8313afa67ad19242"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/helper-pins.json",
+      "bytes": 6948,
+      "sha256": "e45b142841e10b02a4cf019d5bce0f3b768e23b970366fde536b8637d61cdd80"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/seal.json",
+      "bytes": 181577,
+      "sha256": "eddb76a7357e4bc46aa4f9a5c65261081f77b170ad9e18c05403f3a1bf18f471"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/readiness.json",
+      "bytes": 7075,
+      "sha256": "d117b20e11e4ab49ce434944474c1d5f547b8b88e165022f48ea6acceb20784e"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-pins.json",
+      "bytes": 96606,
+      "sha256": "98f2b64288a88e02718f00e8c4bed4a0e9f06bd98877ccd11ab2b3ceb46c6e4c"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-delta.json",
+      "bytes": 2378,
+      "sha256": "37f8b7cca3c1c8a572069027d1e08f5a0112d102a3ae886484a4263b4aa717e0"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/runtime.patch",
+      "bytes": 2799,
+      "sha256": "9f8ae97349e8cf183677b102d5bf9399337f6119c3405bb5c34227b210bd5c0a"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/material-test.patch",
+      "bytes": 4906,
+      "sha256": "da508ca148d20c6ef9e632906d03d08e324dca1488f921c45c0f72a396d14c03"
+    }
+  ],
+  "comparison": {
+    "observations": 71,
+    "allPublicObservationFieldsExactExceptPriorTimingFields": true,
+    "initialSelectionSingleScanAllSixCheckpointsExactExceptPriorTimingFields": true,
+    "completeCameraActorControlsAndPublicOpticalFieldsIncluded": true,
+    "allSettingsExpectedConfigGraphicsOverridesInstallAttributionPhaseLossStopExact": true,
+    "publicRawDifferences": 433,
+    "normalizedPublicDifferences": 0,
+    "metadataReportDifferences": 816,
+    "ownerDifferences": 14,
+    "rawFieldsExcluded": [],
+    "followerActorCameraRedrawFieldsExcluded": []
+  },
+  "matchedCapture": {
+    "initialSeaTime": 361.80670943368096,
+    "lockedStation": {
+      "front": 106,
+      "stationX": 16.25,
+      "initialSigma": 68.67304229736328,
+      "along": 0.6398658752441406,
+      "youngerSign": 1,
+      "stationIdentity": "fixed-Eulerian-solver-column-crest-station",
+      "materialTrajectoryClaim": false
+    },
+    "phase2": {
+      "step": 48,
+      "movingStep": 48,
+      "seaTime": 362.6067094336809
+    },
+    "firstLocalAirLoss": 56,
+    "stop": {
+      "reason": "loft-join-absent",
+      "step": 70,
+      "movingStep": 70,
+      "retirementClaim": false,
+      "physicalDeathClaim": false
+    },
+    "observations": 71,
+    "advances": 70
+  },
+  "completeSidecars": {
+    "initial": {
+      "richRoughness": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/loft-initial.json",
+        "bytes": 1751080,
+        "sha256": "6ffe12e0f6f54839e32069f3c3f58131c56fe64e661ae7076bbdfd2be9578bf3"
+      },
+      "glintsParent": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/loft-initial.json",
+        "bytes": 1751080,
+        "sha256": "6ffe12e0f6f54839e32069f3c3f58131c56fe64e661ae7076bbdfd2be9578bf3"
+      },
+      "wholeFilesByteExact": true,
+      "allMetadataAndArraysEqual": true,
+      "completeRawSidecarDifferences": [],
+      "epoch": {
+        "step": 0,
+        "movingStep": 0,
+        "seaTime": 361.80670943368096,
+        "surfaceRevision": 2,
+        "drawnWaterTime": 361.80670943368096
+      },
+      "counts": {
+        "slices": 116,
+        "vertices": 15544,
+        "indices": 90972
+      },
+      "all37ActiveArrayWordsAndAttributes": {
+        "positions": {
+          "dtype": "Float32Array",
+          "count": 46632,
+          "bytes": 186528,
+          "wordSha256": "8cead17b1b028c163db1d3b976109809df5145df349b00b3a7d18d1b10545af0",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "normals": {
+          "dtype": "Float32Array",
+          "count": 46632,
+          "bytes": 186528,
+          "wordSha256": "e9aa89d35c13c60cd41b55751171b79a381ea30030757c8f1b38ed9d2e65de5b",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "mask": {
+          "dtype": "Float32Array",
+          "count": 15544,
+          "bytes": 62176,
+          "wordSha256": "c71d0999216a75df11f84e7e913b5278ba34ad15848d43d201421c3ecc94d1b1",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "lift": {
+          "dtype": "Float32Array",
+          "count": 15544,
+          "bytes": 62176,
+          "wordSha256": "40ea74b8ade2e41a094d0bc734cdf37d3cbdc4c2be34abbfdeb90bbf018f26bb",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sheet": {
+          "dtype": "Float32Array",
+          "count": 15544,
+          "bytes": 62176,
+          "wordSha256": "a7099008948d6a1fb78879170b4fc9779e82a8a845b22e664c3c905c181774d2",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sheetWeight": {
+          "dtype": "Float32Array",
+          "count": 15544,
+          "bytes": 62176,
+          "wordSha256": "e281239977f9a690af6231e169554d4405cdf0eba4ad679679ca6859f031b47a",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sheetBack": {
+          "dtype": "Float32Array",
+          "count": 15544,
+          "bytes": 62176,
+          "wordSha256": "52e205f3a1d6043e143254a51d79dc975bf5d75661aed237221a483cfc104998",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "throat": {
+          "dtype": "Float32Array",
+          "count": 62176,
+          "bytes": 248704,
+          "wordSha256": "eb30c91cec78ff162173f1a64194ed6927b7d9b069aa09061315dfa1b17a481f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "indices": {
+          "dtype": "Uint32Array",
+          "count": 90972,
+          "bytes": 363888,
+          "wordSha256": "0c41845c5b122352bdfac566dd50a4d8e45f4b6f8fda654ca4f63d8b07c1c29f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceFront": {
+          "dtype": "Int32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "9ff001af176d87cff179c05f3b472bf6f0c25dfae5923a4fe78ebc02cf6b9b06",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceSigma": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "fb679c99da0778e12ea9437a632e28637a0c493e6a3c4adde88291dc18c23665",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTau": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "628fd9063e976f5f53215da4faba487f7e6d736ee17224a738a7cf811134a92e",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "slicePhase": {
+          "dtype": "Uint8Array",
+          "count": 116,
+          "bytes": 116,
+          "wordSha256": "27794703fba461a9c827cf6e12ec49884b3e5ddf90180fa868906ab6de838adf",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceLife": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "09d4703e0a1c87a05a0c8465c43ff85ea5134d8e21af10357a76017c8e23d206",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceCollapse": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "45ff173290e8cf60a1215d2373f5eed20e558f35cbf0fc4091888e6c6bdb19af",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceFade": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "805fcdcf7cf1c718a0af97029121108adcc2ea49aa149416589e81b484c14f6d",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipGap": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "7c4c2b940c41426e36a4cf6c83afababacfb8bb1a1dc39162a95bb812e1d109f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRestHold": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "5635c4e5e71f6b2e788186f7d53f3684a56e7bc0c467cf6396c990a0acf01a26",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRestEnd": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "ad046f09edd83202189792c8fbba3cec78550fde70dd67d789d9364f871acf4b",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRestClimb": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "7545a9d85b21368b71749b382435d14b984444d8509beb357644a2acb14f7a9a",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceToeClimb": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "1c84eec460548a1ab63a03edbb100e657d41632d89f7107c0f82fdfd0452d8e1",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceJoined": {
+          "dtype": "Uint8Array",
+          "count": 116,
+          "bytes": 116,
+          "wordSha256": "9807a35914de2e8534df3d9af862b1ccfd556d17dc8f350476117504ca0d9ace",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRayX": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "7c4c2b940c41426e36a4cf6c83afababacfb8bb1a1dc39162a95bb812e1d109f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRayZ": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "f38ebbfad975e42c103d688b0bcf3da66ab3e2e92768939698d61b9374e02005",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceWeight": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "1bf5798067b5f6fa86eb881f2afabf61d03fb29613656b0134e93ee7871f6101",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceOverturned": {
+          "dtype": "Uint8Array",
+          "count": 116,
+          "bytes": 116,
+          "wordSha256": "8c548952e43dd5ffe7b1a3ecba0e845823d007e7c39db33e7ef000598f0e7b59",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipAlong": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "65a75bff3d3d154983e4654ab39d2207f4f095f6781aee2255c285bc4d78c220",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipUp": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "fd1b27dbea8f896d97574eafffc7888ebc13b6ee460f33b4bf55c4081418862e",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceAnchorVX": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "7c4c2b940c41426e36a4cf6c83afababacfb8bb1a1dc39162a95bb812e1d109f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceAnchorVZ": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "7c4c2b940c41426e36a4cf6c83afababacfb8bb1a1dc39162a95bb812e1d109f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipTransportAlong": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "7c4c2b940c41426e36a4cf6c83afababacfb8bb1a1dc39162a95bb812e1d109f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipTransportUp": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "7c4c2b940c41426e36a4cf6c83afababacfb8bb1a1dc39162a95bb812e1d109f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceFormed": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "bb9f0a6796c04a3e0978c5371d41aa9e512e6548790c7e58b16443562c86c736",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipX": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "87e7baaa82d1e71077a61033e6fdacafdec8387edfaf65a87a542b8c19542ec1",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipY": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "04094e86d512a61b837e7e0f308a9c8b9d7375154a42064d671f73a05f75fcba",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipZ": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "b62ff518b6200f1efb509c30816c1c1365eafec2547de107977498e41952d5fa",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceMouth": {
+          "dtype": "Float32Array",
+          "count": 116,
+          "bytes": 464,
+          "wordSha256": "ad41aa6416085a36f51248e98e60dfdf508a2a7a339bc3ac1695ebc113945320",
+          "everyActiveWordAndDescriptorEqual": true
+        }
+      },
+      "separateRawFrontTypedPacketRetainedInThisSidecar": false,
+      "publicRawFrontRecordsComparedExactlyInEveryObservation": true
+    },
+    "first-phase2": {
+      "richRoughness": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/loft-first-phase2.json",
+        "bytes": 2189404,
+        "sha256": "eefb42cd34b5a4325925357a32562cf4f55ef2ae4a5f6faaf36cc09e110b6d50"
+      },
+      "glintsParent": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/loft-first-phase2.json",
+        "bytes": 2189404,
+        "sha256": "eefb42cd34b5a4325925357a32562cf4f55ef2ae4a5f6faaf36cc09e110b6d50"
+      },
+      "wholeFilesByteExact": true,
+      "allMetadataAndArraysEqual": true,
+      "completeRawSidecarDifferences": [],
+      "epoch": {
+        "step": 48,
+        "movingStep": 48,
+        "seaTime": 362.6067094336809,
+        "surfaceRevision": 50,
+        "drawnWaterTime": 362.6067094336809
+      },
+      "counts": {
+        "slices": 145,
+        "vertices": 19430,
+        "indices": 114114
+      },
+      "all37ActiveArrayWordsAndAttributes": {
+        "positions": {
+          "dtype": "Float32Array",
+          "count": 58290,
+          "bytes": 233160,
+          "wordSha256": "bed44584e396b195b0c51f02e726a6ebfc985106d6e5c90f847169c3ce2d63bd",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "normals": {
+          "dtype": "Float32Array",
+          "count": 58290,
+          "bytes": 233160,
+          "wordSha256": "88092711e1d1a6dfe906ae86bd957a52029b9c035ba0bac40be477f2a86a1579",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "mask": {
+          "dtype": "Float32Array",
+          "count": 19430,
+          "bytes": 77720,
+          "wordSha256": "195365f90e1657587855e14fcdf6859d399b68f7771906e4aac9d40d3e30a541",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "lift": {
+          "dtype": "Float32Array",
+          "count": 19430,
+          "bytes": 77720,
+          "wordSha256": "aae19733aae7ec297555d08e28b29427232f5ab75064ad6070a5d446e61c3751",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sheet": {
+          "dtype": "Float32Array",
+          "count": 19430,
+          "bytes": 77720,
+          "wordSha256": "798bd8f52a5c94e2ee2652c1211126d5776fe65a5a87e2e68b9fd63f519a1532",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sheetWeight": {
+          "dtype": "Float32Array",
+          "count": 19430,
+          "bytes": 77720,
+          "wordSha256": "cb011db20fcd6ea00350627cb16954fce6b5c979007de019ee32a639e9560f8e",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sheetBack": {
+          "dtype": "Float32Array",
+          "count": 19430,
+          "bytes": 77720,
+          "wordSha256": "48db6595104edd708f2aeb130945eef1c5cf6a8ef24b29a2b3cf069476658d21",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "throat": {
+          "dtype": "Float32Array",
+          "count": 77720,
+          "bytes": 310880,
+          "wordSha256": "557b93cc7fe6006e0fb83a4b3ca5a2c2dc4cdf6774318bea68f6c514640ed7fe",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "indices": {
+          "dtype": "Uint32Array",
+          "count": 114114,
+          "bytes": 456456,
+          "wordSha256": "c501e635a60bbfb1e287ea47fbab199ddccbf2b47f848afe53d23cb002cdfb6f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceFront": {
+          "dtype": "Int32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "f300e868f31020663f5aea045497715c2c3067d9850ac8f214f62c70d0d1cce2",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceSigma": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "89aee29d5469c4531574d6a9f501813aedc0216126a1dd5ed34c3474a7d416c5",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTau": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "97946aa04007d4806bed13819b706af91981dc7509d3dcf2c266c3915fbb144f",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "slicePhase": {
+          "dtype": "Uint8Array",
+          "count": 145,
+          "bytes": 145,
+          "wordSha256": "cdad9fc6295f6ef1976e1d2c34810a61411778767b2001e1376d82142ee3fc6c",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceLife": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "c1b302b87a75d3709fb639bcc0ee9763d59a9a3c763c9184846d843c3c24fadb",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceCollapse": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "90d1ea9e6e066505bffb6e690084ee3bae006dd30609d1afc4878532e231e24d",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceFade": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "cbf054b0051e8c221fef794a210672827bba867d6d59820eb042ede05a6e62e4",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipGap": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "b92428daaf38be6775a2b1ce78f5c8ce213b90c6e6fbd95bae56458ab90f7437",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRestHold": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "ec75dd1b14e5bf3b53975b0fc294e780f7a3df101e4a5db72779be06b7f7130e",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRestEnd": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "fa26c6279604783e77141aff53d9c496fd7039fbc0bc9825397cf75ddbf56120",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRestClimb": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "e729ec4c446f7d397e5dec21e28c37b2dd2317880e3d424ffc5ef43736309812",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceToeClimb": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "c4c5af181c5bd907cdc148e425c66dd82b0ff33ced00547e197857dff919fee1",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceJoined": {
+          "dtype": "Uint8Array",
+          "count": 145,
+          "bytes": 145,
+          "wordSha256": "375a80944927c98fc34a5c70a77b2968206379f587ab8e9a56774cac77f5a550",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRayX": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "b92428daaf38be6775a2b1ce78f5c8ce213b90c6e6fbd95bae56458ab90f7437",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceRayZ": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "3b5d51ea897c8886d3872584eecfa69a488e7f86949d354dce81a79c8d6b3215",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceWeight": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "9f1370080eb39ae3c72bc5d0bfaab6091aca8b0ca31caf6ac58a64b6898db333",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceOverturned": {
+          "dtype": "Uint8Array",
+          "count": 145,
+          "bytes": 145,
+          "wordSha256": "ef606cc506b693152dbd202ccdc1b8a84ccb5abb6dfa96546efcfb9ec1523272",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipAlong": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "a8a025002139fbff8873a0c3af28a238e5f5746bee9b15c43d2fc2d4c60a6a12",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipUp": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "3725962e9fcb8c68e230d097ed8b3be80a47d54578367db976aed244616c5f84",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceAnchorVX": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "b92428daaf38be6775a2b1ce78f5c8ce213b90c6e6fbd95bae56458ab90f7437",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceAnchorVZ": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "b92428daaf38be6775a2b1ce78f5c8ce213b90c6e6fbd95bae56458ab90f7437",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipTransportAlong": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "b92428daaf38be6775a2b1ce78f5c8ce213b90c6e6fbd95bae56458ab90f7437",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipTransportUp": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "b92428daaf38be6775a2b1ce78f5c8ce213b90c6e6fbd95bae56458ab90f7437",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceFormed": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "0b67748479a40b08c038af99423a315f01e561ef3482a5f8b0a84b761608ff84",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipX": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "8d54b7f455f047ffe186979abb1f73a1dd252397fe8e524d6289fab1b173d10c",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipY": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "be73615a6b53ff7efbc43f9fce904a1b59c1bb226ae2b5acaef80237f3293ca2",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceTipZ": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "607bb0a4335f14ba0a69c2809997863c68c06f3b9aa632dbf3fda7d66b34cf0a",
+          "everyActiveWordAndDescriptorEqual": true
+        },
+        "sliceMouth": {
+          "dtype": "Float32Array",
+          "count": 145,
+          "bytes": 580,
+          "wordSha256": "3f8df307cc2b2e0a5dc5299a7a21931fee762fc2d0276a704e34f7fabb88a8b8",
+          "everyActiveWordAndDescriptorEqual": true
+        }
+      },
+      "separateRawFrontTypedPacketRetainedInThisSidecar": false,
+      "publicRawFrontRecordsComparedExactlyInEveryObservation": true
+    }
+  },
+  "currentSourceBuildHelperMediaServedClosureIntegrity": {
+    "richRoughness": {
+      "sourceInputs": 587,
+      "assets": 49,
+      "sealedHelperPins": 38,
+      "allCurrentSealedSourceBuildHelperAndServedPinsMatch": true,
+      "servedPins": 15,
+      "build": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-complete-build-result.json",
+        "bytes": 181283,
+        "sha256": "f8f645c10db7d5dc85cdcca24af15de017afcb474071e67c9a1427e3d23e0547"
+      },
+      "media": [
+        {
+          "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/0-initial.png",
+          "bytes": 657559,
+          "sha256": "1b83bb628b127fa7e036c10fc0255d85170e53d9d92933faae0190e30f22c8f3"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/1-initial-exterior.png",
+          "bytes": 2426938,
+          "sha256": "c7069fc30d20b1027a22c8e49563ff152ea64de963c55e36505aa54d81f65d3f"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/2-first-phase2.png",
+          "bytes": 901127,
+          "sha256": "d83c271f2635bfd1b6c6b50e2a09029c1928246c90718716a65cc0c4d2997c30"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/3-first-phase2-water-hidden.png",
+          "bytes": 884203,
+          "sha256": "99f2ff13492a6aafa42b3d196f955ac02921427280d3d381e4724016710ecabf"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/4-first-phase2-barrel-hidden.png",
+          "bytes": 1056742,
+          "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/5-terminal.png",
+          "bytes": 2059465,
+          "sha256": "84a5ec62b12311e464246a95643f58a5b7559824ab90a3541b1972b242734613"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/moving-C.webm",
+          "bytes": 1697812,
+          "sha256": "3789924e463da6a7bd5ac922398cbfc2efd6a71f6014143774d4bce14890005e"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/loft-initial.json",
+          "bytes": 1751080,
+          "sha256": "6ffe12e0f6f54839e32069f3c3f58131c56fe64e661ae7076bbdfd2be9578bf3"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/loft-first-phase2.json",
+          "bytes": 2189404,
+          "sha256": "eefb42cd34b5a4325925357a32562cf4f55ef2ae4a5f6faaf36cc09e110b6d50"
+        }
+      ],
+      "recordedOwner": {
+        "schema": "C-inner-rich-roughness-finite-owner/v1",
+        "arm": "candidate",
+        "complete": true,
+        "firstFailure": null,
+        "startedAt": "2026-10-05T03:39:11.635000+00:00",
+        "sealSha256": "e5556b0620d681a0ec52dd88c3398e0115ef5149a49518de53f73183fc3dfc06",
+        "wholeSeconds": 300,
+        "commandSeconds": 288,
+        "cleanupSeconds": 7,
+        "ports": [
+          4299,
+          9709
+        ],
+        "protectedPorts": [
+          4310,
+          4311,
+          4312,
+          4313
+        ],
+        "dist": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-complete-dist",
+        "served": {
+          "index.html": {
+            "bytes": 1626,
+            "sha256": "040fab1d5f13c7fd95bc89484ae4742f088e02475478f94abd04eed8be883207"
+          },
+          "assets/index-DA8NEfOT.css": {
+            "bytes": 33213,
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          "assets/index-GvhyzZ7i.js": {
+            "bytes": 582402,
+            "sha256": "e1b32b3fa934f38360e45b2dcd64ca5a121187edd51d533c1efdaeb553dc09b8"
+          },
+          "assets/WorkerSurfZone-BYWvWn5f.js": {
+            "bytes": 905904,
+            "sha256": "2b8200c1038b5966b5b81d5c56029c69bdd2434a118cde24dd7bdd9e9be6d4b3"
+          },
+          "assets/skies/skies.json": {
+            "bytes": 2266,
+            "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+          },
+          "assets/surfers/surfer1.glb": {
+            "bytes": 1007368,
+            "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+          },
+          "assets/surfZoneWorker-CzQDF4G6.js": {
+            "bytes": 485310,
+            "sha256": "412f0d3acf19f0830459c75f5ce4c8f77a2ba7c65152416f283671dafdea9afe"
+          },
+          "assets/skies/qwantani_sunset_puresky.jpg": {
+            "bytes": 372349,
+            "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+          },
+          "assets/skies/qwantani_sunset_puresky_1k.hdr": {
+            "bytes": 2097202,
+            "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+          },
+          "barrels/pad19-a20-l12.bin": {
+            "bytes": 149848,
+            "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+          },
+          "barrels/pad19-a30-l12.bin": {
+            "bytes": 163264,
+            "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+          },
+          "barrels/pad19-a45-l12.bin": {
+            "bytes": 168424,
+            "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+          },
+          "barrels/periodic-padang19s-l12.bin": {
+            "bytes": 181852,
+            "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+          },
+          "assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg": {
+            "bytes": 681062,
+            "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+          },
+          "assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr": {
+            "bytes": 2097202,
+            "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+          }
+        },
+        "logBytes": 1350,
+        "nativeGroup": 20320,
+        "physicalGeometryEqualityClaim": false,
+        "bodyEntryClaim": false,
+        "ownedPortsInitiallyClosed": {
+          "4299": true,
+          "9709": true
+        },
+        "protectedStatesInitially": {
+          "4310": true,
+          "4311": true,
+          "4312": false,
+          "4313": false
+        },
+        "protectedPortsInitiallyOpen": {
+          "4310": false,
+          "4311": false,
+          "4312": true,
+          "4313": true
+        },
+        "command": [
+          "/opt/homebrew/bin/node",
+          "/private/tmp/tube-C-inner-rich-roughness-native-20261005/native.mjs",
+          "--run=true",
+          "--arm=candidate",
+          "--url=http://127.0.0.1:4299/?diagnostics",
+          "--out=/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first"
+        ],
+        "exitCode": 0,
+        "sourceBuildHelpersPostUnchanged": true,
+        "remainingOwnedPids": [],
+        "closedPorts": {
+          "4299": true,
+          "9709": true
+        },
+        "protectedStatesFinally": {
+          "4310": true,
+          "4311": true,
+          "4312": false,
+          "4313": false
+        },
+        "protectedPortsStillOpen": {
+          "4310": false,
+          "4311": false,
+          "4312": true,
+          "4313": true
+        },
+        "cleanupElapsedSeconds": 0.4471046670223586,
+        "elapsedSeconds": 108.62949879199732,
+        "independentClosureValid": true,
+        "protectedPortsPreserved": true
+      },
+      "noLiveResourceOrPortProbe": true
+    },
+    "glintsParent": {
+      "sourceInputs": 587,
+      "assets": 49,
+      "sealedHelperPins": 35,
+      "allCurrentSealedSourceBuildHelperAndServedPinsMatch": true,
+      "servedPins": 15,
+      "build": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/root-complete-build-result.json",
+        "bytes": 179785,
+        "sha256": "8feb3a909babaeb0c03e6278232015207ae7a290294e9b757cf547a5ed3d0204"
+      },
+      "media": [
+        {
+          "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/0-initial.png",
+          "bytes": 657559,
+          "sha256": "1b83bb628b127fa7e036c10fc0255d85170e53d9d92933faae0190e30f22c8f3"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/1-initial-exterior.png",
+          "bytes": 2426938,
+          "sha256": "c7069fc30d20b1027a22c8e49563ff152ea64de963c55e36505aa54d81f65d3f"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/2-first-phase2.png",
+          "bytes": 901126,
+          "sha256": "a1e1fd8810fe39c22d9ab166f606dd409a2090f1d67aff87286be9a8a8c9f119"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/3-first-phase2-water-hidden.png",
+          "bytes": 884194,
+          "sha256": "e3623b5bdf11cb64e7d8bc56e47dac102786b7937a1d2e993abf5d056409e208"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/4-first-phase2-barrel-hidden.png",
+          "bytes": 1056742,
+          "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/5-terminal.png",
+          "bytes": 2054423,
+          "sha256": "bce5cb1af8c4a6bc4f8572e3b4b1d7c372558eada5d36836d78724a6f7de3217"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/moving-C.webm",
+          "bytes": 1698078,
+          "sha256": "7542b7afe0dd0dd8715140c7f854f0fd9012dffda8d74a39a88a92f1616a6ef6"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/loft-initial.json",
+          "bytes": 1751080,
+          "sha256": "6ffe12e0f6f54839e32069f3c3f58131c56fe64e661ae7076bbdfd2be9578bf3"
+        },
+        {
+          "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/loft-first-phase2.json",
+          "bytes": 2189404,
+          "sha256": "eefb42cd34b5a4325925357a32562cf4f55ef2ae4a5f6faaf36cc09e110b6d50"
+        }
+      ],
+      "recordedOwner": {
+        "schema": "C-inner-water-glints-finite-owner/v1",
+        "arm": "candidate",
+        "complete": true,
+        "firstFailure": null,
+        "startedAt": "2026-10-05T03:05:38.715825+00:00",
+        "sealSha256": "eddb76a7357e4bc46aa4f9a5c65261081f77b170ad9e18c05403f3a1bf18f471",
+        "wholeSeconds": 300,
+        "commandSeconds": 288,
+        "cleanupSeconds": 7,
+        "ports": [
+          4299,
+          9709
+        ],
+        "protectedPorts": [
+          4310,
+          4311,
+          4312,
+          4313
+        ],
+        "dist": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-complete-dist",
+        "served": {
+          "index.html": {
+            "bytes": 1626,
+            "sha256": "de6bc5cf748a7b39489fcfc26e79f5b8a24aa70106c608552672c6f4a222351b"
+          },
+          "assets/index-DA8NEfOT.css": {
+            "bytes": 33213,
+            "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+          },
+          "assets/index-Bpy8qb0O.js": {
+            "bytes": 582400,
+            "sha256": "23a809256d92b343de2c91b73fee419e9797db39c4065fbe7155ec2ed0d6200a"
+          },
+          "assets/WorkerSurfZone-C7WjPuUb.js": {
+            "bytes": 905611,
+            "sha256": "9c8c47065c2070410c5bc895a83b8eb78990ef260bdafc98dbf116d1b74db83b"
+          },
+          "assets/skies/skies.json": {
+            "bytes": 2266,
+            "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+          },
+          "assets/surfers/surfer1.glb": {
+            "bytes": 1007368,
+            "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+          },
+          "assets/surfZoneWorker-CzQDF4G6.js": {
+            "bytes": 485310,
+            "sha256": "412f0d3acf19f0830459c75f5ce4c8f77a2ba7c65152416f283671dafdea9afe"
+          },
+          "assets/skies/qwantani_sunset_puresky.jpg": {
+            "bytes": 372349,
+            "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+          },
+          "assets/skies/qwantani_sunset_puresky_1k.hdr": {
+            "bytes": 2097202,
+            "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+          },
+          "barrels/pad19-a30-l12.bin": {
+            "bytes": 163264,
+            "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+          },
+          "barrels/pad19-a20-l12.bin": {
+            "bytes": 149848,
+            "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+          },
+          "barrels/periodic-padang19s-l12.bin": {
+            "bytes": 181852,
+            "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+          },
+          "barrels/pad19-a45-l12.bin": {
+            "bytes": 168424,
+            "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+          },
+          "assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg": {
+            "bytes": 681062,
+            "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+          },
+          "assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr": {
+            "bytes": 2097202,
+            "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+          }
+        },
+        "logBytes": 1350,
+        "nativeGroup": 8710,
+        "physicalGeometryEqualityClaim": false,
+        "bodyEntryClaim": false,
+        "ownedPortsInitiallyClosed": {
+          "4299": true,
+          "9709": true
+        },
+        "protectedStatesInitially": {
+          "4310": true,
+          "4311": true,
+          "4312": false,
+          "4313": false
+        },
+        "protectedPortsInitiallyOpen": {
+          "4310": false,
+          "4311": false,
+          "4312": true,
+          "4313": true
+        },
+        "command": [
+          "/opt/homebrew/bin/node",
+          "/private/tmp/tube-C-inner-water-glints-native-20261005/native.mjs",
+          "--run=true",
+          "--arm=candidate",
+          "--url=http://127.0.0.1:4299/?diagnostics",
+          "--out=/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first"
+        ],
+        "exitCode": 0,
+        "sourceBuildHelpersPostUnchanged": true,
+        "remainingOwnedPids": [],
+        "closedPorts": {
+          "4299": true,
+          "9709": true
+        },
+        "protectedStatesFinally": {
+          "4310": true,
+          "4311": true,
+          "4312": false,
+          "4313": false
+        },
+        "protectedPortsStillOpen": {
+          "4310": false,
+          "4311": false,
+          "4312": true,
+          "4313": true
+        },
+        "cleanupElapsedSeconds": 0.5181795000098646,
+        "elapsedSeconds": 124.97819866699865,
+        "independentClosureValid": true,
+        "protectedPortsPreserved": true
+      },
+      "noLiveResourceOrPortProbe": true
+    }
+  },
+  "source": {
+    "fullFrozenInputs": 588,
+    "unchangedParentInputs": 586,
+    "onlyRuntimeAndExistingMaterialTestChanged": true,
+    "runtimeChangedPaths": [
+      "src/scene/barrel/SweptBarrelMesh.ts"
+    ],
+    "testChangedPaths": [
+      "src/scene/barrel/SweptBarrelMesh.test.ts"
+    ],
+    "all588CurrentSourceFilesComparedDirectlyWithImmediateGlintsParent": true,
+    "originalFrozenPreparationReadinessRemainsUnmodified": true,
+    "rootCompletedChecksAndBuildAreSeparatelyPinnedByActualSeal": true
+  },
+  "movie": {
+    "recordedMetadata": {
+      "complete": true,
+      "bytes": 1697812,
+      "mimeType": "video/webm;codecs=vp9",
+      "requestCount": 71,
+      "requestFrameCount": 71,
+      "startStep": 0,
+      "endStep": 70,
+      "physicsAdvances": 70,
+      "physicalSeconds": 1.166666666666572,
+      "startSeaTime": 361.80670943368096,
+      "endSeaTime": 362.97337610034754,
+      "wallMilliseconds": 23592.5,
+      "tracksStopped": true,
+      "physicalPlaybackRateClaim": false,
+      "encodedFrameCountClaim": false,
+      "file": "moving-C.webm",
+      "sha256": "3789924e463da6a7bd5ac922398cbfc2efd6a71f6014143774d4bce14890005e"
+    },
+    "encodedFrameCountNotIndependentlyDecodedHere": true,
+    "pixelOrGameFPSOrPhysicalPlaybackClaim": false
+  },
+  "rootVisualJudgment": {
+    "source": "root owns actual pixels; this analyzer does not assess appearance",
+    "qualityAcceptedByThisNumericAudit": false,
+    "thisAnalyzerDidNotViewPixels": true
+  },
+  "differenceArchive": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/complete-differences.json",
+    "bytes": 311310,
+    "sha256": "7dd840028271b13a917314018539be98d966847e70e7aec13e9741233e04f117"
+  },
+  "limits": {
+    "privateWholeSolverOrGPUStateEquality": false,
+    "unretainedNaNPayloadOrUnusedCapacityEquality": false,
+    "visualOrTranslucencyAcceptance": false,
+    "mouthOrBodyPassageAcceptance": false,
+    "FPSAcceptance": false,
+    "adoption": false
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceHelperShaderGitChanged": false,
+  "testsBuildsNativeRun": false
+}

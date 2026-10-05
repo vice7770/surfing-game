@@ -1,0 +1,178 @@
+{
+  "schema": "C-inner-water-glints-source-readiness/v1",
+  "complete": false,
+  "preparationComplete": true,
+  "frozen": true,
+  "validationComplete": false,
+  "meaning": "Frozen source preparation is complete; strict TypeScript, the 14 focused cases, application build and actual matched visual assessment remain pending with root.",
+  "sourceDirectory": "/private/tmp/tube-C-inner-water-glints-20261005/source",
+  "sourceCount": 588,
+  "unchangedParentInputs": 587,
+  "parentSourceDirectory": "/private/tmp/tube-C-continuous-water-interior-20261005/source",
+  "parentSourceReadiness": {
+    "file": "/private/tmp/tube-C-continuous-water-interior-20261005/readiness.json",
+    "bytes": 9382,
+    "sha256": "0e7ef58a5cb9019dbfd4ce435ae1a92dfbded79a5ce8c08e303c3a8ef74d2910"
+  },
+  "parentSourceDelta": {
+    "file": "/private/tmp/tube-C-continuous-water-interior-20261005/source-delta.json",
+    "bytes": 1451,
+    "sha256": "7d3b637e27fd0ac80bbc2ab990e6cafc89e77673d1a63edf7b80aefe4d34e2fd"
+  },
+  "parentSourcePinsManifest": {
+    "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source-pins.json",
+    "bytes": 96444,
+    "sha256": "5cf0331527e52c14d5a0e5baaaeb5cbb1291345bcee7001a7d97c5be2e06b175"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-C-inner-water-glints-20261005/source-pins.json",
+    "bytes": 96602,
+    "sha256": "dc736647223791a30cb736f655de9bd1a9d6cb733694ea248f2af5f0f34e10b1"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-C-inner-water-glints-20261005/source-delta.json",
+    "bytes": 1335,
+    "sha256": "370486f6594530ce977c8bfc8e7fae314f527a2c31681343d06d54315dc95a49"
+  },
+  "changedPaths": [
+    "src/scene/barrel/SweptBarrelMesh.ts"
+  ],
+  "runtimeChangedPaths": [
+    "src/scene/barrel/SweptBarrelMesh.ts"
+  ],
+  "testChangedPaths": [],
+  "existingTestSource": {
+    "path": "src/scene/barrel/SweptBarrelMesh.test.ts",
+    "bytes": 26886,
+    "sha256": "a3032224e63af43485849eee88c83243ae9bcd6cd6e4be2f687bc74f68c515c7"
+  },
+  "runtimePatch": {
+    "file": "/private/tmp/tube-C-inner-water-glints-20261005/runtime.patch",
+    "bytes": 1041,
+    "sha256": "80b82bb9ae7523590995beee67968b49fe9db2714965e7e335ef2995f5d27bab"
+  },
+  "preparationChecks": {
+    "file": "/private/tmp/tube-C-inner-water-glints-20261005/preparation-checks.json",
+    "bytes": 835,
+    "sha256": "f05a5440652c6eac518a500f72b7a21ed048603fc143f26fb09a9f78f6284d6d"
+  },
+  "designNote": {
+    "file": "/private/tmp/tube-C-interior-surface-detail-design-20261005/README.md",
+    "bytes": 5305,
+    "sha256": "27c9a543844ce1ede9832aae1e5a64a052bcd9a4628c0906357ca99683f4ee32"
+  },
+  "checks": {
+    "strictTypeScript": {
+      "run": false,
+      "passed": false,
+      "exitCode": null,
+      "pendingWithRoot": true,
+      "suggestedArgv": [
+        "node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "/private/tmp/tube-C-inner-water-glints-20261005/source/tsconfig.json"
+      ]
+    },
+    "focusedShaderMaterial": {
+      "run": false,
+      "passed": false,
+      "exitCode": null,
+      "expectedCases": 14,
+      "testSourceByteExactToParent": true,
+      "pendingWithRoot": true,
+      "suggestedArgv": [
+        "node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/private/tmp/tube-C-inner-water-glints-20261005/vitest.config.mjs",
+        "src/scene/barrel/SweptBarrelMesh.test.ts"
+      ]
+    },
+    "applicationBuild": {
+      "run": false,
+      "passed": false,
+      "pendingWithRoot": true
+    },
+    "actualNativeVisualAssessment": {
+      "run": false,
+      "accepted": false,
+      "pendingWithRoot": true
+    }
+  },
+  "materialPolicy": {
+    "COnlyStoredColumnUniformAndClampedInnerWeightExact": true,
+    "directionalIBLUsesExistingMeanBeer": true,
+    "directSpecularUsesExistingSlantBeer": true,
+    "continuousRearBackgroundAndDiffuseFillByteExact": true,
+    "RAWClassicExteriorGeometryContactOpticalAttributesExact": true,
+    "existingNormalRippleLightingSamplesAndRoughnessExact": true,
+    "cavityIncidentLightAttenuationApproximation": true,
+    "exactPhysicalReflectionOrVisibilityClaim": false,
+    "newColorExposureGainRoughnessTuningOrPass": false
+  },
+  "actualContinuousRejectionReferencePins": [
+    {
+      "file": "/private/tmp/tube-C-continuous-water-interior-actual-review-20261005/README.md",
+      "bytes": 4285,
+      "sha256": "7c3c789d76b21f4b2b35c64cfca1dd89b14665d6c60023ae97c1395594eb64ef"
+    },
+    {
+      "file": "/private/tmp/tube-C-continuous-water-interior-actual-review-20261005/analysis.json",
+      "bytes": 61202,
+      "sha256": "62c6b500dd4b7e768ca38b32de0aaefd4d7a071f533b61a77a849d9a88d29a50"
+    },
+    {
+      "file": "/private/tmp/tube-C-continuous-water-interior-native-20261005/candidate-first-owner.json",
+      "bytes": 3370,
+      "sha256": "31f173bff82539e6087b27be61f1ac0d315dcc9c9f27c61bc97a2db06dbccb11"
+    }
+  ],
+  "actualContinuousRejectedVisualJudgment": {
+    "source": "root report after viewing all six PNGs and decoded movie frames 0/35/70",
+    "broadFlatGreenOpaquePlasticWallsAndVerticalStreaks": true,
+    "whiteFoldedRoofCreaseNarrowPhase2ExitTerminalFoldDitherBand": true,
+    "qualityAccepted": false,
+    "adoption": false,
+    "thisPreparationDidNotIndependentlyViewPixels": true
+  },
+  "payloadPins": [
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-20261005/prepare-source.py",
+      "bytes": 6549,
+      "sha256": "c5ab0d1f9ad65125224a66dd99ad1eea5e8c72c20f071a7a0eda94f990671c3c"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-20261005/verify.py",
+      "bytes": 6589,
+      "sha256": "e11d4c3f9b57bc2e9fc36e5ddd6e7a1f45eacfcdfc237af6eaf165869c166b04"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-20261005/vitest.config.mjs",
+      "bytes": 231,
+      "sha256": "91d80834a9258ea538d9fb1e24595d28e9d8031bd7e223fa445b5d1b80d20314"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-20261005/README.md",
+      "bytes": 4299,
+      "sha256": "4a942e16e0adc3c7f93114e5a5bda9b251c55fef6e248ca32a67540435d638ef"
+    }
+  ],
+  "CPUTestsRun": false,
+  "buildPerformed": false,
+  "nativeRun": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "nativeHelperFamilyPrepared": false,
+  "rootSealWritten": false,
+  "GitOrProductionChanged": false,
+  "acceptance": {
+    "newActualAppearance": false,
+    "translucentInterior": false,
+    "tubeEntryOrBodyPassage": false,
+    "FPSOrPerformance": false,
+    "adoption": false
+  }
+}

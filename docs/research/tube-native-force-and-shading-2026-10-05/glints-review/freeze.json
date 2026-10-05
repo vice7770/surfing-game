@@ -1,0 +1,108 @@
+{
+  "schema": "C-inner-water-glints-actual-review-freeze/v1",
+  "complete": true,
+  "frozen": true,
+  "inputPins": [
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/report.json",
+      "bytes": 9372046,
+      "sha256": "634606b882547d71d7f735fbd645967570b3aec512d52a4dd6666620416267b2"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first-owner.json",
+      "bytes": 3341,
+      "sha256": "88376592f8feaced2d630582ed46d2a99e3aacbec3686e3565b2ce88815515d4"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/readiness.json",
+      "bytes": 10740,
+      "sha256": "53ffc46d74b51bf9bf2d265b35d4e51a854592b82451790b8313afa67ad19242"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/helper-pins.json",
+      "bytes": 6948,
+      "sha256": "e45b142841e10b02a4cf019d5bce0f3b768e23b970366fde536b8637d61cdd80"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/seal.json",
+      "bytes": 181577,
+      "sha256": "eddb76a7357e4bc46aa4f9a5c65261081f77b170ad9e18c05403f3a1bf18f471"
+    },
+    {
+      "file": "/private/tmp/tube-C-continuous-water-interior-native-20261005/candidate-first/report.json",
+      "bytes": 9376370,
+      "sha256": "3cb0c56415e32896a6aa127f3513fc0543272b9cb38f63c8ce97fe48a18cc73d"
+    },
+    {
+      "file": "/private/tmp/tube-C-continuous-water-interior-native-20261005/candidate-first-owner.json",
+      "bytes": 3370,
+      "sha256": "31f173bff82539e6087b27be61f1ac0d315dcc9c9f27c61bc97a2db06dbccb11"
+    },
+    {
+      "file": "/private/tmp/tube-C-continuous-water-interior-native-20261005/readiness.json",
+      "bytes": 25505,
+      "sha256": "5af5bb0452894c4a1619f05d5f1ad619bfa480308755ea7af49eb9cbbaf10a26"
+    },
+    {
+      "file": "/private/tmp/tube-C-continuous-water-interior-native-20261005/helper-pins.json",
+      "bytes": 5266,
+      "sha256": "69c1d0e08aa77ffd52bf1a49342c78fb207c46306438cbc42943d564a94edfc1"
+    },
+    {
+      "file": "/private/tmp/tube-C-continuous-water-interior-native-20261005/seal.json",
+      "bytes": 183184,
+      "sha256": "617afb68b58e64541706f32e78938b828af8b7f60b746246df649534f2a090ae"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-20261005/readiness.json",
+      "bytes": 6630,
+      "sha256": "5e4005e45bd176566704ab2f440cacb51596d84bdd4798cee4a346d726a06a4e"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-20261005/source-pins.json",
+      "bytes": 96602,
+      "sha256": "dc736647223791a30cb736f655de9bd1a9d6cb733694ea248f2af5f0f34e10b1"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-20261005/source-delta.json",
+      "bytes": 1335,
+      "sha256": "370486f6594530ce977c8bfc8e7fae314f527a2c31681343d06d54315dc95a49"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-20261005/runtime.patch",
+      "bytes": 1041,
+      "sha256": "80b82bb9ae7523590995beee67968b49fe9db2714965e7e335ef2995f5d27bab"
+    }
+  ],
+  "payloadPins": [
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-actual-review-20261005/README.md",
+      "bytes": 3593,
+      "sha256": "8d117256088a77ce37332f22bc52d23fca84238061b31bfcf11e1a48979db831"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-actual-review-20261005/analyze.py",
+      "bytes": 14564,
+      "sha256": "01d4f8c81474496b01c463774c90b76475026e562cd1c264eb10e555b2e55201"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-actual-review-20261005/analysis.json",
+      "bytes": 43496,
+      "sha256": "f156969f4268412f04d4d3bf102a6f0e0b9ae92cbb370721526b2df0a7a5c708"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-actual-review-20261005/complete-differences.json",
+      "bytes": 302795,
+      "sha256": "6dfba06e3896e24d1b7954dba423cb72c87ddc02b5da20644c99f615e1d0517b"
+    }
+  ],
+  "observations": 71,
+  "completeSidecars": 2,
+  "arraysEach": 37,
+  "rawFieldsExcluded": [],
+  "appearanceAccepted": false,
+  "adoption": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceHelperShaderGitChanged": false
+}

@@ -1,0 +1,29 @@
+{
+  "noFieldsExcluded": true,
+  "differences": [
+    {
+      "path": "$.loft-initial.json.epoch.surfaceRevision",
+      "kind": "value",
+      "V11": 5,
+      "actual": 4
+    },
+    {
+      "path": "$.loft-first-pop-up.json.epoch.surfaceRevision",
+      "kind": "value",
+      "V11": 1305,
+      "actual": 1304
+    },
+    {
+      "path": "$.loft-first-landing.json.epoch.surfaceRevision",
+      "kind": "value",
+      "V11": 1348,
+      "actual": 1347
+    },
+    {
+      "path": "$.loft-terminal.json.epoch.surfaceRevision",
+      "kind": "value",
+      "V11": 1371,
+      "actual": 1370
+    }
+  ]
+}

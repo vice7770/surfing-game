@@ -1,0 +1,177 @@
+--- v8/src/physics/AttachedRider.ts
++++ candidate/src/physics/AttachedRider.ts
+@@ -990,6 +990,15 @@
+   private readonly landingDemand = landingDemandOperands();
+   private legLoad = 0;
+   private legRateAfter = 0;
++  /** Landing only: measured displacement/rate along the heading, with finite hip/ankle impedance.
++   * Provisional existing RIDER_LEG tangential values; no independent position history. */
++  private readonly landingForeAxis = new Vector3();
++  private landingForeOffset = 0;
++  private landingForeRate = 0;
++  private landingForeRateAfter = 0;
++  private landingForeStiffness = 0;
++  private landingForeDamping = 0;
++  private landingForeForce = 0;
+   /**
+    * Standing, how far from a fall, 0 to 1 (spec P9): the least of how near the
+    * centre of pressure is to the support's edges across and along, and how near
+@@ -1268,6 +1277,9 @@
+     this.restRate = 0;
+     this.extending = false;
+     this.legRateAfter = 0;
++    this.landingForeAxis.set(0, 0, 0);
++    this.landingForeOffset = this.landingForeRate = this.landingForeRateAfter = 0;
++    this.landingForeStiffness = this.landingForeDamping = this.landingForeForce = 0;
+     this.balanceMargin = 1;
+     this.rawMargin = 1;
+     this.standingLine = undefined;
+@@ -1578,11 +1590,25 @@
+     // the stance point while pushing through the centre of mass instead, the coupled system turned
+     // singular as a carve changed its geometry, and the solve blew up. Standing, it is carried where
+     // it is along the leg and across it.
++    const landing = this.phase === 'landing';
++    if (landing) {
++      // Heading-only during landing: orthogonal to up, unlike the pitched deck's forward.
++      this.landingForeAxis.copy(Z).applyQuaternion(this.bodyFrame);
++    } else {
++      // Only transient measurements end here; actual COM position/velocity are untouched.
++      this.landingForeAxis.set(0, 0, 0);
++      this.landingForeOffset = this.landingForeRate = this.landingForeRateAfter = 0;
++      this.landingForeStiffness = this.landingForeDamping = this.landingForeForce = 0;
++    }
+     this.carried.subVectors(this.target, board.centerOfMass);
+     if (this.upright) {
+       const off = this.scratch.subVectors(this.position, this.target);
+       this.carried.addScaledVector(this.up, off.dot(this.up));
+       if (this.banking) this.carried.addScaledVector(this.across, off.dot(this.across));
++      if (landing) {
++        this.landingForeOffset = off.dot(this.landingForeAxis);
++        this.carried.addScaledVector(this.landingForeAxis, this.landingForeOffset);
++      }
+     }
+     // Drive: keeping the body's bank as the board rolls and pitches under the feet, the knees' flex, and a
+     // bounded correction toward the posture.
+@@ -1599,7 +1625,17 @@
+     if (this.upright) error.addScaledVector(this.up, -error.dot(this.up));
+     if (this.banking) error.addScaledVector(this.across, -error.dot(this.across));
+     const correction = Math.min(MAX_CORRECTION, (CORRECTION * error.length()) / h);
+-    if (error.lengthSq() > 0) this.drive.addScaledVector(error.normalize(), correction);
++    if (error.lengthSq() > 0) {
++      if (landing) {
++        // Remove only the fore projection of the original bounded correction. Removing
++        // it before normalization would strengthen the remaining lateral servo.
++        error.normalize().multiplyScalar(correction);
++        error.addScaledVector(this.landingForeAxis, -error.dot(this.landingForeAxis));
++        this.drive.add(error);
++      } else {
++        this.drive.addScaledVector(error.normalize(), correction);
++      }
++    }
+     this.gravity.set(0, -this.mass * WATER.gravity, 0);
+     this.waterForces(h, board, water);
+     this.compressAssist(board);
+@@ -1610,7 +1646,7 @@
+       if (this.banking) {
+         this.prepareBank(h, board);
+       } else {
+-        // Landing: carried upright, the bank's unknown held at nothing.
++        // Nonbanking upright: the bank remains at nothing; landing uses a separate translation.
+         this.bank.rate = 0;
+         this.bankSpeed = 0;
+         this.ankleTorque = 0;
+@@ -1812,6 +1848,12 @@
+     this.landingDemand.carriedRelativeX = this.localScratch.x;
+     this.landingDemand.carriedRelativeY = this.localScratch.y;
+     this.landingDemand.carriedRelativeZ = this.localScratch.z;
++    if (this.phase === 'landing') {
++      this.landingForeRate = this.localScratch.dot(this.landingForeAxis);
++      this.landingForeStiffness = RIDER_LEG.tangentialStiffness;
++      this.landingForeDamping = 2 * RIDER_LEG.tangentialDamping * Math.sqrt(this.landingForeStiffness * this.mass);
++      this.landingForeForce = -this.landingForeStiffness * this.landingForeOffset - this.landingForeDamping * this.landingForeRate;
++    }
+     this.leg.force = this.legLoad - this.legStiffness * (this.leg.extension - this.leg.rest) - this.legDamping * this.leg.rate;
+   }
+ 
+@@ -2071,7 +2113,8 @@
+     const a = this.arm;
+     const b = this.carried;
+     const n = this.up;
+-    const t = this.across;
++    const landing = this.phase === 'landing';
++    const t = landing ? this.landingForeAxis : this.across;
+     const av = [a.x, a.y, a.z];
+     const bv = [b.x, b.y, b.z];
+     const nv = [n.x, n.y, n.z];
+@@ -2088,7 +2131,7 @@
+       system[6 * N + i] += m * nv[i];
+       system[(3 + i) * N + 6] += m * an[i];
+       system[6 * N + 3 + i] += m * bn[i];
+-      if (!this.banking) continue;
++      if (!this.banking && !landing) continue;
+       system[i * N + 7] += m * tv[i];
+       system[7 * N + i] += m * tv[i];
+       system[(3 + i) * N + 7] += m * at[i];
+@@ -2111,11 +2154,12 @@
+     }
+     system[6 * N + 6] += m + h * this.legDamping + h * h * this.legStiffness;
+     const length = this.legLength;
+-    // Landing, the bank's unknown is held at nothing: the body is carried upright.
+-    system[7 * N + 7] += this.banking ? m + (h * (ANKLE_STIFFNESS * h + ANKLE_DAMPING)) / (length * length) : 1;
++    // The same eighth slot is bank speed while banking, fore speed only while landing.
++    system[7 * N + 7] += this.banking ? m + (h * (ANKLE_STIFFNESS * h + ANKLE_DAMPING)) / (length * length)
++      : landing ? m + h * this.landingForeDamping + h * h * this.landingForeStiffness : 1;
+     // The momentum the constraint must supply: v_rider' = v' + w' x carried + drive + up s'' + across u'.
+     const mismatch = cross(this.boardSpin, b, this.scratch).add(this.boardVelocity).add(this.drive)
+-      .addScaledVector(n, this.leg.rate).addScaledVector(t, this.bankSpeed).sub(this.velocity);
++      .addScaledVector(n, this.leg.rate).addScaledVector(t, landing ? this.landingForeRate : this.bankSpeed).sub(this.velocity);
+     const f = this.scratch2.copy(this.external).multiplyScalar(h).addScaledVector(mismatch, -m);
+     rhs[0] += f.x;
+     rhs[1] += f.y;
+@@ -2128,6 +2172,7 @@
+     rhs[6] += n.dot(f) + h * (this.leg.force - h * this.legStiffness * this.leg.rate);
+     // The ankle pushes the body back across the leg by its torque over the leg's length.
+     if (this.banking) rhs[7] += t.dot(f) - (h * (this.ankleTorque + this.swingTorque)) / length;
++    else if (landing) rhs[7] += t.dot(f) + h * (this.landingForeForce - h * this.landingForeStiffness * this.landingForeRate);
+     // The upper body's swing turns the body on its feet; the board feels only the push at the feet, not its couple.
+     rhs[3] -= h * this.swingTorque * this.rollAxis.x;
+     rhs[4] -= h * this.swingTorque * this.rollAxis.y;
+@@ -2142,9 +2187,17 @@
+   settleStanding(x: Float64Array, h: number, board: BoardBody): boolean {
+     const spin = this.scratch.set(this.boardSpin.x + x[3], this.boardSpin.y + x[4], this.boardSpin.z + x[5]);
+     this.legRateAfter = this.leg.rate + x[6];
+-    this.bankSpeedAfter = this.bankSpeed + x[7];
++    const landing = this.phase === 'landing';
++    if (landing) {
++      this.landingForeRateAfter = this.landingForeRate + x[7];
++      this.bankSpeedAfter = 0;
++    } else {
++      this.bankSpeedAfter = this.bankSpeed + x[7];
++    }
+     const velocity = cross(spin, this.carried, this.scratch2).add(this.boardVelocity).add(this.drive)
+-      .addScaledVector(this.up, this.legRateAfter).addScaledVector(this.across, this.bankSpeedAfter);
++      .addScaledVector(this.up, this.legRateAfter);
++    if (landing) velocity.addScaledVector(this.landingForeAxis, this.landingForeRateAfter);
++    else velocity.addScaledVector(this.across, this.bankSpeedAfter);
+     velocity.x += x[0];
+     velocity.y += x[1];
+     velocity.z += x[2];
+@@ -2178,10 +2231,16 @@
+     const contact = this.impulse;
+     if (this.feasible) {
+       this.velocity.copy(cross(board.angularVelocity, this.carried, this.scratch2).add(board.velocity).add(this.drive));
+-      if (this.upright) this.velocity.addScaledVector(this.up, this.legRateAfter).addScaledVector(this.across, this.bankSpeedAfter);
++      if (this.upright) {
++        this.velocity.addScaledVector(this.up, this.legRateAfter);
++        if (this.phase === 'landing') this.velocity.addScaledVector(this.landingForeAxis, this.landingForeRateAfter);
++        else this.velocity.addScaledVector(this.across, this.bankSpeedAfter);
++      }
+       contact.copy(this.velocity).sub(before).multiplyScalar(this.mass).addScaledVector(this.external, -h);
+       if (this.upright) {
+-        this.angularVelocity.set(0, board.angularVelocity.y, 0).addScaledVector(this.rollAxis, this.bankSpeedAfter / this.legLength);
++        this.angularVelocity.set(0, board.angularVelocity.y, 0);
++        // Fore/aft translation is not bank angular velocity.
++        if (this.phase !== 'landing') this.angularVelocity.addScaledVector(this.rollAxis, this.bankSpeedAfter / this.legLength);
+       } else {
+         this.angularImpulseWork(board);
+         this.angularVelocity.copy(board.angularVelocity);

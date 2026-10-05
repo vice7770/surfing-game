@@ -1,0 +1,20 @@
+--- first/tests/landingCompliance.test.ts
++++ repair/tests/landingCompliance.fixture-types.test.ts
+@@ -2,7 +2,7 @@
+ import { isDeepStrictEqual } from 'node:util';
+ import { Quaternion, Vector3 } from 'three';
+ import { afterAll, expect, it } from 'vitest';
+-import { AttachedRider, type RiderPhase } from '../source/src/physics/AttachedRider';
++import { AttachedRider } from '../source/src/physics/AttachedRider';
+ import { BoardBody } from '../source/src/physics/BoardBody';
+ import { PlaneWater } from '../source/src/physics/PlaneWater';
+ import { WATER } from '../source/src/physics/hullForces';
+@@ -25,7 +25,7 @@
+   const board = Object.fromEntries(Object.entries(p.board).filter(([key]) => key !== 'rider'));
+   return originalWords({ board, rider: p.rider, water: p.water, diagnostics: p.rider.readContactDiagnostics() });
+ }
+-function pair(oracle: boolean, angle: number, speed: number, phase: RiderPhase = 'prone') {
++function pair(oracle: boolean, angle: number, speed: number, phase: 'prone' | 'standing' = 'prone') {
+   const board = oracle ? new OracleBoard() : new BoardBody();
+   const yaw = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), YAW);
+   const q = yaw.multiply(new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), angle));

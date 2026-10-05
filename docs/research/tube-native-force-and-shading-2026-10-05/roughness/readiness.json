@@ -1,0 +1,310 @@
+{
+  "schema": "C-inner-rich-roughness-native-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "preparationComplete": true,
+  "status": "root-authority-verified",
+  "meaning": "Same completed glints capture helpers; isolated roughness hypothesis, prior rejected appearance and all native quality/adoption claims unaccepted.",
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/readiness.json",
+    "bytes": 7075,
+    "sha256": "d117b20e11e4ab49ce434944474c1d5f547b8b88e165022f48ea6acceb20784e"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-pins.json",
+    "bytes": 96606,
+    "sha256": "98f2b64288a88e02718f00e8c4bed4a0e9f06bd98877ccd11ab2b3ceb46c6e4c"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-delta.json",
+    "bytes": 2378,
+    "sha256": "37f8b7cca3c1c8a572069027d1e08f5a0112d102a3ae886484a4263b4aa717e0"
+  },
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/helper-pins.json",
+    "bytes": 7562,
+    "sha256": "7bee7b8aa3e83997fde19c14abc073892c08be50bcbaa7fa528ddc28c1583b12"
+  },
+  "helperPins": [
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/run.py",
+      "bytes": 32842,
+      "sha256": "9436d470d821b01b78a14e42fab209b24035558f2e67e7e823a6455f6f263ae9"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/native.mjs",
+      "bytes": 13451,
+      "sha256": "a050e1f282d94ad4d2fec89d8b2004e7417467604b3fd9039629ee1db10fcca6"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/prepare.py",
+      "bytes": 5518,
+      "sha256": "b38e663efce00e548145b7547a23706b0af888ccfd8ea44601233d7b2372e025"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/freeze-helper.py",
+      "bytes": 9643,
+      "sha256": "a5aaaf12ebc687b687d091010ecdaa7ec8a1021288445f2ee8ed1ed6c7e8f711"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/README.md",
+      "bytes": 2360,
+      "sha256": "8aa9eb857aba126e3ed740593aad74c088a39195cfe1140c85bfa2bc3c151341"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/helper-checks.json",
+      "bytes": 3761,
+      "sha256": "3784d216dfc8d2267ec02dcf796196b872ffca881dbd4d3dbee71d9e5dd5bc2b"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/adapter-preparation.json",
+      "bytes": 2421,
+      "sha256": "e8369f5d20e8aa183ef27ab8ea67c8537df1acdf99a55952ef7564d816e3ac76"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/run.py.patch",
+      "bytes": 10182,
+      "sha256": "07931e2c7375621b77a48cb894b80bbf3966cd35ef73f0bf2377681ddc9d7fbb"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/native.mjs.patch",
+      "bytes": 6779,
+      "sha256": "09e43d2b80c2b65f0d3999a50a7aff379ca3f5c1bd06cbb40df904aa9c0034a8"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/helper-pins.json",
+      "bytes": 6948,
+      "sha256": "e45b142841e10b02a4cf019d5bce0f3b768e23b970366fde536b8637d61cdd80"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/readiness.json",
+      "bytes": 10740,
+      "sha256": "53ffc46d74b51bf9bf2d265b35d4e51a854592b82451790b8313afa67ad19242"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/seal.json",
+      "bytes": 181577,
+      "sha256": "eddb76a7357e4bc46aa4f9a5c65261081f77b170ad9e18c05403f3a1bf18f471"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first-owner.json",
+      "bytes": 3341,
+      "sha256": "88376592f8feaced2d630582ed46d2a99e3aacbec3686e3565b2ce88815515d4"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/report.json",
+      "bytes": 9372046,
+      "sha256": "634606b882547d71d7f735fbd645967570b3aec512d52a4dd6666620416267b2"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/root-complete-build-result.json",
+      "bytes": 179785,
+      "sha256": "8feb3a909babaeb0c03e6278232015207ae7a290294e9b757cf547a5ed3d0204"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-actual-review-20261005/README.md",
+      "bytes": 3593,
+      "sha256": "8d117256088a77ce37332f22bc52d23fca84238061b31bfcf11e1a48979db831"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-actual-review-20261005/analysis.json",
+      "bytes": 43496,
+      "sha256": "f156969f4268412f04d4d3bf102a6f0e0b9ae92cbb370721526b2df0a7a5c708"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/readiness.json",
+      "bytes": 7075,
+      "sha256": "d117b20e11e4ab49ce434944474c1d5f547b8b88e165022f48ea6acceb20784e"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-pins.json",
+      "bytes": 96606,
+      "sha256": "98f2b64288a88e02718f00e8c4bed4a0e9f06bd98877ccd11ab2b3ceb46c6e4c"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-delta.json",
+      "bytes": 2378,
+      "sha256": "37f8b7cca3c1c8a572069027d1e08f5a0112d102a3ae886484a4263b4aa717e0"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/runtime.patch",
+      "bytes": 2799,
+      "sha256": "9f8ae97349e8cf183677b102d5bf9399337f6119c3405bb5c34227b210bd5c0a"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/material-test.patch",
+      "bytes": 4906,
+      "sha256": "da508ca148d20c6ef9e632906d03d08e324dca1488f921c45c0f72a396d14c03"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/preparation-integrity.json",
+      "bytes": 962,
+      "sha256": "1edcd5f6eec0ab8706ebc830af6375b4880a697eab07721a97cf0d531ce2e60f"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-design-20261005/README.md",
+      "bytes": 3737,
+      "sha256": "a0a34ff144b5794d96cf911bf24b2906ed92746ceb78ac06b4b26568956fdc6f"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/root-checks/result.json",
+      "bytes": 1961,
+      "sha256": "81b95759b7ad52477fcbcbf488a8bd604db29976047354caf6b45c775c09b1f6"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-helper-checks.json",
+      "bytes": 1074,
+      "sha256": "28850313894ea41bc7dbfdfac022d9a6796a612e3fb8102722b664e4c2898d12"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-complete-build-result.json",
+      "bytes": 181283,
+      "sha256": "f8f645c10db7d5dc85cdcca24af15de017afcb474071e67c9a1427e3d23e0547"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/nativeSyntax.root.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/sourceOnlyOwner.root.log",
+      "bytes": 495,
+      "sha256": "04144adb547bedd9529adeeb49cdc6c3ece932e03a4e7fd91aa450c28d81939c"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-object-attribution-native-20261005/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "/private/tmp/tube-directed-entry-20261004/body-witnesses.mjs",
+      "bytes": 11626,
+      "sha256": "71ad07a239e6974bb5f13148247721a58fb398676cc14e3e8d8fc09b7356f4a5"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-object-attribution-native-20261005/moving-shape.mjs",
+      "bytes": 42469,
+      "sha256": "ecce342ad758a004f6dfaffbbb01184a8b4a53b688a82df840ff8d76e03412fe"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-object-attribution-native-20261005/station-tools.mjs",
+      "bytes": 17541,
+      "sha256": "65043d2fb90b01bdf174c0e8455638aba1d8cf1cb92479ca0e55a69cd317c966"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-object-attribution-native-20261005/mouth-tools.mjs",
+      "bytes": 5316,
+      "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-object-attribution-native-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2957,
+      "sha256": "eddf8c0905336fa839a9abdd1af8cdc637f89d243ad0370b3ddc21cc384a53bd"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-object-attribution-native-20261005/object-attribution-tools.mjs",
+      "bytes": 2595,
+      "sha256": "b2d6ea14380130a4671650c017f28c7db688a0b35f172513f40abfb3cb401e2b"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-object-attribution-native-20261005/mock-checks.mjs",
+      "bytes": 22967,
+      "sha256": "10e3ba45f647c51c290ae1dd537c0746d0c759a554b4424ed28f3b860c8923df"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/scripts/browser/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    }
+  ],
+  "sourceContractCheck": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/helper-checks.json",
+    "bytes": 3761,
+    "sha256": "3784d216dfc8d2267ec02dcf796196b872ffca881dbd4d3dbee71d9e5dd5bc2b"
+  },
+  "parentHelperReadiness": {
+    "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/readiness.json",
+    "bytes": 10740,
+    "sha256": "53ffc46d74b51bf9bf2d265b35d4e51a854592b82451790b8313afa67ad19242"
+  },
+  "parentHelperManifest": {
+    "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/helper-pins.json",
+    "bytes": 6948,
+    "sha256": "e45b142841e10b02a4cf019d5bce0f3b768e23b970366fde536b8637d61cdd80"
+  },
+  "priorGlintsSeal": {
+    "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/seal.json",
+    "bytes": 181577,
+    "sha256": "eddb76a7357e4bc46aa4f9a5c65261081f77b170ad9e18c05403f3a1bf18f471"
+  },
+  "priorGlintsOwner": {
+    "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first-owner.json",
+    "bytes": 3341,
+    "sha256": "88376592f8feaced2d630582ed46d2a99e3aacbec3686e3565b2ce88815515d4"
+  },
+  "priorGlintsReport": {
+    "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/report.json",
+    "bytes": 9372046,
+    "sha256": "634606b882547d71d7f735fbd645967570b3aec512d52a4dd6666620416267b2"
+  },
+  "priorGlintsRejection": {
+    "file": "/private/tmp/tube-C-inner-water-glints-actual-review-20261005/analysis.json",
+    "bytes": 43496,
+    "sha256": "f156969f4268412f04d4d3bf102a6f0e0b9ae92cbb370721526b2df0a7a5c708"
+  },
+  "buildId": "tube-C-inner-rich-roughness-20261005",
+  "sourceInputs": 587,
+  "preparationInputs": 588,
+  "unchangedImmediateParentInputs": 586,
+  "assets": 49,
+  "wholeSeconds": 300,
+  "commandSeconds": 288,
+  "cleanupSeconds": 7,
+  "ports": [
+    4299,
+    9709
+  ],
+  "protectedStates": {
+    "4310": true,
+    "4311": true,
+    "4312": false,
+    "4313": false
+  },
+  "ordinaryCapturePolicyChanged": false,
+  "expectedObservations": 71,
+  "expectedAdvances": 70,
+  "countsNotForced": true,
+  "maximumNeutralSearchSteps": 300,
+  "maximumMovingAdvances": 240,
+  "maximumMovieRequests": 241,
+  "maximumPngs": 6,
+  "maximumWholeSidecars": 2,
+  "actualSourceChecksAccepted": true,
+  "actualBuildAccepted": true,
+  "helperAcceptance": true,
+  "checksRunByHelper": false,
+  "actualNewNativePending": true,
+  "actualNative": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "appearanceAccepted": false,
+  "bodyPassageAccepted": false,
+  "physicsAccepted": false,
+  "FPSAccepted": false,
+  "productionAdoption": false,
+  "rootSourceChecks": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/root-checks/result.json",
+    "bytes": 1961,
+    "sha256": "81b95759b7ad52477fcbcbf488a8bd604db29976047354caf6b45c775c09b1f6"
+  },
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-helper-checks.json",
+    "bytes": 1074,
+    "sha256": "28850313894ea41bc7dbfdfac022d9a6796a612e3fb8102722b664e4c2898d12"
+  },
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-complete-build-result.json",
+    "bytes": 181283,
+    "sha256": "f8f645c10db7d5dc85cdcca24af15de017afcb474071e67c9a1427e3d23e0547"
+  }
+}

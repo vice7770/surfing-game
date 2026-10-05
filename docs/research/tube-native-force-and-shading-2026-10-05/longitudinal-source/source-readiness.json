@@ -1,0 +1,83 @@
+{
+  "schema": "landing-longitudinal-source-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "meaning": "Frozen source preparation with actual controlled fixture passes; ordinary native benefit and adoption remain unproved.",
+  "sourceDirectory": "/private/tmp/tube-landing-longitudinal-native-20261005/source",
+  "sourceCount": 588,
+  "applicationSourceCount": 587,
+  "unchangedParentInputs": 587,
+  "runtimeChangedPaths": [
+    "src/physics/AttachedRider.ts"
+  ],
+  "parentManifest": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-complete-build-result.json",
+    "bytes": 188075,
+    "sha256": "55f34f0651d1a4f45292de2e0a5968e193844616eb819414a9075140a7ba26ab"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-landing-longitudinal-native-20261005/source-pins.json",
+    "bytes": 96409,
+    "sha256": "833f8995b05993b8f68ed9da9bbf1d1cc72ee7c384e5d4c98fcc6b4ea609cf4c"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-landing-longitudinal-native-20261005/source-delta.json",
+    "bytes": 1128,
+    "sha256": "536fc03f790cef910ae7997815e1f655671044db8744fdb705f34d1de9f1be76"
+  },
+  "candidatePreparation": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/readiness.json",
+    "bytes": 8112,
+    "sha256": "3b31e4dcce07a4b775ec2a1e713edaff3c09fe770fb1ff9ae76a8b1322e26d13"
+  },
+  "candidateRuntime": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/AttachedRider.ts",
+    "bytes": 149572,
+    "sha256": "84bae9817c3135d1999c094152d5184221162c5777bd27663aa3fa57c3aac5d4"
+  },
+  "candidatePatch": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/candidate.patch",
+    "bytes": 9747,
+    "sha256": "9b18631cb71144baab421c025291142a9c186a33d04e5754fa625b5dcaa49de9"
+  },
+  "controlledCPUResult": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-fixture-discovery-checks/result.json",
+    "bytes": 15885,
+    "sha256": "483614cb8771d0de7eaf76e2a5a45cb578e9606467b34f8aab02250799f73b0f"
+  },
+  "controlledProof": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/controlled-proof.json",
+    "bytes": 282850,
+    "sha256": "44707586c9955872607fb00d246356d58bdde167e6f59bfdcf1e090c3132c830"
+  },
+  "fixtureTypeRepair": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/fixture-types-repair.json",
+    "bytes": 1793,
+    "sha256": "03e4768d57b1b5ce326e4cb764d6e9a9ef58be55efda8b6a271dedfeba14da29"
+  },
+  "fixtureRunnerConfig": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/vitest.fixture-types.config.ts",
+    "bytes": 178,
+    "sha256": "66df7becf7d8ea6a1080f319832c5c19f27a8e1a561c52e60968f424b8420ed5"
+  },
+  "parentV11ActualOwner": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first-owner.json",
+    "bytes": 3508,
+    "sha256": "b8494909bd2282da74c9ff6f30b32953c4b98b7061dd8a8e19c237a5aae8d037"
+  },
+  "actualV11ForceReview": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/analysis.json",
+    "bytes": 122602,
+    "sha256": "6e7f588dedd190746c9dbc0509aadf749498f1ace8dba72760d8d5fe574490d7"
+  },
+  "buildId": "tube-landing-longitudinal-20261005",
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "applicationBuildPerformed": false,
+  "diagnosticBuildPerformed": false,
+  "nativeRun": false,
+  "nativeCauseOrFixAccepted": false,
+  "ordinaryStandingAccepted": false,
+  "bodyPassageAccepted": false,
+  "productionAdoption": false
+}

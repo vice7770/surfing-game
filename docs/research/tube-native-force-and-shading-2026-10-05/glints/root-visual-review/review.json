@@ -1,0 +1,93 @@
+{
+  "schema": "C-inner-water-glints-root-visual-review/v1",
+  "owner": {
+    "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first-owner.json",
+    "bytes": 3341,
+    "sha256": "88376592f8feaced2d630582ed46d2a99e3aacbec3686e3565b2ce88815515d4"
+  },
+  "report": {
+    "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/report.json",
+    "bytes": 9372046,
+    "sha256": "634606b882547d71d7f735fbd645967570b3aec512d52a4dd6666620416267b2"
+  },
+  "actualPNGsViewed": [
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/0-initial.png",
+      "bytes": 657559,
+      "sha256": "1b83bb628b127fa7e036c10fc0255d85170e53d9d92933faae0190e30f22c8f3"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/1-initial-exterior.png",
+      "bytes": 2426938,
+      "sha256": "c7069fc30d20b1027a22c8e49563ff152ea64de963c55e36505aa54d81f65d3f"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/2-first-phase2.png",
+      "bytes": 901126,
+      "sha256": "a1e1fd8810fe39c22d9ab166f606dd409a2090f1d67aff87286be9a8a8c9f119"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/3-first-phase2-water-hidden.png",
+      "bytes": 884194,
+      "sha256": "e3623b5bdf11cb64e7d8bc56e47dac102786b7937a1d2e993abf5d056409e208"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/4-first-phase2-barrel-hidden.png",
+      "bytes": 1056742,
+      "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/5-terminal.png",
+      "bytes": 2054423,
+      "sha256": "bce5cb1af8c4a6bc4f8572e3b4b1d7c372558eada5d36836d78724a6f7de3217"
+    }
+  ],
+  "actualMovie": {
+    "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/moving-C.webm",
+    "bytes": 1698078,
+    "sha256": "7542b7afe0dd0dd8715140c7f854f0fd9012dffda8d74a39a88a92f1616a6ef6"
+  },
+  "decodedSelectedFrames": [
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/root-visual-review/movie-01.png",
+      "bytes": 155322,
+      "sha256": "3c31250177663402ba1faa1a7ce40a52538fdb81859640ce3b82144f7b6f0dc0",
+      "frame": 0
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/root-visual-review/movie-02.png",
+      "bytes": 395692,
+      "sha256": "54b31323d936afeb5665144506b6a23250ec6a72ca7a05ada36c4aee137924f9",
+      "frame": 35
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/root-visual-review/movie-03.png",
+      "bytes": 1254951,
+      "sha256": "0752265e12822a2f982d49402580a4a25296a1286c93dbc16bd409c2f1261690",
+      "frame": 70
+    }
+  ],
+  "wholeMovieWatched": false,
+  "ffprobe": {
+    "codec": "vp9",
+    "width": 1708,
+    "height": 879,
+    "decodedFrames": 71
+  },
+  "observations": 71,
+  "ordinaryAdvances": 70,
+  "physicalSeconds": 1.166666666666572,
+  "wallMilliseconds": 29491,
+  "physicalPlaybackOrFPSClaim": false,
+  "findings": {
+    "initial": "Broad flat opaque green walls and pale roof crease; no convincing water sheen.",
+    "exterior": "Distant breaking crest with stripe-like inner surface and fragmented white coverage.",
+    "phase2": "Narrow arched opening, repeated vertical streaks and folded pale roof. Water-hidden pair looks essentially the same cavity.",
+    "barrelHidden": "Heightfield/underwater band and sandy bottom visible; no per-fragment ownership conclusion.",
+    "terminal": "Folded/cap wall, coverage dither and broad intersecting heightfield band remain."
+  },
+  "qualityAccepted": false,
+  "appearanceAdoption": false,
+  "bodyPassageAccepted": false,
+  "geometryCameraOpticalMatching": "Pending independent complete actual review; source/build pins and capture closure already checked. No pixel claim about unchanged physics from source delta alone."
+}

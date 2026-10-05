@@ -1,0 +1,38 @@
+{
+  "schema": "landing-longitudinal-fixture-type-repair/v1",
+  "reason": "The pair fixture exercises only prone and standing, while RiderPhase also includes recover which the constructor PosePhase excludes. Narrow the fixture parameter to its two actual cases; no runtime, numerical fixture or assertion changes.",
+  "firstFailure": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-checks/strict.log",
+    "bytes": 387,
+    "sha256": "81a0044f67ffce5983ceee48a7104da9aee7050135fb2114301097d62cbaeb87"
+  },
+  "firstResult": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-checks/result.json",
+    "bytes": 14361,
+    "sha256": "4b72268d142efb20e35d6fdfeb6e0da6015477992e32beb4bdb1a385edca5b7a"
+  },
+  "originalTest": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/tests/landingCompliance.test.ts",
+    "bytes": 10882,
+    "sha256": "1be9a048ec8eb4a64e46e7a56eac210208632ab24e38b26c10212f7ba1f0ad5a"
+  },
+  "repairedTest": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/tests/landingCompliance.fixture-types.test.ts",
+    "bytes": 10875,
+    "sha256": "72b2a9e237753d7522ad0bd607c0870ce3e804e56930c0ef001749d6a6cf06b7"
+  },
+  "repairedConfig": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/tsconfig.fixture-types.json",
+    "bytes": 666,
+    "sha256": "158ca776f5a1ff6a4e5c47c8d6e11a80fd93c7ff690631a4ec43ab6c4fa7d062"
+  },
+  "patch": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/fixture-types.patch",
+    "bytes": 1259,
+    "sha256": "9740a177e1ea13997b693f6fbf540cfe8ebad3ddf7c8f5e5e0618f7b7338bca8"
+  },
+  "strictRun": false,
+  "focusedRun": false,
+  "nativeRunning": true,
+  "checksDeferredUntilNativeTerminal": true
+}

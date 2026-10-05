@@ -1,0 +1,60 @@
+{
+  "schema": "C-inner-rich-roughness-root-source-checks/v1",
+  "sourceInputs": 588,
+  "checks": [
+    {
+      "name": "strict",
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "/private/tmp/tube-C-inner-rich-roughness-20261005/source/tsconfig.json"
+      ],
+      "timeoutSeconds": 60,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 35.73228424997069,
+      "log": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "focused",
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/private/tmp/tube-C-inner-rich-roughness-20261005/vitest.config.mjs",
+        "src/scene/barrel/SweptBarrelMesh.test.ts",
+        "--reporter=json",
+        "--outputFile",
+        "/private/tmp/tube-C-inner-rich-roughness-20261005/root-checks/focused.json"
+      ],
+      "timeoutSeconds": 60,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 3.105952084006276,
+      "log": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/root-checks/focused.log",
+        "bytes": 98,
+        "sha256": "da690d88bdb37db1c3a42a6e11c758ef4f9a8e2b5bf66fca425b0a4f3d1ec64f"
+      },
+      "report": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/root-checks/focused.json",
+        "bytes": 6295,
+        "sha256": "9ee8928090b1ea08e1e5858c0db71ee4136bad0adb14713cf028f0b3c9700f82"
+      },
+      "success": true,
+      "passed": 14,
+      "failed": 0,
+      "total": 14
+    }
+  ],
+  "complete": true,
+  "sourcePreUnchanged": true,
+  "sourcePostUnchanged": true
+}

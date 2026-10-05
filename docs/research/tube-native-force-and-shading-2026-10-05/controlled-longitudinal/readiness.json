@@ -1,0 +1,214 @@
+{
+  "schema": "landing-longitudinal-preparation-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "sourceOnly": true,
+  "workspace": "/private/tmp/tube-landing-longitudinal-compliance-20261005",
+  "parent": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.ts",
+    "bytes": 146425,
+    "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+  },
+  "candidate": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/AttachedRider.ts",
+    "bytes": 149572,
+    "sha256": "84bae9817c3135d1999c094152d5184221162c5777bd27663aa3fa57c3aac5d4"
+  },
+  "runtimeChangedPaths": [
+    "src/physics/AttachedRider.ts"
+  ],
+  "literalSourceClosureFiles": 57,
+  "unrelatedSourceFilesExact": 56,
+  "sourceInventory": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source-inventory.json",
+    "bytes": 33429,
+    "sha256": "be6e83f58dc04f2bdb729863f2466ada77f4a818bdb442f86c249e12d345bd60"
+  },
+  "sourceValidity": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source-validity.json",
+    "bytes": 1163,
+    "sha256": "d685deaa7f4fbf1092cd4015b851bad433111e2bc755822fa75abf32a78cc213"
+  },
+  "payloadPins": [
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/prepare.py",
+      "bytes": 9076,
+      "sha256": "1f5f2b528f2f0357c4198ca5c6b93f05686210f73254df5b4e43f3a0718437d4"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/freeze.py",
+      "bytes": 7022,
+      "sha256": "adab5e930a2dda4d4d2ac95daa0253ec8641f4496fbb58d3535ef04139c92cf8"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/DESIGN.md",
+      "bytes": 4882,
+      "sha256": "4661ee09008ce3e549780477910cec22f3fc2aa207e38e2475556a344ca27268"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/candidate.patch",
+      "bytes": 9747,
+      "sha256": "9b18631cb71144baab421c025291142a9c186a33d04e5754fa625b5dcaa49de9"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source-parent.json",
+      "bytes": 33279,
+      "sha256": "2ced6ad8f27d784a191566cb9fc3032b6131ca6687a3ce3a0f9a594c41d9673b"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source-validity.json",
+      "bytes": 1163,
+      "sha256": "d685deaa7f4fbf1092cd4015b851bad433111e2bc755822fa75abf32a78cc213"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source-inventory.json",
+      "bytes": 33429,
+      "sha256": "be6e83f58dc04f2bdb729863f2466ada77f4a818bdb442f86c249e12d345bd60"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/preparation.log",
+      "bytes": 378,
+      "sha256": "acf563b2f36ba47e4a7d4f3bcc55006e82ad94e7a5c9b402fa963ff0d0cf97aa"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/preparation.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/package.json",
+      "bytes": 33,
+      "sha256": "a90fc33418afa2b9cbf4768524b021135b965ecdf993457505bfae3ac44a8428"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/tsconfig.json",
+      "bytes": 626,
+      "sha256": "ffc9bc5efe2e87e94f36cff52e6d1e986349c1e33519441a8165e44f0d2fa1e8"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/vitest.config.ts",
+      "bytes": 164,
+      "sha256": "7ee027d9ad057862450440a8689b8d46c5dda09b31563f86563712ed16b21fd6"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/tests/landingCompliance.test.ts",
+      "bytes": 10882,
+      "sha256": "1be9a048ec8eb4a64e46e7a56eac210208632ab24e38b26c10212f7ba1f0ad5a"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/preparation-first/prepare.py",
+      "bytes": 9056,
+      "sha256": "29ec932ec60391a6e3ae5977762664ea5fbcd53631aa4af99f482507e8ff663a"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/preparation-first/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/preparation-first/failure.json",
+      "bytes": 391,
+      "sha256": "1d7c997b85a83ff323abca45da33a35e814f5e1191dfb570eca797693037d9ca"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    }
+  ],
+  "externalAuthorities": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/readiness-built.json",
+      "bytes": 14567,
+      "sha256": "7771da5422d8b116e906f6ab092e6b64d2bf8dfad3103bf1cb9c48e433f56902"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source-delta.json",
+      "bytes": 1762,
+      "sha256": "5fb428bad3ebf5d60b07184d0d49bbb540916ac5e71c6f44e85c978f154029e0"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-design-20261005.md",
+      "bytes": 12449,
+      "sha256": "4d968eaba608f00ae44f5b65ca2d8a094b79c6aafc5f1baaf41d3f02c3104544"
+    },
+    {
+      "file": "/private/tmp/tube-landing-demand-resolution-20261005/freeze.json",
+      "bytes": 2169,
+      "sha256": "b9b5d0752bb95d3db8a0b7828b6007e8c91cf278f5c0888e688b633f19d91f49"
+    },
+    {
+      "file": "/private/tmp/tube-landing-demand-resolution-20261005/tests/landingDemand.test.ts",
+      "bytes": 7205,
+      "sha256": "ea7cd08c32e0f38cbf7e9a1d425de1d4a00db39b2847591fdaa72d44b0214293"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.test.ts",
+      "bytes": 94027,
+      "sha256": "38057d14b919b205bdda705e0ce2f854f8e79049d0053245463e1705b7f447c4"
+    }
+  ],
+  "dependencyLink": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/node_modules",
+    "target": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/node_modules"
+  },
+  "oracleLink": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/oracle",
+    "target": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source"
+  },
+  "eligibility": "phase === 'landing'",
+  "provisionalTangential": {
+    "source": "unchanged RIDER_LEG",
+    "stiffnessNPerM": 3000,
+    "dampingRatio": 0.5
+  },
+  "preserved": {
+    "pushSeconds": 0.72,
+    "landingSeconds": 0.48,
+    "observerFields": 38,
+    "COPFrictionLoadReachLoss": true,
+    "actualPositionIntegration": true,
+    "pairedReactionAndWorkPaths": true
+  },
+  "prospectiveCases": 5,
+  "phaseParityFrames": 240,
+  "popUpFixtureFrames": 552,
+  "unloadedFixtureFrames": 1,
+  "nativeCausalEvidenceUsed": false,
+  "firstStandingHandoffUnproven": true,
+  "checks": {
+    "sourceInventoryAndLiteralBoundaryOnly": true,
+    "typescript": false,
+    "tests": false,
+    "solves": false,
+    "build": false,
+    "native": false,
+    "visualAcceptance": false,
+    "physicsAdoption": false
+  },
+  "proposedSequentialCommands": [
+    [
+      "./node_modules/.bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "-p",
+      "tsconfig.json"
+    ],
+    [
+      "./node_modules/.bin/vitest",
+      "run",
+      "--config",
+      "vitest.config.ts",
+      "--maxWorkers",
+      "1",
+      "tests/landingCompliance.test.ts"
+    ]
+  ],
+  "executionPolicy": "Root review and separate CPU lease; second only if first passes, first failure preserved and stop. No automatic build/native retry."
+}

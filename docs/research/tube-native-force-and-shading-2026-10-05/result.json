@@ -1,0 +1,1548 @@
+{
+  "schema": "tube-native-force-and-shading-archive/v1",
+  "complete": true,
+  "meaning": "Bounded selected evidence archive; full native reports and raw numerical differences are retained where listed. This is not a complete runnable source/build snapshot. Original absolute references can be resolved through this payload map for selected files.",
+  "goal": "Good hollow moving tubes with ordinary rider entry and passage; remains active and unproven.",
+  "baseCommit": "bc0b489fa29aff8b6b2454fee9e2ab7d101582a2",
+  "runtimeChanged": false,
+  "productionAdoption": false,
+  "mainChanged": false,
+  "targetBranch": "claude/wave-pool",
+  "actualRootRuns": [
+    {
+      "name": "V11 observer-only",
+      "session": 84293,
+      "exitCode": 0,
+      "steps": 1366,
+      "standing": false
+    },
+    {
+      "name": "Landing longitudinal compliance",
+      "session": 16105,
+      "exitCode": 0,
+      "steps": 1366,
+      "standing": false,
+      "controlledFixturePassed": 5,
+      "controlledFixtureTotal": 5,
+      "controlledFixtureSteps": 793
+    },
+    {
+      "name": "C glints",
+      "session": 11326,
+      "exitCode": 0,
+      "observations": 71,
+      "advances": 70,
+      "appearanceAccepted": false
+    },
+    {
+      "name": "C authored Rich roughness",
+      "session": 26974,
+      "exitCode": 0,
+      "observations": 71,
+      "advances": 70,
+      "appearanceAccepted": false
+    }
+  ],
+  "findings": [
+    "V11 attempted implicit axial force becomes negative during unloading; the previous controlled positive-axial/negative-deck witness is not the native failure.",
+    "Longitudinal compliance changes the actual landing response, briefly retains support, then still falls before standing at step1366. Prepared positive legForce at loss is not the attempted implicit force; the actual attempted axial force is negative.",
+    "Both shader trials match their immediate recorded geometry/control/camera baselines. Root rejects their actual appearance after the stated image/frame inspection.",
+    "No ordinary standing, tube entry or full body passage is demonstrated."
+  ],
+  "controlledCheckHistory": [
+    "Original fixture TypeScript failed on its phase parameter type. Runtime source was not changed.",
+    "Fixture type repair passed strict TypeScript. First repaired test invocation discovered zero cases because the runner include was stale.",
+    "Runner include-only repair executed all five cases successfully; both failed checks are preserved in the selected records."
+  ],
+  "preview": {
+    "url": "http://localhost:4313",
+    "conditions": "Padang / Big",
+    "fixedExperimentalBuild": true,
+    "protectedThroughAllNewRuns": true
+  },
+  "nextWork": [
+    "Source-only single inner contour simplification; exact render/contact provider coherence must be revalidated after vertices move.",
+    "Source-only additional trial force/board operands to separate translation, rotation and rider external force in the real native failure."
+  ],
+  "payloadCapBytes": 41943040,
+  "uniquePayloads": 108,
+  "selectedReferences": 113,
+  "payloadBytes": 38763507,
+  "copiesAndGzipRestorationVerified": true,
+  "items": [
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/seal.json",
+        "bytes": 188041,
+        "sha256": "cbae476fee19c4552c34db03c80968ac70b3c7ebf011493d950a0a399f99bce0"
+      },
+      "payload": {
+        "path": "v11/seal.json",
+        "bytes": 188041,
+        "sha256": "cbae476fee19c4552c34db03c80968ac70b3c7ebf011493d950a0a399f99bce0",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/readiness.json",
+        "bytes": 22364,
+        "sha256": "faf3f5866ac9666d8b4330e11a2263f2504a50a65f5b8069858e42a4eae38774"
+      },
+      "payload": {
+        "path": "v11/readiness.json",
+        "bytes": 22364,
+        "sha256": "faf3f5866ac9666d8b4330e11a2263f2504a50a65f5b8069858e42a4eae38774",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/helper-pins.json",
+        "bytes": 9495,
+        "sha256": "06da1b7fd9ca57466c72e848e3415ef5322c278902776a208c03cbb110146604"
+      },
+      "payload": {
+        "path": "v11/helper-pins.json",
+        "bytes": 9495,
+        "sha256": "06da1b7fd9ca57466c72e848e3415ef5322c278902776a208c03cbb110146604",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first-owner.json",
+        "bytes": 3508,
+        "sha256": "b8494909bd2282da74c9ff6f30b32953c4b98b7061dd8a8e19c237a5aae8d037"
+      },
+      "payload": {
+        "path": "v11/candidate-first-owner.json",
+        "bytes": 3508,
+        "sha256": "b8494909bd2282da74c9ff6f30b32953c4b98b7061dd8a8e19c237a5aae8d037",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/root-visual-review/review.json",
+        "bytes": 2004,
+        "sha256": "fd50f7877b0020013ba9bdc009690cbf1f209085dfcfd46905b303e03f4fac89"
+      },
+      "payload": {
+        "path": "v11/root-visual-review/review.json",
+        "bytes": 2004,
+        "sha256": "fd50f7877b0020013ba9bdc009690cbf1f209085dfcfd46905b303e03f4fac89",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/report.json",
+        "bytes": 12753137,
+        "sha256": "e1e92df0eb68ed5b54b2d97aecc8ee1ef72e567e438458d55bd6e65bb06a89ef"
+      },
+      "payload": {
+        "path": "v11/candidate-first/report.json.gz",
+        "bytes": 1739046,
+        "sha256": "ae97b43dec3fa3d51c8fa3dd808504351ab069f8f1346a161bd8e136a3fd32ad",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/02-first-landing.png",
+        "bytes": 1903210,
+        "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+      },
+      "payload": {
+        "path": "v11/candidate-first/02-first-landing.png",
+        "bytes": 1903210,
+        "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/03-terminal.png",
+        "bytes": 1961115,
+        "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+      },
+      "payload": {
+        "path": "v11/candidate-first/03-terminal.png",
+        "bytes": 1961115,
+        "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/pop-up-motion.webm",
+        "bytes": 878925,
+        "sha256": "59d5e4b65c9a596064ffbf4557986f055d894a391f7f8fe33959b60170f5af0f"
+      },
+      "payload": {
+        "path": "v11/candidate-first/pop-up-motion.webm",
+        "bytes": 878925,
+        "sha256": "59d5e4b65c9a596064ffbf4557986f055d894a391f7f8fe33959b60170f5af0f",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-first-landing.json",
+        "bytes": 1496463,
+        "sha256": "11753491a748bd779b079e629ce96099941e63ddff063d81eef0f1131fa3a203"
+      },
+      "payload": {
+        "path": "v11/candidate-first/loft-first-landing.json.gz",
+        "bytes": 307243,
+        "sha256": "9744c7aae18d5140e8c669a9bcc2d6a8961d6cbcf28146af5ab83854c788f8e0",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-first-pop-up.json",
+        "bytes": 1073481,
+        "sha256": "37826d5550b4563218752ef9495846f10a52fb71a5528cf787413352aa0df908"
+      },
+      "payload": {
+        "path": "v11/candidate-first/loft-first-pop-up.json.gz",
+        "bytes": 227959,
+        "sha256": "7189349f5dbd6df60c79d2c56decadadc17d43d48a9a1c77d24b1d274af85fd1",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-initial.json",
+        "bytes": 1099036,
+        "sha256": "86842eafba879130ac5a388f3720e0a5090a9c8343d389ee1cb2752ba02e460a"
+      },
+      "payload": {
+        "path": "v11/candidate-first/loft-initial.json.gz",
+        "bytes": 234098,
+        "sha256": "319a12a8b2e6377c1d8ef7fb43c3bba73d139e0402dbdfffc911b414614ce2a3",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1420830,
+        "sha256": "323bcc1e6714abe83821491e609fa3cdbff124354eda51f89f6b51d3f214d679"
+      },
+      "payload": {
+        "path": "v11/candidate-first/loft-terminal.json.gz",
+        "bytes": 312610,
+        "sha256": "abd84312a438003f43436f852b74f3e513d3fc46fd09aef6f7758fe06ba7b9ba",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/seal.json",
+        "bytes": 187764,
+        "sha256": "741a5d015f003599271477f567f1e565cb3232899f8349440565e4bff1ed0945"
+      },
+      "payload": {
+        "path": "longitudinal/seal.json",
+        "bytes": 187764,
+        "sha256": "741a5d015f003599271477f567f1e565cb3232899f8349440565e4bff1ed0945",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/readiness.json",
+        "bytes": 5898,
+        "sha256": "812df60dc72745f8db7f7566670e7fd967e1a1ef3528a8339a9174fcdc8c91b5"
+      },
+      "payload": {
+        "path": "longitudinal/readiness.json",
+        "bytes": 5898,
+        "sha256": "812df60dc72745f8db7f7566670e7fd967e1a1ef3528a8339a9174fcdc8c91b5",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/helper-pins.json",
+        "bytes": 10683,
+        "sha256": "4acbe3bebfb8e9048ea8d4b3c1b1bf18c2a73f5aef771660f8181fa878e7ebef"
+      },
+      "payload": {
+        "path": "longitudinal/helper-pins.json",
+        "bytes": 10683,
+        "sha256": "4acbe3bebfb8e9048ea8d4b3c1b1bf18c2a73f5aef771660f8181fa878e7ebef",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first-owner.json",
+        "bytes": 3500,
+        "sha256": "def189cd582ba3ad218b577ae766029c7081879b0a90550469e50a1740a4063c"
+      },
+      "payload": {
+        "path": "longitudinal/candidate-first-owner.json",
+        "bytes": 3500,
+        "sha256": "def189cd582ba3ad218b577ae766029c7081879b0a90550469e50a1740a4063c",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/root-visual-review/review.json",
+        "bytes": 1387,
+        "sha256": "c31723f2a3bc638d890f5e28f330ed6ce785b73ead05b6e811e37dcf08141ea1"
+      },
+      "payload": {
+        "path": "longitudinal/root-visual-review/review.json",
+        "bytes": 1387,
+        "sha256": "c31723f2a3bc638d890f5e28f330ed6ce785b73ead05b6e811e37dcf08141ea1",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/report.json",
+        "bytes": 12749798,
+        "sha256": "1e510766433850be7cb10404798e8dbea02184a4fd9dc989f1f9f3eebe64e14c"
+      },
+      "payload": {
+        "path": "longitudinal/candidate-first/report.json.gz",
+        "bytes": 1739306,
+        "sha256": "cfef3e00c3bc1de6e04503194f806833fc1c73018bb9da1805ddf0b31f2a0187",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/root-complete-build-result.json",
+        "bytes": 183990,
+        "sha256": "71238a083c9efba2c896abdc3418a05d741f57e944123ba696e17458efcee2e5"
+      },
+      "payload": {
+        "path": "longitudinal/root-complete-build-result.json",
+        "bytes": 183990,
+        "sha256": "71238a083c9efba2c896abdc3418a05d741f57e944123ba696e17458efcee2e5",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/02-first-landing.png",
+        "bytes": 1903484,
+        "sha256": "c624a5de02e009e65747a5707d532d3976758bf8b579166ea03ffdf9e20f3665"
+      },
+      "payload": {
+        "path": "longitudinal/candidate-first/02-first-landing.png",
+        "bytes": 1903484,
+        "sha256": "c624a5de02e009e65747a5707d532d3976758bf8b579166ea03ffdf9e20f3665",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/03-terminal.png",
+        "bytes": 1959427,
+        "sha256": "2b4e7cd3f9708a9e5a86d26c2e7b8f7c3a9cef7b1a831bd387cdf2b41da7adb3"
+      },
+      "payload": {
+        "path": "longitudinal/candidate-first/03-terminal.png",
+        "bytes": 1959427,
+        "sha256": "2b4e7cd3f9708a9e5a86d26c2e7b8f7c3a9cef7b1a831bd387cdf2b41da7adb3",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/pop-up-motion.webm",
+        "bytes": 883165,
+        "sha256": "4283be479619794a32959cab94ffe6fa797ac7ace61b53146addd8718e7bb6fb"
+      },
+      "payload": {
+        "path": "longitudinal/candidate-first/pop-up-motion.webm",
+        "bytes": 883165,
+        "sha256": "4283be479619794a32959cab94ffe6fa797ac7ace61b53146addd8718e7bb6fb",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/loft-first-landing.json",
+        "bytes": 1496463,
+        "sha256": "2c24b6d30ea606b04b0a66dda8008b1d27e77b11fc64f679b0bf3c124fed7686"
+      },
+      "payload": {
+        "path": "longitudinal/candidate-first/loft-first-landing.json.gz",
+        "bytes": 307244,
+        "sha256": "f5830edf41cb0df258e335ab011f78530235e8f0d5c2fc8952437fa0bd51c5cb",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/loft-first-pop-up.json",
+        "bytes": 1073481,
+        "sha256": "a5beb80b3f52ea64aa6dda46da89431c726e05887ebad7c359f96336a0ca97fa"
+      },
+      "payload": {
+        "path": "longitudinal/candidate-first/loft-first-pop-up.json.gz",
+        "bytes": 227957,
+        "sha256": "e0a0ec8e4a17d72924cf6fb62c4a89bbc03678387f26438b1ec252f74c0ab521",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/loft-initial.json",
+        "bytes": 1099036,
+        "sha256": "685cb5e28d9c4151019f6d72cf55b4911ec294a2b1868634b5ea42de3301f431"
+      },
+      "payload": {
+        "path": "longitudinal/candidate-first/loft-initial.json.gz",
+        "bytes": 234098,
+        "sha256": "1d6f4fc23f01d7675691914ff94606783957a997d9cb1454c1d4fad5d82b8039",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1420830,
+        "sha256": "89dd5a1013dcb68f2d124947949fb8c27aaf221609f31aa2a0f502550235a2a2"
+      },
+      "payload": {
+        "path": "longitudinal/candidate-first/loft-terminal.json.gz",
+        "bytes": 312593,
+        "sha256": "10e743a6a9b0595af78e89a850b9d3e9fd1093e515a7aadde5e0bf611c73bcbf",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/seal.json",
+        "bytes": 181577,
+        "sha256": "eddb76a7357e4bc46aa4f9a5c65261081f77b170ad9e18c05403f3a1bf18f471"
+      },
+      "payload": {
+        "path": "glints/seal.json",
+        "bytes": 181577,
+        "sha256": "eddb76a7357e4bc46aa4f9a5c65261081f77b170ad9e18c05403f3a1bf18f471",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/readiness.json",
+        "bytes": 10740,
+        "sha256": "53ffc46d74b51bf9bf2d265b35d4e51a854592b82451790b8313afa67ad19242"
+      },
+      "payload": {
+        "path": "glints/readiness.json",
+        "bytes": 10740,
+        "sha256": "53ffc46d74b51bf9bf2d265b35d4e51a854592b82451790b8313afa67ad19242",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/helper-pins.json",
+        "bytes": 6948,
+        "sha256": "e45b142841e10b02a4cf019d5bce0f3b768e23b970366fde536b8637d61cdd80"
+      },
+      "payload": {
+        "path": "glints/helper-pins.json",
+        "bytes": 6948,
+        "sha256": "e45b142841e10b02a4cf019d5bce0f3b768e23b970366fde536b8637d61cdd80",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first-owner.json",
+        "bytes": 3341,
+        "sha256": "88376592f8feaced2d630582ed46d2a99e3aacbec3686e3565b2ce88815515d4"
+      },
+      "payload": {
+        "path": "glints/candidate-first-owner.json",
+        "bytes": 3341,
+        "sha256": "88376592f8feaced2d630582ed46d2a99e3aacbec3686e3565b2ce88815515d4",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/root-visual-review/review.json",
+        "bytes": 4048,
+        "sha256": "7cfdb8932991e3754105c491a3a6ab9ace455fd653ad77a2937aa5d8cb9767bb"
+      },
+      "payload": {
+        "path": "glints/root-visual-review/review.json",
+        "bytes": 4048,
+        "sha256": "7cfdb8932991e3754105c491a3a6ab9ace455fd653ad77a2937aa5d8cb9767bb",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/report.json",
+        "bytes": 9372046,
+        "sha256": "634606b882547d71d7f735fbd645967570b3aec512d52a4dd6666620416267b2"
+      },
+      "payload": {
+        "path": "glints/candidate-first/report.json.gz",
+        "bytes": 2090379,
+        "sha256": "3dbb04cfb50befd6ea4b110fdd6b0778580d4bc1f2b98dc26278f2e32e4878fe",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/root-complete-build-result.json",
+        "bytes": 179785,
+        "sha256": "8feb3a909babaeb0c03e6278232015207ae7a290294e9b757cf547a5ed3d0204"
+      },
+      "payload": {
+        "path": "glints/root-complete-build-result.json",
+        "bytes": 179785,
+        "sha256": "8feb3a909babaeb0c03e6278232015207ae7a290294e9b757cf547a5ed3d0204",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/0-initial.png",
+        "bytes": 657559,
+        "sha256": "1b83bb628b127fa7e036c10fc0255d85170e53d9d92933faae0190e30f22c8f3"
+      },
+      "payload": {
+        "path": "glints/candidate-first/0-initial.png",
+        "bytes": 657559,
+        "sha256": "1b83bb628b127fa7e036c10fc0255d85170e53d9d92933faae0190e30f22c8f3",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/1-initial-exterior.png",
+        "bytes": 2426938,
+        "sha256": "c7069fc30d20b1027a22c8e49563ff152ea64de963c55e36505aa54d81f65d3f"
+      },
+      "payload": {
+        "path": "glints/candidate-first/1-initial-exterior.png",
+        "bytes": 2426938,
+        "sha256": "c7069fc30d20b1027a22c8e49563ff152ea64de963c55e36505aa54d81f65d3f",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/2-first-phase2.png",
+        "bytes": 901126,
+        "sha256": "a1e1fd8810fe39c22d9ab166f606dd409a2090f1d67aff87286be9a8a8c9f119"
+      },
+      "payload": {
+        "path": "glints/candidate-first/2-first-phase2.png",
+        "bytes": 901126,
+        "sha256": "a1e1fd8810fe39c22d9ab166f606dd409a2090f1d67aff87286be9a8a8c9f119",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/3-first-phase2-water-hidden.png",
+        "bytes": 884194,
+        "sha256": "e3623b5bdf11cb64e7d8bc56e47dac102786b7937a1d2e993abf5d056409e208"
+      },
+      "payload": {
+        "path": "glints/candidate-first/3-first-phase2-water-hidden.png",
+        "bytes": 884194,
+        "sha256": "e3623b5bdf11cb64e7d8bc56e47dac102786b7937a1d2e993abf5d056409e208",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/4-first-phase2-barrel-hidden.png",
+        "bytes": 1056742,
+        "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b"
+      },
+      "payload": {
+        "path": "glints/candidate-first/4-first-phase2-barrel-hidden.png",
+        "bytes": 1056742,
+        "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/5-terminal.png",
+        "bytes": 2054423,
+        "sha256": "bce5cb1af8c4a6bc4f8572e3b4b1d7c372558eada5d36836d78724a6f7de3217"
+      },
+      "payload": {
+        "path": "glints/candidate-first/5-terminal.png",
+        "bytes": 2054423,
+        "sha256": "bce5cb1af8c4a6bc4f8572e3b4b1d7c372558eada5d36836d78724a6f7de3217",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/moving-C.webm",
+        "bytes": 1698078,
+        "sha256": "7542b7afe0dd0dd8715140c7f854f0fd9012dffda8d74a39a88a92f1616a6ef6"
+      },
+      "payload": {
+        "path": "glints/candidate-first/moving-C.webm",
+        "bytes": 1698078,
+        "sha256": "7542b7afe0dd0dd8715140c7f854f0fd9012dffda8d74a39a88a92f1616a6ef6",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/loft-first-phase2.json",
+        "bytes": 2189404,
+        "sha256": "eefb42cd34b5a4325925357a32562cf4f55ef2ae4a5f6faaf36cc09e110b6d50"
+      },
+      "payload": {
+        "path": "glints/candidate-first/loft-first-phase2.json.gz",
+        "bytes": 487836,
+        "sha256": "322fa4bada8bccfa3651b2ecdd981f2a6f3ea53b9dd0a42186e775cac21bb44f",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/loft-initial.json",
+        "bytes": 1751080,
+        "sha256": "6ffe12e0f6f54839e32069f3c3f58131c56fe64e661ae7076bbdfd2be9578bf3"
+      },
+      "payload": {
+        "path": "glints/candidate-first/loft-initial.json.gz",
+        "bytes": 368720,
+        "sha256": "1426078e77fb13478b611a24b43161e76291351f6a72dd0ac665c888f128fea9",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/seal.json",
+        "bytes": 184910,
+        "sha256": "e5556b0620d681a0ec52dd88c3398e0115ef5149a49518de53f73183fc3dfc06"
+      },
+      "payload": {
+        "path": "roughness/seal.json",
+        "bytes": 184910,
+        "sha256": "e5556b0620d681a0ec52dd88c3398e0115ef5149a49518de53f73183fc3dfc06",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/readiness.json",
+        "bytes": 12403,
+        "sha256": "c9dc47f4b9b4fde740d465e01d21d28d7a3f824adb4c2622346363d4f7b40dcc"
+      },
+      "payload": {
+        "path": "roughness/readiness.json",
+        "bytes": 12403,
+        "sha256": "c9dc47f4b9b4fde740d465e01d21d28d7a3f824adb4c2622346363d4f7b40dcc",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/helper-pins.json",
+        "bytes": 7562,
+        "sha256": "7bee7b8aa3e83997fde19c14abc073892c08be50bcbaa7fa528ddc28c1583b12"
+      },
+      "payload": {
+        "path": "roughness/helper-pins.json",
+        "bytes": 7562,
+        "sha256": "7bee7b8aa3e83997fde19c14abc073892c08be50bcbaa7fa528ddc28c1583b12",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first-owner.json",
+        "bytes": 3350,
+        "sha256": "6f0d6a11e76b7af33a840e2c0255e33f4157486df516aaa9b54997c120400b1d"
+      },
+      "payload": {
+        "path": "roughness/candidate-first-owner.json",
+        "bytes": 3350,
+        "sha256": "6f0d6a11e76b7af33a840e2c0255e33f4157486df516aaa9b54997c120400b1d",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-visual-review/review.json",
+        "bytes": 4254,
+        "sha256": "b2f8c2681d950371090e6dd242288013365a4e9d40021bfaac8a59978605e578"
+      },
+      "payload": {
+        "path": "roughness/root-visual-review/review.json",
+        "bytes": 4254,
+        "sha256": "b2f8c2681d950371090e6dd242288013365a4e9d40021bfaac8a59978605e578",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/report.json",
+        "bytes": 9373701,
+        "sha256": "85a83a64e1ee08eeaf945cbe0e0a093e07792d6ad84a6bb9558265911ea6f9d4"
+      },
+      "payload": {
+        "path": "roughness/candidate-first/report.json.gz",
+        "bytes": 2090283,
+        "sha256": "d72c185c7117a7cf0d954f73b2517d15ce1d544dae9663ac8f8bfbf3c39f1682",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-complete-build-result.json",
+        "bytes": 181283,
+        "sha256": "f8f645c10db7d5dc85cdcca24af15de017afcb474071e67c9a1427e3d23e0547"
+      },
+      "payload": {
+        "path": "roughness/root-complete-build-result.json",
+        "bytes": 181283,
+        "sha256": "f8f645c10db7d5dc85cdcca24af15de017afcb474071e67c9a1427e3d23e0547",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/0-initial.png",
+        "bytes": 657559,
+        "sha256": "1b83bb628b127fa7e036c10fc0255d85170e53d9d92933faae0190e30f22c8f3"
+      },
+      "payload": {
+        "path": "glints/candidate-first/0-initial.png",
+        "bytes": 657559,
+        "sha256": "1b83bb628b127fa7e036c10fc0255d85170e53d9d92933faae0190e30f22c8f3",
+        "encoding": "literal"
+      },
+      "duplicateByteIdentical": true
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/1-initial-exterior.png",
+        "bytes": 2426938,
+        "sha256": "c7069fc30d20b1027a22c8e49563ff152ea64de963c55e36505aa54d81f65d3f"
+      },
+      "payload": {
+        "path": "glints/candidate-first/1-initial-exterior.png",
+        "bytes": 2426938,
+        "sha256": "c7069fc30d20b1027a22c8e49563ff152ea64de963c55e36505aa54d81f65d3f",
+        "encoding": "literal"
+      },
+      "duplicateByteIdentical": true
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/2-first-phase2.png",
+        "bytes": 901127,
+        "sha256": "d83c271f2635bfd1b6c6b50e2a09029c1928246c90718716a65cc0c4d2997c30"
+      },
+      "payload": {
+        "path": "roughness/candidate-first/2-first-phase2.png",
+        "bytes": 901127,
+        "sha256": "d83c271f2635bfd1b6c6b50e2a09029c1928246c90718716a65cc0c4d2997c30",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/3-first-phase2-water-hidden.png",
+        "bytes": 884203,
+        "sha256": "99f2ff13492a6aafa42b3d196f955ac02921427280d3d381e4724016710ecabf"
+      },
+      "payload": {
+        "path": "roughness/candidate-first/3-first-phase2-water-hidden.png",
+        "bytes": 884203,
+        "sha256": "99f2ff13492a6aafa42b3d196f955ac02921427280d3d381e4724016710ecabf",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/4-first-phase2-barrel-hidden.png",
+        "bytes": 1056742,
+        "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b"
+      },
+      "payload": {
+        "path": "glints/candidate-first/4-first-phase2-barrel-hidden.png",
+        "bytes": 1056742,
+        "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b",
+        "encoding": "literal"
+      },
+      "duplicateByteIdentical": true
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/5-terminal.png",
+        "bytes": 2059465,
+        "sha256": "84a5ec62b12311e464246a95643f58a5b7559824ab90a3541b1972b242734613"
+      },
+      "payload": {
+        "path": "roughness/candidate-first/5-terminal.png",
+        "bytes": 2059465,
+        "sha256": "84a5ec62b12311e464246a95643f58a5b7559824ab90a3541b1972b242734613",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/moving-C.webm",
+        "bytes": 1697812,
+        "sha256": "3789924e463da6a7bd5ac922398cbfc2efd6a71f6014143774d4bce14890005e"
+      },
+      "payload": {
+        "path": "roughness/candidate-first/moving-C.webm",
+        "bytes": 1697812,
+        "sha256": "3789924e463da6a7bd5ac922398cbfc2efd6a71f6014143774d4bce14890005e",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/loft-first-phase2.json",
+        "bytes": 2189404,
+        "sha256": "eefb42cd34b5a4325925357a32562cf4f55ef2ae4a5f6faaf36cc09e110b6d50"
+      },
+      "payload": {
+        "path": "glints/candidate-first/loft-first-phase2.json.gz",
+        "bytes": 487836,
+        "sha256": "322fa4bada8bccfa3651b2ecdd981f2a6f3ea53b9dd0a42186e775cac21bb44f",
+        "encoding": "gzip"
+      },
+      "duplicateByteIdentical": true
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/loft-initial.json",
+        "bytes": 1751080,
+        "sha256": "6ffe12e0f6f54839e32069f3c3f58131c56fe64e661ae7076bbdfd2be9578bf3"
+      },
+      "payload": {
+        "path": "glints/candidate-first/loft-initial.json.gz",
+        "bytes": 368720,
+        "sha256": "1426078e77fb13478b611a24b43161e76291351f6a72dd0ac665c888f128fea9",
+        "encoding": "gzip"
+      },
+      "duplicateByteIdentical": true
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/analysis.json",
+        "bytes": 122602,
+        "sha256": "6e7f588dedd190746c9dbc0509aadf749498f1ace8dba72760d8d5fe574490d7"
+      },
+      "payload": {
+        "path": "v11-review/analysis.json",
+        "bytes": 122602,
+        "sha256": "6e7f588dedd190746c9dbc0509aadf749498f1ace8dba72760d8d5fe574490d7",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/all-differences.json",
+        "bytes": 2289573,
+        "sha256": "49091f0505a4bae8eb55b29d6b9a97245a1935601ef4b9aab66f3562e20601aa"
+      },
+      "payload": {
+        "path": "v11-review/all-differences.json.gz",
+        "bytes": 154688,
+        "sha256": "df6c19f16d903b915a81900e23b42ed8593129a30d774f558037a6c3072595e0",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/landing-force-interval.json",
+        "bytes": 82391,
+        "sha256": "9bf3d7fadd175275cd951655057badf296e54ad36c3d8e5b033ac0234e8b4dca"
+      },
+      "payload": {
+        "path": "v11-review/landing-force-interval.json",
+        "bytes": 82391,
+        "sha256": "9bf3d7fadd175275cd951655057badf296e54ad36c3d8e5b033ac0234e8b4dca",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/freeze.json",
+        "bytes": 5290,
+        "sha256": "22667d203b26858b2eb2d34aa948b25eeb76ec2ffac8a86f0ee39b479540972d"
+      },
+      "payload": {
+        "path": "v11-review/freeze.json",
+        "bytes": 5290,
+        "sha256": "22667d203b26858b2eb2d34aa948b25eeb76ec2ffac8a86f0ee39b479540972d",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-v11-source-transition-20261005/evidence.json",
+        "bytes": 29427,
+        "sha256": "53394a377d4882ff6d12c950995546826af5c61229f11b93f26e56a67dca8c92"
+      },
+      "payload": {
+        "path": "v11-transition/evidence.json",
+        "bytes": 29427,
+        "sha256": "53394a377d4882ff6d12c950995546826af5c61229f11b93f26e56a67dca8c92",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-v11-source-transition-20261005/freeze.json",
+        "bytes": 2311,
+        "sha256": "bd099b4df78b0ce010c3852ae437232d20c3576b160a81c86697928f1b250982"
+      },
+      "payload": {
+        "path": "v11-transition/freeze.json",
+        "bytes": 2311,
+        "sha256": "bd099b4df78b0ce010c3852ae437232d20c3576b160a81c86697928f1b250982",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/analysis.json",
+        "bytes": 264790,
+        "sha256": "09420298d9d54af30115ec50dc67b3a8765e6f9f58ee047ca130e7a7aaf05992"
+      },
+      "payload": {
+        "path": "longitudinal-review/analysis.json.gz",
+        "bytes": 28438,
+        "sha256": "eaee81aa35d1fc433b189244d54390b6ce0a80e43831a9e2e804dd651d8058ee",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/force-comparison.json",
+        "bytes": 103800,
+        "sha256": "1aeb31a783280b120aff8bc6606b4f2388c1482101a2fbb388878027eb8453a7"
+      },
+      "payload": {
+        "path": "longitudinal-review/force-comparison.json",
+        "bytes": 103800,
+        "sha256": "1aeb31a783280b120aff8bc6606b4f2388c1482101a2fbb388878027eb8453a7",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/all-differences.ndjson",
+        "bytes": 3029414,
+        "sha256": "56b885ffceeedb88846acfc528ae91cee482de75c101a2af620caa9ab4c2b023"
+      },
+      "payload": {
+        "path": "longitudinal-review/all-differences.ndjson.gz",
+        "bytes": 287306,
+        "sha256": "cde578a346ed0979963ddccd1c979c6019ed091c571c154e2e1416c02185dd0b",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/sidecar-word-differences.ndjson",
+        "bytes": 1663011,
+        "sha256": "1cd7c003e8e23a49e2802605f2b2a3253b2960318b937da8f4ab9edcad283aa6"
+      },
+      "payload": {
+        "path": "longitudinal-review/sidecar-word-differences.ndjson.gz",
+        "bytes": 150572,
+        "sha256": "1f7e4a48537f3d50ded5b8add89a3f4c8a3b3a9a24885c41cbc7b0fc8e156448",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/sidecar-metadata-differences.json",
+        "bytes": 600,
+        "sha256": "bef27e87b3332b44576bc4a17f7885bcdc3f6359fe27c57e72edfafad0e8a909"
+      },
+      "payload": {
+        "path": "longitudinal-review/sidecar-metadata-differences.json",
+        "bytes": 600,
+        "sha256": "bef27e87b3332b44576bc4a17f7885bcdc3f6359fe27c57e72edfafad0e8a909",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/support-interval.json",
+        "bytes": 383014,
+        "sha256": "316c1f5dd75875bc25314941d0528b1793fd15a06de6e477535762bd5bf69cc1"
+      },
+      "payload": {
+        "path": "longitudinal-review/support-interval.json.gz",
+        "bytes": 65352,
+        "sha256": "698baf724f8818c4b2ba004d5c99c8662c71799ccaf7311124fd189ee13ea1b5",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/observer-samples.json",
+        "bytes": 387879,
+        "sha256": "44e088f91e6511182a3c73016ed6b7835d7b199d321018d3766a96ebe8c4d18f"
+      },
+      "payload": {
+        "path": "longitudinal-review/observer-samples.json.gz",
+        "bytes": 66270,
+        "sha256": "9f2450e994d6c57ec8fe2ccf921c0364b438115b448446e4fe1aba4415340286",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/freeze.json",
+        "bytes": 6726,
+        "sha256": "f2593b51d9718516df4064119702002f3d6ada746992862a721ef1adef6076ac"
+      },
+      "payload": {
+        "path": "longitudinal-review/freeze.json",
+        "bytes": 6726,
+        "sha256": "f2593b51d9718516df4064119702002f3d6ada746992862a721ef1adef6076ac",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-actual-review-20261005/analysis.json",
+        "bytes": 43496,
+        "sha256": "f156969f4268412f04d4d3bf102a6f0e0b9ae92cbb370721526b2df0a7a5c708"
+      },
+      "payload": {
+        "path": "glints-review/analysis.json",
+        "bytes": 43496,
+        "sha256": "f156969f4268412f04d4d3bf102a6f0e0b9ae92cbb370721526b2df0a7a5c708",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-actual-review-20261005/freeze.json",
+        "bytes": 4158,
+        "sha256": "999760679f26cab6e775b6b2e21a0bd585d9642bc18530aa06353e7989eae4e3"
+      },
+      "payload": {
+        "path": "glints-review/freeze.json",
+        "bytes": 4158,
+        "sha256": "999760679f26cab6e775b6b2e21a0bd585d9642bc18530aa06353e7989eae4e3",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/analysis.json",
+        "bytes": 43776,
+        "sha256": "cfd96bf35094e9d4d874827e3412087cc24dd3e24b300689b1d413ed8dd323b2"
+      },
+      "payload": {
+        "path": "roughness-review/analysis.json",
+        "bytes": 43776,
+        "sha256": "cfd96bf35094e9d4d874827e3412087cc24dd3e24b300689b1d413ed8dd323b2",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/complete-differences.json",
+        "bytes": 311310,
+        "sha256": "7dd840028271b13a917314018539be98d966847e70e7aec13e9741233e04f117"
+      },
+      "payload": {
+        "path": "roughness-review/complete-differences.json.gz",
+        "bytes": 18313,
+        "sha256": "c5de10ef7fd5febd00886427857d6e4195869921fdcaff67eb9294ef38d03ef9",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/freeze.json",
+        "bytes": 4651,
+        "sha256": "2a030d184b231a0334f9f534bfeec75f5630c1e27e4eb1a720b1d6a0f88138ce"
+      },
+      "payload": {
+        "path": "roughness-review/freeze.json",
+        "bytes": 4651,
+        "sha256": "2a030d184b231a0334f9f534bfeec75f5630c1e27e4eb1a720b1d6a0f88138ce",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/candidate.patch",
+        "bytes": 9747,
+        "sha256": "9b18631cb71144baab421c025291142a9c186a33d04e5754fa625b5dcaa49de9"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/candidate.patch",
+        "bytes": 9747,
+        "sha256": "9b18631cb71144baab421c025291142a9c186a33d04e5754fa625b5dcaa49de9",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/readiness.json",
+        "bytes": 8112,
+        "sha256": "3b31e4dcce07a4b775ec2a1e713edaff3c09fe770fb1ff9ae76a8b1322e26d13"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/readiness.json",
+        "bytes": 8112,
+        "sha256": "3b31e4dcce07a4b775ec2a1e713edaff3c09fe770fb1ff9ae76a8b1322e26d13",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/fixture-types.patch",
+        "bytes": 1259,
+        "sha256": "9740a177e1ea13997b693f6fbf540cfe8ebad3ddf7c8f5e5e0618f7b7338bca8"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/fixture-types.patch",
+        "bytes": 1259,
+        "sha256": "9740a177e1ea13997b693f6fbf540cfe8ebad3ddf7c8f5e5e0618f7b7338bca8",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/fixture-types-repair.json",
+        "bytes": 1793,
+        "sha256": "03e4768d57b1b5ce326e4cb764d6e9a9ef58be55efda8b6a271dedfeba14da29"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/fixture-types-repair.json",
+        "bytes": 1793,
+        "sha256": "03e4768d57b1b5ce326e4cb764d6e9a9ef58be55efda8b6a271dedfeba14da29",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-checks/result.json",
+        "bytes": 14361,
+        "sha256": "4b72268d142efb20e35d6fdfeb6e0da6015477992e32beb4bdb1a385edca5b7a"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/root-checks/result.json",
+        "bytes": 14361,
+        "sha256": "4b72268d142efb20e35d6fdfeb6e0da6015477992e32beb4bdb1a385edca5b7a",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-checks/strict.log",
+        "bytes": 387,
+        "sha256": "81a0044f67ffce5983ceee48a7104da9aee7050135fb2114301097d62cbaeb87"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/root-checks/strict.log",
+        "bytes": 387,
+        "sha256": "81a0044f67ffce5983ceee48a7104da9aee7050135fb2114301097d62cbaeb87",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-fixture-checks/result.json",
+        "bytes": 15616,
+        "sha256": "b608e35b7ebc98ee75f12690fa55260b8749e47e5b4ccc0471b02c2334b09a0d"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/root-fixture-checks/result.json",
+        "bytes": 15616,
+        "sha256": "b608e35b7ebc98ee75f12690fa55260b8749e47e5b4ccc0471b02c2334b09a0d",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-fixture-discovery-checks/result.json",
+        "bytes": 15885,
+        "sha256": "483614cb8771d0de7eaf76e2a5a45cb578e9606467b34f8aab02250799f73b0f"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/root-fixture-discovery-checks/result.json",
+        "bytes": 15885,
+        "sha256": "483614cb8771d0de7eaf76e2a5a45cb578e9606467b34f8aab02250799f73b0f",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-fixture-discovery-checks/focused.json",
+        "bytes": 2008,
+        "sha256": "0e39dbdbf1da2f5d5023552f787182de01ef70f814a2d5ede70afa8461b83c59"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/root-fixture-discovery-checks/focused.json",
+        "bytes": 2008,
+        "sha256": "0e39dbdbf1da2f5d5023552f787182de01ef70f814a2d5ede70afa8461b83c59",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/AttachedRider.ts",
+        "bytes": 149572,
+        "sha256": "84bae9817c3135d1999c094152d5184221162c5777bd27663aa3fa57c3aac5d4"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/source/src/physics/AttachedRider.ts",
+        "bytes": 149572,
+        "sha256": "84bae9817c3135d1999c094152d5184221162c5777bd27663aa3fa57c3aac5d4",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/tests/landingCompliance.fixture-types.test.ts",
+        "bytes": 10875,
+        "sha256": "72b2a9e237753d7522ad0bd607c0870ce3e804e56930c0ef001749d6a6cf06b7"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/tests/landingCompliance.fixture-types.test.ts",
+        "bytes": 10875,
+        "sha256": "72b2a9e237753d7522ad0bd607c0870ce3e804e56930c0ef001749d6a6cf06b7",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/vitest.fixture-types.config.ts",
+        "bytes": 178,
+        "sha256": "66df7becf7d8ea6a1080f319832c5c19f27a8e1a561c52e60968f424b8420ed5"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/vitest.fixture-types.config.ts",
+        "bytes": 178,
+        "sha256": "66df7becf7d8ea6a1080f319832c5c19f27a8e1a561c52e60968f424b8420ed5",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/source-readiness.json",
+        "bytes": 3569,
+        "sha256": "4af9b0fdc1d20b055b2c0917777145bd078bb1da2eec0bc43fdf36838dd43501"
+      },
+      "payload": {
+        "path": "longitudinal-source/source-readiness.json",
+        "bytes": 3569,
+        "sha256": "4af9b0fdc1d20b055b2c0917777145bd078bb1da2eec0bc43fdf36838dd43501",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/source-pins.json",
+        "bytes": 96409,
+        "sha256": "833f8995b05993b8f68ed9da9bbf1d1cc72ee7c384e5d4c98fcc6b4ea609cf4c"
+      },
+      "payload": {
+        "path": "longitudinal-source/source-pins.json",
+        "bytes": 96409,
+        "sha256": "833f8995b05993b8f68ed9da9bbf1d1cc72ee7c384e5d4c98fcc6b4ea609cf4c",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/source-delta.json",
+        "bytes": 1128,
+        "sha256": "536fc03f790cef910ae7997815e1f655671044db8744fdb705f34d1de9f1be76"
+      },
+      "payload": {
+        "path": "longitudinal-source/source-delta.json",
+        "bytes": 1128,
+        "sha256": "536fc03f790cef910ae7997815e1f655671044db8744fdb705f34d1de9f1be76",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/root-diagnostic-build-result.json",
+        "bytes": 35808,
+        "sha256": "1f511e485a06910607fec86feac2e83b470d17cb3f98b133d32016942918f745"
+      },
+      "payload": {
+        "path": "longitudinal-source/root-diagnostic-build-result.json",
+        "bytes": 35808,
+        "sha256": "1f511e485a06910607fec86feac2e83b470d17cb3f98b133d32016942918f745",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/root-source.py",
+        "bytes": 5062,
+        "sha256": "b738722500878eb2ac9efe3d5146e5ef3c2777f0459dc5b97a26f1ad635b0e1d"
+      },
+      "payload": {
+        "path": "longitudinal-source/root-source.py",
+        "bytes": 5062,
+        "sha256": "b738722500878eb2ac9efe3d5146e5ef3c2777f0459dc5b97a26f1ad635b0e1d",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-native-20261005/root-seal.py",
+        "bytes": 3369,
+        "sha256": "9d0cb52142908d3a2b90105906792fd32d78ebbdcd4c2b0545705593a6081822"
+      },
+      "payload": {
+        "path": "longitudinal-source/root-seal.py",
+        "bytes": 3369,
+        "sha256": "9d0cb52142908d3a2b90105906792fd32d78ebbdcd4c2b0545705593a6081822",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-20261005/readiness.json",
+        "bytes": 6630,
+        "sha256": "5e4005e45bd176566704ab2f440cacb51596d84bdd4798cee4a346d726a06a4e"
+      },
+      "payload": {
+        "path": "glints-source/readiness.json",
+        "bytes": 6630,
+        "sha256": "5e4005e45bd176566704ab2f440cacb51596d84bdd4798cee4a346d726a06a4e",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-20261005/source-pins.json",
+        "bytes": 96602,
+        "sha256": "dc736647223791a30cb736f655de9bd1a9d6cb733694ea248f2af5f0f34e10b1"
+      },
+      "payload": {
+        "path": "glints-source/source-pins.json",
+        "bytes": 96602,
+        "sha256": "dc736647223791a30cb736f655de9bd1a9d6cb733694ea248f2af5f0f34e10b1",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-20261005/source-delta.json",
+        "bytes": 1335,
+        "sha256": "370486f6594530ce977c8bfc8e7fae314f527a2c31681343d06d54315dc95a49"
+      },
+      "payload": {
+        "path": "glints-source/source-delta.json",
+        "bytes": 1335,
+        "sha256": "370486f6594530ce977c8bfc8e7fae314f527a2c31681343d06d54315dc95a49",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-20261005/runtime.patch",
+        "bytes": 1041,
+        "sha256": "80b82bb9ae7523590995beee67968b49fe9db2714965e7e335ef2995f5d27bab"
+      },
+      "payload": {
+        "path": "glints-source/runtime.patch",
+        "bytes": 1041,
+        "sha256": "80b82bb9ae7523590995beee67968b49fe9db2714965e7e335ef2995f5d27bab",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-20261005/root-checks/result.json",
+        "bytes": 1949,
+        "sha256": "3d191a161b2d9ed7998e8759e34c552970635a05ffb4fcca789c60645d63fa3e"
+      },
+      "payload": {
+        "path": "glints-source/root-checks/result.json",
+        "bytes": 1949,
+        "sha256": "3d191a161b2d9ed7998e8759e34c552970635a05ffb4fcca789c60645d63fa3e",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-20261005/root-checks/focused.json",
+        "bytes": 6299,
+        "sha256": "f0ff9ccb5fa45048c0d6a8ea17f2fed047c6e428b396c1dc0ec131edad601dc1"
+      },
+      "payload": {
+        "path": "glints-source/root-checks/focused.json",
+        "bytes": 6299,
+        "sha256": "f0ff9ccb5fa45048c0d6a8ea17f2fed047c6e428b396c1dc0ec131edad601dc1",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-water-glints-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 32726,
+        "sha256": "b663d783509482299979cab38d6f021f2ac02bc1eb0bc4ac9c4f1d0478b9d676"
+      },
+      "payload": {
+        "path": "glints-source/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 32726,
+        "sha256": "b663d783509482299979cab38d6f021f2ac02bc1eb0bc4ac9c4f1d0478b9d676",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/readiness.json",
+        "bytes": 7075,
+        "sha256": "d117b20e11e4ab49ce434944474c1d5f547b8b88e165022f48ea6acceb20784e"
+      },
+      "payload": {
+        "path": "roughness-source/readiness.json",
+        "bytes": 7075,
+        "sha256": "d117b20e11e4ab49ce434944474c1d5f547b8b88e165022f48ea6acceb20784e",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-pins.json",
+        "bytes": 96606,
+        "sha256": "98f2b64288a88e02718f00e8c4bed4a0e9f06bd98877ccd11ab2b3ceb46c6e4c"
+      },
+      "payload": {
+        "path": "roughness-source/source-pins.json",
+        "bytes": 96606,
+        "sha256": "98f2b64288a88e02718f00e8c4bed4a0e9f06bd98877ccd11ab2b3ceb46c6e4c",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-delta.json",
+        "bytes": 2378,
+        "sha256": "37f8b7cca3c1c8a572069027d1e08f5a0112d102a3ae886484a4263b4aa717e0"
+      },
+      "payload": {
+        "path": "roughness-source/source-delta.json",
+        "bytes": 2378,
+        "sha256": "37f8b7cca3c1c8a572069027d1e08f5a0112d102a3ae886484a4263b4aa717e0",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/runtime.patch",
+        "bytes": 2799,
+        "sha256": "9f8ae97349e8cf183677b102d5bf9399337f6119c3405bb5c34227b210bd5c0a"
+      },
+      "payload": {
+        "path": "roughness-source/runtime.patch",
+        "bytes": 2799,
+        "sha256": "9f8ae97349e8cf183677b102d5bf9399337f6119c3405bb5c34227b210bd5c0a",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/material-test.patch",
+        "bytes": 4906,
+        "sha256": "da508ca148d20c6ef9e632906d03d08e324dca1488f921c45c0f72a396d14c03"
+      },
+      "payload": {
+        "path": "roughness-source/material-test.patch",
+        "bytes": 4906,
+        "sha256": "da508ca148d20c6ef9e632906d03d08e324dca1488f921c45c0f72a396d14c03",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/root-checks/result.json",
+        "bytes": 1961,
+        "sha256": "81b95759b7ad52477fcbcbf488a8bd604db29976047354caf6b45c775c09b1f6"
+      },
+      "payload": {
+        "path": "roughness-source/root-checks/result.json",
+        "bytes": 1961,
+        "sha256": "81b95759b7ad52477fcbcbf488a8bd604db29976047354caf6b45c775c09b1f6",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/root-checks/focused.json",
+        "bytes": 6295,
+        "sha256": "9ee8928090b1ea08e1e5858c0db71ee4136bad0adb14713cf028f0b3c9700f82"
+      },
+      "payload": {
+        "path": "roughness-source/root-checks/focused.json",
+        "bytes": 6295,
+        "sha256": "9ee8928090b1ea08e1e5858c0db71ee4136bad0adb14713cf028f0b3c9700f82",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33513,
+        "sha256": "fb2b78e2b8d9c974ba00a3279aa14e2c7a56554f3ed90af46e354d5c5786a082"
+      },
+      "payload": {
+        "path": "roughness-source/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33513,
+        "sha256": "fb2b78e2b8d9c974ba00a3279aa14e2c7a56554f3ed90af46e354d5c5786a082",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+        "bytes": 29001,
+        "sha256": "3235956d9d0fb27b15a68174dc4a87c1d8cccb677b479634cf6a24b565a93e4f"
+      },
+      "payload": {
+        "path": "roughness-source/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+        "bytes": 29001,
+        "sha256": "3235956d9d0fb27b15a68174dc4a87c1d8cccb677b479634cf6a24b565a93e4f",
+        "encoding": "literal"
+      }
+    },
+    {
+      "source": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/controlled-proof.json",
+        "bytes": 282850,
+        "sha256": "44707586c9955872607fb00d246356d58bdde167e6f59bfdcf1e090c3132c830"
+      },
+      "payload": {
+        "path": "controlled-longitudinal/controlled-proof.json.gz",
+        "bytes": 47886,
+        "sha256": "ed80333666c6b1ea2fd89df0d40f9179f1e4951a946953e25d1db5b0874f5b6c",
+        "encoding": "gzip"
+      }
+    }
+  ]
+}

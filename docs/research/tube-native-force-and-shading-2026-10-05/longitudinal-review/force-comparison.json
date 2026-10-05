@@ -1,0 +1,3056 @@
+{
+  "schema": "landing-longitudinal-actual-V11-force-comparison/v1",
+  "complete": true,
+  "captureTerminalBeforeExecution": true,
+  "configsEqual": {
+    "settings": true,
+    "overrides": true,
+    "expectedConfig": true,
+    "graphics": true,
+    "schedule": true,
+    "videoContract": true,
+    "everyActualInitialConfigField": true
+  },
+  "sharedRetainedSampleIdentities": 43,
+  "actualRetainedLandingSamples": 46,
+  "V11RetainedLandingSamples": 46,
+  "pairedSamples": [
+    {
+      "step": 1343,
+      "substep": 5,
+      "actual": {
+        "phaseTime": 0.010416666666666666,
+        "seconds": 0.0020833333333333333,
+        "loadNewtons": 488.1942474089524,
+        "implicitSpringNewtons": -82.19314666400312,
+        "implicitDampingNewtons": -420.86406656059324,
+        "implicitAxialNewtons": -14.862965815643975,
+        "preparedForceNewtons": -8.857209181770656,
+        "preparedExtension": 0.0011691264451085814,
+        "preparedRate": 0.355196776462547,
+        "attemptedRateAfter": 0.3354718154097333,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -12.438145128970497,
+        "requestedForeAftNewtons": 21.06623255583503,
+        "preprojectionHeight": 0.38448075950206917,
+        "postureError": 0.0031608515429809984,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.010416666666666666,
+        "seconds": 0.0020833333333333333,
+        "loadNewtons": 505.02809997950516,
+        "implicitSpringNewtons": -79.58682545335702,
+        "implicitDampingNewtons": -418.3435745563764,
+        "implicitAxialNewtons": 7.0976999697717815,
+        "preparedForceNewtons": 38.32911412939035,
+        "preparedExtension": 0.0011140774774984763,
+        "preparedRate": 0.33293345057286206,
+        "attemptedRateAfter": 0.3334627248373534,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 5.452927386373281,
+        "requestedForeAftNewtons": -11.895779533324202,
+        "preprojectionHeight": 0.3845133595678219,
+        "postureError": 0.0027596229869090837,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.003030029358176903,
+          0.011988772822984507,
+          -0.004762424199602944
+        ]
+      }
+    },
+    {
+      "step": 1343,
+      "substep": 6,
+      "actual": {
+        "phaseTime": 0.012499999999999999,
+        "seconds": 0.0020833333333333333,
+        "loadNewtons": 478.2826289718032,
+        "implicitSpringNewtons": -112.90964569077387,
+        "implicitDampingNewtons": -398.06259577396565,
+        "implicitAxialNewtons": -32.689612492936305,
+        "preparedForceNewtons": -47.68060503807658,
+        "preparedExtension": 0.0019050935086823984,
+        "preparedRate": 0.35243021419568643,
+        "attemptedRateAfter": 0.3172967051863456,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -30.437260719509307,
+        "requestedForeAftNewtons": 21.77201105697975,
+        "preprojectionHeight": 0.3850762399321971,
+        "postureError": 0.0033964222972366316,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.012499999999999999,
+        "seconds": 0.0020833333333333333,
+        "loadNewtons": 491.9861912145737,
+        "implicitSpringNewtons": -108.75754990293794,
+        "implicitDampingNewtons": -397.3129526763426,
+        "implicitAxialNewtons": -14.08431136470682,
+        "preparedForceNewtons": -6.988535197723593,
+        "preparedExtension": 0.0018119725753544813,
+        "preparedRate": 0.33418359132468045,
+        "attemptedRateAfter": 0.31669916277099003,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -16.144102226220472,
+        "requestedForeAftNewtons": -12.93710528882764,
+        "preprojectionHeight": 0.38512090400275034,
+        "postureError": 0.0029592716619149953,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1344,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.013020833333333332,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 464.8216203107694,
+        "implicitSpringNewtons": -114.5353724209639,
+        "implicitDampingNewtons": 115.3178415983675,
+        "implicitAxialNewtons": 465.60408948817303,
+        "preparedForceNewtons": -92.75779285314718,
+        "preparedExtension": 0.002650951721014483,
+        "preparedRate": 0.3514724299841251,
+        "attemptedRateAfter": -0.09192014416029187,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 414.3285472999736,
+        "requestedForeAftNewtons": -5.828757475543673,
+        "preprojectionHeight": 0.3856662723808422,
+        "postureError": 0.0034614872116511966,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.0804619880481384,
+          0.215855749924065,
+          0.005582190848260524
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.013020833333333332,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 478.4030326724165,
+        "implicitSpringNewtons": -108.33012975059599,
+        "implicitDampingNewtons": 139.35907482634445,
+        "implicitAxialNewtons": 509.43197774816497,
+        "preparedForceNewtons": -50.606921280324684,
+        "preparedExtension": 0.0025199043785120168,
+        "preparedRate": 0.3332958009978789,
+        "attemptedRateAfter": -0.11108347217161085,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 445.4175950964578,
+        "requestedForeAftNewtons": -51.68929619713324,
+        "preprojectionHeight": 0.38572223586286397,
+        "postureError": 0.0029964714744089033,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.08087096898340719,
+          0.23511806765783147,
+          -0.016837193341296054
+        ]
+      }
+    },
+    {
+      "step": 1344,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.029166666666666705,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 489.21255410185273,
+        "implicitSpringNewtons": -159.8850858576514,
+        "implicitDampingNewtons": -307.944473010355,
+        "implicitAxialNewtons": 21.382995233846316,
+        "preparedForceNewtons": 29.81762666066936,
+        "preparedExtension": 0.003505906471698683,
+        "preparedRate": 0.24322391681402716,
+        "attemptedRateAfter": 0.24546332085422645,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 23.61407368258926,
+        "requestedForeAftNewtons": 12.936201042304798,
+        "preprojectionHeight": 0.3857269093434608,
+        "postureError": 0.003245304804242576,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.001719443594891177,
+          0.011237497027861787,
+          0.008878919255272713
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.029166666666666705,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 492.1700464562044,
+        "implicitSpringNewtons": -155.68686782003314,
+        "implicitDampingNewtons": -305.54274056363465,
+        "implicitAxialNewtons": 30.940438072536608,
+        "preparedForceNewtons": 41.64577743513553,
+        "preparedExtension": 0.00341148952279946,
+        "preparedRate": 0.23946453201815232,
+        "attemptedRateAfter": 0.2435488938264827,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 30.426205171776715,
+        "requestedForeAftNewtons": -8.119979618766687,
+        "preprojectionHeight": 0.3863818605874174,
+        "postureError": 0.00031387839237560663,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.005291213824664401,
+          0.016116703223175183,
+          -0.0009775660402224686
+        ]
+      }
+    },
+    {
+      "step": 1345,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.02968750000000004,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 484.87402737300374,
+        "implicitSpringNewtons": -154.68670169708975,
+        "implicitDampingNewtons": 284.1418076182056,
+        "implicitAxialNewtons": 614.3291332941196,
+        "preparedForceNewtons": 18.394975152862628,
+        "preparedExtension": 0.0036335704796011115,
+        "preparedRate": 0.24439319324689823,
+        "attemptedRateAfter": -0.2264901558702181,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 643.7701398441413,
+        "requestedForeAftNewtons": -15.623632785079604,
+        "preprojectionHeight": 0.38585903470864175,
+        "postureError": 0.003283756118942982,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.0929531425004745,
+          0.3302367657863579,
+          0.05735116382723734
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.02968750000000004,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 488.00661805352564,
+        "implicitSpringNewtons": -149.20236298241701,
+        "implicitDampingNewtons": 351.8941751272037,
+        "implicitAxialNewtons": 690.6984301983123,
+        "preparedForceNewtons": 30.734909496165926,
+        "preparedExtension": 0.0035370543262711607,
+        "preparedRate": 0.24043906016160044,
+        "attemptedRateAfter": -0.2804957399351591,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 781.9509372955218,
+        "requestedForeAftNewtons": 217.8319557860964,
+        "preprojectionHeight": 0.38656192808645873,
+        "postureError": 0.0003087431836113668,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.0827029579976304,
+          0.3865202491242758,
+          0.18874935183240088
+        ]
+      }
+    },
+    {
+      "step": 1345,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.04583333333333332,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 580.8402788982925,
+        "implicitSpringNewtons": -70.19332895073077,
+        "implicitDampingNewtons": -123.20771755431518,
+        "implicitAxialNewtons": 387.43923239324647,
+        "preparedForceNewtons": 421.99092640418866,
+        "preparedExtension": 0.0015441523138726154,
+        "preparedRate": 0.07246192193814088,
+        "attemptedRateAfter": 0.09820918430555764,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 391.12310723536945,
+        "requestedForeAftNewtons": 6.220539471867768,
+        "preprojectionHeight": 0.3847131888940031,
+        "postureError": 0.0051741391652178935,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.006312481190594577,
+          0.2017912668714878,
+          0.027655884418342325
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.04583333333333332,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 604.0571589333953,
+        "implicitSpringNewtons": -59.14113083684594,
+        "implicitDampingNewtons": -90.16005999458795,
+        "implicitAxialNewtons": 454.75596810196134,
+        "preparedForceNewtons": 489.2200051479741,
+        "preparedExtension": 0.0013066859783630314,
+        "preparedRate": 0.04570822748420411,
+        "attemptedRateAfter": 0.07186681260534807,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 454.94918055845994,
+        "requestedForeAftNewtons": -28.404348559195206,
+        "preprojectionHeight": 0.38576296603379684,
+        "postureError": 3.142971171354338e-05,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.008740020182098629,
+          0.2368520667197787,
+          0.017669656126628297
+        ]
+      }
+    },
+    {
+      "step": 1346,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.046354166666666655,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 561.344206731509,
+        "implicitSpringNewtons": -62.209085756964,
+        "implicitDampingNewtons": 435.35484359173563,
+        "implicitAxialNewtons": 934.4899645662806,
+        "preparedForceNewtons": 370.9465413839156,
+        "preparedExtension": 0.001594583717775322,
+        "preparedRate": 0.09584040616741418,
+        "attemptedRateAfter": -0.347022450552007,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 956.6778158175157,
+        "requestedForeAftNewtons": -47.14427778958755,
+        "preprojectionHeight": 0.38482572592534225,
+        "postureError": 0.005243800515474417,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.1413668742739798,
+          0.49426822603258413,
+          0.07298576329754097
+        ]
+      },
+      "V11": null
+    },
+    {
+      "step": 1346,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.06249999999999993,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 653.7091863684606,
+        "implicitSpringNewtons": 73.47602553554887,
+        "implicitDampingNewtons": 19.706599690195475,
+        "implicitAxialNewtons": 746.8918115942049,
+        "preparedForceNewtons": 777.0029256398034,
+        "preparedExtension": -0.0016617283271900263,
+        "preparedRate": -0.039996766317940274,
+        "attemptedRateAfter": -0.015708180619100096,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 751.8996805192568,
+        "requestedForeAftNewtons": -8.598431191053146,
+        "preprojectionHeight": 0.3835855847568167,
+        "postureError": 0.007702372179820322,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.0063403825165491146,
+          0.3890061518719835,
+          0.04708233563298769
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.06249999999999993,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 661.9283521704587,
+        "implicitSpringNewtons": 85.25649801826091,
+        "implicitDampingNewtons": 25.54780048430904,
+        "implicitAxialNewtons": 772.7326506730286,
+        "preparedForceNewtons": 800.5854496759807,
+        "preparedExtension": -0.0019270413194236724,
+        "preparedRate": -0.04293774514001794,
+        "attemptedRateAfter": -0.020364216594297633,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 774.8308534864346,
+        "requestedForeAftNewtons": -32.48886277213071,
+        "preprojectionHeight": 0.3847331052469595,
+        "postureError": 7.506368729461267e-05,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.007722408908263256,
+          0.40246492222553804,
+          0.03706306711943341
+        ]
+      }
+    },
+    {
+      "step": 1347,
+      "substep": 1,
+      "actual": null,
+      "V11": {
+        "phaseTime": 0.06302083333333326,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 647.398633257846,
+        "implicitSpringNewtons": 93.42979838362824,
+        "implicitDampingNewtons": 443.6299802747977,
+        "implicitAxialNewtons": 1184.4584119162719,
+        "preparedForceNewtons": 763.5950810965694,
+        "preparedExtension": -0.0019392281634060815,
+        "preparedRate": -0.02460688106852424,
+        "attemptedRateAfter": -0.35361858300046545,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1180.6742990620785,
+        "requestedForeAftNewtons": -104.22832041908629,
+        "preprojectionHeight": 0.38481173393492807,
+        "postureError": 8.736327969584047e-05,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.22289576943694295,
+          0.6169004146999708,
+          -0.030424275787918766
+        ]
+      }
+    },
+    {
+      "step": 1347,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.07916666666666654,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 670.6918150075953,
+        "implicitSpringNewtons": 218.2500161708586,
+        "implicitDampingNewtons": 40.374631627084874,
+        "implicitAxialNewtons": 929.3164628055388,
+        "preparedForceNewtons": 952.8968922218268,
+        "preparedExtension": -0.004943465806225067,
+        "preparedRate": -0.05156662106444282,
+        "attemptedRateAfter": -0.03218272132170101,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 934.3529730282713,
+        "requestedForeAftNewtons": -17.77554500252264,
+        "preprojectionHeight": 0.383190265227624,
+        "postureError": 0.010522146026495514,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.006470203291185417,
+          0.4840189910445506,
+          0.05438954587267908
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.07916666666666654,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 681.0169057324163,
+        "implicitSpringNewtons": 227.67141766461282,
+        "implicitDampingNewtons": 46.950268149612214,
+        "implicitAxialNewtons": 955.6385915466412,
+        "preparedForceNewtons": 978.1747119688097,
+        "preparedExtension": -0.005154858642156146,
+        "preparedRate": -0.05607140160979612,
+        "attemptedRateAfter": -0.03742417787966827,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 958.6009464335071,
+        "requestedForeAftNewtons": -36.05210673214454,
+        "preprojectionHeight": 0.38461271539553826,
+        "postureError": 0.00010299603455107998,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.00473990633354604,
+          0.49772843309720666,
+          0.04671537876316023
+        ]
+      }
+    },
+    {
+      "step": 1348,
+      "substep": 1,
+      "actual": null,
+      "V11": {
+        "phaseTime": 0.07968749999999987,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 670.255042924025,
+        "implicitSpringNewtons": 234.9194611909137,
+        "implicitDampingNewtons": 392.72515906240176,
+        "implicitAxialNewtons": 1297.8996631773405,
+        "preparedForceNewtons": 950.6789135998233,
+        "preparedExtension": -0.0051760358400758655,
+        "preparedRate": -0.04199000159083875,
+        "attemptedRateAfter": -0.31304222083966377,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1304.0974906522576,
+        "requestedForeAftNewtons": -50.67754650994907,
+        "preprojectionHeight": 0.3847117745578831,
+        "postureError": 0.00011708002263840519,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.2538544863764375,
+          0.6762075705728327,
+          -0.0018013890373762137
+        ]
+      }
+    },
+    {
+      "step": 1348,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.09583333333333315,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 665.4656306485368,
+        "implicitSpringNewtons": 334.82439017510677,
+        "implicitDampingNewtons": 3.2498489537044,
+        "implicitAxialNewtons": 1003.5398697773479,
+        "preparedForceNewtons": 1023.873482557645,
+        "preparedExtension": -0.007608296031852646,
+        "preparedRate": -0.018845757003531804,
+        "attemptedRateAfter": -0.002590462847579963,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1008.2141958809088,
+        "requestedForeAftNewtons": -21.837537852747293,
+        "preprojectionHeight": 0.38440706734192664,
+        "postureError": 0.013271228789375592,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.0058791419801931255,
+          0.5226770155090387,
+          0.05630643385716105
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.09583333333333315,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 677.1409034336298,
+        "implicitSpringNewtons": 342.8016884285856,
+        "implicitDampingNewtons": 10.671485655860147,
+        "implicitAxialNewtons": 1030.6140775180754,
+        "preparedForceNewtons": 1049.8478129379673,
+        "preparedExtension": -0.0077865171162154745,
+        "preparedRate": -0.023992911039136627,
+        "attemptedRateAfter": -0.008506268295478035,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1033.5883678193247,
+        "requestedForeAftNewtons": -38.415110240660304,
+        "preprojectionHeight": 0.3861666383728218,
+        "postureError": 0.00014163247605291672,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.0013132875335621907,
+          0.5367781653739995,
+          0.048975151803299255
+        ]
+      }
+    },
+    {
+      "step": 1349,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.09635416666666648,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 655.6119558593072,
+        "implicitSpringNewtons": 340.50440817235466,
+        "implicitDampingNewtons": 308.8237093547284,
+        "implicitAxialNewtons": 1304.9400733863902,
+        "preparedForceNewtons": 997.5796580699606,
+        "preparedExtension": -0.007610526048134503,
+        "preparedRate": -0.005663059689528235,
+        "attemptedRateAfter": -0.24616416237541316,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1312.9876268162955,
+        "requestedForeAftNewtons": -45.27316124473746,
+        "preprojectionHeight": 0.38454628861203444,
+        "postureError": 0.013357736433243762,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.25585839067059085,
+          0.6798101697157751,
+          -0.0009348589448664401
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.09635416666666648,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 668.3751189946014,
+        "implicitSpringNewtons": 348.429156318413,
+        "implicitDampingNewtons": 305.17493962888454,
+        "implicitAxialNewtons": 1321.979214941899,
+        "preparedForceNewtons": 1026.5281885941429,
+        "preparedExtension": -0.007792148774923735,
+        "preparedRate": -0.012194491904588566,
+        "attemptedRateAfter": -0.2432557187680883,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1343.1248123645962,
+        "requestedForeAftNewtons": 37.69241970250437,
+        "preprojectionHeight": 0.38631291893823616,
+        "postureError": 0.00014961990908365946,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.27092684039193177,
+          0.6892347036327938,
+          0.04230141206470031
+        ]
+      }
+    },
+    {
+      "step": 1349,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.11249999999999975,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 661.4752443635692,
+        "implicitSpringNewtons": 414.05036796084846,
+        "implicitDampingNewtons": -40.46718390750686,
+        "implicitAxialNewtons": 1035.0584284169108,
+        "preparedForceNewtons": 1053.2704509724801,
+        "preparedExtension": -0.009427035893275537,
+        "preparedRate": 0.018328872824214734,
+        "attemptedRateAfter": 0.03225649497927936,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1039.1804287207099,
+        "requestedForeAftNewtons": -23.70419038217827,
+        "preprojectionHeight": 0.38762734126717546,
+        "postureError": 0.015739494464251793,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.002895952327315099,
+          0.539092931467137,
+          0.055314069312153435
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.11249999999999975,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 671.8071922688113,
+        "implicitSpringNewtons": 419.81975273080405,
+        "implicitDampingNewtons": -36.70117360907091,
+        "implicitAxialNewtons": 1054.9257713905442,
+        "preparedForceNewtons": 1072.6978849130621,
+        "preparedExtension": -0.009556594786720662,
+        "preparedRate": 0.015622793625270304,
+        "attemptedRateAfter": 0.029254598614040103,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1057.5979627434865,
+        "requestedForeAftNewtons": -38.79218548860399,
+        "preprojectionHeight": 0.3897601028913511,
+        "postureError": 0.00017953339190652747,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.0005262731867137216,
+          0.5494405059325773,
+          0.04882787937822641
+        ]
+      }
+    },
+    {
+      "step": 1350,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.11302083333333308,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 653.5849195865558,
+        "implicitSpringNewtons": 418.23816007767323,
+        "implicitDampingNewtons": 227.00122731903667,
+        "implicitAxialNewtons": 1298.8243069832656,
+        "preparedForceNewtons": 1031.1828918656618,
+        "preparedExtension": -0.009411171450747435,
+        "preparedRate": 0.029089118488972512,
+        "attemptedRateAfter": -0.18094325431793745,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1313.0252650522336,
+        "requestedForeAftNewtons": -39.54144271779185,
+        "preprojectionHeight": 0.38782200413749357,
+        "postureError": 0.015815163985707027,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.2536164578297671,
+          0.6776573307978495,
+          0.000628109224902443
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.11302083333333308,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 664.6407091067517,
+        "implicitSpringNewtons": 424.06210946846363,
+        "implicitDampingNewtons": 229.19785374972696,
+        "implicitAxialNewtons": 1317.9006723249422,
+        "preparedForceNewtons": 1052.5792530063761,
+        "preparedExtension": -0.009542621990807021,
+        "preparedRate": 0.025456923208568738,
+        "attemptedRateAfter": -0.1826941908198414,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1344.6551173728865,
+        "requestedForeAftNewtons": 51.7439248959431,
+        "preprojectionHeight": 0.3899632096399891,
+        "postureError": 0.0001850948456260123,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.2697638316584782,
+          0.6874134195600242,
+          0.04836684483240418
+        ]
+      }
+    },
+    {
+      "step": 1350,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.12916666666666637,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 661.424233553392,
+        "implicitSpringNewtons": 458.2564724595305,
+        "implicitDampingNewtons": -81.41918013207778,
+        "implicitAxialNewtons": 1038.2615258808448,
+        "preparedForceNewtons": 1055.1735895056388,
+        "preparedExtension": -0.010448721617733359,
+        "preparedRate": 0.05260429989887039,
+        "attemptedRateAfter": 0.06489943508671524,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1041.7552338536739,
+        "requestedForeAftNewtons": -23.926345625552734,
+        "preprojectionHeight": 0.39291690903884097,
+        "postureError": 0.017847244248223686,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.00040590742686896775,
+          0.5407612113962738,
+          0.05320133674379868
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.12916666666666637,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 670.4418430661225,
+        "implicitSpringNewtons": 462.0885590439641,
+        "implicitDampingNewtons": -80.5214092361318,
+        "implicitAxialNewtons": 1052.0089928739546,
+        "preparedForceNewtons": 1068.747618449886,
+        "preparedExtension": -0.010535441778267263,
+        "preparedRate": 0.052013860248688815,
+        "attemptedRateAfter": 0.06418381962743806,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1054.4752293123242,
+        "requestedForeAftNewtons": -36.45188580835166,
+        "preprojectionHeight": 0.3953690593716248,
+        "postureError": 0.00021659574112998785,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.0031707576769288703,
+          0.5479213504551859,
+          0.04793801988055435
+        ]
+      }
+    },
+    {
+      "step": 1351,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.1296874999999997,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 654.8573724585983,
+        "implicitSpringNewtons": 461.4231123880515,
+        "implicitDampingNewtons": 170.97837085940685,
+        "implicitAxialNewtons": 1287.2588557060567,
+        "preparedForceNewtons": 1035.7504225754167,
+        "preparedExtension": -0.010415905952663174,
+        "preparedRate": 0.06170116610800774,
+        "attemptedRateAfter": -0.13628729327440875,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1304.5653297209212,
+        "requestedForeAftNewtons": -38.077572914395,
+        "preprojectionHeight": 0.3931689535402945,
+        "postureError": 0.017910975500346833,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.24777863123317667,
+          0.6713750900776227,
+          -3.337871700977418e-05
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.1296874999999997,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 664.3900502610174,
+        "implicitSpringNewtons": 465.2804663829043,
+        "implicitDampingNewtons": 171.67377158662404,
+        "implicitAxialNewtons": 1301.3442882305458,
+        "preparedForceNewtons": 1050.7136272346895,
+        "preparedExtension": -0.010503284388032608,
+        "preparedRate": 0.060437060562856804,
+        "attemptedRateAfter": -0.1368415989586723,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1329.044271523909,
+        "requestedForeAftNewtons": 47.635313379308116,
+        "preprojectionHeight": 0.3956287765751916,
+        "postureError": 0.0002195519991666154,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.2616604088063545,
+          0.6779686757665908,
+          0.045171815858292566
+        ]
+      }
+    },
+    {
+      "step": 1351,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.14583333333333298,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 667.8972609401193,
+        "implicitSpringNewtons": 476.26844955330677,
+        "implicitDampingNewtons": -114.65388648623643,
+        "implicitAxialNewtons": 1029.5118240071897,
+        "preparedForceNewtons": 1045.5233633357082,
+        "preparedExtension": -0.010871882373484798,
+        "preparedRate": 0.08029749675852077,
+        "attemptedRateAfter": 0.09139090385560762,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1032.5055792268363,
+        "requestedForeAftNewtons": -22.788818510451232,
+        "preprojectionHeight": 0.40009212334858646,
+        "postureError": 0.019613070081205424,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.0014510871096742317,
+          0.5362040750037466,
+          0.0512422976258069
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.14583333333333298,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 675.2204066214372,
+        "implicitSpringNewtons": 477.46324463305734,
+        "implicitDampingNewtons": -116.09456573143008,
+        "implicitAxialNewtons": 1036.5890855230646,
+        "preparedForceNewtons": 1052.4775881872629,
+        "preparedExtension": -0.010899634916012424,
+        "preparedRate": 0.08156491585922293,
+        "attemptedRateAfter": 0.09253927293771516,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1038.5503460606544,
+        "requestedForeAftNewtons": -36.685305842461545,
+        "preprojectionHeight": 0.4028187086774891,
+        "postureError": 0.0002517591937547666,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.005433140010490778,
+          0.5398901487099304,
+          0.04494720764830262
+        ]
+      }
+    },
+    {
+      "step": 1352,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.1463541666666663,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 662.1300483930573,
+        "implicitSpringNewtons": 478.66070224828377,
+        "implicitDampingNewtons": 128.7216546970869,
+        "implicitAxialNewtons": 1269.5124053384282,
+        "preparedForceNewtons": 1027.519560735439,
+        "preparedExtension": -0.010825212554244512,
+        "preparedRate": 0.08841448596155477,
+        "attemptedRateAfter": -0.10260435759382996,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1287.740382393543,
+        "requestedForeAftNewtons": -36.27441189331105,
+        "preprojectionHeight": 0.40039792400515695,
+        "postureError": 0.019666302118935112,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.239311745261534,
+          0.6612371937193213,
+          -0.00035082741804464985
+        ]
+      },
+      "V11": null
+    },
+    {
+      "step": 1352,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.1624999999999996,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 678.6868380966652,
+        "implicitSpringNewtons": 473.36401233721904,
+        "implicitDampingNewtons": -143.4012975955838,
+        "implicitAxialNewtons": 1008.6495528383002,
+        "preparedForceNewtons": 1024.08652127001,
+        "preparedExtension": -0.01081780714214231,
+        "preparedRate": 0.10408870311470525,
+        "attemptedRateAfter": 0.11430553819822434,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1011.3371798425189,
+        "requestedForeAftNewtons": -20.94515895394043,
+        "preprojectionHeight": 0.4089835082724372,
+        "postureError": 0.02107677167242974,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.003045181279662801,
+          0.5253383087699484,
+          0.04918394650136193
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.1624999999999996,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 683.9670990605551,
+        "implicitSpringNewtons": 470.82756961969494,
+        "implicitDampingNewtons": -146.26479838283967,
+        "implicitAxialNewtons": 1008.5298702974105,
+        "preparedForceNewtons": 1023.8279402347771,
+        "preparedExtension": -0.01076134952077723,
+        "preparedRate": 0.10652361754404455,
+        "attemptedRateAfter": 0.11658804194195896,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1010.3957109622387,
+        "requestedForeAftNewtons": -33.79720701668337,
+        "preprojectionHeight": 0.41195539694173333,
+        "postureError": 0.0002839349673918242,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.006975428705885189,
+          0.5252759741132402,
+          0.04317406486514841
+        ]
+      }
+    },
+    {
+      "step": 1353,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.16302083333333292,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 673.3426003238486,
+        "implicitSpringNewtons": 475.04059373002326,
+        "implicitDampingNewtons": 89.82337871037645,
+        "implicitAxialNewtons": 1238.2065727642482,
+        "preparedForceNewtons": 1006.6005979707311,
+        "preparedExtension": -0.010759086274446883,
+        "preparedRate": 0.11170738314129552,
+        "attemptedRateAfter": -0.07159844309936494,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1258.4088848091203,
+        "requestedForeAftNewtons": -34.427308880147535,
+        "preprojectionHeight": 0.4093387222000132,
+        "postureError": 0.02112049059327359,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.22784205361636858,
+          0.6454378422411806,
+          -0.00042482387994521083
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.16302083333333292,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 678.9264575026408,
+        "implicitSpringNewtons": 472.404379342482,
+        "implicitDampingNewtons": 83.98113776891329,
+        "implicitAxialNewtons": 1235.311974614036,
+        "preparedForceNewtons": 1007.1716938280566,
+        "preparedExtension": -0.010701597761655801,
+        "preparedRate": 0.11368680137598108,
+        "attemptedRateAfter": -0.06694157802007564,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1264.3795702927303,
+        "requestedForeAftNewtons": 45.01283585480255,
+        "preprojectionHeight": 0.4123161760306111,
+        "postureError": 0.00028136132525925317,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.23757613584516696,
+          0.6434272470945999,
+          0.04187741698731851
+        ]
+      }
+    },
+    {
+      "step": 1353,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.1791666666666662,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 690.3675947200921,
+        "implicitSpringNewtons": 450.7387019376396,
+        "implicitDampingNewtons": -171.19092723497775,
+        "implicitAxialNewtons": 969.915369422754,
+        "preparedForceNewtons": 984.9348089179039,
+        "preparedExtension": -0.01031513261730943,
+        "preparedRate": 0.12697733499493258,
+        "attemptedRateAfter": 0.13645672250074403,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 972.428916776572,
+        "requestedForeAftNewtons": -18.38199765227434,
+        "preprojectionHeight": 0.4194404981919037,
+        "postureError": 0.022249165592323768,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.003540779044103992,
+          0.5051642549076858,
+          0.04695359481205408
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.1791666666666662,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 693.9956031805796,
+        "implicitSpringNewtons": 444.45895971108945,
+        "implicitDampingNewtons": -173.68921471092972,
+        "implicitAxialNewtons": 964.7653481807392,
+        "preparedForceNewtons": 979.6055999983786,
+        "preparedExtension": -0.010173448386031403,
+        "preparedRate": 0.12914793384543582,
+        "attemptedRateAfter": 0.13844811378729938,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 966.5159506469772,
+        "requestedForeAftNewtons": -30.943956695482992,
+        "preprojectionHeight": 0.42261071325561567,
+        "postureError": 0.0003115907900346501,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.007006806663611087,
+          0.5024819521774693,
+          0.04098419583576174
+        ]
+      }
+    },
+    {
+      "step": 1354,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.17968749999999953,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 685.2886625886317,
+        "implicitSpringNewtons": 451.6986079246046,
+        "implicitDampingNewtons": 50.83990034102896,
+        "implicitAxialNewtons": 1187.8271708542652,
+        "preparedForceNewtons": 967.6393740906851,
+        "preparedExtension": -0.010244770883264476,
+        "preparedRate": 0.13424737755634525,
+        "attemptedRateAfter": -0.04052461356949652,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1211.4461562056595,
+        "requestedForeAftNewtons": -32.67310449615775,
+        "preprojectionHeight": 0.41983981371801765,
+        "postureError": 0.022283639910190126,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.21292158398721261,
+          0.6213113938388557,
+          -0.0004306262662273422
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.17968749999999953,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 689.1674586001226,
+        "implicitSpringNewtons": 445.31942399943375,
+        "implicitDampingNewtons": 45.110170767320305,
+        "implicitAxialNewtons": 1179.5970533668767,
+        "preparedForceNewtons": 963.0312249888635,
+        "preparedExtension": -0.010102168171035597,
+        "preparedRate": 0.13601090775588243,
+        "attemptedRateAfter": -0.03595743158694506,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1210.2726224824678,
+        "requestedForeAftNewtons": 35.80282942209722,
+        "preprojectionHeight": 0.423013852909153,
+        "postureError": 0.00030851485022704455,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.22026789604470354,
+          0.6164878156574813,
+          0.03637547061529747
+        ]
+      }
+    },
+    {
+      "step": 1354,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.1958333333333328,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 701.3674862573916,
+        "implicitSpringNewtons": 408.8360389915236,
+        "implicitDampingNewtons": -197.8453126217705,
+        "implicitAxialNewtons": 912.3582126271447,
+        "preparedForceNewtons": 927.1830008536108,
+        "preparedExtension": -0.009373865138444515,
+        "preparedRate": 0.14876687458730486,
+        "attemptedRateAfter": 0.15770300072880142,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 914.7611002136988,
+        "requestedForeAftNewtons": -15.175581538239744,
+        "preprojectionHeight": 0.4312632288147652,
+        "postureError": 0.023122742072901672,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.002945580955896032,
+          0.47518656907663576,
+          0.044422038188791646
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.1958333333333328,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 703.6341900998883,
+        "implicitSpringNewtons": 399.69111838735853,
+        "implicitDampingNewtons": -198.7786529949098,
+        "implicitAxialNewtons": 904.5466554923369,
+        "preparedForceNewtons": 918.9595753222562,
+        "preparedExtension": -0.009166413517127214,
+        "preparedRate": 0.1498527339244805,
+        "attemptedRateAfter": 0.15844696870860794,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 906.1610735294702,
+        "requestedForeAftNewtons": -27.954218895775007,
+        "preprojectionHeight": 0.43456659099356476,
+        "postureError": 0.00033358185098010914,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.0059461712785551235,
+          0.4711180497355962,
+          0.03830452596105083
+        ]
+      }
+    },
+    {
+      "step": 1355,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.19635416666666614,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 696.3678099888762,
+        "implicitSpringNewtons": 409.110791859292,
+        "implicitDampingNewtons": 13.529328542487221,
+        "implicitAxialNewtons": 1119.0079303906555,
+        "preparedForceNewtons": 909.6896119899757,
+        "preparedExtension": -0.009292355739073166,
+        "preparedRate": 0.1558669052408821,
+        "attemptedRateAfter": -0.010784262112264353,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1146.0153321540893,
+        "requestedForeAftNewtons": -29.465606966389217,
+        "preprojectionHeight": 0.4316995334072621,
+        "postureError": 0.023147904042825716,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.1951588634479617,
+          0.5880972740733773,
+          0.00026091209777947665
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.19635416666666614,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 698.8827806695552,
+        "implicitSpringNewtons": 399.8757587968852,
+        "implicitDampingNewtons": 8.507418423524813,
+        "implicitAxialNewtons": 1107.2659578899652,
+        "preparedForceNewtons": 902.2170067340951,
+        "preparedExtension": -0.009084553508028392,
+        "preparedRate": 0.1565398811941976,
+        "attemptedRateAfter": -0.006781284813202698,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1139.5213284027193,
+        "requestedForeAftNewtons": 25.31385651494073,
+        "preprojectionHeight": 0.4350045286733239,
+        "postureError": 0.0003310528208671796,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.20019347727997236,
+          0.5814720531796086,
+          0.03015501071616684
+        ]
+      }
+    },
+    {
+      "step": 1355,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.2124999999999994,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 711.2348793167241,
+        "implicitSpringNewtons": 349.63110555313017,
+        "implicitDampingNewtons": -221.99840421010438,
+        "implicitAxialNewtons": 838.86758065975,
+        "preparedForceNewtons": 854.0237586519814,
+        "preparedExtension": -0.008038325808241265,
+        "preparedRate": 0.16810689751699315,
+        "attemptedRateAfter": 0.17695549132300462,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 841.1470920836215,
+        "requestedForeAftNewtons": -11.083670927173511,
+        "preprojectionHeight": 0.44418910968598696,
+        "postureError": 0.0236960710907347,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.0005760356370494435,
+          0.43691019826028793,
+          0.042061552493242615
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.2124999999999994,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 711.8756941502287,
+        "implicitSpringNewtons": 338.31966991898736,
+        "implicitDampingNewtons": -221.33579212649582,
+        "implicitAxialNewtons": 828.8595719427203,
+        "preparedForceNewtons": 843.2571135126062,
+        "preparedExtension": -0.007780972637223549,
+        "preparedRate": 0.16817379071912442,
+        "attemptedRateAfter": 0.17642732154976362,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 830.422991240573,
+        "requestedForeAftNewtons": -23.327386899418766,
+        "preprojectionHeight": 0.44755671171168193,
+        "postureError": 0.000349168844859611,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.0037907506749539355,
+          0.43169769372016326,
+          0.03598121424537304
+        ]
+      }
+    },
+    {
+      "step": 1356,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.21302083333333274,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 706.0387827176601,
+        "implicitSpringNewtons": 349.3411493097654,
+        "implicitDampingNewtons": -17.39231854136388,
+        "implicitAxialNewtons": 1037.9876134860615,
+        "preparedForceNewtons": 835.7158750935929,
+        "preparedExtension": -0.007946792127952573,
+        "preparedRate": 0.17534802010539052,
+        "attemptedRateAfter": 0.013863461242813596,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1067.7489842800292,
+        "requestedForeAftNewtons": -26.394131351469547,
+        "preprojectionHeight": 0.444654270377865,
+        "postureError": 0.023712223303341728,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.1758476313495564,
+          0.5485080173551768,
+          0.0008253429245614233
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.21302083333333274,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 706.9509660340984,
+        "implicitSpringNewtons": 337.9464267923222,
+        "implicitDampingNewtons": -21.767559905286383,
+        "implicitAxialNewtons": 1023.1298329211343,
+        "preparedForceNewtons": 825.7922298225612,
+        "preparedExtension": -0.007689637576226982,
+        "preparedRate": 0.17496623055711824,
+        "attemptedRateAfter": 0.017350977236292975,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 1057.5775628021058,
+        "requestedForeAftNewtons": 22.350241841758088,
+        "preprojectionHeight": 0.4480210826260337,
+        "postureError": 0.0003470404858884116,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0.17986087056331196,
+          0.5404067858236996,
+          0.02758852101322941
+        ]
+      }
+    },
+    {
+      "step": 1356,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.22916666666666602,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 719.4434668840195,
+        "implicitSpringNewtons": 276.4388849957914,
+        "implicitDampingNewtons": -241.62788018731544,
+        "implicitAxialNewtons": 754.2544716924954,
+        "preparedForceNewtons": 768.9183432996449,
+        "preparedExtension": -0.00638301557569898,
+        "preparedRate": 0.1844318386138808,
+        "attemptedRateAfter": 0.19260219643478127,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 756.4712555281676,
+        "requestedForeAftNewtons": -7.485539946842463,
+        "preprojectionHeight": 0.45791008754031665,
+        "postureError": 0.023982326173416238,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.0005002446587971665,
+          0.39284087067318113,
+          0.03862910681157494
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.22916666666666602,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 718.2080000003224,
+        "implicitSpringNewtons": 263.8395915721354,
+        "implicitDampingNewtons": -241.6457891474612,
+        "implicitAxialNewtons": 740.4018024249966,
+        "preparedForceNewtons": 755.8804293608682,
+        "preparedExtension": -0.006096675432929022,
+        "preparedRate": 0.18379693111701,
+        "attemptedRateAfter": 0.19261647171235793,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 741.9956347718268,
+        "requestedForeAftNewtons": -16.44577034727876,
+        "preprojectionHeight": 0.46127052543204927,
+        "postureError": 0.00035768659289842276,
+        "limit": "none",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.00017826126478937,
+          0.38562593876302603,
+          0.03472317764545885
+        ]
+      }
+    },
+    {
+      "step": 1357,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.22968749999999935,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 714.0723775512995,
+        "implicitSpringNewtons": 262.2763298583606,
+        "implicitDampingNewtons": -776.2024354567245,
+        "implicitAxialNewtons": 200.14627195293565,
+        "preparedForceNewtons": 749.980413593555,
+        "preparedExtension": -0.006283071996795897,
+        "preparedRate": 0.19174072916618556,
+        "attemptedRateAfter": 0.6187129309378421,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": 168.56132089975978,
+        "requestedForeAftNewtons": -311.09431291867065,
+        "preprojectionHeight": 0.4583950003031707,
+        "postureError": 0.023851343232438114,
+        "limit": "tip",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          -0.011348984643469907,
+          0.0930966273225753,
+          -0.04416604714222984
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.22968749999999935,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 712.6160477728744,
+        "implicitSpringNewtons": 239.6944653131651,
+        "implicitDampingNewtons": -1323.2316889845742,
+        "implicitAxialNewtons": -370.9211758985348,
+        "preparedForceNewtons": 736.4636654097591,
+        "preparedExtension": -0.0059969511390916,
+        "preparedRate": 0.1913191421652617,
+        "attemptedRateAfter": 1.0547513370268495,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -948.7665316943761,
+        "requestedForeAftNewtons": -5282.804254537319,
+        "preprojectionHeight": 0.4617532841801258,
+        "postureError": 0.0002253482299218379,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1357,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.24583333333333263,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 384.15519695148794,
+        "implicitSpringNewtons": -173.16741919556213,
+        "implicitDampingNewtons": -589.3615786273916,
+        "implicitAxialNewtons": -378.37380087146585,
+        "preparedForceNewtons": -480.14938989704245,
+        "preparedExtension": 0.0036909452417410726,
+        "preparedRate": 0.5594886593789157,
+        "attemptedRateAfter": 0.4697816098453056,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -385.3046573320199,
+        "requestedForeAftNewtons": -67.05316244353028,
+        "preprojectionHeight": 0.479647727256887,
+        "postureError": 0.017861113853541864,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.24583333333333263,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 417.15304432234774,
+        "implicitSpringNewtons": -162.33037989604273,
+        "implicitDampingNewtons": -478.69746667256175,
+        "implicitAxialNewtons": -223.87480224625673,
+        "preparedForceNewtons": -372.08308205641134,
+        "preparedExtension": 0.003490591938010379,
+        "preparedRate": 0.506678292629609,
+        "attemptedRateAfter": 0.3815709653928461,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -385.65822141333945,
+        "requestedForeAftNewtons": -1757.1372811392876,
+        "preprojectionHeight": 0.48217354364509063,
+        "postureError": 0.0067538047018384255,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1358,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.24635416666666596,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 382.1909383887996,
+        "implicitSpringNewtons": -185.93304983591463,
+        "implicitDampingNewtons": -586.2511040032884,
+        "implicitAxialNewtons": -389.99321545040345,
+        "preparedForceNewtons": -495.11109210340516,
+        "preparedExtension": 0.0039823645479315495,
+        "preparedRate": 0.5596281476769062,
+        "attemptedRateAfter": 0.467302242629517,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -396.8579094455125,
+        "requestedForeAftNewtons": -66.42954784919252,
+        "preprojectionHeight": 0.48031172635217345,
+        "postureError": 0.017653093361998794,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.24635416666666596,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 415.0413335260943,
+        "implicitSpringNewtons": -173.88338197281993,
+        "implicitDampingNewtons": -475.4977028966094,
+        "implicitAxialNewtons": -234.339751343335,
+        "preparedForceNewtons": -385.9399468995998,
+        "preparedExtension": 0.0037544885731870536,
+        "preparedRate": 0.5067848669121233,
+        "attemptedRateAfter": 0.3790204255675448,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -394.98900283689966,
+        "requestedForeAftNewtons": -1753.3958107377077,
+        "preprojectionHeight": 0.4828034216609212,
+        "postureError": 0.00700101193097526,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1358,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.2624999999999999,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 325.1410958096105,
+        "implicitSpringNewtons": -585.669977420221,
+        "implicitDampingNewtons": -498.6324314272244,
+        "implicitAxialNewtons": -759.1613130378349,
+        "preparedForceNewtons": -970.3280138313203,
+        "preparedExtension": 0.01310367027563819,
+        "preparedRate": 0.5730430861675846,
+        "attemptedRateAfter": 0.39746117638431566,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -763.8306272616612,
+        "requestedForeAftNewtons": -46.3736998805789,
+        "preprojectionHeight": 0.5009394043769825,
+        "postureError": 0.011311281351754531,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.2624999999999999,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 353.281429802067,
+        "implicitSpringNewtons": -535.9059458262891,
+        "implicitDampingNewtons": -387.2789890343594,
+        "implicitAxialNewtons": -569.9035050585815,
+        "preparedForceNewtons": -827.798162527985,
+        "preparedExtension": 0.012018898782330645,
+        "preparedRate": 0.5199085724904442,
+        "attemptedRateAfter": 0.3087010648905032,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -695.0020172564396,
+        "requestedForeAftNewtons": -1614.0806913800297,
+        "preprojectionHeight": 0.5023524621031715,
+        "postureError": 0.014607014254727725,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1359,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.26302083333333326,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 323.4380919902087,
+        "implicitSpringNewtons": -598.7627487753082,
+        "implicitDampingNewtons": -496.0375081895455,
+        "implicitAxialNewtons": -771.362164974645,
+        "preparedForceNewtons": -986.0434590987547,
+        "preparedExtension": 0.013402310563011,
+        "preparedRate": 0.5737383738443637,
+        "attemptedRateAfter": 0.3953927564868719,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -775.9564093603781,
+        "requestedForeAftNewtons": -45.74275596557109,
+        "preprojectionHeight": 0.5016062740098994,
+        "postureError": 0.011112559271727041,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.26302083333333326,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 351.43221933216336,
+        "implicitSpringNewtons": -547.7817634210066,
+        "implicitDampingNewtons": -384.72323274746583,
+        "implicitAxialNewtons": -581.0727768363091,
+        "preparedForceNewtons": -842.4421855907951,
+        "preparedExtension": 0.012289864769238878,
+        "preparedRate": 0.5206038923425185,
+        "attemptedRateAfter": 0.3066638650689176,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -705.0484673722066,
+        "requestedForeAftNewtons": -1609.1692612980014,
+        "preprojectionHeight": 0.5029839549402514,
+        "postureError": 0.014848453703768494,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1359,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.2791666666666674,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 274.8285442992791,
+        "implicitSpringNewtons": -1014.4271829890424,
+        "implicitDampingNewtons": -420.9819166728519,
+        "implicitAxialNewtons": -1160.5805553626153,
+        "preparedForceNewtons": -1488.0051536632682,
+        "preparedExtension": 0.022880389419525304,
+        "preparedRate": 0.6026864893846644,
+        "attemptedRateAfter": 0.3355657540332626,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1162.6456607357723,
+        "requestedForeAftNewtons": -27.411704629323207,
+        "preprojectionHeight": 0.5223207800428391,
+        "postureError": 0.005320820581529972,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.2791666666666674,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 298.6476092917067,
+        "implicitSpringNewtons": -925.7558852877715,
+        "implicitDampingNewtons": -312.7817825579223,
+        "implicitAxialNewtons": -939.890058553987,
+        "preparedForceNewtons": -1310.8339409172152,
+        "preparedExtension": 0.02091005275851643,
+        "preparedRate": 0.5495537587749749,
+        "attemptedRateAfter": 0.24931915256939996,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1030.7363220200227,
+        "requestedForeAftNewtons": -1451.3847592166203,
+        "preprojectionHeight": 0.5225843219161402,
+        "postureError": 0.02213173970841275,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1360,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.27968750000000075,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 273.3879357616925,
+        "implicitSpringNewtons": -1028.210482574603,
+        "implicitDampingNewtons": -418.7037259825849,
+        "implicitAxialNewtons": -1173.5262727954955,
+        "preparedForceNewtons": -1504.7356039046613,
+        "preparedExtension": 0.023194592036402728,
+        "preparedRate": 0.6038541860638886,
+        "attemptedRateAfter": 0.3337498024530785,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1175.4955903056361,
+        "requestedForeAftNewtons": -26.860823377251954,
+        "preprojectionHeight": 0.5229902561449136,
+        "postureError": 0.005152912705601908,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.27968750000000075,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 297.08320679531886,
+        "implicitSpringNewtons": -938.324786812185,
+        "implicitDampingNewtons": -310.6803974593461,
+        "implicitAxialNewtons": -951.9219774762123,
+        "preparedForceNewtons": -1326.470658735338,
+        "preparedExtension": 0.021196582017278587,
+        "preparedRate": 0.5507215362604692,
+        "attemptedRateAfter": 0.24764413317500172,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1041.7588189565356,
+        "requestedForeAftNewtons": -1446.1380434393077,
+        "preprojectionHeight": 0.5232172983036955,
+        "postureError": 0.0223590541545332,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1360,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.2958333333333349,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 232.270431342008,
+        "implicitSpringNewtons": -1470.5150734405702,
+        "implicitDampingNewtons": -352.2587354364386,
+        "implicitAxialNewtons": -1590.5033775350007,
+        "preparedForceNewtons": -2043.443777206191,
+        "preparedExtension": 0.0332745542424604,
+        "preparedRate": 0.6469553789639176,
+        "attemptedRateAfter": 0.28078633188273217,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1589.631971859885,
+        "requestedForeAftNewtons": -11.132301932253995,
+        "preprojectionHeight": 0.5437788709008622,
+        "postureError": 0.0026350620787967114,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.2958333333333349,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 252.43057347903328,
+        "implicitSpringNewtons": -1343.013541743995,
+        "implicitDampingNewtons": -251.32601492389486,
+        "implicitAxialNewtons": -1341.9089831888566,
+        "preparedForceNewtons": -1830.972691422372,
+        "preparedExtension": 0.030418695141593233,
+        "preparedRate": 0.5938259893781057,
+        "attemptedRateAfter": 0.20033260424259558,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1402.5524829019428,
+        "requestedForeAftNewtons": -1279.8984572005356,
+        "preprojectionHeight": 0.5428572730227174,
+        "postureError": 0.029104681606787513,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1361,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.29635416666666825,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 231.05193842196257,
+        "implicitSpringNewtons": -1497.8136188957055,
+        "implicitDampingNewtons": -1034.0432110690188,
+        "implicitAxialNewtons": -2300.8048915427617,
+        "preparedForceNewtons": -2061.5213821330894,
+        "preparedExtension": 0.033611927742799086,
+        "preparedRate": 0.6485612839036032,
+        "attemptedRateAfter": 0.8242384674565474,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -2328.8298256659027,
+        "requestedForeAftNewtons": -479.8668031298504,
+        "preprojectionHeight": 0.5444505211482725,
+        "postureError": 0.002735568317921862,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.29635416666666825,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 251.10725846018474,
+        "implicitSpringNewtons": -1397.5632719508576,
+        "implicitDampingNewtons": -2491.595163654224,
+        "implicitAxialNewtons": -3638.051177144897,
+        "preparedForceNewtons": -1847.9377303814476,
+        "preparedExtension": 0.030728397037621313,
+        "preparedRate": 0.5954320238653195,
+        "attemptedRateAfter": 1.9860568274408679,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -4256.690153808637,
+        "requestedForeAftNewtons": -12312.015523941303,
+        "preprojectionHeight": 0.5434913206112969,
+        "postureError": 0.029497511108345243,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1361,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.3125000000000024,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 521.5766560054914,
+        "implicitSpringNewtons": -1889.0273645481504,
+        "implicitDampingNewtons": -172.16262536899086,
+        "implicitAxialNewtons": -1539.6133339116498,
+        "preparedForceNewtons": -1669.1166479910617,
+        "preparedExtension": 0.042860965485893576,
+        "preparedRate": 0.24296548017414607,
+        "attemptedRateAfter": 0.13723126554907694,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1567.514156422458,
+        "requestedForeAftNewtons": -910.564254988107,
+        "preprojectionHeight": 0.5646269276184303,
+        "postureError": 0.024155467263674884,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.3125000000000024,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 539.6148024938377,
+        "implicitSpringNewtons": -1761.2921536238548,
+        "implicitDampingNewtons": -1886.3495456006503,
+        "implicitAxialNewtons": -3108.0268967306674,
+        "preparedForceNewtons": -1425.1004204582352,
+        "preparedExtension": 0.039246234831219695,
+        "preparedRate": 0.18961546135000892,
+        "attemptedRateAfter": 1.5036140094627604,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -3597.95917913113,
+        "requestedForeAftNewtons": -14640.800043451336,
+        "preprojectionHeight": 0.5625803544232226,
+        "postureError": 0.0536950469920486,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1362,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.31302083333333575,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 531.1202293915633,
+        "implicitSpringNewtons": -1894.2226063846833,
+        "implicitDampingNewtons": -171.65117155146592,
+        "implicitAxialNewtons": -1534.753548544586,
+        "preparedForceNewtons": -1646.1499258227877,
+        "preparedExtension": 0.04297925149792148,
+        "preparedRate": 0.22811726668321347,
+        "attemptedRateAfter": 0.13682358441329953,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1562.655442001326,
+        "requestedForeAftNewtons": -927.3828000276418,
+        "preprojectionHeight": 0.565116947269014,
+        "postureError": 0.025157133932478645,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.31302083333333575,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 548.4837015669245,
+        "implicitSpringNewtons": -1765.5680078887324,
+        "implicitDampingNewtons": -1901.4365360105196,
+        "implicitAxialNewtons": -3118.5208423323274,
+        "preparedForceNewtons": -1402.6050791714097,
+        "preparedExtension": 0.03933714985893788,
+        "preparedRate": 0.17556517131504384,
+        "attemptedRateAfter": 1.5156398878021253,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -3611.6078014262243,
+        "requestedForeAftNewtons": -14802.75726409559,
+        "preprojectionHeight": 0.5630382731305308,
+        "postureError": 0.05473284869273236,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1362,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.3291666666666699,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 687.8274835050631,
+        "implicitSpringNewtons": -1928.7090262082104,
+        "implicitDampingNewtons": 118.73953121119317,
+        "implicitAxialNewtons": -1122.142011491954,
+        "preparedForceNewtons": -1169.342701866046,
+        "preparedExtension": 0.043883591665620614,
+        "preparedRate": -0.05875271260971732,
+        "attemptedRateAfter": -0.09464758163330786,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1160.8663085994544,
+        "requestedForeAftNewtons": -1188.2073367562953,
+        "preprojectionHeight": 0.5778512893774538,
+        "postureError": 0.060572140328116725,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.3291666666666699,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 709.134734484913,
+        "implicitSpringNewtons": -1757.6800754780522,
+        "implicitDampingNewtons": -1473.429613438419,
+        "implicitAxialNewtons": -2521.974954431558,
+        "preparedForceNewtons": -870.1241373590107,
+        "preparedExtension": 0.039335568982401536,
+        "preparedRate": -0.12076594728269513,
+        "attemptedRateAfter": 1.1744744837404235,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -3065.5596204744506,
+        "requestedForeAftNewtons": -15481.751475245526,
+        "preprojectionHeight": 0.5748519789967772,
+        "postureError": 0.09116151536550554,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1363,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.32968750000000324,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 689.2697755572319,
+        "implicitSpringNewtons": -1931.1808197148669,
+        "implicitDampingNewtons": -97.48995283349664,
+        "implicitAxialNewtons": -1339.4009969911315,
+        "preparedForceNewtons": -1160.6766398957534,
+        "preparedExtension": 0.04384999948326129,
+        "preparedRate": -0.06333263573478362,
+        "attemptedRateAfter": 0.07770948878704931,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -1381.8142827972633,
+        "requestedForeAftNewtons": -1270.026102177315,
+        "preprojectionHeight": 0.578207383869769,
+        "postureError": 0.06185225521729438,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.32968750000000324,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 710.2399885698497,
+        "implicitSpringNewtons": -1764.4293843745393,
+        "implicitDampingNewtons": -2001.2346573521304,
+        "implicitAxialNewtons": -3055.42405315682,
+        "preparedForceNewtons": -860.7711092608088,
+        "preparedExtension": 0.039269840106087806,
+        "preparedRate": -0.12503499209728972,
+        "attemptedRateAfter": 1.5951892235640341,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -3687.510790655403,
+        "requestedForeAftNewtons": -17884.7003008486,
+        "preprojectionHeight": 0.5751789334156984,
+        "postureError": 0.09248135116627766,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1363,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.3458333333333374,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 772.3121274967829,
+        "implicitSpringNewtons": -1849.6243211981264,
+        "implicitDampingNewtons": 215.1114409709885,
+        "implicitAxialNewtons": -862.2007527303549,
+        "preparedForceNewtons": -762.0592207657007,
+        "preparedExtension": 0.042126221534329655,
+        "preparedRate": -0.2544211003748207,
+        "attemptedRateAfter": -0.1714658754492444,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -926.5431229765176,
+        "requestedForeAftNewtons": -1510.4282140850662,
+        "preprojectionHeight": 0.5885851282391815,
+        "postureError": 0.10538250231218602,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.3458333333333374,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 779.0274420247225,
+        "implicitSpringNewtons": -1651.4815305190207,
+        "implicitDampingNewtons": -1776.2450732564653,
+        "implicitAxialNewtons": -2648.6991617507633,
+        "preparedForceNewtons": -465.3732105883059,
+        "preparedExtension": 0.036796249556928284,
+        "preparedRate": -0.29862197340760227,
+        "attemptedRateAfter": 1.4158494551640468,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -3409.006595601033,
+        "requestedForeAftNewtons": -17438.48895275758,
+        "preprojectionHeight": 0.5848304941318296,
+        "postureError": 0.13711151020337503,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1364,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.34635416666667074,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 775.38399744671,
+        "implicitSpringNewtons": -1843.6574840401393,
+        "implicitDampingNewtons": 211.9698845142116,
+        "implicitAxialNewtons": -856.3036020792176,
+        "preparedForceNewtons": -743.9674131297268,
+        "preparedExtension": 0.04198930735797113,
+        "preparedRate": -0.26159160677232646,
+        "attemptedRateAfter": -0.1689617328257606,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -921.4496835631959,
+        "requestedForeAftNewtons": -1515.2710981717146,
+        "preprojectionHeight": 0.5888467451837435,
+        "postureError": 0.10687981679766691,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.34635416666667074,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 782.0594395646601,
+        "implicitSpringNewtons": -1644.1157451513984,
+        "implicitDampingNewtons": -1758.2446339766607,
+        "implicitAxialNewtons": -2620.300939563399,
+        "preparedForceNewtons": -446.3171206091774,
+        "preparedExtension": 0.03663631836268744,
+        "preparedRate": -0.3057856294790555,
+        "attemptedRateAfter": 1.401501259337499,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -3383.1016496820525,
+        "requestedForeAftNewtons": -17334.212622388022,
+        "preprojectionHeight": 0.5850694194871094,
+        "postureError": 0.1386417526653053,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1364,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.3625000000000049,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 800.2740936433416,
+        "implicitSpringNewtons": -1603.0550671657804,
+        "implicitDampingNewtons": 296.05763623334605,
+        "implicitAxialNewtons": -506.72333728909274,
+        "preparedForceNewtons": -319.96470539426946,
+        "preparedExtension": 0.03655598027763407,
+        "preparedRate": -0.38916485485924945,
+        "attemptedRateAfter": -0.23598829309609337,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -604.9796236799557,
+        "requestedForeAftNewtons": -1689.3526993511723,
+        "preprojectionHeight": 0.5960857823043652,
+        "postureError": 0.15469838714048922,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.3625000000000049,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 807.8527131832436,
+        "implicitSpringNewtons": -1367.9220442970313,
+        "implicitDampingNewtons": -1564.4925980364217,
+        "implicitAxialNewtons": -2124.5619291502094,
+        "preparedForceNewtons": 16.014545742117207,
+        "preparedExtension": 0.0304396264225546,
+        "preparedRate": -0.43641793978526305,
+        "attemptedRateAfter": 1.2470610198383498,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -3105.8162675240233,
+        "requestedForeAftNewtons": -17035.565466321466,
+        "preprojectionHeight": 0.5915426327064589,
+        "postureError": 0.18751042905571863,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1365,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.36302083333333823,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 799.8812663137772,
+        "implicitSpringNewtons": -1594.1891358021874,
+        "implicitDampingNewtons": 288.3923711010237,
+        "implicitAxialNewtons": -505.91549838738644,
+        "preparedForceNewtons": -308.27394861073435,
+        "preparedExtension": 0.03635129954469418,
+        "preparedRate": -0.3916180430274167,
+        "attemptedRateAfter": -0.22987829080829558,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -604.4122877877633,
+        "requestedForeAftNewtons": -1695.1996270737982,
+        "preprojectionHeight": 0.5962998216039123,
+        "postureError": 0.15627353777920772,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.36302083333333823,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 807.5508664878963,
+        "implicitSpringNewtons": -1357.6131862032908,
+        "implicitDampingNewtons": -1552.669265273405,
+        "implicitAxialNewtons": -2102.7315849887996,
+        "preparedForceNewtons": 29.10781023833374,
+        "preparedExtension": 0.030210242739269866,
+        "preparedRate": -0.43905015500192135,
+        "attemptedRateAfter": 1.2376366112909132,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -3089.468473252515,
+        "requestedForeAftNewtons": -16994.47291061184,
+        "preprojectionHeight": 0.5917324093648334,
+        "postureError": 0.18911703569089777,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1365,
+      "substep": 32,
+      "actual": {
+        "phaseTime": 0.37916666666667237,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 751.5441441659093,
+        "implicitSpringNewtons": -1307.180996098306,
+        "implicitDampingNewtons": 274.15540546702624,
+        "implicitAxialNewtons": -281.4814464653704,
+        "preparedForceNewtons": -44.207845062123624,
+        "preparedExtension": 0.029822476694616906,
+        "preparedRate": -0.41165323148384314,
+        "attemptedRateAfter": -0.21852996937473962,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -421.6354049046506,
+        "requestedForeAftNewtons": -1803.509060901682,
+        "preprojectionHeight": 0.6030457321781182,
+        "postureError": 0.2053507271060382,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.37916666666667237,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 767.7181880081389,
+        "implicitSpringNewtons": -1018.5932836719841,
+        "implicitDampingNewtons": -1099.8214501060331,
+        "implicitAxialNewtons": -1350.6965457698784,
+        "preparedForceNewtons": 364.2872376443154,
+        "preparedExtension": 0.02269324815372986,
+        "preparedRate": -0.47433337602355624,
+        "attemptedRateAfter": 0.8766704687070641,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -2503.9958414998946,
+        "requestedForeAftNewtons": -15195.55365135682,
+        "preprojectionHeight": 0.5975818060713253,
+        "postureError": 0.23922472446771237,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1366,
+      "substep": 1,
+      "actual": {
+        "phaseTime": 0.37968750000000573,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 749.8170046041674,
+        "implicitSpringNewtons": -1297.9407692863601,
+        "implicitDampingNewtons": 261.5242464028504,
+        "implicitAxialNewtons": -286.5995182793423,
+        "preparedForceNewtons": -36.18662980741283,
+        "preparedExtension": 0.029607227618476006,
+        "preparedRate": -0.41187434411389223,
+        "attemptedRateAfter": -0.20846164043276733,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -429.9265891606069,
+        "requestedForeAftNewtons": -1823.3783250207634,
+        "preprojectionHeight": 0.6032705331967073,
+        "postureError": 0.20693560594431137,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": {
+        "phaseTime": 0.37968750000000573,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 765.9067989964632,
+        "implicitSpringNewtons": -1010.3693191046374,
+        "implicitDampingNewtons": -1246.7158563454393,
+        "implicitAxialNewtons": -1491.1783764536135,
+        "preparedForceNewtons": 373.6601250243227,
+        "preparedExtension": 0.022445355543128098,
+        "preparedRate": -0.47455417464219657,
+        "attemptedRateAfter": 0.9937603726691397,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -2699.7482002302154,
+        "requestedForeAftNewtons": -15872.657274478717,
+        "preprojectionHeight": 0.597778133729925,
+        "postureError": 0.2408477749241475,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1366,
+      "substep": 7,
+      "actual": null,
+      "V11": {
+        "phaseTime": 0.3828125000000059,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 734.3491910811904,
+        "implicitSpringNewtons": -944.1322750817114,
+        "implicitDampingNewtons": -986.6075959907226,
+        "implicitAxialNewtons": -1196.3906799912438,
+        "preparedForceNewtons": 368.3222612008908,
+        "preparedExtension": 0.021047954092700216,
+        "preparedRate": -0.44644362053956305,
+        "attemptedRateAfter": 0.7864274183084439,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -2358.956369797284,
+        "requestedForeAftNewtons": -14498.253415815674,
+        "preprojectionHeight": 0.5989873324679934,
+        "postureError": 0.25057804094069314,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "step": 1366,
+      "substep": 29,
+      "actual": {
+        "phaseTime": 0.3942708333333398,
+        "seconds": 0.0005208333333333333,
+        "loadNewtons": 671.7233233432326,
+        "implicitSpringNewtons": -1045.4686132458378,
+        "implicitDampingNewtons": 313.79578136291474,
+        "implicitAxialNewtons": -59.9495085396905,
+        "preparedForceNewtons": 84.50178640678939,
+        "preparedExtension": 0.023890924995619844,
+        "preparedRate": -0.3698389680843801,
+        "attemptedRateAfter": -0.25012741358990964,
+        "preparedRest": 0,
+        "requestedDeckNormalNewtons": -215.07783756552325,
+        "requestedForeAftNewtons": -1608.4502446226184,
+        "preprojectionHeight": 0.6100645513504549,
+        "postureError": 0.25098730540068664,
+        "limit": "flight",
+        "flightTime": 0,
+        "appliedImpulseXYZ": [
+          0,
+          0,
+          0
+        ]
+      },
+      "V11": null
+    }
+  ],
+  "actualInterval1357ToLoss": {
+    "firstStep": 1357,
+    "lastStep": 1366,
+    "steps": 10,
+    "rows": [
+      {
+        "step": 1357,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          -0.6809390786081945,
+          5.585797639354518,
+          -2.6499628285337904
+        ],
+        "meanForceTimesElapsedXYZ": [
+          -0.011348984643469907,
+          0.0930966273225753,
+          -0.04416604714222984
+        ],
+        "peakNormalLoad": 0.2354839346618464,
+        "loss": null
+      },
+      {
+        "step": 1358,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1359,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1360,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1361,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1362,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1363,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1364,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1365,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1366,
+        "phase": "fallen",
+        "substeps": 29,
+        "limitedSubsteps": 29,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.015104166666666665,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": {
+          "trigger": "posture-error",
+          "selectedCause": "lost board",
+          "dominantLimit": "flight",
+          "sample": {
+            "projectLocalX": 0.015643743023979258,
+            "projectLocalY": 0.6774131982965326,
+            "projectLocalZ": -0.010592851677142509,
+            "projectDeckY": 0.06734864694607766,
+            "projectHeight": 0.6100645513504549,
+            "demandLocalX": 0.0022688777538363426,
+            "demandLocalY": -0.1120197070653767,
+            "demandLocalZ": -0.8377345024076137,
+            "legHeight": 0.5581276482827034,
+            "legLoad": 671.7233233432326,
+            "legStiffness": 44000,
+            "legDamping": 1254.5437417643116,
+            "legForce": 84.50178640678939,
+            "legRateAfter": -0.25012741358990964,
+            "specificForceX": -3.5677322970158114,
+            "specificForceY": 9.2016893608662,
+            "specificForceZ": -14.279992148250257,
+            "postureRateX": -0.013824360962422025,
+            "postureRateY": 0.2853821486789142,
+            "postureRateZ": -0.2361705272069807,
+            "driveX": -0.01091332010096388,
+            "driveY": 0.7185082599789316,
+            "driveZ": -1.056800691112043,
+            "carriedRelativeX": 0.7141093097168139,
+            "carriedRelativeY": -0.3698389680843801,
+            "carriedRelativeZ": 2.903931566014607,
+            "demandPositionX": -42.22788579960299,
+            "demandPositionY": 2.2076331817199577,
+            "demandPositionZ": -198.20187418054462,
+            "demandVelocityX": 1.7171191401893904,
+            "demandVelocityY": -0.7977335121920255,
+            "demandVelocityZ": 9.229323207058059,
+            "demandTargetX": -42.287057964239914,
+            "demandTargetY": 2.183742256724338,
+            "demandTargetZ": -198.44430989596904,
+            "demandUpX": 0,
+            "demandUpY": 1,
+            "demandUpZ": 0,
+            "step": 1366,
+            "substep": 29,
+            "seconds": 0.0005208333333333333,
+            "elapsedStepSeconds": 0.015104166666666665,
+            "phase": "landing",
+            "phaseTime": 0.3942708333333398,
+            "phaseDuration": 0.48,
+            "popUpTime": 1.1151041666666437,
+            "feasible": false,
+            "inContact": true,
+            "flightTime": 0,
+            "postureError": 0.25098730540068664,
+            "limit": "flight",
+            "recentFlight": 0.1129308400737412,
+            "recentTip": 0.002320119683679197,
+            "recentSlip": 8.399749311211755e-05,
+            "recentImpact": 0.0002114132610315237,
+            "legExtension": 0.023890924995619844,
+            "legRate": -0.3698389680843801,
+            "legRest": 0,
+            "demandX": -0.2148826019762864,
+            "demandY": -0.03122370236442934,
+            "demandZ": -0.8168250772839709,
+            "projectedX": 0,
+            "projectedY": 0,
+            "projectedZ": 0,
+            "appliedX": 0,
+            "appliedY": 0,
+            "appliedZ": 0,
+            "peakNormalLoad": 0,
+            "frontShare": 1,
+            "relativeVelocityX": 0.6399831113927863,
+            "relativeVelocityY": 0.2046175337447762,
+            "relativeVelocityZ": 2.748767338367103,
+            "supportXMin": -0.13,
+            "supportXMax": 0.13,
+            "supportZMin": -0.649,
+            "supportZMax": 0.10100000000000003,
+            "copX": 0.015643743023979258,
+            "copZ": -0.010592851677142509
+          }
+        }
+      }
+    ],
+    "publishedSubsteps": 317,
+    "publishedLimitedSubsteps": 317,
+    "publishedElapsedSeconds": 0.16510416666666666,
+    "sumPublishedContactImpulseXYZ": [
+      -0.011348984643469907,
+      0.0930966273225753,
+      -0.04416604714222984
+    ],
+    "fullImplicitAxialIntervalImpulseKnown": false
+  },
+  "V11Interval1357ToLoss": {
+    "firstStep": 1357,
+    "lastStep": 1366,
+    "steps": 10,
+    "rows": [
+      {
+        "step": 1357,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1358,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1359,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1360,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1361,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1362,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1363,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1364,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1365,
+        "phase": "landing",
+        "substeps": 32,
+        "limitedSubsteps": 32,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": null
+      },
+      {
+        "step": 1366,
+        "phase": "fallen",
+        "substeps": 7,
+        "limitedSubsteps": 7,
+        "nonContactSubsteps": 0,
+        "elapsedStepSeconds": 0.003645833333333333,
+        "meanForceXYZ": [
+          0,
+          0,
+          0
+        ],
+        "meanForceTimesElapsedXYZ": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "peakNormalLoad": 0,
+        "loss": {
+          "trigger": "posture-error",
+          "selectedCause": "lost board",
+          "dominantLimit": "flight",
+          "sample": {
+            "projectLocalX": 0.015614849863401736,
+            "projectLocalY": 0.6665698203465158,
+            "projectLocalZ": 0.0028893792861428777,
+            "projectDeckY": 0.06758248787852235,
+            "projectHeight": 0.5989873324679934,
+            "demandLocalX": 0.2502176180753297,
+            "demandLocalY": -1.2286231092694186,
+            "demandLocalZ": -7.551173654070664,
+            "legHeight": 0.5545128151166347,
+            "legLoad": 734.3491910811904,
+            "legStiffness": 44000,
+            "legDamping": 1254.5437417643116,
+            "legForce": 368.3222612008908,
+            "legRateAfter": 0.7864274183084439,
+            "specificForceX": -3.7934968199915113,
+            "specificForceY": 10.059577960016307,
+            "specificForceZ": -16.07633141171344,
+            "postureRateX": -0.016749104847429114,
+            "postureRateY": 0.34575887759301543,
+            "postureRateZ": -0.28613582449233893,
+            "driveX": 0.010904815183544664,
+            "driveY": 0.43086336271887865,
+            "driveZ": -1.5049589884292733,
+            "carriedRelativeX": 0.8689882415611905,
+            "carriedRelativeY": -0.44644362053956305,
+            "carriedRelativeZ": 3.503015864350054,
+            "demandPositionX": -42.24613111578877,
+            "demandPositionY": 2.2206402785759463,
+            "demandPositionZ": -198.30633682978066,
+            "demandVelocityX": 1.7212352211664492,
+            "demandVelocityY": -0.6771171855573325,
+            "demandVelocityZ": 9.23067358344799,
+            "demandTargetX": -42.308840473043645,
+            "demandTargetY": 2.199592324483246,
+            "demandTargetZ": -198.5474214450349,
+            "demandUpX": 0,
+            "demandUpY": 1,
+            "demandUpZ": 0,
+            "step": 1366,
+            "substep": 7,
+            "seconds": 0.0005208333333333333,
+            "elapsedStepSeconds": 0.003645833333333333,
+            "phase": "landing",
+            "phaseTime": 0.3828125000000059,
+            "phaseDuration": 0.48,
+            "popUpTime": 1.103645833333311,
+            "feasible": false,
+            "inContact": true,
+            "flightTime": 0,
+            "postureError": 0.25057804094069314,
+            "limit": "flight",
+            "recentFlight": 0.10770001049210326,
+            "recentTip": 0.002496174603162642,
+            "recentSlip": 8.895037421783441e-05,
+            "recentImpact": 0.00022387916575398222,
+            "legExtension": 0.021047954092700216,
+            "legRate": -0.44644362053956305,
+            "legRest": 0,
+            "demandX": -1.7082680772841599,
+            "demandY": -0.6231201458287525,
+            "demandZ": -7.435448111240591,
+            "projectedX": 0,
+            "projectedY": 0,
+            "projectedZ": 0,
+            "appliedX": 0,
+            "appliedY": 0,
+            "appliedZ": 0,
+            "peakNormalLoad": 0,
+            "frontShare": 0.6897902103317769,
+            "relativeVelocityX": 0.6577773761647703,
+            "relativeVelocityY": 0.14524456618101655,
+            "relativeVelocityZ": 2.8024945183173218,
+            "supportXMin": -0.13,
+            "supportXMax": 0.13,
+            "supportZMin": -0.649,
+            "supportZMax": 0.10100000000000003,
+            "copX": 0.015614849863401736,
+            "copZ": 0.0028893792861428777
+          }
+        }
+      }
+    ],
+    "publishedSubsteps": 295,
+    "publishedLimitedSubsteps": 295,
+    "publishedElapsedSeconds": 0.15364583333333334,
+    "sumPublishedContactImpulseXYZ": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "fullImplicitAxialIntervalImpulseKnown": false
+  },
+  "checkpointCameraComparisons": [
+    {
+      "label": "initial",
+      "cameraEqual": true,
+      "followerPositionEqual": true,
+      "followerQuaternionEqual": true
+    },
+    {
+      "label": "first-pop-up",
+      "cameraEqual": true,
+      "followerPositionEqual": true,
+      "followerQuaternionEqual": true
+    },
+    {
+      "label": "first-landing",
+      "cameraEqual": false,
+      "followerPositionEqual": true,
+      "followerQuaternionEqual": false
+    },
+    {
+      "label": "terminal",
+      "cameraEqual": false,
+      "followerPositionEqual": false,
+      "followerQuaternionEqual": false
+    }
+  ],
+  "meaning": "All actually retained landing sample identities and all published unloading summaries. No interpolation of uncaptured internal axial terms or causal/visual/tube acceptance."
+}

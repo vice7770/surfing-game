@@ -1,0 +1,366 @@
+{
+  "schema": "landing-longitudinal-root-cpu-checks/v1",
+  "scope": "Controlled fixtures only; no native causal repair, build or adoption acceptance.",
+  "readiness": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/readiness.json",
+    "bytes": 8112,
+    "sha256": "3b31e4dcce07a4b775ec2a1e713edaff3c09fe770fb1ff9ae76a8b1322e26d13"
+  },
+  "sourceInputs": [
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/package.json",
+      "bytes": 4917,
+      "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 149572,
+      "sha256": "84bae9817c3135d1999c094152d5184221162c5777bd27663aa3fa57c3aac5d4"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/DetachedSurfer.ts",
+      "bytes": 30945,
+      "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/MinimumJerkTrack.ts",
+      "bytes": 2659,
+      "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/PlaneWater.ts",
+      "bytes": 2414,
+      "sha256": "116bd2e95cd9e91b35818c8cdf5dcfda65acad43a3648e997c5f133ab3fc9e75"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/boardReference.ts",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/boardShape.ts",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/finForces.ts",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/hullForces.ts",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/legSpring.ts",
+      "bytes": 5593,
+      "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/physics/riderPosture.ts",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/AdvectionStencil.ts",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/AerationField.ts",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/BoussinesqSolver.ts",
+      "bytes": 38627,
+      "sha256": "c1d87564677e35ece932831139426e31f19b69490d961dccaf8b8e665e3e0910"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/Breaking.ts",
+      "bytes": 12851,
+      "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/CrestKinematics.ts",
+      "bytes": 5019,
+      "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/FoamField.ts",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/Overturn.ts",
+      "bytes": 10648,
+      "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/PlungingLip.ts",
+      "bytes": 67993,
+      "sha256": "4030ccd00423d5fc12a9903412239068b1da5f25adbf3d8165d1baabdd7e0b4b"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/Refraction.ts",
+      "bytes": 5965,
+      "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/SeaStateBoundary.ts",
+      "bytes": 5460,
+      "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/ShallowWaterSolver.ts",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/SideFeed.ts",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/SprayCloud.ts",
+      "bytes": 25478,
+      "sha256": "43fb50e67f430eeefe062bd5125a6b2e35725a806c68b0c6ea7a5ae8dd530f74"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/SurfMeter.ts",
+      "bytes": 3170,
+      "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/SurfZoneSimulation.ts",
+      "bytes": 71135,
+      "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/SwellReadout.ts",
+      "bytes": 2110,
+      "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/BreakingFront.ts",
+      "bytes": 40421,
+      "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 28989,
+      "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/SweptCrash.ts",
+      "bytes": 33689,
+      "sha256": "190bbd5c7101874cc6ad3788b3ddc89d9f27ca4d1341194468942b85479f77b8"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18088,
+      "sha256": "0dba650afc9844df79c1beb61319bddbc257562c0f93ff083fe3838e0cebbd98"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/carrierSupport.ts",
+      "bytes": 5898,
+      "sha256": "7555e0452f5bd0824b051d4165c17c1c2caca8373eb9d291cc5f479ac98d52ca"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/crashCurve.ts",
+      "bytes": 17446,
+      "sha256": "11fcdad4fdaa8f214a9682edcd3a3e2705955be463d482df91713c097e100793"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/crestOnset.ts",
+      "bytes": 4651,
+      "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/crestRays.ts",
+      "bytes": 17776,
+      "sha256": "f1ad5f7a46f03efd9d6d59e4e99f46e90c652d9a53f683f2839bfeb67358c9de"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/frontRecords.ts",
+      "bytes": 1941,
+      "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/heldOverturn.ts",
+      "bytes": 4886,
+      "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/lipSheet.ts",
+      "bytes": 16305,
+      "sha256": "b932aadcaa5fa6e1d1eb067bece4bb658e35e3dfa52c56d688634b8408fd453e"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 3200,
+      "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/sweptContact.ts",
+      "bytes": 30393,
+      "sha256": "ba216e86040a5b82b79f898373ed78073f1905fb0078e9ead0093b9a3b3c7d4e"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 80645,
+      "sha256": "194ee78b57ef68b4449dc44bf8bd4bbd5b1c249efab382c0736dca6dbd650af2"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/breakingAge.ts",
+      "bytes": 2861,
+      "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/particleBudget.ts",
+      "bytes": 2109,
+      "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/particleSources.ts",
+      "bytes": 788,
+      "sha256": "76e2b38a5329a8f5b36d9373513d52cb42a92361b996287ac74d4e5458c96cb0"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/surfForecast.ts",
+      "bytes": 3914,
+      "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/surfZoneState.ts",
+      "bytes": 3955,
+      "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/tubeTable.ts",
+      "bytes": 6876,
+      "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/source/src/wave/warmStart.ts",
+      "bytes": 6238,
+      "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d"
+    }
+  ],
+  "sourcePreUnchanged": true,
+  "checks": [
+    {
+      "name": "strict",
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "-p",
+        "/private/tmp/tube-landing-longitudinal-compliance-20261005/tsconfig.fixture-types.json"
+      ],
+      "timeoutSeconds": 90,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 10.567768874985632,
+      "log": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-fixture-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "focused",
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/private/tmp/tube-landing-longitudinal-compliance-20261005/vitest.fixture-types.config.ts",
+        "--maxWorkers",
+        "1",
+        "tests/landingCompliance.fixture-types.test.ts",
+        "--reporter=json",
+        "--outputFile",
+        "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-fixture-discovery-checks/focused.json"
+      ],
+      "timeoutSeconds": 90,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 7.077907792001497,
+      "log": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-fixture-discovery-checks/focused.log",
+        "bytes": 125,
+        "sha256": "184c04bfbdb9375572a95b5d850589646f14b02e41ae8e23217521735bb8b4ab"
+      },
+      "report": {
+        "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/root-fixture-discovery-checks/focused.json",
+        "bytes": 2008,
+        "sha256": "0e39dbdbf1da2f5d5023552f787182de01ef70f814a2d5ede70afa8461b83c59"
+      },
+      "success": true,
+      "passed": 5,
+      "failed": 0,
+      "total": 5
+    }
+  ],
+  "complete": true,
+  "sourcePostUnchanged": true,
+  "controlledProof": {
+    "file": "/private/tmp/tube-landing-longitudinal-compliance-20261005/controlled-proof.json",
+    "bytes": 282850,
+    "sha256": "44707586c9955872607fb00d246356d58bdde167e6f59bfdcf1e090c3132c830"
+  }
+}

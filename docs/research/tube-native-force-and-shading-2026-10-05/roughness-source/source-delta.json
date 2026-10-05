@@ -1,0 +1,65 @@
+{
+  "schema": "C-inner-rich-roughness-source-delta/v1",
+  "parentSourceDirectory": "/private/tmp/tube-C-inner-water-glints-20261005/source",
+  "parentSourceReadiness": {
+    "file": "/private/tmp/tube-C-inner-water-glints-20261005/readiness.json",
+    "bytes": 6630,
+    "sha256": "5e4005e45bd176566704ab2f440cacb51596d84bdd4798cee4a346d726a06a4e"
+  },
+  "parentSourceDelta": {
+    "file": "/private/tmp/tube-C-inner-water-glints-20261005/source-delta.json",
+    "bytes": 1335,
+    "sha256": "370486f6594530ce977c8bfc8e7fae314f527a2c31681343d06d54315dc95a49"
+  },
+  "parentSourcePinsManifest": {
+    "file": "/private/tmp/tube-C-inner-water-glints-20261005/source-pins.json",
+    "bytes": 96602,
+    "sha256": "dc736647223791a30cb736f655de9bd1a9d6cb733694ea248f2af5f0f34e10b1"
+  },
+  "sourceCount": 588,
+  "applicationSourceCount": 587,
+  "unchangedParentCount": 586,
+  "changes": [
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.test.ts",
+      "before": {
+        "path": "src/scene/barrel/SweptBarrelMesh.test.ts",
+        "bytes": 26886,
+        "sha256": "a3032224e63af43485849eee88c83243ae9bcd6cd6e4be2f687bc74f68c515c7"
+      },
+      "after": {
+        "path": "src/scene/barrel/SweptBarrelMesh.test.ts",
+        "bytes": 29001,
+        "sha256": "3235956d9d0fb27b15a68174dc4a87c1d8cccb677b479634cf6a24b565a93e4f"
+      }
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.ts",
+      "before": {
+        "path": "src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 32726,
+        "sha256": "b663d783509482299979cab38d6f021f2ac02bc1eb0bc4ac9c4f1d0478b9d676"
+      },
+      "after": {
+        "path": "src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33513,
+        "sha256": "fb2b78e2b8d9c974ba00a3279aa14e2c7a56554f3ed90af46e354d5c5786a082"
+      }
+    }
+  ],
+  "replacements": [
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 33513,
+      "sha256": "fb2b78e2b8d9c974ba00a3279aa14e2c7a56554f3ed90af46e354d5c5786a082"
+    },
+    {
+      "path": "src/scene/barrel/SweptBarrelMesh.test.ts",
+      "bytes": 29001,
+      "sha256": "3235956d9d0fb27b15a68174dc4a87c1d8cccb677b479634cf6a24b565a93e4f"
+    }
+  ],
+  "addedPaths": [],
+  "removedPaths": [],
+  "meaning": "Exactly one local material runtime change plus strengthening its existing material case; immediate parent is the complete frozen glints source inventory."
+}

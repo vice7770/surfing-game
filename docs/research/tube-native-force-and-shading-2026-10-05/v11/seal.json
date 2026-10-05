@@ -1,0 +1,3822 @@
+{
+  "schema": "pop-up-contact-v11-root-seal/v1",
+  "complete": true,
+  "rootPurpose": "Complete the same observer-only ordinary contact replay after V10 captured the actual still-loading menu state at90s. Wait180s for the unchanged normal menu/HUD startup, retain all ordinary inputs/cue/clock/camera/detector/media caps and reuse exact V8 application/module. Finite budgets660/648/635/7. Add the exact missing38-field owner metadata copy so terminal row validation can read it. No physics, rendering, source, build, causal repair or playable tube acceptance.",
+  "helperReadiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/readiness.json",
+    "bytes": 22364,
+    "sha256": "faf3f5866ac9666d8b4330e11a2263f2504a50a65f5b8069858e42a4eae38774"
+  },
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/helper-pins.json",
+    "bytes": 9495,
+    "sha256": "06da1b7fd9ca57466c72e848e3415ef5322c278902776a208c03cbb110146604"
+  },
+  "helperPins": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/prepare.py",
+      "bytes": 3538,
+      "sha256": "4ac5b3642cebd264c48380ce574a8cf1e84a160cb9bcab7091bab6b74be7f28e"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/check-source.py",
+      "bytes": 4252,
+      "sha256": "c31b667ccd8ea7623a6dc87e3c3d334f3f694c8c1b5befab3ef9759fafa2cc97"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/freeze.py",
+      "bytes": 7687,
+      "sha256": "c90a84347d41751b6568352930cae966fcd4a748d241249b7ed1493759ec28b9"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/run.py",
+      "bytes": 26398,
+      "sha256": "1c6bf49091f14226920b6cd0a153e73abd80611ece58c3696ecade88e8ff1ea7"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/native.mjs",
+      "bytes": 28463,
+      "sha256": "3c9196160a08f1f4816fb4296e3831a4d45dd4e69d65c7c4838fdb35372e29ac"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/adapter.patch",
+      "bytes": 17421,
+      "sha256": "f59e981389c0eec716c241934d3a6b0b91d1c956d625faf0111fb92b9cf8d7ca"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/README.md",
+      "bytes": 2837,
+      "sha256": "ddf9cfa844665ba581cf81ee22833249bf44e70f3c797e6e2b69039d67b6468c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/preparation.log",
+      "bytes": 288,
+      "sha256": "97af5800870f661585512c2eb4707c2a76ec982b1630b90a5bb8b7cb94858bc8"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/source-helper-checks.json",
+      "bytes": 3347,
+      "sha256": "88748b674060ca03699a9d37d6fdcabe052d900f54469c2f5701e1d60569b046"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/native-syntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/source-only-owner.log",
+      "bytes": 502,
+      "sha256": "82dffad2d732855592dcc1ccd23166ccd3d345b6e2e4ea5e88e3cb2294f3bbed"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/metadata-check.py",
+      "bytes": 1724,
+      "sha256": "fc7fe11abd1bb1451feb7ca1a7d666e070ea79ab150c9e423388aba571b1b22a"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/metadata-check.json",
+      "bytes": 789,
+      "sha256": "e5d968297e154341b583f7cac2e31da81760f9e29e2914df211b1d01cc980230"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/source-readiness.json",
+      "bytes": 9897,
+      "sha256": "e3a82d06f20784004dc73ec99cc750ada890f58158d19f46602a6570a8c408e6"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/readiness.json",
+      "bytes": 19126,
+      "sha256": "3c57111b1b0ef177709d9a16437afecf24124cd45c25df2e368ccdf0dfc7efb4"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/helper-pins.json",
+      "bytes": 7954,
+      "sha256": "f48243a5f27a73c8461ef474bf597bf20945a6a0a08fcb1f2ddd1f4b11ab28cd"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/freeze.json",
+      "bytes": 1786,
+      "sha256": "0002da42d49f685fed4d644c0270ab7934d34efff65e2c868243d5c112fdf180"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/seal.json",
+      "bytes": 184725,
+      "sha256": "7ec1285c5717dd0b5098dd3aa5bbef257dc8d4b4e9d032ffae12b95c2c355e0e"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/candidate-first-owner.json",
+      "bytes": 3366,
+      "sha256": "46d0e3d94054b407844b03c24df058f853d8d2ab70d2f313ef37335ec91b9508"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/candidate-first-owner.log",
+      "bytes": 1932,
+      "sha256": "70a3ac4a89b5b5f44d955c4fd36ab1d56e6b8d5ecefdd008ed9de5c013a55126"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/candidate-first/report.json",
+      "bytes": 153690,
+      "sha256": "e2788eb4f5d66a3040f1646c0487a1a3994136066911a72cbef913ecb6246648"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-complete-build-result.json",
+      "bytes": 188075,
+      "sha256": "55f34f0651d1a4f45292de2e0a5968e193844616eb819414a9075140a7ba26ab"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-diagnostic-build-result.json",
+      "bytes": 36071,
+      "sha256": "b9791156a12145fe2d33ab9b1f6cd3db3dd5007f32d5b2f50226008a4c4119e3"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/diagnostic-autopilot.mjs",
+      "bytes": 348734,
+      "sha256": "13d670bc328b914e5db1b7872e3c0123eb24f45874c35d084fc258e27cf2aac5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/readiness-built.json",
+      "bytes": 14567,
+      "sha256": "7771da5422d8b116e906f6ab092e6b64d2bf8dfad3103bf1cb9c48e433f56902"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-first-owner.json",
+      "bytes": 3364,
+      "sha256": "566f699f2102d6d8c019df31ead75c27304a95d11932007d92041c1ea1b79282"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-first/report.json",
+      "bytes": 144538,
+      "sha256": "83f3865a9460059dd49af635b29875fcc08043824e7dde6f69aa78e3a1572de7"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/readiness.json",
+      "bytes": 17028,
+      "sha256": "7fe4d863db9459a4009b225fd4d163ad03012ab87a4f4e08bc050582f5b476f6"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/candidate-first-owner.json",
+      "bytes": 3514,
+      "sha256": "0f34819f55708ae1a9faf85d563b9b317f1f1d888279610ca83c46d97ac2b686"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/candidate-first/report.json",
+      "bytes": 10904369,
+      "sha256": "0cee6b0fd9419973dc3f00f791226af106fd39c803a3235f2511df74ceeef1cf"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/prior-v9-prefix-review.json",
+      "bytes": 4274,
+      "sha256": "7f8dce789354b8e7a52657303952631616b22c1724ef0dd59f5665eb13ee0e25"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "bytes": 3726,
+      "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+      "bytes": 16704,
+      "sha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "bytes": 1053,
+      "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    }
+  ],
+  "rootDiagnosticBuild": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-diagnostic-build-result.json",
+    "bytes": 36071,
+    "sha256": "b9791156a12145fe2d33ab9b1f6cd3db3dd5007f32d5b2f50226008a4c4119e3"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348734,
+    "sha256": "13d670bc328b914e5db1b7872e3c0123eb24f45874c35d084fc258e27cf2aac5"
+  },
+  "arms": {
+    "candidate": {
+      "rootAuthorized": true,
+      "source": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source",
+      "dist": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist",
+      "buildId": "tube-pop-up-contact-operands-20261005",
+      "sourcePins": [
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/index.html",
+          "bytes": 1442,
+          "sha256": "60675d1b7e6f739633646d53fd74d07f90d913151f5adb2a65b71fc786372392"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/package-lock.json",
+          "bytes": 42710,
+          "sha256": "f4008e3c520f29c5d5fddae962e6528c85abc6dfd95ab99deef1c3c8a4024209"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/package.json",
+          "bytes": 4917,
+          "sha256": "545ae613490c74ed808d4127028976a23c82aa768df159bc56312eb2a20c5702"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/assets/skies/skies.json",
+          "bytes": 2266,
+          "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/assets/surfers/surfers.json",
+          "bytes": 1061,
+          "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/barrels/pad19-a20-l12.bin",
+          "bytes": 149848,
+          "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/barrels/pad19-a30-l12.bin",
+          "bytes": 163264,
+          "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/barrels/pad19-a45-l12.bin",
+          "bytes": 168424,
+          "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/barrels/periodic-padang19s-l12.bin",
+          "bytes": 181852,
+          "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/barrels/periodic-point21-a15-l12.bin",
+          "bytes": 106500,
+          "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/barrels/periodic-point21-a23-l12.bin",
+          "bytes": 128172,
+          "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/barrels/periodic-point21-a30-l12.bin",
+          "bytes": 173576,
+          "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+        },
+        {
+          "file": "/private/tmp/tube-landing-remap-fix-20261005/source/public/barrels/periodic-reef42-l12.bin",
+          "bytes": 193180,
+          "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/AudioEngine.test.ts",
+          "bytes": 11827,
+          "sha256": "a233dfd6c4ae8c124b0dcac55ef60ed6272cce879ebe33d3fb27afb09a48dedf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/AudioEngine.ts",
+          "bytes": 13692,
+          "sha256": "84bbcc4efa28f55af533236257eae50ec86d8807c44e92450f226581d1b132ec"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/GameSound.ts",
+          "bytes": 4255,
+          "sha256": "8c7fb1cb960e56d753c74cdae396f8f1cd510dff50369acbb47ea36e43403edd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/SoundBank.ts",
+          "bytes": 5731,
+          "sha256": "ea2e2b9aa57950c1786a0642fdd38a1065fa8ad13ee15047cfd2a81583eec164"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/audioState.test.ts",
+          "bytes": 2484,
+          "sha256": "8aff435b7280181b64e753a0e3ebd260dc401c1a6f6218523b1b91f069a68cbe"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/audioState.ts",
+          "bytes": 1977,
+          "sha256": "a8e28b447606c75e8802e7e43e58ddb0433ddc1533cb7c58c929f2f5d11df730"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/soundManifest.test.ts",
+          "bytes": 12619,
+          "sha256": "2ee7e57b48c60bb59979636728c5b74597e6db717425696b791df9e61d1afada"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/soundManifest.ts",
+          "bytes": 4078,
+          "sha256": "ac6ee09f460a7b0eb53cd8070c140851851b48d9c02f2f04e17fcb4c9b31a0d1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/soundMapping.test.ts",
+          "bytes": 14787,
+          "sha256": "887b3a03621ae27702e820d753eb60a47f0ad3fd3ff8b7ffc9f67247ee324a4d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/soundMapping.ts",
+          "bytes": 14618,
+          "sha256": "50804c02be8fc43ae85582e54da986b3640ad43630636c8c0ff83efd10cf720e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/synth.test.ts",
+          "bytes": 1534,
+          "sha256": "2de050fe8df4a3071811aceb1b983b339a0982f6278d0ca5cab15f55087bc796"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/synth.ts",
+          "bytes": 9615,
+          "sha256": "7fe3ff5d35c81302b65479cee211b0ece883c354a9e3094891919d23237ca49b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/variants.test.ts",
+          "bytes": 1949,
+          "sha256": "1b48c06d2f0024bde2705c1dea4758072bd18968ef30410a670b7cd7d13c7e6f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/audio/variants.ts",
+          "bytes": 1349,
+          "sha256": "de959432e84100b2686b052f0baa401e3bae8d005b488e1d43f9f56450b2b084"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/controllerCheck.ts",
+          "bytes": 7486,
+          "sha256": "5bce5112c46552008a59fe86a853d26ea1be8c3a99b8d920a99d7ff173062a95"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/Autopilot.test.ts",
+          "bytes": 28731,
+          "sha256": "71f95edd1c37e34b7eee6c239f868226bbd1340eb1de365f0c6397702f1efd5e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/Autopilot.ts",
+          "bytes": 32175,
+          "sha256": "0cdfb3daf9d09ae432b4654f25d4cc16f1289e44a3dd44abda33b96527c75a0a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/bodyFilm.test.ts",
+          "bytes": 34190,
+          "sha256": "1c615d78b8e11446f5145b9ad55d6e3a0ba59a8b287f721897c1db161a5f94eb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/bodyFilm.ts",
+          "bytes": 36465,
+          "sha256": "a4eeea77ab058bd1c7415163c9e4af6f0a7c36026133aa6393db229c1591a4fd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/carveMetrics.test.ts",
+          "bytes": 1593,
+          "sha256": "37cd0d4a9ab3d62c7f5064d4475e30692db55fdfaae291dacd6a223a369b4a57"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/carveMetrics.ts",
+          "bytes": 3730,
+          "sha256": "b3ebaacace59cf83af3ade1526c155d59190d4fe3724b4cc75d0a5bb9e9bdc4d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/characterSheet.ts",
+          "bytes": 23781,
+          "sha256": "576a0d074aa1905fc1e021dca2fd0b19b2bbd3a961531b3bf8fb18252a2102c6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/cueMeasures.test.ts",
+          "bytes": 3002,
+          "sha256": "784fa412397b74a37a158c5a413382d5ab9c858d0a524e221209e13cf8b6ae9b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/cueMeasures.ts",
+          "bytes": 2227,
+          "sha256": "1b8c275adf42aa45d8bbb85fffa001fa87a87a08879229bc68ba7c96c9545aab"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/devStepping.ts",
+          "bytes": 1650,
+          "sha256": "7c8abca05b930cd10d4778a029ac1ec2c8ae57db76e151d1ecde12bb7ce23740"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/faceTrim.test.ts",
+          "bytes": 5671,
+          "sha256": "3004f428d4478b74d9c3ae521912e47ae3fe1225b42d4f8cc97ef876c7a78397"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/heldRider.test.ts",
+          "bytes": 3346,
+          "sha256": "248ee03b9aa902cc53aad6b46987b0927cf3a0b6c40ca7c47396d0e1cdd7b4a9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/heldRider.ts",
+          "bytes": 3079,
+          "sha256": "af937f640c41dc1a592e277545d28550c56893a33b85dc0df2eee37c16a0f3b1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/jev/answers.ts",
+          "bytes": 2478,
+          "sha256": "ee71782c46aef0b053b8aed41488f654296fe53e6449ae739473829f68395903"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/jev/jevPilot.test.ts",
+          "bytes": 8607,
+          "sha256": "6e7892134b2626943814a089270802373a9f9ca1008ffa4562fe15ce4881f38d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/jev/motor.ts",
+          "bytes": 8877,
+          "sha256": "403456d36af0560f02cd97c292f7fedd94554189aa5c9db93c569c694ed82557"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/jev/observe.ts",
+          "bytes": 10055,
+          "sha256": "3b2f8b157d02cba71a37d130d673c5a9cbadf530cdda672ccd038e5347b1f22d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/jev/pilot.ts",
+          "bytes": 5988,
+          "sha256": "45c6a58dfa89bd61fd4af38467c140645ebda1990bd286b1f04f8c2641c35174"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/jev/questions.ts",
+          "bytes": 3704,
+          "sha256": "63f5048f4c5102c85ffba65e9c76f07a041e87fd33ab1718d5bdbea865f99247"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/jev/senses.ts",
+          "bytes": 1531,
+          "sha256": "0faf56ec65127ea932cdc1c4586bbcf407d15a59ef090482a4084cb549c49d11"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/jevRecorder.ts",
+          "bytes": 11409,
+          "sha256": "3baa68a1b39cd934db6bf7601688049ace62a5ffd84bee4a2a7dd30a4ae9fc18"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/particleBench.ts",
+          "bytes": 25711,
+          "sha256": "94d12129a25c3e05e1dc54009d201f27db39dbc08ff4466210dfc7de3db24fa6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/poolStart.test.ts",
+          "bytes": 2219,
+          "sha256": "0c2bbd7fc43087ec188ae20ccb36bf830b7f4abc2669ee8db7df73039bca3093"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/poolStart.ts",
+          "bytes": 7038,
+          "sha256": "aa3f640b1560eeea537ee0e55db259bf686a8d21898488026f0dc1a271b51245"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/rideRecorder.ts",
+          "bytes": 22206,
+          "sha256": "0b505e0e1413498805c34446117c3ae715c4bcf7e5563eef0fd9317c9749e39f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/ridingPoses.test.ts",
+          "bytes": 5044,
+          "sha256": "0ec116c7e83b8c5f92203c1f1d6c2c729b2a561532adceec8dbcff99b2e38f92"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/ridingPoses.ts",
+          "bytes": 15811,
+          "sha256": "3a809d9e7621e162dcccadde48e349c34b123e645d61eb54061b7c1283900faf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/stanceFigure.test.ts",
+          "bytes": 3571,
+          "sha256": "c20f5af17debd9eb08cca76193310dfacde2209cb8761dda938437739cf9a129"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/stanceFigure.ts",
+          "bytes": 11605,
+          "sha256": "b4ddbb5b54ee62d2d1c62324a4856244adbda0509080fd51fd5bdb6eb89841c7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/stanceReport.test.ts",
+          "bytes": 3621,
+          "sha256": "4cabe65e38956fa3abc40d57f23b85310457061e8b618f3ceb907acb53dab922"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/stanceReport.ts",
+          "bytes": 7129,
+          "sha256": "01b39c966f670ae9f1cb29b2035c4c7858cf641029f7b31277482037ecff1e6e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/stanceTargets.test.ts",
+          "bytes": 4101,
+          "sha256": "b26d07dfc36e28707777ce38fb08a88cf5dc0a6f46baf2f5615694756ccfcf73"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/tierParity.test.ts",
+          "bytes": 7079,
+          "sha256": "614e58086665582c8d463ee8318174562589d95362b16b0cc20ebba26486ddd5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/tierParity.ts",
+          "bytes": 9031,
+          "sha256": "b8f1904c28d1401ac558ccf3009c836d1dcba7bf84e62c858521b1c53dde88aa"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/tierParityPage.ts",
+          "bytes": 16271,
+          "sha256": "95cf5394468a08e161a5767fc9640b1b30fa1310cf1cfb9cb01c48ad0e835351"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/tierParityWorker.ts",
+          "bytes": 4533,
+          "sha256": "044ea13816a0083c1b5804e1bc1ba4ad10c3c0f5035c2a23c7cba8a01c9dafc7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/dev/waterSheet.ts",
+          "bytes": 31281,
+          "sha256": "06ee3d0546f5081fdff44b899b8613d3597744ccea67866db4be69dc2a7f2dba"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/devTools.test.ts",
+          "bytes": 451,
+          "sha256": "f00cd42674994ea45cd1ee2efc86322ee31fb66bb4bf0e2217c2f90ce811cb97"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/devTools.ts",
+          "bytes": 852,
+          "sha256": "e56a647be24485b22d073874f2aec11ab3c1f400552d9146a4092bc9f91e0915"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Bindings.test.ts",
+          "bytes": 7389,
+          "sha256": "2121c16f2d762680d1d99e0e0d025d426e01eb6dbdf48352ad52170271bac0ac"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Bindings.ts",
+          "bytes": 9283,
+          "sha256": "05f7086ceb824aefcdcd7d199645364f4d5435ab18951e2ec172e930f8354cdd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Controls.test.ts",
+          "bytes": 13904,
+          "sha256": "bb9f6e84408a29d7fb01c65acf2a4af87bd521c14ece91afda44cfad0c9faf2c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Controls.ts",
+          "bytes": 11972,
+          "sha256": "66047ba082c2ad9845d66bf6da1195902ac082b087f5832c9440f3c7eac464a0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Graphics.test.ts",
+          "bytes": 6201,
+          "sha256": "ca6d50bf993b9c2e9acad4abe52558c34f0e49a10e44137f110609fcb7009663"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Graphics.ts",
+          "bytes": 8753,
+          "sha256": "39e0bd72abe3bee7daf39f022775a4a2688a6ba798f02ca3564a1109ebfcea42"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/InputAxes.test.ts",
+          "bytes": 927,
+          "sha256": "ee6d89f78f9d0818f483d6bc3fc56e6e74532bd55169465fe37535d76a1bfb91"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/InputAxes.ts",
+          "bytes": 849,
+          "sha256": "22b1b8ed042ddfbe8e839341f0356703f03cd9c68c706530f1802faa9a5ddad9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Logbook.test.ts",
+          "bytes": 4326,
+          "sha256": "45a2e7ddc6f688f541cee977e20ff1cc890a412bdb98272e2251ecc9b2f4ac14"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Logbook.ts",
+          "bytes": 3811,
+          "sha256": "decc142b8cb766f09a9dd8f66405d1db46d5013e92230aa3ed0572fc19bfa600"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/OnlinePlay.test.ts",
+          "bytes": 5814,
+          "sha256": "bd72a5e106c1a64ea2aef544c5e53985a43255cdd032f7e5aed6e943a4d65274"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/OnlinePlay.ts",
+          "bytes": 4787,
+          "sha256": "7987022133d8fcec513bc40966256f28bd0fc205a6a0a672fb0ce9553136de66"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/PhysicalMode.barrel.test.ts",
+          "bytes": 2865,
+          "sha256": "824af2f9d5cb1027444b339a547da1cb36f389a99d3f8a6b06ac9ed24e1e63f4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/PhysicalMode.test.ts",
+          "bytes": 27000,
+          "sha256": "030dd189f9f7d12187309ff2da1c0abb4c70af4e098bd0a5c652edeb4692f535"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/PhysicalMode.ts",
+          "bytes": 41940,
+          "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/RideTracker.test.ts",
+          "bytes": 6318,
+          "sha256": "cf3171bb5268a71fcfbeea1a096058bfa1908ea33ee2169365ed4d326e913656"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/RideTracker.ts",
+          "bytes": 5880,
+          "sha256": "cf8f2990ab41adcdaa2f6bef10d8c8b8431c6d3fdecc213c0750bfacfc7b538c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Settings.test.ts",
+          "bytes": 16768,
+          "sha256": "75cc484be8afffb20b270ab67b9788c005241858c72036a8d06797328a4f8028"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Settings.ts",
+          "bytes": 19014,
+          "sha256": "feffa5a5fc4d2df4bfd7d1ad9ca1e81a26f014d9fa25efe02814dcaea684b618"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Sticks.test.ts",
+          "bytes": 3892,
+          "sha256": "55213c29cd3324be37928d092a6871b71c23de5dfc73f3977c2524583adae093"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/Sticks.ts",
+          "bytes": 3737,
+          "sha256": "d80370fe5507f4b9d3192915201f6ceea5610560ef7698fe6196b8631e9e7ee3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/StillFrameGate.test.ts",
+          "bytes": 1720,
+          "sha256": "cf15683dc13543dc852c2c117e6f8c16cb138801a23b72101997a447525f8d08"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/StillFrameGate.ts",
+          "bytes": 1400,
+          "sha256": "7295e2fe116a006f860d1effab869197cbf61903d0b0e386a7511870a4e42733"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/SurfConditions.test.ts",
+          "bytes": 9625,
+          "sha256": "e8e111a90b300ce67314fe6e7d9ae7fb73b46af459031ac069de7b20712f4344"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/SurfConditions.ts",
+          "bytes": 10444,
+          "sha256": "f69da1da985f0caf1f519568d6cc1cea8c4a7629d5dcca1b0ae47d984d92b6f9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/SurfZoneHost.test.ts",
+          "bytes": 8884,
+          "sha256": "e505ac63edfdf0228b8dcb4f99a6cca95171362b438f3b497f30f255df618a5a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/SurfZoneHost.ts",
+          "bytes": 8020,
+          "sha256": "52486c96088a57b45ae65574012cd3108b19bc9be406ea98f9a438706737a424"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/SurfZoneWaterPrefetch.test.ts",
+          "bytes": 17570,
+          "sha256": "df4ab86fcd679e54359e756d2db4bc4976411fb9637f4448c68ad28c8363c55e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/SurfZoneWorkerCore.ts",
+          "bytes": 9863,
+          "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/SurferChoice.test.ts",
+          "bytes": 2332,
+          "sha256": "394fc89baefde2963aa66d03c1b4cb929cc3a315e9b901cbf940abc99b419354"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/SurferChoice.ts",
+          "bytes": 3888,
+          "sha256": "87fbdc397b32fd6e88051ab21f2138027527833363d5844b85ec8fb70cc6ee74"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/WorkerSurfZone.test.ts",
+          "bytes": 26185,
+          "sha256": "c8d4c364bfbf08a32c871ef19c56bd8ff22f41d5bea63cc327f575a654b35f92"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/WorkerSurfZone.ts",
+          "bytes": 8319,
+          "sha256": "f8adebe332b2bae41220c90e15aaa385b6ac346a5c78acd95592da9149c3fa83"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/frameLimit.test.ts",
+          "bytes": 2462,
+          "sha256": "e17305cbd0bc7a48567241a46e6de788896ba3e169570bf1d69572d699ffffa8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/frameLimit.ts",
+          "bytes": 880,
+          "sha256": "00ffb220e144581f0974f1eb20dbb14ea5ca669a4c42b6d37f17fed13db4ce90"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/hints.test.ts",
+          "bytes": 5515,
+          "sha256": "c3f4bdf330f5dcdd41a867ba03190c39a2d4ad3401f8b4cca1e444d9fda1d75a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/hints.ts",
+          "bytes": 6015,
+          "sha256": "07f0b969a0b063f53c525ce736861813aad59ff6f5bac2e16eeb053afb7d629f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/pocketReflex.test.ts",
+          "bytes": 4750,
+          "sha256": "63e396eaea97b0a705c66838df5def1ff31341ef798343d40457822f6a4b135d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/pocketReflex.ts",
+          "bytes": 3295,
+          "sha256": "2e6bd57cac901031b091e71a0edd0742d607609165fd47b666b0b54ef5f28c64"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/rideAnalysis.test.ts",
+          "bytes": 11030,
+          "sha256": "6ac8c5f490a532163ffb7cef33aa4eeb164ab463a3b32811553af8a1a0dd4f2c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/rideAnalysis.ts",
+          "bytes": 12746,
+          "sha256": "d6be2ce5f0ad37af8505b410500ce2f73eafff641260c3a6cd1bccbd1c58284a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/SchoolSession.test.ts",
+          "bytes": 3090,
+          "sha256": "d932682d19bacd2bd834b743fa843fd979fe5fe87f9781a84db58e566a12cd2c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/SchoolSession.ts",
+          "bytes": 2445,
+          "sha256": "5b8e8f4714218803483629dc612e9a2fd48feabaffde967a3bba4be472a29445"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/lessonFlow.test.ts",
+          "bytes": 4695,
+          "sha256": "8319ce27dd4dbc3c96e22d684e9221f0133bce58324e552aa612d20db49da781"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/lessonFlow.ts",
+          "bytes": 4465,
+          "sha256": "0b99fb82c9734e769e2d3ae18084a16e6a86016846ef1348144345a7638e35f9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/lessonGoals.test.ts",
+          "bytes": 11504,
+          "sha256": "73a267ee16c67cf5b6386f499396dc6293c8a837f4883f4eca718bc5be94dd21"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/lessonWave.test.ts",
+          "bytes": 3434,
+          "sha256": "f79cfcb2d60ec6fea9433f5683be23fe6533bafd651adf2deaaa897fd454161e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/lessonWave.ts",
+          "bytes": 4402,
+          "sha256": "42efd9c9fd61adee7b3f07346e74351fa9d54639bb3836d4c0e8430cb8649ce4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/lessonWaves.ts",
+          "bytes": 1235,
+          "sha256": "d7a80f5e0ac652123f63b56440e1b709a11fa9b62ba582c3d71d50eb7f882ce6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/lessons.ts",
+          "bytes": 13658,
+          "sha256": "afc39e839fba5482f38921dccbeec34d9b0d8703dcf2190acd968056af21304d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/schoolProgress.test.ts",
+          "bytes": 1554,
+          "sha256": "d01830460e5f593456b39edba2dc16013c515cc83b2330a1c93c5b19ec761734"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/school/schoolProgress.ts",
+          "bytes": 1305,
+          "sha256": "fb05f97dddc509b30338d591c7df079b995a7e5568b1c6df17d501d28764eb93"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/snapshotTrack.test.ts",
+          "bytes": 6482,
+          "sha256": "f7e82399f053f9f6f489ce39c2feb247d0ece5bb5043a86882adab5ebd12514b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/snapshotTrack.ts",
+          "bytes": 5730,
+          "sha256": "b2becaa523808f2c4d63b759ce2f17889e379f36455902b474989dffa87f8aca"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/sprayVisibility.test.ts",
+          "bytes": 3516,
+          "sha256": "30802204a5496c0c0c81174df399e7aaae95978bfc919c32f00ad68865d4cafc"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/steam/SteamControllerDriver.test.ts",
+          "bytes": 5396,
+          "sha256": "f0fa20cbc943f5b1ce23a19bf51c1b2ddc126ff503cee8f9f73a2ba41a89b630"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/steam/SteamControllerDriver.ts",
+          "bytes": 6246,
+          "sha256": "eeb907965aa9b9bb678cba0a76cfb9c60cf58e913e0fd4706958cc7e2939c419"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/steam/testReports.ts",
+          "bytes": 818,
+          "sha256": "2858e6ce4c511d42c27b2e8ad57b0f239892f9e101f0e64a2726d8973fb15d8b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/steam/tritonProtocol.test.ts",
+          "bytes": 4303,
+          "sha256": "a6e71b6e562f2599434c49bd13b69d2c7e169c0d3d94b3b2cacf6628734c6285"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/steam/tritonProtocol.ts",
+          "bytes": 6573,
+          "sha256": "ae20d3e26804636be5420c236f2d25abe5944b65b9c732b160a4f26d8fd656f1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/steam/webHid.ts",
+          "bytes": 1573,
+          "sha256": "3c12fe9d02bac985e6aa79fc5df345e68045941f1777d676fdfa725ec1991bd8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/surfZoneWorker.ts",
+          "bytes": 827,
+          "sha256": "2f04572a34cc6f5a1a236d2c44f6ef878d03e1db229e7545f5f33e9daa5f84c6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/timeScale.test.ts",
+          "bytes": 691,
+          "sha256": "f9166fc7441b4051ac2ef104844a1c4b11fc175ad893558d0f690c49f5552266"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/timeScale.ts",
+          "bytes": 550,
+          "sha256": "c0afba8db1d0c974b5be424894a3ce032033c99733edc15ba769b6885ad780ec"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/FlyInput.test.ts",
+          "bytes": 6224,
+          "sha256": "25aa6f3efdd712ce237fa29dede66aeeb643b998064e0c21de815d714eafffea"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/FlyInput.ts",
+          "bytes": 8852,
+          "sha256": "c7816bfe5924ab26793ee9d5fc198b68b2b24b5fbd276fd0900adc3acc86b0c4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/WaveLab.test.ts",
+          "bytes": 3655,
+          "sha256": "878441191fbeafd1abedff0651543c9df8b051b7557f8bee2c9239231364a3d8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/WaveLab.ts",
+          "bytes": 6352,
+          "sha256": "a0afcaf01d7a7205117188e2d5a816da3573bab3baf27f105f61c9cd4536f6c3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/crestTracker.test.ts",
+          "bytes": 2405,
+          "sha256": "1c683580a287eeefa29f2ca8004ad4cca94e88f8286bf8d6b9675dda70ce2321"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/crestTracker.ts",
+          "bytes": 4241,
+          "sha256": "6d52f0fcf850d0a2d2fa069d11f18d10fcac19bfe0cd8e33c2e27f33d87903a5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/labClock.test.ts",
+          "bytes": 1241,
+          "sha256": "7535c517173d04506e82545714445093fd074cf8f966c0f48752a7e10b624a98"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/labClock.ts",
+          "bytes": 1444,
+          "sha256": "309311231783007de9c44f1e7ce6fc0659bbe8e4b6fd24543409a3b873f58984"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/labSettings.test.ts",
+          "bytes": 4038,
+          "sha256": "d55e1d849f02c51651a63e556b9068827949aaaac7cc843ae2835d9186767cd4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/labSettings.ts",
+          "bytes": 5278,
+          "sha256": "907b2076b33c96ee0e80d6c26c550f32db71078fbf421c269fb40a43020be4f5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/viewProbe.test.ts",
+          "bytes": 1127,
+          "sha256": "e519c105e8e57945b74939c7ea310c886cf70ceffe311bf6133952f4604af4c6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/viewProbe.ts",
+          "bytes": 2086,
+          "sha256": "62adcbc9cd2c472c85c8160d17f1852211ccbd0e5ddc4e14c76b9dff449f8506"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/waveInfo.test.ts",
+          "bytes": 2041,
+          "sha256": "d03c8aad3e4cb4cc56c0c75d568d7dc41c93d0968847cb035122ed07afbfcc1f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveLab/waveInfo.ts",
+          "bytes": 2837,
+          "sha256": "543945795a1ef2247ab83b808fecb0de4e1b874c5e3ea9b19303cc5b903fc61b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveScore.test.ts",
+          "bytes": 3116,
+          "sha256": "4693fda343adb777b1d2ff60bb6c3ff317b438bdf0057269e9980ba7d07ab4b3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/game/waveScore.ts",
+          "bytes": 3238,
+          "sha256": "8a8f4e7ceb6edff295ed9f894ccaa0bd904421d9ad2e270a7c024a9dfc151bb0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/gpuCheck.ts",
+          "bytes": 12809,
+          "sha256": "0db53fa3bb42c5d65c011885a2e90d1c72139bf1de498be4d15ce2b5b7d85d8c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/main.ts",
+          "bytes": 56712,
+          "sha256": "e88b0f82571f74ffcf8ad1d902ba21a5f0bf62293077617f316994b1c4c82ce5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/ClockSync.test.ts",
+          "bytes": 1166,
+          "sha256": "372c9e5d6babf1059a0b7e7584862a54c91d2f9156cbf6805865a95419df2c28"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/ClockSync.ts",
+          "bytes": 1625,
+          "sha256": "f15461a67af796c16ce6f58b17c66b6f322476a48fb6ee669f6a8e303e187652"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/NetClient.test.ts",
+          "bytes": 6114,
+          "sha256": "8749ad88cc1cdb455a0b3a6f69f13de927a182fce1174c5dbf2552d224344fb8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/NetClient.ts",
+          "bytes": 4979,
+          "sha256": "7f35ebe23e368c333142c5b00027d7b05459ad7f6b948c75cd62daa607cf5c82"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/OnlineController.test.ts",
+          "bytes": 10687,
+          "sha256": "bcbddbc34c3d392c5ea1eb8e6170ddfe01c41f781188a3d48336180b1c6b0073"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/OnlineController.ts",
+          "bytes": 9246,
+          "sha256": "355ae33388e52d296b6abe9f2e9733cc98c6a3e1b7179d7576c0f82ba95f1288"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/OnlinePacer.test.ts",
+          "bytes": 2255,
+          "sha256": "3581f8fc37e47144373833a13ab1de8a769096bde9618e898b79fdd6890cdb8a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/OnlinePacer.ts",
+          "bytes": 2391,
+          "sha256": "946542493284a9f1a5834c03b40bef9e9986d78167e09872f026f3bb3a62b6c6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/RemoteSurfers.test.ts",
+          "bytes": 11929,
+          "sha256": "dffaf986d88a98f0dabf2b6ca2c561af3bcbd9e92904965c060f3e99ba9a90a4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/RemoteSurfers.ts",
+          "bytes": 11652,
+          "sha256": "1f896c2f275db28ccd23d3a4f8f44cfb08fd2e81be98a39612aa79a644c0bcb7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/buildId.ts",
+          "bytes": 265,
+          "sha256": "bb1a440c9ce8a453c7fd7629b209e49f031d7331149bf5f45a1dd55510838e1d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/ownPose.test.ts",
+          "bytes": 2472,
+          "sha256": "d12bd29fb858ea365e2f4d7285b3f005994cbded9d28d544d6f9f131c63005f6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/ownPose.ts",
+          "bytes": 2675,
+          "sha256": "b3cf3b2d340cb5090404785429955881c0007a67dbb5778c4cafab836b415c71"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/poseCodec.test.ts",
+          "bytes": 4779,
+          "sha256": "1482356e58ff74dcdbd723e2279530580580dc8d4f7ccafb5344b75c9447a11f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/poseCodec.ts",
+          "bytes": 8523,
+          "sha256": "6d4e9ca4b832efe6515ae7d7886c056c1d16a417eff816f6d5241c32928cefdf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/protocol.test.ts",
+          "bytes": 4117,
+          "sha256": "5538c1358ec940771e1723d044b55b6003dabd7ed10cf2e4d5cfab6901413da4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/protocol.ts",
+          "bytes": 9427,
+          "sha256": "275427bbf5918a9ac431b26a3a8dc10b0103ba0ec72d129050ced5a8514b819c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/roomCode.test.ts",
+          "bytes": 1585,
+          "sha256": "4966722f70641f448a04a0ca575a8cf0b1fc0814725375ee4fdb4297eab4dd52"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/roomCode.ts",
+          "bytes": 1573,
+          "sha256": "05ca9a5e1960f137ef19e07b49854f21818b05367da146c162ffd20e65ea9ca6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/roomSea.test.ts",
+          "bytes": 1628,
+          "sha256": "41486bd157311c45094d258de42f4ef96d205493df2375a09537eb7fa48579f7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/roomSea.ts",
+          "bytes": 1547,
+          "sha256": "4a050e84305bc6df83235ee8f9029b448b410ea3085ba1a63279d8df77fcc025"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/spawn.test.ts",
+          "bytes": 1532,
+          "sha256": "9644a5acc934965c6c579376bc93d8901b04e3340cb294f581a6d106cea1130b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/net/spawn.ts",
+          "bytes": 2352,
+          "sha256": "9ab74ead004751fc5070944de9e80abe38d4ff6fb8c7bd9078f4bca578371d4b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.deepCrouch.test.ts",
+          "bytes": 6902,
+          "sha256": "080c8a7ddbcd604109046c3bc01fadac3d969afada435e7b8873eddedca6cea3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.test.ts",
+          "bytes": 94027,
+          "sha256": "38057d14b919b205bdda705e0ce2f854f8e79049d0053245463e1705b7f447c4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.ts",
+          "bytes": 146425,
+          "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/BoardBody.test.ts",
+          "bytes": 16502,
+          "sha256": "96efe09cf90f7fe919f2e1b649ca179c8bfe050ed206e616c9ec23e78f0cd9bf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/BoardBody.ts",
+          "bytes": 55109,
+          "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/BoardRecovery.test.ts",
+          "bytes": 7040,
+          "sha256": "d57c5cf66b594b37886ca9e0dd406f82a265adec4f2925eec17519ea3290fffb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/BoardRecovery.ts",
+          "bytes": 13882,
+          "sha256": "9b5161d0528f384e11b7968144734c858ca1eba481259b82b291d7640f003d2f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/Breath.test.ts",
+          "bytes": 1314,
+          "sha256": "31b4218a37102cc3ac9383b1301ddc0c0cdae89905d7b31aae1a02297305576d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/Breath.ts",
+          "bytes": 1341,
+          "sha256": "eb953c2bf7607305e211ec768acc4e2ee644bb185ef924255364dbcaac8e26ed"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/BumpWater.ts",
+          "bytes": 1716,
+          "sha256": "19929143358e0d7ff8132f28c12b852e01d0acf6fa159e08e5edfa39009c2ccd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/DetachedSurfer.test.ts",
+          "bytes": 20555,
+          "sha256": "6c0be0c0aa2e85f69eefbea0add9c773c6a1dd1b335c07d0a191d5a4dfbcd8a4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/DetachedSurfer.ts",
+          "bytes": 30945,
+          "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/Leash.test.ts",
+          "bytes": 4649,
+          "sha256": "d5f59fb55995597499d68ef047b0f3648df497f6663441e4731a34929f0f81bb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/Leash.ts",
+          "bytes": 4335,
+          "sha256": "a98744574a47996440838bd89a44ccc3cdbe782a10a4b371ca5c38f9c3cbc21b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/MinimumJerkTrack.test.ts",
+          "bytes": 2962,
+          "sha256": "63a24a907c1c177282590f8573a63fbe8e85b317c466318d5f5fa521d55a3dab"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/MinimumJerkTrack.ts",
+          "bytes": 2659,
+          "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/PhysicalBodyWaterField.test.ts",
+          "bytes": 7192,
+          "sha256": "d7ac5e7bfbbdb3c6fe6be9a7eda7dc9d1d6f0eaf27d8967085b85e66c946e288"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/PhysicalBodyWaterField.ts",
+          "bytes": 4861,
+          "sha256": "ed7b7052a68325d7ef5ccad745725d0bfdce9a542f3829c630ec4bb1863c7078"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/PhysicalSurfWater.test.ts",
+          "bytes": 26137,
+          "sha256": "1eb4caab9b5f53396b0917f13a0d55d4753815d8013d63573d9dabcf78273f85"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/PhysicalSurfWater.ts",
+          "bytes": 26311,
+          "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/PlaneWater.ts",
+          "bytes": 2414,
+          "sha256": "116bd2e95cd9e91b35818c8cdf5dcfda65acad43a3648e997c5f133ab3fc9e75"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/RideSession.test.ts",
+          "bytes": 20128,
+          "sha256": "ac60b5bd1a4b939048181c660729e1725f952e0e491daac2b4fd19b692b699ad"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/RideSession.ts",
+          "bytes": 13831,
+          "sha256": "57818ef317fd0616d53a07d631304dff303a8904f488d7ddd96693859ca1bd2e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/RiderFall.ts",
+          "bytes": 2159,
+          "sha256": "fbce898b14e9b9a5229aec39440ad8540830191bf0b1103cba7af0bd49c77c53"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/SurfWater.ts",
+          "bytes": 4064,
+          "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/SurfWaterBodyField.test.ts",
+          "bytes": 3104,
+          "sha256": "64928d9105b6827426a296c027f800ed949aa1628e0a84a16cc9e41d36939f2b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/SurfWaterBodyField.ts",
+          "bytes": 1744,
+          "sha256": "e418d2ccd7d6106a0bf6dd0bc8ac24d12347ae27b40c5ce4cd4de63fcb2d55f9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/SwellWater.ts",
+          "bytes": 2763,
+          "sha256": "492a38d3f158a4990982e2764ac5ed086f0b595cc75564d53affbbf0adc72280"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/boardReference.test.ts",
+          "bytes": 936,
+          "sha256": "49def7bcc165d2e8c804b3085fe296f3b037d8e6291c0b53fb928e9cdc8885b5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/boardReference.ts",
+          "bytes": 1317,
+          "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/boardShape.test.ts",
+          "bytes": 2948,
+          "sha256": "b778a85d39d339f875a3a9aeca6accdbf0331378a3f82af17f7e476ad351c4ba"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/boardShape.ts",
+          "bytes": 7008,
+          "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/compressTurn.test.ts",
+          "bytes": 4558,
+          "sha256": "d81bde2b6a01f9d13dd322d1747c028f67cf2b23753ed64ed23dfac68fb9dc3b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/cutback.test.ts",
+          "bytes": 3809,
+          "sha256": "f4ba313ac5648381126e76ccbdf9112e721da0adc4fbfaae52eb70926105aa69"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/duckDive.test.ts",
+          "bytes": 11712,
+          "sha256": "820731c5a7c63f32c8c6f5fb185c1fb138c839812726ef6553507f00551ece24"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/duckDiveBore.test.ts",
+          "bytes": 3774,
+          "sha256": "a9210b6e410a854bd8075a3c076837c5360bfe11cd8fb3e12b395508e526221a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/eddies.test.ts",
+          "bytes": 2036,
+          "sha256": "11fbd9a33882c742779dc5db7296dd29a1d5c57ba50404f178de39be65f4b958"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/eddies.ts",
+          "bytes": 2907,
+          "sha256": "f2a9033f2fa19a31c67f5b6197bbc7f922a2a0a43f194fd09eadcf81d97cd57f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/finForces.test.ts",
+          "bytes": 2165,
+          "sha256": "8a496991c1d7845b069bfbf69c3aa81b19051ac76a02bfd48a77682085a30b43"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/finForces.ts",
+          "bytes": 6071,
+          "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/hullForces.test.ts",
+          "bytes": 10276,
+          "sha256": "c6249edd6e875918f279d97dd023ccbe7670187b5015aca574dafc4496c742fd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/hullForces.ts",
+          "bytes": 8926,
+          "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/leanOut.test.ts",
+          "bytes": 5115,
+          "sha256": "d82762c776edcec4006abe003986f252f0b5a205bf74e2e9a1716abf675c6ff9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/legSpring.test.ts",
+          "bytes": 5303,
+          "sha256": "605016fc78988402fe218488e64df772d7bd77dd29aa9484f72c16bd16dd1e17"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/legSpring.ts",
+          "bytes": 5593,
+          "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/maneuverForcePaths.test.ts",
+          "bytes": 2393,
+          "sha256": "707efe16d891c0e0ce3385ccd2dcd47656b73a4af9601b203b72063c866b7610"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/projection.test.ts",
+          "bytes": 5734,
+          "sha256": "1fe26002baefaca3703a2d7084feea70f8d7814ae2f9bebb215889f8e8e39350"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/projectionLean.test.ts",
+          "bytes": 4152,
+          "sha256": "b9d04c054ee3aaa65b04899261b362106d4fbdb92ffdabf535f5adaae756a6c3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/pumping.test.ts",
+          "bytes": 13637,
+          "sha256": "0da04fd15c90ffc860d03e48fdad9a107f095541bb6cb485de3aeca0bb40738f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/riderPosture.test.ts",
+          "bytes": 2682,
+          "sha256": "538099deb49495e2c103f490083b27831edc541596c371e1c533ca6644c26193"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/riderPosture.ts",
+          "bytes": 9003,
+          "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/rollModel.test.ts",
+          "bytes": 4331,
+          "sha256": "c40ab596d1873bcb208288843e696e45be2656936ae2bce61d36c455b491e421"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/rollModel.ts",
+          "bytes": 14802,
+          "sha256": "93d8a8f4f027fffa873c5fd59d53d6f178f3743635bd95c3b47694855cfa1a29"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/stanceLadder.test.ts",
+          "bytes": 4033,
+          "sha256": "74c3ab12eff80b23dbc32b659c9af71d41aa533b79d3abb9be7282aacb66ba01"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/takeOffCue.test.ts",
+          "bytes": 3539,
+          "sha256": "d235b99f50536f08467baba5c080b12c6b6e0029aae720379beaaa7c49380e9a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/takeOffCue.ts",
+          "bytes": 2242,
+          "sha256": "2ca345e82f21464c74f7f8889520af25f912752cf8f6f8fb4554c3efe95cf293"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/testing/BoreWater.ts",
+          "bytes": 3846,
+          "sha256": "609aebcd7886d0e5fc98398999bafb847b0582feb0999c764f279b966da8bb8d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/testing/FaceWater.ts",
+          "bytes": 4225,
+          "sha256": "808c12aa722ed29fc039769593478da15e9023f84cea036f959bff1a78c7e162"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/twist.test.ts",
+          "bytes": 2189,
+          "sha256": "a08513c0ecf06e8946a6ca7dfbbde2a28ce9d1cdb346c5f209e398cb0b3c2a43"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/waveFrame.test.ts",
+          "bytes": 10329,
+          "sha256": "2426bae646c8efeda28008eb6fa0b7f36d008c95672cbdbf298b0b2fd927ae46"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/waveFrame.ts",
+          "bytes": 11626,
+          "sha256": "1fc4cca2787e2a9064f779f3905fa762dd37e0664a34e08565c94d28bbaff6a2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/BoardMesh.test.ts",
+          "bytes": 3537,
+          "sha256": "35c0b096d451245f24133d11f2fc4860d674a89242fa507c75c07764fcc9b710"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/BoardMesh.ts",
+          "bytes": 9992,
+          "sha256": "711433cea5b63eae199df9936e6bdd7524257f07b42f588c614e1447c49bb328"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/BubblePoints.test.ts",
+          "bytes": 1574,
+          "sha256": "c8b327e7f1a2674c0369e7db1c1177237c3d220b160d49677947809edbd326d6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/BubblePoints.ts",
+          "bytes": 1442,
+          "sha256": "cbd6f49e31e426bf7e6295d6fde213c6289fa23b9c5aedbedd2159acc8846f5a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/CausticMap.test.ts",
+          "bytes": 1509,
+          "sha256": "95064a9e8bc6852506be8d1335a886925a8e7d44464a2606fe3dc4de370195bf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/CausticMap.ts",
+          "bytes": 8575,
+          "sha256": "289df2375c532a4ec9b72ffbe7396ddc977e6473277ccc5bb6abec3fde891380"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/DetachedSurferView.test.ts",
+          "bytes": 1230,
+          "sha256": "85dd041c02d28699fb93fd99982e9fb3574cfa546d0e96628e6043de9d69bdd9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/Environment.ts",
+          "bytes": 2350,
+          "sha256": "9b9e887f60140cce988b67d19cc6a58abf99f28ae191aa9bb0b6ab21eabf67c3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/FarFieldOcean.test.ts",
+          "bytes": 4938,
+          "sha256": "c3f39e8f9382b5802c519a71262926933705d74d363ee1895fddb7600a2bbe73"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/FarFieldOcean.ts",
+          "bytes": 12090,
+          "sha256": "33874ac524e8b86c5a585a81a258bc08d0972ac102d9faccbcbc8f898435f19b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/FftChop.test.ts",
+          "bytes": 1920,
+          "sha256": "925d2e85e7a81c90cb54a6f7219c1e48109abe745e7bbda8be9f2953bc42ca25"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/FftChop.ts",
+          "bytes": 7491,
+          "sha256": "6939107ec1ddb046e08b5e0ab2659a7eb15a43cd81e7c174411afb5b149858fd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/FlatSurfaceSource.ts",
+          "bytes": 500,
+          "sha256": "2fbe9ebc7c41930d9fd2eea4800d0a950c164e1b1890dfabe2927661f2823ad6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/FlyCamera.test.ts",
+          "bytes": 3380,
+          "sha256": "89a94b6dfac619a775fa095b9cde966d010a0c224de5641688fb4a959fc85fe5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/FlyCamera.ts",
+          "bytes": 4320,
+          "sha256": "6c0ff6468a4b803caa097b299f3e05498dfc79c11ceba5bba9beb45eb5f592da"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/LipSheetMesh.test.ts",
+          "bytes": 6326,
+          "sha256": "98516d5b2c173c3ed6c051f44e3f0549f03108c5cb2c0959520fea35acb71830"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/LipSheetMesh.ts",
+          "bytes": 11711,
+          "sha256": "690908f042039936935d8aa298b317185d76764498c0bfb688c3f9bed9c93ac1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/PhotoSky.ts",
+          "bytes": 8311,
+          "sha256": "5a3342e571f91f6d3e12a82cd68dd60257ace3de884f21068d65f88825a52f84"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/PhysicalSurfaceSource.test.ts",
+          "bytes": 1568,
+          "sha256": "4b255c5725e45c2715ab6e1128ca68cd6e01cd4ead759405e8843a226a107a63"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/PhysicalSurfaceSource.ts",
+          "bytes": 3054,
+          "sha256": "009de515f67a1a37a0aeea37f98eb5cd928017d6bdf182763c9ca60b15fa7003"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/PoolScenery.ts",
+          "bytes": 5271,
+          "sha256": "63e800c1c22a345d782a825078ea60b7b476dd6140c628b9a24663fe91015a59"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/RemoteSurferViews.test.ts",
+          "bytes": 3858,
+          "sha256": "cc1a298c65d336d57739d4f5a1924c516143b65deee6787d8e3af37ae99e1bdf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/RemoteSurferViews.ts",
+          "bytes": 9064,
+          "sha256": "38ef6eb4572798fa11bac6a9d71f586b384d6825fd4fd592522b6a57fe08586a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/ShadowRig.test.ts",
+          "bytes": 3817,
+          "sha256": "545dff58982cfb583ba3fb95328fa1e270004ffb7ad65a7687809a1c55b6c04f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/ShadowRig.ts",
+          "bytes": 9235,
+          "sha256": "5fb6e8b3eacef2247f035a8dea0d45e315148afcdc626b99317a12ba6e7207fb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/SpectatorCamera.test.ts",
+          "bytes": 6880,
+          "sha256": "18713ff8269734c599dfa03a3493b5de937eee33f2cbccccb217fc9c95a5c65b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/SpectatorCamera.ts",
+          "bytes": 8677,
+          "sha256": "ab2a5c2fa98db396c4f17740af7932afffe7d1e5a5f84d660c88f4b532b9f42d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/SpotSeabed.test.ts",
+          "bytes": 1822,
+          "sha256": "8ff386d5105792edb9b6d4d75612a0866358c0c773dbc1c9bf9a51cef06b9bc0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/SpotSeabed.ts",
+          "bytes": 4309,
+          "sha256": "11a745e51cf33cb1ef30319b28336e7e563f041bffa3230bdea4ccff7e0a7f8a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/SprayPoints.test.ts",
+          "bytes": 2703,
+          "sha256": "f01f24e794e3ca8c96685c7a1fe9e8d6bdaad86d0efd1d66d51dabcb45b6dd9d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/SprayPoints.ts",
+          "bytes": 6701,
+          "sha256": "8ad09adf3838a093a91aa3ccbdc72ef25dfee280a7aebed67ad628f9215af991"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/SurfboardGeometry.ts",
+          "bytes": 2993,
+          "sha256": "fe55ed0267da5b8a2a5316433437c739d025ce49fb5b7f877ed3263422a62b4a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/Surfer.ts",
+          "bytes": 9357,
+          "sha256": "84a2ccda09bb01217015f0daf3465123ff8cbb076e96527ff39e5f17c3effd0c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/WaterSurface.test.ts",
+          "bytes": 21187,
+          "sha256": "90b4c5877d10f3a037f0b61ddc4af862a5d118136325a5007c206f4746fac760"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/WaterSurface.ts",
+          "bytes": 39192,
+          "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/__snapshots__/waterLooks.test.ts.snap",
+          "bytes": 31437,
+          "sha256": "12c619fffeea5d02a37a008ebcd080714f614630aaca24ce35a96d9403a52468"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/SweptBarrel.test.ts",
+          "bytes": 20775,
+          "sha256": "98890be2af0c2b0594989a1aa836da1ae8e2323c92b9ddc66a71098f14314bbd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/SweptBarrel.ts",
+          "bytes": 6980,
+          "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+          "bytes": 24596,
+          "sha256": "a3c19185fce8001beb28acde1cedaa05f465dd3a7c22cd0010104b929737de43"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+          "bytes": 30437,
+          "sha256": "3f232ce4e085ee62570daad821b777702394fbe5b772c3feda0c046f4b7489d8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/barrelFallback.ts",
+          "bytes": 1174,
+          "sha256": "cf2c4981ef25869fe7dcffdaba0fa9c91b3c1161a18db203673b059093c293ba"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/barrelMask.test.ts",
+          "bytes": 3719,
+          "sha256": "4af5bd284064c72d49a5191965f18363b5a42ee15a2c872ac30bd162fa5680ae"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/barrelMask.ts",
+          "bytes": 2396,
+          "sha256": "7e779278be9cad38d3fad90d484c64603c0500f1280ba8bafe05feb35c588c45"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/barrelMaskGlsl.ts",
+          "bytes": 2142,
+          "sha256": "82a029625f3b9c48680166ccd16cb75028f1cc269a3e4690cf3a168b2f47f44b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/barrelWater.test.ts",
+          "bytes": 7655,
+          "sha256": "b14b48de16305096baaaf795d44ca73a2f0bd1b777ebfb6c3eba8f4fd3820bff"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/barrelWater.ts",
+          "bytes": 5755,
+          "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/fallbackRows.test.ts",
+          "bytes": 13592,
+          "sha256": "d48505dccd275ba984da79b3386dcc8396b6629b8f334b3b921967ebbb1c9c3a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/barrel/fallbackRows.ts",
+          "bytes": 8788,
+          "sha256": "44c5919261a5a30df67c61919101bd6b2375b131efad195e1eb9b40f3a7a8ad8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/board/LeashCord.test.ts",
+          "bytes": 1977,
+          "sha256": "3dcc7a0ba359048bb37c0d432700460a500c069f9068ae3b94e534e11663078f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/board/LeashCord.ts",
+          "bytes": 3781,
+          "sha256": "162c7965237c5ebf68ed3e6d0cd1ab91fe2e61f6624e3ffb396f036b63cfc1f5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/board/boardDesigns.test.ts",
+          "bytes": 1761,
+          "sha256": "81507a4a8856d5da248fa210b19dfb2850e82e81d3f2af43d558b8278ec74d8b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/board/boardDesigns.ts",
+          "bytes": 4506,
+          "sha256": "2e6401b2b3a7961ce06ca81cfff8fb771645cc2ef0ac95938776f3c9fea7159a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/board/finGeometry.test.ts",
+          "bytes": 775,
+          "sha256": "e7e7637d555894bba806f5fd6381aa2282b6ec1c573937b4e1b378e53ced613f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/board/finGeometry.ts",
+          "bytes": 1082,
+          "sha256": "6accebf5cb9700e1896a1ca2726e5a5b1f1a162e828df71ad1f4c46be225a1fe"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/causticMath.test.ts",
+          "bytes": 1610,
+          "sha256": "e8cc331a27676e2a7ff2b0f4d77d04ab062852668e6689681f7dff5cef9a917d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/causticMath.ts",
+          "bytes": 3634,
+          "sha256": "d8ff368712f5d4508a925656913c48de1f266379fbd5e07847e8916b503b3c21"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/SkinnedSurfer.test.ts",
+          "bytes": 5482,
+          "sha256": "ee31c92362f20472ac2b067c8b8fdda2cacfeee2eb2532ab38564909c4ff3da9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/SkinnedSurfer.ts",
+          "bytes": 7264,
+          "sha256": "c306fc9966ccfef1567224125598fe03e3ec985f9e4ecc8b6419bb0f9b71fee6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/SurferPreview.ts",
+          "bytes": 5302,
+          "sha256": "56e88f82029f9dfe4f61878540e79186886d438517df60c63d7a3c889d5a3f91"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/SurferView.test.ts",
+          "bytes": 2609,
+          "sha256": "3a779ab1b7aa1550b90e7d855ecbd6b031b2ed53c1bd23bc007ed306370e4e5a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/SurferView.ts",
+          "bytes": 3604,
+          "sha256": "7c6d6dd97b97e573c2d3376b03d3651cc28bbed314f2be9424373cf9a2dea081"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/outfits.test.ts",
+          "bytes": 4299,
+          "sha256": "7a98cacafa01cb2fd4dbb585fdfcd8db4ff264fc60d84d96b41f8815bbb653c0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/outfits.ts",
+          "bytes": 7128,
+          "sha256": "d320111e5c1d95697457799005f7931f66da25b530a122469836aa076ea4f986"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/surferMaterial.test.ts",
+          "bytes": 2413,
+          "sha256": "30f3bb6b19feed5ccbea115aaf559e1e09ed9320d3688c875d2730a9303e755e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/surferMaterial.ts",
+          "bytes": 3853,
+          "sha256": "192e67d4a3eb2a0cd324b4d7e008de2f1d2e9673afaec0de83d05a314322da2e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/character/testSurferScene.ts",
+          "bytes": 1569,
+          "sha256": "82443e8f09aabbc2bcf3f35e3feee84e6f103ed7d90892731f649211469fda13"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/fftChopMath.test.ts",
+          "bytes": 3996,
+          "sha256": "525090d93a686baa29cb147ca88f749b0e33cb8fc52569a500949c73cbfe69fb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/fftChopMath.ts",
+          "bytes": 7201,
+          "sha256": "18dd410ab5a4fb927c0acc268202dd618bc422c3eca826a363e0722ec938e240"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/foamPattern.test.ts",
+          "bytes": 4044,
+          "sha256": "7b1e60dd93622b40497113e7add32202f6150f476249aaa2fe1d5436d95d54a3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/foamPattern.ts",
+          "bytes": 10598,
+          "sha256": "02550a3b3e9b6f22fded53fbee8efd975aaf216deabe78ef4b74983c703ce9ce"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/gridGeometry.ts",
+          "bytes": 2444,
+          "sha256": "b1e8967460722e7d5390a97d59469fbb46a102b0e1f416c8227761efa8a81b2c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/photoSky.test.ts",
+          "bytes": 5284,
+          "sha256": "308161c6795583fe4647307f7c2b7f3d4a3beb982529ea363047bc757a4de6bb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/HumanoidRig.test.ts",
+          "bytes": 39228,
+          "sha256": "1d9a9fb6f1ac0e1105c8e1722c4d73fed4745f7c1da14da989a7309db7ad76b1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/HumanoidRig.ts",
+          "bytes": 70831,
+          "sha256": "b6282cf4854959a4779a58540dc0a4b85b59422e9e65deac1818237f766fb5fa"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/armSwing.test.ts",
+          "bytes": 4391,
+          "sha256": "2eddc398fb74025ddfa6b7a35df94e130f27174767cf8c6255e1d32defe4fd0b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/armSwing.ts",
+          "bytes": 7187,
+          "sha256": "c66519a9084ecd95c59f0fe780d09ab084a38506d23927d7dd8a12c2bf792a2d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/bodyInertia.test.ts",
+          "bytes": 7726,
+          "sha256": "7ea34e45750511c69bae8cc1937aa7e7696fd1b35fc552f0a1275b62ee57e0b7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/bodyInertia.ts",
+          "bytes": 16289,
+          "sha256": "bef14ba00c00a92d9f11d5cd91094dd3e51945b514e4b0cf7555df0aef3283ee"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/breathing.test.ts",
+          "bytes": 4774,
+          "sha256": "d7e6782e818c107f26351358c8d346d182dd0ed6ab286850f23ca62f1e9d7ccd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/breathing.ts",
+          "bytes": 3918,
+          "sha256": "d59498ce39ceeb3ebed4c827c5829f330a2b057390af2c3801b9239b83fc6af1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/deepTubePose.test.ts",
+          "bytes": 4225,
+          "sha256": "e093c5e0d77b443d9c3776411e083a4fdb93cc8e8e3b5ecab0b3068fc293c342"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/glbSkeleton.test.ts",
+          "bytes": 2123,
+          "sha256": "bdb5b42b7b50eee7e959d9e82484573cc3c752179d4099a40f11e2a716c81513"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/glbSkeleton.ts",
+          "bytes": 2299,
+          "sha256": "6d32f794b6c0375c9cf32c7aae8e674bcea8ddbf76bb1d503311a17cb6391541"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/humanoidBones.ts",
+          "bytes": 1629,
+          "sha256": "1003b861e5f0b22f59caa1f43a2a8c261e0b2d68e96e57b07af8f282d0b7eae1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/orientBone.test.ts",
+          "bytes": 2003,
+          "sha256": "d88a6f9ec2235e926ae9c20accad1d3e2f2e36cff7ffd0d1771936e51fe849ad"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/orientBone.ts",
+          "bytes": 1848,
+          "sha256": "d0c4457f95b02b011171d7c373a23395f05f6a212774dac849dd08301768de61"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/pointInertia.test.ts",
+          "bytes": 5638,
+          "sha256": "ffb236fe9f38db6da1372d3c67cdec20689e1c959a9c2779e880ca4a85b00a6e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/pointInertia.ts",
+          "bytes": 8260,
+          "sha256": "6f618025a9a36ef86aacf0988296a0d6eab5616fde65efdb8b9a01eaa435bbc2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/posedBody.test.ts",
+          "bytes": 1404,
+          "sha256": "3f8eb7bfc3c91fe21727bae7168f28ce966fd571e6f22ac42ff647a84ac0cf1d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/posedBody.ts",
+          "bytes": 1808,
+          "sha256": "f97ed577bc6f722057496e5a303dab8bf3405276a9df66fe06e5cd4f36a1f44a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/posturePoints.ts",
+          "bytes": 4071,
+          "sha256": "6090aa6ec5459177f3b651a6c45426e6a413bd25c3600c491814f85c6f798006"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/riderMotion.test.ts",
+          "bytes": 6513,
+          "sha256": "a638b053920da168545ef38a5712fb430f955f0e101e423c7d1efd766e2d1e9f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/riderMotion.ts",
+          "bytes": 4760,
+          "sha256": "14b11c70e4ad365ad29cc8c14e10251e060351a96050bf5912d34f9208f9f286"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/riderVisualState.test.ts",
+          "bytes": 3950,
+          "sha256": "e58ff71beef836d2901377b2cd198907bb2a2d2d38d7dc9382ac714709965895"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/riderVisualState.ts",
+          "bytes": 4069,
+          "sha256": "0d9f9337315f6a73b3d0e7ac7c2a69315794947e62a6a006b89a955e38a3a960"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceArms.test.ts",
+          "bytes": 5153,
+          "sha256": "4aea1b7acc2d524f1de74bbcaaa7fcacf05952c8a95ae45e0614c9d4a95076e6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceBlend.test.ts",
+          "bytes": 1557,
+          "sha256": "61e99301f78ee809c80a52b23f18d528fe2315c38654d3c008f242363097fc2c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceBlend.ts",
+          "bytes": 3016,
+          "sha256": "cf130b85a20a120e59d7bd8d036b5810d578a15ecb12a2be35779f8578dfbca3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceExtremities.test.ts",
+          "bytes": 5520,
+          "sha256": "4cef3a3674c9e98c3c2610c3558faa7d169bf8318d20f234b3ccb0ab50b99a36"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceGauge.test.ts",
+          "bytes": 8487,
+          "sha256": "e8817af17d1c85da739005716a12371227272fb0995202671fd1413dafde64d5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceGauge.ts",
+          "bytes": 12732,
+          "sha256": "5abeb65a02bddd2e58ab521158fc59f15ba58c38795fb3eb432ff7675f0a0e2e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceHinge.test.ts",
+          "bytes": 8165,
+          "sha256": "9f3f5ffa2a9d3e7d6d3664d7d4ed26994195dd7a85338e849a18baca37293b95"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceMap.test.ts",
+          "bytes": 3135,
+          "sha256": "ebb732f3776fa81d2a3f0ee637589a18e5ff6391c29b903ee33b7d477a2be4a2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceMap.ts",
+          "bytes": 29406,
+          "sha256": "e944a73543e63746f0e7492a1435d91602d244f49f1fcddc8a3cd14eb3843c24"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceMotion.test.ts",
+          "bytes": 12324,
+          "sha256": "633d6fad940a56763a4c7d392cf919dfb1aabfc0caa23422cb0153df0509c1b8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/stanceTurns.test.ts",
+          "bytes": 1727,
+          "sha256": "71d2a5eb87e1062130c7c1f32c4c25b4d73d21105460178aa3869d62b0014218"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/testHumanoid.ts",
+          "bytes": 2084,
+          "sha256": "0d79630c64e827cc8ec13653c263b4103480b1d9a4d633c589eb1b85408ae999"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/twoBoneIk.test.ts",
+          "bytes": 1879,
+          "sha256": "c08f1c1f4628c34e64e8045bcfaf37a55b9ea6c4beb8511e320473ec377e6de1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/rig/twoBoneIk.ts",
+          "bytes": 1690,
+          "sha256": "962a0ef644ceea761ed5406201be39ed885e5cc97f76b54251bd75d66da48d28"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/churnTexture.test.ts",
+          "bytes": 1321,
+          "sha256": "b4754f5b08e31ce59cddd208c317c5c1b99e8d3c070b7f4bc91fcdc65a620d2e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/churnTexture.ts",
+          "bytes": 4462,
+          "sha256": "0a3206ce7654aaae06919916ec109bddb2104acff14b8d2e7a80fd6992aa2045"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/cubicSurface.test.ts",
+          "bytes": 2832,
+          "sha256": "3c2f9247e789690965aacee576106f961cfb7e6bd6ce490c663b56579b8df4ff"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/cubicSurface.ts",
+          "bytes": 2927,
+          "sha256": "c396930d9ff5def978e9a1657931a5c3c49e7cee1c41c577d6cdfbb2c2caee18"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/mist.test.ts",
+          "bytes": 818,
+          "sha256": "6582ab503931d49854e80a4dffd0480eff64feaf3e0c5ef87d5c29c31ff4ca62"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/mist.ts",
+          "bytes": 876,
+          "sha256": "eb40707acfb34e514f9c4394bef0bcfe9204293a758652a99ccd80ceee34d418"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/richLip.test.ts",
+          "bytes": 7494,
+          "sha256": "ecc9c50715cc3cccbe28f61dd0ee02f7bf30a2f9041a19db47a9249112f5ed32"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/richLip.ts",
+          "bytes": 17301,
+          "sha256": "29741392cc5faedbfdcddb7c6fd794c57b27c897e595023ba74ccb62b5f262c3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/richPatch.test.ts",
+          "bytes": 2204,
+          "sha256": "7efd3ae6e0d93fa4f6ba605540cb1228944196b6d24f5b7de99b2b88884a7ee8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/richPatch.ts",
+          "bytes": 4670,
+          "sha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/richSpray.ts",
+          "bytes": 3595,
+          "sha256": "79ef564c42b48eb77d62a560848d4b85f06be50d6f2ae3f21a957f293f77da5d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/richWaterGlsl.ts",
+          "bytes": 8059,
+          "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/rippleTexture.test.ts",
+          "bytes": 3368,
+          "sha256": "f65204df2ec15933da9bcd9e8991ad83f205dafb775d78137178462bb9901669"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/rippleTexture.ts",
+          "bytes": 7451,
+          "sha256": "ab9f8deb2f901165f267e35d4928270320ebfb04846026b7a565a7391de80667"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/specular.test.ts",
+          "bytes": 1186,
+          "sha256": "0f57af561c913a08b9ecb6357af3b1bea6df3c26dc8c8766a00e208ff3f7fab0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/specular.ts",
+          "bytes": 1368,
+          "sha256": "324a52352633b8b3834f27c3113045fc6a356f48933ea4f36d937238602dc5e6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/streaks.test.ts",
+          "bytes": 2970,
+          "sha256": "8d415a57dead262af80cd0eaf8d95b9af55d4685e42544ff3be2a9a3d5161984"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/streaks.ts",
+          "bytes": 4931,
+          "sha256": "f156b6c35aad7d240a6a9d1bbf330016257db253757e7470e74723a815208262"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/tubeCarve.test.ts",
+          "bytes": 8111,
+          "sha256": "d85a742f032269b66b70f4a6c80a0269e2b5281d58e02851e78539c94f977ed9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/tubeCarve.ts",
+          "bytes": 7767,
+          "sha256": "5b8ccfed406bee44877e9791f78223931234a4d52a03c1c4cf30cc9461639ce4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/water/waterLook.ts",
+          "bytes": 109,
+          "sha256": "26c6766f0b6818381db4bd016a9c077f1ea13a7483964f97ec541795c48b8529"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/waterChop.ts",
+          "bytes": 2208,
+          "sha256": "4a486370db15aead8214a01d7d48975e7bd6d13a20d0cd4c15525ee5a6860fad"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/waterLooks.test.ts",
+          "bytes": 23858,
+          "sha256": "9a619ef963504847acfdcbbb6388c85e38dfa5d0bdd23ed7802d62164e3c24fc"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/waterOptics.test.ts",
+          "bytes": 6406,
+          "sha256": "4c847ea2ff589417fdf888d8e0af08e2732082d8e4b504561ad07610059c161b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/scene/waterOptics.ts",
+          "bytes": 13592,
+          "sha256": "3b235ece7102e835f467126158f961c45cdaaff5dbb32ce2b28544a26159ad07"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/style.css",
+          "bytes": 4888,
+          "sha256": "4a74e5a9bf012384eb70f6d943f062fa0229eed942d52cbfe8fe37603e1e43b9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/App.ts",
+          "bytes": 54971,
+          "sha256": "de453426e165d82706bc285e3c73c64b7326adb3f3494ab735a5630efa7770e1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/LessonCard.ts",
+          "bytes": 3932,
+          "sha256": "ea3d2b3760a75e0b91fc410e7b4d7b95e3ac5bc58cee7a26f4350525acc5a045"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/LogbookScreen.test.ts",
+          "bytes": 2179,
+          "sha256": "3d2c85da88866c71d3b4696407a58b2eaadbef3ab4823f978439efda884d5339"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/LogbookScreen.ts",
+          "bytes": 3446,
+          "sha256": "126f165c4ddced6b081c85415111d9a85fc8f3dfa314fa9482f398b0baa1ca8f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/MainMenu.test.ts",
+          "bytes": 1514,
+          "sha256": "674422bd526dbccf7f56e457bcd701b19ee77fc3dbc316c40dde95bed784ff98"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/MainMenu.ts",
+          "bytes": 5302,
+          "sha256": "064f75574ddeef5662eb8646c64ee82269ad9e308e26f5444bdf0817ab4a1052"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/MenuInput.test.ts",
+          "bytes": 889,
+          "sha256": "1ee812472df9d7befdf13a3406524e102748437726e739aa783383abd5482f94"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/MenuInput.ts",
+          "bytes": 4274,
+          "sha256": "d3edd591d1186ee5e8c96c3562cc188f3725d33c369e02b05fb9a671a83f81ec"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/MultiplayerScreen.test.ts",
+          "bytes": 1826,
+          "sha256": "3f339a747cdadfcacda2ac992973e4b343a74253853be19a6b8abacbcca017d5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/MultiplayerScreen.ts",
+          "bytes": 6065,
+          "sha256": "eb16f958a7d0f1b48f244289298dc4c294478d4569e7842b3c965a283f9cec48"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/NameTags.test.ts",
+          "bytes": 1933,
+          "sha256": "d20d37b25cc291ce6b8c6fea9728447c187108d14f4ef4be3d94aa744af19984"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/NameTags.ts",
+          "bytes": 3382,
+          "sha256": "7bdee4e2773baa99379fcb4f1208384e91f342821a170b657f338c5d2324efbd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/OnlineHud.test.ts",
+          "bytes": 2225,
+          "sha256": "d0bfc157b03088d8f6578d4989415aead4162c1ed184122a5edba542b8f56d3a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/OnlineHud.ts",
+          "bytes": 4418,
+          "sha256": "67f87dd70ee91e949e1f89f919bb6663fc13ce1c5e557c8cd20eb566ce7f90ac"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/PauseMenu.ts",
+          "bytes": 6310,
+          "sha256": "041b329c73aa41a90f41cd1150847540fba02b00b2f773525a05f9be143106af"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/PhysicsReadoutPanel.ts",
+          "bytes": 529,
+          "sha256": "812133fb998a2f8f44598f3fd9a0107ef3c4186a471fe7f5a5f4b0822131f7aa"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/RideEndCard.test.ts",
+          "bytes": 2935,
+          "sha256": "5ebdc69f1b934a25f5b34d4426319acbeeee4a0072bea2cf813cb729fde6fe31"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/RideEndCard.ts",
+          "bytes": 4122,
+          "sha256": "f1b4f1f453bb993635b8433c2a99e32c91e5a6f869f00c2f08bcd58894c97e22"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/RideHud.test.ts",
+          "bytes": 3474,
+          "sha256": "f15ed4719ef9fd76f8ef7a0bf22ba75830a453dc87006c51759cdf97012659fb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/RideHud.ts",
+          "bytes": 10406,
+          "sha256": "f926b4dbe98ef9172378d2a631e369ac12e032792335a84c85bc8ac3c283956a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/SchoolScreen.ts",
+          "bytes": 2687,
+          "sha256": "bdf1722e1d52ba8fa43a367824ab1eeddde526824870d160dff652cffab12929"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/ScreenStack.test.ts",
+          "bytes": 1516,
+          "sha256": "a551ebcd05852a9295529c84242cb1b04554412240cdd905fe4541eed7dd6ffa"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/ScreenStack.ts",
+          "bytes": 1481,
+          "sha256": "8781481377605c4d0ce577bbb15dede179261e04304863e109607a018f83bf51"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/SettingsScreen.ts",
+          "bytes": 9020,
+          "sha256": "f6d022a3237feb12d7475c6aa853afbab9bfc68f9eb163eb396b1788ce601cba"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/SoundCheck.ts",
+          "bytes": 3648,
+          "sha256": "37551eef983b7b71f2d09e79afa5f2807a06bcabbe3fd43f1df0da5955c8dc9f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/SurfScreen.test.ts",
+          "bytes": 1746,
+          "sha256": "d8904cf64b201f7d751f3695250dfec403f52a841363673cc5564277cbeff343"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/SurfScreen.ts",
+          "bytes": 7508,
+          "sha256": "4ff834a2665af185fef70f7282db94f721d5e0c9bfb9c8d0def04fa38c1471d6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/SurferCard.test.ts",
+          "bytes": 2800,
+          "sha256": "9c2e97f65661c5ded4e01f0c3733648cb7fb19d4aa40249539c92a7d4a957e99"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/SurferCard.ts",
+          "bytes": 5277,
+          "sha256": "ee598f8cc2cdf1562d4e9ed706d7f394384de25d7c4f65793c3bea821319a933"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/WaveLabScreen.ts",
+          "bytes": 15973,
+          "sha256": "f8e6c1f539bcea1e5386f0a47f1a602185b192d21d05dfb282045de1cf01b03a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/accessibility.test.ts",
+          "bytes": 679,
+          "sha256": "6f7f9673ceda7bddeec40654d1045cbd3fc38ee03532cbdb18c7401b7800a457"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/accessibility.ts",
+          "bytes": 1031,
+          "sha256": "9fa988dc28e889208aa43240078f6dc9d453256851fac7f1481fd800dcc713d6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/dom.ts",
+          "bytes": 1304,
+          "sha256": "a7b8ff68cc957a04b3c2529eee8509147dfd692fd16072fc4539d6442f010ad7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/icons.ts",
+          "bytes": 2193,
+          "sha256": "6fcc247bb14ce3920d16578f8e9e5aaf17a1977bbcc6f94ba398fd190d25eb29"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/labPanelModel.test.ts",
+          "bytes": 4029,
+          "sha256": "d5a082f42fcb9c3360aaef76e7aa775e4109b5ea4fc2ea4325943ee02dc6163e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/labPanelModel.ts",
+          "bytes": 4623,
+          "sha256": "e8dc724c7576351e9e21ea43b2a07379e1d9cef240b499062ea174ad2a2d1047"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/lessonDiagrams.test.ts",
+          "bytes": 995,
+          "sha256": "769facba403cc1a270ad4056bab33256206c501573d82a06571808c303a1a787"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/lessonDiagrams.ts",
+          "bytes": 4404,
+          "sha256": "d8583f11d56c4192cc06723e94157cccb236677db05f297d4b2579f74e220bbf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/oncePerFlight.test.ts",
+          "bytes": 914,
+          "sha256": "bb5eb9cd394b5e3b2c0793ea8970e88e6cb19d4dfd9ddd5aa1e4a14953c59040"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/oncePerFlight.ts",
+          "bytes": 503,
+          "sha256": "e72767fbab24c1ae3b2ebb98ac7d388252ce4124abe56bc1218e78346c3f6540"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/ridePrompt.test.ts",
+          "bytes": 2158,
+          "sha256": "1488b258e8c0a47d59745e2d3db3f9bed205ca945ab64adedd6cbb0c2b6b15e1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/ridePrompt.ts",
+          "bytes": 1198,
+          "sha256": "b864ecd3755040fa03d2ac15860573a761f037fa1287e04687463695003479d2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/schoolModel.test.ts",
+          "bytes": 3269,
+          "sha256": "8d7c0f9682221775fce83268be2387f32bd78f655c0c5a1d81cd21c3b95104b5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/schoolModel.ts",
+          "bytes": 3447,
+          "sha256": "1f51fd1f89919eedfa743716967ed5ffdd748ac69d692c08eceebb847c869b15"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/settingsModel.test.ts",
+          "bytes": 11960,
+          "sha256": "f6140088bcefa005edd61022530ef495f8003f39e4a669b0e01268f8d00f3234"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/settingsModel.ts",
+          "bytes": 12177,
+          "sha256": "7eb2ec326f93b48039b263871b449769ea27ef6468c6eee94e460bd3654e8de2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/spatialNav.test.ts",
+          "bytes": 1045,
+          "sha256": "17f4000315053553a71900315d6558334b427c8152858cd3a40e8748fa6eb432"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/spatialNav.ts",
+          "bytes": 1358,
+          "sha256": "2decc0c64de2a3e03ad457482db1199268f00cdc1b61bb91687bef85d34d71c3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/strings.test.ts",
+          "bytes": 477,
+          "sha256": "99dc80b1d87bdbe1eaa8db7347493aa174e33f36daaf78084f859cfd309da8df"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/strings.ts",
+          "bytes": 25504,
+          "sha256": "52a264b509f229871384639499306df5fea50777ed2c1400efbb1ac6090863b6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/surfHeight.test.ts",
+          "bytes": 2193,
+          "sha256": "5ca74535c9e6f3157a62e99dc24acebe40899067ecc5c9b33f84fb735cb14df1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/surfHeight.ts",
+          "bytes": 3159,
+          "sha256": "e5e475b14f1cd3660253e844722c52a0ca84c32249006e195f07f04ccb73e596"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/ui.css",
+          "bytes": 34930,
+          "sha256": "958e109c0dc341597fa653aac2d0ca533a90a444ffec0227629fae570a2b8f19"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/units.test.ts",
+          "bytes": 641,
+          "sha256": "ed2ca1c92d621939fb516f59fd1a66ec887d2724a1a4a7f1aa4867044fe5a9f4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/ui/units.ts",
+          "bytes": 1267,
+          "sha256": "b7b3393a63e25e562aa50e513aadd2bb55a64e58c6403b1378194517fb8428f0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/AdvectionStencil.test.ts",
+          "bytes": 4619,
+          "sha256": "55efae0a9be92ba0b5564519efab53998f1eab63413062d441c72d5081ee883f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/AdvectionStencil.ts",
+          "bytes": 2316,
+          "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/AerationField.test.ts",
+          "bytes": 9308,
+          "sha256": "027cea3e1264ab69a6be58b876f0829f026fad27549d71586cff252139610c26"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/AerationField.ts",
+          "bytes": 13174,
+          "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Bathymetry.test.ts",
+          "bytes": 21867,
+          "sha256": "809d8ca1362fdebba746379db8c3b675e6d1e85c700a4fb9784f1fc3e29d32df"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Bathymetry.ts",
+          "bytes": 18386,
+          "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/BoussinesqSolver.test.ts",
+          "bytes": 38271,
+          "sha256": "dcef4ec84aa4ac19cb78e3835925a8d2708765c6bb156a2898f16efcc61d1c07"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/BoussinesqSolver.ts",
+          "bytes": 38627,
+          "sha256": "c1d87564677e35ece932831139426e31f19b69490d961dccaf8b8e665e3e0910"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Breaking.test.ts",
+          "bytes": 6984,
+          "sha256": "83ca7b329af36a5be1add7fbf877e58f286913ffeeff40592e184a2b20bd050c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Breaking.ts",
+          "bytes": 12851,
+          "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/BubbleCloud.test.ts",
+          "bytes": 6354,
+          "sha256": "418195224cd71e53919d1648ba00591a4a2d853a3403321dad2a25200a06fab7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/BubbleCloud.ts",
+          "bytes": 5786,
+          "sha256": "d8660d57adbe0215ea3602af7a1278637a8619d182fd28d6179a4fbd3010a502"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/CrestKinematics.test.ts",
+          "bytes": 3781,
+          "sha256": "036c7a35353c1e6c7d640366d8657faf50d50c4dd7232fb00cfd9762895da813"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/CrestKinematics.ts",
+          "bytes": 5019,
+          "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/FarFieldProfile.test.ts",
+          "bytes": 2898,
+          "sha256": "9847c5345636145264ce2685cfd31069ef2ab7cb8092b66f098b6efbcb3f6fa6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/FarFieldProfile.ts",
+          "bytes": 7291,
+          "sha256": "526b8972ed5aec1e300daf4b927bbb927e0c9a9df8b5442ed6217065f1c18c4d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/FoamField.test.ts",
+          "bytes": 7736,
+          "sha256": "a1970ae1b7f39ba799013631ec7ca49524965771eef722076a12b6bcaa61d797"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/FoamField.ts",
+          "bytes": 8686,
+          "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Overturn.test.ts",
+          "bytes": 10174,
+          "sha256": "dc0742e315b39cc44d484d14f23d511c9c46e6cbbfc1d51cd8c448d7bcc01b47"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Overturn.ts",
+          "bytes": 10648,
+          "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/PlungingLip.test.ts",
+          "bytes": 62993,
+          "sha256": "3b14a4e5a509073ff46e302151ee30435fd51f209cbcdcdd05fd193abf3ffca5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/PlungingLip.ts",
+          "bytes": 67993,
+          "sha256": "4030ccd00423d5fc12a9903412239068b1da5f25adbf3d8165d1baabdd7e0b4b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/PlungingLipSweptVoid.test.ts",
+          "bytes": 4068,
+          "sha256": "c85478ca2fd5bcde663380abb237e73a6c22ebbcedf097f7a2bdb536946541e8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Refraction.test.ts",
+          "bytes": 1394,
+          "sha256": "975e48be618d9a90e61e534be737c3a278b49379a100a405bf0379465c93349e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Refraction.ts",
+          "bytes": 5965,
+          "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Rideability.test.ts",
+          "bytes": 3000,
+          "sha256": "c2d256619ccb186878d71b39003874bdfcc0ebbc90f31009773f9eb88a289291"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/Rideability.ts",
+          "bytes": 4715,
+          "sha256": "276e10b559f660d34de3887fa38a651521419f7dff5b2e03a69c37eb24265c4f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SeaState.test.ts",
+          "bytes": 7556,
+          "sha256": "e429b78bf7c3480aa08a1e3a2e8d48013a67c4802b07a1941f16db2ebba6fdd0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SeaState.ts",
+          "bytes": 8739,
+          "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SeaStateBoundary.test.ts",
+          "bytes": 3248,
+          "sha256": "b02a57e32b6a7b40b3b7725a83d727af6468a39654d61f5bee449833c1e4f9de"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SeaStateBoundary.ts",
+          "bytes": 5460,
+          "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/ShallowWaterSolver.test.ts",
+          "bytes": 13617,
+          "sha256": "4fc1369aa6a3336fa5e3fcc9f2b449b917a36ac6a0c51b2a4cc09cbe99f19a3a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/ShallowWaterSolver.ts",
+          "bytes": 33545,
+          "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/ShallowWaterValidation.test.ts",
+          "bytes": 7548,
+          "sha256": "d5cbb58911a6b33a70fb26d9cda78e7c22ea4cad0c5749f10e562a0611bc9a2d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SideFeed.test.ts",
+          "bytes": 8036,
+          "sha256": "5ff5dfdbd6b66cf31d89e499a44b2009f23dff9009422dc0b49a3a15c7f638a8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SideFeed.ts",
+          "bytes": 10038,
+          "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SprayCloud.test.ts",
+          "bytes": 24248,
+          "sha256": "32097fce02b22823f51b3f946bac74d739be16812f4c52c45e42bdce66494312"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SprayCloud.ts",
+          "bytes": 25478,
+          "sha256": "43fb50e67f430eeefe062bd5125a6b2e35725a806c68b0c6ea7a5ae8dd530f74"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/StormSwell.test.ts",
+          "bytes": 2737,
+          "sha256": "5110795b0b45815669bf1ff5108adb13cc5d12bc9bba45c83affd6fa26b93c79"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/StormSwell.ts",
+          "bytes": 5863,
+          "sha256": "f13b70386b369aa11f11c990dcacd4caeb467f9f1a699ad57a26dd3eeb3b46eb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SurfMeter.test.ts",
+          "bytes": 2657,
+          "sha256": "e4a26067a5873e25302003032a7886c3904de7a2b61e9134388a6dcc2facf95d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SurfMeter.ts",
+          "bytes": 3170,
+          "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SurfZoneRunner.test.ts",
+          "bytes": 35301,
+          "sha256": "76f3a16434add7378c18526cd5f6b4a75d9f05f807e6e6322bf1b051aad4883c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SurfZoneRunner.ts",
+          "bytes": 40862,
+          "sha256": "da95505036f34caf0ba1ab1db026414add85f4185a8d5927db7dca8f11740c4f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SurfZoneSimulation.test.ts",
+          "bytes": 85780,
+          "sha256": "58d44cfc1f7db444b5d51239fb4901e8fe5eefb7fb0d83e91e30fef85ec3a690"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SurfZoneSimulation.ts",
+          "bytes": 71135,
+          "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SwellReadout.test.ts",
+          "bytes": 1635,
+          "sha256": "c96cc78adededc041fff660ee417d9c28da4cdef425b9aafd2e30a93da490bb0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SwellReadout.ts",
+          "bytes": 2110,
+          "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/TubeShape.test.ts",
+          "bytes": 3055,
+          "sha256": "d6bce5b150762c6e0f22c7eb1e6224fbd953df5ed26f6614eb7d5dab8257971e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/TubeShape.ts",
+          "bytes": 1069,
+          "sha256": "4c89a5ac14c84ff91f01d41217c589517dbf741d2db081d087ee82790fb2c405"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/BreakingFront.test.ts",
+          "bytes": 52882,
+          "sha256": "e3c815d4e4cadca59826e7b42a99ab7cb71282211a35d13eda9d82aa5307905a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/BreakingFront.ts",
+          "bytes": 40421,
+          "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/ClockLinkPrune.test.ts",
+          "bytes": 6728,
+          "sha256": "7c705f44f3f24bc0619d1e3ac12bad5dc4e088f79a9f7e21adbe96f2739c1a75"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/ProfileLibrary.test.ts",
+          "bytes": 12626,
+          "sha256": "6abb8c3457534fcbe38668f305aea145efc7f12a6a90b14373a064ed66e638de"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/ProfileLibrary.ts",
+          "bytes": 28989,
+          "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/SweptCrash.test.ts",
+          "bytes": 28044,
+          "sha256": "1b887fb4082f819884d7112439ec34fdf9cdd4555638e6d03f16ef01a58d4d63"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/SweptCrash.ts",
+          "bytes": 33689,
+          "sha256": "190bbd5c7101874cc6ad3788b3ddc89d9f27ca4d1341194468942b85479f77b8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/barrelLibrary.test.ts",
+          "bytes": 3322,
+          "sha256": "8757acd54ea4ffba192c1c7992aac80c7ba46b03b31e23904e4626990551fc47"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/barrelLibrary.ts",
+          "bytes": 2301,
+          "sha256": "064d825cd17e00b58e4dda789b7f28dcc81a68b12ebd99b3b28690261eeb30eb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/barrelLibraryIndex.ts",
+          "bytes": 1662,
+          "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/barrelSpots.ts",
+          "bytes": 9578,
+          "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+          "bytes": 15005,
+          "sha256": "d1123ae052d97860826a7f6eeb69a99d26f8a3249d264817486c75d4ba354dc8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/boundedCDemand.test.ts",
+          "bytes": 12492,
+          "sha256": "aab93fe4aea1b8facf736adbe8348b0bc1e7d3e48d736bbdfbda0e13c384aa7a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/boundedCProfile.test.ts",
+          "bytes": 10917,
+          "sha256": "82448f329efa0fef4817c38dc8e5a6dbd201dd065f6a0c10a202499df53b3ae1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/boundedCProfile.ts",
+          "bytes": 18088,
+          "sha256": "0dba650afc9844df79c1beb61319bddbc257562c0f93ff083fe3838e0cebbd98"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/boundedCSweptCrash.test.ts",
+          "bytes": 4478,
+          "sha256": "560e2575240dda8aba52e8a9910cb7ab1f051d062365c1ebfff85c9058773fe8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/carrierSupport.test.ts",
+          "bytes": 31297,
+          "sha256": "5a295441577d5f0eac28b8ce86a15e04fe70d2b1aa579ecef8f6428d536cb3cf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/carrierSupport.ts",
+          "bytes": 5898,
+          "sha256": "7555e0452f5bd0824b051d4165c17c1c2caca8373eb9d291cc5f479ac98d52ca"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/caseFromLibrary.test.ts",
+          "bytes": 6784,
+          "sha256": "22149a1ae8d69d04c0c490ad59f7a30706907277f3cf0cbf33aaa9e3b5ccd4ee"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/caseFromLibrary.ts",
+          "bytes": 9123,
+          "sha256": "3261f0208e71e7d80c03d9f6b9b5ba4d831dacc3dcb01aaa4c9244c19bc4640b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/crashCurve.test.ts",
+          "bytes": 12802,
+          "sha256": "9c6759ffbd1ec6d1d24e048bd71b90d4936a89acb1c78146f5ef319de19519c2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/crashCurve.ts",
+          "bytes": 17446,
+          "sha256": "11fcdad4fdaa8f214a9682edcd3a3e2705955be463d482df91713c097e100793"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/crestOnset.test.ts",
+          "bytes": 4909,
+          "sha256": "0134b88da96627835545eeee1afb0f33ca780832912210d16e0a0dda26ea2b93"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/crestOnset.ts",
+          "bytes": 4651,
+          "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/crestRays.test.ts",
+          "bytes": 11748,
+          "sha256": "8fc206db160795d29b49d118bf31427e624e1d521858dec51df45b9557fc9397"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/crestRays.ts",
+          "bytes": 17776,
+          "sha256": "f1ad5f7a46f03efd9d6d59e4e99f46e90c652d9a53f683f2839bfeb67358c9de"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/everySpot.test.ts",
+          "bytes": 7424,
+          "sha256": "5cf64ac2690eba39e657cd56e1d5011a65a8b99fa18ce21093b5bec91260c885"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/frontRecords.test.ts",
+          "bytes": 1686,
+          "sha256": "c6dd6d453ab45fb30bfd5db71b7f24b6d6b1329c6a1fe17a519b6cbe602e4899"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/frontRecords.ts",
+          "bytes": 1941,
+          "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/heldOverturn.test.ts",
+          "bytes": 4030,
+          "sha256": "0ad85b0c9e73ae04fcf63447377d3b1aeb4315dc3eb35944fa53830182979c75"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/heldOverturn.ts",
+          "bytes": 4886,
+          "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/lipSheet.test.ts",
+          "bytes": 3926,
+          "sha256": "095833d7be04d0f1565859eb779b819a315902818e84be7f0452f1382205224f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/lipSheet.ts",
+          "bytes": 16305,
+          "sha256": "b932aadcaa5fa6e1d1eb067bece4bb658e35e3dfa52c56d688634b8408fd453e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/nodeBarrelCases.ts",
+          "bytes": 498,
+          "sha256": "feb3e71cc206a2bd0b6bc1eccf727abeb89fdac36286e3df6ab90c6d437a4bd0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/ordinaryContact.test.ts",
+          "bytes": 7880,
+          "sha256": "2903dfdac9a3c0eb5343338ccb889e95691a87ce4dd1f95bc1bf3e9f3745c569"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/parallelCrestRays.test.ts",
+          "bytes": 11010,
+          "sha256": "7e688a29274bc5494db3822cd0032804cf48fc3ffedb8dd79e6570b659c0a0d5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/parallelPhysicalCoupling.test.ts",
+          "bytes": 21085,
+          "sha256": "31747285b71e31102910187462baa24dcbb65381d121953e4c742b8f3a2ee193"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/profileFormat.ts",
+          "bytes": 2251,
+          "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/retirementBoundary.fixture.json",
+          "bytes": 68627,
+          "sha256": "f780d82ea323836a1a52974de0cd3f6d64fe8b20d34a99d00f259b39c774c853"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/retirementBoundary.test.ts",
+          "bytes": 15508,
+          "sha256": "0e51ced05016122443d4b611ee8907bad29c98c214a503919dceabdb1802bf61"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/retirementCapPrefix.test.ts",
+          "bytes": 5975,
+          "sha256": "dcd3e054c68548b1b0a62d27ba555d920a9969c6991af71c48d0aa47efcc77b1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/retirementContact.test.ts",
+          "bytes": 18518,
+          "sha256": "f2ed1cfccb5d1eb7ff09e6fd4c9362b055599bca2e2ebc90a59450d8a0c0f761"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/sharedUpperRoot.test.ts",
+          "bytes": 18370,
+          "sha256": "cd5f7a77c91d39b28d577a94253b3ce109577502bd40f9aee5ef0477d4654757"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/sharedUpperRoot.ts",
+          "bytes": 3200,
+          "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/sliceClock.test.ts",
+          "bytes": 9113,
+          "sha256": "a55a7a93c315a5ac19577cea52f438c712e133bec1b85ad6fa9a1e622b06a23f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/sliceClock.ts",
+          "bytes": 12756,
+          "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/stableXSampling.test.ts",
+          "bytes": 9736,
+          "sha256": "621dd57a9fd600478a165aa70706490bbd4b87b380a87c81f94cb208af23d5fb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/stableXStress.test.ts",
+          "bytes": 14036,
+          "sha256": "3ae350249c8483b9ba50feafa32e4781a11b7564396c9ba62d4426a88521f33e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/sweptContact.test.ts",
+          "bytes": 24090,
+          "sha256": "7a63cff85cf812858d963025d1b05e6cb5178bc74553481ae0daffd9cd4e0fcf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/sweptContact.ts",
+          "bytes": 30393,
+          "sha256": "ba216e86040a5b82b79f898373ed78073f1905fb0078e9ead0093b9a3b3c7d4e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/sweptLoft.test.ts",
+          "bytes": 68023,
+          "sha256": "e1fb8c89e3f4f47973fa96d51bdd153367efc59f437fc264a0f78deb269545b3"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/sweptLoft.ts",
+          "bytes": 80645,
+          "sha256": "194ee78b57ef68b4449dc44bf8bd4bbd5b1c249efab382c0736dca6dbd650af2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/sweptLoftClearRoof.test.ts",
+          "bytes": 13644,
+          "sha256": "bcd3fd2f4a6d458c24ab0e0d0ffdf80fc3cee6fe55ca87af9b23826dfcb38ac9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/barrel/toyCase.ts",
+          "bytes": 5444,
+          "sha256": "42031fd435cbd1decbcb67a6c3df48858482dbc2ddb380476eabb1ffbc6f885d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/breakingAge.ts",
+          "bytes": 2861,
+          "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/dispersion.test.ts",
+          "bytes": 2500,
+          "sha256": "e0a4d5790e5e1a54687f9643ce3d6790eb778562755142f68fe48319f1261413"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/dispersion.ts",
+          "bytes": 3285,
+          "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/gpu/GpuBoussinesq.prefetch.test.ts",
+          "bytes": 12716,
+          "sha256": "cc396a7716049427ec63a36dd82aa45d7990e22d573aaa252e813c251f83796c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/gpu/GpuBoussinesq.test.ts",
+          "bytes": 14641,
+          "sha256": "75e57844d8dd160d82998162e332711fb6faa1d3296c3f3e8bfaeb5d0c8cfd61"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/gpu/GpuBoussinesq.ts",
+          "bytes": 23863,
+          "sha256": "41e212604f0d7b889445edb17a05f38edf5044f66dceaa9eddaee4ebf69d8094"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/gpu/boussinesqWgsl.test.ts",
+          "bytes": 5804,
+          "sha256": "3d084a72ea7dbe55fbbafce26724e498b416a384332ecfe6696df4f48283540e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/gpu/boussinesqWgsl.ts",
+          "bytes": 38276,
+          "sha256": "1b9f973616605f8e3d71e99d599f73497839f3d66bdbfc0bed320545518f173f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/gpu/webgpu-env.d.ts",
+          "bytes": 40,
+          "sha256": "039706dee4c12a5f855fe20b669865a5af1da6e9add02e461a188821aa7a36d1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/ledgePeel.test.ts",
+          "bytes": 2441,
+          "sha256": "bdb97e9f8c6bf08d634bbecbf702db135575ca098b09f68279389d481e0b3613"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/ledgePeel.ts",
+          "bytes": 3349,
+          "sha256": "83485e2cadc99750badf833fa9e4d6d54a3404557092d781615b91cd2f75b93b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/particleBudget.test.ts",
+          "bytes": 1491,
+          "sha256": "d2a4ab78924056efb88cf095b0c34172fcfff6810426c6ab7fa993742fd425c4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/particleBudget.ts",
+          "bytes": 2109,
+          "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/particleSources.ts",
+          "bytes": 788,
+          "sha256": "76e2b38a5329a8f5b36d9373513d52cb42a92361b996287ac74d4e5458c96cb0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/particleTestSupport.ts",
+          "bytes": 2109,
+          "sha256": "31ff0524c9172aebc86b246939c2a7db70f77892f576ce30aaa8a2cd0294da15"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/pool.test.ts",
+          "bytes": 3848,
+          "sha256": "6db0dfecd4eb853f57f1983fddf28d1bed96d2ce17f5fa3b2460ca83a52c8fad"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/pool.ts",
+          "bytes": 11917,
+          "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/everySpot.probe.test.ts",
+          "bytes": 12827,
+          "sha256": "e1e48a9154852ed641854254a072b534d677e747184c3d7f0597c73ff75fdeb1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/fastFrontDump.test.ts",
+          "bytes": 10325,
+          "sha256": "3bcb65c792910fab1bf9f87ae6a8f0bb403ad0a805c4e7b8d5bed657afd3dc2f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/fastFrontDump.ts",
+          "bytes": 6953,
+          "sha256": "6a1aafb4727afa8e6473115edc7e0c12e2b3858f2f37d724c8d75914b4564791"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/kennedyLag.probe.test.ts",
+          "bytes": 4543,
+          "sha256": "8c8bdd82bc9a8806ed05cfa292cec0f538605d26f59407757f78471d88ff8999"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangBlowup.probe.test.ts",
+          "bytes": 2363,
+          "sha256": "239624680e631ee9fe0e6ed15b01866fe9ad2cdbdf996a7237f1cf52cee37183"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangContact.probe.test.ts",
+          "bytes": 13051,
+          "sha256": "e5cb9489e40a8288ff72e211c5e094e6b774f13e63f490fefa53cf06b7c4eeb9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangCrash.probe.test.ts",
+          "bytes": 71716,
+          "sha256": "82e13645292ced98cde2097351474ae5032229dfbe9d7aba5c4fb8430a900247"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangCrest.probe.test.ts",
+          "bytes": 2779,
+          "sha256": "f229af7963ca9b92297b4f0893b35b8aaeea51d0cea70db8ed83b92bf92629da"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangCurl.probe.test.ts",
+          "bytes": 9740,
+          "sha256": "692b2f9aba803be423340e7e5f22676cc4e0e15135d3c980f70ab5c3be1a66cf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangFlat.probe.test.ts",
+          "bytes": 2916,
+          "sha256": "8457502ac91842e859d87463d90991610f60e1438027bcf6adfc3082ac8436f6"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangFront.probe.test.ts",
+          "bytes": 11313,
+          "sha256": "b538d924dc149796b9a0ec6e2540035f6b0670c78079a65e9e142a18744e3596"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangFrontCost.probe.test.ts",
+          "bytes": 2767,
+          "sha256": "bfa4e1a96f004ea31b95b763dd9fc37f62c4438f13d8e12e672e6f88030f219e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangFrontGap.probe.test.ts",
+          "bytes": 59600,
+          "sha256": "b4b60928e91ca5b5139e1d87aa00a793146d38c09b174caeee22e44e5ede3475"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangFuse.probe.test.ts",
+          "bytes": 4045,
+          "sha256": "ca54090a11f68b6d01a161336d2275b18ed78ebb36cbb3536a56269e8460b5a8"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangJumps.probe.test.ts",
+          "bytes": 8077,
+          "sha256": "31c10e108efd3293976450bf1409930ec2d2b61306260ee4000ebc4f402d068e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangLoft.probe.test.ts",
+          "bytes": 8149,
+          "sha256": "71b8de198b03c1b6525e718aa14c9b229c62c3fe20de7f4d8bdb179439f8a6cb"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangPeak.probe.test.ts",
+          "bytes": 5722,
+          "sha256": "92db03f808a58dc40c0b1b0a1a031ab953e08fa3135311fd87d7875f54edd1ef"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangPeel.probe.test.ts",
+          "bytes": 6076,
+          "sha256": "3c7d35359c5ca84f2196d0afbe452884a20e8eb4b229ebe7043d7cd97c680946"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangPeelPair.probe.test.ts",
+          "bytes": 6870,
+          "sha256": "761ef522855e227706b000d0f19f26f6ebe15f4a72a70720daa1d755af4ed83c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangPhase.probe.test.ts",
+          "bytes": 5564,
+          "sha256": "067c696fb3810266815b5e86fef9de009cee8ecea05c763a676118216c14f066"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/padangWaves.probe.test.ts",
+          "bytes": 6765,
+          "sha256": "d299c7ccda79b86c897c51f33420227ca8bb5d42bf48f46e7919a262d6a44e02"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/periodicOnset.probe.test.ts",
+          "bytes": 5853,
+          "sha256": "5834bc04680e259b3b1a62aafe0ee70ce5054031a244f1d75eee51316a84609f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/pool.probe.test.ts",
+          "bytes": 13480,
+          "sha256": "ba2ea4cc115ac4118362f0f600f04bd1c9fe19f13e53df01c047935901319262"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/poolFlow.probe.test.ts",
+          "bytes": 29287,
+          "sha256": "425cf83da2d910023c55c41f51e4ffd1ae5cbbcc60e54081a97ffe993cc604a7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/poolSize.probe.test.ts",
+          "bytes": 1617,
+          "sha256": "34018c7d2fbf6ebb394adf16b3131df4b348dc921af307ebbf6edcf75629edae"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/probes/spotOnset.probe.test.ts",
+          "bytes": 7177,
+          "sha256": "fba05c2be1d067fe074b3362e55eeaaa8ac8267c72e8fc7017ddc433ff3db2b5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/random.ts",
+          "bytes": 424,
+          "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/shallowWaterTestSupport.ts",
+          "bytes": 1664,
+          "sha256": "cd22e4eb0f5cb1a8ba94f3dababcc883898732ad92131f0d1a164fd906c61a64"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/sizeReport.test.ts",
+          "bytes": 3682,
+          "sha256": "1bb90dcf2f6ca1e90f9f791ae65b7a39fcc57a1c06c8fb98c20242bc41fe669b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/sizeReport.ts",
+          "bytes": 7995,
+          "sha256": "07314a1761121fb7020780e876fb1126456a0012613a61f042df38967f1d678e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/surfForecast.test.ts",
+          "bytes": 3795,
+          "sha256": "fc4955d52f6e4c8905bf797f4f513da98fa4b480a331208d49a2b95c7195c9f7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/surfForecast.ts",
+          "bytes": 3914,
+          "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/surfZoneState.test.ts",
+          "bytes": 5156,
+          "sha256": "38b925affa880e7a75e0fda9caaf31eaff40523eab94487e7c20231137f18f06"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/surfZoneState.ts",
+          "bytes": 3955,
+          "sha256": "37e7e32130725dddd3885175ff75a703d9f6954920f6ebba417f59b2f5ce4cab"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/sweptEverySpot.test.ts",
+          "bytes": 3982,
+          "sha256": "22f9b2d5ce2c2dfa239a0eff28e98033f048c89dcc76ea644f4d8503eb4a0848"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/tubeTable.test.ts",
+          "bytes": 6362,
+          "sha256": "75f11187525d61b0f0fa3b5c44b5bd08544425957a5e07b13796d0530e71d485"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/tubeTable.ts",
+          "bytes": 6876,
+          "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/warmStart.test.ts",
+          "bytes": 4654,
+          "sha256": "bae8bd510ac4ce3ea1c299f22d76147c4ef90f612005fcb9b29f173c87e6ade7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/warmStart.ts",
+          "bytes": 6238,
+          "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/zzFlat.test.ts",
+          "bytes": 3124,
+          "sha256": "32a0e26b4ecddf12611745d97e47dc29f08ec50de10e12e71b5752c8c897b107"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/zzProfile.test.ts",
+          "bytes": 3087,
+          "sha256": "fc89fdb95f35c652e901f967f4c6a7455d0b5ff5ee246d97c878f160a17ccf28"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/tsconfig.json",
+          "bytes": 550,
+          "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/vite.config.ts",
+          "bytes": 1169,
+          "sha256": "9cbc9a7527a2e4529a8630d6fffc59f4bb4e8291bf7ed49aade006fe1950d230"
+        }
+      ],
+      "assetPins": [
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/WorkerSurfZone-D9ZX-0op.js",
+          "bytes": 909653,
+          "sha256": "254b2ce56082171f80770502dd92bcebbd8ec28e882efada1b68b38910a8c51d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/bubbles-1.m4a",
+          "bytes": 256855,
+          "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/bubbles-2.m4a",
+          "bytes": 198252,
+          "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/distant-1.m4a",
+          "bytes": 883404,
+          "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/distant-2.m4a",
+          "bytes": 912023,
+          "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/lipJet-1.m4a",
+          "bytes": 62354,
+          "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/lipJet-2.m4a",
+          "bytes": 47086,
+          "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/lipRoller-1.m4a",
+          "bytes": 36688,
+          "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/lipRoller-2.m4a",
+          "bytes": 27855,
+          "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/paddle-1.m4a",
+          "bytes": 14645,
+          "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/paddle-2.m4a",
+          "bytes": 13593,
+          "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/plunge-1.m4a",
+          "bytes": 24612,
+          "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/plunge-2.m4a",
+          "bytes": 22031,
+          "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/roar-1.m4a",
+          "bytes": 419823,
+          "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/roar-2.m4a",
+          "bytes": 387857,
+          "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/audio/sounds.json",
+          "bytes": 3499,
+          "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/devStepping-Dio_4RjG.js",
+          "bytes": 320,
+          "sha256": "0c6e6c463b71785075f025823686a37cc882b7b1c931b2574ece33220593b82f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/index-C25ZLGSt.js",
+          "bytes": 582403,
+          "sha256": "49f9a89aeb5e99da8a46f728eac1147cbd144f93463054b1bb9cd7e0b226b4c9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/index-DA8NEfOT.css",
+          "bytes": 33213,
+          "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/jevRecorder-CkAz1WV9.js",
+          "bytes": 15917,
+          "sha256": "1702002c9f1682ede31b14cda480bc7076300fa47baa45339bc3099a344fd715"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/particleBench-BpQoHcoM.js",
+          "bytes": 10708,
+          "sha256": "5f0a494ce1cc30ad08e32ac323ecb29d137586edb9ac12f49bcbc488f45c9815"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/rideRecorder-CJ8tJbnz.js",
+          "bytes": 41108,
+          "sha256": "0599b316a4c2d40ff9e971866d7384d41679c5deb9f95d72c52234c80787c1fa"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+          "bytes": 681062,
+          "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+          "bytes": 2097202,
+          "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/skies/qwantani_sunrise_puresky.jpg",
+          "bytes": 357301,
+          "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/skies/qwantani_sunrise_puresky_1k.hdr",
+          "bytes": 2097202,
+          "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/skies/qwantani_sunset_puresky.jpg",
+          "bytes": 372349,
+          "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/skies/qwantani_sunset_puresky_1k.hdr",
+          "bytes": 2097202,
+          "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/skies/skies.json",
+          "bytes": 2266,
+          "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/surfZoneWorker-a_DCT54H.js",
+          "bytes": 490828,
+          "sha256": "908478807712f36447e1b01fc5f0df61def5b74c82b0281875cd7789af911f70"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/surfers/surfer1.glb",
+          "bytes": 1007368,
+          "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/surfers/surfer2.glb",
+          "bytes": 1595524,
+          "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/surfers/surfer3.glb",
+          "bytes": 1545008,
+          "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/surfers/surfer4.glb",
+          "bytes": 1229872,
+          "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/surfers/surfers.json",
+          "bytes": 1061,
+          "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/assets/waterSheet-36zhFid8.js",
+          "bytes": 11689,
+          "sha256": "2ce726be3c00ddcdd2e4aa595d282d3f8c289159ed6ab13488ac97bc3e700b6e"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/barrels/pad19-a20-l12.bin",
+          "bytes": 149848,
+          "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/barrels/pad19-a30-l12.bin",
+          "bytes": 163264,
+          "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/barrels/pad19-a45-l12.bin",
+          "bytes": 168424,
+          "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/barrels/periodic-padang19s-l12.bin",
+          "bytes": 181852,
+          "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/barrels/periodic-point21-a15-l12.bin",
+          "bytes": 106500,
+          "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/barrels/periodic-point21-a23-l12.bin",
+          "bytes": 128172,
+          "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/barrels/periodic-point21-a30-l12.bin",
+          "bytes": 173576,
+          "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/barrels/periodic-reef42-l12.bin",
+          "bytes": 193180,
+          "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/build.json",
+          "bytes": 49,
+          "sha256": "27752e9a67e8a7d19a6ff5340cb5854d727113c69144c053a66d7bceab507a93"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/index.html",
+          "bytes": 1626,
+          "sha256": "1f9af2ef314974fb8a3421dcdff7e8476a6ab97f2231ebf9fb9e2691779bc0c9"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/lessons/pool-s2-caught.sea",
+          "bytes": 2180693,
+          "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/lessons/pool-s2-pocket.sea",
+          "bytes": 2176894,
+          "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist/lessons/pool-s2-waiting.sea",
+          "bytes": 2232988,
+          "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+        }
+      ],
+      "rootBuildManifest": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-complete-build-result.json",
+        "bytes": 188075,
+        "sha256": "55f34f0651d1a4f45292de2e0a5968e193844616eb819414a9075140a7ba26ab"
+      }
+    }
+  },
+  "diagnosticModuleReferencePolicy": "root-rebuilt-original74-input-graph-against-contact-operands-source",
+  "priorPreparationReadiness": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/readiness.json",
+    "bytes": 5169,
+    "sha256": "ae396c0f31a170ad4aa860d5c1876f8faa9dabd1e56a460ecc36f547ba32d94a"
+  },
+  "priorFailedOwner": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/candidate-first-owner.json",
+    "bytes": 2995,
+    "sha256": "b14d4a2d4c9265af79e2d1db4fe6a4216e177a5bbf285db35baafdce8106f370"
+  },
+  "priorFailedReport": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/candidate-first/report.json",
+    "bytes": 127457,
+    "sha256": "924d970b3ceaf35d661e05f0629fb91038dbd7a0085a8100627eeb4d489cf0ec"
+  },
+  "priorV2PreparationReadiness": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v2-20261005/readiness.json",
+    "bytes": 10206,
+    "sha256": "58449817cf13de6fbde7ef6c1ba5f7ed20ecbf876f15ea3600746897dcbb7b45"
+  },
+  "priorV2FailedOwner": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v2-20261005/candidate-first-owner.json",
+    "bytes": 2501,
+    "sha256": "b34b71039423ecd0a0cbac44df8fe7e85e7e7d1caceab0d4542d6843fe27ffb3"
+  },
+  "priorV2FailedReport": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v2-20261005/candidate-first/report.json",
+    "bytes": 132324,
+    "sha256": "6a1c5c4dbc36a60d7b3db07ab523382857b1f0610fba780766f59e648f398dad"
+  },
+  "priorV3PreparationReadiness": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v3-20261005/readiness.json",
+    "bytes": 10934,
+    "sha256": "e8cf141f1194cf140f98816c453ac6e679f9e85527d7bed1439bcc60c69310e0"
+  },
+  "priorV3Owner": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v3-20261005/candidate-first-owner.json",
+    "bytes": 3439,
+    "sha256": "03a3c7567010e66aa650cada74316dd924d117808378f85f01631f541d2c29d6"
+  },
+  "priorV3Report": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v3-20261005/candidate-first/report.json",
+    "bytes": 3740690,
+    "sha256": "74d6425fdd10514943f1a5404c276e1ca984aa510990c9c79f2de3b6d27ed8e5"
+  },
+  "priorV3EvidenceReview": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-evidence-review-20261005/readiness.json",
+    "bytes": 7621,
+    "sha256": "583bedcc8b0ee5d9390fa7407335f6876026050f208a7cd841b5ee6c49548e96"
+  },
+  "priorV3EvidenceReviewReport": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-evidence-review-20261005/report.json",
+    "bytes": 131280,
+    "sha256": "28017f92c814994197727b954a2307ade3076c45b4da6c125ebb8eac7580a8dc"
+  },
+  "priorV3RootPixelInspection": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v3-20261005/root-pixel-inspection.json",
+    "bytes": 1336,
+    "sha256": "fa3f8eeeb8588804cc204c11e875dfad45c8a03c1a712e6198de13ab5d90197a"
+  },
+  "priorV4Seal": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/seal.json",
+    "bytes": 164954,
+    "sha256": "47966a7f5f7c02f39ca6e8220c4b4461af1ac580743069c8d15563a972c15dce"
+  },
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-complete-build-result.json",
+    "bytes": 188075,
+    "sha256": "55f34f0651d1a4f45292de2e0a5968e193844616eb819414a9075140a7ba26ab"
+  },
+  "priorV4Readiness": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/readiness.json",
+    "bytes": 12549,
+    "sha256": "b69df89fd02a7760aa3d3756ef259316612c8b22068e720fcbabe369c2daa464"
+  },
+  "priorV4Owner": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/candidate-first-owner.json",
+    "bytes": 3440,
+    "sha256": "806d8f550c2a26eb8c310de7d59f3c1170d372962f8bfb79418c30fdb84a0a2c"
+  },
+  "priorV4Report": {
+    "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/candidate-first/report.json",
+    "bytes": 10218530,
+    "sha256": "c411763b4b4c1fb6ff3c592085926f2ddba84e0bd0c2cddb0e4d471255048ead"
+  },
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source-readiness.json",
+    "bytes": 10999,
+    "sha256": "b7e78a1fd56906f54bce1b6892ef7ce62cd0422e0466e981bf232fa5abc1de12"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source-delta.json",
+    "bytes": 1762,
+    "sha256": "5fb428bad3ebf5d60b07184d0d49bbb540916ac5e71c6f44e85c978f154029e0"
+  },
+  "ordinaryRun": {
+    "purpose": "Measure exact missing projection and implicit axial operands on same V7 failure; no physics change",
+    "normalMenuFirst": true,
+    "publicReplayOverrides": {
+      "seed": 6238,
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "seedOnlyAttemptOccurred": false,
+    "allActualConfigFieldsMustMatchV4": true,
+    "initialClockBodyEqualityMeasuredNotAssumed": true,
+    "maxSteps": 2160,
+    "secondsPerStep": 0.016666666666666666,
+    "control": "Unchanged V4 first actual cue pulse and input overlay",
+    "stop": "First published fall/recover/separation/reset increase or horizon",
+    "noPlacementForcedCueSeedSearchOrRetries": true
+  },
+  "diagnosticRetention": {
+    "descriptiveOnly": true,
+    "full": "All non-prone or separation or latched-loss ride and pre-input view copies retain complete contactDiagnostics JSON",
+    "proneNumericTopFields": "All top-level numbers",
+    "proneSampleFields": [
+      "step",
+      "substep",
+      "feasible",
+      "inContact",
+      "flightTime",
+      "postureError",
+      "limit",
+      "supportXMin",
+      "supportXMax",
+      "supportZMin",
+      "supportZMax",
+      "copX",
+      "copZ"
+    ],
+    "proneSamples": [
+      "last",
+      "firstLimited",
+      "firstNonContact"
+    ],
+    "lossLatch": "Complete first finish loss until mount; report.firstContactLoss records first observed latch",
+    "allOtherInputClockBodyDetectorFieldsRetained": true
+  },
+  "checkpointEvidencePolicy": {
+    "checkpointLabels": [
+      "initial",
+      "first-pop-up",
+      "first-landing",
+      "terminal"
+    ],
+    "maximumPNGs": 4,
+    "maximumPNGBytesEach": 12582912,
+    "maximumPNGBytes": 50331648,
+    "movieTrigger": "First actual push output",
+    "maximumMovieAdvances": 240,
+    "maximumMovieRequests": 241,
+    "maximumMovieBytes": 16777216,
+    "maximumSidecars": 4,
+    "maximumSidecarBytesEach": 6291456,
+    "maximumSidecarBytes": 25165824,
+    "maximumDetectorMilliseconds": 20000,
+    "maximumReportBytes": 33554432,
+    "maximumNDJSONBytes": 25165824,
+    "measuredProjection": {
+      "priorRows": 1366,
+      "compactFixtureBytes": 875,
+      "fullFixtureBytes": 2138,
+      "allProneProjection": 20002150.27818448,
+      "diagnosticWindowProjection": 20608390.27818448,
+      "notAGuaranteeForDifferentValuesOrFrontInventory": true
+    }
+  },
+  "finiteOwner": {
+    "wholeSeconds": 360,
+    "commandSeconds": 348,
+    "internalNativeSeconds": 335,
+    "cleanupSeconds": 7,
+    "rootSealSchema": "pop-up-contact-v9-root-seal/v1",
+    "nativeSchema": "pop-up-contact-v9-native/v1",
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    },
+    "protectedStatesFinallyMustMatch": true,
+    "ports": [
+      4301,
+      9711
+    ],
+    "cliCheck": [
+      "python3",
+      "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/run.py",
+      "--arm",
+      "candidate",
+      "--check-seal"
+    ],
+    "cliRun": [
+      "python3",
+      "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/run.py",
+      "--arm",
+      "candidate",
+      "--run"
+    ]
+  },
+  "actualNewNativePending": true,
+  "productionAdoption": "No new observer/force candidate adopted; landing frame correction only committed and C integration checks pending.",
+  "priorV5Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/seal.json",
+    "bytes": 171732,
+    "sha256": "d87daae056e58accb831289886b8b1834ceffce5d1f007d4090bc8cc261e2fb4"
+  },
+  "priorV5Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/readiness.json",
+    "bytes": 8599,
+    "sha256": "d833920a3d09763c52553a2097d257c0476d9701c08b8e2cb3071dc42293b138"
+  },
+  "priorV5Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/candidate-first-owner.json",
+    "bytes": 3489,
+    "sha256": "424b0013050fdfccd86ee6a1f457e458946cb0dcd8541beebb4306e59359acc6"
+  },
+  "priorV5Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v5-20261005/candidate-first/report.json",
+    "bytes": 11648573,
+    "sha256": "f2260f0889e3e9657778dfa4a95913db440b34e7b4f8b4b3be83c4a6662e3239"
+  },
+  "priorV6Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/readiness.json",
+    "bytes": 9713,
+    "sha256": "601d870c3c1a97f838f5693e706122c8e6aef96a9dfd0ab8e2dde832972a9780"
+  },
+  "priorV6Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first-owner.json",
+    "bytes": 3481,
+    "sha256": "b6ebaf9afd303f9dbbe577f53ba2e2701408f545b6107e2b3a1900ffc8f95d91"
+  },
+  "priorV6Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first/report.json",
+    "bytes": 12502746,
+    "sha256": "33fd872c52564b5d061e43ea0d31233f830e1e675ac07876bb068cf68d44c683"
+  },
+  "priorV6Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/seal.json",
+    "bytes": 173338,
+    "sha256": "11577f905c1ea0215fed9711224733aed74dabc556314a0035e8eb581ecef2e0"
+  },
+  "pairedV6InitialComparison": "All recorded initialBody fields excluding workerStepMs, actual seaTime and all config fields; equality measured, no placement or controls selected from result",
+  "priorV7Evidence": {
+    "seal": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/seal.json",
+      "bytes": 167900,
+      "sha256": "c4d5d59d9c6e1d5405448385dc3c386666497a106a7d96b3419cfe6f1e9006ca"
+    },
+    "owner": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first-owner.json",
+      "bytes": 3482,
+      "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+    },
+    "report": {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/report.json",
+      "bytes": 12501789,
+      "sha256": "a03e780fb5cbbbb2b973930ebf722f13391c55a708850eff73619f65b991c495"
+    }
+  },
+  "observerAuthority": {
+    "file": "/private/tmp/tube-landing-demand-resolution-20261005/freeze.json",
+    "bytes": 2169,
+    "sha256": "b9b5d0752bb95d3db8a0b7828b6007e8c91cf278f5c0888e688b633f19d91f49"
+  },
+  "observerFields": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer-fields.json",
+    "bytes": 689,
+    "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+  },
+  "observerCPUProof": {
+    "file": "/private/tmp/tube-landing-demand-resolution-20261005/verification.json",
+    "bytes": 1873,
+    "sha256": "800a4a04c5260c9060458458fef5b92a72da3c756662d973300480467548571d"
+  },
+  "builtMetadataFreeze": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/built-freeze.json",
+    "bytes": 2420,
+    "sha256": "12628bb886d844cd413e4243bddd0503c84f5d4bd5610a83926f05f67641746c"
+  },
+  "priorV8Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/readiness-built.json",
+    "bytes": 14567,
+    "sha256": "7771da5422d8b116e906f6ab092e6b64d2bf8dfad3103bf1cb9c48e433f56902"
+  },
+  "priorV8Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-first-owner.json",
+    "bytes": 3364,
+    "sha256": "566f699f2102d6d8c019df31ead75c27304a95d11932007d92041c1ea1b79282"
+  },
+  "priorV8Report": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-first/report.json",
+    "bytes": 144538,
+    "sha256": "83f3865a9460059dd49af635b29875fcc08043824e7dde6f69aa78e3a1572de7"
+  },
+  "priorV8Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/seal.json",
+    "bytes": 186144,
+    "sha256": "616220b2a7cdc6bcbf3180414d1a0ff8aabfabb792e9e5f80fa52519c397c7ce"
+  },
+  "v9PreparationFreeze": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/freeze.json",
+    "bytes": 1579,
+    "sha256": "f8adce9d90039fc854d1d5faa120e6e2fb5870cef7c31c312a4814ed8fff5df6"
+  },
+  "v9ReusePolicy": "Exact V8 application source/build/dist/module reused without rebuild; only startup diagnostics/wait and finite owner limits changed.",
+  "priorV9Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/readiness.json",
+    "bytes": 17028,
+    "sha256": "7fe4d863db9459a4009b225fd4d163ad03012ab87a4f4e08bc050582f5b476f6"
+  },
+  "priorV9Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/candidate-first-owner.json",
+    "bytes": 3514,
+    "sha256": "0f34819f55708ae1a9faf85d563b9b317f1f1d888279610ca83c46d97ac2b686"
+  },
+  "priorV9Report": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/candidate-first/report.json",
+    "bytes": 10904369,
+    "sha256": "0cee6b0fd9419973dc3f00f791226af106fd39c803a3235f2511df74ceeef1cf"
+  },
+  "priorV9Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v9-20261005/seal.json",
+    "bytes": 182029,
+    "sha256": "3dbf5b754c9c104e48062810578952251824bebaddbbf12cd673a891c0a21d24"
+  },
+  "priorV9PrefixReview": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/prior-v9-prefix-review.json",
+    "bytes": 4274,
+    "sha256": "7f8dce789354b8e7a52657303952631616b22c1724ef0dd59f5665eb13ee0e25"
+  },
+  "v10ReusePolicy": {
+    "sameCandidateArmBuildDiagnosticModule": true,
+    "sameSourceCopiesAndAssets": true,
+    "noSourceCopyOrRebuild": true,
+    "onlyFiniteBudgetAndMetadataAdjustment": true,
+    "priorNativeTerminal": true,
+    "priorOwnedPortsClosedAndPlayerPortsPreserved": true,
+    "noPriorLandingForceEvidence": true
+  },
+  "priorV10Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/readiness.json",
+    "bytes": 19126,
+    "sha256": "3c57111b1b0ef177709d9a16437afecf24124cd45c25df2e368ccdf0dfc7efb4"
+  },
+  "priorV10Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/candidate-first-owner.json",
+    "bytes": 3366,
+    "sha256": "46d0e3d94054b407844b03c24df058f853d8d2ab70d2f313ef37335ec91b9508"
+  },
+  "priorV10Report": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/candidate-first/report.json",
+    "bytes": 153690,
+    "sha256": "e2788eb4f5d66a3040f1646c0487a1a3994136066911a72cbef913ecb6246648"
+  },
+  "priorV10Seal": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v10-20261005/seal.json",
+    "bytes": 184725,
+    "sha256": "7ec1285c5717dd0b5098dd3aa5bbef257dc8d4b4e9d032ffae12b95c2c355e0e"
+  },
+  "literalOperandListCopy": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/observer-fields.json",
+    "target": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer-fields.json",
+    "bytes": 689,
+    "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f",
+    "policy": "exact-literal-frozen-V8-operand-list-copy; owner validation metadata only"
+  },
+  "operandMetadataCheck": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/metadata-check.json",
+    "bytes": 789,
+    "sha256": "e5d968297e154341b583f7cac2e31da81760f9e29e2914df211b1d01cc980230"
+  },
+  "v11ReusePolicy": {
+    "sameCandidateArmSourceBuildModule": true,
+    "noSourceCopyOrRebuild": true,
+    "normalMenuWaitMilliseconds": 180000,
+    "previousWaitMilliseconds": 90000,
+    "onlyStartupWaitBudgetMetadataAdjustment": true,
+    "allInputsCueClocksCameraAndSimulationStepLimitsUnchanged": true,
+    "actualPriorStartupStateWasLoadingNotRide": true,
+    "priorNativeTerminalClosed": true,
+    "pendingNewHostProgressNotVisibleInOldPublicSnapshot": true,
+    "noPriorLandingForceEvidence": true,
+    "exactOwnerOperandMetadataCopy": true
+  }
+}

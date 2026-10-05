@@ -1,0 +1,121 @@
+{
+  "schema": "C-inner-rich-roughness-actual-review-freeze/v1",
+  "complete": true,
+  "frozen": true,
+  "inputPins": [
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/report.json",
+      "bytes": 9373701,
+      "sha256": "85a83a64e1ee08eeaf945cbe0e0a093e07792d6ad84a6bb9558265911ea6f9d4"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first-owner.json",
+      "bytes": 3350,
+      "sha256": "6f0d6a11e76b7af33a840e2c0255e33f4157486df516aaa9b54997c120400b1d"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/readiness.json",
+      "bytes": 12403,
+      "sha256": "c9dc47f4b9b4fde740d465e01d21d28d7a3f824adb4c2622346363d4f7b40dcc"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/helper-pins.json",
+      "bytes": 7562,
+      "sha256": "7bee7b8aa3e83997fde19c14abc073892c08be50bcbaa7fa528ddc28c1583b12"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/seal.json",
+      "bytes": 184910,
+      "sha256": "e5556b0620d681a0ec52dd88c3398e0115ef5149a49518de53f73183fc3dfc06"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first/report.json",
+      "bytes": 9372046,
+      "sha256": "634606b882547d71d7f735fbd645967570b3aec512d52a4dd6666620416267b2"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/candidate-first-owner.json",
+      "bytes": 3341,
+      "sha256": "88376592f8feaced2d630582ed46d2a99e3aacbec3686e3565b2ce88815515d4"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/readiness.json",
+      "bytes": 10740,
+      "sha256": "53ffc46d74b51bf9bf2d265b35d4e51a854592b82451790b8313afa67ad19242"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/helper-pins.json",
+      "bytes": 6948,
+      "sha256": "e45b142841e10b02a4cf019d5bce0f3b768e23b970366fde536b8637d61cdd80"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-water-glints-native-20261005/seal.json",
+      "bytes": 181577,
+      "sha256": "eddb76a7357e4bc46aa4f9a5c65261081f77b170ad9e18c05403f3a1bf18f471"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/readiness.json",
+      "bytes": 7075,
+      "sha256": "d117b20e11e4ab49ce434944474c1d5f547b8b88e165022f48ea6acceb20784e"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-pins.json",
+      "bytes": 96606,
+      "sha256": "98f2b64288a88e02718f00e8c4bed4a0e9f06bd98877ccd11ab2b3ceb46c6e4c"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/source-delta.json",
+      "bytes": 2378,
+      "sha256": "37f8b7cca3c1c8a572069027d1e08f5a0112d102a3ae886484a4263b4aa717e0"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/runtime.patch",
+      "bytes": 2799,
+      "sha256": "9f8ae97349e8cf183677b102d5bf9399337f6119c3405bb5c34227b210bd5c0a"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-20261005/material-test.patch",
+      "bytes": 4906,
+      "sha256": "da508ca148d20c6ef9e632906d03d08e324dca1488f921c45c0f72a396d14c03"
+    }
+  ],
+  "payloadPins": [
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/README.md",
+      "bytes": 3155,
+      "sha256": "80136a5b3b28f4f28fbbdde234b8b9511db29249ef9ebffc0f67e97aea3c29c2"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/AUDIT-PLAN.md",
+      "bytes": 1615,
+      "sha256": "1e9d7caf1ef31b1d2aaa60b17cb01b543743e79543da0893403c6cc6198349fa"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/analyze.py",
+      "bytes": 15053,
+      "sha256": "50707d44d2439cb069c124085dad5f50336a2fd1644b2d7d82ce8f237db7133e"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/analysis.json",
+      "bytes": 43776,
+      "sha256": "cfd96bf35094e9d4d874827e3412087cc24dd3e24b300689b1d413ed8dd323b2"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/complete-differences.json",
+      "bytes": 311310,
+      "sha256": "7dd840028271b13a917314018539be98d966847e70e7aec13e9741233e04f117"
+    }
+  ],
+  "observations": 71,
+  "advances": 70,
+  "completeSidecars": 2,
+  "arraysEach": 37,
+  "wholeSidecarsByteExact": true,
+  "rawFieldsExcluded": [],
+  "appearanceAccepted": false,
+  "adoption": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceHelperShaderGitChanged": false,
+  "testsBuildNativeRun": false
+}

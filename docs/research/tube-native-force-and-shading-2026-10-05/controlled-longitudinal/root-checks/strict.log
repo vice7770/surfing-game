@@ -1,0 +1,4 @@
+tests/landingCompliance.test.ts(33,57): error TS2322: Type 'RiderPhase' is not assignable to type 'PosePhase | undefined'.
+  Type '"recover"' is not assignable to type 'PosePhase | undefined'.
+tests/landingCompliance.test.ts(33,101): error TS2322: Type 'RiderPhase' is not assignable to type 'PosePhase | undefined'.
+  Type '"recover"' is not assignable to type 'PosePhase | undefined'.

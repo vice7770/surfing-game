@@ -1,0 +1,820 @@
+{
+  "schema": "pop-up-contact-v11-source-transition-evidence/v1",
+  "readOnlyInputPins": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/freeze.json",
+      "bytes": 5290,
+      "sha256": "22667d203b26858b2eb2d34aa948b25eeb76ec2ffac8a86f0ee39b479540972d"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/observer-samples.json",
+      "bytes": 410620,
+      "sha256": "fc7777d418266615b39a6a035392ad051ed1f7f9b63706afe1bd3699430a4fb6"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/landing-force-interval.json",
+      "bytes": 82391,
+      "sha256": "9bf3d7fadd175275cd951655057badf296e54ad36c3d8e5b033ac0234e8b4dca"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 146425,
+      "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SurfZoneRunner.ts",
+      "bytes": 40862,
+      "sha256": "da95505036f34caf0ba1ab1db026414add85f4185a8d5927db7dca8f11740c4f"
+    }
+  ],
+  "transition": [
+    {
+      "step": 1356,
+      "substep": 32,
+      "sample": {
+        "projectLocalX": -0.010335946092850278,
+        "projectLocalY": 0.5281701158695772,
+        "projectLocalZ": -0.1646558787552077,
+        "projectDeckY": 0.06689959043752793,
+        "projectHeight": 0.46127052543204927,
+        "demandLocalX": -0.022168479172245847,
+        "demandLocalY": 0.3864560597769931,
+        "demandLocalZ": -0.008565505389207688,
+        "legHeight": 0.4521616241523271,
+        "legLoad": 718.2080000003224,
+        "legStiffness": 44000,
+        "legDamping": 1254.5437417643116,
+        "legForce": 755.8804293608682,
+        "legRateAfter": 0.19261647171235793,
+        "specificForceX": 0.9650551078537035,
+        "specificForceY": 9.838465753429073,
+        "specificForceZ": 3.2737247190848753,
+        "postureRateX": -0.039982684842617446,
+        "postureRateY": 0.8253795268623346,
+        "postureRateZ": -0.6830501448927122,
+        "driveX": 0.0070642574728606335,
+        "driveY": 0.808258208371139,
+        "driveZ": -0.6670517409282554,
+        "carriedRelativeX": -0.018785862309031787,
+        "carriedRelativeY": 0.18379693111701,
+        "carriedRelativeZ": 0.008435087505700878,
+        "demandPositionX": -42.51059173570686,
+        "demandPositionY": 2.2092764884011618,
+        "demandPositionZ": -199.7245913647395,
+        "demandVelocityX": 1.7212376631015833,
+        "demandVelocityY": 0.8248658923363246,
+        "demandVelocityZ": 9.230197923480244,
+        "demandTargetX": -42.51054655056932,
+        "demandTargetY": 2.2153731638340908,
+        "demandTargetZ": -199.72460831932713,
+        "demandUpX": 0,
+        "demandUpY": 1,
+        "demandUpZ": 0,
+        "step": 1356,
+        "substep": 32,
+        "seconds": 0.0005208333333333333,
+        "elapsedStepSeconds": 0.016666666666666666,
+        "phase": "landing",
+        "phaseTime": 0.22916666666666602,
+        "phaseDuration": 0.48,
+        "popUpTime": 0.9499999999999864,
+        "feasible": true,
+        "inContact": true,
+        "flightTime": 0,
+        "postureError": 0.00035768659289842276,
+        "limit": "none",
+        "recentFlight": 0.0007051363032927102,
+        "recentTip": 0.00538161528477817,
+        "recentSlip": 0.00019177211917424718,
+        "recentImpact": 0.0004826711796676797,
+        "legExtension": -0.006096675432929022,
+        "legRate": 0.18379693111701,
+        "legRest": 0,
+        "demandX": -0.00017826126478937,
+        "demandY": 0.38562593876302603,
+        "demandZ": 0.03472317764545885,
+        "projectedX": -0.00017826126478936598,
+        "projectedY": 0.38562593876302603,
+        "projectedZ": 0.03472317764545884,
+        "appliedX": -0.00017826126478937,
+        "appliedY": 0.38562593876302603,
+        "appliedZ": 0.03472317764545885,
+        "peakNormalLoad": 1.5861551342913462,
+        "frontShare": 0.6897902103317769,
+        "relativeVelocityX": -0.243599729721232,
+        "relativeVelocityY": 0.9993910675856361,
+        "relativeVelocityZ": -0.6457652615635521,
+        "supportXMin": -0.13,
+        "supportXMax": 0.13,
+        "supportZMin": -0.649,
+        "supportZMax": 0.10100000000000003,
+        "copX": 0.016124154032664813,
+        "copZ": -0.15443216749098057
+      },
+      "derived": {
+        "axialImplicitLegPushNewtons": 740.4018024249966,
+        "axialForceTerms": {
+          "loadNewtons": 718.2080000003224,
+          "implicitSpringNewtons": 263.8395915721354,
+          "implicitDampingNewtons": -241.6457891474612,
+          "preparedSpringNewtons": 268.253719048877,
+          "preparedDampingNewtons": -230.58128968833117,
+          "preparedForceNewtons": 755.8804293608682,
+          "axialImplicitLegPushNewtons": 740.4018024249966,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": 741.9956347718268,
+        "requestedForeAftNewtons": -16.44577034727876,
+        "uprightFlightProjectionGuard": false,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      "rigidCarriedPointVelocityWorld": [
+        1.7329592679377546,
+        -0.16718924715182448,
+        9.888814576902798
+      ],
+      "landingCoupledMismatchWorld": [
+        0.018785862309031787,
+        0.0,
+        -0.008435087505700878
+      ],
+      "landingCoupledAxialMismatch": 0.0,
+      "perpendicularPositionCorrectionVelocity": [
+        0.017351092814351435,
+        0.0,
+        -0.006510561652248727
+      ],
+      "driveAlongUpMinusAuthoredPostureRateY": -0.01712131849119558,
+      "axialImplicitMatrixDiagonal": 73.66534396272446,
+      "tensileForceRateThreshold": 0.7722053165317321,
+      "combinedTrialBoardAxialMomentumChangeMinusRiderExternalImpulse": -0.2582005246973793,
+      "targetMinusPositionWorld": [
+        4.518513753737352e-05,
+        0.006096675432929022,
+        -1.695458763606439e-05
+      ],
+      "requestedWorldForce": [
+        -0.3422616283955904,
+        740.40180242501,
+        66.66850107928099
+      ]
+    },
+    {
+      "step": 1357,
+      "substep": 1,
+      "sample": {
+        "projectLocalX": -0.01026102768709366,
+        "projectLocalY": 0.5286547421877593,
+        "projectLocalZ": -0.16504577094355344,
+        "projectDeckY": 0.06690145800763354,
+        "projectHeight": 0.4617532841801258,
+        "demandLocalX": 0.03626245451693831,
+        "demandLocalY": -0.49414923525748755,
+        "demandLocalZ": -2.751460549238187,
+        "legHeight": 0.4525915923684821,
+        "legLoad": 712.6160477728744,
+        "legStiffness": 44000,
+        "legDamping": 1254.5437417643116,
+        "legForce": 736.4636654097591,
+        "legRateAfter": 1.0547513370268495,
+        "specificForceX": 0.9753532442678001,
+        "specificForceY": 9.761863668121567,
+        "specificForceZ": 3.2562080082429388,
+        "postureRateX": -0.03999800737086962,
+        "postureRateY": 0.825695836314011,
+        "postureRateZ": -0.683311909583702,
+        "driveX": 0.029101920509190502,
+        "driveY": 0.8096015258602165,
+        "driveZ": -0.6770843695092821,
+        "carriedRelativeX": -0.021755189792626695,
+        "carriedRelativeY": 0.1913191421652617,
+        "carriedRelativeZ": 0.010002069749635467,
+        "demandPositionX": -42.50969525902917,
+        "demandPositionY": 2.2097061962472258,
+        "demandPositionZ": -199.7197837222481,
+        "demandVelocityX": 1.7212352211664492,
+        "demandVelocityY": 0.8250390644426674,
+        "demandVelocityZ": 9.23067358344799,
+        "demandTargetX": -42.50964459989249,
+        "demandTargetY": 2.2157031473863174,
+        "demandTargetZ": -199.7198031962199,
+        "demandUpX": 0,
+        "demandUpY": 1,
+        "demandUpZ": 0,
+        "step": 1357,
+        "substep": 1,
+        "seconds": 0.0005208333333333333,
+        "elapsedStepSeconds": 0.0005208333333333333,
+        "phase": "landing",
+        "phaseTime": 0.22968749999999935,
+        "phaseDuration": 0.48,
+        "popUpTime": 0.9505208333333197,
+        "feasible": false,
+        "inContact": true,
+        "flightTime": 0,
+        "postureError": 0.0002253482299218379,
+        "limit": "flight",
+        "recentFlight": 0.0012241357331011795,
+        "recentTip": 0.005367618894017787,
+        "recentSlip": 0.0001912733623187541,
+        "recentImpact": 0.0004814158587125546,
+        "legExtension": -0.0059969511390916,
+        "legRate": 0.1913191421652617,
+        "legRest": 0,
+        "demandX": -0.6856731051957743,
+        "demandY": -0.19318811244714568,
+        "demandZ": -2.7034356534505406,
+        "projectedX": 0,
+        "projectedY": 0,
+        "projectedZ": 0,
+        "appliedX": 0,
+        "appliedY": 0,
+        "appliedZ": 0,
+        "peakNormalLoad": 0,
+        "frontShare": 0.6897902103317769,
+        "relativeVelocityX": -0.22054178898678467,
+        "relativeVelocityY": 1.2712604389906776,
+        "relativeVelocityZ": -0.4335161416447004,
+        "supportXMin": -0.13,
+        "supportXMax": 0.13,
+        "supportZMin": -0.649,
+        "supportZMax": 0.10100000000000003,
+        "copX": -0.01026102768709366,
+        "copZ": -0.16504577094355344
+      },
+      "derived": {
+        "axialImplicitLegPushNewtons": -370.9211758985349,
+        "axialForceTerms": {
+          "loadNewtons": 712.6160477728744,
+          "implicitSpringNewtons": 239.6944653131651,
+          "implicitDampingNewtons": -1323.2316889845742,
+          "preparedSpringNewtons": 263.86585012003036,
+          "preparedDampingNewtons": -240.01823248314568,
+          "preparedForceNewtons": 736.4636654097591,
+          "axialImplicitLegPushNewtons": -370.9211758985349,
+          "implicitSumMinusEquivalentFormulaNewtons": 1.1368683772161603e-13
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -948.7665316943761,
+        "requestedForeAftNewtons": -5282.804254537319,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      "rigidCarriedPointVelocityWorld": [
+        1.7138884904498854,
+        -0.1758816035828108,
+        9.897755883207637
+      ],
+      "landingCoupledMismatchWorld": [
+        0.021755189792626695,
+        0.0,
+        -0.010002069749635467
+      ],
+      "landingCoupledAxialMismatch": 0.0,
+      "perpendicularPositionCorrectionVelocity": [
+        0.019453108486231947,
+        0.0,
+        -0.007478005172742997
+      ],
+      "driveAlongUpMinusAuthoredPostureRateY": -0.016094310453794503,
+      "axialImplicitMatrixDiagonal": 73.66534396272446,
+      "tensileForceRateThreshold": 0.7643930813419525,
+      "combinedTrialBoardAxialMomentumChangeMinusRiderExternalImpulse": -63.223738337343065,
+      "targetMinusPositionWorld": [
+        5.065913668289568e-05,
+        0.0059969511390916,
+        -1.947397180401822e-05
+      ],
+      "requestedWorldForce": [
+        -1316.4923619758868,
+        -370.9211758985197,
+        -5190.596454625038
+      ]
+    }
+  ],
+  "allNumericOperandDeltas": {
+    "projectLocalX": 7.491840575661775e-05,
+    "projectLocalY": 0.0004846263181821353,
+    "projectLocalZ": -0.0003898921883457307,
+    "projectDeckY": 1.8675701056181104e-06,
+    "projectHeight": 0.0004827587480765172,
+    "demandLocalX": 0.05843093368918416,
+    "demandLocalY": -0.8806052950344807,
+    "demandLocalZ": -2.7428950438489794,
+    "legHeight": 0.0004299682161550411,
+    "legLoad": -5.591952227448019,
+    "legStiffness": 0,
+    "legDamping": 0.0,
+    "legForce": -19.416763951109147,
+    "legRateAfter": 0.8621348653144916,
+    "specificForceX": 0.010298136414096604,
+    "specificForceY": -0.07660208530750623,
+    "specificForceZ": -0.01751671084193651,
+    "postureRateX": -1.5322528252176282e-05,
+    "postureRateY": 0.0003163094516763776,
+    "postureRateZ": -0.0002617646909898186,
+    "driveX": 0.02203766303632987,
+    "driveY": 0.0013433174890774557,
+    "driveZ": -0.010032628581026715,
+    "carriedRelativeX": -0.002969327483594908,
+    "carriedRelativeY": 0.007522211048251681,
+    "carriedRelativeZ": 0.0015669822439345893,
+    "demandPositionX": 0.0008964766776884403,
+    "demandPositionY": 0.00042970784606399803,
+    "demandPositionZ": 0.004807642491385877,
+    "demandVelocityX": -2.4419351341009587e-06,
+    "demandVelocityY": 0.00017317210634282265,
+    "demandVelocityZ": 0.0004756599677460116,
+    "demandTargetX": 0.0009019506768339625,
+    "demandTargetY": 0.00032998355222657594,
+    "demandTargetZ": 0.0048051231072179235,
+    "demandUpX": 0,
+    "demandUpY": 0,
+    "demandUpZ": 0,
+    "step": 1,
+    "substep": -31,
+    "seconds": 0.0,
+    "elapsedStepSeconds": -0.01614583333333333,
+    "phaseTime": 0.0005208333333333315,
+    "phaseDuration": 0.0,
+    "popUpTime": 0.0005208333333333037,
+    "flightTime": 0,
+    "postureError": -0.00013233836297658487,
+    "recentFlight": 0.0005189994298084693,
+    "recentTip": -1.3996390760382879e-05,
+    "recentSlip": -4.987568554930808e-07,
+    "recentImpact": -1.255320955125135e-06,
+    "legExtension": 9.97242938374221e-05,
+    "legRate": 0.007522211048251681,
+    "legRest": 0,
+    "demandX": -0.6854948439309849,
+    "demandY": -0.5788140512101717,
+    "demandZ": -2.7381588310959994,
+    "projectedX": 0.00017826126478936598,
+    "projectedY": -0.38562593876302603,
+    "projectedZ": -0.03472317764545884,
+    "appliedX": 0.00017826126478937,
+    "appliedY": -0.38562593876302603,
+    "appliedZ": -0.03472317764545885,
+    "peakNormalLoad": -1.5861551342913462,
+    "frontShare": 0.0,
+    "relativeVelocityX": 0.023057940734447335,
+    "relativeVelocityY": 0.2718693714050415,
+    "relativeVelocityZ": 0.21224911991885165,
+    "supportXMin": 0.0,
+    "supportXMax": 0.0,
+    "supportZMin": 0.0,
+    "supportZMax": 0.0,
+    "copX": -0.026385181719758476,
+    "copZ": -0.010613603452572867
+  },
+  "implicitForceTermDeltas": {
+    "loadNewtons": -5.591952227448019,
+    "implicitSpringNewtons": -24.145126258970322,
+    "implicitDampingNewtons": -1081.5858998371132,
+    "preparedSpringNewtons": -4.387868928846615,
+    "preparedDampingNewtons": -9.436942794814513,
+    "preparedForceNewtons": -19.416763951109147,
+    "axialImplicitLegPushNewtons": -1111.3229783235315,
+    "implicitSumMinusEquivalentFormulaNewtons": 1.1368683772161603e-13
+  },
+  "inputRecords": [
+    {
+      "step": 1355,
+      "input": {
+        "paddle": false,
+        "popUp": false,
+        "steer": 0,
+        "trim": 0,
+        "crouch": 0,
+        "compress": 0,
+        "pocketReflex": false
+      },
+      "steeringControl": {
+        "requestedPilotSteer": 0,
+        "actualInputSteer": 0,
+        "targetLimitedSteer": 0,
+        "maximumAbsolute": 0.2,
+        "slewRatePerSecond": 0.4,
+        "standing": false,
+        "firstStandingInput": false,
+        "proneSteering": 0
+      }
+    },
+    {
+      "step": 1356,
+      "input": {
+        "paddle": false,
+        "popUp": false,
+        "steer": 0,
+        "trim": 0,
+        "crouch": 0,
+        "compress": 0,
+        "pocketReflex": false
+      },
+      "steeringControl": {
+        "requestedPilotSteer": 0,
+        "actualInputSteer": 0,
+        "targetLimitedSteer": 0,
+        "maximumAbsolute": 0.2,
+        "slewRatePerSecond": 0.4,
+        "standing": false,
+        "firstStandingInput": false,
+        "proneSteering": 0
+      }
+    },
+    {
+      "step": 1357,
+      "input": {
+        "paddle": false,
+        "popUp": false,
+        "steer": 0,
+        "trim": 0,
+        "crouch": 0,
+        "compress": 0,
+        "pocketReflex": false
+      },
+      "steeringControl": {
+        "requestedPilotSteer": 0,
+        "actualInputSteer": 0,
+        "targetLimitedSteer": 0,
+        "maximumAbsolute": 0.2,
+        "slewRatePerSecond": 0.4,
+        "standing": false,
+        "firstStandingInput": false,
+        "proneSteering": 0
+      }
+    },
+    {
+      "step": 1358,
+      "input": {
+        "paddle": false,
+        "popUp": false,
+        "steer": 0,
+        "trim": 0,
+        "crouch": 0,
+        "compress": 0,
+        "pocketReflex": false
+      },
+      "steeringControl": {
+        "requestedPilotSteer": 0,
+        "actualInputSteer": 0,
+        "targetLimitedSteer": 0,
+        "maximumAbsolute": 0.2,
+        "slewRatePerSecond": 0.4,
+        "standing": false,
+        "firstStandingInput": false,
+        "proneSteering": 0
+      }
+    }
+  ],
+  "allRetainedLandingAxialRequestedImpulseIdentity": [
+    {
+      "step": 1343,
+      "substep": 5,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 7.0976999697695575,
+      "attemptedAxialImplicitPush": 7.097699969771765,
+      "differenceNewtons": -2.2071233729548112e-12
+    },
+    {
+      "step": 1343,
+      "substep": 6,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -14.084311364704334,
+      "attemptedAxialImplicitPush": -14.084311364706792,
+      "differenceNewtons": 2.4584778657299466e-12
+    },
+    {
+      "step": 1344,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 509.43197774815206,
+      "attemptedAxialImplicitPush": 509.43197774816485,
+      "differenceNewtons": -1.2789769243681803e-11
+    },
+    {
+      "step": 1344,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 30.940438072542804,
+      "attemptedAxialImplicitPush": 30.940438072536583,
+      "differenceNewtons": 6.220801651579677e-12
+    },
+    {
+      "step": 1345,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 690.6984301983148,
+      "attemptedAxialImplicitPush": 690.6984301983124,
+      "differenceNewtons": 2.3874235921539366e-12
+    },
+    {
+      "step": 1345,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 454.7559681019596,
+      "attemptedAxialImplicitPush": 454.75596810196134,
+      "differenceNewtons": -1.7621459846850485e-12
+    },
+    {
+      "step": 1346,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 772.7326506730291,
+      "attemptedAxialImplicitPush": 772.7326506730286,
+      "differenceNewtons": 4.547473508864641e-13
+    },
+    {
+      "step": 1347,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1184.4584119162678,
+      "attemptedAxialImplicitPush": 1184.4584119162719,
+      "differenceNewtons": -4.092726157978177e-12
+    },
+    {
+      "step": 1347,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 955.6385915466408,
+      "attemptedAxialImplicitPush": 955.6385915466412,
+      "differenceNewtons": -4.547473508864641e-13
+    },
+    {
+      "step": 1348,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1297.8996631773432,
+      "attemptedAxialImplicitPush": 1297.8996631773405,
+      "differenceNewtons": 2.7284841053187847e-12
+    },
+    {
+      "step": 1348,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1030.614077518079,
+      "attemptedAxialImplicitPush": 1030.6140775180754,
+      "differenceNewtons": 3.637978807091713e-12
+    },
+    {
+      "step": 1349,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1321.9792149418981,
+      "attemptedAxialImplicitPush": 1321.9792149418988,
+      "differenceNewtons": -6.821210263296962e-13
+    },
+    {
+      "step": 1349,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1054.9257713905447,
+      "attemptedAxialImplicitPush": 1054.9257713905442,
+      "differenceNewtons": 4.547473508864641e-13
+    },
+    {
+      "step": 1350,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1317.900672324948,
+      "attemptedAxialImplicitPush": 1317.9006723249422,
+      "differenceNewtons": 5.6843418860808015e-12
+    },
+    {
+      "step": 1350,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1052.008992873957,
+      "attemptedAxialImplicitPush": 1052.0089928739546,
+      "differenceNewtons": 2.2737367544323206e-12
+    },
+    {
+      "step": 1351,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1301.3442882305467,
+      "attemptedAxialImplicitPush": 1301.3442882305458,
+      "differenceNewtons": 9.094947017729282e-13
+    },
+    {
+      "step": 1351,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1036.5890855230587,
+      "attemptedAxialImplicitPush": 1036.5890855230643,
+      "differenceNewtons": -5.6843418860808015e-12
+    },
+    {
+      "step": 1352,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1008.5298702974212,
+      "attemptedAxialImplicitPush": 1008.5298702974103,
+      "differenceNewtons": 1.0913936421275139e-11
+    },
+    {
+      "step": 1353,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1235.311974614028,
+      "attemptedAxialImplicitPush": 1235.311974614036,
+      "differenceNewtons": -7.958078640513122e-12
+    },
+    {
+      "step": 1353,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 964.7653481807411,
+      "attemptedAxialImplicitPush": 964.7653481807395,
+      "differenceNewtons": 1.5916157281026244e-12
+    },
+    {
+      "step": 1354,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1179.5970533668813,
+      "attemptedAxialImplicitPush": 1179.5970533668767,
+      "differenceNewtons": 4.547473508864641e-12
+    },
+    {
+      "step": 1354,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 904.5466554923447,
+      "attemptedAxialImplicitPush": 904.546655492337,
+      "differenceNewtons": 7.73070496506989e-12
+    },
+    {
+      "step": 1355,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1107.2659578899675,
+      "attemptedAxialImplicitPush": 1107.2659578899652,
+      "differenceNewtons": 2.2737367544323206e-12
+    },
+    {
+      "step": 1355,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 828.8595719426979,
+      "attemptedAxialImplicitPush": 828.8595719427203,
+      "differenceNewtons": -2.2396307031158358e-11
+    },
+    {
+      "step": 1356,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 1023.1298329211324,
+      "attemptedAxialImplicitPush": 1023.1298329211343,
+      "differenceNewtons": -1.8189894035458565e-12
+    },
+    {
+      "step": 1356,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": 740.40180242501,
+      "attemptedAxialImplicitPush": 740.4018024249966,
+      "differenceNewtons": 1.3415046851150692e-11
+    },
+    {
+      "step": 1357,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -370.9211758985197,
+      "attemptedAxialImplicitPush": -370.9211758985349,
+      "differenceNewtons": 1.517719283583574e-11
+    },
+    {
+      "step": 1357,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -223.87480224626134,
+      "attemptedAxialImplicitPush": -223.8748022462567,
+      "differenceNewtons": -4.632738637155853e-12
+    },
+    {
+      "step": 1358,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -234.3397513433378,
+      "attemptedAxialImplicitPush": -234.3397513433349,
+      "differenceNewtons": -2.8990143619012088e-12
+    },
+    {
+      "step": 1358,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -569.9035050585858,
+      "attemptedAxialImplicitPush": -569.9035050585815,
+      "differenceNewtons": -4.320099833421409e-12
+    },
+    {
+      "step": 1359,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -581.07277683631,
+      "attemptedAxialImplicitPush": -581.072776836309,
+      "differenceNewtons": -1.0231815394945443e-12
+    },
+    {
+      "step": 1359,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -939.8900585539973,
+      "attemptedAxialImplicitPush": -939.8900585539873,
+      "differenceNewtons": -1.000444171950221e-11
+    },
+    {
+      "step": 1360,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -951.9219774762148,
+      "attemptedAxialImplicitPush": -951.9219774762123,
+      "differenceNewtons": -2.5011104298755527e-12
+    },
+    {
+      "step": 1360,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -1341.9089831888825,
+      "attemptedAxialImplicitPush": -1341.9089831888566,
+      "differenceNewtons": -2.5920599000528455e-11
+    },
+    {
+      "step": 1361,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -3638.051177144895,
+      "attemptedAxialImplicitPush": -3638.0511771448964,
+      "differenceNewtons": 1.3642420526593924e-12
+    },
+    {
+      "step": 1361,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -3108.0268967306565,
+      "attemptedAxialImplicitPush": -3108.0268967306674,
+      "differenceNewtons": 1.0913936421275139e-11
+    },
+    {
+      "step": 1362,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -3118.520842332286,
+      "attemptedAxialImplicitPush": -3118.5208423323274,
+      "differenceNewtons": 4.1382008930668235e-11
+    },
+    {
+      "step": 1362,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -2521.974954431573,
+      "attemptedAxialImplicitPush": -2521.974954431558,
+      "differenceNewtons": -1.5006662579253316e-11
+    },
+    {
+      "step": 1363,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -3055.424053156833,
+      "attemptedAxialImplicitPush": -3055.4240531568203,
+      "differenceNewtons": -1.2732925824820995e-11
+    },
+    {
+      "step": 1363,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -2648.699161750822,
+      "attemptedAxialImplicitPush": -2648.6991617507633,
+      "differenceNewtons": -5.866240826435387e-11
+    },
+    {
+      "step": 1364,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -2620.300939563409,
+      "attemptedAxialImplicitPush": -2620.3009395633985,
+      "differenceNewtons": -1.0459189070388675e-11
+    },
+    {
+      "step": 1364,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -2124.5619291501835,
+      "attemptedAxialImplicitPush": -2124.5619291502094,
+      "differenceNewtons": 2.5920599000528455e-11
+    },
+    {
+      "step": 1365,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -2102.7315849888073,
+      "attemptedAxialImplicitPush": -2102.7315849887996,
+      "differenceNewtons": -7.73070496506989e-12
+    },
+    {
+      "step": 1365,
+      "substep": 32,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -1350.6965457698536,
+      "attemptedAxialImplicitPush": -1350.6965457698782,
+      "differenceNewtons": 2.4556356947869062e-11
+    },
+    {
+      "step": 1366,
+      "substep": 1,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -1491.1783764536315,
+      "attemptedAxialImplicitPush": -1491.1783764536135,
+      "differenceNewtons": -1.7962520360015333e-11
+    },
+    {
+      "step": 1366,
+      "substep": 7,
+      "requestedWorldImpulseAlongCapturedUpDividedBySubstepSeconds": -1196.390679991205,
+      "attemptedAxialImplicitPush": -1196.3906799912434,
+      "differenceNewtons": 3.842615114990622e-11
+    }
+  ],
+  "identityMaximumAbsoluteErrorNewtons": 5.866240826435387e-11,
+  "missingSolveState": [
+    "assembled coupled matrix/RHS",
+    "board trial-force and torque",
+    "board velocity/spin separately at solve",
+    "board effective mass/inertia and water Jacobians",
+    "carried lever arm at solve",
+    "rider external force at solve",
+    "solved board translation/rotation increments",
+    "non-retained intermediate internal substep operands"
+  ],
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "candidateOrSourceChanges": false,
+  "causalOrControllerSignBugConclusion": false
+}

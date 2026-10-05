@@ -1,0 +1,58 @@
+{
+  "schema": "pop-up-contact-v11-source-transition-note-freeze/v1",
+  "complete": true,
+  "frozen": true,
+  "inputPins": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/freeze.json",
+      "bytes": 5290,
+      "sha256": "22667d203b26858b2eb2d34aa948b25eeb76ec2ffac8a86f0ee39b479540972d"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/observer-samples.json",
+      "bytes": 410620,
+      "sha256": "fc7777d418266615b39a6a035392ad051ed1f7f9b63706afe1bd3699430a4fb6"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/landing-force-interval.json",
+      "bytes": 82391,
+      "sha256": "9bf3d7fadd175275cd951655057badf296e54ad36c3d8e5b033ac0234e8b4dca"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 146425,
+      "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/wave/SurfZoneRunner.ts",
+      "bytes": 40862,
+      "sha256": "da95505036f34caf0ba1ab1db026414add85f4185a8d5927db7dca8f11740c4f"
+    }
+  ],
+  "payloadPins": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-source-transition-20261005/README.md",
+      "bytes": 6638,
+      "sha256": "0d5535b7b58d55d431205c7b18de7be3ab8f546e12ae38494d5bf7dc26c40de4"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-source-transition-20261005/evidence.json",
+      "bytes": 29427,
+      "sha256": "53394a377d4882ff6d12c950995546826af5c61229f11b93f26e56a67dca8c92"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-source-transition-20261005/extract.py",
+      "bytes": 5582,
+      "sha256": "569178813f5686b721ff08062c09f3620f25153fa7ccabc1d77e654b9d8f7431"
+    }
+  ],
+  "causalAttributionEstablished": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceEditsTestsBuildNativeRun": false
+}

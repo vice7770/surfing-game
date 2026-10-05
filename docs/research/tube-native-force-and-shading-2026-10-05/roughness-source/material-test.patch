@@ -1,0 +1,63 @@
+--- a/src/scene/barrel/SweptBarrelMesh.test.ts
++++ b/src/scene/barrel/SweptBarrelMesh.test.ts
+@@ -1,4 +1,4 @@
+-import { ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
++import { ShaderChunk, ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
+ import { describe, expect, it, vi } from 'vitest';
+ import { FRONT_FIELD, FRONT_STRIDE } from '../../wave/barrel/frontRecords';
+ import { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
+@@ -7,6 +7,7 @@
+ import { WaterSurface, type SurfaceSource } from '../WaterSurface';
+ import { mirrorsBarrelDither, SWEPT_BARREL_DISCARD } from './barrelMaskGlsl';
+ import { WATER_ABSORPTION, WATER_IOR } from '../waterOptics';
++import { CLASSIC_ROUGHNESS, RICH_SPECULAR } from '../water/specular';
+ import { BOUNDED_C_SHEET_BACKGROUND, RICH_LIP_GLOW, RICH_SHEET_BODY, RICH_SHEET_TRANSMISSION, RICH_THROAT, SWEPT_SHEET_BODY, SweptBarrelMesh, WALL_POINT, sweptViewColours } from './SweptBarrelMesh';
+ 
+ const grid = { xMin: 0, zMin: 0, spacing: 1, nx: 8, nz: 8 };
+@@ -197,8 +198,12 @@
+ 
+   it('uses a continuous C inner-sheet water background, retaining original RAW and exterior paths', () => {
+     const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
++    const innerSpecularGuard = 'if ( sweptBoundedInterior > 0.0 && faceDirection < 0.0 && vSweptThroat.w > 0.0 ) {';
+     const classic = compiled(swept.mesh.material);
+     expect(classic.fragment).not.toContain(BOUNDED_C_SHEET_BACKGROUND);
++    expect(classic.fragment).not.toContain(innerSpecularGuard);
++    expect(classic.fragment).not.toContain(RICH_SPECULAR);
++    expect(classic.fragment).not.toContain('richRoughness(');
+     expect(classic.uniforms.sweptBoundedInterior).toBeUndefined();
+     swept.setLook('rich');
+     const rich = compiled(swept.mesh.material);
+@@ -211,12 +216,33 @@
+     expect(BOUNDED_C_SHEET_BACKGROUND).not.toContain('getIBLIrradiance');
+     expect(rich.fragment.indexOf('vec3 sweptWall = waterBodyGain')).toBeLessThan(rich.fragment.indexOf(BOUNDED_C_SHEET_BACKGROUND));
+     expect(rich.fragment.indexOf(BOUNDED_C_SHEET_BACKGROUND)).toBeLessThan(rich.fragment.indexOf('sweptReach * sweptBack * RECIPROCAL_PI'));
++    // Only C inner backfaces take Rich gloss; the complete original rule remains in the fallback branch.
++    expect(rich.fragment).toContain(innerSpecularGuard);
++    const innerSpecularStart = rich.fragment.indexOf(innerSpecularGuard);
++    const originalSpecularElse = rich.fragment.indexOf('} else {', innerSpecularStart);
++    const innerSpecular = rich.fragment.slice(innerSpecularStart, originalSpecularElse);
++    expect(innerSpecular).toContain('roughnessFactor = mix(');
++    expect(innerSpecular).toContain(CLASSIC_ROUGHNESS.toFixed(3));
++    expect(innerSpecular).toContain('richRoughness( roughnessFactor, waterRippleVariance )');
++    expect(innerSpecular).toContain('clamp( vSweptThroat.w, 0.0, 1.0 )');
++    expect(rich.fragment).toContain(`} else {\n    ${RICH_SPECULAR}\n  }`);
++    expect(rich.fragment.split(RICH_SPECULAR)).toHaveLength(2);
++    // Consume the original roughness before the unchanged Rich foam adjustment and three's physical lighting.
++    const foamRoughness = 'roughnessFactor = mix( roughnessFactor, 0.7, waterCover );';
++    expect(rich.fragment).toContain(foamRoughness);
++    expect(rich.fragment).toContain('#include <roughnessmap_fragment>');
++    expect(innerSpecularStart).toBeGreaterThan(rich.fragment.indexOf('#include <roughnessmap_fragment>'));
++    expect(originalSpecularElse).toBeLessThan(rich.fragment.indexOf(foamRoughness));
++    expect(rich.fragment.indexOf(foamRoughness)).toBeLessThan(rich.fragment.indexOf('#include <lights_physical_fragment>'));
++    expect(ShaderChunk.lights_physical_fragment).toContain('roughnessFactor');
+     const raw = new SweptLoft(new ProfileLibrary([tubeCase(0.3)]), 0.05).build(tubeRecords(), 21, 0.5, () => 0.5);
+     const c = new SweptLoft(new ProfileLibrary([tubeCase(0.3)], { geometry: 'bounded-C' }), 0.05).build(tubeRecords(), 21, 0.5, () => 0.5);
+     expect(raw.cSampling).toBeUndefined(); expect(c.cSampling).toBeDefined();
+     swept.update(c); expect(rich.uniforms.sweptBoundedInterior.value).toBe(1);
+     swept.update(raw); expect(rich.uniforms.sweptBoundedInterior.value).toBe(0);
+     swept.update(c); swept.update(undefined); expect(rich.uniforms.sweptBoundedInterior.value).toBe(0);
++    expect(swept.mesh.visible).toBe(false);
++    expect(compiled(swept.mesh.material).uniforms.sweptBoundedInterior).toBe(rich.uniforms.sweptBoundedInterior);
+     // The complete original visibility model is still compiled for RAW, rather than a general diffuse adoption.
+     expect(RICH_THROAT).toContain('sweptOwn * iblIrradiance + vSweptThroat.y * sweptThrough * sweptAbove');
+     expect(RICH_THROAT).toContain('radiance *= mix( 1.0, sweptLeaves( sweptMirror, sweptTip ) ? 1.0 : 0.0, vSweptThroat.w );');

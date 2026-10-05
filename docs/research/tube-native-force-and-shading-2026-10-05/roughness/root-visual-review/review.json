@@ -1,0 +1,103 @@
+{
+  "schema": "C-inner-rich-roughness-root-visual-review/v1",
+  "actualRootSession": 26974,
+  "terminalExitCode": 0,
+  "owner": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first-owner.json",
+    "bytes": 3350,
+    "sha256": "6f0d6a11e76b7af33a840e2c0255e33f4157486df516aaa9b54997c120400b1d"
+  },
+  "report": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/report.json",
+    "bytes": 9373701,
+    "sha256": "85a83a64e1ee08eeaf945cbe0e0a093e07792d6ad84a6bb9558265911ea6f9d4"
+  },
+  "numericReview": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-actual-review-20261005/analysis.json",
+    "bytes": 43776,
+    "sha256": "cfd96bf35094e9d4d874827e3412087cc24dd3e24b300689b1d413ed8dd323b2"
+  },
+  "viewedPNGs": [
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/0-initial.png",
+      "bytes": 657559,
+      "sha256": "1b83bb628b127fa7e036c10fc0255d85170e53d9d92933faae0190e30f22c8f3"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/1-initial-exterior.png",
+      "bytes": 2426938,
+      "sha256": "c7069fc30d20b1027a22c8e49563ff152ea64de963c55e36505aa54d81f65d3f"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/2-first-phase2.png",
+      "bytes": 901127,
+      "sha256": "d83c271f2635bfd1b6c6b50e2a09029c1928246c90718716a65cc0c4d2997c30"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/3-first-phase2-water-hidden.png",
+      "bytes": 884203,
+      "sha256": "99f2ff13492a6aafa42b3d196f955ac02921427280d3d381e4724016710ecabf"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/4-first-phase2-barrel-hidden.png",
+      "bytes": 1056742,
+      "sha256": "c661506e1bf4b59f5c0ab81cc87af7cb6ff733c3c13261d46e9c57750f411d0b"
+    },
+    {
+      "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/5-terminal.png",
+      "bytes": 2059465,
+      "sha256": "84a5ec62b12311e464246a95643f58a5b7559824ab90a3541b1972b242734613"
+    }
+  ],
+  "movie": {
+    "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/candidate-first/moving-C.webm",
+    "bytes": 1697812,
+    "sha256": "3789924e463da6a7bd5ac922398cbfc2efd6a71f6014143774d4bce14890005e"
+  },
+  "movieMetadata": {
+    "codec": "vp9",
+    "width": 1708,
+    "height": 879,
+    "encodedFrames": 71,
+    "actualFFmpegRootSession": 21643
+  },
+  "decodedMovieFramesViewed": [
+    {
+      "encodedFrame": 0,
+      "image": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-visual-review/movie-01.png",
+        "bytes": 155322,
+        "sha256": "3c31250177663402ba1faa1a7ce40a52538fdb81859640ce3b82144f7b6f0dc0"
+      }
+    },
+    {
+      "encodedFrame": 35,
+      "image": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-visual-review/movie-02.png",
+        "bytes": 392791,
+        "sha256": "3326c939fac02ee0befa8401b318468d163a5e1658e0a74c718c633a70770d96"
+      }
+    },
+    {
+      "encodedFrame": 70,
+      "image": {
+        "file": "/private/tmp/tube-C-inner-rich-roughness-native-20261005/root-visual-review/movie-03.png",
+        "bytes": 1261774,
+        "sha256": "99272b5b9be9303a26db8e914b143d25740dd230744b91483ac1be58d20ce17d"
+      }
+    }
+  ],
+  "wholeMovieViewed": false,
+  "rootObservations": [
+    "Broad flat green cavity walls retain vertical streaks and an opaque surface impression.",
+    "Phase2 has a pale folded roof and narrow arched exit. Water-hidden diagnostic retains these cavity features.",
+    "Exterior retains striped wall appearance and fragmented white coverage.",
+    "Barrel-hidden view shows the heightfield underside, water band and sandy floor.",
+    "Terminal and last decoded frame retain folded/capped cavity with dither and a broad intersecting heightfield band."
+  ],
+  "decision": "Appearance rejected: authored inner roughness did not produce convincing water or resolve the folded narrow cavity.",
+  "appearanceAccepted": false,
+  "tubeEntryOrPassageAccepted": false,
+  "FPSClaim": false,
+  "productionAdoption": false
+}

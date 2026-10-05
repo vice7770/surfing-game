@@ -1,0 +1,164 @@
+{
+  "schema": "landing-longitudinal-actual-numeric-review-freeze/v1",
+  "complete": true,
+  "frozen": true,
+  "actualTerminalExitCode": 0,
+  "all1366PublicRowsAudited": true,
+  "sourceRuntimeDeltas": 1,
+  "all38OperandsAudited": true,
+  "distinctRetainedSamples": 100,
+  "fullSidecars": 4,
+  "allRawDifferencesRetained": true,
+  "inputPins": [
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first-owner.json",
+      "bytes": 3500,
+      "sha256": "def189cd582ba3ad218b577ae766029c7081879b0a90550469e50a1740a4063c"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/report.json",
+      "bytes": 12749798,
+      "sha256": "1e510766433850be7cb10404798e8dbea02184a4fd9dc989f1f9f3eebe64e14c"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 12495063,
+      "sha256": "8965480c5eaefd1e73a97dabd7de00653c0f8f230fa764f21cb4fb6441a48ea4"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/seal.json",
+      "bytes": 187764,
+      "sha256": "741a5d015f003599271477f567f1e565cb3232899f8349440565e4bff1ed0945"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/readiness.json",
+      "bytes": 5898,
+      "sha256": "812df60dc72745f8db7f7566670e7fd967e1a1ef3528a8339a9174fcdc8c91b5"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first-owner.json",
+      "bytes": 3508,
+      "sha256": "b8494909bd2282da74c9ff6f30b32953c4b98b7061dd8a8e19c237a5aae8d037"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/report.json",
+      "bytes": 12753137,
+      "sha256": "e1e92df0eb68ed5b54b2d97aecc8ee1ef72e567e438458d55bd6e65bb06a89ef"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/steps.ndjson",
+      "bytes": 12495782,
+      "sha256": "dd6b6e26455ae210bf2bbf823cc262284132e856e9ab39d4a83298062e71259f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/seal.json",
+      "bytes": 188041,
+      "sha256": "cbae476fee19c4552c34db03c80968ac70b3c7ebf011493d950a0a399f99bce0"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/readiness.json",
+      "bytes": 22364,
+      "sha256": "faf3f5866ac9666d8b4330e11a2263f2504a50a65f5b8069858e42a4eae38774"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/source-readiness.json",
+      "bytes": 3569,
+      "sha256": "4af9b0fdc1d20b055b2c0917777145bd078bb1da2eec0bc43fdf36838dd43501"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/source-delta.json",
+      "bytes": 1128,
+      "sha256": "536fc03f790cef910ae7997815e1f655671044db8744fdb705f34d1de9f1be76"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/source-pins.json",
+      "bytes": 96409,
+      "sha256": "833f8995b05993b8f68ed9da9bbf1d1cc72ee7c384e5d4c98fcc6b4ea609cf4c"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/root-complete-build-result.json",
+      "bytes": 183990,
+      "sha256": "71238a083c9efba2c896abdc3418a05d741f57e944123ba696e17458efcee2e5"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-native-20261005/root-diagnostic-build-result.json",
+      "bytes": 35808,
+      "sha256": "1f511e485a06910607fec86feac2e83b470d17cb3f98b133d32016942918f745"
+    }
+  ],
+  "payloadPins": [
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/README.md",
+      "bytes": 6419,
+      "sha256": "698d07f135253eac141470cc1d779f5b63105d0f32f9db1e38aafa6a5f799101"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/AUDIT-PLAN.md",
+      "bytes": 3092,
+      "sha256": "1d419c62cc44d3f42e0cd8966726e25ea61e87336abf8678ff3f2b0343885e05"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/analyze.py",
+      "bytes": 29115,
+      "sha256": "be351a249ea596e8d430d3ad2958132b4baca243f7fe3ab0912f7855d3cd6573"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/compare-force-interval.py",
+      "bytes": 5230,
+      "sha256": "33a9e6e2c445254857351d4cbc57d0d0b25d02038a0775683faedb7b80d3e06b"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/analysis.json",
+      "bytes": 264790,
+      "sha256": "09420298d9d54af30115ec50dc67b3a8765e6f9f58ee047ca130e7a7aaf05992"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/all-differences.ndjson",
+      "bytes": 3029414,
+      "sha256": "56b885ffceeedb88846acfc528ae91cee482de75c101a2af620caa9ab4c2b023"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/observer-samples.json",
+      "bytes": 387879,
+      "sha256": "44e088f91e6511182a3c73016ed6b7835d7b199d321018d3766a96ebe8c4d18f"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/support-interval.json",
+      "bytes": 383014,
+      "sha256": "316c1f5dd75875bc25314941d0528b1793fd15a06de6e477535762bd5bf69cc1"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/force-comparison.json",
+      "bytes": 103800,
+      "sha256": "1aeb31a783280b120aff8bc6606b4f2388c1482101a2fbb388878027eb8453a7"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/sidecar-word-differences.ndjson",
+      "bytes": 1663011,
+      "sha256": "1cd7c003e8e23a49e2802605f2b2a3253b2960318b937da8f4ab9edcad283aa6"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/sidecar-metadata-differences.json",
+      "bytes": 600,
+      "sha256": "bef27e87b3332b44576bc4a17f7885bcdc3f6359fe27c57e72edfafad0e8a909"
+    }
+  ],
+  "sourceBuildHelperServedAuthorityPassed": true,
+  "independentClosureRecorded": true,
+  "standingReached": false,
+  "tubePassageVisualFPSAdoptionAccepted": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceHelpersGitChanged": false,
+  "testsBuildNativeRunByAudit": false
+}

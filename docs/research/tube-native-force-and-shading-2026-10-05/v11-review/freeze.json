@@ -1,0 +1,129 @@
+{
+  "schema": "pop-up-contact-v11-actual-review-freeze/v1",
+  "complete": true,
+  "frozen": true,
+  "inputPins": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first-owner.json",
+      "bytes": 3508,
+      "sha256": "b8494909bd2282da74c9ff6f30b32953c4b98b7061dd8a8e19c237a5aae8d037"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/report.json",
+      "bytes": 12753137,
+      "sha256": "e1e92df0eb68ed5b54b2d97aecc8ee1ef72e567e438458d55bd6e65bb06a89ef"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/steps.ndjson",
+      "bytes": 12495782,
+      "sha256": "dd6b6e26455ae210bf2bbf823cc262284132e856e9ab39d4a83298062e71259f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/seal.json",
+      "bytes": 188041,
+      "sha256": "cbae476fee19c4552c34db03c80968ac70b3c7ebf011493d950a0a399f99bce0"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/readiness.json",
+      "bytes": 22364,
+      "sha256": "faf3f5866ac9666d8b4330e11a2263f2504a50a65f5b8069858e42a4eae38774"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first-owner.json",
+      "bytes": 3482,
+      "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/report.json",
+      "bytes": 12501789,
+      "sha256": "a03e780fb5cbbbb2b973930ebf722f13391c55a708850eff73619f65b991c495"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/steps.ndjson",
+      "bytes": 12261079,
+      "sha256": "86f8781e251e8a6bb24f9ec093daddb242fcda431b3a71a680df751fa526ae27"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/seal.json",
+      "bytes": 167900,
+      "sha256": "c4d5d59d9c6e1d5405448385dc3c386666497a106a7d96b3419cfe6f1e9006ca"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/readiness.json",
+      "bytes": 11256,
+      "sha256": "3a6ffeff68a335a9682582277192ac14707dc1b3630de7b8e5f93245b19b6d7b"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer.patch",
+      "bytes": 5998,
+      "sha256": "9b34e9aef4a3692f261ede210fc49aa91448c1c50f93cd7b526c8e846b444d8d"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 146425,
+      "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+    },
+    {
+      "file": "/private/tmp/tube-landing-demand-resolution-20261005/FINDINGS.md",
+      "bytes": 6133,
+      "sha256": "73ec03906b35fe5e90c11f5bdd22889d98e93041d66d3c270bc4deac489c9dd8"
+    }
+  ],
+  "payloadPins": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/README.md",
+      "bytes": 6197,
+      "sha256": "f8a0509d16e66839af0ab10ebb8f00f2d235f7e55406192bbfb6b2661b05eb34"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/analyze.py",
+      "bytes": 25106,
+      "sha256": "1b05e3743aeb0bdf771fc7b8571ed5a13c236953a19d84a1da2da8a424881c4c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/analysis.json",
+      "bytes": 122602,
+      "sha256": "6e7f588dedd190746c9dbc0509aadf749498f1ace8dba72760d8d5fe574490d7"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/all-differences.json",
+      "bytes": 2289573,
+      "sha256": "49091f0505a4bae8eb55b29d6b9a97245a1935601ef4b9aab66f3562e20601aa"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/observer-samples.json",
+      "bytes": 410620,
+      "sha256": "fc7777d418266615b39a6a035392ad051ed1f7f9b63706afe1bd3699430a4fb6"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/landing-force-interval.json",
+      "bytes": 82391,
+      "sha256": "9bf3d7fadd175275cd951655057badf296e54ad36c3d8e5b033ac0234e8b4dca"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/sidecar-differences.json",
+      "bytes": 584,
+      "sha256": "aa3d69158245a74762e3a4d565eea4d3f4f9f0722ceb68848d4fda4acd3a3092"
+    }
+  ],
+  "allActualRecordsAudited": true,
+  "rawDifferenceFieldsExcluded": [],
+  "retainedFullSamples": 100,
+  "retainedFullReferences": 202,
+  "everyInternalSolverSubstepCaptured": false,
+  "nativeLossCauseCounterfactuallyEstablished": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "buildsTestsNativeRun": false,
+  "sourceShaderHelperGitChanged": false
+}

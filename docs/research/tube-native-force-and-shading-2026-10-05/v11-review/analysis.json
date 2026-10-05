@@ -1,0 +1,3096 @@
+{
+  "schema": "pop-up-contact-v11-actual-numeric-review/v1",
+  "complete": true,
+  "readOnlyInputs": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first-owner.json",
+      "bytes": 3508,
+      "sha256": "b8494909bd2282da74c9ff6f30b32953c4b98b7061dd8a8e19c237a5aae8d037"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/report.json",
+      "bytes": 12753137,
+      "sha256": "e1e92df0eb68ed5b54b2d97aecc8ee1ef72e567e438458d55bd6e65bb06a89ef"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/steps.ndjson",
+      "bytes": 12495782,
+      "sha256": "dd6b6e26455ae210bf2bbf823cc262284132e856e9ab39d4a83298062e71259f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/seal.json",
+      "bytes": 188041,
+      "sha256": "cbae476fee19c4552c34db03c80968ac70b3c7ebf011493d950a0a399f99bce0"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/readiness.json",
+      "bytes": 22364,
+      "sha256": "faf3f5866ac9666d8b4330e11a2263f2504a50a65f5b8069858e42a4eae38774"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first-owner.json",
+      "bytes": 3482,
+      "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/report.json",
+      "bytes": 12501789,
+      "sha256": "a03e780fb5cbbbb2b973930ebf722f13391c55a708850eff73619f65b991c495"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/steps.ndjson",
+      "bytes": 12261079,
+      "sha256": "86f8781e251e8a6bb24f9ec093daddb242fcda431b3a71a680df751fa526ae27"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/seal.json",
+      "bytes": 167900,
+      "sha256": "c4d5d59d9c6e1d5405448385dc3c386666497a106a7d96b3419cfe6f1e9006ca"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/readiness.json",
+      "bytes": 11256,
+      "sha256": "3a6ffeff68a335a9682582277192ac14707dc1b3630de7b8e5f93245b19b6d7b"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer.patch",
+      "bytes": 5998,
+      "sha256": "9b34e9aef4a3692f261ede210fc49aa91448c1c50f93cd7b526c8e846b444d8d"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 146425,
+      "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+    },
+    {
+      "file": "/private/tmp/tube-landing-demand-resolution-20261005/FINDINGS.md",
+      "bytes": 6133,
+      "sha256": "73ec03906b35fe5e90c11f5bdd22889d98e93041d66d3c270bc4deac489c9dd8"
+    }
+  ],
+  "V11Owner": {
+    "schema": "pop-up-contact-v11-finite-owner/v1",
+    "arm": "candidate",
+    "complete": true,
+    "firstFailure": null,
+    "startedAt": "2026-10-05T02:49:00.244158+00:00",
+    "sealSha256": "cbae476fee19c4552c34db03c80968ac70b3c7ebf011493d950a0a399f99bce0",
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "cleanupSeconds": 7,
+    "ports": [
+      4301,
+      9711
+    ],
+    "protectedPorts": [
+      4310,
+      4311,
+      4312,
+      4313
+    ],
+    "dist": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/candidate-complete-dist",
+    "served": {
+      "index.html": {
+        "bytes": 1626,
+        "sha256": "1f9af2ef314974fb8a3421dcdff7e8476a6ab97f2231ebf9fb9e2691779bc0c9"
+      },
+      "assets/index-DA8NEfOT.css": {
+        "bytes": 33213,
+        "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+      },
+      "assets/index-C25ZLGSt.js": {
+        "bytes": 582403,
+        "sha256": "49f9a89aeb5e99da8a46f728eac1147cbd144f93463054b1bb9cd7e0b226b4c9"
+      },
+      "assets/WorkerSurfZone-D9ZX-0op.js": {
+        "bytes": 909653,
+        "sha256": "254b2ce56082171f80770502dd92bcebbd8ec28e882efada1b68b38910a8c51d"
+      },
+      "assets/skies/skies.json": {
+        "bytes": 2266,
+        "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+      },
+      "assets/surfers/surfer1.glb": {
+        "bytes": 1007368,
+        "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+      },
+      "assets/surfZoneWorker-a_DCT54H.js": {
+        "bytes": 490828,
+        "sha256": "908478807712f36447e1b01fc5f0df61def5b74c82b0281875cd7789af911f70"
+      },
+      "assets/skies/qwantani_sunset_puresky.jpg": {
+        "bytes": 372349,
+        "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+      },
+      "assets/skies/qwantani_sunset_puresky_1k.hdr": {
+        "bytes": 2097202,
+        "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+      },
+      "barrels/pad19-a20-l12.bin": {
+        "bytes": 149848,
+        "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+      },
+      "barrels/periodic-padang19s-l12.bin": {
+        "bytes": 181852,
+        "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+      },
+      "barrels/pad19-a30-l12.bin": {
+        "bytes": 163264,
+        "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+      },
+      "barrels/pad19-a45-l12.bin": {
+        "bytes": 168424,
+        "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+      },
+      "assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg": {
+        "bytes": 681062,
+        "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+      },
+      "assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr": {
+        "bytes": 2097202,
+        "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+      },
+      "diagnostic-autopilot.mjs": {
+        "bytes": 348734,
+        "sha256": "13d670bc328b914e5db1b7872e3c0123eb24f45874c35d084fc258e27cf2aac5",
+        "separateDiagnosticRoute": true
+      }
+    },
+    "logBytes": 2835,
+    "nativeGroup": 3112,
+    "physicalGeometryEqualityClaim": false,
+    "bodyEntryClaim": false,
+    "ownedPortsInitiallyClosed": {
+      "4301": true,
+      "9711": true
+    },
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    },
+    "protectedPortsInitiallyOpen": {
+      "4310": false,
+      "4311": false,
+      "4312": true,
+      "4313": true
+    },
+    "command": [
+      "/opt/homebrew/bin/node",
+      "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/native.mjs",
+      "--run=true",
+      "--arm=candidate",
+      "--url=http://127.0.0.1:4301/?diagnostics",
+      "--out=/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first"
+    ],
+    "exitCode": 0,
+    "sourceBuildHelpersPostUnchanged": true,
+    "remainingOwnedPids": [],
+    "closedPorts": {
+      "4301": true,
+      "9711": true
+    },
+    "protectedStatesFinally": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    },
+    "protectedPortsStillOpen": {
+      "4310": false,
+      "4311": false,
+      "4312": true,
+      "4313": true
+    },
+    "cleanupElapsedSeconds": 0.770041209005285,
+    "elapsedSeconds": 490.1071807910339,
+    "independentClosureValid": true,
+    "protectedPortsPreserved": true
+  },
+  "reportAndNDJSONExactlyAgreeBothRuns": true,
+  "steps": {
+    "V11": 1366,
+    "V7": 1366,
+    "allActualRecordsInspected": true,
+    "everyRecordedInputSeaTimePhysicalSecondBodyAndCameraPoseEqual": true,
+    "completeRawDifferenceCounts": {
+      "followerExecutionCounter": 2732,
+      "redrawSurfaceRevision": 1366,
+      "recordedTiming": 2732,
+      "addedObserverOperand": 7562
+    },
+    "unclassifiedStepDifferences": 0,
+    "noFieldsExcludedFromRawDifferenceArchive": true,
+    "sharedValueGroups": {
+      "balance": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "boardPose": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "cameraFollower": {
+        "rows": 1366,
+        "equalRows": 0,
+        "allSharedValuesEqual": false,
+        "firstDifferentStep": 1,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "clocks": {
+        "rows": 1366,
+        "equalRows": 0,
+        "allSharedValuesEqual": false,
+        "firstDifferentStep": 1,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "compute": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "cue": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "detector": {
+        "rows": 1366,
+        "equalRows": 0,
+        "allSharedValuesEqual": false,
+        "firstDifferentStep": 1,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "displayedBoard": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "displayedRiderPoints": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "frontInventory": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "input": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "inputView": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "loft": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "nearFormed": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "physicalSeconds": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "pilot": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "popupControl": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "ride": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "riderPoints": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "riderWords": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "seaCounters": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "seaTime": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "separation": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "steeringControl": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "step": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "witness": {
+        "rows": 1366,
+        "equalRows": 1366,
+        "allSharedValuesEqual": true,
+        "firstDifferentStep": null,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      },
+      "workerStepMs": {
+        "rows": 1366,
+        "equalRows": 0,
+        "allSharedValuesEqual": false,
+        "firstDifferentStep": 1,
+        "onlyNewObserverFieldsOmittedForSharedValueComparison": true
+      }
+    }
+  },
+  "initialBodyCompleteDifferences": [
+    {
+      "path": "$.initialBody.clocks.surfaceRevision",
+      "kind": "value",
+      "V7": 4,
+      "V11": 5
+    },
+    {
+      "path": "$.initialBody.workerStepMs",
+      "kind": "value",
+      "V7": 13.699999988079071,
+      "V11": 26.599999964237213
+    }
+  ],
+  "initialCameraPositionAndQuaternionEqual": true,
+  "checkpointCameraPositionQuaternionAllEqual": [
+    true,
+    true,
+    true,
+    true
+  ],
+  "fullReportMetadataAndOwnerDifferenceCounts": {
+    "reportOther": 1046,
+    "owner": 32
+  },
+  "observerAudit": {
+    "fieldsExactFrozenV8List": true,
+    "fieldCount": 38,
+    "everyFieldFiniteAtEveryRetainedReference": true,
+    "retainedReferences": 202,
+    "uniqueRetainedSubsteps": 100,
+    "uniqueOuterSteps": 67,
+    "duplicateReferencesAgreeExactly": true,
+    "phases": {
+      "push": 54,
+      "landing": 46
+    },
+    "summarizedNonProneInternalSubsteps": 925,
+    "everyInternalSubstepWasCaptured": false,
+    "preprojectionHeightIdentityExactForAllReferences": true,
+    "allRetainedLandingHeightsPositive": true,
+    "negativeRawLegForceCount": 16,
+    "positiveAxialPushButNonpositiveDeckNormalCount": 0,
+    "allSustainedUnloadingRetainedImplicitAxialAndDeckNormalNegative": true,
+    "positivePreparedForceDoesNotProvePositiveImplicitPush": true,
+    "unloadingGuardSamplesAllZeroProjectedAndApplied": true,
+    "selectedActualSamples": [
+      {
+        "recordedStep": 1300,
+        "slot": "last",
+        "step": 1300,
+        "substep": 4,
+        "phase": "push",
+        "phaseTime": 0.016666666666666666,
+        "projectHeight": 0.1239228320025496,
+        "legHeight": 0,
+        "legForce": 0,
+        "legRate": 0,
+        "legRateAfter": 0,
+        "demandLocalY": 0.006798772022283003,
+        "demandLocalZ": -0.0032569946341989816,
+        "postureError": 0.00013004186727728478,
+        "limit": "none",
+        "projected": [
+          0.17170673281740922,
+          0.014240506786870721,
+          -0.06503682768335778
+        ],
+        "applied": [
+          0.17170673281740922,
+          0.014240506786868501,
+          -0.06503682768335779
+        ],
+        "axialImplicitLegPushNewtons": null,
+        "axialForceTerms": null,
+        "axialForceBasis": "Not derived: push has no freshly prepared upright-leg solve.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": 1.6317052853479208,
+        "requestedForeAftNewtons": -0.7816787122077555,
+        "uprightFlightProjectionGuard": false,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1343,
+        "slot": "last",
+        "step": 1343,
+        "substep": 6,
+        "phase": "landing",
+        "phaseTime": 0.012499999999999999,
+        "projectHeight": 0.38512090400275034,
+        "legHeight": 0.3550831964891579,
+        "legForce": -6.988535197723593,
+        "legRate": 0.33418359132468045,
+        "legRateAfter": 0.31669916277099003,
+        "demandLocalY": -0.033633546304625984,
+        "demandLocalZ": -0.026952302685057584,
+        "postureError": 0.0029592716619149953,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -14.084311364706792,
+        "axialForceTerms": {
+          "loadNewtons": 491.9861912145737,
+          "implicitSpringNewtons": -108.75754990293794,
+          "implicitDampingNewtons": -397.3129526763426,
+          "preparedSpringNewtons": -79.72679331559718,
+          "preparedDampingNewtons": -419.24793309670014,
+          "preparedForceNewtons": -6.988535197723593,
+          "axialImplicitLegPushNewtons": -14.084311364706792,
+          "implicitSumMinusEquivalentFormulaNewtons": -2.842170943040401e-14
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -16.144102226220472,
+        "requestedForeAftNewtons": -12.93710528882764,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1343,
+        "slot": "firstLimited",
+        "step": 1343,
+        "substep": 5,
+        "phase": "landing",
+        "phaseTime": 0.010416666666666666,
+        "projectHeight": 0.3845133595678219,
+        "legHeight": 0.3550681596294241,
+        "legForce": 38.32911412939035,
+        "legRate": 0.33293345057286206,
+        "legRateAfter": 0.3334627248373534,
+        "demandLocalY": 0.011360265388277668,
+        "demandLocalZ": -0.024782874027758754,
+        "postureError": 0.0027596229869090837,
+        "limit": "tip",
+        "projected": [
+          0.003030029358176903,
+          0.011988772822984507,
+          -0.004762424199602944
+        ],
+        "applied": [
+          0.003030029358176903,
+          0.011988772822984507,
+          -0.004762424199602944
+        ],
+        "axialImplicitLegPushNewtons": 7.097699969771765,
+        "axialForceTerms": {
+          "loadNewtons": 505.02809997950516,
+          "implicitSpringNewtons": -79.58682545335702,
+          "implicitDampingNewtons": -418.3435745563764,
+          "preparedSpringNewtons": -49.01940900993296,
+          "preparedDampingNewtons": -417.6795768401818,
+          "preparedForceNewtons": 38.32911412939035,
+          "axialImplicitLegPushNewtons": 7.097699969771765,
+          "implicitSumMinusEquivalentFormulaNewtons": 1.687538997430238e-14
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": 5.452927386373281,
+        "requestedForeAftNewtons": -11.895779533324202,
+        "uprightFlightProjectionGuard": false,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1353,
+        "slot": "last",
+        "step": 1353,
+        "substep": 32,
+        "phase": "landing",
+        "phaseTime": 0.1791666666666662,
+        "projectHeight": 0.42261071325561567,
+        "legHeight": 0.4128295664440161,
+        "legForce": 979.6055999983786,
+        "legRate": 0.12914793384543582,
+        "legRateAfter": 0.13844811378729938,
+        "demandLocalY": 0.5033937242953006,
+        "demandLocalZ": -0.016116644112230724,
+        "postureError": 0.0003115907900346501,
+        "limit": "none",
+        "projected": [
+          0.007006806663611097,
+          0.5024819521774693,
+          0.04098419583576175
+        ],
+        "applied": [
+          0.007006806663611087,
+          0.5024819521774693,
+          0.04098419583576174
+        ],
+        "axialImplicitLegPushNewtons": 964.7653481807395,
+        "axialForceTerms": {
+          "loadNewtons": 693.9956031805796,
+          "implicitSpringNewtons": 444.45895971108945,
+          "implicitDampingNewtons": -173.68921471092972,
+          "preparedSpringNewtons": 447.63172898538176,
+          "preparedDampingNewtons": -162.02173216758283,
+          "preparedForceNewtons": 979.6055999983786,
+          "axialImplicitLegPushNewtons": 964.7653481807395,
+          "implicitSumMinusEquivalentFormulaNewtons": -2.2737367544323206e-13
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": 966.5159506469772,
+        "requestedForeAftNewtons": -30.943956695482992,
+        "uprightFlightProjectionGuard": false,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1353,
+        "slot": "firstLimited",
+        "step": 1353,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.16302083333333292,
+        "projectHeight": 0.4123161760306111,
+        "legHeight": 0.40157134973644193,
+        "legForce": 1007.1716938280566,
+        "legRate": 0.11368680137598108,
+        "legRateAfter": -0.06694157802007564,
+        "demandLocalY": 0.6585310261941303,
+        "demandLocalZ": 0.023444185341042995,
+        "postureError": 0.00028136132525925317,
+        "limit": "tip",
+        "projected": [
+          0.23757613584516696,
+          0.6434272470945999,
+          0.04187741698731851
+        ],
+        "applied": [
+          0.23757613584516696,
+          0.6434272470945999,
+          0.04187741698731851
+        ],
+        "axialImplicitLegPushNewtons": 1235.311974614036,
+        "axialForceTerms": {
+          "loadNewtons": 678.9264575026408,
+          "implicitSpringNewtons": 472.404379342482,
+          "implicitDampingNewtons": 83.98113776891329,
+          "preparedSpringNewtons": 470.87030151285524,
+          "preparedDampingNewtons": -142.6250651874394,
+          "preparedForceNewtons": 1007.1716938280566,
+          "axialImplicitLegPushNewtons": 1235.311974614036,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": 1264.3795702927303,
+        "requestedForeAftNewtons": 45.01283585480255,
+        "uprightFlightProjectionGuard": false,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1356,
+        "slot": "last",
+        "step": 1356,
+        "substep": 32,
+        "phase": "landing",
+        "phaseTime": 0.22916666666666602,
+        "projectHeight": 0.46127052543204927,
+        "legHeight": 0.4521616241523271,
+        "legForce": 755.8804293608682,
+        "legRate": 0.18379693111701,
+        "legRateAfter": 0.19261647171235793,
+        "demandLocalY": 0.3864560597769931,
+        "demandLocalZ": -0.008565505389207688,
+        "postureError": 0.00035768659289842276,
+        "limit": "none",
+        "projected": [
+          -0.00017826126478936598,
+          0.38562593876302603,
+          0.03472317764545884
+        ],
+        "applied": [
+          -0.00017826126478937,
+          0.38562593876302603,
+          0.03472317764545885
+        ],
+        "axialImplicitLegPushNewtons": 740.4018024249966,
+        "axialForceTerms": {
+          "loadNewtons": 718.2080000003224,
+          "implicitSpringNewtons": 263.8395915721354,
+          "implicitDampingNewtons": -241.6457891474612,
+          "preparedSpringNewtons": 268.253719048877,
+          "preparedDampingNewtons": -230.58128968833117,
+          "preparedForceNewtons": 755.8804293608682,
+          "axialImplicitLegPushNewtons": 740.4018024249966,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": 741.9956347718268,
+        "requestedForeAftNewtons": -16.44577034727876,
+        "uprightFlightProjectionGuard": false,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1356,
+        "slot": "firstLimited",
+        "step": 1356,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.21302083333333274,
+        "projectHeight": 0.4480210826260337,
+        "legHeight": 0.43895617326291547,
+        "legForce": 825.7922298225612,
+        "legRate": 0.17496623055711824,
+        "legRateAfter": 0.017350977236292975,
+        "demandLocalY": 0.5508216472927634,
+        "demandLocalZ": 0.011640750959249003,
+        "postureError": 0.0003470404858884116,
+        "limit": "tip",
+        "projected": [
+          0.17986087056331196,
+          0.5404067858236996,
+          0.02758852101322941
+        ],
+        "applied": [
+          0.17986087056331196,
+          0.5404067858236996,
+          0.02758852101322941
+        ],
+        "axialImplicitLegPushNewtons": 1023.1298329211343,
+        "axialForceTerms": {
+          "loadNewtons": 706.9509660340984,
+          "implicitSpringNewtons": 337.9464267923222,
+          "implicitDampingNewtons": -21.767559905286383,
+          "preparedSpringNewtons": 338.3440533539872,
+          "preparedDampingNewtons": -219.50278956552435,
+          "preparedForceNewtons": 825.7922298225612,
+          "axialImplicitLegPushNewtons": 1023.1298329211343,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": 1057.5775628021058,
+        "requestedForeAftNewtons": 22.350241841758088,
+        "uprightFlightProjectionGuard": false,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1357,
+        "slot": "last",
+        "step": 1357,
+        "substep": 32,
+        "phase": "landing",
+        "phaseTime": 0.24583333333333263,
+        "projectHeight": 0.48217354364509063,
+        "legHeight": 0.465960087314891,
+        "legForce": -372.08308205641134,
+        "legRate": 0.506678292629609,
+        "legRateAfter": 0.3815709653928461,
+        "demandLocalY": -0.2008636569861143,
+        "demandLocalZ": -0.9151756672600456,
+        "postureError": 0.0067538047018384255,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -223.8748022462567,
+        "axialForceTerms": {
+          "loadNewtons": 417.15304432234774,
+          "implicitSpringNewtons": -162.33037989604273,
+          "implicitDampingNewtons": -478.69746667256175,
+          "preparedSpringNewtons": -153.58604527245666,
+          "preparedDampingNewtons": -635.6500811063024,
+          "preparedForceNewtons": -372.08308205641134,
+          "axialImplicitLegPushNewtons": -223.8748022462567,
+          "implicitSumMinusEquivalentFormulaNewtons": -2.842170943040401e-14
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -385.65822141333945,
+        "requestedForeAftNewtons": -1757.1372811392876,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1357,
+        "slot": "firstLimited",
+        "step": 1357,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.22968749999999935,
+        "projectHeight": 0.4617532841801258,
+        "legHeight": 0.4525915923684821,
+        "legForce": 736.4636654097591,
+        "legRate": 0.1913191421652617,
+        "legRateAfter": 1.0547513370268495,
+        "demandLocalY": -0.49414923525748755,
+        "demandLocalZ": -2.751460549238187,
+        "postureError": 0.0002253482299218379,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -370.9211758985349,
+        "axialForceTerms": {
+          "loadNewtons": 712.6160477728744,
+          "implicitSpringNewtons": 239.6944653131651,
+          "implicitDampingNewtons": -1323.2316889845742,
+          "preparedSpringNewtons": 263.86585012003036,
+          "preparedDampingNewtons": -240.01823248314568,
+          "preparedForceNewtons": 736.4636654097591,
+          "axialImplicitLegPushNewtons": -370.9211758985349,
+          "implicitSumMinusEquivalentFormulaNewtons": 1.1368683772161603e-13
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -948.7665316943761,
+        "requestedForeAftNewtons": -5282.804254537319,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1358,
+        "slot": "last",
+        "step": 1358,
+        "substep": 32,
+        "phase": "landing",
+        "phaseTime": 0.2624999999999999,
+        "projectHeight": 0.5023524621031715,
+        "legHeight": 0.47966557437396107,
+        "legForce": -827.798162527985,
+        "legRate": 0.5199085724904442,
+        "legRateAfter": 0.3087010648905032,
+        "demandLocalY": -0.3619802173210623,
+        "demandLocalZ": -0.8406670267604321,
+        "postureError": 0.014607014254727725,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -569.9035050585815,
+        "axialForceTerms": {
+          "loadNewtons": 353.281429802067,
+          "implicitSpringNewtons": -535.9059458262891,
+          "implicitDampingNewtons": -387.2789890343594,
+          "preparedSpringNewtons": -528.8315464225484,
+          "preparedDampingNewtons": -652.2480459075036,
+          "preparedForceNewtons": -827.798162527985,
+          "axialImplicitLegPushNewtons": -569.9035050585815,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -695.0020172564396,
+        "requestedForeAftNewtons": -1614.0806913800297,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1358,
+        "slot": "firstLimited",
+        "step": 1358,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.24635416666666596,
+        "projectHeight": 0.4828034216609212,
+        "legHeight": 0.46639117294792565,
+        "legForce": -385.9399468995998,
+        "legRate": 0.5067848669121233,
+        "legRateAfter": 0.3790204255675448,
+        "demandLocalY": -0.2057234389775519,
+        "demandLocalZ": -0.9132269847592228,
+        "postureError": 0.00700101193097526,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -234.3397513433349,
+        "axialForceTerms": {
+          "loadNewtons": 415.0413335260943,
+          "implicitSpringNewtons": -173.88338197281993,
+          "implicitDampingNewtons": -475.4977028966094,
+          "preparedSpringNewtons": -165.19749722023036,
+          "preparedDampingNewtons": -635.7837832054638,
+          "preparedForceNewtons": -385.9399468995998,
+          "axialImplicitLegPushNewtons": -234.3397513433349,
+          "implicitSumMinusEquivalentFormulaNewtons": -8.526512829121202e-14
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -394.98900283689966,
+        "requestedForeAftNewtons": -1753.3958107377077,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1360,
+        "slot": "last",
+        "step": 1360,
+        "substep": 32,
+        "phase": "landing",
+        "phaseTime": 0.2958333333333349,
+        "projectHeight": 0.5428572730227174,
+        "legHeight": 0.5057572399656253,
+        "legForce": -1830.972691422372,
+        "legRate": 0.5938259893781057,
+        "legRateAfter": 0.20033260424259558,
+        "demandLocalY": -0.7304960848447618,
+        "demandLocalZ": -0.6666137797919456,
+        "postureError": 0.029104681606787513,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -1341.9089831888566,
+        "axialForceTerms": {
+          "loadNewtons": 252.43057347903328,
+          "implicitSpringNewtons": -1343.013541743995,
+          "implicitDampingNewtons": -251.32601492389486,
+          "preparedSpringNewtons": -1338.4225862301023,
+          "preparedDampingNewtons": -744.980678671303,
+          "preparedForceNewtons": -1830.972691422372,
+          "axialImplicitLegPushNewtons": -1341.9089831888566,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -1402.5524829019428,
+        "requestedForeAftNewtons": -1279.8984572005356,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1360,
+        "slot": "firstLimited",
+        "step": 1360,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.27968750000000075,
+        "projectHeight": 0.5232172983036955,
+        "legHeight": 0.4934240465545273,
+        "legForce": -1326.470658735338,
+        "legRate": 0.5507215362604692,
+        "legRateAfter": 0.24764413317500172,
+        "demandLocalY": -0.5425827182065289,
+        "demandLocalZ": -0.7531968976246394,
+        "postureError": 0.0223590541545332,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -951.9219774762123,
+        "axialForceTerms": {
+          "loadNewtons": 297.08320679531886,
+          "implicitSpringNewtons": -938.324786812185,
+          "implicitDampingNewtons": -310.6803974593461,
+          "preparedSpringNewtons": -932.6496087602578,
+          "preparedDampingNewtons": -690.904256770399,
+          "preparedForceNewtons": -1326.470658735338,
+          "axialImplicitLegPushNewtons": -951.9219774762123,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -1041.7588189565356,
+        "requestedForeAftNewtons": -1446.1380434393077,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1361,
+        "slot": "last",
+        "step": 1361,
+        "substep": 32,
+        "phase": "landing",
+        "phaseTime": 0.3125000000000024,
+        "projectHeight": 0.5625803544232226,
+        "legHeight": 0.5176569581574978,
+        "legForce": -1425.1004204582352,
+        "legRate": 0.18961546135000892,
+        "legRateAfter": 1.5036140094627604,
+        "demandLocalY": -1.8739370724641302,
+        "demandLocalZ": -7.6254166892975705,
+        "postureError": 0.0536950469920486,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -3108.0268967306674,
+        "axialForceTerms": {
+          "loadNewtons": 539.6148024938377,
+          "implicitSpringNewtons": -1761.2921536238548,
+          "implicitDampingNewtons": -1886.3495456006503,
+          "preparedSpringNewtons": -1726.8343325736666,
+          "preparedDampingNewtons": -237.8808903784064,
+          "preparedForceNewtons": -1425.1004204582352,
+          "axialImplicitLegPushNewtons": -3108.0268967306674,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -3597.95917913113,
+        "requestedForeAftNewtons": -14640.800043451336,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1361,
+        "slot": "firstLimited",
+        "step": 1361,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.29635416666666825,
+        "projectHeight": 0.5434913206112969,
+        "legHeight": 0.5061430115265456,
+        "legForce": -1847.9377303814476,
+        "legRate": 0.5954320238653195,
+        "legRateAfter": 1.9860568274408679,
+        "demandLocalY": -2.2170261217753318,
+        "demandLocalZ": -6.412508085386095,
+        "postureError": 0.029497511108345243,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -3638.0511771448964,
+        "axialForceTerms": {
+          "loadNewtons": 251.10725846018474,
+          "implicitSpringNewtons": -1397.5632719508576,
+          "implicitDampingNewtons": -2491.595163654224,
+          "preparedSpringNewtons": -1352.0494696553378,
+          "preparedDampingNewtons": -746.9955191862947,
+          "preparedForceNewtons": -1847.9377303814476,
+          "axialImplicitLegPushNewtons": -3638.0511771448964,
+          "implicitSumMinusEquivalentFormulaNewtons": -4.547473508864641e-13
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -4256.690153808637,
+        "requestedForeAftNewtons": -12312.015523941303,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1363,
+        "slot": "last",
+        "step": 1363,
+        "substep": 32,
+        "phase": "landing",
+        "phaseTime": 0.3458333333333374,
+        "projectHeight": 0.5848304941318296,
+        "legHeight": 0.5381301552248084,
+        "legForce": -465.3732105883059,
+        "legRate": -0.29862197340760227,
+        "legRateAfter": 1.4158494551640468,
+        "demandLocalY": -1.7755242685422048,
+        "demandLocalZ": -9.08254632956124,
+        "postureError": 0.13711151020337503,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -2648.6991617507633,
+        "axialForceTerms": {
+          "loadNewtons": 779.0274420247225,
+          "implicitSpringNewtons": -1651.4815305190207,
+          "implicitDampingNewtons": -1776.2450732564653,
+          "preparedSpringNewtons": -1619.0349805048445,
+          "preparedDampingNewtons": 374.6343278918161,
+          "preparedForceNewtons": -465.3732105883059,
+          "axialImplicitLegPushNewtons": -2648.6991617507633,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -3409.006595601033,
+        "requestedForeAftNewtons": -17438.48895275758,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1363,
+        "slot": "firstLimited",
+        "step": 1363,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.32968750000000324,
+        "projectHeight": 0.5751789334156984,
+        "legHeight": 0.5288263029070877,
+        "legForce": -860.7711092608088,
+        "legRate": -0.12503499209728972,
+        "legRateAfter": 1.5951892235640341,
+        "demandLocalY": -1.920578536799689,
+        "demandLocalZ": -9.314948073358645,
+        "postureError": 0.09248135116627766,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -3055.4240531568203,
+        "axialForceTerms": {
+          "loadNewtons": 710.2399885698497,
+          "implicitSpringNewtons": -1764.4293843745393,
+          "implicitDampingNewtons": -2001.2346573521304,
+          "preparedSpringNewtons": -1727.8729646678635,
+          "preparedDampingNewtons": 156.86186683720496,
+          "preparedForceNewtons": -860.7711092608088,
+          "axialImplicitLegPushNewtons": -3055.4240531568203,
+          "implicitSumMinusEquivalentFormulaNewtons": 4.547473508864641e-13
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -3687.510790655403,
+        "requestedForeAftNewtons": -17884.7003008486,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1364,
+        "slot": "last",
+        "step": 1364,
+        "substep": 32,
+        "phase": "landing",
+        "phaseTime": 0.3625000000000049,
+        "projectHeight": 0.5915426327064589,
+        "legHeight": 0.5463952669307389,
+        "legForce": 16.014545742117207,
+        "legRate": -0.43641793978526305,
+        "legRateAfter": 1.2470610198383498,
+        "demandLocalY": -1.6176126393354289,
+        "demandLocalZ": -8.87269034704243,
+        "postureError": 0.18751042905571863,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -2124.5619291502094,
+        "axialForceTerms": {
+          "loadNewtons": 807.8527131832436,
+          "implicitSpringNewtons": -1367.9220442970313,
+          "implicitDampingNewtons": -1564.4925980364217,
+          "preparedSpringNewtons": -1339.3435625924023,
+          "preparedDampingNewtons": 547.5053951512759,
+          "preparedForceNewtons": 16.014545742117207,
+          "axialImplicitLegPushNewtons": -2124.5619291502094,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -3105.8162675240233,
+        "requestedForeAftNewtons": -17035.565466321466,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1364,
+        "slot": "firstLimited",
+        "step": 1364,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.34635416666667074,
+        "projectHeight": 0.5850694194871094,
+        "legHeight": 0.5384095820265917,
+        "legForce": -446.3171206091774,
+        "legRate": -0.3057856294790555,
+        "legRateAfter": 1.401501259337499,
+        "demandLocalY": -1.7620321092094025,
+        "demandLocalZ": -9.028235740827094,
+        "postureError": 0.1386417526653053,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -2620.3009395633985,
+        "axialForceTerms": {
+          "loadNewtons": 782.0594395646601,
+          "implicitSpringNewtons": -1644.1157451513984,
+          "implicitDampingNewtons": -1758.2446339766607,
+          "preparedSpringNewtons": -1611.9980079582472,
+          "preparedDampingNewtons": 383.62144778440967,
+          "preparedForceNewtons": -446.3171206091774,
+          "axialImplicitLegPushNewtons": -2620.3009395633985,
+          "implicitSumMinusEquivalentFormulaNewtons": -4.547473508864641e-13
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -3383.1016496820525,
+        "requestedForeAftNewtons": -17334.212622388022,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1365,
+        "slot": "last",
+        "step": 1365,
+        "substep": 32,
+        "phase": "landing",
+        "phaseTime": 0.37916666666667237,
+        "projectHeight": 0.5975818060713253,
+        "legHeight": 0.5532169301110053,
+        "legForce": 364.2872376443154,
+        "legRate": -0.47433337602355624,
+        "legRateAfter": 0.8766704687070641,
+        "demandLocalY": -1.304164500781195,
+        "demandLocalZ": -7.914350860081677,
+        "postureError": 0.23922472446771237,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -1350.6965457698782,
+        "axialForceTerms": {
+          "loadNewtons": 767.7181880081389,
+          "implicitSpringNewtons": -1018.5932836719841,
+          "implicitDampingNewtons": -1099.8214501060331,
+          "preparedSpringNewtons": -998.5029187641139,
+          "preparedDampingNewtons": 595.0719684002904,
+          "preparedForceNewtons": 364.2872376443154,
+          "axialImplicitLegPushNewtons": -1350.6965457698782,
+          "implicitSumMinusEquivalentFormulaNewtons": -2.2737367544323206e-13
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -2503.9958414998946,
+        "requestedForeAftNewtons": -15195.55365135682,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1365,
+        "slot": "firstLimited",
+        "step": 1365,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.36302083333333823,
+        "projectHeight": 0.5917324093648334,
+        "legHeight": 0.5466305914884245,
+        "legForce": 29.10781023833374,
+        "legRate": -0.43905015500192135,
+        "legRateAfter": 1.2376366112909132,
+        "demandLocalY": -1.6090981631523515,
+        "demandLocalZ": -8.851287974277,
+        "postureError": 0.18911703569089777,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -2102.7315849887996,
+        "axialForceTerms": {
+          "loadNewtons": 807.5508664878963,
+          "implicitSpringNewtons": -1357.6131862032908,
+          "implicitDampingNewtons": -1552.669265273405,
+          "preparedSpringNewtons": -1329.250680527874,
+          "preparedDampingNewtons": 550.8076242783114,
+          "preparedForceNewtons": 29.10781023833374,
+          "axialImplicitLegPushNewtons": -2102.7315849887996,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -3089.468473252515,
+        "requestedForeAftNewtons": -16994.47291061184,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1366,
+        "slot": "last",
+        "step": 1366,
+        "substep": 7,
+        "phase": "landing",
+        "phaseTime": 0.3828125000000059,
+        "projectHeight": 0.5989873324679934,
+        "legHeight": 0.5545128151166347,
+        "legForce": 368.3222612008908,
+        "legRate": -0.44644362053956305,
+        "legRateAfter": 0.7864274183084439,
+        "demandLocalY": -1.2286231092694186,
+        "demandLocalZ": -7.551173654070664,
+        "postureError": 0.25057804094069314,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -1196.3906799912434,
+        "axialForceTerms": {
+          "loadNewtons": 734.3491910811904,
+          "implicitSpringNewtons": -944.1322750817114,
+          "implicitDampingNewtons": -986.6075959907226,
+          "preparedSpringNewtons": -926.1099800788095,
+          "preparedDampingNewtons": 560.0830501985099,
+          "preparedForceNewtons": 368.3222612008908,
+          "axialImplicitLegPushNewtons": -1196.3906799912434,
+          "implicitSumMinusEquivalentFormulaNewtons": -4.547473508864641e-13
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -2358.956369797284,
+        "requestedForeAftNewtons": -14498.253415815674,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      },
+      {
+        "recordedStep": 1366,
+        "slot": "firstLimited",
+        "step": 1366,
+        "substep": 1,
+        "phase": "landing",
+        "phaseTime": 0.37968750000000573,
+        "projectHeight": 0.597778133729925,
+        "legHeight": 0.5534063815129937,
+        "legForce": 373.6601250243227,
+        "legRate": -0.47455417464219657,
+        "legRateAfter": 0.9937603726691397,
+        "demandLocalY": -1.4061188542865706,
+        "demandLocalZ": -8.267008997124332,
+        "postureError": 0.2408477749241475,
+        "limit": "flight",
+        "projected": [
+          0,
+          0,
+          0
+        ],
+        "applied": [
+          0,
+          0,
+          0
+        ],
+        "axialImplicitLegPushNewtons": -1491.1783764536135,
+        "axialForceTerms": {
+          "loadNewtons": 765.9067989964632,
+          "implicitSpringNewtons": -1010.3693191046374,
+          "implicitDampingNewtons": -1246.7158563454393,
+          "preparedSpringNewtons": -987.5956438976364,
+          "preparedDampingNewtons": 595.3489699254959,
+          "preparedForceNewtons": 373.6601250243227,
+          "axialImplicitLegPushNewtons": -1491.1783764536135,
+          "implicitSumMinusEquivalentFormulaNewtons": 0.0
+        },
+        "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+        "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+        "requestedDeckNormalNewtons": -2699.7482002302154,
+        "requestedForeAftNewtons": -15872.657274478717,
+        "uprightFlightProjectionGuard": true,
+        "preprojectionHeightPositive": true,
+        "axialPushPositiveButDeckNormalNotPositive": false
+      }
+    ],
+    "firstRetainedSustainedUnloadingSample": {
+      "step": 1357,
+      "substep": 1,
+      "axialImplicitLegPushNewtons": -370.9211758985349,
+      "axialForceTerms": {
+        "loadNewtons": 712.6160477728744,
+        "implicitSpringNewtons": 239.6944653131651,
+        "implicitDampingNewtons": -1323.2316889845742,
+        "preparedSpringNewtons": 263.86585012003036,
+        "preparedDampingNewtons": -240.01823248314568,
+        "preparedForceNewtons": 736.4636654097591,
+        "axialImplicitLegPushNewtons": -370.9211758985349,
+        "implicitSumMinusEquivalentFormulaNewtons": 1.1368683772161603e-13
+      },
+      "axialForceBasis": "Captured demandUp: world vertical during landing; attempted implicit solve before unilateral contact/fallback.",
+      "requestedImpulseBasis": "Board local +Y up, +Z toward nose; demandLocalY/Z are N*s, divided by this contact substep seconds for N.",
+      "requestedDeckNormalNewtons": -948.7665316943761,
+      "requestedForeAftNewtons": -5282.804254537319,
+      "uprightFlightProjectionGuard": true,
+      "preprojectionHeightPositive": true,
+      "axialPushPositiveButDeckNormalNotPositive": false
+    }
+  },
+  "events": {
+    "firstPopUp": {
+      "step": 1300,
+      "seaTime": 297.99602272193914,
+      "physicalSeconds": 21.666666666666668
+    },
+    "firstLanding": {
+      "step": 1343,
+      "seaTime": 298.7126893886058,
+      "physicalSeconds": 22.383333333333333
+    },
+    "stop": {
+      "kind": "first-published-fall-or-separation",
+      "step": 1366,
+      "phase": "fallen",
+      "separation": "lost board",
+      "resets": 0
+    },
+    "firstContactLoss": {
+      "step": 1366,
+      "seaTime": 299.0960227219391,
+      "physicalSeconds": 22.766666666666666,
+      "ridePhase": "fallen",
+      "separation": "lost board"
+    },
+    "loss": {
+      "trigger": "posture-error",
+      "selectedCause": "lost board",
+      "dominantLimit": "flight",
+      "step": 1366,
+      "substep": 7,
+      "phaseTime": 0.3828125000000059,
+      "postureError": 0.25057804094069314,
+      "flightTime": 0,
+      "inContact": true
+    }
+  },
+  "allEventMetadataMatchV7": true,
+  "sidecarChecks": [
+    {
+      "file": "loft-initial.json",
+      "V11": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-initial.json",
+        "bytes": 1099036,
+        "sha256": "86842eafba879130ac5a388f3720e0a5090a9c8343d389ee1cb2752ba02e460a"
+      },
+      "V7": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/loft-initial.json",
+        "bytes": 1099036,
+        "sha256": "685cb5e28d9c4151019f6d72cf55b4911ec294a2b1868634b5ea42de3301f431"
+      },
+      "arrayCount": 37,
+      "arrays": [
+        {
+          "array": "indices",
+          "activeWords": 55860,
+          "bytes": 223440,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "25a64109a709337e219241176990f9a97a208f5c84ac9050df2b05b0805bdbb6",
+          "V7WordSha256": "25a64109a709337e219241176990f9a97a208f5c84ac9050df2b05b0805bdbb6"
+        },
+        {
+          "array": "lift",
+          "activeWords": 9782,
+          "bytes": 39128,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "65d1d139c27b72e4871b4c695761c955e9cff242f54be9734cd9858034d38390",
+          "V7WordSha256": "65d1d139c27b72e4871b4c695761c955e9cff242f54be9734cd9858034d38390"
+        },
+        {
+          "array": "mask",
+          "activeWords": 9782,
+          "bytes": 39128,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "57374cfa49289883c40ca8bd058ff442cd5d48f53bb5c55e15824ea6750689ef",
+          "V7WordSha256": "57374cfa49289883c40ca8bd058ff442cd5d48f53bb5c55e15824ea6750689ef"
+        },
+        {
+          "array": "normals",
+          "activeWords": 29346,
+          "bytes": 117384,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "58b8145017d585c2e409e0879356cc4aa229c2ac463a128ca36b2ac62f759624",
+          "V7WordSha256": "58b8145017d585c2e409e0879356cc4aa229c2ac463a128ca36b2ac62f759624"
+        },
+        {
+          "array": "positions",
+          "activeWords": 29346,
+          "bytes": 117384,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "df4880a1a3a7fcdd6671da4d05353dee499bcc6fe74b17256a3a4c3a9fc04c81",
+          "V7WordSha256": "df4880a1a3a7fcdd6671da4d05353dee499bcc6fe74b17256a3a4c3a9fc04c81"
+        },
+        {
+          "array": "sheet",
+          "activeWords": 9782,
+          "bytes": 39128,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "9ed1b76c1ce1101b9f895fe3524f9a38b760d21747c547c9336311a910cf5421",
+          "V7WordSha256": "9ed1b76c1ce1101b9f895fe3524f9a38b760d21747c547c9336311a910cf5421"
+        },
+        {
+          "array": "sheetBack",
+          "activeWords": 9782,
+          "bytes": 39128,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "9958e034614b2081b6c887fc484761a67d5f04f195d252a8947a58624ee247c8",
+          "V7WordSha256": "9958e034614b2081b6c887fc484761a67d5f04f195d252a8947a58624ee247c8"
+        },
+        {
+          "array": "sheetWeight",
+          "activeWords": 9782,
+          "bytes": 39128,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "9c0f605678d250db1b1118a7a0b1442f2349774ade0e0046838af7602e581fa5",
+          "V7WordSha256": "9c0f605678d250db1b1118a7a0b1442f2349774ade0e0046838af7602e581fa5"
+        },
+        {
+          "array": "sliceAnchorVX",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4",
+          "V7WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        {
+          "array": "sliceAnchorVZ",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4",
+          "V7WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        {
+          "array": "sliceCollapse",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "15f82e4c55954e7bd848512e08ac38e33fba855e3d3ae39173543daede9ff273",
+          "V7WordSha256": "15f82e4c55954e7bd848512e08ac38e33fba855e3d3ae39173543daede9ff273"
+        },
+        {
+          "array": "sliceFade",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "e38072c1b9a5517fb6890146989f5eefeb2f31c1eb2e2cb1bd5d85e1f386a7bb",
+          "V7WordSha256": "e38072c1b9a5517fb6890146989f5eefeb2f31c1eb2e2cb1bd5d85e1f386a7bb"
+        },
+        {
+          "array": "sliceFormed",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "5bb5a63e168edbcc2be41b6a1b42a496b7c4ded0497d05296520f19c6aeba120",
+          "V7WordSha256": "5bb5a63e168edbcc2be41b6a1b42a496b7c4ded0497d05296520f19c6aeba120"
+        },
+        {
+          "array": "sliceFront",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "5607f6a6a3016e7b80d35e5feea036eab5faa99a2c758bbea70212a406a31573",
+          "V7WordSha256": "5607f6a6a3016e7b80d35e5feea036eab5faa99a2c758bbea70212a406a31573"
+        },
+        {
+          "array": "sliceJoined",
+          "activeWords": 73,
+          "bytes": 73,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "fb74dbfa22c124dabf8012ec3b8d72bee06053b971ec7330ae293da2e2227702",
+          "V7WordSha256": "fb74dbfa22c124dabf8012ec3b8d72bee06053b971ec7330ae293da2e2227702"
+        },
+        {
+          "array": "sliceLife",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "a5079c2aa4714754ca8e055196967de853128139700e48e08d7c1831364480c8",
+          "V7WordSha256": "a5079c2aa4714754ca8e055196967de853128139700e48e08d7c1831364480c8"
+        },
+        {
+          "array": "sliceMouth",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "7a4d9dc04952bf4667f70437b74eee91a0ddcecef95041c5c144b759c3a8cfa6",
+          "V7WordSha256": "7a4d9dc04952bf4667f70437b74eee91a0ddcecef95041c5c144b759c3a8cfa6"
+        },
+        {
+          "array": "sliceOverturned",
+          "activeWords": 73,
+          "bytes": 73,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "404d059b9c0bed4697415f428672fcf64a899d1410ef5d1d629aa3ac453739e0",
+          "V7WordSha256": "404d059b9c0bed4697415f428672fcf64a899d1410ef5d1d629aa3ac453739e0"
+        },
+        {
+          "array": "slicePhase",
+          "activeWords": 73,
+          "bytes": 73,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "e918ebdb653583b2f5cdadd94a3250b6a863d61d3daf19fbe84077145f5a5362",
+          "V7WordSha256": "e918ebdb653583b2f5cdadd94a3250b6a863d61d3daf19fbe84077145f5a5362"
+        },
+        {
+          "array": "sliceRayX",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4",
+          "V7WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        {
+          "array": "sliceRayZ",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "53fe451693731fd85f56201a99ab14fd510b2eda5127e0f1642140a058d231a2",
+          "V7WordSha256": "53fe451693731fd85f56201a99ab14fd510b2eda5127e0f1642140a058d231a2"
+        },
+        {
+          "array": "sliceRestClimb",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "4765c611b45419f24f97951417a52856b5c884ca00c00d6b8d41a2466b88ec52",
+          "V7WordSha256": "4765c611b45419f24f97951417a52856b5c884ca00c00d6b8d41a2466b88ec52"
+        },
+        {
+          "array": "sliceRestEnd",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "70c18b35e13893902f1299128d9c40b9a07be728a19e76db4f4707d506f8f8be",
+          "V7WordSha256": "70c18b35e13893902f1299128d9c40b9a07be728a19e76db4f4707d506f8f8be"
+        },
+        {
+          "array": "sliceRestHold",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d8f4d2c24f166b29fd2baaf68e162cd14cbd2f857d80b2053c1331ba22fab249",
+          "V7WordSha256": "d8f4d2c24f166b29fd2baaf68e162cd14cbd2f857d80b2053c1331ba22fab249"
+        },
+        {
+          "array": "sliceSigma",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "09dbe1efaec0479e21da263ff8da8e24904fb8429331db67343f018fd9751b16",
+          "V7WordSha256": "09dbe1efaec0479e21da263ff8da8e24904fb8429331db67343f018fd9751b16"
+        },
+        {
+          "array": "sliceTau",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "367027189d07cbca60eaac8631fba577093dcd447ce48d35c8772ffe913efa56",
+          "V7WordSha256": "367027189d07cbca60eaac8631fba577093dcd447ce48d35c8772ffe913efa56"
+        },
+        {
+          "array": "sliceTipAlong",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "68945d483cf7e9e4748fc80b2a24d71e4cf8a2d3c47749a18997fa8466618209",
+          "V7WordSha256": "68945d483cf7e9e4748fc80b2a24d71e4cf8a2d3c47749a18997fa8466618209"
+        },
+        {
+          "array": "sliceTipGap",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4",
+          "V7WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        {
+          "array": "sliceTipTransportAlong",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4",
+          "V7WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        {
+          "array": "sliceTipTransportUp",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4",
+          "V7WordSha256": "3453f578e4f10a1cafd84b6500620ae42aeb9b31d700b3b9c3ef5498062a25d4"
+        },
+        {
+          "array": "sliceTipUp",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "b6cbe554ebc732703c333676f1719e5d0859c6e9f644ab44032aec4a1a3c2a0a",
+          "V7WordSha256": "b6cbe554ebc732703c333676f1719e5d0859c6e9f644ab44032aec4a1a3c2a0a"
+        },
+        {
+          "array": "sliceTipX",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "b7e265a074f7460de898c71e8d222204053c29aee335f8be855d2f8c76cb548e",
+          "V7WordSha256": "b7e265a074f7460de898c71e8d222204053c29aee335f8be855d2f8c76cb548e"
+        },
+        {
+          "array": "sliceTipY",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "ea144e01e87f347956a01b75c90778f8f09e7fb6e3e243bd25d2c10ffe2e9273",
+          "V7WordSha256": "ea144e01e87f347956a01b75c90778f8f09e7fb6e3e243bd25d2c10ffe2e9273"
+        },
+        {
+          "array": "sliceTipZ",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "413d030cb5d91a948a0544ceb222eada8febb54d8947d58566e209b5e46a53e4",
+          "V7WordSha256": "413d030cb5d91a948a0544ceb222eada8febb54d8947d58566e209b5e46a53e4"
+        },
+        {
+          "array": "sliceToeClimb",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "73acf09fc4599c13695cf9a9be6d6bdc9bf2ba206610525ec50cbca4a34b2dae",
+          "V7WordSha256": "73acf09fc4599c13695cf9a9be6d6bdc9bf2ba206610525ec50cbca4a34b2dae"
+        },
+        {
+          "array": "sliceWeight",
+          "activeWords": 73,
+          "bytes": 292,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "b10885d8dc17b32396a0e1481001f280ade8b52d4e4a63125d00be6fc55ec5ec",
+          "V7WordSha256": "b10885d8dc17b32396a0e1481001f280ade8b52d4e4a63125d00be6fc55ec5ec"
+        },
+        {
+          "array": "throat",
+          "activeWords": 39128,
+          "bytes": 156512,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d7a8960140a35b61df412fb16549f9760a18fffed9c9209a6057e62d5436e584",
+          "V7WordSha256": "d7a8960140a35b61df412fb16549f9760a18fffed9c9209a6057e62d5436e584"
+        }
+      ],
+      "everyActiveGeometryOpticalAndMetadataWordEqual": true,
+      "rawFrontPacketDescriptorsAndAllWordsEqual": true,
+      "V11Epoch": {
+        "step": 0,
+        "seaTime": 276.3293560552737,
+        "surfaceRevision": 5,
+        "drawnWaterTime": 276.3293560552737
+      },
+      "V7Epoch": {
+        "step": 0,
+        "seaTime": 276.3293560552737,
+        "surfaceRevision": 4,
+        "drawnWaterTime": 276.3293560552737
+      },
+      "allOtherSidecarFieldsEqual": true
+    },
+    {
+      "file": "loft-first-pop-up.json",
+      "V11": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-first-pop-up.json",
+        "bytes": 1073481,
+        "sha256": "37826d5550b4563218752ef9495846f10a52fb71a5528cf787413352aa0df908"
+      },
+      "V7": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/loft-first-pop-up.json",
+        "bytes": 1073481,
+        "sha256": "a5beb80b3f52ea64aa6dda46da89431c726e05887ebad7c359f96336a0ca97fa"
+      },
+      "arrayCount": 37,
+      "arrays": [
+        {
+          "array": "indices",
+          "activeWords": 55062,
+          "bytes": 220248,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "bc5852024ee3f0b946e639dbd3c80011dab0e35c44f77b65b0c366eded63c852",
+          "V7WordSha256": "bc5852024ee3f0b946e639dbd3c80011dab0e35c44f77b65b0c366eded63c852"
+        },
+        {
+          "array": "lift",
+          "activeWords": 9514,
+          "bytes": 38056,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "75cc3c67200469ce6af8bb73cbc56897a914290a8cba0e6b502ddb3b1439e46c",
+          "V7WordSha256": "75cc3c67200469ce6af8bb73cbc56897a914290a8cba0e6b502ddb3b1439e46c"
+        },
+        {
+          "array": "mask",
+          "activeWords": 9514,
+          "bytes": 38056,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "51de468c498458147175c33b6bc3cee16a5de61faaa3f1147084b8982155fc40",
+          "V7WordSha256": "51de468c498458147175c33b6bc3cee16a5de61faaa3f1147084b8982155fc40"
+        },
+        {
+          "array": "normals",
+          "activeWords": 28542,
+          "bytes": 114168,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "514097ed026f3fe75893b76df2d927c0ff6d2385783277a95482623e2af909b2",
+          "V7WordSha256": "514097ed026f3fe75893b76df2d927c0ff6d2385783277a95482623e2af909b2"
+        },
+        {
+          "array": "positions",
+          "activeWords": 28542,
+          "bytes": 114168,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "7429e3a3a82c19ea266b5e10c5fef3ead4a1ca21824370ca09259c50d377970f",
+          "V7WordSha256": "7429e3a3a82c19ea266b5e10c5fef3ead4a1ca21824370ca09259c50d377970f"
+        },
+        {
+          "array": "sheet",
+          "activeWords": 9514,
+          "bytes": 38056,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "4cf899ccf806d2cfcf6f1aa7d8241d7fc30f54a0b86925ab4e4b2ef16380bd44",
+          "V7WordSha256": "4cf899ccf806d2cfcf6f1aa7d8241d7fc30f54a0b86925ab4e4b2ef16380bd44"
+        },
+        {
+          "array": "sheetBack",
+          "activeWords": 9514,
+          "bytes": 38056,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "f30bfb8c6efa211786c9dd336d9ee5f71f8874861cb4ecc3c0fe28c527370a51",
+          "V7WordSha256": "f30bfb8c6efa211786c9dd336d9ee5f71f8874861cb4ecc3c0fe28c527370a51"
+        },
+        {
+          "array": "sheetWeight",
+          "activeWords": 9514,
+          "bytes": 38056,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "700143a0a911425aec7fe059c58812d1de0a2062326f53f145158c4021940412",
+          "V7WordSha256": "700143a0a911425aec7fe059c58812d1de0a2062326f53f145158c4021940412"
+        },
+        {
+          "array": "sliceAnchorVX",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5",
+          "V7WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5"
+        },
+        {
+          "array": "sliceAnchorVZ",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5",
+          "V7WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5"
+        },
+        {
+          "array": "sliceCollapse",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "9c344df409a05367ffa856bdca06ab75b7617574723b76a6e665e4c2e19b2252",
+          "V7WordSha256": "9c344df409a05367ffa856bdca06ab75b7617574723b76a6e665e4c2e19b2252"
+        },
+        {
+          "array": "sliceFade",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "0c7e1d3197bccde6333786c5ddbb0168e351c1e549b913fc7298cdff3bd20582",
+          "V7WordSha256": "0c7e1d3197bccde6333786c5ddbb0168e351c1e549b913fc7298cdff3bd20582"
+        },
+        {
+          "array": "sliceFormed",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "eaae2feb948097d52956121189452afea4c4c5204b03d141882b32f9b74dd84f",
+          "V7WordSha256": "eaae2feb948097d52956121189452afea4c4c5204b03d141882b32f9b74dd84f"
+        },
+        {
+          "array": "sliceFront",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "06b010228616300919121d20bc55a5ceb10690e1bfce33230f3ca17242ef25b5",
+          "V7WordSha256": "06b010228616300919121d20bc55a5ceb10690e1bfce33230f3ca17242ef25b5"
+        },
+        {
+          "array": "sliceJoined",
+          "activeWords": 71,
+          "bytes": 71,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "ff4d2440e201be9416768840b17cc1feac5c1b626db35c456b70c36e36ec5978",
+          "V7WordSha256": "ff4d2440e201be9416768840b17cc1feac5c1b626db35c456b70c36e36ec5978"
+        },
+        {
+          "array": "sliceLife",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "ecdc7db56ffeb66e59f3ed73fd3818d09154d33c90bffb4a6c593e3fe65a8933",
+          "V7WordSha256": "ecdc7db56ffeb66e59f3ed73fd3818d09154d33c90bffb4a6c593e3fe65a8933"
+        },
+        {
+          "array": "sliceMouth",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "8ed8a473b2197eaf7facb79425536c8642170f9b955e9dbb83b84dbb3f53312c",
+          "V7WordSha256": "8ed8a473b2197eaf7facb79425536c8642170f9b955e9dbb83b84dbb3f53312c"
+        },
+        {
+          "array": "sliceOverturned",
+          "activeWords": 71,
+          "bytes": 71,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "111ea9f4ebfb2dcde3de1540a37cc4857f6db69fbc8c9b16b9086e5188243394",
+          "V7WordSha256": "111ea9f4ebfb2dcde3de1540a37cc4857f6db69fbc8c9b16b9086e5188243394"
+        },
+        {
+          "array": "slicePhase",
+          "activeWords": 71,
+          "bytes": 71,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "fa22b66de1691f09b825948cf1570103e076ff1cbb12a94561e93b9945d56f7d",
+          "V7WordSha256": "fa22b66de1691f09b825948cf1570103e076ff1cbb12a94561e93b9945d56f7d"
+        },
+        {
+          "array": "sliceRayX",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5",
+          "V7WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5"
+        },
+        {
+          "array": "sliceRayZ",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "8732e98bee3a07b0117bef4cdc248b1798ace7ac0d25c986c951e0f1cb9d2e92",
+          "V7WordSha256": "8732e98bee3a07b0117bef4cdc248b1798ace7ac0d25c986c951e0f1cb9d2e92"
+        },
+        {
+          "array": "sliceRestClimb",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "f3b7c94c0023952ceddd3c2644a544377738410ea418648b9a135a07cd3a828a",
+          "V7WordSha256": "f3b7c94c0023952ceddd3c2644a544377738410ea418648b9a135a07cd3a828a"
+        },
+        {
+          "array": "sliceRestEnd",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d0dbb0b919f370607df63c0d06d09bb9cabd2c8534a08ad655cb62457eda7bae",
+          "V7WordSha256": "d0dbb0b919f370607df63c0d06d09bb9cabd2c8534a08ad655cb62457eda7bae"
+        },
+        {
+          "array": "sliceRestHold",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "4850ea712b6c28c256827e4acbb4480b5c010d41d90564de646b15e1ed4b8b72",
+          "V7WordSha256": "4850ea712b6c28c256827e4acbb4480b5c010d41d90564de646b15e1ed4b8b72"
+        },
+        {
+          "array": "sliceSigma",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "6bb8f900bad0180e778a326ae8b688c6e3ca164475999eacd1251dc2e0b91929",
+          "V7WordSha256": "6bb8f900bad0180e778a326ae8b688c6e3ca164475999eacd1251dc2e0b91929"
+        },
+        {
+          "array": "sliceTau",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "8186bab43bab3ad8d2ec077c7a19eb6f4853dacad16a5a6ba6c9cbd209f48210",
+          "V7WordSha256": "8186bab43bab3ad8d2ec077c7a19eb6f4853dacad16a5a6ba6c9cbd209f48210"
+        },
+        {
+          "array": "sliceTipAlong",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "b644d3f07407fead86f7901603cd3990b1de6218447212d61d480bd7a50e25bd",
+          "V7WordSha256": "b644d3f07407fead86f7901603cd3990b1de6218447212d61d480bd7a50e25bd"
+        },
+        {
+          "array": "sliceTipGap",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5",
+          "V7WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5"
+        },
+        {
+          "array": "sliceTipTransportAlong",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5",
+          "V7WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5"
+        },
+        {
+          "array": "sliceTipTransportUp",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5",
+          "V7WordSha256": "d72511e843bf5a2e44e8bd1da20c2626311d1d6679424f717807a1db731d62f5"
+        },
+        {
+          "array": "sliceTipUp",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "02e96d0a57563fbfa4d4df873579a25d585ae267b89664fe40ffaa42962787db",
+          "V7WordSha256": "02e96d0a57563fbfa4d4df873579a25d585ae267b89664fe40ffaa42962787db"
+        },
+        {
+          "array": "sliceTipX",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "0cc2394c08563bdf174b108468c05a8f5bb36cf01551668e6865714ce53533e1",
+          "V7WordSha256": "0cc2394c08563bdf174b108468c05a8f5bb36cf01551668e6865714ce53533e1"
+        },
+        {
+          "array": "sliceTipY",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "686b0bd652914483c878f736dd40ef93c93c6ac6ab6ed7be854f890280262444",
+          "V7WordSha256": "686b0bd652914483c878f736dd40ef93c93c6ac6ab6ed7be854f890280262444"
+        },
+        {
+          "array": "sliceTipZ",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "7d60301f93cf56df02316688bb1416936c158eb0be36dcbc96f180f3359d5eb5",
+          "V7WordSha256": "7d60301f93cf56df02316688bb1416936c158eb0be36dcbc96f180f3359d5eb5"
+        },
+        {
+          "array": "sliceToeClimb",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "2c809e2049dd817c27bddce95c9b6dd506045b270e4e472363e9cbb9dffe7f36",
+          "V7WordSha256": "2c809e2049dd817c27bddce95c9b6dd506045b270e4e472363e9cbb9dffe7f36"
+        },
+        {
+          "array": "sliceWeight",
+          "activeWords": 71,
+          "bytes": 284,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "88bc46279aefe06f7669ef8a6eb7627d6d9e386c477628ccc4beb2a7f8280209",
+          "V7WordSha256": "88bc46279aefe06f7669ef8a6eb7627d6d9e386c477628ccc4beb2a7f8280209"
+        },
+        {
+          "array": "throat",
+          "activeWords": 38056,
+          "bytes": 152224,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "f10e2633e86d3d71421b735adae616d66014e57f505fa75334a5d3dd9ef50286",
+          "V7WordSha256": "f10e2633e86d3d71421b735adae616d66014e57f505fa75334a5d3dd9ef50286"
+        }
+      ],
+      "everyActiveGeometryOpticalAndMetadataWordEqual": true,
+      "rawFrontPacketDescriptorsAndAllWordsEqual": true,
+      "V11Epoch": {
+        "step": 1300,
+        "seaTime": 297.99602272193914,
+        "surfaceRevision": 1305,
+        "drawnWaterTime": 297.99602272193914
+      },
+      "V7Epoch": {
+        "step": 1300,
+        "seaTime": 297.99602272193914,
+        "surfaceRevision": 1304,
+        "drawnWaterTime": 297.99602272193914
+      },
+      "allOtherSidecarFieldsEqual": true
+    },
+    {
+      "file": "loft-first-landing.json",
+      "V11": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-first-landing.json",
+        "bytes": 1496463,
+        "sha256": "11753491a748bd779b079e629ce96099941e63ddff063d81eef0f1131fa3a203"
+      },
+      "V7": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/loft-first-landing.json",
+        "bytes": 1496463,
+        "sha256": "2c24b6d30ea606b04b0a66dda8008b1d27e77b11fc64f679b0bf3c124fed7686"
+      },
+      "arrayCount": 37,
+      "arrays": [
+        {
+          "array": "indices",
+          "activeWords": 77406,
+          "bytes": 309624,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "9ef0fdda9d9ae324fe6c01b0657a1c452c2cc736027c686e459a14a3095c1983",
+          "V7WordSha256": "9ef0fdda9d9ae324fe6c01b0657a1c452c2cc736027c686e459a14a3095c1983"
+        },
+        {
+          "array": "lift",
+          "activeWords": 13266,
+          "bytes": 53064,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "0dd8fbb5ed57d1549cebe891ed451f7584a5e9df1d736f899c59c4891846eeeb",
+          "V7WordSha256": "0dd8fbb5ed57d1549cebe891ed451f7584a5e9df1d736f899c59c4891846eeeb"
+        },
+        {
+          "array": "mask",
+          "activeWords": 13266,
+          "bytes": 53064,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "cb0be3fece9219025bd420af2b863efa448875e8fb001f8cdecbf8755d016298",
+          "V7WordSha256": "cb0be3fece9219025bd420af2b863efa448875e8fb001f8cdecbf8755d016298"
+        },
+        {
+          "array": "normals",
+          "activeWords": 39798,
+          "bytes": 159192,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "e575a93ea1754a9bc5237bdba37363a780f3612190c6f99f43a1494c57329480",
+          "V7WordSha256": "e575a93ea1754a9bc5237bdba37363a780f3612190c6f99f43a1494c57329480"
+        },
+        {
+          "array": "positions",
+          "activeWords": 39798,
+          "bytes": 159192,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "0ac13bfe393a903311fa2d161f774756b88535bc25b9b4eea32b7e3dfecb0bfa",
+          "V7WordSha256": "0ac13bfe393a903311fa2d161f774756b88535bc25b9b4eea32b7e3dfecb0bfa"
+        },
+        {
+          "array": "sheet",
+          "activeWords": 13266,
+          "bytes": 53064,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "fda83cc0c5ae7988c498a820f9d12292ba63da5be8d076bcc8b6347761d4c2f9",
+          "V7WordSha256": "fda83cc0c5ae7988c498a820f9d12292ba63da5be8d076bcc8b6347761d4c2f9"
+        },
+        {
+          "array": "sheetBack",
+          "activeWords": 13266,
+          "bytes": 53064,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "25109e2fc1bd8a04eac404e28d976c3c92ef791cd2463fa59bc2e13c9bd26b46",
+          "V7WordSha256": "25109e2fc1bd8a04eac404e28d976c3c92ef791cd2463fa59bc2e13c9bd26b46"
+        },
+        {
+          "array": "sheetWeight",
+          "activeWords": 13266,
+          "bytes": 53064,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "898738564539c000d7097aea88f7046fb29d37a263e14520155867cdda469bc4",
+          "V7WordSha256": "898738564539c000d7097aea88f7046fb29d37a263e14520155867cdda469bc4"
+        },
+        {
+          "array": "sliceAnchorVX",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032",
+          "V7WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032"
+        },
+        {
+          "array": "sliceAnchorVZ",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032",
+          "V7WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032"
+        },
+        {
+          "array": "sliceCollapse",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "a70daf4a1cd9d537e784f0b96fd6bbcb5b2769438d399068924a3fd237547ccd",
+          "V7WordSha256": "a70daf4a1cd9d537e784f0b96fd6bbcb5b2769438d399068924a3fd237547ccd"
+        },
+        {
+          "array": "sliceFade",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "6761d4b80c67d792cfb0cca555e1ed4af7043d8e6edb95f26329c94ddfced0b9",
+          "V7WordSha256": "6761d4b80c67d792cfb0cca555e1ed4af7043d8e6edb95f26329c94ddfced0b9"
+        },
+        {
+          "array": "sliceFormed",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "087c7ce3f4303d1822b724cc1ee37f4e58811e9b9cc7d3347d0f659809debd07",
+          "V7WordSha256": "087c7ce3f4303d1822b724cc1ee37f4e58811e9b9cc7d3347d0f659809debd07"
+        },
+        {
+          "array": "sliceFront",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "8c8bb365cd352fe9b0aa89f850caadad6917002217d7397f82809fc0330adab7",
+          "V7WordSha256": "8c8bb365cd352fe9b0aa89f850caadad6917002217d7397f82809fc0330adab7"
+        },
+        {
+          "array": "sliceJoined",
+          "activeWords": 99,
+          "bytes": 99,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "3d1680cc6d42c69a83279c087fcb6d126d3f3542c10274840dbcce2f43790e09",
+          "V7WordSha256": "3d1680cc6d42c69a83279c087fcb6d126d3f3542c10274840dbcce2f43790e09"
+        },
+        {
+          "array": "sliceLife",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "4dcf1aae37cb3b3abe17e65aaa4c5896976a1ae86bf8bdc127bdc61730eb31e7",
+          "V7WordSha256": "4dcf1aae37cb3b3abe17e65aaa4c5896976a1ae86bf8bdc127bdc61730eb31e7"
+        },
+        {
+          "array": "sliceMouth",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "4de1149306a1804901ef1fb9bce1a0dfe372e7fbce36bbecd5cf0bc2f1462a25",
+          "V7WordSha256": "4de1149306a1804901ef1fb9bce1a0dfe372e7fbce36bbecd5cf0bc2f1462a25"
+        },
+        {
+          "array": "sliceOverturned",
+          "activeWords": 99,
+          "bytes": 99,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "a5989313a3b625a0f77f51d699f79a9100350a9075271856c9a38d4e0b4cc2b8",
+          "V7WordSha256": "a5989313a3b625a0f77f51d699f79a9100350a9075271856c9a38d4e0b4cc2b8"
+        },
+        {
+          "array": "slicePhase",
+          "activeWords": 99,
+          "bytes": 99,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "f05d54221916c8cae8498b4128f1350e1f06af9079349b709a59894317699f19",
+          "V7WordSha256": "f05d54221916c8cae8498b4128f1350e1f06af9079349b709a59894317699f19"
+        },
+        {
+          "array": "sliceRayX",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032",
+          "V7WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032"
+        },
+        {
+          "array": "sliceRayZ",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "915ad2a24bed57aec89b579c6d0d68dc05753c629e3aa69327674662e8cb12a5",
+          "V7WordSha256": "915ad2a24bed57aec89b579c6d0d68dc05753c629e3aa69327674662e8cb12a5"
+        },
+        {
+          "array": "sliceRestClimb",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "f59ed1985854eb3a25ad90270a719d7aeea1f0449ba0c066c6085f5f84be075c",
+          "V7WordSha256": "f59ed1985854eb3a25ad90270a719d7aeea1f0449ba0c066c6085f5f84be075c"
+        },
+        {
+          "array": "sliceRestEnd",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "11177b30f85dce75e6fbd118c48302fe3a184f311d5059ea1e36b024a2c1b98e",
+          "V7WordSha256": "11177b30f85dce75e6fbd118c48302fe3a184f311d5059ea1e36b024a2c1b98e"
+        },
+        {
+          "array": "sliceRestHold",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "5939ff86abeee45b51a59eaeea827013bda348165479483260028ab6bdfb932d",
+          "V7WordSha256": "5939ff86abeee45b51a59eaeea827013bda348165479483260028ab6bdfb932d"
+        },
+        {
+          "array": "sliceSigma",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "bc2dc64b9bd56a6d512477e574e912a903badd296b9e45f3bbf1caa38627d2bc",
+          "V7WordSha256": "bc2dc64b9bd56a6d512477e574e912a903badd296b9e45f3bbf1caa38627d2bc"
+        },
+        {
+          "array": "sliceTau",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "96396bc3b77d770c1f2b79e6d27e657f6f830f8ab09bc7ca0f4b9d4bb236cf97",
+          "V7WordSha256": "96396bc3b77d770c1f2b79e6d27e657f6f830f8ab09bc7ca0f4b9d4bb236cf97"
+        },
+        {
+          "array": "sliceTipAlong",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "c26c4574c34d73162ed964793631617f6b3fbee1456e8c228dd065bb3a4d0112",
+          "V7WordSha256": "c26c4574c34d73162ed964793631617f6b3fbee1456e8c228dd065bb3a4d0112"
+        },
+        {
+          "array": "sliceTipGap",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032",
+          "V7WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032"
+        },
+        {
+          "array": "sliceTipTransportAlong",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032",
+          "V7WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032"
+        },
+        {
+          "array": "sliceTipTransportUp",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032",
+          "V7WordSha256": "58553b15fb3888e443e29fff5663675b8f70e37f0ea6c54076489d6ff04c1032"
+        },
+        {
+          "array": "sliceTipUp",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "d682f1ab06252574db6fb9fe2deb5a32c7348b7036be59da6ef64ca32f4b4d4d",
+          "V7WordSha256": "d682f1ab06252574db6fb9fe2deb5a32c7348b7036be59da6ef64ca32f4b4d4d"
+        },
+        {
+          "array": "sliceTipX",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "ec248409da086dadee10d14143fa36867931466102d497f15737f6951a099be4",
+          "V7WordSha256": "ec248409da086dadee10d14143fa36867931466102d497f15737f6951a099be4"
+        },
+        {
+          "array": "sliceTipY",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "44d48d0fd9bcb0d53a0f0a0b462a76d573e34e043cbd1806ccb1dd30047e5ae7",
+          "V7WordSha256": "44d48d0fd9bcb0d53a0f0a0b462a76d573e34e043cbd1806ccb1dd30047e5ae7"
+        },
+        {
+          "array": "sliceTipZ",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "2911867bff3b843ea6f2edddb0c817e63c3e9c30eb08479edfb79c763f6b53f4",
+          "V7WordSha256": "2911867bff3b843ea6f2edddb0c817e63c3e9c30eb08479edfb79c763f6b53f4"
+        },
+        {
+          "array": "sliceToeClimb",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "26f3e18ba015e2a24cc7bc6420e1c610706c43e7ee95bbc8d79e8a09a78eaa81",
+          "V7WordSha256": "26f3e18ba015e2a24cc7bc6420e1c610706c43e7ee95bbc8d79e8a09a78eaa81"
+        },
+        {
+          "array": "sliceWeight",
+          "activeWords": 99,
+          "bytes": 396,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "740ead5d308067b1fabac2aef009c3574fdc1532e89efe838d19fabc7ca891ac",
+          "V7WordSha256": "740ead5d308067b1fabac2aef009c3574fdc1532e89efe838d19fabc7ca891ac"
+        },
+        {
+          "array": "throat",
+          "activeWords": 53064,
+          "bytes": 212256,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "df81da42883c5448c09ac840ad619267a2d24e2fbd1c67b162ebbcafa90bdf74",
+          "V7WordSha256": "df81da42883c5448c09ac840ad619267a2d24e2fbd1c67b162ebbcafa90bdf74"
+        }
+      ],
+      "everyActiveGeometryOpticalAndMetadataWordEqual": true,
+      "rawFrontPacketDescriptorsAndAllWordsEqual": true,
+      "V11Epoch": {
+        "step": 1343,
+        "seaTime": 298.7126893886058,
+        "surfaceRevision": 1348,
+        "drawnWaterTime": 298.7126893886058
+      },
+      "V7Epoch": {
+        "step": 1343,
+        "seaTime": 298.7126893886058,
+        "surfaceRevision": 1347,
+        "drawnWaterTime": 298.7126893886058
+      },
+      "allOtherSidecarFieldsEqual": true
+    },
+    {
+      "file": "loft-terminal.json",
+      "V11": {
+        "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1420830,
+        "sha256": "323bcc1e6714abe83821491e609fa3cdbff124354eda51f89f6b51d3f214d679"
+      },
+      "V7": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1420830,
+        "sha256": "aa96c2afdc929219079abb4698231fe58f7417e84e64081696236a1557e99acd"
+      },
+      "arrayCount": 37,
+      "arrays": [
+        {
+          "array": "indices",
+          "activeWords": 73416,
+          "bytes": 293664,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "96764500ee2e96db753294ee6ba1891733b0570ac29e93feccad341e30c87f27",
+          "V7WordSha256": "96764500ee2e96db753294ee6ba1891733b0570ac29e93feccad341e30c87f27"
+        },
+        {
+          "array": "lift",
+          "activeWords": 12596,
+          "bytes": 50384,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "b05ba93c487f4c2a6d99d58612b353a898bbff2f204008d34b5faec4595552db",
+          "V7WordSha256": "b05ba93c487f4c2a6d99d58612b353a898bbff2f204008d34b5faec4595552db"
+        },
+        {
+          "array": "mask",
+          "activeWords": 12596,
+          "bytes": 50384,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "ff50afdc6bb72c212d3bd187e2519ed3e2fb2c4cb4098e3ed0087cf034476e71",
+          "V7WordSha256": "ff50afdc6bb72c212d3bd187e2519ed3e2fb2c4cb4098e3ed0087cf034476e71"
+        },
+        {
+          "array": "normals",
+          "activeWords": 37788,
+          "bytes": 151152,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "e8b66fce1427e018c05a520fc8e6c94dda19f5b9b7df1531edf990a1e5d99c80",
+          "V7WordSha256": "e8b66fce1427e018c05a520fc8e6c94dda19f5b9b7df1531edf990a1e5d99c80"
+        },
+        {
+          "array": "positions",
+          "activeWords": 37788,
+          "bytes": 151152,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "1a49544ed05f7536511178b68340d10df750b337a87aef7e5efa04a5577314f6",
+          "V7WordSha256": "1a49544ed05f7536511178b68340d10df750b337a87aef7e5efa04a5577314f6"
+        },
+        {
+          "array": "sheet",
+          "activeWords": 12596,
+          "bytes": 50384,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "449e3fe18803cc616a412a152e46145d78f6ed09ee7520ca4de75d55bbe9249a",
+          "V7WordSha256": "449e3fe18803cc616a412a152e46145d78f6ed09ee7520ca4de75d55bbe9249a"
+        },
+        {
+          "array": "sheetBack",
+          "activeWords": 12596,
+          "bytes": 50384,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "29f4ff0ad4fc7e47a361e01a260b46b3a58cb8d9a690a979fcc6b92b4cda234a",
+          "V7WordSha256": "29f4ff0ad4fc7e47a361e01a260b46b3a58cb8d9a690a979fcc6b92b4cda234a"
+        },
+        {
+          "array": "sheetWeight",
+          "activeWords": 12596,
+          "bytes": 50384,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "ebdd728114123eda31558edc3ba9470eb7bc885e74e962f4e600cdd5cc864efa",
+          "V7WordSha256": "ebdd728114123eda31558edc3ba9470eb7bc885e74e962f4e600cdd5cc864efa"
+        },
+        {
+          "array": "sliceAnchorVX",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271",
+          "V7WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271"
+        },
+        {
+          "array": "sliceAnchorVZ",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271",
+          "V7WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271"
+        },
+        {
+          "array": "sliceCollapse",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "7b2f9aff0fbff8a5098334f09aed0360af9bceebd5351064329e87edf62bfa6a",
+          "V7WordSha256": "7b2f9aff0fbff8a5098334f09aed0360af9bceebd5351064329e87edf62bfa6a"
+        },
+        {
+          "array": "sliceFade",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "49830af453f6c38ef44f4e38dad342657f6aa1c6df9551a9ce16fc62e9d4ace8",
+          "V7WordSha256": "49830af453f6c38ef44f4e38dad342657f6aa1c6df9551a9ce16fc62e9d4ace8"
+        },
+        {
+          "array": "sliceFormed",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "63110f9e662044b65b4fde5bd8c1bb42619769e459a87645b738c18877b9eb04",
+          "V7WordSha256": "63110f9e662044b65b4fde5bd8c1bb42619769e459a87645b738c18877b9eb04"
+        },
+        {
+          "array": "sliceFront",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "5e68644b33baefbf5173318934ebbdfb529031eae4fae0691fa67f17d5ec7c9d",
+          "V7WordSha256": "5e68644b33baefbf5173318934ebbdfb529031eae4fae0691fa67f17d5ec7c9d"
+        },
+        {
+          "array": "sliceJoined",
+          "activeWords": 94,
+          "bytes": 94,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "666a11213cef5f49f8c0c23b5502df94444a368c3dcb9264ba419bd16ea485e9",
+          "V7WordSha256": "666a11213cef5f49f8c0c23b5502df94444a368c3dcb9264ba419bd16ea485e9"
+        },
+        {
+          "array": "sliceLife",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "cc0bf7e083b06c2ce882be09df8d2406fde21e3c84cf3514e1479f033e645152",
+          "V7WordSha256": "cc0bf7e083b06c2ce882be09df8d2406fde21e3c84cf3514e1479f033e645152"
+        },
+        {
+          "array": "sliceMouth",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "c2136f00cc105fa64060e52f81065c3aac518c720de06bc341f635048e32e56c",
+          "V7WordSha256": "c2136f00cc105fa64060e52f81065c3aac518c720de06bc341f635048e32e56c"
+        },
+        {
+          "array": "sliceOverturned",
+          "activeWords": 94,
+          "bytes": 94,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "998f54b11d4ab3a6d9e94ed9151054539125cf22cc94a338756b35b19e7683ab",
+          "V7WordSha256": "998f54b11d4ab3a6d9e94ed9151054539125cf22cc94a338756b35b19e7683ab"
+        },
+        {
+          "array": "slicePhase",
+          "activeWords": 94,
+          "bytes": 94,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "08065995bc3a716d0439c364e1337e5c354abb115d8070b7ff74645458547538",
+          "V7WordSha256": "08065995bc3a716d0439c364e1337e5c354abb115d8070b7ff74645458547538"
+        },
+        {
+          "array": "sliceRayX",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271",
+          "V7WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271"
+        },
+        {
+          "array": "sliceRayZ",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "0de3a5306f16f00612c2793a91f4a72e9e134854a8a7a7681f13b5af26a0fa3c",
+          "V7WordSha256": "0de3a5306f16f00612c2793a91f4a72e9e134854a8a7a7681f13b5af26a0fa3c"
+        },
+        {
+          "array": "sliceRestClimb",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "e766a090f959b8ecc84a70b731950183db682d9ab74d89b7084ab26045db764a",
+          "V7WordSha256": "e766a090f959b8ecc84a70b731950183db682d9ab74d89b7084ab26045db764a"
+        },
+        {
+          "array": "sliceRestEnd",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "657b80ffe062ee0b3b8f9cc4ac062992bff57dc22483ef6e40194860c8264392",
+          "V7WordSha256": "657b80ffe062ee0b3b8f9cc4ac062992bff57dc22483ef6e40194860c8264392"
+        },
+        {
+          "array": "sliceRestHold",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "bd6496b16f671e61763b9f6c3dcdca974cc7bb2c78ec3a0b70b1cc24f9850f53",
+          "V7WordSha256": "bd6496b16f671e61763b9f6c3dcdca974cc7bb2c78ec3a0b70b1cc24f9850f53"
+        },
+        {
+          "array": "sliceSigma",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "18efea188fb9f6a8bcc0059d34d7169b1fae2043e35dcf91f4017e953adf4460",
+          "V7WordSha256": "18efea188fb9f6a8bcc0059d34d7169b1fae2043e35dcf91f4017e953adf4460"
+        },
+        {
+          "array": "sliceTau",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "412326e7fdcf4c1b194078b5e8e0d2ad47f1647fcd62576d3c90020fac79e5e6",
+          "V7WordSha256": "412326e7fdcf4c1b194078b5e8e0d2ad47f1647fcd62576d3c90020fac79e5e6"
+        },
+        {
+          "array": "sliceTipAlong",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "88ed43c4d9203fc72854c6bbd6ceceff6dee2dd8af6d3a83e099d2ffef601205",
+          "V7WordSha256": "88ed43c4d9203fc72854c6bbd6ceceff6dee2dd8af6d3a83e099d2ffef601205"
+        },
+        {
+          "array": "sliceTipGap",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271",
+          "V7WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271"
+        },
+        {
+          "array": "sliceTipTransportAlong",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271",
+          "V7WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271"
+        },
+        {
+          "array": "sliceTipTransportUp",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271",
+          "V7WordSha256": "70d6aad73b9cfd0facdee81f4aac5bbf30d603300653623c57f7c26e1c376271"
+        },
+        {
+          "array": "sliceTipUp",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "b19bd35cccc15f34def041b02da58c85012b534942dda029bc1276e2003e7218",
+          "V7WordSha256": "b19bd35cccc15f34def041b02da58c85012b534942dda029bc1276e2003e7218"
+        },
+        {
+          "array": "sliceTipX",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "47f9a12760dd5585799a7e0304915c1bd64abcb8c056106373485a44ecb80a5e",
+          "V7WordSha256": "47f9a12760dd5585799a7e0304915c1bd64abcb8c056106373485a44ecb80a5e"
+        },
+        {
+          "array": "sliceTipY",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "08791be8633c10d9934abe2aa24e76e1c3779b7a6626f4ecf9fc528911bde748",
+          "V7WordSha256": "08791be8633c10d9934abe2aa24e76e1c3779b7a6626f4ecf9fc528911bde748"
+        },
+        {
+          "array": "sliceTipZ",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "0a8e011647d1f13e74e5c8cf911a662594f41769618979e239e96a6a147ee728",
+          "V7WordSha256": "0a8e011647d1f13e74e5c8cf911a662594f41769618979e239e96a6a147ee728"
+        },
+        {
+          "array": "sliceToeClimb",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "855c8411aa758a666f7d3e1606995269e342d602f0dd5ee6cd28649727cb6575",
+          "V7WordSha256": "855c8411aa758a666f7d3e1606995269e342d602f0dd5ee6cd28649727cb6575"
+        },
+        {
+          "array": "sliceWeight",
+          "activeWords": 94,
+          "bytes": 376,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "8237ea09201a83fdc250cc247c7f2949d0366ebf335c18012d33834d1d1ffca4",
+          "V7WordSha256": "8237ea09201a83fdc250cc247c7f2949d0366ebf335c18012d33834d1d1ffca4"
+        },
+        {
+          "array": "throat",
+          "activeWords": 50384,
+          "bytes": 201536,
+          "descriptorsEqual": true,
+          "everyActiveWordEqual": true,
+          "V11WordSha256": "8a3079ced843317ef45cc6f9da86e196de377454e39bd7987cb4cada1b47690f",
+          "V7WordSha256": "8a3079ced843317ef45cc6f9da86e196de377454e39bd7987cb4cada1b47690f"
+        }
+      ],
+      "everyActiveGeometryOpticalAndMetadataWordEqual": true,
+      "rawFrontPacketDescriptorsAndAllWordsEqual": true,
+      "V11Epoch": {
+        "step": 1366,
+        "seaTime": 299.0960227219391,
+        "surfaceRevision": 1371,
+        "drawnWaterTime": 299.0960227219391
+      },
+      "V7Epoch": {
+        "step": 1366,
+        "seaTime": 299.0960227219391,
+        "surfaceRevision": 1370,
+        "drawnWaterTime": 299.0960227219391
+      },
+      "allOtherSidecarFieldsEqual": true
+    }
+  ],
+  "readOnlyIntegrity": {
+    "currentSealedSourceInputs": 587,
+    "currentSealedAssets": 49,
+    "currentSealedHelpers": 42,
+    "allCurrentSealedSourceBuildHelperAndServedPinsMatch": true,
+    "ownerRecordsPostUnchangedAndIndependentClosure": true,
+    "portsProbed": false
+  },
+  "evidenceArtifacts": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/00-initial.png",
+      "bytes": 2444798,
+      "sha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/01-first-pop-up.png",
+      "bytes": 1963811,
+      "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/02-first-landing.png",
+      "bytes": 1903210,
+      "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/03-terminal.png",
+      "bytes": 1961115,
+      "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/pop-up-motion.webm",
+      "bytes": 878925,
+      "sha256": "59d5e4b65c9a596064ffbf4557986f055d894a391f7f8fe33959b60170f5af0f"
+    }
+  ],
+  "differenceArchive": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/all-differences.json",
+    "bytes": 2289573,
+    "sha256": "49091f0505a4bae8eb55b29d6b9a97245a1935601ef4b9aab66f3562e20601aa"
+  },
+  "observerSampleArchive": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/observer-samples.json",
+    "bytes": 410620,
+    "sha256": "fc7777d418266615b39a6a035392ad051ed1f7f9b63706afe1bd3699430a4fb6"
+  },
+  "sidecarDifferenceArchive": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/sidecar-differences.json",
+    "bytes": 584,
+    "sha256": "aa3d69158245a74762e3a4d565eea4d3f4f9f0722ceb68848d4fda4acd3a3092"
+  },
+  "landingForceIntervalArchive": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/landing-force-interval.json",
+    "bytes": 82391,
+    "sha256": "9bf3d7fadd175275cd951655057badf296e54ad36c3d8e5b033ac0234e8b4dca"
+  },
+  "limitations": [
+    "A predeclared seeded diagnostic replay follows normal menu startup; this is not normal random menu acceptance.",
+    "Exact recorded public equality does not establish full private solver equality.",
+    "All actually retained sample slots are audited, but intermediate internal substeps between those slots were not recorded.",
+    "Axial implicit push is derived from stage-captured operands, not a raw 38th-plus field or realized fallback rate.",
+    "The earlier controlled witness has positive implicit axial push with negative deck demand and survives. V11 instead has negative implicit axial push throughout every retained sustained-unloading sample; fore/aft compliance is not established as the native cause.",
+    "No counterfactual run or fix was evaluated; root owns actual pixel/movie judgment."
+  ],
+  "claims": {
+    "knownFailureLandingSolved": false,
+    "forceCauseResolvedByCounterfactual": false,
+    "normalMenuAcceptance": false,
+    "tubeEntryOrPassage": false,
+    "visualAcceptance": false,
+    "FPS": false,
+    "adoption": false
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "buildsOrTestsRun": false,
+  "physicsShaderSourceHelpersGitChanged": false
+}
