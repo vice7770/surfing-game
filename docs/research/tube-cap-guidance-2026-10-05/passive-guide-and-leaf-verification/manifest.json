@@ -1,0 +1,205 @@
+{
+  "schema": "tube-passive-guide-and-leaf-verification/v1",
+  "files": [
+    {
+      "original": "/private/tmp/tube-approach-passive-telemetry-patch-20261005/candidate.patch",
+      "stored": "passive-proposal/candidate.patch",
+      "bytes": 47637,
+      "sha256": "9e6263e329d6dd097a731e4994f6423b3df18c932312e230619562b2668b7eff"
+    },
+    {
+      "original": "/private/tmp/tube-approach-passive-telemetry-patch-20261005/provenance.json",
+      "stored": "passive-proposal/provenance.json",
+      "bytes": 3269,
+      "sha256": "6227536cedd1bce2093b9e51c4eda30e65ecf4ee784cae7baf97e00da0204d77"
+    },
+    {
+      "original": "/private/tmp/tube-approach-passive-telemetry-patch-20261005/README.md",
+      "stored": "passive-proposal/README.md",
+      "bytes": 6547,
+      "sha256": "f80d9483784613cdf551037b28b0d595fc7abf748559026ad994f57fdb70fa41"
+    },
+    {
+      "original": "/private/tmp/tube-approach-passive-telemetry-tests-20261005.log",
+      "stored": "passive-tests.log",
+      "bytes": 361,
+      "sha256": "235e698dfdda42eadeb4153df0c512e365e2b506c353b730c683ec84539602a2"
+    },
+    {
+      "original": "/private/tmp/tube-approach-passive-telemetry-build-20261005.log",
+      "stored": "passive-build.log",
+      "bytes": 1328,
+      "sha256": "178d4685f7c6c68abc7f19fcb9aeea311da5d08c1016d4480aabfdd2dc4c48db"
+    },
+    {
+      "original": "/private/tmp/tube-leaf-identity-core-proposal-20261005/candidate.patch",
+      "stored": "identity-core/candidate.patch",
+      "bytes": 8145,
+      "sha256": "a705dd4b30f3c7a47b11bcf2e7ed2893c71a099e45f4b70d0db9add2b72030da"
+    },
+    {
+      "original": "/private/tmp/tube-leaf-identity-core-proposal-20261005/provenance.json",
+      "stored": "identity-core/provenance.json",
+      "bytes": 3778,
+      "sha256": "d8711d394708f3234b8a568477295528320d39d638213aa86747f0f749ee2b10"
+    },
+    {
+      "original": "/private/tmp/tube-leaf-identity-core-proposal-20261005/README.md",
+      "stored": "identity-core/README.md",
+      "bytes": 4028,
+      "sha256": "90f268b627bd3deb6f3600a4f646a3d22aa14bd83577e8f3e00c3ef93018dc48"
+    },
+    {
+      "original": "/private/tmp/tube-leaf-identity-core-proposal-20261005/root-application.json",
+      "stored": "identity-core/root-application.json",
+      "bytes": 1145,
+      "sha256": "93eba52caee9c7b7426ad422494e408e8c62575c0c076be9a10fb5ab658ab207"
+    },
+    {
+      "original": "/private/tmp/tube-leaf-identity-core-proposal-20261005/root-tests.log",
+      "stored": "identity-core/root-tests.log",
+      "bytes": 584,
+      "sha256": "82c623e4452f19362b53f5f606ac10085b362e4ab987c83f0017bb8725612bcb"
+    },
+    {
+      "original": "/private/tmp/tube-leaf-identity-core-proposal-20261005/root-tests.json",
+      "stored": "identity-core/root-tests.json",
+      "bytes": 617,
+      "sha256": "f7d867ffdc7f2fc61fb4ad9fe8c85f64ea035f67fbf5e8ff5baf0b37107a1dc8"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/application-build.log",
+      "stored": "fresh-build/application-build.log",
+      "bytes": 1328,
+      "sha256": "3030332b9efa18b8053ccef1d2ff50865187583a96290d0d99fbe040644294e5"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-application-build-result.json",
+      "stored": "fresh-build/root-application-build-result.json",
+      "bytes": 265,
+      "sha256": "1715a1ff0bca66fffd6102c3ff21f076f36358648a227cc1d19a7e9ee28a203c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.log",
+      "stored": "fresh-build/diagnostic-build.log",
+      "bytes": 282,
+      "sha256": "2478068a25a69eb395dbfb6bd33ada5b70a6caba996f9ed56f79b532040c6810"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-diagnostic-build-result.json",
+      "stored": "fresh-build/root-diagnostic-build-result.json",
+      "bytes": 278,
+      "sha256": "603aa89a537f7a8ea15362554df482f0ab5ec44ee6b4b7bb1c629b20776987dd"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.json",
+      "stored": "fresh-build/diagnostic-build.json",
+      "bytes": 16809,
+      "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-build-authority.json",
+      "stored": "fresh-build/root-build-authority.json",
+      "bytes": 11447,
+      "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc"
+    },
+    {
+      "original": "/private/tmp/tube-approach-passive-telemetry-build-20261005/build.json",
+      "stored": "passive-build-receipt.json",
+      "bytes": 133672,
+      "sha256": "bdf30293f22c472b1fddf5df69812868dfbf9c2dd622bd131071e86ef6e6f09b"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-current-application-receipt.json",
+      "stored": "fresh-build/root-current-application-receipt.json",
+      "bytes": 132778,
+      "sha256": "badb26b5ca7076553d40148d1f88e1a5557b10166d32a1bd1856a1b379e64257"
+    },
+    {
+      "original": "Root command output written directly to archive",
+      "stored": "combined-source-passive-tests.log",
+      "bytes": 361,
+      "sha256": "fca684deec176b852177b9662b0e0dab07083a9b379cd89f8df9db43bbcf79cd"
+    },
+    {
+      "original": "Root command output written directly to archive",
+      "stored": "combined-source-passive-tests.json",
+      "bytes": 425,
+      "sha256": "088ed53a275ee78f9dd712c52110ba1dd3c40d18c5390ca1243b590a8dfe862a"
+    }
+  ],
+  "productionSources": [
+    {
+      "file": "src/wave/SurfZoneRunner.ts",
+      "bytes": 44969,
+      "sha256": "3511ee2d08c0dc4be86933ea5633b1e7b27a1753bb58a4edcd7bd6cf5397981b"
+    },
+    {
+      "file": "src/wave/SurfZoneRunner.tube.test.ts",
+      "bytes": 7843,
+      "sha256": "104f20410cde558d84968684de25dbc78466fa47f716e63df97866de59bb6aa8"
+    },
+    {
+      "file": "src/wave/barrel/sweptContact.ts",
+      "bytes": 39047,
+      "sha256": "c24017b1ee89abc6212df904e630e2e2fa7b73288948f36ce6b9a76399668bbf"
+    },
+    {
+      "file": "src/wave/barrel/sweptContact.test.ts",
+      "bytes": 35437,
+      "sha256": "947580186191e9616ec3e39cd38d270ee939b62240c8bd8e1138ae132990a06b"
+    },
+    {
+      "file": "src/wave/barrel/tubeApproach.ts",
+      "bytes": 24407,
+      "sha256": "05bb1424a8aa8189761a36606374d26e28298dc260047e347d917acb4183c472"
+    },
+    {
+      "file": "src/wave/barrel/tubeApproach.test.ts",
+      "bytes": 13723,
+      "sha256": "adfb1796a40aaf7d151e652b25a1b4d433a1bd20ec64e7431da78fcffe0867ca"
+    },
+    {
+      "file": "src/wave/barrel/boundedCProfile.ts",
+      "bytes": 20184,
+      "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+    },
+    {
+      "file": "src/wave/barrel/boundedCLeafReach.test.ts",
+      "bytes": 18620,
+      "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
+    }
+  ],
+  "actualResults": {
+    "passiveTelemetryTests": {
+      "files": 3,
+      "tests": 41,
+      "terminalExitCode": 0
+    },
+    "identityCoreGeometryTests": {
+      "files": 8,
+      "tests": 104,
+      "terminalExitCode": 0
+    },
+    "freshNormalBuild": {
+      "buildId": "tube-guided-passive-telemetry-20261005",
+      "terminalExitCode": 0
+    },
+    "freshDiagnosticCompilation": {
+      "sources": 77,
+      "terminalExitCode": 0
+    },
+    "combinedSourcePassiveTests": {
+      "files": 3,
+      "tests": 41,
+      "terminalExitCode": 0,
+      "identityCoreApplied": true
+    },
+    "combinedSourceUniqueAffectedCases": 145
+  },
+  "limits": [
+    "No new ordinary ride or native visual acceptance at verification creation.",
+    "Scalar bound C1 does not establish global cap trajectory C1.",
+    "Proposal original source-only flags describe authorship; root actual application/tests/builds are separate receipts."
+  ]
+}

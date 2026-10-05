@@ -1,0 +1,14 @@
+{
+  "actualToolChunk": "3ca19e",
+  "exitCode": 1,
+  "stage": "Python AST check of frozen static run.py before preparation",
+  "firstFailure": "SyntaxError: invalid syntax at run.py:170; missing closing ] in spec list",
+  "originalFreeze": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/recipe-source-freeze.json",
+    "bytes": 10210,
+    "sha256": "2b3a8f5122e60958de861c1096ee44e15d291ad8f0b4522ccc6131ce9a53816c"
+  },
+  "preparationExecuted": false,
+  "nativeExecuted": false,
+  "productionChanged": false
+}

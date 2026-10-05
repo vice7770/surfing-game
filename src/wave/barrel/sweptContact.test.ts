@@ -9,7 +9,8 @@ import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
 import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS } from './ProfileLibrary';
-import type { TubeApproachRequest } from './tubeApproach';
+import * as tubeApproachQueries from './tubeApproach';
+import { createTubeApproachObservation, cloneTubeApproachObservation, type TubeApproachRequest } from './tubeApproach';
 
 const STILL = 0.5;
 const flat = () => STILL;
@@ -565,5 +566,91 @@ describe('the swept contact', () => {
       expect(a.query(x, y, z, ha)).toBe(b.query(x, y, z, hb));
       expect(hb).toEqual(ha);
     }
+  });
+});
+
+function matureApproachFixture() {
+  const cases = readBarrelCases().map(decodeCase), c = cases.find(value => value.id === 'pad19-a30-l12')!;
+  const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
+  const base = { slope: c.slope, footHeight: c.nonlinearity * 7, footDepth: 7 }, profile = new Float32Array(2 * PROFILE_POINTS);
+  library.profileAt({ ...base, seconds: library.profileTimes(base).clearSeconds }, profile);
+  const scale = 3 / (profile[2 * LANDMARK.crest + 1] - profile[2 * LANDMARK.toe + 1]);
+  const query = { slope: c.slope, footHeight: base.footHeight * scale, footDepth: base.footDepth * scale };
+  const times = library.profileTimes(query), packet = new Float32Array(9 * FRONT_STRIDE);
+  for (let k = 0; k < 9; k++) {
+    const o = k * FRONT_STRIDE;
+    packet[o + FRONT_FIELD.x] = k + 0.5; packet[o + FRONT_FIELD.z] = -100;
+    packet[o + FRONT_FIELD.front] = 9; packet[o + FRONT_FIELD.sigma] = k;
+    packet[o + FRONT_FIELD.footHeight] = query.footHeight; packet[o + FRONT_FIELD.footDepth] = query.footDepth;
+    packet[o + FRONT_FIELD.tau] = times.clearSeconds; packet[o + FRONT_FIELD.throwZ] = -100; packet[o + FRONT_FIELD.pace] = 0;
+  }
+  const contact = new SweptContact(library, c.slope);
+  contact.update(packet, 9, STILL, flat);
+  const loft = contact.last!, row = Array.from(loft.sliceSigma.subarray(0, loft.sliceCount)).indexOf(4);
+  const cap = 3 * (row * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.lip);
+  const request: TubeApproachRequest = { x: 4.371, z: loft.positions[cap + 2] + 0.6, seaTime: 23,
+    bodyHeight: 1, halfWidth: 0.15, halfDepth: 0.2, envelopeRayX: 1, envelopeRayZ: 0, body: [], reach: 3 };
+  return { contact, request };
+}
+
+describe('passive answers-only approach observations', () => {
+  it.each(['accepted', 'rejected'] as const)('calls exactly the same routes in the same order for a %s shipped loft query', mode => {
+    const f = matureApproachFixture(), request = mode === 'rejected' ? { ...f.request, halfWidth: 50 } : f.request;
+    const spy = vi.spyOn(tubeApproachQueries, 'routeForStrip');
+    try {
+      const plain = f.contact.approachNear(request);
+      const calls = spy.mock.calls.map(call => call.slice(0, 7));
+      spy.mockClear();
+      const observation = createTubeApproachObservation(request);
+      const observed = f.contact.approachNear(request, observation);
+      expect(observed).toEqual(plain);
+      expect(spy.mock.calls.map(call => call.slice(0, 7))).toEqual(calls);
+      expect(observation.routesAttempted).toBe(calls.length);
+      expect(observation.routesAttempted).toBeGreaterThan(0);
+      expect(observation.nearestEligibleCap).toBeDefined(); expect(observation.firstAttempt).toBeDefined();
+      expect(Object.keys(observation.rejectionCounts).length).toBeLessThanOrEqual(15);
+      expect(observation.candidatesInReach).toBeGreaterThanOrEqual(observation.routesAttempted);
+      if (mode === 'accepted') {
+        expect(observed).toBeDefined(); expect(observation.outcome).toBe('accepted');
+        expect(observation.accepted!.bodyFitsMouth).toBe(observed!.bodyFitsMouth);
+        expect(observation.accepted!.bodyInCavity).toBe(observed!.bodyInCavity);
+      } else {
+        expect(observed).toBeUndefined(); expect(observation.outcome).toBe('all-existing-route-attempts-rejected');
+        expect(observation.nearestRejectedAttempt).toBeDefined();
+        expect(Object.values(observation.rejectionCounts).reduce((sum, count) => sum + count!, 0)).toBe(observation.routesAttempted);
+      }
+      const detached = cloneTubeApproachObservation(observation);
+      detached.request.x = 999; detached.firstAttempt!.cap.x = 999; detached.nearestEligibleCap!.x = 999;
+      detached.rejectionCounts['invalid-route-input'] = 999;
+      expect(observation.request.x).toBe(request.x); expect(observation.firstAttempt!.cap.x).not.toBe(999);
+      expect(observation.nearestEligibleCap!.x).not.toBe(999); expect(observation.rejectionCounts['invalid-route-input']).not.toBe(999);
+      if (detached.accepted) { detached.accepted.cap.x = 999; expect(observation.accepted!.cap.x).not.toBe(999); }
+      if (detached.nearestRejectedAttempt) {
+        detached.nearestRejectedAttempt.cap.x = 999; expect(observation.nearestRejectedAttempt!.cap.x).not.toBe(999);
+      }
+    } finally { spy.mockRestore(); }
+  });
+
+  it('resets prior attempts on early returns and does not validate out-of-reach cap projections', () => {
+    const f = matureApproachFixture(), observation = createTubeApproachObservation(f.request);
+    f.contact.approachNear(f.request, observation);
+    expect(observation.firstAttempt).toBeDefined();
+    const spy = vi.spyOn(tubeApproachQueries, 'routeForStrip');
+    try {
+      const far = { ...f.request, x: 1000, seaTime: 24 };
+      expect(f.contact.approachNear(far, observation)).toBeUndefined(); expect(spy).not.toHaveBeenCalled();
+      expect(observation.seaTime).toBe(24); expect(observation.outcome).toBe('no-eligible-mature-cap-segment-in-reach');
+      expect(observation.nearestEligibleCap).toBeDefined(); expect(observation.routesAttempted).toBe(0);
+      expect(observation.firstAttempt).toBeUndefined(); expect(observation.nearestRejectedAttempt).toBeUndefined();
+      expect(observation.accepted).toBeUndefined(); expect(observation.rejectionCounts).toEqual({});
+      expect(f.contact.approachNear({ ...f.request, bodyHeight: Infinity }, observation)).toBeUndefined();
+      expect(observation.outcome).toBe('invalid-request'); expect(observation.nearestEligibleCap).toBeUndefined();
+      expect(spy).not.toHaveBeenCalled();
+      f.contact.update(new Float32Array(0), 0, STILL, flat);
+      expect(f.contact.approachNear(f.request, observation)).toBeUndefined();
+      // Empty update may retain an empty loft; neither case can publish a preceding attempt.
+      expect(['no-contact-loft', 'no-eligible-mature-cap-segment']).toContain(observation.outcome);
+      expect(observation.routesAttempted).toBe(0); expect(observation.firstAttempt).toBeUndefined();
+    } finally { spy.mockRestore(); }
   });
 });

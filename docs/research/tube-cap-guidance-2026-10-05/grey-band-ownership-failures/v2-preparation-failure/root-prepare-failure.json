@@ -1,0 +1,48 @@
+{
+  "schema": "grey-band-owner-v2-root-prepare-failure/v1",
+  "complete": true,
+  "observedAtUTC": "2026-10-05T16:10:22.243097+00:00",
+  "actualPrepareExitCode": 1,
+  "actualToolChunk": "4105ad",
+  "command": "python3 /private/tmp/tube-grey-band-ownership-native-v2-20261005/prepare.py",
+  "firstFailure": "git show historical commit failed for node_modules/three/build/three.core.js: dependency exists on disk but is untracked in6bcae3aa0740cb66187f572a03cc8abbb1981030",
+  "stage": "First historical source recovery; no produced application/source/seal/results yet",
+  "producedOutputsExist": {
+    "dist": false,
+    "historical-source": false,
+    "historical-diagnostic": false,
+    "source-provenance.json": false,
+    "build.json": false,
+    "seal.json": false,
+    "prepare-result.json": false,
+    "owner.json": false,
+    "candidate-first": false
+  },
+  "sourcePreparationFreeze": {
+    "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/preparation-freeze.json",
+    "bytes": 3203,
+    "sha256": "30a02b7adc979d45e2e4d7ca5b6a72d8e21b9e665bfa7646b6c409fb943952bb"
+  },
+  "failedPrepareSource": {
+    "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/prepare.py",
+    "bytes": 10095,
+    "sha256": "5349c6113c27237f0202af17c0488cf997c52d4331d12b9c38116ef193be91b1"
+  },
+  "inputs": {
+    "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/inputs.json",
+    "bytes": 11713,
+    "sha256": "337332f0554344c7239125b4bb00f161c29e70581ea61468aa6b07918d3bab64"
+  },
+  "rootActualSyntaxChecks": {
+    "pythonASTFiles": 2,
+    "nodeSyntaxFiles": 2,
+    "passed": true,
+    "frozenPinsMatched": true,
+    "shaderInspectionByteIdenticalToReviewedOriginal": true
+  },
+  "nativeExecutionStarted": false,
+  "portsProbedOrStartedByPreparation": false,
+  "testsOrBuildsExecutedByPreparation": false,
+  "originalSourcesAndFreezePreserved": true,
+  "qualification": "Receipt documents actual failed preparation; complete:true describes recording this outcome, not successful preparation/native capture."
+}

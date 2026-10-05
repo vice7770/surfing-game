@@ -1,8 +1,28 @@
 import { LANDMARK, type ProfileLibrary } from './ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
 import type { OwnedPlainSurface, PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
-import { routeForStrip, validTubeApproachRequest, type TubeApproachCue, type TubeApproachRequest } from './tubeApproach';
-export type { TubeApproachCue, TubeApproachRequest } from './tubeApproach';
+import { createTubeApproachObservation, resetTubeRouteObservation, routeForStrip, validTubeApproachRequest,
+  type TubeApproachCue, type TubeApproachRequest, type TubeApproachObservation, type TubeCapProjectionObservation,
+  type TubeRouteObservation, type TubeRouteAttemptObservation } from './tubeApproach';
+export type { TubeApproachCue, TubeApproachRequest, TubeApproachObservation } from './tubeApproach';
+
+/** Scalar records are reused: no per-rejected-candidate diagnostic object or unbounded history. */
+function writeCapObservation(target: TubeCapProjectionObservation | undefined, frontId: number, strip: number,
+  fraction: number, sigma: number, x: number, z: number, distanceSquared: number, preferred: boolean): TubeCapProjectionObservation {
+  if (!target) return { frontId, strip, fraction, sigma, x, z, distanceSquared, preferred };
+  target.frontId = frontId; target.strip = strip; target.fraction = fraction; target.sigma = sigma;
+  target.x = x; target.z = z; target.distanceSquared = distanceSquared; target.preferred = preferred;
+  return target;
+}
+
+function writeAttemptObservation(target: TubeRouteAttemptObservation | undefined, route: TubeRouteObservation,
+  cap: TubeCapProjectionObservation): TubeRouteAttemptObservation {
+  if (!target) return { ...route, cap: { ...cap } };
+  resetTubeRouteObservation(target);
+  Object.assign(target, route);
+  Object.assign(target.cap, cap);
+  return target;
+}
 
 /** The physical water needs answers, not mutable contact geometry. */
 export type SweptSurfaceQueries = Pick<SweptContact, 'query' | 'floorAt' | 'approachNear'>;
@@ -328,23 +348,48 @@ export class SweptContact {
    * while one remains usable. The private loft never escapes; returned points/scalars belong to this generation.
    * Calling this is opt-in. Physics queries and their normal/bucket preparation are unchanged.
    */
-  approachNear(request: TubeApproachRequest): TubeApproachCue | undefined {
+  approachNear(request: TubeApproachRequest, observation?: TubeApproachObservation): TubeApproachCue | undefined {
     const loft = this.last;
-    if (!this.boundedC || !loft || !validTubeApproachRequest(request)) return undefined;
-    const p = loft.positions, candidates: { strip: number; fraction: number; distance: number; preferred: boolean }[] = [];
+    if (observation) Object.assign(observation, createTubeApproachObservation(request, this.geometryStep));
+    if (!this.boundedC || !loft || !validTubeApproachRequest(request)) {
+      if (observation) observation.outcome = !this.boundedC ? 'not-bounded-c' : !loft ? 'no-contact-loft' : 'invalid-request';
+      return undefined;
+    }
+    const p = loft.positions, candidates: { strip: number; fraction: number; distance: number; preferred: boolean;
+      capX?: number; capZ?: number; capSigma?: number; capFrontId?: number }[] = [];
     const reachSquared = (request.reach ?? 15) ** 2;
     for (let strip = 0; strip + 1 < loft.sliceCount; strip++) {
       if (loft.sliceJoined[strip] !== 1 || loft.sliceFront[strip] !== loft.sliceFront[strip + 1]
         || loft.slicePhase[strip] !== 1 || loft.slicePhase[strip + 1] !== 1
         || !(loft.sliceWeight[strip] > 0 && loft.sliceWeight[strip + 1] > 0)) continue;
+      if (observation) observation.eligibleMaturePairs++;
       const a = 3 * (strip * S + E + LANDMARK.lip), b = a + 3 * S;
       const dx = p[b] - p[a], dz = p[b + 2] - p[a + 2], span = dx * dx + dz * dz;
       if (!(span > 0)) continue;
+      if (observation) observation.nondegenerateMatureCapSegments++;
       const fraction = Math.max(0, Math.min(1, ((request.x - p[a]) * dx + (request.z - p[a + 2]) * dz) / span));
-      const distance = (p[a] + fraction * dx - request.x) ** 2 + (p[a + 2] + fraction * dz - request.z) ** 2;
-      if (distance <= reachSquared) candidates.push({ strip, fraction, distance, preferred: loft.sliceFront[strip] === request.preferredFront });
+      const capX = p[a] + fraction * dx, capZ = p[a + 2] + fraction * dz;
+      const distance = (capX - request.x) ** 2 + (capZ - request.z) ** 2;
+      if (observation && distance < (observation.nearestEligibleCap?.distanceSquared ?? Infinity)) {
+        observation.nearestEligibleCap = writeCapObservation(observation.nearestEligibleCap, loft.sliceFront[strip], strip, fraction,
+          loft.sliceSigma[strip] + fraction * (loft.sliceSigma[strip + 1] - loft.sliceSigma[strip]), capX, capZ, distance,
+          loft.sliceFront[strip] === request.preferredFront);
+      }
+      if (distance <= reachSquared) {
+        const candidate: typeof candidates[number] = { strip, fraction, distance, preferred: loft.sliceFront[strip] === request.preferredFront };
+        if (observation) {
+          candidate.capX = capX; candidate.capZ = capZ; candidate.capFrontId = loft.sliceFront[strip];
+          candidate.capSigma = loft.sliceSigma[strip] + fraction * (loft.sliceSigma[strip + 1] - loft.sliceSigma[strip]);
+        }
+        candidates.push(candidate);
+      }
     }
-    if (candidates.length === 0) return undefined;
+    if (observation) observation.candidatesInReach = candidates.length;
+    if (candidates.length === 0) {
+      if (observation) observation.outcome = observation.nondegenerateMatureCapSegments === 0
+        ? 'no-eligible-mature-cap-segment' : 'no-eligible-mature-cap-segment-in-reach';
+      return undefined;
+    }
     candidates.sort((a, b) => Number(b.preferred) - Number(a.preferred) || a.distance - b.distance || a.strip - b.strip);
     // One actual-index selection serves all nearby candidates. This bound contains every candidate's translated
     // finite envelope in any ray frame, plus the supplied current world body. XZ needs no deferred Y preparation.
@@ -355,22 +400,53 @@ export class SweptContact {
     const triangleOffsets: number[] = [];
     for (let i = 0; i + 2 < loft.indexCount; i += 3) {
       const a = loft.indices[i], b = loft.indices[i + 1], c = loft.indices[i + 2];
-      if (Math.max(a, b, c) >= loft.vertexCount) return undefined;
+      if (Math.max(a, b, c) >= loft.vertexCount) {
+        if (observation) observation.outcome = 'invalid-indexed-geometry';
+        return undefined;
+      }
       if (Math.max(p[3 * a], p[3 * b], p[3 * c]) < xMin || Math.min(p[3 * a], p[3 * b], p[3 * c]) > xMax
         || Math.max(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2]) < zMin || Math.min(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2]) > zMax) continue;
       triangleOffsets.push(i);
     }
     const endpoints = new Set<number>();
+    const routeObservation: TubeRouteObservation | undefined = observation ? { columnCalls: 0, clearRouteCalls: 0 } : undefined;
+    let capObservation: TubeCapProjectionObservation | undefined;
+    if (observation) observation.outcome = 'all-existing-route-attempts-rejected';
     for (const candidate of candidates) {
       // Adjacent mature strips can project to exactly the same stored cap row. Their run, ray and route coincide;
       // other stations, even very close ones, remain distinct and are never hidden by coarse spatial deduplication.
       const endpoint = candidate.fraction === 0 ? candidate.strip : candidate.fraction === 1 ? candidate.strip + 1 : undefined;
       if (endpoint !== undefined) {
-        if (endpoints.has(endpoint)) continue;
+        if (endpoints.has(endpoint)) {
+          if (observation) observation.endpointDuplicatesSkipped++;
+          continue;
+        }
         endpoints.add(endpoint);
       }
-      const cue = routeForStrip(loft, candidate.strip, candidate.fraction, request, this.geometryStep, this.prepareRow, triangleOffsets);
-      if (cue) return cue;
+      if (observation) {
+        observation.routesAttempted++;
+        capObservation = writeCapObservation(capObservation, candidate.capFrontId!, candidate.strip, candidate.fraction,
+          candidate.capSigma!, candidate.capX!, candidate.capZ!, candidate.distance, candidate.preferred);
+      }
+      const cue = routeForStrip(loft, candidate.strip, candidate.fraction, request, this.geometryStep, this.prepareRow, triangleOffsets, routeObservation);
+      if (observation) {
+        observation.columnCalls += routeObservation!.columnCalls; observation.clearRouteCalls += routeObservation!.clearRouteCalls;
+        if (!observation.firstAttempt) observation.firstAttempt = writeAttemptObservation(undefined, routeObservation!, capObservation!);
+        if (!cue) {
+          const rejection = routeObservation!.rejection;
+          if (rejection) observation.rejectionCounts[rejection] = (observation.rejectionCounts[rejection] ?? 0) + 1;
+          if (candidate.distance < (observation.nearestRejectedAttempt?.cap.distanceSquared ?? Infinity))
+            observation.nearestRejectedAttempt = writeAttemptObservation(observation.nearestRejectedAttempt, routeObservation!, capObservation!);
+        }
+      }
+      if (cue) {
+        if (observation) {
+          observation.outcome = 'accepted';
+          observation.accepted = { cap: { ...capObservation! }, bodyFitsMouth: cue.bodyFitsMouth, bodyInCavity: cue.bodyInCavity,
+            mouthDistanceSquared: (cue.mouth.x - request.x) ** 2 + (cue.mouth.z - request.z) ** 2 };
+        }
+        return cue;
+      }
     }
     return undefined;
   }

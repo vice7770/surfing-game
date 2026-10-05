@@ -1,0 +1,77 @@
+{
+  "schema": "grey-band-ownership-source-preparation/v2",
+  "sourceOnly": true,
+  "executionPending": true,
+  "executedChecksBuildsNativeOrPorts": false,
+  "productionFilesWritten": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/prepare.py",
+      "bytes": 10095,
+      "sha256": "5349c6113c27237f0202af17c0488cf997c52d4331d12b9c38116ef193be91b1"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/run.py",
+      "bytes": 17886,
+      "sha256": "c33084c76194b5c7873126ef20321c75f0bcef3f55adedd44b23e67be42bd774"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/native.mjs",
+      "bytes": 10079,
+      "sha256": "2340ede6559735fb27eabff4ebf6fcb10e734b2d96969ce6c3d31620686786c2"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/ownership-inspection.mjs",
+      "bytes": 26366,
+      "sha256": "7132754e19d34d4c256531582e6856bb430b0db5e27b276d2107717d94b54c9b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/inputs.json",
+      "bytes": 11713,
+      "sha256": "337332f0554344c7239125b4bb00f161c29e70581ea61468aa6b07918d3bab64"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/README.md",
+      "bytes": 12468,
+      "sha256": "f2e2f08485ece1813b198b7f8f68d9a8139b44e852e4983c08149736e5f21b28"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/recipe-diff.md",
+      "bytes": 2993,
+      "sha256": "a36cbc785fdff58c4837798884810ad2937151bf821a3bb653059ebef574f3e1"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/recipe.patch",
+      "bytes": 46341,
+      "sha256": "8ecde11d60839853cde8cb5768cd88c2ab32d826028c6dc8bff2af92752e9b4a"
+    }
+  ],
+  "ownershipShaderHelperBytesIdenticalToReviewedOriginal": true,
+  "sourceOnlyParent": {
+    "directory": "/private/tmp/tube-grey-band-ownership-native-20261005",
+    "ownershipHelper": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-20261005/ownership-inspection.mjs",
+      "bytes": 26366,
+      "sha256": "7132754e19d34d4c256531582e6856bb430b0db5e27b276d2107717d94b54c9b"
+    },
+    "runtimeExecutionClaim": false
+  },
+  "qualifiedPriorV3Run": {
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    "qualification": "The V3 gameplay owner/report actually failed the640s diagnostic wall deadline after1525rows. Its immutable app build/assets/log/source receipts are complete; gameplay success is not claimed."
+  },
+  "protectedIdentityAuthority": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+    "bytes": 25763,
+    "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+  }
+}

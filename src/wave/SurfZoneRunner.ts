@@ -19,7 +19,8 @@ import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
 import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
 import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } from './barrel/sweptContact';
-import type { TubeApproachCue, TubeApproachRequest, TubeBodyPoint } from './barrel/tubeApproach';
+import { cloneTubeApproachObservation, createTubeApproachObservation,
+  type TubeApproachCue, type TubeApproachRequest, type TubeBodyPoint, type TubeApproachObservation } from './barrel/tubeApproach';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SurfZoneSimulation, sweptBarrelOn, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
@@ -229,6 +230,8 @@ export interface SurfZoneStatus {
     bank?: number;
     /** Optional dev guidance. This is a geometry observation, not a completed ride. */
     tubeApproach?: TubeApproachCue;
+    /** Same-query passive scalar evidence; absence does not classify an unobserved route. */
+    tubeApproachObservation?: TubeApproachObservation;
     /** Same-step dev witnesses: drawn tips/centres and the physical part spheres, observed without moving the rider. */
     tubeBody?: { seaTime: number; renderPoints: TubeBodyPoint[]; partSpheres: TubeBodyPoint[] };
     /** The leash (the wipeout spec): snapped, its tension (N) and the ends' distance (m), and whether it is being reeled in. */
@@ -342,6 +345,7 @@ export class SurfZoneRunner {
   private readonly gauge?: WaveFrameGauge;
   private wave?: WaveFrame;
   private tubeApproach?: TubeApproachCue;
+  private tubeApproachObservation?: TubeApproachObservation;
   private tubeBodyTime = Number.NaN;
   private readonly tubeBody = Array.from({ length: 14 }, () => ({ x: 0, y: 0, z: 0, radius: 0 }));
   private peelAngle = 0;
@@ -657,6 +661,7 @@ export class SurfZoneRunner {
   /** A restored sea or a restarted actor cannot retain guidance from the preceding geometry. */
   invalidateTubeApproach(): void {
     this.tubeApproach = undefined;
+    this.tubeApproachObservation = undefined;
     this.tubeBodyTime = Number.NaN;
   }
 
@@ -695,7 +700,8 @@ export class SurfZoneRunner {
       body: this.tubeBody, preferredFront: this.tubeApproach?.frontId, reach: 16,
     };
     this.tubeBodyTime = request.seaTime;
-    this.tubeApproach = contactQueries.approachNear(request);
+    this.tubeApproachObservation = createTubeApproachObservation(request);
+    this.tubeApproach = contactQueries.approachNear(request, this.tubeApproachObservation);
   }
 
   /** The step's sample for the ride's analyzer; a finished ride's report is kept and a new ride awaited. */
@@ -869,6 +875,9 @@ export class SurfZoneRunner {
         ...(this.tubeApproach?.seaTime === simulation.seaTime ? { tubeApproach: {
           ...this.tubeApproach, mouth: { ...this.tubeApproach.mouth }, inside: { ...this.tubeApproach.inside },
         } } : {}),
+        ...(this.tubeApproachObservation?.seaTime === simulation.seaTime ? {
+          tubeApproachObservation: cloneTubeApproachObservation(this.tubeApproachObservation),
+        } : {}),
         ...(this.tubeBodyTime === simulation.seaTime ? { tubeBody: {
           seaTime: this.tubeBodyTime, renderPoints: this.tubeBody.slice(0, 7).map(p => ({ ...p })),
           partSpheres: this.tubeBody.slice(7).map(p => ({ ...p })),

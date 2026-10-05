@@ -1,0 +1,97 @@
+{
+  "schema": "guided-ordinary-source-preparation/v4",
+  "testsBuildsNativePortsExecuted": false,
+  "copiedHistoricalAssetsModulesOutputs": false,
+  "productionMutations": false,
+  "originFiles": [
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/autopilot-entry.ts",
+      "bytes": 106,
+      "sha256": "53ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/build-diagnostic.mjs",
+      "bytes": 1874,
+      "sha256": "5ab6542657ed0ca1e7d95d85905263fabf634d12e03b77eb7e66511d2172e07c"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/rider-driver.mjs",
+      "bytes": 12947,
+      "sha256": "49164d75109cba0afa6d057ca3bfe96ad36f0483caa18d2810351d95a097792f"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/native.mjs",
+      "bytes": 14564,
+      "sha256": "070d793c796be73258c023997961c0e82da7c818c7c0da58c15216a7d3d26dd6"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/prepare.py",
+      "bytes": 4310,
+      "sha256": "d4ca9dc9ab52eea2183f7e2ef4f78deb1c28891990b518378112082784b2d0fa"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/run.py",
+      "bytes": 16337,
+      "sha256": "61b7f58e803fe21a45ae1742d7d17cd5a0550984335b66103272d12fd27f3db4"
+    }
+  ],
+  "unchangedWitnessControlAcceptanceHelpers": [
+    "body-mesh.mjs",
+    "control-policy.mjs",
+    "criteria.mjs",
+    "loft-snapshot-tools.mjs"
+  ],
+  "sourceOnly": true,
+  "candidateRuntimePreparationBuildOrCaptureHelpersExecuted": false,
+  "sourceWriterScriptsExecutedForTemporaryFilesOnly": true,
+  "preservedV3ReadOnlyCostAuditExecuted": true,
+  "deadlineRepair": {
+    "scope": "Only native.mjs finally keeps the existing640s deadline timer armed through browser close and final save, then clears it. No extension, restart, control, checkpoint, input or acceptance change.",
+    "authorizedByRoot": true,
+    "runtimeSyntaxBuildChecksPerformedByRepairAgent": false,
+    "candidateRuntimeExecutedByRepairAgent": false,
+    "rootBuildAuthorityOrLogsAssetsModified": false,
+    "beforeRepairRecords": [
+      {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-deadline-repair/native.mjs",
+        "bytes": 16577,
+        "sha256": "dd841a2dfe68ea17635be50474d2e2bf7db10c690e6a7be48a3de2a0b4811d3b"
+      },
+      {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-deadline-repair/recipe-source-freeze.json",
+        "bytes": 8942,
+        "sha256": "dd8e79c1e036d1a7ba3e4b868842edad04e289a00d1c827fb324d754032415a9"
+      },
+      {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-deadline-repair/recipe.patch",
+        "bytes": 124858,
+        "sha256": "8d8334e45628d816c91a3afe390226a059b4ec202d803f3e2f66987f999831c0"
+      },
+      {
+        "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-deadline-repair/source-only-origin.json",
+        "bytes": 2580,
+        "sha256": "e057992e362339dee936a55a2aceacd8bef58d219dfce794d24a5537955d8d14"
+      }
+    ]
+  }
+}

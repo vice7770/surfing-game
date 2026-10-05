@@ -1,0 +1,129 @@
+{
+  "schema": "shared-leaf-residual-offline-provenance/v1",
+  "complete": true,
+  "script": {
+    "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/provenance.py",
+    "bytes": 3388,
+    "sha256": "77758f51eed83e752d47d6ffd1f1bc8411699177db30accd09f1e84e7c57a58c"
+  },
+  "captureClosedCompleteVerified": true,
+  "captureHandleSuppliedByRoot": null,
+  "savedAnalysisDirectInputPinsVerified": true,
+  "allOfflineInspectionInputPinsVerified": true,
+  "captureSelectedLiveSourcePinsVerified": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 31647,
+      "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 19679,
+      "sha256": "83feb4b827ff2b822a0aa0869cba2495480929c0e7e6ab3e74e3882cc69c2414"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    }
+  ],
+  "capturedCaseAssetPinsVerified": [
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/dist/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/dist/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/dist/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/dist/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    }
+  ],
+  "actualOfflineExecutions": [
+    {
+      "script": "inspect-pre-nan-fix.py",
+      "exitCode": 1,
+      "outcome": "NaN-expanded packet serialization failure before inspection output; exact first source preserved."
+    },
+    {
+      "script": "inspect.py",
+      "exitCode": 0,
+      "log": "inspection-run-final.log"
+    },
+    {
+      "script": "decompose.py",
+      "exitCode": 0,
+      "log": "decomposition-run.log"
+    }
+  ],
+  "files": [
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/README.md",
+      "bytes": 6282,
+      "sha256": "57e70774fa3a8cedff9a5f3a5b094446719a5b29128f30a16f33c0ec7e42827b"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/decompose.py",
+      "bytes": 4730,
+      "sha256": "84a580bbbcb100abedd1a3f97a537e166d07a84a54ea4490da4048af6d1cf842"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/decomposition-run.log",
+      "bytes": 15492,
+      "sha256": "f87a01b57fe07f0d4d36d1ee523f69451bc579de3fda37e86b2c8bdad14eb59f"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/decomposition.json",
+      "bytes": 15492,
+      "sha256": "f87a01b57fe07f0d4d36d1ee523f69451bc579de3fda37e86b2c8bdad14eb59f"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/first-attempt-note.md",
+      "bytes": 533,
+      "sha256": "dab4f41442261c201b00b2407d0ed193aecfe8dc2da8b3ff0a58e0f38e5085f1"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/inspect-pre-nan-fix.py",
+      "bytes": 8674,
+      "sha256": "5e241e89e879582502b213af8a1d5cb095db27d137ee2986a0df7089c9c8e967"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/inspect.py",
+      "bytes": 8660,
+      "sha256": "4ebc99b2ab53086eb7297f8000651f0065fd3307925ae0bd9df943f714f4e105"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/inspection-run-final.log",
+      "bytes": 8239,
+      "sha256": "8d22c334276f69f2ecce32b143d0c30e9e4a931d7db7385247a63bb10cd646e7"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/inspection-run.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/inspection.json",
+      "bytes": 67124,
+      "sha256": "49a696222f303feacf109d2127ea56bf4fc1dd4632976b90524544b4e0088fb2"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/provenance.py",
+      "bytes": 3388,
+      "sha256": "77758f51eed83e752d47d6ffd1f1bc8411699177db30accd09f1e84e7c57a58c"
+    }
+  ],
+  "maximumAbsoluteCapPredictionErrorMeters": 1.1920928955078125e-07,
+  "runtimeCompilerTestPortProductionMutations": false,
+  "scope": "Direct completed capture/source/asset checks and finite saved-word math only; no visual, globalC1, ordinary rider passage, physics or quality acceptance."
+}

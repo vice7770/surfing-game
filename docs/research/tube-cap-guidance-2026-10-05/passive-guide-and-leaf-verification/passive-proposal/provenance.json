@@ -1,0 +1,85 @@
+{
+  "scope": "SOURCE-ONLY, not applied/compiled/tested/built/run; no production/dist/native/port mutation",
+  "baselineHead": "2f43b943cfb29419a063c6ee31813e4f116c7a7a",
+  "proposal": {
+    "path": "/private/tmp/tube-approach-passive-telemetry-proposal-20261005.ts",
+    "sha256": "4182defddd8aea20eb1135bbcb59d69575bb2183cb41ec020eabc094f96a5221"
+  },
+  "authoredNewCases": 8,
+  "patch": {
+    "path": "candidate.patch",
+    "sha256": "9e6263e329d6dd097a731e4994f6423b3df18c932312e230619562b2668b7eff",
+    "bytes": 47637
+  },
+  "sources": [
+    {
+      "path": "src/wave/barrel/tubeApproach.ts",
+      "baselineSha256": "e9dcef6c769f73382dfd28988386a66b597e87e347ae232ee29cc3e5706ce0fd",
+      "candidateSha256": "05bb1424a8aa8189761a36606374d26e28298dc260047e347d917acb4183c472",
+      "candidateBytes": 24407,
+      "productionStillEqualsBaseline": true
+    },
+    {
+      "path": "src/wave/barrel/sweptContact.ts",
+      "baselineSha256": "710ce9b807e8959459969ae723a1f9635bf01eee8841ff1168e06c1043e2ff94",
+      "candidateSha256": "c24017b1ee89abc6212df904e630e2e2fa7b73288948f36ce6b9a76399668bbf",
+      "candidateBytes": 39047,
+      "productionStillEqualsBaseline": true
+    },
+    {
+      "path": "src/wave/SurfZoneRunner.ts",
+      "baselineSha256": "783a20494b5670840de9040cf9de063a7d788efc3610794cc3c25e1e25cc5cdb",
+      "candidateSha256": "3511ee2d08c0dc4be86933ea5633b1e7b27a1753bb58a4edcd7bd6cf5397981b",
+      "candidateBytes": 44969,
+      "productionStillEqualsBaseline": true
+    },
+    {
+      "path": "src/wave/barrel/tubeApproach.test.ts",
+      "baselineSha256": "03bb23b7530a24988e4ba3d1ff051be088e06439294d8f6a725af0e339acbc5d",
+      "candidateSha256": "adfb1796a40aaf7d151e652b25a1b4d433a1bd20ec64e7431da78fcffe0867ca",
+      "candidateBytes": 13723,
+      "productionStillEqualsBaseline": true
+    },
+    {
+      "path": "src/wave/barrel/sweptContact.test.ts",
+      "baselineSha256": "84bcce2b07d30ffc3f7fada61b3502abb342fb51d19bf0ffdb13b31f538d4d95",
+      "candidateSha256": "947580186191e9616ec3e39cd38d270ee939b62240c8bd8e1138ae132990a06b",
+      "candidateBytes": 35437,
+      "productionStillEqualsBaseline": true
+    },
+    {
+      "path": "src/wave/SurfZoneRunner.tube.test.ts",
+      "baselineSha256": "22673a4e56f83ef8e4f5628d9fac6c1ef21fbe28359f0c4657c2db1a0d7ea8b7",
+      "candidateSha256": "104f20410cde558d84968684de25dbc78466fa47f716e63df97866de59bb6aa8",
+      "candidateBytes": 7843,
+      "productionStillEqualsBaseline": true
+    }
+  ],
+  "helperFiles": [
+    {
+      "path": "README.md",
+      "sha256": "f80d9483784613cdf551037b28b0d595fc7abf748559026ad994f57fdb70fa41",
+      "bytes": 6547
+    },
+    {
+      "path": "baseline-pins.json",
+      "sha256": "2b5a4e84f8670ee613563bfd3e563a94bb07ff9b5d4077d1f739644a68354827",
+      "bytes": 1143
+    },
+    {
+      "path": "edit-candidate.py",
+      "sha256": "908d66bdbc8c913d35458ba5ecb956458d6d91503c1639c71849a9a7b8e76ffa",
+      "bytes": 14220
+    },
+    {
+      "path": "edit-contact-runner.py",
+      "sha256": "cf12e37aa5643df415cf695969f359af0948cbe1b8b5130c372e222f6168041d",
+      "bytes": 10909
+    },
+    {
+      "path": "edit-tests.py",
+      "sha256": "61ce9e2dc8dffd992fe6699700576cb6cff25b082048f4c1147aafe4c43fbb56",
+      "bytes": 14018
+    }
+  ]
+}

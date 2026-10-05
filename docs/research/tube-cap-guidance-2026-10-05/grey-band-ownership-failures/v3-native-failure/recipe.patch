@@ -1,0 +1,330 @@
+diff --git a/prepare.py b/prepare.py
+--- a/prepare.py
++++ b/prepare.py
+@@ -1,27 +1,33 @@
+ """Root-only preparation source. Copies immutable V3 assets; never builds or pins mutable production."""
+ from pathlib import Path
+ import hashlib,json,shutil,subprocess
+-W=Path('/private/tmp/tube-grey-band-ownership-native-v2-20261005')
++W=Path('/private/tmp/tube-grey-band-ownership-native-v3-20261005')
+ def pin(p):
+  b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ def verify(spec):
+  b=Path(spec['file']).read_bytes();assert len(b)==spec['bytes'] and hashlib.sha256(b).hexdigest()==spec['sha256'],spec['file'];return b
+-assert not any((W/n).exists()for n in('dist','historical-source','historical-diagnostic','source-provenance.json','build.json','seal.json','prepare-result.json','owner.json','candidate-first')),'First-only root preparation'
++assert not any((W/n).exists()for n in('dist','historical-source','historical-dependencies','historical-diagnostic','source-provenance.json','build.json','seal.json','prepare-result.json','owner.json','candidate-first')),'First-only root preparation'
+ i=json.loads((W/'inputs.json').read_bytes())
+ reference_names=('opticalApplicationBuild','opticalApplicationFreeze','opticalApplicationSeal','opticalApplicationBuildLog','referenceReport','referenceOwner','referenceLoft','authoredReport','authoredOwner','authoredSeal','baselinePNG')
+-references=[i[k]for k in reference_names]+i['readOnlyEvidence']+[i['protectedIdentityAuthority'],i['historicalOpticalRun']['owner'],i['historicalOpticalRun']['report']]
++references=[i[k]for k in reference_names]+i['readOnlyEvidence']+[i['protectedIdentityAuthority'],i['historicalOpticalRun']['owner'],i['historicalOpticalRun']['report'],i['priorPreparationFailure']['receipt']]
+ for spec in references+i['borrowedHelperPins']:verify(spec)
+ closure=json.loads(verify(i['protectedIdentityAuthority']))
+ assert closure['schema']=='shared-leaf-independent-post-failure/v1' and closure['complete'] and closure['protectedPreserved'] and closure['ownedGroupAbsent'] and all(closure['closedPorts'].values())
+ # This independent root OS receipt is an expected-identity authority, not success of this ID recipe.
+ old_run=json.loads(verify(i['historicalOpticalRun']['owner']));old_report=json.loads(verify(i['historicalOpticalRun']['report']))
+ assert not old_run['complete'] and old_run['exitCode']==1 and not old_report['complete'] and old_report['stepCount']==1525 and '640s native deadline' in old_report['firstFailure']
++previous_prepare=json.loads(verify(i['priorPreparationFailure']['receipt']))
++assert previous_prepare['schema']=='grey-band-owner-v2-root-prepare-failure/v1' and previous_prepare['complete'] and previous_prepare['actualPrepareExitCode']==1
++assert not previous_prepare['nativeExecutionStarted'] and not previous_prepare['portsProbedOrStartedByPreparation'] and previous_prepare['originalSourcesAndFreezePreserved']
++assert previous_prepare['producedOutputsExist'] and not any(previous_prepare['producedOutputsExist'].values())
++# complete:true on that separate receipt records a failed preparation, not native success.
+ b=json.loads(verify(i['opticalApplicationBuild']));f=json.loads(verify(i['opticalApplicationFreeze']));s=json.loads(verify(i['opticalApplicationSeal']))
+ assert b['complete'] and b['build']==i['applicationBuildId'] and f['complete'] and f['build']==b['build'] and s['complete'] and s['rootAuthorized'] and s['buildId']==b['build']
+ assert b['applicationBuildLog']==i['opticalApplicationBuildLog']
+ assert b['productionSources']==f['productionSources'] and b['diagnosticCompiledSources']==f['diagnosticCompiledSources']
+-# These records are historical evidence. Their live /repo source paths, root dist and old run helpers are NOT read or verified.
+-# Only the immutable copied V3 app asset paths are authoritative executable inputs here.
++# Historical app/source paths and root dist are not read; app/source is recovered from Git.
++# Declared dependency and external diagnostic originals are direct read-only compiled-pin inputs.
++# Only immutable copied V3 app asset paths are authoritative executable inputs here.
+ app=Path(i['applicationDirectory']);assert app.is_dir();asset_paths={Path(spec['file']).resolve()for spec in b['assets']}
+ assert asset_paths=={p.resolve()for p in app.rglob('*')if p.is_file()}
+ for spec in b['assets']:assert Path(spec['file']).is_relative_to(app);verify(spec)
+@@ -36,38 +42,65 @@
+ assert all(p['baselineRepeatPixelsIdentical'] and all(p['guards'].values())for p in a['pairs'])
+ assert a['pairs'][4]['treatment']=='authored-mask-plus-sheet-fill-A' and a['pairs'][4]['fixedPose']==i['fixedCamera']
+ assert {k:i['baselinePNG'][k]for k in('bytes','sha256')}=={k:a['pairs'][4]['combinedSupport'][k]for k in('bytes','sha256')}
+-# Repository source receipts and external diagnostic entries have different, explicit provenance.
+-# No mutable repo source is read. External pinned entry points are not assigned a Git commit/hash.
+-repo=Path(i['repository']);commit=i['historicalCommit'];historical=[];external=[];repository_records=[];external_records=[];extra_records=[]
+-historical_specs={};external_specs={};families={}
++# Committed repository app/source, untracked repository dependencies, and external
++# diagnostic entries have distinct provenance. No changed application source is read.
++repo=Path(i['repository']);commit=i['historicalCommit'];policy=i['sourceProvenancePolicy']
++assert policy['gitReadSeconds']==2 and policy['repositoryDependencyPrefixes']==['node_modules/']
++assert policy['repositoryDependencyFamily']=='diagnosticCompiledSources'
++historical=[];dependencies=[];external=[];repository_records=[];dependency_records=[];external_records=[];extra_records=[]
++historical_specs={};dependency_specs={};external_specs={};families={}
++def committed_bytes(relative):
++ assert not Path(relative).is_absolute() and '..' not in Path(relative).parts
++ result=subprocess.run(['/usr/bin/git','show',commit+':'+relative],cwd=repo,capture_output=True,timeout=policy['gitReadSeconds'])
++ assert result.returncode==0,'Required committed source unavailable: '+relative+' '+result.stderr.decode(errors='replace')[:400]
++ return result.stdout
++def require_dependency_absent_from_commit(relative):
++ # batch-check reports a missing object with terminal0, rather than confusing any
++ # Git failure with an absent path. Reads are bounded and never mutate the repo.
++ query=commit+':'+relative
++ command=['/usr/bin/git','cat-file','--batch-check=%(objecttype)']
++ result=subprocess.run(command,input=query+'\n',cwd=repo,text=True,capture_output=True,timeout=policy['gitReadSeconds'])
++ assert result.returncode==0 and result.stdout==query+' missing\n','Declared dependency must be absent from historical commit: '+relative
++ return {'command':command,'objectQuery':query,'terminalExitCode':result.returncode,'stdout':result.stdout,'timeoutSeconds':policy['gitReadSeconds']}
+ for family in ('productionSources','diagnosticCompiledSources'):
+  for spec in b[family]:
+   path=Path(spec['file']);families.setdefault(str(path),[]).append(family)
+   if path.is_relative_to(repo):
+-   relative=path.relative_to(repo)
++   relative=path.relative_to(repo);key=relative.as_posix()
+    assert relative.parts and '..' not in relative.parts
+-   target=historical_specs;key=str(relative)
++   if any(key.startswith(prefix)for prefix in policy['repositoryDependencyPrefixes']):
++    assert family=='diagnosticCompiledSources','Dependency cannot be authored production source'
++    target=dependency_specs
++   else:target=historical_specs
+   else:
++   assert family=='diagnosticCompiledSources','External entry cannot be authored production source'
+    target=external_specs;key=str(path)
+   if key in target:assert target[key]==spec,'Conflicting historical source receipt '+key
+   target[key]=spec
+ for relative,spec in sorted(historical_specs.items()):
+- data=subprocess.check_output(['/usr/bin/git','show',commit+':'+relative],cwd=repo,timeout=10)
++ data=committed_bytes(relative)
+  assert len(data)==spec['bytes'] and hashlib.sha256(data).hexdigest()==spec['sha256'],'Historical committed source differs: '+relative
+  dest=W/'historical-source'/relative;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);copy=pin(dest);historical.append(copy)
+- repository_records.append({'relative':relative,'historicalCommit':commit,'receipt':spec,'copied':copy,'sourceFamilies':families[spec['file']],'provenance':'Exact git show from declared historical commit, verified against existing compiled/production source receipt.'})
++ repository_records.append({'relative':relative,'historicalCommit':commit,'recoveredFromGit':True,'receipt':spec,'copied':copy,'sourceFamilies':families[spec['file']],'provenance':'Exact bounded git show from declared historical commit, verified against existing compiled/production source receipt.'})
++for relative,spec in sorted(dependency_specs.items()):
++ assert families[spec['file']]==['diagnosticCompiledSources']
++ existence=require_dependency_absent_from_commit(relative)
++ data=verify(spec);dest=W/'historical-dependencies'/relative
++ dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);copy=pin(dest);dependencies.append(copy);verify(spec)
++ dependency_records.append({'relative':relative,'original':spec,'copied':copy,'sourceFamilies':families[spec['file']],'historicalCommit':None,'recoveredFromGit':False,'historicalCommitChecked':commit,'historicalCommitContainsPath':False,'gitExistenceCheck':existence,'provenance':'Declared node_modules dependency absent from the historical commit; exact compiled-source receipt verified directly before/after copy. No committed dependency source/hash invented.'})
+ for number,(original,spec)in enumerate(sorted(external_specs.items())):
+  data=verify(spec);dest=W/'historical-diagnostic'/(str(number).zfill(3)+'-'+Path(original).name)
+  dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);copy=pin(dest);external.append(copy);verify(spec)
+  external_records.append({'original':spec,'copied':copy,'sourceFamilies':families[original],'historicalCommit':None,'recoveredFromGit':False,'provenance':'Exact pinned original outside-repository diagnostic source; compiled-source receipt verified directly. No committed source hash invented.'})
+ for relative in i['historicalOpticalSourcePaths']:
+  rel=Path(relative);assert not rel.is_absolute() and '..' not in rel.parts
++ assert not any(rel.as_posix().startswith(prefix)for prefix in policy['repositoryDependencyPrefixes'])
+  dest=W/'historical-source'/rel
+  if dest.exists():continue
+- data=subprocess.check_output(['/usr/bin/git','show',commit+':'+relative],cwd=repo,timeout=10)
++ data=committed_bytes(relative)
+  dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);copy=pin(dest);historical.append(copy)
+  extra_records.append({'relative':relative,'historicalCommit':commit,'copied':copy,'existingBuildReceiptHashAvailable':False,'provenance':'Additional source read from the exact declared commit for optical interpretation; not assigned an invented prior build receipt hash.'})
+-provenance={'schema':'grey-band-ownership-source-provenance/v2','complete':True,'applicationBuild':i['opticalApplicationBuild'],'applicationFreeze':i['opticalApplicationFreeze'],'historicalCommit':commit,'repositorySources':repository_records,'externalDiagnosticSources':external_records,'extraOpticalCommittedSources':extra_records,'mutableProductionSourcesReadOrFrozen':False,'originalV3GameplaySucceeded':False}
++provenance={'schema':'grey-band-ownership-source-provenance/v3','complete':True,'applicationBuild':i['opticalApplicationBuild'],'applicationFreeze':i['opticalApplicationFreeze'],'historicalCommit':commit,'sourceProvenancePolicy':policy,'priorPreparationFailure':i['priorPreparationFailure'],'repositorySources':repository_records,'repositoryDependencySources':dependency_records,'externalDiagnosticSources':external_records,'extraOpticalCommittedSources':extra_records,'counts':{'uniqueCommittedReceiptSources':len(repository_records),'repositoryDependencies':len(dependency_records),'externalDiagnosticSources':len(external_records),'additionalOpticalCommittedSources':len(extra_records)},'mutableProductionSourcesReadOrFrozen':False,'originalV3GameplaySucceeded':False}
+ (W/'source-provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
+ shutil.copytree(app,W/'dist')
+ copied_assets=[pin(p)for p in sorted((W/'dist').rglob('*'))if p.is_file()]
+@@ -77,18 +110,18 @@
+  original=old_assets[Path(spec['file']).relative_to(W/'dist')]
+  assert spec['bytes']==original['bytes'] and spec['sha256']==original['sha256'],'Copied immutable app bytes differ'
+ for spec in b['assets']:verify(spec)
+-copied={'schema':'grey-band-ownership-build/v2','complete':True,'build':i['applicationBuildId'],
+- 'operation':'Copy immutable V3 app assets only; read-only git show reconstructs historical source; no build/current source freeze.',
++copied={'schema':'grey-band-ownership-build/v3','complete':True,'build':i['applicationBuildId'],
++ 'operation':'Copy immutable V3 app assets only; bounded read-only git show reconstructs committed sources; dependencies/external diagnostic copied from direct compiled pins; no build/current source freeze.',
+  'assets':copied_assets, 'priorBuild':i['opticalApplicationBuild'],
+- 'historicalCommit':commit,'sourceProvenance':pin(W/'source-provenance.json'),'reconstructedHistoricalSources':historical,'copiedExternalDiagnosticSources':external,'historicalOpticalRun':i['historicalOpticalRun'],'oldProductionSourceReceiptVerification':True,
++ 'historicalCommit':commit,'sourceProvenance':pin(W/'source-provenance.json'),'reconstructedHistoricalSources':historical,'copiedRepositoryDependencySources':dependencies,'copiedExternalDiagnosticSources':external,'historicalOpticalRun':i['historicalOpticalRun'],'priorPreparationFailure':i['priorPreparationFailure'],'oldProductionSourceReceiptVerification':True,
+  'mutableProductionSourcePinsRequired':False,'oldAndCurrentGeometryEquivalenceAsserted':False}
+ (W/'build.json').write_text(json.dumps(copied,indent=2)+'\n')
+ names=('inputs.json','README.md','prepare.py','run.py','native.mjs','ownership-inspection.mjs','recipe-diff.md','recipe.patch','preparation-freeze.json')
+-seal={'schema':'grey-band-ownership-seal/v2','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),
++seal={'schema':'grey-band-ownership-seal/v3','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),
+  'sourceProvenance':pin(W/'source-provenance.json'),'helpers':[pin(W/n)for n in names],'borrowedHelpers':i['borrowedHelperPins'],'references':references,
+- 'immutablePriorAssets':b['assets'],'historicalScratchSources':historical,'externalDiagnosticScratchSources':external,'limits':i['limits'],'comparison':i['comparison']}
++ 'immutablePriorAssets':b['assets'],'historicalScratchSources':historical,'repositoryDependencyScratchSources':dependencies,'externalDiagnosticScratchSources':external,'limits':i['limits'],'comparison':i['comparison']}
+ (W/'seal.json').write_text(json.dumps(seal,indent=2)+'\n')
+-result={'schema':'grey-band-ownership-preparation/v2','complete':True,'seal':pin(W/'seal.json'),'build':pin(W/'build.json'),
++result={'schema':'grey-band-ownership-preparation/v3','complete':True,'seal':pin(W/'seal.json'),'build':pin(W/'build.json'),
+  'resourcesStarted':False,'portsProbed':False,'executedChecksOrBuilds':False,'liveSourcesWrittenOrFrozen':False,
+- 'sourceProvenance':pin(W/'source-provenance.json'),'historicalSourceRecovery':'Repository sources recovered with read-only git show and existing receipt hashes; outside-repository diagnostic sources copied from their exact direct receipt. No build/current source freeze.'}
++ 'sourceProvenance':pin(W/'source-provenance.json'),'historicalSourceRecovery':'Committed repository sources recovered with bounded read-only git show and existing receipt hashes; declared untracked repository dependencies and outside-repository diagnostic sources copied from their exact compiled-source receipts. No build/current source freeze.'}
+ (W/'prepare-result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))
+diff --git a/run.py b/run.py
+--- a/run.py
++++ b/run.py
+@@ -2,7 +2,7 @@
+ from pathlib import Path
+ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+ import hashlib,json,os,signal,socket,subprocess,threading,time
+-W=Path('/private/tmp/tube-grey-band-ownership-native-v2-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
++W=Path('/private/tmp/tube-grey-band-ownership-native-v3-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
+ EXPECTED_PROTECTED={4312:92445,4313:58298,4314:51358,4315:87796}
+ OS_SECONDS=2;IDENTITY_PERIOD=5;REQUIRED_ATTEMPTS=3;NOTE_LIMIT=16;whole_started=time.monotonic()
+ timeout_notes=[];timeout_count=0
+@@ -56,7 +56,7 @@
+    if attempt+1<REQUIRED_ATTEMPTS and time.monotonic()<deadline:time.sleep(min(.1,max(0,deadline-time.monotonic())))
+  raise TimeoutError('Required identity could not be verified: '+phase)from last
+ def validate_result(result):
+- assert result['schema']=='grey-band-ownership-native/v2' and result['complete'] and result['firstFailure']is None and result['ownedBrowserClose']
++ assert result['schema']=='grey-band-ownership-native/v3' and result['complete'] and result['firstFailure']is None and result['ownedBrowserClose']
+  assert not result['browserErrors'] and result['stepCount']==0 and result['pngCount']==4
+  assert result['applicationBuildRequest']['build']==inputs['applicationBuildId'] and result['applicationBuildRequest']['checkedBeforeReplay']
+  assert result['replayStartup']['publicStartCalls']==1 and result['replayStartup']['noPlacement'] and result['replayStartup']['noClockAssignment']
+@@ -110,12 +110,12 @@
+   'wholePixelOwnershipPlayabilityOrProductionFixClaim':False}
+ 
+ sealbytes=(W/'seal.json').read_bytes();seal=json.loads(sealbytes);inputs=json.loads((W/'inputs.json').read_bytes())
+-assert seal['schema']=='grey-band-ownership-seal/v2' and seal['rootAuthorized'] and seal['complete']
+-build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='grey-band-ownership-build/v2' and build['build']==inputs['applicationBuildId']
++assert seal['schema']=='grey-band-ownership-seal/v3' and seal['rootAuthorized'] and seal['complete']
++build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='grey-band-ownership-build/v3' and build['build']==inputs['applicationBuildId']
+ def check(deadline=None):
+  assert build['sourceProvenance']==seal['sourceProvenance']
+- provenance=json.loads(verify(seal['sourceProvenance']));assert provenance['complete'] and provenance['schema']=='grey-band-ownership-source-provenance/v2' and provenance['applicationBuild']==inputs['opticalApplicationBuild'] and provenance['applicationFreeze']==inputs['opticalApplicationFreeze']
+- for spec in build['assets']+seal['helpers']+seal['borrowedHelpers']+seal['references']+seal['immutablePriorAssets']+seal['historicalScratchSources']+seal['externalDiagnosticScratchSources']:
++ provenance=json.loads(verify(seal['sourceProvenance']));assert provenance['complete'] and provenance['schema']=='grey-band-ownership-source-provenance/v3' and provenance['applicationBuild']==inputs['opticalApplicationBuild'] and provenance['applicationFreeze']==inputs['opticalApplicationFreeze'] and provenance['sourceProvenancePolicy']==inputs['sourceProvenancePolicy'] and provenance['priorPreparationFailure']==inputs['priorPreparationFailure']
++ for spec in build['assets']+seal['helpers']+seal['borrowedHelpers']+seal['references']+seal['immutablePriorAssets']+seal['historicalScratchSources']+seal['repositoryDependencyScratchSources']+seal['externalDiagnosticScratchSources']:
+   if deadline is not None and time.monotonic()>=deadline:raise TimeoutError('Finite pin verification budget')
+   verify(spec)
+ whole_deadline=whole_started+inputs['limits']['totalSeconds'];preflight_deadline=min(whole_started+20,whole_deadline-inputs['limits']['cleanupSeconds'])
+@@ -127,12 +127,13 @@
+  expected=str(pid)+' '+identity['started']+' '+identity['command']
+  assert expected in before[str(port)],'Protected full PID/start/command required '+str(port)
+ started=time.monotonic();owner_deadline=min(started+inputs['limits']['ownerSeconds'],whole_deadline-inputs['limits']['cleanupSeconds']);server=None;proc=None
+-record={'schema':'grey-band-ownership-owner/v2','complete':False,'firstFailure':None,'protectedBefore':before,
++record={'schema':'grey-band-ownership-owner/v3','complete':False,'firstFailure':None,'protectedBefore':before,
+  'protected4315ExpectedPid':87796,'protected4315RootToolSession':'64713','toolSessionOSIdentityClaim':False,
+  'sealSha256':hashlib.sha256(sealbytes).hexdigest(),'preExecutionPinsVerified':True,'postExecutionPinsVerified':False,'copiedAndHistoricalSourcePinsPostVerified':False,'cleanupFailures':[]}
+ record['expectedProtectedPids']=EXPECTED_PROTECTED
+ record['protectedIdentityAuthority']=inputs['protectedIdentityAuthority']
+ record['historicalOpticalRun']=inputs['historicalOpticalRun']
++record['priorPreparationFailure']=inputs['priorPreparationFailure']
+ record['osObservationPolicy']=inputs['ownerObservationPolicy']
+ record['absoluteBudget']={'wholeSeconds':inputs['limits']['totalSeconds'],'cleanupReservedSeconds':inputs['limits']['cleanupSeconds'],'activeOwnerBudgetSeconds':owner_deadline-started,'maximumNativeOwnerSeconds':inputs['limits']['ownerSeconds'],'preflightBudgetSeconds':20}
+ known_owned={}
+diff --git a/native.mjs b/native.mjs
+--- a/native.mjs
++++ b/native.mjs
+@@ -6,20 +6,20 @@
+ import { launch } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs';
+ import { prepareMenu } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs';
+ import { installGreyOwnershipInspection } from './ownership-inspection.mjs';
+-const W='/private/tmp/tube-grey-band-ownership-native-v2-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
++const W='/private/tmp/tube-grey-band-ownership-native-v3-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
+ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+ const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const i=arg.indexOf('=');assert(arg.startsWith('--')&&i>2);return[arg.slice(2,i),arg.slice(i+1)];}));
+ assert.equal(args.run,'true');assert.equal(args.url,'http://127.0.0.1:4301/?diagnostics');assert.equal(resolve(args.out),W+'/candidate-first');
+ const sealBytes=readFileSync(W+'/seal.json'), seal=JSON.parse(sealBytes);
+-assert.equal(hash(sealBytes),process.env.GREY_OWNERSHIP_OWNER_SEAL_SHA);assert.equal(seal.schema,'grey-band-ownership-seal/v2');assert(seal.rootAuthorized&&seal.complete);
++assert.equal(hash(sealBytes),process.env.GREY_OWNERSHIP_OWNER_SEAL_SHA);assert.equal(seal.schema,'grey-band-ownership-seal/v3');assert(seal.rootAuthorized&&seal.complete);
+ const readPinned=spec=>{const bytes=readFileSync(spec.file);assert.equal(bytes.length,spec.bytes);assert.equal(hash(bytes),spec.sha256);return bytes;};
+ const reference=JSON.parse(readPinned(inputs.referenceReport)), expected=JSON.parse(readPinned(inputs.referenceLoft));
+ assert(reference.complete&&reference.firstFailure===null&&reference.stepCount===0&&reference.stop.kind==='first-eligible-capture');
+ assert.equal(expected.epoch.seaTime,reference.stop.seaTime);assert.equal(expected.epoch.step,0);assert.equal(Object.keys(expected.arrays).length,37);
+ assert.deepEqual(inputs.referenceCounts,expected.counts);assert.deepEqual(inputs.overrides,{seed:6238,componentCount:64,dx:2,fineSpacing:1});
+ assert(!existsSync(args.out));mkdirSync(args.out);const OUT=resolve(args.out),started=performance.now();let page,exitCode=0;
+-const report={schema:'grey-band-ownership-native/v2',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
+- protectedIdentityAuthority:inputs.protectedIdentityAuthority,historicalOpticalRun:inputs.historicalOpticalRun,
++const report={schema:'grey-band-ownership-native/v3',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
++ protectedIdentityAuthority:inputs.protectedIdentityAuthority,historicalOpticalRun:inputs.historicalOpticalRun,priorPreparationFailure:inputs.priorPreparationFailure,
+  opticalAppAuthority:{build:inputs.opticalApplicationBuild,freeze:inputs.opticalApplicationFreeze,seal:inputs.opticalApplicationSeal,baselinePNG:inputs.baselinePNG},
+  referenceReport:inputs.referenceReport,referenceLoft:inputs.referenceLoft,settings:inputs.settings,overrides:inputs.overrides,graphics:inputs.graphics,
+  policy:inputs.comparison,limits:inputs.limits,stepCount:0,artifacts:[],pngCount:0,pngBytes:0,browserErrors:[],acceptance:{ownershipConclusion:null,playability:false,productionFixAdopted:false}};
+diff --git a/inputs.json b/inputs.json
+--- a/inputs.json
++++ b/inputs.json
+@@ -77,7 +77,7 @@
+       "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+     }
+   ],
+-  "schema": "grey-band-ownership-inputs/v2",
++  "schema": "grey-band-ownership-inputs/v3",
+   "preparationOnly": true,
+   "rootExecutionPending": true,
+   "resourcesStarted": false,
+@@ -376,5 +376,23 @@
+     "requiredIdentityOutcome": "Initial/preflight/cleanup identity verification required; never signal unverified groups.",
+     "absoluteWholeSeconds": 680,
+     "cleanupReserveSeconds": 20
++  },
++  "sourceProvenancePolicy": {
++    "repositoryDependencyPrefixes": [
++      "node_modules/"
++    ],
++    "gitReadSeconds": 2,
++    "repositoryDependencyFamily": "diagnosticCompiledSources",
++    "dependencyHistoricalCommitClaim": false,
++    "externalDiagnosticHistoricalCommitClaim": false,
++    "mutableProductionApplicationSourcesRead": false
++  },
++  "priorPreparationFailure": {
++    "receipt": {
++      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/root-prepare-failure.json",
++      "bytes": 2044,
++      "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf"
++    },
++    "qualification": "The ID V2 root preparation actually exited1 while treating node_modules/three/build/three.core.js as committed Git source. Its failed preparation started no native run and produced no dist, source scratch, provenance, build, seal, owner or candidate results. The receipt complete flag records this actual failure only; V2 source freeze remains unchanged."
+   }
+ }
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -1,10 +1,10 @@
+-# Fixed INTERIOR grey-band surviving-drawable diagnostic V2 — SOURCE ONLY
++# Fixed INTERIOR grey-band surviving-drawable diagnostic V3 — SOURCE ONLY
+ 
+ This directory contains a complete, bounded recipe for root review and later execution. It has **not** been checked, prepared, built, run, or used to probe/start ports. No old sealed helper, production source, application asset, or listener is changed by this source preparation. Historical reports and PNGs are pinned references, not copied or represented as new results.
+ 
+ The declared optical application is the immutable, already-built `/private/tmp/tube-guided-ordinary-v3-native-20261005/dist`, build `tube-guided-early-crest-20261005`. It already includes the final authored-mask max predicate and the adopted wall-light A. The new geometry under development is deliberately unrelated to this diagnostic. The recipe does **not** assert that the old and current builds share geometry. It independently requires the exact old 37 active loft arrays, raw 333 front words, counts, zero-step epoch, fixed camera and first native combined baseline PNG to match at runtime; a mismatch aborts without searching for another epoch, camera, seed, quality or pixel.
+ 
+-`prepare.py` is root-only: verify pinned historical receipts and immutable V3 copied assets, recover old committed source into **new** scratch using read-only `git show 6bcae3aa0740cb66187f572a03cc8abbb1981030:<path>`, verify historical source hashes against that scratch, and copy only the immutable app assets into this recipe. Repository-relative receipt entries are recovered from the commit; outside-repository entries are separately verified and copied from their direct compiled-source pins, without applying relative_to(repo) or claiming Git provenance. It never compares now-changed live ProfileLibrary, boundedCProfile, TubePilot, root dist or any other mutable source against old receipts. Additional optical source files are committed provenance, without invented historical receipt hashes. Recovered source is for interpretation; the app is served from verified copied assets. This preparation performs no build.
++`prepare.py` is root-only: it verifies historical receipts and immutable V3 app assets, then categorizes the exact existing source arrays before copying. Committed repository application/source files are recovered with read-only `git show 6bcae3aa0740cb66187f572a03cc8abbb1981030:<path>` and must match their compiled/production receipt bytes and hashes. Declared repository dependency paths under `node_modules/` are permitted only in `diagnosticCompiledSources`; a bounded Git batch existence read must prove they are absent from that historical commit, and their original dependency bytes are then verified directly against the existing compiled-source receipt before and after copying into **new** historical-dependencies scratch. No dependency Git source or committed hash is invented. Outside-repository diagnostic entries are similarly verified and copied directly into new historical-diagnostic scratch, with no Git provenance. Every Git read has a2s timeout. No repository node_modules file is modified or fetched, and no dependency code is compiled. Additional optical files are recovered from the commit with explicit absence of a prior build-receipt hash. No changed live application source or root dist is compared to old receipts. Interpretation copies are separate from the verified immutable app assets that are served. This preparation performs no build.
+ 
+ The actual menu and public diagnostic start flow is borrowed from the completed authored-mask owner: Padang Padang / Big / Mid / Calm / Midday, normal paused HUD with inactive lab, one public seeded `start` (6238), outstanding-step drain, existing clear-drawing hold, 1708×879 canvas, original camera clone and zero physical steps. The application build is verified before the replay. There is no placement, clock assignment, stepping, Autopilot import, quality adjustment or search.
+ 
+@@ -30,13 +30,13 @@
+ An exact primary marker at a predeclared pixel is evidence for an encoded surviving contribution. It is **not exclusive whole-pixel coverage proof**: alpha blending, multiple contributions, MSAA, untagged scene effects and exact accidental colors can make interpretation ambiguous. Mixed or unmarked ID pixels remain ambiguous. Raster facing is separate from body-normal facing; cosine/facing reads need an independently unmixed contribution. The two previous saved rays excluding direct loft hits do not prove another drawable's ownership. This probe establishes no geometry improvement, seam complementarity, physical air volume, full-body clearance, playability or final reference-quality tube. It preserves authored fade/dither and existing mask+A optical behavior, including depth/stencil resolution where authored support overlaps ordinary water.
+ 
+ 
+-This V2 directory clones only the reviewed original /private/tmp/tube-grey-band-ownership-native-20261005 recipe sources. That source preparation is not runtime evidence and remains unchanged. ownership-inspection.mjs is byte-identical: the five IDs, actual final define/callback and dynamic repair-delegation guards, original alpha/predicates/depth/stencil/far-opacity behavior, exact historical baseline before probes, fixed four samples/camera, four PNGs and three restored repeats are unchanged. Native differences are only fresh path/schema and provenance report metadata. Fresh schemas are grey-band-ownership-inputs/build/seal/preparation/native/owner/source-provenance version2.
++This V3 directory clones only the frozen V2 recipe sources. V2 remains unchanged. Its actual root syntax checks passed, but preparation exited1 before producing any source scratch, assets, seal or owner because it treated the untracked Three.js dependency as committed source. The separate actual root failure receipt is directly pinned: `/private/tmp/tube-grey-band-ownership-native-v2-20261005/root-prepare-failure.json`,2044bytes,SHA256ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf. Its complete:true describes recording that failed preparation, not successful preparation or native execution. V3 is unexecuted. ownership-inspection.mjs remains byte-identical to the reviewed original: all five IDs, final define/callback and dynamic repair-delegation guards, original alpha/predicates/depth/stencil/far-opacity behavior, historical baseline before probes, fixed samples/camera, four PNGs and three restored repeats remain unchanged. Native differences are fresh V3 paths/schemas and qualified provenance metadata. New schemas are grey-band-ownership inputs/build/seal/preparation/native/owner/source-provenance version3. The robust V2 owner OS/cleanup policy is retained.
+ 
+ The separate expected-protected-identity authority is the actual /private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json,25763bytes,SHA25638922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86. It records root's verified closure of an earlier failed shared-leaf owner, not success of this ID recipe. Its complete/protected/port proof is pinned context. Fresh preflight still requires actual protected4312PID92445,4313PID58298,4314PID51358,4315PID87796 and the exact recorded start/full HTTP command. Full-width ps -ww command= rows split(None,6) normalize only the five start words; the command retains its internal spaces. Fresh after-identities must equal preflight exactly.
+ 
+ The immutable optical V3 application has complete build/assets/source receipts and an actual successful build log. The V3 ordinary gameplay owner/report itself was complete:false, terminal1 at the640s diagnostic wall deadline after1525rows. Those actually failed receipts are directly pinned qualified history; no successful ride/native result is inferred from its completed app build. The cap-reference owner and combined optical owner are separate completed zero-step references, and the first new native baseline must independently match the historical combined PNG exactly before ownership probes.
+ 
+-The actual V3 build/freeze source arrays contain15 productionSources and77 diagnosticCompiledSources. The latter includes /private/tmp/tube-guided-ordinary-v3-native-20261005/autopilot-entry.ts,106bytes,SHA25653ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335. prepare.py categorizes before calling relative_to(repo). Existing repository source pins are verified against read-only exact6bcae3aa0740cb66187f572a03cc8abbb1981030 Git content in new historical-source scratch. The external diagnostic entry is verified directly and copied into new historical-diagnostic scratch; its provenance explicitly has historicalCommit:null/recoveredFromGit:false. Extra optical files recovered from that commit record the actual new scratch pin and explicitly lack an existing build receipt hash. The new source-provenance receipt binds these categories; build/seal must point to exactly the same receipt pin/hash. Runtime rechecks every copied source and executable asset without inspecting changed current repository source.
++The actual optical V3 build/freeze arrays contain15 productionSources and77 diagnosticCompiledSources. The diagnostic array includes74 application/source entries, two repository dependencies, and one outside-repository diagnostic entry. The dependencies are `node_modules/three/build/three.core.js`,1,458,113bytes,SHA2569edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6, and `node_modules/three/build/three.module.js`,662,772bytes,SHA2569052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea. The external entry is `/private/tmp/tube-guided-ordinary-v3-native-20261005/autopilot-entry.ts`,106bytes,SHA25653ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335. Prefix classification happens before any Git source recovery. Only repository app/source entries use exact historical committed bytes. The dependencies and external entry have historicalCommit:null/recoveredFromGit:false; dependency records separately pin the bounded historical-path absence check. The source-provenance receipt binds every original receipt and copy. Build and seal must point to the exact same source-provenance pin/hash. Runtime checks every copied committed source, copied dependency, external entry and app asset; it does not compare changed live repository application sources. A dependency receipt mismatch is a finite preparation failure, never permission to fetch or substitute bytes.
+ 
+ Every OS subprocess read has a2s upper bound. Required preflight/initial/cleanup reads retry at most3 times within their finite deadline. Periodic owned identity reads run every5s; TimeoutExpired is observation-only, with at most16 retained notes plus exact total count. It continues the same native handle and HTTP server and retries on the next scheduled poll. An identity mismatch or genuinely missing protected listener remains a failure. Immediately before TERM/KILL a current full group read must match the recorded fresh leader command/start identity or an exact recorded survivor anchor and exclude protected PIDs; unverified groups are never signalled. Final group absence, protected equality, closed4301/9711 and all exact input/provenance pins remain mandatory.
+ 
+diff --git a/recipe-diff.md b/recipe-diff.md
+--- a/recipe-diff.md
++++ b/recipe-diff.md
+@@ -1,22 +1,14 @@
+-# Source-only change from completed authored-mask native template
++# Source-only V3 changes from frozen ID V2
+ 
+-- Application authority: old sealed cap application → immutable already-built V3 optical app, build `tube-guided-early-crest-20261005`. Current geometry/leaf sources are not frozen or compared. Historical exact commit source is reconstructed into new scratch only during root preparation.
+-- Replay/menu/zero-step hold/native launcher and finite protected-port/owned-group discipline retained.
+-- Five mask/region/light pairs and ten PNGs → one fixed INTERIOR Rich baseline plus three actual-drawable RGB probes, four PNGs, three exact restored baseline repeats.
+-- No candidate mask attribute or lighting injection: mask+A are already in the declared app. Existing authored-mask draw prefix and exact tested A baseline statements are guarded.
+-- Five distinct real material groups are wrapped. Actual final shader ID defines are guarded. Late-repair dynamic callback delegation is resolved before any instrumentation.
+-- Vertex source unchanged; fragment difference is only the reversible declared RGB output and, for body-cos, scalar/copy. All original predicates/alpha remain; far-ocean transparency/fade retained.
+-- Full37/raw333 historical bytes, fixed camera and combined native baseline SHA are independent runtime preconditions, not an assertion of equality between different builds.
+-- Offline four-sample/seven-PNG/ray evidence, sample-choice source, and exact already-executed Python source are pinned references. No historical execution outputs are copied as new.
+-- Recipe new schemas are `grey-band-ownership-*/v1`. Root-only preparation and owner create fresh receipts later. This source author has run no checks, builds, preparation or capture and has touched no listeners/processes.
++The actual V2 preparation failed before outputs because its repository-relative classification included untracked Three.js dependencies. This V3 recipe preserves that actual failure and its source freeze; it does not relabel it as a successful run.
+ 
++- Fresh V3 paths and schemas; qualified V2 failure receipt directly pinned in inputs, preparation, build, owner and native metadata.
++- Committed repository app/source: bounded2s read-only Git recovery from exact historical6b, verified against actual old production/compiled-source receipts.
++- Declared `node_modules/` dependencies: diagnostic-source family only, bounded Git batch existence proof of historical absence, direct compiled-source byte/SHA verification and copies into new historical-dependencies scratch. No invented committed dependency source or hash; no root dependency modification, fetch or compile.
++- Outside-repository diagnostic entry: unchanged direct pinned-copy provenance, without relative_to(repo) or Git origin.
++- New copied dependency pins in build/seal/runtime checks, and explicit source-policy/prior-failure equality on the common source-provenance receipt.
++- Immutable optical V3 app and actual successful build evidence unchanged; that separate ordinary gameplay run remains a qualified deadline failure.
++- Ownership inspection helper byte-identical to reviewed original and V2. Five IDs, exact first historical baseline PNG, probes, callbacks/delegation, alpha/predicates/depth/far-opacity, fixed four samples/camera, four PNGs and three restored repeats are unchanged.
++- Robust reviewed V2 owner discipline unchanged apart from fresh schemas and new provenance/pin fields:2s OS reads,5s nonfatal periodic notes16, full normalized PID/start/exact command, fresh owned-group anchor before signals,680s absolute including reserved20s cleanup.
+ 
+-V2 change from the reviewed original ID recipe:
+-
+-- ownership-inspection.mjs unchanged byte-for-byte; no diagnostic shader behavior change.
+-- Fresh V2 paths/schemas and historical/OS provenance metadata only in native.
+-- Owner discipline taken from reviewed shared-leafV2:2s bounded full command/PID/start reads,5s observation-only timeout polls, notes cap16, fresh group anchors before signals,680s absolute/20s reserved cleanup.
+-- Protected preflight identities independently match the exact separate root closure receipt. That receipt does not certify this recipe's execution.
+-- Preparer categorizes repo and outside-repo source entries before relative_to. Git provenance is used only for exact committed sources; the106B external diagnostic entry is copied from its direct compiled-source pin.
+-- New source-provenance receipt equality/hash and copied external sources are checked before/after. The failed V3 deadline run is retained as qualified history; its completed app/build/log remains immutable executable authority.
+-- recipe.patch is the exact source-only diff against the untouched original recipe. No helper checks, preparation, compiler, builds, native runs, production writes or port/process operations executed.
++recipe.patch records the exact source diff against frozen V2. No checker, preparation, Git read, build, native, process or port action was executed by this source author. Only these fresh source files and metadata are written.

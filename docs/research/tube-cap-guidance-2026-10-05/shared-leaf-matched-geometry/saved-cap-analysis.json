@@ -1,0 +1,2083 @@
+{
+  "schema": "shared-leaf-saved-cap-analysis/v2",
+  "complete": true,
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/measure.py",
+      "bytes": 8177,
+      "sha256": "e7189b0d2e5b040352c4b2e3d25a274bf690de252f68eba55b842b5d01edcf69"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/owner.json",
+      "bytes": 15739,
+      "sha256": "015c31d0bf9fecc62935ab919e7a65277f74084b79b80a7a4fe40e26efe7a02c"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/report.json",
+      "bytes": 42900,
+      "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1219771,
+      "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+    },
+    {
+      "file": "loft-candidate.json",
+      "bytes": 1204806,
+      "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+    },
+    {
+      "file": "draw-inputs.json",
+      "bytes": 1696833,
+      "sha256": "0f26472964cb9ee71d3abe267b5e5c1be16aeadb2eaf7bbd6cf3848ce63a4a6f"
+    }
+  ],
+  "target": {
+    "front": 41,
+    "worldCrestX": 75.625,
+    "coordinateIsSigma": false,
+    "priorReported33DegreeCorner": "Baseline direct measurement below is authoritative; do not substitute historical rounded33-degree number."
+  },
+  "epochAndRawPacketExact": true,
+  "old": {
+    "counts": {
+      "slices": 81,
+      "vertices": 10854,
+      "indices": 62244
+    },
+    "cSampling": null,
+    "targetAtExactWorldCrestX": {
+      "row": 49,
+      "front": 41,
+      "worldCrestX": 75.625,
+      "storedSigma": 11.224187850952148,
+      "worldCap": [
+        75.625,
+        1.4413024187088013,
+        -67.77931213378906
+      ],
+      "tau": 0.5308052897453308,
+      "phase": 1,
+      "weight": 1.0,
+      "fade": 1.0,
+      "capFloorGap": 1.223215714097023,
+      "projection": {
+        "inFrustum": true,
+        "ndc": [
+          0.4725122688518937,
+          0.9000191195297786,
+          0.859188940578067
+        ],
+        "pixel": [
+          1257.5254775995172,
+          43.94159696666229
+        ]
+      },
+      "bendDegrees": 33.27588227428939,
+      "bendXZDegrees": 33.29674891016865,
+      "neighborWorldCrestDeltaX": [
+        0.125,
+        0.125
+      ],
+      "neighborStoredDeltaSigma": [
+        0.1308155059814453,
+        0.1308145523071289
+      ],
+      "capNormalTurnDegrees": [
+        1.1509919233392722,
+        0.38049496056783577
+      ]
+    },
+    "targetBracketingWorldX": {
+      "lower": {
+        "row": 49,
+        "front": 41,
+        "worldCrestX": 75.625,
+        "storedSigma": 11.224187850952148,
+        "worldCap": [
+          75.625,
+          1.4413024187088013,
+          -67.77931213378906
+        ],
+        "tau": 0.5308052897453308,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.223215714097023,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.4725122688518937,
+            0.9000191195297786,
+            0.859188940578067
+          ],
+          "pixel": [
+            1257.5254775995172,
+            43.94159696666229
+          ]
+        },
+        "bendDegrees": 33.27588227428939,
+        "bendXZDegrees": 33.29674891016865,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.1509919233392722,
+          0.38049496056783577
+        ]
+      },
+      "upper": {
+        "row": 49,
+        "front": 41,
+        "worldCrestX": 75.625,
+        "storedSigma": 11.224187850952148,
+        "worldCap": [
+          75.625,
+          1.4413024187088013,
+          -67.77931213378906
+        ],
+        "tau": 0.5308052897453308,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.223215714097023,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.4725122688518937,
+            0.9000191195297786,
+            0.859188940578067
+          ],
+          "pixel": [
+            1257.5254775995172,
+            43.94159696666229
+          ]
+        },
+        "bendDegrees": 33.27588227428939,
+        "bendXZDegrees": 33.29674891016865,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.1509919233392722,
+          0.38049496056783577
+        ]
+      }
+    },
+    "predeclaredFront41WorldX74To77Rows": [
+      {
+        "row": 39,
+        "front": 41,
+        "worldCrestX": 74.0,
+        "storedSigma": 9.546640396118164,
+        "worldCap": [
+          74.0,
+          1.1987488269805908,
+          -67.91607666015625
+        ],
+        "tau": 0.7956117391586304,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 0.9814611524343491,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.36737857361780185,
+            0.3494737120647552,
+            0.9105084181673953
+          ],
+          "pixel": [
+            540.2586981303972,
+            285.9063035475401
+          ]
+        },
+        "bendDegrees": 9.837934242763321,
+        "bendXZDegrees": 0.003337401511287713,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.25586891174316406,
+          0.12793350219726562
+        ],
+        "capNormalTurnDegrees": [
+          4.9497978871211386,
+          13.518085039291101
+        ]
+      },
+      {
+        "row": 40,
+        "front": 41,
+        "worldCrestX": 74.125,
+        "storedSigma": 9.67457389831543,
+        "worldCap": [
+          74.125,
+          1.323349118232727,
+          -67.88873291015625
+        ],
+        "tau": 0.7763034701347351,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.1060708910226822,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.330915954697114,
+            0.4806123000794995,
+            0.9072753107357162
+          ],
+          "pixel": [
+            571.3977746886646,
+            228.27089411505997
+          ]
+        },
+        "bendDegrees": 14.312849545046184,
+        "bendXZDegrees": 0.003337401511287713,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.12793350219726562,
+          0.12793445587158203
+        ],
+        "capNormalTurnDegrees": [
+          13.518085039291101,
+          24.78273747226229
+        ]
+      },
+      {
+        "row": 41,
+        "front": 41,
+        "worldCrestX": 74.25,
+        "storedSigma": 9.802508354187012,
+        "worldCap": [
+          74.25,
+          1.397003173828125,
+          -67.86139678955078
+        ],
+        "tau": 0.7569952011108398,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.1797344535589218,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.2917194761046597,
+            0.571295858773147,
+            0.9038003463525351
+          ],
+          "pixel": [
+            604.8715674066206,
+            188.4154700692019
+          ]
+        },
+        "bendDegrees": 26.00846924143374,
+        "bendXZDegrees": 2.155430774921306,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.12793445587158203,
+          0.25586795806884766
+        ],
+        "capNormalTurnDegrees": [
+          24.78273747226229,
+          11.220683876712084
+        ]
+      },
+      {
+        "row": 42,
+        "front": 41,
+        "worldCrestX": 74.5,
+        "storedSigma": 10.05837631225586,
+        "worldCap": [
+          74.5,
+          1.4150481224060059,
+          -67.79678344726562
+        ],
+        "tau": 0.7183786630630493,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.1974781155586243,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.2070924030375779,
+            0.6397949163897477,
+            0.8955167638495866
+          ],
+          "pixel": [
+            677.1430878059084,
+            158.31013424670587
+          ]
+        },
+        "bendDegrees": 3.2252003939148004,
+        "bendXZDegrees": 1.0682756197135386,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.25586795806884766,
+          0.25586891174316406
+        ],
+        "capNormalTurnDegrees": [
+          11.220683876712084,
+          1.288621980323543
+        ]
+      },
+      {
+        "row": 43,
+        "front": 41,
+        "worldCrestX": 74.75,
+        "storedSigma": 10.314245223999023,
+        "worldCap": [
+          74.75,
+          1.4193694591522217,
+          -67.7271728515625
+        ],
+        "tau": 0.6797621250152588,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2025576084852219,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.10808978868941627,
+            0.7069286440704797,
+            0.8853765688803522
+          ],
+          "pixel": [
+            761.6913204592385,
+            128.80486093102417
+          ]
+        },
+        "bendDegrees": 9.136312577245166,
+        "bendXZDegrees": 9.127547148057428,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.25586891174316406,
+          0.25586795806884766
+        ],
+        "capNormalTurnDegrees": [
+          1.288621980323543,
+          0.015220715710730668
+        ]
+      },
+      {
+        "row": 44,
+        "front": 41,
+        "worldCrestX": 75.0,
+        "storedSigma": 10.570113182067871,
+        "worldCap": [
+          75.0,
+          1.4255017042160034,
+          -67.69898986816406
+        ],
+        "tau": 0.6411455869674683,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2042677849531174,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.023404028864287267,
+            0.7724415340004236,
+            0.8760131246189723
+          ],
+          "pixel": [
+            873.9870406501012,
+            100.01194580681383
+          ]
+        },
+        "bendDegrees": 10.17882605196543,
+        "bendXZDegrees": 10.123182769121719,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.25586795806884766,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.015220715710730668,
+          0.1824756114450563
+        ]
+      },
+      {
+        "row": 45,
+        "front": 41,
+        "worldCrestX": 75.125,
+        "storedSigma": 10.700927734375,
+        "worldCap": [
+          75.125,
+          1.426203966140747,
+          -67.7070541381836
+        ],
+        "tau": 0.6190775036811829,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2099151313304901,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.10262996911312504,
+            0.7959210632271859,
+            0.8723899436433635
+          ],
+          "pixel": [
+            941.6459936226087,
+            89.69269271165179
+          ]
+        },
+        "bendDegrees": 13.656043937376266,
+        "bendXZDegrees": 13.60219833610497,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.1308155059814453
+        ],
+        "capNormalTurnDegrees": [
+          0.1824756114450563,
+          0.7853055727456141
+        ]
+      },
+      {
+        "row": 46,
+        "front": 41,
+        "worldCrestX": 75.25,
+        "storedSigma": 10.831743240356445,
+        "worldCap": [
+          75.25,
+          1.4297603368759155,
+          -67.7459716796875
+        ],
+        "tau": 0.5970094799995422,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2109310626983643,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.1921786093581302,
+            0.8097855135275414,
+            0.8709211637012915
+          ],
+          "pixel": [
+            1018.1205323918431,
+            83.59926680464558
+          ]
+        },
+        "bendDegrees": 0.2045768190359987,
+        "bendXZDegrees": 0.20425964578965627,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.7853055727456141,
+          0.1626619237073289
+        ]
+      },
+      {
+        "row": 47,
+        "front": 41,
+        "worldCrestX": 75.375,
+        "storedSigma": 10.962557792663574,
+        "worldCap": [
+          75.375,
+          1.4333417415618896,
+          -67.7844009399414
+        ],
+        "tau": 0.5749413967132568,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.211917832493782,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.2837506482355567,
+            0.824244237127593,
+            0.8693804547846978
+          ],
+          "pixel": [
+            1096.3230535931655,
+            77.24465778242289
+          ]
+        },
+        "bendDegrees": 19.86641064403612,
+        "bendXZDegrees": 19.874171315983645,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.1626619237073289,
+          0.019575696300186202
+        ]
+      },
+      {
+        "row": 48,
+        "front": 41,
+        "worldCrestX": 75.5,
+        "storedSigma": 11.093372344970703,
+        "worldCap": [
+          75.5,
+          1.4370043277740479,
+          -67.7783203125
+        ],
+        "tau": 0.5528733730316162,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2174623161554337,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.3743283581824192,
+            0.8621395590266617,
+            0.8641809729720783
+          ],
+          "pixel": [
+            1173.676417887786,
+            60.58966380778217
+          ]
+        },
+        "bendDegrees": 3.251145897338957,
+        "bendXZDegrees": 3.2395668309248897,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.1308155059814453
+        ],
+        "capNormalTurnDegrees": [
+          0.019575696300186202,
+          1.1509919233392722
+        ]
+      },
+      {
+        "row": 49,
+        "front": 41,
+        "worldCrestX": 75.625,
+        "storedSigma": 11.224187850952148,
+        "worldCap": [
+          75.625,
+          1.4413024187088013,
+          -67.77931213378906
+        ],
+        "tau": 0.5308052897453308,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.223215714097023,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.4725122688518937,
+            0.9000191195297786,
+            0.859188940578067
+          ],
+          "pixel": [
+            1257.5254775995172,
+            43.94159696666229
+          ]
+        },
+        "bendDegrees": 33.27588227428939,
+        "bendXZDegrees": 33.29674891016865,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.1509919233392722,
+          0.38049496056783577
+        ]
+      },
+      {
+        "row": 50,
+        "front": 41,
+        "worldCrestX": 75.75,
+        "storedSigma": 11.355002403259277,
+        "worldCap": [
+          75.75,
+          1.4483262300491333,
+          -67.86283874511719
+        ],
+        "tau": 0.5087372064590454,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2234948873519897,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.5738547116013444,
+            0.8959162120376919,
+            0.8613940466053029
+          ],
+          "pixel": [
+            1344.0719237075482,
+            45.74482480943441
+          ]
+        },
+        "bendDegrees": 33.12482097304829,
+        "bendXZDegrees": 33.142891743333934,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.2616300582885742
+        ],
+        "capNormalTurnDegrees": [
+          0.38049496056783577,
+          0.45841105411439836
+        ]
+      },
+      {
+        "row": 51,
+        "front": 41,
+        "worldCrestX": 76.0,
+        "storedSigma": 11.616632461547852,
+        "worldCap": [
+          76.0,
+          1.4565836191177368,
+          -67.86549377441406
+        ],
+        "tau": 0.4646010994911194,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.233770951628685,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.7976364431025198,
+            0.9779732308883382,
+            0.8506506714180845
+          ],
+          "pixel": [
+            1535.181522409552,
+            9.680765024575358
+          ]
+        },
+        "bendDegrees": 13.42207603366076,
+        "bendXZDegrees": 13.429424112082781,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.2616300582885742,
+          0.2616291046142578
+        ],
+        "capNormalTurnDegrees": [
+          0.45841105411439836,
+          0.28516360577217137
+        ]
+      },
+      {
+        "row": 52,
+        "front": 41,
+        "worldCrestX": 76.25,
+        "storedSigma": 11.87826156616211,
+        "worldCap": [
+          76.25,
+          1.4655780792236328,
+          -67.9280014038086
+        ],
+        "tau": 0.42046499252319336,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2407586574554443,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.0352763599209631,
+            1.0298406493811207,
+            0.8449119677090481
+          ],
+          "pixel": [
+            1738.1260113725023,
+            -13.114965403002566
+          ]
+        },
+        "bendDegrees": 24.971290011113737,
+        "bendXZDegrees": 24.961285338942783,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.2616291046142578,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.28516360577217137,
+          0.40958020212768376
+        ]
+      },
+      {
+        "row": 53,
+        "front": 41,
+        "worldCrestX": 76.375,
+        "storedSigma": 12.009076118469238,
+        "worldCap": [
+          76.375,
+          1.4678490161895752,
+          -67.90387725830078
+        ],
+        "tau": 0.39839693903923035,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2480405271053314,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.1885991047479618,
+            1.0972018913899497,
+            0.8353411373099079
+          ],
+          "pixel": [
+            1869.0636354547594,
+            -42.7202312658829
+          ]
+        },
+        "bendDegrees": 45.83816041999871,
+        "bendXZDegrees": 45.84071315926294,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.1308155059814453
+        ],
+        "capNormalTurnDegrees": [
+          0.40958020212768376,
+          1.1174529031237797
+        ]
+      },
+      {
+        "row": 54,
+        "front": 41,
+        "worldCrestX": 76.5,
+        "storedSigma": 12.139891624450684,
+        "worldCap": [
+          76.5,
+          1.4741437435150146,
+          -67.99113464355469
+        ],
+        "tau": 0.37632888555526733,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2475322782993317,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.2915355383215354,
+            1.084646489718551,
+            0.8387885394813627
+          ],
+          "pixel": [
+            1956.9713497265914,
+            -37.20213223130318
+          ]
+        },
+        "bendDegrees": 21.638712217227653,
+        "bendXZDegrees": 21.657111917075234,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.1174529031237797,
+          1.427338908831914
+        ]
+      },
+      {
+        "row": 55,
+        "front": 41,
+        "worldCrestX": 76.625,
+        "storedSigma": 12.270706176757812,
+        "worldCap": [
+          76.625,
+          1.4803211688995361,
+          -68.02059173583984
+        ],
+        "tau": 0.3542608320713043,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2480938732624054,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.4288710278302237,
+            1.1186573572032614,
+            0.8352830098815217
+          ],
+          "pixel": [
+            2074.2558577670106,
+            -52.1499084908334
+          ]
+        },
+        "bendDegrees": 23.80901376733705,
+        "bendXZDegrees": 23.75481266816571,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.427338908831914,
+          0.640858348483059
+        ]
+      },
+      {
+        "row": 56,
+        "front": 41,
+        "worldCrestX": 76.75,
+        "storedSigma": 12.401520729064941,
+        "worldCap": [
+          76.75,
+          1.4824471473693848,
+          -67.9974365234375
+        ],
+        "tau": 0.3321927487850189,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2545925676822662,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.6173549380490801,
+            1.1951334345318632,
+            0.8245810791028597
+          ],
+          "pixel": [
+            2235.2211170939145,
+            -85.76114447675386
+          ]
+        },
+        "bendDegrees": null
+      },
+      {
+        "row": 57,
+        "front": 41,
+        "worldCrestX": 77.0,
+        "storedSigma": 12.663150787353516,
+        "worldCap": [
+          77.0,
+          1.4883021116256714,
+          -68.04429626464844
+        ],
+        "tau": 0.2880566418170929,
+        "phase": 1,
+        "weight": 0.9977717399597168,
+        "fade": 1.0,
+        "capFloorGap": 1.256900355219841,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.9545396276648364,
+            1.2770152459292772,
+            0.8141961626825941
+          ],
+          "pixel": [
+            2523.17684202577,
+            -121.74820058591732
+          ]
+        },
+        "bendDegrees": null
+      }
+    ],
+    "maximumEligibleVisibleBendInDeclaredNeighborhood": {
+      "row": 49,
+      "front": 41,
+      "worldCrestX": 75.625,
+      "storedSigma": 11.224187850952148,
+      "worldCap": [
+        75.625,
+        1.4413024187088013,
+        -67.77931213378906
+      ],
+      "tau": 0.5308052897453308,
+      "phase": 1,
+      "weight": 1.0,
+      "fade": 1.0,
+      "capFloorGap": 1.223215714097023,
+      "projection": {
+        "inFrustum": true,
+        "ndc": [
+          0.4725122688518937,
+          0.9000191195297786,
+          0.859188940578067
+        ],
+        "pixel": [
+          1257.5254775995172,
+          43.94159696666229
+        ]
+      },
+      "bendDegrees": 33.27588227428939,
+      "bendXZDegrees": 33.29674891016865,
+      "neighborWorldCrestDeltaX": [
+        0.125,
+        0.125
+      ],
+      "neighborStoredDeltaSigma": [
+        0.1308155059814453,
+        0.1308145523071289
+      ],
+      "capNormalTurnDegrees": [
+        1.1509919233392722,
+        0.38049496056783577
+      ]
+    }
+  },
+  "candidate": {
+    "counts": {
+      "slices": 80,
+      "vertices": 10720,
+      "indices": 61446
+    },
+    "cSampling": {
+      "policy": "fixed-origin-stored-F32-X-and-raw-knots/v1",
+      "mandatoryRawKnots": 33,
+      "plannedStations": 187,
+      "omittedPrecisionStations": 8,
+      "collapsedShoulders": 0,
+      "budgetTruncated": false,
+      "firstOmittedPlannedX": null,
+      "omittedFronts": 0,
+      "minimumStoredDeltaX": 0.125,
+      "minimumStoredDeltaSigma": 0.12793350219726562,
+      "retirement": {
+        "policy": "one-adjacent-intrinsic-dead-water-row/v1",
+        "plannedSupports": 1,
+        "retainedSupports": 1,
+        "omittedDeadStations": 107,
+        "budgetOmittedSupports": 0,
+        "budgetClampedDeadStations": 0,
+        "detachedSupports": 0
+      }
+    },
+    "targetAtExactWorldCrestX": {
+      "row": 48,
+      "front": 41,
+      "worldCrestX": 75.625,
+      "storedSigma": 11.224187850952148,
+      "worldCap": [
+        75.625,
+        1.4413084983825684,
+        -67.78913116455078
+      ],
+      "tau": 0.5308052897453308,
+      "phase": 1,
+      "weight": 1.0,
+      "fade": 1.0,
+      "capFloorGap": 1.22322179377079,
+      "projection": {
+        "inFrustum": true,
+        "ndc": [
+          0.47264977385413287,
+          0.8944267133838363,
+          0.8600656716057866
+        ],
+        "pixel": [
+          1257.6429068714294,
+          46.39945946780396
+        ]
+      },
+      "bendDegrees": 21.479273974306263,
+      "bendXZDegrees": 21.47935271894562,
+      "neighborWorldCrestDeltaX": [
+        0.125,
+        0.125
+      ],
+      "neighborStoredDeltaSigma": [
+        0.1308155059814453,
+        0.1308145523071289
+      ],
+      "capNormalTurnDegrees": [
+        1.0480426640259368,
+        0.33881065675593713
+      ]
+    },
+    "targetBracketingWorldX": {
+      "lower": {
+        "row": 48,
+        "front": 41,
+        "worldCrestX": 75.625,
+        "storedSigma": 11.224187850952148,
+        "worldCap": [
+          75.625,
+          1.4413084983825684,
+          -67.78913116455078
+        ],
+        "tau": 0.5308052897453308,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.22322179377079,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.47264977385413287,
+            0.8944267133838363,
+            0.8600656716057866
+          ],
+          "pixel": [
+            1257.6429068714294,
+            46.39945946780396
+          ]
+        },
+        "bendDegrees": 21.479273974306263,
+        "bendXZDegrees": 21.47935271894562,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.0480426640259368,
+          0.33881065675593713
+        ]
+      },
+      "upper": {
+        "row": 48,
+        "front": 41,
+        "worldCrestX": 75.625,
+        "storedSigma": 11.224187850952148,
+        "worldCap": [
+          75.625,
+          1.4413084983825684,
+          -67.78913116455078
+        ],
+        "tau": 0.5308052897453308,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.22322179377079,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.47264977385413287,
+            0.8944267133838363,
+            0.8600656716057866
+          ],
+          "pixel": [
+            1257.6429068714294,
+            46.39945946780396
+          ]
+        },
+        "bendDegrees": 21.479273974306263,
+        "bendXZDegrees": 21.47935271894562,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.0480426640259368,
+          0.33881065675593713
+        ]
+      }
+    },
+    "predeclaredFront41WorldX74To77Rows": [
+      {
+        "row": 39,
+        "front": 41,
+        "worldCrestX": 74.0,
+        "storedSigma": 9.546640396118164,
+        "worldCap": [
+          74.0,
+          1.1987488269805908,
+          -67.91607666015625
+        ],
+        "tau": 0.7956117391586304,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 0.9814611524343491,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.36737857361780185,
+            0.3494737120647552,
+            0.9105084181673953
+          ],
+          "pixel": [
+            540.2586981303972,
+            285.9063035475401
+          ]
+        },
+        "bendDegrees": 9.837934242763321,
+        "bendXZDegrees": 0.003337401511287713,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.25586891174316406,
+          0.12793350219726562
+        ],
+        "capNormalTurnDegrees": [
+          4.9497978871211386,
+          13.518085039291101
+        ]
+      },
+      {
+        "row": 40,
+        "front": 41,
+        "worldCrestX": 74.125,
+        "storedSigma": 9.67457389831543,
+        "worldCap": [
+          74.125,
+          1.323349118232727,
+          -67.88873291015625
+        ],
+        "tau": 0.7763034701347351,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.1060708910226822,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.330915954697114,
+            0.4806123000794995,
+            0.9072753107357162
+          ],
+          "pixel": [
+            571.3977746886646,
+            228.27089411505997
+          ]
+        },
+        "bendDegrees": 14.312849545046184,
+        "bendXZDegrees": 0.003337401511287713,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.12793350219726562,
+          0.12793445587158203
+        ],
+        "capNormalTurnDegrees": [
+          13.518085039291101,
+          24.789118044876247
+        ]
+      },
+      {
+        "row": 41,
+        "front": 41,
+        "worldCrestX": 74.25,
+        "storedSigma": 9.802508354187012,
+        "worldCap": [
+          74.25,
+          1.397003173828125,
+          -67.86139678955078
+        ],
+        "tau": 0.7569952011108398,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.1797344535589218,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.2917194761046597,
+            0.571295858773147,
+            0.9038003463525351
+          ],
+          "pixel": [
+            604.8715674066206,
+            188.4154700692019
+          ]
+        },
+        "bendDegrees": 26.060732444770846,
+        "bendXZDegrees": 2.668884603514737,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.12793445587158203,
+          0.25586795806884766
+        ],
+        "capNormalTurnDegrees": [
+          24.789118044876247,
+          11.204980827944162
+        ]
+      },
+      {
+        "row": 42,
+        "front": 41,
+        "worldCrestX": 74.5,
+        "storedSigma": 10.05837631225586,
+        "worldCap": [
+          74.5,
+          1.4150465726852417,
+          -67.79438781738281
+        ],
+        "tau": 0.7183786630630493,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.19747656583786,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.20788895049712397,
+            0.6405195286748765,
+            0.8953980820803844
+          ],
+          "pixel": [
+            676.4628362754561,
+            157.99166714739178
+          ]
+        },
+        "bendDegrees": 3.1653852206564763,
+        "bendXZDegrees": 0.9289016524776075,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.25586795806884766,
+          0.25586891174316406
+        ],
+        "capNormalTurnDegrees": [
+          11.204980827944162,
+          1.3056683648458987
+        ]
+      },
+      {
+        "row": 43,
+        "front": 41,
+        "worldCrestX": 74.75,
+        "storedSigma": 10.314245223999023,
+        "worldCap": [
+          74.75,
+          1.4193720817565918,
+          -67.73170471191406
+        ],
+        "tau": 0.6797621250152588,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.202560231089592,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.10667495589131333,
+            0.7052722036151056,
+            0.8856458041567632
+          ],
+          "pixel": [
+            762.8995876688184,
+            129.5328665111611
+          ]
+        },
+        "bendDegrees": 5.240280862866757,
+        "bendXZDegrees": 5.224092541996769,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.25586891174316406,
+          0.25586795806884766
+        ],
+        "capNormalTurnDegrees": [
+          1.3056683648458987,
+          0.2336745170735169
+        ]
+      },
+      {
+        "row": 44,
+        "front": 41,
+        "worldCrestX": 75.0,
+        "storedSigma": 10.570113182067871,
+        "worldCap": [
+          75.0,
+          1.4254977703094482,
+          -67.6927719116211
+        ],
+        "tau": 0.6411455869674683,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2042638510465622,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.02175279468370354,
+            0.7751433750108747,
+            0.8755784046826954
+          ],
+          "pixel": [
+            872.5768866598828,
+            98.82448668272056
+          ]
+        },
+        "bendDegrees": 20.841526022520807,
+        "bendXZDegrees": 20.84151288292353,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.25586795806884766,
+          0.2616300582885742
+        ],
+        "capNormalTurnDegrees": [
+          0.2336745170735169,
+          0.2321410081075228
+        ]
+      },
+      {
+        "row": 45,
+        "front": 41,
+        "worldCrestX": 75.25,
+        "storedSigma": 10.831743240356445,
+        "worldCap": [
+          75.25,
+          1.4297603368759155,
+          -67.74586486816406
+        ],
+        "tau": 0.5970094799995422,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2109310626983643,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.19215972197495138,
+            0.8098360865391795,
+            0.8709130982604707
+          ],
+          "pixel": [
+            1018.1044025666084,
+            83.57703996603061
+          ]
+        },
+        "bendDegrees": 5.14749727238837,
+        "bendXZDegrees": 5.112119151652861,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.2616300582885742,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.2321410081075228,
+          0.34575381932910754
+        ]
+      },
+      {
+        "row": 46,
+        "front": 41,
+        "worldCrestX": 75.375,
+        "storedSigma": 10.962557792663574,
+        "worldCap": [
+          75.375,
+          1.4333417415618896,
+          -67.7843246459961
+        ],
+        "tau": 0.5749413967132568,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.211917832493782,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.28374113011874114,
+            0.8242814436997629,
+            0.8693745555792953
+          ],
+          "pixel": [
+            1096.314925121405,
+            77.22830549395422
+          ]
+        },
+        "bendDegrees": 19.51639919400452,
+        "bendXZDegrees": 19.52400845439865,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.34575381932910754,
+          0.051401865734434074
+        ]
+      },
+      {
+        "row": 47,
+        "front": 41,
+        "worldCrestX": 75.5,
+        "storedSigma": 11.093372344970703,
+        "worldCap": [
+          75.5,
+          1.4370046854019165,
+          -67.77903747558594
+        ],
+        "tau": 0.5528733730316162,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2174626737833023,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.37438139945885834,
+            0.8617598658574346,
+            0.8642408966056929
+          ],
+          "pixel": [
+            1173.721715137865,
+            60.756538955657504
+          ]
+        },
+        "bendDegrees": 7.040954080619859,
+        "bendXZDegrees": 7.038606180794509,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.1308155059814453
+        ],
+        "capNormalTurnDegrees": [
+          0.051401865734434074,
+          1.0480426640259368
+        ]
+      },
+      {
+        "row": 48,
+        "front": 41,
+        "worldCrestX": 75.625,
+        "storedSigma": 11.224187850952148,
+        "worldCap": [
+          75.625,
+          1.4413084983825684,
+          -67.78913116455078
+        ],
+        "tau": 0.5308052897453308,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.22322179377079,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.47264977385413287,
+            0.8944267133838363,
+            0.8600656716057866
+          ],
+          "pixel": [
+            1257.6429068714294,
+            46.39945946780396
+          ]
+        },
+        "bendDegrees": 21.479273974306263,
+        "bendXZDegrees": 21.47935271894562,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.0480426640259368,
+          0.33881065675593713
+        ]
+      },
+      {
+        "row": 49,
+        "front": 41,
+        "worldCrestX": 75.75,
+        "storedSigma": 11.355002403259277,
+        "worldCap": [
+          75.75,
+          1.4483182430267334,
+          -67.85035705566406
+        ],
+        "tau": 0.5087372064590454,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2234869003295898,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.57448059006127,
+            0.9029805149428112,
+            0.8602988411374307
+          ],
+          "pixel": [
+            1344.6064239123245,
+            42.64006368263449
+          ]
+        },
+        "bendDegrees": 21.970766407809982,
+        "bendXZDegrees": 21.967830444284974,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.2616300582885742
+        ],
+        "capNormalTurnDegrees": [
+          0.33881065675593713,
+          0.43276198804756894
+        ]
+      },
+      {
+        "row": 50,
+        "front": 41,
+        "worldCrestX": 76.0,
+        "storedSigma": 11.616632461547852,
+        "worldCap": [
+          76.0,
+          1.4565852880477905,
+          -67.86840057373047
+        ],
+        "tau": 0.4646010994911194,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2337726205587387,
+        "projection": {
+          "inFrustum": true,
+          "ndc": [
+            0.7970417844325198,
+            0.9760566259993319,
+            0.8509438825431783
+          ],
+          "pixel": [
+            1534.673683905372,
+            10.523112873293652
+          ]
+        },
+        "bendDegrees": 7.221472128533923,
+        "bendXZDegrees": 7.224518795745563,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborStoredDeltaSigma": [
+          0.2616300582885742,
+          0.2616291046142578
+        ],
+        "capNormalTurnDegrees": [
+          0.43276198804756894,
+          0.2578305720372373
+        ]
+      },
+      {
+        "row": 51,
+        "front": 41,
+        "worldCrestX": 76.25,
+        "storedSigma": 11.87826156616211,
+        "worldCap": [
+          76.25,
+          1.4655722379684448,
+          -67.91859436035156
+        ],
+        "tau": 0.42046499252319336,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2407528162002563,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.0388726362799006,
+            1.036681312618051,
+            0.8438799516072749
+          ],
+          "pixel": [
+            1741.197231383035,
+            -16.121436895633398
+          ]
+        },
+        "bendDegrees": 11.598891321636541,
+        "bendXZDegrees": 11.562453018871349,
+        "neighborWorldCrestDeltaX": [
+          0.25,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.2616291046142578,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.2578305720372373,
+          0.37948378086875706
+        ]
+      },
+      {
+        "row": 52,
+        "front": 41,
+        "worldCrestX": 76.375,
+        "storedSigma": 12.009076118469238,
+        "worldCap": [
+          76.375,
+          1.4678574800491333,
+          -67.91813659667969
+        ],
+        "tau": 0.39839693903923035,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2480489909648895,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.1812970489238528,
+            1.0856714742932678,
+            0.8370743494388422
+          ],
+          "pixel": [
+            1862.8276797809704,
+            -37.65261295189121
+          ]
+        },
+        "bendDegrees": 27.708572725576445,
+        "bendXZDegrees": 27.682382217472416,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.1308155059814453
+        ],
+        "capNormalTurnDegrees": [
+          0.37948378086875706,
+          1.0138377303133552
+        ]
+      },
+      {
+        "row": 53,
+        "front": 41,
+        "worldCrestX": 76.5,
+        "storedSigma": 12.139891624450684,
+        "worldCap": [
+          76.5,
+          1.4741387367248535,
+          -67.9831314086914
+        ],
+        "tau": 0.37632888555526733,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2475272715091705,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.2962196770047263,
+            1.0910134356924768,
+            0.8378405882345697
+          ],
+          "pixel": [
+            1960.9716041620363,
+            -40.00040498684354
+          ]
+        },
+        "bendDegrees": 14.377297022265871,
+        "bendXZDegrees": 14.39139157382994,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.0138377303133552,
+          1.2581901052180287
+        ]
+      },
+      {
+        "row": 54,
+        "front": 41,
+        "worldCrestX": 76.625,
+        "storedSigma": 12.270706176757812,
+        "worldCap": [
+          76.625,
+          1.4803160429000854,
+          -68.01217651367188
+        ],
+        "tau": 0.3542608320713043,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2480887472629547,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.4347731540473552,
+            1.125715659683557,
+            0.8342420040962418
+          ],
+          "pixel": [
+            2079.2962735564415,
+            -55.252032430923265
+          ]
+        },
+        "bendDegrees": 16.39987665583088,
+        "bendXZDegrees": 16.312515420367777,
+        "neighborWorldCrestDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborStoredDeltaSigma": [
+          0.1308145523071289,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.2581901052180287,
+          0.6904760908282832
+        ]
+      },
+      {
+        "row": 55,
+        "front": 41,
+        "worldCrestX": 76.75,
+        "storedSigma": 12.401520729064941,
+        "worldCap": [
+          76.75,
+          1.4824516773223877,
+          -68.00511932373047
+        ],
+        "tau": 0.3321927487850189,
+        "phase": 1,
+        "weight": 1.0,
+        "fade": 1.0,
+        "capFloorGap": 1.2545970976352692,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.6105437205976494,
+            1.1878911839045307,
+            0.8256456731955976
+          ],
+          "pixel": [
+            2229.4043373903924,
+            -82.57817532604126
+          ]
+        },
+        "bendDegrees": null
+      },
+      {
+        "row": 56,
+        "front": 41,
+        "worldCrestX": 77.0,
+        "storedSigma": 12.663150787353516,
+        "worldCap": [
+          77.0,
+          1.4883009195327759,
+          -68.04268646240234
+        ],
+        "tau": 0.2880566418170929,
+        "phase": 1,
+        "weight": 0.9977717399597168,
+        "fade": 1.0,
+        "capFloorGap": 1.2568994462490082,
+        "projection": {
+          "inFrustum": false,
+          "ndc": [
+            1.9565199172992742,
+            1.2787451476507723,
+            0.8139440431645899
+          ],
+          "pixel": [
+            2524.86800937358,
+            -122.50849239251443
+          ]
+        },
+        "bendDegrees": null
+      }
+    ],
+    "maximumEligibleVisibleBendInDeclaredNeighborhood": {
+      "row": 41,
+      "front": 41,
+      "worldCrestX": 74.25,
+      "storedSigma": 9.802508354187012,
+      "worldCap": [
+        74.25,
+        1.397003173828125,
+        -67.86139678955078
+      ],
+      "tau": 0.7569952011108398,
+      "phase": 1,
+      "weight": 1.0,
+      "fade": 1.0,
+      "capFloorGap": 1.1797344535589218,
+      "projection": {
+        "inFrustum": true,
+        "ndc": [
+          -0.2917194761046597,
+          0.571295858773147,
+          0.9038003463525351
+        ],
+        "pixel": [
+          604.8715674066206,
+          188.4154700692019
+        ]
+      },
+      "bendDegrees": 26.060732444770846,
+      "bendXZDegrees": 2.668884603514737,
+      "neighborWorldCrestDeltaX": [
+        0.125,
+        0.25
+      ],
+      "neighborStoredDeltaSigma": [
+        0.12793445587158203,
+        0.25586795806884766
+      ],
+      "capNormalTurnDegrees": [
+        24.789118044876247,
+        11.204980827944162
+      ]
+    }
+  },
+  "priorRetainedPositiveFadeRawAudit": {
+    "records": [
+      {
+        "front": 42,
+        "rawWorldX": -73.0,
+        "rawSigma": 0.0,
+        "oldRow": 3,
+        "candidateRow": 3,
+        "oldPhase": 0,
+        "oldFade": 1.0,
+        "candidatePhase": 0,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 42,
+        "rawWorldX": -71.0,
+        "rawSigma": 2.2360680103302,
+        "oldRow": 11,
+        "candidateRow": 11,
+        "oldPhase": 0,
+        "oldFade": 1.0,
+        "candidatePhase": 0,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 45,
+        "rawWorldX": -63.0,
+        "rawSigma": 0.0,
+        "oldRow": 18,
+        "candidateRow": 18,
+        "oldPhase": 0,
+        "oldFade": 1.0,
+        "candidatePhase": 0,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 45,
+        "rawWorldX": -61.0,
+        "rawSigma": 2.0,
+        "oldRow": 22,
+        "candidateRow": 22,
+        "oldPhase": 0,
+        "oldFade": 1.0,
+        "candidatePhase": 0,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 45,
+        "rawWorldX": -59.0,
+        "rawSigma": 4.0,
+        "oldRow": 26,
+        "candidateRow": 26,
+        "oldPhase": 0,
+        "oldFade": 1.0,
+        "candidatePhase": 0,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 41,
+        "rawWorldX": 73.0,
+        "rawSigma": 8.52316665649414,
+        "oldRow": 35,
+        "candidateRow": 35,
+        "oldPhase": 2,
+        "oldFade": 0.7535448670387268,
+        "candidatePhase": 2,
+        "candidateFade": 0.7535448670387268,
+        "tauExact": true
+      },
+      {
+        "front": 41,
+        "rawWorldX": 75.0,
+        "rawSigma": 10.570113182067871,
+        "oldRow": 44,
+        "candidateRow": 44,
+        "oldPhase": 1,
+        "oldFade": 1.0,
+        "candidatePhase": 1,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 41,
+        "rawWorldX": 77.0,
+        "rawSigma": 12.663150787353516,
+        "oldRow": 57,
+        "candidateRow": 56,
+        "oldPhase": 1,
+        "oldFade": 1.0,
+        "candidatePhase": 1,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 41,
+        "rawWorldX": 79.0,
+        "rawSigma": 14.669886589050293,
+        "oldRow": 65,
+        "candidateRow": 64,
+        "oldPhase": 0,
+        "oldFade": 1.0,
+        "candidatePhase": 0,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 41,
+        "rawWorldX": 81.0,
+        "rawSigma": 16.66988754272461,
+        "oldRow": 69,
+        "candidateRow": 68,
+        "oldPhase": 0,
+        "oldFade": 1.0,
+        "candidatePhase": 0,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 41,
+        "rawWorldX": 83.0,
+        "rawSigma": 18.905954360961914,
+        "oldRow": 73,
+        "candidateRow": 72,
+        "oldPhase": 0,
+        "oldFade": 1.0,
+        "candidatePhase": 0,
+        "candidateFade": 1.0,
+        "tauExact": true
+      },
+      {
+        "front": 41,
+        "rawWorldX": 85.0,
+        "rawSigma": 20.905954360961914,
+        "oldRow": 77,
+        "candidateRow": 76,
+        "oldPhase": 0,
+        "oldFade": 1.0,
+        "candidatePhase": 0,
+        "candidateFade": 1.0,
+        "tauExact": true
+      }
+    ],
+    "missing": []
+  },
+  "limitations": [
+    "Actual indexed saved polyline bend and normal-turn only; no shader/pixel silhouette or radiance proof.",
+    "World crest X and stored sigma are separate fields; no nearest-sigma substitute for the old world-X corner.",
+    "Adaptive stations/counts may differ. A missing exact target is bracketed and reported, not silently moved.",
+    "The smoothing map is C1 in delta; remaining raw width/tangent kinks do not guarantee a globally C1 trajectory.",
+    "Common current ordinary-water mask is held fixed; altered footprint/authored support can alter overlap and surviving coverage.",
+    "Missing prior raw rows are not attributed to budget/retirement without saved cSampling evidence.",
+    "No quality, full-body clearance, ordinary ridden entry/travel/exit, reference match or FPS acceptance."
+  ]
+}

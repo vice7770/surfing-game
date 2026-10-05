@@ -1,0 +1,87 @@
+{
+  "schema": "shared-leaf-source-preparation/v2",
+  "sourceOnly": true,
+  "executionPending": true,
+  "executedChecksBuildsNativeOrPorts": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/prepare.py",
+      "bytes": 6241,
+      "sha256": "d095b8229cbea8d86ae14cb14213444f744c640e3e2d5d9795a8c57c48a4f724"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/run.py",
+      "bytes": 15631,
+      "sha256": "348177699091dfa22f211218e1e4a0740e314c5c897724314c3412cd046f5438"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/native.mjs",
+      "bytes": 10270,
+      "sha256": "6b0b13c1abd4107c3e123344d96500011dbf18db5363a887f9028f63f126f7a5"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/geometry-inspection.mjs",
+      "bytes": 18841,
+      "sha256": "6a2594d3b74174b311d3d706f714fdf7f6bcb0b9a1b388c2718b5d7232b00857"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/measure.py",
+      "bytes": 8177,
+      "sha256": "e7189b0d2e5b040352c4b2e3d25a274bf690de252f68eba55b842b5d01edcf69"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/inputs.json",
+      "bytes": 9715,
+      "sha256": "8bec37b744c0b16699d734b0f1b8a3e3cd7c709e98e7eca1bd618ebf2b9b2459"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/README.md",
+      "bytes": 12001,
+      "sha256": "04937c16ef8a02792251f10a833c54de84980f43c525e0c30427c645fafe9a48"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/recipe.patch",
+      "bytes": 44916,
+      "sha256": "c39e6ce3fd476f2d56a0aba328934da70d257f3558934ca84c068257aa2383d9"
+    }
+  ],
+  "productionFilesWritten": false,
+  "priorFailedAttempt": {
+    "directory": "/private/tmp/tube-shared-leaf-native-20261005",
+    "owner": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/owner.json",
+      "bytes": 2607,
+      "sha256": "7c53fecb36b28d2b0b90d592fe7c1f609c0b598666635ef96238f74b9d12eea6"
+    },
+    "report": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/candidate-first/report.json",
+      "bytes": 4899,
+      "sha256": "a32e3e33645fcdb407f3dd5fd7ca62ff155e1d05bb9d6a131e5a0cbdac0408d9"
+    },
+    "sourceFreeze": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/source-freeze.json",
+      "bytes": 6267,
+      "sha256": "ea5f8d376b76ab982085dce43962e025f04290e09b370f61bf1f12da2c463cce"
+    },
+    "nativeHandle": 30897,
+    "nativeGroup": 21700,
+    "outcome": "Terminal1 OS-query timeout owner abort before installation/steps/images; original failed receipts retained unchanged.",
+    "rootClosureReceipt": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+      "bytes": 25763,
+      "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+    },
+    "rootClosureQualification": "Separate actual independent root receipt complete:true; original failed owner/report remain complete:false.",
+    "build": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/build.json",
+      "bytes": 15872,
+      "sha256": "7abf323e2d00d7d8fe5ac141ceb4398dbbb34a88bb8db66b678e9ae176f4a717"
+    }
+  },
+  "applicationBuildEvidence": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-application-build.log",
+    "bytes": 1328,
+    "sha256": "aa356c4bf230738569166bf4942c48f1fdc5a00702090b07fa60d6c6aeda2886"
+  },
+  "geometryHelperBytesIdenticalToReviewedPrior": true
+}

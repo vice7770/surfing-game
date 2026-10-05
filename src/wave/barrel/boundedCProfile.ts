@@ -46,10 +46,17 @@ function derivative(c:Cubic,t:number):Vec2{const s=1-t;return mul(add(add(mul(su
 const at=(p:Float32Array,i:number):Vec2=>[p[2*i],p[2*i+1]];
 export function boundedCParameters(profile:Float32Array,authoredTD:number,tau:number):BoundedCParameters{return {crest:at(profile,32),toe:at(profile,112),incoming:sub(at(profile,32),at(profile,31)),outgoing:sub(at(profile,113),at(profile,112)),authoredTD,tau};}
 export function blendBoundedCParameters(a:BoundedCParameters,b:BoundedCParameters,w:number):BoundedCParameters{return {crest:round(mix(a.crest,b.crest,w)),toe:round(mix(a.toe,b.toe,w)),incoming:round(mix(a.incoming,b.incoming,w)),outgoing:round(mix(a.outgoing,b.outgoing,w)),authoredTD:a.authoredTD+w*(b.authoredTD-a.authoredTD),tau:a.tau+w*(b.tau-a.tau),leafWidthDelta:(a.leafWidthDelta??0)+w*((b.leafWidthDelta??0)-(a.leafWidthDelta??0))};}
-/** C1 saturation in the requested correction: never spends a whole thickness scale of toe-side room. */
-export function boundedLeafWidthDelta(delta:number,thickness:number):number{
- if(!Number.isFinite(delta)||!Number.isFinite(thickness)||!(thickness>0))throw Error('invalid leaf reach correction');
- return thickness*(delta/(thickness+Math.abs(delta)));
+/** Identity core with a C1 shoulder in the requested correction; the bound is the available leaf-reach room. */
+export function boundedLeafWidthDelta(delta:number,budget:number):number{
+ if(!Number.isFinite(delta)||!Number.isFinite(budget)||!(budget>0))throw Error('invalid leaf reach correction');
+ const magnitude=Math.abs(delta),core=.6*budget;
+ if(magnitude<=core)return delta;
+ // Dimensional arithmetic avoids overflowing delta/budget for huge finite requests.
+ // The shoulder joins with unit derivative and approaches the same budget; floating-point
+ // rounding may reach that bound for extreme ratios. Guard its separately rounded terms
+ // against an upward ULP overshoot. This scalar C1 map is not a C1 trajectory.
+ const shoulder=.4*budget,excess=magnitude-core;
+ return Math.sign(delta)*Math.min(budget,core+shoulder*(excess/(shoulder+excess)));
 }
 function ordinary(z:BoundedCParameters){
  const A=z.crest,Toe=z.toe,ct=unit(z.incoming),tt=unit(z.outgoing),W=Toe[0]-A[0],H=A[1]-Toe[1];

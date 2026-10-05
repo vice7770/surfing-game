@@ -1,0 +1,215 @@
+{
+  "schema": "guided-ordinary-native-inputs/v4",
+  "repository": "/Users/regina/Desktop/Projects/surfing-game",
+  "buildId": "tube-guided-passive-telemetry-20261005",
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "pilot": {
+    "style": "tube",
+    "waitOutside": 5,
+    "rise": 1,
+    "lineDegrees": 60,
+    "giveUp": 30,
+    "stall": false
+  },
+  "limits": {
+    "steps": 3000,
+    "wallSeconds": 690,
+    "nativeSeconds": 640,
+    "ownerSeconds": 653,
+    "detectorMilliseconds": 120000,
+    "pngCount": 7,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 88080384,
+    "loftBytesEach": 6291456,
+    "loftBytesTotal": 44040192,
+    "traceBytes": 134217728,
+    "reportBytes": 2097152,
+    "observationSeconds": 620,
+    "totalSeconds": 690,
+    "cleanupSeconds": 20
+  },
+  "criteria": {
+    "minimumBothRowMouthGap": 1.2,
+    "continuousContainedSeconds": 1,
+    "relativeProgressMetres": 3,
+    "standingAfterExitSeconds": 1,
+    "fixedStepSeconds": 0.016666666666666666,
+    "singleAttempt": true,
+    "requireObservedStandingOutsideBeforeEntry": true,
+    "requireObservedPartialBeforeEntry": true
+  },
+  "protectedPorts": [
+    4312,
+    4313,
+    4314,
+    4315
+  ],
+  "protected4315Provenance": {
+    "pid": 87796,
+    "rootSession": 64713
+  },
+  "ownedPorts": [
+    4301,
+    9711
+  ],
+  "productionSources": [
+    "src/dev/Autopilot.ts",
+    "src/dev/TubePilot.ts",
+    "src/wave/SurfZoneRunner.ts",
+    "src/game/PhysicalMode.ts",
+    "src/game/SurfZoneHost.ts",
+    "src/main.ts",
+    "src/wave/barrel/tubeApproach.ts",
+    "src/wave/barrel/sweptContact.ts",
+    "src/wave/barrel/boundedCProfile.ts",
+    "src/wave/barrel/ProfileLibrary.ts",
+    "src/wave/barrel/sweptLoft.ts",
+    "src/wave/barrel/lipSheet.ts",
+    "src/scene/barrel/SweptBarrelMesh.ts",
+    "src/game/snapshotTrack.ts",
+    "src/scene/barrel/barrelMaskGlsl.ts"
+  ],
+  "preparationOnly": true,
+  "resourcesStarted": false,
+  "rootExecutionPending": true,
+  "applicationBuildLog": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/application-build.log"
+  },
+  "priorFailurePreserved": true,
+  "visualWitnessPolicy": {
+    "maximumInterpolationLagSeconds": 0.016666766666666666,
+    "waterClockMustEqualWorker": true,
+    "displayedRenderPoints": 7,
+    "currentModelWitnesses": 14,
+    "unionWitnessCount": 21,
+    "currentPartSpheresReusedInSecondClassifier": true,
+    "normalInterpolationPreserved": true,
+    "renderedPhaseMustBeStandingForSequenceAcceptance": true
+  },
+  "priorCompletedV2Preserved": true,
+  "priorObservation": {
+    "trialDirectory": "/private/tmp/tube-guided-ordinary-v3-native-20261005",
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    "trace": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 18438314,
+      "sha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c"
+    },
+    "rootPostFailurePins": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/root-post-failure-pins.json",
+      "bytes": 43646,
+      "sha256": "6e4a7ca025d044f50d426f3127ad7c3b15535603be57a2c03bd45809bbef03d0"
+    },
+    "copiedHistoricalOutputs": false,
+    "observedSteps": 1525,
+    "observedStandingSamples": 292,
+    "observedGuides": 0,
+    "observedTerminal": "640s native deadline; no extension or retry",
+    "complete": false,
+    "acceptedModelWitnessRide": false,
+    "scope": "Preserved failed V3 run and bounded recorded prefix; no completed ride or retrospective telemetry diagnosis."
+  },
+  "candidateChange": {
+    "scope": "Fresh current production candidate after root tests/build; passive SAME-query telemetry and first-event observations. Current tested leaf/seek changes are source/build-pinned.",
+    "owner": "Root production decision; source-only recipe does not install any production change.",
+    "driverControlsUnchangedFromV3": true,
+    "independentGeometryAndAcceptanceUnchanged": true,
+    "observerClassifierOptimizationsApplied": false,
+    "visualChangesBoundByFreshBuild": true,
+    "tubeSuccessClaim": false
+  },
+  "rootBuildAuthority": {
+    "file": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-build-authority.json",
+    "requiredApplicationTerminalExitCode": 0,
+    "requiredDiagnosticTerminalExitCode": 0,
+    "pending": true
+  },
+  "milestonePolicy": {
+    "labels": [
+      "initial",
+      "first-standing",
+      "first-guide",
+      "first-partial-entry",
+      "body-entry",
+      "intentional-exit",
+      "terminal"
+    ],
+    "selection": "First actual event only; no quality/seed/camera search",
+    "firstStanding": "First current ride.phase standing, irrespective of displayed landing lag",
+    "firstGuide": "First current same-step tubeApproach present",
+    "firstPartialEntry": "First independent current+displayed union classification partial",
+    "entryExit": "Existing independent sequence entry/exit only",
+    "terminalAtFiniteObservationCeiling": true,
+    "terminalUnprovedOnHardDeadline": true
+  },
+  "telemetryPolicy": {
+    "source": "ride.tubeApproachObservation from existing SAME approachNear invocation",
+    "schema": "tube-approach-observation/v1",
+    "passiveOnly": true,
+    "noExtraRouteQueries": true,
+    "controllerReadsTelemetry": false,
+    "detachedScalarOutputOnly": true,
+    "sameSeaTimeAsBodyRequiredOnStanding": true,
+    "classificationDoesNotFeedControls": true,
+    "counterfactualQueries": false
+  },
+  "ownerObservationPolicy": {
+    "osReadSeconds": 2,
+    "periodicIdentitySeconds": 5,
+    "maximumRecordedTimeoutNotes": 16,
+    "requiredReadAttempts": 3,
+    "periodicTimeoutOutcome": "Observation only; same native and HTTP continue, no retry/restart.",
+    "requiredIdentityOutcome": "Required preflight/initial/cleanup identity; no signal against unverified group."
+  },
+  "protectedIdentityReference": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+    "bytes": 25763,
+    "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+  },
+  "priorV3Preserved": true
+}

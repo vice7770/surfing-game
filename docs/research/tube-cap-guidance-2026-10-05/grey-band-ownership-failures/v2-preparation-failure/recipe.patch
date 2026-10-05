@@ -1,0 +1,455 @@
+diff --git a/prepare.py b/prepare.py
+--- a/prepare.py
++++ b/prepare.py
+@@ -1,18 +1,24 @@
+ """Root-only preparation source. Copies immutable V3 assets; never builds or pins mutable production."""
+ from pathlib import Path
+ import hashlib,json,shutil,subprocess
+-W=Path('/private/tmp/tube-grey-band-ownership-native-20261005')
++W=Path('/private/tmp/tube-grey-band-ownership-native-v2-20261005')
+ def pin(p):
+  b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ def verify(spec):
+  b=Path(spec['file']).read_bytes();assert len(b)==spec['bytes'] and hashlib.sha256(b).hexdigest()==spec['sha256'],spec['file'];return b
+-assert not any((W/n).exists()for n in('dist','historical-source','build.json','seal.json','prepare-result.json','owner.json','candidate-first')),'First-only root preparation'
++assert not any((W/n).exists()for n in('dist','historical-source','historical-diagnostic','source-provenance.json','build.json','seal.json','prepare-result.json','owner.json','candidate-first')),'First-only root preparation'
+ i=json.loads((W/'inputs.json').read_bytes())
+ reference_names=('opticalApplicationBuild','opticalApplicationFreeze','opticalApplicationSeal','opticalApplicationBuildLog','referenceReport','referenceOwner','referenceLoft','authoredReport','authoredOwner','authoredSeal','baselinePNG')
+-references=[i[k]for k in reference_names]+i['readOnlyEvidence']
++references=[i[k]for k in reference_names]+i['readOnlyEvidence']+[i['protectedIdentityAuthority'],i['historicalOpticalRun']['owner'],i['historicalOpticalRun']['report']]
+ for spec in references+i['borrowedHelperPins']:verify(spec)
++closure=json.loads(verify(i['protectedIdentityAuthority']))
++assert closure['schema']=='shared-leaf-independent-post-failure/v1' and closure['complete'] and closure['protectedPreserved'] and closure['ownedGroupAbsent'] and all(closure['closedPorts'].values())
++# This independent root OS receipt is an expected-identity authority, not success of this ID recipe.
++old_run=json.loads(verify(i['historicalOpticalRun']['owner']));old_report=json.loads(verify(i['historicalOpticalRun']['report']))
++assert not old_run['complete'] and old_run['exitCode']==1 and not old_report['complete'] and old_report['stepCount']==1525 and '640s native deadline' in old_report['firstFailure']
+ b=json.loads(verify(i['opticalApplicationBuild']));f=json.loads(verify(i['opticalApplicationFreeze']));s=json.loads(verify(i['opticalApplicationSeal']))
+ assert b['complete'] and b['build']==i['applicationBuildId'] and f['complete'] and f['build']==b['build'] and s['complete'] and s['rootAuthorized'] and s['buildId']==b['build']
++assert b['applicationBuildLog']==i['opticalApplicationBuildLog']
+ assert b['productionSources']==f['productionSources'] and b['diagnosticCompiledSources']==f['diagnosticCompiledSources']
+ # These records are historical evidence. Their live /repo source paths, root dist and old run helpers are NOT read or verified.
+ # Only the immutable copied V3 app asset paths are authoritative executable inputs here.
+@@ -30,36 +36,59 @@
+ assert all(p['baselineRepeatPixelsIdentical'] and all(p['guards'].values())for p in a['pairs'])
+ assert a['pairs'][4]['treatment']=='authored-mask-plus-sheet-fill-A' and a['pairs'][4]['fixedPose']==i['fixedCamera']
+ assert {k:i['baselinePNG'][k]for k in('bytes','sha256')}=={k:a['pairs'][4]['combinedSupport'][k]for k in('bytes','sha256')}
+-# Recover exact old source from committed history into NEW scratch. Never require current files to match old receipts.
+-repo=Path(i['repository']);commit=i['historicalCommit'];historical=[];historical_specs={}
+-for spec in b['productionSources']+b['diagnosticCompiledSources']:
+- path=Path(spec['file']);relative=path.relative_to(repo)
+- if relative.parts[0]=='src':
+-  if str(relative)in historical_specs:assert historical_specs[str(relative)]==spec
+-  historical_specs[str(relative)]=spec
++# Repository source receipts and external diagnostic entries have different, explicit provenance.
++# No mutable repo source is read. External pinned entry points are not assigned a Git commit/hash.
++repo=Path(i['repository']);commit=i['historicalCommit'];historical=[];external=[];repository_records=[];external_records=[];extra_records=[]
++historical_specs={};external_specs={};families={}
++for family in ('productionSources','diagnosticCompiledSources'):
++ for spec in b[family]:
++  path=Path(spec['file']);families.setdefault(str(path),[]).append(family)
++  if path.is_relative_to(repo):
++   relative=path.relative_to(repo)
++   assert relative.parts and '..' not in relative.parts
++   target=historical_specs;key=str(relative)
++  else:
++   target=external_specs;key=str(path)
++  if key in target:assert target[key]==spec,'Conflicting historical source receipt '+key
++  target[key]=spec
+ for relative,spec in sorted(historical_specs.items()):
+  data=subprocess.check_output(['/usr/bin/git','show',commit+':'+relative],cwd=repo,timeout=10)
+  assert len(data)==spec['bytes'] and hashlib.sha256(data).hexdigest()==spec['sha256'],'Historical committed source differs: '+relative
+- dest=W/'historical-source'/relative;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);historical.append(pin(dest))
++ dest=W/'historical-source'/relative;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);copy=pin(dest);historical.append(copy)
++ repository_records.append({'relative':relative,'historicalCommit':commit,'receipt':spec,'copied':copy,'sourceFamilies':families[spec['file']],'provenance':'Exact git show from declared historical commit, verified against existing compiled/production source receipt.'})
++for number,(original,spec)in enumerate(sorted(external_specs.items())):
++ data=verify(spec);dest=W/'historical-diagnostic'/(str(number).zfill(3)+'-'+Path(original).name)
++ dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);copy=pin(dest);external.append(copy);verify(spec)
++ external_records.append({'original':spec,'copied':copy,'sourceFamilies':families[original],'historicalCommit':None,'recoveredFromGit':False,'provenance':'Exact pinned original outside-repository diagnostic source; compiled-source receipt verified directly. No committed source hash invented.'})
+ for relative in i['historicalOpticalSourcePaths']:
+- dest=W/'historical-source'/relative
++ rel=Path(relative);assert not rel.is_absolute() and '..' not in rel.parts
++ dest=W/'historical-source'/rel
+  if dest.exists():continue
+  data=subprocess.check_output(['/usr/bin/git','show',commit+':'+relative],cwd=repo,timeout=10)
+- dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);historical.append(pin(dest))
+-# Extra optical files have committed-source provenance, not an invented old build receipt hash.
++ dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);copy=pin(dest);historical.append(copy)
++ extra_records.append({'relative':relative,'historicalCommit':commit,'copied':copy,'existingBuildReceiptHashAvailable':False,'provenance':'Additional source read from the exact declared commit for optical interpretation; not assigned an invented prior build receipt hash.'})
++provenance={'schema':'grey-band-ownership-source-provenance/v2','complete':True,'applicationBuild':i['opticalApplicationBuild'],'applicationFreeze':i['opticalApplicationFreeze'],'historicalCommit':commit,'repositorySources':repository_records,'externalDiagnosticSources':external_records,'extraOpticalCommittedSources':extra_records,'mutableProductionSourcesReadOrFrozen':False,'originalV3GameplaySucceeded':False}
++(W/'source-provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
+ shutil.copytree(app,W/'dist')
+-copied={'schema':'grey-band-ownership-build/v1','complete':True,'build':i['applicationBuildId'],
++copied_assets=[pin(p)for p in sorted((W/'dist').rglob('*'))if p.is_file()]
++old_assets={Path(spec['file']).relative_to(app):spec for spec in b['assets']}
++assert {Path(spec['file']).relative_to(W/'dist')for spec in copied_assets}==set(old_assets)
++for spec in copied_assets:
++ original=old_assets[Path(spec['file']).relative_to(W/'dist')]
++ assert spec['bytes']==original['bytes'] and spec['sha256']==original['sha256'],'Copied immutable app bytes differ'
++for spec in b['assets']:verify(spec)
++copied={'schema':'grey-band-ownership-build/v2','complete':True,'build':i['applicationBuildId'],
+  'operation':'Copy immutable V3 app assets only; read-only git show reconstructs historical source; no build/current source freeze.',
+- 'assets':[pin(p)for p in sorted((W/'dist').rglob('*'))if p.is_file()], 'priorBuild':i['opticalApplicationBuild'],
+- 'historicalCommit':commit,'reconstructedHistoricalSources':historical,'oldProductionSourceReceiptVerification':True,
++ 'assets':copied_assets, 'priorBuild':i['opticalApplicationBuild'],
++ 'historicalCommit':commit,'sourceProvenance':pin(W/'source-provenance.json'),'reconstructedHistoricalSources':historical,'copiedExternalDiagnosticSources':external,'historicalOpticalRun':i['historicalOpticalRun'],'oldProductionSourceReceiptVerification':True,
+  'mutableProductionSourcePinsRequired':False,'oldAndCurrentGeometryEquivalenceAsserted':False}
+ (W/'build.json').write_text(json.dumps(copied,indent=2)+'\n')
+-names=('inputs.json','README.md','prepare.py','run.py','native.mjs','ownership-inspection.mjs','recipe-diff.md')
+-seal={'schema':'grey-band-ownership-seal/v1','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),
+- 'helpers':[pin(W/n)for n in names],'borrowedHelpers':i['borrowedHelperPins'],'references':references,
+- 'immutablePriorAssets':b['assets'],'historicalScratchSources':historical,'limits':i['limits'],'comparison':i['comparison']}
++names=('inputs.json','README.md','prepare.py','run.py','native.mjs','ownership-inspection.mjs','recipe-diff.md','recipe.patch','preparation-freeze.json')
++seal={'schema':'grey-band-ownership-seal/v2','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),
++ 'sourceProvenance':pin(W/'source-provenance.json'),'helpers':[pin(W/n)for n in names],'borrowedHelpers':i['borrowedHelperPins'],'references':references,
++ 'immutablePriorAssets':b['assets'],'historicalScratchSources':historical,'externalDiagnosticScratchSources':external,'limits':i['limits'],'comparison':i['comparison']}
+ (W/'seal.json').write_text(json.dumps(seal,indent=2)+'\n')
+-result={'schema':'grey-band-ownership-preparation/v1','complete':True,'seal':pin(W/'seal.json'),'build':pin(W/'build.json'),
++result={'schema':'grey-band-ownership-preparation/v2','complete':True,'seal':pin(W/'seal.json'),'build':pin(W/'build.json'),
+  'resourcesStarted':False,'portsProbed':False,'executedChecksOrBuilds':False,'liveSourcesWrittenOrFrozen':False,
+- 'historicalSourceRecovery':'Read-only git show into new recipe scratch; immutable old receipt hashes verified there.'}
++ 'sourceProvenance':pin(W/'source-provenance.json'),'historicalSourceRecovery':'Repository sources recovered with read-only git show and existing receipt hashes; outside-repository diagnostic sources copied from their exact direct receipt. No build/current source freeze.'}
+ (W/'prepare-result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))
+diff --git a/run.py b/run.py
+--- a/run.py
++++ b/run.py
+@@ -2,7 +2,10 @@
+ from pathlib import Path
+ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+ import hashlib,json,os,signal,socket,subprocess,threading,time
+-W=Path('/private/tmp/tube-grey-band-ownership-native-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
++W=Path('/private/tmp/tube-grey-band-ownership-native-v2-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
++EXPECTED_PROTECTED={4312:92445,4313:58298,4314:51358,4315:87796}
++OS_SECONDS=2;IDENTITY_PERIOD=5;REQUIRED_ATTEMPTS=3;NOTE_LIMIT=16;whole_started=time.monotonic()
++timeout_notes=[];timeout_count=0
+ def verify(spec):
+  b=Path(spec['file']).read_bytes();assert len(b)==spec['bytes'] and hashlib.sha256(b).hexdigest()==spec['sha256'],spec['file'];return b
+ def free(port):
+@@ -11,21 +14,49 @@
+  except ConnectionRefusedError:return True
+  except (TimeoutError,OSError):return False
+  finally:s.close()
+-def identities():
++def read_timeout(deadline=None):
++ remaining=OS_SECONDS if deadline is None else min(OS_SECONDS,deadline-time.monotonic())
++ if remaining<=0:raise TimeoutError('Finite required identity-read budget exhausted')
++ return remaining
++def identities(deadline=None):
+  pids={}
+  for port in PROTECTED:
+-  raw=subprocess.run(['/usr/sbin/lsof','-nP','-a','-iTCP:'+str(port),'-sTCP:LISTEN','-Fp'],text=True,capture_output=True,timeout=.35)
++  raw=subprocess.run(['/usr/sbin/lsof','-nP','-a','-iTCP:'+str(port),'-sTCP:LISTEN','-Fp'],text=True,capture_output=True,timeout=read_timeout(deadline))
+   assert raw.returncode==0,'Protected listener absent '+str(port)
+   ids=sorted({int(row[1:])for row in raw.stdout.splitlines()if row.startswith('p')});assert ids;pids[str(port)]=ids
+  allids=sorted({pid for ids in pids.values()for pid in ids})
+- raw=subprocess.check_output(['/bin/ps','-p',','.join(map(str,allids)),'-o','pid=,lstart=,comm='],text=True,timeout=.35)
+- rows={int(row.split()[0]):row.strip()for row in raw.splitlines()if row.strip()};assert set(rows)==set(allids)
++ raw=subprocess.check_output(['/bin/ps','-ww','-p',','.join(map(str,allids)),'-o','pid=,lstart=,command='],text=True,timeout=read_timeout(deadline))
++ rows={}
++ for row in raw.splitlines():
++  fields=row.split(None,6)
++  if fields:
++   assert len(fields)==7,'Full PID/start/command required';rows[int(fields[0])]=fields[0]+' '+' '.join(fields[1:6])+' '+fields[6]
++ assert set(rows)==set(allids)
+  return {port:[rows[pid]for pid in ids]for port,ids in pids.items()}
+-def group_members(pgid):
+- raw=subprocess.check_output(['/bin/ps','-axo','pid=,pgid=,stat='],text=True,timeout=.35)
+- return [int(words[0])for row in raw.splitlines()if len(words:=row.split())==3 and int(words[1])==pgid and not words[2].startswith('Z')]
++def group_identities(pgid,deadline=None):
++ raw=subprocess.check_output(['/bin/ps','-ww','-axo','pid=,pgid=,stat=,lstart=,command='],text=True,timeout=read_timeout(deadline))
++ result={}
++ for row in raw.splitlines():
++  words=row.split(None,8)
++  if len(words)==9 and int(words[1])==pgid and not words[2].startswith('Z'):
++   pid=int(words[0]);result[pid]={'pid':pid,'pgid':pgid,'started':' '.join(words[3:8]),'command':words[8]}
++ return result
++def note_timeout(phase,error):
++ global timeout_count
++ timeout_count+=1
++ if len(timeout_notes)<NOTE_LIMIT:
++  timeout_notes.append({'phase':phase,'elapsedSeconds':time.monotonic()-whole_started,'command':list(error.cmd)if not isinstance(error.cmd,str)else error.cmd,'timeoutSeconds':error.timeout,'outcome':'Observation only'if phase=='periodic-owned-identity'else'Required identity read will retry within its finite budget'})
++def required_read(call,phase,deadline):
++ last=None
++ for attempt in range(REQUIRED_ATTEMPTS):
++  if time.monotonic()>=deadline:break
++  try:return call(deadline)
++  except subprocess.TimeoutExpired as error:
++   note_timeout(phase,error);last=error
++   if attempt+1<REQUIRED_ATTEMPTS and time.monotonic()<deadline:time.sleep(min(.1,max(0,deadline-time.monotonic())))
++ raise TimeoutError('Required identity could not be verified: '+phase)from last
+ def validate_result(result):
+- assert result['schema']=='grey-band-ownership-native/v1' and result['complete'] and result['firstFailure']is None and result['ownedBrowserClose']
++ assert result['schema']=='grey-band-ownership-native/v2' and result['complete'] and result['firstFailure']is None and result['ownedBrowserClose']
+  assert not result['browserErrors'] and result['stepCount']==0 and result['pngCount']==4
+  assert result['applicationBuildRequest']['build']==inputs['applicationBuildId'] and result['applicationBuildRequest']['checkedBeforeReplay']
+  assert result['replayStartup']['publicStartCalls']==1 and result['replayStartup']['noPlacement'] and result['replayStartup']['noClockAssignment']
+@@ -79,57 +110,105 @@
+   'wholePixelOwnershipPlayabilityOrProductionFixClaim':False}
+ 
+ sealbytes=(W/'seal.json').read_bytes();seal=json.loads(sealbytes);inputs=json.loads((W/'inputs.json').read_bytes())
+-assert seal['schema']=='grey-band-ownership-seal/v1' and seal['rootAuthorized'] and seal['complete']
+-build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='grey-band-ownership-build/v1' and build['build']==inputs['applicationBuildId']
+-def check():
+- for spec in build['assets']+seal['helpers']+seal['borrowedHelpers']+seal['references']+seal['immutablePriorAssets']+seal['historicalScratchSources']:verify(spec)
+-check();assert not (W/'owner.json').exists() and not (W/'candidate-first').exists() and all(free(port)for port in OWNED)
+-before=identities();assert any(int(row.split()[0])==87796 for row in before['4315']),'Protected4315 PID87796 required'
+-started=time.monotonic();server=None;proc=None
+-record={'schema':'grey-band-ownership-owner/v1','complete':False,'firstFailure':None,'protectedBefore':before,
++assert seal['schema']=='grey-band-ownership-seal/v2' and seal['rootAuthorized'] and seal['complete']
++build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='grey-band-ownership-build/v2' and build['build']==inputs['applicationBuildId']
++def check(deadline=None):
++ assert build['sourceProvenance']==seal['sourceProvenance']
++ provenance=json.loads(verify(seal['sourceProvenance']));assert provenance['complete'] and provenance['schema']=='grey-band-ownership-source-provenance/v2' and provenance['applicationBuild']==inputs['opticalApplicationBuild'] and provenance['applicationFreeze']==inputs['opticalApplicationFreeze']
++ for spec in build['assets']+seal['helpers']+seal['borrowedHelpers']+seal['references']+seal['immutablePriorAssets']+seal['historicalScratchSources']+seal['externalDiagnosticScratchSources']:
++  if deadline is not None and time.monotonic()>=deadline:raise TimeoutError('Finite pin verification budget')
++  verify(spec)
++whole_deadline=whole_started+inputs['limits']['totalSeconds'];preflight_deadline=min(whole_started+20,whole_deadline-inputs['limits']['cleanupSeconds'])
++check(preflight_deadline);assert not (W/'owner.json').exists() and not (W/'candidate-first').exists() and all(free(port)for port in OWNED)
++before=required_read(identities,'preflight-protected',preflight_deadline)
++closure=json.loads(verify(inputs['protectedIdentityAuthority']))
++for port,pid in EXPECTED_PROTECTED.items():
++ identity=closure['protectedIdentities'][str(port)]['actualIdentity'];assert identity['pid']==pid
++ expected=str(pid)+' '+identity['started']+' '+identity['command']
++ assert expected in before[str(port)],'Protected full PID/start/command required '+str(port)
++started=time.monotonic();owner_deadline=min(started+inputs['limits']['ownerSeconds'],whole_deadline-inputs['limits']['cleanupSeconds']);server=None;proc=None
++record={'schema':'grey-band-ownership-owner/v2','complete':False,'firstFailure':None,'protectedBefore':before,
+  'protected4315ExpectedPid':87796,'protected4315RootToolSession':'64713','toolSessionOSIdentityClaim':False,
+- 'sealSha256':hashlib.sha256(sealbytes).hexdigest(),'preExecutionPinsVerified':True,'postExecutionPinsVerified':False,'cleanupFailures':[]}
++ 'sealSha256':hashlib.sha256(sealbytes).hexdigest(),'preExecutionPinsVerified':True,'postExecutionPinsVerified':False,'copiedAndHistoricalSourcePinsPostVerified':False,'cleanupFailures':[]}
++record['expectedProtectedPids']=EXPECTED_PROTECTED
++record['protectedIdentityAuthority']=inputs['protectedIdentityAuthority']
++record['historicalOpticalRun']=inputs['historicalOpticalRun']
++record['osObservationPolicy']=inputs['ownerObservationPolicy']
++record['absoluteBudget']={'wholeSeconds':inputs['limits']['totalSeconds'],'cleanupReservedSeconds':inputs['limits']['cleanupSeconds'],'activeOwnerBudgetSeconds':owner_deadline-started,'maximumNativeOwnerSeconds':inputs['limits']['ownerSeconds'],'preflightBudgetSeconds':20}
++known_owned={}
++def remember_owned(deadline=None):
++ current=group_identities(proc.pid,deadline)
++ if current:
++  if not known_owned:
++   assert proc.poll() is None and proc.pid in current and str(W/'native.mjs') in current[proc.pid]['command'],'Fresh leader command identity required'
++  for pid in current.keys()&known_owned.keys():assert current[pid]==known_owned[pid],'Owned PID identity changed'
++  # A matching recorded survivor proves that this process group has not been recycled, even after its leader exits.
++  assert not known_owned or any(current.get(pid)==identity for pid,identity in known_owned.items()),'Owned process group lost its recorded identity'
++  known_owned.update(current)
++ return current
+ class Handler(SimpleHTTPRequestHandler):
+  def __init__(self,*args,**kw):super().__init__(*args,directory=str(W/'dist'),**kw)
+  def log_message(self,*args):pass
+ try:
++ if time.monotonic()>=owner_deadline:raise TimeoutError('No active owner time before starting resources')
+  server=ThreadingHTTPServer(('127.0.0.1',4301),Handler);server.daemon_threads=True
+  thread=threading.Thread(target=lambda:server.serve_forever(poll_interval=.1),daemon=True);thread.start()
+  env={**os.environ,'GREY_OWNERSHIP_OWNER_SEAL_SHA':record['sealSha256'],'FULL_WRITER_FPS_LAUNCHER_REPORT':str(W/'launcher.json')}
+  with (W/'native.log').open('wb')as log:
+   proc=subprocess.Popen(['/opt/homebrew/bin/node',str(W/'native.mjs'),'--run=true','--url=http://127.0.0.1:4301/?diagnostics','--out='+str(W/'candidate-first')],stdout=log,stderr=subprocess.STDOUT,start_new_session=True,env=env)
+   record['pid']=proc.pid;record['ownedProcessGroup']=proc.pid;(W/'live.json').write_text(json.dumps(record))
++  initial_owned=required_read(remember_owned,'initial-owned-leader',min(owner_deadline,time.monotonic()+7));assert proc.pid in initial_owned,'Fresh native leader identity absent'
++  record['ownedProcessIdentity']=initial_owned[proc.pid];record['ownedIdentities']=list(known_owned.values());last_identity=time.monotonic()
+   while proc.poll()is None:
+-   if time.monotonic()-started>inputs['limits']['ownerSeconds']:raise TimeoutError('Finite owner deadline')
+-   time.sleep(.2)
++   if time.monotonic()>=owner_deadline:raise TimeoutError('Finite owner deadline with cleanup reserved')
++   if time.monotonic()-last_identity>=IDENTITY_PERIOD:
++    try:remember_owned(owner_deadline);record['ownedIdentities']=list(known_owned.values())
++    except subprocess.TimeoutExpired as error:note_timeout('periodic-owned-identity',error)
++    # A transient OS observation timeout never closes HTTP, aborts this process, or starts another native handle.
++    last_identity=time.monotonic()
++   time.sleep(min(.2,max(0,owner_deadline-time.monotonic())))
+   record['exitCode']=proc.returncode;assert proc.returncode==0,'Native terminal exit '+str(proc.returncode)
++ if time.monotonic()>=owner_deadline:raise TimeoutError('Finite active owner budget before report validation')
+  record['observation']=validate_result(json.loads((W/'candidate-first/report.json').read_bytes()))
+- check();record['postExecutionPinsVerified']=True;record['complete']=True
++ check(owner_deadline)
++ if time.monotonic()>=owner_deadline:raise TimeoutError('Finite active owner budget after post-pins')
++ record['postExecutionPinsVerified']=True;record['copiedAndHistoricalSourcePinsPostVerified']=True;record['complete']=True
+ except BaseException as error:record['firstFailure']=type(error).__name__+': '+str(error);record['complete']=False
+ finally:
+- cleanup=time.monotonic()
++ cleanup=time.monotonic();cleanup_deadline=min(cleanup+inputs['limits']['cleanupSeconds'],whole_deadline)
+  if proc:
+   try:
+-   protected={int(row.split()[0])for group in before.values()for row in group};owned=group_members(proc.pid)
++   protected={int(row.split()[0])for group in before.values()for row in group}
++   owned=required_read(remember_owned,'cleanup-before-TERM',cleanup_deadline)
+    assert not protected.intersection(owned),'Owned process group intersects protected listener PIDs'
+-   record['ownedMembersBeforeCleanup']=owned
++   record['ownedMembersBeforeCleanup']=list(owned);record['ownedIdentities']=list(known_owned.values())
+    if owned:
+-    os.killpg(proc.pid,signal.SIGTERM);end=time.monotonic()+1.5
+-    while time.monotonic()<end and group_members(proc.pid):time.sleep(.05)
+-    if group_members(proc.pid):os.killpg(proc.pid,signal.SIGKILL)
+-    end=time.monotonic()+.5
+-    while time.monotonic()<end and group_members(proc.pid):time.sleep(.05)
+-   record['ownedMembersAfterCleanup']=group_members(proc.pid);assert not record['ownedMembersAfterCleanup'];proc.wait(timeout=.35)
+-  except BaseException as error:record['cleanupFailures'].append('owned-group: '+type(error).__name__+': '+str(error))
++    # The immediately preceding read must carry the original leader or an exact recorded survivor anchor.
++    record.setdefault('signals',[]).append({'signal':'TERM','verifiedMembers':list(owned),'identityAnchorVerified':True})
++    os.killpg(proc.pid,signal.SIGTERM);time.sleep(min(.5,max(0,cleanup_deadline-time.monotonic())))
++    remaining=required_read(remember_owned,'cleanup-before-KILL',cleanup_deadline)
++    if remaining:
++     assert not protected.intersection(remaining),'Remaining owned group intersects protected PIDs'
++     record['signals'].append({'signal':'KILL','verifiedMembers':list(remaining),'identityAnchorVerified':True})
++     os.killpg(proc.pid,signal.SIGKILL);time.sleep(min(.2,max(0,cleanup_deadline-time.monotonic())))
++   remaining=required_read(remember_owned,'cleanup-final-group-absence',cleanup_deadline)
++   record['ownedMembersAfterCleanup']=list(remaining);assert not remaining,'Owned group still present'
++   proc.wait(timeout=read_timeout(cleanup_deadline));record['ownedGroupIdentityAndAbsenceVerified']=True
++  except BaseException as error:
++   record['ownedGroupIdentityAndAbsenceVerified']=False
++   record['cleanupFailures'].append('owned-group: '+type(error).__name__+': '+str(error))
+  if server:
+   try:
+-   stopper=threading.Thread(target=server.shutdown,daemon=True);stopper.start();stopper.join(timeout=.35);server.server_close();assert not stopper.is_alive()
++   stopper=threading.Thread(target=server.shutdown,daemon=True);stopper.start();stopper.join(timeout=max(0,min(OS_SECONDS,cleanup_deadline-time.monotonic())));server.server_close();assert not stopper.is_alive()
+   except BaseException as error:record['cleanupFailures'].append('server: '+type(error).__name__+': '+str(error))
+- try:record['protectedAfter']=identities();record['protectedPreserved']=record['protectedAfter']==before
++ try:
++  record['protectedAfter']=required_read(identities,'cleanup-protected',cleanup_deadline)
++  record['protectedPreserved']=record['protectedAfter']==before
+  except BaseException as error:record['protectedPreserved']=False;record['cleanupFailures'].append('protected: '+type(error).__name__+': '+str(error))
+  try:record['closedPorts']={str(port):free(port)for port in OWNED}
+  except BaseException as error:record['closedPorts']={str(port):False for port in OWNED};record['cleanupFailures'].append('ports: '+type(error).__name__+': '+str(error))
+- record['cleanupElapsedSeconds']=time.monotonic()-cleanup;record['elapsedSeconds']=time.monotonic()-started
+- record['complete']=record['complete']and not record['cleanupFailures']and record['protectedPreserved']and all(record['closedPorts'].values())and record['cleanupElapsedSeconds']<=inputs['limits']['cleanupSeconds']and record['elapsedSeconds']<=inputs['limits']['totalSeconds']
++ record['osReadTimeoutCount']=timeout_count;record['osReadTimeoutNotes']=timeout_notes;record['osReadTimeoutNotesTruncated']=timeout_count>len(timeout_notes)
++ record['cleanupElapsedSeconds']=time.monotonic()-cleanup;record['nativeOwnerElapsedSeconds']=time.monotonic()-started;record['elapsedSeconds']=time.monotonic()-whole_started
++ record['complete']=record['complete']and record.get('ownedGroupIdentityAndAbsenceVerified',False)and not record['cleanupFailures']and record['protectedPreserved']and all(record['closedPorts'].values())and record['cleanupElapsedSeconds']<=inputs['limits']['cleanupSeconds']and record['elapsedSeconds']<=inputs['limits']['totalSeconds']
+  (W/'owner.json').write_text(json.dumps(record,indent=2)+'\n')
+ print(json.dumps(record));raise SystemExit(0 if record['complete']else 1)
+diff --git a/native.mjs b/native.mjs
+--- a/native.mjs
++++ b/native.mjs
+@@ -6,19 +6,20 @@
+ import { launch } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs';
+ import { prepareMenu } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs';
+ import { installGreyOwnershipInspection } from './ownership-inspection.mjs';
+-const W='/private/tmp/tube-grey-band-ownership-native-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
++const W='/private/tmp/tube-grey-band-ownership-native-v2-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
+ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+ const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const i=arg.indexOf('=');assert(arg.startsWith('--')&&i>2);return[arg.slice(2,i),arg.slice(i+1)];}));
+ assert.equal(args.run,'true');assert.equal(args.url,'http://127.0.0.1:4301/?diagnostics');assert.equal(resolve(args.out),W+'/candidate-first');
+ const sealBytes=readFileSync(W+'/seal.json'), seal=JSON.parse(sealBytes);
+-assert.equal(hash(sealBytes),process.env.GREY_OWNERSHIP_OWNER_SEAL_SHA);assert.equal(seal.schema,'grey-band-ownership-seal/v1');assert(seal.rootAuthorized&&seal.complete);
++assert.equal(hash(sealBytes),process.env.GREY_OWNERSHIP_OWNER_SEAL_SHA);assert.equal(seal.schema,'grey-band-ownership-seal/v2');assert(seal.rootAuthorized&&seal.complete);
+ const readPinned=spec=>{const bytes=readFileSync(spec.file);assert.equal(bytes.length,spec.bytes);assert.equal(hash(bytes),spec.sha256);return bytes;};
+ const reference=JSON.parse(readPinned(inputs.referenceReport)), expected=JSON.parse(readPinned(inputs.referenceLoft));
+ assert(reference.complete&&reference.firstFailure===null&&reference.stepCount===0&&reference.stop.kind==='first-eligible-capture');
+ assert.equal(expected.epoch.seaTime,reference.stop.seaTime);assert.equal(expected.epoch.step,0);assert.equal(Object.keys(expected.arrays).length,37);
+ assert.deepEqual(inputs.referenceCounts,expected.counts);assert.deepEqual(inputs.overrides,{seed:6238,componentCount:64,dx:2,fineSpacing:1});
+ assert(!existsSync(args.out));mkdirSync(args.out);const OUT=resolve(args.out),started=performance.now();let page,exitCode=0;
+-const report={schema:'grey-band-ownership-native/v1',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
++const report={schema:'grey-band-ownership-native/v2',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
++ protectedIdentityAuthority:inputs.protectedIdentityAuthority,historicalOpticalRun:inputs.historicalOpticalRun,
+  opticalAppAuthority:{build:inputs.opticalApplicationBuild,freeze:inputs.opticalApplicationFreeze,seal:inputs.opticalApplicationSeal,baselinePNG:inputs.baselinePNG},
+  referenceReport:inputs.referenceReport,referenceLoft:inputs.referenceLoft,settings:inputs.settings,overrides:inputs.overrides,graphics:inputs.graphics,
+  policy:inputs.comparison,limits:inputs.limits,stepCount:0,artifacts:[],pngCount:0,pngBytes:0,browserErrors:[],acceptance:{ownershipConclusion:null,playability:false,productionFixAdopted:false}};
+diff --git a/inputs.json b/inputs.json
+--- a/inputs.json
++++ b/inputs.json
+@@ -77,7 +77,7 @@
+       "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+     }
+   ],
+-  "schema": "grey-band-ownership-inputs/v1",
++  "schema": "grey-band-ownership-inputs/v2",
+   "preparationOnly": true,
+   "rootExecutionPending": true,
+   "resourcesStarted": false,
+@@ -270,8 +270,8 @@
+     "steps": 0,
+     "nativeSeconds": 635,
+     "ownerSeconds": 648,
+-    "totalSeconds": 660,
+-    "cleanupSeconds": 7,
++    "totalSeconds": 680,
++    "cleanupSeconds": 20,
+     "pngCount": 4,
+     "pngBytesEach": 12582912,
+     "pngBytesTotal": 50331648,
+@@ -348,5 +348,33 @@
+       "Preserves final authored fade/dither and tested A lighting; no seam support repair.",
+       "No geometry, force, air-volume, body or playability certification."
+     ]
++  },
++  "protectedIdentityAuthority": {
++    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
++    "bytes": 25763,
++    "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
++  },
++  "historicalOpticalRun": {
++    "owner": {
++      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
++      "bytes": 3469,
++      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
++    },
++    "report": {
++      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
++      "bytes": 42104,
++      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
++    },
++    "qualification": "The V3 gameplay owner/report actually failed the640s diagnostic wall deadline after1525rows. Its immutable app build/assets/log/source receipts are complete; gameplay success is not claimed."
++  },
++  "ownerObservationPolicy": {
++    "osReadSeconds": 2,
++    "periodicIdentitySeconds": 5,
++    "maximumRecordedTimeoutNotes": 16,
++    "requiredReadAttempts": 3,
++    "periodicTimeoutOutcome": "Observation only; keep same native handle/HTTP server and retry at next scheduled poll.",
++    "requiredIdentityOutcome": "Initial/preflight/cleanup identity verification required; never signal unverified groups.",
++    "absoluteWholeSeconds": 680,
++    "cleanupReserveSeconds": 20
+   }
+ }
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -1,10 +1,10 @@
+-# Fixed INTERIOR grey-band surviving-drawable diagnostic — SOURCE ONLY
++# Fixed INTERIOR grey-band surviving-drawable diagnostic V2 — SOURCE ONLY
+ 
+ This directory contains a complete, bounded recipe for root review and later execution. It has **not** been checked, prepared, built, run, or used to probe/start ports. No old sealed helper, production source, application asset, or listener is changed by this source preparation. Historical reports and PNGs are pinned references, not copied or represented as new results.
+ 
+ The declared optical application is the immutable, already-built `/private/tmp/tube-guided-ordinary-v3-native-20261005/dist`, build `tube-guided-early-crest-20261005`. It already includes the final authored-mask max predicate and the adopted wall-light A. The new geometry under development is deliberately unrelated to this diagnostic. The recipe does **not** assert that the old and current builds share geometry. It independently requires the exact old 37 active loft arrays, raw 333 front words, counts, zero-step epoch, fixed camera and first native combined baseline PNG to match at runtime; a mismatch aborts without searching for another epoch, camera, seed, quality or pixel.
+ 
+-`prepare.py` is root-only: verify pinned historical receipts and immutable V3 copied assets, recover old committed source into **new** scratch using read-only `git show 6bcae3aa0740cb66187f572a03cc8abbb1981030:<path>`, verify historical source hashes against that scratch, and copy only the immutable app assets into this recipe. It never compares now-changed live ProfileLibrary, boundedCProfile, TubePilot, root dist or any other mutable source against old receipts. Additional optical source files are committed provenance, without invented historical receipt hashes. Recovered source is for interpretation; the app is served from verified copied assets. This preparation performs no build.
++`prepare.py` is root-only: verify pinned historical receipts and immutable V3 copied assets, recover old committed source into **new** scratch using read-only `git show 6bcae3aa0740cb66187f572a03cc8abbb1981030:<path>`, verify historical source hashes against that scratch, and copy only the immutable app assets into this recipe. Repository-relative receipt entries are recovered from the commit; outside-repository entries are separately verified and copied from their direct compiled-source pins, without applying relative_to(repo) or claiming Git provenance. It never compares now-changed live ProfileLibrary, boundedCProfile, TubePilot, root dist or any other mutable source against old receipts. Additional optical source files are committed provenance, without invented historical receipt hashes. Recovered source is for interpretation; the app is served from verified copied assets. This preparation performs no build.
+ 
+ The actual menu and public diagnostic start flow is borrowed from the completed authored-mask owner: Padang Padang / Big / Mid / Calm / Midday, normal paused HUD with inactive lab, one public seeded `start` (6238), outstanding-step drain, existing clear-drawing hold, 1708×879 canvas, original camera clone and zero physical steps. The application build is verified before the replay. There is no placement, clock assignment, stepping, Autopilot import, quality adjustment or search.
+ 
+@@ -25,6 +25,19 @@
+ 
+ The first native baseline PNG comparison is deliberately strict. Identical historical geometry does not establish identical V3 optical output; the image must also match. A mismatch is a finite failed diagnostic, not permission to retry or adjust the scene.
+ 
+-`run.py` borrows the completed closed-owner resource discipline. Only root may execute it after review/preparation. It requires protected ports 4312–4315 and the pinned 4315 PID 87796 (root session 64713 is provenance, not an OS identity assertion). It starts only owned 4301 HTTP and 9711 native browser inside a fresh owned process group, checks protected PID/start/command identities before and after, closes only its own group/server, rechecks sealed inputs afterward and records closed owned ports. Limits are 635 native seconds, 648 owner seconds, 660 total seconds including cleanup, cleanup at most 7 seconds, four PNGs at most 12 MiB each and a 2 MiB report. No retry or extension. Root should review any changed protected listener expectation before execution; preparation itself does not inspect listeners.
++`run.py` borrows the completed closed-owner resource discipline. Only root may execute it after review/preparation. It requires protected ports 4312–4315 and the pinned 4315 PID 87796 (root session 64713 is provenance, not an OS identity assertion). It starts only owned4301 HTTP and9711 native browser inside a fresh owned process group, checks full normalized PID/start/exact command identities before and after, closes only its own verified group/server, rechecks sealed inputs afterward and records closed owned ports. Limits are635 native seconds,648 maximum owner seconds,680 absolute total seconds including cleanup, cleanup at most20 seconds, four PNGs at most12MiB each and a2MiB report. No retry or extension. Root should review any changed protected listener expectation before execution; preparation itself does not inspect listeners.
+ 
+ An exact primary marker at a predeclared pixel is evidence for an encoded surviving contribution. It is **not exclusive whole-pixel coverage proof**: alpha blending, multiple contributions, MSAA, untagged scene effects and exact accidental colors can make interpretation ambiguous. Mixed or unmarked ID pixels remain ambiguous. Raster facing is separate from body-normal facing; cosine/facing reads need an independently unmixed contribution. The two previous saved rays excluding direct loft hits do not prove another drawable's ownership. This probe establishes no geometry improvement, seam complementarity, physical air volume, full-body clearance, playability or final reference-quality tube. It preserves authored fade/dither and existing mask+A optical behavior, including depth/stencil resolution where authored support overlaps ordinary water.
++
++
++This V2 directory clones only the reviewed original /private/tmp/tube-grey-band-ownership-native-20261005 recipe sources. That source preparation is not runtime evidence and remains unchanged. ownership-inspection.mjs is byte-identical: the five IDs, actual final define/callback and dynamic repair-delegation guards, original alpha/predicates/depth/stencil/far-opacity behavior, exact historical baseline before probes, fixed four samples/camera, four PNGs and three restored repeats are unchanged. Native differences are only fresh path/schema and provenance report metadata. Fresh schemas are grey-band-ownership-inputs/build/seal/preparation/native/owner/source-provenance version2.
++
++The separate expected-protected-identity authority is the actual /private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json,25763bytes,SHA25638922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86. It records root's verified closure of an earlier failed shared-leaf owner, not success of this ID recipe. Its complete/protected/port proof is pinned context. Fresh preflight still requires actual protected4312PID92445,4313PID58298,4314PID51358,4315PID87796 and the exact recorded start/full HTTP command. Full-width ps -ww command= rows split(None,6) normalize only the five start words; the command retains its internal spaces. Fresh after-identities must equal preflight exactly.
++
++The immutable optical V3 application has complete build/assets/source receipts and an actual successful build log. The V3 ordinary gameplay owner/report itself was complete:false, terminal1 at the640s diagnostic wall deadline after1525rows. Those actually failed receipts are directly pinned qualified history; no successful ride/native result is inferred from its completed app build. The cap-reference owner and combined optical owner are separate completed zero-step references, and the first new native baseline must independently match the historical combined PNG exactly before ownership probes.
++
++The actual V3 build/freeze source arrays contain15 productionSources and77 diagnosticCompiledSources. The latter includes /private/tmp/tube-guided-ordinary-v3-native-20261005/autopilot-entry.ts,106bytes,SHA25653ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335. prepare.py categorizes before calling relative_to(repo). Existing repository source pins are verified against read-only exact6bcae3aa0740cb66187f572a03cc8abbb1981030 Git content in new historical-source scratch. The external diagnostic entry is verified directly and copied into new historical-diagnostic scratch; its provenance explicitly has historicalCommit:null/recoveredFromGit:false. Extra optical files recovered from that commit record the actual new scratch pin and explicitly lack an existing build receipt hash. The new source-provenance receipt binds these categories; build/seal must point to exactly the same receipt pin/hash. Runtime rechecks every copied source and executable asset without inspecting changed current repository source.
++
++Every OS subprocess read has a2s upper bound. Required preflight/initial/cleanup reads retry at most3 times within their finite deadline. Periodic owned identity reads run every5s; TimeoutExpired is observation-only, with at most16 retained notes plus exact total count. It continues the same native handle and HTTP server and retries on the next scheduled poll. An identity mismatch or genuinely missing protected listener remains a failure. Immediately before TERM/KILL a current full group read must match the recorded fresh leader command/start identity or an exact recorded survivor anchor and exclude protected PIDs; unverified groups are never signalled. Final group absence, protected equality, closed4301/9711 and all exact input/provenance pins remain mandatory.
++
++The absolute680s whole deadline starts before preflight. Preflight including pin checks is capped20s; active ownership ends at min(ownerStart+648s,wholeDeadline−20s), and periodic reads/sleeps obey that active deadline. Cleanup is capped by min(cleanupStart+20s,wholeDeadline). Thus preflight/owner/cleanup allowances cannot add beyond680s. Native635s remains an upper bound. No new build, old output mutation, mutable source freeze, ordinary-control simulation, compiler, listener/process probe or actual capture was executed by this source preparation.
+diff --git a/recipe-diff.md b/recipe-diff.md
+--- a/recipe-diff.md
++++ b/recipe-diff.md
+@@ -9,3 +9,14 @@
+ - Full37/raw333 historical bytes, fixed camera and combined native baseline SHA are independent runtime preconditions, not an assertion of equality between different builds.
+ - Offline four-sample/seven-PNG/ray evidence, sample-choice source, and exact already-executed Python source are pinned references. No historical execution outputs are copied as new.
+ - Recipe new schemas are `grey-band-ownership-*/v1`. Root-only preparation and owner create fresh receipts later. This source author has run no checks, builds, preparation or capture and has touched no listeners/processes.
++
++
++V2 change from the reviewed original ID recipe:
++
++- ownership-inspection.mjs unchanged byte-for-byte; no diagnostic shader behavior change.
++- Fresh V2 paths/schemas and historical/OS provenance metadata only in native.
++- Owner discipline taken from reviewed shared-leafV2:2s bounded full command/PID/start reads,5s observation-only timeout polls, notes cap16, fresh group anchors before signals,680s absolute/20s reserved cleanup.
++- Protected preflight identities independently match the exact separate root closure receipt. That receipt does not certify this recipe's execution.
++- Preparer categorizes repo and outside-repo source entries before relative_to. Git provenance is used only for exact committed sources; the106B external diagnostic entry is copied from its direct compiled-source pin.
++- New source-provenance receipt equality/hash and copied external sources are checked before/after. The failed V3 deadline run is retained as qualified history; its completed app/build/log remains immutable executable authority.
++- recipe.patch is the exact source-only diff against the untouched original recipe. No helper checks, preparation, compiler, builds, native runs, production writes or port/process operations executed.

@@ -4,7 +4,7 @@ import { readBarrelCases } from './nodeBarrelCases';
 import { decodeCase } from './profileFormat';
 import { LANDMARK, PROFILE_POINTS, ProfileLibrary } from './ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
-import { routeForStrip, validTubeApproachRequest, type TubeApproachRequest } from './tubeApproach';
+import { routeForStrip, validTubeApproachRequest, type TubeApproachRequest, type TubeRouteObservation } from './tubeApproach';
 
 const cases = readBarrelCases().map(decodeCase);
 const c = cases.find(value => value.id === 'pad19-a30-l12')!;
@@ -157,5 +157,58 @@ describe('actual indexed tube approach route', () => {
     expect(cue!.tangentX).toBeCloseTo(co * original.tangentX - si * original.tangentZ, 6);
     expect(cue!.tangentZ).toBeCloseTo(si * original.tangentX + co * original.tangentZ, 6);
     expect(cue!.minimumClearance).toBeCloseTo(original.minimumClearance, 4);
+  });
+});
+
+/** Constant-size read receipt: counts and order-sensitive hashes cover every existing indexed position read. */
+function routeReadReceipt(loft: LoftResult, strip: number, request: TubeApproachRequest, observation?: TubeRouteObservation) {
+  let reads = 0, orderHash = 2166136261;
+  const positions = new Proxy(loft.positions, { get(target, key) {
+    if (typeof key === 'string' && /^\d+$/.test(key)) { reads++; orderHash = Math.imul(orderHash ^ Number(key), 16777619); }
+    return Reflect.get(target, key, target);
+  } });
+  const preparedRows: number[] = [];
+  const cue = routeForStrip({ ...loft, positions }, strip, 0.5, request, 42, row => preparedRows.push(row), undefined, observation);
+  return { cue, reads, orderHash, preparedRows };
+}
+
+describe('passive route observation parity', () => {
+  it.each(['accepted', 'reduced-height', 'indexed-obstruction'] as const)('keeps all geometry reads and lazy row preparation unchanged for %s', mode => {
+    const f = fixture(), clear = routeForStrip(f.loft, f.strip, 0.5, f.request)!;
+    const loft = mode === 'indexed-obstruction' ? obstruct(f.loft, f.x, f.z, clear.mouth.floorY) : f.loft;
+    const request = mode === 'reduced-height' ? { ...f.request, bodyHeight: 5 } : f.request;
+    const plain = routeReadReceipt(loft, f.strip, request);
+    const observation: TubeRouteObservation = { columnCalls: 999, clearRouteCalls: 999, rejection: 'invalid-route-input' };
+    const observed = routeReadReceipt(loft, f.strip, request, observation);
+    expect(observed).toEqual(plain);
+    if (mode === 'indexed-obstruction') {
+      expect(observed.cue).toBeUndefined();
+      expect(observation.rejection).toBe('full-and-reduced-height-swept-envelope-obstructed');
+      expect(observation.firstBlockingTriangleOffset).toBeGreaterThanOrEqual(0);
+      expect(observation.firstBlockingRouteSegment).toBeGreaterThanOrEqual(1);
+      expect(observation.fullHeightClear).toBe(false); expect(observation.reducedHeightClear).toBe(false);
+      expect(observation.clearRouteCalls).toBe(2);
+    } else {
+      expect(observed.cue).toBeDefined(); expect(observation.rejection).toBeUndefined();
+      // These are exactly the existing two mouth columns and ten columns per finite station; body is empty here.
+      expect(observation.columnCalls).toBe(2 + 10 * (observation.steps! + 1));
+      expect(observation.fullHeightClear).toBe(mode === 'accepted');
+      expect(observation.clearRouteCalls).toBe(mode === 'accepted' ? 1 : 2);
+      if (mode === 'accepted') {
+        expect(observation.reducedHeight).toBeUndefined(); expect(observation.reducedHeightClear).toBeUndefined();
+      } else {
+        expect(observation.reducedHeightClear).toBe(true); expect(observed.cue!.bodyFitsMouth).toBe(false);
+      }
+    }
+  });
+
+  it('resets a reused sink before an invalid request without reaching geometry, columns or envelope sweeps', () => {
+    const f = fixture(), observation: TubeRouteObservation = { columnCalls: 0, clearRouteCalls: 0 };
+    routeForStrip(f.loft, f.strip, 0.5, f.request, 42, undefined, undefined, observation);
+    const invalid = { ...f.request, bodyHeight: Infinity };
+    const plain = routeReadReceipt(f.loft, f.strip, invalid);
+    const observed = routeReadReceipt(f.loft, f.strip, invalid, observation);
+    expect(observed).toEqual(plain); expect(observed.cue).toBeUndefined(); expect(observed.reads).toBe(0);
+    expect(observation).toEqual({ rejection: 'invalid-route-input', columnCalls: 0, clearRouteCalls: 0 });
   });
 });

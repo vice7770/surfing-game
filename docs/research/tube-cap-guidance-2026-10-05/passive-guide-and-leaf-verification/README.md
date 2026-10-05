@@ -1,0 +1,11 @@
+# Passive guide diagnostics and feasible lip correction
+
+The opt-in ordinary tube guide now records detached scalar diagnostics from the same geometry query. It reports nearest eligible cap before reach filtering, bounded rejection reasons, envelope obstruction and query counts. It does not perform another search or feed observations into controls. Existing guide ordering, geometry search calls and acceptance behavior are retained; pure scalar predicate evaluation counts can differ. The three affected test files pass all 41 cases.
+
+The shared lip correction now preserves requested mean-width corrections exactly within 60% of the existing safe reach budget. A smooth shoulder retains the same asymptotic bound and a rounding guard. It preserves the crest/toe anchors, original thickness/domain budget and authored clocks. Eight geometry/contact test files pass all 104 cases, including independent generic cap bend and extreme-domain checks. This map is C1 for a fixed positive budget; it does not establish a globally C1 surface trajectory. The separate falling-lip sampling corner remains.
+
+Root applied both proposals after verifying exact baseline and candidate pins. Root executed the tests and the fresh TypeScript/Vite build with BUILD_ID `tube-guided-passive-telemetry-20261005` successfully. Root also compiled the current Autopilot/TubePilot diagnostic module from 77 actual transitive sources. The application build warning about large chunks remains advisory.
+
+Original source-only proposals, actual command logs and separate root receipts remain distinct. The fresh build authority records the actual normal build and diagnostic completion; it does not imply successful preparation or a ride. No new native visual comparison or ordinary entry/travel/exit is accepted by this verification. The live human preview on 4315 remains the earlier fixed build.
+
+After applying the identity-core correction, root reran the three passive-guidance/contact files against the combined source: all 41 tests passed in 2.51 seconds. Together with the 104 current geometry/contact cases, the checkpoint has 145 passing affected cases across 11 files. The subsequent ordinary V4 owner failed during browser startup with zero steps/images; its separate archive preserves that incomplete result.

@@ -1,0 +1,20 @@
+{
+  "command": [
+    "npm",
+    "test",
+    "--",
+    "--maxWorkers=1",
+    "src/wave/barrel/boundedCLeafReach.test.ts",
+    "src/wave/barrel/boundedCProfile.test.ts",
+    "src/wave/barrel/boundedCOpenMouth.test.ts",
+    "src/wave/barrel/boundedCCapRefinement.test.ts",
+    "src/wave/barrel/boundedCSweptCrash.test.ts",
+    "src/wave/barrel/sweptLoft.test.ts",
+    "src/wave/barrel/sweptLoftClearRoof.test.ts",
+    "src/wave/barrel/boundedCConsumers.test.ts"
+  ],
+  "exitCode": 0,
+  "seconds": 15.821185540989973,
+  "logBytes": 584,
+  "logSha256": "82c623e4452f19362b53f5f606ac10085b362e4ab987c83f0017bb8725612bcb"
+}

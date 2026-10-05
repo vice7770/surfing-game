@@ -1,0 +1,442 @@
+{
+  "schema": "tube-ordinary-v4-browser-startup-failure/v1",
+  "files": [
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/README.md",
+      "stored": "README.md",
+      "bytes": 7189,
+      "sha256": "202883f6092ea5ad50d0af710b4e72a6bd4d98bca26bc6923407b2070f850743"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/amend-owner-source.py",
+      "stored": "amend-owner-source.py",
+      "bytes": 6225,
+      "sha256": "9bd149731d1e987b773d723982ca7f74acf78110f53efc84cb7b1fe4ef7c1484"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/amend-source.py",
+      "stored": "amend-source.py",
+      "bytes": 10506,
+      "sha256": "898089811815ba1b611e1249093d6cdc98800c046db9a25c9bb7d867927115f2"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/application-build.log",
+      "stored": "application-build.log",
+      "bytes": 1328,
+      "sha256": "3030332b9efa18b8053ccef1d2ff50865187583a96290d0d99fbe040644294e5"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/autopilot-entry.ts",
+      "stored": "autopilot-entry.ts",
+      "bytes": 106,
+      "sha256": "53ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/body-mesh.mjs",
+      "stored": "body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/broadphase-proposal.md",
+      "stored": "broadphase-proposal.md",
+      "bytes": 2911,
+      "sha256": "de2e08ed9a73f92bfa82fce63c7114e12bb5cc8d82395e1293b37053a60c991f"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build-diagnostic.mjs",
+      "stored": "build-diagnostic.mjs",
+      "bytes": 2476,
+      "sha256": "f56a9ff9ac5717d769b89820f03d057ffbe5cd9677b568fc84aa9e93dcc85365"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build.json",
+      "stored": "build.json",
+      "bytes": 43568,
+      "sha256": "d80b8f247b2854b08f680543ec251d5868ccb120e834f93122fdf2ecf19fa2f2"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/candidate-first/report.json",
+      "stored": "candidate-first/report.json",
+      "bytes": 7256,
+      "sha256": "c61dc548c52838fc1ab8739cad55c109110960ad04f98047a71bb97cb33b870b"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/candidate-first/steps.ndjson",
+      "stored": "candidate-first/steps.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/control-policy.mjs",
+      "stored": "control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/criteria.mjs",
+      "stored": "criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.json",
+      "stored": "diagnostic-build.json",
+      "bytes": 16809,
+      "sha256": "8187fa6e4805837bdba724d0b52177bede0c5ed1974abc184e2c725679478611"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/diagnostic-build.log",
+      "stored": "diagnostic-build.log",
+      "bytes": 282,
+      "sha256": "2478068a25a69eb395dbfb6bd33ada5b70a6caba996f9ed56f79b532040c6810"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/driver-diff.md",
+      "stored": "driver-diff.md",
+      "bytes": 3474,
+      "sha256": "d169baa481d5b3ba3c2873946330574db0a7f3aa1b08543a71b8a56b8c93c814"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/inputs.json",
+      "stored": "inputs.json",
+      "bytes": 7221,
+      "sha256": "2fe31ab0315ec5bd0faeb907588c6a9f773b194d07d257c21a1ecd3f08a215ea"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/launcher.json",
+      "stored": "launcher.json",
+      "bytes": 2362,
+      "sha256": "e1b974c46ad87fa75c198b1d56587bb6e29ea360175997422f3f96f4db78ffae"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/loft-snapshot-tools.mjs",
+      "stored": "loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.log",
+      "stored": "native.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/native.mjs",
+      "stored": "native.mjs",
+      "bytes": 16577,
+      "sha256": "0011a0e8aa896491b40571b838768e8661cf89b512bb1677c47e32b223ab3d7c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/observer-cost-audit.json",
+      "stored": "observer-cost-audit.json",
+      "bytes": 2882,
+      "sha256": "cb643b784a37cf315fba1519613d77f9b2e8c58f03e5eb9aa5a97b7191eb480a"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/observer-cost-audit.md",
+      "stored": "observer-cost-audit.md",
+      "bytes": 2665,
+      "sha256": "473d8797dd46ab20885f59eeaa687b56946e4203ea355807968ee6b87e6999dd"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/observer-cost-audit.py",
+      "stored": "observer-cost-audit.py",
+      "bytes": 3246,
+      "sha256": "de6e264808b61325488ec1deebd56616c35950494ee4fc9c168cd8c6f68c975c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/owner.json",
+      "stored": "owner.json",
+      "bytes": 17385,
+      "sha256": "38197cc967caa3800bcada6c24210b4483f60d80591ee01a73177ca47402aa59"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-deadline-repair/native.mjs",
+      "stored": "pre-deadline-repair/native.mjs",
+      "bytes": 16577,
+      "sha256": "dd841a2dfe68ea17635be50474d2e2bf7db10c690e6a7be48a3de2a0b4811d3b"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-deadline-repair/recipe-source-freeze.json",
+      "stored": "pre-deadline-repair/recipe-source-freeze.json",
+      "bytes": 8942,
+      "sha256": "dd8e79c1e036d1a7ba3e4b868842edad04e289a00d1c827fb324d754032415a9"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-deadline-repair/recipe.patch",
+      "stored": "pre-deadline-repair/recipe.patch",
+      "bytes": 124858,
+      "sha256": "8d8334e45628d816c91a3afe390226a059b4ec202d803f3e2f66987f999831c0"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-deadline-repair/source-only-origin.json",
+      "stored": "pre-deadline-repair/source-only-origin.json",
+      "bytes": 2580,
+      "sha256": "e057992e362339dee936a55a2aceacd8bef58d219dfce794d24a5537955d8d14"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/README.md",
+      "stored": "pre-syntax-fix/README.md",
+      "bytes": 7189,
+      "sha256": "202883f6092ea5ad50d0af710b4e72a6bd4d98bca26bc6923407b2070f850743"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/amend-owner-source.py",
+      "stored": "pre-syntax-fix/amend-owner-source.py",
+      "bytes": 6225,
+      "sha256": "9bd149731d1e987b773d723982ca7f74acf78110f53efc84cb7b1fe4ef7c1484"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/amend-source.py",
+      "stored": "pre-syntax-fix/amend-source.py",
+      "bytes": 10506,
+      "sha256": "898089811815ba1b611e1249093d6cdc98800c046db9a25c9bb7d867927115f2"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/autopilot-entry.ts",
+      "stored": "pre-syntax-fix/autopilot-entry.ts",
+      "bytes": 106,
+      "sha256": "53ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/body-mesh.mjs",
+      "stored": "pre-syntax-fix/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/broadphase-proposal.md",
+      "stored": "pre-syntax-fix/broadphase-proposal.md",
+      "bytes": 2911,
+      "sha256": "de2e08ed9a73f92bfa82fce63c7114e12bb5cc8d82395e1293b37053a60c991f"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/build-diagnostic.mjs",
+      "stored": "pre-syntax-fix/build-diagnostic.mjs",
+      "bytes": 2476,
+      "sha256": "f56a9ff9ac5717d769b89820f03d057ffbe5cd9677b568fc84aa9e93dcc85365"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/control-policy.mjs",
+      "stored": "pre-syntax-fix/control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/criteria.mjs",
+      "stored": "pre-syntax-fix/criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/driver-diff.md",
+      "stored": "pre-syntax-fix/driver-diff.md",
+      "bytes": 3474,
+      "sha256": "d169baa481d5b3ba3c2873946330574db0a7f3aa1b08543a71b8a56b8c93c814"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/inputs.json",
+      "stored": "pre-syntax-fix/inputs.json",
+      "bytes": 7221,
+      "sha256": "2fe31ab0315ec5bd0faeb907588c6a9f773b194d07d257c21a1ecd3f08a215ea"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/loft-snapshot-tools.mjs",
+      "stored": "pre-syntax-fix/loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/native.mjs",
+      "stored": "pre-syntax-fix/native.mjs",
+      "bytes": 16577,
+      "sha256": "0011a0e8aa896491b40571b838768e8661cf89b512bb1677c47e32b223ab3d7c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/observer-cost-audit.json",
+      "stored": "pre-syntax-fix/observer-cost-audit.json",
+      "bytes": 2882,
+      "sha256": "cb643b784a37cf315fba1519613d77f9b2e8c58f03e5eb9aa5a97b7191eb480a"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/observer-cost-audit.md",
+      "stored": "pre-syntax-fix/observer-cost-audit.md",
+      "bytes": 2665,
+      "sha256": "473d8797dd46ab20885f59eeaa687b56946e4203ea355807968ee6b87e6999dd"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/observer-cost-audit.py",
+      "stored": "pre-syntax-fix/observer-cost-audit.py",
+      "bytes": 3246,
+      "sha256": "de6e264808b61325488ec1deebd56616c35950494ee4fc9c168cd8c6f68c975c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/prepare.py",
+      "stored": "pre-syntax-fix/prepare.py",
+      "bytes": 5419,
+      "sha256": "f4c8625467146a3af29deb4a879d30242646944dcaf85b7ba4e36ed7fc5b4fb0"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/recipe-source-freeze.json",
+      "stored": "pre-syntax-fix/recipe-source-freeze.json",
+      "bytes": 10210,
+      "sha256": "2b3a8f5122e60958de861c1096ee44e15d291ad8f0b4522ccc6131ce9a53816c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/recipe.patch",
+      "stored": "pre-syntax-fix/recipe.patch",
+      "bytes": 126877,
+      "sha256": "cab3edc4618ee122bfa42e4f958d2ad26b298fbc15e366563d9b676092e1a1ee"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/rider-driver.mjs",
+      "stored": "pre-syntax-fix/rider-driver.mjs",
+      "bytes": 14485,
+      "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/run.py",
+      "stored": "pre-syntax-fix/run.py",
+      "bytes": 25009,
+      "sha256": "e45bf276514118b3bd03fbbbc1a2065b9a6163004e6ca77b2f8606d3549d778c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/pre-syntax-fix/source-only-origin.json",
+      "stored": "pre-syntax-fix/source-only-origin.json",
+      "bytes": 4032,
+      "sha256": "7a239e1d218d4d58b64648f2e0ad8359a5cd18326d6ba6411518426442f6722c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/prepare-result.json",
+      "stored": "prepare-result.json",
+      "bytes": 851,
+      "sha256": "3adb70b162e76cd751a0b37f516adb353ebcc4a442801b5a38e439f01b3f50e7"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/prepare.py",
+      "stored": "prepare.py",
+      "bytes": 5419,
+      "sha256": "f4c8625467146a3af29deb4a879d30242646944dcaf85b7ba4e36ed7fc5b4fb0"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/recipe-source-freeze.json",
+      "stored": "recipe-source-freeze.json",
+      "bytes": 15835,
+      "sha256": "1d8938ca9fbf6c042ef21cf7c65cf5e82b4efd4330c75988ed2f1edaaa818321"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/recipe.patch",
+      "stored": "recipe.patch",
+      "bytes": 132974,
+      "sha256": "1513b9a3f8b67d5f32b1d7d41fb1d3f85926274ca1d1a2fea1bc32aceec4360b"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/rider-driver.mjs",
+      "stored": "rider-driver.mjs",
+      "bytes": 14485,
+      "sha256": "fca6e3b5cb312d36abb49b4c7d40a0c96b1bd1296a4c023e572230726fb6dea5"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-application-build-result.json",
+      "stored": "root-application-build-result.json",
+      "bytes": 265,
+      "sha256": "1715a1ff0bca66fffd6102c3ff21f076f36358648a227cc1d19a7e9ee28a203c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-build-authority.json",
+      "stored": "root-build-authority.json",
+      "bytes": 11447,
+      "sha256": "9f7b465a123611ac6ff8241257e1c1f31c64c618c8a3671579f60f7152230fdc"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-diagnostic-build-result.json",
+      "stored": "root-diagnostic-build-result.json",
+      "bytes": 278,
+      "sha256": "603aa89a537f7a8ea15362554df482f0ab5ec44ee6b4b7bb1c629b20776987dd"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-post-failure-pins-and-closure.json",
+      "stored": "root-post-failure-pins-and-closure.json",
+      "bytes": 49694,
+      "sha256": "360c2acd8138f348c66d68cef401bd150ddd588ecfaa902558516c202c650c21"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-prepare-result.json",
+      "stored": "root-prepare-result.json",
+      "bytes": 156,
+      "sha256": "6f42eca62a11505970b325132499cd37340c87fddc6e546871e281a40a15825e"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-prepare.log",
+      "stored": "root-prepare.log",
+      "bytes": 783,
+      "sha256": "5785d76af497764b9656a614c143649efe877e76cad3dd46ee0a93da12dfe832"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-source-check-failure.json",
+      "stored": "root-source-check-failure.json",
+      "bytes": 556,
+      "sha256": "d568041878b0bbf1300a8c92bbf0787b12a42d578a98eae1c6c5c110a4f6514f"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/root-source-checks.json",
+      "stored": "root-source-checks.json",
+      "bytes": 188,
+      "sha256": "7b4e3b5d117c5899af1e3c834ce2a85990153c82c0b0750d9c4fa31739520160"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/run.py",
+      "stored": "run.py",
+      "bytes": 25010,
+      "sha256": "9f46679cd446b85d50115d7e59dbe320fb9db7012cc38eea8d2bb6b903170e71"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/seal.json",
+      "stored": "seal.json",
+      "bytes": 9774,
+      "sha256": "5468a44b10bda1397b49d744395af0947d0d8803d3b42d9a65d2fa70c71aadc4"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-freeze.json",
+      "stored": "source-freeze.json",
+      "bytes": 19549,
+      "sha256": "7a54da77f3dd0daed385fd1bd2483e77d72fe270d1ab4875284cc885fd125c3c"
+    },
+    {
+      "original": "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/source-only-origin.json",
+      "stored": "source-only-origin.json",
+      "bytes": 10000,
+      "sha256": "e8212221a8a1bbd090b7341979cca4629376e4096e2579fff5a982f431af2d7a"
+    }
+  ],
+  "actualExecution": {
+    "handle": 40957,
+    "terminalExitCode": 1,
+    "wholeSeconds": 16.966399584023748,
+    "ownerComplete": false,
+    "nativeComplete": false,
+    "steps": 0,
+    "pngCount": 0,
+    "firstFailure": "AssertionError: Owned PID identity changed",
+    "nativeExitCodeNotRecordedByOwner": true,
+    "cleanupFailures": [],
+    "protectedPreserved": true,
+    "closedPorts": {
+      "4301": true,
+      "9711": true
+    }
+  },
+  "independentRootPostFailure": {
+    "pins": 218,
+    "ownedGroupAbsent": true,
+    "protectedExactIdentitiesPreserved": true,
+    "noSignalsSentByAudit": true
+  },
+  "limits": [
+    "No actual ride or takeoff evidence.",
+    "The offending old/current OS identity rows were not retained; exact source of identity mismatch is unproved.",
+    "Native incomplete report has no firstFailure; owner stopped and terminated test resources before completion.",
+    "Original pre-deadline and pre-syntax-fix source freezes retain the historical failed syntax gate."
+  ]
+}

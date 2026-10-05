@@ -1,0 +1,2397 @@
+{
+  "schema": "shared-leaf-residual-offline-inspection/v1",
+  "scope": "Saved words plus literal finite parameter/roof arithmetic reconstruction only; no compiled provider, new sampling search, render, runtime, tests, physical ride, or quality acceptance. Model cap formula applies only pre-impact/non-collapsed rows; reconstruction errors are reported.",
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/draw-inputs.json",
+      "bytes": 1696833,
+      "sha256": "0f26472964cb9ee71d3abe267b5e5c1be16aeadb2eaf7bbd6cf3848ce63a4a6f"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
+      "bytes": 1204806,
+      "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/saved-cap-analysis.json",
+      "bytes": 52531,
+      "sha256": "b30f47bd4eda122ffc6c8a405eba9e574d98d3a7d0707fc536c06b507da796e5"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/report.json",
+      "bytes": 42900,
+      "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/owner.json",
+      "bytes": 15739,
+      "sha256": "015c31d0bf9fecc62935ab919e7a65277f74084b79b80a7a4fe40e26efe7a02c"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/build.json",
+      "bytes": 16556,
+      "sha256": "f945caaa1aba8d283487942e7150a7ed9e0def1b1c2e190b75ea83d6fa3bd705"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source-freeze.json",
+      "bytes": 6300,
+      "sha256": "e38226f54858e5804065cec68626af7ed2b1e1fbf799f87ecef12f2136825e78"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/seal.json",
+      "bytes": 9461,
+      "sha256": "bc8d8374c629fd7cf74da7abac0609b036242f3a3b0ee53ce8a8a1519e9dd3ee"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/dist/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/dist/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/dist/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/dist/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 31647,
+      "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 19679,
+      "sha256": "83feb4b827ff2b822a0aa0869cba2495480929c0e7e6ab3e74e3882cc69c2414"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    }
+  ],
+  "script": {
+    "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/inspect.py",
+    "bytes": 8660,
+    "sha256": "4ebc99b2ab53086eb7297f8000651f0065fd3307925ae0bd9df943f714f4e105"
+  },
+  "rows": [
+    {
+      "row": 37,
+      "worldCrestX": 73.5,
+      "storedSigma": 9.034903526306152,
+      "sampledSigma": 9.034903287887573,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6652235984802246,
+        "footDepth": 7,
+        "seconds": 0.872844859957695,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 73.5,
+        "z": -70.04551887512207,
+        "tau": 0.872844859957695,
+        "footHeight": 1.6652235984802246,
+        "footDepth": 7,
+        "pace": 8.649431467056274
+      },
+      "model": {
+        "a0": 0.23788908549717494,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3788908549717494,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 1.033290751996491,
+        "authoredTD": 0.8824095540523044,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.8824095540523044,
+        "lowerFramePosition": 144,
+        "upperFramePosition": 144.94274023353466,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 0,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": -1.3976833221629459e-05,
+        "requestedWidthDelta": -0.0,
+        "BTerms": [
+          0.01735288582742214,
+          0.019220899790525436,
+          0.005119744377881966
+        ],
+        "thicknessB": 0.005119744377881966,
+        "reachBudget": 0.005119744377881966,
+        "boundedWidthDelta": -0.0,
+        "boundedPerRequested": null,
+        "saturationDerivative": 1.0,
+        "crest": [
+          0.6680183410644531,
+          0.3202612102031708
+        ],
+        "toe": [
+          0.9755527377128601,
+          0.031046446412801743
+        ],
+        "incoming": [
+          0.06246461719274521,
+          0.0032298036385327578
+        ],
+        "outgoing": [
+          0.0664515420794487,
+          -0.01020993385463953
+        ],
+        "widthND": 0.307534396648407,
+        "heightND": 0.28921476379036903,
+        "formationG": 1,
+        "fallS": 0.604253803795078,
+        "K0": [
+          0.8217855393886566,
+          0.18354788759420443
+        ],
+        "K": [
+          0.959162561024128,
+          0.06476800777980277
+        ],
+        "normal": [
+          0.9994589369079873,
+          0.03289123644310077
+        ],
+        "cap": [
+          0.9566040738875488,
+          0.06212393822943121
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        73.5,
+        0.4348675608634949,
+        -68.02542114257812
+      ],
+      "savedCrest": [
+        73.5,
+        2.241828441619873,
+        -70.04551696777344
+      ],
+      "savedToe": [
+        73.5,
+        0.2173251211643219,
+        -67.89277648925781
+      ],
+      "predictedCap": [
+        73.5,
+        0.4348675608634949,
+        -68.02542114257812
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 32.641760584661014,
+      "spacingWorldX": [
+        0.25,
+        0.25
+      ]
+    },
+    {
+      "row": 38,
+      "worldCrestX": 73.75,
+      "storedSigma": 9.290771484375,
+      "sampledSigma": 9.29077160358429,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6646512746810913,
+        "footDepth": 7,
+        "seconds": 0.8342283144593239,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 73.75,
+        "z": -69.99103450775146,
+        "tau": 0.8342283144593239,
+        "footHeight": 1.6646512746810913,
+        "footDepth": 7,
+        "pace": 8.738713145256042
+      },
+      "model": {
+        "a0": 0.23780732495444162,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.37807324954441623,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.9875757330188313,
+        "authoredTD": 0.8820127606262719,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.8820127606262719,
+        "lowerFramePosition": 144,
+        "upperFramePosition": 144.92686849649334,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 0,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": -7.026624147532523e-06,
+        "requestedWidthDelta": -0.0,
+        "BTerms": [
+          0.0173485466837883,
+          0.019222062081098557,
+          0.0051168748635018425
+        ],
+        "thicknessB": 0.0051168748635018425,
+        "reachBudget": 0.0051168748635018425,
+        "boundedWidthDelta": -0.0,
+        "boundedPerRequested": null,
+        "saturationDerivative": 1.0,
+        "crest": [
+          0.6676219701766968,
+          0.32018622756004333
+        ],
+        "toe": [
+          0.9751749634742737,
+          0.031043782830238342
+        ],
+        "incoming": [
+          0.06246444955468178,
+          0.003230950329452753
+        ],
+        "outgoing": [
+          0.06645165383815765,
+          -0.010208058170974255
+        ],
+        "widthND": 0.3075529932975769,
+        "heightND": 0.289142444729805,
+        "formationG": 1,
+        "fallS": 0.35048472251404134,
+        "K0": [
+          0.8213984668254852,
+          0.1835091578398702
+        ],
+        "K": [
+          0.9587901538813185,
+          0.12345724206159554
+        ],
+        "normal": [
+          0.9990890291888146,
+          0.04267448599048205
+        ],
+        "cap": [
+          0.9562340471113902,
+          0.12078962462750584
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        73.75,
+        0.8455273509025574,
+        -67.97074890136719
+      ],
+      "savedCrest": [
+        73.75,
+        2.2413036823272705,
+        -69.99103546142578
+      ],
+      "savedToe": [
+        73.75,
+        0.2173064798116684,
+        -67.83816528320312
+      ],
+      "predictedCap": [
+        73.75,
+        0.8455273509025574,
+        -67.97074890136719
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 3.993594300014757,
+      "spacingWorldX": [
+        0.25,
+        0.25
+      ]
+    },
+    {
+      "row": 39,
+      "worldCrestX": 74,
+      "storedSigma": 9.546640396118164,
+      "sampledSigma": 9.546639919281006,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.664078950881958,
+        "footDepth": 7,
+        "seconds": 0.7956117689609528,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 74,
+        "z": -69.93655014038086,
+        "tau": 0.7956117689609528,
+        "footHeight": 1.664078950881958,
+        "footDepth": 7,
+        "pace": 8.82799482345581
+      },
+      "model": {
+        "a0": 0.23772556441170828,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3772556441170828,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.9418607140411718,
+        "authoredTD": 0.8816159672002393,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.8816159672002393,
+        "lowerFramePosition": 144,
+        "upperFramePosition": 144.91099675945205,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 0,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": 1.4092416982802725e-06,
+        "requestedWidthDelta": 0.0,
+        "BTerms": [
+          0.017344203516840934,
+          0.01922321692109108,
+          0.0051140059458016475
+        ],
+        "thicknessB": 0.0051140059458016475,
+        "reachBudget": 0.0051140059458016475,
+        "boundedWidthDelta": 0.0,
+        "boundedPerRequested": null,
+        "saturationDerivative": 1.0,
+        "crest": [
+          0.667226254940033,
+          0.32011115550994873
+        ],
+        "toe": [
+          0.9747977256774902,
+          0.03104109689593315
+        ],
+        "incoming": [
+          0.062464285641908646,
+          0.00323208118788898
+        ],
+        "outgoing": [
+          0.06645175814628601,
+          -0.010206175036728382
+        ],
+        "widthND": 0.3075714707374573,
+        "heightND": 0.2890700586140156,
+        "formationG": 1,
+        "fallS": 0.13201663535998748,
+        "K0": [
+          0.8210119903087616,
+          0.18347035559556293
+        ],
+        "K": [
+          0.9584182843711379,
+          0.17395348684711312
+        ],
+        "normal": [
+          0.9983539842654472,
+          0.057352611983301514
+        ],
+        "cap": [
+          0.9558654902653637,
+          0.17124983307486738
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        74.0,
+        1.1987488269805908,
+        -67.91607666015625
+      ],
+      "savedCrest": [
+        74.0,
+        2.2407779693603516,
+        -69.93655395507812
+      ],
+      "savedToe": [
+        74.0,
+        0.21728767454624176,
+        -67.7835464477539
+      ],
+      "predictedCap": [
+        74,
+        1.1987488269805908,
+        -67.91607666015625
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 9.837934242763321,
+      "spacingWorldX": [
+        0.25,
+        0.125
+      ]
+    },
+    {
+      "row": 40,
+      "worldCrestX": 74.125,
+      "storedSigma": 9.67457389831543,
+      "sampledSigma": 9.674574077129364,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6637927889823914,
+        "footDepth": 7,
+        "seconds": 0.7763034962117672,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 74.125,
+        "z": -69.90930795669556,
+        "tau": 0.7763034962117672,
+        "footHeight": 1.6637927889823914,
+        "footDepth": 7,
+        "pace": 8.872635662555695
+      },
+      "model": {
+        "a0": 0.23768468414034163,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.37684684140341634,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.919003204552342,
+        "authoredTD": 0.8814175704872231,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.8814175704872231,
+        "lowerFramePosition": 144,
+        "upperFramePosition": 144.90306089093139,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 0,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": 6.184295910482973e-06,
+        "requestedWidthDelta": 0.0,
+        "BTerms": [
+          0.017342033274471758,
+          0.01922379434108734,
+          0.005112572647447233
+        ],
+        "thicknessB": 0.005112572647447233,
+        "reachBudget": 0.005112572647447233,
+        "boundedWidthDelta": 0.0,
+        "boundedPerRequested": null,
+        "saturationDerivative": 1.0,
+        "crest": [
+          0.6670286059379578,
+          0.3200736343860626
+        ],
+        "toe": [
+          0.9746093153953552,
+          0.03103974647819996
+        ],
+        "incoming": [
+          0.06246422231197357,
+          0.0032326618675142527
+        ],
+        "outgoing": [
+          0.06645187735557556,
+          -0.010205231606960297
+        ],
+        "widthND": 0.30758070945739746,
+        "heightND": 0.28903388790786266,
+        "formationG": 1,
+        "fallS": 0.05486843370588415,
+        "K0": [
+          0.8208189606666565,
+          0.1834509599411457
+        ],
+        "K": [
+          0.9582325559113127,
+          0.19177300984897636
+        ],
+        "normal": [
+          0.9978675877690205,
+          0.06527079959703518
+        ],
+        "cap": [
+          0.9556817206438117,
+          0.18904987267290432
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        74.125,
+        1.323349118232727,
+        -67.88873291015625
+      ],
+      "savedCrest": [
+        74.125,
+        2.2405154705047607,
+        -69.90930938720703
+      ],
+      "savedToe": [
+        74.125,
+        0.21727822721004486,
+        -67.75624084472656
+      ],
+      "predictedCap": [
+        74.125,
+        1.323349118232727,
+        -67.88873291015625
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 14.312849545046184,
+      "spacingWorldX": [
+        0.125,
+        0.125
+      ]
+    },
+    {
+      "row": 41,
+      "worldCrestX": 74.25,
+      "storedSigma": 9.802508354187012,
+      "sampledSigma": 9.802508234977722,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6635066270828247,
+        "footDepth": 7,
+        "seconds": 0.7569952234625816,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 74.25,
+        "z": -69.88206577301025,
+        "tau": 0.7569952234625816,
+        "footHeight": 1.6635066270828247,
+        "footDepth": 7,
+        "pace": 8.917276501655579
+      },
+      "model": {
+        "a0": 0.23764380386897496,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3764380386897496,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.8961456950635123,
+        "authoredTD": 0.8812191737742068,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.8812191737742068,
+        "lowerFramePosition": 144,
+        "upperFramePosition": 144.89512502241075,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 0,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": 1.1330764315642394e-05,
+        "requestedWidthDelta": 0.0,
+        "BTerms": [
+          0.017339861690998076,
+          0.0192243754863739,
+          0.0051111378142751395
+        ],
+        "thicknessB": 0.0051111378142751395,
+        "reachBudget": 0.0051111378142751395,
+        "boundedWidthDelta": 0.0,
+        "boundedPerRequested": null,
+        "saturationDerivative": 1.0,
+        "crest": [
+          0.6668311357498169,
+          0.3200360834598541
+        ],
+        "toe": [
+          0.9744211435317993,
+          0.03103838860988617
+        ],
+        "incoming": [
+          0.062464140355587006,
+          0.0032332187984138727
+        ],
+        "outgoing": [
+          0.06645191460847855,
+          -0.010204286314547062
+        ],
+        "widthND": 0.3075900077819824,
+        "heightND": 0.28899769484996796,
+        "formationG": 1,
+        "fallS": 0.009203757166944378,
+        "K0": [
+          0.8206261396408081,
+          0.18343153936022455
+        ],
+        "K": [
+          0.9580470677476094,
+          0.2023091138357023
+        ],
+        "normal": [
+          0.997470077615202,
+          0.07108758163225978
+        ],
+        "cap": [
+          0.9554979642314558,
+          0.19957187571526172
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        74.25,
+        1.397003173828125,
+        -67.86139678955078
+      ],
+      "savedCrest": [
+        74.25,
+        2.2402524948120117,
+        -69.88206481933594
+      ],
+      "savedToe": [
+        74.25,
+        0.21726872026920319,
+        -67.72893524169922
+      ],
+      "predictedCap": [
+        74.25,
+        1.397003173828125,
+        -67.86139678955078
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 26.060732444770846,
+      "spacingWorldX": [
+        0.125,
+        0.25
+      ]
+    },
+    {
+      "row": 42,
+      "worldCrestX": 74.5,
+      "storedSigma": 10.05837631225586,
+      "sampledSigma": 10.058376550674438,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6629343032836914,
+        "footDepth": 7,
+        "seconds": 0.7183786779642105,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 74.5,
+        "z": -69.82758140563965,
+        "tau": 0.7183786779642105,
+        "footHeight": 1.6629343032836914,
+        "footDepth": 7,
+        "pace": 9.006558179855347
+      },
+      "model": {
+        "a0": 0.23756204332624162,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3756204332624162,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.8504306760858527,
+        "authoredTD": 0.8808223803481742,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.8504306760858527,
+        "lowerFramePosition": 144,
+        "upperFramePosition": 143.6635851148765,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": 0.0009763973628544864,
+        "requestedWidthDelta": 0.00036675480047168276,
+        "BTerms": [
+          0.017380915135145187,
+          0.019316591322422028,
+          0.005110852649503732
+        ],
+        "thicknessB": 0.005110852649503732,
+        "reachBudget": 0.005110852649503732,
+        "boundedWidthDelta": 0.00034219862610222746,
+        "boundedPerRequested": 0.9330447090593671,
+        "saturationDerivative": 0.8705724291036789,
+        "crest": [
+          0.6557392477989197,
+          0.32076334953308105
+        ],
+        "toe": [
+          0.9648047089576721,
+          0.0310814306139946
+        ],
+        "incoming": [
+          0.062460482120513916,
+          0.003319070441648364
+        ],
+        "outgoing": [
+          0.06645085662603378,
+          -0.010192997753620148
+        ],
+        "widthND": 0.30906546115875244,
+        "heightND": 0.28968191891908646,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.8102719783782959,
+          0.18390131069978025
+        ],
+        "K": [
+          0.9487438930615918,
+          0.20489058196544646
+        ],
+        "normal": [
+          0.9973575059254057,
+          0.07264988213517291
+        ],
+        "cap": [
+          0.9461952194357611,
+          0.20214950421939626
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        74.5,
+        1.4150465726852417,
+        -67.79438781738281
+      ],
+      "savedCrest": [
+        74.5,
+        2.2453434467315674,
+        -69.82758331298828
+      ],
+      "savedToe": [
+        74.5,
+        0.2175700068473816,
+        -67.66412353515625
+      ],
+      "predictedCap": [
+        74.5,
+        1.4150465726852417,
+        -67.79438781738281
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 3.1653852206564763,
+      "spacingWorldX": [
+        0.25,
+        0.25
+      ]
+    },
+    {
+      "row": 43,
+      "worldCrestX": 74.75,
+      "storedSigma": 10.314245223999023,
+      "sampledSigma": 10.314244866371155,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.662361979484558,
+        "footDepth": 7,
+        "seconds": 0.6797621324658394,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 74.75,
+        "z": -69.77309703826904,
+        "tau": 0.6797621324658394,
+        "footHeight": 1.662361979484558,
+        "footDepth": 7,
+        "pace": 9.095839858055115
+      },
+      "model": {
+        "a0": 0.2374802827835083,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.37480282783508295,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.8047156571081931,
+        "authoredTD": 0.8804255869221417,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.8047156571081931,
+        "lowerFramePosition": 144,
+        "upperFramePosition": 141.83498435577002,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": -0.001975541344222509,
+        "requestedWidthDelta": -0.0007404384823197173,
+        "BTerms": [
+          0.017453869879245756,
+          0.01945538818836212,
+          0.0051170792226471916
+        ],
+        "thicknessB": 0.0051170792226471916,
+        "reachBudget": 0.0051170792226471916,
+        "boundedWidthDelta": -0.0006468409596634843,
+        "boundedPerRequested": 0.8735917636762994,
+        "saturationDerivative": 0.7631625695630673,
+        "crest": [
+          0.6401696801185608,
+          0.32187095284461975
+        ],
+        "toe": [
+          0.9514558911323547,
+          0.030973121523857117
+        ],
+        "incoming": [
+          0.062462713569402695,
+          0.0033792820759117603
+        ],
+        "outgoing": [
+          0.06646813452243805,
+          -0.010125887580215931
+        ],
+        "widthND": 0.31128621101379395,
+        "heightND": 0.29089783132076263,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.7958127856254578,
+          0.18445488580720643
+        ],
+        "K": [
+          0.9343491675071209,
+          0.20551182031631468
+        ],
+        "normal": [
+          0.9973588807219653,
+          0.07263100608575276
+        ],
+        "cap": [
+          0.9317973853040884,
+          0.2027674513989104
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        74.75,
+        1.4193720817565918,
+        -67.73170471191406
+      ],
+      "savedCrest": [
+        74.75,
+        2.253096580505371,
+        -69.7730941772461
+      ],
+      "savedToe": [
+        74.75,
+        0.21681185066699982,
+        -67.5940933227539
+      ],
+      "predictedCap": [
+        74.75,
+        1.4193722009658813,
+        -67.73170471191406
+      ],
+      "predictionError": [
+        0.0,
+        1.1920928955078125e-07,
+        0.0
+      ],
+      "observedCapBend": 5.240280862866757,
+      "spacingWorldX": [
+        0.25,
+        0.25
+      ]
+    },
+    {
+      "row": 44,
+      "worldCrestX": 75,
+      "storedSigma": 10.570113182067871,
+      "sampledSigma": 10.570113182067871,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6617896556854248,
+        "footDepth": 7,
+        "seconds": 0.6411455869674683,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 75,
+        "z": -69.71861267089844,
+        "tau": 0.6411455869674683,
+        "footHeight": 1.6617896556854248,
+        "footDepth": 7,
+        "pace": 9.185121536254883
+      },
+      "model": {
+        "a0": 0.23739852224077498,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3739852224077498,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.7590006381305336,
+        "authoredTD": 0.8800287934961092,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.7590006381305336,
+        "lowerFramePosition": 144,
+        "upperFramePosition": 140.00638359666354,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": 0.002863336550693041,
+        "requestedWidthDelta": 0.001070845556739176,
+        "BTerms": [
+          0.01748218484222889,
+          0.01922811195254326,
+          0.005194375566741895
+        ],
+        "thicknessB": 0.005194375566741895,
+        "reachBudget": 0.005194375566741895,
+        "boundedWidthDelta": 0.0008878176661368245,
+        "boundedPerRequested": 0.8290809636828598,
+        "saturationDerivative": 0.6873752443412994,
+        "crest": [
+          0.6275848150253296,
+          0.3229745924472809
+        ],
+        "toe": [
+          0.9352346062660217,
+          0.03160484507679939
+        ],
+        "incoming": [
+          0.062475524842739105,
+          0.0031361698638647795
+        ],
+        "outgoing": [
+          0.06643187254667282,
+          -0.010320860892534256
+        ],
+        "widthND": 0.30764979124069214,
+        "heightND": 0.2913697473704815,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.7814097106456757,
+          0.18519472067586454
+        ],
+        "K": [
+          0.9195806769738608,
+          0.2064266934990883
+        ],
+        "normal": [
+          0.9974053754820613,
+          0.07198970037087424
+        ],
+        "cap": [
+          0.9169902279175903,
+          0.2036425349453856
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        75.0,
+        1.4254977703094482,
+        -67.6927719116211
+      ],
+      "savedCrest": [
+        75.0,
+        2.260822057723999,
+        -69.71861267089844
+      ],
+      "savedToe": [
+        75.0,
+        0.22123391926288605,
+        -67.5650634765625
+      ],
+      "predictedCap": [
+        75,
+        1.4254977703094482,
+        -67.6927719116211
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 20.841526022520807,
+      "spacingWorldX": [
+        0.25,
+        0.25
+      ]
+    },
+    {
+      "row": 45,
+      "worldCrestX": 75.25,
+      "storedSigma": 10.831743240356445,
+      "sampledSigma": 10.831742882728577,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6611770391464233,
+        "footDepth": 7,
+        "seconds": 0.5970094688236713,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 75.25,
+        "z": -69.79574966430664,
+        "tau": 0.5970094688236713,
+        "footHeight": 1.6611770391464233,
+        "footDepth": 7,
+        "pace": 9.134305953979492
+      },
+      "model": {
+        "a0": 0.2373110055923462,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.37311005592346186,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.7067514415101626,
+        "authoredTD": 0.8796040650194623,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.7067514415101626,
+        "lowerFramePosition": 144,
+        "upperFramePosition": 137.91641573184856,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": 4.2256068383483836e-05,
+        "requestedWidthDelta": 1.5766164037667284e-05,
+        "BTerms": [
+          0.017576637268066405,
+          0.019500121474266052,
+          0.0051774133257982335
+        ],
+        "thicknessB": 0.0051774133257982335,
+        "reachBudget": 0.0051774133257982335,
+        "boundedWidthDelta": 1.5718298962148685e-05,
+        "boundedPerRequested": 0.9969640633318134,
+        "saturationDerivative": 0.99393734357508,
+        "crest": [
+          0.6091518998146057,
+          0.32420527935028076
+        ],
+        "toe": [
+          0.9211538434028625,
+          0.031261324882507324
+        ],
+        "incoming": [
+          0.06247247755527496,
+          0.0032540932297706604
+        ],
+        "outgoing": [
+          0.06646356731653214,
+          -0.010154913179576397
+        ],
+        "widthND": 0.31200194358825684,
+        "heightND": 0.29294395446777344,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.7651528716087341,
+          0.18572357820128063
+        ],
+        "K": [
+          0.9045746961784631,
+          0.20702769756317138
+        ],
+        "normal": [
+          0.9973733048374144,
+          0.07243266388649695
+        ],
+        "cap": [
+          0.9019927892588328,
+          0.20425148398065776
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        75.25,
+        1.4297603368759155,
+        -67.74586486816406
+      ],
+      "savedCrest": [
+        75.25,
+        2.269436836242676,
+        -69.79574584960938
+      ],
+      "savedToe": [
+        75.25,
+        0.21882927417755127,
+        -67.61174011230469
+      ],
+      "predictedCap": [
+        75.25,
+        1.4297603368759155,
+        -67.74586486816406
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 5.14749727238837,
+      "spacingWorldX": [
+        0.25,
+        0.125
+      ]
+    },
+    {
+      "row": 46,
+      "worldCrestX": 75.375,
+      "storedSigma": 10.962557792663574,
+      "sampledSigma": 10.96255773305893,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6608707308769226,
+        "footDepth": 7,
+        "seconds": 0.5749414097517729,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 75.375,
+        "z": -69.83431816101074,
+        "tau": 0.5749414097517729,
+        "footHeight": 1.6608707308769226,
+        "footDepth": 7,
+        "pace": 9.108898162841797
+      },
+      "model": {
+        "a0": 0.2372672472681318,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.37267247268131803,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.680626843199977,
+        "authoredTD": 0.8793917007811389,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.680626843199977,
+        "lowerFramePosition": 143.2838971656135,
+        "upperFramePosition": 136.8714317994411,
+        "lowerMeanEnabled": 0,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": 0,
+        "upperWidthDelta": 2.9199915675404142e-05,
+        "requestedWidthDelta": 1.088200477683884e-05,
+        "BTerms": [
+          0.01759114198386669,
+          0.01950264349579811,
+          0.005185291301684387
+        ],
+        "thicknessB": 0.005185291301684387,
+        "reachBudget": 0.005185291301684387,
+        "boundedWidthDelta": 1.0859215308324406e-05,
+        "boundedPerRequested": 0.997905765621153,
+        "saturationDerivative": 0.9958159170599392,
+        "crest": [
+          0.5999341011047363,
+          0.3248176872730255
+        ],
+        "toe": [
+          0.9119763970375061,
+          0.031631987541913986
+        ],
+        "incoming": [
+          0.062472403049468994,
+          0.0033188732340931892
+        ],
+        "outgoing": [
+          0.06644432991743088,
+          -0.01026601530611515
+        ],
+        "widthND": 0.3120422959327698,
+        "heightND": 0.2931856997311115,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.7559552490711212,
+          0.18632354191732287
+        ],
+        "K": [
+          0.8953758277307903,
+          0.20754340738058089
+        ],
+        "normal": [
+          0.9973770692633187,
+          0.07238081035545964
+        ],
+        "cap": [
+          0.892789982409915,
+          0.2047631039365662
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        75.375,
+        1.4333417415618896,
+        -67.7843246459961
+      ],
+      "savedCrest": [
+        75.375,
+        2.273723840713501,
+        -69.83432006835938
+      ],
+      "savedToe": [
+        75.375,
+        0.2214239090681076,
+        -67.6500244140625
+      ],
+      "predictedCap": [
+        75.375,
+        1.4333417415618896,
+        -67.7843246459961
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 19.51639919400452,
+      "spacingWorldX": [
+        0.125,
+        0.125
+      ]
+    },
+    {
+      "row": 47,
+      "worldCrestX": 75.5,
+      "storedSigma": 11.093372344970703,
+      "sampledSigma": 11.093372583389282,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6605644226074219,
+        "footDepth": 7,
+        "seconds": 0.5528733506798744,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 75.5,
+        "z": -69.87288665771484,
+        "tau": 0.5528733506798744,
+        "footHeight": 1.6605644226074219,
+        "footDepth": 7,
+        "pace": 9.083490371704102
+      },
+      "model": {
+        "a0": 0.2372234889439174,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.37223488943917393,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.6545022448897915,
+        "authoredTD": 0.8791793365428155,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.6545022448897915,
+        "lowerFramePosition": 142.238913233206,
+        "upperFramePosition": 135.8264478670336,
+        "lowerMeanEnabled": 0.8560355125554485,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": -0.0013079090743319808,
+        "upperWidthDelta": 0.0019244866188255494,
+        "requestedWidthDelta": -0.0001046986208658254,
+        "BTerms": [
+          0.017667477428913114,
+          0.01989995688199997,
+          0.005125963724280633
+        ],
+        "thicknessB": 0.005125963724280633,
+        "reachBudget": 0.005125963724280633,
+        "boundedWidthDelta": -0.00010260293957579197,
+        "boundedPerRequested": 0.9799836781735729,
+        "saturationDerivative": 0.9603680094866051,
+        "crest": [
+          0.5795392990112305,
+          0.3258211016654968
+        ],
+        "toe": [
+          0.89793860912323,
+          0.031363144516944885
+        ],
+        "incoming": [
+          0.06181800365447998,
+          0.0035732898395508528
+        ],
+        "outgoing": [
+          0.06645914912223816,
+          -0.010131336748600006
+        ],
+        "widthND": 0.3183993101119995,
+        "heightND": 0.29445795714855194,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.7387389540672302,
+          0.1869599737552554
+        ],
+        "K": [
+          0.8812160925328529,
+          0.20803791880607606
+        ],
+        "normal": [
+          0.9972904096981049,
+          0.07356520049715147
+        ],
+        "cap": [
+          0.8786600553015103,
+          0.20528639066937682
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        75.5,
+        1.4370046854019165,
+        -67.77903747558594
+      ],
+      "savedCrest": [
+        75.5,
+        2.280747652053833,
+        -69.87288665771484
+      ],
+      "savedToe": [
+        75.5,
+        0.2195420116186142,
+        -67.64408874511719
+      ],
+      "predictedCap": [
+        75.5,
+        1.4370046854019165,
+        -67.77903747558594
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 7.040954080619859,
+      "spacingWorldX": [
+        0.125,
+        0.125
+      ]
+    },
+    {
+      "row": 48,
+      "worldCrestX": 75.625,
+      "storedSigma": 11.224187850952148,
+      "sampledSigma": 11.224187433719635,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6602581143379211,
+        "footDepth": 7,
+        "seconds": 0.530805291607976,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 75.625,
+        "z": -69.91145515441895,
+        "tau": 0.530805291607976,
+        "footHeight": 1.6602581143379211,
+        "footDepth": 7,
+        "pace": 9.058082580566406
+      },
+      "model": {
+        "a0": 0.23717973061970302,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3717973061970301,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.6283776465796059,
+        "authoredTD": 0.8789669723044922,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.6283776465796059,
+        "lowerFramePosition": 141.19392930079852,
+        "upperFramePosition": 134.78146393462612,
+        "lowerMeanEnabled": 1,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": -0.002009889216233518,
+        "upperWidthDelta": -0.0018147247972752911,
+        "requestedWidthDelta": -0.0019373276109993407,
+        "BTerms": [
+          0.01774780601263046,
+          0.020236101001501083,
+          0.0050867580543888105
+        ],
+        "thicknessB": 0.0050867580543888105,
+        "reachBudget": 0.0050867580543888105,
+        "boundedWidthDelta": -0.0014029892713012856,
+        "boundedPerRequested": 0.7241879294630892,
+        "saturationDerivative": 0.5244481571800362,
+        "crest": [
+          0.5549855828285217,
+          0.3269520103931427
+        ],
+        "toe": [
+          0.8787631988525391,
+          0.031155243515968323
+        ],
+        "incoming": [
+          0.06228029727935791,
+          0.004041509702801704
+        ],
+        "outgoing": [
+          0.06648192554712296,
+          -0.0100266607478261
+        ],
+        "widthND": 0.32377761602401733,
+        "heightND": 0.2957967668771744,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.7168743908405304,
+          0.18778389019965985
+        ],
+        "K": [
+          0.8607111411519798,
+          0.20863330364227295
+        ],
+        "normal": [
+          0.9972434123268391,
+          0.07419957257775754
+        ],
+        "cap": [
+          0.8581747731720599,
+          0.20590120697835748
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        75.625,
+        1.4413084983825684,
+        -67.78913116455078
+      ],
+      "savedCrest": [
+        75.625,
+        2.2886641025543213,
+        -69.91145324707031
+      ],
+      "savedToe": [
+        75.625,
+        0.21808670461177826,
+        -67.64501190185547
+      ],
+      "predictedCap": [
+        75.625,
+        1.4413084983825684,
+        -67.78913116455078
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 21.479273974306263,
+      "spacingWorldX": [
+        0.125,
+        0.125
+      ]
+    },
+    {
+      "row": 49,
+      "worldCrestX": 75.75,
+      "storedSigma": 11.355002403259277,
+      "sampledSigma": 11.355002284049988,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6599518060684204,
+        "footDepth": 7,
+        "seconds": 0.5087372325360775,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 75.75,
+        "z": -69.95002365112305,
+        "tau": 0.5087372325360775,
+        "footHeight": 1.6599518060684204,
+        "footDepth": 7,
+        "pace": 9.032674789428711
+      },
+      "model": {
+        "a0": 0.23713597229548863,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3713597229548863,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.6022530482694204,
+        "authoredTD": 0.8787546080661688,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.6022530482694204,
+        "lowerFramePosition": 140.14894536839105,
+        "upperFramePosition": 133.73648000221866,
+        "lowerMeanEnabled": 1,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": 0.004190790531990174,
+        "upperWidthDelta": 0.00021835180522455921,
+        "requestedWidthDelta": 0.002715586786963234,
+        "BTerms": [
+          0.01775708757340908,
+          0.01984338089823723,
+          0.005192857173292044
+        ],
+        "thicknessB": 0.005192857173292044,
+        "reachBudget": 0.005192857173292044,
+        "boundedWidthDelta": 0.0017831136437519795,
+        "boundedPerRequested": 0.6566218587865448,
+        "saturationDerivative": 0.4311522654362971,
+        "crest": [
+          0.5367366075515747,
+          0.3280702233314514
+        ],
+        "toe": [
+          0.8542307019233704,
+          0.03211876377463341
+        ],
+        "incoming": [
+          0.06246457248926163,
+          0.003793087787926197
+        ],
+        "outgoing": [
+          0.06644086539745331,
+          -0.010319591499865055
+        ],
+        "widthND": 0.31749409437179565,
+        "heightND": 0.295951459556818,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.6954836547374725,
+          0.18866857116747027
+        ],
+        "K": [
+          0.8392782193331023,
+          0.2096896395087242
+        ],
+        "normal": [
+          0.9973019512369201,
+          0.07340856938418137
+        ],
+        "cap": [
+          0.8366887960373929,
+          0.2069026108140243
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        75.75,
+        1.4483182430267334,
+        -67.85035705566406
+      ],
+      "savedCrest": [
+        75.75,
+        2.2964916229248047,
+        -69.95002746582031
+      ],
+      "savedToe": [
+        75.75,
+        0.22483134269714355,
+        -67.7275619506836
+      ],
+      "predictedCap": [
+        75.75,
+        1.4483182430267334,
+        -67.85035705566406
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 21.970766407809982,
+      "spacingWorldX": [
+        0.125,
+        0.25
+      ]
+    },
+    {
+      "row": 50,
+      "worldCrestX": 76,
+      "storedSigma": 11.616632461547852,
+      "sampledSigma": 11.616631984710693,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.659339189529419,
+        "footDepth": 7,
+        "seconds": 0.4646011143922806,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 76,
+        "z": -70.02716064453125,
+        "tau": 0.4646011143922806,
+        "footHeight": 1.659339189529419,
+        "footDepth": 7,
+        "pace": 8.98185920715332
+      },
+      "model": {
+        "a0": 0.23704845564705984,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.37048455647059836,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.5500038516490492,
+        "authoredTD": 0.8783298795895219,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.5500038516490492,
+        "lowerFramePosition": 138.05897750357607,
+        "upperFramePosition": 131.6465121374037,
+        "lowerMeanEnabled": 1,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": 1.1607329857443727e-05,
+        "upperWidthDelta": -0.0012408594260872596,
+        "requestedWidthDelta": -0.0004524122607128989,
+        "BTerms": [
+          0.017899703308939932,
+          0.020508063957095146,
+          0.005105585758028223
+        ],
+        "thicknessB": 0.005105585758028223,
+        "reachBudget": 0.005105585758028223,
+        "boundedWidthDelta": -0.00041558661720723336,
+        "boundedPerRequested": 0.9186015793479233,
+        "saturationDerivative": 0.8438288615804991,
+        "crest": [
+          0.48872265219688416,
+          0.3301587700843811
+        ],
+        "toe": [
+          0.8168516755104065,
+          0.031830381602048874
+        ],
+        "incoming": [
+          0.06244513764977455,
+          0.004356850404292345
+        ],
+        "outgoing": [
+          0.06646887212991714,
+          -0.010133011266589165
+        ],
+        "widthND": 0.32812902331352234,
+        "heightND": 0.29832838848233223,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.6527871638536453,
+          0.19010911085244123
+        ],
+        "K": [
+          0.7996623369108724,
+          0.2108274146914482
+        ],
+        "normal": [
+          0.9971970498417421,
+          0.07482007609543247
+        ],
+        "cap": [
+          0.7971166993830625,
+          0.20808362165497038
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        76.0,
+        1.4565852880477905,
+        -67.86840057373047
+      ],
+      "savedCrest": [
+        76.0,
+        2.3111114501953125,
+        -70.02716064453125
+      ],
+      "savedToe": [
+        76.0,
+        0.22281266748905182,
+        -67.73025512695312
+      ],
+      "predictedCap": [
+        76,
+        1.45658540725708,
+        -67.86840057373047
+      ],
+      "predictionError": [
+        0.0,
+        1.1920928955078125e-07,
+        0.0
+      ],
+      "observedCapBend": 7.221472128533923,
+      "spacingWorldX": [
+        0.25,
+        0.25
+      ]
+    },
+    {
+      "row": 51,
+      "worldCrestX": 76.25,
+      "storedSigma": 11.87826156616211,
+      "sampledSigma": 11.878261685371399,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6587265729904175,
+        "footDepth": 7,
+        "seconds": 0.42046499624848366,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 76.25,
+        "z": -70.10429763793945,
+        "tau": 0.42046499624848366,
+        "footHeight": 1.6587265729904175,
+        "footDepth": 7,
+        "pace": 8.93104362487793
+      },
+      "model": {
+        "a0": 0.23696093899863108,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3696093899863107,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.49775465502867816,
+        "authoredTD": 0.8779051511128753,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.49775465502867816,
+        "lowerFramePosition": 135.96900963876112,
+        "upperFramePosition": 129.55654427258872,
+        "lowerMeanEnabled": 1,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": 0.002695175720700105,
+        "upperWidthDelta": 0.000328809208766101,
+        "requestedWidthDelta": 0.001820544437740144,
+        "BTerms": [
+          0.018000814765691757,
+          0.02064512111246586,
+          0.0051291507596390885
+        ],
+        "thicknessB": 0.0051291507596390885,
+        "reachBudget": 0.0051291507596390885,
+        "boundedWidthDelta": 0.0013436340185556525,
+        "boundedPerRequested": 0.7380396713762812,
+        "saturationDerivative": 0.5447025565252092,
+        "crest": [
+          0.44701215624809265,
+          0.33213064074516296
+        ],
+        "toe": [
+          0.7773340940475464,
+          0.03211706131696701
+        ],
+        "incoming": [
+          0.06249034032225609,
+          0.004204818047583103
+        ],
+        "outgoing": [
+          0.06646856665611267,
+          -0.01014433428645134
+        ],
+        "widthND": 0.33032193779945374,
+        "heightND": 0.30001357942819595,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.6121731251478195,
+          0.19120382339380412
+        ],
+        "K": [
+          0.7618129877908347,
+          0.21212520897388457
+        ],
+        "normal": [
+          0.9971595832557073,
+          0.07531776365044181
+        ],
+        "cap": [
+          0.7592556968738661,
+          0.20936747551174403
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        76.25,
+        1.4655722379684448,
+        -67.91859436035156
+      ],
+      "savedCrest": [
+        76.25,
+        2.3249144554138184,
+        -70.10429382324219
+      ],
+      "savedToe": [
+        76.25,
+        0.22481942176818848,
+        -67.79204559326172
+      ],
+      "predictedCap": [
+        76.25,
+        1.4655723571777344,
+        -67.91859436035156
+      ],
+      "predictionError": [
+        0.0,
+        1.1920928955078125e-07,
+        0.0
+      ],
+      "observedCapBend": 11.598891321636541,
+      "spacingWorldX": [
+        0.25,
+        0.125
+      ]
+    },
+    {
+      "row": 52,
+      "worldCrestX": 76.375,
+      "storedSigma": 12.009076118469238,
+      "sampledSigma": 12.009076535701752,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.6584202647209167,
+        "footDepth": 7,
+        "seconds": 0.3983969371765852,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 76.375,
+        "z": -70.14286613464355,
+        "tau": 0.3983969371765852,
+        "footHeight": 1.6584202647209167,
+        "footDepth": 7,
+        "pace": 8.905635833740234
+      },
+      "model": {
+        "a0": 0.23691718067441667,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3691718067441666,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.4716300567184926,
+        "authoredTD": 0.8776927868745518,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.4716300567184926,
+        "lowerFramePosition": 134.92402570635363,
+        "upperFramePosition": 128.51156034018126,
+        "lowerMeanEnabled": 1,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": -0.004956526868827138,
+        "upperWidthDelta": -0.0007727456069313576,
+        "requestedWidthDelta": -0.0034119927813506838,
+        "BTerms": [
+          0.01810100220143795,
+          0.02120358496904373,
+          0.005049803988162531
+        ],
+        "thicknessB": 0.005049803988162531,
+        "reachBudget": 0.005049803988162531,
+        "boundedWidthDelta": -0.00203619812956553,
+        "boundedPerRequested": 0.5967767987948303,
+        "saturationDerivative": 0.3561425475798052,
+        "crest": [
+          0.4230535626411438,
+          0.3330845832824707
+        ],
+        "toe": [
+          0.7623109221458435,
+          0.03140121325850487
+        ],
+        "incoming": [
+          0.062484465539455414,
+          0.004471604712307453
+        ],
+        "outgoing": [
+          0.06650602072477341,
+          -0.009850258938968182
+        ],
+        "widthND": 0.3392573595046997,
+        "heightND": 0.30168337002396584,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.5926822423934937,
+          0.19155866142060682
+        ],
+        "K": [
+          0.7433899688498589,
+          0.21241123527288436
+        ],
+        "normal": [
+          0.9970923880254263,
+          0.07620216362907745
+        ],
+        "cap": [
+          0.7408724082910502,
+          0.20969393028390274
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        76.375,
+        1.4678574800491333,
+        -67.91813659667969
+      ],
+      "savedCrest": [
+        76.375,
+        2.331592082977295,
+        -70.14286804199219
+      ],
+      "savedToe": [
+        76.375,
+        0.21980848908424377,
+        -67.76806640625
+      ],
+      "predictedCap": [
+        76.375,
+        1.4678574800491333,
+        -67.91813659667969
+      ],
+      "predictionError": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "observedCapBend": 27.708572725576445,
+      "spacingWorldX": [
+        0.125,
+        0.125
+      ]
+    },
+    {
+      "row": 53,
+      "worldCrestX": 76.5,
+      "storedSigma": 12.139891624450684,
+      "sampledSigma": 12.139891386032104,
+      "query": {
+        "slope": 0.05263157894736842,
+        "footHeight": 1.658113956451416,
+        "footDepth": 7,
+        "seconds": 0.37632887810468674,
+        "hold": "contact"
+      },
+      "rawSample": {
+        "x": 76.5,
+        "z": -70.18143463134766,
+        "tau": 0.37632887810468674,
+        "footHeight": 1.658113956451416,
+        "footDepth": 7,
+        "pace": 8.880228042602539
+      },
+      "model": {
+        "a0": 0.23687342235020228,
+        "lower": "pad19-a20-l12",
+        "upper": "pad19-a30-l12",
+        "blendWeight": 0.3687342235020228,
+        "scale": 7,
+        "timeUnit": 0.8447233832986626,
+        "tauND": 0.445505458408307,
+        "authoredTD": 0.8774804226362284,
+        "frameStep": 0.02499999999999858,
+        "carrierTau": 0.445505458408307,
+        "lowerFramePosition": 133.87904177394617,
+        "upperFramePosition": 127.46657640777377,
+        "lowerMeanEnabled": 1,
+        "upperMeanEnabled": 1,
+        "holdEnable": 1,
+        "lowerWidthDelta": 0.0023220786936416493,
+        "upperWidthDelta": 1.2183428860668144e-05,
+        "requestedWidthDelta": 0.001470341256811635,
+        "BTerms": [
+          0.01809884928166866,
+          0.020776351913809776,
+          0.005152419409673831
+        ],
+        "thicknessB": 0.005152419409673831,
+        "reachBudget": 0.005152419409673831,
+        "boundedWidthDelta": 0.0011439058742946813,
+        "boundedPerRequested": 0.7779866537753194,
+        "saturationDerivative": 0.6052632334525186,
+        "crest": [
+          0.4053724706172943,
+          0.33402055501937866
+        ],
+        "toe": [
+          0.7377941012382507,
+          0.03237306699156761
+        ],
+        "incoming": [
+          0.06248481199145317,
+          0.003917111083865166
+        ],
+        "outgoing": [
+          0.06646854430437088,
+          -0.010135137476027012
+        ],
+        "widthND": 0.3324216306209564,
+        "heightND": 0.30164748802781105,
+        "formationG": 1,
+        "fallS": 0,
+        "K0": [
+          0.5715832859277725,
+          0.19213767385650626
+        ],
+        "K": [
+          0.7219847356807787,
+          0.21336155980825425
+        ],
+        "normal": [
+          0.9971573481033722,
+          0.07534734981039673
+        ],
+        "cap": [
+          0.7194158492433453,
+          0.21059123952960204
+        ],
+        "limitedRoofControls": false,
+        "caseHeaders": [
+          {
+            "id": "pad19-a20-l12",
+            "tauStart": -2.9014705859401566,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 0.6985294140598448,
+            "frameCount": 145
+          },
+          {
+            "id": "pad19-a30-l12",
+            "tauStart": -2.741158951785856,
+            "tauStep": 0.02499999999999858,
+            "touchdown": 1.1838410482141448,
+            "frameCount": 158
+          }
+        ]
+      },
+      "savedCap": [
+        76.5,
+        1.4741387367248535,
+        -67.9831314086914
+      ],
+      "savedCrest": [
+        76.5,
+        2.338143825531006,
+        -70.18143463134766
+      ],
+      "savedToe": [
+        76.5,
+        0.22661146521568298,
+        -67.85448455810547
+      ],
+      "predictedCap": [
+        76.5,
+        1.474138617515564,
+        -67.9831314086914
+      ],
+      "predictionError": [
+        0.0,
+        -1.1920928955078125e-07,
+        0.0
+      ],
+      "observedCapBend": 14.377297022265871,
+      "spacingWorldX": [
+        0.125,
+        0.125
+      ]
+    }
+  ],
+  "rawFrontPacket": {
+    "dtype": "Float32Array",
+    "littleEndian": true,
+    "recordCount": 37,
+    "stride": 9,
+    "fieldOffsets": {
+      "x": 0,
+      "z": 1,
+      "front": 2,
+      "sigma": 3,
+      "tau": 4,
+      "height": 5,
+      "depth": 6,
+      "throwZ": 7,
+      "pace": 8
+    },
+    "encoding": "base64-exact-active-typed-array-words",
+    "count": 333,
+    "byteLength": 1332,
+    "data": "AACSwgAAq8IAAChCAAAAAPHhnL/blMs/AADgQAAAwH8AAMB/AACOwgAArcIAAChCvRsPQP+Hcb87x8o/AADgQAAAwH8AAMB/AACKwgAAr8IAABBBAAAAAAQ1G8Ch2co/AADgQAAAwH8AAMB/AACCwgAAr8IAANBBAAAAAIOXXkELIco/AADgQOV2OcMAAMB/AAB8wgAAscIAANBBvRsPQLNpaUFM3Mk/AADgQOSMP8MAAMB/AAB0wgAAscIAANBB3o2HQHB3bkGLj8k/AADgQPuuQcMAAMB/AABswgAAs8IAANBBvRvPQJU4b0GLmMk/AADgQFGAQMMAAMB/AAB8wgCAZMMAADRCAAAAAFJbN78Sig9AAADgQAAAwH8AAMB/AAB0wgCAZMMAADRCAAAAQMSaLb8FrQ5AAADgQAAAwH8AAMB/AABswgCAZMMAADRCAACAQJoBP7+Jxw1AAADgQAAAwH8AAMB/AAAswgAAvcIAAOBBAAAAAImZT0Ep5co/AADgQNsvM8MAAMB/AAAkwgAAv8IAAOBBvRsPQIh9TEFzdss/AADgQK+OMcMAAMB/AAAcwgAAv8IAAOBB3o2HQHT6SEE6A8w/AADgQCDtL8MAAMB/AAAUwgAAv8IAAOBB3o3HQNNWRUE3Ks0/AADgQMdYLsMAAMB/AAAMwgAAwcIAAOBB3o0HQV1oQUGBps0/AADgQM61LMMAAMB/AAAEwgAAwcIAAOBB3o0nQWITPkHeLs8/AADgQM0pK8MAAMB/AAD4wQAAwcIAAOBB3o1HQQO2OkFseNA/AADgQGqYKcMAAMB/AADowQAAv8IAAOBBzlRrQaIJN0FH7tE/AADgQNIKKMMAAMB/AADYwQAAv8IAAOBBZ6qFQTjkM0Gi9dE/AADgQNVdJsMAAMB/AADIwQAAv8IAAOBBZ6qVQQPfMEExWtE/AADgQOWiJMMAAMB/AAC4wQAAv8IAAOBBZ6qlQXTALUHVDdA/AADgQM7YIsMAAMB/AACYwQAAvcIAACxCAAAAABb9JEEYp84/AADgQNVeH8MAAMB/AACYQQAAq8IAAAxCAAAAAFzi1EAmFtg/AADgQK9IAMMAAMB/AACoQQAAqcIAAAxCvRsPQIe70UDmRtg/AADgQM48/cIAAMB/AADYQQAApcIAABhCAAAAAIZPwECGDNk/AADgQCdE88IAAMB/AAAEQgAAocIAABxCAAAAABKYrkAGMdk/AADgQKom6cIAAMB/AACCQgAAjcIAACRCAAAAAIG9/j+uQNc/AADgQFrhrsIAAMB/AACGQkR3jcIAACRCgd0AQPUC3T9u0tY/AADgQLaLqsLquwZBAACKQplbj8IAACRC+DqHQFv9vD++WdY/AADgQAMKpsKkyfVAAACOQp88jsIAACRCM7LJQAiSnj+W19U/AADgQNZVocIgqvZAAACSQhlPjMIAACRC5F4IQU84cz+OS9U/AADgQKtnnMKtiAdBAACWQu5vi8IAACRCLx8pQR4iJD+GtdQ/AADgQBk3l8JC9hJBAACaQuKrjMIAACRCRJxKQSl8kz7uFNQ/AADgQJi6kcIidQxBAACeQgAAjcIAACRC27dqQb3puL1eadM/AADgQAAAwH8AAMB/AACiQgAAjcIAACRC7luFQYvEbL6Gs9I/AADgQAAAwH8AAMB/AACmQgAAj8IAACRCZT+XQUQkar5289E/AADgQAAAwH8AAMB/AACqQgAAj8IAACRCZT+nQccaeb7WKNE/AADgQAAAwH8AAMB/"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "command": [
+    "npm",
+    "test",
+    "--",
+    "--maxWorkers=1",
+    "src/wave/SurfZoneRunner.tube.test.ts",
+    "src/wave/barrel/sweptContact.test.ts",
+    "src/wave/barrel/tubeApproach.test.ts"
+  ],
+  "exitCode": 0,
+  "seconds": 2.922696207999252,
+  "logBytes": 361,
+  "logSha256": "fca684deec176b852177b9662b0e0dab07083a9b379cd89f8df9db43bbcf79cd",
+  "sourceState": "Applied identity-core plus passive telemetry"
+}

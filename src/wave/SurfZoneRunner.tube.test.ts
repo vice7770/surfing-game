@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readBarrelCases } from './barrel/nodeBarrelCases';
 import { SweptContact } from './barrel/sweptContact';
-import type { TubeApproachCue, TubeApproachRequest } from './barrel/tubeApproach';
+import { createTubeApproachObservation, type TubeApproachCue, type TubeApproachRequest } from './barrel/tubeApproach';
 import { SURF_ZONE_STEP, SurfZoneRunner } from './SurfZoneRunner';
 import type { SurfZoneConfig } from './SurfZoneSimulation';
 
@@ -73,5 +73,51 @@ describe('opt-in tube observations', () => {
     runner.advance(1, input);
     expect(runner.status().ride!.tubeApproach).toBeUndefined();
     expect(runner.simulation.seaTime - initialTime).toBeCloseTo(3 * SURF_ZONE_STEP);
+  });
+});
+
+describe('passive guide status lifetime', () => {
+  it('publishes detached opt-in scalars and invalidates at the same time, placement and retry boundaries', () => {
+    const runner = new SurfZoneRunner(config, { rider: true, barrelCases: readBarrelCases() }, 'warm');
+    const standing = () => runner.session!.place({ x: runner.focus.x, z: runner.focus.z - 5, heading: 0, phase: 'standing', speed: 6 }, runner.water);
+    standing();
+    let generation = 0;
+    const spy = vi.spyOn(SweptContact.prototype, 'approachNear').mockImplementation((request, observation) => {
+      generation++;
+      if (observation) Object.assign(observation, createTubeApproachObservation(request, generation), {
+        outcome: 'all-existing-route-attempts-rejected', eligibleMaturePairs: 1, nondegenerateMatureCapSegments: 1,
+        candidatesInReach: 1, routesAttempted: 1,
+        nearestEligibleCap: { frontId: 1, strip: 2, fraction: 0.5, sigma: 3, x: 4, z: 5, distanceSquared: 6, preferred: false },
+        firstAttempt: { columnCalls: 2, clearRouteCalls: 0, rejection: 'outer-column-unavailable',
+          cap: { frontId: 1, strip: 2, fraction: 0.5, sigma: 3, x: 4, z: 5, distanceSquared: 6, preferred: false } },
+        rejectionCounts: { 'outer-column-unavailable': 1 },
+      });
+      return undefined;
+    });
+    runner.advance(1, input);
+    expect(spy).not.toHaveBeenCalled(); expect(runner.status().ride!.tubeApproachObservation).toBeUndefined();
+    runner.advance(1, { ...input, tubeGuide: true });
+    expect(spy).toHaveBeenCalledTimes(1);
+    const observation = runner.status().ride!.tubeApproachObservation!;
+    expect(observation.seaTime).toBe(runner.simulation.seaTime); expect(observation.geometryStep).toBe(1);
+    expect(observation.request.bodyHeight).toBeGreaterThan(0); expect('body' in observation.request).toBe(false);
+    observation.request.x = 999; observation.nearestEligibleCap!.x = 999; observation.firstAttempt!.cap.x = 999;
+    observation.rejectionCounts['outer-column-unavailable'] = 999;
+    const intact = runner.status().ride!.tubeApproachObservation!;
+    expect(intact.request.x).not.toBe(999); expect(intact.nearestEligibleCap!.x).toBe(4);
+    expect(intact.firstAttempt!.cap.x).toBe(4); expect(intact.rejectionCounts['outer-column-unavailable']).toBe(1);
+    const time = runner.simulation.seaTime;
+    // This same-time invalidation entry is also used after restoring diagnostic sea state.
+    runner.invalidateTubeApproach();
+    expect(runner.simulation.seaTime).toBe(time); expect(runner.status().ride!.tubeApproachObservation).toBeUndefined();
+    runner.advance(1, { ...input, tubeGuide: true });
+    expect(runner.status().ride!.tubeApproachObservation!.geometryStep).toBe(2);
+    runner.advance(1, { ...input, tubeGuide: true, place: { x: runner.focus.x, z: runner.focus.z - 5, heading: 0, phase: 'prone', speed: 0 } });
+    expect(runner.status().ride!.tubeApproachObservation).toBeUndefined();
+    standing(); runner.advance(1, { ...input, tubeGuide: true });
+    expect(runner.status().ride!.tubeApproachObservation!.geometryStep).toBe(3);
+    runner.advance(1, { ...input, tubeGuide: true, retry: true });
+    expect(runner.status().ride!.tubeApproachObservation).toBeUndefined();
+    expect(spy).toHaveBeenCalledTimes(3);
   });
 });

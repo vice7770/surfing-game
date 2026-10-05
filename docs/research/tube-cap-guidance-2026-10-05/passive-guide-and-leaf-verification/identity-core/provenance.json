@@ -1,0 +1,88 @@
+{
+  "schema": "leaf-identity-core-unapplied-proposal/v1",
+  "sourceOnly": true,
+  "appliedToProduction": false,
+  "executedTestsBuildsNumericsNativeOrPorts": false,
+  "ownership": [
+    "src/wave/barrel/boundedCProfile.ts",
+    "src/wave/barrel/boundedCLeafReach.test.ts"
+  ],
+  "baseline": [
+    {
+      "relative": "src/wave/barrel/boundedCProfile.ts",
+      "productionAtPreparation": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 19679,
+        "sha256": "83feb4b827ff2b822a0aa0869cba2495480929c0e7e6ab3e74e3882cc69c2414"
+      },
+      "scratch": {
+        "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/baseline/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 19679,
+        "sha256": "83feb4b827ff2b822a0aa0869cba2495480929c0e7e6ab3e74e3882cc69c2414"
+      },
+      "bytesEqualAtFreeze": true
+    },
+    {
+      "relative": "src/wave/barrel/boundedCLeafReach.test.ts",
+      "productionAtPreparation": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCLeafReach.test.ts",
+        "bytes": 16453,
+        "sha256": "6e7e8a913d1fd18ccf23ca910793276d35970f2fde9c42d3361fec77ac3bc3fa"
+      },
+      "scratch": {
+        "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/baseline/src/wave/barrel/boundedCLeafReach.test.ts",
+        "bytes": 16453,
+        "sha256": "6e7e8a913d1fd18ccf23ca910793276d35970f2fde9c42d3361fec77ac3bc3fa"
+      },
+      "bytesEqualAtFreeze": true
+    }
+  ],
+  "candidate": [
+    {
+      "relative": "src/wave/barrel/boundedCProfile.ts",
+      "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/candidate/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 20184,
+      "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+    },
+    {
+      "relative": "src/wave/barrel/boundedCLeafReach.test.ts",
+      "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/candidate/src/wave/barrel/boundedCLeafReach.test.ts",
+      "bytes": 18620,
+      "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
+    }
+  ],
+  "patch": {
+    "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/candidate.patch",
+    "bytes": 8145,
+    "sha256": "a705dd4b30f3c7a47b11bcf2e7ed2893c71a099e45f4b70d0db9add2b72030da"
+  },
+  "notes": {
+    "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/README.md",
+    "bytes": 4028,
+    "sha256": "90f268b627bd3deb6f3600a4f646a3d22aa14bd83577e8f3e00c3ef93018dc48"
+  },
+  "directEvidence": [
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/README.md",
+      "bytes": 6282,
+      "sha256": "57e70774fa3a8cedff9a5f3a5b094446719a5b29128f30a16f33c0ec7e42827b"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-residual-analysis-20261005/decomposition.json",
+      "bytes": 15492,
+      "sha256": "f87a01b57fe07f0d4d36d1ee523f69451bc579de3fda37e86b2c8bdad14eb59f"
+    }
+  ],
+  "independentReadOnlyReview": {
+    "scope": "Scalar arithmetic, huge-finite rounding and meaningful generic cap test reasoning",
+    "checksExecuted": false,
+    "reportedIssue": "Separately rounded complementary core/shoulder terms can overshoot budget by one ULP at extreme ratios.",
+    "preparedCorrection": "Final roundoff-only min(budget,value), with independently derived non-round budget regression."
+  },
+  "semanticLimits": [
+    "Scalar C1 map for a fixed positive budget is not global trajectory C1.",
+    "Raw.98 width, B/height/tangent terms, min branches and falling-height finite turns remain.",
+    "Only root can validate actual domain/intersection tests and matched native visual benefit.",
+    "No ordinary entry, passage, exit or quality result is claimed."
+  ]
+}

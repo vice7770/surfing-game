@@ -1,0 +1,255 @@
+{
+  "schema": "shared-leaf-seal/v2",
+  "rootAuthorized": true,
+  "complete": true,
+  "applicationBuild": {
+    "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/build.json",
+    "bytes": 16556,
+    "sha256": "f945caaa1aba8d283487942e7150a7ed9e0def1b1c2e190b75ea83d6fa3bd705"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source-freeze.json",
+    "bytes": 6300,
+    "sha256": "e38226f54858e5804065cec68626af7ed2b1e1fbf799f87ecef12f2136825e78"
+  },
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/README.md",
+      "bytes": 12001,
+      "sha256": "04937c16ef8a02792251f10a833c54de84980f43c525e0c30427c645fafe9a48"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/inputs.json",
+      "bytes": 9715,
+      "sha256": "8bec37b744c0b16699d734b0f1b8a3e3cd7c709e98e7eca1bd618ebf2b9b2459"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/prepare.py",
+      "bytes": 6241,
+      "sha256": "d095b8229cbea8d86ae14cb14213444f744c640e3e2d5d9795a8c57c48a4f724"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/run.py",
+      "bytes": 15631,
+      "sha256": "348177699091dfa22f211218e1e4a0740e314c5c897724314c3412cd046f5438"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/native.mjs",
+      "bytes": 10270,
+      "sha256": "6b0b13c1abd4107c3e123344d96500011dbf18db5363a887f9028f63f126f7a5"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/geometry-inspection.mjs",
+      "bytes": 18841,
+      "sha256": "6a2594d3b74174b311d3d706f714fdf7f6bcb0b9a1b388c2718b5d7232b00857"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/measure.py",
+      "bytes": 8177,
+      "sha256": "e7189b0d2e5b040352c4b2e3d25a274bf690de252f68eba55b842b5d01edcf69"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/recipe.patch",
+      "bytes": 44916,
+      "sha256": "c39e6ce3fd476f2d56a0aba328934da70d257f3558934ca84c068257aa2383d9"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/preparation-freeze.json",
+      "bytes": 3553,
+      "sha256": "11fcee81e8078fd672443e641654f027eb34f89548f99c9d4f1684ed33011968"
+    }
+  ],
+  "borrowedHelpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    }
+  ],
+  "references": [
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+      "bytes": 49054,
+      "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+      "bytes": 3848,
+      "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1219771,
+      "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+      "bytes": 15655,
+      "sha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/seal.json",
+      "bytes": 6584,
+      "sha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+      "bytes": 5973,
+      "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+      "bytes": 11001,
+      "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
+      "bytes": 8807,
+      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
+      "bytes": 2757,
+      "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
+      "bytes": 39508,
+      "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/owner.json",
+      "bytes": 2607,
+      "sha256": "7c53fecb36b28d2b0b90d592fe7c1f609c0b598666635ef96238f74b9d12eea6"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/candidate-first/report.json",
+      "bytes": 4899,
+      "sha256": "a32e3e33645fcdb407f3dd5fd7ca62ff155e1d05bb9d6a131e5a0cbdac0408d9"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/source-freeze.json",
+      "bytes": 6267,
+      "sha256": "ea5f8d376b76ab982085dce43962e025f04290e09b370f61bf1f12da2c463cce"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+      "bytes": 25763,
+      "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/build.json",
+      "bytes": 15872,
+      "sha256": "7abf323e2d00d7d8fe5ac141ceb4398dbbb34a88bb8db66b678e9ae176f4a717"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-application-build.log",
+      "bytes": 1328,
+      "sha256": "aa356c4bf230738569166bf4942c48f1fdc5a00702090b07fa60d6c6aeda2886"
+    }
+  ],
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 680,
+    "cleanupSeconds": 20,
+    "pngCount": 8,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 100663296,
+    "reportBytes": 2097152,
+    "sidecarBytes": 6291456,
+    "drawInputsBytes": 8388608
+  },
+  "comparison": {
+    "pairs": [
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      }
+    ],
+    "geometryOrder": [
+      "preserved-cap",
+      "shared-leaf",
+      "restored-preserved-cap-repeat"
+    ],
+    "oldFull37Exact": true,
+    "candidateActiveCountsMayChange": true,
+    "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Not the prior cap historical footprint mask.",
+    "currentMaterialPolicy": "Unmodified current compiled authored max-mask and wall-light A on both variants; observer wrapper records exact shader words only.",
+    "targetCorner": {
+      "front": 41,
+      "worldCrestX": 75.625,
+      "coordinateIsSigma": false,
+      "priorMeasuredBendDegrees": 33.2759
+    },
+    "noPlacement": true,
+    "noSteps": true,
+    "noSeedEpochPoseSelectorSearch": true,
+    "globalC1Guarantee": false
+  },
+  "priorFailedAttempt": {
+    "directory": "/private/tmp/tube-shared-leaf-native-20261005",
+    "owner": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/owner.json",
+      "bytes": 2607,
+      "sha256": "7c53fecb36b28d2b0b90d592fe7c1f609c0b598666635ef96238f74b9d12eea6"
+    },
+    "report": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/candidate-first/report.json",
+      "bytes": 4899,
+      "sha256": "a32e3e33645fcdb407f3dd5fd7ca62ff155e1d05bb9d6a131e5a0cbdac0408d9"
+    },
+    "sourceFreeze": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/source-freeze.json",
+      "bytes": 6267,
+      "sha256": "ea5f8d376b76ab982085dce43962e025f04290e09b370f61bf1f12da2c463cce"
+    },
+    "nativeHandle": 30897,
+    "nativeGroup": 21700,
+    "outcome": "Terminal1 OS-query timeout owner abort before installation/steps/images; original failed receipts retained unchanged.",
+    "rootClosureReceipt": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+      "bytes": 25763,
+      "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+    },
+    "rootClosureQualification": "Separate actual independent root receipt complete:true; original failed owner/report remain complete:false.",
+    "build": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/build.json",
+      "bytes": 15872,
+      "sha256": "7abf323e2d00d7d8fe5ac141ceb4398dbbb34a88bb8db66b678e9ae176f4a717"
+    }
+  }
+}

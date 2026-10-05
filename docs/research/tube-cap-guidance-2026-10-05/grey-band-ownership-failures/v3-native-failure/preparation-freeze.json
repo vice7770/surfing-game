@@ -1,0 +1,101 @@
+{
+  "schema": "grey-band-ownership-source-preparation/v3",
+  "sourceOnly": true,
+  "executionPending": true,
+  "executedChecksBuildsNativeGitOrPorts": false,
+  "productionFilesWritten": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/prepare.py",
+      "bytes": 13997,
+      "sha256": "8440dcd9d8a40efb8a294e4f0d72bf8168150814789221be8982a87e619bec17"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/run.py",
+      "bytes": 18149,
+      "sha256": "3876abbab8aec1e8d5a54f4221f52e46f8ca1f0370916c9e8d3fcddaa039061c"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/native.mjs",
+      "bytes": 10134,
+      "sha256": "067f2743f5b22da5c8e65cd6dc5a5f88da0fb22a2e3721046a992215511152d1"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/ownership-inspection.mjs",
+      "bytes": 26366,
+      "sha256": "7132754e19d34d4c256531582e6856bb430b0db5e27b276d2107717d94b54c9b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/inputs.json",
+      "bytes": 12698,
+      "sha256": "f30f2c3588d4b17489b9af6b831e969dc4ff59169da22164279ea9b311fdd2fe"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/README.md",
+      "bytes": 13799,
+      "sha256": "b15af68d7b9ea760a6dfcd585454561fdaf6d1eb29004f29bac48e9b5290cee0"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/recipe-diff.md",
+      "bytes": 2097,
+      "sha256": "4feadb83b7941c1801747836a15a3a647426ba2cd211c035bc2d2ff12c7e3a99"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/recipe.patch",
+      "bytes": 43143,
+      "sha256": "b28943b678d238e86a9706a8d3489dcdefa58ea4697b38fff3a7b94eb284621b"
+    }
+  ],
+  "ownershipShaderHelperBytesIdenticalToReviewedOriginalAndV2": true,
+  "sourceOnlyParent": {
+    "directory": "/private/tmp/tube-grey-band-ownership-native-v2-20261005",
+    "preparationFreeze": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/preparation-freeze.json",
+      "bytes": 3203,
+      "sha256": "30a02b7adc979d45e2e4d7ca5b6a72d8e21b9e665bfa7646b6c409fb943952bb"
+    },
+    "runtimeExecutionClaim": false
+  },
+  "actualPriorPreparationFailure": {
+    "receipt": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/root-prepare-failure.json",
+      "bytes": 2044,
+      "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf"
+    },
+    "qualification": "The ID V2 root preparation actually exited1 while treating node_modules/three/build/three.core.js as committed Git source. Its failed preparation started no native run and produced no dist, source scratch, provenance, build, seal, owner or candidate results. The receipt complete flag records this actual failure only; V2 source freeze remains unchanged."
+  },
+  "qualifiedPriorOpticalV3Run": {
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    "qualification": "The V3 gameplay owner/report actually failed the640s diagnostic wall deadline after1525rows. Its immutable app build/assets/log/source receipts are complete; gameplay success is not claimed."
+  },
+  "protectedIdentityAuthority": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+    "bytes": 25763,
+    "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+  },
+  "preparedSourceClassification": {
+    "productionSources": 15,
+    "diagnosticCompiledSources": 77,
+    "diagnosticRepositoryAppOrSourceEntries": 74,
+    "diagnosticRepositoryDependencyEntries": 2,
+    "diagnosticOutsideRepositoryEntries": 1,
+    "dependencyPrefix": "node_modules/",
+    "GitReadsPendingBoundedSeconds": 2,
+    "dependencyCopiesVerifiedOnlyDuringRootPreparation": true,
+    "dependencyOrExternalCommittedHashInvented": false
+  },
+  "independentSourceReview": {
+    "scope": "Read-only classification/provenance source and pin gates",
+    "blockingIssuesReported": false,
+    "executionClaim": false
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "scope": "Read-only audit of recorded prefix. No candidate helper/test/build/native/port execution; no retrospective missing geometry or telemetry reconstruction.",
+  "priorComplete": false,
+  "priorFailure": "640s native deadline; no extension or retry",
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 18438314,
+      "sha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/rider-driver.mjs",
+      "bytes": 12947,
+      "sha256": "49164d75109cba0afa6d057ca3bfe96ad36f0483caa18d2810351d95a097792f"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    }
+  ],
+  "steps": 1525,
+  "physicalSeconds": 25.416666666666668,
+  "ownerElapsedSeconds": 640.9917799580144,
+  "averageWholeAttemptWallMsPerRecordedStep": 420.32247866099306,
+  "detectorCumulativeMsLastRow": 5683.200000166893,
+  "detectorElapsedMsSum": 5685.400000274181,
+  "standingRows": 292,
+  "standingDetectorElapsedMsSum": 5673.500000238419,
+  "publishedWorkerStepMsSum": 67464.19999873638,
+  "publishedWorkerStepMsMedian": 38.60000002384186,
+  "detectorBudgetMilliseconds": 120000,
+  "sphereChecks": {
+    "calls": 4088,
+    "nearTrianglesTotal": 578,
+    "callsWithZeroNearTriangles": 3896,
+    "scope": "V3 recomputes all seven current spheres twice per standing row; near count is after every active indexed triangle AABB scan."
+  },
+  "standingGeometryCounts": {
+    "slices": {
+      "minimum": 69,
+      "maximum": 201
+    },
+    "vertices": {
+      "minimum": 9246,
+      "maximum": 26934
+    },
+    "indices": {
+      "minimum": 53466,
+      "maximum": 158004
+    }
+  },
+  "firstPhaseSteps": {
+    "push": 1162,
+    "landing": 1205,
+    "standing": 1234
+  },
+  "causalLimit": "Published worker-step sums and detector cumulative time are not a complete partition of the whole wall interval. Startup, native/browser transport, drawing, guard capture/verification and other work were not separately recorded. Classifier domination is unsupported; exact dominant cause remains unproved.",
+  "candidatePolicy": "Keep classifier, witness checks, acceptance, controls and byte guards unchanged. Add per-phase observer timings before deciding an optimization."
+}

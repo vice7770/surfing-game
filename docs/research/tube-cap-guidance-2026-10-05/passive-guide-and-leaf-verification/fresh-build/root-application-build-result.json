@@ -1,0 +1,12 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "build"
+  ],
+  "BUILD_ID": "tube-guided-passive-telemetry-20261005",
+  "exitCode": 0,
+  "seconds": 6.507821040984709,
+  "logBytes": 1328,
+  "logSha256": "3030332b9efa18b8053ccef1d2ff50865187583a96290d0d99fbe040644294e5"
+}

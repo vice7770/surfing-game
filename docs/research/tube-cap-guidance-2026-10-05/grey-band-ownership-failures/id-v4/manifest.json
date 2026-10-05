@@ -1,0 +1,817 @@
+{
+  "schema": "tube-grey-band-id-v4-native-failure-archive/v1",
+  "archivedAtUTC": "2026-10-05T16:30:20.078616+00:00",
+  "scope": "Actual failed ID V4 installation before baseline/probes; independent later audit separate. No new ownership/quality/ride or draw-index cause conclusion.",
+  "actualExecution": {
+    "handle": 66322,
+    "exitCode": 1,
+    "ownerComplete": false,
+    "nativeComplete": false,
+    "elapsedSeconds": 48.4626647089608,
+    "physicalSteps": 0,
+    "pngCount": 0,
+    "pngBytes": 0,
+    "failedBeforeBaselineAndProbes": true,
+    "firstNativeFailure": "Actual loft draw index prefix differs",
+    "postExecutionPinsVerified": false,
+    "copiedAndHistoricalSourcePinsPostVerified": false,
+    "ownershipConclusion": null
+  },
+  "actualRootSourceChecks": {
+    "freezeSHA256": "a70c91a125eb8ee3b14228853fa4dc543e2c030b2daa0708b77ecd305248ccf3",
+    "verifiedFiles": 8,
+    "pythonASTChecks": 2,
+    "nodeSyntaxChecks": 2,
+    "allPassed": true
+  },
+  "actualRootPreparation": {
+    "exitCode": 0,
+    "seconds": 1.5045302499784157,
+    "logBytes": 1057,
+    "logSha256": "1f201b84e186caab23aa8b9d413ef23935f5aaae8ce13f9b5f1dd2f691bc408a"
+  },
+  "preparationProvenanceCounts": {
+    "uniqueCommittedReceiptSources": 80,
+    "repositoryDependencies": 2,
+    "externalDiagnosticSources": 1,
+    "additionalOpticalCommittedSources": 7
+  },
+  "independentLaterRootAudit": {
+    "receipt": "root-post-failure-pins-and-closure.json",
+    "observedAtUTC": "2026-10-05T16:26:00.832143+00:00",
+    "complete": true,
+    "uniqueExecutablePinsVerified": 227,
+    "ownedGroup": 34236,
+    "ownedGroupAbsent": true,
+    "ownedPortsClosed": {
+      "4301": true,
+      "9711": true
+    },
+    "noSignalsSentByAudit": true,
+    "qualification": "Independent root audit after actual failed native; original normal post-execution pin gate was not reached. No baseline PNG or shader probes; draw-index equality assertion failed."
+  },
+  "drawIndexCause": "Unproved. Possible facesOut winding explanation is source-review inference only, not accepted by this archive.",
+  "originalCopies": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/prepare.py",
+        "bytes": 17190,
+        "sha256": "45aeba7f4c82e0e338514a0cea2fd96cf9be8f8b7e9caf3e3bd8e2c6912f3036"
+      },
+      "stored": {
+        "file": "prepare.py",
+        "bytes": 17190,
+        "sha256": "45aeba7f4c82e0e338514a0cea2fd96cf9be8f8b7e9caf3e3bd8e2c6912f3036"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/run.py",
+        "bytes": 18741,
+        "sha256": "a115ee365ae6cc5c2edacc105c1110f0946912de3d4a1d617c326c5d4c78668c"
+      },
+      "stored": {
+        "file": "run.py",
+        "bytes": 18741,
+        "sha256": "a115ee365ae6cc5c2edacc105c1110f0946912de3d4a1d617c326c5d4c78668c"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/native.mjs",
+        "bytes": 10179,
+        "sha256": "1d922bd64c52cacd5edd8ca569c2ce2b1b3371f18e0e37ff72ccf125aef65c63"
+      },
+      "stored": {
+        "file": "native.mjs",
+        "bytes": 10179,
+        "sha256": "1d922bd64c52cacd5edd8ca569c2ce2b1b3371f18e0e37ff72ccf125aef65c63"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/ownership-inspection.mjs",
+        "bytes": 27266,
+        "sha256": "f95d01df89eca30010387d3ec1cf1c559d4b391c7bb6f353de7eef4d8fcd7b58"
+      },
+      "stored": {
+        "file": "ownership-inspection.mjs",
+        "bytes": 27266,
+        "sha256": "f95d01df89eca30010387d3ec1cf1c559d4b391c7bb6f353de7eef4d8fcd7b58"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/inputs.json",
+        "bytes": 14499,
+        "sha256": "37da91be0e9b19d4aa7928a4088fed0ae9ba0380bbca2fbb7a013fccd014b2c2"
+      },
+      "stored": {
+        "file": "inputs.json",
+        "bytes": 14499,
+        "sha256": "37da91be0e9b19d4aa7928a4088fed0ae9ba0380bbca2fbb7a013fccd014b2c2"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/README.md",
+        "bytes": 15424,
+        "sha256": "26166c1cf0e4441dce8d32fb0de1d8e906cf11eb9dc3226d0ba2add01cdde754"
+      },
+      "stored": {
+        "file": "README-original.md",
+        "bytes": 15424,
+        "sha256": "26166c1cf0e4441dce8d32fb0de1d8e906cf11eb9dc3226d0ba2add01cdde754"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/recipe-diff.md",
+        "bytes": 1757,
+        "sha256": "523a8b261b308127921428abe68d6593879b9e866f2ed0c4179212f0c2604b83"
+      },
+      "stored": {
+        "file": "recipe-diff.md",
+        "bytes": 1757,
+        "sha256": "523a8b261b308127921428abe68d6593879b9e866f2ed0c4179212f0c2604b83"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/recipe.patch",
+        "bytes": 42208,
+        "sha256": "97208279a9cb387d3bae1abaa6c144275b68c5e0eb0737d7a65d930ae43f7d53"
+      },
+      "stored": {
+        "file": "recipe.patch",
+        "bytes": 42208,
+        "sha256": "97208279a9cb387d3bae1abaa6c144275b68c5e0eb0737d7a65d930ae43f7d53"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/preparation-freeze.json",
+        "bytes": 7254,
+        "sha256": "a70c91a125eb8ee3b14228853fa4dc543e2c030b2daa0708b77ecd305248ccf3"
+      },
+      "stored": {
+        "file": "preparation-freeze.json",
+        "bytes": 7254,
+        "sha256": "a70c91a125eb8ee3b14228853fa4dc543e2c030b2daa0708b77ecd305248ccf3"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/build.json",
+        "bytes": 36098,
+        "sha256": "0d7ea2dd6e763f51fe3f49f65828a5128b04c5bcf04005274ee1d3dfab9d961d"
+      },
+      "stored": {
+        "file": "build.json",
+        "bytes": 36098,
+        "sha256": "0d7ea2dd6e763f51fe3f49f65828a5128b04c5bcf04005274ee1d3dfab9d961d"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/seal.json",
+        "bytes": 43165,
+        "sha256": "0c36454740d9d3378eb6764d443d44d4e9d5a80b07df3d3744865d0e487aad10"
+      },
+      "stored": {
+        "file": "seal.json",
+        "bytes": 43165,
+        "sha256": "0c36454740d9d3378eb6764d443d44d4e9d5a80b07df3d3744865d0e487aad10"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/prepare-result.json",
+        "bytes": 1127,
+        "sha256": "0c4f9e8f3276afb09785a364ca653ed2df91354ca5d41f4d7159c63e55098342"
+      },
+      "stored": {
+        "file": "prepare-result.json",
+        "bytes": 1127,
+        "sha256": "0c4f9e8f3276afb09785a364ca653ed2df91354ca5d41f4d7159c63e55098342"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/source-provenance.json",
+        "bytes": 81413,
+        "sha256": "7409d95ac1d4077ffa88724307f2b0e3a0581a12da667f4343e0173098265317"
+      },
+      "stored": {
+        "file": "source-provenance.json",
+        "bytes": 81413,
+        "sha256": "7409d95ac1d4077ffa88724307f2b0e3a0581a12da667f4343e0173098265317"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/owner.json",
+        "bytes": 16681,
+        "sha256": "5c3c876f6129b5f5e9856e2ec80af11dc7551a66807803abb81104a0462bd9f2"
+      },
+      "stored": {
+        "file": "owner.json",
+        "bytes": 16681,
+        "sha256": "5c3c876f6129b5f5e9856e2ec80af11dc7551a66807803abb81104a0462bd9f2"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/launcher.json",
+        "bytes": 11179,
+        "sha256": "da873d0598ae0156973dfeb0db0798041bd4d59f3f8aea51619762d661c8f133"
+      },
+      "stored": {
+        "file": "launcher.json",
+        "bytes": 11179,
+        "sha256": "da873d0598ae0156973dfeb0db0798041bd4d59f3f8aea51619762d661c8f133"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/native.log",
+        "bytes": 451,
+        "sha256": "ec0ca26338c327c22a5852e79a7ea3ad79e8a02a4ac83519a09fd84f319b4afa"
+      },
+      "stored": {
+        "file": "native.log",
+        "bytes": 451,
+        "sha256": "ec0ca26338c327c22a5852e79a7ea3ad79e8a02a4ac83519a09fd84f319b4afa"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/candidate-first/report.json",
+        "bytes": 31388,
+        "sha256": "19562e9bcf94fe990acd512d7d8d80497e7a3e3fc3b908308a3e040d5b9de64a"
+      },
+      "stored": {
+        "file": "candidate-first/report.json",
+        "bytes": 31388,
+        "sha256": "19562e9bcf94fe990acd512d7d8d80497e7a3e3fc3b908308a3e040d5b9de64a"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/root-source-checks.json",
+        "bytes": 181,
+        "sha256": "da720877e0156bec41148b6521d7f248a3825bcdcffbbc66d10eb2e0b635a6c0"
+      },
+      "stored": {
+        "file": "root-source-checks.json",
+        "bytes": 181,
+        "sha256": "da720877e0156bec41148b6521d7f248a3825bcdcffbbc66d10eb2e0b635a6c0"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/root-prepare-result.json",
+        "bytes": 156,
+        "sha256": "ccf9b1fc24d3ea675db3b8e9bd8c57ba2815ff26111d6acfc4c52256786f7323"
+      },
+      "stored": {
+        "file": "root-prepare-result.json",
+        "bytes": 156,
+        "sha256": "ccf9b1fc24d3ea675db3b8e9bd8c57ba2815ff26111d6acfc4c52256786f7323"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/root-prepare.log",
+        "bytes": 1057,
+        "sha256": "1f201b84e186caab23aa8b9d413ef23935f5aaae8ce13f9b5f1dd2f691bc408a"
+      },
+      "stored": {
+        "file": "root-prepare.log",
+        "bytes": 1057,
+        "sha256": "1f201b84e186caab23aa8b9d413ef23935f5aaae8ce13f9b5f1dd2f691bc408a"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/root-post-failure-pins-and-closure.json",
+        "bytes": 54257,
+        "sha256": "b1cac33132acca83cbe270d5bf6425226b0963a1d568b384298692ed91111401"
+      },
+      "stored": {
+        "file": "root-post-failure-pins-and-closure.json",
+        "bytes": 54257,
+        "sha256": "b1cac33132acca83cbe270d5bf6425226b0963a1d568b384298692ed91111401"
+      },
+      "bytesEqualVerified": true
+    }
+  ],
+  "inputReferences": [
+    {
+      "role": "opticalApplicationBuild",
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/build.json",
+        "bytes": 41743,
+        "sha256": "8a14b79263e47a3a490c6eb734ada185c98559605ab57754b6faa1de54e67fb8"
+      },
+      "stored": {
+        "file": "../../ordinary-v3-wall-deadline/build.json",
+        "bytes": 41743,
+        "sha256": "8a14b79263e47a3a490c6eb734ada185c98559605ab57754b6faa1de54e67fb8"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "opticalApplicationFreeze",
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/source-freeze.json",
+        "bytes": 19399,
+        "sha256": "d6c7ffd6bd467c5e491140ff3100fac2905c11531fc4983ec0f3a0f2b4114df9"
+      },
+      "stored": {
+        "file": "../../ordinary-v3-wall-deadline/source-freeze.json",
+        "bytes": 19399,
+        "sha256": "d6c7ffd6bd467c5e491140ff3100fac2905c11531fc4983ec0f3a0f2b4114df9"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "opticalApplicationSeal",
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/seal.json",
+        "bytes": 5517,
+        "sha256": "43f54e0dbe2b55c9e3fd0024372f50c716324769228d97d03d494d9fbe9ef067"
+      },
+      "stored": {
+        "file": "../../ordinary-v3-wall-deadline/seal.json",
+        "bytes": 5517,
+        "sha256": "43f54e0dbe2b55c9e3fd0024372f50c716324769228d97d03d494d9fbe9ef067"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "opticalApplicationBuildLog",
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/application-build.log",
+        "bytes": 1328,
+        "sha256": "ef1c24e5376c8f3ca28e9fd95b9bfa76bc1487f90f5bda1136e2de7c8da3de6e"
+      },
+      "stored": {
+        "file": "../../ordinary-v3-wall-deadline/application-build.log",
+        "bytes": 1328,
+        "sha256": "ef1c24e5376c8f3ca28e9fd95b9bfa76bc1487f90f5bda1136e2de7c8da3de6e"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "referenceReport",
+      "original": {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+        "bytes": 49054,
+        "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+      },
+      "stored": {
+        "file": "../../cap/capture/report.json",
+        "bytes": 49054,
+        "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "referenceOwner",
+      "original": {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+        "bytes": 3848,
+        "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+      },
+      "stored": {
+        "file": "../../cap/owner.json",
+        "bytes": 3848,
+        "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "referenceLoft",
+      "original": {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1219771,
+        "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+      },
+      "stored": {
+        "file": "../../cap/capture/loft-terminal.json.gz",
+        "bytes": 266399,
+        "sha256": "a4c17794c24950b13e42c2e50a8326835bee2dfca214cc7bd34c868e7b5f7dc9"
+      },
+      "encoding": "gzip",
+      "decoded": {
+        "bytes": 1219771,
+        "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+      },
+      "decodedBytesEqualVerified": true
+    },
+    {
+      "role": "authoredReport",
+      "original": {
+        "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+        "bytes": 66175,
+        "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+      },
+      "stored": {
+        "file": "../../authored-mask-comparison/report.json",
+        "bytes": 66175,
+        "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "authoredOwner",
+      "original": {
+        "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+        "bytes": 2886,
+        "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+      },
+      "stored": {
+        "file": "../../authored-mask-comparison/owner.json",
+        "bytes": 2886,
+        "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "authoredSeal",
+      "original": {
+        "file": "/private/tmp/tube-authored-mask-native-20261005/seal.json",
+        "bytes": 22535,
+        "sha256": "b22727d355b9b3b8ef78877f92ccbc7496a40a98390f27c4119b3e63706f64e2"
+      },
+      "stored": {
+        "file": "../../authored-mask-comparison/seal.json",
+        "bytes": 22535,
+        "sha256": "b22727d355b9b3b8ef78877f92ccbc7496a40a98390f27c4119b3e63706f64e2"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "baselinePNG",
+      "original": {
+        "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/interior-rich-combined-mask-and-sheet-fill-A.png",
+        "bytes": 1979202,
+        "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+      },
+      "stored": {
+        "file": "../../authored-mask-comparison/interior-rich-combined-mask-and-sheet-fill-A.png",
+        "bytes": 1979202,
+        "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "protectedIdentityAuthority",
+      "original": {
+        "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+        "bytes": 25763,
+        "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+      },
+      "stored": {
+        "file": "../../shared-leaf-native-process-query-failure/root-post-failure-closure-and-pins.json",
+        "bytes": 25763,
+        "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "historicalOpticalRun.owner",
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+        "bytes": 3469,
+        "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+      },
+      "stored": {
+        "file": "../../ordinary-v3-wall-deadline/owner.json",
+        "bytes": 3469,
+        "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "historicalOpticalRun.report",
+      "original": {
+        "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+        "bytes": 42104,
+        "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+      },
+      "stored": {
+        "file": "../../ordinary-v3-wall-deadline/report.json",
+        "bytes": 42104,
+        "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "readOnlyEvidence",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/README.md",
+        "bytes": 7467,
+        "sha256": "a777322f61afe7da7c3f1a8f1df7be8157a0ff450a07207f3ca01e8e315b8679"
+      },
+      "stored": {
+        "file": "../../grey-band-ownership/README.md",
+        "bytes": 7467,
+        "sha256": "a777322f61afe7da7c3f1a8f1df7be8157a0ff450a07207f3ca01e8e315b8679"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "readOnlyEvidence",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/probe-shader-deltas.mjs",
+        "bytes": 4991,
+        "sha256": "aed2b614c0aad7e6d5534cf9f9dcc58ec0ec64d4be9c5e7b264a50796400aadb"
+      },
+      "stored": {
+        "file": "../../grey-band-ownership/probe-shader-deltas.mjs",
+        "bytes": 4991,
+        "sha256": "aed2b614c0aad7e6d5534cf9f9dcc58ec0ec64d4be9c5e7b264a50796400aadb"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "readOnlyEvidence",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/proposal.json",
+        "bytes": 12197,
+        "sha256": "f11dde4a6074c64b887f17561efcf455187d2c7027cba23e27a598994daf734e"
+      },
+      "stored": {
+        "file": "../../grey-band-ownership/proposal.json",
+        "bytes": 12197,
+        "sha256": "f11dde4a6074c64b887f17561efcf455187d2c7027cba23e27a598994daf734e"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "readOnlyEvidence",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/sample-choice.json",
+        "bytes": 1058,
+        "sha256": "0becdc934ddb5db9d6b1e98e3be286118c84fb7ff381b3e4b852b8cb8995b18c"
+      },
+      "stored": {
+        "file": "../../grey-band-ownership/sample-choice.json",
+        "bytes": 1058,
+        "sha256": "0becdc934ddb5db9d6b1e98e3be286118c84fb7ff381b3e4b852b8cb8995b18c"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "readOnlyEvidence",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/saved-pixel-ray-inspection.json",
+        "bytes": 17779,
+        "sha256": "7252459ee405aad4ec8a8283cc6237885472a08365af4f429d0ef47abda6bd21"
+      },
+      "stored": {
+        "file": "../../grey-band-ownership/saved-pixel-ray-inspection.json",
+        "bytes": 17779,
+        "sha256": "7252459ee405aad4ec8a8283cc6237885472a08365af4f429d0ef47abda6bd21"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "readOnlyEvidence",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/offline-read.py",
+        "bytes": 4061,
+        "sha256": "b78ee833b4904d45165a0ceeb757f6160860469156781491b3c5e12fddf6eb75"
+      },
+      "stored": {
+        "file": "../../grey-band-ownership/offline-read.py",
+        "bytes": 4061,
+        "sha256": "b78ee833b4904d45165a0ceeb757f6160860469156781491b3c5e12fddf6eb75"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "readOnlyEvidence",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/offline-source-note.md",
+        "bytes": 457,
+        "sha256": "0a9bd3b1fa06d269548869e92255f6d27ae41ba5b6b35fce794379544bd34208"
+      },
+      "stored": {
+        "file": "../../grey-band-ownership/offline-source-note.md",
+        "bytes": 457,
+        "sha256": "0a9bd3b1fa06d269548869e92255f6d27ae41ba5b6b35fce794379544bd34208"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "priorPreparationFailure",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/root-prepare-failure.json",
+        "bytes": 2044,
+        "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf"
+      },
+      "stored": {
+        "file": "../v2-preparation-failure/root-prepare-failure.json",
+        "bytes": 2044,
+        "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "priorNativeFailure.owner",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/owner.json",
+        "bytes": 15489,
+        "sha256": "a210ddebe768f0eb58e4831560caf4ecc572b93eef35e2aa61477224cb5a29f7"
+      },
+      "stored": {
+        "file": "../v3-native-failure/owner.json",
+        "bytes": 15489,
+        "sha256": "a210ddebe768f0eb58e4831560caf4ecc572b93eef35e2aa61477224cb5a29f7"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "priorNativeFailure.report",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/candidate-first/report.json",
+        "bytes": 30186,
+        "sha256": "d702e3d226fc6eb182fe3e2634281594e4e4c5078f0459eeac81492939005b82"
+      },
+      "stored": {
+        "file": "../v3-native-failure/candidate-first/report.json",
+        "bytes": 30186,
+        "sha256": "d702e3d226fc6eb182fe3e2634281594e4e4c5078f0459eeac81492939005b82"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "role": "priorNativeFailure.rootPostFailure",
+      "original": {
+        "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/root-post-failure-pins-and-closure.json",
+        "bytes": 54427,
+        "sha256": "235816a6057bf3f3a19a14b141010d5518c1912e2f2ad34b18d51d4b927a8dfe"
+      },
+      "stored": {
+        "file": "../v3-native-failure/root-post-failure-pins-and-closure.json",
+        "bytes": 54427,
+        "sha256": "235816a6057bf3f3a19a14b141010d5518c1912e2f2ad34b18d51d4b927a8dfe"
+      },
+      "bytesEqualVerified": true
+    }
+  ],
+  "omissions": [
+    "Intermediate live.json.",
+    "Large dist and historical source/dependency/diagnostic trees; exact complete pin rosters retained in receipts.",
+    "Borrowed temporary helper bundles; retained pins identify provenance, not a portable native runner."
+  ],
+  "archivalChecks": {
+    "copiedOriginalBytesEqual": true,
+    "preparationFreezeSourcePinsVerified": 8,
+    "rootSourceCheckFreezeBindingVerified": true,
+    "rootPreparationLogPinVerified": true,
+    "preparationOutputReceiptPinsVerified": 3,
+    "originalRootAuditExecutableFilesRehashedReadOnly": 227,
+    "failedOwnerAndReportPinsVerified": true,
+    "relativeEvidenceReferencesVerified": 25,
+    "newProcessPortObservations": false,
+    "compilerNativeTestsGitExecuted": false,
+    "actualV4InputReferenceBindingsVerified": 25
+  },
+  "files": [
+    {
+      "file": "README-original.md",
+      "bytes": 15424,
+      "sha256": "26166c1cf0e4441dce8d32fb0de1d8e906cf11eb9dc3226d0ba2add01cdde754"
+    },
+    {
+      "file": "README.md",
+      "bytes": 3545,
+      "sha256": "0130259e5c99ff8c99d902fc907ad904214d3b7d077249ee5d21d8cfe1ef3e2e"
+    },
+    {
+      "file": "build.json",
+      "bytes": 36098,
+      "sha256": "0d7ea2dd6e763f51fe3f49f65828a5128b04c5bcf04005274ee1d3dfab9d961d"
+    },
+    {
+      "file": "candidate-first/report.json",
+      "bytes": 31388,
+      "sha256": "19562e9bcf94fe990acd512d7d8d80497e7a3e3fc3b908308a3e040d5b9de64a"
+    },
+    {
+      "file": "inputs.json",
+      "bytes": 14499,
+      "sha256": "37da91be0e9b19d4aa7928a4088fed0ae9ba0380bbca2fbb7a013fccd014b2c2"
+    },
+    {
+      "file": "launcher.json",
+      "bytes": 11179,
+      "sha256": "da873d0598ae0156973dfeb0db0798041bd4d59f3f8aea51619762d661c8f133"
+    },
+    {
+      "file": "native.log",
+      "bytes": 451,
+      "sha256": "ec0ca26338c327c22a5852e79a7ea3ad79e8a02a4ac83519a09fd84f319b4afa"
+    },
+    {
+      "file": "native.mjs",
+      "bytes": 10179,
+      "sha256": "1d922bd64c52cacd5edd8ca569c2ce2b1b3371f18e0e37ff72ccf125aef65c63"
+    },
+    {
+      "file": "owner.json",
+      "bytes": 16681,
+      "sha256": "5c3c876f6129b5f5e9856e2ec80af11dc7551a66807803abb81104a0462bd9f2"
+    },
+    {
+      "file": "ownership-inspection.mjs",
+      "bytes": 27266,
+      "sha256": "f95d01df89eca30010387d3ec1cf1c559d4b391c7bb6f353de7eef4d8fcd7b58"
+    },
+    {
+      "file": "preparation-freeze.json",
+      "bytes": 7254,
+      "sha256": "a70c91a125eb8ee3b14228853fa4dc543e2c030b2daa0708b77ecd305248ccf3"
+    },
+    {
+      "file": "prepare-result.json",
+      "bytes": 1127,
+      "sha256": "0c4f9e8f3276afb09785a364ca653ed2df91354ca5d41f4d7159c63e55098342"
+    },
+    {
+      "file": "prepare.py",
+      "bytes": 17190,
+      "sha256": "45aeba7f4c82e0e338514a0cea2fd96cf9be8f8b7e9caf3e3bd8e2c6912f3036"
+    },
+    {
+      "file": "recipe-diff.md",
+      "bytes": 1757,
+      "sha256": "523a8b261b308127921428abe68d6593879b9e866f2ed0c4179212f0c2604b83"
+    },
+    {
+      "file": "recipe.patch",
+      "bytes": 42208,
+      "sha256": "97208279a9cb387d3bae1abaa6c144275b68c5e0eb0737d7a65d930ae43f7d53"
+    },
+    {
+      "file": "root-post-failure-pins-and-closure.json",
+      "bytes": 54257,
+      "sha256": "b1cac33132acca83cbe270d5bf6425226b0963a1d568b384298692ed91111401"
+    },
+    {
+      "file": "root-prepare-result.json",
+      "bytes": 156,
+      "sha256": "ccf9b1fc24d3ea675db3b8e9bd8c57ba2815ff26111d6acfc4c52256786f7323"
+    },
+    {
+      "file": "root-prepare.log",
+      "bytes": 1057,
+      "sha256": "1f201b84e186caab23aa8b9d413ef23935f5aaae8ce13f9b5f1dd2f691bc408a"
+    },
+    {
+      "file": "root-source-checks.json",
+      "bytes": 181,
+      "sha256": "da720877e0156bec41148b6521d7f248a3825bcdcffbbc66d10eb2e0b635a6c0"
+    },
+    {
+      "file": "run.py",
+      "bytes": 18741,
+      "sha256": "a115ee365ae6cc5c2edacc105c1110f0946912de3d4a1d617c326c5d4c78668c"
+    },
+    {
+      "file": "seal.json",
+      "bytes": 43165,
+      "sha256": "0c36454740d9d3378eb6764d443d44d4e9d5a80b07df3d3744865d0e487aad10"
+    },
+    {
+      "file": "source-provenance.json",
+      "bytes": 81413,
+      "sha256": "7409d95ac1d4077ffa88724307f2b0e3a0581a12da667f4343e0173098265317"
+    }
+  ],
+  "manifestSelfHashExcluded": true
+}

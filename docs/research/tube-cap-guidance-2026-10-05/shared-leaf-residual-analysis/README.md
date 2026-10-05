@@ -1,0 +1,28 @@
+# Shared-leaf residual analysis: saved evidence
+
+This archive preserves the completed finite offline analysis of the earlier shared-leaf V2 matched geometry capture. It contains exact original computation sources, outputs, logs and provenance, including the first strict-JSON failure. It does not contain a new capture or a production change.
+
+The completed [matched capture](../shared-leaf-matched-geometry/README.md) supplied the same saved front41 rows and fixed-camera evidence. Its target at world crest X75.625 changed from 33.275882274° to 21.479273974° with the same 0.125/0.125m neighboring stations. The worst visible candidate sample remained 26.060732445° at X74.25. Those numbers describe that completed capture; this archive makes no later source or visual acceptance claim.
+
+## What completed
+
+- The original finite inspection exited 1 before writing its JSON output: expanding encoded Float32 pace words exposed NaNs to strict JSON serialization. [inspect-pre-nan-fix.py](inspect-pre-nan-fix.py), the empty [inspection-run.log](inspection-run.log), and the contemporaneous [first-attempt-note.md](first-attempt-note.md) are preserved. The first stderr existed in tool output and was not saved as a standalone file; this archive does not fabricate it.
+- The corrected [inspect.py](inspect.py) preserved the original encoded packet descriptor and completed with exit 0. [inspection.json](inspection.json) and [inspection-run-final.log](inspection-run-final.log) preserve the actual output.
+- [decompose.py](decompose.py) completed with exit 0; [decomposition.json](decomposition.json) and [decomposition-run.log](decomposition-run.log) are the exact result and stdout.
+- [provenance.py](provenance.py) completed its original finite pin verification with exit 0. [provenance.json](provenance.json) and [provenance-run.log](provenance-run.log) retain that result. Across 17 saved front41 rows, reconstructed cap X/Z matched exactly and the maximum cap Y difference was one Float32 ULP, 1.1920928955078125e-7m.
+
+## Measured terms and their limits
+
+At X75.625, stored authored width reversals survived because the roof still combined authoritative raw width and bounded correction. The raw .98W term contributed -0.640001097 to the Z secant-slope jump; bounded smoothing contributed +0.251243398; thickness retreat and the finite normal offset contributed -0.016274136 and -0.004072576. Crest Z contributed zero. Their sum agreed with the saved Float32 coordinates within coordinate rounding. Falling height was zero in this neighborhood, scale remained exactly 7, and the same height-squared/width B branch applied throughout.
+
+Each 0.125m neighbor crossed about 1.045 authored frames. The three existing bounded-map derivatives with respect to the requested correction were approximately 0.9604, 0.5244 and 0.4312. Thus it attenuated valid requests that were already inside the domain budget. True crest/toe height, raw B and tangent-dependent normal offset remained authoritative; the source and decomposition do not support attributing every residual turn to width alone.
+
+At X74.25, the 0.125/0.25m unequal neighbor spacings straddled the common authored-hold end. Falling-lip height supplied -0.531733 of the Y secant-slope jump; all other Y terms supplied +0.014674. The smoothstep fall was already C1 at the hold boundary. A finite polyline turn across that curved fall does not itself prove a derivative discontinuity, and the existing sagitta/refinement limit did not impose a maximum vertex angle.
+
+The contemporaneous identity-core bounded correction direction remains a **proposal in this evidence**: retain delta exactly inside 0.6 of the same reach budget, then use a C1 shoulder approaching that budget. It spends more available room on feasible width correction while retaining the curvature/toe allowance. It leaves raw B/height/tangent terms and the falling trajectory present. Its old formula in the exact original notes is not a numerical implementation approval; an eventual implementation needs stable dimensional arithmetic, a roundoff-only upper-bound guard, affected-domain checks and its own comparison. No global C1, reference-quality tube, moving formation/closure, physics or ordinary rider entry/travel/exit result follows from this offline analysis.
+
+## Exact files and portable references
+
+[analysis-notes-original.md](analysis-notes-original.md) is the byte-exact original README, renamed to distinguish its historical interpretation from this portable index. [manifest.json](manifest.json) pins every archive file, its original source and the 17 analysis inputs. Existing capture JSON is reused from the matched archive; compressed saved packets include verified decoded hashes. Three large source files are reused from the earlier [frozen source archive](../shared-leaf-native-process-query-failure/README.md); only the two small interpretation inputs absent there are copied under `interpretation-source/`. The four BRL assets are linked to verified relative `public/barrels` paths rather than duplicated.
+
+The relative `stored.file` paths in the manifest resolve from this directory after moving the repository. Original absolute paths inside unchanged scripts and receipts describe execution provenance. Those scripts are historical computation sources, not a portable runner requiring replay. Only file reads, byte copies, JSON parsing, decompression and SHA256 comparison were performed to create this archive. No source execution, compiler, test, native runtime, Git command, process/port probe or production mutation was performed by the archiver.

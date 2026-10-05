@@ -1,0 +1,20 @@
+# Shared leaf identity-core candidate — unapplied source proposal
+
+This proposal changes only temporary copies of `src/wave/barrel/boundedCProfile.ts` and `boundedCLeafReach.test.ts`. No production, dist, sealed recipe, dependency, process or port is changed. Tests, compilers, builds, native captures and numerical diagnostics have not been executed. Root reviews/applies/checks later.
+
+The completed offline residual review attributes the remaining world-crest-X75.625 cap bend mainly to raw authored width reversals that survive attenuation of already-feasible mean corrections. Its three requested delta/budget magnitudes are approximately0.0204,0.3809 and0.5229, all inside the proposed identity core. The separate X74.25 bend is mainly the existing falling-height trajectory sampled across unequal neighboring spacings; this change does not target that mechanism. Exact evidence is pinned in provenance.json.
+
+The shared scalar bound returns the requested ND correction exactly while its magnitude is at most0.6 of the available budget. Outside that core it joins with unit first derivative to the same bounded asymptote. The shoulder uses dimensional arithmetic rather than dividing delta by budget, avoiding ratio overflow for huge finite requests. A final upper guard handles a one-ULP overshoot of separately rounded complementary terms; it does not change the intended analytic shoulder. The available budget remains the existing `min(B,(.98-.85)*W-2*B)`, including the original.85W leaf-domain reserve. No mean-width integration, width/height coefficient, root/thickness rule, anchor, tangent, phase, station or cache key is changed. Full profile, cap and contact/table paths continue to call this one shared bound. The exact-zero common authored-hold taper and original final-carrier event clock ownership remain in ProfileLibrary unchanged.
+
+The proposed meaningful checks are:
+
+- Exact preservation throughout the feasible core across varied budgets, including signed zero and the independently observed target magnitudes.
+- Oddness, strict monotonicity for ordinary finite ratios, and independent one-sided finite-difference derivative agreement at both shoulders and zero.
+- Finite/bounded output for enormous finite corrections across very small/large budgets, without overflow from delta/budget. Floating-point asymptotes may round to the budget; this remains inside the same domain allowance.
+- Existing actual steep-contour adversarial.85W minimum reach, floor datum and finiteness, extended to both signs of Number.MAX_VALUE.
+- Actual shared-provider F32 cap bend of a generic small authored width knot: inspect three cap samples and require residual second difference below35% of the uncorrected contour. The prior larger-amplitude bend fixture and its reduction gate remain as a second case. It does not reimplement the bound or embed the saved seed/camera. Existing true crest/toe/outgoing/floor guards remain.
+- Existing exact lifecycle clocks, final-hold correction/velocity limits, full/cap/table parity, actual eager/deferred draw-contact parity, raw input equality, raw clock/station retention, zero-origin lattice and bounded loft budget are retained unchanged.
+
+This is C1 only as a scalar map of delta for a fixed positive budget. It does not certify a globally C1 cap trajectory: the.98 raw-width coefficient, raw B/height/tangent terms, budget min branches, boundary activation, finite samples and post-impact trajectory remain. Feasible corrections spend more available room; meaningful domain/intersection suites and the fixed-camera native comparison must decide safety and visual benefit. No exposed mouth, ordinary rider entry/travel/exit or visual-quality success is inferred from this unexecuted proposal.
+
+Apply only after comparing the exact baseline pins in provenance.json with the intended production files. candidate.patch targets the two repository-relative paths. Baseline copies retain the exact pre-proposal source bytes for review; candidate copies are the proposed bytes.

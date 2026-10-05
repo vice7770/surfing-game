@@ -1,0 +1,31 @@
+{
+  "schema": "root-leaf-identity-core-application/v1",
+  "baselinePinsVerified": true,
+  "proposalPinsVerified": true,
+  "gitApplyCheckExitCode": 0,
+  "gitApplyExitCode": 0,
+  "candidateProductionPinsVerified": true,
+  "diffCheckExitCode": 0,
+  "testsExecuted": false,
+  "buildExecuted": false,
+  "nativeExecuted": false,
+  "candidate": [
+    {
+      "relative": "src/wave/barrel/boundedCProfile.ts",
+      "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/candidate/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 20184,
+      "sha256": "22b53cc2eb2073d8ba64263b02f382a6e335b0ae7572ba36e69c3af726d10426"
+    },
+    {
+      "relative": "src/wave/barrel/boundedCLeafReach.test.ts",
+      "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/candidate/src/wave/barrel/boundedCLeafReach.test.ts",
+      "bytes": 18620,
+      "sha256": "fa49acf878837a85b6444a82d928d8582c43ebe3a0c28baf759a97add27b9222"
+    }
+  ],
+  "patch": {
+    "file": "/private/tmp/tube-leaf-identity-core-proposal-20261005/candidate.patch",
+    "bytes": 8145,
+    "sha256": "a705dd4b30f3c7a47b11bcf2e7ed2893c71a099e45f4b70d0db9add2b72030da"
+  }
+}

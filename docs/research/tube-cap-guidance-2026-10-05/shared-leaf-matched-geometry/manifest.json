@@ -1,0 +1,377 @@
+{
+  "schema": "tube-shared-leaf-matched-geometry/v1",
+  "actualExecution": {
+    "handle": 16950,
+    "exitCode": 0,
+    "ownerComplete": true,
+    "nativeComplete": true,
+    "elapsedSeconds": 58.077906999969855,
+    "physicalSteps": 0,
+    "pngCount": 8,
+    "fourRestoredBaselineRepeatsPixelExact": true,
+    "postExecutionCopiedAndLiveSourcePinsVerified": true,
+    "closedOwnedPorts": [
+      4301,
+      9711
+    ],
+    "protectedPreviewsPreserved": [
+      4312,
+      4313,
+      4314,
+      4315
+    ],
+    "osObservationTimeoutCount": 0
+  },
+  "rootActualSourceChecks": {
+    "pythonASTFiles": 3,
+    "nodeSyntaxFiles": 2,
+    "passed": true,
+    "preparationFreezeSHA256": "11fcee81e8078fd672443e641654f027eb34f89548f99c9d4f1684ed33011968"
+  },
+  "rootActualOfflineAnalysis": {
+    "exitCode": 0,
+    "source": "measure.py",
+    "output": "saved-cap-analysis.json"
+  },
+  "rootViewedImages": [
+    "interior-region-preserved-cap.png",
+    "interior-region-shared-leaf.png",
+    "interior-rich-preserved-cap.png",
+    "interior-rich-shared-leaf.png",
+    "side-region-preserved-cap.png",
+    "side-region-shared-leaf.png",
+    "side-rich-preserved-cap.png",
+    "side-rich-shared-leaf.png"
+  ],
+  "rootVisualConclusion": "Modest contour improvement, especially the smaller interior roof-edge notches; side appearance remains similar. Grey angular band and dense partial-fade stippling remain. Not reference-quality acceptance or ordinary ridden entry/travel/exit evidence.",
+  "numericObservation": {
+    "front": 41,
+    "worldCrestX": 75.625,
+    "coordinateIsSigma": false,
+    "oldTargetBendDegrees": 33.27588227428939,
+    "candidateTargetBendDegrees": 21.479273974306263,
+    "oldSlices": 81,
+    "candidateSlices": 80,
+    "candidateVisibleNeighborhoodMaximumBendDegrees": 26.060732444770846,
+    "candidateVisibleNeighborhoodMaximumWorldX": 74.25,
+    "priorPositiveFadeRawStationsRetained": 12,
+    "missing": []
+  },
+  "applicationCheckpoint": "2f43b943cfb29419a063c6ee31813e4f116c7a7a",
+  "sourceReuse": [
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 31647,
+        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/wave/barrel/ProfileLibrary.ts",
+        "bytes": 31647,
+        "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 19679,
+        "sha256": "83feb4b827ff2b822a0aa0869cba2495480929c0e7e6ab3e74e3882cc69c2414"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 19679,
+        "sha256": "83feb4b827ff2b822a0aa0869cba2495480929c0e7e6ab3e74e3882cc69c2414"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 84568,
+        "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/wave/barrel/lipSheet.ts",
+        "bytes": 19136,
+        "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/scene/barrel/barrelMaskGlsl.ts",
+        "bytes": 2355,
+        "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/scene/barrel/barrelMaskGlsl.ts",
+        "bytes": 2355,
+        "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/scene/barrel/SweptBarrel.ts",
+        "bytes": 6980,
+        "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/scene/barrel/SweptBarrel.ts",
+        "bytes": 6980,
+        "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/scene/barrel/barrelWater.ts",
+        "bytes": 5755,
+        "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/scene/barrel/barrelWater.ts",
+        "bytes": 5755,
+        "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/wave/barrel/boundedCLeafReach.test.ts",
+        "bytes": 16453,
+        "sha256": "6e7e8a913d1fd18ccf23ca910793276d35970f2fde9c42d3361fec77ac3bc3fa"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/wave/barrel/boundedCLeafReach.test.ts",
+        "bytes": 16453,
+        "sha256": "6e7e8a913d1fd18ccf23ca910793276d35970f2fde9c42d3361fec77ac3bc3fa"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/wave/barrel/boundedCCapRefinement.test.ts",
+        "bytes": 11167,
+        "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/wave/barrel/boundedCCapRefinement.test.ts",
+        "bytes": 11167,
+        "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+      },
+      "bytesEqualVerified": true
+    },
+    {
+      "originalFrozenSource": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16525,
+        "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+      },
+      "storedReuse": {
+        "file": "shared-leaf-native-process-query-failure/source/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 16525,
+        "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+      },
+      "bytesEqualVerified": true
+    }
+  ],
+  "compressedArtifacts": [
+    {
+      "stored": {
+        "file": "candidate-first/loft-candidate.json.gz",
+        "bytes": 262012,
+        "sha256": "5cf89df120c318f710deb8453f5d5888a7a6bc766532d6a7b722568d9f6e22ad"
+      },
+      "original": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/loft-candidate.json",
+        "bytes": 1204806,
+        "sha256": "4188b6d7a5768d08f4c8f1b90a605d0124badc5dbf3194d23688d3f022e98d9d"
+      },
+      "decompressionVerified": true
+    },
+    {
+      "stored": {
+        "file": "candidate-first/draw-inputs.json.gz",
+        "bytes": 532498,
+        "sha256": "d8d2e5519d4e619a48cc6dcd48b4fbdef833d88623d4a378f8bb8ee9f84021af"
+      },
+      "original": {
+        "file": "/private/tmp/tube-shared-leaf-native-v2-20261005/candidate-first/draw-inputs.json",
+        "bytes": 1696833,
+        "sha256": "0f26472964cb9ee71d3abe267b5e5c1be16aeadb2eaf7bbd6cf3848ce63a4a6f"
+      },
+      "decompressionVerified": true
+    }
+  ],
+  "scope": "Matched old/current geometry through identical unmodified current material and common current ordinary-water surface/mask at exact raw333, actor words, epoch and fixed cameras. Geometry-derived support/depth/classification can change. Zero physical steps. Global C1 trajectory, moving formation/closure, full-body clearance and ride acceptance unproved. Temporary dependencies in helpers are original execution provenance, not a portable runner.",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 12001,
+      "sha256": "04937c16ef8a02792251f10a833c54de84980f43c525e0c30427c645fafe9a48"
+    },
+    {
+      "file": "build.json",
+      "bytes": 16556,
+      "sha256": "f945caaa1aba8d283487942e7150a7ed9e0def1b1c2e190b75ea83d6fa3bd705"
+    },
+    {
+      "file": "candidate-first/draw-inputs.json.gz",
+      "bytes": 532498,
+      "sha256": "d8d2e5519d4e619a48cc6dcd48b4fbdef833d88623d4a378f8bb8ee9f84021af"
+    },
+    {
+      "file": "candidate-first/interior-region-preserved-cap.png",
+      "bytes": 839660,
+      "sha256": "9def6a6222d128bd7b918223e0ae8ce9af2300b431797507db9801fef82dd96a"
+    },
+    {
+      "file": "candidate-first/interior-region-shared-leaf.png",
+      "bytes": 840419,
+      "sha256": "8da73d29dac4995509a8baf803101b3cfa7107703bfca2d5e0a68c8264bd24b9"
+    },
+    {
+      "file": "candidate-first/interior-rich-preserved-cap.png",
+      "bytes": 1979202,
+      "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+    },
+    {
+      "file": "candidate-first/interior-rich-shared-leaf.png",
+      "bytes": 1980748,
+      "sha256": "8150de63687c70314cbc8612cdfb937f539a70f977b0ece83a45d35240e818a5"
+    },
+    {
+      "file": "candidate-first/loft-candidate.json.gz",
+      "bytes": 262012,
+      "sha256": "5cf89df120c318f710deb8453f5d5888a7a6bc766532d6a7b722568d9f6e22ad"
+    },
+    {
+      "file": "candidate-first/report.json",
+      "bytes": 42900,
+      "sha256": "e221d3b1d355cd932750879760ea9a30a21d517a58204f86f53347474fdfbaf7"
+    },
+    {
+      "file": "candidate-first/side-region-preserved-cap.png",
+      "bytes": 541363,
+      "sha256": "0bf0ca2dadab1999773123cff1d1278676012018ad7694ee6c4465bb389e7569"
+    },
+    {
+      "file": "candidate-first/side-region-shared-leaf.png",
+      "bytes": 541476,
+      "sha256": "762b13a9cfa5c757ddb1b934f01596067862b2dfbfc0d56a64e4edd976b26105"
+    },
+    {
+      "file": "candidate-first/side-rich-preserved-cap.png",
+      "bytes": 1335540,
+      "sha256": "18807283a3a81522f61f088eac4c73f66686b38058bf97e8a9462c904fa46cac"
+    },
+    {
+      "file": "candidate-first/side-rich-shared-leaf.png",
+      "bytes": 1334550,
+      "sha256": "b846c8281de4fee4b5e1d9d63fa4e34ca11969ee599a638069b73a1a73436884"
+    },
+    {
+      "file": "geometry-inspection.mjs",
+      "bytes": 18841,
+      "sha256": "6a2594d3b74174b311d3d706f714fdf7f6bcb0b9a1b388c2718b5d7232b00857"
+    },
+    {
+      "file": "inputs.json",
+      "bytes": 9715,
+      "sha256": "8bec37b744c0b16699d734b0f1b8a3e3cd7c709e98e7eca1bd618ebf2b9b2459"
+    },
+    {
+      "file": "launcher.json",
+      "bytes": 11496,
+      "sha256": "7bd4691ee7979a16f78468be13ca760996962c60cfca07704cd4bc2939b72a43"
+    },
+    {
+      "file": "measure.py",
+      "bytes": 8177,
+      "sha256": "e7189b0d2e5b040352c4b2e3d25a274bf690de252f68eba55b842b5d01edcf69"
+    },
+    {
+      "file": "native.log",
+      "bytes": 61,
+      "sha256": "527dc62d6ccd0a264f35ecf823b3958d02451c76546e5fbd6f30ac867a0405ec"
+    },
+    {
+      "file": "native.mjs",
+      "bytes": 10270,
+      "sha256": "6b0b13c1abd4107c3e123344d96500011dbf18db5363a887f9028f63f126f7a5"
+    },
+    {
+      "file": "owner.json",
+      "bytes": 15739,
+      "sha256": "015c31d0bf9fecc62935ab919e7a65277f74084b79b80a7a4fe40e26efe7a02c"
+    },
+    {
+      "file": "preparation-freeze.json",
+      "bytes": 3553,
+      "sha256": "11fcee81e8078fd672443e641654f027eb34f89548f99c9d4f1684ed33011968"
+    },
+    {
+      "file": "prepare-result.json",
+      "bytes": 746,
+      "sha256": "8a4651902634637103250ca52067f2f36cae1f8afaca3c18ed3bb48fb00ecede"
+    },
+    {
+      "file": "prepare.py",
+      "bytes": 6241,
+      "sha256": "d095b8229cbea8d86ae14cb14213444f744c640e3e2d5d9795a8c57c48a4f724"
+    },
+    {
+      "file": "recipe.patch",
+      "bytes": 44916,
+      "sha256": "c39e6ce3fd476f2d56a0aba328934da70d257f3558934ca84c068257aa2383d9"
+    },
+    {
+      "file": "run.py",
+      "bytes": 15631,
+      "sha256": "348177699091dfa22f211218e1e4a0740e314c5c897724314c3412cd046f5438"
+    },
+    {
+      "file": "saved-cap-analysis.json",
+      "bytes": 52531,
+      "sha256": "b30f47bd4eda122ffc6c8a405eba9e574d98d3a7d0707fc536c06b507da796e5"
+    },
+    {
+      "file": "seal.json",
+      "bytes": 9461,
+      "sha256": "bc8d8374c629fd7cf74da7abac0609b036242f3a3b0ee53ce8a8a1519e9dd3ee"
+    },
+    {
+      "file": "source-freeze.json",
+      "bytes": 6300,
+      "sha256": "e38226f54858e5804065cec68626af7ed2b1e1fbf799f87ecef12f2136825e78"
+    }
+  ]
+}

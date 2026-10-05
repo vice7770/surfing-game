@@ -110,21 +110,53 @@ describe('shared bounded-C leaf reach', () => {
     expect(Math.abs(carrierWidthDelta(c, 0.1875))).toBeGreaterThan(0);
   });
 
-  it('bounds both signs smoothly below one thickness scale without a hard clamp corner', () => {
-    const thickness = 0.03125, epsilon = thickness * 1e-6;
-    let previous = -thickness;
-    for (const requested of [-100, -0.25, -0.01, 0, 0.01, 0.25, 100]) {
-      const value = boundedLeafWidthDelta(requested, thickness);
+  it('preserves feasible mean corrections exactly throughout the identity core', () => {
+    // These ratios include small and near-shoulder corrections; they are not expected values
+    // computed by a second implementation of the bound.
+    for (const budget of [1e-200, 0.005, 0.03125, 10, 1e200]) {
+      for (const ratio of [-0.6, -0.5229, -0.3809, -0.0204, 0, 0.0204, 0.3809, 0.5229, 0.6]) {
+        const requested = ratio * budget;
+        expect(boundedLeafWidthDelta(requested, budget)).toBe(requested);
+      }
+    }
+    expect(Object.is(boundedLeafWidthDelta(-0, 1), -0)).toBe(true);
+  });
+
+  it('is odd, monotonic and joins both shoulders with unit first derivative', () => {
+    const budget = 0.03125, epsilon = budget * 1e-6;
+    let previous = -budget;
+    for (const ratio of [-100, -5, -1, -0.75, -0.6, -0.5229, -0.3809, -0.0204,
+      0, 0.0204, 0.3809, 0.5229, 0.6, 0.75, 1, 5, 100]) {
+      const requested = ratio * budget, value = boundedLeafWidthDelta(requested, budget);
       expect(Number.isFinite(value)).toBe(true);
-      expect(Math.abs(value)).toBeLessThan(thickness);
+      expect(Math.abs(value)).toBeLessThan(budget);
       expect(value).toBeGreaterThan(previous);
-      expect(boundedLeafWidthDelta(-requested, thickness)).toBe(-value);
+      expect(boundedLeafWidthDelta(-requested, budget)).toBe(-value);
       previous = value;
     }
-    const left = -boundedLeafWidthDelta(-epsilon, thickness) / epsilon;
-    const right = boundedLeafWidthDelta(epsilon, thickness) / epsilon;
-    expect(left).toBeCloseTo(right, 12);
-    expect(left).toBeCloseTo(1, 5);
+    for (const requested of [-0.6 * budget, 0, 0.6 * budget]) {
+      const value = boundedLeafWidthDelta(requested, budget);
+      const left = (value - boundedLeafWidthDelta(requested - epsilon, budget)) / epsilon;
+      const right = (boundedLeafWidthDelta(requested + epsilon, budget) - value) / epsilon;
+      expect(Math.abs(left - right)).toBeLessThan(5e-6);
+      expect(Math.abs(left - 1)).toBeLessThan(5e-6);
+      expect(Math.abs(right - 1)).toBeLessThan(5e-6);
+    }
+  });
+
+  it('keeps huge finite requests finite and bounded without a ratio overflow', () => {
+    // The non-round budget catches upward ULP rounding of complementary shoulder terms.
+    for (const budget of [1e-200, 0.03125, 1, 1.7500000000000011, 1e200, Number.MAX_VALUE]) {
+      for (const magnitude of [1e-200, 1, 1e200, Number.MAX_VALUE]) {
+        const positive = boundedLeafWidthDelta(magnitude, budget);
+        expect(Number.isFinite(positive)).toBe(true);
+        expect(positive).toBeGreaterThan(0);
+        // Extreme floating-point ratios may round the asymptote to its exact budget.
+        expect(positive).toBeLessThanOrEqual(budget);
+        expect(positive).toBeLessThanOrEqual(magnitude);
+        expect(boundedLeafWidthDelta(-magnitude, budget)).toBe(-positive);
+      }
+    }
   });
 
   it('keeps the original leaf domain under extreme reach corrections', () => {
@@ -136,7 +168,7 @@ describe('shared bounded-C leaf reach', () => {
     }
     const controls = boundedCParameters(carrier, 1, 0.625);
     const width = controls.toe[0] - controls.crest[0];
-    for (const requested of [-1e9, 0, 1e9]) {
+    for (const requested of [-Number.MAX_VALUE, -1e9, 0, 1e9, Number.MAX_VALUE]) {
       const final = carrier.slice();
       sampleBoundedC({ ...controls, leafWidthDelta: requested }, final, false, undefined, true);
       // The existing thickness/curvature bound assumes this minimum outer-leaf reach.
@@ -147,8 +179,9 @@ describe('shared bounded-C leaf reach', () => {
     }
   });
 
-  it('reduces a generic leaf bend while keeping the true crest/toe, floor and outgoing carrier', () => {
-    const width = (tau: number) => 2 + 0.015625 * Math.max(0, 1 - Math.abs(tau - 0.625) / STEP);
+  it.each([{ amplitude: 0.015625, maximumResidual: 1 }, { amplitude: 0.0078125, maximumResidual: 0.35 }])(
+    'reduces the actual generic cap bend for amplitude $amplitude while keeping true anchors', ({ amplitude, maximumResidual }) => {
+    const width = (tau: number) => 2 + amplitude * Math.max(0, 1 - Math.abs(tau - 0.625) / STEP);
     const c = widthCase(width), raw = new ProfileLibrary([c]), corrected = new ProfileLibrary([c], { geometry: 'bounded-C' });
     const query = { slope: c.slope, footHeight: c.nonlinearity, footDepth: 1 };
     const unit = Math.sqrt(1 / GRAVITY), expected = rawFrame(c, c.touchdown);
@@ -168,7 +201,11 @@ describe('shared bounded-C leaf reach', () => {
       expect(final[2 * 104 + 1]).toBe(final[2 * LANDMARK.toe + 1]);
       expect(final[2 * LANDMARK.lip + 1]).toBeGreaterThan(final[2 * 104 + 1]);
     }
-    expect(Math.abs(after[0] - 2 * after[1] + after[2])).toBeLessThan(Math.abs(before[0] - 2 * before[1] + before[2]));
+    // Inspect the actual F32 cap response of a generic small width knot. The old bound
+    // attenuated even this feasible correction; no old bound formula is reproduced here.
+    const rawBend = Math.abs(before[0] - 2 * before[1] + before[2]);
+    expect(rawBend).toBeGreaterThan(1e-4);
+    expect(Math.abs(after[0] - 2 * after[1] + after[2])).toBeLessThan(maximumResidual * rawBend);
   });
 
   it('rejoins the authored hold with exact zero added reach and no added one-sided cap velocity', () => {

@@ -1,0 +1,13 @@
+
+> surfing-game@0.1.0 test
+> vitest run --maxWorkers=1 src/wave/SurfZoneRunner.tube.test.ts src/wave/barrel/sweptContact.test.ts src/wave/barrel/tubeApproach.test.ts
+
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+
+ Test Files  3 passed (3)
+      Tests  41 passed (41)
+   Start at  17:31:33
+   Duration  2.51s (tests 72%, transform 21%, import 7%)
+

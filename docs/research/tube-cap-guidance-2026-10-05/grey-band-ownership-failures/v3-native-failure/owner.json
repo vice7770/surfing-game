@@ -1,0 +1,175 @@
+{
+  "schema": "grey-band-ownership-owner/v3",
+  "complete": false,
+  "firstFailure": "AssertionError: Native terminal exit 1",
+  "protectedBefore": {
+    "4312": [
+      "92445 Sun Oct 4 23:17:08 2026 /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4312 --bind 127.0.0.1 --directory /private/tmp/tube-coherent-warmup-native-20261004/dist"
+    ],
+    "4313": [
+      "58298 Mon Oct 5 01:49:12 2026 /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4313 --bind 127.0.0.1 --directory /private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-complete-dist"
+    ],
+    "4314": [
+      "51358 Mon Oct 5 13:02:44 2026 /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4314 --bind 127.0.0.1 --directory /private/tmp/tube-c-formation-native-20261005/candidate-complete-dist"
+    ],
+    "4315": [
+      "87796 Mon Oct 5 15:00:00 2026 /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4315 --bind 127.0.0.1 --directory /private/tmp/tube-open-mouth-body-clearance-native-20261005/dist"
+    ]
+  },
+  "protected4315ExpectedPid": 87796,
+  "protected4315RootToolSession": "64713",
+  "toolSessionOSIdentityClaim": false,
+  "sealSha256": "0f710a80cabb8d4aff923562f4c9ec7adc2b1ba7707f1639f6ec932c9eca571f",
+  "preExecutionPinsVerified": true,
+  "postExecutionPinsVerified": false,
+  "copiedAndHistoricalSourcePinsPostVerified": false,
+  "cleanupFailures": [],
+  "expectedProtectedPids": {
+    "4312": 92445,
+    "4313": 58298,
+    "4314": 51358,
+    "4315": 87796
+  },
+  "protectedIdentityAuthority": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+    "bytes": 25763,
+    "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+  },
+  "historicalOpticalRun": {
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    "qualification": "The V3 gameplay owner/report actually failed the640s diagnostic wall deadline after1525rows. Its immutable app build/assets/log/source receipts are complete; gameplay success is not claimed."
+  },
+  "priorPreparationFailure": {
+    "receipt": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/root-prepare-failure.json",
+      "bytes": 2044,
+      "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf"
+    },
+    "qualification": "The ID V2 root preparation actually exited1 while treating node_modules/three/build/three.core.js as committed Git source. Its failed preparation started no native run and produced no dist, source scratch, provenance, build, seal, owner or candidate results. The receipt complete flag records this actual failure only; V2 source freeze remains unchanged."
+  },
+  "osObservationPolicy": {
+    "osReadSeconds": 2,
+    "periodicIdentitySeconds": 5,
+    "maximumRecordedTimeoutNotes": 16,
+    "requiredReadAttempts": 3,
+    "periodicTimeoutOutcome": "Observation only; keep same native handle/HTTP server and retry at next scheduled poll.",
+    "requiredIdentityOutcome": "Initial/preflight/cleanup identity verification required; never signal unverified groups.",
+    "absoluteWholeSeconds": 680,
+    "cleanupReserveSeconds": 20
+  },
+  "absoluteBudget": {
+    "wholeSeconds": 680,
+    "cleanupReservedSeconds": 20,
+    "activeOwnerBudgetSeconds": 648.0,
+    "maximumNativeOwnerSeconds": 648,
+    "preflightBudgetSeconds": 20
+  },
+  "pid": 30849,
+  "ownedProcessGroup": 30849,
+  "ownedProcessIdentity": {
+    "pid": 30849,
+    "pgid": 30849,
+    "started": "Mon Oct 5 17:13:29 2026",
+    "command": "/opt/homebrew/bin/node /private/tmp/tube-grey-band-ownership-native-v3-20261005/native.mjs --run=true --url=http://127.0.0.1:4301/?diagnostics --out=/private/tmp/tube-grey-band-ownership-native-v3-20261005/candidate-first"
+  },
+  "ownedIdentities": [
+    {
+      "pid": 30849,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:29 2026",
+      "command": "/opt/homebrew/bin/node /private/tmp/tube-grey-band-ownership-native-v3-20261005/native.mjs --run=true --url=http://127.0.0.1:4301/?diagnostics --out=/private/tmp/tube-grey-band-ownership-native-v3-20261005/candidate-first"
+    },
+    {
+      "pid": 30851,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:29 2026",
+      "command": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome --remote-debugging-port=9711 --user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-riYfyz --no-first-run --no-default-browser-check --disable-extensions --disable-background-networking --disable-component-update --disable-sync --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --disable-background-timer-throttling --autoplay-policy=no-user-gesture-required --window-size=1708,966 --window-position=60,60 --app=about:blank --mute-audio"
+    },
+    {
+      "pid": 30857,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:30 2026",
+      "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.93/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper --type=gpu-process --gpu-recent-crash-count=0 --user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-riYfyz --gpu-preferences=WAAAAAAAAAAgAQAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAADAAAAAEAAAAAAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA= --shared-files --metrics-shmem-handle=1752395122,r,3606467248702256743,3875837379438495212,262144 --field-trial-handle=1718379636,r,4004634658596210036,2288740065607502754,262144 --variations-seed-version --pseudonymization-salt-handle=1935764596,r,17385672248958314120,4192269090508711861,4 --trace-process-track-uuid=3190708988185955192 --seatbelt-client=29"
+    },
+    {
+      "pid": 30858,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:30 2026",
+      "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.93/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=network --mute-audio --user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-riYfyz --shared-files --metrics-shmem-handle=1752395122,r,5093730357598218108,9567540602755051287,524288 --field-trial-handle=1718379636,r,4004634658596210036,2288740065607502754,262144 --variations-seed-version --pseudonymization-salt-handle=1935764596,r,17385672248958314120,4192269090508711861,4 --trace-process-track-uuid=3190708989122997041 --seatbelt-client=29"
+    },
+    {
+      "pid": 30859,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:30 2026",
+      "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.93/Helpers/Google Chrome Helper.app/Contents/MacOS/Google Chrome Helper --type=utility --utility-sub-type=storage.mojom.StorageService --lang=en-US --service-sandbox-type=service --mute-audio --user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-riYfyz --shared-files --metrics-shmem-handle=1752395122,r,10582134629567020675,1138725778900689496,524288 --field-trial-handle=1718379636,r,4004634658596210036,2288740065607502754,262144 --variations-seed-version --pseudonymization-salt-handle=1935764596,r,17385672248958314120,4192269090508711861,4 --trace-process-track-uuid=3190708990060038890 --seatbelt-client=45"
+    },
+    {
+      "pid": 30862,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:30 2026",
+      "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.93/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --top-chrome-webui --user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-riYfyz --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --remote-debugging-port=9711 --lang=en-US --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=6 --launch-time-ticks=408352166578 --shared-files --metrics-shmem-handle=1752395122,r,6694543955421584161,16572115474717314800,1572864 --field-trial-handle=1718379636,r,4004634658596210036,2288740065607502754,262144 --variations-seed-version --pseudonymization-salt-handle=1935764596,r,17385672248958314120,4192269090508711861,4 --trace-process-track-uuid=3190708991934122588 --seatbelt-client=78"
+    },
+    {
+      "pid": 30865,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:30 2026",
+      "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.93/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-riYfyz --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --remote-debugging-port=9711 --lang=en-US --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=9 --launch-time-ticks=408352389700 --shared-files --metrics-shmem-handle=1752395122,r,7632455239786799378,14141986509428069272,1572864 --field-trial-handle=1718379636,r,4004634658596210036,2288740065607502754,262144 --variations-seed-version --pseudonymization-salt-handle=1935764596,r,17385672248958314120,4192269090508711861,4 --trace-process-track-uuid=3190708994745248135 --seatbelt-client=88"
+    },
+    {
+      "pid": 30866,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:30 2026",
+      "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.93/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-riYfyz --extension-process --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --remote-debugging-port=9711 --lang=en-US --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=10 --launch-time-ticks=408352391346 --shared-files --metrics-shmem-handle=1752395122,r,456529031501900082,10799263779831173034,1572864 --field-trial-handle=1718379636,r,4004634658596210036,2288740065607502754,262144 --variations-seed-version --pseudonymization-salt-handle=1935764596,r,17385672248958314120,4192269090508711861,4 --trace-process-track-uuid=3190708995682289984 --seatbelt-client=87"
+    },
+    {
+      "pid": 30868,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:30 2026",
+      "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.93/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-riYfyz --extension-process --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --remote-debugging-port=9711 --lang=en-US --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=11 --launch-time-ticks=408352448059 --shared-files --metrics-shmem-handle=1752395122,r,14126482627533863216,8018057965761073092,1572864 --field-trial-handle=1718379636,r,4004634658596210036,2288740065607502754,262144 --variations-seed-version --pseudonymization-salt-handle=1935764596,r,17385672248958314120,4192269090508711861,4 --trace-process-track-uuid=3190708996619331833 --seatbelt-client=104"
+    },
+    {
+      "pid": 30881,
+      "pgid": 30849,
+      "started": "Mon Oct 5 17:13:32 2026",
+      "command": "/Applications/Google Chrome.app/Contents/Frameworks/Google Chrome Framework.framework/Versions/154.0.8037.93/Helpers/Google Chrome Helper (Renderer).app/Contents/MacOS/Google Chrome Helper (Renderer) --type=renderer --user-data-dir=/var/folders/91/xd6q44sj40vbzk9pysv_0lzh0000gn/T/breakline-full-writer-fps-riYfyz --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --remote-debugging-port=9711 --lang=en-US --num-raster-threads=4 --enable-zero-copy --enable-gpu-memory-buffer-compositor-resources --enable-main-frame-before-activation --renderer-client-id=23 --launch-time-ticks=408354786657 --shared-files --metrics-shmem-handle=1752395122,r,13903657410370781337,5551276344162522886,1572864 --field-trial-handle=1718379636,r,4004634658596210036,2288740065607502754,262144 --variations-seed-version --pseudonymization-salt-handle=1935764596,r,17385672248958314120,4192269090508711861,4 --trace-process-track-uuid=3190709007863834021 --seatbelt-client=127"
+    }
+  ],
+  "exitCode": 1,
+  "ownedMembersBeforeCleanup": [],
+  "ownedMembersAfterCleanup": [],
+  "ownedGroupIdentityAndAbsenceVerified": true,
+  "protectedAfter": {
+    "4312": [
+      "92445 Sun Oct 4 23:17:08 2026 /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4312 --bind 127.0.0.1 --directory /private/tmp/tube-coherent-warmup-native-20261004/dist"
+    ],
+    "4313": [
+      "58298 Mon Oct 5 01:49:12 2026 /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4313 --bind 127.0.0.1 --directory /private/tmp/tube-bounded-c-retirement-boundary-native-20261005/candidate-complete-dist"
+    ],
+    "4314": [
+      "51358 Mon Oct 5 13:02:44 2026 /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4314 --bind 127.0.0.1 --directory /private/tmp/tube-c-formation-native-20261005/candidate-complete-dist"
+    ],
+    "4315": [
+      "87796 Mon Oct 5 15:00:00 2026 /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m http.server 4315 --bind 127.0.0.1 --directory /private/tmp/tube-open-mouth-body-clearance-native-20261005/dist"
+    ]
+  },
+  "protectedPreserved": true,
+  "closedPorts": {
+    "4301": true,
+    "9711": true
+  },
+  "osReadTimeoutCount": 0,
+  "osReadTimeoutNotes": [],
+  "osReadTimeoutNotesTruncated": false,
+  "cleanupElapsedSeconds": 0.46615187503630295,
+  "nativeOwnerElapsedSeconds": 53.18998962501064,
+  "elapsedSeconds": 53.450254833034705
+}

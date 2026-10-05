@@ -1,0 +1,356 @@
+diff --git a/prepare.py b/prepare.py
+--- a/prepare.py
++++ b/prepare.py
+@@ -1,7 +1,7 @@
+ """Root-only preparation source. Copies immutable V3 assets; never builds or pins mutable production."""
+ from pathlib import Path
+ import hashlib,json,shutil,subprocess
+-W=Path('/private/tmp/tube-grey-band-ownership-native-v3-20261005')
++W=Path('/private/tmp/tube-grey-band-ownership-native-v4-20261005')
+ def pin(p):
+  b=p.read_bytes();return {'file':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+ def verify(spec):
+@@ -9,7 +9,7 @@
+ assert not any((W/n).exists()for n in('dist','historical-source','historical-dependencies','historical-diagnostic','source-provenance.json','build.json','seal.json','prepare-result.json','owner.json','candidate-first')),'First-only root preparation'
+ i=json.loads((W/'inputs.json').read_bytes())
+ reference_names=('opticalApplicationBuild','opticalApplicationFreeze','opticalApplicationSeal','opticalApplicationBuildLog','referenceReport','referenceOwner','referenceLoft','authoredReport','authoredOwner','authoredSeal','baselinePNG')
+-references=[i[k]for k in reference_names]+i['readOnlyEvidence']+[i['protectedIdentityAuthority'],i['historicalOpticalRun']['owner'],i['historicalOpticalRun']['report'],i['priorPreparationFailure']['receipt']]
++references=[i[k]for k in reference_names]+i['readOnlyEvidence']+[i['protectedIdentityAuthority'],i['historicalOpticalRun']['owner'],i['historicalOpticalRun']['report'],i['priorPreparationFailure']['receipt'],i['priorNativeFailure']['owner'],i['priorNativeFailure']['report'],i['priorNativeFailure']['rootPostFailure']]
+ for spec in references+i['borrowedHelperPins']:verify(spec)
+ closure=json.loads(verify(i['protectedIdentityAuthority']))
+ assert closure['schema']=='shared-leaf-independent-post-failure/v1' and closure['complete'] and closure['protectedPreserved'] and closure['ownedGroupAbsent'] and all(closure['closedPorts'].values())
+@@ -21,6 +21,18 @@
+ assert not previous_prepare['nativeExecutionStarted'] and not previous_prepare['portsProbedOrStartedByPreparation'] and previous_prepare['originalSourcesAndFreezePreserved']
+ assert previous_prepare['producedOutputsExist'] and not any(previous_prepare['producedOutputsExist'].values())
+ # complete:true on that separate receipt records a failed preparation, not native success.
++previous_native=json.loads(verify(i['priorNativeFailure']['owner']));previous_report=json.loads(verify(i['priorNativeFailure']['report']))
++previous_audit=json.loads(verify(i['priorNativeFailure']['rootPostFailure']))
++assert previous_native['schema']=='grey-band-ownership-owner/v3' and not previous_native['complete'] and previous_native['exitCode']==1
++assert previous_native['protectedPreserved'] and previous_native['ownedGroupIdentityAndAbsenceVerified'] and all(previous_native['closedPorts'].values())
++assert not previous_native['postExecutionPinsVerified']
++assert previous_report['schema']=='grey-band-ownership-native/v3' and not previous_report['complete'] and previous_report['stepCount']==0 and previous_report['pngCount']==0
++assert 'Untargeted legacy lip must retain actual zero draw range' in previous_report['firstFailure']
++assert previous_audit['schema']=='grey-band-v3-independent-post-failure/v1' and previous_audit['complete'] and previous_audit['actualExecutionExitCode']==1
++assert previous_audit['failedOwner']==i['priorNativeFailure']['owner'] and previous_audit['failedReport']==i['priorNativeFailure']['report']
++assert previous_audit['originalOutputsUnchanged'] and not previous_audit['originalOwnerAndNativeComplete'] and previous_audit['comparisonPNGCount']==0 and previous_audit['physicalSteps']==0
++assert previous_audit['ownedGroupAbsent'] and previous_audit['protectedPreserved'] and all(previous_audit['closedPorts'].values()) and not previous_audit['signalsSentByThisAudit']
++# This separate actual post-failure receipt preserves the failed native outcome; it is not a success receipt.
+ b=json.loads(verify(i['opticalApplicationBuild']));f=json.loads(verify(i['opticalApplicationFreeze']));s=json.loads(verify(i['opticalApplicationSeal']))
+ assert b['complete'] and b['build']==i['applicationBuildId'] and f['complete'] and f['build']==b['build'] and s['complete'] and s['rootAuthorized'] and s['buildId']==b['build']
+ assert b['applicationBuildLog']==i['opticalApplicationBuildLog']
+@@ -100,7 +112,19 @@
+  data=committed_bytes(relative)
+  dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(data);copy=pin(dest);historical.append(copy)
+  extra_records.append({'relative':relative,'historicalCommit':commit,'copied':copy,'existingBuildReceiptHashAvailable':False,'provenance':'Additional source read from the exact declared commit for optical interpretation; not assigned an invented prior build receipt hash.'})
+-provenance={'schema':'grey-band-ownership-source-provenance/v3','complete':True,'applicationBuild':i['opticalApplicationBuild'],'applicationFreeze':i['opticalApplicationFreeze'],'historicalCommit':commit,'sourceProvenancePolicy':policy,'priorPreparationFailure':i['priorPreparationFailure'],'repositorySources':repository_records,'repositoryDependencySources':dependency_records,'externalDiagnosticSources':external_records,'extraOpticalCommittedSources':extra_records,'counts':{'uniqueCommittedReceiptSources':len(repository_records),'repositoryDependencies':len(dependency_records),'externalDiagnosticSources':len(external_records),'additionalOpticalCommittedSources':len(extra_records)},'mutableProductionSourcesReadOrFrozen':False,'originalV3GameplaySucceeded':False}
++# Exact historical source rationale only. The actual index/position emptiness and range
++# are still independently checked and recorded in the new browser installation/capture.
++legacy_policy=i['legacyLipGuard'];assert legacy_policy['sourceRationaleHistoricalCommit']==commit
++physical_path=W/'historical-source'/legacy_policy['sourceRationalePaths'][0]
++lip_path=W/'historical-source'/legacy_policy['sourceRationalePaths'][1]
++physical=physical_path.read_text();lip=lip_path.read_text()
++assert 'this.lipSheet.update(host.snapshot.lip, this.swept ? 0 : host.snapshot.lipCount, host.init.dx);' in physical
++assert "geometry.setAttribute('position', new BufferAttribute(lip.positions, 3));" in lip
++assert 'geometry.setIndex(new BufferAttribute(lip.indices, 1));' in lip and '.drawRange' not in lip and 'setDrawRange(' not in lip
++legacy_sources={'historicalCommit':commit,'physicalMode':pin(physical_path),'lipSheetMesh':pin(lip_path),
++ 'sweptPassesZeroLipCount':True,'richLipInstallsBuiltPositionAndIndex':True,'lipSheetExplicitDrawRangeAssignmentFound':False,
++ 'actualRuntimeCountsAndRangeAssertedFromSource':False,'qualification':'Historical source rationale only; the actual runtime index and position counts must independently be0 and actual range/visibility/attributes must remain unchanged.'}
++provenance={'schema':'grey-band-ownership-source-provenance/v4','complete':True,'applicationBuild':i['opticalApplicationBuild'],'applicationFreeze':i['opticalApplicationFreeze'],'historicalCommit':commit,'sourceProvenancePolicy':policy,'priorPreparationFailure':i['priorPreparationFailure'],'priorNativeFailure':i['priorNativeFailure'],'legacyLipGuardPolicy':legacy_policy,'legacyEmptyGeometrySourceEvidence':legacy_sources,'repositorySources':repository_records,'repositoryDependencySources':dependency_records,'externalDiagnosticSources':external_records,'extraOpticalCommittedSources':extra_records,'counts':{'uniqueCommittedReceiptSources':len(repository_records),'repositoryDependencies':len(dependency_records),'externalDiagnosticSources':len(external_records),'additionalOpticalCommittedSources':len(extra_records)},'mutableProductionSourcesReadOrFrozen':False,'originalV3GameplaySucceeded':False}
+ (W/'source-provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
+ shutil.copytree(app,W/'dist')
+ copied_assets=[pin(p)for p in sorted((W/'dist').rglob('*'))if p.is_file()]
+@@ -110,18 +134,18 @@
+  original=old_assets[Path(spec['file']).relative_to(W/'dist')]
+  assert spec['bytes']==original['bytes'] and spec['sha256']==original['sha256'],'Copied immutable app bytes differ'
+ for spec in b['assets']:verify(spec)
+-copied={'schema':'grey-band-ownership-build/v3','complete':True,'build':i['applicationBuildId'],
++copied={'schema':'grey-band-ownership-build/v4','complete':True,'build':i['applicationBuildId'],
+  'operation':'Copy immutable V3 app assets only; bounded read-only git show reconstructs committed sources; dependencies/external diagnostic copied from direct compiled pins; no build/current source freeze.',
+  'assets':copied_assets, 'priorBuild':i['opticalApplicationBuild'],
+- 'historicalCommit':commit,'sourceProvenance':pin(W/'source-provenance.json'),'reconstructedHistoricalSources':historical,'copiedRepositoryDependencySources':dependencies,'copiedExternalDiagnosticSources':external,'historicalOpticalRun':i['historicalOpticalRun'],'priorPreparationFailure':i['priorPreparationFailure'],'oldProductionSourceReceiptVerification':True,
++ 'historicalCommit':commit,'sourceProvenance':pin(W/'source-provenance.json'),'reconstructedHistoricalSources':historical,'copiedRepositoryDependencySources':dependencies,'copiedExternalDiagnosticSources':external,'historicalOpticalRun':i['historicalOpticalRun'],'priorPreparationFailure':i['priorPreparationFailure'],'priorNativeFailure':i['priorNativeFailure'],'oldProductionSourceReceiptVerification':True,
+  'mutableProductionSourcePinsRequired':False,'oldAndCurrentGeometryEquivalenceAsserted':False}
+ (W/'build.json').write_text(json.dumps(copied,indent=2)+'\n')
+ names=('inputs.json','README.md','prepare.py','run.py','native.mjs','ownership-inspection.mjs','recipe-diff.md','recipe.patch','preparation-freeze.json')
+-seal={'schema':'grey-band-ownership-seal/v3','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),
++seal={'schema':'grey-band-ownership-seal/v4','rootAuthorized':True,'complete':True,'applicationBuild':pin(W/'build.json'),
+  'sourceProvenance':pin(W/'source-provenance.json'),'helpers':[pin(W/n)for n in names],'borrowedHelpers':i['borrowedHelperPins'],'references':references,
+  'immutablePriorAssets':b['assets'],'historicalScratchSources':historical,'repositoryDependencyScratchSources':dependencies,'externalDiagnosticScratchSources':external,'limits':i['limits'],'comparison':i['comparison']}
+ (W/'seal.json').write_text(json.dumps(seal,indent=2)+'\n')
+-result={'schema':'grey-band-ownership-preparation/v3','complete':True,'seal':pin(W/'seal.json'),'build':pin(W/'build.json'),
++result={'schema':'grey-band-ownership-preparation/v4','complete':True,'seal':pin(W/'seal.json'),'build':pin(W/'build.json'),
+  'resourcesStarted':False,'portsProbed':False,'executedChecksOrBuilds':False,'liveSourcesWrittenOrFrozen':False,
+  'sourceProvenance':pin(W/'source-provenance.json'),'historicalSourceRecovery':'Committed repository sources recovered with bounded read-only git show and existing receipt hashes; declared untracked repository dependencies and outside-repository diagnostic sources copied from their exact compiled-source receipts. No build/current source freeze.'}
+ (W/'prepare-result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))
+diff --git a/run.py b/run.py
+--- a/run.py
++++ b/run.py
+@@ -2,7 +2,7 @@
+ from pathlib import Path
+ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+ import hashlib,json,os,signal,socket,subprocess,threading,time
+-W=Path('/private/tmp/tube-grey-band-ownership-native-v3-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
++W=Path('/private/tmp/tube-grey-band-ownership-native-v4-20261005');PROTECTED=(4312,4313,4314,4315);OWNED=(4301,9711)
+ EXPECTED_PROTECTED={4312:92445,4313:58298,4314:51358,4315:87796}
+ OS_SECONDS=2;IDENTITY_PERIOD=5;REQUIRED_ATTEMPTS=3;NOTE_LIMIT=16;whole_started=time.monotonic()
+ timeout_notes=[];timeout_count=0
+@@ -56,7 +56,7 @@
+    if attempt+1<REQUIRED_ATTEMPTS and time.monotonic()<deadline:time.sleep(min(.1,max(0,deadline-time.monotonic())))
+  raise TimeoutError('Required identity could not be verified: '+phase)from last
+ def validate_result(result):
+- assert result['schema']=='grey-band-ownership-native/v3' and result['complete'] and result['firstFailure']is None and result['ownedBrowserClose']
++ assert result['schema']=='grey-band-ownership-native/v4' and result['complete'] and result['firstFailure']is None and result['ownedBrowserClose']
+  assert not result['browserErrors'] and result['stepCount']==0 and result['pngCount']==4
+  assert result['applicationBuildRequest']['build']==inputs['applicationBuildId'] and result['applicationBuildRequest']['checkedBeforeReplay']
+  assert result['replayStartup']['publicStartCalls']==1 and result['replayStartup']['noPlacement'] and result['replayStartup']['noClockAssignment']
+@@ -66,7 +66,9 @@
+  reference=json.loads(verify(inputs['referenceLoft']));out=W/'candidate-first'
+  assert result['initial']['seaTime']==reference['epoch']['seaTime'] and result['initial']['compute']=='gpu'
+  assert result['initial']['canvas']==[1708,879] and result['initial']['menu']['selectedChoices']==['Padang Padang','Big','Mid','Calm','Midday']
+- c=result['capture'];assert c['complete'] and c['camera']=='interior' and c['view']=='rich' and c['fixedPose']==inputs['fixedCamera']
++ installation=result['installation'];assert installation['installed'] and installation['legacyLipIndexedGeometryEmpty']
++ legacy=installation['legacyLipState'];assert legacy['indexPresent'] and legacy['indexCount']==0 and legacy['positionCount']==0
++ c=result['capture'];assert c['legacyLipState']==legacy and c['guards']['legacyLipIndexedGeometryEmpty'];assert c['complete'] and c['camera']=='interior' and c['view']=='rich' and c['fixedPose']==inputs['fixedCamera']
+  assert c['stepCount']==0 and c['seaTime']==reference['epoch']['seaTime'] and all(c['guards'].values())
+  assert c['renderedStages']==['owner','rasterFace','bodyCos'] and len(c['restoredRepeats'])==3
+  assert [r['after']for r in c['restoredRepeats']]==c['renderedStages']
+@@ -105,16 +107,17 @@
+  assert (out/'report.json').stat().st_size<=inputs['limits']['reportBytes'] and {p.name for p in out.iterdir()}==expected
+  return {'steps':0,'pngCount':4,'sameHistoricalFull37Raw333AndCurrentDrawableGuardsVerified':True,
+   'exactFixedInteriorCameraAndCombinedNativeBaselinePNGVerified':True,'threeRestoredBaselineRepeatsByteExact':True,
++  'legacyLipIndexedGeometryEmpty':True,'legacyLipActualState':legacy,
+   'fiveActualMaterialIdDefinesAndRepairDynamicDelegationVerified':True,'allOriginalDiscardAlphaDepthStencilAndFarOpacityRetained':True,
+   'originalCallbacksCacheDefineIdentityViewCameraRestored':True,'mixedIdsRemainAmbiguous':True,
+   'wholePixelOwnershipPlayabilityOrProductionFixClaim':False}
+ 
+ sealbytes=(W/'seal.json').read_bytes();seal=json.loads(sealbytes);inputs=json.loads((W/'inputs.json').read_bytes())
+-assert seal['schema']=='grey-band-ownership-seal/v3' and seal['rootAuthorized'] and seal['complete']
+-build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='grey-band-ownership-build/v3' and build['build']==inputs['applicationBuildId']
++assert seal['schema']=='grey-band-ownership-seal/v4' and seal['rootAuthorized'] and seal['complete']
++build=json.loads(verify(seal['applicationBuild']));assert build['schema']=='grey-band-ownership-build/v4' and build['build']==inputs['applicationBuildId']
+ def check(deadline=None):
+  assert build['sourceProvenance']==seal['sourceProvenance']
+- provenance=json.loads(verify(seal['sourceProvenance']));assert provenance['complete'] and provenance['schema']=='grey-band-ownership-source-provenance/v3' and provenance['applicationBuild']==inputs['opticalApplicationBuild'] and provenance['applicationFreeze']==inputs['opticalApplicationFreeze'] and provenance['sourceProvenancePolicy']==inputs['sourceProvenancePolicy'] and provenance['priorPreparationFailure']==inputs['priorPreparationFailure']
++ provenance=json.loads(verify(seal['sourceProvenance']));assert provenance['complete'] and provenance['schema']=='grey-band-ownership-source-provenance/v4' and provenance['applicationBuild']==inputs['opticalApplicationBuild'] and provenance['applicationFreeze']==inputs['opticalApplicationFreeze'] and provenance['sourceProvenancePolicy']==inputs['sourceProvenancePolicy'] and provenance['priorPreparationFailure']==inputs['priorPreparationFailure'] and provenance['priorNativeFailure']==inputs['priorNativeFailure'] and provenance['legacyLipGuardPolicy']==inputs['legacyLipGuard']
+  for spec in build['assets']+seal['helpers']+seal['borrowedHelpers']+seal['references']+seal['immutablePriorAssets']+seal['historicalScratchSources']+seal['repositoryDependencyScratchSources']+seal['externalDiagnosticScratchSources']:
+   if deadline is not None and time.monotonic()>=deadline:raise TimeoutError('Finite pin verification budget')
+   verify(spec)
+@@ -127,13 +130,14 @@
+  expected=str(pid)+' '+identity['started']+' '+identity['command']
+  assert expected in before[str(port)],'Protected full PID/start/command required '+str(port)
+ started=time.monotonic();owner_deadline=min(started+inputs['limits']['ownerSeconds'],whole_deadline-inputs['limits']['cleanupSeconds']);server=None;proc=None
+-record={'schema':'grey-band-ownership-owner/v3','complete':False,'firstFailure':None,'protectedBefore':before,
++record={'schema':'grey-band-ownership-owner/v4','complete':False,'firstFailure':None,'protectedBefore':before,
+  'protected4315ExpectedPid':87796,'protected4315RootToolSession':'64713','toolSessionOSIdentityClaim':False,
+  'sealSha256':hashlib.sha256(sealbytes).hexdigest(),'preExecutionPinsVerified':True,'postExecutionPinsVerified':False,'copiedAndHistoricalSourcePinsPostVerified':False,'cleanupFailures':[]}
+ record['expectedProtectedPids']=EXPECTED_PROTECTED
+ record['protectedIdentityAuthority']=inputs['protectedIdentityAuthority']
+ record['historicalOpticalRun']=inputs['historicalOpticalRun']
+ record['priorPreparationFailure']=inputs['priorPreparationFailure']
++record['priorNativeFailure']=inputs['priorNativeFailure']
+ record['osObservationPolicy']=inputs['ownerObservationPolicy']
+ record['absoluteBudget']={'wholeSeconds':inputs['limits']['totalSeconds'],'cleanupReservedSeconds':inputs['limits']['cleanupSeconds'],'activeOwnerBudgetSeconds':owner_deadline-started,'maximumNativeOwnerSeconds':inputs['limits']['ownerSeconds'],'preflightBudgetSeconds':20}
+ known_owned={}
+diff --git a/native.mjs b/native.mjs
+--- a/native.mjs
++++ b/native.mjs
+@@ -6,20 +6,20 @@
+ import { launch } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs';
+ import { prepareMenu } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs';
+ import { installGreyOwnershipInspection } from './ownership-inspection.mjs';
+-const W='/private/tmp/tube-grey-band-ownership-native-v3-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
++const W='/private/tmp/tube-grey-band-ownership-native-v4-20261005', inputs=JSON.parse(readFileSync(W+'/inputs.json'));
+ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+ const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const i=arg.indexOf('=');assert(arg.startsWith('--')&&i>2);return[arg.slice(2,i),arg.slice(i+1)];}));
+ assert.equal(args.run,'true');assert.equal(args.url,'http://127.0.0.1:4301/?diagnostics');assert.equal(resolve(args.out),W+'/candidate-first');
+ const sealBytes=readFileSync(W+'/seal.json'), seal=JSON.parse(sealBytes);
+-assert.equal(hash(sealBytes),process.env.GREY_OWNERSHIP_OWNER_SEAL_SHA);assert.equal(seal.schema,'grey-band-ownership-seal/v3');assert(seal.rootAuthorized&&seal.complete);
++assert.equal(hash(sealBytes),process.env.GREY_OWNERSHIP_OWNER_SEAL_SHA);assert.equal(seal.schema,'grey-band-ownership-seal/v4');assert(seal.rootAuthorized&&seal.complete);
+ const readPinned=spec=>{const bytes=readFileSync(spec.file);assert.equal(bytes.length,spec.bytes);assert.equal(hash(bytes),spec.sha256);return bytes;};
+ const reference=JSON.parse(readPinned(inputs.referenceReport)), expected=JSON.parse(readPinned(inputs.referenceLoft));
+ assert(reference.complete&&reference.firstFailure===null&&reference.stepCount===0&&reference.stop.kind==='first-eligible-capture');
+ assert.equal(expected.epoch.seaTime,reference.stop.seaTime);assert.equal(expected.epoch.step,0);assert.equal(Object.keys(expected.arrays).length,37);
+ assert.deepEqual(inputs.referenceCounts,expected.counts);assert.deepEqual(inputs.overrides,{seed:6238,componentCount:64,dx:2,fineSpacing:1});
+ assert(!existsSync(args.out));mkdirSync(args.out);const OUT=resolve(args.out),started=performance.now();let page,exitCode=0;
+-const report={schema:'grey-band-ownership-native/v3',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
+- protectedIdentityAuthority:inputs.protectedIdentityAuthority,historicalOpticalRun:inputs.historicalOpticalRun,priorPreparationFailure:inputs.priorPreparationFailure,
++const report={schema:'grey-band-ownership-native/v4',complete:false,firstFailure:null,sealSha256:hash(sealBytes),applicationBuild:seal.applicationBuild,
++ protectedIdentityAuthority:inputs.protectedIdentityAuthority,historicalOpticalRun:inputs.historicalOpticalRun,priorPreparationFailure:inputs.priorPreparationFailure,priorNativeFailure:inputs.priorNativeFailure,
+  opticalAppAuthority:{build:inputs.opticalApplicationBuild,freeze:inputs.opticalApplicationFreeze,seal:inputs.opticalApplicationSeal,baselinePNG:inputs.baselinePNG},
+  referenceReport:inputs.referenceReport,referenceLoft:inputs.referenceLoft,settings:inputs.settings,overrides:inputs.overrides,graphics:inputs.graphics,
+  policy:inputs.comparison,limits:inputs.limits,stepCount:0,artifacts:[],pngCount:0,pngBytes:0,browserErrors:[],acceptance:{ownershipConclusion:null,playability:false,productionFixAdopted:false}};
+diff --git a/ownership-inspection.mjs b/ownership-inspection.mjs
+--- a/ownership-inspection.mjs
++++ b/ownership-inspection.mjs
+@@ -111,7 +111,18 @@
+     'metalness','ior','emissiveIntensity','displacementMap','displacementScale','displacementBias','depthPacking','toneMapped','fog','vertexColors'];
+   const allMeshes = descriptors.flatMap(x => x.meshes);
+   const legacy = mode.lipSheet.mesh;
+-  must(legacy.geometry.drawRange.count === 0, 'Untargeted legacy lip must retain actual zero draw range');
++  function legacyLipState() {
++    const geometry=legacy.geometry,index=geometry.index,position=geometry.getAttribute('position');
++    must(index && position && index.count===0 && position.count===0, 'Untargeted legacy lip must retain empty indexed geometry');
++    const encoded=value=>Number.isFinite(value)?value:String(value);
++    return {meshUUID:legacy.uuid,geometryUUID:geometry.uuid,visible:legacy.visible,indexPresent:true,indexCount:index.count,
++      positionCount:position.count,drawRange:{start:encoded(geometry.drawRange.start),count:encoded(geometry.drawRange.count)},
++      nonfiniteRangeEncoding:'String preserves Infinity rather than JSON null'};
++  }
++  const legacyAtInstallation=legacyLipState();
++  function verifyLegacyLip() {
++    must(JSON.stringify(legacyLipState())===JSON.stringify(legacyAtInstallation), 'Untargeted legacy lip indexed state changed');
++  }
+   const original = descriptors.map(x => ({ descriptor: x, compile: x.material.onBeforeCompile, key: x.material.customProgramCacheKey,
+     originalKeyValue: x.material.customProgramCacheKey(), defines: x.material.defines, definesJSON: JSON.stringify(x.material.defines), shaderValues: [x.material.vertexShader, x.material.fragmentShader],
+     values: stateKeys.map(k => x.material[k]), baselineVertex: null, baselineFragment: null }));
+@@ -158,7 +169,7 @@
+           && x.normalized===y.normalized && x.usage===y.usage && same(x.copy,y.copy), 'Original drawable array identity/words changed');
+       }
+     }
+-    materialGuard();
++    verifyLegacyLip();materialGuard();
+   }
+   for (const saved of original) {
+     const item = saved.descriptor;
+@@ -265,13 +276,13 @@
+           actualVertexSHA256:await sourceHash(afterVertex),actualFragmentSHA256:await sourceHash(afterFragment)});
+       }
+       verifyRaw(beforeRaw);verifyDraw(beforeDraw);completed=true;
+-      result={complete:true,stepCount:0,seaTime,camera:'interior',view:'rich',fixedPose:fixed,pngs,restoredRepeats:repeats,samples:sampleEvidence,
++      result={complete:true,stepCount:0,seaTime,camera:'interior',view:'rich',fixedPose:fixed,pngs,restoredRepeats:repeats,samples:sampleEvidence,legacyLipState:legacyLipState(),
+         shaderEvidence,renderedStages,materialGroups:descriptors.map(x=>({kind:x.kind,id:x.id,materialUUID:x.material.uuid,meshUUIDs:x.meshes.map(m=>m.uuid),
+           originalDefines:original.find(y=>y.descriptor===x).definesJSON,originalCacheKey:original.find(y=>y.descriptor===x).originalKeyValue})),
+         guards:{exactHistoricalFull37Words:true,exactHistoricalRaw333FrontWords:true,exactFinalAuthoredMaskDrawWords:true,actualLoftPositionAndIndexPrefix:true,
+           allOriginalDrawableArrayIdentitiesAndWords:true,allOriginalPredicatesAndAlpha:true,waterMaskBytesImageGridAndShaderProperties:true,
+           materialDepthStencilBlendingAndOpacity:true,allFiveActualMaterialIdDefines:true,lateRepairDynamicDelegation:true,normalCameraAndActorWords:true,
+-          fixedCameraWords:true,legacyLipDrawRangeZero:true,noPhysicalSteps:true,firstBaselineNativePNGMatchesCombinedAuthorityBeforeAnyProbe:true},
++          fixedCameraWords:true,legacyLipIndexedGeometryEmpty:true,noPhysicalSteps:true,firstBaselineNativePNGMatchesCombinedAuthorityBeforeAnyProbe:true},
+         interpretation:'RGB-only surviving-contribution instrumentation; mixed IDs remain ambiguous. No geometry fix, support repair, lighting fix, playability, air-volume or whole-body certification.'};
+     } finally {
+       for (const saved of original) {const m=saved.descriptor.material;m.onBeforeCompile=saved.compile;m.customProgramCacheKey=saved.key;m.defines=saved.defines;m.needsUpdate=true;}
+@@ -284,5 +295,5 @@
+   }
+   window.__greyOwnership={capture,finish(){must(completed&&restored&&!active,'Complete fixed capture and exact original restoration required');verifyRaw(beforeRaw);
+     return {complete:true,stepCount:0,seaTime,originalShaderCacheDefineViewAndCameraRestored:true,originalAttributesNeverModified:true,completedStages:[...renderedStages]};}};
+-  return {installed:true,stepCount:0,seaTime,exactHistoricalGeometryRequired:true,declaredMaterials:descriptors.map(x=>({kind:x.kind,id:x.id})),cameraSearch:false,epochSearch:false};
++  return {installed:true,stepCount:0,seaTime,exactHistoricalGeometryRequired:true,legacyLipIndexedGeometryEmpty:true,legacyLipState:legacyAtInstallation,declaredMaterials:descriptors.map(x=>({kind:x.kind,id:x.id})),cameraSearch:false,epochSearch:false};
+ }
+diff --git a/inputs.json b/inputs.json
+--- a/inputs.json
++++ b/inputs.json
+@@ -77,7 +77,7 @@
+       "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+     }
+   ],
+-  "schema": "grey-band-ownership-inputs/v3",
++  "schema": "grey-band-ownership-inputs/v4",
+   "preparationOnly": true,
+   "rootExecutionPending": true,
+   "resourcesStarted": false,
+@@ -264,7 +264,8 @@
+     "src/scene/SpotSeabed.ts",
+     "src/scene/water/richWaterGlsl.ts",
+     "src/scene/waterOptics.ts",
+-    "src/scene/barrel/barrelFallback.ts"
++    "src/scene/barrel/barrelFallback.ts",
++    "src/scene/LipSheetMesh.ts"
+   ],
+   "limits": {
+     "steps": 0,
+@@ -394,5 +395,38 @@
+       "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf"
+     },
+     "qualification": "The ID V2 root preparation actually exited1 while treating node_modules/three/build/three.core.js as committed Git source. Its failed preparation started no native run and produced no dist, source scratch, provenance, build, seal, owner or candidate results. The receipt complete flag records this actual failure only; V2 source freeze remains unchanged."
++  },
++  "priorNativeFailure": {
++    "owner": {
++      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/owner.json",
++      "bytes": 15489,
++      "sha256": "a210ddebe768f0eb58e4831560caf4ecc572b93eef35e2aa61477224cb5a29f7"
++    },
++    "report": {
++      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/candidate-first/report.json",
++      "bytes": 30186,
++      "sha256": "d702e3d226fc6eb182fe3e2634281594e4e4c5078f0459eeac81492939005b82"
++    },
++    "qualification": "ID V3 actual owner exited1 after53.4503s with0steps/0PNGs before probes: its legacy drawRange.count===0 guard rejected the default Infinity range even though indexed geometry can be empty. Owned group/ports closed and all four protected identities preserved; owner postExecutionPinsVerified remains false. Independent root post-failure pins/closure receipt is separate authority. V3 sealed sources and failed results remain unchanged.",
++    "rootPostFailure": {
++      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/root-post-failure-pins-and-closure.json",
++      "bytes": 54427,
++      "sha256": "235816a6057bf3f3a19a14b141010d5518c1912e2f2ad34b18d51d4b927a8dfe"
++    }
++  },
++  "legacyLipGuard": {
++    "requireIndexedGeometry": true,
++    "requireIndexCount": 0,
++    "requirePositionCount": 0,
++    "requireZeroDrawRange": false,
++    "preserveActualVisibleRangeGroupsAndAttributeIdentities": true,
++    "recordInstallationAndCaptureState": true,
++    "nonfiniteDrawRangeJSONEncoding": "String, e.g. Infinity; never JSON null",
++    "sourceRationaleHistoricalCommit": "6bcae3aa0740cb66187f572a03cc8abbb1981030",
++    "sourceRationalePaths": [
++      "src/game/PhysicalMode.ts",
++      "src/scene/LipSheetMesh.ts"
++    ],
++    "actualRuntimeCountsMustBeVerified": true
+   }
+ }
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,4 @@
+-# Fixed INTERIOR grey-band surviving-drawable diagnostic V3 — SOURCE ONLY
++# Fixed INTERIOR grey-band surviving-drawable diagnostic V4 — SOURCE ONLY
+ 
+ This directory contains a complete, bounded recipe for root review and later execution. It has **not** been checked, prepared, built, run, or used to probe/start ports. No old sealed helper, production source, application asset, or listener is changed by this source preparation. Historical reports and PNGs are pinned references, not copied or represented as new results.
+ 
+@@ -10,7 +10,7 @@
+ 
+ The fixed sample choice is independently pinned in the prior read-only proposal: grey-band points `(1300,360)` and `(1500,400)`, roof `(1400,180)`, wall `(400,450)`; coordinates are zero-based with top-left origin. The exact completed cap INTERIOR eye/quaternion/up/projection is used. These points were chosen from existing combined/region images before a new shader variant or ray calculation. The offline evidence and exact already-executed computation source are retained as references; they are not rerun here.
+ 
+-`ownership-inspection.mjs` wraps the actual main materials of five groups: swept loft 1, shared ordinary water mesh/patch 2, separate late repair mesh/patch 3, seabed 4 and far ocean 5. It requires five distinct material identities and actual final shader callbacks for all five in every stage. The late repair dynamically invokes the current ordinary-water callback. A delegation-depth guard suppresses intermediate water marking, lets the original repair replace its own discard predicate, then marks only that final repair shader with actual material ID 3. The actual `shader.defines` object and numeric ID must match the final material. Separate shadow/depth materials and other scene drawables are not falsely marked; the legacy lip is required to retain its actual zero draw range.
++`ownership-inspection.mjs` wraps the actual main materials of five groups: swept loft 1, shared ordinary water mesh/patch 2, separate late repair mesh/patch 3, seabed 4 and far ocean 5. It requires five distinct material identities and actual final shader callbacks for all five in every stage. The late repair dynamically invokes the current ordinary-water callback. A delegation-depth guard suppresses intermediate water marking, lets the original repair replace its own discard predicate, then marks only that final repair shader with actual material ID 3. The actual `shader.defines` object and numeric ID must match the final material. Separate shadow/depth materials and other scene drawables are not falsely marked; the untargeted legacy lip must have actual index.count0 and position.count0. Its real range (including default Infinity), visibility, groups and attribute/index identities and words remain unchanged. Installation and capture record that actual state, encoding nonfinite range values as strings so JSON does not silently turn Infinity into null.
+ 
+ Four PNGs are saved, in order:
+ 
+@@ -30,7 +30,11 @@
+ An exact primary marker at a predeclared pixel is evidence for an encoded surviving contribution. It is **not exclusive whole-pixel coverage proof**: alpha blending, multiple contributions, MSAA, untagged scene effects and exact accidental colors can make interpretation ambiguous. Mixed or unmarked ID pixels remain ambiguous. Raster facing is separate from body-normal facing; cosine/facing reads need an independently unmixed contribution. The two previous saved rays excluding direct loft hits do not prove another drawable's ownership. This probe establishes no geometry improvement, seam complementarity, physical air volume, full-body clearance, playability or final reference-quality tube. It preserves authored fade/dither and existing mask+A optical behavior, including depth/stencil resolution where authored support overlaps ordinary water.
+ 
+ 
+-This V3 directory clones only the frozen V2 recipe sources. V2 remains unchanged. Its actual root syntax checks passed, but preparation exited1 before producing any source scratch, assets, seal or owner because it treated the untracked Three.js dependency as committed source. The separate actual root failure receipt is directly pinned: `/private/tmp/tube-grey-band-ownership-native-v2-20261005/root-prepare-failure.json`,2044bytes,SHA256ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf. Its complete:true describes recording that failed preparation, not successful preparation or native execution. V3 is unexecuted. ownership-inspection.mjs remains byte-identical to the reviewed original: all five IDs, final define/callback and dynamic repair-delegation guards, original alpha/predicates/depth/stencil/far-opacity behavior, historical baseline before probes, fixed samples/camera, four PNGs and three restored repeats remain unchanged. Native differences are fresh V3 paths/schemas and qualified provenance metadata. New schemas are grey-band-ownership inputs/build/seal/preparation/native/owner/source-provenance version3. The robust V2 owner OS/cleanup policy is retained.
++This V4 directory clones only the sealed V3 recipe sources. The actual V3 native16008 exited1 after53.4503s with0steps/0PNGs before probes because the installation guard incorrectly required drawRange.count0. Its owner actually verified owned-group absence, closed4301/9711 and all four protected identities; postExecutionPinsVerified remainedfalse. The separate root post-failure audit verified223 executable-policy pins, absent group30849, both owned ports closed and protected full PID/start/commands, with no signals. It preserves the failed outcome and is pinned as `/private/tmp/tube-grey-band-ownership-native-v3-20261005/root-post-failure-pins-and-closure.json`,54,427bytes,SHA256235816a6057bf3f3a19a14b141010d5518c1912e2f2ad34b18d51d4b927a8dfe. V3 sealed sources/results remain unchanged; no images or ownership result exists from that attempt. The earlier actual V2 preparation failure remains separately qualified.
++
++V4 changes only that legacy geometry precondition and its truthful metadata, plus fresh paths/schemas and qualified history. It requires an actual index and position attribute with both counts0, records installation/capture index counts, UUIDs, visible flag and actual draw range, and requires that state to remain identical. The guard is named legacyLipIndexedGeometryEmpty. It does not hide the mesh, set its range or modify attributes. Shader RGB/cos injection, final callbacks/defines/cache, repair delegation, alpha/predicates/depth/stencil/far-opacity behavior, historical baseline before probes, fixed samples/camera, four PNGs and three restored repeats are unchanged. New schemas are grey-band-ownership inputs/build/seal/preparation/native/owner/source-provenance version4. The reviewed robust owner OS/cleanup policy and immutable optical V3 app authority remain unchanged.
++
++The historical6b source rationale is direct: the already-pinned PhysicalMode.ts source calls lipSheet.update with count0 when swept is active. Root preparation explicitly recovers LipSheetMesh.ts from that same commit into fresh scratch; it verifies the Rich path installs its built position and index attributes and does not assign drawRange. The returned source-provenance receipt pins both exact recovered files and labels these source facts as rationale, not runtime count measurements. Actual index0/position0 and unchanged range/visibility/attributes are independently required by the browser helper. A default Infinity range is compatible with an empty indexed draw; V4 never assumes an actual count merely from source.
+ 
+ The separate expected-protected-identity authority is the actual /private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json,25763bytes,SHA25638922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86. It records root's verified closure of an earlier failed shared-leaf owner, not success of this ID recipe. Its complete/protected/port proof is pinned context. Fresh preflight still requires actual protected4312PID92445,4313PID58298,4314PID51358,4315PID87796 and the exact recorded start/full HTTP command. Full-width ps -ww command= rows split(None,6) normalize only the five start words; the command retains its internal spaces. Fresh after-identities must equal preflight exactly.
+ 
+diff --git a/recipe-diff.md b/recipe-diff.md
+--- a/recipe-diff.md
++++ b/recipe-diff.md
+@@ -1,14 +1,12 @@
+-# Source-only V3 changes from frozen ID V2
++# Source-only ID V4 changes from sealed failed ID V3
+ 
+-The actual V2 preparation failed before outputs because its repository-relative classification included untracked Three.js dependencies. This V3 recipe preserves that actual failure and its source freeze; it does not relabel it as a successful run.
++- Fresh paths and grey-band-ownership */v4 schemas; immutable optical application/build/baseline/camera remain unchanged.
++- Replace only the incorrect legacy drawRange.count0 precondition with actual index.count0 AND position.count0. Record actual installation/capture legacy geometry state, preserving nonfinite range values as strings. Truthful guard name legacyLipIndexedGeometryEmpty.
++- Existing full drawable snapshots still guard visibility, range, groups, geometry/material, attributes/index identities/counts/words. New explicit legacy state equality is additional; no hiding, setDrawRange, geometry or material mutation.
++- Owner validates both counts and exact same installation/capture state.
++- Historical6b PhysicalMode/LipSheet source rationale is recovered/pinned during root preparation, with no invented old build hash for the additional LipSheet source and no assumption of runtime counts.
++- Actual failed V3 owner/report and independent root223-pin/closure audit are direct qualified references. Actual V2 preparation failure and separate V3 ordinary deadline failure retain their previous qualification.
++- Shader RGB/cos delta, original generated shader predicates, final callbacks/defines/cache, repair delegation, alpha/depth/stencil/far-opacity, all37/raw333 guards, fixed samples/camera, exact first baseline PNG, four PNGs and three restored repeats remain unchanged.
++- Robust OS/680s resource discipline and committed/dependency/external source provenance policy are unchanged.
+ 
+-- Fresh V3 paths and schemas; qualified V2 failure receipt directly pinned in inputs, preparation, build, owner and native metadata.
+-- Committed repository app/source: bounded2s read-only Git recovery from exact historical6b, verified against actual old production/compiled-source receipts.
+-- Declared `node_modules/` dependencies: diagnostic-source family only, bounded Git batch existence proof of historical absence, direct compiled-source byte/SHA verification and copies into new historical-dependencies scratch. No invented committed dependency source or hash; no root dependency modification, fetch or compile.
+-- Outside-repository diagnostic entry: unchanged direct pinned-copy provenance, without relative_to(repo) or Git origin.
+-- New copied dependency pins in build/seal/runtime checks, and explicit source-policy/prior-failure equality on the common source-provenance receipt.
+-- Immutable optical V3 app and actual successful build evidence unchanged; that separate ordinary gameplay run remains a qualified deadline failure.
+-- Ownership inspection helper byte-identical to reviewed original and V2. Five IDs, exact first historical baseline PNG, probes, callbacks/delegation, alpha/predicates/depth/far-opacity, fixed four samples/camera, four PNGs and three restored repeats are unchanged.
+-- Robust reviewed V2 owner discipline unchanged apart from fresh schemas and new provenance/pin fields:2s OS reads,5s nonfatal periodic notes16, full normalized PID/start/exact command, fresh owned-group anchor before signals,680s absolute including reserved20s cleanup.
+-
+-recipe.patch records the exact source diff against frozen V2. No checker, preparation, Git read, build, native, process or port action was executed by this source author. Only these fresh source files and metadata are written.
++Only new source files/metadata were prepared; no checker, Git read, preparation, compiler, build, native, process or port action was executed. recipe.patch is the exact source diff from immutable V3.

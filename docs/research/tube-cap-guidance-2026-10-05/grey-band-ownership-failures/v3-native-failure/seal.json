@@ -1,0 +1,972 @@
+{
+  "schema": "grey-band-ownership-seal/v3",
+  "rootAuthorized": true,
+  "complete": true,
+  "applicationBuild": {
+    "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/build.json",
+    "bytes": 34680,
+    "sha256": "86bcc3770cea1ebe1cffa6f61d164a8744e65d48b8908ed139506d666e72ec59"
+  },
+  "sourceProvenance": {
+    "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/source-provenance.json",
+    "bytes": 78042,
+    "sha256": "a4fd6752405da5bb36733d6cdf5ae529b3d9ba4cbd5ec8bcf02a0cc86d4a6589"
+  },
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/inputs.json",
+      "bytes": 12698,
+      "sha256": "f30f2c3588d4b17489b9af6b831e969dc4ff59169da22164279ea9b311fdd2fe"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/README.md",
+      "bytes": 13799,
+      "sha256": "b15af68d7b9ea760a6dfcd585454561fdaf6d1eb29004f29bac48e9b5290cee0"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/prepare.py",
+      "bytes": 13997,
+      "sha256": "8440dcd9d8a40efb8a294e4f0d72bf8168150814789221be8982a87e619bec17"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/run.py",
+      "bytes": 18149,
+      "sha256": "3876abbab8aec1e8d5a54f4221f52e46f8ca1f0370916c9e8d3fcddaa039061c"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/native.mjs",
+      "bytes": 10134,
+      "sha256": "067f2743f5b22da5c8e65cd6dc5a5f88da0fb22a2e3721046a992215511152d1"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/ownership-inspection.mjs",
+      "bytes": 26366,
+      "sha256": "7132754e19d34d4c256531582e6856bb430b0db5e27b276d2107717d94b54c9b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/recipe-diff.md",
+      "bytes": 2097,
+      "sha256": "4feadb83b7941c1801747836a15a3a647426ba2cd211c035bc2d2ff12c7e3a99"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/recipe.patch",
+      "bytes": 43143,
+      "sha256": "b28943b678d238e86a9706a8d3489dcdefa58ea4697b38fff3a7b94eb284621b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/preparation-freeze.json",
+      "bytes": 4495,
+      "sha256": "f61477f4866f42644ef08c5ed6af88ec8f0e4fe3ceb4894d0bafd1863e0bcfc7"
+    }
+  ],
+  "borrowedHelpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    }
+  ],
+  "references": [
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/build.json",
+      "bytes": 41743,
+      "sha256": "8a14b79263e47a3a490c6eb734ada185c98559605ab57754b6faa1de54e67fb8"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/source-freeze.json",
+      "bytes": 19399,
+      "sha256": "d6c7ffd6bd467c5e491140ff3100fac2905c11531fc4983ec0f3a0f2b4114df9"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/seal.json",
+      "bytes": 5517,
+      "sha256": "43f54e0dbe2b55c9e3fd0024372f50c716324769228d97d03d494d9fbe9ef067"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/application-build.log",
+      "bytes": 1328,
+      "sha256": "ef1c24e5376c8f3ca28e9fd95b9bfa76bc1487f90f5bda1136e2de7c8da3de6e"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+      "bytes": 49054,
+      "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+      "bytes": 3848,
+      "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1219771,
+      "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/seal.json",
+      "bytes": 22535,
+      "sha256": "b22727d355b9b3b8ef78877f92ccbc7496a40a98390f27c4119b3e63706f64e2"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/interior-rich-combined-mask-and-sheet-fill-A.png",
+      "bytes": 1979202,
+      "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/README.md",
+      "bytes": 7467,
+      "sha256": "a777322f61afe7da7c3f1a8f1df7be8157a0ff450a07207f3ca01e8e315b8679"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/probe-shader-deltas.mjs",
+      "bytes": 4991,
+      "sha256": "aed2b614c0aad7e6d5534cf9f9dcc58ec0ec64d4be9c5e7b264a50796400aadb"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/proposal.json",
+      "bytes": 12197,
+      "sha256": "f11dde4a6074c64b887f17561efcf455187d2c7027cba23e27a598994daf734e"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/sample-choice.json",
+      "bytes": 1058,
+      "sha256": "0becdc934ddb5db9d6b1e98e3be286118c84fb7ff381b3e4b852b8cb8995b18c"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/saved-pixel-ray-inspection.json",
+      "bytes": 17779,
+      "sha256": "7252459ee405aad4ec8a8283cc6237885472a08365af4f429d0ef47abda6bd21"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/offline-read.py",
+      "bytes": 4061,
+      "sha256": "b78ee833b4904d45165a0ceeb757f6160860469156781491b3c5e12fddf6eb75"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/offline-source-note.md",
+      "bytes": 457,
+      "sha256": "0a9bd3b1fa06d269548869e92255f6d27ae41ba5b6b35fce794379544bd34208"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+      "bytes": 25763,
+      "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/root-prepare-failure.json",
+      "bytes": 2044,
+      "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf"
+    }
+  ],
+  "immutablePriorAssets": [
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/WorkerSurfZone-DWmy4g23.js",
+      "bytes": 916917,
+      "sha256": "d16c18fc08fc0f9cfd0fb2df58babc98eba6384a9e4a24ab309314437d30c38d"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/bubbles-1.m4a",
+      "bytes": 256855,
+      "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/bubbles-2.m4a",
+      "bytes": 198252,
+      "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/distant-1.m4a",
+      "bytes": 883404,
+      "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/distant-2.m4a",
+      "bytes": 912023,
+      "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/lipJet-1.m4a",
+      "bytes": 62354,
+      "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/lipJet-2.m4a",
+      "bytes": 47086,
+      "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/lipRoller-1.m4a",
+      "bytes": 36688,
+      "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/lipRoller-2.m4a",
+      "bytes": 27855,
+      "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/paddle-1.m4a",
+      "bytes": 14645,
+      "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/paddle-2.m4a",
+      "bytes": 13593,
+      "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/plunge-1.m4a",
+      "bytes": 24612,
+      "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/plunge-2.m4a",
+      "bytes": 22031,
+      "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/roar-1.m4a",
+      "bytes": 419823,
+      "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/roar-2.m4a",
+      "bytes": 387857,
+      "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/audio/sounds.json",
+      "bytes": 3499,
+      "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/devStepping-BQ4BPVrx.js",
+      "bytes": 320,
+      "sha256": "566e01abb84845a3b37709bd46f5d506fb6aec6b666a8f7c6c6123911844ac5c"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/index-WRkJL0Rz.js",
+      "bytes": 586130,
+      "sha256": "6f1476916aeb3437a6d3af26ba447acdf155fbb24cded45766b2a30334259f3e"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/jevRecorder-ChiQFARA.js",
+      "bytes": 15917,
+      "sha256": "30b25a986f0d2eaa00ae84fbddcbb47fe33c56686c6bec8d83ff3c231681bfd8"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/particleBench-CP4uOKgJ.js",
+      "bytes": 10708,
+      "sha256": "5bf7d83fa89efaaab8b012e6dfb3dc12e8a4e6c4acd570a72dcf617e62f104f5"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/rideRecorder-n2dIVP26.js",
+      "bytes": 41139,
+      "sha256": "e53a063c5f55300b9ffcc335f0dddf86a7defff4bf7a1a7c4fd826c2adcfeb7b"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+      "bytes": 681062,
+      "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "bytes": 2097202,
+      "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/skies/qwantani_sunrise_puresky.jpg",
+      "bytes": 357301,
+      "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/skies/qwantani_sunrise_puresky_1k.hdr",
+      "bytes": 2097202,
+      "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/skies/qwantani_sunset_puresky.jpg",
+      "bytes": 372349,
+      "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/skies/qwantani_sunset_puresky_1k.hdr",
+      "bytes": 2097202,
+      "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/skies/skies.json",
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/surfZoneWorker-C2owdEvZ.js",
+      "bytes": 495837,
+      "sha256": "ab9e6564981ea6b00b8be62099d875ff6d7355cebd82cbdf9507f4d6bfd2051f"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/surfers/surfer1.glb",
+      "bytes": 1007368,
+      "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/surfers/surfer2.glb",
+      "bytes": 1595524,
+      "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/surfers/surfer3.glb",
+      "bytes": 1545008,
+      "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/surfers/surfer4.glb",
+      "bytes": 1229872,
+      "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/surfers/surfers.json",
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/assets/waterSheet-DOdvoSqg.js",
+      "bytes": 11689,
+      "sha256": "e06738a5823763655bcb34a06feb0765c8b65dcde73b8608ccc422c89135dd18"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/build.json",
+      "bytes": 44,
+      "sha256": "3b9b37883d674e90f341f6bbc3268213bd0a1de1747e75e8d1bd28d0c6dbebe5"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/index.html",
+      "bytes": 1626,
+      "sha256": "6c5f052e346fea24f86b4b2905c355e30dc541ea80f0fbeb47dccbd2a1997f59"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/lessons/pool-s2-caught.sea",
+      "bytes": 2180693,
+      "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/lessons/pool-s2-pocket.sea",
+      "bytes": 2176894,
+      "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/dist/lessons/pool-s2-waiting.sea",
+      "bytes": 2232988,
+      "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+    }
+  ],
+  "historicalScratchSources": [
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/dev/Autopilot.ts",
+      "bytes": 33524,
+      "sha256": "834a6ca11168f01bbc44a6de357b19a494b73cffd199db92de495c32f6bc12c4"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/dev/TubePilot.ts",
+      "bytes": 6413,
+      "sha256": "de2718ec2bac16443dce6759ee4aeba25043d7a383a9bff8b25b3b4c46b9d4d8"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/game/PhysicalMode.ts",
+      "bytes": 41940,
+      "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/game/SurfZoneHost.ts",
+      "bytes": 8062,
+      "sha256": "04fa4a94b1c7ec12296281f401d35316e3be97e2cc41fbbb3297bc8f6f091148"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/game/pocketReflex.ts",
+      "bytes": 3295,
+      "sha256": "2e6bd57cac901031b091e71a0edd0742d607609165fd47b666b0b54ef5f28c64"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/game/rideAnalysis.ts",
+      "bytes": 12746,
+      "sha256": "d6be2ce5f0ad37af8505b410500ce2f73eafff641260c3a6cd1bccbd1c58284a"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/game/snapshotTrack.ts",
+      "bytes": 5730,
+      "sha256": "b2becaa523808f2c4d63b759ce2f17889e379f36455902b474989dffa87f8aca"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/main.ts",
+      "bytes": 56743,
+      "sha256": "bc228b0d71da661e1758937129e384a3798dae7695f8b1bc0c30d43d4be3fb1d"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/AttachedRider.ts",
+      "bytes": 135728,
+      "sha256": "5f607ef4495d250de12933c0c88054875094a22444808ce8f391d4a45ce62d7b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/BoardBody.ts",
+      "bytes": 55079,
+      "sha256": "8e063acc4e8cffb5604476e4190cc872f0808a40a0ba4c10f630acac774169c0"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/BoardRecovery.ts",
+      "bytes": 13882,
+      "sha256": "9b5161d0528f384e11b7968144734c858ca1eba481259b82b291d7640f003d2f"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/Breath.ts",
+      "bytes": 1341,
+      "sha256": "eb953c2bf7607305e211ec768acc4e2ee644bb185ef924255364dbcaac8e26ed"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/DetachedSurfer.ts",
+      "bytes": 30945,
+      "sha256": "503e8b24027a2024b626b05d86d8ff8c33520ce693b600ed8c6ddf6f46984bdd"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/Leash.ts",
+      "bytes": 4335,
+      "sha256": "a98744574a47996440838bd89a44ccc3cdbe782a10a4b371ca5c38f9c3cbc21b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/MinimumJerkTrack.ts",
+      "bytes": 2659,
+      "sha256": "89e6c5a9952227660a70e4c92104a3b761f985989bc03d16d0c8ce400e234ebb"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/RideSession.ts",
+      "bytes": 13831,
+      "sha256": "57818ef317fd0616d53a07d631304dff303a8904f488d7ddd96693859ca1bd2e"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/SurfWaterBodyField.ts",
+      "bytes": 1744,
+      "sha256": "e418d2ccd7d6106a0bf6dd0bc8ac24d12347ae27b40c5ce4cd4de63fcb2d55f9"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/boardReference.ts",
+      "bytes": 1317,
+      "sha256": "5cf432da388e4d220a2916dcbdfb11af262035e8769390cd777041daa61c2032"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/boardShape.ts",
+      "bytes": 7008,
+      "sha256": "831d16e8cadde8ebf52e1800d765c36a0815a39fc862605002f7824a4d3580a2"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/eddies.ts",
+      "bytes": 2907,
+      "sha256": "f2a9033f2fa19a31c67f5b6197bbc7f922a2a0a43f194fd09eadcf81d97cd57f"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/finForces.ts",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/hullForces.ts",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/legSpring.ts",
+      "bytes": 5593,
+      "sha256": "9af4d52e10405822b16d3b4c3725b846b45a8c454b0828bcd87fdbc19574301c"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/riderPosture.ts",
+      "bytes": 9003,
+      "sha256": "30bb1b7d3359f749698d1d39458341c1d2fb296782a67cba17a91c0b7ff8a734"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/takeOffCue.ts",
+      "bytes": 2242,
+      "sha256": "2ca345e82f21464c74f7f8889520af25f912752cf8f6f8fb4554c3efe95cf293"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/physics/waveFrame.ts",
+      "bytes": 11626,
+      "sha256": "1fc4cca2787e2a9064f779f3905fa762dd37e0664a34e08565c94d28bbaff6a2"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 33396,
+      "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 2355,
+      "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/AdvectionStencil.ts",
+      "bytes": 2316,
+      "sha256": "a8800b136b5e68b7e97ba95e35d4a77e010fae02995581536d6f6e948e38db54"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/AerationField.ts",
+      "bytes": 13174,
+      "sha256": "4373c0361f7e66ea0e93e1d101768485d6e3746e4e3d09d389b891c75e96727f"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/Bathymetry.ts",
+      "bytes": 18386,
+      "sha256": "798058f81790043f068bff175ddf6d57fe06d0ca03cf1363a232451b08fc2a54"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/BoussinesqSolver.ts",
+      "bytes": 38627,
+      "sha256": "c1d87564677e35ece932831139426e31f19b69490d961dccaf8b8e665e3e0910"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/Breaking.ts",
+      "bytes": 12851,
+      "sha256": "f56f2cf3096280d33ac1b5db38962fb82c901046d3ab8913e0e79dbef38cdac3"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/BubbleCloud.ts",
+      "bytes": 5786,
+      "sha256": "d8660d57adbe0215ea3602af7a1278637a8619d182fd28d6179a4fbd3010a502"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/CrestKinematics.ts",
+      "bytes": 5019,
+      "sha256": "93909e4cfe0c6c41374784cc73f22a4ab27c956883c582934ece1b7c7a7a990d"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/FoamField.ts",
+      "bytes": 8686,
+      "sha256": "b112cfe168c23af10a49fffeffee6d1b1a1ec3723ccde1c01a37018ca79f396d"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/Overturn.ts",
+      "bytes": 10648,
+      "sha256": "4dc05dc9edcdd2eb3b3d06a5fde77ff63b44c8e7873746fc9791a44d4021ac29"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/PlungingLip.ts",
+      "bytes": 67993,
+      "sha256": "4030ccd00423d5fc12a9903412239068b1da5f25adbf3d8165d1baabdd7e0b4b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/Refraction.ts",
+      "bytes": 5965,
+      "sha256": "bc06494bdacab728368d60896a8e0a875a6ecb4e0fe0e0974ec821a96574b36b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/SeaState.ts",
+      "bytes": 8739,
+      "sha256": "2fd19fb9a8a1a5d7b7e7f8840537ea80ec3e26c8fabd7d49150a54b3a49e6ab7"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/SeaStateBoundary.ts",
+      "bytes": 5460,
+      "sha256": "b36c0e1d5f06cf8f78e8563470fe92a85418ca60eae7e85aa416fdeb73789d9c"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/ShallowWaterSolver.ts",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/SideFeed.ts",
+      "bytes": 10038,
+      "sha256": "ebdfb6924197f5ae59ed0f56bff1121622bf687fd28d0985b9fd2f26980efabd"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/SprayCloud.ts",
+      "bytes": 25478,
+      "sha256": "43fb50e67f430eeefe062bd5125a6b2e35725a806c68b0c6ea7a5ae8dd530f74"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/SurfMeter.ts",
+      "bytes": 3170,
+      "sha256": "b9abdd850a460f599cfa15b1ae62bc254d40637ff510c20ab261727029ed8a6c"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/SurfZoneRunner.ts",
+      "bytes": 44316,
+      "sha256": "783a20494b5670840de9040cf9de063a7d788efc3610794cc3c25e1e25cc5cdb"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/SurfZoneSimulation.ts",
+      "bytes": 71135,
+      "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/SwellReadout.ts",
+      "bytes": 2110,
+      "sha256": "20a6f4dba14df244edfb814d7ac991e2fc9bb8b57a1994a27afdd375ae3115d3"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/BreakingFront.ts",
+      "bytes": 40421,
+      "sha256": "825b1cde695e36f383fc7f3c16660202015aa416731a0aa3d59c3d35144d1fc8"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 29409,
+      "sha256": "a1d9214645f072f9f93b9e98407360364cfd20cf748e84fd0b72cf15b8246c7f"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/SweptCrash.ts",
+      "bytes": 33689,
+      "sha256": "190bbd5c7101874cc6ad3788b3ddc89d9f27ca4d1341194468942b85479f77b8"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/barrelLibrary.ts",
+      "bytes": 2301,
+      "sha256": "064d825cd17e00b58e4dda789b7f28dcc81a68b12ebd99b3b28690261eeb30eb"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/barrelLibraryIndex.ts",
+      "bytes": 1662,
+      "sha256": "f68cca7de3e180b29ef5d364d905e41f58f5788c48b382566e63d8d9b3a8a9b8"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/barrelSpots.ts",
+      "bytes": 9578,
+      "sha256": "b36cf015197f9939a1c5848d5c3559f8c046c6e3e02af55f3a7c774414225c99"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18493,
+      "sha256": "1bf2a75955885a1f2f7f12f1ebc9299b16b40d6d3634d7b3f8e7165d670f4f18"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/carrierSupport.ts",
+      "bytes": 5898,
+      "sha256": "7555e0452f5bd0824b051d4165c17c1c2caca8373eb9d291cc5f479ac98d52ca"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/crashCurve.ts",
+      "bytes": 17446,
+      "sha256": "11fcdad4fdaa8f214a9682edcd3a3e2705955be463d482df91713c097e100793"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/crestOnset.ts",
+      "bytes": 4651,
+      "sha256": "b9697a54863582b0e86d4a284e2ec90c3b148097c2b303ae18dc06f7dbb01dc3"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/crestRays.ts",
+      "bytes": 17776,
+      "sha256": "f1ad5f7a46f03efd9d6d59e4e99f46e90c652d9a53f683f2839bfeb67358c9de"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/frontRecords.ts",
+      "bytes": 1941,
+      "sha256": "500d44d0ff8f1315dbc1cc5e73ec10688e1b2c52217db5663c1729b7f54ba1b7"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/heldOverturn.ts",
+      "bytes": 4886,
+      "sha256": "412125fb01e7ada0ca53df718495159c93c3c77c74900654e49f02e77d597f44"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/lipSheet.ts",
+      "bytes": 19136,
+      "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/profileFormat.ts",
+      "bytes": 2251,
+      "sha256": "7e86293bc7aa422a6deb1eb2c82391c22d26271a63dccb60390b5500896cec6e"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/sharedUpperRoot.ts",
+      "bytes": 3200,
+      "sha256": "d9a57460bca867f392b6c6986414f66ed0aa8e7ed8be7bd9bb99b326e673e15a"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/sliceClock.ts",
+      "bytes": 12756,
+      "sha256": "e31df63d47efef5b31e39748ba3acfa9474ef1243ba2db78e90cf71c20c94204"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/sweptContact.ts",
+      "bytes": 34382,
+      "sha256": "710ce9b807e8959459969ae723a1f9635bf01eee8841ff1168e06c1043e2ff94"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/barrel/tubeApproach.ts",
+      "bytes": 14609,
+      "sha256": "e9dcef6c769f73382dfd28988386a66b597e87e347ae232ee29cc3e5706ce0fd"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/breakingAge.ts",
+      "bytes": 2861,
+      "sha256": "972e91c421f6df28e8928f88b6dbc76bfef1b70bcd19c1ae1d5c844f5735f992"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/dispersion.ts",
+      "bytes": 3285,
+      "sha256": "2caf631987e333fc1034babdc3d6ccbcc8aad5c23ca9b1f69d495efb74694131"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/particleBudget.ts",
+      "bytes": 2109,
+      "sha256": "3b2f78fde2cd5f1a90f5cde1a7668f0f0bab12bacec539b6c07028db929dd363"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/particleSources.ts",
+      "bytes": 788,
+      "sha256": "76e2b38a5329a8f5b36d9373513d52cb42a92361b996287ac74d4e5458c96cb0"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/pool.ts",
+      "bytes": 11917,
+      "sha256": "2f92a0368fa1f0a42e483398468e7fdc9f90cf2200e183a69503b289c1b26e3c"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/random.ts",
+      "bytes": 424,
+      "sha256": "57a624db15cd27305aa61416934bc16da4997e3b81375efb1e03ae6abf319c9e"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/surfForecast.ts",
+      "bytes": 3914,
+      "sha256": "97535e1d5fe7fdab6ba3bd77d1b520528df3064f62726f3fd55837c373f0c3c5"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/tubeTable.ts",
+      "bytes": 6876,
+      "sha256": "a852a9ecbbf62c1e729e75cd5e6043404bf4554723d23ca6760e3e4edbe884bc"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/wave/warmStart.ts",
+      "bytes": 6238,
+      "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/tsconfig.json",
+      "bytes": 550,
+      "sha256": "f053f5fa6092f2c9339c31dee03d591e7632d2bde7b143f7f3e2b98289b1ca8f"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/scene/WaterSurface.ts",
+      "bytes": 39192,
+      "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/scene/FarFieldOcean.ts",
+      "bytes": 12090,
+      "sha256": "33874ac524e8b86c5a585a81a258bc08d0972ac102d9faccbcbc8f898435f19b"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/scene/SpotSeabed.ts",
+      "bytes": 4309,
+      "sha256": "11a745e51cf33cb1ef30319b28336e7e563f041bffa3230bdea4ccff7e0a7f8a"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/scene/water/richWaterGlsl.ts",
+      "bytes": 8059,
+      "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/scene/waterOptics.ts",
+      "bytes": 13592,
+      "sha256": "3b235ece7102e835f467126158f961c45cdaaff5dbb32ce2b28544a26159ad07"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/scene/barrel/barrelFallback.ts",
+      "bytes": 1174,
+      "sha256": "cf2c4981ef25869fe7dcffdaba0fa9c91b3c1161a18db203673b059093c293ba"
+    }
+  ],
+  "repositoryDependencyScratchSources": [
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-dependencies/node_modules/three/build/three.core.js",
+      "bytes": 1458113,
+      "sha256": "9edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-dependencies/node_modules/three/build/three.module.js",
+      "bytes": 662772,
+      "sha256": "9052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea"
+    }
+  ],
+  "externalDiagnosticScratchSources": [
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-diagnostic/000-autopilot-entry.ts",
+      "bytes": 106,
+      "sha256": "53ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335"
+    }
+  ],
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 680,
+    "cleanupSeconds": 20,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "reportBytes": 2097152
+  },
+  "comparison": {
+    "camera": "interior",
+    "view": "rich",
+    "stages": [
+      "baseline",
+      "owner",
+      "rasterFace",
+      "bodyCos"
+    ],
+    "restoredRepeats": 3,
+    "steps": 0,
+    "ownerDefine": "BREAKLINE_TUBE_GREY_OWNER",
+    "owners": {
+      "loft": 1,
+      "originalWater": 2,
+      "lateRepair": 3,
+      "seabed": 4,
+      "farOcean": 5
+    },
+    "encodedOwnerRGB": {
+      "1": [
+        255,
+        0,
+        255
+      ],
+      "2": [
+        0,
+        255,
+        255
+      ],
+      "3": [
+        255,
+        255,
+        0
+      ],
+      "4": [
+        255,
+        0,
+        0
+      ],
+      "5": [
+        0,
+        0,
+        255
+      ]
+    },
+    "baselineNativePNGHashMustMatchCombinedAuthority": true,
+    "actualFinalMaterialDefinesRequired": true,
+    "allFiveActualCallbacksRequired": true,
+    "all37Raw333MustMatchHistoricalCap": true,
+    "baselineBuildsShareGeometryAssertion": false,
+    "mutableProductionSourcePins": false,
+    "probeDelta": "Only a distinct actual material ID define and final gl_FragColor.rgb assignment after the unchanged final chunk. Body-cos stage additionally copies actual waterViewCos into a scalar; seabed has no water body.",
+    "allOriginalPredicatesAlphaDepthStencilRetained": true,
+    "farOceanOriginalTransparencyAndFadeRetained": true,
+    "mixedIdPixelsRemainAmbiguous": true,
+    "dynamicRepairDelegation": "Suppress intermediate original-water instrumentation while the actual late-repair callback dynamically delegates. Instrument only the final repair shader after its original predicate replacement.",
+    "search": {
+      "seed": false,
+      "epoch": false,
+      "camera": false,
+      "quality": false,
+      "pixels": false
+    },
+    "limitations": [
+      "Encoded unmixed surviving contribution is not an exclusive whole-pixel coverage proof.",
+      "Mixed, blended, MSAA and unmarked pixels remain ambiguous.",
+      "Raster facing differs from body-normal view cosine.",
+      "Preserves final authored fade/dither and tested A lighting; no seam support repair.",
+      "No geometry, force, air-volume, body or playability certification."
+    ]
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "schema": "grey-band-ownership-source-preparation/v4",
+  "sourceOnly": true,
+  "executionPending": true,
+  "executedChecksBuildsNativeGitOrPorts": false,
+  "productionFilesWritten": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/prepare.py",
+      "bytes": 17190,
+      "sha256": "45aeba7f4c82e0e338514a0cea2fd96cf9be8f8b7e9caf3e3bd8e2c6912f3036"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/run.py",
+      "bytes": 18741,
+      "sha256": "a115ee365ae6cc5c2edacc105c1110f0946912de3d4a1d617c326c5d4c78668c"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/native.mjs",
+      "bytes": 10179,
+      "sha256": "1d922bd64c52cacd5edd8ca569c2ce2b1b3371f18e0e37ff72ccf125aef65c63"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/ownership-inspection.mjs",
+      "bytes": 27266,
+      "sha256": "f95d01df89eca30010387d3ec1cf1c559d4b391c7bb6f353de7eef4d8fcd7b58"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/inputs.json",
+      "bytes": 14499,
+      "sha256": "37da91be0e9b19d4aa7928a4088fed0ae9ba0380bbca2fbb7a013fccd014b2c2"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/README.md",
+      "bytes": 15424,
+      "sha256": "26166c1cf0e4441dce8d32fb0de1d8e906cf11eb9dc3226d0ba2add01cdde754"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/recipe-diff.md",
+      "bytes": 1757,
+      "sha256": "523a8b261b308127921428abe68d6593879b9e866f2ed0c4179212f0c2604b83"
+    },
+    {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v4-20261005/recipe.patch",
+      "bytes": 42208,
+      "sha256": "97208279a9cb387d3bae1abaa6c144275b68c5e0eb0737d7a65d930ae43f7d53"
+    }
+  ],
+  "sourceOnlyParent": {
+    "directory": "/private/tmp/tube-grey-band-ownership-native-v3-20261005",
+    "preparationFreeze": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/preparation-freeze.json",
+      "bytes": 4495,
+      "sha256": "f61477f4866f42644ef08c5ed6af88ec8f0e4fe3ceb4894d0bafd1863e0bcfc7"
+    },
+    "sourceAndFailedResultsUnchanged": true
+  },
+  "actualPriorNativeFailure": {
+    "owner": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/owner.json",
+      "bytes": 15489,
+      "sha256": "a210ddebe768f0eb58e4831560caf4ecc572b93eef35e2aa61477224cb5a29f7"
+    },
+    "report": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/candidate-first/report.json",
+      "bytes": 30186,
+      "sha256": "d702e3d226fc6eb182fe3e2634281594e4e4c5078f0459eeac81492939005b82"
+    },
+    "qualification": "ID V3 actual owner exited1 after53.4503s with0steps/0PNGs before probes: its legacy drawRange.count===0 guard rejected the default Infinity range even though indexed geometry can be empty. Owned group/ports closed and all four protected identities preserved; owner postExecutionPinsVerified remains false. Independent root post-failure pins/closure receipt is separate authority. V3 sealed sources and failed results remain unchanged.",
+    "rootPostFailure": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/root-post-failure-pins-and-closure.json",
+      "bytes": 54427,
+      "sha256": "235816a6057bf3f3a19a14b141010d5518c1912e2f2ad34b18d51d4b927a8dfe"
+    }
+  },
+  "actualPriorPreparationFailure": {
+    "receipt": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v2-20261005/root-prepare-failure.json",
+      "bytes": 2044,
+      "sha256": "ad4124b6d699570bb33996e654ee53725a9a34f25ef54b0103fbd7ed087c59cf"
+    },
+    "qualification": "The ID V2 root preparation actually exited1 while treating node_modules/three/build/three.core.js as committed Git source. Its failed preparation started no native run and produced no dist, source scratch, provenance, build, seal, owner or candidate results. The receipt complete flag records this actual failure only; V2 source freeze remains unchanged."
+  },
+  "qualifiedPriorOpticalV3Run": {
+    "owner": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    "report": {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    "qualification": "The V3 gameplay owner/report actually failed the640s diagnostic wall deadline after1525rows. Its immutable app build/assets/log/source receipts are complete; gameplay success is not claimed."
+  },
+  "protectedIdentityAuthority": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/root-post-failure-closure-and-pins.json",
+    "bytes": 25763,
+    "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+  },
+  "legacyGuard": {
+    "requireIndexedGeometry": true,
+    "requireIndexCount": 0,
+    "requirePositionCount": 0,
+    "requireZeroDrawRange": false,
+    "preserveActualVisibleRangeGroupsAndAttributeIdentities": true,
+    "recordInstallationAndCaptureState": true,
+    "nonfiniteDrawRangeJSONEncoding": "String, e.g. Infinity; never JSON null",
+    "sourceRationaleHistoricalCommit": "6bcae3aa0740cb66187f572a03cc8abbb1981030",
+    "sourceRationalePaths": [
+      "src/game/PhysicalMode.ts",
+      "src/scene/LipSheetMesh.ts"
+    ],
+    "actualRuntimeCountsMustBeVerified": true
+  },
+  "historicalSourceRationale": {
+    "physicalModeAlreadyPinnedCopiedSource": {
+      "file": "/private/tmp/tube-grey-band-ownership-native-v3-20261005/historical-source/src/game/PhysicalMode.ts",
+      "bytes": 41940,
+      "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+    },
+    "physicalModeHistoricalCommit": "6bcae3aa0740cb66187f572a03cc8abbb1981030",
+    "lipSheetPath": "src/scene/LipSheetMesh.ts",
+    "lipSheetHistoricalCommit": "6bcae3aa0740cb66187f572a03cc8abbb1981030",
+    "lipSheetRecoveryAndNewPinPendingRootPreparation": true,
+    "actualRuntimeIndexPositionCountsNotAssumed": true
+  },
+  "unchangedShaderSourceBlocks": [
+    {
+      "block": "shaderConstantsAndDelta",
+      "bytes": 3049,
+      "sha256": "ab02b27b65b577b8f13d2bb8fb5f2abdaf75dd9c1fc762dfe9e3b2e7877e2eab",
+      "byteIdenticalToV3": true
+    },
+    {
+      "block": "actualCallbacksAndStages",
+      "bytes": 4135,
+      "sha256": "cd8fd2beae84d08d33daabed1b8686495a16fd27c4716898a62aeda1890a47da",
+      "byteIdenticalToV3": true
+    },
+    {
+      "block": "materialGuards",
+      "bytes": 802,
+      "sha256": "25dea7b179d8a01cadd28de218026f04bc6de2d56ee0027bfab382ee5d38e4fd",
+      "byteIdenticalToV3": true
+    },
+    {
+      "block": "probeAndRestorationLoop",
+      "bytes": 941,
+      "sha256": "1b7a35eea9a18ee09d44c03fef8a7bb79bbe66ca2be4f09a801757bcb1a7211b",
+      "byteIdenticalToV3": true
+    }
+  ],
+  "independentReadOnlyReview": {
+    "scope": "Legacy-only helper diff, retained shader behavior source and owner count/state gates",
+    "blockingIssuesReported": false,
+    "executionClaim": false
+  },
+  "runtimeAcceptancePending": true
+}

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "node",
+    "/private/tmp/tube-guided-ordinary-v4-telemetry-native-20261005/build-diagnostic.mjs"
+  ],
+  "exitCode": 0,
+  "seconds": 0.10742283397121355,
+  "logBytes": 282,
+  "logSha256": "2478068a25a69eb395dbfb6bd33ada5b70a6caba996f9ed56f79b532040c6810"
+}
