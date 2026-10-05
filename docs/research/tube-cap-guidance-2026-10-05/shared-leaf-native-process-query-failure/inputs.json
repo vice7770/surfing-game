@@ -1,0 +1,295 @@
+{
+  "referenceReport": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+    "bytes": 49054,
+    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+  },
+  "referenceOwner": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+    "bytes": 3848,
+    "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+  },
+  "referenceLoft": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+    "bytes": 1219771,
+    "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+  },
+  "referenceBuild": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+    "bytes": 15655,
+    "sha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00"
+  },
+  "referenceSeal": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/seal.json",
+    "bytes": 6584,
+    "sha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05"
+  },
+  "referenceSourceFreeze": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+    "bytes": 5973,
+    "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
+  },
+  "borrowedHelperPins": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    }
+  ],
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "fixedCameras": {
+    "side": {
+      "eye": [
+        75.65191820636392,
+        0.8180906549096107,
+        -66.22397584095597
+      ],
+      "target": [
+        74.75,
+        0.8180906549096107,
+        -68.14806801453233
+      ],
+      "quaternion": [
+        0,
+        0.21741787419751346,
+        0,
+        0.9760786177247376
+      ],
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1
+    },
+    "interior": {
+      "eye": [
+        74.0625,
+        1.0598396605743825,
+        -68.79456329345703
+      ],
+      "target": [
+        74.1875,
+        1.0626037843906364,
+        -68.7633285522461
+      ],
+      "quaternion": [
+        0.006600678893715275,
+        -0.7881247536647293,
+        0.008452992668955604,
+        0.6154220914250564
+      ],
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1
+    }
+  },
+  "referenceEpoch": {
+    "step": 0,
+    "seaTime": 276.3293560552737,
+    "kind": "first-eligible-capture"
+  },
+  "referenceCounts": {
+    "slices": 81,
+    "vertices": 10854,
+    "indices": 62244
+  },
+  "protectedPorts": [
+    4312,
+    4313,
+    4314,
+    4315
+  ],
+  "protected4315": {
+    "pid": 87796,
+    "rootSession": "64713"
+  },
+  "ownedPorts": [
+    4301,
+    9711
+  ],
+  "schema": "shared-leaf-inputs/v1",
+  "preparationOnly": true,
+  "rootExecutionPending": true,
+  "applicationBuildId": "tube-shared-leaf-seek-history-20261005",
+  "applicationDirectory": "/Users/regina/Desktop/Projects/surfing-game/dist",
+  "authoredAuthority": [
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+      "bytes": 11001,
+      "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    }
+  ],
+  "opticalAuthority": [
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
+      "bytes": 8807,
+      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
+      "bytes": 2757,
+      "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
+      "bytes": 39508,
+      "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+    }
+  ],
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 660,
+    "cleanupSeconds": 7,
+    "pngCount": 8,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 100663296,
+    "reportBytes": 2097152,
+    "sidecarBytes": 6291456,
+    "drawInputsBytes": 8388608
+  },
+  "comparison": {
+    "pairs": [
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      }
+    ],
+    "geometryOrder": [
+      "preserved-cap",
+      "shared-leaf",
+      "restored-preserved-cap-repeat"
+    ],
+    "oldFull37Exact": true,
+    "candidateActiveCountsMayChange": true,
+    "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Not the prior cap historical footprint mask.",
+    "currentMaterialPolicy": "Unmodified current compiled authored max-mask and wall-light A on both variants; observer wrapper records exact shader words only.",
+    "targetCorner": {
+      "front": 41,
+      "worldCrestX": 75.625,
+      "coordinateIsSigma": false,
+      "priorMeasuredBendDegrees": 33.2759
+    },
+    "noPlacement": true,
+    "noSteps": true,
+    "noSeedEpochPoseSelectorSearch": true,
+    "globalC1Guarantee": false
+  }
+}

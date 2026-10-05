@@ -1,0 +1,183 @@
+{
+  "schema": "tube-ordinary-v3-wall-deadline-archive/v1",
+  "actualExecHandle": 62575,
+  "actualExecExitCode": 1,
+  "ownerComplete": false,
+  "nativeComplete": false,
+  "nativeFailure": "640s native deadline; no extension or retry",
+  "recordedSteps": 1525,
+  "recordedPhysicalSeconds": 25.416666666666668,
+  "rootPostTerminalPinnedFilesChecked": 203,
+  "ownedResourcesClosed": true,
+  "protectedPreviewsPreserved": true,
+  "actualCompletedRideAcceptance": false,
+  "observedPrefix": {
+    "idleProneActions": 0,
+    "popUpInputs": 1,
+    "positiveCueAndPushStep": 1162,
+    "standingStep": 1234,
+    "displayedStandingStep": 1235,
+    "standingSamples": 292,
+    "guideSamples": 0,
+    "union21OutsideSamples": 292
+  },
+  "missing": [
+    "physical terminal result",
+    "terminal checkpoint image/loft/body",
+    "successful native/owner completion",
+    "tube entry/travel/exit"
+  ],
+  "scope": "Actual failed diagnostic wall-deadline execution plus a complete recorded prefix. Root ran the prefix analyzer after terminal and independently verified all203 sealed/source/build pins. Standing is observed; completed riding and tube passage remain unproved. No retry or deadline extension of this attempt.",
+  "files": [
+    {
+      "file": "00-initial.png",
+      "bytes": 2444374,
+      "sha256": "9dfdc76d2e924a9e0a267fa44db04e0b0ef90a6202bf082ed40e4d002b9920dc"
+    },
+    {
+      "file": "README.md",
+      "bytes": 9008,
+      "sha256": "b0f2f89331eeb28e86286ad3f9335ca86d772d631b84b1332a7230e5306ba98a"
+    },
+    {
+      "file": "application-build.log",
+      "bytes": 1328,
+      "sha256": "ef1c24e5376c8f3ca28e9fd95b9bfa76bc1487f90f5bda1136e2de7c8da3de6e"
+    },
+    {
+      "file": "autopilot-entry.ts",
+      "bytes": 106,
+      "sha256": "53ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335"
+    },
+    {
+      "file": "body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    },
+    {
+      "file": "build-diagnostic.mjs",
+      "bytes": 1874,
+      "sha256": "5ab6542657ed0ca1e7d95d85905263fabf634d12e03b77eb7e66511d2172e07c"
+    },
+    {
+      "file": "build.json",
+      "bytes": 41743,
+      "sha256": "8a14b79263e47a3a490c6eb734ada185c98559605ab57754b6faa1de54e67fb8"
+    },
+    {
+      "file": "control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+    },
+    {
+      "file": "criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+    },
+    {
+      "file": "diagnostic-build.json",
+      "bytes": 16724,
+      "sha256": "013b95b29c789270843c54fa9c2021c186bfb0be5d1c56e9dc993896c5f62e46"
+    },
+    {
+      "file": "driver-diff.md",
+      "bytes": 1975,
+      "sha256": "3f4b5c91164bc5521d13277c4f81225798919ee2439593db6c6737500e4ff9c8"
+    },
+    {
+      "file": "inputs.json",
+      "bytes": 4802,
+      "sha256": "181b87dfb0954ff16260caeb206a1e235308211617c0bf918e66d34dca98fd9c"
+    },
+    {
+      "file": "loft-initial.json.gz",
+      "bytes": 266389,
+      "sha256": "a48d2eedb302cca7d0182b0a96b68dbdcc5ce7b0adaef3907db96ccc175ab445"
+    },
+    {
+      "file": "loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+    },
+    {
+      "file": "native.log",
+      "bytes": 5004,
+      "sha256": "fb7b0c3f81a78265d00122c560744a016f716c29977d5ea3e5f5a2a5011286d3"
+    },
+    {
+      "file": "native.mjs",
+      "bytes": 14564,
+      "sha256": "070d793c796be73258c023997961c0e82da7c818c7c0da58c15216a7d3d26dd6"
+    },
+    {
+      "file": "owner.json",
+      "bytes": 3469,
+      "sha256": "7998eaf74840dadd709eae3bceb62b4be6b9d262278a8b1c22f4715e674146d7"
+    },
+    {
+      "file": "prepare-result.json",
+      "bytes": 769,
+      "sha256": "63444cbeb0d3b5c993fa90f6eedf1dbbf805f8bb83dcc87f84e3bab763198fd8"
+    },
+    {
+      "file": "prepare.py",
+      "bytes": 4310,
+      "sha256": "d4ca9dc9ab52eea2183f7e2ef4f78deb1c28891990b518378112082784b2d0fa"
+    },
+    {
+      "file": "report.json",
+      "bytes": 42104,
+      "sha256": "49e5532a9607571500ac6a20649c42f26106a363baa25659d0a04f69c52294b3"
+    },
+    {
+      "file": "rider-driver.mjs",
+      "bytes": 12947,
+      "sha256": "49164d75109cba0afa6d057ca3bfe96ad36f0483caa18d2810351d95a097792f"
+    },
+    {
+      "file": "root-post-failure-pins.json",
+      "bytes": 43646,
+      "sha256": "6e4a7ca025d044f50d426f3127ad7c3b15535603be57a2c03bd45809bbef03d0"
+    },
+    {
+      "file": "run.py",
+      "bytes": 16337,
+      "sha256": "61b7f58e803fe21a45ae1742d7d17cd5a0550984335b66103272d12fd27f3db4"
+    },
+    {
+      "file": "seal.json",
+      "bytes": 5517,
+      "sha256": "43f54e0dbe2b55c9e3fd0024372f50c716324769228d97d03d494d9fbe9ef067"
+    },
+    {
+      "file": "source-freeze.json",
+      "bytes": 19399,
+      "sha256": "d6c7ffd6bd467c5e491140ff3100fac2905c11531fc4983ec0f3a0f2b4114df9"
+    },
+    {
+      "file": "steps.ndjson.gz",
+      "bytes": 2468117,
+      "sha256": "3b800fb89c4dec3d84e8a748b236b74041809f650f954921002bb74928634be2"
+    },
+    {
+      "file": "tube-guided-ordinary-v3-takeoff-audit-notes-20261005.md",
+      "bytes": 5707,
+      "sha256": "7aad13ee3dacd2f446b986ff86ac6c4ef2f25b63d87f7588b4c3964d1055c954"
+    },
+    {
+      "file": "tube-guided-ordinary-v3-takeoff-guide-prefix-20261005.json",
+      "bytes": 69860,
+      "sha256": "9510ade7fc0db5f24118288d31d6bd39ac8986b5e1e29fab3e560022094dbcc9"
+    },
+    {
+      "file": "tube-guided-ordinary-v3-takeoff-guide-prefix-20261005.py",
+      "bytes": 14220,
+      "sha256": "1d0e56c567c0c3fe597be31000b8641d051b06179e2a3747aed27adc2dd8f9ea"
+    },
+    {
+      "file": "tube-guided-ordinary-v3-takeoff-guide-prefix-root-20261005.log",
+      "bytes": 21035,
+      "sha256": "5f4e834f1c37116c2109cdf8efe981ccbc48f86ed610b8655e93ab6ccb16e058"
+    }
+  ]
+}

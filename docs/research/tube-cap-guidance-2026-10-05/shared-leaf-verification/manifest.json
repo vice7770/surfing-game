@@ -1,0 +1,139 @@
+{
+  "schema": "tube-shared-leaf-verification/v1",
+  "actualExecutions": {
+    "initialBarrel": {
+      "handle": 79282,
+      "exitCode": 1,
+      "files": 37,
+      "tests": 364,
+      "passed": 360,
+      "timeoutFailures": 4
+    },
+    "serialTimeoutRecheck": {
+      "handle": 64387,
+      "exitCode": 0,
+      "files": 4,
+      "tests": 22,
+      "passed": 22,
+      "timeoutsUnchanged": true
+    },
+    "controller": {
+      "handle": 33726,
+      "exitCode": 0,
+      "files": 2,
+      "tests": 53,
+      "passed": 53
+    },
+    "adversarialBeforeGuard": {
+      "handle": 36125,
+      "exitCode": 1,
+      "failedTests": 1,
+      "skippedTests": 8,
+      "observedLeafReach": 0.844531238079071,
+      "requiredMinimum": 0.8499998
+    },
+    "finalGuardAffectedSuites": {
+      "handle": 62856,
+      "exitCode": 0,
+      "files": 3,
+      "tests": 29,
+      "passed": 29
+    },
+    "finalApplicationBuild": {
+      "handle": 70767,
+      "exitCode": 0,
+      "buildId": "tube-shared-leaf-seek-history-20261005",
+      "typeCheckAndViteBuildPass": true
+    }
+  },
+  "currentSourcePins": [
+    {
+      "file": "src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 31647,
+      "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+    },
+    {
+      "file": "src/wave/barrel/boundedCProfile.ts",
+      "bytes": 19679,
+      "sha256": "83feb4b827ff2b822a0aa0869cba2495480929c0e7e6ab3e74e3882cc69c2414"
+    },
+    {
+      "file": "src/wave/barrel/boundedCLeafReach.test.ts",
+      "bytes": 16453,
+      "sha256": "6e7e8a913d1fd18ccf23ca910793276d35970f2fde9c42d3361fec77ac3bc3fa"
+    },
+    {
+      "file": "src/dev/TubePilot.ts",
+      "bytes": 6577,
+      "sha256": "40577229aef35a07d025c25b97e35a20036a64af9a0433d4ebd8da9074a82237"
+    },
+    {
+      "file": "src/dev/TubePilot.test.ts",
+      "bytes": 7672,
+      "sha256": "9bb7da8375f351e39d948a63dd92cc8c0fef843e59fc17c34ac13a1a07900f27"
+    }
+  ],
+  "nativeGeometryCapture": {
+    "handle": 30897,
+    "exitCode": 1,
+    "complete": false,
+    "capturedComparisonImages": 0,
+    "physicalSteps": 0,
+    "failure": "Periodic OS process query timed out after0.35s; infrastructure failure before comparison",
+    "archive": "../shared-leaf-native-process-query-failure/manifest.json",
+    "independentPostTerminalClosureAndPinsVerified": true
+  },
+  "scope": "Executed unit/build stages with unchanged timing limits on serial recheck. Final shared-domain guard tested by29 affected cases after prior broad coverage. No rendered quality, global C1 trajectory or ordinary tube entry/travel/exit acceptance.",
+  "files": [
+    {
+      "file": "root-domain-guard.patch",
+      "bytes": 2286,
+      "sha256": "ef9c70f369f91ff63664568a16305bb01c29540328a24127699cb63642925e9d"
+    },
+    {
+      "file": "tube-leaf-domain-regression-after-20261005.log",
+      "bytes": 373,
+      "sha256": "a14eb1eab02f2791337f3c8306fe63406706a9dd60d919bc653122576dba0f33"
+    },
+    {
+      "file": "tube-leaf-domain-regression-before-20261005.log",
+      "bytes": 1398,
+      "sha256": "0b7a49bfa7622261686c658174e2b54bb23b9c3721006b704ea559493cc91920"
+    },
+    {
+      "file": "tube-seek-pose-history-tests-20261005.log",
+      "bytes": 553,
+      "sha256": "58e9a8eaa1c1edcda1a7daa8ef038edbe7ab02bc96ebd73429e599ba6b4c8add"
+    },
+    {
+      "file": "tube-shared-leaf-budget-review-20261005.md",
+      "bytes": 4532,
+      "sha256": "7745ee142100ceba3e5c0927dab2366da83f36f33da848b65001ad500062ea59"
+    },
+    {
+      "file": "tube-shared-leaf-reach-proposal-20261005.patch",
+      "bytes": 24276,
+      "sha256": "04c643fdbab455f5c6bf08fd306f24fb1d575fb43ad12a4dd49e2387cc6c63f6"
+    },
+    {
+      "file": "tube-shared-leaf-reach-root-20261005.patch",
+      "bytes": 24297,
+      "sha256": "ca17d22db214bea78a18409190561b989c6040de6e126fc3d7fee2cdf3acbe70"
+    },
+    {
+      "file": "tube-shared-leaf-reach-tests-20261005.log",
+      "bytes": 3725,
+      "sha256": "8dc50171a7593cfa0f880541d3fdfd652dd1cd8de60840adb6d9c997ae42667f"
+    },
+    {
+      "file": "tube-shared-leaf-reach-timeout-recheck-20261005.log",
+      "bytes": 400,
+      "sha256": "0e53812d2600cef1b5b6be424c6d21088535ea14ae1cf8e2f0d73bca8793a7ac"
+    },
+    {
+      "file": "tube-shared-leaf-seek-history-build-final-20261005.log",
+      "bytes": 1328,
+      "sha256": "aa356c4bf230738569166bf4942c48f1fdc5a00702090b07fa60d6c6aeda2886"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "grey-band-fixed-sample-choice/v1",
+  "source": "Visual inspection of completed fixed INTERIOR combined Rich and region images, before any new shader/render variant or ray calculation.",
+  "camera": "Exact completed cap INTERIOR eye/quaternion/up/projection; unchanged 1708x879 canvas.",
+  "samplesTopLeft0Based": [
+    {"pixel": [1300, 360], "role": "grey-band interior", "reason": "Inside the broad opaque grey wedge, clear of its roof and lower dither boundary."},
+    {"pixel": [1500, 400], "role": "grey-band second interior", "reason": "A separated point in the same broad grey wedge, below the upper red/green lip boundary."},
+    {"pixel": [1400, 180], "role": "roof control", "reason": "Inside the visibly recoloured swept roof in the region view."},
+    {"pixel": [400, 450], "role": "wall control", "reason": "Existing predeclared wall point, away from the new grey-wedge samples."}
+  ],
+  "search": {"camera": false, "epoch": false, "seed": false, "geometrySelector": false, "pixelQualityOptimization": false},
+  "nativeSteps": 0
+}

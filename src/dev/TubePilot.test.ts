@@ -19,6 +19,13 @@ function view(time: number, approach: TubeApproachCue | undefined = cue(time)): 
       leash: { snapped: false, tension: 0, distance: 0, reeling: false }, duck: 0, boardInReach: false,
       knock: 0, breath: 1, rescues: 0, tubeApproach: approach } };
 }
+function seeking(time: number, heading: number, bank: number): AutopilotView {
+  const snapshot = view(time);
+  snapshot.ride.tubeApproach = undefined;
+  snapshot.board.heading = heading;
+  snapshot.ride.bank = bank;
+  return snapshot;
+}
 
 describe('ordinary tube controls', () => {
   it('keeps controls finite while no usable wave frame or tube cue is available', () => {
@@ -27,6 +34,45 @@ describe('ordinary tube controls', () => {
     const input = new TubePilot().next(snapshot, 1 / 60);
     expect(Number.isFinite(input.steer)).toBe(true);
     expect(input.crouch).toBe(1);
+  });
+
+  it.each([
+    { motion: 'yaw', previousHeading: 0.2, previousBank: 0.1 },
+    { motion: 'bank rate', previousHeading: 0.6, previousBank: -0.2 },
+  ])('damps actual $motion across consecutive no-guide seek snapshots', ({ previousHeading, previousBank }) => {
+    const moving = new TubePilot(), steady = new TubePilot();
+    moving.next(seeking(1, previousHeading, previousBank), 1 / 60);
+    steady.next(seeking(1, 0.6, 0.1), 1 / 60);
+    const damped = moving.next(seeking(1.2, 0.6, 0.1), 1 / 60);
+    const staticPose = steady.next(seeking(1.2, 0.6, 0.1), 1 / 60);
+    // The same face target lies to the positive side of this pose. Actual turn/bank motion requires release instead.
+    expect(staticPose.steer).toBeGreaterThan(0);
+    expect(damped.steer).toBeLessThan(0);
+    expect(moving.phase).toBe('seek');
+    expect(damped).toMatchObject({ paddle: false, popUp: false, crouch: 1, compress: 0, trim: 0 });
+  });
+
+  it('keeps seek pose history unchanged on duplicate clocks and clears it on reset', () => {
+    const pilot = new TubePilot();
+    const first = pilot.next(seeking(1, 0.2, -0.2), 1 / 60);
+    const duplicate = view(1, cue(1, { bodyInCavity: true }));
+    duplicate.board.heading = 1.5; duplicate.ride.bank = 0.8;
+    expect(pilot.next(duplicate, 1 / 60)).toEqual(first);
+    expect(pilot.phase).toBe('seek');
+    expect(pilot.next(seeking(1.2, 0.6, 0.1), 1 / 60).steer).toBeLessThan(0);
+    pilot.reset();
+    expect(pilot.next(seeking(1.2, 0.6, 0.1), 1 / 60).steer).toBeGreaterThan(0);
+    expect(pilot.phase).toBe('seek');
+  });
+
+  it('does not divide pose changes by a zero fallback interval', () => {
+    const pilot = new TubePilot(), snapshot = seeking(1, 0.6, 0.1);
+    snapshot.seaTime = undefined;
+    const first = pilot.next(snapshot, 0);
+    snapshot.board.heading = 1; snapshot.ride.bank = 0.2;
+    expect(pilot.next(snapshot, 0)).toEqual(first);
+    expect(Number.isFinite(first.steer)).toBe(true);
+    expect(pilot.phase).toBe('seek');
   });
   it('crouches before the current body fits, bounds steering and never places or assists the actor', () => {
     const pilot = new TubePilot();
@@ -68,6 +114,10 @@ describe('ordinary tube controls', () => {
     // Retired/lost geometry cannot be scored as an intentional exit.
     const lost = view(2.7); lost.ride.tubeApproach = undefined;
     pilot.next(lost, 1 / 60); expect(pilot.phase).toBe('seek');
+    const reappeared = view(2.8, cue(2.8, { bodyInCavity: true }));
+    reappeared.board.x = 10;
+    expect(pilot.next(reappeared, 1 / 60).crouch).toBe(1);
+    expect(pilot.phase).toBe('travel'); // Previous travel/exit intent was cleared when guidance disappeared.
   });
 
   it('requests opt-in geometry through the public autopilot and preserves its normal pop-up cue', () => {

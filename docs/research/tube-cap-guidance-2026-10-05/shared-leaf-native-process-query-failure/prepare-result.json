@@ -1,0 +1,22 @@
+{
+  "schema": "shared-leaf-preparation/v1",
+  "complete": true,
+  "build": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/build.json",
+    "bytes": 15872,
+    "sha256": "7abf323e2d00d7d8fe5ac141ceb4398dbbb34a88bb8db66b678e9ae176f4a717"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/source-freeze.json",
+    "bytes": 6267,
+    "sha256": "ea5f8d376b76ab982085dce43962e025f04290e09b370f61bf1f12da2c463cce"
+  },
+  "seal": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/seal.json",
+    "bytes": 7113,
+    "sha256": "a4e1a369d06cf0679f0b0560ccf1c199e813416cd3f675f4a1e36cd18852b507"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedChecksOrBuilds": false
+}

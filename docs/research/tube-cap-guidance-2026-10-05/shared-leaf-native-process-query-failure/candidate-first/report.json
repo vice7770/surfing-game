@@ -1,0 +1,156 @@
+{
+  "schema": "shared-leaf-native/v1",
+  "complete": false,
+  "firstFailure": "Error: timed out waiting for document.querySelector('.screen-menu') && !document.querySelector('.is-scene-pending')\n    at Page.waitFor (file:///private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs:122:51)\n    at async launch (file:///private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs:90:5)\n    at async file:///private/tmp/tube-shared-leaf-native-20261005/native.mjs:32:7",
+  "sealSha256": "a4e1a369d06cf0679f0b0560ccf1c199e813416cd3f675f4a1e36cd18852b507",
+  "applicationBuild": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/build.json",
+    "bytes": 15872,
+    "sha256": "7abf323e2d00d7d8fe5ac141ceb4398dbbb34a88bb8db66b678e9ae176f4a717"
+  },
+  "referenceReport": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+    "bytes": 49054,
+    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+  },
+  "referenceLoft": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+    "bytes": 1219771,
+    "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+  },
+  "opticalAuthority": [
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
+      "bytes": 8807,
+      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
+      "bytes": 2757,
+      "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
+      "bytes": 39508,
+      "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+    }
+  ],
+  "authoredAuthority": [
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+      "bytes": 11001,
+      "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    }
+  ],
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "policy": {
+    "pairs": [
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      }
+    ],
+    "geometryOrder": [
+      "preserved-cap",
+      "shared-leaf",
+      "restored-preserved-cap-repeat"
+    ],
+    "oldFull37Exact": true,
+    "candidateActiveCountsMayChange": true,
+    "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Not the prior cap historical footprint mask.",
+    "currentMaterialPolicy": "Unmodified current compiled authored max-mask and wall-light A on both variants; observer wrapper records exact shader words only.",
+    "targetCorner": {
+      "front": 41,
+      "worldCrestX": 75.625,
+      "coordinateIsSigma": false,
+      "priorMeasuredBendDegrees": 33.2759
+    },
+    "noPlacement": true,
+    "noSteps": true,
+    "noSeedEpochPoseSelectorSearch": true,
+    "globalC1Guarantee": false
+  },
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 660,
+    "cleanupSeconds": 7,
+    "pngCount": 8,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 100663296,
+    "reportBytes": 2097152,
+    "sidecarBytes": 6291456,
+    "drawInputsBytes": 8388608
+  },
+  "stepCount": 0,
+  "pairs": [],
+  "artifacts": [],
+  "pngCount": 0,
+  "pngBytes": 0,
+  "browserErrors": [],
+  "acceptance": {
+    "visualCause": null,
+    "playability": false,
+    "productionFixAdopted": false
+  },
+  "elapsedMilliseconds": 47626.070292000004
+}

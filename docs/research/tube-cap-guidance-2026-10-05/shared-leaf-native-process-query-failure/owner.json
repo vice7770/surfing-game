@@ -1,0 +1,59 @@
+{
+  "schema": "shared-leaf-owner/v1",
+  "complete": false,
+  "firstFailure": "TimeoutExpired: Command '['/bin/ps', '-axo', 'pid=,pgid=,stat=,lstart=,command=']' timed out after 0.35 seconds",
+  "protectedBefore": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4315": [
+      "87796 Mon Oct  5 15:00:00 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "protected4315ExpectedPid": 87796,
+  "protected4315RootToolSession": "64713",
+  "toolSessionOSIdentityClaim": false,
+  "sealSha256": "a4e1a369d06cf0679f0b0560ccf1c199e813416cd3f675f4a1e36cd18852b507",
+  "preExecutionPinsVerified": true,
+  "postExecutionPinsVerified": false,
+  "copiedAndLiveSourcePinsPostVerified": false,
+  "cleanupFailures": [
+    "owned-group: TimeoutExpired: Command '['/bin/ps', '-axo', 'pid=,pgid=,stat=,lstart=,command=']' timed out after 0.35 seconds",
+    "protected: TimeoutExpired: Command '['/usr/sbin/lsof', '-nP', '-a', '-iTCP:4313', '-sTCP:LISTEN', '-Fp']' timed out after 0.35 seconds"
+  ],
+  "expectedProtectedPids": {
+    "4312": 92445,
+    "4313": 58298,
+    "4314": 51358,
+    "4315": 87796
+  },
+  "pid": 21700,
+  "ownedProcessGroup": 21700,
+  "ownedProcessIdentity": {
+    "pid": 21700,
+    "pgid": 21700,
+    "started": "Mon Oct 5 16:47:07 2026",
+    "command": "/opt/homebrew/bin/node /private/tmp/tube-shared-leaf-native-20261005/native.mjs --run=true --url=http://127.0.0.1:4301/?diagnostics --out=/private/tmp/tube-shared-leaf-native-20261005/candidate-first"
+  },
+  "ownedIdentities": [
+    {
+      "pid": 21700,
+      "pgid": 21700,
+      "started": "Mon Oct 5 16:47:07 2026",
+      "command": "/opt/homebrew/bin/node /private/tmp/tube-shared-leaf-native-20261005/native.mjs --run=true --url=http://127.0.0.1:4301/?diagnostics --out=/private/tmp/tube-shared-leaf-native-20261005/candidate-first"
+    }
+  ],
+  "protectedPreserved": false,
+  "closedPorts": {
+    "4301": true,
+    "9711": false
+  },
+  "cleanupElapsedSeconds": 1.2129763750126585,
+  "elapsedSeconds": 2.728328542027157
+}

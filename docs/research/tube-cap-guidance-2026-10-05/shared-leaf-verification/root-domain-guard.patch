@@ -1,0 +1,42 @@
+--- a/src/wave/barrel/boundedCProfile.ts
++++ b/src/wave/barrel/boundedCProfile.ts
+@@ -60,7 +60,9 @@
+  // Use the maximum height in the width-squared bound and the minimum in the height-squared bound.
+  const minimumLeafHeight=(1-LIP_OPEN_HEIGHT)*H;
+  const B=Math.min(.06*H,W/16,.1*Math.min((.85*W)**2/H,minimumLeafHeight**2/(.85*W)));
+- const leafWidthDelta=boundedLeafWidthDelta(z.leafWidthDelta??0,B);
++ // The existing curvature budget assumes a leaf at least .85W from the crest. Its unadjusted reach
++ // is .98W-2B; reserve that domain as well as the toe-side thickness room (B<=W/16 keeps this positive).
++ const reachBudget=Math.min(B,(.98-.85)*W-2*B),leafWidthDelta=boundedLeafWidthDelta(z.leafWidthDelta??0,reachBudget);
+  return {A,Toe,ct,tt,W,H,base,K0,d0,ha0:ha/2,he0:norm(derivative(base,.5))/6,ht0:ht/2,B,leafWidthDelta};
+ }
+ type Ordinary=ReturnType<typeof ordinary>;
+--- a/src/wave/barrel/boundedCLeafReach.test.ts
++++ b/src/wave/barrel/boundedCLeafReach.test.ts
+@@ -125,6 +125,26 @@
+     const right = boundedLeafWidthDelta(epsilon, thickness) / epsilon;
+     expect(left).toBeCloseTo(right, 12);
+     expect(left).toBeCloseTo(1, 5);
++  });
++
++  it('keeps the original leaf domain under extreme reach corrections', () => {
++    const carrier = rawFrame(widthCase(() => 2), 0.625);
++    // This steep, valid carrier approaches the width-based thickness limit.
++    for (let i = 0; i < PROFILE_POINTS; i++) {
++      carrier[2 * i] *= 0.5;
++      carrier[2 * i + 1] *= 1.6;
++    }
++    const controls = boundedCParameters(carrier, 1, 0.625);
++    const width = controls.toe[0] - controls.crest[0];
++    for (const requested of [-1e9, 0, 1e9]) {
++      const final = carrier.slice();
++      sampleBoundedC({ ...controls, leafWidthDelta: requested }, final, false, undefined, true);
++      // The existing thickness/curvature bound assumes this minimum outer-leaf reach.
++      expect(final[2 * 60] - controls.crest[0]).toBeGreaterThanOrEqual(0.85 * width - 2e-7);
++      expect(final[2 * 60]).toBeLessThan(controls.toe[0]);
++      expect(final.every(Number.isFinite)).toBe(true);
++      expect(final[2 * 104 + 1]).toBe(final[2 * LANDMARK.toe + 1]);
++    }
+   });
+ 
+   it('reduces a generic leaf bend while keeping the true crest/toe, floor and outgoing carrier', () => {

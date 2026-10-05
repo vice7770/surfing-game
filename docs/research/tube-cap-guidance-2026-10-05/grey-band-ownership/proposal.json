@@ -1,0 +1,350 @@
+{
+  "schema": "grey-band-ownership-proposal/v1",
+  "sourceOnlyNativePending": true,
+  "nativeRun": false,
+  "nativePrepared": false,
+  "applicationBuild": false,
+  "portsProbed": false,
+  "productionWritten": false,
+  "offlineReadOnlyPixelRayInspectionExecuted": true,
+  "authority": [
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+      "bytes": 11001,
+      "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/seal.json",
+      "bytes": 22535,
+      "sha256": "b22727d355b9b3b8ef78877f92ccbc7496a40a98390f27c4119b3e63706f64e2"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/build.json",
+      "bytes": 11113,
+      "sha256": "7a03efc16e9487351cf982bcc69f21587a7d38de3fa58c3b4d1f176b999bd7ef"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/interior-rich-combined-mask-and-sheet-fill-A.png",
+      "bytes": 1979202,
+      "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
+      "bytes": 8807,
+      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
+      "bytes": 2757,
+      "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/seal.json",
+      "bytes": 20206,
+      "sha256": "e1a89b2b419d876863dc783e7ed393fa479568e92acd8f26506e56f3e43da844"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
+      "bytes": 39508,
+      "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/sheet-inspection.mjs",
+      "bytes": 18668,
+      "sha256": "42d1e1e51e139c862b0bf693d81751a418f35d88914a09ef1f07cad6f8715142"
+    }
+  ],
+  "completedBaselineApplication": "/private/tmp/tube-cap-refinement-native-20261005/dist",
+  "completedBaselineInputs": {
+    "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+    "bytes": 11001,
+    "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+  },
+  "completedBaselineReferenceLoft": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+    "bytes": 1219771,
+    "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+  },
+  "fixedCamera": {
+    "eye": [
+      74.0625,
+      1.0598396605743825,
+      -68.79456329345703
+    ],
+    "target": [
+      74.1875,
+      1.0626037843906364,
+      -68.7633285522461
+    ],
+    "quaternion": [
+      0.006600678893715275,
+      -0.7881247536647293,
+      0.008452992668955604,
+      0.6154220914250564
+    ],
+    "inheritedUp": [
+      0,
+      1,
+      0
+    ],
+    "projection": [
+      1.0551622229204924,
+      0,
+      0,
+      0,
+      0,
+      2.050303841579296,
+      0,
+      0,
+      0,
+      0,
+      -1.000066668888963,
+      -1,
+      0,
+      0,
+      -0.2000066668888963,
+      0
+    ],
+    "fov": 52,
+    "aspect": 1.9431171786120591,
+    "near": 0.1,
+    "far": 3000,
+    "zoom": 1
+  },
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "choice": {
+    "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/sample-choice.json",
+    "bytes": 1058,
+    "sha256": "0becdc934ddb5db9d6b1e98e3be286118c84fb7ff381b3e4b852b8cb8995b18c"
+  },
+  "evidence": {
+    "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/saved-pixel-ray-inspection.json",
+    "bytes": 17779,
+    "sha256": "7252459ee405aad4ec8a8283cc6237885472a08365af4f429d0ef47abda6bd21"
+  },
+  "sourcesReadAndCopied": [
+    {
+      "relative": "src/scene/barrel/SweptBarrelMesh.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+        "bytes": 33396,
+        "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/barrelMaskGlsl.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelMaskGlsl.ts",
+        "bytes": 2355,
+        "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/scene/barrel/barrelMaskGlsl.ts",
+        "bytes": 2355,
+        "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+      }
+    },
+    {
+      "relative": "src/scene/barrel/barrelFallback.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/barrel/barrelFallback.ts",
+        "bytes": 1174,
+        "sha256": "cf2c4981ef25869fe7dcffdaba0fa9c91b3c1161a18db203673b059093c293ba"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/scene/barrel/barrelFallback.ts",
+        "bytes": 1174,
+        "sha256": "cf2c4981ef25869fe7dcffdaba0fa9c91b3c1161a18db203673b059093c293ba"
+      }
+    },
+    {
+      "relative": "src/scene/WaterSurface.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/WaterSurface.ts",
+        "bytes": 39192,
+        "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/scene/WaterSurface.ts",
+        "bytes": 39192,
+        "sha256": "3d82a382bf7e6055c5b77ba22e84c9cc948f593764725611162cc572125d040c"
+      }
+    },
+    {
+      "relative": "src/scene/SpotSeabed.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/SpotSeabed.ts",
+        "bytes": 4309,
+        "sha256": "11a745e51cf33cb1ef30319b28336e7e563f041bffa3230bdea4ccff7e0a7f8a"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/scene/SpotSeabed.ts",
+        "bytes": 4309,
+        "sha256": "11a745e51cf33cb1ef30319b28336e7e563f041bffa3230bdea4ccff7e0a7f8a"
+      }
+    },
+    {
+      "relative": "src/scene/FarFieldOcean.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/FarFieldOcean.ts",
+        "bytes": 12090,
+        "sha256": "33874ac524e8b86c5a585a81a258bc08d0972ac102d9faccbcbc8f898435f19b"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/scene/FarFieldOcean.ts",
+        "bytes": 12090,
+        "sha256": "33874ac524e8b86c5a585a81a258bc08d0972ac102d9faccbcbc8f898435f19b"
+      }
+    },
+    {
+      "relative": "src/scene/waterOptics.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/waterOptics.ts",
+        "bytes": 13592,
+        "sha256": "3b235ece7102e835f467126158f961c45cdaaff5dbb32ce2b28544a26159ad07"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/scene/waterOptics.ts",
+        "bytes": 13592,
+        "sha256": "3b235ece7102e835f467126158f961c45cdaaff5dbb32ce2b28544a26159ad07"
+      }
+    },
+    {
+      "relative": "src/scene/water/richWaterGlsl.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richWaterGlsl.ts",
+        "bytes": 8059,
+        "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/scene/water/richWaterGlsl.ts",
+        "bytes": 8059,
+        "sha256": "3ffbf8004f0c8c5bea16f748031c9d67813c69de9b7b67b0ceefcea000d8c416"
+      }
+    },
+    {
+      "relative": "src/scene/water/richPatch.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/scene/water/richPatch.ts",
+        "bytes": 4670,
+        "sha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/scene/water/richPatch.ts",
+        "bytes": 4670,
+        "sha256": "3153a59891e68a67264b93f2ca1517696e54fc9c9402f78b443258d9b3ee6435"
+      }
+    },
+    {
+      "relative": "src/game/PhysicalMode.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/game/PhysicalMode.ts",
+        "bytes": 41940,
+        "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/game/PhysicalMode.ts",
+        "bytes": 41940,
+        "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+      }
+    },
+    {
+      "relative": "src/main.ts",
+      "readOnlyOriginal": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/main.ts",
+        "bytes": 56743,
+        "sha256": "bc228b0d71da661e1758937129e384a3798dae7695f8b1bc0c30d43d4be3fb1d"
+      },
+      "frozenCopy": {
+        "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/source/src/main.ts",
+        "bytes": 56743,
+        "sha256": "bc228b0d71da661e1758937129e384a3798dae7695f8b1bc0c30d43d4be3fb1d"
+      }
+    }
+  ],
+  "orderedStages": [
+    "baseline-combined",
+    "owner",
+    "rasterFace",
+    "bodyCos"
+  ],
+  "baselineRepeatAfterEachProbePNGExactRequired": true,
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 660,
+    "cleanupSeconds": 7,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "reportBytes": 2097152
+  },
+  "protectedPorts": [
+    4312,
+    4313,
+    4314,
+    4315
+  ],
+  "protected4315ExpectedPID": 87796,
+  "ownedPorts": [
+    4301,
+    9711
+  ],
+  "untaggedPixelPolicy": "Unclassified, never assume ordinary water.",
+  "maskDitherPolicy": "All current authored mask, world-mask, shared dither and early discards retained; output probes are not a support repair.",
+  "mixedTransparentOrAntialiasPolicy": "Unclassified unless pure unambiguous marker; retain far-ocean original transparency and alpha fade.",
+  "legacyLipPolicy": "Require actual zero active draw count at this swept spot, as authored by PhysicalMode.update; otherwise report unsupported extra drawable.",
+  "bodyCosRequires": "Actual WebGL2 GLSL ES 3 for isnan/isinf; no context fallback."
+}

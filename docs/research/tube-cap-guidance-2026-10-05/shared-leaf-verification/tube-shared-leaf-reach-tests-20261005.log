@@ -1,0 +1,70 @@
+
+> surfing-game@0.1.0 test
+> vitest run src/wave/barrel
+
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+ ❯ src/wave/barrel/boundedCDemand.test.ts (3 tests | 1 failed) 79053ms
+   ❯ lifecycle and demand cap evaluation (3)
+     × agrees with the complete contour on every asset frame, adjacent blend and both cap derivative stencils 78763ms
+ ❯ src/wave/barrel/boundedCProfile.test.ts (10 tests | 1 failed) 85199ms
+   ❯ bounded C provider contracts (3)
+     × retains global finite/no-new-crossing invariants on1224frames and3648F32 parameter interpolations 75103ms
+ ❯ src/wave/barrel/boundedCConsumers.test.ts (6 tests | 1 failed) 95897ms
+   ❯ bounded-C derived consumers (6)
+     × uses identical final drawing/contact geometry and ordered air columns with neighboring different ages 66172ms
+ ❯ src/wave/barrel/sharedUpperRoot.test.ts (3 tests | 1 failed) 105896ms
+   ❯ shared inner-sheet sampling (3)
+     × keeps asset frames and adjacent parameter blends finite, ordered and free of new proper crossings 85260ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/wave/barrel/boundedCConsumers.test.ts > bounded-C derived consumers > uses identical final drawing/contact geometry and ordered air columns with neighboring different ages
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/wave/barrel/boundedCConsumers.test.ts:104:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/wave/barrel/boundedCDemand.test.ts > lifecycle and demand cap evaluation > agrees with the complete contour on every asset frame, adjacent blend and both cap derivative stencils
+Error: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/wave/barrel/boundedCDemand.test.ts:14:3
+     12|
+     13| describe('lifecycle and demand cap evaluation', () => {
+     14|   it('agrees with the complete contour on every asset frame, adjacent …
+       |   ^
+     15|     let frames = 0, adjacent = 0;
+     16|     function check(raw: Float32Array, z: provider.BoundedCParameters) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/wave/barrel/boundedCProfile.test.ts > bounded C provider contracts > retains global finite/no-new-crossing invariants on1224frames and3648F32 parameter interpolations
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/wave/barrel/boundedCProfile.test.ts:41:2
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/wave/barrel/sharedUpperRoot.test.ts > shared inner-sheet sampling > keeps asset frames and adjacent parameter blends finite, ordered and free of new proper crossings
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/wave/barrel/sharedUpperRoot.test.ts:43:3
+     41|
+     42| describe('shared inner-sheet sampling', () => {
+     43|   it('keeps asset frames and adjacent parameter blends finite, ordered…
+       |   ^
+     44|     let frames = 0, adjacent = 0;
+     45|     function check(raw: Float32Array, z: BoundedCParameters) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  4 failed | 33 passed (37)
+      Tests  4 failed | 360 passed (364)
+   Start at  16:30:58
+   Duration  112.01s (tests 90%, transform 6%, import 4%, worker 1%)
+

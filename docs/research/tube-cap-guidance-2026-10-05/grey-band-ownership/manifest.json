@@ -1,0 +1,62 @@
+{
+  "schema": "tube-grey-band-ownership-offline/v1",
+  "offlineInlineExecutionReportedByAgent": true,
+  "savedOfflineSourceRerun": false,
+  "nativeExecution": false,
+  "predeclaredSamples": [
+    [
+      1300,
+      360
+    ],
+    [
+      1500,
+      400
+    ],
+    [
+      1400,
+      180
+    ],
+    [
+      400,
+      450
+    ]
+  ],
+  "scope": "Observed encoded pixels and exact saved-loft double-sided ray test atfour predeclared points. Two grey samples have zero forward in-frustum saved loft hits; the actual other drawable remains unidentified. Native ID proposal is source-only.",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 7467,
+      "sha256": "a777322f61afe7da7c3f1a8f1df7be8157a0ff450a07207f3ca01e8e315b8679"
+    },
+    {
+      "file": "offline-read.py",
+      "bytes": 4061,
+      "sha256": "b78ee833b4904d45165a0ceeb757f6160860469156781491b3c5e12fddf6eb75"
+    },
+    {
+      "file": "offline-source-note.md",
+      "bytes": 457,
+      "sha256": "0a9bd3b1fa06d269548869e92255f6d27ae41ba5b6b35fce794379544bd34208"
+    },
+    {
+      "file": "probe-shader-deltas.mjs",
+      "bytes": 4991,
+      "sha256": "aed2b614c0aad7e6d5534cf9f9dcc58ec0ec64d4be9c5e7b264a50796400aadb"
+    },
+    {
+      "file": "proposal.json",
+      "bytes": 12197,
+      "sha256": "f11dde4a6074c64b887f17561efcf455187d2c7027cba23e27a598994daf734e"
+    },
+    {
+      "file": "sample-choice.json",
+      "bytes": 1058,
+      "sha256": "0becdc934ddb5db9d6b1e98e3be286118c84fb7ff381b3e4b852b8cb8995b18c"
+    },
+    {
+      "file": "saved-pixel-ray-inspection.json",
+      "bytes": 17779,
+      "sha256": "7252459ee405aad4ec8a8283cc6237885472a08365af4f429d0ef47abda6bd21"
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "schema": "tube-shared-leaf-native-process-query-failure/v1",
+  "actualExecution": {
+    "handle": 30897,
+    "exitCode": 1,
+    "ownerComplete": false,
+    "firstFailure": "TimeoutExpired: Command '['/bin/ps', '-axo', 'pid=,pgid=,stat=,lstart=,command=']' timed out after 0.35 seconds",
+    "ownerElapsedSeconds": 2.728328542027157,
+    "capturedComparisonImages": 0,
+    "physicalSteps": 0
+  },
+  "independentPostTerminalVerification": {
+    "receipt": "root-post-failure-closure-and-pins.json",
+    "complete": true,
+    "uniquePins": 99,
+    "ownedGroupAbsent": true,
+    "closedPorts": [
+      4301,
+      9711
+    ],
+    "protectedPreserved": [
+      4312,
+      4313,
+      4314,
+      4315
+    ],
+    "signalsSent": []
+  },
+  "scope": "Preserved failed native execution: periodic 0.35-second OS query timed out before comparison images or physical steps. Original owner/report remain failed and unchanged. Independent later closure/pin evidence is separate. Helpers retain original temporary dependencies; application assets remain sealed in the original directory. No geometry/visual/ride acceptance. A separate revised source-only recipe corrects observer timeouts.",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 7284,
+      "sha256": "42dbc833d784e091377777c14177bfd6d126e0a0c49a41aac22a08101d7295bd"
+    },
+    {
+      "file": "build.json",
+      "bytes": 15872,
+      "sha256": "7abf323e2d00d7d8fe5ac141ceb4398dbbb34a88bb8db66b678e9ae176f4a717"
+    },
+    {
+      "file": "candidate-first/report.json",
+      "bytes": 4899,
+      "sha256": "a32e3e33645fcdb407f3dd5fd7ca62ff155e1d05bb9d6a131e5a0cbdac0408d9"
+    },
+    {
+      "file": "geometry-inspection.mjs",
+      "bytes": 18841,
+      "sha256": "6a2594d3b74174b311d3d706f714fdf7f6bcb0b9a1b388c2718b5d7232b00857"
+    },
+    {
+      "file": "inputs.json",
+      "bytes": 7567,
+      "sha256": "cb3aea1c3d1bd47798281406dfbf0a39106b8847d63368fe114dd43b8d933cf2"
+    },
+    {
+      "file": "launcher.json",
+      "bytes": 11626,
+      "sha256": "5ce9c4b7bb6e16bfa9405cd1e0038640fc76552e8f76402c53a95337a8b73fd0"
+    },
+    {
+      "file": "measure.py",
+      "bytes": 8174,
+      "sha256": "a424f469c9c9be42f977a194c68159c4f2515929d7d700419c25a245c123b76b"
+    },
+    {
+      "file": "native.log",
+      "bytes": 463,
+      "sha256": "021e8551cc313869d391899a27670e0c6808805ae3368acfd7edb69032401f6a"
+    },
+    {
+      "file": "native.mjs",
+      "bytes": 10267,
+      "sha256": "a1186de7fff24e8e28a4cdcba3b6ebb2a24fb6f3e57886eb108bc8a10d8ed082"
+    },
+    {
+      "file": "owner.json",
+      "bytes": 2607,
+      "sha256": "7c53fecb36b28d2b0b90d592fe7c1f609c0b598666635ef96238f74b9d12eea6"
+    },
+    {
+      "file": "preparation-freeze.json",
+      "bytes": 2197,
+      "sha256": "b53f4d68fe9f0848e80373eb3260f26f932903bd134beceddb890347f5b916d7"
+    },
+    {
+      "file": "prepare-result.json",
+      "bytes": 737,
+      "sha256": "130ccaf2d4c317e05d9d782b61d88e06a154d9926a4fb4d36505f2544f27bea4"
+    },
+    {
+      "file": "prepare.py",
+      "bytes": 4123,
+      "sha256": "308d5dbfe9626693cd332b7c563598a62030872d53a04932f21a7d74832c7b40"
+    },
+    {
+      "file": "recipe.patch",
+      "bytes": 78309,
+      "sha256": "cb0810f59c904d734474244b0bde0fea6dcf94a0e0e03a6db0a4c07b85bbba3c"
+    },
+    {
+      "file": "root-application-build.log",
+      "bytes": 1328,
+      "sha256": "aa356c4bf230738569166bf4942c48f1fdc5a00702090b07fa60d6c6aeda2886"
+    },
+    {
+      "file": "root-owner-audit.patch",
+      "bytes": 7002,
+      "sha256": "76e208dc41dda8dc8ba338833b923dfde43155db9fa1ca7c0344369876a3bcd9"
+    },
+    {
+      "file": "root-post-failure-closure-and-pins.json",
+      "bytes": 25763,
+      "sha256": "38922c6b239f45b4bc084e7b22f1490ca800695a96178214daab6c3d2f729c86"
+    },
+    {
+      "file": "run.py",
+      "bytes": 11560,
+      "sha256": "2c1901d475a744d6c1b2ad0243375544086ea9244fa01cc0ffc307d550988d50"
+    },
+    {
+      "file": "seal.json",
+      "bytes": 7113,
+      "sha256": "a4e1a369d06cf0679f0b0560ccf1c199e813416cd3f675f4a1e36cd18852b507"
+    },
+    {
+      "file": "source/src/scene/barrel/SweptBarrel.ts",
+      "bytes": 6980,
+      "sha256": "09ef9ade19e57b84289f2d1cee3a1b12e77fc227bbadd46884439ad3078f2a58"
+    },
+    {
+      "file": "source/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 33396,
+      "sha256": "125a54cca794061a89d4e4efb46cbdafcd103c3ccc6621498bff1ca920df24ac"
+    },
+    {
+      "file": "source/src/scene/barrel/barrelMaskGlsl.ts",
+      "bytes": 2355,
+      "sha256": "56fe47a02878d7e7f82db876d7573fd0c19835419608ed6bd667e52361a2b05a"
+    },
+    {
+      "file": "source/src/scene/barrel/barrelWater.ts",
+      "bytes": 5755,
+      "sha256": "847a13f3ba464ea941ea3aed919d0906c4bcace13ac53652743b95107a1aeb13"
+    },
+    {
+      "file": "source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 31647,
+      "sha256": "81ccbeff2949db3e15167945c1f6cb06bc69fb90a76ad9c3f85c6b93a92b7d31"
+    },
+    {
+      "file": "source/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "bytes": 11167,
+      "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+    },
+    {
+      "file": "source/src/wave/barrel/boundedCConsumers.test.ts",
+      "bytes": 16525,
+      "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+    },
+    {
+      "file": "source/src/wave/barrel/boundedCLeafReach.test.ts",
+      "bytes": 16453,
+      "sha256": "6e7e8a913d1fd18ccf23ca910793276d35970f2fde9c42d3361fec77ac3bc3fa"
+    },
+    {
+      "file": "source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 19679,
+      "sha256": "83feb4b827ff2b822a0aa0869cba2495480929c0e7e6ab3e74e3882cc69c2414"
+    },
+    {
+      "file": "source/src/wave/barrel/lipSheet.ts",
+      "bytes": 19136,
+      "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+    },
+    {
+      "file": "source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    },
+    {
+      "file": "source-freeze.json",
+      "bytes": 6267,
+      "sha256": "ea5f8d376b76ab982085dce43962e025f04290e09b370f61bf1f12da2c463cce"
+    }
+  ]
+}

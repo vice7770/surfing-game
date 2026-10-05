@@ -1,0 +1,13 @@
+
+> surfing-game@0.1.0 test
+> vitest run src/wave/barrel/boundedCConsumers.test.ts src/wave/barrel/boundedCDemand.test.ts src/wave/barrel/boundedCProfile.test.ts src/wave/barrel/sharedUpperRoot.test.ts --maxWorkers=1
+
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+
+ Test Files  4 passed (4)
+      Tests  22 passed (22)
+   Start at  16:33:34
+   Duration  51.87s (tests 98%, transform 1%)
+

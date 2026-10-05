@@ -1,0 +1,142 @@
+{
+  "schema": "guided-ordinary-seal/v2",
+  "rootAuthorized": true,
+  "complete": true,
+  "buildId": "tube-guided-early-crest-20261005",
+  "limits": {
+    "steps": 1800,
+    "wallSeconds": 660,
+    "nativeSeconds": 640,
+    "ownerSeconds": 650,
+    "detectorMilliseconds": 120000,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "loftBytesEach": 6291456,
+    "loftBytesTotal": 25165824,
+    "traceBytes": 67108864,
+    "reportBytes": 2097152
+  },
+  "applicationBuild": {
+    "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/build.json",
+    "bytes": 41743,
+    "sha256": "8a14b79263e47a3a490c6eb734ada185c98559605ab57754b6faa1de54e67fb8"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/source-freeze.json",
+    "bytes": 19399,
+    "sha256": "d6c7ffd6bd467c5e491140ff3100fac2905c11531fc4983ec0f3a0f2b4114df9"
+  },
+  "diagnosticBuild": {
+    "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/diagnostic-build.json",
+    "bytes": 16724,
+    "sha256": "013b95b29c789270843c54fa9c2021c186bfb0be5d1c56e9dc993896c5f62e46"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 352650,
+    "sha256": "303b276fc44e70fb9a3d6dfb824211bee451d0b15967f1c419806904ad578517"
+  },
+  "priorObservation": {
+    "trialDirectory": "/private/tmp/tube-guided-ordinary-v2-native-20261005",
+    "owner": "/private/tmp/tube-guided-ordinary-v2-native-20261005/owner.json",
+    "report": "/private/tmp/tube-guided-ordinary-v2-native-20261005/candidate-first/report.json",
+    "analysis": "/private/tmp/tube-guided-ordinary-analysis-20261005.json",
+    "copiedHistoricalOutputs": false,
+    "observedSteps": 1535,
+    "observedTerminal": "actual-fall-or-separation",
+    "observedPositiveCueSamples": 0,
+    "observedStandingSamples": 0,
+    "acceptedModelWitnessRide": false,
+    "scope": "Completed V2 observation only; no causal controller or tube success inference."
+  },
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/inputs.json",
+      "bytes": 4802,
+      "sha256": "181b87dfb0954ff16260caeb206a1e235308211617c0bf918e66d34dca98fd9c"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/autopilot-entry.ts",
+      "bytes": 106,
+      "sha256": "53ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/build-diagnostic.mjs",
+      "bytes": 1874,
+      "sha256": "5ab6542657ed0ca1e7d95d85905263fabf634d12e03b77eb7e66511d2172e07c"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/prepare.py",
+      "bytes": 4310,
+      "sha256": "d4ca9dc9ab52eea2183f7e2ef4f78deb1c28891990b518378112082784b2d0fa"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/run.py",
+      "bytes": 16337,
+      "sha256": "61b7f58e803fe21a45ae1742d7d17cd5a0550984335b66103272d12fd27f3db4"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/native.mjs",
+      "bytes": 14564,
+      "sha256": "070d793c796be73258c023997961c0e82da7c818c7c0da58c15216a7d3d26dd6"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/rider-driver.mjs",
+      "bytes": 12947,
+      "sha256": "49164d75109cba0afa6d057ca3bfe96ad36f0483caa18d2810351d95a097792f"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/README.md",
+      "bytes": 9008,
+      "sha256": "b0f2f89331eeb28e86286ad3f9335ca86d772d631b84b1332a7230e5306ba98a"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/driver-diff.md",
+      "bytes": 1975,
+      "sha256": "3f4b5c91164bc5521d13277c4f81225798919ee2439593db6c6737500e4ff9c8"
+    }
+  ],
+  "borrowedHelpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    }
+  ]
+}

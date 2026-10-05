@@ -1,0 +1,709 @@
+{
+  "file": "/private/tmp/tube-guided-ordinary-v3-takeoff-guide-prefix-20261005.json",
+  "v3Prefix": {
+    "file": "/private/tmp/tube-guided-ordinary-v3-native-20261005/candidate-first/steps.ndjson",
+    "observedFileBytes": 18438314,
+    "capturedBytes": 18438314,
+    "completePrefixBytes": 18438314,
+    "trailingPartialBytesExcluded": 0,
+    "sha256": "e5a9fd33b9e265ee7a74a040f47205e075fc5adad55a3f33e882ad58bd95df4c",
+    "rowCount": 1525,
+    "firstStep": 1,
+    "lastStep": 1525,
+    "readPolicy": "One opened file; fstat byte bound captured once; complete newline-terminated rows only; no reread."
+  },
+  "phaseCounts": {
+    "prone": 1161,
+    "push": 43,
+    "landing": 29,
+    "standing": 292
+  },
+  "commands": {
+    "paddleTrue": 1161,
+    "paddleFalse": 364,
+    "popUpTrue": 1,
+    "inputCueTrue": 1,
+    "outputCueTrue": 1,
+    "idleProneRuns": [],
+    "idleProneActions": 0
+  },
+  "takeoffAndGuide": {
+    "standingSampleCount": 292,
+    "seekStandingSampleCount": 290,
+    "firstInputPositiveCue": {
+      "step": 1162,
+      "inputSeaTime": 295.6793560552726,
+      "outputSeaTime": 295.69602272193924,
+      "physicalSeconds": 19.366666666666667,
+      "inputPhase": "prone",
+      "outputPhase": "push",
+      "inputPilot": {
+        "state": "go",
+        "phase": "",
+        "attempts": 1
+      },
+      "input": {
+        "paddle": false,
+        "popUp": true,
+        "steer": 0,
+        "tubeGuide": true
+      },
+      "crestBehind": 2.1857459526681433,
+      "focusZ": -265.09137870490895,
+      "board": {
+        "x": -34.02961412990183,
+        "z": -229.3808308091311,
+        "heading": -0.04622698916046236
+      },
+      "peelDirection": 1,
+      "inputCue": true,
+      "outputCue": false,
+      "boardSpeed": 7.882963428829812,
+      "wave": {
+        "valid": true,
+        "directionX": 0.07551515225500421,
+        "directionZ": 0.9971446543906776,
+        "aheadOfCrest": 3.9923858229817952,
+        "crestSpeed": 8.88008359238286,
+        "faceHeight": 3.2632260988323987,
+        "faceFraction": 0.9066413257668642,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 7.882925597891763,
+        "speedShoreward": 7.87411757664423,
+        "speedAlongCrest": -0.3725431130481407,
+        "requiredSpeed": 24.117123339318233
+      },
+      "displayedPhase": "prone",
+      "visualPoseTime": 295.67935605527236,
+      "interpolationLag": 0.016666666666878882,
+      "pilot": {
+        "state": "go",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 0,
+        "phase": ""
+      },
+      "boardPose": [
+        -34.02466195723631,
+        1.9520976824391596,
+        -229.2491026274523,
+        0.045097168749333894,
+        -0.01953391670819468,
+        0.0004054515935624928,
+        0.9987915233309885,
+        1
+      ],
+      "popUpReport": {
+        "outcome": "rising",
+        "duration": 0,
+        "landingPeak": 0,
+        "frontShare": 0
+      },
+      "outputGuide": null,
+      "outputTubeBodyAvailable": false,
+      "witnessClass": null,
+      "renderedWitnessClass": null,
+      "unionWitnessClass": null
+    },
+    "firstPilotPopUp": {
+      "step": 1162,
+      "inputSeaTime": 295.6793560552726,
+      "outputSeaTime": 295.69602272193924,
+      "physicalSeconds": 19.366666666666667,
+      "inputPhase": "prone",
+      "outputPhase": "push",
+      "inputPilot": {
+        "state": "go",
+        "phase": "",
+        "attempts": 1
+      },
+      "input": {
+        "paddle": false,
+        "popUp": true,
+        "steer": 0,
+        "tubeGuide": true
+      },
+      "crestBehind": 2.1857459526681433,
+      "focusZ": -265.09137870490895,
+      "board": {
+        "x": -34.02961412990183,
+        "z": -229.3808308091311,
+        "heading": -0.04622698916046236
+      },
+      "peelDirection": 1,
+      "inputCue": true,
+      "outputCue": false,
+      "boardSpeed": 7.882963428829812,
+      "wave": {
+        "valid": true,
+        "directionX": 0.07551515225500421,
+        "directionZ": 0.9971446543906776,
+        "aheadOfCrest": 3.9923858229817952,
+        "crestSpeed": 8.88008359238286,
+        "faceHeight": 3.2632260988323987,
+        "faceFraction": 0.9066413257668642,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 7.882925597891763,
+        "speedShoreward": 7.87411757664423,
+        "speedAlongCrest": -0.3725431130481407,
+        "requiredSpeed": 24.117123339318233
+      },
+      "displayedPhase": "prone",
+      "visualPoseTime": 295.67935605527236,
+      "interpolationLag": 0.016666666666878882,
+      "pilot": {
+        "state": "go",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 0,
+        "phase": ""
+      },
+      "boardPose": [
+        -34.02466195723631,
+        1.9520976824391596,
+        -229.2491026274523,
+        0.045097168749333894,
+        -0.01953391670819468,
+        0.0004054515935624928,
+        0.9987915233309885,
+        1
+      ],
+      "popUpReport": {
+        "outcome": "rising",
+        "duration": 0,
+        "landingPeak": 0,
+        "frontShare": 0
+      },
+      "outputGuide": null,
+      "outputTubeBodyAvailable": false,
+      "witnessClass": null,
+      "renderedWitnessClass": null,
+      "unionWitnessClass": null
+    },
+    "firstOutputPush": {
+      "step": 1162,
+      "inputSeaTime": 295.6793560552726,
+      "outputSeaTime": 295.69602272193924,
+      "physicalSeconds": 19.366666666666667,
+      "inputPhase": "prone",
+      "outputPhase": "push",
+      "inputPilot": {
+        "state": "go",
+        "phase": "",
+        "attempts": 1
+      },
+      "input": {
+        "paddle": false,
+        "popUp": true,
+        "steer": 0,
+        "tubeGuide": true
+      },
+      "crestBehind": 2.1857459526681433,
+      "focusZ": -265.09137870490895,
+      "board": {
+        "x": -34.02961412990183,
+        "z": -229.3808308091311,
+        "heading": -0.04622698916046236
+      },
+      "peelDirection": 1,
+      "inputCue": true,
+      "outputCue": false,
+      "boardSpeed": 7.882963428829812,
+      "wave": {
+        "valid": true,
+        "directionX": 0.07551515225500421,
+        "directionZ": 0.9971446543906776,
+        "aheadOfCrest": 3.9923858229817952,
+        "crestSpeed": 8.88008359238286,
+        "faceHeight": 3.2632260988323987,
+        "faceFraction": 0.9066413257668642,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 7.882925597891763,
+        "speedShoreward": 7.87411757664423,
+        "speedAlongCrest": -0.3725431130481407,
+        "requiredSpeed": 24.117123339318233
+      },
+      "displayedPhase": "prone",
+      "visualPoseTime": 295.67935605527236,
+      "interpolationLag": 0.016666666666878882,
+      "pilot": {
+        "state": "go",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 0,
+        "phase": ""
+      },
+      "boardPose": [
+        -34.02466195723631,
+        1.9520976824391596,
+        -229.2491026274523,
+        0.045097168749333894,
+        -0.01953391670819468,
+        0.0004054515935624928,
+        0.9987915233309885,
+        1
+      ],
+      "popUpReport": {
+        "outcome": "rising",
+        "duration": 0,
+        "landingPeak": 0,
+        "frontShare": 0
+      },
+      "outputGuide": null,
+      "outputTubeBodyAvailable": false,
+      "witnessClass": null,
+      "renderedWitnessClass": null,
+      "unionWitnessClass": null
+    },
+    "firstOutputLanding": {
+      "step": 1205,
+      "inputSeaTime": 296.39602272193923,
+      "outputSeaTime": 296.4126893886059,
+      "physicalSeconds": 20.083333333333332,
+      "inputPhase": "push",
+      "outputPhase": "landing",
+      "inputPilot": {
+        "state": "go",
+        "phase": "",
+        "attempts": 1
+      },
+      "input": {
+        "paddle": false,
+        "popUp": false,
+        "steer": 0,
+        "tubeGuide": true
+      },
+      "crestBehind": 2.1591499238625227,
+      "focusZ": -265.09137870490895,
+      "board": {
+        "x": -33.810769088961905,
+        "z": -223.78088908367346,
+        "heading": 0.018030048731117247
+      },
+      "peelDirection": 1,
+      "inputCue": false,
+      "outputCue": false,
+      "boardSpeed": 8.362256820328787,
+      "wave": {
+        "valid": true,
+        "directionX": 0.07961523290111958,
+        "directionZ": 0.9968256691568994,
+        "aheadOfCrest": 3.2863867720733495,
+        "crestSpeed": 8.808351935935146,
+        "faceHeight": 3.2648372095936993,
+        "faceFraction": 0.9376447703584283,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 8.362112935904698,
+        "speedShoreward": 8.35952211366891,
+        "speedAlongCrest": -0.2081412594972939,
+        "requiredSpeed": 22.58497174977876
+      },
+      "displayedPhase": "push",
+      "visualPoseTime": 296.39602272193895,
+      "interpolationLag": 0.016666666666935726,
+      "pilot": {
+        "state": "go",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 0,
+        "phase": ""
+      },
+      "boardPose": [
+        -33.803685962137685,
+        2.0309927126024196,
+        -223.6384157627737,
+        0.06384267344879899,
+        0.011311199858888529,
+        -0.00268181101162595,
+        0.9978922675792014,
+        1
+      ],
+      "popUpReport": {
+        "outcome": "rising",
+        "duration": 0,
+        "landingPeak": 1.4215102497999423,
+        "frontShare": 0.6467861294979356
+      },
+      "outputGuide": null,
+      "outputTubeBodyAvailable": false,
+      "witnessClass": null,
+      "renderedWitnessClass": null,
+      "unionWitnessClass": null
+    },
+    "firstOutputStanding": {
+      "step": 1234,
+      "inputSeaTime": 296.8793560552725,
+      "outputSeaTime": 296.8960227219392,
+      "physicalSeconds": 20.566666666666666,
+      "inputPhase": "landing",
+      "outputPhase": "standing",
+      "inputPilot": {
+        "state": "go",
+        "phase": "",
+        "attempts": 1
+      },
+      "input": {
+        "paddle": false,
+        "popUp": false,
+        "steer": 0,
+        "tubeGuide": true
+      },
+      "crestBehind": 2.181568615525041,
+      "focusZ": -265.09137870490895,
+      "board": {
+        "x": -33.64990958813239,
+        "z": -219.40692346726095,
+        "heading": 0.024620469425996223
+      },
+      "peelDirection": 1,
+      "inputCue": false,
+      "outputCue": false,
+      "boardSpeed": 8.747050879389663,
+      "wave": {
+        "valid": true,
+        "directionX": 0.08034246796999943,
+        "directionZ": 0.996767318806395,
+        "aheadOfCrest": 3.502816665899701,
+        "crestSpeed": 8.636265470746242,
+        "faceHeight": 3.2906960263278107,
+        "faceFraction": 0.9325376783845392,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 8.744356233766814,
+        "speedShoreward": 8.737012930850232,
+        "speedAlongCrest": -0.3582889743940384,
+        "requiredSpeed": 22.14373507087691
+      },
+      "displayedPhase": "landing",
+      "visualPoseTime": 296.8793560552723,
+      "interpolationLag": 0.016666666666878882,
+      "pilot": {
+        "state": "go",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 0,
+        "phase": ""
+      },
+      "boardPose": [
+        -33.64414528819702,
+        2.0309604084944075,
+        -219.2611936545156,
+        0.039038539794554954,
+        0.01264650281642273,
+        -0.002975348765191059,
+        0.999153244340901,
+        1
+      ],
+      "popUpReport": {
+        "outcome": "stood",
+        "duration": 1.2010416666666388,
+        "landingPeak": 1.9620441184554043,
+        "frontShare": 0.8133875645493591,
+        "refusal": "sinking"
+      },
+      "outputGuide": null,
+      "outputTubeBodyAvailable": true,
+      "witnessClass": "outside",
+      "renderedWitnessClass": "outside",
+      "unionWitnessClass": "outside"
+    },
+    "firstDisplayedStanding": {
+      "step": 1235,
+      "inputSeaTime": 296.8960227219392,
+      "outputSeaTime": 296.9126893886059,
+      "physicalSeconds": 20.583333333333332,
+      "inputPhase": "standing",
+      "outputPhase": "standing",
+      "inputPilot": {
+        "state": "ride",
+        "phase": "",
+        "attempts": 1
+      },
+      "input": {
+        "paddle": false,
+        "popUp": false,
+        "steer": 0,
+        "tubeGuide": true
+      },
+      "crestBehind": 2.185629300510095,
+      "focusZ": -265.09137870490895,
+      "board": {
+        "x": -33.64414528819702,
+        "z": -219.2611936545156,
+        "heading": 0.02511861229284279
+      },
+      "peelDirection": 1,
+      "inputCue": false,
+      "outputCue": false,
+      "boardSpeed": 8.748339027660611,
+      "wave": {
+        "valid": true,
+        "directionX": 0.08021956603651824,
+        "directionZ": 0.99677721744877,
+        "aheadOfCrest": 3.5079761261443494,
+        "crestSpeed": 8.625322204970383,
+        "faceHeight": 3.291526348597626,
+        "faceFraction": 0.9324979656436623,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 8.742512005320698,
+        "speedShoreward": 8.735263589728293,
+        "speedAlongCrest": -0.3559300228186561,
+        "requiredSpeed": 22.11567609342055
+      },
+      "displayedPhase": "standing",
+      "visualPoseTime": 296.89602272193895,
+      "interpolationLag": 0.016666666666935726,
+      "pilot": {
+        "state": "ride",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 0,
+        "phase": ""
+      },
+      "boardPose": [
+        -33.638292883506786,
+        2.0275418266246015,
+        -219.11526598607196,
+        0.04210237842826449,
+        0.012901212077610942,
+        -0.0032772740860563276,
+        0.9990246282911032,
+        1
+      ],
+      "popUpReport": {
+        "outcome": "stood",
+        "duration": 1.2010416666666388,
+        "landingPeak": 1.9620441184554043,
+        "frontShare": 0.8133875645493591,
+        "refusal": "sinking"
+      },
+      "outputGuide": null,
+      "outputTubeBodyAvailable": true,
+      "witnessClass": "outside",
+      "renderedWitnessClass": "outside",
+      "unionWitnessClass": "outside"
+    },
+    "firstTubeSeek": {
+      "step": 1236,
+      "inputSeaTime": 296.9126893886059,
+      "outputSeaTime": 296.92935605527254,
+      "physicalSeconds": 20.6,
+      "inputPhase": "standing",
+      "outputPhase": "standing",
+      "inputPilot": {
+        "state": "ride",
+        "phase": "seek",
+        "attempts": 1
+      },
+      "input": {
+        "paddle": false,
+        "popUp": false,
+        "steer": 0.025000000000062528,
+        "tubeGuide": true,
+        "crouch": 1,
+        "compress": 0,
+        "trim": 0
+      },
+      "crestBehind": 2.1906972448376854,
+      "focusZ": -265.09137870490895,
+      "board": {
+        "x": -33.638292883506786,
+        "z": -219.11526598607196,
+        "heading": 0.025594986223888987
+      },
+      "peelDirection": 1,
+      "inputCue": false,
+      "outputCue": false,
+      "boardSpeed": 8.765394580536181,
+      "wave": {
+        "valid": true,
+        "directionX": 0.08011901069318221,
+        "directionZ": 0.9967853049305782,
+        "aheadOfCrest": 3.5148018036317623,
+        "crestSpeed": 8.610232254997838,
+        "faceHeight": 3.2923548569435757,
+        "faceFraction": 0.9324663874892275,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 8.756728069909075,
+        "speedShoreward": 8.749668870214565,
+        "speedAlongCrest": -0.35154110987436316,
+        "requiredSpeed": 22.07698484943822
+      },
+      "displayedPhase": "standing",
+      "visualPoseTime": 296.9126893886056,
+      "interpolationLag": 0.016666666666935726,
+      "pilot": {
+        "state": "ride",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 0.016666666666708352,
+        "phase": "seek"
+      },
+      "boardPose": [
+        -33.632369977786986,
+        2.0245784961449025,
+        -218.9689348492987,
+        0.04254213983946533,
+        0.013192776055689852,
+        -0.003220961108483202,
+        0.9990023735744383,
+        1
+      ],
+      "popUpReport": {
+        "outcome": "stood",
+        "duration": 1.2010416666666388,
+        "landingPeak": 1.9620441184554043,
+        "frontShare": 0.8133875645493591,
+        "refusal": "sinking"
+      },
+      "outputGuide": null,
+      "outputTubeBodyAvailable": true,
+      "witnessClass": "outside",
+      "renderedWitnessClass": "outside",
+      "unionWitnessClass": "outside"
+    },
+    "firstOutputGuide": null,
+    "inputGuideSamples": 0,
+    "outputGuideSamples": 0,
+    "standingCurrentTubeBodySamples": 292,
+    "standingCurrent14ClassificationCounts": {
+      "outside": 292
+    },
+    "standingDisplayed7WithCurrentSpheresClassificationCounts": {
+      "outside": 292
+    },
+    "standingUnion21ClassificationCounts": {
+      "outside": 292
+    },
+    "currentAndDisplayedStandingRuns": [
+      {
+        "firstStep": 1235,
+        "lastStep": 1525,
+        "actions": 291,
+        "actionSeconds": 4.85
+      }
+    ],
+    "firstConsecutiveNoGuideSeekPair": {
+      "previousStep": 1236,
+      "step": 1237,
+      "inputDeltaSeconds": 0.01666666666665151,
+      "actualLoggedHeadingRate": 0.03528702132675223,
+      "actualLoggedBankRate": -0.012439930846878349,
+      "steer": 0.05000000000003979,
+      "bank": -0.00042402472231295517,
+      "noCurrentGuide": true
+    },
+    "lastConsecutiveNoGuideSeekPair": {
+      "previousStep": 1524,
+      "step": 1525,
+      "inputDeltaSeconds": 0.01666666666665151,
+      "actualLoggedHeadingRate": -0.3506057162719969,
+      "actualLoggedBankRate": 0.26731303691496344,
+      "steer": 0.5,
+      "bank": 0.30167311020788395,
+      "noCurrentGuide": true
+    },
+    "lastStanding": {
+      "step": 1525,
+      "inputSeaTime": 301.72935605527226,
+      "outputSeaTime": 301.7460227219389,
+      "physicalSeconds": 25.416666666666668,
+      "inputPhase": "standing",
+      "outputPhase": "standing",
+      "inputPilot": {
+        "state": "ride",
+        "phase": "seek",
+        "attempts": 1
+      },
+      "input": {
+        "paddle": false,
+        "popUp": false,
+        "steer": 0.5,
+        "tubeGuide": true,
+        "crouch": 1,
+        "compress": 0,
+        "trim": 0
+      },
+      "crestBehind": 1.9385550477304778,
+      "focusZ": -265.09137870490895,
+      "board": {
+        "x": -25.4443171598529,
+        "z": -170.44287744983495,
+        "heading": 0.2830389254239581
+      },
+      "peelDirection": 1,
+      "inputCue": false,
+      "outputCue": false,
+      "boardSpeed": 13.388960840557637,
+      "wave": {
+        "valid": true,
+        "directionX": 0.07567643546694118,
+        "directionZ": 0.9971324270702552,
+        "aheadOfCrest": 10.899118530177308,
+        "crestSpeed": 8.734412688065053,
+        "faceHeight": 2.647385051697878,
+        "faceFraction": 0.17011972320225066,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 13.277396459292882,
+        "speedShoreward": 13.178459273294525,
+        "speedAlongCrest": 1.6178590542320763,
+        "requiredSpeed": 22.395388518262628
+      },
+      "displayedPhase": "standing",
+      "visualPoseTime": 301.729356055272,
+      "interpolationLag": 0.016666666666935726,
+      "pilot": {
+        "state": "ride",
+        "outcome": null,
+        "attempts": 1,
+        "rideTime": 4.833333333333087,
+        "phase": "seek"
+      },
+      "boardPose": [
+        -25.399711411585866,
+        -0.1855958280038708,
+        -170.22620123017572,
+        0.0736076549670677,
+        0.14708280221954184,
+        -0.11735316792292062,
+        0.9793757176895652,
+        1
+      ],
+      "popUpReport": {
+        "outcome": "stood",
+        "duration": 1.2010416666666388,
+        "landingPeak": 1.9620441184554043,
+        "frontShare": 0.8133875645493591,
+        "refusal": "sinking"
+      },
+      "outputGuide": null,
+      "outputTubeBodyAvailable": true,
+      "witnessClass": "outside",
+      "renderedWitnessClass": "outside",
+      "unionWitnessClass": "outside"
+    },
+    "guideAbsenceMeaning": "With same-time tubeBody stamped on standing rows, measureTubeApproach passes enabled/attached/contact-query gates and calls approachNear. No cue identifies no accepted route; it does not separate absence of a mature indexed strip within16m from finite-route or body/board-envelope rejection.",
+    "missingGuideRejectionOperands": [
+      "nearest eligible mouth distance/front/sigma",
+      "candidate mature/joined/phase counts",
+      "route rejection stage",
+      "actual request envelope dimensions including board footprint"
+    ],
+    "definiteSeekControllerSourceIssue": "TubePilot.next clears this.previous whenever no current cue, then computes yaw/bankRate from it; those rates are therefore zero during every no-guide seek update, despite logged motion. Retain physical rate history separately from mouth/route history; this alone is not proof of why a guide is missing or a fall occurs."
+  }
+}

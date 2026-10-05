@@ -1,0 +1,58 @@
+{
+  "schema": "shared-leaf-source-preparation/v1",
+  "sourceOnly": true,
+  "executionPending": true,
+  "executedChecksBuildsNativeOrPorts": false,
+  "files": [
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/prepare.py",
+      "bytes": 4123,
+      "sha256": "308d5dbfe9626693cd332b7c563598a62030872d53a04932f21a7d74832c7b40"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/run.py",
+      "bytes": 11560,
+      "sha256": "2c1901d475a744d6c1b2ad0243375544086ea9244fa01cc0ffc307d550988d50"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/native.mjs",
+      "bytes": 10267,
+      "sha256": "a1186de7fff24e8e28a4cdcba3b6ebb2a24fb6f3e57886eb108bc8a10d8ed082"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/geometry-inspection.mjs",
+      "bytes": 18841,
+      "sha256": "6a2594d3b74174b311d3d706f714fdf7f6bcb0b9a1b388c2718b5d7232b00857"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/measure.py",
+      "bytes": 8174,
+      "sha256": "a424f469c9c9be42f977a194c68159c4f2515929d7d700419c25a245c123b76b"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/inputs.json",
+      "bytes": 7567,
+      "sha256": "cb3aea1c3d1bd47798281406dfbf0a39106b8847d63368fe114dd43b8d933cf2"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/README.md",
+      "bytes": 7284,
+      "sha256": "42dbc833d784e091377777c14177bfd6d126e0a0c49a41aac22a08101d7295bd"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/recipe.patch",
+      "bytes": 78309,
+      "sha256": "cb0810f59c904d734474244b0bde0fea6dcf94a0e0e03a6db0a4c07b85bbba3c"
+    }
+  ],
+  "productionFilesWritten": false,
+  "rootAmendment": {
+    "preservedOriginalDirectory": "/private/tmp/tube-shared-leaf-native-20261005/pre-root-owner-audit",
+    "reason": "Record/recheck owned OS identity, enforce4protected PIDs, verify source-freeze receipt pre/post",
+    "patch": {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-owner-audit.patch",
+      "bytes": 7002,
+      "sha256": "76e208dc41dda8dc8ba338833b923dfde43155db9fa1ca7c0344369876a3bcd9"
+    }
+  }
+}

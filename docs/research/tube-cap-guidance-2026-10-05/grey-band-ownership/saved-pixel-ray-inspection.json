@@ -1,0 +1,695 @@
+{
+  "schema": "grey-band-saved-pixel-ray-inspection/v1",
+  "executedOfflineReadOnly": true,
+  "nativeExecution": false,
+  "productionChanged": false,
+  "choicePin": {
+    "file": "/private/tmp/tube-grey-band-ownership-proposal-20261005/sample-choice.json",
+    "bytes": 1058,
+    "sha256": "0becdc934ddb5db9d6b1e98e3be286118c84fb7ff381b3e4b852b8cb8995b18c"
+  },
+  "helperPin": {
+    "file": "/private/tmp/tube-mask-author-support-analysis-20261005.py",
+    "bytes": 16020,
+    "sha256": "2b1577b360d8fe531ddc472e2ec385f2c770ae8a5df724f74f007e7be018eb22"
+  },
+  "authorityPins": [
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+      "bytes": 11001,
+      "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1219771,
+      "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/interior-rich-combined-mask-and-sheet-fill-A.png",
+      "bytes": 1979202,
+      "sha256": "0965d56198fed43badfa11e5e834a9268cdad85675f4210769456f72ac6f44a6"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/interior-rich-authored-support.png",
+      "bytes": 1982817,
+      "sha256": "7af9cc34fb0ebdf64da6ba27cab9f93ac5f5331bb3b968b964459b30e1753f74"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/interior-region-authored-support.png",
+      "bytes": 839660,
+      "sha256": "9def6a6222d128bd7b918223e0ae8ce9af2300b431797507db9801fef82dd96a"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/interior-region-original.png",
+      "bytes": 933925,
+      "sha256": "9a6290b0eeda64bd85fb752d89f05d732a31b259f33439f243816397bf255dd3"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/interior-rich-original.png",
+      "bytes": 2064927,
+      "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/interior-rich-sheet-fill-A.png",
+      "bytes": 2061288,
+      "sha256": "cd2c53970146bd843ba060b9d0aafebd732c06703736fa2941f18cbf6b8bc23f"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/interior-rich-throat-bypass-B.png",
+      "bytes": 2077627,
+      "sha256": "eda917afffd2097a161873d98122dde018c577c90ca81fabb41866481eaac2ad"
+    }
+  ],
+  "camera": {
+    "eye": [
+      74.0625,
+      1.0598396605743825,
+      -68.79456329345703
+    ],
+    "target": [
+      74.1875,
+      1.0626037843906364,
+      -68.7633285522461
+    ],
+    "quaternion": [
+      0.006600678893715275,
+      -0.7881247536647293,
+      0.008452992668955604,
+      0.6154220914250564
+    ],
+    "inheritedUp": [
+      0,
+      1,
+      0
+    ],
+    "projection": [
+      1.0551622229204924,
+      0,
+      0,
+      0,
+      0,
+      2.050303841579296,
+      0,
+      0,
+      0,
+      0,
+      -1.000066668888963,
+      -1,
+      0,
+      0,
+      -0.2000066668888963,
+      0
+    ],
+    "fov": 52,
+    "aspect": 1.9431171786120591,
+    "near": 0.1,
+    "far": 3000,
+    "zoom": 1
+  },
+  "geometryEpoch": {
+    "step": 0,
+    "seaTime": 276.3293560552737,
+    "surfaceRevision": 5,
+    "drawnWaterTime": 276.3293560552737
+  },
+  "samples": [
+    {
+      "pixel": [
+        1300,
+        360
+      ],
+      "role": "grey-band interior",
+      "reason": "Inside the broad opaque grey wedge, clear of its roof and lower dither boundary.",
+      "encodedRGBA": {
+        "combined": [
+          55,
+          78,
+          95,
+          255
+        ],
+        "maskRich": [
+          55,
+          78,
+          95,
+          255
+        ],
+        "maskRegion": [
+          55,
+          78,
+          95,
+          255
+        ],
+        "regionOriginal": [
+          55,
+          78,
+          95,
+          255
+        ],
+        "baseline": [
+          55,
+          78,
+          95,
+          255
+        ],
+        "opticalA": [
+          55,
+          78,
+          95,
+          255
+        ],
+        "opticalB": [
+          55,
+          78,
+          95,
+          255
+        ]
+      },
+      "rayOrigin": [
+        74.0625,
+        1.0598396605743825,
+        -68.79456329345703
+      ],
+      "rayDirection": [
+        0.7575045061823488,
+        0.0974553334377073,
+        0.6455148186509596
+      ],
+      "ndc": [
+        0.5228337236533958,
+        0.17974971558589303
+      ],
+      "insideFrustumForwardLoftHits": 0,
+      "nearestThreeSavedLoftHits": []
+    },
+    {
+      "pixel": [
+        1500,
+        400
+      ],
+      "role": "grey-band second interior",
+      "reason": "A separated point in the same broad grey wedge, below the upper red/green lip boundary.",
+      "encodedRGBA": {
+        "combined": [
+          56,
+          80,
+          96,
+          255
+        ],
+        "maskRich": [
+          56,
+          80,
+          96,
+          255
+        ],
+        "maskRegion": [
+          56,
+          80,
+          96,
+          255
+        ],
+        "regionOriginal": [
+          56,
+          80,
+          96,
+          255
+        ],
+        "baseline": [
+          56,
+          80,
+          96,
+          255
+        ],
+        "opticalA": [
+          56,
+          80,
+          96,
+          255
+        ],
+        "opticalB": [
+          56,
+          80,
+          96,
+          255
+        ]
+      },
+      "rayOrigin": [
+        74.0625,
+        1.0598396605743825,
+        -68.79456329345703
+      ],
+      "rayDirection": [
+        0.6456480267496749,
+        0.05255232106954081,
+        0.7618247036585616
+      ],
+      "ndc": [
+        0.7570257611241218,
+        0.0887372013651877
+      ],
+      "insideFrustumForwardLoftHits": 0,
+      "nearestThreeSavedLoftHits": []
+    },
+    {
+      "pixel": [
+        1400,
+        180
+      ],
+      "role": "roof control",
+      "reason": "Inside the visibly recoloured swept roof in the region view.",
+      "encodedRGBA": {
+        "combined": [
+          25,
+          120,
+          88,
+          255
+        ],
+        "maskRich": [
+          0,
+          1,
+          3,
+          255
+        ],
+        "maskRegion": [
+          242,
+          39,
+          39,
+          255
+        ],
+        "regionOriginal": [
+          242,
+          39,
+          39,
+          255
+        ],
+        "baseline": [
+          0,
+          1,
+          3,
+          255
+        ],
+        "opticalA": [
+          25,
+          120,
+          88,
+          255
+        ],
+        "opticalB": [
+          0,
+          3,
+          8,
+          255
+        ]
+      },
+      "rayOrigin": [
+        74.0625,
+        1.0598396605743825,
+        -68.79456329345703
+      ],
+      "rayDirection": [
+        0.6783341210291751,
+        0.2564119406068349,
+        0.6885606269325987
+      ],
+      "ndc": [
+        0.6399297423887589,
+        0.5893060295790671
+      ],
+      "insideFrustumForwardLoftHits": 2,
+      "nearestThreeSavedLoftHits": [
+        {
+          "triangle": 11314,
+          "indexOffset": 33942,
+          "distanceMetres": 1.5495425228027477,
+          "insideClipRange": true,
+          "worldPoint": [
+            75.11360756520273,
+            1.4571608658990458,
+            -67.72760932249724
+          ],
+          "barycentric": [
+            0.09113947837814067,
+            0.8063859022918762,
+            0.1024746193299831
+          ],
+          "nearTriangleEdge": false,
+          "vertexMasks": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "allThreeMasksExactly1": true,
+          "interpolatedAuthoredMask": 1.0,
+          "interpolatedRegionLinearRGB": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "barycentricProfileIndex": 68.10247461932998,
+          "vertices": [
+            {
+              "index": 5967,
+              "row": 44,
+              "profilePoint": 68,
+              "front": 41,
+              "phase": 1,
+              "tau": 0.6411455869674683,
+              "sigma": 10.570113182067871,
+              "rowWeight": 1.0,
+              "rowFade": 1.0,
+              "authoredMask": 1.0,
+              "lift": 1.0,
+              "sheetWeight": 1.0,
+              "throatWeight": 1.0,
+              "regionLinearRGB": [
+                1,
+                0,
+                0
+              ]
+            },
+            {
+              "index": 6101,
+              "row": 45,
+              "profilePoint": 68,
+              "front": 41,
+              "phase": 1,
+              "tau": 0.6190775036811829,
+              "sigma": 10.700927734375,
+              "rowWeight": 1.0,
+              "rowFade": 1.0,
+              "authoredMask": 1.0,
+              "lift": 1.0,
+              "sheetWeight": 1.0,
+              "throatWeight": 1.0,
+              "regionLinearRGB": [
+                1,
+                0,
+                0
+              ]
+            },
+            {
+              "index": 6102,
+              "row": 45,
+              "profilePoint": 69,
+              "front": 41,
+              "phase": 1,
+              "tau": 0.6190775036811829,
+              "sigma": 10.700927734375,
+              "rowWeight": 1.0,
+              "rowFade": 1.0,
+              "authoredMask": 1.0,
+              "lift": 1.0,
+              "sheetWeight": 1.0,
+              "throatWeight": 1.0,
+              "regionLinearRGB": [
+                1,
+                0,
+                0
+              ]
+            }
+          ],
+          "facesOutWindingSwap": true,
+          "crossDotAverageNormal": -0.052907265474173654,
+          "actualWindingCrossDotRay": -0.013707291030101602,
+          "inferredRasterFrontFacingAssumingIdentityWorldTransform": true
+        },
+        {
+          "triangle": 11562,
+          "indexOffset": 34686,
+          "distanceMetres": 1.59228803784964,
+          "insideClipRange": true,
+          "worldPoint": [
+            75.14260330658,
+            1.4681213263644581,
+            -67.698176443858
+          ],
+          "barycentric": [
+            0.06307672605694137,
+            0.14082645264004368,
+            0.796096821303015
+          ],
+          "nearTriangleEdge": false,
+          "vertexMasks": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "allThreeMasksExactly1": true,
+          "interpolatedAuthoredMask": 1.0,
+          "interpolatedRegionLinearRGB": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "barycentricProfileIndex": 59.79609682130301,
+          "vertices": [
+            {
+              "index": 6092,
+              "row": 45,
+              "profilePoint": 59,
+              "front": 41,
+              "phase": 1,
+              "tau": 0.6190775036811829,
+              "sigma": 10.700927734375,
+              "rowWeight": 1.0,
+              "rowFade": 1.0,
+              "authoredMask": 1.0,
+              "lift": 1.0,
+              "sheetWeight": 1.0,
+              "throatWeight": 0.0,
+              "regionLinearRGB": [
+                1,
+                0,
+                0
+              ]
+            },
+            {
+              "index": 6226,
+              "row": 46,
+              "profilePoint": 59,
+              "front": 41,
+              "phase": 1,
+              "tau": 0.5970094799995422,
+              "sigma": 10.831743240356445,
+              "rowWeight": 1.0,
+              "rowFade": 1.0,
+              "authoredMask": 1.0,
+              "lift": 1.0,
+              "sheetWeight": 1.0,
+              "throatWeight": 0.0,
+              "regionLinearRGB": [
+                1,
+                0,
+                0
+              ]
+            },
+            {
+              "index": 6093,
+              "row": 45,
+              "profilePoint": 60,
+              "front": 41,
+              "phase": 1,
+              "tau": 0.6190775036811829,
+              "sigma": 10.700927734375,
+              "rowWeight": 1.0,
+              "rowFade": 1.0,
+              "authoredMask": 1.0,
+              "lift": 1.0,
+              "sheetWeight": 1.0,
+              "throatWeight": 0.0,
+              "regionLinearRGB": [
+                1,
+                0,
+                0
+              ]
+            }
+          ],
+          "facesOutWindingSwap": true,
+          "crossDotAverageNormal": -0.04257716249813156,
+          "actualWindingCrossDotRay": 0.012656863987575562,
+          "inferredRasterFrontFacingAssumingIdentityWorldTransform": false
+        }
+      ]
+    },
+    {
+      "pixel": [
+        400,
+        450
+      ],
+      "role": "wall control",
+      "reason": "Existing predeclared wall point, away from the new grey-wedge samples.",
+      "encodedRGBA": {
+        "combined": [
+          2,
+          70,
+          59,
+          255
+        ],
+        "maskRich": [
+          2,
+          70,
+          59,
+          255
+        ],
+        "maskRegion": [
+          39,
+          39,
+          242,
+          255
+        ],
+        "regionOriginal": [
+          39,
+          39,
+          242,
+          255
+        ],
+        "baseline": [
+          2,
+          70,
+          59,
+          255
+        ],
+        "opticalA": [
+          2,
+          70,
+          59,
+          255
+        ],
+        "opticalB": [
+          2,
+          70,
+          59,
+          255
+        ]
+      },
+      "rayOrigin": [
+        74.0625,
+        1.0598396605743825,
+        -68.79456329345703
+      ],
+      "rayDirection": [
+        0.9755614786335147,
+        0.008256817294570382,
+        -0.2195714607469618
+      ],
+      "ndc": [
+        -0.5310304449648712,
+        -0.025028441410694047
+      ],
+      "insideFrustumForwardLoftHits": 1,
+      "nearestThreeSavedLoftHits": [
+        {
+          "triangle": 15084,
+          "indexOffset": 45252,
+          "distanceMetres": 3.3711831059259696,
+          "insideClipRange": true,
+          "worldPoint": [
+            77.35129637556146,
+            1.0876749035465556,
+            -69.53477889247067
+          ],
+          "barycentric": [
+            0.4028614105652913,
+            0.4051855022458559,
+            0.1919530871888528
+          ],
+          "nearTriangleEdge": false,
+          "vertexMasks": [
+            0.9083991050720215,
+            0.7234799265861511,
+            0.9083991050720215
+          ],
+          "allThreeMasksExactly1": false,
+          "interpolatedAuthoredMask": 0.8334725348623331,
+          "interpolatedRegionLinearRGB": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "barycentricProfileIndex": 91.19195308718885,
+          "vertices": [
+            {
+              "index": 7866,
+              "row": 58,
+              "profilePoint": 91,
+              "front": 41,
+              "phase": 1,
+              "tau": 0.2407633662223816,
+              "sigma": 12.913992881774902,
+              "rowWeight": 0.9083991050720215,
+              "rowFade": 1.0,
+              "authoredMask": 0.9083991050720215,
+              "lift": 0.9083991050720215,
+              "sheetWeight": 0.0,
+              "throatWeight": 0.9083991050720215,
+              "regionLinearRGB": [
+                0,
+                0,
+                1
+              ]
+            },
+            {
+              "index": 8000,
+              "row": 59,
+              "profilePoint": 91,
+              "front": 41,
+              "phase": 1,
+              "tau": 0.1934700906276703,
+              "sigma": 13.164834976196289,
+              "rowWeight": 0.7234799265861511,
+              "rowFade": 1.0,
+              "authoredMask": 0.7234799265861511,
+              "lift": 0.7234799265861511,
+              "sheetWeight": 0.0,
+              "throatWeight": 0.7234799265861511,
+              "regionLinearRGB": [
+                0,
+                0,
+                1
+              ]
+            },
+            {
+              "index": 7867,
+              "row": 58,
+              "profilePoint": 92,
+              "front": 41,
+              "phase": 1,
+              "tau": 0.2407633662223816,
+              "sigma": 12.913992881774902,
+              "rowWeight": 0.9083991050720215,
+              "rowFade": 1.0,
+              "authoredMask": 0.9083991050720215,
+              "lift": 0.9083991050720215,
+              "sheetWeight": 0.0,
+              "throatWeight": 0.9083991050720215,
+              "regionLinearRGB": [
+                0,
+                0,
+                1
+              ]
+            }
+          ],
+          "facesOutWindingSwap": true,
+          "crossDotAverageNormal": -0.4110364328828232,
+          "actualWindingCrossDotRay": -0.11947738040087534,
+          "inferredRasterFrontFacingAssumingIdentityWorldTransform": true
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Four predeclared points only; no pixel/geometry/epoch search.",
+    "Saved double-sided triangle rays omit discard, stencil, depth occlusion by other drawables, shader displacement of ordinary water and raster multisampling.",
+    "Repaired loft winding inference assumes its source-authored identity world transform; actual runtime gl_FrontFacing is not recorded.",
+    "Actual encoded PNG samples are observed; ray hits cannot identify final visible drawable."
+  ]
+}

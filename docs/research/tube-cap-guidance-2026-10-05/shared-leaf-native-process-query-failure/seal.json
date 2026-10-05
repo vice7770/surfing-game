@@ -1,0 +1,203 @@
+{
+  "schema": "shared-leaf-seal/v1",
+  "rootAuthorized": true,
+  "complete": true,
+  "applicationBuild": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/build.json",
+    "bytes": 15872,
+    "sha256": "7abf323e2d00d7d8fe5ac141ceb4398dbbb34a88bb8db66b678e9ae176f4a717"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-shared-leaf-native-20261005/source-freeze.json",
+    "bytes": 6267,
+    "sha256": "ea5f8d376b76ab982085dce43962e025f04290e09b370f61bf1f12da2c463cce"
+  },
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/README.md",
+      "bytes": 7284,
+      "sha256": "42dbc833d784e091377777c14177bfd6d126e0a0c49a41aac22a08101d7295bd"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/inputs.json",
+      "bytes": 7567,
+      "sha256": "cb3aea1c3d1bd47798281406dfbf0a39106b8847d63368fe114dd43b8d933cf2"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/prepare.py",
+      "bytes": 4123,
+      "sha256": "308d5dbfe9626693cd332b7c563598a62030872d53a04932f21a7d74832c7b40"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/run.py",
+      "bytes": 11560,
+      "sha256": "2c1901d475a744d6c1b2ad0243375544086ea9244fa01cc0ffc307d550988d50"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/native.mjs",
+      "bytes": 10267,
+      "sha256": "a1186de7fff24e8e28a4cdcba3b6ebb2a24fb6f3e57886eb108bc8a10d8ed082"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/geometry-inspection.mjs",
+      "bytes": 18841,
+      "sha256": "6a2594d3b74174b311d3d706f714fdf7f6bcb0b9a1b388c2718b5d7232b00857"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/measure.py",
+      "bytes": 8174,
+      "sha256": "a424f469c9c9be42f977a194c68159c4f2515929d7d700419c25a245c123b76b"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/recipe.patch",
+      "bytes": 78309,
+      "sha256": "cb0810f59c904d734474244b0bde0fea6dcf94a0e0e03a6db0a4c07b85bbba3c"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/preparation-freeze.json",
+      "bytes": 2197,
+      "sha256": "b53f4d68fe9f0848e80373eb3260f26f932903bd134beceddb890347f5b916d7"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-owner-audit.patch",
+      "bytes": 7002,
+      "sha256": "76e208dc41dda8dc8ba338833b923dfde43155db9fa1ca7c0344369876a3bcd9"
+    },
+    {
+      "file": "/private/tmp/tube-shared-leaf-native-20261005/root-application-build.log",
+      "bytes": 1328,
+      "sha256": "aa356c4bf230738569166bf4942c48f1fdc5a00702090b07fa60d6c6aeda2886"
+    }
+  ],
+  "borrowedHelpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    }
+  ],
+  "references": [
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+      "bytes": 49054,
+      "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+      "bytes": 3848,
+      "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1219771,
+      "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+      "bytes": 15655,
+      "sha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/seal.json",
+      "bytes": 6584,
+      "sha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+      "bytes": 5973,
+      "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/inputs.json",
+      "bytes": 11001,
+      "sha256": "6d62e80bf4a241fce51a773de7433bcfdbe7cfa3097d293366bbb8724cc37254"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/owner.json",
+      "bytes": 2886,
+      "sha256": "6257eec9bdeeff2560a52d2420a71ddae33b948147b229a763fd7b6e5a111c20"
+    },
+    {
+      "file": "/private/tmp/tube-authored-mask-native-20261005/candidate-first/report.json",
+      "bytes": 66175,
+      "sha256": "62506601ae2191a0bf06cc0fde9028829e8b327fb2a726b0a5b2f7aad3494aee"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/inputs.json",
+      "bytes": 8807,
+      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/owner.json",
+      "bytes": 2757,
+      "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+    },
+    {
+      "file": "/private/tmp/tube-sheet-fill-native-20261005/candidate-first/report.json",
+      "bytes": 39508,
+      "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+    }
+  ],
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 660,
+    "cleanupSeconds": 7,
+    "pngCount": 8,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 100663296,
+    "reportBytes": 2097152,
+    "sidecarBytes": 6291456,
+    "drawInputsBytes": 8388608
+  },
+  "comparison": {
+    "pairs": [
+      {
+        "camera": "side",
+        "view": "rich"
+      },
+      {
+        "camera": "side",
+        "view": "region"
+      },
+      {
+        "camera": "interior",
+        "view": "rich"
+      },
+      {
+        "camera": "interior",
+        "view": "region"
+      }
+    ],
+    "geometryOrder": [
+      "preserved-cap",
+      "shared-leaf",
+      "restored-preserved-cap-repeat"
+    ],
+    "oldFull37Exact": true,
+    "candidateActiveCountsMayChange": true,
+    "ordinaryMaskPolicy": "Same current candidate-owned water mask bytes and grid throughout. Not the prior cap historical footprint mask.",
+    "currentMaterialPolicy": "Unmodified current compiled authored max-mask and wall-light A on both variants; observer wrapper records exact shader words only.",
+    "targetCorner": {
+      "front": 41,
+      "worldCrestX": 75.625,
+      "coordinateIsSigma": false,
+      "priorMeasuredBendDegrees": 33.2759
+    },
+    "noPlacement": true,
+    "noSteps": true,
+    "noSeedEpochPoseSelectorSearch": true,
+    "globalC1Guarantee": false
+  }
+}

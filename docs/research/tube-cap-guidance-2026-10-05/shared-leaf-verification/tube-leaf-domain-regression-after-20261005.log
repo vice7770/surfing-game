@@ -1,0 +1,13 @@
+
+> surfing-game@0.1.0 test
+> vitest run src/wave/barrel/boundedCLeafReach.test.ts src/wave/barrel/ProfileLibrary.test.ts src/wave/barrel/boundedCConsumers.test.ts --maxWorkers=1
+
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  16:38:58
+   Duration  21.97s (tests 96%, transform 3%, import 1%)
+

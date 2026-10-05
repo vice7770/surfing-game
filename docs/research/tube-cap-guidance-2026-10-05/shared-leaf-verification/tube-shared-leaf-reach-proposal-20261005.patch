@@ -1,0 +1,371 @@
+diff --git a/src/wave/barrel/ProfileLibrary.ts b/src/wave/barrel/ProfileLibrary.ts
+--- a/src/wave/barrel/ProfileLibrary.ts
++++ b/src/wave/barrel/ProfileLibrary.ts
+@@ -128,6 +128,40 @@
+ }
+ 
+ const FLOATS = 2 * PROFILE_POINTS;
++const ease = (value: number) => {
++  const t = Math.max(0, Math.min(1, value));
++  return t * t * (3 - 2 * t);
++};
++
++/**
++ * Carrier-width adjustment, h0. A centered continuous mean spans one authored frame on each side.
++ * We do not extend or asymmetrically truncate a case: its first/last interval stays raw, with a zero-slope
++ * activation over the next interval. Constant and linear frame-width sequences therefore stay unchanged,
++ * including boundaries. In the fully enabled interior the averaged width is C1 at raw frame knots.
++ * This changes neither the raw case words nor the actual crest/toe coordinates.
++ */
++export function carrierWidthDelta(c: BarrelCase, tau: number): number {
++  const count = c.frames.length / FLOATS;
++  if (count < 3) return 0;
++  const position = Math.max(0, Math.min(count - 1, (tau - c.tauStart) / c.tauStep));
++  const enabled = ease(position - 1) * ease(count - 2 - position);
++  if (enabled === 0) return 0;
++  const width = (frame: number) => c.frames[frame * FLOATS + 2 * LANDMARK.toe]
++    - c.frames[frame * FLOATS + 2 * LANDMARK.crest];
++  const frame = Math.floor(position), share = position - frame;
++  const raw = width(frame) + share * (width(frame + 1) - width(frame));
++  // Integrate the actual piecewise-linear curve, not a mean of three samples. Frame coordinates avoid
++  // cancellation from subtracting large absolute tauStart values. This support crosses at most three intervals.
++  const high = position + 1;
++  let low = position - 1, interval = Math.floor(low), area = 0;
++  while (low < high) {
++    const end = Math.min(high, interval + 1), a = width(interval), slope = width(interval + 1) - a;
++    area += (end - low) * (2 * a + slope * (low + end - 2 * interval)) / 2;
++    low = end;
++    interval += 1;
++  }
++  return enabled * (area / 2 - raw);
++}
+ /** A slice whose slope is this far (relative) from every case's is outside the library. */
+ const SLOPE_TOLERANCE = 0.2;
+ 
+@@ -440,12 +474,17 @@
+     const tau = query.seconds / b.unit;
+     // The raw carrier/outside geometry settles at the authored event. The analytic roof keeps evolving to actual impact.
+     const carrier = Math.min(tau, b.touchdown);
++    // The correction ends with zero derivative at the common authored hold, including case blends. Final
++    // lifecycle/event construction remains byte-for-byte on its original carrier, and post-impact uses that event.
++    const leafEnable = ease((b.touchdown - carrier) / b.frameStep);
+     this.frameAt(b.lower, carrier, out);
+     const lower = boundedCParameters(out, b.lower.touchdown, tau);
++    lower.leafWidthDelta = leafEnable * carrierWidthDelta(b.lower, carrier);
+     let parameters = lower;
+     if (b.upper !== b.lower) {
+       this.frameAt(b.upper, carrier, this.analyticOther);
+       const upper = boundedCParameters(this.analyticOther, b.upper.touchdown, tau);
++      upper.leafWidthDelta = leafEnable * carrierWidthDelta(b.upper, carrier);
+       parameters = blendBoundedCParameters(lower, upper, b.weight);
+       for (let i = 0; i < FLOATS; i++) out[i] += b.weight * (this.analyticOther[i] - out[i]);
+     }
+diff --git a/src/wave/barrel/boundedCProfile.ts b/src/wave/barrel/boundedCProfile.ts
+--- a/src/wave/barrel/boundedCProfile.ts
++++ b/src/wave/barrel/boundedCProfile.ts
+@@ -1,6 +1,10 @@
+ /** Experimental parameter-first C-profile with an enlarged across-profile mouth; precision-v4 retains separate current roof/floor controls. */
+ export type Vec2 = [number, number];
+-export interface BoundedCParameters { crest: Vec2; toe: Vec2; incoming: Vec2; outgoing: Vec2; authoredTD: number; tau: number }
++export interface BoundedCParameters {
++ crest: Vec2; toe: Vec2; incoming: Vec2; outgoing: Vec2; authoredTD: number; tau: number;
++ /** Optional ND leaf reach adjustment; the actual toe, carrier width and endpoint tangents remain authoritative. */
++ leafWidthDelta?: number;
++}
+ export interface BoundedCEvent { seal: number; cap: Vec2; fraction: number }
+ export interface BoundedCLifecycle { impactEvent: BoundedCEvent; impactTau: number; retiredTau: number; fullyFormedTau: number }
+ export interface BoundedCMetadata {
+@@ -41,7 +45,12 @@
+ function derivative(c:Cubic,t:number):Vec2{const s=1-t;return mul(add(add(mul(sub(c[1],c[0]),s*s),mul(sub(c[2],c[1]),2*s*t)),mul(sub(c[3],c[2]),t*t)),3);}
+ const at=(p:Float32Array,i:number):Vec2=>[p[2*i],p[2*i+1]];
+ export function boundedCParameters(profile:Float32Array,authoredTD:number,tau:number):BoundedCParameters{return {crest:at(profile,32),toe:at(profile,112),incoming:sub(at(profile,32),at(profile,31)),outgoing:sub(at(profile,113),at(profile,112)),authoredTD,tau};}
+-export function blendBoundedCParameters(a:BoundedCParameters,b:BoundedCParameters,w:number):BoundedCParameters{return {crest:round(mix(a.crest,b.crest,w)),toe:round(mix(a.toe,b.toe,w)),incoming:round(mix(a.incoming,b.incoming,w)),outgoing:round(mix(a.outgoing,b.outgoing,w)),authoredTD:a.authoredTD+w*(b.authoredTD-a.authoredTD),tau:a.tau+w*(b.tau-a.tau)};}
++export function blendBoundedCParameters(a:BoundedCParameters,b:BoundedCParameters,w:number):BoundedCParameters{return {crest:round(mix(a.crest,b.crest,w)),toe:round(mix(a.toe,b.toe,w)),incoming:round(mix(a.incoming,b.incoming,w)),outgoing:round(mix(a.outgoing,b.outgoing,w)),authoredTD:a.authoredTD+w*(b.authoredTD-a.authoredTD),tau:a.tau+w*(b.tau-a.tau),leafWidthDelta:(a.leafWidthDelta??0)+w*((b.leafWidthDelta??0)-(a.leafWidthDelta??0))};}
++/** C1 saturation in the requested correction: never spends a whole thickness scale of toe-side room. */
++export function boundedLeafWidthDelta(delta:number,thickness:number):number{
++ if(!Number.isFinite(delta)||!Number.isFinite(thickness)||!(thickness>0))throw Error('invalid leaf reach correction');
++ return thickness*(delta/(thickness+Math.abs(delta)));
++}
+ function ordinary(z:BoundedCParameters){
+  const A=z.crest,Toe=z.toe,ct=unit(z.incoming),tt=unit(z.outgoing),W=Toe[0]-A[0],H=A[1]-Toe[1];
+  if(W<=0||H<=0||ct[0]<=0||tt[0]<=0||z.authoredTD<=0)throw Error('invalid crest/toe domain');
+@@ -51,12 +60,15 @@
+  // Use the maximum height in the width-squared bound and the minimum in the height-squared bound.
+  const minimumLeafHeight=(1-LIP_OPEN_HEIGHT)*H;
+  const B=Math.min(.06*H,W/16,.1*Math.min((.85*W)**2/H,minimumLeafHeight**2/(.85*W)));
+- return {A,Toe,ct,tt,W,H,base,K0,d0,ha0:ha/2,he0:norm(derivative(base,.5))/6,ht0:ht/2,B};
++ const leafWidthDelta=boundedLeafWidthDelta(z.leafWidthDelta??0,B);
++ return {A,Toe,ct,tt,W,H,base,K0,d0,ha0:ha/2,he0:norm(derivative(base,.5))/6,ht0:ht/2,B,leafWidthDelta};
+ }
+ type Ordinary=ReturnType<typeof ordinary>;
+ function roof(o:Ordinary,g:number,s:number,T:number,post?:Vec2,remaining=1){
+  const {A,Toe,W,H}=o,angle0=Math.atan2(o.d0[1],o.d0[0]),angle=post?-Math.PI/2*remaining:(1-g)*angle0-g*Math.PI/2,v:Vec2=[Math.cos(angle),Math.sin(angle)];
+- const L:Vec2=[Toe[0]-2*o.B-.02*W,Toe[1]+LIP_OPEN_HEIGHT*H-LIP_FALL_HEIGHT*H*s];let K=mix(o.K0,L,g);
++ // Only the leaf reach changes. The root and floor are rebuilt below and still end at the original physical Toe.
++ // C1 saturation in delta is not a C1 cap trajectory: raw carrier width/tangents can retain derivative kinks.
++ const L:Vec2=[Toe[0]-2*o.B-.02*W+o.leafWidthDelta,Toe[1]+LIP_OPEN_HEIGHT*H-LIP_FALL_HEIGHT*H*s];let K=mix(o.K0,L,g);
+  function controls(K:Vec2):Cubic{
+   const width=K[0]-A[0],height=A[1]-K[1];if(width<=0||height<=0)throw Error('nonpositive leaf domain');
+   let hs=(1-g)*o.ha0+g*KAPPA*width,he=(1-g)*o.he0+g*KAPPA*height;const advance=hs*o.ct[0]+he*Math.max(0,v[0]);
+@@ -69,7 +81,7 @@
+ }
+ const eventCache = new Map<string, { seal: number; cap: Vec2; fraction: number }>();
+ function event(o:Ordinary){
+- const key=[...o.A,...o.Toe,...o.ct,...o.tt].join(',');const cached=eventCache.get(key);if(cached)return cached;
++ const key=[...o.A,...o.Toe,...o.ct,...o.tt,o.leafWidthDelta].join(',');const cached=eventCache.get(key);if(cached)return cached;
+  const gap=(s:number)=>{const {P,n}=roof(o,1,s,o.B);return P[28][1]-o.B/2*(1+n[1])-o.Toe[1];};
+  if(gap(0)<=0||gap(1)>=0)throw Error('impact not bracketed');let lo=0,hi=1;
+  for(let i=0;i<32;i++){const m=(lo+hi)/2;if(gap(m)>0)lo=m;else hi=m;}
+diff --git a/src/wave/barrel/boundedCLeafReach.test.ts b/src/wave/barrel/boundedCLeafReach.test.ts
+--- /dev/null
++++ b/src/wave/barrel/boundedCLeafReach.test.ts
+@@ -0,0 +1,249 @@
++import { describe, expect, it } from 'vitest';
++import { GRAVITY } from '../dispersion';
++import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, boundedLeafWidthDelta, boundedCCap, sampleBoundedC } from './boundedCProfile';
++import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
++import { readBarrelCases } from './nodeBarrelCases';
++import { decodeCase } from './profileFormat';
++import { carrierWidthDelta, LANDMARK, PROFILE_POINTS, ProfileLibrary, type BarrelCase, type ProfileQuery } from './ProfileLibrary';
++import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
++
++const FLOATS = 2 * PROFILE_POINTS;
++const cases = readBarrelCases().map(decodeCase);
++const STEP = 0.125;
++
++/** A generic moving carrier, with a caller-authored width curve and valid crest/toe endpoint tangents. */
++function widthCase(widthAt: (tau: number) => number, tauStart = 0): BarrelCase {
++  const frames = new Float32Array(9 * FLOATS);
++  for (let f = 0; f < 9; f++) {
++    const width = widthAt(f * STEP);
++    for (let i = 0; i < PROFILE_POINTS; i++) {
++      let x: number, y: number;
++      if (i <= LANDMARK.crest) { x = (i - LANDMARK.crest) / 32; y = 1 + x / 8; }
++      else if (i <= LANDMARK.toe) {
++        const t = (i - LANDMARK.crest) / (LANDMARK.toe - LANDMARK.crest);
++        x = width * t; y = 1 - t;
++      } else { x = width + (i - LANDMARK.toe) / 16; y = (i - LANDMARK.toe) / 128; }
++      frames[f * FLOATS + 2 * i] = x;
++      frames[f * FLOATS + 2 * i + 1] = y;
++    }
++  }
++  return { id: 'generic-width', slope: 1 / 19, nonlinearity: 0.3, flatDepth: 0.2, breakerHeight: 1,
++    tauStep: STEP, tauStart, touchdown: tauStart + 1, frames };
++}
++
++/** Existing raw frame semantics, independent of the new mean/correction rule. */
++function rawFrame(c: BarrelCase, tau: number): Float32Array {
++  const position = Math.max(0, Math.min(c.frames.length / FLOATS - 1, (tau - c.tauStart) / c.tauStep));
++  const frame = Math.floor(position), next = Math.min(frame + 1, c.frames.length / FLOATS - 1), share = position - frame;
++  const out = new Float32Array(FLOATS);
++  for (let i = 0; i < FLOATS; i++) out[i] = c.frames[frame * FLOATS + i]
++    + share * (c.frames[next * FLOATS + i] - c.frames[frame * FLOATS + i]);
++  return out;
++}
++
++/** Prior uncorrected final carrier/event, not a second implementation of the width correction. */
++function originalClock(query: Omit<ProfileQuery, 'seconds'>) {
++  const slopes = [...new Set(cases.map(c => c.slope))];
++  const slope = slopes.reduce((best, value) => Math.abs(value - query.slope) < Math.abs(best - query.slope) ? value : best);
++  const group = cases.filter(c => c.slope === slope).sort((a, b) => a.nonlinearity - b.nonlinearity);
++  const ratio = query.footHeight / query.footDepth;
++  let lower = group[0], upper = group[group.length - 1], weight = 0;
++  if (ratio <= lower.nonlinearity) upper = lower;
++  else if (ratio >= upper.nonlinearity) lower = upper;
++  else for (let i = 0; i + 1 < group.length; i++) if (ratio >= group[i].nonlinearity && ratio <= group[i + 1].nonlinearity) {
++    lower = group[i]; upper = group[i + 1];
++    weight = (ratio - lower.nonlinearity) / (upper.nonlinearity - lower.nonlinearity);
++    break;
++  }
++  const authored = lower.touchdown + weight * (upper.touchdown - lower.touchdown);
++  const scale = lower === upper ? query.footHeight / lower.nonlinearity : query.footDepth;
++  const unit = Math.sqrt(scale / GRAVITY), tau = authored * unit / unit, carrier = Math.min(tau, authored);
++  let parameters = boundedCParameters(rawFrame(lower, carrier), lower.touchdown, tau);
++  if (upper !== lower) parameters = blendBoundedCParameters(parameters,
++    boundedCParameters(rawFrame(upper, carrier), upper.touchdown, tau), weight);
++  return { ...boundedCLifecycle(parameters), authored, unit };
++}
++
++const frameBlend = (c: BarrelCase) => ({ lower: c, upper: c, weight: 0, scale: 1,
++  lowerFrame: 0, lowerNext: 0, lowerShare: 0, upperFrame: 0, upperNext: 0, upperShare: 0 });
++const vertex = (row: number, point: number) => row * LOFT_SAMPLES + LOFT.extensionSamples + point;
++const xAt = (loft: LoftResult, row: number) => loft.positions[3 * vertex(row, LANDMARK.crest)];
++
++describe('shared bounded-C leaf reach', () => {
++  it('leaves constant and linear widths unchanged inside, at boundaries and under clamping', () => {
++    for (const width of [() => 2, (tau: number) => 2 + tau / 2]) {
++      const c = widthCase(width), before = c.frames.slice();
++      for (const tau of [-1, 0, 0.03125, STEP, 0.1875, 0.25, 0.4375, 0.5, 0.8125, 0.875, 0.96875, 1, 2]) {
++        expect(Math.abs(carrierWidthDelta(c, tau))).toBeLessThan(1e-12);
++      }
++      expect(c.frames).toEqual(before);
++    }
++  });
++
++  it('removes an interior isolated width peak continuously, without depending on an absolute clock origin', () => {
++    const width = (tau: number) => 2 + 0.25 * Math.max(0, 1 - Math.abs(tau - 0.5) / STEP);
++    const c = widthCase(width), shifted = widthCase(width, 4096);
++    const coherent = (tau: number) => width(tau) + carrierWidthDelta(c, tau);
++    // The triangular excess has half the area of a constant peak over this full centered support.
++    expect(coherent(0.5)).toBeCloseTo(2.125, 12);
++    const epsilon = 1e-6;
++    for (const tau of [0.375, 0.5, 0.625]) {
++      expect(Math.abs(coherent(tau + epsilon) - coherent(tau - epsilon))).toBeLessThan(1e-5);
++      const before = (coherent(tau) - coherent(tau - epsilon)) / epsilon;
++      const after = (coherent(tau + epsilon) - coherent(tau)) / epsilon;
++      expect(Math.abs(before - after)).toBeLessThan(2e-4);
++    }
++    for (const tau of [0, STEP, 0.1875, 0.5, 0.8125, 0.875, 1]) {
++      expect(carrierWidthDelta(shifted, 4096 + tau)).toBe(carrierWidthDelta(c, tau));
++    }
++  });
++
++  it('keeps unsupported endpoint windows raw and starts/ends the correction with zero slope', () => {
++    const width = (tau: number) => 2 + 0.25 * (Math.max(0, 1 - Math.abs(tau - 0.25) / STEP)
++      + Math.max(0, 1 - Math.abs(tau - 0.75) / STEP));
++    const c = widthCase(width), epsilon = 1e-6;
++    for (const tau of [0, 0.0625, STEP, 0.875, 0.9375, 1]) expect(carrierWidthDelta(c, tau)).toBe(0);
++    for (const tau of [STEP, 0.875]) {
++      expect(Math.abs(carrierWidthDelta(c, tau - epsilon) / epsilon)).toBeLessThan(1e-4);
++      expect(Math.abs(carrierWidthDelta(c, tau + epsilon) / epsilon)).toBeLessThan(1e-4);
++    }
++    expect(Math.abs(carrierWidthDelta(c, 0.1875))).toBeGreaterThan(0);
++  });
++
++  it('bounds both signs smoothly below one thickness scale without a hard clamp corner', () => {
++    const thickness = 0.03125, epsilon = thickness * 1e-6;
++    let previous = -thickness;
++    for (const requested of [-100, -0.25, -0.01, 0, 0.01, 0.25, 100]) {
++      const value = boundedLeafWidthDelta(requested, thickness);
++      expect(Number.isFinite(value)).toBe(true);
++      expect(Math.abs(value)).toBeLessThan(thickness);
++      expect(value).toBeGreaterThan(previous);
++      expect(boundedLeafWidthDelta(-requested, thickness)).toBe(-value);
++      previous = value;
++    }
++    const left = -boundedLeafWidthDelta(-epsilon, thickness) / epsilon;
++    const right = boundedLeafWidthDelta(epsilon, thickness) / epsilon;
++    expect(left).toBeCloseTo(right, 12);
++    expect(left).toBeCloseTo(1, 5);
++  });
++
++  it('reduces a generic leaf bend while keeping the true crest/toe, floor and outgoing carrier', () => {
++    const width = (tau: number) => 2 + 0.015625 * Math.max(0, 1 - Math.abs(tau - 0.625) / STEP);
++    const c = widthCase(width), raw = new ProfileLibrary([c]), corrected = new ProfileLibrary([c], { geometry: 'bounded-C' });
++    const query = { slope: c.slope, footHeight: c.nonlinearity, footDepth: 1 };
++    const unit = Math.sqrt(1 / GRAVITY), expected = rawFrame(c, c.touchdown);
++    const originalEvent = boundedCLifecycle(boundedCParameters(expected, c.touchdown, c.touchdown));
++    const before: number[] = [], after: number[] = [];
++    for (const tau of [0.5, 0.625, 0.75]) {
++      const carrier = new Float32Array(FLOATS), final = new Float32Array(FLOATS);
++      raw.profileAt({ ...query, seconds: tau * unit }, carrier);
++      const controls = boundedCParameters(carrier, c.touchdown, tau);
++      // The direct sampler is the old contour at these same physical carrier controls and event.
++      const baseline = carrier.slice();
++      sampleBoundedC(controls, baseline, false, originalEvent.impactEvent, true);
++      corrected.profileAt({ ...query, seconds: tau * unit }, final);
++      before.push(baseline[2 * LANDMARK.lip]); after.push(final[2 * LANDMARK.lip]);
++      for (const i of [0, 31, 32, 112, 113, 127]) expect(final.subarray(2 * i, 2 * i + 2)).toEqual(carrier.subarray(2 * i, 2 * i + 2));
++      expect(final.every(Number.isFinite)).toBe(true);
++      expect(final[2 * 104 + 1]).toBe(final[2 * LANDMARK.toe + 1]);
++      expect(final[2 * LANDMARK.lip + 1]).toBeGreaterThan(final[2 * 104 + 1]);
++    }
++    expect(Math.abs(after[0] - 2 * after[1] + after[2])).toBeLessThan(Math.abs(before[0] - 2 * before[1] + before[2]));
++  });
++
++  it('rejoins the authored hold with exact zero added reach and no added one-sided cap velocity', () => {
++    const width = (tau: number) => 2 + 0.015625 * Math.max(0, 1 - Math.abs(tau - 0.5) / STEP);
++    const c = { ...widthCase(width), touchdown: 0.5 };
++    // Frames continue beyond TD: an endpoint fallback cannot make this final-hold test vacuous.
++    expect(Math.abs(carrierWidthDelta(c, c.touchdown))).toBeGreaterThan(0);
++    const library = new ProfileLibrary([c], { geometry: 'bounded-C' }), unit = Math.sqrt(1 / GRAVITY);
++    const query = { slope: c.slope, footHeight: c.nonlinearity, footDepth: 1 };
++    const event = boundedCLifecycle(boundedCParameters(rawFrame(c, c.touchdown), c.touchdown, c.touchdown)).impactEvent;
++    const point = new Float64Array(2);
++    const extraReach = (tau: number) => {
++      const carrier = rawFrame(c, Math.min(tau, c.touchdown));
++      const baseline = boundedCCap(boundedCParameters(carrier, c.touchdown, tau), event);
++      library.pointAt({ ...query, seconds: tau * unit }, LANDMARK.lip, point);
++      return point[0] - baseline[0];
++    };
++    expect(Math.abs(extraReach(c.touchdown - STEP / 4))).toBeGreaterThan(1e-5);
++    expect(extraReach(c.touchdown)).toBe(0);
++    const epsilon = 1e-3;
++    expect(extraReach(c.touchdown + epsilon)).toBe(0);
++    // A linear fade would retain a nonzero extra velocity here; inspect actual F32 cap displacement instead.
++    expect(Math.abs(extraReach(c.touchdown - epsilon) / epsilon)).toBeLessThan(0.01);
++  });
++
++  it('retains exact original lifecycle clocks and shares full/cap/table geometry through the final-hold taper', () => {
++    const library = new ProfileLibrary(cases, { geometry: 'bounded-C' }), raw = new ProfileLibrary(cases);
++    const snapshots = cases.map(c => c.frames.slice());
++    const queries = cases.map(c => ({ slope: c.slope, footHeight: c.nonlinearity * 7, footDepth: 7 }));
++    const padang = cases.filter(c => c.slope === cases.find(c => c.id === 'pad19-a30-l12')!.slope)
++      .sort((a, b) => a.nonlinearity - b.nonlinearity);
++    queries.push({ slope: padang[0].slope, footHeight: (padang[0].nonlinearity + padang[1].nonlinearity) * 7 / 2, footDepth: 7 });
++    const final = new Float32Array(FLOATS), carrier = new Float32Array(FLOATS), contact = new Float32Array(FLOATS), point = new Float64Array(2);
++    for (const query of queries) {
++      const prior = originalClock(query), times = library.profileTimes(query), authoredSeconds = prior.authored * prior.unit;
++      expect(times.touchdownSeconds).toBe(prior.impactTau * prior.unit);
++      expect(times.clearSeconds).toBe(prior.fullyFormedTau * prior.unit);
++      expect(times.collapseSeconds).toBe((prior.retiredTau - prior.impactTau) * prior.unit);
++      for (const seconds of [0, times.clearSeconds / 2, times.clearSeconds,
++        authoredSeconds - 0.75 * times.frameSeconds, authoredSeconds - 0.25 * times.frameSeconds,
++        authoredSeconds, times.touchdownSeconds, times.touchdownSeconds + times.collapseSeconds / 2,
++        times.touchdownSeconds + times.collapseSeconds]) {
++        const q = { ...query, seconds, hold: 'drawing' as const };
++        const lookup = library.profileAt(q, final);
++        library.profileAt({ ...q, hold: 'contact' }, contact);
++        raw.profileAt(q, carrier);
++        expect(contact).toEqual(final);
++        expect(final.every(Number.isFinite)).toBe(true);
++        expect(lookup.touchdownSeconds).toBe(times.touchdownSeconds);
++        for (const i of [0, 31, 32, 112, 113, 127]) expect(final.subarray(2 * i, 2 * i + 2)).toEqual(carrier.subarray(2 * i, 2 * i + 2));
++        for (const i of [32, 64, 88, 112]) {
++          library.pointAt(q, i, point);
++          expect(Array.from(point)).toEqual(Array.from(final.subarray(2 * i, 2 * i + 2)));
++        }
++        expect(library.frameBlend(q, frameBlend(cases[0])).analyticProfile).toEqual(final);
++        if (seconds >= times.touchdownSeconds && lookup.analytic!.sheetExists) {
++          expect(final[2 * LANDMARK.lip + 1]).toBe(final[2 * 104 + 1]);
++        }
++        if (seconds === times.touchdownSeconds + times.collapseSeconds) {
++          expect(lookup.analytic!.sheetExists).toBe(false);
++          expect(lookup.analytic!.thickness).toBe(0);
++        }
++      }
++    }
++    cases.forEach((c, i) => expect(c.frames).toEqual(snapshots[i]));
++  });
++
++  it('shares actual draw/eager/deferred contact without moving raw knots or the zero-origin lattice', () => {
++    const c = cases.find(c => c.id === 'pad19-a30-l12')!, library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
++    const query = { slope: c.slope, footHeight: c.nonlinearity * 7, footDepth: 7 }, times = library.profileTimes(query);
++    const authored = times.clearSeconds / 0.4, records = new Float32Array(9 * FRONT_STRIDE);
++    for (let k = 0; k < 9; k++) {
++      const x = k + 0.125;
++      records.set([x, -100 + x / 32, 1, k, authored - 3 * times.frameSeconds + (k - 4) * times.frameSeconds / 4,
++        query.footHeight, query.footDepth, -100, 0], k * FRONT_STRIDE);
++    }
++    const original = records.slice(), water = (x: number, z: number) => 0.5 + 0.02 * x + 0.08 * Math.sin(z + 100);
++    const draw = new SweptLoft(library, c.slope, { sheet: false }).build(records, 9, 0.5, water);
++    const eager = new SweptLoft(library, c.slope, { contact: true }).build(records, 9, 0.5, water);
++    const owner = SweptLoft.forContactQueries(library, c.slope), deferred = owner.build(records, 9, 0.5, water);
++    for (let row = 0; row < deferred.sliceCount; row++) owner.prepareRow(row);
++    for (let v = 0; v < deferred.vertexCount; v++) owner.prepareNormal(v);
++    expect(records).toEqual(original);
++    for (const key of ['positions', 'indices', 'normals', 'sliceTau', 'sliceSigma', 'sliceWeight', 'slicePhase', 'sliceJoined'] as const) {
++      expect(eager[key]).toEqual(draw[key]); expect(deferred[key]).toEqual(draw[key]);
++    }
++    const xs = Array.from({ length: draw.sliceCount }, (_, row) => xAt(draw, row));
++    for (let k = 0; k < 9; k++) {
++      const row = xs.indexOf(records[k * FRONT_STRIDE + FRONT_FIELD.x]);
++      expect(row).toBeGreaterThanOrEqual(0);
++      expect(draw.sliceTau[row]).toBe(records[k * FRONT_STRIDE + FRONT_FIELD.tau]);
++      expect(draw.sliceSigma[row]).toBe(records[k * FRONT_STRIDE + FRONT_FIELD.sigma]);
++    }
++    for (let x = 0.5; x <= 8; x += 0.5) expect(xs).toContain(x);
++    expect(draw.vertexCount).toBeLessThanOrEqual(LOFT.budget);
++    expect(draw.rayInvalidIntervals).toBe(0); expect(draw.rayMinAdvance).toBeGreaterThan(0);
++  });
++});

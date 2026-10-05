@@ -10,7 +10,9 @@ export type TubePilotPhase = 'seek' | 'prepare' | 'enter' | 'travel' | 'exit';
 export class TubePilot {
   phase: TubePilotPhase = 'seek';
   private front?: number;
-  private previous?: { time: number; heading: number; bank: number; mouthX: number; mouthZ: number; front: number };
+  /** Pose rates remain available while seeking; mouth transport needs consecutive accepted guidance. */
+  private previousPose?: { heading: number; bank: number };
+  private previousMouth?: { mouthX: number; mouthZ: number; front: number };
   private steer = 0;
   private travelled = 0;
   private insideTime = 0;
@@ -20,7 +22,7 @@ export class TubePilot {
   private held: RideInput = { paddle: false, popUp: false, steer: 0, crouch: 1, compress: 0, trim: 0 };
 
   reset(): void {
-    this.phase = 'seek'; this.front = undefined; this.previous = undefined;
+    this.phase = 'seek'; this.front = undefined; this.previousPose = undefined; this.previousMouth = undefined;
     this.steer = 0; this.travelled = 0; this.insideTime = 0; this.insidePosition = undefined;
     this.outsideTime = 0;
     this.lastTime = Number.NaN;
@@ -38,7 +40,7 @@ export class TubePilot {
     let target = this.faceLine(view);
     if (!current || (this.front !== undefined && current.frontId !== this.front)) {
       this.phase = 'seek'; this.front = undefined; this.insidePosition = undefined;
-      this.insideTime = 0; this.travelled = 0; this.outsideTime = 0; this.previous = undefined;
+      this.insideTime = 0; this.travelled = 0; this.outsideTime = 0; this.previousMouth = undefined;
     } else {
       this.front = current.frontId;
       const stable = Math.abs(view.ride.bank ?? 0) < Math.PI / 7 && view.ride.balance > 0.35;
@@ -60,7 +62,7 @@ export class TubePilot {
       target = this.targetHeading(view, current, stable, dt);
     }
 
-    const previous = this.previous;
+    const previous = this.previousPose;
     const yaw = previous && dt > 0 ? wrap(view.board.heading - previous.heading) / dt : 0;
     const bank = view.ride.bank ?? 0;
     const bankRate = previous && dt > 0 ? (bank - previous.bank) / dt : 0;
@@ -71,11 +73,9 @@ export class TubePilot {
       wanted = -0.3 * Math.sign(anticipatedBank || bank);
     }
     this.steer += clamp(wanted - this.steer, 1.5 * dt);
-    this.previous = {
-      time: time ?? (previous?.time ?? 0) + dt, heading: view.board.heading, bank,
-      mouthX: current?.mouth.x ?? view.board.x, mouthZ: current?.mouth.z ?? view.board.z,
-      front: current?.frontId ?? -1,
-    };
+    this.previousPose = { heading: view.board.heading, bank };
+    this.previousMouth = current && this.front === current.frontId
+      ? { mouthX: current.mouth.x, mouthZ: current.mouth.z, front: current.frontId } : undefined;
     this.held = { paddle: false, popUp: false, steer: this.steer,
       crouch: this.phase === 'exit' ? Math.max(0, 1 - this.outsideTime) : 1, compress: 0, trim: 0 };
     return { ...this.held };
@@ -106,7 +106,7 @@ export class TubePilot {
       x = point.x + cue.rayX * standOff; z = point.z + cue.rayZ * standOff;
     }
     // Follow measured mouth transport, rather than the material velocity of the falling lip.
-    const previous = this.previous;
+    const previous = this.previousMouth;
     const lead = Math.min(0.5, Math.hypot(x - view.board.x, z - view.board.z) / Math.max(2, view.ride.speed));
     if (previous && previous.front === cue.frontId && dt > 0) {
       const vx = (cue.mouth.x - previous.mouthX) / dt;
