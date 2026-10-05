@@ -1,4 +1,4 @@
-import { ShaderLib, type WebGLProgramParametersWithUniforms } from 'three';
+import { DynamicDrawUsage, ShaderLib, type BufferAttribute, type WebGLProgramParametersWithUniforms } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { FRONT_FIELD, FRONT_STRIDE } from '../../wave/barrel/frontRecords';
 import { ProfileLibrary } from '../../wave/barrel/ProfileLibrary';
@@ -46,7 +46,7 @@ function tubeRecords(): Float32Array {
 }
 
 describe('the swept barrel’s mesh', () => {
-  it('shades lofted vertices as the water, showing exactly where the water gives way, in both looks', () => {
+  it('shades lofted vertices as the water, with the shared seam dither, in both looks', () => {
     const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
     for (const look of ['classic', 'rich'] as const) {
       swept.setLook(look);
@@ -57,8 +57,56 @@ describe('the swept barrel’s mesh', () => {
       expect(vertex).toContain('vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;');
       expect(fragment).toContain(SWEPT_BARREL_DISCARD);
       expect(mirrorsBarrelDither(fragment)).toBe(true);
-      expect(swept.mesh.material.customProgramCacheKey()).toBe(`breakline-swept-barrel-${look}`);
+      expect(swept.mesh.material.customProgramCacheKey()).toBe(`breakline-swept-barrel-authored-mask-${look}`);
     }
+  });
+
+  it('copies the final authored mask, including fades, into a separate scalar buffer on every update', () => {
+    const loft = oneQuad();
+    loft.mask.set([1, 0.25, 0, 0.5]);
+    const original = loft.mask.slice();
+    const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+    swept.update(loft);
+    const mask = swept.mesh.geometry.getAttribute('sweptMask') as BufferAttribute;
+    expect(mask.itemSize).toBe(1);
+    expect(mask.usage).toBe(DynamicDrawUsage);
+    expect(mask.array).not.toBe(loft.mask);
+    expect(Array.from(mask.array.slice(0, loft.vertexCount))).toEqual([1, 0.25, 0, 0.5]);
+    expect(mask.updateRanges).toEqual([{ start: 0, count: loft.vertexCount }]);
+    expect(loft.mask).toEqual(original);
+
+    const version = mask.version;
+    loft.mask.set([0.5, 0, 1, 0.25]);
+    swept.update(loft);
+    expect(Array.from(mask.array.slice(0, loft.vertexCount))).toEqual([0.5, 0, 1, 0.25]);
+    expect(mask.updateRanges).toEqual([{ start: 0, count: loft.vertexCount }]);
+    expect(mask.version).toBeGreaterThan(version);
+    loft.mask[0] = 0;
+    expect(mask.array[0]).toBe(0.5);
+  });
+
+  it('carries authored coverage through both looks and every dev view within the WebGL2 attribute budget', () => {
+    const keys = new Set<string>();
+    for (const look of ['classic', 'rich'] as const) {
+      const swept = new SweptBarrelMesh(new WaterSurface(source).materialUniforms);
+      swept.setLook(look);
+      for (const view of [undefined, 'phase', 'front', 'sheet', 'region'] as const) {
+        swept.setView(view);
+        swept.update(oneQuad());
+        const { vertex, fragment } = compiled(swept.mesh.material);
+        expect(vertex).toContain('attribute float sweptMask;');
+        expect(vertex).toContain('varying float vSweptMask;');
+        expect(vertex).toContain('vSweptMask = sweptMask;');
+        expect(fragment).toContain('varying float vSweptMask;');
+        expect(fragment).toContain(SWEPT_BARREL_DISCARD);
+        // Each stored attribute fits one location: 13 normally, 14 after a dev view, below WebGL2's minimum 16.
+        expect(Object.keys(swept.mesh.geometry.attributes).length).toBeLessThanOrEqual(14);
+        const key = swept.mesh.material.customProgramCacheKey();
+        expect(key).toBe(`breakline-swept-barrel-authored-mask-${look}${view ? `-view-${view}` : ''}`);
+        keys.add(key);
+      }
+    }
+    expect(keys.size).toBe(10);
   });
 
   it('draws a loft’s triangles, and hides for an empty loft or none', () => {
@@ -98,7 +146,11 @@ describe('the swept barrel’s mesh', () => {
         expect(fragment).toContain(RICH_SHEET_BODY_NORMAL);
         expect(fragment.indexOf('vec3 sweptMeanN')).toBeLessThan(fragment.indexOf('float waterViewCos ='));
         // Directional radiance replaces diffuse transmission; PI cancels RECIPROCAL_PI once.
-        expect(fragment).toContain('sweptSkyTransmission * PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity');
+        expect(fragment).toContain('PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity');
+        expect(fragment).not.toContain('sweptSkyTransmission * PI * textureCubeUV');
+        // A failed approximate sky exit receives the modeled wall background; apply the transmission gate once.
+        expect(fragment).toContain('float sweptSkyShare = clamp( vSweptSheetBack, 0.0, 1.0 ) * sweptSkyTransmission;');
+        expect(fragment).toContain('vec3 sweptBack = sweptSkyShare * sweptSky + ( 1.0 - sweptSkyShare ) * sweptWall;');
         expect(fragment).not.toContain('getIBLIrradiance( -normal )');
         // Rich enters at the fragment and leaves on the local opposite sheet, retaining air→water→air refraction.
         expect(fragment).toContain(RICH_SHEET_TRANSMISSION);
@@ -118,12 +170,13 @@ describe('the swept barrel’s mesh', () => {
         expect(fragment).not.toContain('sweptFarInwardN');
         expect(fragment).toContain('getIBLIrradiance( -normal )');
         expect(fragment).not.toContain('vec3 sweptSkyRay');
+        expect(fragment).not.toContain('sweptSkyShare');
+        expect(fragment).toContain('vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;');
       }
       // Behind the far side that sees no opening, the back wall as drawn: its column body at its depth, under its own light.
       expect(vertex).toContain('vSweptWallDepth = max( 0.0, sweptWall.y - waterBedAt( sweptWall.xz ) );');
       expect(fragment).toContain('sweptWallLight += getIBLIrradiance( ( viewMatrix * vec4( sweptWallN, 0.0 ) ).xyz );');
       expect(fragment).toContain('vec3 sweptWall = waterBodyGain * waterBodyReflectance( vSweptWallDepth, max( 0.05, dot( sweptWallN, waterV ) ), sweptWallSun ) * sweptWallLight;');
-      expect(fragment).toContain('vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;');
       expect(fragment).toContain('float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );');
       // The height field's crest-light march never runs on the curl.
       expect(fragment).not.toContain('waterCrestThickness( vWaterWorld');
@@ -220,7 +273,7 @@ describe('the swept barrel’s mesh', () => {
     expect(RICH_THROAT).toContain('reflectedLight.directSpecular *= 1.0 - vSweptThroat.w;');
     expect(fragment.indexOf(RICH_THROAT)).toBeGreaterThan(fragment.indexOf('radiance *= waterReflection;'));
     expect(fragment.indexOf(RICH_THROAT)).toBeLessThan(fragment.indexOf('#include <lights_fragment_end>'));
-    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-rich');
+    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-authored-mask-rich');
   });
 
   it('copies the throat’s views per vertex, and each slice’s tip, mouth, ray and lip normal to its vertices, in the Rich look only', () => {
@@ -256,12 +309,12 @@ describe('the swept barrel’s mesh', () => {
     expect(plain.vertex).not.toContain('sweptView');
     expect(swept.mesh.geometry.getAttribute('sweptView')).toBeUndefined();
     swept.setView('phase');
-    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-classic-view-phase');
+    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-authored-mask-classic-view-phase');
     const viewed = compiled(swept.mesh.material);
     expect(viewed.vertex).toContain('vSweptView = sweptView;');
     expect(viewed.fragment).toContain('gl_FragColor = vec4( vSweptView');
     swept.setView(undefined);
-    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-classic');
+    expect(swept.mesh.material.customProgramCacheKey()).toBe('breakline-swept-barrel-authored-mask-classic');
     expect(compiled(swept.mesh.material)).toEqual(plain);
   });
 

@@ -1,0 +1,91 @@
+{
+  "schema": "guided-ordinary-owner/v2",
+  "complete": true,
+  "firstFailure": null,
+  "protectedBefore": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4315": [
+      "87796 Mon Oct  5 15:00:00 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "protected4315RootSession": 64713,
+  "build": {
+    "file": "/private/tmp/tube-guided-ordinary-v2-native-20261005/build.json",
+    "bytes": 30471,
+    "sha256": "7c6ce70375f88c1da96d0153480cabf7399f7182cffab395f5c347f56eb22968"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-guided-ordinary-v2-native-20261005/source-freeze.json",
+    "bytes": 19166,
+    "sha256": "7cb32b04f873c9c28d19d75fcfed239847051f31e0b5e7a95b95e57c11da25e1"
+  },
+  "diagnosticBuild": {
+    "file": "/private/tmp/tube-guided-ordinary-v2-native-20261005/diagnostic-build.json",
+    "bytes": 16724,
+    "sha256": "03bc70291cde78a7098e0254a4726e09f396fdc108a924cde17e4aac5e7743ff"
+  },
+  "sealSha256": "5d9fbcc8ede3bc8db44f9d9301319a2c84e9bbfc0dc54089fdaa353a2aa5d193",
+  "limits": {
+    "steps": 1800,
+    "wallSeconds": 660,
+    "nativeSeconds": 640,
+    "ownerSeconds": 650,
+    "detectorMilliseconds": 120000,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "loftBytesEach": 6291456,
+    "loftBytesTotal": 25165824,
+    "traceBytes": 67108864,
+    "reportBytes": 2097152
+  },
+  "preExecutionPinsVerified": true,
+  "postExecutionPinsVerified": true,
+  "cleanupFailures": [],
+  "scope": "Independent current input/body trace, artifact bytes and finite resources. Geometric classifier is independent from production guide; no full skin/capsule or quality claim.",
+  "pid": 3508,
+  "ownedProcessGroup": 3508,
+  "exitCode": 0,
+  "observation": {
+    "stepCount": 1535,
+    "stop": "actual-fall-or-separation",
+    "modelWitnessRideAccepted": false,
+    "pngCount": 2,
+    "exactInputAndCurrentBodyTraceChecked": true,
+    "ordinaryOutsideWaterBoundProvenanceChecked": true,
+    "current14AndDisplayed7Union21TraceChecked": true,
+    "authoredInterpolationLagChecked": true,
+    "completeSkinCapsuleCubicShaderFPSOrVisualQualityAcceptance": false
+  },
+  "ownedMembersBeforeCleanup": [],
+  "ownedMembersAfterCleanup": [],
+  "protectedAfter": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4315": [
+      "87796 Mon Oct  5 15:00:00 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "protectedPreserved": true,
+  "closedPorts": {
+    "4301": true,
+    "9711": true
+  },
+  "cleanupElapsedSeconds": 0.433368917030748,
+  "elapsedSeconds": 468.9418188750278
+}

@@ -1,0 +1,129 @@
+{
+  "schema": "guided-ordinary-seal/v1",
+  "rootAuthorized": true,
+  "complete": true,
+  "buildId": "tube-guided-ordinary-20261005",
+  "limits": {
+    "steps": 1800,
+    "wallSeconds": 660,
+    "nativeSeconds": 640,
+    "ownerSeconds": 650,
+    "detectorMilliseconds": 120000,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "loftBytesEach": 6291456,
+    "loftBytesTotal": 25165824,
+    "traceBytes": 67108864,
+    "reportBytes": 2097152
+  },
+  "applicationBuild": {
+    "file": "/private/tmp/tube-guided-ordinary-native-20261005/build.json",
+    "bytes": 29822,
+    "sha256": "d8e44df293a7572ca54d885824334486f03641b4838df7e1a22ba26431f021b0"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-guided-ordinary-native-20261005/source-freeze.json",
+    "bytes": 18959,
+    "sha256": "49255069978c02f028feb9bc884b30638509bc6c95ee8e5c7f9dcd02e96be113"
+  },
+  "diagnosticBuild": {
+    "file": "/private/tmp/tube-guided-ordinary-native-20261005/diagnostic-build.json",
+    "bytes": 16715,
+    "sha256": "337db84f5aaaa93447ab88ebdca9486f7e7495ad3d822571a9983dfe3f5fed04"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-guided-ordinary-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 352505,
+    "sha256": "58dd09b0513f2258f7219610c21f9a39389592d0bf057f3dbbbf778bccbd7a77"
+  },
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/inputs.json",
+      "bytes": 2182,
+      "sha256": "4022298b644502f374b5e37c10edffad319c58e1c6656b3b32452d0b7691f87f"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/autopilot-entry.ts",
+      "bytes": 106,
+      "sha256": "53ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/build-diagnostic.mjs",
+      "bytes": 1871,
+      "sha256": "58f65a9bd1132f23373c53587feaf6c92755a4c2959ce32d2d699246e2ec5c77"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/prepare.py",
+      "bytes": 3500,
+      "sha256": "69040f1c180ff92305a2ebf54f9d9334c018df564eaeaac7f8f98d3ae59165a4"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/run.py",
+      "bytes": 13898,
+      "sha256": "71efa775c7ed502c593d5f79bad41299c9898a7a760e613446547658a35fa80d"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/native.mjs",
+      "bytes": 13310,
+      "sha256": "a01cfa09dc00ead7b2992a28100d7f0bc1e947add93358c288e873bec3fdcf77"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/criteria.mjs",
+      "bytes": 5148,
+      "sha256": "3cc32d014fbc68cce0cd07bb3ab78211eee625129cf68b7a96401711d24e9748"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/rider-driver.mjs",
+      "bytes": 8921,
+      "sha256": "08b693220a1066a2e8f1a8e0feb1cf92bcbefe5f54d74f3f85d3a50f30b0c354"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/README.md",
+      "bytes": 5723,
+      "sha256": "33216ac4524ac299ab2bf3e1c90f3f84206f7e882aa5f79be4563bc2bd6d733b"
+    },
+    {
+      "file": "/private/tmp/tube-guided-ordinary-native-20261005/driver-diff.md",
+      "bytes": 2347,
+      "sha256": "4efce39f2b39a7bab06bdc8344f270cecdd98609c7142f52e2be5594f71aac11"
+    }
+  ],
+  "borrowedHelpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    }
+  ]
+}

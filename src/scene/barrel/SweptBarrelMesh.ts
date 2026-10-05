@@ -100,11 +100,13 @@ gl_FragColor = vec4( vSweptView, 1.0 );`;
 // roller's whitewater there is the tube's water, not foam on it; the tube's own foam comes with the crash curve (PR 5).
 // The lip's thickness and its weight as a sheet come from the loft (`sheetAcross`).
 const sweptVertexPars = /* glsl */ `attribute float sweptLift;
+attribute float sweptMask;
 attribute float sweptSheet;
 attribute float sweptSheetWeight;
 attribute float sweptSheetBack;
 attribute vec3 sweptWall;
 attribute vec3 sweptWallNormal;
+varying float vSweptMask;
 varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
@@ -114,12 +116,14 @@ const sweptBeginNormal = /* glsl */ `vec3 objectNormal = vec3( normal );
 vWaterDepth = max( 0.0, position.y - waterBedAt( position.xz ) );
 vWaterFoam = ( 1.0 - sweptLift ) * waterFoamAt( position.xz );
 vWaterFlow = waterFlowAt( position.xz );
+vSweptMask = sweptMask;
 vSweptSheet = sweptSheet;
 vSweptSheetWeight = sweptSheetWeight;
 vSweptSheetBack = sweptSheetBack;
 vSweptWallDepth = max( 0.0, sweptWall.y - waterBedAt( sweptWall.xz ) );
 vSweptWallNormal = sweptWallNormal;`;
-const sweptFragmentPars = /* glsl */ `varying float vSweptSheet;
+const sweptFragmentPars = /* glsl */ `varying float vSweptMask;
+varying float vSweptSheet;
 varying float vSweptSheetWeight;
 varying float vSweptSheetBack;
 varying float vSweptWallDepth;
@@ -135,7 +139,8 @@ export const WALL_POINT = LANDMARK.throat + 8;
  * Both normals point toward the incident medium for GLSL refract; orient the far normal into the sheet, toward the
  * entry side. The opposite normal comes from the nearest point on the other lip run of the drawn contour.
  * No ray is marched to an exit point; this remains a thin-sheet approximation, including at grazing angles.
- * A ray heading away from that interface, or totally internally reflected there, carries no environment radiance.
+ * A ray heading away from that interface, or totally internally reflected there, carries no sky radiance; the sheet
+ * uses its modeled wall background instead. This does not trace an internal reflection or an actual wall hit.
  */
 export const RICH_SHEET_TRANSMISSION = /* glsl */ `
     vec3 sweptOppositeN = dot( vSweptExitNormal, vSweptExitNormal ) > 0.0 ? normalize( vSweptExitNormal ) : waterN;
@@ -155,7 +160,7 @@ export const RICH_SHEET_TRANSMISSION = /* glsl */ `
  * gain. Behind it: E_back = F · π L_sky(exit ray) + (1 − F) · E_wall, F the far side's view of the sky through the tube's
  * opening (`sheetAcross`), L_sky the environment's directional radiance, filtered by the material's roughness. Rich refracts through the
  * fragment's normal and the drawn contour's local opposite-sheet normal; it suppresses that radiance if the
- * approximate exit refracts to zero. Classic retains the diffuse environment background. Ambient
+ * approximate exit refracts to zero, assigning that background share to the modeled wall. Classic retains the diffuse environment background. Ambient
  * irradiance retains the painted-sky fallback. E_wall is
  * the back wall as drawn: its column body (the body's
  * gain on the reflectance at its depth over the bed) under the sky and sun on its own normal (`WALL_POINT`; the
@@ -165,8 +170,12 @@ export const RICH_SHEET_TRANSMISSION = /* glsl */ `
 function sweptSheetBody(transmission = ''): string {
   const ray = transmission ? `\n    vec3 sweptSkyRay = -waterV;\n    float sweptSkyTransmission = 1.0;${transmission}` : '';
   const sky = transmission
-    ? 'sweptSkyTransmission * PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity'
+    ? 'PI * textureCubeUV( envMap, envMapRotation * sweptSkyRay, roughnessFactor ).rgb * envMapIntensity'
     : 'getIBLIrradiance( -normal )';
+  const back = transmission
+    ? `float sweptSkyShare = clamp( vSweptSheetBack, 0.0, 1.0 ) * sweptSkyTransmission;
+    vec3 sweptBack = sweptSkyShare * sweptSky + ( 1.0 - sweptSkyShare ) * sweptWall;`
+    : 'vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;';
   return /* glsl */ `
     float sweptPath = vSweptSheet / max( 0.2, waterRefractedCosine( waterViewCos ) );
     vec3 sweptReach = exp( -waterAttenuation * sweptPath );
@@ -182,7 +191,7 @@ function sweptSheetBody(transmission = ''): string {
       sweptWallLight += getIBLIrradiance( ( viewMatrix * vec4( sweptWallN, 0.0 ) ).xyz );
     #endif
     vec3 sweptWall = waterBodyGain * waterBodyReflectance( vSweptWallDepth, max( 0.05, dot( sweptWallN, waterV ) ), sweptWallSun ) * sweptWallLight;
-    vec3 sweptBack = vSweptSheetBack * sweptSky + ( 1.0 - vSweptSheetBack ) * sweptWall;
+    ${back}
     float sweptSunPath = vSweptSheet / max( 0.2, abs( dot( waterN, waterSunDirection ) ) );
     float sweptSunBehind = pow( max( 0.0, dot( -waterV, waterSunDirection ) ), 4.0 );
     totalEmissiveRadiance += vSweptSheetWeight * ( 1.0 - vWaterFoam ) * ( 1.0 - waterFresnel( waterViewCos ) ) * (
@@ -286,8 +295,8 @@ vWaterWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;`;
 /**
  * The swept barrel as drawn (the Padang Padang spec, Part B, PR 3): the loft's grid, shaded as the water is in either
  * look (spec 15: Classic with its existing shading), on the water's own uniforms, opaque, except that its lip is shaded
- * as a thin sheet lit from behind (`SWEPT_SHEET_BODY`). It shows exactly where the water gave way to the seam's mask,
- * the same dither deciding each pixel of the band. The height field's crest light is not marched on it: under a lip it
+ * as a thin sheet lit from behind (`SWEPT_SHEET_BODY`). It retains the loft's authored coverage when the seam texture
+ * misses it, with the same dither deciding each pixel of the band. The height field's crest light is not marched on it: under a lip it
  * reads the hump, not the lip; the lip takes the crest light over its own thickness.
  */
 export class SweptBarrelMesh {
@@ -295,6 +304,7 @@ export class SweptBarrelMesh {
   private readonly positions = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly normals = new BufferAttribute(new Float32Array(3 * VERTICES), 3).setUsage(DynamicDrawUsage);
   private readonly lift = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
+  private readonly mask = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly sheet = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly sheetWeight = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
   private readonly sheetBack = new BufferAttribute(new Float32Array(VERTICES), 1).setUsage(DynamicDrawUsage);
@@ -330,6 +340,7 @@ export class SweptBarrelMesh {
     geometry.setAttribute('position', this.positions);
     geometry.setAttribute('normal', this.normals);
     geometry.setAttribute('sweptLift', this.lift);
+    geometry.setAttribute('sweptMask', this.mask);
     geometry.setAttribute('sweptSheet', this.sheet);
     geometry.setAttribute('sweptSheetWeight', this.sheetWeight);
     geometry.setAttribute('sweptSheetBack', this.sheetBack);
@@ -371,7 +382,7 @@ export class SweptBarrelMesh {
         .replace('#include <common>', `#include <common>\n${sweptViewFragmentPars}`)
         .replace('#include <opaque_fragment>', view === 'region' ? SWEPT_REGION_OUTPUT : SWEPT_VIEW_OUTPUT);
     };
-    material.customProgramCacheKey = () => `breakline-swept-barrel-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}`;
+    material.customProgramCacheKey = () => `breakline-swept-barrel-authored-mask-${this.look}${this.currentView ? `-view-${this.currentView}` : ''}`;
     this.mesh = new Mesh(geometry, material);
     this.mesh.frustumCulled = false;
     this.mesh.visible = false;
@@ -420,6 +431,7 @@ export class SweptBarrelMesh {
     (this.positions.array as Float32Array).set(loft.positions.subarray(0, 3 * vertices));
     (this.normals.array as Float32Array).set(loft.normals.subarray(0, 3 * vertices));
     (this.lift.array as Float32Array).set(loft.lift.subarray(0, vertices));
+    (this.mask.array as Float32Array).set(loft.mask.subarray(0, vertices));
     (this.sheet.array as Float32Array).set(loft.sheet.subarray(0, vertices));
     (this.sheetBack.array as Float32Array).set(loft.sheetBack.subarray(0, vertices));
     // Each slice's back wall, the same for all its vertices.
@@ -520,7 +532,7 @@ export class SweptBarrelMesh {
       attribute.addUpdateRange(0, 3 * vertices);
       attribute.needsUpdate = true;
     }
-    for (const attribute of [this.lift, this.sheet, this.sheetWeight, this.sheetBack]) {
+    for (const attribute of [this.lift, this.mask, this.sheet, this.sheetWeight, this.sheetBack]) {
       attribute.clearUpdateRanges();
       attribute.addUpdateRange(0, vertices);
       attribute.needsUpdate = true;

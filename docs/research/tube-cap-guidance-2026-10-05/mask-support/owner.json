@@ -1,0 +1,62 @@
+{
+  "schema": "matched-mask-support-owner/v1",
+  "complete": true,
+  "firstFailure": null,
+  "protectedBefore": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4315": [
+      "87796 Mon Oct  5 15:00:00 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "protected4315ExpectedPid": 87796,
+  "protected4315RootToolSession": "64713",
+  "toolSessionOSIdentityClaim": false,
+  "sealSha256": "b9af9a81d9340f7b630af74ed0ed681980a3a84bd7d48681d08933d0591b67a3",
+  "preExecutionPinsVerified": true,
+  "postExecutionPinsVerified": true,
+  "cleanupFailures": [],
+  "pid": 1614,
+  "ownedProcessGroup": 1614,
+  "exitCode": 0,
+  "observation": {
+    "steps": 0,
+    "pngCount": 4,
+    "exactPriorFull37RawFrontAndCurrentActualDrawingGuardsVerified": true,
+    "exactFixedSideAndInteriorCamerasVerified": true,
+    "bothMaskedRepeatsPixelExact": true,
+    "onlySweptDiscardRemoved": true,
+    "ordinaryWaterDepthStencilParameterGuardsVerified": true,
+    "visualCauseOrProductionAdoptionClaim": false
+  },
+  "ownedMembersBeforeCleanup": [],
+  "ownedMembersAfterCleanup": [],
+  "protectedAfter": {
+    "4312": [
+      "92445 Sun Oct  4 23:17:08 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4313": [
+      "58298 Mon Oct  5 01:49:12 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4314": [
+      "51358 Mon Oct  5 13:02:44 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ],
+    "4315": [
+      "87796 Mon Oct  5 15:00:00 2026     /opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python"
+    ]
+  },
+  "protectedPreserved": true,
+  "closedPorts": {
+    "4301": true,
+    "9711": true
+  },
+  "cleanupElapsedSeconds": 0.7195345000363886,
+  "elapsedSeconds": 194.3078958329861
+}

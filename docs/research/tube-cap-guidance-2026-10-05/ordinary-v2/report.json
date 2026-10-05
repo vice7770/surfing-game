@@ -1,0 +1,1950 @@
+{
+  "schema": "guided-ordinary-native/v2",
+  "complete": true,
+  "firstFailure": null,
+  "sealSha256": "5d9fbcc8ede3bc8db44f9d9301319a2c84e9bbfc0dc54089fdaa353a2aa5d193",
+  "applicationBuild": {
+    "file": "/private/tmp/tube-guided-ordinary-v2-native-20261005/build.json",
+    "bytes": 30471,
+    "sha256": "7c6ce70375f88c1da96d0153480cabf7399f7182cffab395f5c347f56eb22968"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-guided-ordinary-v2-native-20261005/source-freeze.json",
+    "bytes": 19166,
+    "sha256": "7cb32b04f873c9c28d19d75fcfed239847051f31e0b5e7a95b95e57c11da25e1"
+  },
+  "diagnosticBuild": {
+    "file": "/private/tmp/tube-guided-ordinary-v2-native-20261005/diagnostic-build.json",
+    "bytes": 16724,
+    "sha256": "03bc70291cde78a7098e0254a4726e09f396fdc108a924cde17e4aac5e7743ff"
+  },
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "pilot": {
+    "style": "tube",
+    "waitOutside": 5,
+    "rise": 1,
+    "lineDegrees": 60,
+    "giveUp": 30,
+    "stall": false
+  },
+  "limits": {
+    "steps": 1800,
+    "wallSeconds": 660,
+    "nativeSeconds": 640,
+    "ownerSeconds": 650,
+    "detectorMilliseconds": 120000,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "loftBytesEach": 6291456,
+    "loftBytesTotal": 25165824,
+    "traceBytes": 67108864,
+    "reportBytes": 2097152
+  },
+  "criteria": {
+    "minimumBothRowMouthGap": 1.2,
+    "continuousContainedSeconds": 1,
+    "relativeProgressMetres": 3,
+    "standingAfterExitSeconds": 1,
+    "fixedStepSeconds": 0.016666666666666666,
+    "singleAttempt": true,
+    "requireObservedStandingOutsideBeforeEntry": true,
+    "requireObservedPartialBeforeEntry": true
+  },
+  "policy": {
+    "ordinaryPublicInputs": true,
+    "publicMenuStartup": true,
+    "diagnosticSeedRestart": true,
+    "normalMenuSeedReachabilityClaim": false,
+    "noPlacement": true,
+    "noRetry": true,
+    "noPilotGo": true,
+    "noPrivateCueClock": true,
+    "noProneSteerZeroOverlay": true,
+    "noPostureCompressionTrimOverlay": true,
+    "tubeGuideForwarded": true,
+    "normalFollowerOnly": true,
+    "singleAttempt": true,
+    "noSeedOrCameraSearch": true,
+    "ordinaryWaterFallbackOnlyUndefinedOutsideAllIndexedCrossings": true,
+    "ordinaryWaterWholeRadiusFootprintRawNodeBound": true,
+    "cavityStillRequiresDefinedLoftAir": true,
+    "authoredSnapshotTrackDelayPreserved": true,
+    "maximumVisualInterpolationLagSeconds": 0.016666766666666666,
+    "displayedPointsAdditionallyClassified": true,
+    "uniqueAcceptanceWitnessCount": 21
+  },
+  "menuSeedReachability": {
+    "evaluated": false,
+    "reason": "One predeclared seed6238 public diagnostic restart after ordinary menu/HUD startup; no menu-seed trajectory search or actor placement."
+  },
+  "stepCount": 1535,
+  "traceBytes": 8744774,
+  "checkpoints": [
+    {
+      "label": "initial",
+      "step": 0,
+      "seaTime": 276.3293560552737,
+      "current": {
+        "step": 0,
+        "seaTime": 276.3293560552737,
+        "visualPoseTime": 276.3293560552737,
+        "interpolationLag": 0,
+        "physicalSeconds": 0,
+        "initialResets": 0,
+        "riderPoints": [
+          -49.994895376366614,
+          1.5803086638891037,
+          -271.5681943474821,
+          -49.994895376366614,
+          1.6559038735871818,
+          -271.1281943474821,
+          -49.994895376366614,
+          1.805740525369383,
+          -270.79819434748214,
+          -49.74687865264968,
+          1.5159939704742273,
+          -271.1189165866059,
+          -50.249928280109366,
+          1.5326789373529581,
+          -271.1204760119371,
+          -49.84289537636662,
+          1.4800578384281706,
+          -272.5751943474822,
+          -50.14689537636661,
+          1.4800578384281706,
+          -272.5751943474822
+        ],
+        "riderWords": [
+          0,
+          0,
+          1,
+          -4.35570919491357e-19,
+          0,
+          -49.998981668862214,
+          1.4364241650285066,
+          -271.873787605353,
+          1,
+          0,
+          1,
+          0
+        ],
+        "boardPose": [
+          -50,
+          1.4788478128777949,
+          -271.09137870490895,
+          -0.04657276978326883,
+          -0.0007755052936279339,
+          -0.016631095575452233,
+          0.9987761422692347,
+          1
+        ],
+        "ride": {
+          "phase": "prone",
+          "speed": 2.050225068895419,
+          "boardSpeed": 2.120040362702959,
+          "cue": false,
+          "popUp": {
+            "outcome": "none",
+            "duration": 0,
+            "landingPeak": 0,
+            "frontShare": 0
+          },
+          "separation": null,
+          "resets": 0,
+          "balance": 1,
+          "bank": 0,
+          "wave": {
+            "valid": true,
+            "directionX": 0,
+            "directionZ": 1,
+            "aheadOfCrest": -1.5671161123588675,
+            "crestSpeed": 0,
+            "faceHeight": 2.539606482413471,
+            "faceFraction": 0.9655299848980522,
+            "crestBreaking": 0,
+            "curlDistance": null,
+            "curlSide": 0,
+            "speedOverGround": 2.050225068895419,
+            "speedShoreward": 2.034409815450815,
+            "speedAlongCrest": 0.2541643876010291,
+            "requiredSpeed": null
+          },
+          "tubeApproach": null,
+          "tubeBody": null,
+          "breath": 1
+        },
+        "compute": "gpu",
+        "workerStepMs": 24.30000001192093,
+        "displayedBoard": {
+          "position": [
+            -50,
+            1.4788478128777949,
+            -271.09137870490895
+          ],
+          "quaternion": [
+            -0.04657276978326883,
+            -0.0007755052936279339,
+            -0.016631095575452233,
+            0.9987761422692347
+          ]
+        },
+        "displayedRiderPoints": [
+          -49.994895376366614,
+          1.5803086638891037,
+          -271.5681943474821,
+          -49.994895376366614,
+          1.6559038735871818,
+          -271.1281943474821,
+          -49.994895376366614,
+          1.805740525369383,
+          -270.79819434748214,
+          -49.74687865264968,
+          1.5159939704742273,
+          -271.1189165866059,
+          -50.249928280109366,
+          1.5326789373529581,
+          -271.1204760119371,
+          -49.84289537636662,
+          1.4800578384281706,
+          -272.5751943474822,
+          -50.14689537636661,
+          1.4800578384281706,
+          -272.5751943474822
+        ],
+        "displayedRiderPhaseIndex": 0,
+        "displayedRiderPhase": "prone",
+        "displayedRiderPresent": 1,
+        "clocks": {
+          "workerSeaTime": 276.3293560552737,
+          "visualClock": 276.3293560552737,
+          "waterTime": 276.3293560552737,
+          "surfaceRevision": 4
+        },
+        "loft": {
+          "slices": 81,
+          "vertices": 10854,
+          "indices": 62244
+        },
+        "cameraFollower": {
+          "policy": "public-authored-follower-mirror/v1",
+          "view": "front",
+          "activeLab": false,
+          "normalHudPause": true,
+          "calls": 2,
+          "positiveDtCalls": 0,
+          "zeroDtCalls": 2,
+          "exactPositionQuaternionMatch": true,
+          "actualDrawnFollowTargetMatch": true,
+          "publishedClockBodyWordsUnchangedByCamera": true,
+          "mirrorUsesOrdinaryHostHeightReads": true,
+          "last": {
+            "dt": 0,
+            "seaTime": 276.3293560552737,
+            "followPosition": [
+              -50,
+              1.4788478128777949,
+              -271.09137870490895
+            ],
+            "follows": "drawn-board"
+          },
+          "position": [
+            -55,
+            4.978847812877795,
+            -262.09137870490895
+          ],
+          "quaternion": [
+            -0.10613155169903152,
+            -0.17537037421567395,
+            -0.019019725070247278,
+            0.9785803879291994
+          ],
+          "scope": "Public authored camera execution/pose and recorded physics words; no full renderer-internal nonmutation claim"
+        },
+        "pilot": {
+          "state": "position",
+          "outcome": null,
+          "attempts": 0,
+          "rideTime": 0,
+          "phase": ""
+        }
+      },
+      "sequence": {
+        "observedStandingOutside": false,
+        "partialFronts": [],
+        "entry": null,
+        "travel": null,
+        "exitIntent": null,
+        "exit": null,
+        "standingAfterExitSeconds": 0,
+        "stop": null,
+        "accepted": false,
+        "uniqueWitnessCount": 21,
+        "currentModelWitnessCount": 14,
+        "additionalDisplayedPointCount": 7,
+        "bothCurrentAndDisplayedStandingRequired": true,
+        "modelPartSpheresAndRenderWitnessesOnly": true,
+        "completeSkinnedBodyOrCapsuleClaim": false,
+        "controllerCueNotContainmentAuthority": true,
+        "normalInterpolationPreserved": true
+      },
+      "nonmutation": {
+        "unchanged": true,
+        "checkedLoftArrays": 37,
+        "checkedBoardWords": 8,
+        "checkedRiderWords": 33,
+        "checkedRawFrontWords": 333,
+        "checkedOrdinarySurfaceWords": 203826,
+        "checkedTubeWords": 0,
+        "checkedDrawnBoardWords": 8,
+        "checkedDrawnRiderWords": 33,
+        "ordinaryGridAndSurfaceChecked": true,
+        "normalDrawnArraysAndVisualClockChecked": true,
+        "exactActiveBytesCompared": true,
+        "normalFollowerChecked": true
+      },
+      "png": {
+        "file": "00-initial.png",
+        "bytes": 2444374,
+        "sha256": "9dfdc76d2e924a9e0a267fa44db04e0b0ef90a6202bf082ed40e4d002b9920dc"
+      },
+      "loft": {
+        "file": "loft-initial.json",
+        "bytes": 1219847,
+        "sha256": "247619a85a34ea61ae0d0802b7692fa82853ea664959b17abe47940e45ecb4f5"
+      }
+    },
+    {
+      "label": "terminal",
+      "step": 1535,
+      "seaTime": 301.9126893886056,
+      "current": {
+        "step": 1535,
+        "seaTime": 301.9126893886056,
+        "visualPoseTime": 301.8960227219387,
+        "interpolationLag": 0.016666666666878882,
+        "physicalSeconds": 25.583333333333332,
+        "initialResets": 0,
+        "riderPoints": [
+          -33.751278786784,
+          0.8720720403301292,
+          -239.9768654257543,
+          -33.64639040133916,
+          1.1754732094652114,
+          -240.1076541269683,
+          -33.52374637292839,
+          1.5104548714925767,
+          -240.26527940540643,
+          -33.9641270306584,
+          1.1759791544546279,
+          -240.2841284265659,
+          -33.38950614446351,
+          1.1675539783797755,
+          -239.85065653097087,
+          -34.030614422369354,
+          0.4676729753455869,
+          -239.85709889001933,
+          -33.791196749985076,
+          0.4656174767774417,
+          -239.67582106629018
+        ],
+        "riderWords": [
+          5,
+          0,
+          1,
+          -0.6082424520576709,
+          0,
+          -33.84085995632297,
+          0.8159196320068777,
+          -239.80202234191188,
+          1,
+          5,
+          0.9991050402673175,
+          0
+        ],
+        "boardPose": [
+          -33.689025267564716,
+          1.5716609943891096,
+          -239.9426129207696,
+          -0.7706209861762677,
+          -0.11228992081584428,
+          -0.2222978376128415,
+          0.5866156669750158,
+          1
+        ],
+        "ride": {
+          "phase": "fallen",
+          "speed": 2.2003333050347234,
+          "boardSpeed": 3.2045756279765643,
+          "cue": false,
+          "popUp": {
+            "outcome": "none",
+            "duration": 0,
+            "landingPeak": 0,
+            "frontShare": 0
+          },
+          "separation": "lost board",
+          "resets": 0,
+          "balance": 0,
+          "bank": 0,
+          "wave": {
+            "valid": true,
+            "directionX": 0.07032346894705696,
+            "directionZ": 0.9975242401642439,
+            "aheadOfCrest": 4.426685357908163,
+            "crestSpeed": 7.606429353309832,
+            "faceHeight": 3.598382329631537,
+            "faceFraction": 0.8044707738936171,
+            "crestBreaking": 0,
+            "curlDistance": null,
+            "curlSide": 0,
+            "speedOverGround": 2.411646546024297,
+            "speedShoreward": 2.3596905010484592,
+            "speedAlongCrest": 0.49789537275675666,
+            "requiredSpeed": 19.503193481670547
+          },
+          "tubeApproach": null,
+          "tubeBody": null,
+          "breath": 0.9991050402673175
+        },
+        "compute": "gpu",
+        "workerStepMs": 33.5,
+        "displayedBoard": {
+          "position": [
+            -33.642620666842994,
+            1.4989564414485474,
+            -240.07988920076485
+          ],
+          "quaternion": [
+            -0.7698906158347333,
+            -0.1085707493034719,
+            -0.22383404204033738,
+            0.587689674632099
+          ]
+        },
+        "displayedRiderPoints": [
+          -33.799952673748756,
+          0.8419483507988623,
+          -240.00222490969534,
+          -33.6282575407566,
+          1.1887215354981513,
+          -240.22489905594858,
+          -33.455021766259414,
+          1.4033756824557226,
+          -240.45998198992206,
+          -33.587508726167165,
+          1.1687725611797273,
+          -239.68550827690083,
+          -33.86606502035517,
+          1.837364512782321,
+          -240.33363779283368,
+          -34.03308985310243,
+          0.006195368946532803,
+          -239.45966870345165,
+          -34.28324167327229,
+          0.019454701696800428,
+          -239.63190185055382
+        ],
+        "displayedRiderPhaseIndex": 0,
+        "displayedRiderPhase": "prone",
+        "displayedRiderPresent": 1,
+        "clocks": {
+          "workerSeaTime": 301.9126893886056,
+          "visualClock": 301.8960227219387,
+          "waterTime": 301.9126893886056,
+          "surfaceRevision": 1539
+        },
+        "loft": {
+          "slices": 201,
+          "vertices": 26934,
+          "indices": 155610
+        },
+        "cameraFollower": {
+          "policy": "public-authored-follower-mirror/v1",
+          "view": "front",
+          "activeLab": false,
+          "normalHudPause": true,
+          "calls": 13688,
+          "positiveDtCalls": 1535,
+          "zeroDtCalls": 12153,
+          "exactPositionQuaternionMatch": true,
+          "actualDrawnFollowTargetMatch": true,
+          "publishedClockBodyWordsUnchangedByCamera": true,
+          "mirrorUsesOrdinaryHostHeightReads": true,
+          "last": {
+            "dt": 0,
+            "seaTime": 301.9126893886056,
+            "followPosition": [
+              -33.642620666842994,
+              1.4989564414485474,
+              -240.07988920076485
+            ],
+            "follows": "drawn-board"
+          },
+          "position": [
+            -38.63974199732209,
+            2.9620282415447803,
+            -231.06612793719208
+          ],
+          "quaternion": [
+            -0.06610149000395728,
+            -0.1637980976464197,
+            -0.01100094493715139,
+            0.9842152993309748
+          ],
+          "scope": "Public authored camera execution/pose and recorded physics words; no full renderer-internal nonmutation claim"
+        },
+        "pilot": {
+          "state": "go",
+          "outcome": null,
+          "attempts": 1,
+          "rideTime": 0,
+          "phase": ""
+        }
+      },
+      "sequence": {
+        "observedStandingOutside": false,
+        "partialFronts": [],
+        "entry": null,
+        "travel": null,
+        "exitIntent": null,
+        "exit": null,
+        "standingAfterExitSeconds": 0,
+        "stop": {
+          "kind": "actual-fall-or-separation",
+          "step": 1535,
+          "seaTime": 301.9126893886056,
+          "visualPoseTime": 301.8960227219387,
+          "interpolationLag": 0.016666666666878882,
+          "displayedRiderPhase": "prone",
+          "boardPose": [
+            -33.689025267564716,
+            1.5716609943891096,
+            -239.9426129207696,
+            -0.7706209861762677,
+            -0.11228992081584428,
+            -0.2222978376128415,
+            0.5866156669750158,
+            1
+          ],
+          "pilotPhase": "",
+          "witnessClass": null,
+          "renderedWitnessClass": null,
+          "unionWitnessClass": null
+        },
+        "accepted": false,
+        "uniqueWitnessCount": 21,
+        "currentModelWitnessCount": 14,
+        "additionalDisplayedPointCount": 7,
+        "bothCurrentAndDisplayedStandingRequired": true,
+        "modelPartSpheresAndRenderWitnessesOnly": true,
+        "completeSkinnedBodyOrCapsuleClaim": false,
+        "controllerCueNotContainmentAuthority": true,
+        "normalInterpolationPreserved": true
+      },
+      "nonmutation": {
+        "unchanged": true,
+        "checkedLoftArrays": 37,
+        "checkedBoardWords": 8,
+        "checkedRiderWords": 33,
+        "checkedRawFrontWords": 630,
+        "checkedOrdinarySurfaceWords": 203826,
+        "checkedTubeWords": 0,
+        "checkedDrawnBoardWords": 8,
+        "checkedDrawnRiderWords": 33,
+        "ordinaryGridAndSurfaceChecked": true,
+        "normalDrawnArraysAndVisualClockChecked": true,
+        "exactActiveBytesCompared": true,
+        "normalFollowerChecked": true
+      },
+      "png": {
+        "file": "01-terminal.png",
+        "bytes": 2270243,
+        "sha256": "78488c932a164a435f3f1e6343630a6df5bed38cc656a087b153d52b6af7bb8d"
+      },
+      "loft": {
+        "file": "loft-terminal.json",
+        "bytes": 3022311,
+        "sha256": "3c94609ae36f779d1ac3f04cd3269eb68f696558f3157c1675b62ad50ae656dc"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "00-initial.png",
+      "bytes": 2444374,
+      "sha256": "9dfdc76d2e924a9e0a267fa44db04e0b0ef90a6202bf082ed40e4d002b9920dc"
+    },
+    {
+      "file": "loft-initial.json",
+      "bytes": 1219847,
+      "sha256": "247619a85a34ea61ae0d0802b7692fa82853ea664959b17abe47940e45ecb4f5"
+    },
+    {
+      "file": "01-terminal.png",
+      "bytes": 2270243,
+      "sha256": "78488c932a164a435f3f1e6343630a6df5bed38cc656a087b153d52b6af7bb8d"
+    },
+    {
+      "file": "loft-terminal.json",
+      "bytes": 3022311,
+      "sha256": "3c94609ae36f779d1ac3f04cd3269eb68f696558f3157c1675b62ad50ae656dc"
+    },
+    {
+      "file": "steps.ndjson",
+      "bytes": 8744774,
+      "sha256": "868735d72380daad88155384225d4ba86f4113a553235ae422c1fb5061111b2c"
+    }
+  ],
+  "browserErrors": [],
+  "pngCount": 2,
+  "pngBytes": 4714617,
+  "loftBytes": 4242158,
+  "sequence": {
+    "observedStandingOutside": false,
+    "partialFronts": [],
+    "entry": null,
+    "travel": null,
+    "exitIntent": null,
+    "exit": null,
+    "standingAfterExitSeconds": 0,
+    "stop": {
+      "kind": "actual-fall-or-separation",
+      "step": 1535,
+      "seaTime": 301.9126893886056,
+      "visualPoseTime": 301.8960227219387,
+      "interpolationLag": 0.016666666666878882,
+      "displayedRiderPhase": "prone",
+      "boardPose": [
+        -33.689025267564716,
+        1.5716609943891096,
+        -239.9426129207696,
+        -0.7706209861762677,
+        -0.11228992081584428,
+        -0.2222978376128415,
+        0.5866156669750158,
+        1
+      ],
+      "pilotPhase": "",
+      "witnessClass": null,
+      "renderedWitnessClass": null,
+      "unionWitnessClass": null
+    },
+    "accepted": false,
+    "uniqueWitnessCount": 21,
+    "currentModelWitnessCount": 14,
+    "additionalDisplayedPointCount": 7,
+    "bothCurrentAndDisplayedStandingRequired": true,
+    "modelPartSpheresAndRenderWitnessesOnly": true,
+    "completeSkinnedBodyOrCapsuleClaim": false,
+    "controllerCueNotContainmentAuthority": true,
+    "normalInterpolationPreserved": true
+  },
+  "stop": {
+    "kind": "actual-fall-or-separation",
+    "step": 1535,
+    "seaTime": 301.9126893886056,
+    "visualPoseTime": 301.8960227219387,
+    "interpolationLag": 0.016666666666878882,
+    "displayedRiderPhase": "prone",
+    "boardPose": [
+      -33.689025267564716,
+      1.5716609943891096,
+      -239.9426129207696,
+      -0.7706209861762677,
+      -0.11228992081584428,
+      -0.2222978376128415,
+      0.5866156669750158,
+      1
+    ],
+    "pilotPhase": "",
+    "witnessClass": null,
+    "renderedWitnessClass": null,
+    "unionWitnessClass": null
+  },
+  "limitations": [
+    "Acceptance covers seven current published render witnesses, seven current equivalent-volume physics spheres, and seven actual delayed displayed points against current indexed drawing geometry. The second classifier repeats the current spheres; the unique union is21. It does not enclose complete skin or limb segments.",
+    "Connected mesh component and unambiguous columns do not prove connected air volume, shader displacement, rendered visibility, or worker contact-force correctness.",
+    "Cues are recorded controller inputs; their bodyInCavity/fit/progress values are not independent acceptance.",
+    "Fixed-sigma mouth transport and mature1.20m pair are independent geometry observations; no finite full-board swept route proof or FPS/reference-quality acceptance.",
+    "Outside indexed coverage only, the normal host bilinear/carved water field is bounded over each full radius footprint by current raw snapshot nodes. This does not certify the distinct Rich cubic/displaced shader surface or skin/limb segments.",
+    "SnapshotTrack preserves its authored up-to-one-step delay. Displayed points use recorded visualPoseTime; current part spheres and drawn loft use worker seaTime. This conservative joint check is not a historical-water or post-inertia skin reconstruction."
+  ],
+  "menuStartup": {
+    "actualDomStartup": true,
+    "actions": [
+      {
+        "query": ".screen-menu button.tile-primary",
+        "label": "Surf",
+        "beforeScreen": "menu"
+      },
+      {
+        "query": ".spot-card",
+        "label": "Padang Padang",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Swell\"] button",
+        "label": "Big",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Tide\"] button",
+        "label": "Mid",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Wind\"] button",
+        "label": "Calm",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Time of day\"] button",
+        "label": "Midday",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".panel-footer button.button-primary",
+        "label": "Paddle out",
+        "beforeScreen": "surf"
+      }
+    ],
+    "rideObserved": false,
+    "popupNotForced": true,
+    "normalSpawnPreserved": true,
+    "normalPhysicalStartup": true,
+    "initialModeClock": 20.125,
+    "lastAttempt": {
+      "query": ".panel-footer button.button-primary",
+      "label": "Paddle out",
+      "beforeScreen": "surf",
+      "queriedButtonCount": 1,
+      "matchingButtonCount": 1,
+      "queriedButtons": [
+        {
+          "text": "Paddle out",
+          "tag": "BUTTON",
+          "disabled": false,
+          "ariaDisabled": null,
+          "ariaPressed": null
+        }
+      ],
+      "matchingButtons": [
+        {
+          "text": "Paddle out",
+          "tag": "BUTTON",
+          "disabled": false,
+          "ariaDisabled": null,
+          "ariaPressed": null
+        }
+      ],
+      "groupInventory": [
+        {
+          "ariaLabel": "Swell",
+          "buttons": [
+            {
+              "text": "Practice",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Small",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Medium",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Big",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Tide",
+          "buttons": [
+            {
+              "text": "Low",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Mid",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "High",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Wind",
+          "buttons": [
+            {
+              "text": "Offshore",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Calm",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Onshore",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Time of day",
+          "buttons": [
+            {
+              "text": "Dawn",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Midday",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Sunset",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Surfer",
+          "buttons": [
+            {
+              "text": "Woman",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Man",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Look",
+          "buttons": [
+            {
+              "text": "1",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "2",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Outfit",
+          "buttons": [
+            {
+              "text": "Full suit",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Spring suit",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Vest and bikini",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Colour",
+          "buttons": [
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Board",
+          "buttons": [
+            {
+              "text": "Classic",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Sunset fade",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Sea glass",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Midnight",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Coral rail",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        }
+      ],
+      "inventoryTruncated": false
+    },
+    "selectedConditionScopes": [
+      {
+        "group": "Swell",
+        "query": ".choice-row .segmented[aria-label=\"Swell\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Big"
+        ]
+      },
+      {
+        "group": "Tide",
+        "query": ".choice-row .segmented[aria-label=\"Tide\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Mid"
+        ]
+      },
+      {
+        "group": "Wind",
+        "query": ".choice-row .segmented[aria-label=\"Wind\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Calm"
+        ]
+      },
+      {
+        "group": "Time of day",
+        "query": ".choice-row .segmented[aria-label=\"Time of day\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Midday"
+        ]
+      }
+    ],
+    "selectedChoices": [
+      "Padang Padang",
+      "Big",
+      "Mid",
+      "Calm",
+      "Midday"
+    ]
+  },
+  "applicationBuildRequest": {
+    "build": "tube-guided-ordinary-20261005",
+    "status": 200,
+    "checkedBeforeReplayAndStepping": true
+  },
+  "normalMenuBeforeReplay": {
+    "config": {
+      "spot": "padang",
+      "seed": 1669,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "seaTime": 569.1229172588502,
+    "boardPose": [
+      -50,
+      0.22486708048152515,
+      -271.09137870490895,
+      0.03520741704451537,
+      0.00036939404346206695,
+      -0.010484855677730257,
+      0.9993249567255446,
+      1
+    ],
+    "riderWords": [
+      -49.99678308677067,
+      0.3796098758824289,
+      -271.5437495485813,
+      -49.99678308677067,
+      0.455205085580507,
+      -271.1037495485813,
+      -49.99678308677067,
+      0.6050417373627083,
+      -270.7737495485813,
+      -49.747384937864354,
+      0.26910973828504003,
+      -271.1122786104031,
+      -50.250602804036454,
+      0.27964417831960353,
+      -271.1115354059903,
+      -49.844783086770676,
+      0.27935905042149556,
+      -272.55074954858134,
+      -50.14878308677066,
+      0.27935905042149556,
+      -272.55074954858134,
+      0,
+      0,
+      1,
+      0,
+      0,
+      -49.999358251823395,
+      0.3104717774107809,
+      -271.87024705990365,
+      1,
+      0,
+      1,
+      0
+    ]
+  },
+  "replayStartup": {
+    "api": "breaklineDiagnostics.start",
+    "publicStartCalls": 1,
+    "overrides": {
+      "seed": 6238,
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "diagnosticOnly": true,
+    "noPlacementOrPrivateClockAssignment": true
+  },
+  "initial": {
+    "menu": {
+      "actualDomStartup": true,
+      "actions": [
+        {
+          "query": ".screen-menu button.tile-primary",
+          "label": "Surf",
+          "beforeScreen": "menu"
+        },
+        {
+          "query": ".spot-card",
+          "label": "Padang Padang",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Swell\"] button",
+          "label": "Big",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Tide\"] button",
+          "label": "Mid",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Wind\"] button",
+          "label": "Calm",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Time of day\"] button",
+          "label": "Midday",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".panel-footer button.button-primary",
+          "label": "Paddle out",
+          "beforeScreen": "surf"
+        }
+      ],
+      "rideObserved": true,
+      "popupNotForced": true,
+      "normalSpawnPreserved": true,
+      "normalPhysicalStartup": true,
+      "initialModeClock": 20.125,
+      "lastAttempt": {
+        "query": ".panel-footer button.button-primary",
+        "label": "Paddle out",
+        "beforeScreen": "surf",
+        "queriedButtonCount": 1,
+        "matchingButtonCount": 1,
+        "queriedButtons": [
+          {
+            "text": "Paddle out",
+            "tag": "BUTTON",
+            "disabled": false,
+            "ariaDisabled": null,
+            "ariaPressed": null
+          }
+        ],
+        "matchingButtons": [
+          {
+            "text": "Paddle out",
+            "tag": "BUTTON",
+            "disabled": false,
+            "ariaDisabled": null,
+            "ariaPressed": null
+          }
+        ],
+        "groupInventory": [
+          {
+            "ariaLabel": "Swell",
+            "buttons": [
+              {
+                "text": "Practice",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Small",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Medium",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Big",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Tide",
+            "buttons": [
+              {
+                "text": "Low",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Mid",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "High",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Wind",
+            "buttons": [
+              {
+                "text": "Offshore",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Calm",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Onshore",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Time of day",
+            "buttons": [
+              {
+                "text": "Dawn",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Midday",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Sunset",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Surfer",
+            "buttons": [
+              {
+                "text": "Woman",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Man",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Look",
+            "buttons": [
+              {
+                "text": "1",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "2",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Outfit",
+            "buttons": [
+              {
+                "text": "Full suit",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Spring suit",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Vest and bikini",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Colour",
+            "buttons": [
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Board",
+            "buttons": [
+              {
+                "text": "Classic",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Sunset fade",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Sea glass",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Midnight",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Coral rail",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          }
+        ],
+        "inventoryTruncated": false
+      },
+      "selectedConditionScopes": [
+        {
+          "group": "Swell",
+          "query": ".choice-row .segmented[aria-label=\"Swell\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Big"
+          ]
+        },
+        {
+          "group": "Tide",
+          "query": ".choice-row .segmented[aria-label=\"Tide\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Mid"
+          ]
+        },
+        {
+          "group": "Wind",
+          "query": ".choice-row .segmented[aria-label=\"Wind\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Calm"
+          ]
+        },
+        {
+          "group": "Time of day",
+          "query": ".choice-row .segmented[aria-label=\"Time of day\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Midday"
+          ]
+        }
+      ],
+      "selectedChoices": [
+        "Padang Padang",
+        "Big",
+        "Mid",
+        "Calm",
+        "Midday"
+      ],
+      "rideClockAtObserver": 569.1229172588502,
+      "outstandingAtObserver": 0,
+      "normalRideView": "front",
+      "pauseButtonInventory": {
+        "query": ".ride-hud button.hud-pause",
+        "count": 1,
+        "buttons": [
+          {
+            "disabled": false,
+            "ariaLabel": "Pause"
+          }
+        ]
+      },
+      "normalHudPaused": true,
+      "activeLabDisabled": true
+    },
+    "config": {
+      "spot": "padang",
+      "seed": 6238,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "seaTime": 276.3293560552737,
+    "compute": "gpu",
+    "canvas": [
+      1708,
+      879
+    ]
+  },
+  "initialBody": {
+    "step": 0,
+    "seaTime": 276.3293560552737,
+    "visualPoseTime": 276.3293560552737,
+    "interpolationLag": 0,
+    "physicalSeconds": 0,
+    "initialResets": 0,
+    "riderPoints": [
+      -49.994895376366614,
+      1.5803086638891037,
+      -271.5681943474821,
+      -49.994895376366614,
+      1.6559038735871818,
+      -271.1281943474821,
+      -49.994895376366614,
+      1.805740525369383,
+      -270.79819434748214,
+      -49.74687865264968,
+      1.5159939704742273,
+      -271.1189165866059,
+      -50.249928280109366,
+      1.5326789373529581,
+      -271.1204760119371,
+      -49.84289537636662,
+      1.4800578384281706,
+      -272.5751943474822,
+      -50.14689537636661,
+      1.4800578384281706,
+      -272.5751943474822
+    ],
+    "riderWords": [
+      0,
+      0,
+      1,
+      -4.35570919491357e-19,
+      0,
+      -49.998981668862214,
+      1.4364241650285066,
+      -271.873787605353,
+      1,
+      0,
+      1,
+      0
+    ],
+    "boardPose": [
+      -50,
+      1.4788478128777949,
+      -271.09137870490895,
+      -0.04657276978326883,
+      -0.0007755052936279339,
+      -0.016631095575452233,
+      0.9987761422692347,
+      1
+    ],
+    "ride": {
+      "phase": "prone",
+      "speed": 2.050225068895419,
+      "boardSpeed": 2.120040362702959,
+      "cue": false,
+      "popUp": {
+        "outcome": "none",
+        "duration": 0,
+        "landingPeak": 0,
+        "frontShare": 0
+      },
+      "separation": null,
+      "resets": 0,
+      "balance": 1,
+      "bank": 0,
+      "wave": {
+        "valid": true,
+        "directionX": 0,
+        "directionZ": 1,
+        "aheadOfCrest": -1.5671161123588675,
+        "crestSpeed": 0,
+        "faceHeight": 2.539606482413471,
+        "faceFraction": 0.9655299848980522,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 2.050225068895419,
+        "speedShoreward": 2.034409815450815,
+        "speedAlongCrest": 0.2541643876010291,
+        "requiredSpeed": null
+      },
+      "tubeApproach": null,
+      "tubeBody": null,
+      "breath": 1
+    },
+    "compute": "gpu",
+    "workerStepMs": 24.30000001192093,
+    "displayedBoard": {
+      "position": [
+        -50,
+        1.4788478128777949,
+        -271.09137870490895
+      ],
+      "quaternion": [
+        -0.04657276978326883,
+        -0.0007755052936279339,
+        -0.016631095575452233,
+        0.9987761422692347
+      ]
+    },
+    "displayedRiderPoints": [
+      -49.994895376366614,
+      1.5803086638891037,
+      -271.5681943474821,
+      -49.994895376366614,
+      1.6559038735871818,
+      -271.1281943474821,
+      -49.994895376366614,
+      1.805740525369383,
+      -270.79819434748214,
+      -49.74687865264968,
+      1.5159939704742273,
+      -271.1189165866059,
+      -50.249928280109366,
+      1.5326789373529581,
+      -271.1204760119371,
+      -49.84289537636662,
+      1.4800578384281706,
+      -272.5751943474822,
+      -50.14689537636661,
+      1.4800578384281706,
+      -272.5751943474822
+    ],
+    "displayedRiderPhaseIndex": 0,
+    "displayedRiderPhase": "prone",
+    "displayedRiderPresent": 1,
+    "clocks": {
+      "workerSeaTime": 276.3293560552737,
+      "visualClock": 276.3293560552737,
+      "waterTime": 276.3293560552737,
+      "surfaceRevision": 4
+    },
+    "loft": {
+      "slices": 81,
+      "vertices": 10854,
+      "indices": 62244
+    },
+    "cameraFollower": {
+      "policy": "public-authored-follower-mirror/v1",
+      "view": "front",
+      "activeLab": false,
+      "normalHudPause": true,
+      "calls": 1,
+      "positiveDtCalls": 0,
+      "zeroDtCalls": 1,
+      "exactPositionQuaternionMatch": true,
+      "actualDrawnFollowTargetMatch": true,
+      "publishedClockBodyWordsUnchangedByCamera": true,
+      "mirrorUsesOrdinaryHostHeightReads": true,
+      "last": {
+        "dt": 0,
+        "seaTime": 276.3293560552737,
+        "followPosition": [
+          -50,
+          1.4788478128777949,
+          -271.09137870490895
+        ],
+        "follows": "drawn-board"
+      },
+      "position": [
+        -55,
+        4.978847812877795,
+        -262.09137870490895
+      ],
+      "quaternion": [
+        -0.10613155169903152,
+        -0.17537037421567395,
+        -0.019019725070247278,
+        0.9785803879291994
+      ],
+      "scope": "Public authored camera execution/pose and recorded physics words; no full renderer-internal nonmutation claim"
+    },
+    "pilot": {
+      "state": "position",
+      "outcome": null,
+      "attempts": 0,
+      "rideTime": 0,
+      "phase": ""
+    }
+  },
+  "terminalBody": {
+    "step": 1535,
+    "seaTime": 301.9126893886056,
+    "visualPoseTime": 301.8960227219387,
+    "interpolationLag": 0.016666666666878882,
+    "physicalSeconds": 25.583333333333332,
+    "initialResets": 0,
+    "riderPoints": [
+      -33.751278786784,
+      0.8720720403301292,
+      -239.9768654257543,
+      -33.64639040133916,
+      1.1754732094652114,
+      -240.1076541269683,
+      -33.52374637292839,
+      1.5104548714925767,
+      -240.26527940540643,
+      -33.9641270306584,
+      1.1759791544546279,
+      -240.2841284265659,
+      -33.38950614446351,
+      1.1675539783797755,
+      -239.85065653097087,
+      -34.030614422369354,
+      0.4676729753455869,
+      -239.85709889001933,
+      -33.791196749985076,
+      0.4656174767774417,
+      -239.67582106629018
+    ],
+    "riderWords": [
+      5,
+      0,
+      1,
+      -0.6082424520576709,
+      0,
+      -33.84085995632297,
+      0.8159196320068777,
+      -239.80202234191188,
+      1,
+      5,
+      0.9991050402673175,
+      0
+    ],
+    "boardPose": [
+      -33.689025267564716,
+      1.5716609943891096,
+      -239.9426129207696,
+      -0.7706209861762677,
+      -0.11228992081584428,
+      -0.2222978376128415,
+      0.5866156669750158,
+      1
+    ],
+    "ride": {
+      "phase": "fallen",
+      "speed": 2.2003333050347234,
+      "boardSpeed": 3.2045756279765643,
+      "cue": false,
+      "popUp": {
+        "outcome": "none",
+        "duration": 0,
+        "landingPeak": 0,
+        "frontShare": 0
+      },
+      "separation": "lost board",
+      "resets": 0,
+      "balance": 0,
+      "bank": 0,
+      "wave": {
+        "valid": true,
+        "directionX": 0.07032346894705696,
+        "directionZ": 0.9975242401642439,
+        "aheadOfCrest": 4.426685357908163,
+        "crestSpeed": 7.606429353309832,
+        "faceHeight": 3.598382329631537,
+        "faceFraction": 0.8044707738936171,
+        "crestBreaking": 0,
+        "curlDistance": null,
+        "curlSide": 0,
+        "speedOverGround": 2.411646546024297,
+        "speedShoreward": 2.3596905010484592,
+        "speedAlongCrest": 0.49789537275675666,
+        "requiredSpeed": 19.503193481670547
+      },
+      "tubeApproach": null,
+      "tubeBody": null,
+      "breath": 0.9991050402673175
+    },
+    "compute": "gpu",
+    "workerStepMs": 33.5,
+    "displayedBoard": {
+      "position": [
+        -33.642620666842994,
+        1.4989564414485474,
+        -240.07988920076485
+      ],
+      "quaternion": [
+        -0.7698906158347333,
+        -0.1085707493034719,
+        -0.22383404204033738,
+        0.587689674632099
+      ]
+    },
+    "displayedRiderPoints": [
+      -33.799952673748756,
+      0.8419483507988623,
+      -240.00222490969534,
+      -33.6282575407566,
+      1.1887215354981513,
+      -240.22489905594858,
+      -33.455021766259414,
+      1.4033756824557226,
+      -240.45998198992206,
+      -33.587508726167165,
+      1.1687725611797273,
+      -239.68550827690083,
+      -33.86606502035517,
+      1.837364512782321,
+      -240.33363779283368,
+      -34.03308985310243,
+      0.006195368946532803,
+      -239.45966870345165,
+      -34.28324167327229,
+      0.019454701696800428,
+      -239.63190185055382
+    ],
+    "displayedRiderPhaseIndex": 0,
+    "displayedRiderPhase": "prone",
+    "displayedRiderPresent": 1,
+    "clocks": {
+      "workerSeaTime": 301.9126893886056,
+      "visualClock": 301.8960227219387,
+      "waterTime": 301.9126893886056,
+      "surfaceRevision": 1539
+    },
+    "loft": {
+      "slices": 201,
+      "vertices": 26934,
+      "indices": 155610
+    },
+    "cameraFollower": {
+      "policy": "public-authored-follower-mirror/v1",
+      "view": "front",
+      "activeLab": false,
+      "normalHudPause": true,
+      "calls": 13705,
+      "positiveDtCalls": 1535,
+      "zeroDtCalls": 12170,
+      "exactPositionQuaternionMatch": true,
+      "actualDrawnFollowTargetMatch": true,
+      "publishedClockBodyWordsUnchangedByCamera": true,
+      "mirrorUsesOrdinaryHostHeightReads": true,
+      "last": {
+        "dt": 0,
+        "seaTime": 301.9126893886056,
+        "followPosition": [
+          -33.642620666842994,
+          1.4989564414485474,
+          -240.07988920076485
+        ],
+        "follows": "drawn-board"
+      },
+      "position": [
+        -38.63974199732209,
+        2.9620282415447803,
+        -231.06612793719208
+      ],
+      "quaternion": [
+        -0.06610149000395728,
+        -0.1637980976464197,
+        -0.01100094493715139,
+        0.9842152993309748
+      ],
+      "scope": "Public authored camera execution/pose and recorded physics words; no full renderer-internal nonmutation claim"
+    },
+    "pilot": {
+      "state": "go",
+      "outcome": null,
+      "attempts": 1,
+      "rideTime": 0,
+      "phase": ""
+    }
+  },
+  "acceptedModelWitnessRide": false,
+  "ownedBrowserClose": true,
+  "elapsedMilliseconds": 467977.25666699995
+}

@@ -1,0 +1,40 @@
+{
+  "schema": "tube-shading-catch-verification/v1",
+  "terminalResults": {
+    "sceneTests": {
+      "files": 6,
+      "passed": 57
+    },
+    "earlyCrestAutopilotTests": {
+      "files": 1,
+      "passed": 43
+    },
+    "applicationBuild": {
+      "buildId": "tube-guided-early-crest-20261005",
+      "typescriptAndVitePassed": true
+    }
+  },
+  "scope": "Source/control and compiler verification. Native combined appearance and actual ordinary takeoff/entry/travel/exit remain pending.",
+  "files": [
+    {
+      "file": "application-build.log",
+      "bytes": 1328,
+      "sha256": "ef1c24e5376c8f3ca28e9fd95b9bfa76bc1487f90f5bda1136e2de7c8da3de6e"
+    },
+    {
+      "file": "authored-mask-proposal.patch",
+      "bytes": 17438,
+      "sha256": "52722936a24b713daccee8a94b7d75466537253f359a48e5772a3331c9f7a006"
+    },
+    {
+      "file": "early-crest-tests.log",
+      "bytes": 272,
+      "sha256": "aa22c2ee2263cf9ae05ffeaa88c2b832b10dca9e8304c971a9f39da4c8518456"
+    },
+    {
+      "file": "scene-tests.log",
+      "bytes": 508,
+      "sha256": "6c9abfee70050512c98e7721cab5d7668e94d95597014b1c5c125d592b4f4303"
+    }
+  ]
+}

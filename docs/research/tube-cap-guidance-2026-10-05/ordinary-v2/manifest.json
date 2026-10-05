@@ -1,0 +1,155 @@
+{
+  "schema": "tube-ordinary-v2-archive/v1",
+  "actualTerminalOwner": true,
+  "steps": 1535,
+  "physicalSeconds": 25.583333333333332,
+  "acceptedModelWitnessRide": false,
+  "scope": "Single public diagnostic seed6238 restart, normal spawn and ordinary controls; no cue or pop-up before prone lost-board separation. This does not test tube-controller riding or prove normal menu seed reachability.",
+  "files": [
+    {
+      "file": "00-initial.png",
+      "bytes": 2444374,
+      "sha256": "9dfdc76d2e924a9e0a267fa44db04e0b0ef90a6202bf082ed40e4d002b9920dc"
+    },
+    {
+      "file": "01-terminal.png",
+      "bytes": 2270243,
+      "sha256": "78488c932a164a435f3f1e6343630a6df5bed38cc656a087b153d52b6af7bb8d"
+    },
+    {
+      "file": "README.md",
+      "bytes": 7014,
+      "sha256": "dfdae488a8e7d3716627cba4d70ab518055855c809486c4ae48101c7720a84cc"
+    },
+    {
+      "file": "application-build.log",
+      "bytes": 1328,
+      "sha256": "34fef9c440c60faa32362fc730b186d84f819982cfc04400dc2229f0e439aabf"
+    },
+    {
+      "file": "autopilot-entry.ts",
+      "bytes": 106,
+      "sha256": "53ac3b67aa20c5e02025d6e2568c6d4b9b6a16e136ea7be586d4703947636335"
+    },
+    {
+      "file": "body-mesh.mjs",
+      "bytes": 17890,
+      "sha256": "994cdd47301e5a6eb388768b354a08fd4aeda7722d4de1c6d0de9f5fbc789a62"
+    },
+    {
+      "file": "build-diagnostic.mjs",
+      "bytes": 1874,
+      "sha256": "380db9f123d1609959f1e1b6c6ea7b7b510c90ccd9cdd050a3601970aaee4448"
+    },
+    {
+      "file": "build.json",
+      "bytes": 30471,
+      "sha256": "7c6ce70375f88c1da96d0153480cabf7399f7182cffab395f5c347f56eb22968"
+    },
+    {
+      "file": "control-policy.mjs",
+      "bytes": 883,
+      "sha256": "f4d8370743764637d891f630af3988370723d43c0d0ad8b4718736860b523af8"
+    },
+    {
+      "file": "criteria.mjs",
+      "bytes": 5854,
+      "sha256": "bbb1899475e8bbb88deab061f2d976b1428dd4e6eeb92629aaba6ec8e2744812"
+    },
+    {
+      "file": "diagnostic-build.json",
+      "bytes": 16724,
+      "sha256": "03bc70291cde78a7098e0254a4726e09f396fdc108a924cde17e4aac5e7743ff"
+    },
+    {
+      "file": "driver-diff.md",
+      "bytes": 2983,
+      "sha256": "81e1d79b1e78fb9d54b94dbeff6a6354c075177944237f94fb344634a58c3d25"
+    },
+    {
+      "file": "inputs.json",
+      "bytes": 3401,
+      "sha256": "d96e6e1472c67179d7ef4fe585cef87bdc7762798efe089c7d90798465c7f406"
+    },
+    {
+      "file": "loft-initial.json.gz",
+      "bytes": 266389,
+      "sha256": "a48d2eedb302cca7d0182b0a96b68dbdcc5ce7b0adaef3907db96ccc175ab445"
+    },
+    {
+      "file": "loft-snapshot-tools.mjs",
+      "bytes": 2995,
+      "sha256": "3abc33f1dba703ca03dad8c8aaa1d9a04b4673a9a71b3b0bf6f1931f84f70fd3"
+    },
+    {
+      "file": "loft-terminal.json.gz",
+      "bytes": 711693,
+      "sha256": "aa2ed8deb1b712b3b854d3a6438f40c17f93a707c6a7846360126f1e409f8cd0"
+    },
+    {
+      "file": "native.log",
+      "bytes": 5397,
+      "sha256": "fc0bc76ad33bfa94cfab39dd11fff025f90af79213ceb8dd119a4e341ffb1014"
+    },
+    {
+      "file": "native.mjs",
+      "bytes": 14482,
+      "sha256": "e214cbff21ab028055e557609633fb6ec6117cbd92a398082dd57024b5bb6386"
+    },
+    {
+      "file": "owner.json",
+      "bytes": 3762,
+      "sha256": "5ff70e8dac42393af5fba4f7ea15fb2f09f3e1cf25dc7f069a026f79cdf0a68c"
+    },
+    {
+      "file": "prepare-result.json",
+      "bytes": 769,
+      "sha256": "2146b19cfdf3cda5cc011d736d9d52164bd9a80e24c5e3467f263fa76b95a22b"
+    },
+    {
+      "file": "prepare.py",
+      "bytes": 4041,
+      "sha256": "724c92caf030b7939e40bd9f23aaa27a9034c4e0ff5befda10dea0451529e753"
+    },
+    {
+      "file": "report.json",
+      "bytes": 54680,
+      "sha256": "e40858d6bfe3ae5e93345d1bb5a6122634c133e9c507ae44916e94b46d40ab97"
+    },
+    {
+      "file": "rider-driver.mjs",
+      "bytes": 12947,
+      "sha256": "49164d75109cba0afa6d057ca3bfe96ad36f0483caa18d2810351d95a097792f"
+    },
+    {
+      "file": "run.py",
+      "bytes": 16339,
+      "sha256": "0e74c025a43fe0d1514e6f1b66222431915ba5fb536d8abb94cb2d8bc9628db8"
+    },
+    {
+      "file": "seal.json",
+      "bytes": 5045,
+      "sha256": "5d9fbcc8ede3bc8db44f9d9301319a2c84e9bbfc0dc54089fdaa353a2aa5d193"
+    },
+    {
+      "file": "source-freeze.json",
+      "bytes": 19166,
+      "sha256": "7cb32b04f873c9c28d19d75fcfed239847051f31e0b5e7a95b95e57c11da25e1"
+    },
+    {
+      "file": "steps.ndjson.gz",
+      "bytes": 1244145,
+      "sha256": "37f54404cc6a3d620b5f5ac40e2e800138069bbf61df9bedb4f982a904ec258f"
+    },
+    {
+      "file": "tube-guided-ordinary-analysis-20261005.json",
+      "bytes": 16369,
+      "sha256": "2c18185d0450bb1f8b69a18cd4d00db51f5c1fc22ae5921f55301a8bd46772a8"
+    },
+    {
+      "file": "tube-guided-ordinary-analysis-20261005.py",
+      "bytes": 18577,
+      "sha256": "e95d6937493c32952d6475724484128889a1de95e844c9dd030daf1dcc0ee343"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "matched-mask-support-preparation/v1",
+  "complete": true,
+  "seal": {
+    "file": "/private/tmp/tube-mask-support-native-20261005/seal.json",
+    "bytes": 17757,
+    "sha256": "b9af9a81d9340f7b630af74ed0ed681980a3a84bd7d48681d08933d0591b67a3"
+  },
+  "build": {
+    "file": "/private/tmp/tube-mask-support-native-20261005/build.json",
+    "bytes": 11063,
+    "sha256": "d5796d250807ffab3712b35fea7bd61077fec16b9fa2d66bdd83560e0e9636f6"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedChecksOrBuilds": false,
+  "liveSourcesWrittenOrFrozen": false
+}

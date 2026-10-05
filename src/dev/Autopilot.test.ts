@@ -135,6 +135,82 @@ describe('the take-off', () => {
   });
 });
 
+describe('the tube catch at the normal spawn', () => {
+  const STEP = 1 / 60;
+  const early = (overrides: Partial<AutopilotView> = {}) => view({
+    seaTime: 100, board: { x: 0, z: -6, heading: 0 }, crestBehind: 1.204, ...overrides,
+  });
+
+  it.each([
+    { heading: 0, curlSide: -1, expectedSteer: 1 },
+    { heading: 0, curlSide: 1, expectedSteer: -1 },
+    { heading: 35 * Math.PI / 180, curlSide: -1, expectedSteer: 0 },
+  ])('catches an already rising crest with ordinary take-off steering ($heading, $curlSide)', ({ heading, curlSide, expectedSteer }) => {
+    const pilot = new Autopilot({ style: 'tube', waitOutside: 5, rise: 1 });
+    const input = pilot.next(early({ board: { x: 0, z: -6, heading }, ride: ride({ wave: wave({ curlSide }) }) }), STEP);
+    expect(pilot.state).toBe('go');
+    expect(pilot.attempts).toBe(1);
+    expect(input).toMatchObject({ paddle: true, popUp: false, tubeGuide: true });
+    expect(input.steer).toBeCloseTo(expectedSteer, 12);
+    // The tube steering/posture policy still starts after standing.
+    expect(pilot.phase).toBe('');
+    expect(input.crouch).toBeUndefined();
+  });
+
+  it.each([0, 1, Number.NaN])('keeps positioning without an above-threshold crest (%s)', crestBehind => {
+    const pilot = new Autopilot({ style: 'tube', waitOutside: 5, rise: 1 });
+    expect(pilot.next(early({ crestBehind }), STEP)).toMatchObject({ paddle: true, popUp: false, steer: 0, tubeGuide: true });
+    expect(pilot.state).toBe('position');
+    expect(pilot.attempts).toBe(0);
+  });
+
+  it.each(['push', 'standing', 'fallen'] as const)('does not start an early catch outside prone (%s)', phase => {
+    const pilot = new Autopilot({ style: 'tube', waitOutside: 5, rise: 1 });
+    const input = pilot.next(early({ ride: ride({ phase }) }), STEP);
+    expect(pilot.state).toBe('wait');
+    expect(pilot.attempts).toBe(0);
+    expect(input).toMatchObject({ paddle: false, popUp: false, tubeGuide: true });
+  });
+
+  it('continues the early attempt past the waiting distance and pops up only once on the actual cue', () => {
+    const pilot = new Autopilot({ style: 'tube', waitOutside: 5, rise: 1 });
+    expect(pilot.next(early(), STEP).popUp).toBe(false);
+    const arrived = early({ seaTime: 100 + STEP, board: { x: 0, z: -4.9, heading: 0 }, crestBehind: 0.819 });
+    expect(pilot.next(arrived, STEP)).toMatchObject({ paddle: true, popUp: false, tubeGuide: true });
+    expect(pilot.state).toBe('go');
+    const cued = early({ seaTime: 100 + 2 * STEP, ride: ride({ cue: true }) });
+    expect(pilot.next(cued, STEP)).toMatchObject({ paddle: false, popUp: true, tubeGuide: true });
+    expect(pilot.next({ ...cued, seaTime: 100 + 3 * STEP }, STEP).popUp).toBe(false);
+    expect(pilot.attempts).toBe(1);
+  });
+
+  it('keeps catch timing on actual seaTime when the early snapshot repeats', () => {
+    const pilot = new Autopilot({ style: 'tube', waitOutside: 5, rise: 1, giveUp: 1 });
+    expect(pilot.next(early(), 30)).toMatchObject({ paddle: true, popUp: false });
+    expect(pilot.next(early(), 30)).toMatchObject({ paddle: true, popUp: false });
+    expect(pilot.attempts).toBe(1);
+    expect(pilot.next(early({ seaTime: 100.5 }), 30).paddle).toBe(true);
+    expect(pilot.state).toBe('go');
+    pilot.next(early({ seaTime: 101.01 }), STEP);
+    expect(pilot.state).toBe('done');
+    expect(pilot.outcome).toBe('missed the wave');
+  });
+
+  it.each([undefined, 'line', 'turns', 'flow'] as const)('preserves positioning and waiting for other styles (%s)', style => {
+    const pilot = new Autopilot({ style, waitOutside: 5, rise: 1 });
+    expect(pilot.next(early(), STEP)).toMatchObject({ paddle: true, popUp: false, steer: 0 });
+    expect(pilot.state).toBe('position');
+    expect(pilot.attempts).toBe(0);
+    expect(pilot.next(early({ seaTime: 100 + STEP, board: { x: 0, z: -4.9, heading: 0 } }), STEP).paddle).toBe(false);
+    expect(pilot.state).toBe('wait');
+    const catchInput = pilot.next(early({ seaTime: 100 + 2 * STEP, board: { x: 0, z: -4.9, heading: 0 } }), STEP);
+    expect(pilot.state).toBe('go');
+    expect(pilot.attempts).toBe(1);
+    expect(catchInput).toMatchObject({ paddle: true, popUp: false });
+    expect(catchInput.tubeGuide).toBeUndefined();
+  });
+});
+
 describe('autopilot turns', () => {
   const DEG = Math.PI / 180;
   /** Standing at `heading` on a wave travelling +z, the peel toward `peel`. */

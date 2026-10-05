@@ -1,0 +1,22 @@
+{
+  "schema": "guided-ordinary-preparation-result/v1",
+  "complete": true,
+  "build": {
+    "file": "/private/tmp/tube-guided-ordinary-native-20261005/build.json",
+    "bytes": 29822,
+    "sha256": "d8e44df293a7572ca54d885824334486f03641b4838df7e1a22ba26431f021b0"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-guided-ordinary-native-20261005/source-freeze.json",
+    "bytes": 18959,
+    "sha256": "49255069978c02f028feb9bc884b30638509bc6c95ee8e5c7f9dcd02e96be113"
+  },
+  "seal": {
+    "file": "/private/tmp/tube-guided-ordinary-native-20261005/seal.json",
+    "bytes": 4779,
+    "sha256": "c0856fcfe90dab69f9aa759b4055ed4dbfd19dbc36e1ebcc665d2f7b5194edf3"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedTestsOrBuilds": false
+}

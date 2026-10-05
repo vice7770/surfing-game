@@ -32,6 +32,21 @@ describe('the barrel mask', () => {
     expect(out[1 * 10 + 3]).toBe(0);
   });
 
+  it('can miss a fully authored triangle between grid nodes, leaving a zero texture despite core coverage', () => {
+    const loft = {
+      ...quad(),
+      positions: new Float32Array([2.125, 1, 2.125, 2.375, 1, 2.125, 2.125, 1, 2.375]),
+      mask: new Float32Array([1, 1, 1]),
+      indices: new Uint32Array([0, 1, 2]), vertexCount: 3, indexCount: 3,
+    };
+    const original = loft.mask.slice();
+    const out = new Uint8Array(100).fill(255);
+    expect(rasterizeBarrelMask(loft, grid, out)).toBe(0);
+    expect(out.every((value) => value === 0)).toBe(true);
+    expect(loft.mask).toEqual(original);
+    // The authored interpolant is 1 throughout this actual triangle; the texture cannot supply its support.
+  });
+
   // Review Focus 3.
   it('writes nothing outside the grid for a footprint running off it', () => {
     const loft = quad();

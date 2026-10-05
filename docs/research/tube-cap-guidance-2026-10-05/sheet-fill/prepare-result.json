@@ -1,0 +1,18 @@
+{
+  "schema": "matched-sheet-fill-preparation/v1",
+  "complete": true,
+  "seal": {
+    "file": "/private/tmp/tube-sheet-fill-native-20261005/seal.json",
+    "bytes": 20206,
+    "sha256": "e1a89b2b419d876863dc783e7ed393fa479568e92acd8f26506e56f3e43da844"
+  },
+  "build": {
+    "file": "/private/tmp/tube-sheet-fill-native-20261005/build.json",
+    "bytes": 10963,
+    "sha256": "dbca284f30c9885ec2ec05159c6f97b0221c81ecb38d1e3048184cca29faec6d"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedChecksOrBuilds": false,
+  "liveSourcesWrittenOrFrozen": false
+}

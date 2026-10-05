@@ -1,0 +1,96 @@
+{
+  "schema": "tube-sheet-fill-archive/v1",
+  "scope": "Actual zero-step matched Rich comparison at fixed prior interior/side cameras. Six PNGs; all four restored baselines pixel exact. Root viewed all images: A removes the interior black strip; B does not. Grey angular band and stippling remain. No physical-optics or ride acceptance.",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 5130,
+      "sha256": "6e68c22ba711e83f3fca41c4b42c8718b08e770c45f73c94db3d2149e558a976"
+    },
+    {
+      "file": "build.json",
+      "bytes": 10963,
+      "sha256": "dbca284f30c9885ec2ec05159c6f97b0221c81ecb38d1e3048184cca29faec6d"
+    },
+    {
+      "file": "inputs.json",
+      "bytes": 8807,
+      "sha256": "3b52e96a1dcad22f0f560124c7c452a7011a8282385812385c6881daf86e61f9"
+    },
+    {
+      "file": "interior-rich-baseline.png",
+      "bytes": 2064927,
+      "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+    },
+    {
+      "file": "interior-rich-sheet-fill-A.png",
+      "bytes": 2061288,
+      "sha256": "cd2c53970146bd843ba060b9d0aafebd732c06703736fa2941f18cbf6b8bc23f"
+    },
+    {
+      "file": "interior-rich-throat-bypass-B.png",
+      "bytes": 2077627,
+      "sha256": "eda917afffd2097a161873d98122dde018c577c90ca81fabb41866481eaac2ad"
+    },
+    {
+      "file": "native.log",
+      "bytes": 61,
+      "sha256": "99b5729d53c3e2fe2b0769fe110596e4bb2e5df53e4a7750ecb310d3fe8165b2"
+    },
+    {
+      "file": "native.mjs",
+      "bytes": 9638,
+      "sha256": "3228619389962544acba7b49a4134c213a04d5bb1f76d9cd2c0f389b4d4f905f"
+    },
+    {
+      "file": "owner.json",
+      "bytes": 2757,
+      "sha256": "e717135e1a7d656763ae0a5258059c07efc857155f6b568d1b14a2d6f7acb043"
+    },
+    {
+      "file": "prepare-result.json",
+      "bytes": 577,
+      "sha256": "5b9f895531dd847c96a12bdb1a419cad6c70712a8dc7fbca447565d44d7b5655"
+    },
+    {
+      "file": "prepare.py",
+      "bytes": 3416,
+      "sha256": "4fd0a80c53dd20741bdff5e567aa26734829f9b3a04984cd7c140ebcb92e76f5"
+    },
+    {
+      "file": "report.json",
+      "bytes": 39508,
+      "sha256": "f391d97a95b1fb8e78f93d7be3c7539dc7f4003c50e09b87fad60c4babf9e558"
+    },
+    {
+      "file": "run.py",
+      "bytes": 10481,
+      "sha256": "b74ea86e6e434c56376b6f9e50b8111a75b7bc5b8b1d7af0c972fe0e82ee8f52"
+    },
+    {
+      "file": "seal.json",
+      "bytes": 20206,
+      "sha256": "e1a89b2b419d876863dc783e7ed393fa479568e92acd8f26506e56f3e43da844"
+    },
+    {
+      "file": "sheet-inspection.mjs",
+      "bytes": 18668,
+      "sha256": "42d1e1e51e139c862b0bf693d81751a418f35d88914a09ef1f07cad6f8715142"
+    },
+    {
+      "file": "side-rich-baseline.png",
+      "bytes": 1446012,
+      "sha256": "2ab8d64d8624506d09989ebb8a4b9690569ce8ccd4634ba869392cb8968d39e8"
+    },
+    {
+      "file": "side-rich-sheet-fill-A.png",
+      "bytes": 1446130,
+      "sha256": "3e9985463e8a0df463f03c3d8c6bf7ffce9b426679331bfc63107f8a3dbcf4cf"
+    },
+    {
+      "file": "side-rich-throat-bypass-B.png",
+      "bytes": 1579336,
+      "sha256": "44bfa334ed497e9a87d291b78adfcc5b6f30750fc46ba76fabd6f683e56d2ab1"
+    }
+  ]
+}

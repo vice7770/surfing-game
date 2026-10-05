@@ -1,0 +1,307 @@
+{
+  "schema": "matched-sheet-fill-inputs/v1",
+  "preparationOnly": true,
+  "rootExecutionPending": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "applicationBuildId": "tube-cap-refinement-20261005",
+  "applicationDirectory": "/private/tmp/tube-cap-refinement-native-20261005/dist",
+  "referenceReport": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+    "bytes": 49054,
+    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+  },
+  "referenceOwner": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+    "bytes": 3848,
+    "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+  },
+  "referenceLoft": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+    "bytes": 1219771,
+    "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+  },
+  "referenceBuild": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+    "bytes": 15655,
+    "sha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00"
+  },
+  "referenceSeal": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/seal.json",
+    "bytes": 6584,
+    "sha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05"
+  },
+  "referenceSourceFreeze": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+    "bytes": 5973,
+    "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
+  },
+  "borrowedHelperPins": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    }
+  ],
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "fixedCameras": {
+    "side": {
+      "eye": [
+        75.65191820636392,
+        0.8180906549096107,
+        -66.22397584095597
+      ],
+      "target": [
+        74.75,
+        0.8180906549096107,
+        -68.14806801453233
+      ],
+      "quaternion": [
+        0,
+        0.21741787419751346,
+        0,
+        0.9760786177247376
+      ],
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1
+    },
+    "interior": {
+      "eye": [
+        74.0625,
+        1.0598396605743825,
+        -68.79456329345703
+      ],
+      "target": [
+        74.1875,
+        1.0626037843906364,
+        -68.7633285522461
+      ],
+      "quaternion": [
+        0.006600678893715275,
+        -0.7881247536647293,
+        0.008452992668955604,
+        0.6154220914250564
+      ],
+      "inheritedUp": [
+        0,
+        1,
+        0
+      ],
+      "projection": [
+        1.0551622229204924,
+        0,
+        0,
+        0,
+        0,
+        2.050303841579296,
+        0,
+        0,
+        0,
+        0,
+        -1.000066668888963,
+        -1,
+        0,
+        0,
+        -0.2000066668888963,
+        0
+      ],
+      "fov": 52,
+      "aspect": 1.9431171786120591,
+      "near": 0.1,
+      "far": 3000,
+      "zoom": 1
+    }
+  },
+  "referenceEpoch": {
+    "step": 0,
+    "seaTime": 276.3293560552737,
+    "kind": "first-eligible-capture"
+  },
+  "referenceCounts": {
+    "slices": 81,
+    "vertices": 10854,
+    "indices": 62244
+  },
+  "protectedPorts": [
+    4312,
+    4313,
+    4314,
+    4315
+  ],
+  "protected4315": {
+    "pid": 87796,
+    "rootSession": "64713"
+  },
+  "ownedPorts": [
+    4301,
+    9711
+  ],
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 660,
+    "cleanupSeconds": 7,
+    "pngCount": 6,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 75497472,
+    "reportBytes": 2097152
+  },
+  "comparison": {
+    "view": "normal shaded Rich; no diagnostic ownership or region colouring",
+    "poseOrder": [
+      "interior",
+      "side"
+    ],
+    "primaryCamera": "interior",
+    "secondaryCamera": "side",
+    "perPoseOrder": [
+      "baseline",
+      "sheet-fill",
+      "baseline-repeat-after-A",
+      "throat-bypass",
+      "baseline-repeat-after-B"
+    ],
+    "A": "Only sky/wall mixture: F_eff=clamp(F,0,1)*T, E_back=F_eff*E_sky+(1-F_eff)*E_wall; remove T from the environment summand so it applies once.",
+    "B": "Only remove the RICH_THROAT radiance multiplier. A is off.",
+    "transmissionPolicy": "Preserve the existing two-interface direction/TIR gate and safe nonzero environment ray exactly; Classic is unchanged.",
+    "fixedCameraSource": "Exact completed cap eye/quaternion/up/projection; no camera derivation or selector.",
+    "geometryPolicy": "Exact prior full37 active typed bytes and raw fronts; same live identities and actual draw attributes/index range for every render.",
+    "ordinaryWaterPolicy": "Keep original swept discard and water shader, mask bytes/grid, material, depth/stencil parameters, render order and geometry unchanged.",
+    "baselineRepeatExactPixelsRequiredAfterEachVariant": true,
+    "restoreAfterEachPose": [
+      "original onBeforeCompile",
+      "original program cache function",
+      "original view",
+      "normal camera"
+    ],
+    "claims": {
+      "A": "Modeled wall fallback for failed approximate exit; no actual wall-hit or multiple-scattering proof.",
+      "B": "Diagnostic aesthetic bypass of modeled reflection occlusion; no physical optical correction claimed."
+    },
+    "placement": false,
+    "epochSearch": false,
+    "cameraSearch": false,
+    "qualitySearch": false,
+    "productionAdoption": false
+  },
+  "adaptedRecipePins": [
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/inputs.json",
+      "bytes": 6317,
+      "sha256": "c3eca877ae46a8045cf263ea315d82dd79cf96dd0c857f2ced9d5e7190b56fb4"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/mask-inspection.mjs",
+      "bytes": 14815,
+      "sha256": "9e43fe4e336c3d753e3e100aba2d59aff3f9716fe5ef4be0d460fb37dac38b6b"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/native.mjs",
+      "bytes": 9404,
+      "sha256": "3aada2b8907337bcd6b12611a7913bd928b0a104ac8cb1767614bf6b107840d7"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/prepare.py",
+      "bytes": 2851,
+      "sha256": "f32a13349a3576b7ee1439d7bd3f2dac8e49a072ba6431095db83d9a3d6a212b"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/run.py",
+      "bytes": 9044,
+      "sha256": "7ae22173711dd1acfb5ad8a81519d18362973d21f130b3e68c18d3db77119892"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/README.md",
+      "bytes": 4778,
+      "sha256": "804b01a7d76f80a8f042cda9d78f79eb9c4e044ad3d8288b7c02ba5a12e7d7e8"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/seal.json",
+      "bytes": 17757,
+      "sha256": "b9af9a81d9340f7b630af74ed0ed681980a3a84bd7d48681d08933d0591b67a3"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/owner.json",
+      "bytes": 2641,
+      "sha256": "cb8fc51bc56376ecfe17e8370047530043b53e691aece2368de460baa476273e"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/candidate-first/report.json",
+      "bytes": 33432,
+      "sha256": "c3280de79f4f1d0c448b2c4cf1741e71b3c8c12ddae7f591e128e378440234ee"
+    }
+  ]
+}

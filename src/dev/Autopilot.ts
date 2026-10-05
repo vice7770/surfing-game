@@ -384,6 +384,12 @@ export class Autopilot {
     if (ride.wave.valid) this.travel = Math.atan2(ride.wave.directionX, ride.wave.directionZ);
     switch (this.state) {
       case 'position':
+        // A tube catch can already be arriving at the normal spawn. Use the waiting state's ordinary catch
+        // transition immediately, so reaching the waiting distance does not stop paddling through that wave.
+        if (this.style === 'tube' && ride.phase === 'prone' && view.crestBehind > this.rise) {
+          this.go();
+          return this.next(view, 0);
+        }
         if (ride.phase === 'prone' && view.focusZ - view.board.z > this.waitOutside) input.paddle = true;
         else this.state = 'wait';
         break;

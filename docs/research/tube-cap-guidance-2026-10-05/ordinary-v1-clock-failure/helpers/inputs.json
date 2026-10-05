@@ -1,0 +1,18 @@
+{
+  "schema": "guided-ordinary-native-inputs/v1",
+  "repository": "/Users/regina/Desktop/Projects/surfing-game",
+  "buildId": "tube-guided-ordinary-20261005",
+  "settings": { "spot": "padang", "stage": 2, "compute": "auto", "source": "buoy", "significantHeight": 3.8, "peakPeriod": 18, "directionDegrees": 0, "spread": 0, "spreading": 150, "tide": 0, "windSpeed": 0, "stormWindSpeed": 18, "stormFetchKm": 600, "stormDurationHours": 36, "stormDistanceKm": 3000 },
+  "overrides": { "seed": 6238, "componentCount": 64, "dx": 2, "fineSpacing": 1 },
+  "graphics": { "preset": "custom", "renderScale": 1, "nativePixelDensity": true, "frameLimit": 60, "waterSimulation": "accurate", "seaDetail": "rich", "caustics": true, "sprayMist": true, "oceanView": "far", "foam": "detailed", "waterLook": "rich", "particles": "high" },
+  "pilot": { "style": "tube", "waitOutside": 5, "rise": 1, "lineDegrees": 60, "giveUp": 30, "stall": false },
+  "limits": { "steps": 1800, "wallSeconds": 660, "nativeSeconds": 640, "ownerSeconds": 650, "detectorMilliseconds": 120000, "pngCount": 4, "pngBytesEach": 12582912, "pngBytesTotal": 50331648, "loftBytesEach": 6291456, "loftBytesTotal": 25165824, "traceBytes": 67108864, "reportBytes": 2097152 },
+  "criteria": { "minimumBothRowMouthGap": 1.2, "continuousContainedSeconds": 1, "relativeProgressMetres": 3, "standingAfterExitSeconds": 1, "fixedStepSeconds": 0.016666666666666666, "singleAttempt": true, "requireObservedStandingOutsideBeforeEntry": true, "requireObservedPartialBeforeEntry": true },
+  "protectedPorts": [4312, 4313, 4314, 4315],
+  "protected4315Provenance": { "pid": 87796, "rootSession": 64713 },
+  "ownedPorts": [4301, 9711],
+  "productionSources": [ "src/dev/Autopilot.ts", "src/dev/TubePilot.ts", "src/wave/SurfZoneRunner.ts", "src/game/PhysicalMode.ts", "src/game/SurfZoneHost.ts", "src/main.ts", "src/wave/barrel/tubeApproach.ts", "src/wave/barrel/sweptContact.ts", "src/wave/barrel/boundedCProfile.ts", "src/wave/barrel/ProfileLibrary.ts", "src/wave/barrel/sweptLoft.ts", "src/wave/barrel/lipSheet.ts", "src/scene/barrel/SweptBarrelMesh.ts" ],
+  "preparationOnly": true,
+  "resourcesStarted": false,
+  "rootExecutionPending": true
+}

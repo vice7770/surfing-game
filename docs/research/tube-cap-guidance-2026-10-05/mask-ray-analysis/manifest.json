@@ -1,0 +1,16 @@
+{
+  "schema": "tube-mask-ray-archive/v1",
+  "scope": "Executed four predeclared pixel-centre rays against saved indexed loft words, with exact paired PNG samples. Mask/region interpolation is not visibility, texture-value or dither-decision certification.",
+  "files": [
+    {
+      "file": "tube-mask-author-support-analysis-20261005.json",
+      "bytes": 16704,
+      "sha256": "613aca4aad2ab687678d5841f99c5000cea320432f03bec34d7668661aeddd8c"
+    },
+    {
+      "file": "tube-mask-author-support-analysis-20261005.py",
+      "bytes": 16020,
+      "sha256": "2b1577b360d8fe531ddc472e2ec385f2c770ae8a5df724f74f007e7be018eb22"
+    }
+  ]
+}

@@ -1,0 +1,1367 @@
+{
+  "schema": "matched-sheet-fill-native/v1",
+  "complete": true,
+  "firstFailure": null,
+  "sealSha256": "e1a89b2b419d876863dc783e7ed393fa479568e92acd8f26506e56f3e43da844",
+  "applicationBuild": {
+    "file": "/private/tmp/tube-sheet-fill-native-20261005/build.json",
+    "bytes": 10963,
+    "sha256": "dbca284f30c9885ec2ec05159c6f97b0221c81ecb38d1e3048184cca29faec6d"
+  },
+  "referenceReport": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+    "bytes": 49054,
+    "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+  },
+  "referenceLoft": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+    "bytes": 1219771,
+    "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+  },
+  "settings": {
+    "spot": "padang",
+    "stage": 2,
+    "compute": "auto",
+    "source": "buoy",
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spread": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stormWindSpeed": 18,
+    "stormFetchKm": 600,
+    "stormDurationHours": 36,
+    "stormDistanceKm": 3000
+  },
+  "overrides": {
+    "seed": 6238,
+    "componentCount": 64,
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "graphics": {
+    "preset": "custom",
+    "renderScale": 1,
+    "nativePixelDensity": true,
+    "frameLimit": 60,
+    "waterSimulation": "accurate",
+    "seaDetail": "rich",
+    "caustics": true,
+    "sprayMist": true,
+    "oceanView": "far",
+    "foam": "detailed",
+    "waterLook": "rich",
+    "particles": "high"
+  },
+  "policy": {
+    "view": "normal shaded Rich; no diagnostic ownership or region colouring",
+    "poseOrder": [
+      "interior",
+      "side"
+    ],
+    "primaryCamera": "interior",
+    "secondaryCamera": "side",
+    "perPoseOrder": [
+      "baseline",
+      "sheet-fill",
+      "baseline-repeat-after-A",
+      "throat-bypass",
+      "baseline-repeat-after-B"
+    ],
+    "A": "Only sky/wall mixture: F_eff=clamp(F,0,1)*T, E_back=F_eff*E_sky+(1-F_eff)*E_wall; remove T from the environment summand so it applies once.",
+    "B": "Only remove the RICH_THROAT radiance multiplier. A is off.",
+    "transmissionPolicy": "Preserve the existing two-interface direction/TIR gate and safe nonzero environment ray exactly; Classic is unchanged.",
+    "fixedCameraSource": "Exact completed cap eye/quaternion/up/projection; no camera derivation or selector.",
+    "geometryPolicy": "Exact prior full37 active typed bytes and raw fronts; same live identities and actual draw attributes/index range for every render.",
+    "ordinaryWaterPolicy": "Keep original swept discard and water shader, mask bytes/grid, material, depth/stencil parameters, render order and geometry unchanged.",
+    "baselineRepeatExactPixelsRequiredAfterEachVariant": true,
+    "restoreAfterEachPose": [
+      "original onBeforeCompile",
+      "original program cache function",
+      "original view",
+      "normal camera"
+    ],
+    "claims": {
+      "A": "Modeled wall fallback for failed approximate exit; no actual wall-hit or multiple-scattering proof.",
+      "B": "Diagnostic aesthetic bypass of modeled reflection occlusion; no physical optical correction claimed."
+    },
+    "placement": false,
+    "epochSearch": false,
+    "cameraSearch": false,
+    "qualitySearch": false,
+    "productionAdoption": false
+  },
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 660,
+    "cleanupSeconds": 7,
+    "pngCount": 6,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 75497472,
+    "reportBytes": 2097152
+  },
+  "stepCount": 0,
+  "triples": [
+    {
+      "complete": true,
+      "camera": "interior",
+      "seaTime": 276.3293560552737,
+      "stepCount": 0,
+      "fixedPose": {
+        "eye": [
+          74.0625,
+          1.0598396605743825,
+          -68.79456329345703
+        ],
+        "target": [
+          74.1875,
+          1.0626037843906364,
+          -68.7633285522461
+        ],
+        "quaternion": [
+          0.006600678893715275,
+          -0.7881247536647293,
+          0.008452992668955604,
+          0.6154220914250564
+        ],
+        "inheritedUp": [
+          0,
+          1,
+          0
+        ],
+        "projection": [
+          1.0551622229204924,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ],
+        "fov": 52,
+        "aspect": 1.9431171786120591,
+        "near": 0.1,
+        "far": 3000,
+        "zoom": 1
+      },
+      "shaderEvidence": [
+        {
+          "variant": "baseline",
+          "baselineUnmodified": true,
+          "onlySkyWallMixChanged": false,
+          "onlyThroatRadianceMultiplierRemoved": false,
+          "AOff": true,
+          "BOff": true,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "sweptDiscardPreserved": true,
+          "vertexShaderUntouchedByDiagnostic": true,
+          "waterShaderUntouchedByDiagnostic": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "fragmentCharacters": 18759,
+          "changedCharacters": 0
+        },
+        {
+          "variant": "sheet-fill",
+          "baselineUnmodified": false,
+          "onlySkyWallMixChanged": true,
+          "onlyThroatRadianceMultiplierRemoved": false,
+          "AOff": false,
+          "BOff": true,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "sweptDiscardPreserved": true,
+          "vertexShaderUntouchedByDiagnostic": true,
+          "waterShaderUntouchedByDiagnostic": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "fragmentCharacters": 18817,
+          "changedCharacters": 58
+        },
+        {
+          "variant": "throat-bypass",
+          "baselineUnmodified": false,
+          "onlySkyWallMixChanged": false,
+          "onlyThroatRadianceMultiplierRemoved": true,
+          "AOff": true,
+          "BOff": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "sweptDiscardPreserved": true,
+          "vertexShaderUntouchedByDiagnostic": true,
+          "waterShaderUntouchedByDiagnostic": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "fragmentCharacters": 18670,
+          "changedCharacters": -89
+        }
+      ],
+      "baselineRepeatAfterAPixelsIdentical": true,
+      "baselineRepeatAfterBPixelsIdentical": true,
+      "guards": {
+        "exactPriorFull37ActiveWords": true,
+        "exactPriorRawFrontWords": true,
+        "actualDrawAttributesAndIndicesIdentical": true,
+        "actorBoard8Rider33Unchanged": true,
+        "sameFixedCloneWords": true,
+        "waterMaskBytesAndGridIdentical": true,
+        "ordinaryWaterMaterialAndGeometryUnchanged": true,
+        "depthStencilParametersUnchanged": true,
+        "originalSweptDiscardPreserved": true,
+        "RichNormalShadedView": true,
+        "directionTIRGateAndSafeRayPreserved": true,
+        "ClassicUntouched": true,
+        "originalShaderCallbackCacheViewRestored": true,
+        "normalCameraRestored": true
+      },
+      "interpretation": {
+        "A": "Modeled wall radiance replaces the failed approximate-exit sky fraction. No actual reflected path, wall hit or energy-conservation proof.",
+        "B": "Only the modeled environment reflection occlusion multiplier is bypassed. A remains off; this is an aesthetic diagnostic, not a physical optical correction.",
+        "acceptance": "Requires actual image review. No production adoption, playability or reference-quality claim."
+      },
+      "baseline": {
+        "file": "interior-rich-baseline.png",
+        "bytes": 2064927,
+        "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+      },
+      "sheetFill": {
+        "file": "interior-rich-sheet-fill-A.png",
+        "bytes": 2061288,
+        "sha256": "cd2c53970146bd843ba060b9d0aafebd732c06703736fa2941f18cbf6b8bc23f"
+      },
+      "throatBypass": {
+        "file": "interior-rich-throat-bypass-B.png",
+        "bytes": 2077627,
+        "sha256": "eda917afffd2097a161873d98122dde018c577c90ca81fabb41866481eaac2ad"
+      }
+    },
+    {
+      "complete": true,
+      "camera": "side",
+      "seaTime": 276.3293560552737,
+      "stepCount": 0,
+      "fixedPose": {
+        "eye": [
+          75.65191820636392,
+          0.8180906549096107,
+          -66.22397584095597
+        ],
+        "target": [
+          74.75,
+          0.8180906549096107,
+          -68.14806801453233
+        ],
+        "quaternion": [
+          0,
+          0.21741787419751346,
+          0,
+          0.9760786177247376
+        ],
+        "inheritedUp": [
+          0,
+          1,
+          0
+        ],
+        "projection": [
+          1.0551622229204924,
+          0,
+          0,
+          0,
+          0,
+          2.050303841579296,
+          0,
+          0,
+          0,
+          0,
+          -1.000066668888963,
+          -1,
+          0,
+          0,
+          -0.2000066668888963,
+          0
+        ],
+        "fov": 52,
+        "aspect": 1.9431171786120591,
+        "near": 0.1,
+        "far": 3000,
+        "zoom": 1
+      },
+      "shaderEvidence": [
+        {
+          "variant": "baseline",
+          "baselineUnmodified": true,
+          "onlySkyWallMixChanged": false,
+          "onlyThroatRadianceMultiplierRemoved": false,
+          "AOff": true,
+          "BOff": true,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "sweptDiscardPreserved": true,
+          "vertexShaderUntouchedByDiagnostic": true,
+          "waterShaderUntouchedByDiagnostic": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "fragmentCharacters": 18759,
+          "changedCharacters": 0
+        },
+        {
+          "variant": "sheet-fill",
+          "baselineUnmodified": false,
+          "onlySkyWallMixChanged": true,
+          "onlyThroatRadianceMultiplierRemoved": false,
+          "AOff": false,
+          "BOff": true,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "sweptDiscardPreserved": true,
+          "vertexShaderUntouchedByDiagnostic": true,
+          "waterShaderUntouchedByDiagnostic": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "fragmentCharacters": 18817,
+          "changedCharacters": 58
+        },
+        {
+          "variant": "throat-bypass",
+          "baselineUnmodified": false,
+          "onlySkyWallMixChanged": false,
+          "onlyThroatRadianceMultiplierRemoved": true,
+          "AOff": true,
+          "BOff": false,
+          "directionTIRGatePreserved": true,
+          "safeNonzeroEnvironmentRayPreserved": true,
+          "sweptDiscardPreserved": true,
+          "vertexShaderUntouchedByDiagnostic": true,
+          "waterShaderUntouchedByDiagnostic": true,
+          "ClassicUntouchedByDiagnostic": true,
+          "fragmentCharacters": 18670,
+          "changedCharacters": -89
+        }
+      ],
+      "baselineRepeatAfterAPixelsIdentical": true,
+      "baselineRepeatAfterBPixelsIdentical": true,
+      "guards": {
+        "exactPriorFull37ActiveWords": true,
+        "exactPriorRawFrontWords": true,
+        "actualDrawAttributesAndIndicesIdentical": true,
+        "actorBoard8Rider33Unchanged": true,
+        "sameFixedCloneWords": true,
+        "waterMaskBytesAndGridIdentical": true,
+        "ordinaryWaterMaterialAndGeometryUnchanged": true,
+        "depthStencilParametersUnchanged": true,
+        "originalSweptDiscardPreserved": true,
+        "RichNormalShadedView": true,
+        "directionTIRGateAndSafeRayPreserved": true,
+        "ClassicUntouched": true,
+        "originalShaderCallbackCacheViewRestored": true,
+        "normalCameraRestored": true
+      },
+      "interpretation": {
+        "A": "Modeled wall radiance replaces the failed approximate-exit sky fraction. No actual reflected path, wall hit or energy-conservation proof.",
+        "B": "Only the modeled environment reflection occlusion multiplier is bypassed. A remains off; this is an aesthetic diagnostic, not a physical optical correction.",
+        "acceptance": "Requires actual image review. No production adoption, playability or reference-quality claim."
+      },
+      "baseline": {
+        "file": "side-rich-baseline.png",
+        "bytes": 1446012,
+        "sha256": "2ab8d64d8624506d09989ebb8a4b9690569ce8ccd4634ba869392cb8968d39e8"
+      },
+      "sheetFill": {
+        "file": "side-rich-sheet-fill-A.png",
+        "bytes": 1446130,
+        "sha256": "3e9985463e8a0df463f03c3d8c6bf7ffce9b426679331bfc63107f8a3dbcf4cf"
+      },
+      "throatBypass": {
+        "file": "side-rich-throat-bypass-B.png",
+        "bytes": 1579336,
+        "sha256": "44bfa334ed497e9a87d291b78adfcc5b6f30750fc46ba76fabd6f683e56d2ab1"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "interior-rich-baseline.png",
+      "bytes": 2064927,
+      "sha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8"
+    },
+    {
+      "file": "interior-rich-sheet-fill-A.png",
+      "bytes": 2061288,
+      "sha256": "cd2c53970146bd843ba060b9d0aafebd732c06703736fa2941f18cbf6b8bc23f"
+    },
+    {
+      "file": "interior-rich-throat-bypass-B.png",
+      "bytes": 2077627,
+      "sha256": "eda917afffd2097a161873d98122dde018c577c90ca81fabb41866481eaac2ad"
+    },
+    {
+      "file": "side-rich-baseline.png",
+      "bytes": 1446012,
+      "sha256": "2ab8d64d8624506d09989ebb8a4b9690569ce8ccd4634ba869392cb8968d39e8"
+    },
+    {
+      "file": "side-rich-sheet-fill-A.png",
+      "bytes": 1446130,
+      "sha256": "3e9985463e8a0df463f03c3d8c6bf7ffce9b426679331bfc63107f8a3dbcf4cf"
+    },
+    {
+      "file": "side-rich-throat-bypass-B.png",
+      "bytes": 1579336,
+      "sha256": "44bfa334ed497e9a87d291b78adfcc5b6f30750fc46ba76fabd6f683e56d2ab1"
+    }
+  ],
+  "pngCount": 6,
+  "pngBytes": 10675320,
+  "browserErrors": [],
+  "acceptance": {
+    "visualCauseA": null,
+    "visualCauseB": null,
+    "physicalOpticsProof": false,
+    "playability": false,
+    "productionFixAdopted": false
+  },
+  "menuStartup": {
+    "actualDomStartup": true,
+    "actions": [
+      {
+        "query": ".screen-menu button.tile-primary",
+        "label": "Surf",
+        "beforeScreen": "menu"
+      },
+      {
+        "query": ".spot-card",
+        "label": "Padang Padang",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Swell\"] button",
+        "label": "Big",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Tide\"] button",
+        "label": "Mid",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Wind\"] button",
+        "label": "Calm",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".choice-row .segmented[aria-label=\"Time of day\"] button",
+        "label": "Midday",
+        "beforeScreen": "surf"
+      },
+      {
+        "query": ".panel-footer button.button-primary",
+        "label": "Paddle out",
+        "beforeScreen": "surf"
+      }
+    ],
+    "rideObserved": false,
+    "popupNotForced": true,
+    "normalSpawnPreserved": true,
+    "normalPhysicalStartup": true,
+    "initialModeClock": 562.3960962786273,
+    "lastAttempt": {
+      "query": ".panel-footer button.button-primary",
+      "label": "Paddle out",
+      "beforeScreen": "surf",
+      "queriedButtonCount": 1,
+      "matchingButtonCount": 1,
+      "queriedButtons": [
+        {
+          "text": "Paddle out",
+          "tag": "BUTTON",
+          "disabled": false,
+          "ariaDisabled": null,
+          "ariaPressed": null
+        }
+      ],
+      "matchingButtons": [
+        {
+          "text": "Paddle out",
+          "tag": "BUTTON",
+          "disabled": false,
+          "ariaDisabled": null,
+          "ariaPressed": null
+        }
+      ],
+      "groupInventory": [
+        {
+          "ariaLabel": "Swell",
+          "buttons": [
+            {
+              "text": "Practice",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Small",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Medium",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Big",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Tide",
+          "buttons": [
+            {
+              "text": "Low",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Mid",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "High",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Wind",
+          "buttons": [
+            {
+              "text": "Offshore",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Calm",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Onshore",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Time of day",
+          "buttons": [
+            {
+              "text": "Dawn",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Midday",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Sunset",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Surfer",
+          "buttons": [
+            {
+              "text": "Woman",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Man",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Look",
+          "buttons": [
+            {
+              "text": "1",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "2",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Outfit",
+          "buttons": [
+            {
+              "text": "Full suit",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Spring suit",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Vest and bikini",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Colour",
+          "buttons": [
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        },
+        {
+          "ariaLabel": "Board",
+          "buttons": [
+            {
+              "text": "Classic",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "true"
+            },
+            {
+              "text": "Sunset fade",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Sea glass",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Midnight",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            },
+            {
+              "text": "Coral rail",
+              "tag": "BUTTON",
+              "disabled": false,
+              "ariaDisabled": null,
+              "ariaPressed": "false"
+            }
+          ]
+        }
+      ],
+      "inventoryTruncated": false
+    },
+    "selectedConditionScopes": [
+      {
+        "group": "Swell",
+        "query": ".choice-row .segmented[aria-label=\"Swell\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Big"
+        ]
+      },
+      {
+        "group": "Tide",
+        "query": ".choice-row .segmented[aria-label=\"Tide\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Mid"
+        ]
+      },
+      {
+        "group": "Wind",
+        "query": ".choice-row .segmented[aria-label=\"Wind\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Calm"
+        ]
+      },
+      {
+        "group": "Time of day",
+        "query": ".choice-row .segmented[aria-label=\"Time of day\"] button[aria-pressed=\"true\"]",
+        "matchingSelectedButtonCount": 1,
+        "selectedTexts": [
+          "Midday"
+        ]
+      }
+    ],
+    "selectedChoices": [
+      "Padang Padang",
+      "Big",
+      "Mid",
+      "Calm",
+      "Midday"
+    ]
+  },
+  "applicationBuildRequest": {
+    "build": "tube-cap-refinement-20261005",
+    "status": 200,
+    "checkedBeforeReplay": true
+  },
+  "normalMenuBeforeReplay": {
+    "config": {
+      "spot": "padang",
+      "seed": 9181,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "dx": 2,
+      "fineSpacing": 1,
+      "componentCount": 64
+    },
+    "seaTime": 104.81259606638667,
+    "board8": [
+      -50,
+      1.0210761019660435,
+      -271.09137870490895,
+      0.1885269745473127,
+      0.008343258965120226,
+      -0.04341734374654839,
+      0.981072323613235,
+      1
+    ],
+    "rider33": [
+      -49.98645609439668,
+      1.2620307531801738,
+      -271.47566153721755,
+      -49.98645609439668,
+      1.3376259628782519,
+      -271.03566153721755,
+      -49.98645609439668,
+      1.487462614660453,
+      -270.70566153721757,
+      -49.745083488010174,
+      1.0536729094111537,
+      -271.1041696585992,
+      -50.24644446695721,
+      1.094968635719067,
+      -271.08768999257046,
+      -49.834456094396685,
+      1.1617799277192407,
+      -272.4826615372176,
+      -50.13845609439667,
+      1.1617799277192407,
+      -272.4826615372176,
+      0,
+      0,
+      1,
+      0,
+      0,
+      -49.997298100351045,
+      1.3395710770398255,
+      -271.8072824281708,
+      1,
+      0,
+      1,
+      0
+    ]
+  },
+  "replayStartup": {
+    "api": "breaklineDiagnostics.start",
+    "publicStartCalls": 1,
+    "noPlacement": true,
+    "noClockAssignment": true,
+    "diagnosticSeedRestart": true
+  },
+  "initial": {
+    "menu": {
+      "actualDomStartup": true,
+      "actions": [
+        {
+          "query": ".screen-menu button.tile-primary",
+          "label": "Surf",
+          "beforeScreen": "menu"
+        },
+        {
+          "query": ".spot-card",
+          "label": "Padang Padang",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Swell\"] button",
+          "label": "Big",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Tide\"] button",
+          "label": "Mid",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Wind\"] button",
+          "label": "Calm",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".choice-row .segmented[aria-label=\"Time of day\"] button",
+          "label": "Midday",
+          "beforeScreen": "surf"
+        },
+        {
+          "query": ".panel-footer button.button-primary",
+          "label": "Paddle out",
+          "beforeScreen": "surf"
+        }
+      ],
+      "rideObserved": true,
+      "popupNotForced": true,
+      "normalSpawnPreserved": true,
+      "normalPhysicalStartup": true,
+      "initialModeClock": 562.3960962786273,
+      "lastAttempt": {
+        "query": ".panel-footer button.button-primary",
+        "label": "Paddle out",
+        "beforeScreen": "surf",
+        "queriedButtonCount": 1,
+        "matchingButtonCount": 1,
+        "queriedButtons": [
+          {
+            "text": "Paddle out",
+            "tag": "BUTTON",
+            "disabled": false,
+            "ariaDisabled": null,
+            "ariaPressed": null
+          }
+        ],
+        "matchingButtons": [
+          {
+            "text": "Paddle out",
+            "tag": "BUTTON",
+            "disabled": false,
+            "ariaDisabled": null,
+            "ariaPressed": null
+          }
+        ],
+        "groupInventory": [
+          {
+            "ariaLabel": "Swell",
+            "buttons": [
+              {
+                "text": "Practice",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Small",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Medium",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Big",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Tide",
+            "buttons": [
+              {
+                "text": "Low",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Mid",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "High",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Wind",
+            "buttons": [
+              {
+                "text": "Offshore",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Calm",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Onshore",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Time of day",
+            "buttons": [
+              {
+                "text": "Dawn",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Midday",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Sunset",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Surfer",
+            "buttons": [
+              {
+                "text": "Woman",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Man",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Look",
+            "buttons": [
+              {
+                "text": "1",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "2",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Outfit",
+            "buttons": [
+              {
+                "text": "Full suit",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Spring suit",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Vest and bikini",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Colour",
+            "buttons": [
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          },
+          {
+            "ariaLabel": "Board",
+            "buttons": [
+              {
+                "text": "Classic",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "true"
+              },
+              {
+                "text": "Sunset fade",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Sea glass",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Midnight",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              },
+              {
+                "text": "Coral rail",
+                "tag": "BUTTON",
+                "disabled": false,
+                "ariaDisabled": null,
+                "ariaPressed": "false"
+              }
+            ]
+          }
+        ],
+        "inventoryTruncated": false
+      },
+      "selectedConditionScopes": [
+        {
+          "group": "Swell",
+          "query": ".choice-row .segmented[aria-label=\"Swell\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Big"
+          ]
+        },
+        {
+          "group": "Tide",
+          "query": ".choice-row .segmented[aria-label=\"Tide\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Mid"
+          ]
+        },
+        {
+          "group": "Wind",
+          "query": ".choice-row .segmented[aria-label=\"Wind\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Calm"
+          ]
+        },
+        {
+          "group": "Time of day",
+          "query": ".choice-row .segmented[aria-label=\"Time of day\"] button[aria-pressed=\"true\"]",
+          "matchingSelectedButtonCount": 1,
+          "selectedTexts": [
+            "Midday"
+          ]
+        }
+      ],
+      "selectedChoices": [
+        "Padang Padang",
+        "Big",
+        "Mid",
+        "Calm",
+        "Midday"
+      ],
+      "rideClockAtObserver": 104.81259606638667,
+      "outstandingAtObserver": 0,
+      "normalRideView": "front",
+      "pauseButtonInventory": {
+        "query": ".ride-hud button.hud-pause",
+        "count": 1,
+        "buttons": [
+          {
+            "disabled": false,
+            "ariaLabel": "Pause"
+          }
+        ]
+      },
+      "normalHudPaused": true,
+      "activeLabDisabled": true
+    },
+    "config": {
+      "spot": "padang",
+      "seed": 6238,
+      "significantHeight": 3.8,
+      "peakPeriod": 18,
+      "directionDegrees": 0,
+      "spreading": 150,
+      "tide": 0,
+      "windSpeed": 0,
+      "stage": 2,
+      "compute": "auto",
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "seaTime": 276.3293560552737,
+    "compute": "gpu",
+    "canvas": [
+      1708,
+      879
+    ]
+  },
+  "installation": {
+    "installed": true,
+    "seaTime": 276.3293560552737,
+    "stepCount": 0,
+    "RichNormalShadedView": true,
+    "exactPriorGeometryRequired": true,
+    "cameraSearch": false
+  },
+  "restoration": {
+    "complete": true,
+    "completed": [
+      "interior",
+      "side"
+    ],
+    "seaTime": 276.3293560552737,
+    "stepCount": 0,
+    "originalShaderViewCameraRestored": true,
+    "shaderEvidence": [
+      {
+        "variant": "baseline",
+        "baselineUnmodified": true,
+        "onlySkyWallMixChanged": false,
+        "onlyThroatRadianceMultiplierRemoved": false,
+        "AOff": true,
+        "BOff": true,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "sweptDiscardPreserved": true,
+        "vertexShaderUntouchedByDiagnostic": true,
+        "waterShaderUntouchedByDiagnostic": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "fragmentCharacters": 18759,
+        "changedCharacters": 0
+      },
+      {
+        "variant": "sheet-fill",
+        "baselineUnmodified": false,
+        "onlySkyWallMixChanged": true,
+        "onlyThroatRadianceMultiplierRemoved": false,
+        "AOff": false,
+        "BOff": true,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "sweptDiscardPreserved": true,
+        "vertexShaderUntouchedByDiagnostic": true,
+        "waterShaderUntouchedByDiagnostic": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "fragmentCharacters": 18817,
+        "changedCharacters": 58
+      },
+      {
+        "variant": "throat-bypass",
+        "baselineUnmodified": false,
+        "onlySkyWallMixChanged": false,
+        "onlyThroatRadianceMultiplierRemoved": true,
+        "AOff": true,
+        "BOff": false,
+        "directionTIRGatePreserved": true,
+        "safeNonzeroEnvironmentRayPreserved": true,
+        "sweptDiscardPreserved": true,
+        "vertexShaderUntouchedByDiagnostic": true,
+        "waterShaderUntouchedByDiagnostic": true,
+        "ClassicUntouchedByDiagnostic": true,
+        "fragmentCharacters": 18670,
+        "changedCharacters": -89
+      }
+    ]
+  },
+  "ownedBrowserClose": true,
+  "elapsedMilliseconds": 148238.858625
+}

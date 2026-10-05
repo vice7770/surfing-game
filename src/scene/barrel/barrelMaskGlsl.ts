@@ -2,8 +2,10 @@
  * The swept barrel's seam in the shaders (the Padang Padang spec, Part B, PR 3; the build sheet's "keep two surfaces and
  * cut a hole", after Surf's Up): the mask's value at a world xz, read from the texture `rasterizeBarrelMask` fills on
  * the seam grid's nodes (node-centred texels, linear filtering), and a per-pixel dither both surfaces share
- * (interleaved gradient noise, Jimenez 2014). Where the mask is 1 only the swept surface draws, where it is 0 only the
- * water, and across the band between each pixel shows exactly one of them. The seam's grid can be finer than the water.
+ * (interleaved gradient noise, Jimenez 2014). The water uses this texture; the swept surface also retains its authored
+ * vertex coverage when the grid misses it. Both keep the same dither in their transition bands; where authored coverage
+ * exceeds the texture, both surfaces can survive and the existing depth/stencil rules decide visibility. The seam's grid
+ * can be finer than the water.
  */
 export const waterBarrelMaskPars = /* glsl */ `
 uniform sampler2D waterBarrelMask;
@@ -25,8 +27,8 @@ export const WATER_BARREL_DISCARD = 'if ( waterBarrelMaskActive > 0.5 && waterBa
 /** A late repair draws only water fragments the original world-mask test rejected. Inactive masks never repair. */
 export const WATER_BARREL_FALLBACK_DISCARD = 'if ( waterBarrelMaskActive < 0.5 || waterBarrelMaskAt( vWaterWorld.xz ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;';
 
-/** The swept surface keeps its original world-mask and dither test. */
-export const SWEPT_BARREL_DISCARD = 'if ( waterBarrelMaskAt( vWaterWorld.xz ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;';
+/** Preserve authored loft support between seam nodes, including its existing formation, end and rest fades. */
+export const SWEPT_BARREL_DISCARD = 'if ( max( waterBarrelMaskAt( vWaterWorld.xz ), vSweptMask ) <= waterBarrelDither( gl_FragCoord.xy ) ) discard;';
 
 /** Whether a fragment shader reads the barrel mask and the shared dither (for tests). */
 export function mirrorsBarrelDither(fragment: string): boolean {

@@ -1,0 +1,28 @@
+Source preparation only. No build, freeze, checks, capture, or listener operation has been performed by this preparation.
+
+Root execution sequence after the current application changes are ready:
+
+```
+BUILD_ID=tube-guided-ordinary-20261005 npm run build > /private/tmp/tube-guided-ordinary-native-20261005/application-build.log 2>&1
+/opt/homebrew/bin/node /private/tmp/tube-guided-ordinary-native-20261005/build-diagnostic.mjs
+python3 /private/tmp/tube-guided-ordinary-native-20261005/prepare.py
+python3 /private/tmp/tube-guided-ordinary-native-20261005/run.py
+```
+
+The fresh diagnostic entry compiles the current Autopilot and TubePilot. Existing geometry captures and their old line-policy module stay unchanged. The driver forwards `pilot.next()` unchanged, including `tubeGuide:true`, the 35-degree prone takeoff steering, and the tube pilot's crouch/trim/compress. A requested pop-up is allowed only once, when the actual input snapshot is prone and its published cue is positive. The helper never calls `pilot.go()`, retries, places an actor, assigns a cue, or changes a physics clock.
+
+The actual rendered Padang/Big/Mid/Calm/Midday menu and normal HUD pause are used first. Then exactly one **diagnostic public seeded restart** via `breaklineDiagnostics.start` selects seed6238/component64/dx2/fine1. This is not an ordinary menu-seed reachability result. The unmodified menu seed/config and actor words are recorded before the restart. No seed, epoch, pose, target, or image search is allowed. The normal authored follower camera is passively certified; no interior inspection camera is used.
+
+Independent acceptance uses detached current-clock `ride.tubeBody`: seven render points (radius0) and seven actual equivalent-volume physics part spheres. Every point must occupy the same unambiguous floor/inner-return/outer-roof air column of one connected indexed drawn-loft component. All seven spheres must fit vertically and avoid every active indexed triangle. Production `waterAt` is a parity cross-check, never the sole authority. Cues and `bodyInCavity` are logged for controller inspection and never substitute for this classifier.
+
+The cavity gate requires defined drawn `waterAt:false` and independent indexed parity/clearance (`allPointsLoftParityClear`). Exit/standing uses the separate `allPointsWaterClear`: defined drawn answers remain authoritative; an undefined answer can use ordinary water **only when every indexed component has zero actual covering crossings/candidates at that witness**. Covered even, unclosed, or ambiguous columns never use this fallback.
+
+The fallback records the actual current `mode.host.heightAt(x,z)`, body bottom and bottom gap, plus a conservative maximum of all raw snapshot height nodes used by every bilinear cell intersecting the witness's full radius footprint. Requiring `y-radius > rawNodeMaximum` clears the whole equivalent-volume sphere against the normal host bilinear/carved height field, since `carveAt` only lowers it. Grid bounds are checked; unavailable/nonfinite data, an out-of-grid footprint, or an unsupported bound ends the trial as outside-unclassified. Each witness records provenance, the footprint/node range, upper bound, gap, and current seaTime. This is not Rich cubic/displaced-shader, skin, capsule or limb-segment clearance.
+
+The predeclared sequence is standing outside, a partial same-front entry, all14 witnesses contained, uninterrupted containment for at least1physical second with at least3m net board progress relative to a **fixed entry material-sigma mouth point** and entry mesh tangent, then a controller-intended exit while the same front still has a mature joined two-row opening of at least1.20m and actual three-crossing interior air. Exit also requires all14 witnesses shoreward of the local cap by their radii, no cavity membership or water/parity ambiguity, and all part spheres clear. It must finish with at least1second continuously standing outside. The independent mouth transport/geometry comes from drawn row words, not the controller cue.
+
+Missing/stale body telemetry, a lost fixed-sigma reference, interrupted containment, an ambiguous exit, detector exhaustion, actual fall/separation/reset, or a second attempt ends the trial without acceptance. Maximum1800 fixed1/60s steps, maximum660s including finite cleanup. Zero retries or extensions. A terminal physical failure is a completed observation, not an accepted ride. There is no FPS, reference visual quality, complete skin, capsule/limb-segment, air-volume connectivity, shader-displaced surface, or worker-contact-force certification. Part spheres are the physics model's equivalent-volume spheres and need not enclose the drawn body.
+
+Up to four normal-follower PNG/full37/raw-front checkpoint pairs are retained: initial, first independently accepted body entry, independently accepted intentional exit, terminal. Every step logs input snapshot and output snapshot seaTime, actual cue and optional tubeApproach, tubeBody, pilot state/phase, exact requested/applied input, body witnesses and ordinary-water provenance, independent mouth frame, travel/exit state, normal follower pose, and clock coherence. Report and trace have explicit byte caps. Active loft arrays, raw fronts, actor words, the complete ordinary snapshot surface, active tube-table words and grid are guarded during read-only witness and checkpoint work.
+
+The owner protects4312–4315, records exact PID/start/command identities before/after, and requires4315 PID87796 to remain. It signals only its newly started process group, independently closes4301/9711, and does no operation on protected previews. Root owns all checks, execution, frozen-source/build authority and acceptance.

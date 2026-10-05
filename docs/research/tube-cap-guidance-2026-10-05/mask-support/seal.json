@@ -1,0 +1,423 @@
+{
+  "schema": "matched-mask-support-seal/v1",
+  "rootAuthorized": true,
+  "complete": true,
+  "applicationBuild": {
+    "file": "/private/tmp/tube-mask-support-native-20261005/build.json",
+    "bytes": 11063,
+    "sha256": "d5796d250807ffab3712b35fea7bd61077fec16b9fa2d66bdd83560e0e9636f6"
+  },
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/inputs.json",
+      "bytes": 6317,
+      "sha256": "c3eca877ae46a8045cf263ea315d82dd79cf96dd0c857f2ced9d5e7190b56fb4"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/README.md",
+      "bytes": 4778,
+      "sha256": "804b01a7d76f80a8f042cda9d78f79eb9c4e044ad3d8288b7c02ba5a12e7d7e8"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/prepare.py",
+      "bytes": 2851,
+      "sha256": "f32a13349a3576b7ee1439d7bd3f2dac8e49a072ba6431095db83d9a3d6a212b"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/run.py",
+      "bytes": 9044,
+      "sha256": "7ae22173711dd1acfb5ad8a81519d18362973d21f130b3e68c18d3db77119892"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/native.mjs",
+      "bytes": 9404,
+      "sha256": "3aada2b8907337bcd6b12611a7913bd928b0a104ac8cb1767614bf6b107840d7"
+    },
+    {
+      "file": "/private/tmp/tube-mask-support-native-20261005/mask-inspection.mjs",
+      "bytes": 14815,
+      "sha256": "9e43fe4e336c3d753e3e100aba2d59aff3f9716fe5ef4be0d460fb37dac38b6b"
+    }
+  ],
+  "borrowedHelpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    }
+  ],
+  "references": [
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+      "bytes": 49054,
+      "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+      "bytes": 3848,
+      "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+      "bytes": 1219771,
+      "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+      "bytes": 15655,
+      "sha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/seal.json",
+      "bytes": 6584,
+      "sha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+      "bytes": 5973,
+      "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
+    }
+  ],
+  "priorAssetsAndFrozenSources": [
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/WorkerSurfZone-D2QWsEkT.js",
+      "bytes": 916491,
+      "sha256": "7892d7b1ff169f0611deaededec8280de421c1d3f04e0907ae4a38a6c140b8aa"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/bubbles-1.m4a",
+      "bytes": 256855,
+      "sha256": "78b19b45dfa40089b88cf88da40397e288dd67215e4fc3fc60e62cc5d3779598"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/bubbles-2.m4a",
+      "bytes": 198252,
+      "sha256": "819d08dcdd577c29f3a1f2da988d6b4dfaa0aea15e97b96e0db7688cc36af3e1"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/distant-1.m4a",
+      "bytes": 883404,
+      "sha256": "fd78fd0b78363123e789d5d199a9fd82a3849640842b225829c8124d25bda0a2"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/distant-2.m4a",
+      "bytes": 912023,
+      "sha256": "a5f2bf5016c7e4be9e18296c1e82bd098e4650b2b79b8703f26623fdc4cc90e4"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/lipJet-1.m4a",
+      "bytes": 62354,
+      "sha256": "d8b31c345f6bfd1c1802b46ec127b40562af98bfbbf372f1cbc4d965bbd8d17a"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/lipJet-2.m4a",
+      "bytes": 47086,
+      "sha256": "63c49d6bbd3f494c5afe852b3e60479feb42493f160ff7609e491ff6cda9e64e"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/lipRoller-1.m4a",
+      "bytes": 36688,
+      "sha256": "e223fc8b109df1789fc59689b61da806178cd0e2cac64af57f020446a562e61b"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/lipRoller-2.m4a",
+      "bytes": 27855,
+      "sha256": "92d25a3609eb59083a73da7063f0da0ce5bcc40168795e652940e4deb3de2aab"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/paddle-1.m4a",
+      "bytes": 14645,
+      "sha256": "5f449f49c1d89ca7309a9599b2735dd801ae8698aac752f4baa28290478cd0e2"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/paddle-2.m4a",
+      "bytes": 13593,
+      "sha256": "994bfbc3798d2d4b98444138d0478360f2a6ffed833fbcaba0f328495f445028"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/plunge-1.m4a",
+      "bytes": 24612,
+      "sha256": "8e0b49ce358029570d36f6c6cc975873b9e2bcc9a34e54f12d6dc84f5132febe"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/plunge-2.m4a",
+      "bytes": 22031,
+      "sha256": "3ba4eaef98793c00a0b189a5ac176f66f660ab14915237865d083485a54158a1"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/roar-1.m4a",
+      "bytes": 419823,
+      "sha256": "b74f3c130fe1ef299bb787c027c207798df0c03fa4d5c3324744e301dce482dc"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/roar-2.m4a",
+      "bytes": 387857,
+      "sha256": "583a0aaff8a6e72e260b805f50b3cea169950a258df074c6077e6c1f5e2db844"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/audio/sounds.json",
+      "bytes": 3499,
+      "sha256": "42442853504824c5d2db7506366ab3d66829f789d2c5ea79eb7b1a24570fad6d"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/devStepping-BfI-paiv.js",
+      "bytes": 320,
+      "sha256": "3e00cbff09fc0519d152336771e6aa7f988cf3fa3ad3e77cac556b2b4d823962"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/index-CQbLCvKJ.js",
+      "bytes": 586027,
+      "sha256": "72189418f23311a440c4b98b794622ffa9ef0c930be154adf6b3e7236768b1c9"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/index-DA8NEfOT.css",
+      "bytes": 33213,
+      "sha256": "bc5e05b302e3e4f336ab5cfc2a14e91113929582cf0233c8e2edf8c8ee2f5148"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/jevRecorder-DrKDaWw1.js",
+      "bytes": 15917,
+      "sha256": "a876a946bec013ab28ffc4e2cde4b11b46444986f2c5bc2e9e578e4ae25d9e29"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/particleBench-CB0cGxjE.js",
+      "bytes": 10708,
+      "sha256": "7805f23ff90f6d2910b93d7e32a24fd15d6705077ec51230ed09b4611611cdd2"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/rideRecorder-Ck2DOXX4.js",
+      "bytes": 41139,
+      "sha256": "592e245f0de830497ff763f6a8d8408d4c5577bb13504c68940293b6e98262d6"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg",
+      "bytes": 681062,
+      "sha256": "08390d6fb5a8b8f944cf9c110b0793d74be28255b2ca4a122302d6ff9bf35b54"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "bytes": 2097202,
+      "sha256": "7939bf27294ceea2cf3b59eab783db4522f6e8b361c747e4b6e176e086b4cbed"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/skies/qwantani_sunrise_puresky.jpg",
+      "bytes": 357301,
+      "sha256": "944d42264b1c5cec965565d4a7dc1b6bb4e6befb44ed5e2857f041f4be585ea4"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/skies/qwantani_sunrise_puresky_1k.hdr",
+      "bytes": 2097202,
+      "sha256": "1d77fdf03747bb1e190d7166bf76621c02089e295f8ae45af2dbb13aaa326e8d"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/skies/qwantani_sunset_puresky.jpg",
+      "bytes": 372349,
+      "sha256": "df98bc8f467c28acc9eb04cb7e64374a9721330920ac77edff65c346e74128cf"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/skies/qwantani_sunset_puresky_1k.hdr",
+      "bytes": 2097202,
+      "sha256": "6f2ac5e908bfc8188e18e396519d0ba3fb43f672ff00220047a25c728509b61e"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/skies/skies.json",
+      "bytes": 2266,
+      "sha256": "bb547c6f3fea477c09ca1c2b18af15298a6c49dab1ae5b79c12cceb3e2802e39"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/surfZoneWorker-C2owdEvZ.js",
+      "bytes": 495837,
+      "sha256": "ab9e6564981ea6b00b8be62099d875ff6d7355cebd82cbdf9507f4d6bfd2051f"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/surfers/surfer1.glb",
+      "bytes": 1007368,
+      "sha256": "2c4f4d2d8f4eaac2c79f4ecc36e44fa295d106c1f43bc6ed04634de1a6657fdc"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/surfers/surfer2.glb",
+      "bytes": 1595524,
+      "sha256": "1679b7ec24873184a2402503802616768ff6fa9a6a7d4b5c22440cf03a1db3a1"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/surfers/surfer3.glb",
+      "bytes": 1545008,
+      "sha256": "cb1e99d538fd787b662460a3c57367687dd5b766f1a97ba56e5bdf87778166a7"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/surfers/surfer4.glb",
+      "bytes": 1229872,
+      "sha256": "e005399299a819ba037cf01623824c82ec8b352dca8c2fd42ff20992faf5cb1d"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/surfers/surfers.json",
+      "bytes": 1061,
+      "sha256": "ee7b767b063c7b2a7035742015ccfc082768ab5f07f905b08c1acdbcf333130c"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/assets/waterSheet-DhKKK1CK.js",
+      "bytes": 11689,
+      "sha256": "47fb425677d8d1f02541e0952042532fd8c93f08781f44d7d30b8e28856987da"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/barrels/periodic-point21-a15-l12.bin",
+      "bytes": 106500,
+      "sha256": "851cb607413ec4fe6ad5d6fd92b896c2ee280d7029f44597f0685d0c2e18a7f2"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/barrels/periodic-point21-a23-l12.bin",
+      "bytes": 128172,
+      "sha256": "db35e68d7e8001980e1659e5a1a59e5066cf123876aa66db56824d2d83759a72"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/barrels/periodic-point21-a30-l12.bin",
+      "bytes": 173576,
+      "sha256": "4ff726a11bd457592b43c23f3094c74777e927aeebe4b72ab40c9b57fbcbb081"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/barrels/periodic-reef42-l12.bin",
+      "bytes": 193180,
+      "sha256": "64ddd42114edfc07fb5386b300b51950857775a249f8acd932e700e4b67fe6f0"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/build.json",
+      "bytes": 40,
+      "sha256": "9ecd02650f51d404565cef2c2c7216af7e9dc306531001ddd7f8d5d8697b292b"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/index.html",
+      "bytes": 1626,
+      "sha256": "dd80476b18eb69fba311b96ceebce140e7c5d62b39de4d783edbc257c4bb5abf"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/lessons/pool-s2-caught.sea",
+      "bytes": 2180693,
+      "sha256": "702704635063b588e3d4374112bf7d68085e846df07ad42b4d13721b4db80dcd"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/lessons/pool-s2-pocket.sea",
+      "bytes": 2176894,
+      "sha256": "d61257dcf47a151569a00920708eaa9d713f8e8b29d596012d2bbbd95f5bff16"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/dist/lessons/pool-s2-waiting.sea",
+      "bytes": 2232988,
+      "sha256": "fa64004c2741797f7639a3815a2194b82c751beffbfb6bb863772a406fba467a"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/lipSheet.ts",
+      "bytes": 19136,
+      "sha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+      "bytes": 32658,
+      "sha256": "223522190ffc23c3096406f6116b57b260b1ede807b9917be5677eab4dc1db4e"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18493,
+      "sha256": "1bf2a75955885a1f2f7f12f1ebc9299b16b40d6d3634d7b3f8e7165d670f4f18"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 84568,
+      "sha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 29409,
+      "sha256": "a1d9214645f072f9f93b9e98407360364cfd20cf748e84fd0b72cf15b8246c7f"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/sheetExitNormals.test.ts",
+      "bytes": 6599,
+      "sha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+      "bytes": 26341,
+      "sha256": "293e399cb5fa7800c0f4592b3c08d4f60d81950361e97bf8efb9b8c02615400b"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/boundedCOpenMouth.test.ts",
+      "bytes": 10279,
+      "sha256": "0268ea876ae7e68167aa75f684c3074da4f45d0421bff505f3823068aae16d90"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+      "bytes": 16525,
+      "sha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "bytes": 11167,
+      "sha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0"
+    }
+  ],
+  "limits": {
+    "steps": 0,
+    "nativeSeconds": 635,
+    "ownerSeconds": 648,
+    "totalSeconds": 660,
+    "cleanupSeconds": 7,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "reportBytes": 2097152
+  },
+  "comparison": {
+    "view": "region",
+    "sideOrder": [
+      "masked",
+      "bypassed",
+      "masked-repeat"
+    ],
+    "interiorOrder": [
+      "masked",
+      "bypassed",
+      "masked-repeat"
+    ],
+    "onlyDiagnosticShaderDifference": "Remove the exact SWEPT_BARREL_DISCARD once from swept fragment shader only.",
+    "fixedCameraSource": "Exact completed cap capture camera derivations; no geometry-derived camera or selector.",
+    "geometryPolicy": "Exact prior full37 active typed bytes and raw-front bytes required; same live identities/active bytes across every pair.",
+    "ordinaryWaterPolicy": "Keep water shader, mask bytes/grid, material, depth/stencil parameters, render ordering and geometry ownership unchanged.",
+    "stencilConsequence": "Coverage bits may change because formerly discarded sheet fragments survive; stencil configuration stays identical.",
+    "maskedRepeatExactPixelsRequired": true,
+    "optionalSupportColourEnabled": false,
+    "placement": false,
+    "epochSearch": false,
+    "cameraSearch": false,
+    "qualitySearch": false
+  }
+}
