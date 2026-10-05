@@ -1,0 +1,23 @@
+{
+  "schema": "cap-refinement-preparation-result/v1",
+  "complete": true,
+  "build": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+    "bytes": 15655,
+    "sha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+    "bytes": 5973,
+    "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
+  },
+  "seal": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/seal.json",
+    "bytes": 6584,
+    "sha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05"
+  },
+  "sources": 10,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "executedTestsOrBuilds": false
+}

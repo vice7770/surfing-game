@@ -161,7 +161,7 @@ class SurfGame {
   private schoolSeaTime = Number.NaN;
   readonly school: SchoolHost;
   /** `?demo`'s autopilot, and how long it has been done with its ride, s. */
-  private readonly demoPilot = demoMode === null ? undefined : new Autopilot({ style: demoMode === 'line' ? 'line' : 'turns' });
+  private readonly demoPilot = demoMode === null ? undefined : new Autopilot({ style: demoMode === 'tube' ? 'tube' : demoMode === 'line' ? 'line' : 'turns' });
   private demoDone = 0;
   private readonly fixedStep = 1 / 60;
   private isBelowSurface = false;

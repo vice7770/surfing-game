@@ -1,0 +1,1418 @@
+{
+  "schema": "cap-refinement-saved-loft-analysis/v1",
+  "complete": true,
+  "inputs": {
+    "baseline": [
+      {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/owner.json",
+        "bytes": 3313,
+        "sha256": "211b7518ab215c184db57b3041e59b13a2c69ffd57fda2a36070ab8968b2ba59"
+      },
+      {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/candidate-first/report.json",
+        "bytes": 48309,
+        "sha256": "f6e9484f91f470aae64b3354e5442dde4966d94b7c6da5c3c9fe69e4ed38f968"
+      },
+      {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1129091,
+        "sha256": "c3d70ea74c2030592db60f307e8c48ac714348e1e4757a04926c8dda6acdcdb8"
+      },
+      {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/candidate-first/side-mouth.png",
+        "bytes": 1443322,
+        "sha256": "a91453a8223a39b9a1bf51b98ebbd3648366d8445997eee14cdc75f1a754545f"
+      },
+      {
+        "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/source-freeze.json",
+        "bytes": 4961,
+        "sha256": "539cb7465a25693cc21598fd4775ac66690a131ab9cc234c2a6d746fe7f43366"
+      }
+    ],
+    "candidate": [
+      {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+        "bytes": 3848,
+        "sha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64"
+      },
+      {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+        "bytes": 49054,
+        "sha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed"
+      },
+      {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1219771,
+        "sha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237"
+      },
+      {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/side-mouth.png",
+        "bytes": 1446012,
+        "sha256": "2ab8d64d8624506d09989ebb8a4b9690569ce8ccd4634ba869392cb8968d39e8"
+      },
+      {
+        "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+        "bytes": 5973,
+        "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
+      }
+    ],
+    "analysisSource": {
+      "file": "/private/tmp/tube-cap-refinement-analysis-20261005.py",
+      "bytes": 13913,
+      "sha256": "397ff9f428c7deb400545a44fe445d6694c4bbc8713d4405d87c4ecb56593185"
+    }
+  },
+  "comparison": {
+    "exactPriorSideCamera": true,
+    "pngDimensions": [
+      [
+        1708,
+        879
+      ],
+      [
+        1708,
+        879
+      ]
+    ],
+    "epochExact": false,
+    "rawFrontPacketBytesExact": true,
+    "boundedCControlsSourceExact": true,
+    "selectorOrWholeGeometryEqualityRequired": false
+  },
+  "method": "Stored phase1/weight1 with positive aligned cap64/floor104 gap; both neighboring rows must belong to same-front joined indexed266-triangle strips. Camera neighborhood is cap vertices inside exact prior side frustum, before raster depth/discard.",
+  "baseline": {
+    "counts": {
+      "slices": 75,
+      "vertices": 10050,
+      "indices": 57456
+    },
+    "epoch": {
+      "step": 0,
+      "seaTime": 276.3293560552737,
+      "surfaceRevision": 4,
+      "drawnWaterTime": 276.3293560552737
+    },
+    "selector": {
+      "row": 42,
+      "inwardRow": 43,
+      "front": 41,
+      "tau": 0.6797621250152588
+    },
+    "eligibleIndexedPairs": 13,
+    "visibleCapRows": [
+      {
+        "row": 37,
+        "front": 41,
+        "x": 73.5,
+        "sigma": 9.034903526306152,
+        "tau": 0.8728448748588562,
+        "cap": [
+          73.5,
+          0.4348675608634949,
+          -68.02542114257812
+        ],
+        "capFloorGap": 0.21754243969917297,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.4909387038080416,
+            -0.3087952144164524,
+            0.9214625805196852
+          ],
+          "pixel": [
+            434.7383469479325,
+            575.2154967360309
+          ]
+        },
+        "bendDegrees": null
+      },
+      {
+        "row": 38,
+        "front": 41,
+        "x": 73.75,
+        "sigma": 9.290771484375,
+        "tau": 0.8342283368110657,
+        "cap": [
+          73.75,
+          0.8455273509025574,
+          -67.97074890136719
+        ],
+        "capFloorGap": 0.628220871090889,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.4331830169824305,
+            0.02354819143082294,
+            0.916342278612576
+          ],
+          "pixel": [
+            484.0617034970044,
+            429.1505698661533
+          ]
+        },
+        "bendDegrees": 3.993594300014757,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.25586795806884766,
+          0.25586891174316406
+        ],
+        "capNormalTurnDegrees": [
+          10.007426824335932,
+          9.033915031943986
+        ]
+      },
+      {
+        "row": 39,
+        "front": 41,
+        "x": 74.0,
+        "sigma": 9.546640396118164,
+        "tau": 0.7956117391586304,
+        "cap": [
+          74.0,
+          1.1987488269805908,
+          -67.91607666015625
+        ],
+        "capFloorGap": 0.9814611524343491,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.36737857361780185,
+            0.3494737120647552,
+            0.9105084181673953
+          ],
+          "pixel": [
+            540.2586981303972,
+            285.9063035475401
+          ]
+        },
+        "bendDegrees": 16.311667294617905,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.25586891174316406,
+          0.25586795806884766
+        ],
+        "capNormalTurnDegrees": [
+          9.033915031943986,
+          24.53426394824039
+        ]
+      },
+      {
+        "row": 40,
+        "front": 41,
+        "x": 74.25,
+        "sigma": 9.802508354187012,
+        "tau": 0.7569952011108398,
+        "cap": [
+          74.25,
+          1.397003173828125,
+          -67.86139678955078
+        ],
+        "capFloorGap": 1.1797344535589218,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.2917194761046597,
+            0.571295858773147,
+            0.9038003463525351
+          ],
+          "pixel": [
+            604.8715674066206,
+            188.4154700692019
+          ]
+        },
+        "bendDegrees": 33.824928541856494,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.25586795806884766,
+          0.25586795806884766
+        ],
+        "capNormalTurnDegrees": [
+          24.53426394824039,
+          20.90266315945246
+        ]
+      },
+      {
+        "row": 41,
+        "front": 41,
+        "x": 74.5,
+        "sigma": 10.05837631225586,
+        "tau": 0.7183786630630493,
+        "cap": [
+          74.5,
+          1.4150481224060059,
+          -67.79678344726562
+        ],
+        "capFloorGap": 1.1974781155586243,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.2070924030375779,
+            0.6397949163897477,
+            0.8955167638495866
+          ],
+          "pixel": [
+            677.1430878059084,
+            158.31013424670587
+          ]
+        },
+        "bendDegrees": 3.2252003939148004,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.25586795806884766,
+          0.25586891174316406
+        ],
+        "capNormalTurnDegrees": [
+          20.90266315945246,
+          1.288621980323543
+        ]
+      },
+      {
+        "row": 42,
+        "front": 41,
+        "x": 74.75,
+        "sigma": 10.314245223999023,
+        "tau": 0.6797621250152588,
+        "cap": [
+          74.75,
+          1.4193694591522217,
+          -67.7271728515625
+        ],
+        "capFloorGap": 1.2025576084852219,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.10808978868941627,
+            0.7069286440704797,
+            0.8853765688803522
+          ],
+          "pixel": [
+            761.6913204592385,
+            128.80486093102417
+          ]
+        },
+        "bendDegrees": 9.136312577245166,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.25586891174316406,
+          0.25586795806884766
+        ],
+        "capNormalTurnDegrees": [
+          1.288621980323543,
+          0.2359878807939583
+        ]
+      },
+      {
+        "row": 43,
+        "front": 41,
+        "x": 75.0,
+        "sigma": 10.570113182067871,
+        "tau": 0.6411455869674683,
+        "cap": [
+          75.0,
+          1.4255017042160034,
+          -67.69898986816406
+        ],
+        "capFloorGap": 1.2042677849531174,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.023404028864287267,
+            0.7724415340004236,
+            0.8760131246189723
+          ],
+          "pixel": [
+            873.9870406501012,
+            100.01194580681383
+          ]
+        },
+        "bendDegrees": 17.077131460187367,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.25586795806884766,
+          0.2616300582885742
+        ],
+        "capNormalTurnDegrees": [
+          0.2359878807939583,
+          0.2535656734831138
+        ]
+      },
+      {
+        "row": 44,
+        "front": 41,
+        "x": 75.25,
+        "sigma": 10.831743240356445,
+        "tau": 0.5970094799995422,
+        "cap": [
+          75.25,
+          1.4297603368759155,
+          -67.7459716796875
+        ],
+        "capFloorGap": 1.2109310626983643,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.1921786093581302,
+            0.8097855135275414,
+            0.8709211637012915
+          ],
+          "pixel": [
+            1018.1205323918431,
+            83.59926680464558
+          ]
+        },
+        "bendDegrees": 3.3410146970804027,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.2616300582885742,
+          0.2616291046142578
+        ],
+        "capNormalTurnDegrees": [
+          0.2535656734831138,
+          0.8901921513063403
+        ]
+      },
+      {
+        "row": 45,
+        "front": 41,
+        "x": 75.5,
+        "sigma": 11.093372344970703,
+        "tau": 0.5528733730316162,
+        "cap": [
+          75.5,
+          1.4370043277740479,
+          -67.7783203125
+        ],
+        "capFloorGap": 1.2174623161554337,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.3743283581824192,
+            0.8621395590266617,
+            0.8641809729720783
+          ],
+          "pixel": [
+            1173.676417887786,
+            60.58966380778217
+          ]
+        },
+        "bendDegrees": 11.327924269225765,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.2616291046142578,
+          0.2616300582885742
+        ],
+        "capNormalTurnDegrees": [
+          0.8901921513063403,
+          0.05255706655147639
+        ]
+      },
+      {
+        "row": 46,
+        "front": 41,
+        "x": 75.75,
+        "sigma": 11.355002403259277,
+        "tau": 0.5087372064590454,
+        "cap": [
+          75.75,
+          1.4483262300491333,
+          -67.86283874511719
+        ],
+        "capFloorGap": 1.2234948873519897,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.5738547116013444,
+            0.8959162120376919,
+            0.8613940466053029
+          ],
+          "pixel": [
+            1344.0719237075482,
+            45.74482480943441
+          ]
+        },
+        "bendDegrees": 18.06622428460067,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.2616300582885742,
+          0.2616300582885742
+        ],
+        "capNormalTurnDegrees": [
+          0.05255706655147639,
+          0.30989133416942305
+        ]
+      },
+      {
+        "row": 47,
+        "front": 41,
+        "x": 76.0,
+        "sigma": 11.616632461547852,
+        "tau": 0.4646010994911194,
+        "cap": [
+          76.0,
+          1.4565836191177368,
+          -67.86549377441406
+        ],
+        "capFloorGap": 1.233770951628685,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.7976364431025198,
+            0.9779732308883382,
+            0.8506506714180845
+          ],
+          "pixel": [
+            1535.181522409552,
+            9.680765024575358
+          ]
+        },
+        "bendDegrees": 13.42207603366076,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.2616300582885742,
+          0.2616291046142578
+        ],
+        "capNormalTurnDegrees": [
+          0.30989133416942305,
+          0.16541815929422946
+        ]
+      }
+    ],
+    "visiblePairDeltaX": {
+      "count": 10,
+      "min": 0.25,
+      "median": 0.25,
+      "max": 0.25
+    },
+    "maximumVisibleBend": {
+      "row": 40,
+      "front": 41,
+      "x": 74.25,
+      "sigma": 9.802508354187012,
+      "tau": 0.7569952011108398,
+      "cap": [
+        74.25,
+        1.397003173828125,
+        -67.86139678955078
+      ],
+      "capFloorGap": 1.1797344535589218,
+      "capIndexedTriangleIncidences": 6,
+      "capProjection": {
+        "inFrustum": true,
+        "ndc": [
+          -0.2917194761046597,
+          0.571295858773147,
+          0.9038003463525351
+        ],
+        "pixel": [
+          604.8715674066206,
+          188.4154700692019
+        ]
+      },
+      "bendDegrees": 33.824928541856494,
+      "neighborDeltaX": [
+        0.25,
+        0.25
+      ],
+      "neighborDeltaSigma": [
+        0.25586795806884766,
+        0.25586795806884766
+      ],
+      "capNormalTurnDegrees": [
+        24.53426394824039,
+        20.90266315945246
+      ]
+    }
+  },
+  "candidate": {
+    "counts": {
+      "slices": 81,
+      "vertices": 10854,
+      "indices": 62244
+    },
+    "epoch": {
+      "step": 0,
+      "seaTime": 276.3293560552737,
+      "surfaceRevision": 5,
+      "drawnWaterTime": 276.3293560552737
+    },
+    "selector": {
+      "row": 43,
+      "inwardRow": 44,
+      "front": 41,
+      "tau": 0.6797621250152588
+    },
+    "eligibleIndexedPairs": 19,
+    "visibleCapRows": [
+      {
+        "row": 37,
+        "front": 41,
+        "x": 73.5,
+        "sigma": 9.034903526306152,
+        "tau": 0.8728448748588562,
+        "cap": [
+          73.5,
+          0.4348675608634949,
+          -68.02542114257812
+        ],
+        "capFloorGap": 0.21754243969917297,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.4909387038080416,
+            -0.3087952144164524,
+            0.9214625805196852
+          ],
+          "pixel": [
+            434.7383469479325,
+            575.2154967360309
+          ]
+        },
+        "bendDegrees": null
+      },
+      {
+        "row": 38,
+        "front": 41,
+        "x": 73.75,
+        "sigma": 9.290771484375,
+        "tau": 0.8342283368110657,
+        "cap": [
+          73.75,
+          0.8455273509025574,
+          -67.97074890136719
+        ],
+        "capFloorGap": 0.628220871090889,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.4331830169824305,
+            0.02354819143082294,
+            0.916342278612576
+          ],
+          "pixel": [
+            484.0617034970044,
+            429.1505698661533
+          ]
+        },
+        "bendDegrees": 3.993594300014757,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.25586795806884766,
+          0.25586891174316406
+        ],
+        "capNormalTurnDegrees": [
+          10.007426824335932,
+          4.9497978871211386
+        ]
+      },
+      {
+        "row": 39,
+        "front": 41,
+        "x": 74.0,
+        "sigma": 9.546640396118164,
+        "tau": 0.7956117391586304,
+        "cap": [
+          74.0,
+          1.1987488269805908,
+          -67.91607666015625
+        ],
+        "capFloorGap": 0.9814611524343491,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.36737857361780185,
+            0.3494737120647552,
+            0.9105084181673953
+          ],
+          "pixel": [
+            540.2586981303972,
+            285.9063035475401
+          ]
+        },
+        "bendDegrees": 9.837934242763321,
+        "neighborDeltaX": [
+          0.25,
+          0.125
+        ],
+        "neighborDeltaSigma": [
+          0.25586891174316406,
+          0.12793350219726562
+        ],
+        "capNormalTurnDegrees": [
+          4.9497978871211386,
+          13.518085039291101
+        ]
+      },
+      {
+        "row": 40,
+        "front": 41,
+        "x": 74.125,
+        "sigma": 9.67457389831543,
+        "tau": 0.7763034701347351,
+        "cap": [
+          74.125,
+          1.323349118232727,
+          -67.88873291015625
+        ],
+        "capFloorGap": 1.1060708910226822,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.330915954697114,
+            0.4806123000794995,
+            0.9072753107357162
+          ],
+          "pixel": [
+            571.3977746886646,
+            228.27089411505997
+          ]
+        },
+        "bendDegrees": 14.312849545046184,
+        "neighborDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborDeltaSigma": [
+          0.12793350219726562,
+          0.12793445587158203
+        ],
+        "capNormalTurnDegrees": [
+          13.518085039291101,
+          24.78273747226229
+        ]
+      },
+      {
+        "row": 41,
+        "front": 41,
+        "x": 74.25,
+        "sigma": 9.802508354187012,
+        "tau": 0.7569952011108398,
+        "cap": [
+          74.25,
+          1.397003173828125,
+          -67.86139678955078
+        ],
+        "capFloorGap": 1.1797344535589218,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.2917194761046597,
+            0.571295858773147,
+            0.9038003463525351
+          ],
+          "pixel": [
+            604.8715674066206,
+            188.4154700692019
+          ]
+        },
+        "bendDegrees": 26.00846924143374,
+        "neighborDeltaX": [
+          0.125,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.12793445587158203,
+          0.25586795806884766
+        ],
+        "capNormalTurnDegrees": [
+          24.78273747226229,
+          11.220683876712084
+        ]
+      },
+      {
+        "row": 42,
+        "front": 41,
+        "x": 74.5,
+        "sigma": 10.05837631225586,
+        "tau": 0.7183786630630493,
+        "cap": [
+          74.5,
+          1.4150481224060059,
+          -67.79678344726562
+        ],
+        "capFloorGap": 1.1974781155586243,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.2070924030375779,
+            0.6397949163897477,
+            0.8955167638495866
+          ],
+          "pixel": [
+            677.1430878059084,
+            158.31013424670587
+          ]
+        },
+        "bendDegrees": 3.2252003939148004,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.25586795806884766,
+          0.25586891174316406
+        ],
+        "capNormalTurnDegrees": [
+          11.220683876712084,
+          1.288621980323543
+        ]
+      },
+      {
+        "row": 43,
+        "front": 41,
+        "x": 74.75,
+        "sigma": 10.314245223999023,
+        "tau": 0.6797621250152588,
+        "cap": [
+          74.75,
+          1.4193694591522217,
+          -67.7271728515625
+        ],
+        "capFloorGap": 1.2025576084852219,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            -0.10808978868941627,
+            0.7069286440704797,
+            0.8853765688803522
+          ],
+          "pixel": [
+            761.6913204592385,
+            128.80486093102417
+          ]
+        },
+        "bendDegrees": 9.136312577245166,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.25586891174316406,
+          0.25586795806884766
+        ],
+        "capNormalTurnDegrees": [
+          1.288621980323543,
+          0.015220715710730668
+        ]
+      },
+      {
+        "row": 44,
+        "front": 41,
+        "x": 75.0,
+        "sigma": 10.570113182067871,
+        "tau": 0.6411455869674683,
+        "cap": [
+          75.0,
+          1.4255017042160034,
+          -67.69898986816406
+        ],
+        "capFloorGap": 1.2042677849531174,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.023404028864287267,
+            0.7724415340004236,
+            0.8760131246189723
+          ],
+          "pixel": [
+            873.9870406501012,
+            100.01194580681383
+          ]
+        },
+        "bendDegrees": 10.17882605196543,
+        "neighborDeltaX": [
+          0.25,
+          0.125
+        ],
+        "neighborDeltaSigma": [
+          0.25586795806884766,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.015220715710730668,
+          0.1824756114450563
+        ]
+      },
+      {
+        "row": 45,
+        "front": 41,
+        "x": 75.125,
+        "sigma": 10.700927734375,
+        "tau": 0.6190775036811829,
+        "cap": [
+          75.125,
+          1.426203966140747,
+          -67.7070541381836
+        ],
+        "capFloorGap": 1.2099151313304901,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.10262996911312504,
+            0.7959210632271859,
+            0.8723899436433635
+          ],
+          "pixel": [
+            941.6459936226087,
+            89.69269271165179
+          ]
+        },
+        "bendDegrees": 13.656043937376266,
+        "neighborDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborDeltaSigma": [
+          0.1308145523071289,
+          0.1308155059814453
+        ],
+        "capNormalTurnDegrees": [
+          0.1824756114450563,
+          0.7853055727456141
+        ]
+      },
+      {
+        "row": 46,
+        "front": 41,
+        "x": 75.25,
+        "sigma": 10.831743240356445,
+        "tau": 0.5970094799995422,
+        "cap": [
+          75.25,
+          1.4297603368759155,
+          -67.7459716796875
+        ],
+        "capFloorGap": 1.2109310626983643,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.1921786093581302,
+            0.8097855135275414,
+            0.8709211637012915
+          ],
+          "pixel": [
+            1018.1205323918431,
+            83.59926680464558
+          ]
+        },
+        "bendDegrees": 0.2045768190359987,
+        "neighborDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.7853055727456141,
+          0.1626619237073289
+        ]
+      },
+      {
+        "row": 47,
+        "front": 41,
+        "x": 75.375,
+        "sigma": 10.962557792663574,
+        "tau": 0.5749413967132568,
+        "cap": [
+          75.375,
+          1.4333417415618896,
+          -67.7844009399414
+        ],
+        "capFloorGap": 1.211917832493782,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.2837506482355567,
+            0.824244237127593,
+            0.8693804547846978
+          ],
+          "pixel": [
+            1096.3230535931655,
+            77.24465778242289
+          ]
+        },
+        "bendDegrees": 19.86641064403612,
+        "neighborDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborDeltaSigma": [
+          0.1308145523071289,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          0.1626619237073289,
+          0.019575696300186202
+        ]
+      },
+      {
+        "row": 48,
+        "front": 41,
+        "x": 75.5,
+        "sigma": 11.093372344970703,
+        "tau": 0.5528733730316162,
+        "cap": [
+          75.5,
+          1.4370043277740479,
+          -67.7783203125
+        ],
+        "capFloorGap": 1.2174623161554337,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.3743283581824192,
+            0.8621395590266617,
+            0.8641809729720783
+          ],
+          "pixel": [
+            1173.676417887786,
+            60.58966380778217
+          ]
+        },
+        "bendDegrees": 3.251145897338957,
+        "neighborDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborDeltaSigma": [
+          0.1308145523071289,
+          0.1308155059814453
+        ],
+        "capNormalTurnDegrees": [
+          0.019575696300186202,
+          1.1509919233392722
+        ]
+      },
+      {
+        "row": 49,
+        "front": 41,
+        "x": 75.625,
+        "sigma": 11.224187850952148,
+        "tau": 0.5308052897453308,
+        "cap": [
+          75.625,
+          1.4413024187088013,
+          -67.77931213378906
+        ],
+        "capFloorGap": 1.223215714097023,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.4725122688518937,
+            0.9000191195297786,
+            0.859188940578067
+          ],
+          "pixel": [
+            1257.5254775995172,
+            43.94159696666229
+          ]
+        },
+        "bendDegrees": 33.27588227428939,
+        "neighborDeltaX": [
+          0.125,
+          0.125
+        ],
+        "neighborDeltaSigma": [
+          0.1308155059814453,
+          0.1308145523071289
+        ],
+        "capNormalTurnDegrees": [
+          1.1509919233392722,
+          0.38049496056783577
+        ]
+      },
+      {
+        "row": 50,
+        "front": 41,
+        "x": 75.75,
+        "sigma": 11.355002403259277,
+        "tau": 0.5087372064590454,
+        "cap": [
+          75.75,
+          1.4483262300491333,
+          -67.86283874511719
+        ],
+        "capFloorGap": 1.2234948873519897,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.5738547116013444,
+            0.8959162120376919,
+            0.8613940466053029
+          ],
+          "pixel": [
+            1344.0719237075482,
+            45.74482480943441
+          ]
+        },
+        "bendDegrees": 33.12482097304829,
+        "neighborDeltaX": [
+          0.125,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.1308145523071289,
+          0.2616300582885742
+        ],
+        "capNormalTurnDegrees": [
+          0.38049496056783577,
+          0.45841105411439836
+        ]
+      },
+      {
+        "row": 51,
+        "front": 41,
+        "x": 76.0,
+        "sigma": 11.616632461547852,
+        "tau": 0.4646010994911194,
+        "cap": [
+          76.0,
+          1.4565836191177368,
+          -67.86549377441406
+        ],
+        "capFloorGap": 1.233770951628685,
+        "capIndexedTriangleIncidences": 6,
+        "capProjection": {
+          "inFrustum": true,
+          "ndc": [
+            0.7976364431025198,
+            0.9779732308883382,
+            0.8506506714180845
+          ],
+          "pixel": [
+            1535.181522409552,
+            9.680765024575358
+          ]
+        },
+        "bendDegrees": 13.42207603366076,
+        "neighborDeltaX": [
+          0.25,
+          0.25
+        ],
+        "neighborDeltaSigma": [
+          0.2616300582885742,
+          0.2616291046142578
+        ],
+        "capNormalTurnDegrees": [
+          0.45841105411439836,
+          0.28516360577217137
+        ]
+      }
+    ],
+    "visiblePairDeltaX": {
+      "count": 14,
+      "min": 0.125,
+      "median": 0.125,
+      "max": 0.25
+    },
+    "maximumVisibleBend": {
+      "row": 49,
+      "front": 41,
+      "x": 75.625,
+      "sigma": 11.224187850952148,
+      "tau": 0.5308052897453308,
+      "cap": [
+        75.625,
+        1.4413024187088013,
+        -67.77931213378906
+      ],
+      "capFloorGap": 1.223215714097023,
+      "capIndexedTriangleIncidences": 6,
+      "capProjection": {
+        "inFrustum": true,
+        "ndc": [
+          0.4725122688518937,
+          0.9000191195297786,
+          0.859188940578067
+        ],
+        "pixel": [
+          1257.5254775995172,
+          43.94159696666229
+        ]
+      },
+      "bendDegrees": 33.27588227428939,
+      "neighborDeltaX": [
+        0.125,
+        0.125
+      ],
+      "neighborDeltaSigma": [
+        0.1308155059814453,
+        0.1308145523071289
+      ],
+      "capNormalTurnDegrees": [
+        1.1509919233392722,
+        0.38049496056783577
+      ]
+    }
+  },
+  "priorMaximumBendAtSameStoredFrontX": {
+    "row": 41,
+    "front": 41,
+    "x": 74.25,
+    "sigma": 9.802508354187012,
+    "tau": 0.7569952011108398,
+    "cap": [
+      74.25,
+      1.397003173828125,
+      -67.86139678955078
+    ],
+    "capFloorGap": 1.1797344535589218,
+    "capIndexedTriangleIncidences": 6,
+    "capProjection": {
+      "inFrustum": true,
+      "ndc": [
+        -0.2917194761046597,
+        0.571295858773147,
+        0.9038003463525351
+      ],
+      "pixel": [
+        604.8715674066206,
+        188.4154700692019
+      ]
+    },
+    "bendDegrees": 26.00846924143374,
+    "neighborDeltaX": [
+      0.125,
+      0.25
+    ],
+    "neighborDeltaSigma": [
+      0.12793445587158203,
+      0.25586795806884766
+    ],
+    "capNormalTurnDegrees": [
+      24.78273747226229,
+      11.220683876712084
+    ]
+  },
+  "priorLiveRawAudit": {
+    "priorRetainedPositiveFadeRawCount": 12,
+    "candidateMissingPriorLiveRaw": [],
+    "candidateAtHardVertexBudget": false,
+    "capturedBudgetOrOmissionReasonAvailable": false,
+    "records": [
+      {
+        "front": 42,
+        "x": -73.0,
+        "baselineRow": 3,
+        "candidateRow": 3,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 0,
+        "candidateFade": 1.0,
+        "candidatePhase": 0,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 42,
+        "x": -71.0,
+        "baselineRow": 11,
+        "candidateRow": 11,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 0,
+        "candidateFade": 1.0,
+        "candidatePhase": 0,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 45,
+        "x": -63.0,
+        "baselineRow": 18,
+        "candidateRow": 18,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 0,
+        "candidateFade": 1.0,
+        "candidatePhase": 0,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 45,
+        "x": -61.0,
+        "baselineRow": 22,
+        "candidateRow": 22,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 0,
+        "candidateFade": 1.0,
+        "candidatePhase": 0,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 45,
+        "x": -59.0,
+        "baselineRow": 26,
+        "candidateRow": 26,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 0,
+        "candidateFade": 1.0,
+        "candidatePhase": 0,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 41,
+        "x": 73.0,
+        "baselineRow": 35,
+        "candidateRow": 35,
+        "rawWordsEqual": true,
+        "baselineFade": 0.7535448670387268,
+        "baselinePhase": 2,
+        "candidateFade": 0.7535448670387268,
+        "candidatePhase": 2,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 41,
+        "x": 75.0,
+        "baselineRow": 43,
+        "candidateRow": 44,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 1,
+        "candidateFade": 1.0,
+        "candidatePhase": 1,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 41,
+        "x": 77.0,
+        "baselineRow": 51,
+        "candidateRow": 57,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 1,
+        "candidateFade": 1.0,
+        "candidatePhase": 1,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 41,
+        "x": 79.0,
+        "baselineRow": 59,
+        "candidateRow": 65,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 0,
+        "candidateFade": 1.0,
+        "candidatePhase": 0,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 41,
+        "x": 81.0,
+        "baselineRow": 63,
+        "candidateRow": 69,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 0,
+        "candidateFade": 1.0,
+        "candidatePhase": 0,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 41,
+        "x": 83.0,
+        "baselineRow": 67,
+        "candidateRow": 73,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 0,
+        "candidateFade": 1.0,
+        "candidatePhase": 0,
+        "capPositionExact": true,
+        "stationTauExact": true
+      },
+      {
+        "front": 41,
+        "x": 85.0,
+        "baselineRow": 71,
+        "candidateRow": 77,
+        "rawWordsEqual": true,
+        "baselineFade": 1.0,
+        "baselinePhase": 0,
+        "candidateFade": 1.0,
+        "candidatePhase": 0,
+        "capPositionExact": true,
+        "stationTauExact": true
+      }
+    ]
+  },
+  "limitations": [
+    "Raw saved geometry/normal words only; no provider, simulation, build, native or port execution.",
+    "Raw packet endian metadata is absent in this writer; decoding uses the same-capture Float32 array endian flag.",
+    "Frustum membership is projected vertex membership, not surviving fragment/white-cut attribution or visibility.",
+    "Bend angles describe existing polylines; changes may follow different selectors, epochs or inputs, reported separately.",
+    "Prior positive-fade raw rows include ordinary prethrow support; missing rows are listed, not assigned a budget/retirement cause without planner diagnostics.",
+    "No image score, optical/shader cause, actual body/board entry, mouth quality, ordinary ride or FPS acceptance."
+  ]
+}

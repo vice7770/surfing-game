@@ -111,6 +111,7 @@ export class LocalSurfZone extends SnapshotSampler implements SurfZoneHost {
   }
 
   restore(sea: Uint8Array): void {
+    this.runner.invalidateTubeApproach();
     this.runner.simulation.importState(decodeSurfZoneState(sea));
     this.refresh();
   }

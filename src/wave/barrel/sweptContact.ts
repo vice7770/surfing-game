@@ -1,9 +1,11 @@
 import { LANDMARK, type ProfileLibrary } from './ProfileLibrary';
 import { LOFT, LOFT_SAMPLES, SweptLoft, type LoftResult } from './sweptLoft';
 import type { OwnedPlainSurface, PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
+import { routeForStrip, validTubeApproachRequest, type TubeApproachCue, type TubeApproachRequest } from './tubeApproach';
+export type { TubeApproachCue, TubeApproachRequest } from './tubeApproach';
 
 /** The physical water needs answers, not mutable contact geometry. */
-export type SweptSurfaceQueries = Pick<SweptContact, 'query' | 'floorAt'>;
+export type SweptSurfaceQueries = Pick<SweptContact, 'query' | 'floorAt' | 'approachNear'>;
 /** Internal ordinary-worker owner; neither object publishes a raw contact or loft. */
 export interface OrdinaryContactOwner {
   readonly queries: SweptSurfaceQueries;
@@ -121,6 +123,7 @@ export class SweptContact {
   private readonly bucket: number;
   /** Provider mode, not descriptive loft diagnostics, controls C water-closure contact ownership. */
   private readonly boundedC: boolean;
+  private geometryStep = 0;
   /** Per vertex, its along-ray coordinate on its own slice's ray, and (a joined slice's next) on the previous slice's. */
   private own = new Float32Array(0);
   private prior = new Float32Array(0);
@@ -181,6 +184,7 @@ export class SweptContact {
     const queries = Object.freeze({
       query: contact.query.bind(contact),
       floorAt: contact.floorAt.bind(contact),
+      approachNear: contact.approachNear.bind(contact),
     });
     let owned: OwnedPlainSurface | undefined;
     let source: PhysicalSurfWater | undefined;
@@ -203,6 +207,7 @@ export class SweptContact {
   update(records: Float32Array, count: number, stillLevel: number, heightAt: (x: number, z: number) => number): void {
     const loft = this.loft.build(records, count, stillLevel, heightAt);
     this.last = loft;
+    this.geometryStep += 1;
     const { positions: p, sliceCount } = loft;
     if (this.own.length !== p.length / 3) {
       const slices = p.length / 3 / S;
@@ -316,6 +321,58 @@ export class SweptContact {
   /** The lowest crossing at (x, z): the face; NaN where the loft is not. */
   floorAt(x: number, z: number): number {
     return this.strip(x, z) < 0 ? Number.NaN : this.ys[0];
+  }
+
+  /**
+   * Answers-only ordinary guide: the nearest geometrically reachable mature C mouth, preserving a preferred front
+   * while one remains usable. The private loft never escapes; returned points/scalars belong to this generation.
+   * Calling this is opt-in. Physics queries and their normal/bucket preparation are unchanged.
+   */
+  approachNear(request: TubeApproachRequest): TubeApproachCue | undefined {
+    const loft = this.last;
+    if (!this.boundedC || !loft || !validTubeApproachRequest(request)) return undefined;
+    const p = loft.positions, candidates: { strip: number; fraction: number; distance: number; preferred: boolean }[] = [];
+    const reachSquared = (request.reach ?? 15) ** 2;
+    for (let strip = 0; strip + 1 < loft.sliceCount; strip++) {
+      if (loft.sliceJoined[strip] !== 1 || loft.sliceFront[strip] !== loft.sliceFront[strip + 1]
+        || loft.slicePhase[strip] !== 1 || loft.slicePhase[strip + 1] !== 1
+        || !(loft.sliceWeight[strip] > 0 && loft.sliceWeight[strip + 1] > 0)) continue;
+      const a = 3 * (strip * S + E + LANDMARK.lip), b = a + 3 * S;
+      const dx = p[b] - p[a], dz = p[b + 2] - p[a + 2], span = dx * dx + dz * dz;
+      if (!(span > 0)) continue;
+      const fraction = Math.max(0, Math.min(1, ((request.x - p[a]) * dx + (request.z - p[a + 2]) * dz) / span));
+      const distance = (p[a] + fraction * dx - request.x) ** 2 + (p[a + 2] + fraction * dz - request.z) ** 2;
+      if (distance <= reachSquared) candidates.push({ strip, fraction, distance, preferred: loft.sliceFront[strip] === request.preferredFront });
+    }
+    if (candidates.length === 0) return undefined;
+    candidates.sort((a, b) => Number(b.preferred) - Number(a.preferred) || a.distance - b.distance || a.strip - b.strip);
+    // One actual-index selection serves all nearby candidates. This bound contains every candidate's translated
+    // finite envelope in any ray frame, plus the supplied current world body. XZ needs no deferred Y preparation.
+    let extent = Math.hypot(request.halfWidth, request.halfDepth);
+    for (const body of request.body) extent = Math.max(extent, Math.hypot(body.x - request.x, body.z - request.z) + body.radius);
+    const radius = (request.reach ?? 15) + 3 * extent + 0.55;
+    const xMin = request.x - radius, xMax = request.x + radius, zMin = request.z - radius, zMax = request.z + radius;
+    const triangleOffsets: number[] = [];
+    for (let i = 0; i + 2 < loft.indexCount; i += 3) {
+      const a = loft.indices[i], b = loft.indices[i + 1], c = loft.indices[i + 2];
+      if (Math.max(a, b, c) >= loft.vertexCount) return undefined;
+      if (Math.max(p[3 * a], p[3 * b], p[3 * c]) < xMin || Math.min(p[3 * a], p[3 * b], p[3 * c]) > xMax
+        || Math.max(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2]) < zMin || Math.min(p[3 * a + 2], p[3 * b + 2], p[3 * c + 2]) > zMax) continue;
+      triangleOffsets.push(i);
+    }
+    const endpoints = new Set<number>();
+    for (const candidate of candidates) {
+      // Adjacent mature strips can project to exactly the same stored cap row. Their run, ray and route coincide;
+      // other stations, even very close ones, remain distinct and are never hidden by coarse spatial deduplication.
+      const endpoint = candidate.fraction === 0 ? candidate.strip : candidate.fraction === 1 ? candidate.strip + 1 : undefined;
+      if (endpoint !== undefined) {
+        if (endpoints.has(endpoint)) continue;
+        endpoints.add(endpoint);
+      }
+      const cue = routeForStrip(loft, candidate.strip, candidate.fraction, request, this.geometryStep, this.prepareRow, triangleOffsets);
+      if (cue) return cue;
+    }
+    return undefined;
   }
 
   /**

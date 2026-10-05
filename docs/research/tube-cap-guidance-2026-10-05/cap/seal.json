@@ -1,0 +1,171 @@
+{
+  "schema": "cap-refinement-capture/v1",
+  "rootAuthorized": true,
+  "complete": true,
+  "limits": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "nativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "hudReadyWaitMilliseconds": 180000,
+    "steps": 360,
+    "physicalSeconds": 6,
+    "inspectionCadence": 30,
+    "reportBytes": 33554432,
+    "traceBytes": 25165824,
+    "pngCount": 4,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "sidecarCount": 1,
+    "sidecarBytesEach": 6291456,
+    "sidecarRawBytes": 4194304,
+    "movieCount": 0,
+    "ownedPorts": [
+      4301,
+      9711
+    ],
+    "protectedOpenPorts": [
+      4312,
+      4313,
+      4314,
+      4315
+    ]
+  },
+  "approvedApplicationBuild": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+    "bytes": 15655,
+    "sha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00"
+  },
+  "sourceFreeze": {
+    "file": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+    "bytes": 5973,
+    "sha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36"
+  },
+  "approvedDiagnosticBuild": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 35375,
+    "sha256": "a7865f10a887387c397af2298360f18bea882e9f26e5be1582fdcd29d542edf0"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348510,
+    "sha256": "cdf62d8f7cad69477eaaa7eb45c68490f3d4a60542d7bf841e97421a7af76055"
+  },
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/prepare.py",
+      "bytes": 4795,
+      "sha256": "4e002c0d513a23312f1a23c57791424794591906d123e7a7a87b078103b55b98"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/run.py",
+      "bytes": 13779,
+      "sha256": "343456a042f7af72fc96d8b20674c796b667037c723233a12733226961216ac8"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/native.mjs",
+      "bytes": 21325,
+      "sha256": "2ceb650438129c2f00b66ad10f42b17de78a2516a24335876d7de4426ab0e876"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/mature-mouth.mjs",
+      "bytes": 28500,
+      "sha256": "dbe1ee43639eb5af1072547a5a96b8f7f70e1ed5bc15e13669ddfb9b337522e7"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/inspection-bridge.mjs",
+      "bytes": 6372,
+      "sha256": "e442075bfb5d3f741c3b3ecb87a1d2136076ae2004b56a37652e5380024552c4"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/inputs.json",
+      "bytes": 5180,
+      "sha256": "77d0825bd75485858f04aede97f59b0cb7594c774d9157343b7feaa1e6a6127d"
+    },
+    {
+      "file": "/private/tmp/tube-cap-refinement-native-20261005/README.md",
+      "bytes": 4896,
+      "sha256": "fc7aca19fedc4abd6d70533729fa6144be7df67a7827a5e998dcd9515d3c4667"
+    }
+  ],
+  "borrowedHelpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "bytes": 3726,
+      "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+      "bytes": 16704,
+      "sha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "bytes": 1053,
+      "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+    }
+  ],
+  "referencePins": [
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json",
+      "bytes": 18331566,
+      "sha256": "850e86557f7e3be891b9ff11036bafb5bdaa3364fee78ee99cd814271cda58c2"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first-owner.json",
+      "bytes": 3457,
+      "sha256": "1e24c8c0b4135f1eef96adb17bef8c03fd1e9ce56df1597761c20ea6ee84c522"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first/report.json",
+      "bytes": 41583,
+      "sha256": "47c4c82ba86de60adede064625d34a0ef109b81b6c897324eaa00f7e9f548685"
+    },
+    {
+      "file": "/private/tmp/tube-c-mature-mouth-inspection-native-20261005/candidate-first-owner.json",
+      "bytes": 5312,
+      "sha256": "c6c5b449b36a3d0cb866deb49c4dfbf6e5f446a39769a359b1a3437761c027fb"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/candidate-first/report.json",
+      "bytes": 48309,
+      "sha256": "f6e9484f91f470aae64b3354e5442dde4966d94b7c6da5c3c9fe69e4ed38f968"
+    },
+    {
+      "file": "/private/tmp/tube-open-mouth-body-clearance-native-20261005/owner.json",
+      "bytes": 3313,
+      "sha256": "211b7518ab215c184db57b3041e59b13a2c69ffd57fda2a36070ab8968b2ba59"
+    }
+  ],
+  "comparison": "Current first eligible mature joined pair with both sampled cap64/floor104 gaps>=1.20m and positive row air recorded anew. Prior report supplies fixed interior pose/projection only; no prior geometry/epoch/selector equality. Primary exact prior side pose/projection, independent of current cap/floor coordinates; exact prior interior secondary. No exposed run-end mouth, playability or quality acceptance."
+}

@@ -19,6 +19,7 @@ import { TUBE_CAPACITY, TUBE_STRIDE } from './tubeTable';
 import { libraryFromBytes } from './barrel/barrelLibrary';
 import { FRONT_CAPACITY, FRONT_STRIDE, writeFrontRecords } from './barrel/frontRecords';
 import { SweptContact, type OrdinaryContactOwner, type SweptSurfaceQueries } from './barrel/sweptContact';
+import type { TubeApproachCue, TubeApproachRequest, TubeBodyPoint } from './barrel/tubeApproach';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
 import { SurfZoneSimulation, sweptBarrelOn, type RenderGrid, type SolverDevice, type SurfZoneConfig, type SurfZoneStart } from './SurfZoneSimulation';
 import type { BreakerType } from './SwellReadout';
@@ -127,6 +128,8 @@ export interface SurfZoneRunnerOptions {
 /** The player's request for a batch of steps: the ride's input, and a quick retry. */
 export interface RideRequest extends RideInput {
   retry: boolean;
+  /** Dev tube controller: request copied mouth guidance from current contact geometry. */
+  tubeGuide?: boolean;
   /** Online (spec N1): a retry puts the rider here, and later retries too (a free spot in the lineup). */
   spawnAt?: { x: number; z: number };
   /** Surf School (spec L2): put the rider here, standing or lying, as a restart. */
@@ -224,6 +227,10 @@ export interface SurfZoneStatus {
     balance: number;
     /** Standing, the body's bank on its ankles, rad, toward the board's +x (its left); 0 otherwise (the dev autopilot's flow). */
     bank?: number;
+    /** Optional dev guidance. This is a geometry observation, not a completed ride. */
+    tubeApproach?: TubeApproachCue;
+    /** Same-step dev witnesses: drawn tips/centres and the physical part spheres, observed without moving the rider. */
+    tubeBody?: { seaTime: number; renderPoints: TubeBodyPoint[]; partSpheres: TubeBodyPoint[] };
     /** The leash (the wipeout spec): snapped, its tension (N) and the ends' distance (m), and whether it is being reeled in. */
     leash: { snapped: boolean; tension: number; distance: number; reeling: boolean };
     /** The duck-dive's press, 0–1. */
@@ -334,6 +341,9 @@ export class SurfZoneRunner {
   /** The rider against the wave (spec P9 phase 0), and the peel angle it uses, refreshed once per simulated second. */
   private readonly gauge?: WaveFrameGauge;
   private wave?: WaveFrame;
+  private tubeApproach?: TubeApproachCue;
+  private tubeBodyTime = Number.NaN;
+  private readonly tubeBody = Array.from({ length: 14 }, () => ({ x: 0, y: 0, z: 0, radius: 0 }));
   private peelAngle = 0;
   private peelAge = Infinity;
   /** The ride in progress read from its trace (spec P9), and the last finished ride's report. */
@@ -541,6 +551,7 @@ export class SurfZoneRunner {
         this.launchRide();
       }
       if (request.place) {
+        this.invalidateTubeApproach();
         this.rideResets += 1;
         session.place(request.place, this.water);
         this.gauge?.reset();
@@ -564,7 +575,7 @@ export class SurfZoneRunner {
         if (heldDown) this.rescues += 1;
         this.launchRide();
       }
-      this.measureRide();
+      this.measureRide(request.tubeGuide === true);
     } else if (board) {
       const start = performance.now();
       board.step(SURF_ZONE_STEP, this.water);
@@ -603,6 +614,7 @@ export class SurfZoneRunner {
 
   /** Board and rider back in the lineup: prone, nose to the beach. */
   private launchRide(): void {
+    this.invalidateTubeApproach();
     this.session?.reset(this.rideLineup, 0, this.water);
     this.gauge?.reset();
     // A restart drops the ride in progress unreported.
@@ -626,7 +638,7 @@ export class SurfZoneRunner {
   }
 
   /** The rider (on the board, or fallen) against the wave under it. */
-  private measureRide(): void {
+  private measureRide(tubeGuide = false): void {
     const { session, gauge } = this;
     if (!session || !gauge) return;
     this.peelAge += SURF_ZONE_STEP;
@@ -638,7 +650,52 @@ export class SurfZoneRunner {
     const position = body ? body.centerOfMass : session.surfer.centerOfMass(this.point);
     const velocity = body ? body.velocity : session.surfer.linearMomentum(this.momentum).divideScalar(session.surfer.mass);
     this.wave = gauge.update(this.water, position, velocity, SURF_ZONE_STEP, this.peelAngle);
+    this.measureTubeApproach(tubeGuide);
     this.analyze(position, velocity);
+  }
+
+  /** A restored sea or a restarted actor cannot retain guidance from the preceding geometry. */
+  invalidateTubeApproach(): void {
+    this.tubeApproach = undefined;
+    this.tubeBodyTime = Number.NaN;
+  }
+
+  private measureTubeApproach(enabled: boolean): void {
+    const { session, contactQueries, wave } = this;
+    if (!enabled || !session || session.phase !== 'standing' || !session.rider.attached || !contactQueries) {
+      this.invalidateTubeApproach();
+      return;
+    }
+    const origin = session.board.position;
+    const rayX = wave?.valid ? wave.directionX : 0, rayZ = wave?.valid ? wave.directionZ : 1;
+    let bodyHeight = 0, halfWidth = 0.3, halfDepth = 0.8;
+    const include = (x: number, y: number, z: number, radius: number) => {
+      bodyHeight = Math.max(bodyHeight, y + radius - origin.y + 0.05);
+      halfWidth = Math.max(halfWidth, Math.abs((x - origin.x) * rayZ - (z - origin.z) * rayX) + radius + 0.03);
+      halfDepth = Math.max(halfDepth, Math.abs((x - origin.x) * rayX + (z - origin.z) * rayZ) + radius + 0.03);
+    };
+    for (let i = 0; i < 7; i += 1) {
+      const point = session.renderPoint(i, this.point), drawn = this.tubeBody[i];
+      drawn.x = point.x; drawn.y = point.y; drawn.z = point.z; drawn.radius = 0;
+      include(point.x, point.y, point.z, 0);
+      const part = session.rider.partPosition(i, this.point), sphere = this.tubeBody[i + 7];
+      sphere.x = part.x; sphere.y = part.y; sphere.z = part.z;
+      sphere.radius = Math.cbrt(3 * session.rider.partVolumes[i] / (4 * Math.PI));
+      include(part.x, part.y, part.z, sphere.radius);
+    }
+    // The board's actual oriented footprint also has to pass the opening.
+    for (const side of [-1, 1]) for (const end of [-1, 1]) {
+      const corner = session.board.toWorld(this.axis.set(side * session.board.shape.maxWidth / 2, 0,
+        end * session.board.shape.length / 2), this.point);
+      include(corner.x, origin.y, corner.z, 0);
+    }
+    const request: TubeApproachRequest = {
+      x: origin.x, z: origin.z, seaTime: this.simulation.seaTime, bodyHeight, halfWidth, halfDepth,
+      envelopeRayX: rayX, envelopeRayZ: rayZ,
+      body: this.tubeBody, preferredFront: this.tubeApproach?.frontId, reach: 16,
+    };
+    this.tubeBodyTime = request.seaTime;
+    this.tubeApproach = contactQueries.approachNear(request);
   }
 
   /** The step's sample for the ride's analyzer; a finished ride's report is kept and a new ride awaited. */
@@ -809,6 +866,13 @@ export class SurfZoneRunner {
         report: this.rideReport && { ...this.rideReport, maneuvers: this.rideReport.maneuvers.map((maneuver) => ({ ...maneuver })) },
         balance: this.session.phase === 'fallen' ? 0 : this.session.rider.balanceReserve,
         bank: this.session.rider.attached ? this.session.rider.bank.angle : 0,
+        ...(this.tubeApproach?.seaTime === simulation.seaTime ? { tubeApproach: {
+          ...this.tubeApproach, mouth: { ...this.tubeApproach.mouth }, inside: { ...this.tubeApproach.inside },
+        } } : {}),
+        ...(this.tubeBodyTime === simulation.seaTime ? { tubeBody: {
+          seaTime: this.tubeBodyTime, renderPoints: this.tubeBody.slice(0, 7).map(p => ({ ...p })),
+          partSpheres: this.tubeBody.slice(7).map(p => ({ ...p })),
+        } } : {}),
         leash: { snapped: this.session.leash.snapped, tension: this.session.leash.tension, distance: this.session.leash.distance, reeling: this.session.leash.reeling },
         duck: this.session.rider.attached ? this.session.rider.duck.press : 0,
         boardInReach: this.session.surfer.active && this.session.recovery.state === 'free' && this.session.recovery.inReach(this.session.board),

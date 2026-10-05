@@ -1,0 +1,304 @@
+{
+  "schema": "tube-cap-guidance-evidence/v1",
+  "completeCapObservation": true,
+  "ordinaryRideVerified": false,
+  "artifacts": [
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/owner.json",
+      "inputBytes": 3848,
+      "inputSha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64",
+      "saved": "cap/owner.json",
+      "savedBytes": 3848,
+      "savedSha256": "d77445bdafd51fe69495c6c897e7a7f120cdf552b049cec8c3662cdc690fea64",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/build.json",
+      "inputBytes": 15655,
+      "inputSha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00",
+      "saved": "cap/build.json",
+      "savedBytes": 15655,
+      "savedSha256": "6a67bfb24bb3cbc6f871598fb03b832f51766c69fea2d9ba95881cc7d2920e00",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source-freeze.json",
+      "inputBytes": 5973,
+      "inputSha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36",
+      "saved": "cap/source-freeze.json",
+      "savedBytes": 5973,
+      "savedSha256": "6752a9cfe4fb699f07514bfacd0e2b9296ff6313b75818570ae194f70bdf6c36",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/seal.json",
+      "inputBytes": 6584,
+      "inputSha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05",
+      "saved": "cap/seal.json",
+      "savedBytes": 6584,
+      "savedSha256": "8e036aafab4d9b4ecc5f1f36fa41b0487f8eaf03a48479cfee60e918630d6e05",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/prepare-result.json",
+      "inputBytes": 772,
+      "inputSha256": "ef7c3d68645bb18c8fbd254eff15b8f037475b6f1a234454b4d1791b3cb44dea",
+      "saved": "cap/prepare-result.json",
+      "savedBytes": 772,
+      "savedSha256": "ef7c3d68645bb18c8fbd254eff15b8f037475b6f1a234454b4d1791b3cb44dea",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/report.json",
+      "inputBytes": 49054,
+      "inputSha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed",
+      "saved": "cap/capture/report.json",
+      "savedBytes": 49054,
+      "savedSha256": "b89ab3e7a4ddf645c63a730bebb5eb7be6643d170faf26368ef0d7e9616286ed",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/normal.png",
+      "inputBytes": 2444374,
+      "inputSha256": "9dfdc76d2e924a9e0a267fa44db04e0b0ef90a6202bf082ed40e4d002b9920dc",
+      "saved": "cap/capture/normal.png",
+      "savedBytes": 2444374,
+      "savedSha256": "9dfdc76d2e924a9e0a267fa44db04e0b0ef90a6202bf082ed40e4d002b9920dc",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/side-mouth.png",
+      "inputBytes": 1446012,
+      "inputSha256": "2ab8d64d8624506d09989ebb8a4b9690569ce8ccd4634ba869392cb8968d39e8",
+      "saved": "cap/capture/side-mouth.png",
+      "savedBytes": 1446012,
+      "savedSha256": "2ab8d64d8624506d09989ebb8a4b9690569ce8ccd4634ba869392cb8968d39e8",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/mature-core.png",
+      "inputBytes": 2064927,
+      "inputSha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8",
+      "saved": "cap/capture/mature-core.png",
+      "savedBytes": 2064927,
+      "savedSha256": "2bd745c66015d1126652d494b78f78918ebdeb5c23abbb2b413c32b82f9fbda8",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/mature-region.png",
+      "inputBytes": 933925,
+      "inputSha256": "9a6290b0eeda64bd85fb752d89f05d732a31b259f33439f243816397bf255dd3",
+      "saved": "cap/capture/mature-region.png",
+      "savedBytes": 933925,
+      "savedSha256": "9a6290b0eeda64bd85fb752d89f05d732a31b259f33439f243816397bf255dd3",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/candidate-first/loft-terminal.json",
+      "inputBytes": 1219771,
+      "inputSha256": "0532a0072889ae0cf0e010f4a3b9d2a4fec0bb91b5c5d93cf1dbba46d7c80237",
+      "saved": "cap/capture/loft-terminal.json.gz",
+      "savedBytes": 266399,
+      "savedSha256": "a4c17794c24950b13e42c2e50a8326835bee2dfca214cc7bd34c868e7b5f7dc9",
+      "gzip": true
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/prepare.py",
+      "inputBytes": 4795,
+      "inputSha256": "4e002c0d513a23312f1a23c57791424794591906d123e7a7a87b078103b55b98",
+      "saved": "cap/helpers/prepare.py",
+      "savedBytes": 4795,
+      "savedSha256": "4e002c0d513a23312f1a23c57791424794591906d123e7a7a87b078103b55b98",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/run.py",
+      "inputBytes": 13779,
+      "inputSha256": "343456a042f7af72fc96d8b20674c796b667037c723233a12733226961216ac8",
+      "saved": "cap/helpers/run.py",
+      "savedBytes": 13779,
+      "savedSha256": "343456a042f7af72fc96d8b20674c796b667037c723233a12733226961216ac8",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/native.mjs",
+      "inputBytes": 21325,
+      "inputSha256": "2ceb650438129c2f00b66ad10f42b17de78a2516a24335876d7de4426ab0e876",
+      "saved": "cap/helpers/native.mjs",
+      "savedBytes": 21325,
+      "savedSha256": "2ceb650438129c2f00b66ad10f42b17de78a2516a24335876d7de4426ab0e876",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/mature-mouth.mjs",
+      "inputBytes": 28500,
+      "inputSha256": "dbe1ee43639eb5af1072547a5a96b8f7f70e1ed5bc15e13669ddfb9b337522e7",
+      "saved": "cap/helpers/mature-mouth.mjs",
+      "savedBytes": 28500,
+      "savedSha256": "dbe1ee43639eb5af1072547a5a96b8f7f70e1ed5bc15e13669ddfb9b337522e7",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/inspection-bridge.mjs",
+      "inputBytes": 6372,
+      "inputSha256": "e442075bfb5d3f741c3b3ecb87a1d2136076ae2004b56a37652e5380024552c4",
+      "saved": "cap/helpers/inspection-bridge.mjs",
+      "savedBytes": 6372,
+      "savedSha256": "e442075bfb5d3f741c3b3ecb87a1d2136076ae2004b56a37652e5380024552c4",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/inputs.json",
+      "inputBytes": 5180,
+      "inputSha256": "77d0825bd75485858f04aede97f59b0cb7594c774d9157343b7feaa1e6a6127d",
+      "saved": "cap/helpers/inputs.json",
+      "savedBytes": 5180,
+      "savedSha256": "77d0825bd75485858f04aede97f59b0cb7594c774d9157343b7feaa1e6a6127d",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/README.md",
+      "inputBytes": 4896,
+      "inputSha256": "fc7aca19fedc4abd6d70533729fa6144be7df67a7827a5e998dcd9515d3c4667",
+      "saved": "cap/helpers/README.md",
+      "savedBytes": 4896,
+      "savedSha256": "fc7aca19fedc4abd6d70533729fa6144be7df67a7827a5e998dcd9515d3c4667",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+      "inputBytes": 26341,
+      "inputSha256": "293e399cb5fa7800c0f4592b3c08d4f60d81950361e97bf8efb9b8c02615400b",
+      "saved": "cap/source/src/scene/barrel/SweptBarrelMesh.test.ts",
+      "savedBytes": 26341,
+      "savedSha256": "293e399cb5fa7800c0f4592b3c08d4f60d81950361e97bf8efb9b8c02615400b",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/scene/barrel/SweptBarrelMesh.ts",
+      "inputBytes": 32658,
+      "inputSha256": "223522190ffc23c3096406f6116b57b260b1ede807b9917be5677eab4dc1db4e",
+      "saved": "cap/source/src/scene/barrel/SweptBarrelMesh.ts",
+      "savedBytes": 32658,
+      "savedSha256": "223522190ffc23c3096406f6116b57b260b1ede807b9917be5677eab4dc1db4e",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/ProfileLibrary.ts",
+      "inputBytes": 29409,
+      "inputSha256": "a1d9214645f072f9f93b9e98407360364cfd20cf748e84fd0b72cf15b8246c7f",
+      "saved": "cap/source/src/wave/barrel/ProfileLibrary.ts",
+      "savedBytes": 29409,
+      "savedSha256": "a1d9214645f072f9f93b9e98407360364cfd20cf748e84fd0b72cf15b8246c7f",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "inputBytes": 11167,
+      "inputSha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0",
+      "saved": "cap/source/src/wave/barrel/boundedCCapRefinement.test.ts",
+      "savedBytes": 11167,
+      "savedSha256": "00b40af0b579532ad053b075d83e23ddc976779a28456b425071bbda162114e0",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/boundedCConsumers.test.ts",
+      "inputBytes": 16525,
+      "inputSha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570",
+      "saved": "cap/source/src/wave/barrel/boundedCConsumers.test.ts",
+      "savedBytes": 16525,
+      "savedSha256": "474131ae7a8166a1fb3d17a33e87778c78d4cc01549963f1939d2ea645ba1570",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/boundedCOpenMouth.test.ts",
+      "inputBytes": 10279,
+      "inputSha256": "0268ea876ae7e68167aa75f684c3074da4f45d0421bff505f3823068aae16d90",
+      "saved": "cap/source/src/wave/barrel/boundedCOpenMouth.test.ts",
+      "savedBytes": 10279,
+      "savedSha256": "0268ea876ae7e68167aa75f684c3074da4f45d0421bff505f3823068aae16d90",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/boundedCProfile.ts",
+      "inputBytes": 18493,
+      "inputSha256": "1bf2a75955885a1f2f7f12f1ebc9299b16b40d6d3634d7b3f8e7165d670f4f18",
+      "saved": "cap/source/src/wave/barrel/boundedCProfile.ts",
+      "savedBytes": 18493,
+      "savedSha256": "1bf2a75955885a1f2f7f12f1ebc9299b16b40d6d3634d7b3f8e7165d670f4f18",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/lipSheet.ts",
+      "inputBytes": 19136,
+      "inputSha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b",
+      "saved": "cap/source/src/wave/barrel/lipSheet.ts",
+      "savedBytes": 19136,
+      "savedSha256": "a0e7b35563ffba056658550d9b892df46b4990259551268825dbeb6ce10e6a7b",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/sheetExitNormals.test.ts",
+      "inputBytes": 6599,
+      "inputSha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978",
+      "saved": "cap/source/src/wave/barrel/sheetExitNormals.test.ts",
+      "savedBytes": 6599,
+      "savedSha256": "c684e9fd1ba8af0d90899b4e9472a72b2d7a55337c144801d4e6cff0a7d8d978",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-native-20261005/source/src/wave/barrel/sweptLoft.ts",
+      "inputBytes": 84568,
+      "inputSha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122",
+      "saved": "cap/source/src/wave/barrel/sweptLoft.ts",
+      "savedBytes": 84568,
+      "savedSha256": "27189b96afc5da37e8e798b376d7aae70375b926fbef313bd1b6a88382df3122",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-analysis-20261005.py",
+      "inputBytes": 13913,
+      "inputSha256": "397ff9f428c7deb400545a44fe445d6694c4bbc8713d4405d87c4ecb56593185",
+      "saved": "checks/tube-cap-refinement-analysis-20261005.py",
+      "savedBytes": 13913,
+      "savedSha256": "397ff9f428c7deb400545a44fe445d6694c4bbc8713d4405d87c4ecb56593185",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-analysis-20261005.json",
+      "inputBytes": 35818,
+      "inputSha256": "102e73d750cd16456b0850da9753ea068eb735b7c0de23341e290ff58d5f775d",
+      "saved": "checks/tube-cap-refinement-analysis-20261005.json",
+      "savedBytes": 35818,
+      "savedSha256": "102e73d750cd16456b0850da9753ea068eb735b7c0de23341e290ff58d5f775d",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-refinement-triad-tests-20261005.log",
+      "inputBytes": 279,
+      "inputSha256": "c616749a98ea21dda4f9f2842e82a72c62e64e328ef5da6208ce185993cc0290",
+      "saved": "checks/tube-cap-refinement-triad-tests-20261005.log",
+      "savedBytes": 279,
+      "savedSha256": "c616749a98ea21dda4f9f2842e82a72c62e64e328ef5da6208ce185993cc0290",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-guidance-verified-tests-20261005.log",
+      "inputBytes": 359,
+      "inputSha256": "55896cd6c9539aadfeb810d75d8adfb288c44c68616f878676e52c9940fa4d9f",
+      "saved": "checks/tube-cap-guidance-verified-tests-20261005.log",
+      "savedBytes": 359,
+      "savedSha256": "55896cd6c9539aadfeb810d75d8adfb288c44c68616f878676e52c9940fa4d9f",
+      "gzip": false
+    },
+    {
+      "input": "/private/tmp/tube-cap-guidance-verified-build-20261005.log",
+      "inputBytes": 1328,
+      "inputSha256": "e07c1bfd03e318f7768bba30c896aac9c78eb3c5e2ff122c7d386ba7deb3706d",
+      "saved": "checks/tube-cap-guidance-verified-build-20261005.log",
+      "savedBytes": 1328,
+      "savedSha256": "e07c1bfd03e318f7768bba30c896aac9c78eb3c5e2ff122c7d386ba7deb3706d",
+      "gzip": false
+    }
+  ]
+}

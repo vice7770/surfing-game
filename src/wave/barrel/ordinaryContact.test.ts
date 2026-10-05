@@ -80,7 +80,7 @@ describe('ordinary worker contact preparation', () => {
     expect(Object.isFrozen(p.owner)).toBe(true);
     expect(Object.isFrozen(p.owner.queries)).toBe(true);
     expect(Object.keys(p.owner).sort()).toEqual(['queries', 'updateFromPlainSurface']);
-    expect(Object.keys(p.owner.queries).sort()).toEqual(['floorAt', 'query']);
+    expect(Object.keys(p.owner.queries).sort()).toEqual(['approachNear', 'floorAt', 'query']);
     for (const count of [21, 13, 0, 21]) {
       p.update(frontRecords(count));
       const state = p.state();
@@ -155,6 +155,6 @@ describe('ordinary worker contact preparation', () => {
     expect(workerState.ordinaryContactOwner).toBe(owner);
     expect(workerState.contactQueries).toBe(owner.queries);
     expect(Object.isFrozen(owner.queries)).toBe(true);
-    expect(Object.keys(owner.queries).sort()).toEqual(['floorAt', 'query']);
+    expect(Object.keys(owner.queries).sort()).toEqual(['approachNear', 'floorAt', 'query']);
   });
 });

@@ -4,6 +4,12 @@ import { ProfileLibrary } from './ProfileLibrary';
 import { CONTACT, createContactHit, SweptContact, tubeState } from './sweptContact';
 import { LOFT, LOFT_SAMPLES, SweptLoft } from './sweptLoft';
 import { tubeCase } from './toyCase';
+import { PhysicalSurfWater } from '../../physics/PhysicalSurfWater';
+import { ShallowWaterSolver, uniformEdges } from '../ShallowWaterSolver';
+import { readBarrelCases } from './nodeBarrelCases';
+import { decodeCase } from './profileFormat';
+import { LANDMARK, PROFILE_POINTS } from './ProfileLibrary';
+import type { TubeApproachRequest } from './tubeApproach';
 
 const STILL = 0.5;
 const flat = () => STILL;
@@ -46,6 +52,73 @@ const prepareAll = (contact: SweptContact) => {
   const loft = contact.last!;
   for (let s = 0; s + 1 < loft.sliceCount; s += 1) if (loft.sliceJoined[s] === 1) bucketState(contact).ensureBucket(s);
 };
+
+describe('ordinary bounded-C approach answers', () => {
+  it('matches eager geometry through deferred, changed and empty generations without preparing normals or publishing lofts', () => {
+    const cases = readBarrelCases().map(decodeCase), c = cases.find(value => value.id === 'pad19-a30-l12')!;
+    const library = new ProfileLibrary(cases, { geometry: 'bounded-C' });
+    const base = { slope: c.slope, footHeight: c.nonlinearity * 7, footDepth: 7 }, profile = new Float32Array(2 * PROFILE_POINTS);
+    library.profileAt({ ...base, seconds: library.profileTimes(base).clearSeconds }, profile);
+    const scale = 3 / (profile[2 * LANDMARK.crest + 1] - profile[2 * LANDMARK.toe + 1]);
+    const query = { slope: c.slope, footHeight: base.footHeight * scale, footDepth: base.footDepth * scale };
+    const times = library.profileTimes(query), packet = new Float32Array(9 * FRONT_STRIDE);
+    for (let k = 0; k < 9; k++) {
+      const o = k * FRONT_STRIDE;
+      packet[o + FRONT_FIELD.x] = k + 0.5; packet[o + FRONT_FIELD.z] = -100;
+      packet[o + FRONT_FIELD.front] = 9; packet[o + FRONT_FIELD.sigma] = k;
+      packet[o + FRONT_FIELD.footHeight] = query.footHeight; packet[o + FRONT_FIELD.footDepth] = query.footDepth;
+      packet[o + FRONT_FIELD.tau] = times.clearSeconds; packet[o + FRONT_FIELD.throwZ] = -100; packet[o + FRONT_FIELD.pace] = 0;
+    }
+    const solver = new ShallowWaterSolver({ nx: 48, xMin: -12, dx: 1, zEdges: uniformEdges(-130, -70, 60) }, () => 7, { waterLevel: STILL });
+    const water = new PhysicalSurfWater(solver, { peakPeriod: 18, nodeSpacing: 2 });
+    let deferred: { normalDemand: boolean; heightReady: Uint8Array; normalReady: Uint8Array } | undefined;
+    const build = SweptLoft.prototype.build;
+    const spy = vi.spyOn(SweptLoft.prototype, 'build').mockImplementation(function (this: SweptLoft, ...args) {
+      const result = build.apply(this, args);
+      const state = this as unknown as NonNullable<typeof deferred>;
+      if (state.normalDemand) deferred = state;
+      return result;
+    });
+    try {
+      const owner = SweptContact.forOrdinaryWorker(library, c.slope), eager = new SweptContact(library, c.slope);
+      const update = (data: Float32Array) => {
+        owner.updateFromPlainSurface(data, data.length / FRONT_STRIDE, STILL, water);
+        water.withSurfaceNodeCache(() => eager.update(data, data.length / FRONT_STRIDE, STILL, (x, z) => water.plainSurfaceAt(x, z)));
+      };
+      update(packet);
+      expect(Object.keys(owner).sort()).toEqual(['queries', 'updateFromPlainSurface']);
+      expect(Object.keys(owner.queries).sort()).toEqual(['approachNear', 'floorAt', 'query']);
+      expect(Object.isFrozen(owner.queries)).toBe(true);
+      expect(deferred!.heightReady.some(Boolean)).toBe(false); expect(deferred!.normalReady.some(Boolean)).toBe(false);
+      const loft = eager.last!, row = Array.from(loft.sliceSigma.subarray(0, loft.sliceCount)).indexOf(4);
+      const cap = 3 * (row * LOFT_SAMPLES + LOFT.extensionSamples + LANDMARK.lip);
+      const request: TubeApproachRequest = { x: 4.371, z: loft.positions[cap + 2] + 0.6, seaTime: 23,
+        bodyHeight: 1, halfWidth: 0.15, halfDepth: 0.2, envelopeRayX: 1, envelopeRayZ: 0, body: [], reach: 3 };
+      const expected = eager.approachNear(request), actual = owner.queries.approachNear(request);
+      expect(expected).toBeDefined(); expect(actual).toEqual(expected);
+      expect(actual!.frontId).toBe(9); expect(actual!.geometryStep).toBe(1);
+      expect(deferred!.heightReady.some(Boolean)).toBe(true); expect(deferred!.normalReady.some(Boolean)).toBe(false);
+      const retained = { ...actual!, mouth: { ...actual!.mouth }, inside: { ...actual!.inside } };
+      const changed = packet.slice();
+      for (let k = 0; k < 9; k++) changed[k * FRONT_STRIDE + FRONT_FIELD.z] += 0.2;
+      update(changed);
+      const next = owner.queries.approachNear({ ...request, z: request.z + 0.2, seaTime: 24 });
+      expect(next).toEqual(eager.approachNear({ ...request, z: request.z + 0.2, seaTime: 24 }));
+      expect(next!.geometryStep).toBe(2); expect(actual).toEqual(retained);
+      update(new Float32Array(0));
+      expect(owner.queries.approachNear(request)).toBeUndefined();
+      expect(deferred!.heightReady.some(Boolean)).toBe(false); expect(deferred!.normalReady.some(Boolean)).toBe(false);
+      expect(actual).toEqual(retained);
+    } finally { spy.mockRestore(); }
+  });
+
+  it('leaves raw contact and invalid requests without a C guide', () => {
+    const contact = contactAt(0.1);
+    const request: TubeApproachRequest = { x: 10.3, z: -93, seaTime: 0, bodyHeight: 1, halfWidth: 0.2, halfDepth: 0.15, body: [] };
+    expect(contact.approachNear(request)).toBeUndefined();
+    expect(contact.approachNear({ ...request, bodyHeight: Infinity })).toBeUndefined();
+  });
+});
 
 type GridState = BucketState & {
   loft: SweptLoft;

@@ -178,10 +178,12 @@ export class SurfZoneWorkerCore {
       return this.queueSolo(async () => {
         if (generation !== this.generation || runner !== this.runner) return;
         await runner.simulation.discardWaterPrefetch();
+        runner.invalidateTubeApproach();
         runner.simulation.importState(decodeSurfZoneState(sea));
       });
     }
     await this.stepping;
+    runner.invalidateTubeApproach();
     runner.simulation.importState(decodeSurfZoneState(sea));
   }
 

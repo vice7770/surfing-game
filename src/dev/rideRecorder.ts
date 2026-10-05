@@ -1,7 +1,8 @@
 /**
  * Dev tool (`?inpage&record`): an autopilot (`Autopilot`) paddles for waves in
  * the physical surf zone, pops up on the cue and rides S-turns up and down the face (`&style=line`:
- * holds a line along it; `&style=flow`: rides the movement flow, bottom turn, projection, trim, cutback), while the game's own
+ * holds a line along it; `&style=flow`: rides the movement flow, bottom turn, projection, trim, cutback;
+ * `&style=tube`: steers toward a measured mouth and crouches through ordinary controls), while the game's own
  * renderer films it frame by frame into an H.264 MP4 (WebCodecs). Failed
  * attempts are dropped; the first ride of at least MIN_RIDE seconds is posted
  * to a local receiver (RECEIVER, `npm run record:ride`) as `ride.mp4`. It
@@ -58,7 +59,7 @@ const WAIT_OUTSIDE = Number(params.get('outside') ?? 5);
 const LEAD = 4;
 const AFTER = 2.5;
 const MAX_SIM_SECONDS = Number(params.get('maxMinutes') ?? 20) * 60;
-const STYLE = params.get('style') === 'line' ? 'line' : params.get('style') === 'flow' ? 'flow' : 'turns';
+const STYLE = params.get('style') === 'tube' ? 'tube' : params.get('style') === 'line' ? 'line' : params.get('style') === 'flow' ? 'flow' : 'turns';
 /** `start=trough|face`: on the Wave Pool, put the standing rider in place for each attempt instead of paddling (`poolStart.ts`). */
 const START: PoolStartKind | undefined = params.get('start') === 'trough' || params.get('start') === 'face' ? (params.get('start') as PoolStartKind) : undefined;
 /** `arm=left`: the pool's left arm, the right (the game's take-off) by default. */

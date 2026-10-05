@@ -1,9 +1,12 @@
 import type { SurfZoneHost } from '../game/SurfZoneHost';
 import type { RideInput } from '../physics/RideSession';
 import { RIDER_SNAPSHOT, type SurfZoneStatus } from '../wave/SurfZoneRunner';
+import { TubePilot } from './TubePilot';
 
 /** What the autopilot sees each step: the ride's status, the peel, the board and the water behind it. */
 export interface AutopilotView {
+  /** Time of this snapshot, used to avoid integrating twice while the worker is busy. */
+  seaTime?: number;
   ride: NonNullable<SurfZoneStatus['ride']>;
   /** +1 when the break peels toward +x, −1 toward −x, 0 for a close-out. */
   peelDirection: number;
@@ -26,6 +29,7 @@ export function autopilotView(host: SurfZoneHost, focusZ: number, tide: number, 
   let crest = -Infinity;
   for (let back = 2; back <= look; back += 2) crest = Math.max(crest, host.heightAt(board[0], board[2] - back));
   return {
+    seaTime: status.seaTime,
     ride: status.ride,
     peelDirection: status.peel?.direction ?? 0,
     board: { x: board[0], z: board[2], heading: rider[RIDER_SNAPSHOT.heading] },
@@ -45,9 +49,10 @@ export interface AutopilotOptions {
   giveUp?: number;
   /**
    * Standing: hold a line along the face ('line'), ride S-turns up and down it ('turns', spec P9), or ride the user's
-   * movement flow ('flow', the movement-flow spec): bottom turn, projection, cutback, rebound.
+   * movement flow ('flow', the movement-flow spec): bottom turn, projection, cutback, rebound; or approach a current
+   * measured mouth with ordinary steering and crouch ('tube', a dev driver, not a ride certification).
    */
-  style?: 'line' | 'turns' | 'flow';
+  style?: 'line' | 'turns' | 'flow' | 'tube';
   /** Standing, end the ride when the board crawls (STALL for STALL_TIME); false leaves the end to the caller's ride analyzer. */
   stall?: boolean;
   /** Riding S-turns, the longest a turn is held, s (TURN_LIMIT by default). */
@@ -67,6 +72,7 @@ export interface AutopilotOptions {
 }
 
 export type AutopilotState = 'position' | 'wait' | 'go' | 'ride' | 'done';
+export type AutopilotInput = RideInput & { tubeGuide?: boolean };
 type Turn = 'bottom' | 'top' | 'cutback';
 /** The movement flow's phases (style 'flow'): the rebound is the bottom turn off the foam after a cutback. */
 export type FlowPhase = 'drop' | 'bottom' | 'project' | 'trim' | 'cutback' | 'rebound';
@@ -285,7 +291,9 @@ export class Autopilot {
   private popped = false;
   private lastHeading = Number.NaN;
   private travel = 0;
-  private readonly style: 'line' | 'turns' | 'flow';
+  private readonly style: 'line' | 'turns' | 'flow' | 'tube';
+  private readonly tubePilot = new TubePilot();
+  private tubeTime = Number.NaN;
   private readonly cutbackReach: number;
   private readonly flowFrom: FlowPhase;
   private readonly bottomEnd: number;
@@ -333,6 +341,7 @@ export class Autopilot {
     this.popped = false;
     this.rideTime = 0;
     this.stalled = 0;
+    this.tubePilot.reset();
   }
 
   /** End the ride from outside (the ride analyzer's end). */
@@ -355,10 +364,19 @@ export class Autopilot {
     this.flowOpen = false;
     this.flowFace = 0;
     this.pumpSide = 1;
+    this.tubePilot.reset();
+    this.tubeTime = Number.NaN;
   }
 
-  next(view: AutopilotView, dt: number): RideInput {
-    const input: RideInput = { paddle: false, popUp: false, steer: 0 };
+  next(view: AutopilotView, dt: number): AutopilotInput {
+    const input: AutopilotInput = { paddle: false, popUp: false, steer: 0 };
+    if (this.style === 'tube') {
+      input.tubeGuide = true;
+      if (view.seaTime !== undefined) {
+        if (Number.isFinite(this.tubeTime)) dt = Math.max(0, view.seaTime - this.tubeTime);
+        this.tubeTime = view.seaTime;
+      }
+    }
     const { ride } = view;
     const heading = view.board.heading;
     const yawRate = Number.isFinite(this.lastHeading) && dt > 0 ? wrap(heading - this.lastHeading) / dt : 0;
@@ -411,7 +429,10 @@ export class Autopilot {
           this.end('the wave left');
           break;
         }
-        if (this.style === 'turns' && this.openFace(view) !== 0) Object.assign(input, this.turns(view, heading, dt));
+        if (this.style === 'tube') {
+          Object.assign(input, this.tubePilot.next(view, dt));
+          this.phase = this.tubePilot.phase;
+        } else if (this.style === 'turns' && this.openFace(view) !== 0) Object.assign(input, this.turns(view, heading, dt));
         else if (this.style === 'flow' && (this.flowFace || this.openFace(view)) !== 0) Object.assign(input, this.flow(view, heading, yawRate));
         else input.steer = this.steer(view, heading, yawRate);
         break;

@@ -1,0 +1,13 @@
+
+> surfing-game@0.1.0 test
+> vitest run src/wave/barrel/boundedCCapRefinement.test.ts
+
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  15:25:49
+   Duration  3.50s (tests 83%, transform 14%, import 3%)
+
