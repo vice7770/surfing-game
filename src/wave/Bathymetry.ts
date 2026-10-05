@@ -177,7 +177,17 @@ export function padangReefAt(x: number): boolean {
  * canyon wall crossing an edge, the edge cells ran unstable until the
  * dispersive terms carried the surface's curvature across open edges.
  */
-export const CANYON = { axisX: 80, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250 };
+export const CANYON = {
+  axisX: 80, halfWidth: 30, depth: 14, head: 60, fullAt: 160, fadeStart: 200, fadeEnd: 250,
+  // The spilling bar (experimental sweep values; see canyonBar).
+  bar: 0, shelfDepth: 3.5, shoreSlope: 1 / 15, crestDepth: 1.4, barSlope: 1 / 15, insideSlope: 1 / 15,
+  peakX: -45, peakZ: -140, angle: 65, fadeWidth: 25, endX: 65,
+};
+
+/** Where the Canyon's bar crest line crosses along-shore position x. */
+export function canyonBarZ(x: number): number {
+  return CANYON.peakZ + (x - CANYON.peakX) * Math.tan((CANYON.angle * Math.PI) / 180);
+}
 
 function beach(seed: number): SurfSpot {
   const random = seededRandom(seed, 0xbeac4);
@@ -305,7 +315,15 @@ function canyon(): SurfSpot {
     depthAt(x, z) {
       const offshore = -z;
       const along = smoothstep(CANYON.head, CANYON.fullAt, offshore) * (1 - smoothstep(CANYON.fadeStart, CANYON.fadeEnd, offshore));
-      return deanDepth(offshore) + CANYON.depth * Math.exp(-(((x - CANYON.axisX) / CANYON.halfWidth) ** 2)) * along;
+      const cut = CANYON.depth * Math.exp(-(((x - CANYON.axisX) / CANYON.halfWidth) ** 2)) * along;
+      if (!CANYON.bar) return deanDepth(offshore) + cut;
+      const c = CANYON;
+      if (offshore <= 0) return offshore * 0.06;
+      const base = Math.min(c.shelfDepth, offshore * c.shoreSlope);
+      const seaward = (canyonBarZ(x) - z) * Math.cos((c.angle * Math.PI) / 180);
+      const bar = c.crestDepth + (seaward >= 0 ? seaward * c.barSlope : -seaward * c.insideSlope);
+      const weight = smoothstep(c.peakX - c.fadeWidth, c.peakX, x) * (1 - smoothstep(c.endX - c.fadeWidth, c.endX, x));
+      return base - Math.max(0, base - bar) * weight + cut;
     },
   };
 }

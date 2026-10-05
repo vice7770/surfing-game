@@ -29,6 +29,7 @@ import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceCloc
 import { SweptCrash } from './barrel/SweptCrash';
 import { CarrierSupport } from './barrel/carrierSupport';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
+import { SpillingFront, type SpillingFrontOptions } from './SpillingFront';
 
 /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
 const WATER_DENSITY = 1025;
@@ -107,6 +108,28 @@ export interface SurfZoneConfig {
    * profile library is given at a swept spot (the default); off keeps Kennedy's lip there (the before-and-after probes).
    */
   sweptCrash?: boolean;
+  /**
+   * Whether a spilling spot's whitewater follows its spilling front (`SPILLING_SPOTS`, the canyon spilling prototype):
+   * on by default there; off feeds the foam the solver's own breaking (the before-and-after probes).
+   */
+  spillingFront?: boolean;
+}
+
+/**
+ * Spilling spots (the canyon spilling prototype, docs/research/canyon-spilling-2026-10-05): their waves spill at any
+ * size, never throwing a lip or a tube, and their whitewater follows a spilling front (`SpillingFront`) that peels
+ * along each crest no faster than the spot's peel and never runs ahead of the solver's break.
+ */
+export const SPILLING_SPOTS: readonly SpotName[] = ['canyon'];
+
+/** Each spilling spot's front: the Canyon peels left to right seen from the beach (+x), at a 55° visible peel. */
+export const SPILLING_FRONT: Partial<Record<SpotName, Partial<SpillingFrontOptions>>> = {
+  canyon: { direction: 1, peelAngleDegrees: 55 },
+};
+
+/** Whether a sea's whitewater follows a spilling front: the config's say, else SPILLING_SPOTS. */
+export function spillingFrontOn(config: Pick<SurfZoneConfig, 'spot' | 'spillingFront'>): boolean {
+  return SPILLING_SPOTS.includes(config.spot) && config.spillingFront !== false;
 }
 
 /**
@@ -523,7 +546,12 @@ export class SurfZoneSimulation {
    * library: they replace Kennedy's lip there, and the whitewater waits for their touchdown.
    */
   readonly crash?: SweptCrash;
-  /** The breaking the whitewater sees at a swept spot with the crash: withheld over open curls (`SweptCrash`). */
+  /** The spilling front, at a spilling spot (`SPILLING_SPOTS`): it holds the whitewater back ahead of each wave's peel. */
+  readonly spilling?: SpillingFront;
+  /**
+   * The breaking the whitewater sees at a swept spot with the crash (withheld over open curls, `SweptCrash`), or at a
+   * spilling spot (withheld ahead of the spilling front and grown down the face behind it, `SpillingFront`).
+   */
   private readonly whitewater?: Float64Array;
   private readonly crestSamples: CrestSample[] = [];
   /** When a front's lips throw after the solver's onset: the spot's barrel transect, its foot at the tide (BARREL_SPOTS). */
@@ -639,6 +667,10 @@ export class SurfZoneSimulation {
         this.crash = new SweptCrash(barrel, slope);
         this.whitewater = new Float64Array(this.solver.h.length);
       }
+    }
+    if (spillingFrontOn(config) && !this.crash) {
+      this.spilling = new SpillingFront(this.solver, SPILLING_FRONT[config.spot]);
+      this.whitewater = new Float64Array(this.solver.h.length);
     }
     const takeOff = this.breakPoint();
     this.surf = new SurfMeter([{ xMin: takeOff.x - TAKE_OFF_BAND, xMax: takeOff.x + TAKE_OFF_BAND }], config.peakPeriod);
@@ -851,6 +883,8 @@ export class SurfZoneSimulation {
     this.stepCosts.water = phase - start;
     this.breaking.update(dt);
     this.markBreakingOnsets();
+    // A spilling spot's whitewater follows its front (`SpillingFront`): it reads the breaking, never writes it.
+    this.spilling?.update(this.solver.time, dt, this.spilling.speedCap(this.breakerCelerity()), this.breaking.strength, this.breaking.age, this.whitewater!);
     let end = performance.now();
     this.stepCosts.breaking = end - phase;
     phase = end;
@@ -899,7 +933,7 @@ export class SurfZoneSimulation {
   /**
    * The breaking the whitewater sees: the foam's bore source (and the spray and bubbles it drives), the bore's air and
    * turbulence, and the roar. At a swept spot with the crash it waits, over each open curl, for the barrel's touchdown
-   * (PR 5); anywhere else it is the solver's own.
+   * (PR 5); at a spilling spot it follows the spilling front; anywhere else it is the solver's own.
    */
   get whitewaterStrength(): Float64Array {
     return this.whitewater ?? this.breaking.strength;
@@ -969,6 +1003,7 @@ export class SurfZoneSimulation {
       if (this.onsetsArmed && outer < previous - 5 && this.newBreaker(column, row)) {
         this.lastOnset[column] = solver.time;
         this.peel.markOnset(column, solver.time, outer);
+        this.spilling?.observeOnset(column, solver.time);
         this.measureBreak(column, row);
         this.throwLip(column, row);
       }
@@ -1045,6 +1080,11 @@ export class SurfZoneSimulation {
     const stillDepth = solver.restLevel - bed[crest];
     if (!(stillDepth >= 0.4 * this.breakerDepth()) || crestRow < 1 || crestRow > nz - 2) return;
     this.lastThrow[column] = solver.time;
+    // A spilling spot's waves spill at every size: no lip, no tube (the canyon spilling prototype).
+    if (SPILLING_SPOTS.includes(this.config.spot)) {
+      this.lipRollers += 1;
+      return;
+    }
     const slopeZ = (bed[crest + nx] - bed[crest - nx]) / (zCenters[crestRow + 1] - zCenters[crestRow - 1]);
     const slopeX = column > 0 && column < nx - 1 ? (bed[crest + 1] - bed[crest - 1]) / (2 * solver.dx) : 0;
     const breakerHeight = BREAKER_INDEX * stillDepth;
