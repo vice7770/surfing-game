@@ -1,0 +1,27 @@
+{
+  "schema": "trial-balance-source-delta/v1",
+  "source": "/private/tmp/tube-native-trial-balance-native-20261005/source",
+  "sourceCount": 588,
+  "unchangedParentInputs": 587,
+  "parentManifest": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source-manifest.json",
+    "bytes": 324317,
+    "sha256": "d243aa1e1f207720e1f52b0ef277b7112241a11ae913c0069d63f555db2c30d7"
+  },
+  "overrides": [
+    {
+      "path": "src/physics/AttachedRider.ts",
+      "before": {
+        "path": "src/physics/AttachedRider.ts",
+        "bytes": 146425,
+        "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+      },
+      "after": {
+        "path": "src/physics/AttachedRider.ts",
+        "bytes": 153209,
+        "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+      }
+    }
+  ],
+  "onlyPhysicsDifference": "Passive numeric copies of prepared board matrix/RHS, arms/external force and coupled trial delta; solver arithmetic unchanged."
+}

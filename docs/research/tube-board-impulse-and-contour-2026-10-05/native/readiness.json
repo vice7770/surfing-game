@@ -1,0 +1,247 @@
+{
+  "schema": "trial-balance-preparation-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "preparationFrozen": true,
+  "status": "frozen-actual-root-authority-verified",
+  "sourceOnly": true,
+  "work": "/private/tmp/tube-native-trial-balance-native-20261005",
+  "buildId": "tube-native-trial-balance-20261005",
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-readiness.json",
+    "bytes": 2889,
+    "sha256": "41942c6127a4607d26ea926e66827ce43cb26984202c97ed507a31a294cd9b6b"
+  },
+  "helperPinsManifest": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/helper-pins.json",
+    "bytes": 17825,
+    "sha256": "9cb35283adcc8bc8021a9b86de72e6a4da36ed71231ab2b801e82bc6cf80cfe7"
+  },
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "sourceOrBuildWrittenByHelper": false,
+  "actualAppBuildAccepted": true,
+  "actualDiagnosticBuildAccepted": true,
+  "helperAcceptance": true,
+  "executableChecksAccepted": true,
+  "actualNative": false,
+  "sourcePreparationCount": 588,
+  "completeBuildSourceCount": 587,
+  "completeBuildAssetCount": 49,
+  "diagnosticModuleInputs": 74,
+  "diagnosticCandidateSourceInputs": 71,
+  "compilerConfigurationInputCount": 1,
+  "compilerWatchedInputCount": 75,
+  "observerFields": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/observer-fields.json",
+    "target": "/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json",
+    "bytes": 8731,
+    "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a",
+    "policy": "exact-literal-frozen-observer-metadata-copy"
+  },
+  "originalFields": 38,
+  "newScalarCopies": 63,
+  "availabilityMarker": "standingTrialAvailable",
+  "totalFields": 102,
+  "markerZeroInvalidatesStaleWords": true,
+  "markerOneOnlyMeansCoupledTrialCaptured": true,
+  "separateHydrodynamicAttributionAvailable": false,
+  "minimalAdapterChanges": "Workspace/schema/source and receipt authority, field metadata reader and descriptive report metadata only; replay/menu/cue/control/camera/timing/media/sidecar/selection tail unchanged.",
+  "ordinaryRun": {
+    "publicReplayOverrides": {
+      "seed": 6238,
+      "componentCount": 64,
+      "dx": 2,
+      "fineSpacing": 1
+    },
+    "maxSteps": 2160,
+    "secondsPerStep": 0.016666666666666666,
+    "noPlacementForcedCueSeedSearchOrRetries": true
+  },
+  "finiteOwner": {
+    "wholeSeconds": 660,
+    "commandSeconds": 648,
+    "internalNativeSeconds": 635,
+    "cleanupSeconds": 7,
+    "startupWaitMilliseconds": 180000,
+    "rootSealSchema": "trial-balance-root-seal/v1",
+    "nativeSchema": "trial-balance-native/v1",
+    "ports": [
+      4301,
+      9711
+    ],
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false,
+      "4313": false
+    }
+  },
+  "movieCapBehavior": {
+    "movingAdvances": 240,
+    "requests": 241,
+    "movieStopsAtCap": true,
+    "ordinaryPhysicsContinues": true,
+    "replayStopUnchanged": true
+  },
+  "diagnosticModuleReferencePolicy": "root-rebuilt-original74-input-graph-against-trial-balance-observer-source",
+  "executableChecks": {
+    "sourceHelperCheck": {
+      "run": true,
+      "passed": true,
+      "receipt": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-helper-checks.json",
+        "bytes": 2967,
+        "sha256": "b352dca01b5e710e21f92af014eaac6ffa37d4ce800e9905ce274d6e593910f3"
+      }
+    },
+    "metadataCheck": {
+      "run": true,
+      "passed": true,
+      "receipt": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/metadata-check.json",
+        "bytes": 796,
+        "sha256": "8d2d50c80a4a50cec04b5c434aec244ea502e62d27530168983d345d8dfc7f7a"
+      }
+    },
+    "nativeSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-native-trial-balance-native-20261005/native.mjs"
+      ],
+      "elapsedSeconds": 0.0871105000260286,
+      "log": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-logs/nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "passed": true
+    },
+    "diagnosticWrapperSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-native-trial-balance-build-20261005/build-diagnostic.mjs"
+      ],
+      "elapsedSeconds": 0.08233837503939867,
+      "log": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-logs/diagnosticWrapperSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "passed": true
+    },
+    "sourceOnlyOwner": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "python3",
+        "/private/tmp/tube-native-trial-balance-native-20261005/run.py",
+        "--arm",
+        "candidate"
+      ],
+      "elapsedSeconds": 0.3080887910327874,
+      "log": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-logs/sourceOnlyOwner.log",
+        "bytes": 495,
+        "sha256": "5c6cadd3e23fb84f1b34d282fed713d7e607ea9a8136eacb137b7eae3bc43104"
+      },
+      "passed": true
+    },
+    "applicationBuild": {
+      "run": true,
+      "passed": true,
+      "exitCode": 0,
+      "receipt": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-complete-build-result.json",
+        "bytes": 184293,
+        "sha256": "c9a34a949e1f6d86b6bb9f5dbc6bf77ad93eea48b57ebd791db149a7a70519d8"
+      }
+    },
+    "diagnosticBuild": {
+      "run": true,
+      "passed": true,
+      "exitCode": 0,
+      "receipt": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-diagnostic-build-result.json",
+        "bytes": 36109,
+        "sha256": "a3b4058fd8ae426e1d66622dd7ef4bee56ee1198caf156713a2fc503406a7489"
+      }
+    },
+    "native": {
+      "run": false,
+      "passed": false,
+      "status": "pending root acceptance"
+    }
+  },
+  "claims": {
+    "actualNative": false,
+    "exactV11InitialReplay": false,
+    "nativeCauseOrFixAccepted": false,
+    "ordinaryStandingAccepted": false,
+    "bodyPassageAccepted": false,
+    "visualAcceptance": false,
+    "FPS": false,
+    "productionAdoption": false
+  },
+  "priorV11Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/readiness.json",
+    "bytes": 22364,
+    "sha256": "faf3f5866ac9666d8b4330e11a2263f2504a50a65f5b8069858e42a4eae38774"
+  },
+  "priorV11Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first-owner.json",
+    "bytes": 3508,
+    "sha256": "b8494909bd2282da74c9ff6f30b32953c4b98b7061dd8a8e19c237a5aae8d037"
+  },
+  "priorV11Report": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/report.json",
+    "bytes": 12753137,
+    "sha256": "e1e92df0eb68ed5b54b2d97aecc8ee1ef72e567e438458d55bd6e65bb06a89ef"
+  },
+  "priorV7Readiness": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/readiness.json",
+    "bytes": 11256,
+    "sha256": "3a6ffeff68a335a9682582277192ac14707dc1b3630de7b8e5f93245b19b6d7b"
+  },
+  "priorV7Owner": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first-owner.json",
+    "bytes": 3482,
+    "sha256": "08642eca3a108eb722e44c4924eb600d6a2cd843b52c77caca352aabbdd03563"
+  },
+  "priorV7Report": {
+    "file": "/private/tmp/tube-pop-up-contact-native-v7-20261005/candidate-first/report.json",
+    "bytes": 12501789,
+    "sha256": "a03e780fb5cbbbb2b973930ebf722f13391c55a708850eff73619f65b991c495"
+  },
+  "actualObserverCPUAuthorityKeys": [
+    "rootObserverChecks",
+    "rootCPUResult"
+  ],
+  "originalOrFailedFixturePassInherited": false,
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-complete-build-result.json",
+    "bytes": 184293,
+    "sha256": "c9a34a949e1f6d86b6bb9f5dbc6bf77ad93eea48b57ebd791db149a7a70519d8"
+  },
+  "rootDiagnosticBuild": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 36109,
+    "sha256": "a3b4058fd8ae426e1d66622dd7ef4bee56ee1198caf156713a2fc503406a7489"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348650,
+    "sha256": "255adee3346589ad8c4ea865934bb453414bae26c344a950b5e8788e0f4e5d11"
+  },
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-checks.json",
+    "bytes": 2475,
+    "sha256": "ed3d550941570f667480788054868f6151209caef89467f97361ac6a58b27dbb"
+  }
+}

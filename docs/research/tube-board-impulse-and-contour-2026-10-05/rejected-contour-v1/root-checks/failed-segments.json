@@ -1,0 +1,184 @@
+{
+  "schema": "C-two-branch-root-failed-segment-audit/v1",
+  "input": {
+    "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-query-receipt.json",
+    "bytes": 140038,
+    "sha256": "585b0904c7e18f91f41eb29d417bad7387465f7e3c46bd479496b5b1a9763edc"
+  },
+  "rows": [
+    {
+      "group": "phase376",
+      "id": 29,
+      "error": "Error: actual cavity thickness0.0003872070702416173/0.0009836058597940745",
+      "closestEndpointSegmentDistance": 0.0003872070702416173,
+      "outerSegment": 52,
+      "innerSegment": 73,
+      "outerPoints": [
+        [
+          0.8048147559165955,
+          0.037241701036691666
+        ],
+        [
+          0.8082165122032166,
+          0.035134803503751755
+        ]
+      ],
+      "innerPoints": [
+        [
+          0.8082165122032166,
+          0.03468501940369606
+        ],
+        [
+          0.8048147559165955,
+          0.036695629358291626
+        ]
+      ],
+      "limitation": "Endpoint-segment metric only; proper crossings already independently checked by the fixture. Pairing-exception outputs can be partially rewritten."
+    },
+    {
+      "group": "phase376",
+      "id": 217,
+      "error": "Error: actual cavity thickness0.0002442928249058159/0.0012353968792547668",
+      "closestEndpointSegmentDistance": 0.0002442928249058159,
+      "outerSegment": 52,
+      "innerSegment": 73,
+      "outerPoints": [
+        [
+          0.9155086278915405,
+          -0.031225264072418213
+        ],
+        [
+          0.9203827977180481,
+          -0.03416695445775986
+        ]
+      ],
+      "innerPoints": [
+        [
+          0.9203827977180481,
+          -0.034451913088560104
+        ],
+        [
+          0.9155086278915405,
+          -0.03152482584118843
+        ]
+      ],
+      "limitation": "Endpoint-segment metric only; proper crossings already independently checked by the fixture. Pairing-exception outputs can be partially rewritten."
+    },
+    {
+      "group": "phase376",
+      "id": 218,
+      "error": "Error: shared upper-root negative paired separation",
+      "closestEndpointSegmentDistance": 3.109535015345788e-06,
+      "outerSegment": 59,
+      "innerSegment": 77,
+      "outerPoints": [
+        [
+          0.923273503780365,
+          -0.04191333055496216
+        ],
+        [
+          0.9390379190444946,
+          -0.04482509195804596
+        ]
+      ],
+      "innerPoints": [
+        [
+          0.9280412793159485,
+          -0.042807988822460175
+        ],
+        [
+          0.9267969131469727,
+          -0.042567282915115356
+        ]
+      ],
+      "limitation": "Endpoint-segment metric only; proper crossings already independently checked by the fixture. Pairing-exception outputs can be partially rewritten."
+    },
+    {
+      "group": "phase376",
+      "id": 264,
+      "error": "Error: actual cavity thickness0.0004210974675162089/0.001663813315151181",
+      "closestEndpointSegmentDistance": 0.00042109746751620885,
+      "outerSegment": 52,
+      "innerSegment": 73,
+      "outerPoints": [
+        [
+          1.182235598564148,
+          -0.03596850112080574
+        ],
+        [
+          1.1885290145874023,
+          -0.0398055836558342
+        ]
+      ],
+      "innerPoints": [
+        [
+          1.1885290145874023,
+          -0.04029654711484909
+        ],
+        [
+          1.182235598564148,
+          -0.03652387857437134
+        ]
+      ],
+      "limitation": "Endpoint-segment metric only; proper crossings already independently checked by the fixture. Pairing-exception outputs can be partially rewritten."
+    },
+    {
+      "group": "phase376",
+      "id": 265,
+      "error": "Error: actual cavity thickness0.00004410571313088372/0.00012919357936791835",
+      "closestEndpointSegmentDistance": 4.410571313088373e-05,
+      "outerSegment": 46,
+      "innerSegment": 79,
+      "outerPoints": [
+        [
+          1.1940584182739258,
+          -0.05026721581816673
+        ],
+        [
+          1.1955132484436035,
+          -0.05053875595331192
+        ]
+      ],
+      "innerPoints": [
+        [
+          1.1955132484436035,
+          -0.05058621987700462
+        ],
+        [
+          1.1940584182739258,
+          -0.05031208321452141
+        ]
+      ],
+      "limitation": "Endpoint-segment metric only; proper crossings already independently checked by the fixture. Pairing-exception outputs can be partially rewritten."
+    },
+    {
+      "group": "phase376",
+      "id": 359,
+      "error": "Error: shared upper-root negative paired separation",
+      "closestEndpointSegmentDistance": 2.5832993265246215e-05,
+      "outerSegment": 59,
+      "innerSegment": 68,
+      "outerPoints": [
+        [
+          1.2552242279052734,
+          -0.047973085194826126
+        ],
+        [
+          1.2727627754211426,
+          -0.05258942395448685
+        ]
+      ],
+      "innerPoints": [
+        [
+          1.2727315425872803,
+          -0.0527079813182354
+        ],
+        [
+          1.2695809602737427,
+          -0.0517786480486393
+        ]
+      ],
+      "limitation": "Endpoint-segment metric only; proper crossings already independently checked by the fixture. Pairing-exception outputs can be partially rewritten."
+    }
+  ]
+}

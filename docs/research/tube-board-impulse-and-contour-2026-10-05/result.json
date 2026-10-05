@@ -1,0 +1,2242 @@
+{
+  "schema": "tube-board-impulse-and-contour-evidence/v1",
+  "complete": true,
+  "goalComplete": false,
+  "productionRuntimeChanged": false,
+  "observerAdopted": false,
+  "contourDraftsAdopted": false,
+  "native": {
+    "rootSession": 79647,
+    "terminal": true,
+    "exitCode": 0,
+    "steps": 1366,
+    "cueStep": 1300,
+    "landingStep": 1343,
+    "fallStep": 1366,
+    "standingReached": false,
+    "tubeEntryOrPassageEstablished": false,
+    "ownedPortsClosed": [
+      4301,
+      9711
+    ],
+    "humanPreviewPortsPreserved": [
+      4312,
+      4313
+    ]
+  },
+  "observer": {
+    "fields": 102,
+    "originalFields": 38,
+    "newScalarFields": 63,
+    "availabilityMarkers": 1,
+    "controlledStrictPassed": true,
+    "controlledParityCasesPassed": 2,
+    "controlledSteps": 552,
+    "earlierTimeoutsAndWordGraphFailuresRetained": true,
+    "nativePublishedRowsEqualToV11": 1366,
+    "allOriginalFieldsRetainedInComparison": true,
+    "approvedComparisonExclusions": "exact64 observer additions in complete records plus seven prior timing/follower/redraw categories; all raw differences retained",
+    "fullRetainedRepresentations": 202,
+    "uniqueAvailableLandingSamples": 46,
+    "availableTrialDoesNotMeanAppliedOrFeasibleMotion": true,
+    "diagnosticCompiledGraphInputCount": 74,
+    "diagnosticObserverIdentifiersRetained": 0,
+    "diagnosticGraphReachabilityIsNotClassRetention": true,
+    "sealedApplicationWorkersWithAll102Identifiers": 2,
+    "loftComparison": "all four checkpoints:37 arrays plus raw front packets/descriptors/optical data exact; signed surfaceRevision delta -1 retained",
+    "sourceInputs": 588,
+    "applicationInputs": 587,
+    "completeAssets": 49,
+    "helperPins": 79,
+    "auditPrepFailuresAndBothRootRepairsRetained": true
+  },
+  "balance": {
+    "availableSamples": 46,
+    "inferredRiderMassKg": 73,
+    "fullSevenUnknownMaximumSolutionResidual": 2.02e-14,
+    "fullBoardImpulseTorqueMaximumResidual": 8.35e-14,
+    "transition": [
+      1356,
+      32,
+      1357,
+      1
+    ],
+    "actualLegRateAfterIncrease": 0.8621348653,
+    "chosenInverseAllocationLegDeltaFromCombinedBoardRhs": 0.8338514759,
+    "chosenInverseAllocationMaximumResidual": 1.11e-15,
+    "boardRhsYBefore": 0.18873031945,
+    "boardRhsYAfter": -16.953996276542,
+    "componentCauseIdentified": false,
+    "nextWork": "Separate the board explicit forces, gyro and radiation/entrainment impulses before changing physics.",
+    "scope": "Captured combined assembly; exact algebraic allocation is not a unique causal intervention. No unpublished substep claim.",
+    "sourceAssessment": "pending-board-rhs-assessment/ASSESSMENT.md",
+    "nextObserverPreparation": "Source-only143-field draft authorized: retain existing102 and copy41 already computed aggregate RHS scalars; no physics arithmetic or radiation/entrainment split. Not built/tested/run/adopted."
+  },
+  "rejectedGeometry": {
+    "v1": {
+      "strictPassed": true,
+      "testsPassed": 14,
+      "testsTotal": 15,
+      "queriesAttempted": 6447,
+      "phase376Failures": 6,
+      "minimumStoredClearanceOverThickness": 0.1977444083
+    },
+    "v2": {
+      "strictPassed": true,
+      "testsPassed": 14,
+      "testsTotal": 15,
+      "queriesAttempted": 6447,
+      "phase376Failures": 10,
+      "minimumStoredClearanceOverThickness": 0.1365299672
+    },
+    "retirementCasesRemainRequired": true,
+    "fullFailureGeometryAndParametersRetained": true,
+    "newOffsetPrefixReturn": "Source design only. Positive-handle, paired-roof, Float32 clearance, self-intersection and downward-wall feasibility remain pending."
+  },
+  "archive": {
+    "selectedReferences": 164,
+    "uniquePayloads": 151,
+    "uniquePayloadBytes": 16492793,
+    "allCopiedAndDecodedBytesVerified": true,
+    "scope": "Selected evidence and changed postimages, not a complete runnable588-file dependency snapshot. Original temporary absolute paths remain provenance.",
+    "priorResultBeforeAssessmentAppend": {
+      "bytes": 81227,
+      "sha256": "e0f09fcb0816d2e738db17c83d9dc351cffcd80484af8dc3c41cddf842e5c002"
+    },
+    "unusedPreparatoryScript": "controlled-observer/root-finalize-graph-check.py was prepared but never executed; actual accepted CPU authority is root-bounded-graph-checks/result.json."
+  },
+  "files": [
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/DESIGN.md",
+        "bytes": 5853,
+        "sha256": "6e943be16ed0b7de8f1caf6c52cda4fbf1d3c0d49dc5c794fb9dd447a8b6d2da"
+      },
+      "archived": {
+        "file": "controlled-observer/DESIGN.md",
+        "bytes": 5853,
+        "sha256": "6e943be16ed0b7de8f1caf6c52cda4fbf1d3c0d49dc5c794fb9dd447a8b6d2da",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/dependency-pins.json",
+        "bytes": 100355,
+        "sha256": "e5470d24f5e8c041c059f933602e99fcb37242b04110c88ee9ae5d268f9f0ca1"
+      },
+      "archived": {
+        "file": "controlled-observer/dependency-pins.json.gz",
+        "bytes": 32117,
+        "sha256": "332f407d48b2b5fc62ffe8d683793c39ed94a149ccc879ca614040b210dc0e85",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/freeze.json",
+        "bytes": 2634,
+        "sha256": "6ad8131be23be72a516a99abcb63a0cccf6822ce5c2589f98ff3d89cc417e206"
+      },
+      "archived": {
+        "file": "controlled-observer/freeze.json",
+        "bytes": 2634,
+        "sha256": "6ad8131be23be72a516a99abcb63a0cccf6822ce5c2589f98ff3d89cc417e206",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+      },
+      "archived": {
+        "file": "controlled-observer/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/observer.patch",
+        "bytes": 9618,
+        "sha256": "670579217c51abb9efa0fdb3739497c51bf356f28fdbce0c8b4fe14d3e2978cc"
+      },
+      "archived": {
+        "file": "controlled-observer/observer.patch",
+        "bytes": 9618,
+        "sha256": "670579217c51abb9efa0fdb3739497c51bf356f28fdbce0c8b4fe14d3e2978cc",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/override-pins.json",
+        "bytes": 398,
+        "sha256": "ebe5fb0fb763a78be178a417e681767b4a467b91eac38991163b629451c0100d"
+      },
+      "archived": {
+        "file": "controlled-observer/override-pins.json",
+        "bytes": 398,
+        "sha256": "ebe5fb0fb763a78be178a417e681767b4a467b91eac38991163b629451c0100d",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/prospective-fixture.json",
+        "bytes": 4070,
+        "sha256": "b4679a06cf6fdf476215fca8ef5f0ab3e3205683d7d9336fa380aa894329a5db"
+      },
+      "archived": {
+        "file": "controlled-observer/prospective-fixture.json",
+        "bytes": 4070,
+        "sha256": "b4679a06cf6fdf476215fca8ef5f0ab3e3205683d7d9336fa380aa894329a5db",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/readiness.json",
+        "bytes": 4924,
+        "sha256": "21fa23cf02a81981aba408cb4b41b141e34d3916cebcc41c1e4d95a4f3fd684e"
+      },
+      "archived": {
+        "file": "controlled-observer/readiness.json",
+        "bytes": 4924,
+        "sha256": "21fa23cf02a81981aba408cb4b41b141e34d3916cebcc41c1e4d95a4f3fd684e",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks.py",
+        "bytes": 4527,
+        "sha256": "2627e4b7beea112345cc039539ce5df9002e089fc748404dbc2d59b31d955ef7"
+      },
+      "archived": {
+        "file": "controlled-observer/root-bounded-graph-checks.py",
+        "bytes": 4527,
+        "sha256": "2627e4b7beea112345cc039539ce5df9002e089fc748404dbc2d59b31d955ef7",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-finalize-graph-check.py",
+        "bytes": 3628,
+        "sha256": "485388e8c25ed7e70a84bc69aba4978834be357b1c6cf5406863df8d05ac318a"
+      },
+      "archived": {
+        "file": "controlled-observer/root-finalize-graph-check.py",
+        "bytes": 3628,
+        "sha256": "485388e8c25ed7e70a84bc69aba4978834be357b1c6cf5406863df8d05ac318a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-materialize-and-check.py",
+        "bytes": 4425,
+        "sha256": "af7ed35840ae273cc3598ac59abb23c5d8e323a0f6d8b59c118a4e691183363d"
+      },
+      "archived": {
+        "file": "controlled-observer/root-materialize-and-check.py",
+        "bytes": 4425,
+        "sha256": "af7ed35840ae273cc3598ac59abb23c5d8e323a0f6d8b59c118a4e691183363d",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-parity-boundaries.py",
+        "bytes": 3885,
+        "sha256": "0cd48c90bad89a85bf95aab6986cc81f8800bebffcee2e95e46fbcbed8434eb6"
+      },
+      "archived": {
+        "file": "controlled-observer/root-parity-boundaries.py",
+        "bytes": 3885,
+        "sha256": "0cd48c90bad89a85bf95aab6986cc81f8800bebffcee2e95e46fbcbed8434eb6",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-word-checks.py",
+        "bytes": 6522,
+        "sha256": "9d18f6012c04cd195bb9d4edc66a8d7a00b576cbc382ad54bc6379abe1e4fd68"
+      },
+      "archived": {
+        "file": "controlled-observer/root-word-checks.py",
+        "bytes": 6522,
+        "sha256": "9d18f6012c04cd195bb9d4edc66a8d7a00b576cbc382ad54bc6379abe1e4fd68",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/source-delta.json",
+        "bytes": 1209,
+        "sha256": "dd00fb3352ae80ccd962838ac70468b684c4f5a4a00d6e277757d3838eb3f1ae"
+      },
+      "archived": {
+        "file": "controlled-observer/source-delta.json",
+        "bytes": 1209,
+        "sha256": "dd00fb3352ae80ccd962838ac70468b684c4f5a4a00d6e277757d3838eb3f1ae",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-boundaries.test.ts",
+        "bytes": 13072,
+        "sha256": "f259b0d857d61dc0295be466cde4e35f4042ea8573f848510f2e5ba85f1cefcf"
+      },
+      "archived": {
+        "file": "controlled-observer/tests/trialBalance.parity-boundaries.test.ts",
+        "bytes": 13072,
+        "sha256": "f259b0d857d61dc0295be466cde4e35f4042ea8573f848510f2e5ba85f1cefcf",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-bounded-graph.test.ts",
+        "bytes": 14519,
+        "sha256": "31903fc7c6e88873e867c9d4dc7fbf08d173e7d0c9e6181aca908f019355695f"
+      },
+      "archived": {
+        "file": "controlled-observer/tests/trialBalance.parity-bounded-graph.test.ts",
+        "bytes": 14519,
+        "sha256": "31903fc7c6e88873e867c9d4dc7fbf08d173e7d0c9e6181aca908f019355695f",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-graph-diff.test.ts",
+        "bytes": 14518,
+        "sha256": "e1c711e3cab83eac8eb3681d42e70d7bd49ab1ad0d8b37a2c967683aa29bd456"
+      },
+      "archived": {
+        "file": "controlled-observer/tests/trialBalance.parity-graph-diff.test.ts",
+        "bytes": 14518,
+        "sha256": "e1c711e3cab83eac8eb3681d42e70d7bd49ab1ad0d8b37a2c967683aa29bd456",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-words.test.ts",
+        "bytes": 13438,
+        "sha256": "d4b6f69839f7f704c31672f522c3146a43d0640c4636318832d3d9b36c34a5b0"
+      },
+      "archived": {
+        "file": "controlled-observer/tests/trialBalance.parity-words.test.ts",
+        "bytes": 13438,
+        "sha256": "d4b6f69839f7f704c31672f522c3146a43d0640c4636318832d3d9b36c34a5b0",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity.prospective.test.ts",
+        "bytes": 13074,
+        "sha256": "b19fc9a78bf1e151cf41432314ef0fab99e66b14ac0c8c8ced668a6a43df0aac"
+      },
+      "archived": {
+        "file": "controlled-observer/tests/trialBalance.parity.prospective.test.ts",
+        "bytes": 13074,
+        "sha256": "b19fc9a78bf1e151cf41432314ef0fab99e66b14ac0c8c8ced668a6a43df0aac",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-checks/materialization.json",
+        "bytes": 271482,
+        "sha256": "8841183d62f27b457c14d68fa61ab3fb141a69667b5d6fffded877856f00cff9"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/materialization.json.gz",
+        "bytes": 62033,
+        "sha256": "dc6ecf50c5147801a0798c26c21bb56cc9f26dacdd6908bc2d3c87fdfb00bb56",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-checks/parity.log",
+        "bytes": 387,
+        "sha256": "636a73d534abea6e020b5dd232b640af0934c0efafbc42f3edb04b8430ba320c"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/parity.log",
+        "bytes": 387,
+        "sha256": "636a73d534abea6e020b5dd232b640af0934c0efafbc42f3edb04b8430ba320c",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-checks/result.json",
+        "bytes": 273810,
+        "sha256": "9afa21378b4bbd40a3ee4c5a2bdf423736f7f1b68fefd76e9d5da764614a7fd5"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/result.json.gz",
+        "bytes": 62706,
+        "sha256": "dd4279d74b785602cca5225eeb244331bd80c00909f6944676500432e210ae9d",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-checks/tsconfig.json",
+        "bytes": 301,
+        "sha256": "7319115c5daf582f1e24cf3f86affc896901e4f20fe45926aa758ce43eade9d5"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/tsconfig.json",
+        "bytes": 301,
+        "sha256": "7319115c5daf582f1e24cf3f86affc896901e4f20fe45926aa758ce43eade9d5",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-checks/vitest.config.ts",
+        "bytes": 251,
+        "sha256": "2f2c998daf2a905423354d61b80e1f3083863989066e75696ca236de3babff6a"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/vitest.config.ts",
+        "bytes": 251,
+        "sha256": "2f2c998daf2a905423354d61b80e1f3083863989066e75696ca236de3babff6a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-boundary-checks/parity.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-boundary-checks/repair.json",
+        "bytes": 1222,
+        "sha256": "f0c674b47f273ada4546a95eb08e9639929c5e12ac3ea564e7db2a24c3397b34"
+      },
+      "archived": {
+        "file": "controlled-observer/root-boundary-checks/repair.json",
+        "bytes": 1222,
+        "sha256": "f0c674b47f273ada4546a95eb08e9639929c5e12ac3ea564e7db2a24c3397b34",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-boundary-checks/result.json",
+        "bytes": 274740,
+        "sha256": "aecb656440eff1c5cd4e9f5ca3c67d4bda5974a44a5cbe554bb4d0b4a56cfc1c"
+      },
+      "archived": {
+        "file": "controlled-observer/root-boundary-checks/result.json.gz",
+        "bytes": 62969,
+        "sha256": "ee7cf73a42f5ed002c91cff6b308d3ce8cecc4f752acca414435cfd9ac4c622a",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-boundary-checks/vitest.config.mts",
+        "bytes": 250,
+        "sha256": "7f9b79291244bedd7bb30f485b7c2672e187d4d028da1f17204009633d89ac60"
+      },
+      "archived": {
+        "file": "controlled-observer/root-boundary-checks/vitest.config.mts",
+        "bytes": 250,
+        "sha256": "7f9b79291244bedd7bb30f485b7c2672e187d4d028da1f17204009633d89ac60",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-word-checks/parity.json",
+        "bytes": 3751,
+        "sha256": "8ccfa74574b5d7d22c72af6c8f3f23d2f1c78722c769e51db9b7cd2e4e764dea"
+      },
+      "archived": {
+        "file": "controlled-observer/root-word-checks/parity.json",
+        "bytes": 3751,
+        "sha256": "8ccfa74574b5d7d22c72af6c8f3f23d2f1c78722c769e51db9b7cd2e4e764dea",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-word-checks/parity.log",
+        "bytes": 109,
+        "sha256": "e4608e0c2d697da47a8ceba1e86bf155600a5267d8e9dcf23ce35cc560bf0007"
+      },
+      "archived": {
+        "file": "controlled-observer/root-word-checks/parity.log",
+        "bytes": 109,
+        "sha256": "e4608e0c2d697da47a8ceba1e86bf155600a5267d8e9dcf23ce35cc560bf0007",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-word-checks/repair.json",
+        "bytes": 1288,
+        "sha256": "fe8635373063842821ec8749ede8344fe9c5f3e8b1c3d3a77f967e3c5de3c524"
+      },
+      "archived": {
+        "file": "controlled-observer/root-word-checks/repair.json",
+        "bytes": 1288,
+        "sha256": "fe8635373063842821ec8749ede8344fe9c5f3e8b1c3d3a77f967e3c5de3c524",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-word-checks/result.json",
+        "bytes": 275591,
+        "sha256": "661f3859e1c67852d874ecd5fe894e22d5cdb89a4b69e5b0b6b511e908245f9f"
+      },
+      "archived": {
+        "file": "controlled-observer/root-word-checks/result.json.gz",
+        "bytes": 63169,
+        "sha256": "ca3480381511740b06d9a7fdc6a0ff07ad734ba440306db0bb6bb439ef2ccbdf",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-word-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-word-checks/tsconfig.json",
+        "bytes": 295,
+        "sha256": "ec8604b92551ad55e310f7d514df3458a69c80cda873c15f709d52e12bb688e9"
+      },
+      "archived": {
+        "file": "controlled-observer/root-word-checks/tsconfig.json",
+        "bytes": 295,
+        "sha256": "ec8604b92551ad55e310f7d514df3458a69c80cda873c15f709d52e12bb688e9",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-word-checks/vitest.config.mts",
+        "bytes": 245,
+        "sha256": "e290224f60e6fba27de45ccf0e601f8e6b4b791799f77529aa1bcaa38b17fec8"
+      },
+      "archived": {
+        "file": "controlled-observer/root-word-checks/vitest.config.mts",
+        "bytes": 245,
+        "sha256": "e290224f60e6fba27de45ccf0e601f8e6b4b791799f77529aa1bcaa38b17fec8",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-graph-diff/parity.json",
+        "bytes": 4419,
+        "sha256": "335c5616d57fc8012c8aa1ab2f170c1b22a51587970ba5f78f8b178c01963e7c"
+      },
+      "archived": {
+        "file": "controlled-observer/root-graph-diff/parity.json",
+        "bytes": 4419,
+        "sha256": "335c5616d57fc8012c8aa1ab2f170c1b22a51587970ba5f78f8b178c01963e7c",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-graph-diff/vitest.config.mts",
+        "bytes": 238,
+        "sha256": "2bbc26be0dd2d6cbe636c33236a47ae807e7ffeb3bef29703651206f459dc659"
+      },
+      "archived": {
+        "file": "controlled-observer/root-graph-diff/vitest.config.mts",
+        "bytes": 238,
+        "sha256": "2bbc26be0dd2d6cbe636c33236a47ae807e7ffeb3bef29703651206f459dc659",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/parity.json",
+        "bytes": 1518,
+        "sha256": "1a5009e6186eecd923f550d9627af6bfef8fa7af4a099e0cf6d9ded55eca0b41"
+      },
+      "archived": {
+        "file": "controlled-observer/root-bounded-graph-checks/parity.json",
+        "bytes": 1518,
+        "sha256": "1a5009e6186eecd923f550d9627af6bfef8fa7af4a099e0cf6d9ded55eca0b41",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/parity.log",
+        "bytes": 1126,
+        "sha256": "606617bf207dd0d71b2eb9f19ad4d4ed1bbd56c0067e43e489c8f034bf7748d3"
+      },
+      "archived": {
+        "file": "controlled-observer/root-bounded-graph-checks/parity.log",
+        "bytes": 1126,
+        "sha256": "606617bf207dd0d71b2eb9f19ad4d4ed1bbd56c0067e43e489c8f034bf7748d3",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/repair.json",
+        "bytes": 2242,
+        "sha256": "0d934cc0f809385f5ef165cdbfd2d2773f3e56a4c7626a8b4d6212ffb59c8ec1"
+      },
+      "archived": {
+        "file": "controlled-observer/root-bounded-graph-checks/repair.json",
+        "bytes": 2242,
+        "sha256": "0d934cc0f809385f5ef165cdbfd2d2773f3e56a4c7626a8b4d6212ffb59c8ec1",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/result.json",
+        "bytes": 276681,
+        "sha256": "cf1dca6f5983b28e2eb0c525780be5f1546b568129feeb32b9b31f2570e68a86"
+      },
+      "archived": {
+        "file": "controlled-observer/root-bounded-graph-checks/result.json.gz",
+        "bytes": 63424,
+        "sha256": "3e6192729fa201e9ab4d461bd30fb218ff2384733ee5bee49a0a25f8bda5e9d1",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/tsconfig.json",
+        "bytes": 303,
+        "sha256": "ffa5d3b5b0c64f4f38f1a72b19c7471dc45378bdffbb9ba04155c84b813081ee"
+      },
+      "archived": {
+        "file": "controlled-observer/root-bounded-graph-checks/tsconfig.json",
+        "bytes": 303,
+        "sha256": "ffa5d3b5b0c64f4f38f1a72b19c7471dc45378bdffbb9ba04155c84b813081ee",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/vitest.config.mts",
+        "bytes": 241,
+        "sha256": "8530b1a2b368daf517eb4ce45edc6537d44b5041f30731fc749f54c831260f0c"
+      },
+      "archived": {
+        "file": "controlled-observer/root-bounded-graph-checks/vitest.config.mts",
+        "bytes": 241,
+        "sha256": "8530b1a2b368daf517eb4ce45edc6537d44b5041f30731fc749f54c831260f0c",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-observer-20261005/source/src/physics/AttachedRider.ts",
+        "bytes": 153209,
+        "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+      },
+      "archived": {
+        "file": "controlled-observer/source/src/physics/AttachedRider.ts",
+        "bytes": 153209,
+        "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/README.md",
+        "bytes": 4595,
+        "sha256": "e6de33fdb3641fd26e986bb1886b29eff762663828ae371b6a035ae323ce8b56"
+      },
+      "archived": {
+        "file": "native/README.md",
+        "bytes": 4595,
+        "sha256": "e6de33fdb3641fd26e986bb1886b29eff762663828ae371b6a035ae323ce8b56",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/adapter.patch",
+        "bytes": 24458,
+        "sha256": "880fb4df9ff621f561013530661d003862a1df9a4bde34ec4aa67c7bb267b6bb"
+      },
+      "archived": {
+        "file": "native/adapter.patch",
+        "bytes": 24458,
+        "sha256": "880fb4df9ff621f561013530661d003862a1df9a4bde34ec4aa67c7bb267b6bb",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/autopilot-entry.ts",
+        "bytes": 313,
+        "sha256": "b563ec7f4eb6e099a7bed00fdd0d8839c55aebaf964f943bff27f81aa986f735"
+      },
+      "archived": {
+        "file": "native/autopilot-entry.ts",
+        "bytes": 313,
+        "sha256": "b563ec7f4eb6e099a7bed00fdd0d8839c55aebaf964f943bff27f81aa986f735",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first-owner.json",
+        "bytes": 3486,
+        "sha256": "8b4fbfa3fbc42e816699bf378d5efaa2c9db9fea4799a143ae1907bf2d217875"
+      },
+      "archived": {
+        "file": "native/candidate-first-owner.json",
+        "bytes": 3486,
+        "sha256": "8b4fbfa3fbc42e816699bf378d5efaa2c9db9fea4799a143ae1907bf2d217875",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first-owner.log",
+        "bytes": 3036,
+        "sha256": "c1e8c77edcf0c8f1847c4d27e88abbcc99465a4f889e940a5d5c5e321cec865c"
+      },
+      "archived": {
+        "file": "native/candidate-first-owner.log",
+        "bytes": 3036,
+        "sha256": "c1e8c77edcf0c8f1847c4d27e88abbcc99465a4f889e940a5d5c5e321cec865c",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/check-source.py",
+        "bytes": 3645,
+        "sha256": "80f8bec9a556a877a93e18d5b099803632c3979a07b4e7032991e8aa99ec5d9e"
+      },
+      "archived": {
+        "file": "native/check-source.py",
+        "bytes": 3645,
+        "sha256": "80f8bec9a556a877a93e18d5b099803632c3979a07b4e7032991e8aa99ec5d9e",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/diagnostic-autopilot.mjs",
+        "bytes": 348650,
+        "sha256": "255adee3346589ad8c4ea865934bb453414bae26c344a950b5e8788e0f4e5d11"
+      },
+      "archived": {
+        "file": "native/diagnostic-autopilot.mjs",
+        "bytes": 348650,
+        "sha256": "255adee3346589ad8c4ea865934bb453414bae26c344a950b5e8788e0f4e5d11",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/freeze.json",
+        "bytes": 1665,
+        "sha256": "5f6e342b79fa19c429c18ef4bdeea4aff40b6ab70003d89aaa9c44d01f3abe79"
+      },
+      "archived": {
+        "file": "native/freeze.json",
+        "bytes": 1665,
+        "sha256": "5f6e342b79fa19c429c18ef4bdeea4aff40b6ab70003d89aaa9c44d01f3abe79",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/freeze.py",
+        "bytes": 11374,
+        "sha256": "949fca311d07f8292ab068d7e1d4b13048dc855a743d0d61b6b203a356f9d592"
+      },
+      "archived": {
+        "file": "native/freeze.py",
+        "bytes": 11374,
+        "sha256": "949fca311d07f8292ab068d7e1d4b13048dc855a743d0d61b6b203a356f9d592",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/helper-pins.json",
+        "bytes": 17825,
+        "sha256": "9cb35283adcc8bc8021a9b86de72e6a4da36ed71231ab2b801e82bc6cf80cfe7"
+      },
+      "archived": {
+        "file": "native/helper-pins.json",
+        "bytes": 17825,
+        "sha256": "9cb35283adcc8bc8021a9b86de72e6a4da36ed71231ab2b801e82bc6cf80cfe7",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/metadata-check.json",
+        "bytes": 796,
+        "sha256": "8d2d50c80a4a50cec04b5c434aec244ea502e62d27530168983d345d8dfc7f7a"
+      },
+      "archived": {
+        "file": "native/metadata-check.json",
+        "bytes": 796,
+        "sha256": "8d2d50c80a4a50cec04b5c434aec244ea502e62d27530168983d345d8dfc7f7a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/metadata-check.py",
+        "bytes": 1602,
+        "sha256": "0b519a2e174e220e43714d227b7d642c0c26d149a8c97349125f653774ed58a3"
+      },
+      "archived": {
+        "file": "native/metadata-check.py",
+        "bytes": 1602,
+        "sha256": "0b519a2e174e220e43714d227b7d642c0c26d149a8c97349125f653774ed58a3",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/native.mjs",
+        "bytes": 29775,
+        "sha256": "6ce785fe8edf4bf42905f9b8d0f81a8b46da1918ec380d97d1dc3b50345ffc87"
+      },
+      "archived": {
+        "file": "native/native.mjs",
+        "bytes": 29775,
+        "sha256": "6ce785fe8edf4bf42905f9b8d0f81a8b46da1918ec380d97d1dc3b50345ffc87",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+      },
+      "archived": {
+        "file": "controlled-observer/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/readiness.json",
+        "bytes": 8829,
+        "sha256": "4993a2320b3818f3cd9f5b422f123c553b0a920bdbc12fbab0ce5a1fed6ba8d8"
+      },
+      "archived": {
+        "file": "native/readiness.json",
+        "bytes": 8829,
+        "sha256": "4993a2320b3818f3cd9f5b422f123c553b0a920bdbc12fbab0ce5a1fed6ba8d8",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-base-copy.json",
+        "bytes": 96831,
+        "sha256": "3f42a5e76ee7b86e65251b4408a659c0a2e69b0218bae4b3ad11e4968708a09e"
+      },
+      "archived": {
+        "file": "native/root-base-copy.json.gz",
+        "bytes": 30963,
+        "sha256": "88deb58f2333ac0e6f7b9b6ffa520218fe1f29228401be5463834ba8c96e120d",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-base-copy.py",
+        "bytes": 1555,
+        "sha256": "8235f8f532a62ccffd69ccfb71515441627c00dbbd4c457492e0a07a6d310166"
+      },
+      "archived": {
+        "file": "native/root-base-copy.py",
+        "bytes": 1555,
+        "sha256": "8235f8f532a62ccffd69ccfb71515441627c00dbbd4c457492e0a07a6d310166",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-build-result.json",
+        "bytes": 146230,
+        "sha256": "13a11a2c17d2d30abe8bbd62859b9863c72f0be40673da86866dd749c485d21a"
+      },
+      "archived": {
+        "file": "native/root-build-result.json.gz",
+        "bytes": 33743,
+        "sha256": "ca60382ad28394ffd8228ee8c0964cd834c56fa26f251143335472c4f7862775",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-complete-build-result.json",
+        "bytes": 184293,
+        "sha256": "c9a34a949e1f6d86b6bb9f5dbc6bf77ad93eea48b57ebd791db149a7a70519d8"
+      },
+      "archived": {
+        "file": "native/root-complete-build-result.json.gz",
+        "bytes": 36543,
+        "sha256": "2b45770f43acbead19c848aa259a8029fbf6be7c4dff1da789f1d507e5cd994d",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-diagnostic-build-result.json",
+        "bytes": 36109,
+        "sha256": "a3b4058fd8ae426e1d66622dd7ef4bee56ee1198caf156713a2fc503406a7489"
+      },
+      "archived": {
+        "file": "native/root-diagnostic-build-result.json.gz",
+        "bytes": 5815,
+        "sha256": "88b2f4d5884f4d5b8f0374e4d8cd4cfdff62689b009e598bcf7e988f1d397c85",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-checks.json",
+        "bytes": 2475,
+        "sha256": "ed3d550941570f667480788054868f6151209caef89467f97361ac6a58b27dbb"
+      },
+      "archived": {
+        "file": "native/root-helper-checks.json",
+        "bytes": 2475,
+        "sha256": "ed3d550941570f667480788054868f6151209caef89467f97361ac6a58b27dbb",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-checks.py",
+        "bytes": 1269,
+        "sha256": "6077393fa21044d01fa393988a2d2cd84aeb376faf749c30c53580d0a9da3c71"
+      },
+      "archived": {
+        "file": "native/root-helper-checks.py",
+        "bytes": 1269,
+        "sha256": "6077393fa21044d01fa393988a2d2cd84aeb376faf749c30c53580d0a9da3c71",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-seal.py",
+        "bytes": 3038,
+        "sha256": "7b6ab37ca976e083d607498e229f9f88ea19ee2744aa6439806e9503d0e34f9b"
+      },
+      "archived": {
+        "file": "native/root-seal.py",
+        "bytes": 3038,
+        "sha256": "7b6ab37ca976e083d607498e229f9f88ea19ee2744aa6439806e9503d0e34f9b",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-source.py",
+        "bytes": 3691,
+        "sha256": "c27f47e3e559ed6fcba3bbca8ca803851aff479ddc3bf11335e9b85ba6dbc96a"
+      },
+      "archived": {
+        "file": "native/root-source.py",
+        "bytes": 3691,
+        "sha256": "c27f47e3e559ed6fcba3bbca8ca803851aff479ddc3bf11335e9b85ba6dbc96a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/run.py",
+        "bytes": 32114,
+        "sha256": "594a71faae887e82554fa9f23209fc2dd5f1f573756443bcdb8d388b29f5a95d"
+      },
+      "archived": {
+        "file": "native/run.py",
+        "bytes": 32114,
+        "sha256": "594a71faae887e82554fa9f23209fc2dd5f1f573756443bcdb8d388b29f5a95d",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/seal-handoff.json",
+        "bytes": 14513,
+        "sha256": "114c7260cd0e27a4a806ba5b58655e2bcc02a70fc24e2d9d2c248fd0799025ed"
+      },
+      "archived": {
+        "file": "native/seal-handoff.json",
+        "bytes": 14513,
+        "sha256": "114c7260cd0e27a4a806ba5b58655e2bcc02a70fc24e2d9d2c248fd0799025ed",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/seal.json",
+        "bytes": 194155,
+        "sha256": "19847d2bf1af8944a28f841a13fde0f88d688f271376842363d1a70605a4c549"
+      },
+      "archived": {
+        "file": "native/seal.json.gz",
+        "bytes": 44266,
+        "sha256": "be387077aeff8ccd203e9da4e5a016d76d5fd6480bc6c4c98b41b6281aa66466",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-delta.json",
+        "bytes": 1010,
+        "sha256": "9054d4e2396788ed6b7093eedc5dfd8dcb353f1fafd636e055bc0f766a864847"
+      },
+      "archived": {
+        "file": "native/source-delta.json",
+        "bytes": 1010,
+        "sha256": "9054d4e2396788ed6b7093eedc5dfd8dcb353f1fafd636e055bc0f766a864847",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-helper-checks.json",
+        "bytes": 2967,
+        "sha256": "b352dca01b5e710e21f92af014eaac6ffa37d4ce800e9905ce274d6e593910f3"
+      },
+      "archived": {
+        "file": "native/source-helper-checks.json",
+        "bytes": 2967,
+        "sha256": "b352dca01b5e710e21f92af014eaac6ffa37d4ce800e9905ce274d6e593910f3",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-pins.json",
+        "bytes": 96402,
+        "sha256": "f1ca1311288234e6e4087556e20f8f66d39763daa6690ac7a4f878fddf1d19c7"
+      },
+      "archived": {
+        "file": "native/source-pins.json.gz",
+        "bytes": 30716,
+        "sha256": "b08100ff9b17add1d87b4aa27977673450df93ea3006fc60ee14b13b2643b058",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-readiness.json",
+        "bytes": 2889,
+        "sha256": "41942c6127a4607d26ea926e66827ce43cb26984202c97ed507a31a294cd9b6b"
+      },
+      "archived": {
+        "file": "native/source-readiness.json",
+        "bytes": 2889,
+        "sha256": "41942c6127a4607d26ea926e66827ce43cb26984202c97ed507a31a294cd9b6b",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/00-initial.png",
+        "bytes": 2444829,
+        "sha256": "f9ad89a4b21d00236c1be596de695d8c9713fb2ee5b9f65fbd947fef57c10d8c"
+      },
+      "archived": {
+        "file": "native/candidate-first/00-initial.png",
+        "bytes": 2444829,
+        "sha256": "f9ad89a4b21d00236c1be596de695d8c9713fb2ee5b9f65fbd947fef57c10d8c",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/01-first-pop-up.png",
+        "bytes": 1963811,
+        "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+      },
+      "archived": {
+        "file": "native/candidate-first/01-first-pop-up.png",
+        "bytes": 1963811,
+        "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/02-first-landing.png",
+        "bytes": 1903210,
+        "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+      },
+      "archived": {
+        "file": "native/candidate-first/02-first-landing.png",
+        "bytes": 1903210,
+        "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/03-terminal.png",
+        "bytes": 1961115,
+        "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+      },
+      "archived": {
+        "file": "native/candidate-first/03-terminal.png",
+        "bytes": 1961115,
+        "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/launcher.json",
+        "bytes": 11964,
+        "sha256": "413ca9b297ac5c417011a58bc50d2d788a22097e18b567cae92c08a9d5e598a2"
+      },
+      "archived": {
+        "file": "native/candidate-first/launcher.json",
+        "bytes": 11964,
+        "sha256": "413ca9b297ac5c417011a58bc50d2d788a22097e18b567cae92c08a9d5e598a2",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-first-landing.json",
+        "bytes": 1496463,
+        "sha256": "2c24b6d30ea606b04b0a66dda8008b1d27e77b11fc64f679b0bf3c124fed7686"
+      },
+      "archived": {
+        "file": "native/candidate-first/loft-first-landing.json.gz",
+        "bytes": 306149,
+        "sha256": "5105097fedcb5c5de935378f5e1cd7f1ba2cbb60a91a4a6c7d9cede5b4aa657a",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-first-pop-up.json",
+        "bytes": 1073481,
+        "sha256": "a5beb80b3f52ea64aa6dda46da89431c726e05887ebad7c359f96336a0ca97fa"
+      },
+      "archived": {
+        "file": "native/candidate-first/loft-first-pop-up.json.gz",
+        "bytes": 227289,
+        "sha256": "424f97ed6804e6ebc71c54d1747b2d070571eb1b80b24e0ac2a92c26635d37fa",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-initial.json",
+        "bytes": 1099036,
+        "sha256": "685cb5e28d9c4151019f6d72cf55b4911ec294a2b1868634b5ea42de3301f431"
+      },
+      "archived": {
+        "file": "native/candidate-first/loft-initial.json.gz",
+        "bytes": 233813,
+        "sha256": "0f66f050c16cceacd3cac5412dc62a1d0f7b916daa6ecefd381818bd3a4ebb5b",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-terminal.json",
+        "bytes": 1420830,
+        "sha256": "aa96c2afdc929219079abb4698231fe58f7417e84e64081696236a1557e99acd"
+      },
+      "archived": {
+        "file": "native/candidate-first/loft-terminal.json.gz",
+        "bytes": 311764,
+        "sha256": "4fd799247ab3b0a0c35e79af5b10e4d0e678007ff7062311e458b0c360433cf5",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/pop-up-motion.webm",
+        "bytes": 878096,
+        "sha256": "e023c8180a095414c02738aefb4088ec3ddcb128f48be9cabfe69822fe9f2bfb"
+      },
+      "archived": {
+        "file": "native/candidate-first/pop-up-motion.webm",
+        "bytes": 878096,
+        "sha256": "e023c8180a095414c02738aefb4088ec3ddcb128f48be9cabfe69822fe9f2bfb",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/report.json",
+        "bytes": 13122643,
+        "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af"
+      },
+      "archived": {
+        "file": "native/candidate-first/report.json.gz",
+        "bytes": 1811957,
+        "sha256": "463406f0f005752b6eb9723eea79a4dd71eb9552e25ed7891a777d84fdba224d",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/steps.ndjson",
+        "bytes": 12856827,
+        "sha256": "b63528c4e17d323817f16d6aad79e56894104811d4b739fbd911767352e2f801"
+      },
+      "archived": {
+        "file": "native/candidate-first/steps.ndjson.gz",
+        "bytes": 1751336,
+        "sha256": "b28a6d0a05599a63af89948965db8823fc2ee837b9c1fc2cb4b66edb4ebfa777",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/BoardBody.ts",
+        "bytes": 55109,
+        "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+      },
+      "archived": {
+        "file": "native/source/src/physics/BoardBody.ts",
+        "bytes": 55109,
+        "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/README.md",
+        "bytes": 5016,
+        "sha256": "6b9c323145f4e6e57b9e4681bf0d1631c123a0ee136553fb0c2f9d8ca9c574cb"
+      },
+      "archived": {
+        "file": "review/README.md",
+        "bytes": 5016,
+        "sha256": "6b9c323145f4e6e57b9e4681bf0d1631c123a0ee136553fb0c2f9d8ca9c574cb",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/analyze.py",
+        "bytes": 19169,
+        "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+      },
+      "archived": {
+        "file": "review/analyze.py",
+        "bytes": 19169,
+        "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/audit-contract.json",
+        "bytes": 6413,
+        "sha256": "025e81fff5991c17f062d216e8c00e9561d67bae886fbdcef789e8c78cc40269"
+      },
+      "archived": {
+        "file": "review/audit-contract.json",
+        "bytes": 6413,
+        "sha256": "025e81fff5991c17f062d216e8c00e9561d67bae886fbdcef789e8c78cc40269",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/authority.py",
+        "bytes": 15753,
+        "sha256": "33015f7b985d44d56f0e4c0ae94b5fbff9842a74b0b5b7aa17331ebfb9e75bbf"
+      },
+      "archived": {
+        "file": "review/authority.py",
+        "bytes": 15753,
+        "sha256": "33015f7b985d44d56f0e4c0ae94b5fbff9842a74b0b5b7aa17331ebfb9e75bbf",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/freeze.json",
+        "bytes": 1774,
+        "sha256": "45e511b3d4886ec83339ff03012947e80d87ff263a5262a121673e0469dc0930"
+      },
+      "archived": {
+        "file": "review/freeze.json",
+        "bytes": 1774,
+        "sha256": "45e511b3d4886ec83339ff03012947e80d87ff263a5262a121673e0469dc0930",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+      },
+      "archived": {
+        "file": "controlled-observer/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/readiness.json",
+        "bytes": 4039,
+        "sha256": "6afeb8345015368de572e06c761e0727d3551a826a9a0a35a22bd837a8f7f8fe"
+      },
+      "archived": {
+        "file": "review/readiness.json",
+        "bytes": 4039,
+        "sha256": "6afeb8345015368de572e06c761e0727d3551a826a9a0a35a22bd837a8f7f8fe",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-balance.py",
+        "bytes": 8133,
+        "sha256": "df93e70e3dafb59140a4d6033340f0abff27468dd092bdefe931045c6ab02143"
+      },
+      "archived": {
+        "file": "review/root-balance.py",
+        "bytes": 8133,
+        "sha256": "df93e70e3dafb59140a4d6033340f0abff27468dd092bdefe931045c6ab02143",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-transition.py",
+        "bytes": 3530,
+        "sha256": "a04f033cf0bf3c6e3eb784f2f5134c362eef5dadca3236767ea349cadd33073b"
+      },
+      "archived": {
+        "file": "review/root-transition.py",
+        "bytes": 3530,
+        "sha256": "a04f033cf0bf3c6e3eb784f2f5134c362eef5dadca3236767ea349cadd33073b",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-balance/all-samples.json",
+        "bytes": 480987,
+        "sha256": "8d7b56e2ca9d05d312210ac812a53257465d2aa8743a239e43c81cdf2188c720"
+      },
+      "archived": {
+        "file": "review/root-balance/all-samples.json.gz",
+        "bytes": 99731,
+        "sha256": "30d1916156cfc1cafd428311508d9592ab51985b371691952d1f1d721b85030a",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-balance/analysis.json",
+        "bytes": 25758,
+        "sha256": "188bc821d278b3282286ea4e68f77bc3d9cd2afcbd23a6cce401122ac1ecb54e"
+      },
+      "archived": {
+        "file": "review/root-balance/analysis.json",
+        "bytes": 25758,
+        "sha256": "188bc821d278b3282286ea4e68f77bc3d9cd2afcbd23a6cce401122ac1ecb54e",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-balance/transition.json",
+        "bytes": 6710,
+        "sha256": "8547a334989787363b86e7ac5e73759802b22588f1dc7eff02e581549ce6b2f8"
+      },
+      "archived": {
+        "file": "review/root-balance/transition.json",
+        "bytes": 6710,
+        "sha256": "8547a334989787363b86e7ac5e73759802b22588f1dc7eff02e581549ce6b2f8",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v2/analyze.py",
+        "bytes": 19169,
+        "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+      },
+      "archived": {
+        "file": "review/analyze.py",
+        "bytes": 19169,
+        "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v2/authority.py",
+        "bytes": 17174,
+        "sha256": "53cde884b7e5ba4e994287b47ad22f6bf6a74c71ca971bc41ecd4b2f23607c8a"
+      },
+      "archived": {
+        "file": "review/root-audit-v2/authority.py",
+        "bytes": 17174,
+        "sha256": "53cde884b7e5ba4e994287b47ad22f6bf6a74c71ca971bc41ecd4b2f23607c8a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v2/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+      },
+      "archived": {
+        "file": "controlled-observer/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v2/root-repair.json",
+        "bytes": 3124,
+        "sha256": "c51eba0d715182d6614d8355e0af16448e97f2232377390cad49ccec6cac7ddc"
+      },
+      "archived": {
+        "file": "review/root-audit-v2/root-repair.json",
+        "bytes": 3124,
+        "sha256": "c51eba0d715182d6614d8355e0af16448e97f2232377390cad49ccec6cac7ddc",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/analyze.py",
+        "bytes": 19169,
+        "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+      },
+      "archived": {
+        "file": "review/analyze.py",
+        "bytes": 19169,
+        "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/authority.py",
+        "bytes": 18253,
+        "sha256": "19ab3931ca5e119f2b4f311c09ad647f1e10c97551edc09d49a5eb938055816e"
+      },
+      "archived": {
+        "file": "review/root-audit-v3/authority.py",
+        "bytes": 18253,
+        "sha256": "19ab3931ca5e119f2b4f311c09ad647f1e10c97551edc09d49a5eb938055816e",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+      },
+      "archived": {
+        "file": "controlled-observer/observer-fields.json",
+        "bytes": 8731,
+        "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/all-full-observer-records.json",
+        "bytes": 1138658,
+        "sha256": "c9793672693ba38477f201e388e1dada56a5ef11bff62854bbf605b4f53131c7"
+      },
+      "archived": {
+        "file": "review/root-audit-v3/root-numeric-review/all-full-observer-records.json.gz",
+        "bytes": 124526,
+        "sha256": "ccaf0bef51c76b1b580273e357ff6b68b500d92a90778b605b702e684ba9edcc",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/all-raw-differences.ndjson",
+        "bytes": 5294557,
+        "sha256": "c29a654bc55038534cb6fe57e567ff2d50e8055534b4afc42fdb49078d675965"
+      },
+      "archived": {
+        "file": "review/root-audit-v3/root-numeric-review/all-raw-differences.ndjson.gz",
+        "bytes": 188654,
+        "sha256": "0fa19b5c0d5432dd655f0ff003e2a218e0aac0c09db898efffc3f0a7d9010554",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/analysis.json",
+        "bytes": 15660,
+        "sha256": "198fedcdc2909453f2f73c93bd76dd88c7d34cfe2146cdf6c7b87ec22b89a9cf"
+      },
+      "archived": {
+        "file": "review/root-audit-v3/root-numeric-review/analysis.json",
+        "bytes": 15660,
+        "sha256": "198fedcdc2909453f2f73c93bd76dd88c7d34cfe2146cdf6c7b87ec22b89a9cf",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/full-sidecar-comparison.json",
+        "bytes": 64677,
+        "sha256": "d8c8310f48db91f3f3dc8c9efa4f3bcd968190c728d10bb17b05549c26b5b475"
+      },
+      "archived": {
+        "file": "review/root-audit-v3/root-numeric-review/full-sidecar-comparison.json.gz",
+        "bytes": 8283,
+        "sha256": "bc7bc6b201b053cbb4ef553e58feed55449b49c4202b42f5810ae9eb6169c3b7",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/original-published-row-comparison.json",
+        "bytes": 312306,
+        "sha256": "8d6116b3ca6e077ff6a32a3080b63cd087fffd7fe2b291b2ae7a59384bfb61d9"
+      },
+      "archived": {
+        "file": "review/root-audit-v3/root-numeric-review/original-published-row-comparison.json.gz",
+        "bytes": 13582,
+        "sha256": "0b67d2374c0007f00ef74211459b15508b6f5c9be80ef415af60137376513c5e",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/postcapture-authority.json",
+        "bytes": 1260110,
+        "sha256": "5bee9175496768128070e747d855fd20e4efbd622db45ea5818cc911cc8b0c13"
+      },
+      "archived": {
+        "file": "review/root-audit-v3/root-numeric-review/postcapture-authority.json.gz",
+        "bytes": 257973,
+        "sha256": "eaf9810594f541bdde6abee6b820b17e03f3744ca8c37ab7417119bd99618cec",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/sidecar-all-raw-differences.ndjson",
+        "bytes": 654,
+        "sha256": "7fc3260865a82bf419fe072340400e002922e3be9167c8c16f5d17b1e77c94dd"
+      },
+      "archived": {
+        "file": "review/root-audit-v3/root-numeric-review/sidecar-all-raw-differences.ndjson",
+        "bytes": 654,
+        "sha256": "7fc3260865a82bf419fe072340400e002922e3be9167c8c16f5d17b1e77c94dd",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/sidecar-word-differences.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-repair.json",
+        "bytes": 4680,
+        "sha256": "7061abdc19bf144ddf3f05822cb9e4f31040713aba8c36d09467aad232f14bf2"
+      },
+      "archived": {
+        "file": "review/root-audit-v3/root-repair.json",
+        "bytes": 4680,
+        "sha256": "7061abdc19bf144ddf3f05822cb9e4f31040713aba8c36d09467aad232f14bf2",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/DESIGN.md",
+        "bytes": 4732,
+        "sha256": "7e7f03f4aa0a6538192325d8e4845c4cbab12c3b1ba658bc49635ce5d20017f7"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/DESIGN.md",
+        "bytes": 4732,
+        "sha256": "7e7f03f4aa0a6538192325d8e4845c4cbab12c3b1ba658bc49635ce5d20017f7",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/freeze.json",
+        "bytes": 1702,
+        "sha256": "a9486a86c63a7de713700dcfd6091dcc0c3f8933ce5959361eba9bf983ed1001"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/freeze.json",
+        "bytes": 1702,
+        "sha256": "a9486a86c63a7de713700dcfd6091dcc0c3f8933ce5959361eba9bf983ed1001",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-exact-receipt.json",
+        "bytes": 1534,
+        "sha256": "642674fc4f9275cea4a226b47e98f354e7907599d7e010d3d97f7d5416144078"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/fullsheet-exact-receipt.json",
+        "bytes": 1534,
+        "sha256": "642674fc4f9275cea4a226b47e98f354e7907599d7e010d3d97f7d5416144078",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-query-receipt.json",
+        "bytes": 140038,
+        "sha256": "585b0904c7e18f91f41eb29d417bad7387465f7e3c46bd479496b5b1a9763edc"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/fullsheet-query-receipt.json.gz",
+        "bytes": 26288,
+        "sha256": "ba011eb1e8ca9a519795969a052c3c73309746cac5f51d43b5dcff2662f3696e",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-switch-receipt.json",
+        "bytes": 28748,
+        "sha256": "58c5c58a1e7234fab8140660221699a6b812658d1fdb7ab625a0dbd798aa76e9"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/fullsheet-switch-receipt.json",
+        "bytes": 28748,
+        "sha256": "58c5c58a1e7234fab8140660221699a6b812658d1fdb7ab625a0dbd798aa76e9",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/geometry-test.patch",
+        "bytes": 8068,
+        "sha256": "697374eed5cc4edfa7f8011e392adea5ac579a46eaeefa2cebce6d4c4d8f2ce5"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/geometry-test.patch",
+        "bytes": 8068,
+        "sha256": "697374eed5cc4edfa7f8011e392adea5ac579a46eaeefa2cebce6d4c4d8f2ce5",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/prospective-geometry-contracts.json",
+        "bytes": 1812,
+        "sha256": "c3bb3a4c1a09922c38b49bb5d4adb7244a5ce19a89265bb12032a3f6c133a50f"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/prospective-geometry-contracts.json",
+        "bytes": 1812,
+        "sha256": "c3bb3a4c1a09922c38b49bb5d4adb7244a5ce19a89265bb12032a3f6c133a50f",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/readiness.json",
+        "bytes": 4494,
+        "sha256": "e1ceefb0ff3e1b6af5fda3afb915cae7461bbe553242ea0cdaaae960219e8fd5"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/readiness.json",
+        "bytes": 4494,
+        "sha256": "e1ceefb0ff3e1b6af5fda3afb915cae7461bbe553242ea0cdaaae960219e8fd5",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks.py",
+        "bytes": 3405,
+        "sha256": "d2c90f71a0f4cae69126a54f443b09c8aacc724f420b5b2b84515c20d0aebd58"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/root-checks.py",
+        "bytes": 3405,
+        "sha256": "d2c90f71a0f4cae69126a54f443b09c8aacc724f420b5b2b84515c20d0aebd58",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/runtime.patch",
+        "bytes": 7315,
+        "sha256": "8ba1021f10f4996bb07b98c2f51ca803c95edd6372cd77933bbd74603ce82373"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/runtime.patch",
+        "bytes": 7315,
+        "sha256": "8ba1021f10f4996bb07b98c2f51ca803c95edd6372cd77933bbd74603ce82373",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source-delta.json",
+        "bytes": 1726,
+        "sha256": "9afd9e95c5d3f67ef11b79c5e1103e87224d5aa7324f0a4463dd0d128df049b8"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/source-delta.json",
+        "bytes": 1726,
+        "sha256": "9afd9e95c5d3f67ef11b79c5e1103e87224d5aa7324f0a4463dd0d128df049b8",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source-pins.json",
+        "bytes": 96441,
+        "sha256": "f7a51a8de02bc26b016c05ac047f2e5f2ff092b9bd913f5b3de35df74d714fef"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/source-pins.json.gz",
+        "bytes": 30747,
+        "sha256": "c7b3d39913ee5793c28a240451cd2f43d699baaac9a3c34a2ed205bcc657d124",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks/failed-segments.json",
+        "bytes": 5188,
+        "sha256": "ea5a8c4848aee6f806abbae681640924663f03ae0a252cb8d327f7c77a84e38d"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/root-checks/failed-segments.json",
+        "bytes": 5188,
+        "sha256": "ea5a8c4848aee6f806abbae681640924663f03ae0a252cb8d327f7c77a84e38d",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks/geometry.json",
+        "bytes": 8331,
+        "sha256": "de78b7d76afa53e693b5241e2b27fa2f4068373e35d26fba053e04b36cd58527"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/root-checks/geometry.json",
+        "bytes": 8331,
+        "sha256": "de78b7d76afa53e693b5241e2b27fa2f4068373e35d26fba053e04b36cd58527",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks/geometry.log",
+        "bytes": 103,
+        "sha256": "2df67aa0cad4f8bc14a5523c8882240f21a4f7f34203bc24c9431e52553d1cf0"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/root-checks/geometry.log",
+        "bytes": 103,
+        "sha256": "2df67aa0cad4f8bc14a5523c8882240f21a4f7f34203bc24c9431e52553d1cf0",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks/result.json",
+        "bytes": 136833,
+        "sha256": "d825dddc8a5313bb0b5072375d27e25d4c09f68ed8c174c4eadbca4f856ca4ee"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/root-checks/result.json.gz",
+        "bytes": 32334,
+        "sha256": "55f862f970f0b55a44ee59fb7fa37973802a56640459aba2cacfc65b27a375b7",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks/vitest.config.mts",
+        "bytes": 279,
+        "sha256": "fc1647d2a5e0af535cdfbeb50f54042bc08530eaa6971211ebb29aa42776e39d"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/root-checks/vitest.config.mts",
+        "bytes": 279,
+        "sha256": "fc1647d2a5e0af535cdfbeb50f54042bc08530eaa6971211ebb29aa42776e39d",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20566,
+        "sha256": "31e1a55524536b63207bb745ed860881e3ad8565efaa180f2ef8a8f07dcd9e45"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20566,
+        "sha256": "31e1a55524536b63207bb745ed860881e3ad8565efaa180f2ef8a8f07dcd9e45",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source/src/wave/barrel/sharedUpperRoot.test.ts",
+        "bytes": 20828,
+        "sha256": "60ec1e644eb8af46d12fde49bdfea23f4e3365b12cbe8b17ef2d268e0144ed84"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/source/src/wave/barrel/sharedUpperRoot.test.ts",
+        "bytes": 20828,
+        "sha256": "60ec1e644eb8af46d12fde49bdfea23f4e3365b12cbe8b17ef2d268e0144ed84",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/DESIGN.md",
+        "bytes": 3568,
+        "sha256": "ba81543bf89d991e594c2228c7140a2ba5f9a9a6f2c0d1bf9af530637ce9a6b5"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/DESIGN.md",
+        "bytes": 3568,
+        "sha256": "ba81543bf89d991e594c2228c7140a2ba5f9a9a6f2c0d1bf9af530637ce9a6b5",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/freeze.json",
+        "bytes": 1950,
+        "sha256": "64ede80e69447aa256fa5e4d82a1719dc2b9064425b1f9a083826ef613da4477"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/freeze.json",
+        "bytes": 1950,
+        "sha256": "64ede80e69447aa256fa5e4d82a1719dc2b9064425b1f9a083826ef613da4477",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/fullsheet-exact-receipt.json",
+        "bytes": 1535,
+        "sha256": "fbc7dd22c3410693b7515d7b7212f40f5f045d9644aecd554edf2fd251e6ef8f"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/fullsheet-exact-receipt.json",
+        "bytes": 1535,
+        "sha256": "fbc7dd22c3410693b7515d7b7212f40f5f045d9644aecd554edf2fd251e6ef8f",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/fullsheet-query-receipt.json",
+        "bytes": 230737,
+        "sha256": "6f313d150d74b052b52f4b5cb438750b6e234de61424f03d6905f1174944d07d"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/fullsheet-query-receipt.json.gz",
+        "bytes": 45742,
+        "sha256": "52bb58656ed253842391a69cb9a155710310344e0481a65ee9af82a320334589",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/fullsheet-switch-receipt.json",
+        "bytes": 28748,
+        "sha256": "58c5c58a1e7234fab8140660221699a6b812658d1fdb7ab625a0dbd798aa76e9"
+      },
+      "archived": {
+        "file": "rejected-contour-v1/fullsheet-switch-receipt.json",
+        "bytes": 28748,
+        "sha256": "58c5c58a1e7234fab8140660221699a6b812658d1fdb7ab625a0dbd798aa76e9",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/geometry-test.patch",
+        "bytes": 3499,
+        "sha256": "c331bfa187afd0ec1446833909fe4c188e87eda0baf13b02c92937b7324999af"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/geometry-test.patch",
+        "bytes": 3499,
+        "sha256": "c331bfa187afd0ec1446833909fe4c188e87eda0baf13b02c92937b7324999af",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/prospective-geometry-contracts.json",
+        "bytes": 1426,
+        "sha256": "99e574fe5a0431cbc49fa841fff3a568cf59ab87f57f89b086c2efad9a6ea540"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/prospective-geometry-contracts.json",
+        "bytes": 1426,
+        "sha256": "99e574fe5a0431cbc49fa841fff3a568cf59ab87f57f89b086c2efad9a6ea540",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/readiness.json",
+        "bytes": 5216,
+        "sha256": "42f764f5cf4af38df48deb0f0cc92d8777a069a4c83877a233cc0affd7ee2301"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/readiness.json",
+        "bytes": 5216,
+        "sha256": "42f764f5cf4af38df48deb0f0cc92d8777a069a4c83877a233cc0affd7ee2301",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/root-checks.py",
+        "bytes": 3405,
+        "sha256": "fa79f02baf8c67d0b92ad0fa328c8cfa75fb121e1940137e3cd95b3487437c69"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/root-checks.py",
+        "bytes": 3405,
+        "sha256": "fa79f02baf8c67d0b92ad0fa328c8cfa75fb121e1940137e3cd95b3487437c69",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/runtime.patch",
+        "bytes": 4201,
+        "sha256": "71f8ea2a7827d7bcc0fa90a8db6569993077f4996ad4e83ea2398585c041d05c"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/runtime.patch",
+        "bytes": 4201,
+        "sha256": "71f8ea2a7827d7bcc0fa90a8db6569993077f4996ad4e83ea2398585c041d05c",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/source-delta.json",
+        "bytes": 1701,
+        "sha256": "33546355177f0531a0272f3463a13cd520a65e3aa5a1c9f000b97e3bfd7dcdab"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/source-delta.json",
+        "bytes": 1701,
+        "sha256": "33546355177f0531a0272f3463a13cd520a65e3aa5a1c9f000b97e3bfd7dcdab",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/source-pins.json",
+        "bytes": 96444,
+        "sha256": "11291485b9f039661e5031860b386403459b83e12c1aeb141d28cbaf73c88210"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/source-pins.json.gz",
+        "bytes": 30749,
+        "sha256": "d20c1a3bdd72485278056e6008f1b585ff41d525d17396e3ab4b78e3a0fafcbf",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/v1-failure-input-pins.json",
+        "bytes": 1181,
+        "sha256": "2a83ef8eb57c9e16923f925c5cab5cd3135448a7ff9ae02ed84b9853e3b688da"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/v1-failure-input-pins.json",
+        "bytes": 1181,
+        "sha256": "2a83ef8eb57c9e16923f925c5cab5cd3135448a7ff9ae02ed84b9853e3b688da",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/root-checks/geometry.json",
+        "bytes": 8359,
+        "sha256": "2115e4796987efcd29eafa5e0c61634fae4676d558fb3489a5b95e34fb587322"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/root-checks/geometry.json",
+        "bytes": 8359,
+        "sha256": "2115e4796987efcd29eafa5e0c61634fae4676d558fb3489a5b95e34fb587322",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/root-checks/geometry.log",
+        "bytes": 106,
+        "sha256": "20220cd9888443e456ebdb325abc322abb21becc2df8d245b828ca4ccf991e17"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/root-checks/geometry.log",
+        "bytes": 106,
+        "sha256": "20220cd9888443e456ebdb325abc322abb21becc2df8d245b828ca4ccf991e17",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/root-checks/result.json",
+        "bytes": 138635,
+        "sha256": "04fda283d5b77fb960bfa4500ea3fe90107aa0cb71d5ba623098ee5e362dc5a5"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/root-checks/result.json.gz",
+        "bytes": 32328,
+        "sha256": "9a92776759853fef58dfd096e5bc62aea410f87ed325fb066200c71e453a9a32",
+        "encoding": "gzip"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "archived": {
+        "file": "controlled-observer/root-checks/strict.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/root-checks/vitest.config.mts",
+        "bytes": 282,
+        "sha256": "e68b53eec9510de7b854805a1fab681988ef835fd840d7763bcc149427c0ccaa"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/root-checks/vitest.config.mts",
+        "bytes": 282,
+        "sha256": "e68b53eec9510de7b854805a1fab681988ef835fd840d7763bcc149427c0ccaa",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20747,
+        "sha256": "9adb31158319636dbf79beb52b25d162164c7ba2c9f8671c57d4ee646ed39a94"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/source/src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20747,
+        "sha256": "9adb31158319636dbf79beb52b25d162164c7ba2c9f8671c57d4ee646ed39a94",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/source/src/wave/barrel/sharedUpperRoot.test.ts",
+        "bytes": 20837,
+        "sha256": "460a57e69e4a930b163e150d4ab3c429b082e8ce687da98ca53ec228d9b19b7e"
+      },
+      "archived": {
+        "file": "rejected-contour-v2/source/src/wave/barrel/sharedUpperRoot.test.ts",
+        "bytes": 20837,
+        "sha256": "460a57e69e4a930b163e150d4ab3c429b082e8ce687da98ca53ec228d9b19b7e",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-offset-prefix-return-design-20261005/artifact-pins.sha256",
+        "bytes": 1077,
+        "sha256": "75d8173d8361e6f587c3366a39da9763e0d01961ffe6796a098f2b42ec099f3d"
+      },
+      "archived": {
+        "file": "pending-offset-return-design/artifact-pins.sha256",
+        "bytes": 1077,
+        "sha256": "75d8173d8361e6f587c3366a39da9763e0d01961ffe6796a098f2b42ec099f3d",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-C-offset-prefix-return-design-20261005/design.md",
+        "bytes": 11471,
+        "sha256": "f26e8cd223deabf5cc911e71736805152baccbd02055718e51fc3795d4e6926f"
+      },
+      "archived": {
+        "file": "pending-offset-return-design/design.md",
+        "bytes": 11471,
+        "sha256": "f26e8cd223deabf5cc911e71736805152baccbd02055718e51fc3795d4e6926f",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-impulse-archive-20261005/build.py",
+        "bytes": 8052,
+        "sha256": "0dd3220627f35cf5f1c69fbb247ab3ac5e18a0e9088903628cd4fca406427aaf"
+      },
+      "archived": {
+        "file": "build-archive.py",
+        "bytes": 8052,
+        "sha256": "0dd3220627f35cf5f1c69fbb247ab3ac5e18a0e9088903628cd4fca406427aaf",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-board-rhs-source-assessment-20261005/ASSESSMENT.md",
+        "bytes": 8534,
+        "sha256": "c5d0fc929f459fb7b2ce33cdf2be943f5c5d63d3dca37055f64c708b6e50d91b"
+      },
+      "archived": {
+        "file": "pending-board-rhs-assessment/ASSESSMENT.md",
+        "bytes": 8534,
+        "sha256": "c5d0fc929f459fb7b2ce33cdf2be943f5c5d63d3dca37055f64c708b6e50d91b",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-board-rhs-source-assessment-20261005/pins.json",
+        "bytes": 2307,
+        "sha256": "9a80651d6f112646865b99519a9cb8ceefd23c07d4a872886214b146e04f7fb8"
+      },
+      "archived": {
+        "file": "pending-board-rhs-assessment/pins.json",
+        "bytes": 2307,
+        "sha256": "9a80651d6f112646865b99519a9cb8ceefd23c07d4a872886214b146e04f7fb8",
+        "encoding": "identity"
+      }
+    },
+    {
+      "original": {
+        "file": "/private/tmp/tube-impulse-archive-20261005/add-assessment.py",
+        "bytes": 2815,
+        "sha256": "976ee5aa8769d8db89657344079a2868b0ffc03b707835c489c9f1d6a8f795b2"
+      },
+      "archived": {
+        "file": "add-assessment.py",
+        "bytes": 2815,
+        "sha256": "976ee5aa8769d8db89657344079a2868b0ffc03b707835c489c9f1d6a8f795b2",
+        "encoding": "identity"
+      }
+    }
+  ]
+}

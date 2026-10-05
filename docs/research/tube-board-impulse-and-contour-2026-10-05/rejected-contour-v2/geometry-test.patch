@@ -1,0 +1,32 @@
+--- v1/src/wave/barrel/sharedUpperRoot.test.ts
++++ v2/src/wave/barrel/sharedUpperRoot.test.ts
+@@ -178,9 +178,9 @@
+     for (const [i, r] of oldReport.crossCaseGridAll.entries()) check(blend(held.get(r.cases[0])!, held.get(r.cases[1])!, r.share), fromPy(r), 'casePairs672', i);
+     for (const r of golden.precision522) check(new Float32Array(golden.rawBlocks[r.block]), r.params, 'precision522', [r.block, r.sample]);
+     const receipt = { partialCaptureLimitation: 'Five captures contain only32..112: upstream0..31 and113..127 unobserved, excluded from bulk guards/crossing/preservation checks; buffer placeholders are not evidence. Full asset/provider queries use all128 points.', groups, failures, maximumRoofEnvelopeChange, maximumMaterialDisplacement, maximumRootRadiusReduction, limitedRoots, coalescedStations,
+-      authoredRoofCapLifecycleCoefficientsUnchanged: true, innerContourCandidate: 'two-branch-cavity/v1', minimumActualClearanceRatio,
++      authoredRoofCapLifecycleCoefficientsUnchanged: true, innerContourCandidate: 'two-branch-cavity/v2', minimumActualClearanceRatio,
+       geometryPhysicallyEquivalent: false, fixedProfilePoints: 128, rowVertices: LOFT_SAMPLES, vertexBudget: LOFT.budget };
+-    writeFileSync('/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-query-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
++    writeFileSync('/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/fullsheet-query-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
+     expect(Object.values(groups).reduce((n, g) => n + g.attempted, 0)).toBe(6447);
+     expect({ count: failures.length, first: failures[0] }).toEqual({ count: 0, first: undefined });
+   }, 30000);
+@@ -197,7 +197,7 @@
+     const top = hits.filter(h => h.segment >= 32 && h.segment < 64), under = hits.filter(h => h.segment >= 64 && h.segment < 88);
+     expect(top.length).toBeGreaterThan(0); expect(under.length).toBeGreaterThan(0);
+     const signedGap = Math.min(...top.map(h => h.y)) - Math.max(...under.map(h => h.y));
+-    writeFileSync('/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-exact-receipt.json', JSON.stringify({ originalPenetration: failure.penetration,
++    writeFileSync('/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/fullsheet-exact-receipt.json', JSON.stringify({ originalPenetration: failure.penetration,
+       fixedInputRecords: Array.from(input), x: failure.x, z: failure.z, strip: failure.strip, hits, signedGap }, null, 2) + '\n');
+     expect(signedGap).toBeGreaterThanOrEqual(0);
+   });
+@@ -242,7 +242,7 @@
+       maximumSampledPairedSwitch: Math.max(...rows.map(r => r.sampledPairedSwitch)), maximumNormalizedSampledPairedSwitch: Math.max(...rows.map(r => r.normalizedSampledPairedSwitch)),
+       fixedOriginalGateAndControls: true, sameSamplingInBothStates: true,
+       limitation: 'Roof metric is exact vertical polygon difference on common domain at union breakpoints; whole-contour metric samples vertices/midpoints, not continuous Hausdorff proof.' };
+-    writeFileSync('/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-switch-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
++    writeFileSync('/private/tmp/tube-C-two-branch-inner-contour-v2-20261005/fullsheet-switch-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
+     expect(rows.length).toBe(40);
+     expect(rows.every(r => Number.isFinite(r.pairedRoofSwitch) && Number.isFinite(r.sampledPairedSwitch))).toBe(true);
+   }, 30000);

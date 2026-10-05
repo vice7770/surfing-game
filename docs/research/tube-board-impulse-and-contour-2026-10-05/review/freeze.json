@@ -1,0 +1,47 @@
+{
+  "schema": "trial-balance-actual-review-source-preparation-freeze/v1",
+  "preparationFrozen": true,
+  "complete": false,
+  "sourceOnly": true,
+  "numericExecution": false,
+  "checksExecuted": false,
+  "candidateActualFilesRead": false,
+  "pins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/analyze.py",
+      "bytes": 19169,
+      "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/authority.py",
+      "bytes": 15753,
+      "sha256": "33015f7b985d44d56f0e4c0ae94b5fbff9842a74b0b5b7aa17331ebfb9e75bbf"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/audit-contract.json",
+      "bytes": 6413,
+      "sha256": "025e81fff5991c17f062d216e8c00e9561d67bae886fbdcef789e8c78cc40269"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/README.md",
+      "bytes": 5016,
+      "sha256": "6b9c323145f4e6e57b9e4681bf0d1631c123a0ee136553fb0c2f9d8ca9c574cb"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/readiness.json",
+      "bytes": 4039,
+      "sha256": "6afeb8345015368de572e06c761e0727d3551a826a9a0a35a22bd837a8f7f8fe"
+    }
+  ],
+  "readiness": {
+    "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/readiness.json",
+    "bytes": 4039,
+    "sha256": "6afeb8345015368de572e06c761e0727d3551a826a9a0a35a22bd837a8f7f8fe"
+  },
+  "rootOwnedNumericOutputs": false
+}

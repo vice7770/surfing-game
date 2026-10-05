@@ -1,0 +1,36 @@
+{
+  "schema": "C-two-branch-inner-contour-v2-v1-failure-input-pins/v1",
+  "readOnlyExistingFailureEvidence": true,
+  "newGeometryExecuted": false,
+  "pairingExceptionAfterArraysAreNotCompletedPolygons": true,
+  "retainedFailedPhaseIds": [
+    29,
+    217,
+    218,
+    264,
+    265,
+    359
+  ],
+  "pins": [
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks/result.json",
+      "bytes": 136833,
+      "sha256": "d825dddc8a5313bb0b5072375d27e25d4c09f68ed8c174c4eadbca4f856ca4ee"
+    },
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks/geometry.json",
+      "bytes": 8331,
+      "sha256": "de78b7d76afa53e693b5241e2b27fa2f4068373e35d26fba053e04b36cd58527"
+    },
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/root-checks/failed-segments.json",
+      "bytes": 5188,
+      "sha256": "ea5a8c4848aee6f806abbae681640924663f03ae0a252cb8d327f7c77a84e38d"
+    },
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-query-receipt.json",
+      "bytes": 140038,
+      "sha256": "585b0904c7e18f91f41eb29d417bad7387465f7e3c46bd479496b5b1a9763edc"
+    }
+  ]
+}

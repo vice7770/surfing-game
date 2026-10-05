@@ -1,0 +1,41 @@
+{
+  "schema": "trial-balance-root-complete-fixture-repair/v1",
+  "original": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity.prospective.test.ts",
+    "bytes": 13074,
+    "sha256": "b19fc9a78bf1e151cf41432314ef0fab99e66b14ac0c8c8ced668a6a43df0aac"
+  },
+  "final": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-bounded-graph.test.ts",
+    "bytes": 14519,
+    "sha256": "31903fc7c6e88873e867c9d4dc7fbf08d173e7d0c9e6181aca908f019355695f"
+  },
+  "runtimeChanged": false,
+  "waterPrefixes": "Complete ordered whole-step calls plus each substep prefix count; no call omitted.",
+  "equalWords": "Native isDeepStrictEqual over the full existing declarative own-word graph, including original alias ref IDs/descriptors/typed bytes. Every scalar uses Object.is semantics. Incidental sharing inside the graph representation itself is not a physics-state alias.",
+  "perCaseBudgetSeconds": 120,
+  "wholeParityBudgetSeconds": 270,
+  "budgetEvidence": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-graph-diff/parity.json",
+    "bytes": 4419,
+    "sha256": "335c5616d57fc8012c8aa1ab2f170c1b22a51587970ba5f78f8b178c01963e7c"
+  },
+  "reason": "Both276-step cases completed all assertions and1668captured standing trials each without difference artifacts, but failed the original30s test budget after60.49s/50.10s. This copies exactly that completed test with a120s per-case bound, preserving all552steps and checks.",
+  "earlierTimeouts": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-checks/result.json",
+      "bytes": 273810,
+      "sha256": "9afa21378b4bbd40a3ee4c5a2bdf423736f7f1b68fefd76e9d5da764614a7fd5"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-boundary-checks/result.json",
+      "bytes": 274740,
+      "sha256": "aecb656440eff1c5cd4e9f5ca3c67d4bda5974a44a5cbe554bb4d0b4a56cfc1c"
+    }
+  ],
+  "falseV8ByteComparator": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-word-checks/result.json",
+    "bytes": 275591,
+    "sha256": "661f3859e1c67852d874ecd5fe894e22d5cdb89a4b69e5b0b6b511e908245f9f"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "trial-balance-root-fixture-boundary-repair/v1",
+  "original": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity.prospective.test.ts",
+    "bytes": 13074,
+    "sha256": "b19fc9a78bf1e151cf41432314ef0fab99e66b14ac0c8c8ced668a6a43df0aac"
+  },
+  "repaired": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-boundaries.test.ts",
+    "bytes": 13072,
+    "sha256": "f259b0d857d61dc0295be466cde4e35f4042ea8573f848510f2e5ba85f1cefcf"
+  },
+  "onlyChange": "Finish events retain the ordered water-call prefix length instead of serializing the entire prefix again. The unchanged full ordered call equality after each whole step, together with every finish boundary count, proves equality of every substep prefix. Complete original own-state graphs at every finish and whole step, all independent stage scalars, marker and detachedness checks remain unchanged.",
+  "runtimeChanged": false,
+  "originalTimeoutResult": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-checks/result.json",
+    "bytes": 273810,
+    "sha256": "9afa21378b4bbd40a3ee4c5a2bdf423736f7f1b68fefd76e9d5da764614a7fd5"
+  }
+}

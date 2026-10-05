@@ -1,0 +1,47 @@
+{
+  "schema": "trial-balance-helper-freeze/v1",
+  "complete": true,
+  "frozen": true,
+  "preparationFrozen": true,
+  "status": "frozen-actual-root-authority-verified",
+  "pins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/readiness.json",
+      "bytes": 8829,
+      "sha256": "4993a2320b3818f3cd9f5b422f123c553b0a920bdbc12fbab0ce5a1fed6ba8d8"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/helper-pins.json",
+      "bytes": 17825,
+      "sha256": "9cb35283adcc8bc8021a9b86de72e6a4da36ed71231ab2b801e82bc6cf80cfe7"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/seal-handoff.json",
+      "bytes": 14513,
+      "sha256": "114c7260cd0e27a4a806ba5b58655e2bcc02a70fc24e2d9d2c248fd0799025ed"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-helper-checks.json",
+      "bytes": 2967,
+      "sha256": "b352dca01b5e710e21f92af014eaac6ffa37d4ce800e9905ce274d6e593910f3"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/metadata-check.json",
+      "bytes": 796,
+      "sha256": "8d2d50c80a4a50cec04b5c434aec244ea502e62d27530168983d345d8dfc7f7a"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/adapter.patch",
+      "bytes": 24458,
+      "sha256": "880fb4df9ff621f561013530661d003862a1df9a4bde34ec4aa67c7bb267b6bb"
+    }
+  ],
+  "helperPinsCount": 79,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "rootSealCreated": false,
+  "actualAppBuildAccepted": true,
+  "actualDiagnosticBuildAccepted": true,
+  "helperAcceptance": true,
+  "actualNative": false
+}

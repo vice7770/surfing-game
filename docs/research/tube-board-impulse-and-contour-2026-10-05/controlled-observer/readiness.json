@@ -1,0 +1,135 @@
+{
+  "schema": "native-trial-balance-observer-source-readiness/v1",
+  "buildId": "tube-native-trial-balance-observer-20261005",
+  "prepared": true,
+  "frozenPreparation": true,
+  "complete": false,
+  "sourceOnly": true,
+  "status": "partial literal observer override and unexecuted prospective parity fixture; all actual gates pending",
+  "sourceRoot": "/private/tmp/tube-native-trial-balance-observer-20261005/source",
+  "copiedSourceCount": 1,
+  "expectedRootMaterializedSourceCount": 588,
+  "expectedApplicationInputCount": 587,
+  "sourceOverride": {
+    "path": "/private/tmp/tube-native-trial-balance-observer-20261005/source/src/physics/AttachedRider.ts",
+    "bytes": 153209,
+    "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+  },
+  "parentRuntime": {
+    "path": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.ts",
+    "bytes": 146425,
+    "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+  },
+  "sourceDelta": {
+    "path": "/private/tmp/tube-native-trial-balance-observer-20261005/source-delta.json",
+    "bytes": 1209,
+    "sha256": "dd00fb3352ae80ccd962838ac70468b684c4f5a4a00d6e277757d3838eb3f1ae"
+  },
+  "overridePins": {
+    "path": "/private/tmp/tube-native-trial-balance-observer-20261005/override-pins.json",
+    "bytes": 398,
+    "sha256": "ebe5fb0fb763a78be178a417e681767b4a467b91eac38991163b629451c0100d"
+  },
+  "patch": {
+    "path": "/private/tmp/tube-native-trial-balance-observer-20261005/observer.patch",
+    "bytes": 9618,
+    "sha256": "670579217c51abb9efa0fdb3739497c51bf356f28fdbce0c8b4fe14d3e2978cc"
+  },
+  "fields": {
+    "path": "/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json",
+    "bytes": 8731,
+    "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+  },
+  "dependencies": {
+    "path": "/private/tmp/tube-native-trial-balance-observer-20261005/dependency-pins.json",
+    "bytes": 100355,
+    "sha256": "e5470d24f5e8c041c059f933602e99fcb37242b04110c88ee9ae5d268f9f0ca1"
+  },
+  "fixture": {
+    "path": "/private/tmp/tube-native-trial-balance-observer-20261005/prospective-fixture.json",
+    "bytes": 4070,
+    "sha256": "b4679a06cf6fdf476215fca8ef5f0ab3e3205683d7d9336fa380aa894329a5db"
+  },
+  "design": {
+    "path": "/private/tmp/tube-native-trial-balance-observer-20261005/DESIGN.md",
+    "bytes": 5853,
+    "sha256": "6e943be16ed0b7de8f1caf6c52cda4fbf1d3c0d49dc5c794fb9dd447a8b6d2da"
+  },
+  "counts": {
+    "originalFields": 38,
+    "newOperandFields": 63,
+    "availabilityMarker": 1,
+    "totalFields": 102
+  },
+  "markerOnlyMeansTrialCaptured": true,
+  "separateHydrodynamicAttributionAvailable": false,
+  "noNewReferencesArraysVectorsScratch": true,
+  "importsRewritten": false,
+  "aliasesCreated": 0,
+  "constructionInventory": {
+    "sourceOnlyInsertionGroups": 5,
+    "removingExactAdditionsRestoresParentBytes": true,
+    "allOriginalObserverAssignmentLinesPreserved": true,
+    "existingObjectAssignPathPreserved": true,
+    "scope": "text construction and byte inventory; no TS/parser/test execution"
+  },
+  "candidateDependencyMaterializationComplete": false,
+  "sourceImplementationAccepted": false,
+  "parityAccepted": false,
+  "actualBuildAcceptance": false,
+  "helperAcceptance": false,
+  "nativeAcceptance": false,
+  "executableChecks": {
+    "dependencyMaterialization": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    },
+    "sourceSyntax": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    },
+    "typescript": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    },
+    "prospectiveParityFixture": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    },
+    "existingTests": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    },
+    "applicationBuild": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    },
+    "diagnosticBuild": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    },
+    "native": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    },
+    "resources": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    },
+    "probes": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns materialization and actual gates"
+    }
+  },
+  "sourceReview": "Parent reported independent read-only review found no source defect; no executable acceptance inferred."
+}

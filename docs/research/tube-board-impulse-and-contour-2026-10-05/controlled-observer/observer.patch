@@ -1,0 +1,171 @@
+--- /private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.ts
++++ /private/tmp/tube-native-trial-balance-observer-20261005/source/src/physics/AttachedRider.ts
+@@ -681,9 +681,76 @@
+   demandUpX: number;
+   demandUpY: number;
+   demandUpZ: number;
++  /** Observer-only copies of the unaugmented board solve and trial standing result. */
++  boardPreMatrix00: number;
++  boardPreMatrix01: number;
++  boardPreMatrix02: number;
++  boardPreMatrix03: number;
++  boardPreMatrix04: number;
++  boardPreMatrix05: number;
++  boardPreMatrix10: number;
++  boardPreMatrix11: number;
++  boardPreMatrix12: number;
++  boardPreMatrix13: number;
++  boardPreMatrix14: number;
++  boardPreMatrix15: number;
++  boardPreMatrix20: number;
++  boardPreMatrix21: number;
++  boardPreMatrix22: number;
++  boardPreMatrix23: number;
++  boardPreMatrix24: number;
++  boardPreMatrix25: number;
++  boardPreMatrix30: number;
++  boardPreMatrix31: number;
++  boardPreMatrix32: number;
++  boardPreMatrix33: number;
++  boardPreMatrix34: number;
++  boardPreMatrix35: number;
++  boardPreMatrix40: number;
++  boardPreMatrix41: number;
++  boardPreMatrix42: number;
++  boardPreMatrix43: number;
++  boardPreMatrix44: number;
++  boardPreMatrix45: number;
++  boardPreMatrix50: number;
++  boardPreMatrix51: number;
++  boardPreMatrix52: number;
++  boardPreMatrix53: number;
++  boardPreMatrix54: number;
++  boardPreMatrix55: number;
++  boardPreRhs0: number;
++  boardPreRhs1: number;
++  boardPreRhs2: number;
++  boardPreRhs3: number;
++  boardPreRhs4: number;
++  boardPreRhs5: number;
++  preparedBoardVelocityX: number;
++  preparedBoardVelocityY: number;
++  preparedBoardVelocityZ: number;
++  preparedBoardSpinX: number;
++  preparedBoardSpinY: number;
++  preparedBoardSpinZ: number;
++  riderExternalX: number;
++  riderExternalY: number;
++  riderExternalZ: number;
++  forceArmX: number;
++  forceArmY: number;
++  forceArmZ: number;
++  carriedArmX: number;
++  carriedArmY: number;
++  carriedArmZ: number;
++  trialBoardDeltaVelocityX: number;
++  trialBoardDeltaVelocityY: number;
++  trialBoardDeltaVelocityZ: number;
++  trialBoardDeltaSpinX: number;
++  trialBoardDeltaSpinY: number;
++  trialBoardDeltaSpinZ: number;
++  /** 1 after this prepare/substep reached trial settlement; 0 otherwise. */
++  standingTrialAvailable: number;
+ }
+ function landingDemandOperands(): LandingDemandOperands {
+-  return { projectLocalX: 0, projectLocalY: 0, projectLocalZ: 0, projectDeckY: 0, projectHeight: 0, demandLocalX: 0, demandLocalY: 0, demandLocalZ: 0, legHeight: 0, legLoad: 0, legStiffness: 0, legDamping: 0, legForce: 0, legRateAfter: 0, specificForceX: 0, specificForceY: 0, specificForceZ: 0, postureRateX: 0, postureRateY: 0, postureRateZ: 0, driveX: 0, driveY: 0, driveZ: 0, carriedRelativeX: 0, carriedRelativeY: 0, carriedRelativeZ: 0, demandPositionX: 0, demandPositionY: 0, demandPositionZ: 0, demandVelocityX: 0, demandVelocityY: 0, demandVelocityZ: 0, demandTargetX: 0, demandTargetY: 0, demandTargetZ: 0, demandUpX: 0, demandUpY: 0, demandUpZ: 0 };
++  return { projectLocalX: 0, projectLocalY: 0, projectLocalZ: 0, projectDeckY: 0, projectHeight: 0, demandLocalX: 0, demandLocalY: 0, demandLocalZ: 0, legHeight: 0, legLoad: 0, legStiffness: 0, legDamping: 0, legForce: 0, legRateAfter: 0, specificForceX: 0, specificForceY: 0, specificForceZ: 0, postureRateX: 0, postureRateY: 0, postureRateZ: 0, driveX: 0, driveY: 0, driveZ: 0, carriedRelativeX: 0, carriedRelativeY: 0, carriedRelativeZ: 0, demandPositionX: 0, demandPositionY: 0, demandPositionZ: 0, demandVelocityX: 0, demandVelocityY: 0, demandVelocityZ: 0, demandTargetX: 0, demandTargetY: 0, demandTargetZ: 0, demandUpX: 0, demandUpY: 0, demandUpZ: 0,
++    boardPreMatrix00: 0, boardPreMatrix01: 0, boardPreMatrix02: 0, boardPreMatrix03: 0, boardPreMatrix04: 0, boardPreMatrix05: 0, boardPreMatrix10: 0, boardPreMatrix11: 0, boardPreMatrix12: 0, boardPreMatrix13: 0, boardPreMatrix14: 0, boardPreMatrix15: 0, boardPreMatrix20: 0, boardPreMatrix21: 0, boardPreMatrix22: 0, boardPreMatrix23: 0, boardPreMatrix24: 0, boardPreMatrix25: 0, boardPreMatrix30: 0, boardPreMatrix31: 0, boardPreMatrix32: 0, boardPreMatrix33: 0, boardPreMatrix34: 0, boardPreMatrix35: 0, boardPreMatrix40: 0, boardPreMatrix41: 0, boardPreMatrix42: 0, boardPreMatrix43: 0, boardPreMatrix44: 0, boardPreMatrix45: 0, boardPreMatrix50: 0, boardPreMatrix51: 0, boardPreMatrix52: 0, boardPreMatrix53: 0, boardPreMatrix54: 0, boardPreMatrix55: 0, boardPreRhs0: 0, boardPreRhs1: 0, boardPreRhs2: 0, boardPreRhs3: 0, boardPreRhs4: 0, boardPreRhs5: 0, preparedBoardVelocityX: 0, preparedBoardVelocityY: 0, preparedBoardVelocityZ: 0, preparedBoardSpinX: 0, preparedBoardSpinY: 0, preparedBoardSpinZ: 0, riderExternalX: 0, riderExternalY: 0, riderExternalZ: 0, forceArmX: 0, forceArmY: 0, forceArmZ: 0, carriedArmX: 0, carriedArmY: 0, carriedArmZ: 0, trialBoardDeltaVelocityX: 0, trialBoardDeltaVelocityY: 0, trialBoardDeltaVelocityZ: 0, trialBoardDeltaSpinX: 0, trialBoardDeltaSpinY: 0, trialBoardDeltaSpinZ: 0, standingTrialAvailable: 0 };
+ }
+ 
+ export interface RiderContactSample extends LandingDemandOperands {
+@@ -1548,6 +1615,8 @@
+ 
+   /** Before the board's solve: the posture's target, its drive velocity and the forces on the rider. */
+   prepare(h: number, board: BoardBody, water: SurfWater): void {
++    // Availability only; stale numeric copies are ignored until this substep reaches settleStanding.
++    this.landingDemand.standingTrialAvailable = 0;
+     this.advancePhase(h, board, water);
+     this.duckStep(h);
+     this.planingStep(board, water);
+@@ -2066,6 +2135,65 @@
+    * ankle's stretch to u' alone.
+    */
+   coupleStanding(system: Float64Array, rhs: Float64Array, h: number): void {
++    // Observer-only scalar copies before the rider augments any matrix/RHS word.
++    const observer = this.landingDemand;
++    observer.boardPreMatrix00 = system[0 * 8 + 0];
++    observer.boardPreMatrix01 = system[0 * 8 + 1];
++    observer.boardPreMatrix02 = system[0 * 8 + 2];
++    observer.boardPreMatrix03 = system[0 * 8 + 3];
++    observer.boardPreMatrix04 = system[0 * 8 + 4];
++    observer.boardPreMatrix05 = system[0 * 8 + 5];
++    observer.boardPreMatrix10 = system[1 * 8 + 0];
++    observer.boardPreMatrix11 = system[1 * 8 + 1];
++    observer.boardPreMatrix12 = system[1 * 8 + 2];
++    observer.boardPreMatrix13 = system[1 * 8 + 3];
++    observer.boardPreMatrix14 = system[1 * 8 + 4];
++    observer.boardPreMatrix15 = system[1 * 8 + 5];
++    observer.boardPreMatrix20 = system[2 * 8 + 0];
++    observer.boardPreMatrix21 = system[2 * 8 + 1];
++    observer.boardPreMatrix22 = system[2 * 8 + 2];
++    observer.boardPreMatrix23 = system[2 * 8 + 3];
++    observer.boardPreMatrix24 = system[2 * 8 + 4];
++    observer.boardPreMatrix25 = system[2 * 8 + 5];
++    observer.boardPreMatrix30 = system[3 * 8 + 0];
++    observer.boardPreMatrix31 = system[3 * 8 + 1];
++    observer.boardPreMatrix32 = system[3 * 8 + 2];
++    observer.boardPreMatrix33 = system[3 * 8 + 3];
++    observer.boardPreMatrix34 = system[3 * 8 + 4];
++    observer.boardPreMatrix35 = system[3 * 8 + 5];
++    observer.boardPreMatrix40 = system[4 * 8 + 0];
++    observer.boardPreMatrix41 = system[4 * 8 + 1];
++    observer.boardPreMatrix42 = system[4 * 8 + 2];
++    observer.boardPreMatrix43 = system[4 * 8 + 3];
++    observer.boardPreMatrix44 = system[4 * 8 + 4];
++    observer.boardPreMatrix45 = system[4 * 8 + 5];
++    observer.boardPreMatrix50 = system[5 * 8 + 0];
++    observer.boardPreMatrix51 = system[5 * 8 + 1];
++    observer.boardPreMatrix52 = system[5 * 8 + 2];
++    observer.boardPreMatrix53 = system[5 * 8 + 3];
++    observer.boardPreMatrix54 = system[5 * 8 + 4];
++    observer.boardPreMatrix55 = system[5 * 8 + 5];
++    observer.boardPreRhs0 = rhs[0];
++    observer.boardPreRhs1 = rhs[1];
++    observer.boardPreRhs2 = rhs[2];
++    observer.boardPreRhs3 = rhs[3];
++    observer.boardPreRhs4 = rhs[4];
++    observer.boardPreRhs5 = rhs[5];
++    observer.preparedBoardVelocityX = this.boardVelocity.x;
++    observer.preparedBoardVelocityY = this.boardVelocity.y;
++    observer.preparedBoardVelocityZ = this.boardVelocity.z;
++    observer.preparedBoardSpinX = this.boardSpin.x;
++    observer.preparedBoardSpinY = this.boardSpin.y;
++    observer.preparedBoardSpinZ = this.boardSpin.z;
++    observer.riderExternalX = this.external.x;
++    observer.riderExternalY = this.external.y;
++    observer.riderExternalZ = this.external.z;
++    observer.forceArmX = this.arm.x;
++    observer.forceArmY = this.arm.y;
++    observer.forceArmZ = this.arm.z;
++    observer.carriedArmX = this.carried.x;
++    observer.carriedArmY = this.carried.y;
++    observer.carriedArmZ = this.carried.z;
+     const N = 8;
+     const m = this.mass;
+     const a = this.arm;
+@@ -2140,6 +2268,15 @@
+ 
+   /** Standing, after the 8 x 8 solve: the contact impulse the motion needs, and whether feet on a deck can give it (as `settle`). */
+   settleStanding(x: Float64Array, h: number, board: BoardBody): boolean {
++    // Trial board delta from the coupled solve, before contact projection or fallback.
++    const observer = this.landingDemand;
++    observer.trialBoardDeltaVelocityX = x[0];
++    observer.trialBoardDeltaVelocityY = x[1];
++    observer.trialBoardDeltaVelocityZ = x[2];
++    observer.trialBoardDeltaSpinX = x[3];
++    observer.trialBoardDeltaSpinY = x[4];
++    observer.trialBoardDeltaSpinZ = x[5];
++    observer.standingTrialAvailable = 1;
+     const spin = this.scratch.set(this.boardSpin.x + x[3], this.boardSpin.y + x[4], this.boardSpin.z + x[5]);
+     this.legRateAfter = this.leg.rate + x[6];
+     this.bankSpeedAfter = this.bankSpeed + x[7];

@@ -1,0 +1,129 @@
+{
+  "schema": "trial-balance-actual-review-preparation-readiness/v1",
+  "complete": false,
+  "preparationFrozen": true,
+  "sourceOnly": true,
+  "status": "frozen-source-preparation-pending-root-review-and-execution",
+  "numericExecution": false,
+  "candidateEvidenceReadByWorker": false,
+  "scriptSyntaxExecuted": false,
+  "testsOrBuildsRun": false,
+  "resourcesStarted": false,
+  "portsOrPidsProbed": false,
+  "authorityVerified": false,
+  "comparisonExecuted": false,
+  "decompositionExecuted": false,
+  "actualAcceptance": false,
+  "checks": {
+    "scriptSyntax": {
+      "run": false,
+      "passed": false,
+      "status": "pending root"
+    },
+    "independentRootSourceReview": {
+      "run": false,
+      "passed": false,
+      "status": "pending root"
+    },
+    "terminalOwnerAndClosure": {
+      "run": false,
+      "passed": false,
+      "status": "pending root"
+    },
+    "freshSourceBuildModuleHelperSealServedMediaPins": {
+      "run": false,
+      "passed": false,
+      "status": "pending root"
+    },
+    "completeRawDiff": {
+      "run": false,
+      "passed": false,
+      "status": "pending root"
+    },
+    "originalPublicRowEquality": {
+      "run": false,
+      "passed": false,
+      "status": "pending root"
+    },
+    "full37ArraySidecarComparison": {
+      "run": false,
+      "passed": false,
+      "status": "pending root"
+    },
+    "numericDecomposition": {
+      "run": false,
+      "passed": false,
+      "status": "pending root"
+    }
+  },
+  "ownedSourcePins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/analyze.py",
+      "bytes": 19169,
+      "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/authority.py",
+      "bytes": 15753,
+      "sha256": "33015f7b985d44d56f0e4c0ae94b5fbff9842a74b0b5b7aa17331ebfb9e75bbf"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/audit-contract.json",
+      "bytes": 6413,
+      "sha256": "025e81fff5991c17f062d216e8c00e9561d67bae886fbdcef789e8c78cc40269"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/README.md",
+      "bytes": 5016,
+      "sha256": "6b9c323145f4e6e57b9e4681bf0d1631c123a0ee136553fb0c2f9d8ca9c574cb"
+    }
+  ],
+  "borrowedLogicAndFrozenMetadata": [
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-v11-actual-review-20261005/analyze.py",
+      "bytes": 25106,
+      "sha256": "1b05e3743aeb0bdf771fc7b8571ed5a13c236953a19d84a1da2da8a424881c4c"
+    },
+    {
+      "file": "/private/tmp/tube-landing-longitudinal-actual-review-20261005/analyze.py",
+      "bytes": 29115,
+      "sha256": "be351a249ea596e8d430d3ad2958132b4baca243f7fe3ab0912f7855d3cd6573"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    }
+  ],
+  "rootOwnedOutputFilesCreated": [],
+  "rootExpectedSeal": {
+    "bytes": 194155,
+    "sha256": "19847d2bf1af8944a28f841a13fde0f88d688f271376842363d1a70605a4c549"
+  },
+  "rootExpectedReport": {
+    "bytes": 13122643,
+    "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af",
+    "workerReadOrVerifiedActual": false
+  },
+  "rootAuthorizationAndTerminalRequired": true,
+  "noClaims": [
+    "native benefit",
+    "causal fix",
+    "private whole-solver equality",
+    "hidden hydrodynamic cause",
+    "visual quality",
+    "tube passage",
+    "FPS",
+    "adoption"
+  ]
+}

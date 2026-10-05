@@ -1,0 +1,140 @@
+{
+  "schema": "C-two-branch-inner-contour-source-readiness/v1",
+  "buildId": "tube-C-two-branch-inner-contour-20261005",
+  "prepared": true,
+  "frozenPreparation": true,
+  "complete": false,
+  "sourceOnly": true,
+  "status": "concrete two-branch source draft; no executable validation",
+  "source": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source",
+  "sourceCount": 588,
+  "applicationInputCount": 587,
+  "unchangedParentInputs": 586,
+  "runtimeChangedPaths": [
+    "src/wave/barrel/boundedCProfile.ts"
+  ],
+  "testChangedPaths": [
+    "src/wave/barrel/sharedUpperRoot.test.ts"
+  ],
+  "sourcePins": {
+    "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source-pins.json",
+    "bytes": 96441,
+    "sha256": "f7a51a8de02bc26b016c05ac047f2e5f2ff092b9bd913f5b3de35df74d714fef"
+  },
+  "sourceDelta": {
+    "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source-delta.json",
+    "bytes": 1726,
+    "sha256": "9afd9e95c5d3f67ef11b79c5e1103e87224d5aa7324f0a4463dd0d128df049b8"
+  },
+  "parentManifest": {
+    "path": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source-pins.json",
+    "bytes": 96444,
+    "sha256": "5cf0331527e52c14d5a0e5baaaeb5cbb1291345bcee7001a7d97c5be2e06b175"
+  },
+  "design": {
+    "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/DESIGN.md",
+    "bytes": 4732,
+    "sha256": "7e7f03f4aa0a6538192325d8e4845c4cbab12c3b1ba658bc49635ce5d20017f7"
+  },
+  "prospectiveContracts": {
+    "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/prospective-geometry-contracts.json",
+    "bytes": 1812,
+    "sha256": "c3bb3a4c1a09922c38b49bb5d4adb7244a5ce19a89265bb12032a3f6c133a50f"
+  },
+  "runtimePatch": {
+    "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/runtime.patch",
+    "bytes": 7315,
+    "sha256": "8ba1021f10f4996bb07b98c2f51ca803c95edd6372cd77933bbd74603ce82373"
+  },
+  "geometryTestPatch": {
+    "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/geometry-test.patch",
+    "bytes": 8068,
+    "sha256": "697374eed5cc4edfa7f8011e392adea5ac579a46eaeefa2cebce6d4c4d8f2ce5"
+  },
+  "changedStoredIndexRanges": [
+    [
+      69,
+      87
+    ],
+    [
+      89,
+      101
+    ]
+  ],
+  "sameCapJoinPlateauTail": true,
+  "originalUnpairedV4AndRawConstructionPreservedByBranch": true,
+  "carrierPrefixLegalDomainsNotDropped": true,
+  "oldCertificateCertifiesNewSplines": false,
+  "actualThicknessAccepted": false,
+  "sourceImplementationAccepted": false,
+  "actualBuildAcceptance": false,
+  "helperAcceptance": false,
+  "nativeAcceptance": false,
+  "performanceMeasured": false,
+  "adoption": false,
+  "candidateDependencyMaterializationComplete": false,
+  "aliasesCreated": 0,
+  "sourceReview": "Independent read-only review found no concrete math/type defect; upper/lower X control ordering and analytic cap/floor G1 plus join index-parameter C1 hold. Actual clearance, sampled facets, Y ordering/crossings/Float32/world domains remain unverified.",
+  "executableChecks": {
+    "dependencyMaterialization": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "sourceSyntax": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "typescript": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "geometryTests": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "full6447Domain": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "actualThickness": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "precisionSwitches": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "worldTriangleFootprints": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "applicationBuild": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "native": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "resources": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    },
+    "probes": {
+      "run": false,
+      "passed": false,
+      "status": "pending; root owns actual gates"
+    }
+  }
+}

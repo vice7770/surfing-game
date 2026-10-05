@@ -1,0 +1,100 @@
+{
+  "schema": "trial-balance-root-audit-inventory-repair/v1",
+  "originalPreparationPins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/analyze.py",
+      "bytes": 19169,
+      "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/authority.py",
+      "bytes": 15753,
+      "sha256": "33015f7b985d44d56f0e4c0ae94b5fbff9842a74b0b5b7aa17331ebfb9e75bbf"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/audit-contract.json",
+      "bytes": 6413,
+      "sha256": "025e81fff5991c17f062d216e8c00e9561d67bae886fbdcef789e8c78cc40269"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/README.md",
+      "bytes": 5016,
+      "sha256": "6b9c323145f4e6e57b9e4681bf0d1631c123a0ee136553fb0c2f9d8ca9c574cb"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/readiness.json",
+      "bytes": 4039,
+      "sha256": "6afeb8345015368de572e06c761e0727d3551a826a9a0a35a22bd837a8f7f8fe"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/freeze.json",
+      "bytes": 1774,
+      "sha256": "45e511b3d4886ec83339ff03012947e80d87ff263a5262a121673e0469dc0930"
+    }
+  ],
+  "originalActualExecution": {
+    "chunkId": "a3392d",
+    "terminal": true,
+    "exitCode": 1,
+    "failure": "Source filesystem inventory compared generated Vite21 assets and tsc incremental cache against588 source-only inputs."
+  },
+  "change": "Preserve588 source input checks; independently verify exact21 generated Vite assets against sealed actual build pins; require exact additional tsc cache name and present-byte pin. No blanket exclusions. Report610 actual files separately from588 inputs. Cache is unused at native runtime, has no capture-time authority, and receives only present unchanged checks.",
+  "currentUnusedTscCache": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/tsconfig.tsbuildinfo",
+    "bytes": 19039,
+    "sha256": "d99be9805531c7633ac853a6fa5631fe710566d9b0b7a828cb93cb6ca1313299"
+  },
+  "newScriptPins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/analyze.py",
+      "bytes": 19169,
+      "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/authority.py",
+      "bytes": 18253,
+      "sha256": "19ab3931ca5e119f2b4f311c09ad647f1e10c97551edc09d49a5eb938055816e"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    }
+  ],
+  "priorRootRepair": {
+    "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v2/root-repair.json",
+    "bytes": 3124,
+    "sha256": "c51eba0d715182d6614d8355e0af16448e97f2232377390cad49ccec6cac7ddc"
+  },
+  "priorScriptPins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v2/analyze.py",
+      "bytes": 19169,
+      "sha256": "e31f9037005a912bbb5a485ca0122e2adfa463c717ccf1028e52f957fd620cf7"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v2/authority.py",
+      "bytes": 17174,
+      "sha256": "53cde884b7e5ba4e994287b47ad22f6bf6a74c71ca971bc41ecd4b2f23607c8a"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v2/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    }
+  ],
+  "secondActualExecution": {
+    "chunkId": "c1b359",
+    "sessionId": 17209,
+    "terminalChunkId": "eabcfd",
+    "terminal": true,
+    "exitCode": 1,
+    "failure": "Incorrect assumption that source graph reachability retains102 observer identifiers in the diagnostic module; actual count0 after tree shaking."
+  },
+  "secondChange": "Keep exact diagnostic module/build/inputs/graph checks and report actual lexicalcount0. Prove102 field identifiers retained in each of the two independently pinned application worker assets. Observer fields in report must remain finite and exact. No code change/recompilation."
+}

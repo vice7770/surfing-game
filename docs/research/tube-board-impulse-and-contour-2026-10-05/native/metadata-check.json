@@ -1,0 +1,24 @@
+{
+  "schema": "trial-balance-helper-metadata-check/v1",
+  "complete": true,
+  "sourceOnly": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "original": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json",
+    "bytes": 8731,
+    "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+  },
+  "copy": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/observer-fields.json",
+    "bytes": 8731,
+    "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+  },
+  "originalFields": 38,
+  "newScalarCopies": 63,
+  "availabilityMarker": 1,
+  "fields": 102,
+  "literalCopyNotSymlink": true,
+  "markerOneOnlyMeansTrialCaptured": true,
+  "separateHydrodynamicAttributionAvailable": false
+}

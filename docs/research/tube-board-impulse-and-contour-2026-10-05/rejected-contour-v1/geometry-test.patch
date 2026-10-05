@@ -1,0 +1,101 @@
+--- parent/src/wave/barrel/sharedUpperRoot.test.ts
++++ candidate/src/wave/barrel/sharedUpperRoot.test.ts
+@@ -39,6 +39,31 @@
+   return result;
+ }
+ 
++function pointSegmentDistance(p: Float32Array, vertex: number, segment: number): number {
++  const ax = p[2 * segment], ay = p[2 * segment + 1];
++  const dx = p[2 * segment + 2] - ax, dy = p[2 * segment + 3] - ay;
++  const x = p[2 * vertex], y = p[2 * vertex + 1];
++  const t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy || 1)));
++  return Math.hypot(x - ax - t * dx, y - ay - t * dy);
++}
++
++/** Complete stored-segment clearance, after the independent proper-crossing check. */
++function cavityClearance(p: Float32Array, preservedCarrierStart: number): number {
++  let minimum = Infinity;
++  for (let a = preservedCarrierStart; a < 60; a += 1) for (let b = 68; b < 102; b += 1) {
++    const ax = p[2 * a], ay = p[2 * a + 1], dx = p[2 * a + 2] - ax, dy = p[2 * a + 3] - ay;
++    const bx = p[2 * b], by = p[2 * b + 1], ex = p[2 * b + 2] - bx, ey = p[2 * b + 3] - by;
++    const den = dx * ey - dy * ex;
++    if (den !== 0) {
++      const t = ((bx - ax) * ey - (by - ay) * ex) / den, u = ((bx - ax) * dy - (by - ay) * dx) / den;
++      if (t >= 0 && t <= 1 && u >= 0 && u <= 1) return 0;
++    }
++    minimum = Math.min(minimum, pointSegmentDistance(p, a, b), pointSegmentDistance(p, a + 1, b),
++      pointSegmentDistance(p, b, a), pointSegmentDistance(p, b + 1, a));
++  }
++  return minimum;
++}
++
+ function records(height: number, center: number, curved: boolean): Float32Array {
+   const data = new Float32Array(9 * FRONT_STRIDE);
+   for (let k = 0; k < 21; k += 1) {
+@@ -75,6 +100,7 @@
+     const groups: Record<string, { attempted: number; valid: number; failed: number; resolved: number; maximumRoofEnvelopeChange: number; maximumNormalizedRoofEnvelopeChange: number; maximumMaterialDisplacement: number; maximumNormalizedMaterialDisplacement: number }> = {};
+     const failures: unknown[] = [];
+     let maximumRoofEnvelopeChange = 0, maximumMaterialDisplacement = 0, maximumRootRadiusReduction = 0, coalescedStations = 0, limitedRoots = 0;
++    let minimumActualClearanceRatio = Infinity;
+     function check(raw: Float32Array, z: BoundedCParameters, group: string, id: unknown, preservedCarrierStart = 0) {
+       const stats = groups[group] ??= { attempted: 0, valid: 0, failed: 0, resolved: 0, maximumRoofEnvelopeChange: 0, maximumNormalizedRoofEnvelopeChange: 0, maximumMaterialDisplacement: 0, maximumNormalizedMaterialDisplacement: 0 };
+       stats.attempted += 1;
+@@ -85,7 +111,9 @@
+         const first = preservedCarrierStart, last = first ? 112 : 127, spatialScale = Math.max(z.toe[0] - z.crest[0], z.crest[1] - z.toe[1]);
+         if (!out.subarray(2 * first, 2 * last + 2).every(Number.isFinite)) throw Error('nonfinite known contour');
+         for (let i = first; i <= last; i += 1) {
+-          if (i <= 32 || i >= 102 || i >= 60 && i <= 80) {
++          // The contour candidate owns69..101. Cap60..68, plateau102..106,
++          // tail107..112 and all RAW carrier anchors retain the original port.
++          if (i <= 32 || i >= 102 || i >= 60 && i <= 68) {
+             if (out[2 * i] !== before[2 * i] || out[2 * i + 1] !== before[2 * i + 1]) throw Error(`changed preserved point${i}`);
+           }
+           const displacement = Math.hypot(out[2 * i] - before[2 * i], out[2 * i + 1] - before[2 * i + 1]);
+@@ -95,6 +123,17 @@
+         }
+         const oldPairs = crossings(before, first, last), newPairs = [...crossings(out, first, last)].filter(p => !oldPairs.has(p));
+         if (newPairs.length) throw Error(`new proper crossing pairs${newPairs.join(',')}`);
++        if (meta.sheetExists) {
++          // Metadata T alone does not establish material separation. Measure the
++          // actual F32 cavity against every known outer/carrier segment. The
++          // retained root guarded a T/2 material-clearance budget; this contour
++          // must independently satisfy that lower bound too.
++          const clearance = cavityClearance(out, preservedCarrierStart);
++          const quantization = 4 * 2 ** -23 * Math.max(...out.subarray(2 * first, 122).map(Math.abs));
++          minimumActualClearanceRatio = Math.min(minimumActualClearanceRatio, clearance / meta.thickness);
++          if (!(clearance > 0)) throw Error('nonpositive actual cavity thickness');
++          if (clearance < meta.thickness / 2 - quantization) throw Error(`actual cavity thickness${clearance}/${meta.thickness}`);
++        }
+         if (paired) {
+           if (meta.sheetExists) stats.resolved += 1;
+           for (let i = 38; i <= 58; i += 1) {
+@@ -139,8 +178,9 @@
+     for (const [i, r] of oldReport.crossCaseGridAll.entries()) check(blend(held.get(r.cases[0])!, held.get(r.cases[1])!, r.share), fromPy(r), 'casePairs672', i);
+     for (const r of golden.precision522) check(new Float32Array(golden.rawBlocks[r.block]), r.params, 'precision522', [r.block, r.sample]);
+     const receipt = { partialCaptureLimitation: 'Five captures contain only32..112: upstream0..31 and113..127 unobserved, excluded from bulk guards/crossing/preservation checks; buffer placeholders are not evidence. Full asset/provider queries use all128 points.', groups, failures, maximumRoofEnvelopeChange, maximumMaterialDisplacement, maximumRootRadiusReduction, limitedRoots, coalescedStations,
+-      originalV4CoefficientsUnchanged: true, geometryPhysicallyEquivalent: false, fixedProfilePoints: 128, rowVertices: LOFT_SAMPLES, vertexBudget: LOFT.budget };
+-    writeFileSync('/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-query-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
++      authoredRoofCapLifecycleCoefficientsUnchanged: true, innerContourCandidate: 'two-branch-cavity/v1', minimumActualClearanceRatio,
++      geometryPhysicallyEquivalent: false, fixedProfilePoints: 128, rowVertices: LOFT_SAMPLES, vertexBudget: LOFT.budget };
++    writeFileSync('/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-query-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
+     expect(Object.values(groups).reduce((n, g) => n + g.attempted, 0)).toBe(6447);
+     expect({ count: failures.length, first: failures[0] }).toEqual({ count: 0, first: undefined });
+   }, 30000);
+@@ -157,7 +197,7 @@
+     const top = hits.filter(h => h.segment >= 32 && h.segment < 64), under = hits.filter(h => h.segment >= 64 && h.segment < 88);
+     expect(top.length).toBeGreaterThan(0); expect(under.length).toBeGreaterThan(0);
+     const signedGap = Math.min(...top.map(h => h.y)) - Math.max(...under.map(h => h.y));
+-    writeFileSync('/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-exact-receipt.json', JSON.stringify({ originalPenetration: failure.penetration,
++    writeFileSync('/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-exact-receipt.json', JSON.stringify({ originalPenetration: failure.penetration,
+       fixedInputRecords: Array.from(input), x: failure.x, z: failure.z, strip: failure.strip, hits, signedGap }, null, 2) + '\n');
+     expect(signedGap).toBeGreaterThanOrEqual(0);
+   });
+@@ -202,7 +242,7 @@
+       maximumSampledPairedSwitch: Math.max(...rows.map(r => r.sampledPairedSwitch)), maximumNormalizedSampledPairedSwitch: Math.max(...rows.map(r => r.normalizedSampledPairedSwitch)),
+       fixedOriginalGateAndControls: true, sameSamplingInBothStates: true,
+       limitation: 'Roof metric is exact vertical polygon difference on common domain at union breakpoints; whole-contour metric samples vertices/midpoints, not continuous Hausdorff proof.' };
+-    writeFileSync('/private/tmp/tube-bounded-c-parallel-rays-20261004/fullsheet-switch-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
++    writeFileSync('/private/tmp/tube-C-two-branch-inner-contour-20261005/fullsheet-switch-receipt.json', JSON.stringify(receipt, null, 2) + '\n');
+     expect(rows.length).toBe(40);
+     expect(rows.every(r => Number.isFinite(r.pairedRoofSwitch) && Number.isFinite(r.sampledPairedSwitch))).toBe(true);
+   }, 30000);

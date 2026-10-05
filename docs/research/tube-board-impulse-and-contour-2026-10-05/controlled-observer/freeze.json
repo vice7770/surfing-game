@@ -1,0 +1,65 @@
+{
+  "schema": "native-trial-balance-observer-source-only-freeze/v1",
+  "buildId": "tube-native-trial-balance-observer-20261005",
+  "scope": "observer override and prospective fixture preparation; not a root seal",
+  "sourceOnly": true,
+  "candidateSourceCount": 1,
+  "dependencyMaterializationPending": true,
+  "artifacts": [
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 153209,
+      "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+    },
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/observer.patch",
+      "bytes": 9618,
+      "sha256": "670579217c51abb9efa0fdb3739497c51bf356f28fdbce0c8b4fe14d3e2978cc"
+    },
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    },
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/override-pins.json",
+      "bytes": 398,
+      "sha256": "ebe5fb0fb763a78be178a417e681767b4a467b91eac38991163b629451c0100d"
+    },
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/source-delta.json",
+      "bytes": 1209,
+      "sha256": "dd00fb3352ae80ccd962838ac70468b684c4f5a4a00d6e277757d3838eb3f1ae"
+    },
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/dependency-pins.json",
+      "bytes": 100355,
+      "sha256": "e5470d24f5e8c041c059f933602e99fcb37242b04110c88ee9ae5d268f9f0ca1"
+    },
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity.prospective.test.ts",
+      "bytes": 13074,
+      "sha256": "b19fc9a78bf1e151cf41432314ef0fab99e66b14ac0c8c8ced668a6a43df0aac"
+    },
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/prospective-fixture.json",
+      "bytes": 4070,
+      "sha256": "b4679a06cf6fdf476215fca8ef5f0ab3e3205683d7d9336fa380aa894329a5db"
+    },
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/DESIGN.md",
+      "bytes": 5853,
+      "sha256": "6e943be16ed0b7de8f1caf6c52cda4fbf1d3c0d49dc5c794fb9dd447a8b6d2da"
+    },
+    {
+      "path": "/private/tmp/tube-native-trial-balance-observer-20261005/readiness.json",
+      "bytes": 4924,
+      "sha256": "21fa23cf02a81981aba408cb4b41b141e34d3916cebcc41c1e4d95a4f3fd684e"
+    }
+  ],
+  "candidateImplementationAccepted": false,
+  "parityAccepted": false,
+  "actualBuildAcceptance": false,
+  "nativeAcceptance": false,
+  "executableChecksRun": []
+}

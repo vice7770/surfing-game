@@ -1,0 +1,11 @@
+{"fixture":"existing flat towed 6 m/s pop-up study","step":60,"capturedStandingTrials":0}
+{"fixture":"existing flat towed 6 m/s pop-up study","step":120,"capturedStandingTrials":0}
+{"fixture":"existing flat towed 6 m/s pop-up study","step":180,"capturedStandingTrials":0}
+{"fixture":"existing flat towed 6 m/s pop-up study","step":240,"capturedStandingTrials":516}
+{"fixture":"existing flat towed 6 m/s pop-up study","step":276,"capturedStandingTrials":1668}
+{"fixture":"fixed 15-degree face released from 9.2 m/s tow at pop-up","step":60,"capturedStandingTrials":0}
+{"fixture":"fixed 15-degree face released from 9.2 m/s tow at pop-up","step":120,"capturedStandingTrials":0}
+{"fixture":"fixed 15-degree face released from 9.2 m/s tow at pop-up","step":180,"capturedStandingTrials":0}
+{"fixture":"fixed 15-degree face released from 9.2 m/s tow at pop-up","step":240,"capturedStandingTrials":516}
+{"fixture":"fixed 15-degree face released from 9.2 m/s tow at pop-up","step":276,"capturedStandingTrials":1668}
+JSON report written to /private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/parity.json

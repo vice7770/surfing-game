@@ -1,0 +1,14 @@
+{
+  "schema": "native-trial-balance-observer-override-pins/v1",
+  "sourceCount": 1,
+  "scope": "partial literal runtime override only",
+  "pins": [
+    {
+      "path": "src/physics/AttachedRider.ts",
+      "bytes": 153209,
+      "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+    }
+  ],
+  "expectedRootMaterializedSourceCount": 588,
+  "materializationPending": true
+}

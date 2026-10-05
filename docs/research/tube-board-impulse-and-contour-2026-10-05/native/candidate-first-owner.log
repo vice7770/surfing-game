@@ -1,0 +1,52 @@
+"GET /?diagnostics HTTP/1.1" 200 -
+"GET /assets/index-DA8NEfOT.css HTTP/1.1" 200 -
+"GET /assets/WorkerSurfZone-BdomCNU5.js HTTP/1.1" 200 -
+"GET /assets/index-DC72smrw.js HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/surfers/surfer1.glb HTTP/1.1" 200 -
+"GET /barrels/pad19-a30-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a20-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a45-l12.bin HTTP/1.1" 200 -
+"GET /barrels/periodic-padang19s-l12.bin HTTP/1.1" 200 -
+code 404, message Not Found
+"GET /favicon.ico HTTP/1.1" 404 -
+"GET /assets/skies/qwantani_sunset_puresky.jpg HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-B6e0RpmD.js HTTP/1.1" 200 -
+"GET /assets/skies/qwantani_sunset_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /?diagnostics HTTP/1.1" 200 -
+"GET /assets/index-DC72smrw.js HTTP/1.1" 200 -
+"GET /assets/index-DA8NEfOT.css HTTP/1.1" 200 -
+"GET /assets/WorkerSurfZone-BdomCNU5.js HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/surfers/surfer1.glb HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-B6e0RpmD.js HTTP/1.1" 200 -
+"GET /assets/skies/qwantani_sunset_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/skies/qwantani_sunset_puresky.jpg HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/surfers/surfer1.glb HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /barrels/pad19-a20-l12.bin HTTP/1.1" 200 -
+"GET /barrels/periodic-padang19s-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a30-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a45-l12.bin HTTP/1.1" 200 -
+"GET /assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg HTTP/1.1" 200 -
+"GET /assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-B6e0RpmD.js HTTP/1.1" 200 -
+"GET /assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-B6e0RpmD.js HTTP/1.1" 200 -
+"GET /diagnostic-autopilot.mjs HTTP/1.1" 200 -
+{"progressSteps":120,"phase":"prone","entry":false,"detectorMs":110.99999976158142}
+{"progressSteps":240,"phase":"prone","entry":false,"detectorMs":216.2999992966652}
+{"progressSteps":360,"phase":"prone","entry":false,"detectorMs":375.99999982118607}
+{"progressSteps":480,"phase":"prone","entry":false,"detectorMs":629.6999998688698}
+{"progressSteps":600,"phase":"prone","entry":false,"detectorMs":913.599999666214}
+{"progressSteps":720,"phase":"prone","entry":false,"detectorMs":1069.0999993085861}
+{"progressSteps":840,"phase":"prone","entry":false,"detectorMs":1163.7999994158745}
+{"progressSteps":960,"phase":"prone","entry":false,"detectorMs":1243.8999989628792}
+{"progressSteps":1080,"phase":"prone","entry":false,"detectorMs":1372.7999992370605}
+{"progressSteps":1200,"phase":"prone","entry":false,"detectorMs":1486.3999993801117}
+{"progressSteps":1320,"phase":"push","entry":false,"detectorMs":1605.0999997258186}

@@ -1,0 +1,350 @@
+{
+  "schema": "trial-balance-actual-readonly-review/v1",
+  "complete": true,
+  "numericExecution": true,
+  "rootExplicitTerminalAuthorization": true,
+  "candidate": "/private/tmp/tube-native-trial-balance-native-20261005",
+  "baseline": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005",
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first-owner.json",
+      "bytes": 3486,
+      "sha256": "8b4fbfa3fbc42e816699bf378d5efaa2c9db9fea4799a143ae1907bf2d217875"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/report.json",
+      "bytes": 13122643,
+      "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 12856827,
+      "sha256": "b63528c4e17d323817f16d6aad79e56894104811d4b739fbd911767352e2f801"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/seal.json",
+      "bytes": 194155,
+      "sha256": "19847d2bf1af8944a28f841a13fde0f88d688f271376842363d1a70605a4c549"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/readiness.json",
+      "bytes": 8829,
+      "sha256": "4993a2320b3818f3cd9f5b422f123c553b0a920bdbc12fbab0ce5a1fed6ba8d8"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/observer-fields.json",
+      "bytes": 8731,
+      "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first-owner.json",
+      "bytes": 3508,
+      "sha256": "b8494909bd2282da74c9ff6f30b32953c4b98b7061dd8a8e19c237a5aae8d037"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/report.json",
+      "bytes": 12753137,
+      "sha256": "e1e92df0eb68ed5b54b2d97aecc8ee1ef72e567e438458d55bd6e65bb06a89ef"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/steps.ndjson",
+      "bytes": 12495782,
+      "sha256": "dd6b6e26455ae210bf2bbf823cc262284132e856e9ab39d4a83298062e71259f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/seal.json",
+      "bytes": 188041,
+      "sha256": "cbae476fee19c4552c34db03c80968ac70b3c7ebf011493d950a0a399f99bce0"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/readiness.json",
+      "bytes": 22364,
+      "sha256": "faf3f5866ac9666d8b4330e11a2263f2504a50a65f5b8069858e42a4eae38774"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/observer-fields.json",
+      "bytes": 689,
+      "sha256": "c0a69fe8c1d451265b118c1f5e34c56e86efc8c961fa9a6cd6a4d216a2dea04f"
+    }
+  ],
+  "mediaPins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/00-initial.png",
+      "bytes": 2444829,
+      "sha256": "f9ad89a4b21d00236c1be596de695d8c9713fb2ee5b9f65fbd947fef57c10d8c"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/01-first-pop-up.png",
+      "bytes": 1963811,
+      "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/02-first-landing.png",
+      "bytes": 1903210,
+      "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/03-terminal.png",
+      "bytes": 1961115,
+      "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/pop-up-motion.webm",
+      "bytes": 878096,
+      "sha256": "e023c8180a095414c02738aefb4088ec3ddcb128f48be9cabfe69822fe9f2bfb"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/steps.ndjson",
+      "bytes": 12856827,
+      "sha256": "b63528c4e17d323817f16d6aad79e56894104811d4b739fbd911767352e2f801"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/00-initial.png",
+      "bytes": 2444798,
+      "sha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/01-first-pop-up.png",
+      "bytes": 1963811,
+      "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/02-first-landing.png",
+      "bytes": 1903210,
+      "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/03-terminal.png",
+      "bytes": 1961115,
+      "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/pop-up-motion.webm",
+      "bytes": 878925,
+      "sha256": "59d5e4b65c9a596064ffbf4557986f055d894a391f7f8fe33959b60170f5af0f"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/steps.ndjson",
+      "bytes": 12495782,
+      "sha256": "dd6b6e26455ae210bf2bbf823cc262284132e856e9ab39d4a83298062e71259f"
+    }
+  ],
+  "captureInventories": [
+    {
+      "work": "/private/tmp/tube-native-trial-balance-native-20261005",
+      "declaredCoreFiles": 11,
+      "actualFiles": 12,
+      "additionalFilesNotInArtifactOrSidecarDeclarations": [
+        "launcher.json"
+      ],
+      "allActualFilePins": [
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-initial.json",
+          "bytes": 1099036,
+          "sha256": "685cb5e28d9c4151019f6d72cf55b4911ec294a2b1868634b5ea42de3301f431"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/launcher.json",
+          "bytes": 11964,
+          "sha256": "413ca9b297ac5c417011a58bc50d2d788a22097e18b567cae92c08a9d5e598a2"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/report.json",
+          "bytes": 13122643,
+          "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/00-initial.png",
+          "bytes": 2444829,
+          "sha256": "f9ad89a4b21d00236c1be596de695d8c9713fb2ee5b9f65fbd947fef57c10d8c"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/03-terminal.png",
+          "bytes": 1961115,
+          "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/02-first-landing.png",
+          "bytes": 1903210,
+          "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/01-first-pop-up.png",
+          "bytes": 1963811,
+          "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/steps.ndjson",
+          "bytes": 12856827,
+          "sha256": "b63528c4e17d323817f16d6aad79e56894104811d4b739fbd911767352e2f801"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-first-pop-up.json",
+          "bytes": 1073481,
+          "sha256": "a5beb80b3f52ea64aa6dda46da89431c726e05887ebad7c359f96336a0ca97fa"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-first-landing.json",
+          "bytes": 1496463,
+          "sha256": "2c24b6d30ea606b04b0a66dda8008b1d27e77b11fc64f679b0bf3c124fed7686"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/loft-terminal.json",
+          "bytes": 1420830,
+          "sha256": "aa96c2afdc929219079abb4698231fe58f7417e84e64081696236a1557e99acd"
+        },
+        {
+          "file": "/private/tmp/tube-native-trial-balance-native-20261005/candidate-first/pop-up-motion.webm",
+          "bytes": 878096,
+          "sha256": "e023c8180a095414c02738aefb4088ec3ddcb128f48be9cabfe69822fe9f2bfb"
+        }
+      ],
+      "pngDeclared": 4,
+      "pngActual": 4,
+      "sidecarsDeclared": 4,
+      "sidecarsActual": 4
+    },
+    {
+      "work": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005",
+      "declaredCoreFiles": 11,
+      "actualFiles": 12,
+      "additionalFilesNotInArtifactOrSidecarDeclarations": [
+        "launcher.json"
+      ],
+      "allActualFilePins": [
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-initial.json",
+          "bytes": 1099036,
+          "sha256": "86842eafba879130ac5a388f3720e0a5090a9c8343d389ee1cb2752ba02e460a"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/launcher.json",
+          "bytes": 12375,
+          "sha256": "76891a2a02f3ae46190943de2b02b4d8bd42dded61f8105f0b95cb10c6a48647"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/report.json",
+          "bytes": 12753137,
+          "sha256": "e1e92df0eb68ed5b54b2d97aecc8ee1ef72e567e438458d55bd6e65bb06a89ef"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/00-initial.png",
+          "bytes": 2444798,
+          "sha256": "1af4aaf18248eb89395d6dc3a8de71efe5ef44fe9596c381cbf2148ebd913fe5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/03-terminal.png",
+          "bytes": 1961115,
+          "sha256": "da7f8061993beb5e5f1a2daafcc77dc4991e7f3a35f655d599a2e3dd134135a5"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/02-first-landing.png",
+          "bytes": 1903210,
+          "sha256": "e94b0072dff6f27e938857c4e013b0b68987e25bcc027e39eddc164378ef914f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/01-first-pop-up.png",
+          "bytes": 1963811,
+          "sha256": "12a7ab0ad39abe05fa2387d2ecc8858d68454817738b979457ef32ebeef8d475"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/steps.ndjson",
+          "bytes": 12495782,
+          "sha256": "dd6b6e26455ae210bf2bbf823cc262284132e856e9ab39d4a83298062e71259f"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-first-pop-up.json",
+          "bytes": 1073481,
+          "sha256": "37826d5550b4563218752ef9495846f10a52fb71a5528cf787413352aa0df908"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-first-landing.json",
+          "bytes": 1496463,
+          "sha256": "11753491a748bd779b079e629ce96099941e63ddff063d81eef0f1131fa3a203"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/loft-terminal.json",
+          "bytes": 1420830,
+          "sha256": "323bcc1e6714abe83821491e609fa3cdbff124354eda51f89f6b51d3f214d679"
+        },
+        {
+          "file": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005/candidate-first/pop-up-motion.webm",
+          "bytes": 878925,
+          "sha256": "59d5e4b65c9a596064ffbf4557986f055d894a391f7f8fe33959b60170f5af0f"
+        }
+      ],
+      "pngDeclared": 4,
+      "pngActual": 4,
+      "sidecarsDeclared": 4,
+      "sidecarsActual": 4
+    }
+  ],
+  "rawDifferenceCounts": {
+    "trace:priorRecordedTimingFollowerOrRedrawCategory": 6827,
+    "trace:newObserverWordRetainedRaw": 12736,
+    "reportOther:nonapprovedRecordedDifference": 1007,
+    "reportOther:newObserverWordRetainedRaw": 192,
+    "owner:nonapprovedRecordedDifference": 19
+  },
+  "candidateRows": 1366,
+  "V11Rows": 1366,
+  "allOriginalPublishedRowsEqualAfterOnlyApprovedExclusions": true,
+  "original38Retained": true,
+  "new64ExcludedOnlyInFullObserverRecords": true,
+  "wholeReportOrContactDiagnosticsExcluded": false,
+  "rawDifferenceArchive": {
+    "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/all-raw-differences.ndjson",
+    "bytes": 5294557,
+    "sha256": "c29a654bc55038534cb6fe57e567ff2d50e8055534b4afc42fdb49078d675965"
+  },
+  "sidecarRawDifferenceArchive": {
+    "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/sidecar-all-raw-differences.ndjson",
+    "bytes": 654,
+    "sha256": "7fc3260865a82bf419fe072340400e002922e3be9167c8c16f5d17b1e77c94dd"
+  },
+  "sidecarWordDifferenceArchive": {
+    "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/sidecar-word-differences.ndjson",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "artifacts": {
+    "rows": {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/original-published-row-comparison.json",
+      "bytes": 312306,
+      "sha256": "8d6116b3ca6e077ff6a32a3080b63cd087fffd7fe2b291b2ae7a59384bfb61d9"
+    },
+    "sidecars": {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/full-sidecar-comparison.json",
+      "bytes": 64677,
+      "sha256": "d8c8310f48db91f3f3dc8c9efa4f3bcd968190c728d10bb17b05549c26b5b475"
+    },
+    "samples": {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/all-full-observer-records.json",
+      "bytes": 1138658,
+      "sha256": "c9793672693ba38477f201e388e1dada56a5ef11bff62854bbf605b4f53131c7"
+    },
+    "authority": {
+      "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/root-audit-v3/root-numeric-review/postcapture-authority.json",
+      "bytes": 1260110,
+      "sha256": "5bee9175496768128070e747d855fd20e4efbd622db45ea5818cc911cc8b0c13"
+    }
+  },
+  "limits": [
+    "Recorded public equality does not establish private whole-solver equality.",
+    "Only retained observer records are available; intermediate trial states may be unpublished.",
+    "Combined board matrix/RHS and external assembly cannot identify separate hydrodynamic load components.",
+    "Movie recording stops at240 moving advances; ordinary physics continues under the unchanged replay stop policy."
+  ],
+  "claims": {
+    "nativeBenefit": false,
+    "causalFix": false,
+    "hiddenHydrodynamicCause": false,
+    "visualQuality": false,
+    "tubePassage": false,
+    "FPS": false,
+    "adoption": false
+  },
+  "resourcesStarted": false,
+  "portsOrPidsProbed": false,
+  "testsOrBuildsRun": false
+}

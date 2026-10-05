@@ -1,0 +1,71 @@
+{
+  "schema": "trial-balance-source-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "sourceDirectory": "/private/tmp/tube-native-trial-balance-native-20261005/source",
+  "sourceCount": 588,
+  "applicationSourceCount": 587,
+  "unchangedParentInputs": 587,
+  "runtimeChangedPaths": [
+    "src/physics/AttachedRider.ts"
+  ],
+  "parentManifest": {
+    "file": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source-manifest.json",
+    "bytes": 324317,
+    "sha256": "d243aa1e1f207720e1f52b0ef277b7112241a11ae913c0069d63f555db2c30d7"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-pins.json",
+    "bytes": 96402,
+    "sha256": "f1ca1311288234e6e4087556e20f8f66d39763daa6690ac7a4f878fddf1d19c7"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/source-delta.json",
+    "bytes": 1010,
+    "sha256": "9054d4e2396788ed6b7093eedc5dfd8dcb353f1fafd636e055bc0f766a864847"
+  },
+  "candidatePreparation": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/readiness.json",
+    "bytes": 4924,
+    "sha256": "21fa23cf02a81981aba408cb4b41b141e34d3916cebcc41c1e4d95a4f3fd684e"
+  },
+  "candidateRuntime": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/AttachedRider.ts",
+    "bytes": 153209,
+    "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+  },
+  "candidatePatch": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/observer.patch",
+    "bytes": 9618,
+    "sha256": "670579217c51abb9efa0fdb3739497c51bf356f28fdbce0c8b4fe14d3e2978cc"
+  },
+  "observerFields": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json",
+    "bytes": 8731,
+    "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+  },
+  "rootCPUResult": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/result.json",
+    "bytes": 276681,
+    "sha256": "cf1dca6f5983b28e2eb0c525780be5f1546b568129feeb32b9b31f2570e68a86"
+  },
+  "rootObserverChecks": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/result.json",
+    "bytes": 276681,
+    "sha256": "cf1dca6f5983b28e2eb0c525780be5f1546b568129feeb32b9b31f2570e68a86"
+  },
+  "rootBaseCopy": {
+    "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-base-copy.json",
+    "bytes": 96831,
+    "sha256": "3f42a5e76ee7b86e65251b4408a659c0a2e69b0218bae4b3ad11e4968708a09e"
+  },
+  "buildId": "tube-native-trial-balance-20261005",
+  "resourcesStarted": false,
+  "applicationBuildPerformed": false,
+  "diagnosticBuildPerformed": false,
+  "nativeRun": false,
+  "nativeCauseOrFixAccepted": false,
+  "ordinaryStandingAccepted": false,
+  "bodyPassageAccepted": false,
+  "productionAdoption": false
+}

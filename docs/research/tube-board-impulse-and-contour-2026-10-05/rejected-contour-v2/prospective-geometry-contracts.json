@@ -1,0 +1,20 @@
+{
+  "schema": "C-two-branch-inner-contour-v2-prospective-contracts/v1",
+  "sourceOnly": true,
+  "executed": false,
+  "immediateParent": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source",
+  "geometricDelta": "cap tangent handle additionally bounded by existing rounded-cap radius T/2",
+  "sameInheritedGatesAndCases": true,
+  "noThresholdRelaxation": true,
+  "requiredRootGates": [
+    "strict TS and same complete15 geometry cases",
+    "all6447 queries including all six retained legal failures",
+    "actual positive stored-segment clearance and unchanged T/2 allowance",
+    "completed authoritative paired profiles with nonnegative separation",
+    "exact Reef column and all40 precision switches",
+    "actual adjacent-age shared triangle footprints and cap/floor datum",
+    "all legal carrier-prefix and lifecycle domains"
+  ],
+  "unproven": ["cap-handle causation of V1 failures", "whole-cubic clearance", "all-segment endpoint clearance", "paired-chord clearance", "Float32 sampled tangent quality", "no legal-domain failures", "world mesh ordering", "tube quality", "performance", "adoption"],
+  "forbiddenSubstitutions": ["partial pairing-exception after arrays as completed profiles", "metadata T as actual thickness", "cap-radius bound as whole-spline certificate", "vertex clamps", "silent RAW fallback", "dropped legal queries", "relaxed T/2 or separation", "favorable camera or timing changes"]
+}

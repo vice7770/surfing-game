@@ -1,0 +1,60 @@
+{
+  "schema": "board-rhs-source-assessment-pins/v1",
+  "sourceOnly": true,
+  "preparationFrozen": true,
+  "actualNumericalAnalysisExecuted": false,
+  "rootSuppliedTransitionIndependentlyVerified": false,
+  "candidateReportTraceOwnerMediaRead": false,
+  "testsOrBuildsRun": false,
+  "resourcesStarted": false,
+  "portsOrPidsProbed": false,
+  "sourceHelperAuditGitChanged": false,
+  "candidateImplementationAuthorized": false,
+  "candidateImplementationPerformed": false,
+  "readSourcePins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/hullForces.ts",
+      "bytes": 8926,
+      "sha256": "5a3234c923af44aeab032ec5a778f99d9b7c0fd3d1f508f7c6d5f9ed316ea149"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/finForces.ts",
+      "bytes": 6071,
+      "sha256": "b703e857b3418216f580cdedfb3512c73cbf3a2dbd6ded630845258de88647bc"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 153209,
+      "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+    }
+  ],
+  "assessment": {
+    "file": "/private/tmp/tube-board-rhs-source-assessment-20261005/ASSESSMENT.md",
+    "bytes": 8534,
+    "sha256": "c5d0fc929f459fb7b2ce33cdf2be943f5c5d63d3dca37055f64c708b6e50d91b"
+  },
+  "prospectiveObservation": {
+    "existingScalarCopies": 41,
+    "existingBoardPreRhsSumOracleWords": 6,
+    "additionalQueriesOrForceCalculationsRequiredForFirstAggregateCopy": false,
+    "radiationEntrainmentSeparateExistingAggregatesAvailable": false,
+    "currentPreRHSWaterAggregateRemainsMixed": true,
+    "perPatchExpansionRequiredNow": false
+  },
+  "claims": {
+    "pressureCause": false,
+    "addedMassCause": false,
+    "wettingCause": false,
+    "hydrodynamicCause": false
+  }
+}

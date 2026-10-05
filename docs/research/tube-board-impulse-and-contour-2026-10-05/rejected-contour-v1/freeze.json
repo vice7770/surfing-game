@@ -1,0 +1,46 @@
+{
+  "schema": "C-two-branch-inner-contour-source-freeze/v1",
+  "sourceOnly": true,
+  "complete": false,
+  "frozenPreparation": true,
+  "literalSourceInputs": 588,
+  "changedSourceInputs": 2,
+  "allExecutableAcceptancePending": true,
+  "artifacts": [
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/DESIGN.md",
+      "bytes": 4732,
+      "sha256": "7e7f03f4aa0a6538192325d8e4845c4cbab12c3b1ba658bc49635ce5d20017f7"
+    },
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/prospective-geometry-contracts.json",
+      "bytes": 1812,
+      "sha256": "c3bb3a4c1a09922c38b49bb5d4adb7244a5ce19a89265bb12032a3f6c133a50f"
+    },
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source-pins.json",
+      "bytes": 96441,
+      "sha256": "f7a51a8de02bc26b016c05ac047f2e5f2ff092b9bd913f5b3de35df74d714fef"
+    },
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source-delta.json",
+      "bytes": 1726,
+      "sha256": "9afd9e95c5d3f67ef11b79c5e1103e87224d5aa7324f0a4463dd0d128df049b8"
+    },
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/readiness.json",
+      "bytes": 4494,
+      "sha256": "e1ceefb0ff3e1b6af5fda3afb915cae7461bbe553242ea0cdaaae960219e8fd5"
+    },
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/runtime.patch",
+      "bytes": 7315,
+      "sha256": "8ba1021f10f4996bb07b98c2f51ca803c95edd6372cd77933bbd74603ce82373"
+    },
+    {
+      "path": "/private/tmp/tube-C-two-branch-inner-contour-20261005/geometry-test.patch",
+      "bytes": 8068,
+      "sha256": "697374eed5cc4edfa7f8011e392adea5ac579a46eaeefa2cebce6d4c4d8f2ce5"
+    }
+  ]
+}

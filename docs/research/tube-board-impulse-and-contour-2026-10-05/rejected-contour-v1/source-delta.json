@@ -1,0 +1,49 @@
+{
+  "schema": "C-two-branch-inner-contour-source-delta/v1",
+  "parentSource": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source",
+  "source": "/private/tmp/tube-C-two-branch-inner-contour-20261005/source",
+  "sourceCount": 588,
+  "applicationInputCount": 587,
+  "unchangedParentInputs": 586,
+  "parentManifest": {
+    "path": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source-pins.json",
+    "bytes": 96444,
+    "sha256": "5cf0331527e52c14d5a0e5baaaeb5cbb1291345bcee7001a7d97c5be2e06b175"
+  },
+  "overrides": [
+    {
+      "path": "src/wave/barrel/boundedCProfile.ts",
+      "before": {
+        "path": "src/wave/barrel/boundedCProfile.ts",
+        "bytes": 18088,
+        "sha256": "0dba650afc9844df79c1beb61319bddbc257562c0f93ff083fe3838e0cebbd98"
+      },
+      "after": {
+        "path": "src/wave/barrel/boundedCProfile.ts",
+        "bytes": 20566,
+        "sha256": "31e1a55524536b63207bb745ed860881e3ad8565efaa180f2ef8a8f07dcd9e45"
+      }
+    },
+    {
+      "path": "src/wave/barrel/sharedUpperRoot.test.ts",
+      "before": {
+        "path": "src/wave/barrel/sharedUpperRoot.test.ts",
+        "bytes": 18370,
+        "sha256": "cd5f7a77c91d39b28d577a94253b3ce109577502bd40f9aee5ef0477d4654757"
+      },
+      "after": {
+        "path": "src/wave/barrel/sharedUpperRoot.test.ts",
+        "bytes": 20828,
+        "sha256": "60ec1e644eb8af46d12fde49bdfea23f4e3365b12cbe8b17ef2d268e0144ed84"
+      }
+    }
+  ],
+  "runtimeChangedPaths": [
+    "src/wave/barrel/boundedCProfile.ts"
+  ],
+  "testChangedPaths": [
+    "src/wave/barrel/sharedUpperRoot.test.ts"
+  ],
+  "implementationAvailable": true,
+  "status": "source-only two-branch draft, all acceptance pending"
+}

@@ -1,0 +1,145 @@
+{
+  "schema": "trial-balance-actual-review-contract/v1",
+  "sourceOnly": true,
+  "numericExecution": false,
+  "candidate": "/private/tmp/tube-native-trial-balance-native-20261005",
+  "baseline": "/private/tmp/tube-pop-up-contact-operands-native-v11-20261005",
+  "expectedCandidateSchemas": {
+    "native": "trial-balance-native/v1",
+    "owner": "trial-balance-finite-owner/v1",
+    "seal": "trial-balance-root-seal/v1",
+    "sourceReadiness": "trial-balance-source-readiness/v1",
+    "application": "trial-balance-root-complete-build/v1",
+    "diagnostic": "trial-balance-diagnostic-root-build/v1",
+    "helpers": "trial-balance-helper-pins/v1"
+  },
+  "rootDeclaredExpectedSeal": {
+    "bytes": 194155,
+    "sha256": "19847d2bf1af8944a28f841a13fde0f88d688f271376842363d1a70605a4c549"
+  },
+  "rootDeclaredExpectedReport": {
+    "bytes": 13122643,
+    "sha256": "dd71421a152b01ad63e87161db7c80faa5eb84a4b343f3b3698b280e656d65af",
+    "workerReadOrVerifiedActual": false
+  },
+  "preReadGate": [
+    "explicit --root-authorized-terminal",
+    "exact --expected-seal-sha256 supplied by root",
+    "fresh root-owned output subdirectory",
+    "candidate owner complete / exitCode0 / firstFailure null / recorded resource closure / protected states",
+    "no polling or retry"
+  ],
+  "comparison": {
+    "rawArchives": "Every trace leaf/row, all report fields except trace stored once, entire owner; every sidecar field including base64 payload and every changed typed word. Added/removed and absent/null distinctions retained.",
+    "original38Preserved": true,
+    "onlyObserverExclusion": "Exactly frozen newFields63 plus standingTrialAvailable; only dicts containing all original38 observer fields. No blanket contactDiagnostics, landingDemand, report, provenance, metadata or public optical removal.",
+    "numericScalarExactness": "Type and signed zero retained; sidecar words compared byte-exact.",
+    "approvedNondeterministicSuffixes": [
+      ".workerStepMs",
+      ".detector.elapsedMilliseconds",
+      ".detector.cumulativeMilliseconds",
+      ".cameraFollower.calls",
+      ".cameraFollower.zeroDtCalls",
+      ".cameraFollower.positiveDtCalls",
+      ".clocks.surfaceRevision"
+    ],
+    "approvedNormalizationScopes": [
+      "each whole trace row",
+      "initialBody only"
+    ],
+    "allApprovedDifferencesRetainedRaw": true,
+    "checkpointPolicy": "Same-label camera pose and step compared exactly; full checkpoint objects remain raw without normalization. Label equality alone is not epoch equality.",
+    "sidecarPolicy": "Both sides must contain exact frozen37 array inventory; all descriptor fields and every active word plus complete rawFrontPacket compared. Full scalar optical fields and all epoch metadata preserved. Only exact epoch.surfaceRevision may be reported separately; signed delta retained.",
+    "allPublicRowFields": "Whole recursive row comparison includes controls/config/seaTime/body/board/rider/camera/public front/ride/locked station and all original public optical data; missing/extra rows retained."
+  },
+  "postcaptureAuthority": {
+    "source": {
+      "declared": 588,
+      "actualPinCount": 588,
+      "actualFilesystemCountRequired": 588,
+      "unchangedExactV8Inputs": 587,
+      "onlyChangedPath": "src/physics/AttachedRider.ts",
+      "oldRuntimeSha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31",
+      "newRuntimeBytes": 153209,
+      "newRuntimeSha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4",
+      "parentManifestLayout": "V8 literal files[].path plus files[].after; not longitudinal compliance sourcePins mapping."
+    },
+    "appSourceInputs": 587,
+    "completeAssets": 49,
+    "diagnostic": {
+      "inputs": 74,
+      "sourceInputs": 71,
+      "compilerConfigurationInputs": 1,
+      "watchedInputs": 75,
+      "exports": [
+        "Autopilot",
+        "autopilotView",
+        "riderPartVolumes"
+      ],
+      "compiledModuleObserverIdentifiers": 102,
+      "moduleCopiedFromPriorAllowed": false
+    },
+    "helpers": {
+      "expectedPins": 79,
+      "recomputeEveryCurrentPin": true,
+      "declaredVersusActualCountsReported": true
+    },
+    "cpu": {
+      "acceptedAuthorityKeys": [
+        "rootObserverChecks",
+        "rootCPUResult"
+      ],
+      "sameDirectPinRequired": true,
+      "acceptedPath": "/private/tmp/tube-native-trial-balance-observer-20261005/root-bounded-graph-checks/result.json",
+      "shape": "complete true; nonempty checks all exitCode0; sourcePostUnchanged true; all source/oracle/check input pins",
+      "historyRetained": [
+        "root-checks/result.json",
+        "root-boundary-checks/result.json",
+        "root-word-checks/result.json"
+      ],
+      "historyAcceptedAsCurrentAuthority": false
+    },
+    "served": "Recorded served bytes/SHA independently checked against current sealed app assets and separately rebuilt diagnostic module; no request/probe.",
+    "media": "Every declared artifact/sidecar pin checked, current capture directory inventory hashed; declaration/actual PNG and sidecar counts recorded and checked; additional files explicitly retained.",
+    "closure": {
+      "ownedClosedPorts": [
+        4301,
+        9711
+      ],
+      "remainingOwnedPids": [],
+      "protectedClosedPorts": [
+        4310,
+        4311
+      ],
+      "protectedOpenPorts": [
+        4312,
+        4313
+      ],
+      "wholeSeconds": 660,
+      "cleanupSeconds": 7,
+      "freshProbesByAudit": false
+    }
+  },
+  "observerSemantics": {
+    "0": "Invalidates all new words including stale values.",
+    "1": "Captured coupled upright trial before projection/fallback; not feasible, applied or realized motion.",
+    "assembly": "Combined board matrix/RHS and external assembly cannot separately attribute hydrodynamic components.",
+    "coverage": "All retained representations, not every unpublished internal substep."
+  },
+  "noClaims": [
+    "native benefit",
+    "causal fix",
+    "private whole-solver equality",
+    "hidden hydrodynamic cause",
+    "visual quality",
+    "tube passage",
+    "FPS",
+    "adoption"
+  ],
+  "moviePolicy": "Unchanged240 moving advances cap stops recording only; ordinary physics continues.",
+  "observerFields": {
+    "file": "/private/tmp/tube-native-trial-balance-actual-review-20261005/observer-fields.json",
+    "bytes": 8731,
+    "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+  }
+}

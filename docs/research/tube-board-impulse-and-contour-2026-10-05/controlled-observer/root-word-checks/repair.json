@@ -1,0 +1,20 @@
+{
+  "schema": "trial-balance-root-fixture-word-repair/v1",
+  "original": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-boundaries.test.ts",
+    "bytes": 13072,
+    "sha256": "f259b0d857d61dc0295be466cde4e35f4042ea8573f848510f2e5ba85f1cefcf"
+  },
+  "repaired": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-words.test.ts",
+    "bytes": 13438,
+    "sha256": "d4b6f69839f7f704c31672f522c3146a43d0640c4636318832d3d9b36c34a5b0"
+  },
+  "runtimeChanged": false,
+  "onlyChange": "Native assertions compare identical original scalar operands with Object.is semantics. Native v8 serializes the complete existing declarative own-word graph (descriptors, symbols, references, typed bytes, undefined and numeric values) and compares every serialized byte; no graph fields removed. Every original552whole steps/finish/stage/query/reaction/marker/detachedness check remains. Water-boundary repair retained. Progress logging is external to physics state.",
+  "previousBoundedTimeout": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/root-boundary-checks/result.json",
+    "bytes": 274740,
+    "sha256": "aecb656440eff1c5cd4e9f5ca3c67d4bda5974a44a5cbe554bb4d0b4a56cfc1c"
+  }
+}

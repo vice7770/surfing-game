@@ -1,0 +1,32 @@
+{
+  "schema": "native-trial-balance-observer-source-delta/v1",
+  "parentSource": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source",
+  "source": "/private/tmp/tube-native-trial-balance-observer-20261005/source",
+  "scope": "partial override; other source files absent intentionally",
+  "copiedSourceCount": 1,
+  "changedPaths": [
+    "src/physics/AttachedRider.ts"
+  ],
+  "overrides": [
+    {
+      "path": "src/physics/AttachedRider.ts",
+      "before": {
+        "path": "/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source/src/physics/AttachedRider.ts",
+        "bytes": 146425,
+        "sha256": "d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31"
+      },
+      "after": {
+        "path": "/private/tmp/tube-native-trial-balance-observer-20261005/source/src/physics/AttachedRider.ts",
+        "bytes": 153209,
+        "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+      }
+    }
+  ],
+  "observerOnlyProposed": true,
+  "originalOperandCount": 38,
+  "newOperandCount": 63,
+  "availabilityMarkerCount": 1,
+  "totalOperandCount": 102,
+  "mathSolveControlTimingEditsProposed": false,
+  "dependencyMaterializationPending": true
+}

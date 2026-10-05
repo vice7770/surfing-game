@@ -1,0 +1,7 @@
+{
+  "extends": "/private/tmp/tube-native-trial-balance-observer-20261005/source/tsconfig.json",
+  "include": [
+    "/private/tmp/tube-native-trial-balance-observer-20261005/source/src",
+    "/private/tmp/tube-native-trial-balance-observer-20261005/tests/trialBalance.parity-words.test.ts"
+  ]
+}

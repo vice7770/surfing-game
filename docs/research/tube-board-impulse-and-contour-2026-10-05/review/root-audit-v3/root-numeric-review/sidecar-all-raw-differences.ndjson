@@ -1,0 +1,4 @@
+{"path": "$.loft-first-landing.json.epoch.surfaceRevision", "candidatePresent": true, "V11Present": true, "candidate": 1347, "V11": 1348, "fullObserverNewWord": false}
+{"path": "$.loft-first-pop-up.json.epoch.surfaceRevision", "candidatePresent": true, "V11Present": true, "candidate": 1304, "V11": 1305, "fullObserverNewWord": false}
+{"path": "$.loft-initial.json.epoch.surfaceRevision", "candidatePresent": true, "V11Present": true, "candidate": 4, "V11": 5, "fullObserverNewWord": false}
+{"path": "$.loft-terminal.json.epoch.surfaceRevision", "candidatePresent": true, "V11Present": true, "candidate": 1370, "V11": 1371, "fullObserverNewWord": false}

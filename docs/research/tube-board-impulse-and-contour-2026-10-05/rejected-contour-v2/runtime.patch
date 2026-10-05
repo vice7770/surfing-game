@@ -1,0 +1,47 @@
+--- v1/src/wave/barrel/boundedCProfile.ts
++++ v2/src/wave/barrel/boundedCProfile.ts
+@@ -5,7 +5,7 @@
+ export interface BoundedCLifecycle { impactEvent: BoundedCEvent; impactTau: number; retiredTau: number; fullyFormedTau: number }
+ export interface BoundedCMetadata {
+   /** Isolated contour draft; lifecycle/roof/cap coefficients retain v4 authority. */
+-  innerContour?: 'two-branch-cavity/v1';
++  innerContour?: 'two-branch-cavity/v2';
+   /** Isolated new polygon sampling experiment; current v4 controls are unchanged. */
+   sharedSheet?: import('./sharedUpperRoot').SharedSheet;
+   /** New isolated geometric domain bound, separate from v4's original coefficients. */
+@@ -90,14 +90,16 @@
+  * the minimum-X join and a finite handle scale; its old circle certificate does
+  * not certify these new cubics. Complete carrier/thickness tests remain required.
+  */
+-function twoBranchInner(target:Vec2[],Q:Vec2[],last:Vec2,pv:Vec2,R:number){
++function twoBranchInner(target:Vec2[],Q:Vec2[],last:Vec2,pv:Vec2,R:number,T:number){
+  const cap=target[68],join=target[88],floor=target[102],u=mul(last,-1),down:Vec2=[0,-1];
+  const upperChord=norm(sub(join,cap)),lowerChord=norm(sub(floor,join));
+  const upperWidth=cap[0]-join[0],lowerWidth=floor[0]-join[0];
+  if(!(upperWidth>0&&lowerWidth>0&&u[0]<=0&&pv[0]>0))throw Error('two-branch cavity tangent domain');
+- // A cap handle no longer than the actual terminal offset facet avoids borrowing
+- // a large authored root-scale handle at the sheet's thin rounded end.
+- const capHandle=Math.min(norm(sub(Q[27],Q[28])),upperChord/3,u[0]<0?upperWidth/(-3*u[0]):Infinity);
++ // The cap has radius T/2. Limit the unit tangent's handle to that same local
++ // sheet scale as it retires: a terminal sampling facet can remain much longer
++ // than the thinning cap. This bounds control1's displacement, not the whole
++ // spline's material clearance; actual roof/carrier separation still needs gates.
++ const capHandle=Math.min(T/2,norm(sub(Q[27],Q[28])),upperChord/3,u[0]<0?upperWidth/(-3*u[0]):Infinity);
+  const upperJoinHandle=Math.min(KAPPA*R,upperChord/3,lowerChord/3);
+  // Equal derivative per material-index interval at the common vertical join:
+  // upper has20 intervals, lower14. This is a shared tangent, not a third return.
+@@ -188,12 +190,12 @@
+   for(let i=97;i<=102;i++)target[i]=mix(rr.E,F0,(i-96)/6);for(let i=103;i<=106;i++)target[i]=mix(F0,F1,(i-102)/4);for(let i=107;i<=112;i++)target[i]=bezier(fc,(i-106)/6);
+   // Only the current shared bounded-C provider opts into this isolated draft.
+   // RAW and the original unpaired v4 port remain byte-for-byte constructions.
+-  if(sharedRootDomain)twoBranchInner(target,Q,V[27],pv,R);
++  if(sharedRootDomain)twoBranchInner(target,Q,V[27],pv,R,T);
+  }
+  for(let i=33;i<112;i++){profile[2*i]=target[i][0];profile[2*i+1]=target[i][1];if(!Number.isFinite(profile[2*i]+profile[2*i+1]))throw Error('nonfinite profile');}
+  const cap=at(profile,64),flow=Math.sqrt(2*o.H),meta:BoundedCMetadata={model:'bounded-analytic-C/v4',impactEvent:ev,lengthScale:1,timeScale:1,formation:g,remaining,seal:s,authoredSealTau:TD,impactTau:impact,retiredTau:retired,fullyFormedTau:.4*TD,sheetExists:!collapsed,precisionCollapsed:collapsed&&requested>0,thickness:T,requestedThickness:requested,cap,impactCap:ev.cap,rootRadius:R,rootVerticalLeg:D,precisionEnvelopeBound:envelopeBound,precisionEnvelopeBudget:envelopeBudget,collapsedConnectorLength:connectorLength,capBoundaryVelocity:[0,0],fluidAlong:post?0:last[0]*flow,fluidUp:post?-flow:last[1]*flow,partRanges:{outer:[32,60],cap:[60,68],inner:[68,80],upperRoot:[80,88],face:[88,92],lowerRoot:[92,96],floor:[96,112]}};
+  meta.rootRadiusMaximumFromSheetDomain=domainRadius;
+- if(sharedRootDomain&&!collapsed)meta.innerContour='two-branch-cavity/v1';
++ if(sharedRootDomain&&!collapsed)meta.innerContour='two-branch-cavity/v2';
+  if(velocity){const dt=1e-5*TD,a=profile.slice(),b=profile.slice();sampleBoundedC({...z,tau:z.tau-dt},a,false,lifecycle,sharedRootDomain,preservedCarrierStart);sampleBoundedC({...z,tau:z.tau+dt},b,false,lifecycle,sharedRootDomain,preservedCarrierStart);meta.capBoundaryVelocity=[(b[128]-a[128])/(2*dt),(b[129]-a[129])/(2*dt)];}
+  return meta;
+ }

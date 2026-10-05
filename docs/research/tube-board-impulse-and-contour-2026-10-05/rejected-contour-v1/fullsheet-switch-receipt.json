@@ -1,0 +1,974 @@
+{
+  "switches": [
+    {
+      "block": "pad19-a20-l12",
+      "label": "post",
+      "tauSwitch": 1.0044716024097804,
+      "tauPair": [
+        1.0044715404510498,
+        1.004471778869629
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 2.2351741790771484e-8,
+      "pairedRoofSwitch": 1.4901161193847656e-8,
+      "normalizedPairedRoofSwitch": 4.709559577058944e-8,
+      "perSideRoofResampling": [
+        0.003989745749122357,
+        0.003989745680933181
+      ],
+      "sampledOriginalSwitch": 1.4857748645513394e-8,
+      "sampledPairedSwitch": 1.4085892737815721e-8,
+      "normalizedSampledPairedSwitch": 4.451891378250081e-8
+    },
+    {
+      "block": "pad19-a20-l12",
+      "label": "pre",
+      "tauSwitch": 0.0006265003926453137,
+      "tauPair": [
+        0.0006265003466978669,
+        0.0006265004631131887
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.0012008822475898517,
+        0.0012008822475898517
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "pad19-a20-l12",
+      "label": "sheet-post",
+      "tauSwitch": 1.0029114257506213,
+      "tauPair": [
+        1.0029113292694092,
+        1.0029115676879883
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 5.50502206445036e-7,
+      "pairedRoofSwitch": 0.0003408886220415408,
+      "normalizedPairedRoofSwitch": 0.0010773893750703214,
+      "perSideRoofResampling": [
+        0.004017220778955166,
+        0.003983058220509303
+      ],
+      "sampledOriginalSwitch": 0.00009344064103929875,
+      "sampledPairedSwitch": 0.00032064626531566853,
+      "normalizedSampledPairedSwitch": 0.0010134127602680228
+    },
+    {
+      "block": "pad19-a20-l12",
+      "label": "sheet-pre",
+      "tauSwitch": 0.012253874846688205,
+      "tauPair": [
+        0.012253873981535435,
+        0.012253875844180584
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0.000022448383229095592,
+      "normalizedPairedRoofSwitch": 0.0000709488320076201,
+      "perSideRoofResampling": [
+        0.0012059900168528426,
+        0.0012013405998440585
+      ],
+      "sampledOriginalSwitch": 0.00011446648027652323,
+      "sampledPairedSwitch": 0.00009768537851601569,
+      "normalizedSampledPairedSwitch": 0.0003087377580471217
+    },
+    {
+      "block": "pad19-a30-l12",
+      "label": "post",
+      "tauSwitch": 1.7012576170348637,
+      "tauPair": [
+        1.7012574672698975,
+        1.7012577056884766
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3633003234863281,
+      "originalRoofSwitch": 2.9802322387695312e-8,
+      "pairedRoofSwitch": 2.9802322387695312e-8,
+      "normalizedPairedRoofSwitch": 8.203219337022376e-8,
+      "perSideRoofResampling": [
+        0.005808459422460888,
+        0.005808459422460888
+      ],
+      "sampledOriginalSwitch": 1.575315823625056e-8,
+      "sampledPairedSwitch": 1.8147746845536892e-8,
+      "normalizedSampledPairedSwitch": 4.995246541865476e-8
+    },
+    {
+      "block": "pad19-a30-l12",
+      "label": "pre",
+      "tauSwitch": 0.0012850627692255452,
+      "tauPair": [
+        0.00128506263718009,
+        0.0012850628700107336
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3633003234863281,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.001642514762622338,
+        0.001642514762622338
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "pad19-a30-l12",
+      "label": "sheet-post",
+      "tauSwitch": 1.6983406128690453,
+      "tauPair": [
+        1.6983405351638794,
+        1.6983407735824585
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 0.3633003234863281,
+      "originalRoofSwitch": 0.0000010136567267088337,
+      "pairedRoofSwitch": 0.0004956266833152298,
+      "normalizedPairedRoofSwitch": 0.0013642340820373133,
+      "perSideRoofResampling": [
+        0.005745111717114337,
+        0.005801514332917923
+      ],
+      "sampledOriginalSwitch": 0.00013823256180973186,
+      "sampledPairedSwitch": 0.0003344229231511145,
+      "normalizedSampledPairedSwitch": 0.0009205136949560124
+    },
+    {
+      "block": "pad19-a30-l12",
+      "label": "sheet-pre",
+      "tauSwitch": 0.022880288919618342,
+      "tauPair": [
+        0.02288028784096241,
+        0.02288029156625271
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 0.3633003234863281,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0.0000367542733898385,
+      "normalizedPairedRoofSwitch": 0.00010116774198584398,
+      "perSideRoofResampling": [
+        0.0016508742345334726,
+        0.0016431327025402953
+      ],
+      "sampledOriginalSwitch": 0.00017147659098283396,
+      "sampledPairedSwitch": 0.00014019012451171875,
+      "normalizedSampledPairedSwitch": 0.00038587943761353254
+    },
+    {
+      "block": "pad19-a45-l12",
+      "label": "post",
+      "tauSwitch": 1.9655598194504358,
+      "tauPair": [
+        1.965559720993042,
+        1.965559959411621
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.4939999748021364,
+      "originalRoofSwitch": 2.9802322387695312e-8,
+      "pairedRoofSwitch": 2.9802322387695312e-8,
+      "normalizedPairedRoofSwitch": 6.03285909065727e-8,
+      "perSideRoofResampling": [
+        0.008759805122087183,
+        0.008759819247921574
+      ],
+      "sampledOriginalSwitch": 2.368343713897217e-8,
+      "sampledPairedSwitch": 2.707968258818203e-8,
+      "normalizedSampledPairedSwitch": 5.4817174027242316e-8
+    },
+    {
+      "block": "pad19-a45-l12",
+      "label": "pre",
+      "tauSwitch": 0.0017618659952334192,
+      "tauPair": [
+        0.0017618659185245633,
+        0.001761866151355207
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.4939999748021364,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.0023201275378207376,
+        0.0023201275378207376
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "pad19-a45-l12",
+      "label": "sheet-post",
+      "tauSwitch": 1.9618806485461702,
+      "tauPair": [
+        1.9618805646896362,
+        1.9618808031082153
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 0.4939999748021364,
+      "originalRoofSwitch": 0.0000020818616545403845,
+      "pairedRoofSwitch": 0.0007588195069203052,
+      "normalizedPairedRoofSwitch": 0.0015360719547085765,
+      "perSideRoofResampling": [
+        0.008656787314341718,
+        0.008747810511314902
+      ],
+      "sampledOriginalSwitch": 0.00022866292460849895,
+      "sampledPairedSwitch": 0.000532606114358564,
+      "normalizedSampledPairedSwitch": 0.0010781500840600054
+    },
+    {
+      "block": "pad19-a45-l12",
+      "label": "sheet-pre",
+      "tauSwitch": 0.028821280689525677,
+      "tauPair": [
+        0.028821278363466263,
+        0.02882128208875656
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 0.4939999748021364,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0.00006154562545251929,
+      "normalizedPairedRoofSwitch": 0.00012458629269600748,
+      "perSideRoofResampling": [
+        0.002334308514792549,
+        0.0023212898600944998
+      ],
+      "sampledOriginalSwitch": 0.000283711374749705,
+      "sampledPairedSwitch": 0.0002277134327076479,
+      "normalizedSampledPairedSwitch": 0.00046095838931743823
+    },
+    {
+      "block": "periodic-padang19s-l12",
+      "label": "post",
+      "tauSwitch": 1.402555111191643,
+      "tauPair": [
+        1.402554988861084,
+        1.402555227279663
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3280982971191406,
+      "originalRoofSwitch": 1.4901161193847656e-8,
+      "pairedRoofSwitch": 1.4901161193847656e-8,
+      "normalizedPairedRoofSwitch": 4.5416758711297656e-8,
+      "perSideRoofResampling": [
+        0.004669288693869539,
+        0.004669288693869539
+      ],
+      "sampledOriginalSwitch": 9.424103225291579e-9,
+      "sampledPairedSwitch": 1.0559118768835734e-8,
+      "normalizedSampledPairedSwitch": 3.21827905281735e-8
+    },
+    {
+      "block": "periodic-padang19s-l12",
+      "label": "pre",
+      "tauSwitch": 0.0008111401820737751,
+      "tauPair": [
+        0.000811140111181885,
+        0.0008111402275972068
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3280982971191406,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.001385272771316337,
+        0.001385272771316337
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "periodic-padang19s-l12",
+      "label": "sheet-post",
+      "tauSwitch": 1.400459899997129,
+      "tauPair": [
+        1.4004597663879395,
+        1.4004600048065186
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 0.3280982971191406,
+      "originalRoofSwitch": 5.726888740731351e-7,
+      "pairedRoofSwitch": 0.0003608866548705236,
+      "normalizedPairedRoofSwitch": 0.0010999345563182754,
+      "perSideRoofResampling": [
+        0.0046258056725274055,
+        0.004664949561809989
+      ],
+      "sampledOriginalSwitch": 0.00009253786245782525,
+      "sampledPairedSwitch": 0.0002442196747277053,
+      "normalizedSampledPairedSwitch": 0.0007443491077889474
+    },
+    {
+      "block": "periodic-padang19s-l12",
+      "label": "sheet-pre",
+      "tauSwitch": 0.016464099262114392,
+      "tauPair": [
+        0.016464097425341606,
+        0.016464101150631905
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 0.3280982971191406,
+      "originalRoofSwitch": 1.4901161193847656e-8,
+      "pairedRoofSwitch": 0.000024261815323750602,
+      "normalizedPairedRoofSwitch": 0.00007394678831551672,
+      "perSideRoofResampling": [
+        0.0013914786628520803,
+        0.0013864996740694524
+      ],
+      "sampledOriginalSwitch": 0.00011522022506348957,
+      "sampledPairedSwitch": 0.00009626150131225586,
+      "normalizedSampledPairedSwitch": 0.00029339226127498284
+    },
+    {
+      "block": "periodic-point21-a15-l12",
+      "label": "post",
+      "tauSwitch": 1.1491607908063406,
+      "tauPair": [
+        1.149160623550415,
+        1.1491608619689941
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.4540977478027344,
+      "originalRoofSwitch": 2.9802322387695312e-8,
+      "pairedRoofSwitch": 2.9802322387695312e-8,
+      "normalizedPairedRoofSwitch": 6.56297515940154e-8,
+      "perSideRoofResampling": [
+        0.005895766315562281,
+        0.005895767910651134
+      ],
+      "sampledOriginalSwitch": 1.7582794211148605e-8,
+      "sampledPairedSwitch": 1.931473674714479e-8,
+      "normalizedSampledPairedSwitch": 4.253431522310775e-8
+    },
+    {
+      "block": "periodic-point21-a15-l12",
+      "label": "pre",
+      "tauSwitch": 0.0009045027440676319,
+      "tauPair": [
+        0.0009045026963576674,
+        0.0009045028127729893
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.4540977478027344,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.001513619303697089,
+        0.001513619303697089
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "periodic-point21-a15-l12",
+      "label": "sheet-post",
+      "tauSwitch": 1.1471477531583174,
+      "tauPair": [
+        1.1471476554870605,
+        1.1471478939056396
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 0.4540977478027344,
+      "originalRoofSwitch": 0.0000010470068718057557,
+      "pairedRoofSwitch": 0.0005369037830849563,
+      "normalizedPairedRoofSwitch": 0.0011823528869784087,
+      "perSideRoofResampling": [
+        0.005844139952576308,
+        0.005882101165758949
+      ],
+      "sampledOriginalSwitch": 0.00016944877046007553,
+      "sampledPairedSwitch": 0.0005030674407589015,
+      "normalizedSampledPairedSwitch": 0.001107839541581343
+    },
+    {
+      "block": "periodic-point21-a15-l12",
+      "label": "sheet-pre",
+      "tauSwitch": 0.01578503590858637,
+      "tauPair": [
+        0.015785034745931625,
+        0.015785038471221924
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 0.4540977478027344,
+      "originalRoofSwitch": 1.4901161193847656e-8,
+      "pairedRoofSwitch": 0.00003632060014654992,
+      "normalizedPairedRoofSwitch": 0.0000799841010493803,
+      "perSideRoofResampling": [
+        0.0015225415656579533,
+        0.0015151205977795845
+      ],
+      "sampledOriginalSwitch": 0.0001975900145735216,
+      "sampledPairedSwitch": 0.00016716362726315148,
+      "normalizedSampledPairedSwitch": 0.0003681225640779205
+    },
+    {
+      "block": "periodic-point21-a23-l12",
+      "label": "post",
+      "tauSwitch": 1.2577171690949938,
+      "tauPair": [
+        1.2577170133590698,
+        1.257717251777649
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.5860023498535156,
+      "originalRoofSwitch": 2.9802322387695312e-8,
+      "pairedRoofSwitch": 2.9802322387695312e-8,
+      "normalizedPairedRoofSwitch": 5.085700150373982e-8,
+      "perSideRoofResampling": [
+        0.007610702445016909,
+        0.00761070380344589
+      ],
+      "sampledOriginalSwitch": 2.286220317567237e-8,
+      "sampledPairedSwitch": 2.4035741663902102e-8,
+      "normalizedSampledPairedSwitch": 4.101645952428411e-8
+    },
+    {
+      "block": "periodic-point21-a23-l12",
+      "label": "pre",
+      "tauSwitch": 0.0008533560919902657,
+      "tauPair": [
+        0.00085335603216663,
+        0.0008533561485819519
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.5860023498535156,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.0020490532839341213,
+        0.0020490532839341213
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "periodic-point21-a23-l12",
+      "label": "sheet-post",
+      "tauSwitch": 1.2556768175688418,
+      "tauPair": [
+        1.2556767463684082,
+        1.2556769847869873
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 0.5860023498535156,
+      "originalRoofSwitch": 0.0000010448308712940335,
+      "pairedRoofSwitch": 0.000630495281297605,
+      "normalizedPairedRoofSwitch": 0.0010759261997075804,
+      "perSideRoofResampling": [
+        0.007589616920174944,
+        0.007595990597163135
+      ],
+      "sampledOriginalSwitch": 0.00018788634384700847,
+      "sampledPairedSwitch": 0.0005913926974977466,
+      "normalizedSampledPairedSwitch": 0.0010091985085820532
+    },
+    {
+      "block": "periodic-point21-a23-l12",
+      "label": "sheet-pre",
+      "tauSwitch": 0.01601620414766673,
+      "tauPair": [
+        0.016016202047467232,
+        0.01601620577275753
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 0.5860023498535156,
+      "originalRoofSwitch": 2.9802322387695312e-8,
+      "pairedRoofSwitch": 0.00004246077809622051,
+      "normalizedPairedRoofSwitch": 0.00007245837513592656,
+      "perSideRoofResampling": [
+        0.002059805343983201,
+        0.0020511646791766536
+      ],
+      "sampledOriginalSwitch": 0.00022239104731712752,
+      "sampledPairedSwitch": 0.00018930273257163847,
+      "normalizedSampledPairedSwitch": 0.0003230409103631733
+    },
+    {
+      "block": "periodic-point21-a30-l12",
+      "label": "post",
+      "tauSwitch": 1.6893190908167472,
+      "tauPair": [
+        1.6893190145492554,
+        1.6893192529678345
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.4649009704589844,
+      "originalRoofSwitch": 2.9802322387695312e-8,
+      "pairedRoofSwitch": 1.4901161193847656e-8,
+      "normalizedPairedRoofSwitch": 3.2052334025321853e-8,
+      "perSideRoofResampling": [
+        0.007136742394153683,
+        0.007136742394153683
+      ],
+      "sampledOriginalSwitch": 2.478768740979162e-8,
+      "sampledPairedSwitch": 1.0556839135791658e-8,
+      "normalizedSampledPairedSwitch": 2.2707715850472784e-8
+    },
+    {
+      "block": "periodic-point21-a30-l12",
+      "label": "pre",
+      "tauSwitch": 0.001138448257643419,
+      "tauPair": [
+        0.0011384481331333518,
+        0.0011384483659639955
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.4649009704589844,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.0020192832562021534,
+        0.0020192832562021534
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "periodic-point21-a30-l12",
+      "label": "sheet-post",
+      "tauSwitch": 1.6865884141293352,
+      "tauPair": [
+        1.6865882873535156,
+        1.6865885257720947
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 0.4649009704589844,
+      "originalRoofSwitch": 0.000001143464997577226,
+      "pairedRoofSwitch": 0.0005756020107335197,
+      "normalizedPairedRoofSwitch": 0.0012381174643822386,
+      "perSideRoofResampling": [
+        0.007064734269992434,
+        0.007129064160678933
+      ],
+      "sampledOriginalSwitch": 0.00015544568826182415,
+      "sampledPairedSwitch": 0.00038907481759473215,
+      "normalizedSampledPairedSwitch": 0.0008368982693467146
+    },
+    {
+      "block": "periodic-point21-a30-l12",
+      "label": "sheet-pre",
+      "tauSwitch": 0.021436035332976618,
+      "tauPair": [
+        0.02143603377044201,
+        0.021436037495732307
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 0.4649009704589844,
+      "originalRoofSwitch": 2.9802322387695312e-8,
+      "pairedRoofSwitch": 0.000040884880317837435,
+      "normalizedPairedRoofSwitch": 0.00008794320278031014,
+      "perSideRoofResampling": [
+        0.002029242523061192,
+        0.0020207798637307817
+      ],
+      "sampledOriginalSwitch": 0.00019456221266458173,
+      "sampledPairedSwitch": 0.0001595020294189453,
+      "normalizedSampledPairedSwitch": 0.00034308818340704516
+    },
+    {
+      "block": "periodic-reef42-l12",
+      "label": "post",
+      "tauSwitch": 2.3660428568078107,
+      "tauPair": [
+        2.3660426139831543,
+        2.3660430908203125
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 1.1137008666992188,
+      "originalRoofSwitch": 2.9802322387695312e-8,
+      "pairedRoofSwitch": 2.60770320892334e-8,
+      "normalizedPairedRoofSwitch": 2.341475423873951e-8,
+      "perSideRoofResampling": [
+        0.01006329909447324,
+        0.010063306069650113
+      ],
+      "sampledOriginalSwitch": 2.8134067747442334e-8,
+      "sampledPairedSwitch": 2.45577209509972e-8,
+      "normalizedSampledPairedSwitch": 2.205055386531327e-8
+    },
+    {
+      "block": "periodic-reef42-l12",
+      "label": "pre",
+      "tauSwitch": 0.0019057951026727566,
+      "tauPair": [
+        0.0019057949539273977,
+        0.0019057951867580414
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 1.1137008666992188,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.0016080951414321198,
+        0.0016080951414321198
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "periodic-reef42-l12",
+      "label": "sheet-post",
+      "tauSwitch": 2.3555086072977978,
+      "tauPair": [
+        2.355508327484131,
+        2.355508804321289
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 1.1137008666992188,
+      "originalRoofSwitch": 0.0000010275460636810507,
+      "pairedRoofSwitch": 0.0024344948211570336,
+      "normalizedPairedRoofSwitch": 0.002185950369574891,
+      "perSideRoofResampling": [
+        0.008824004329835954,
+        0.009864121132088483
+      ],
+      "sampledOriginalSwitch": 0.0007323922104254307,
+      "sampledPairedSwitch": 0.0022944874339312703,
+      "normalizedSampledPairedSwitch": 0.0020602367319077887
+    },
+    {
+      "block": "periodic-reef42-l12",
+      "label": "sheet-pre",
+      "tauSwitch": 0.0411554035197324,
+      "tauPair": [
+        0.04115540161728859,
+        0.041155409067869186
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 1.1137008666992188,
+      "originalRoofSwitch": 2.0202880729458528e-8,
+      "pairedRoofSwitch": 0.00006130461655190489,
+      "normalizedPairedRoofSwitch": 0.00005504585511691233,
+      "perSideRoofResampling": [
+        0.0015996893144988866,
+        0.0015870014833772317
+      ],
+      "sampledOriginalSwitch": 0.0004285597757831528,
+      "sampledPairedSwitch": 0.000358959818476863,
+      "normalizedSampledPairedSwitch": 0.0003223125968652125
+    },
+    {
+      "block": "exact-factory-1.4000000000000001",
+      "label": "post",
+      "tauSwitch": 1.0044716024097804,
+      "tauPair": [
+        1.0044715404510498,
+        1.004471778869629
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 2.2351741790771484e-8,
+      "pairedRoofSwitch": 1.4901161193847656e-8,
+      "normalizedPairedRoofSwitch": 4.709559577058944e-8,
+      "perSideRoofResampling": [
+        0.003989745749122357,
+        0.003989745680933181
+      ],
+      "sampledOriginalSwitch": 1.4857748645513394e-8,
+      "sampledPairedSwitch": 1.4085892737815721e-8,
+      "normalizedSampledPairedSwitch": 4.451891378250081e-8
+    },
+    {
+      "block": "exact-factory-1.4000000000000001",
+      "label": "pre",
+      "tauSwitch": 0.0006265003926453137,
+      "tauPair": [
+        0.0006265003466978669,
+        0.0006265004631131887
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.0012008822475898517,
+        0.0012008822475898517
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "exact-factory-1.4000000000000001",
+      "label": "sheet-post",
+      "tauSwitch": 1.0029114257506213,
+      "tauPair": [
+        1.0029113292694092,
+        1.0029115676879883
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 5.50502206445036e-7,
+      "pairedRoofSwitch": 0.0003408886220415408,
+      "normalizedPairedRoofSwitch": 0.0010773893750703214,
+      "perSideRoofResampling": [
+        0.004017220778955166,
+        0.003983058220509303
+      ],
+      "sampledOriginalSwitch": 0.00009344064103929875,
+      "sampledPairedSwitch": 0.00032064626531566853,
+      "normalizedSampledPairedSwitch": 0.0010134127602680228
+    },
+    {
+      "block": "exact-factory-1.4000000000000001",
+      "label": "sheet-pre",
+      "tauSwitch": 0.012253874846688205,
+      "tauPair": [
+        0.012253873981535435,
+        0.012253875844180584
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0.000022448383229095592,
+      "normalizedPairedRoofSwitch": 0.0000709488320076201,
+      "perSideRoofResampling": [
+        0.0012059900168528426,
+        0.0012013405998440585
+      ],
+      "sampledOriginalSwitch": 0.00011446648027652323,
+      "sampledPairedSwitch": 0.00009768537851601569,
+      "normalizedSampledPairedSwitch": 0.0003087377580471217
+    },
+    {
+      "block": "exact-factory-1.399999976158142",
+      "label": "post",
+      "tauSwitch": 1.004471626730541,
+      "tauPair": [
+        1.0044715404510498,
+        1.004471778869629
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 2.2351741790771484e-8,
+      "pairedRoofSwitch": 2.2351741790771484e-8,
+      "normalizedPairedRoofSwitch": 7.064339365588416e-8,
+      "perSideRoofResampling": [
+        0.003989746688968579,
+        0.0039897466207794025
+      ],
+      "sampledOriginalSwitch": 1.5312998837292395e-8,
+      "sampledPairedSwitch": 1.5392656628264408e-8,
+      "normalizedSampledPairedSwitch": 4.864898278528321e-8
+    },
+    {
+      "block": "exact-factory-1.399999976158142",
+      "label": "pre",
+      "tauSwitch": 0.0006265004001418591,
+      "tauPair": [
+        0.0006265003466978669,
+        0.0006265004631131887
+      ],
+      "sheetExists": [
+        false,
+        false
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 0,
+      "pairedRoofSwitch": 0,
+      "normalizedPairedRoofSwitch": 0,
+      "perSideRoofResampling": [
+        0.0012008822475898517,
+        0.0012008822475898517
+      ],
+      "sampledOriginalSwitch": 0,
+      "sampledPairedSwitch": 0,
+      "normalizedSampledPairedSwitch": 0
+    },
+    {
+      "block": "exact-factory-1.399999976158142",
+      "label": "sheet-post",
+      "tauSwitch": 1.0029114500443406,
+      "tauPair": [
+        1.0029113292694092,
+        1.0029115676879883
+      ],
+      "sheetExists": [
+        true,
+        false
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 5.604724306051967e-7,
+      "pairedRoofSwitch": 0.0003408885866549721,
+      "normalizedPairedRoofSwitch": 0.001077389263229941,
+      "perSideRoofResampling": [
+        0.004017223542541158,
+        0.003983057297700585
+      ],
+      "sampledOriginalSwitch": 0.0000934408028007988,
+      "sampledPairedSwitch": 0.0003206462278089527,
+      "normalizedSampledPairedSwitch": 0.0010134126417268498
+    },
+    {
+      "block": "exact-factory-1.399999976158142",
+      "label": "sheet-pre",
+      "tauSwitch": 0.01225387505996474,
+      "tauPair": [
+        0.012253873981535435,
+        0.012253875844180584
+      ],
+      "sheetExists": [
+        false,
+        true
+      ],
+      "spatialScale": 0.3164024353027344,
+      "originalRoofSwitch": 1.4901161193847656e-8,
+      "pairedRoofSwitch": 0.000022448383229095592,
+      "normalizedPairedRoofSwitch": 0.0000709488320076201,
+      "perSideRoofResampling": [
+        0.0012059900168528426,
+        0.0012013405998440585
+      ],
+      "sampledOriginalSwitch": 0.00011446648027652323,
+      "sampledPairedSwitch": 0.00009768537851601569,
+      "normalizedSampledPairedSwitch": 0.0003087377580471217
+    }
+  ],
+  "measuredSwitches": 40,
+  "activeCollapsedSwitches": 20,
+  "maximumOriginalRoofSwitch": 0.0000020818616545403845,
+  "maximumPairedRoofSwitch": 0.0024344948211570336,
+  "maximumNormalizedPairedRoofSwitch": 0.002185950369574891,
+  "maximumSampledPairedSwitch": 0.0022944874339312703,
+  "maximumNormalizedSampledPairedSwitch": 0.0020602367319077887,
+  "fixedOriginalGateAndControls": true,
+  "sameSamplingInBothStates": true,
+  "limitation": "Roof metric is exact vertical polygon difference on common domain at union breakpoints; whole-contour metric samples vertices/midpoints, not continuous Hausdorff proof."
+}

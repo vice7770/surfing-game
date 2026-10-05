@@ -1,0 +1,181 @@
+--- longitudinal-helper/run.py
++++ trial-balance-helper/run.py
+@@ -3,7 +3,7 @@
+ from pathlib import Path
+ from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
+ import argparse,datetime,hashlib,json,os,selectors,signal,socket,subprocess,threading,time,shutil,math,base64,struct
+-WORK=Path('/private/tmp/tube-landing-longitudinal-native-20261005');PORTS=(4301,9711);USERS=(4310,4311,4312,4313)
++WORK=Path('/private/tmp/tube-native-trial-balance-native-20261005');PORTS=(4301,9711);USERS=(4310,4311,4312,4313)
+ CANDIDATE_DIST=WORK/'candidate-complete-dist';BUILD_MANIFEST=CANDIDATE_DIST.parent/'root-complete-build-result.json'
+ def pin(p):
+  file=Path(p['file']);assert file.is_file(),'Missing sealed file '+str(file)
+@@ -12,35 +12,39 @@
+ def verify_source_authority(q):
+  assert q['file']==str(WORK/'source-readiness.json')
+  authority=json.loads(pin(q))
+- assert authority['schema']=='landing-longitudinal-source-readiness/v1' and authority['complete'] is True and authority['frozen'] is True
++ assert authority['schema']=='trial-balance-source-readiness/v1' and authority['complete'] is True and authority['frozen'] is True
+  assert authority['sourceDirectory']==str(WORK/'source') and authority['sourceCount']==588 and authority['applicationSourceCount']==587 and authority['unchangedParentInputs']==587
+- assert authority['buildId']=='tube-landing-longitudinal-20261005' and authority['runtimeChangedPaths']==['src/physics/AttachedRider.ts']
++ assert authority['buildId']=='tube-native-trial-balance-20261005' and authority['runtimeChangedPaths']==['src/physics/AttachedRider.ts']
++ assert authority['rootObserverChecks']==authority['rootCPUResult']
++ cpu=json.loads(pin(authority['rootObserverChecks']));pin(authority['rootCPUResult'])
++ assert cpu['complete'] is True and cpu['checks'] and all(check['exitCode']==0 for check in cpu['checks'])
+  manifest=json.loads(pin(authority['sourcePinsManifest']));delta=json.loads(pin(authority['sourceDelta']));parent=json.loads(pin(authority['parentManifest']))
+- assert manifest['schema']=='landing-longitudinal-source-pins/v1' and manifest['count']==len(manifest['pins'])==588
++ assert manifest['schema']=='trial-balance-source-pins/v1' and manifest['count']==len(manifest['pins'])==588
+  rows={r['path']:r for r in manifest['pins']};assert len(rows)==588
+- assert delta['schema']=='landing-longitudinal-source-delta/v1' and delta['source']==str(WORK/'source') and delta['sourceCount']==588 and delta['unchangedParentInputs']==587
++ assert delta['schema']=='trial-balance-source-delta/v1' and delta['source']==str(WORK/'source') and delta['sourceCount']==588 and delta['unchangedParentInputs']==587
+  assert delta['parentManifest']==authority['parentManifest'] and len(delta['overrides'])==1
+- override=delta['overrides'][0];runtime='src/physics/AttachedRider.ts'
+- assert override['path']==runtime and override['after']==rows[runtime]
+- assert authority['candidateRuntime']['bytes']==149572 and authority['candidateRuntime']['sha256']=='84bae9817c3135d1999c094152d5184221162c5777bd27663aa3fa57c3aac5d4'
+- pin(authority['candidateRuntime']);assert (rows[runtime]['bytes'],rows[runtime]['sha256'])==(authority['candidateRuntime']['bytes'],authority['candidateRuntime']['sha256'])
++ assert authority['parentManifest']['file']=='/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/source-manifest.json'
+  old={}
+- for p in parent['sourcePins']:
+-  pin(p);f=Path(p['file']);root=Path(parent['source'])
+-  relative=str(f.relative_to(root)) if f.is_relative_to(root) else 'public/'+str(f).split('/public/',1)[1]
++ for item in parent['files']:
++  relative=item['path'];p=item['after'];pin(p)
+   assert relative not in old;old[relative]={'path':relative,'bytes':p['bytes'],'sha256':p['sha256']}
+- extra='docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json'
+- b=(Path(parent['source'])/extra).read_bytes();old[extra]={'path':extra,'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+- assert len(old)==588 and set(old)==set(rows) and override['before']==old[runtime]
++ assert len(old)==588 and set(old)==set(rows)
++ runtime='src/physics/AttachedRider.ts';override=delta['overrides'][0]
++ assert override['path']==runtime and override['before']==old[runtime] and override['after']==rows[runtime]
++ assert (old[runtime]['bytes'],old[runtime]['sha256'])==(146425,'d6d54aa4f6e20ff7ffcebc39450957b7a81ec26cf14886edec7882d8ecae7b31')
++ assert (rows[runtime]['bytes'],rows[runtime]['sha256'])==(153209,'1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4')
+  assert [relative for relative in sorted(rows) if rows[relative]!=old[relative]]==[runtime]
++ pin(authority['candidateRuntime']);assert (authority['candidateRuntime']['bytes'],authority['candidateRuntime']['sha256'])==(rows[runtime]['bytes'],rows[runtime]['sha256'])
+  for relative,r in rows.items():
+   assert Path(relative).is_absolute() is False and '..' not in Path(relative).parts
+   pin({'file':str(WORK/'source'/relative),'bytes':r['bytes'],'sha256':r['sha256']})
+- for key in ['candidatePreparation','candidatePatch','controlledCPUResult','controlledProof','fixtureTypeRepair','fixtureRunnerConfig','parentV11ActualOwner','actualV11ForceReview']:pin(authority[key])
++ metadata=json.loads((WORK/'observer-fields.json').read_text());assert len(metadata['allFields'])==len(set(metadata['allFields']))==102 and len(metadata['originalFields'])==38 and len(metadata['newFields'])==63
++ assert metadata['availabilityMarker']=='standingTrialAvailable'
++ assert (WORK/'observer-fields.json').read_bytes()==Path('/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json').read_bytes()
+  return authority,rows
+ def verify_complete_build(build,dist):
+- assert build['schema']=='pop-up-contact-longitudinal-root-complete-build/v1' and build['terminal'] is True and build['exitCode']==0
+- assert build['source']==str(WORK/'source') and build['sourceUnchangedAfterBuild'] is True and build['buildId']=='tube-landing-longitudinal-20261005'
++ assert build['schema']=='trial-balance-root-complete-build/v1' and build['terminal'] is True and build['exitCode']==0
++ assert build['source']==str(WORK/'source') and build['sourceUnchangedAfterBuild'] is True and build['buildId']=='tube-native-trial-balance-20261005'
+  authority,rows=verify_source_authority(build['readiness'])
+  extra='docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json'
+  expected=[{'file':str(WORK/'source'/relative),'bytes':r['bytes'],'sha256':r['sha256']} for relative,r in sorted(rows.items()) if relative!=extra]
+@@ -71,9 +75,9 @@
+  return True
+ def verify_diagnostic_reference(s,build):
+  assert s['rootDiagnosticBuild']['file']==str(WORK/'root-diagnostic-build-result.json')
+- assert s['diagnosticModuleReferencePolicy']=='root-rebuilt-original74-input-graph-against-longitudinal-source'
++ assert s['diagnosticModuleReferencePolicy']=='root-rebuilt-original74-input-graph-against-trial-balance-observer-source'
+  pin(s['priorV4Readiness']);pin(s['priorV4Owner']);pin(s['priorV4Report']);pin(s['priorV6Readiness']);pin(s['priorV6Owner']);pin(s['priorV6Report'])
+- diagnostic=json.loads(pin(s['rootDiagnosticBuild']));assert diagnostic['schema']=='pop-up-contact-longitudinal-diagnostic-root-build/v1' and diagnostic['terminal'] is True and diagnostic['exitCode']==0 and diagnostic['module']==s['diagnosticModule']
++ diagnostic=json.loads(pin(s['rootDiagnosticBuild']));assert diagnostic['schema']=='trial-balance-diagnostic-root-build/v1' and diagnostic['terminal'] is True and diagnostic['exitCode']==0 and diagnostic['module']==s['diagnosticModule']
+  original=json.loads(pin(diagnostic['originalDiagnosticBuild']));assert diagnostic['originalDiagnosticBuild']['file']=='/private/tmp/tube-stable-x-ordinary-rider-prep-20261005/root-diagnostic-build-result.json'
+  assert diagnostic['source']==build['source'] and diagnostic['entry']['file']==str(WORK/'autopilot-entry.ts') and diagnostic['module']['file']==str(WORK/'diagnostic-autopilot.mjs')
+  assert diagnostic['originalEntry']==original['entry'] and diagnostic['completeBuildAssetCountUnchanged']==49 and diagnostic['sourceOrCompleteDistModified'] is False and diagnostic['separateDiagnosticRoute']=='/diagnostic-autopilot.mjs'
+@@ -96,10 +100,12 @@
+  assert sorted(diagnostic['moduleExports'])==['Autopilot','autopilotView','riderPartVolumes']
+  assert str(WORK/'source/src/physics/AttachedRider.ts') in {p['file'] for p in diagnostic['sourceInputs']}
+  assert diagnostic['parentV8DiagnosticBuild']['file']=='/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/root-diagnostic-build-result.json';pin(diagnostic['parentV8DiagnosticBuild'])
++ assert diagnostic['observerFields']=={'file':str(WORK/'observer-fields.json'),'bytes':8731,'sha256':'19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a'};pin(diagnostic['observerFields'])
++ assert diagnostic['observerFieldCount']==102 and diagnostic['originalObserverFieldCount']==38 and diagnostic['newObserverScalarCount']==63
+  return diagnostic
+ def sealed(arm):
+  body=(WORK/'seal.json').read_bytes();assert len(body)<=1024*1024;s=json.loads(body)
+- assert s['schema']=='pop-up-contact-longitudinal-root-seal/v1' and s['complete'] is True and arm=='candidate'
++ assert s['schema']=='trial-balance-root-seal/v1' and s['complete'] is True and arm=='candidate'
+  a=s['arms'][arm];assert a['rootAuthorized'] is True and Path(a['dist'])==CANDIDATE_DIST
+  build=json.loads(pin(a['rootBuildManifest']));assert a['rootBuildManifest']['file']==str(BUILD_MANIFEST)
+  assert verify_complete_build(build,CANDIDATE_DIST) and len(build['sourcePins'])==587 and len(build['assetPins'])==49
+@@ -108,7 +114,11 @@
+  ready=json.loads(pin(s['helperReadiness']));assert ready['complete'] is True and ready['frozen'] is True and ready['resourcesStarted'] is False and ready['actualAppBuildAccepted'] is True and ready['actualDiagnosticBuildAccepted'] is True and ready['helperAcceptance'] is True
+  assert ready['sourceReadiness']==s['sourceReadiness'] and s['sourceReadiness']['file']==str(WORK/'source-readiness.json')
+  verify_source_authority(s['sourceReadiness'])
+- manifest=json.loads(pin(s['helperPinsManifest']));assert manifest['schema']=='pop-up-contact-longitudinal-helper-pins/v1'
++ assert ready['schema']=='trial-balance-preparation-readiness/v1' and ready['executableChecksAccepted'] is True
++ rootChecks=json.loads(pin(ready['rootHelperChecks']));assert rootChecks['schema']=='trial-balance-root-helper-checks/v1' and rootChecks['complete'] is True
++ for name in ['nativeSyntax','diagnosticWrapperSyntax','sourceOnlyOwner']:
++  check=rootChecks[name];assert check['run'] is True and check['exitCode']==0;pin(check['log'])
++ manifest=json.loads(pin(s['helperPinsManifest']));assert manifest['schema']=='trial-balance-helper-pins/v1'
+  assert s['helperPins']==manifest['pins']
+  assert {Path(p['file']).name for p in s['helperPins']} >= {'run.py','native.mjs','native-owned.mjs','rider-driver.mjs','control-policy.mjs','menu-startup.mjs','loft-snapshot-tools.mjs','body-witnesses.mjs','cdp.mjs','follower-camera.mjs','contact-retention.mjs','check-source.py'}
+  for p in s['helperPins']:pin(p)
+@@ -156,7 +166,7 @@
+    cd=ride['contactDiagnostics'];assert cd is not None and cd['mount']>=1 and cd['step']>=0
+    if ride['contactDiagnosticRetention']=='full':
+     for sample in (cd.get('last'),cd.get('firstLimited'),cd.get('firstNonContact'),(cd.get('loss') or {}).get('sample')):
+-     if sample is not None:assert all(key in sample and type(sample[key]) in (int,float) and math.isfinite(sample[key]) for key in json.loads((WORK/'observer-fields.json').read_text()))
++     if sample is not None:assert all(key in sample and type(sample[key]) in (int,float) and math.isfinite(sample[key]) for key in json.loads((WORK/'observer-fields.json').read_text())['allFields'])
+    compact=ride['phase']=='prone' and not ride.get('separation') and cd.get('loss') is None
+    assert ride['contactDiagnosticRetention']==('compact-prone-flight-support' if compact else 'full')
+  losses=[r for r in rows if r['ride']['contactDiagnostics'].get('loss')]
+@@ -173,7 +183,7 @@
+  else:assert n.get('firstContactLoss') is None
+  return True
+ def validate_native(n,out,sealsha):
+- assert n['schema']=='pop-up-contact-longitudinal-native/v1' and n['complete'] is True and n['firstFailure'] is None and n['chromeClosed'] is True and n['sealSha256']==sealsha
++ assert n['schema']=='trial-balance-native/v1' and n['complete'] is True and n['firstFailure'] is None and n['chromeClosed'] is True and n['sealSha256']==sealsha
+  assert n['initial']['menuEvidence']['actualDomStartup'] is True and n['initial']['menuEvidence']['normalSpawnPreserved'] is True and n['initial']['menuEvidence']['rideObserved'] is True and n['initial']['menuEvidence']['selectedChoices']==['Padang Padang','Big','Mid','Calm','Midday']
+  assert n['initial']['menuEvidence']['normalHudPaused'] is True and n['initial']['menuEvidence']['activeLabDisabled'] is True
+  assert n['knownFailureReplay'] is True and n['normalMenuAcceptance'] is False and n['overrides']=={'seed':6238,'componentCount':64,'dx':2,'fineSpacing':1}
+@@ -244,7 +254,7 @@
+  except (AssertionError,KeyError,FileNotFoundError,json.JSONDecodeError) as e:print(json.dumps({'resourcesStarted':False,'portsProbed':False,'sealFailure':str(e)}));return 2
+  if args.check_seal:print(json.dumps({'sealValid':True,'resourcesStarted':False,'portsProbed':False,'arm':args.arm,'sealSha256':sealsha}));return 0
+  start=time.monotonic();out=WORK/(args.arm+'-first');owner=WORK/(args.arm+'-first-owner.json');log=WORK/(args.arm+'-first-owner.log');assert not out.exists() and not owner.exists() and not log.exists(),'First-only arm: preserve unsuccessful invocation, no overwrite/retry'
+- report={'schema':'pop-up-contact-longitudinal-finite-owner/v1','arm':args.arm,'complete':False,'firstFailure':None,'startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'sealSha256':sealsha,'wholeSeconds':660,'commandSeconds':648,'cleanupSeconds':7,'ports':PORTS,'protectedPorts':USERS,'dist':str(DIST),'served':{},'logBytes':0,'nativeGroup':None,'physicalGeometryEqualityClaim':False,'bodyEntryClaim':False}
++ report={'schema':'trial-balance-finite-owner/v1','arm':args.arm,'complete':False,'firstFailure':None,'startedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'sealSha256':sealsha,'wholeSeconds':660,'commandSeconds':648,'cleanupSeconds':7,'ports':PORTS,'protectedPorts':USERS,'dist':str(DIST),'served':{},'logBytes':0,'nativeGroup':None,'physicalGeometryEqualityClaim':False,'bodyEntryClaim':False}
+  lock=threading.Lock();server=None;proc=None;sel=selectors.DefaultSelector()
+  def save():
+   with lock:b=json.dumps(report,separators=(',',':')).encode()
+--- longitudinal-helper/native.mjs
++++ trial-balance-helper/native.mjs
+@@ -11,8 +11,9 @@
+ import { prepareMenu } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs';
+ import { retainContactDiagnostics } from '/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs';
+ import { installFollowerCamera } from '/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs';
+-const OPERAND_FIELDS=JSON.parse(readFileSync('/private/tmp/tube-pop-up-contact-operands-native-v8-20261005/observer-fields.json'));
+-const WORK='/private/tmp/tube-landing-longitudinal-native-20261005',PORT=4301,CDP=9711,DT=1/60;
++const OPERAND_METADATA=JSON.parse(readFileSync('/private/tmp/tube-native-trial-balance-native-20261005/observer-fields.json'));const OPERAND_FIELDS=OPERAND_METADATA.allFields;
++assert.equal(OPERAND_FIELDS.length,102);assert.equal(OPERAND_METADATA.originalFields.length,38);assert.equal(OPERAND_METADATA.newFields.length,63);assert.equal(OPERAND_METADATA.availabilityMarker,'standingTrialAvailable');
++const WORK='/private/tmp/tube-native-trial-balance-native-20261005',PORT=4301,CDP=9711,DT=1/60;
+ const args=Object.fromEntries(process.argv.slice(2).map(a=>{const i=a.indexOf('=');assert(a.startsWith('--')&&i>2);return[a.slice(2,i),a.slice(i+1)];}));
+ assert.equal(args.run,'true','Only the bounded Python owner may arm');assert.equal(args.arm,'candidate');assert.equal(process.env.BOUNDED_C_OWNER_ARM,'candidate');const seal=JSON.parse(readFileSync(WORK+'/seal.json'));assert.equal(process.env.BOUNDED_C_OWNER_SEAL_SHA,createHash('sha256').update(readFileSync(WORK+'/seal.json')).digest('hex')); 
+ assert.equal(args.url,`http://127.0.0.1:${PORT}/?diagnostics`);
+@@ -26,13 +27,13 @@
+ const GRAPHICS={preset:'custom',renderScale:1,nativePixelDensity:true,frameLimit:60,waterSimulation:'accurate',seaDetail:'rich',
+  caustics:true,sprayMist:true,oceanView:'far',foam:'detailed',waterLook:'rich',particles:'high'};
+ const POLICY={style:'line',waitOutside:5,rise:1,lineDegrees:60,giveUp:30,stall:false};
+-const report={schema:'pop-up-contact-longitudinal-native/v1',priorFailedMenuReport:seal.priorFailedReport,priorV2FailedMenuReport:seal.priorV2FailedReport,menuRepair:'Unchanged V4 actual menu/HUD startup followed by explicitly declared public seeded restart for diagnostic comparison',priorV4Report:seal.priorV4Report,priorV6Report:seal.priorV6Report,normalFollowerCameraContract:'Passive public authored follower mirror after normal HUD pause; no manual pose/fly ownership; mirror repeats ordinary height reads',sealSha256:process.env.BOUNDED_C_OWNER_SEAL_SHA,arm:args.arm,complete:false,firstFailure:null,settings:SETTINGS,overrides:REPLAY_OVERRIDES,knownFailureReplay:true,normalMenuAcceptance:false,expectedConfig:EXPECTED_CONFIG,seedPolicy:'One predeclared public replay of observed V4 seed6238 with explicit component64/dx2/fine1 overrides from pinned V4 config; no seed search or exact startup claim',
+- graphics:GRAPHICS,policy:{...POLICY,trial:'Declared longitudinal landing candidate on successful V11 controls; exact observer operands and original control policy retained, ordinary native benefit unproved',standingSteering:{maximumAbsolute:.2,slewRatePerSecond:.4,initialInput:0},standingInputOverlay:{crouch:1,compress:1},cue:'One ordinary pulse on first actual positive cue while prone; no fixed83/manual telemetry/pilot-go gate',proneInput:'paddle true, steer zero'},
++const report={schema:'trial-balance-native/v1',priorFailedMenuReport:seal.priorFailedReport,priorV2FailedMenuReport:seal.priorV2FailedReport,menuRepair:'Unchanged V4 actual menu/HUD startup followed by explicitly declared public seeded restart for diagnostic comparison',priorV4Report:seal.priorV4Report,priorV6Report:seal.priorV6Report,normalFollowerCameraContract:'Passive public authored follower mirror after normal HUD pause; no manual pose/fly ownership; mirror repeats ordinary height reads',sealSha256:process.env.BOUNDED_C_OWNER_SEAL_SHA,arm:args.arm,complete:false,firstFailure:null,settings:SETTINGS,overrides:REPLAY_OVERRIDES,knownFailureReplay:true,normalMenuAcceptance:false,expectedConfig:EXPECTED_CONFIG,seedPolicy:'One predeclared public replay of observed V4 seed6238 with explicit component64/dx2/fine1 overrides from pinned V4 config; no seed search or exact startup claim',
++ graphics:GRAPHICS,policy:{...POLICY,trial:'Declared observer-only trial-balance capture on successful V11 controls; original solver and control policy retained, causal explanation unproved',standingSteering:{maximumAbsolute:.2,slewRatePerSecond:.4,initialInput:0},standingInputOverlay:{crouch:1,compress:1},cue:'One ordinary pulse on first actual positive cue while prone; no fixed83/manual telemetry/pilot-go gate',proneInput:'paddle true, steer zero'},
+  source:seal.arms.candidate,diagnosticModule:seal.diagnosticModule,rootCompleteBuild:seal.arms.candidate.rootBuildManifest,helperReadiness:seal.helperReadiness,schedule:{maxSteps:2160,maxPhysicalSeconds:2160/60,fixedStepSeconds:DT,
+  stop:'First published fall/separation/reset increase, or finite2160step cap; one ordinary fixed step and update(1/60) each iteration',noSettle:true,noPlacements:true,noReset:true,noRetries:true},videoContract:{start:'First actual output push phase (ordinary first-cue pop-up), with no tube-proximity requirement',initialRequestBeforeAwaitStart:true,maximumMovingSteps:240,maximumBytes:16*1024*1024,maximumRequests:241,ordinaryStepsOnly:true,fpsClaim:false,wallTimeEncoding:true},
+  detector:{maximumCumulativeMilliseconds:20000,scope:'Seven published air-column witnesses on one connected indexed mesh component plus reference trunk spheres; air-volume connectivity and full body/capsule clearance are not proved',elapsedMilliseconds:0},
+  diagnosticOutput:{canvas:[1708,879],pixelRatio:1,resizeCalls:1,maximumPngs:4,maximumPngBytes:12*1024*1024,maximumTotalPngBytes:48*1024*1024,maximumReportBytes:32*1024*1024,
+- fidelityPass:false,fpsClaim:false,renderer:'Root-frozen stable-X C drawing with exactly frozen longitudinal AttachedRider candidate; fresh app and reachable diagnostic compilation receipts required before launch'},
++ fidelityPass:false,fpsClaim:false,renderer:'Root-frozen original stable-X C drawing and V8/V11 solver with observer-only scalar copies; fresh app and reachable diagnostic compilation receipts required before launch'},
+  checkpointPolicy:{maximum:4,priority:['initial','first-pop-up','first-landing','terminal'],maximumFullSnapshots:4,maximumFullSnapshotBytesEach:6*1024*1024,maximumTotalFullSnapshotBytes:24*1024*1024},
+  loftSnapshots:[],snapshotBytes:0,browserErrors:[],steps:[],stepCount:0,checkpoints:[],artifacts:[],pngCount:0,pngBytes:0,
+  entry:{observedStandingOutside:false,firstPartial:null,firstConnectedWitnessEntry:null,containmentWithoutObservedOutside:null,
+@@ -42,13 +43,13 @@
+  'Visible skinned extents use the drawn/interpolated clock; trajectory body points use the current worker clock. PNGs use the root-frozen stable-X C loft and coherent startup candidate; no experimental curl geometry is injected.',
+  'Initial warmed snapshot/PNG and trace counters are evidence, not causal proof of the prior missing-front failure.',
+  'No FPS, full-body collision, visual acceptance or adoption pass is inferred.']};
+-report.operandObservation={fields:OPERAND_FIELDS,sourceOnlyObserver:true,allFullSamplesChecked:true,compactProneSummaryUnchanged:true,causalClaim:false};
++report.operandObservation={fields:OPERAND_FIELDS,originalFields:OPERAND_METADATA.originalFields,newFields:OPERAND_METADATA.newFields,availabilityMarker:OPERAND_METADATA.availabilityMarker,availabilitySemantics:OPERAND_METADATA.availabilitySemantics,assemblyAttribution:OPERAND_METADATA.assemblyAttribution,sourceOnlyObserver:true,allFullSamplesChecked:true,compactProneSummaryUnchanged:true,causalClaim:false};
+ report.startupPolicy={ridePauseWaitMilliseconds:180000,priorRidePauseWaitMilliseconds:90000,actualFailureSnapshot:true,failureSnapshotMilliseconds:3500,failureScreenshotMilliseconds:4000,noMenuControlChange:true,noMenuPhysicsChange:true};
+ report.priorV8StartupAttempt={readiness:seal.priorV8Readiness,owner:seal.priorV8Owner,report:seal.priorV8Report,noStepEvidence:true};
+ report.priorV9BudgetAttempt={readiness:seal.priorV9Readiness,owner:seal.priorV9Owner,report:seal.priorV9Report,startupSucceeded:true,capturedPronePrefixSteps:1213,landingForceEvidence:false};
+ report.priorV10StartupAttempt={readiness:seal.priorV10Readiness,owner:seal.priorV10Owner,report:seal.priorV10Report,capturedSteps:0,landingForceEvidence:false,lateUiStatusRetained:true};
+ report.priorV11SuccessfulBaseline={readiness:seal.priorV11Readiness,owner:seal.priorV11Owner,report:seal.priorV11Report,ordinarySteps:1366,exitCode:0,causalFixEvidence:false};
+-report.longitudinalCandidate={sourceReadiness:seal.sourceReadiness,controlledFixtureOnly:true,ordinaryNativeBenefitAccepted:false,oneRuntimeChanged:'src/physics/AttachedRider.ts'};
++report.trialBalanceObserver={sourceReadiness:seal.sourceReadiness,observerOnly:true,originalFields:38,newScalarCopies:63,availabilityMarker:'standingTrialAvailable',markerZeroInvalidatesStaleWords:true,markerOneOnlyMeansCoupledTrialCaptured:true,trialMayBeRejectedAndDifferFromRealizedMotion:true,separateHydrodynamicAttributionAvailable:false,causalExplanationAccepted:false,oneRuntimeChanged:'src/physics/AttachedRider.ts'};
+ report.movieCapBehavior={movingAdvances:240,requests:241,movieStopsAtCap:true,ordinaryPhysicsContinues:true,replayStopUnchanged:true};
+ report.firstContactLoss=null;
+ let ndjsonBytes=0,lastComponent=null,residence=null,consecutive=0,entryOccurred=false,wasContained=false;

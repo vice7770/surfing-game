@@ -1,0 +1,80 @@
+{
+  "sourceHelper": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "python3",
+      "/private/tmp/tube-native-trial-balance-native-20261005/check-source.py"
+    ],
+    "elapsedSeconds": 0.9299925420200452,
+    "log": {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-logs/sourceHelper.log",
+      "bytes": 2633,
+      "sha256": "00b7c1cde9593452832974497c366522e4948bbc0214976912c55abf70d549fd"
+    }
+  },
+  "metadata": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "python3",
+      "/private/tmp/tube-native-trial-balance-native-20261005/metadata-check.py"
+    ],
+    "elapsedSeconds": 0.1522794589982368,
+    "log": {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-logs/metadata.log",
+      "bytes": 734,
+      "sha256": "986f6ff0cc12fa82482fe0f4ab8e726c18a1e1582b612711f62a999f5d2f9238"
+    }
+  },
+  "nativeSyntax": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "/opt/homebrew/bin/node",
+      "--check",
+      "/private/tmp/tube-native-trial-balance-native-20261005/native.mjs"
+    ],
+    "elapsedSeconds": 0.0871105000260286,
+    "log": {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-logs/nativeSyntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "diagnosticWrapperSyntax": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "/opt/homebrew/bin/node",
+      "--check",
+      "/private/tmp/tube-native-trial-balance-build-20261005/build-diagnostic.mjs"
+    ],
+    "elapsedSeconds": 0.08233837503939867,
+    "log": {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-logs/diagnosticWrapperSyntax.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "sourceOnlyOwner": {
+    "run": true,
+    "exitCode": 0,
+    "argv": [
+      "python3",
+      "/private/tmp/tube-native-trial-balance-native-20261005/run.py",
+      "--arm",
+      "candidate"
+    ],
+    "elapsedSeconds": 0.3080887910327874,
+    "log": {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/root-helper-logs/sourceOnlyOwner.log",
+      "bytes": 495,
+      "sha256": "5c6cadd3e23fb84f1b34d282fed713d7e607ea9a8136eacb137b7eae3bc43104"
+    }
+  },
+  "schema": "trial-balance-root-helper-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false
+}
