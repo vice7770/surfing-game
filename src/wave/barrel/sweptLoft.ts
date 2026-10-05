@@ -848,6 +848,8 @@ export class SweptLoft {
       const lookup = this.library.profileAt(query, profile);
       const touchdown = lookup.touchdownSeconds;
       const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
+      // Before the C contour forms, the ordinary surface keeps drawing and contact ownership.
+      const wFormation = lookup.analytic?.formation ?? 1;
       if (retirementSupport && wFade !== 0) throw new Error('C retirement closure clocks disagree with its profile lookup');
       if (wFade === 0 && !retirementSupport) {
         closeRun();
@@ -884,7 +886,7 @@ export class SweptLoft {
       const wEnd = d <= 0 ? 0 : r0 * r0 * (3 - 2 * r0);
       // The contact follows the drawing's weight: the lerp toward the same water by the same weight keeps a vertical
       // line's crossings in order, so a partly weighted lip shrinks as drawn (the advisor, 2026-09-30).
-      const w = wEnd * wFade;
+      const w = wEnd * wFade * wFormation;
       let overturned = 0;
       for (let i = LOFT.pinned; i < LAST - LOFT.pinned; i += 1) {
         if (profile[2 * (i + 1)] < profile[2 * i]) {
@@ -913,7 +915,7 @@ export class SweptLoft {
         }
       }
       const maskBand = Math.min(1, Math.max(0, 1 + d / LOFT.band));
-      const maskSlice = this.library.options.geometry === 'bounded-C' ? wFade * maskBand : wFade > 0 ? maskBand : 0;
+      const maskSlice = this.library.options.geometry === 'bounded-C' ? wFade * maskBand * wFormation : wFade > 0 ? maskBand : 0;
       // The forward rest, from the drawn slice in both modes, so the contact and the overlaps follow the drawing.
       const forward = this.rest;
       if (w > 0) {
