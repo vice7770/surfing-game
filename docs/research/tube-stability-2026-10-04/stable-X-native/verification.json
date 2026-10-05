@@ -1,0 +1,138 @@
+{
+  "schema": "stable-X-native-archive-verification-record/v1",
+  "complete": true,
+  "verifiedAtUTC": "2026-10-05T00:09:11.170373+00:00",
+  "manifest": {
+    "bytes": 89451,
+    "sha256": "02100948b71274dd4c3737e47c45df01c5da16fbd26c553c338650b9d8ff7285"
+  },
+  "readme": {
+    "bytes": 7563,
+    "sha256": "693887f2813faaec9d4df29162b8b3502c626a221477242e7793e0b71948b252"
+  },
+  "portableTwoWorkingDirectories": true,
+  "originalPinsCheckedOnce": true,
+  "readmeLinksChecked": 24,
+  "runs": [
+    {
+      "label": "archive-cwd",
+      "cwd": "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/stable-X-native",
+      "argv": [
+        "python3",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/stable-X-native/verify.py"
+      ],
+      "exitCode": 0,
+      "result": {
+        "schema": "stable-X-native-archive-verification/v1",
+        "passed": true,
+        "manifestSha256": "02100948b71274dd4c3737e47c45df01c5da16fbd26c553c338650b9d8ff7285",
+        "payloadFiles": 91,
+        "externalReferences": 28,
+        "transportBytes": 11043507,
+        "decodedBytes": 22614776,
+        "exactPatchSets": 2,
+        "exactPatchedFileChecks": 5,
+        "candidateSourcePins": 584,
+        "rootBuildSourcePins": 583,
+        "completeAssets": 49,
+        "helperManifestPins": 44,
+        "rootSealHelperPins": 46,
+        "recordedFocusedSourceTests": 101,
+        "nativeRootSession": 71253,
+        "nativeMedia": 5,
+        "fullLoftSnapshots": 2,
+        "snapshotJSONBytes": 3910204,
+        "snapshotRawWordBytes": 2922997,
+        "ordinaryAdvancesRecorded": 67,
+        "encodedFramesRecorded": 68,
+        "decodedPNGsOmitted": 5,
+        "originalPathsRehashed": 0,
+        "optionalOriginalSourceBuildHelperChecks": 0,
+        "noSourceModelBuildNativeTestsOrResourcesRun": true,
+        "fullSourceDependenciesOrBuildReconstructionClaim": false,
+        "adoptionAcceptance": false
+      }
+    },
+    {
+      "label": "scratch-cwd",
+      "cwd": "/private/tmp/tube-stable-x-durable-archive-20261005",
+      "argv": [
+        "python3",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/stable-X-native/verify.py"
+      ],
+      "exitCode": 0,
+      "result": {
+        "schema": "stable-X-native-archive-verification/v1",
+        "passed": true,
+        "manifestSha256": "02100948b71274dd4c3737e47c45df01c5da16fbd26c553c338650b9d8ff7285",
+        "payloadFiles": 91,
+        "externalReferences": 28,
+        "transportBytes": 11043507,
+        "decodedBytes": 22614776,
+        "exactPatchSets": 2,
+        "exactPatchedFileChecks": 5,
+        "candidateSourcePins": 584,
+        "rootBuildSourcePins": 583,
+        "completeAssets": 49,
+        "helperManifestPins": 44,
+        "rootSealHelperPins": 46,
+        "recordedFocusedSourceTests": 101,
+        "nativeRootSession": 71253,
+        "nativeMedia": 5,
+        "fullLoftSnapshots": 2,
+        "snapshotJSONBytes": 3910204,
+        "snapshotRawWordBytes": 2922997,
+        "ordinaryAdvancesRecorded": 67,
+        "encodedFramesRecorded": 68,
+        "decodedPNGsOmitted": 5,
+        "originalPathsRehashed": 0,
+        "optionalOriginalSourceBuildHelperChecks": 0,
+        "noSourceModelBuildNativeTestsOrResourcesRun": true,
+        "fullSourceDependenciesOrBuildReconstructionClaim": false,
+        "adoptionAcceptance": false
+      }
+    },
+    {
+      "label": "originals",
+      "cwd": "/private/tmp/tube-stable-x-durable-archive-20261005",
+      "argv": [
+        "python3",
+        "/Users/regina/Desktop/Projects/surfing-game/docs/research/tube-stability-2026-10-04/stable-X-native/verify.py",
+        "--originals"
+      ],
+      "exitCode": 0,
+      "result": {
+        "schema": "stable-X-native-archive-verification/v1",
+        "passed": true,
+        "manifestSha256": "02100948b71274dd4c3737e47c45df01c5da16fbd26c553c338650b9d8ff7285",
+        "payloadFiles": 91,
+        "externalReferences": 28,
+        "transportBytes": 11043507,
+        "decodedBytes": 22614776,
+        "exactPatchSets": 2,
+        "exactPatchedFileChecks": 5,
+        "candidateSourcePins": 584,
+        "rootBuildSourcePins": 583,
+        "completeAssets": 49,
+        "helperManifestPins": 44,
+        "rootSealHelperPins": 46,
+        "recordedFocusedSourceTests": 101,
+        "nativeRootSession": 71253,
+        "nativeMedia": 5,
+        "fullLoftSnapshots": 2,
+        "snapshotJSONBytes": 3910204,
+        "snapshotRawWordBytes": 2922997,
+        "ordinaryAdvancesRecorded": 67,
+        "encodedFramesRecorded": 68,
+        "decodedPNGsOmitted": 5,
+        "originalPathsRehashed": 123,
+        "optionalOriginalSourceBuildHelperChecks": 1914,
+        "noSourceModelBuildNativeTestsOrResourcesRun": true,
+        "fullSourceDependenciesOrBuildReconstructionClaim": false,
+        "adoptionAcceptance": false
+      }
+    }
+  ],
+  "packagingReceiptFinalization": "All three verifier runs passed first. Initial link check encountered the pending verification.json self-link before writing its receipt; finalized from retained successful outputs, with no original-pin rerun.",
+  "noSourceModelBuildNativeBrowserPortGitOrHelperTestsRerun": true
+}

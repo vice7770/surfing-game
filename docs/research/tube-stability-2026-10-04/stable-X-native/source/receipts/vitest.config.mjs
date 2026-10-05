@@ -1,0 +1,1 @@
+export default { root: '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source', cacheDir: '/private/tmp/tube-bounded-c-stable-x-sampling-20261005/cache', test: { cache: false, maxWorkers: 1 } };

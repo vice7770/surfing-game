@@ -1,0 +1,48 @@
+{
+  "complete": true,
+  "history": [
+    {
+      "kind": "actual focused suite result",
+      "tests": 85,
+      "passed": 84,
+      "failed": 1,
+      "failure": "carrierSupport measured handoff expected both neighboring row weights positive; new exact sampler gives sealed first surviving row zero",
+      "fixture": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/carrier-handoff-original-failure.json",
+        "bytes": 987,
+        "sha256": "d759f563ce30ad210e3fafb97f32abb3f846ca21a747651248af9d9a87f2b09a"
+      },
+      "nativeOrModelInputChanged": false
+    },
+    {
+      "kind": "honest boundary reclassification",
+      "rawX": 15,
+      "intrinsicFadeBefore": 0,
+      "intrinsicFadeAfter": 0,
+      "fixedStation": 16.192875862121582,
+      "stationRelocated": false,
+      "endpointPairNowRequires": "joined phase2 overturned pair and positive interpolated original fixed-X roof, with legacy sealed first row explicitly zero",
+      "originalFailureUnchanged": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/carrier-handoff-original-failure.json",
+        "bytes": 987,
+        "sha256": "d759f563ce30ad210e3fafb97f32abb3f846ca21a747651248af9d9a87f2b09a"
+      },
+      "toleranceWidened": false
+    }
+  ],
+  "new14SamplerStressTestsPassed": true,
+  "strictTSPassedBeforeClassification": true,
+  "finalDurableCommands": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/final-command-receipt.json",
+    "bytes": 2577,
+    "sha256": "84aed88f6e52d2399bf5f76aa7fecfe16830a1e2e2c03e4fdcd313ba21483d69"
+  },
+  "uniqueFocusedPassingTests": 101,
+  "uniqueFocusedPassingComposition": {
+    "previouslyObservedUnchangedSamplerRayClearRoof": 76,
+    "finalCarrier": 9,
+    "finalNewSampler": 11,
+    "finalNewStress": 5
+  },
+  "fullSuiteClaim": false
+}

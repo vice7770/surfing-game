@@ -1,0 +1,16 @@
+{
+  "complete": true,
+  "scope": "read-only frozen C stable-X sampler source and existing receipts; no reruns or adoption",
+  "pins": [
+    {
+      "path": "/private/tmp/tube-stable-x-source-review-20261005/README.md",
+      "bytes": 7711,
+      "sha256": "fe0050f07ec1910c54f26306c11ddfd86a50b517e7773fe65f0e7811017bbebb"
+    },
+    {
+      "path": "/private/tmp/tube-stable-x-source-review-20261005/pin-verification.json",
+      "bytes": 1267,
+      "sha256": "90f1c77808c5d560a9b9a4022d8c0485f4e6b83a26979abbe8e835a56561e925"
+    }
+  ]
+}

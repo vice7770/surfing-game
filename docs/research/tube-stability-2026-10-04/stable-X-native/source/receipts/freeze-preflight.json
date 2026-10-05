@@ -1,0 +1,41 @@
+{
+  "schema": "bounded-C-stable-X-freeze-preflight/v1",
+  "complete": true,
+  "checkedAtUTC": "2026-10-04T23:42:24.263753+00:00",
+  "parentPinsVerifiedUnchanged": 582,
+  "priorRawComparatorPinsVerifiedUnchanged": 580,
+  "sourceCount": 584,
+  "runtimeFiles": [
+    "src/wave/barrel/crestRays.ts",
+    "src/wave/barrel/sweptLoft.ts"
+  ],
+  "testFiles": [
+    "src/wave/barrel/carrierSupport.test.ts",
+    "src/wave/barrel/stableXSampling.test.ts",
+    "src/wave/barrel/stableXStress.test.ts"
+  ],
+  "sourcePins": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source-pins.json",
+    "bytes": 95772,
+    "sha256": "f6dcd3c5d35b67e533c8d041eb36a66d3c17d48534ffd573717dfc6958d9ba8b"
+  },
+  "runtimePatch": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/runtime.patch",
+    "bytes": 21663,
+    "sha256": "af5707da065caee18b6c020cf695d5ebb5ad7b061affede0304cae2bfd30498c"
+  },
+  "testsPatch": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/tests.patch",
+    "bytes": 30222,
+    "sha256": "056054693d2d851b33e48cdb89cb8650c4b011955edde7d7cf9ca6f96dd3ae9d"
+  },
+  "patchVerification": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/patch-verification.json",
+    "bytes": 4459,
+    "sha256": "ccda9bcf2188ad5af75c90ac4b40d8d97a14f594a83012e6875b81f96a288c4a"
+  },
+  "resourcesStarted": false,
+  "buildRun": false,
+  "nativeRun": false,
+  "readyForSourceFreeze": true
+}

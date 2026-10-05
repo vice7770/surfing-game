@@ -1,0 +1,24 @@
+{
+  "complete": true,
+  "actualRecordedIdentityTransitionsPassed": 4,
+  "oldActualEventsProveNewLeaseSemantics": false,
+  "oldSchemaOrIdentityMutationsRejected": 5,
+  "syntheticCarrierEventsPassed": 1,
+  "syntheticCarrierMutationsRejected": 7,
+  "syntheticDirectProbeObservationsPassed": 6,
+  "syntheticDirectProbeMutationsRejected": 4,
+  "inputCapture": {
+    "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json",
+    "bytes": 7810380,
+    "sha256": "fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3"
+  },
+  "syntheticFixture": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/carrier-event-fixtures.json",
+    "bytes": 30886,
+    "sha256": "24a877841d37c43376f842b124ad03a0061d6300c09c93e52b4a1757d3e40cdd"
+  },
+  "oldOwnerRewrittenOrRetroaccepted": false,
+  "actualNewNativeCarrierProofPending": true,
+  "resourcesStarted": false,
+  "portsProbed": false
+}

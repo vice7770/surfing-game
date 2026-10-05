@@ -1,0 +1,75 @@
+{
+  "complete": true,
+  "commands": [
+    {
+      "name": "sampler-stress",
+      "cwd": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/wave/barrel/stableXSampling.test.ts",
+        "src/wave/barrel/stableXStress.test.ts",
+        "--config",
+        "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/vitest.config.mjs",
+        "--cache=false",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/private/tmp/tube-bounded-c-stable-x-sampling-20261005/sampler-stress-vitest.json"
+      ],
+      "environmentAdditions": {},
+      "exitCode": 0,
+      "elapsedSeconds": 5.707470178604126,
+      "output": {
+        "path": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/sampler-stress-output.txt",
+        "bytes": 794,
+        "sha256": "28397171625211677ee78836b039ec897a4e1e633ada589e5aa6e3e2c333d646"
+      }
+    },
+    {
+      "name": "carrier",
+      "cwd": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source",
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/wave/barrel/carrierSupport.test.ts",
+        "--config",
+        "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/vitest.config.mjs",
+        "--cache=false",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/private/tmp/tube-bounded-c-stable-x-sampling-20261005/carrier-vitest.json"
+      ],
+      "environmentAdditions": {
+        "CARRIER_METRICS": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/carrier-focused-result.json"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 5.544215202331543,
+      "output": {
+        "path": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/carrier-output.txt",
+        "bytes": 661,
+        "sha256": "07d7b44e2e62b125a23c7c143e831340e9cd3fcf996108e66f30aab65e880a5a"
+      }
+    },
+    {
+      "name": "strict-typescript",
+      "cwd": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source",
+      "argv": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.json"
+      ],
+      "environmentAdditions": {},
+      "exitCode": 0,
+      "elapsedSeconds": 6.335872173309326,
+      "output": {
+        "path": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/strict-typescript-output.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ]
+}

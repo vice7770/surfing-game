@@ -1,0 +1,178 @@
+{
+  "oblique": {
+    "rawX": [
+      0.1,
+      2.75,
+      4.125,
+      8.2
+    ],
+    "roster": [
+      -1.1862393617630005,
+      -1,
+      -0.5,
+      0,
+      0.10000000149011612,
+      0.30000001192092896,
+      0.5,
+      0.75,
+      1,
+      1.25,
+      1.5,
+      1.75,
+      2,
+      2.25,
+      2.5,
+      2.75,
+      2.875,
+      3,
+      3.25,
+      3.5,
+      3.75,
+      4,
+      4.125,
+      4.5,
+      5,
+      5.5,
+      6,
+      6.5,
+      7,
+      7.5,
+      8,
+      8.199999809265137,
+      8.5,
+      9,
+      9.486239433288574
+    ],
+    "diagnostics": {
+      "policy": "fixed-origin-stored-F32-X-and-raw-knots/v1",
+      "mandatoryRawKnots": 4,
+      "plannedStations": 35,
+      "omittedPrecisionStations": 0,
+      "collapsedShoulders": 0,
+      "budgetTruncated": false,
+      "firstOmittedPlannedX": null,
+      "omittedFronts": 0,
+      "minimumStoredDeltaX": 0.10000000149011612,
+      "minimumStoredDeltaSigma": 0.1166190430521965
+    }
+  },
+  "nearColumns": {
+    "near": 1.0000001192092896,
+    "minimumActualDeltaX": 1.1920928955078125e-7,
+    "diagnostics": {
+      "policy": "fixed-origin-stored-F32-X-and-raw-knots/v1",
+      "mandatoryRawKnots": 4,
+      "plannedStations": 24,
+      "omittedPrecisionStations": 0,
+      "collapsedShoulders": 0,
+      "budgetTruncated": false,
+      "firstOmittedPlannedX": null,
+      "omittedFronts": 0,
+      "minimumStoredDeltaX": 1.1920928955078125e-7,
+      "minimumStoredDeltaSigma": 1.1920928955078125e-7
+    }
+  },
+  "sigmaCollision": {
+    "policy": "fixed-origin-stored-F32-X-and-raw-knots/v1",
+    "mandatoryRawKnots": 4,
+    "plannedStations": 23,
+    "omittedPrecisionStations": 2,
+    "collapsedShoulders": 0,
+    "budgetTruncated": false,
+    "firstOmittedPlannedX": null,
+    "omittedFronts": 0,
+    "minimumStoredDeltaX": 0.09999990463256836,
+    "minimumStoredDeltaSigma": 0.099609375
+  },
+  "midpoint": {
+    "x": 0.30000001192092896,
+    "tau": 0.14000000059604645,
+    "directXFraction": 0.05000000381842265
+  },
+  "collapsedShoulders": {
+    "roster": [
+      100000000,
+      100000008
+    ],
+    "diagnostics": {
+      "policy": "fixed-origin-stored-F32-X-and-raw-knots/v1",
+      "mandatoryRawKnots": 2,
+      "plannedStations": 2,
+      "omittedPrecisionStations": 34,
+      "collapsedShoulders": 2,
+      "budgetTruncated": false,
+      "firstOmittedPlannedX": null,
+      "omittedFronts": 0,
+      "minimumStoredDeltaX": 8,
+      "minimumStoredDeltaSigma": 8
+    }
+  },
+  "longMostlyDead": {
+    "slices": 127,
+    "minimumX": 560,
+    "maximumX": 601.530029296875,
+    "diagnostics": {
+      "policy": "fixed-origin-stored-F32-X-and-raw-knots/v1",
+      "mandatoryRawKnots": 601,
+      "plannedStations": 1812,
+      "omittedPrecisionStations": 0,
+      "collapsedShoulders": 0,
+      "budgetTruncated": false,
+      "firstOmittedPlannedX": null,
+      "omittedFronts": 0,
+      "minimumStoredDeltaX": 0.0150146484375,
+      "minimumStoredDeltaSigma": 0.0150146484375
+    }
+  },
+  "mandatoryOverflow": {
+    "slices": 298,
+    "lastX": 26.329999923706055,
+    "rawKnotsRetained": 264,
+    "diagnostics": {
+      "policy": "fixed-origin-stored-F32-X-and-raw-knots/v1",
+      "mandatoryRawKnots": 401,
+      "plannedStations": 455,
+      "omittedPrecisionStations": 0,
+      "collapsedShoulders": 0,
+      "budgetTruncated": true,
+      "firstOmittedPlannedX": 26.43000030517578,
+      "omittedFronts": 0,
+      "minimumStoredDeltaX": 0.00006723403930664062,
+      "minimumStoredDeltaSigma": 0.00006723403930664062
+    }
+  },
+  "multiFront": {
+    "policy": "fixed-origin-stored-F32-X-and-raw-knots/v1",
+    "mandatoryRawKnots": 663,
+    "plannedStations": 488,
+    "omittedPrecisionStations": 6,
+    "collapsedShoulders": 0,
+    "budgetTruncated": true,
+    "firstOmittedPlannedX": 34.79999923706055,
+    "omittedFronts": 1,
+    "minimumStoredDeltaX": 0.0017123222351074219,
+    "minimumStoredDeltaSigma": 0.0017123222351074219
+  },
+  "sharedPlan": {
+    "slices": 37,
+    "positionsAndNormalsExact": true,
+    "diagnostics": {
+      "policy": "fixed-origin-stored-F32-X-and-raw-knots/v1",
+      "mandatoryRawKnots": 5,
+      "plannedStations": 37,
+      "omittedPrecisionStations": 0,
+      "collapsedShoulders": 0,
+      "budgetTruncated": false,
+      "firstOmittedPlannedX": null,
+      "omittedFronts": 0,
+      "minimumStoredDeltaX": 0.10000000149011612,
+      "minimumStoredDeltaSigma": 0.10000000149011612
+    }
+  },
+  "rawParity": {
+    "fixtures": 3,
+    "modes": 2,
+    "allResultWordsAndMetadataExact": true,
+    "controlsUnchanged": true
+  }
+}

@@ -1,0 +1,15 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-stable-x-sampling-20261005/source
+
+ ✓ src/wave/barrel/stableXStress.test.ts (5 tests) 114ms
+ ✓ src/wave/barrel/stableXSampling.test.ts (11 tests) 4799ms
+   ✓ C fixed stored-X sampling with mandatory raw parameter knots (11)
+     ✓ shares the same C drawing/contact/normal-demand station and metadata plan; lazy materialization reproduces ordinary contact words 414ms
+     ✓ preserves complete RAW words, metadata and control input against the frozen parent, including budgeted/dead/kink fixtures 4279ms
+
+ Test Files  2 passed (2)
+      Tests  16 passed (16)
+   Start at  00:41:10
+   Duration  5.47s (tests 92%, transform 6%, import 2%)
+
+JSON report written to /private/tmp/tube-bounded-c-stable-x-sampling-20261005/sampler-stress-vitest.json

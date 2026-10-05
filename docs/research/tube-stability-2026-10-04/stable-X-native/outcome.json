@@ -1,0 +1,973 @@
+{
+  "schema": "stable-X-native-archive-outcome/v1",
+  "sourceReadinessInputs": 584,
+  "rootBuildInputs": 583,
+  "sourcePayloadPins": 30,
+  "sourceRuntimeFiles": 2,
+  "sourceChangedOrNewTests": 3,
+  "recordedUniqueFocusedTests": 101,
+  "fullSuiteRerun": false,
+  "sourceStrictTypeScriptExitCode": 0,
+  "rootBuildTerminalExitCode": 0,
+  "completeAssets": 49,
+  "helperManifestPins": 44,
+  "rootSealHelperPins": 46,
+  "nativeRootSession": 71253,
+  "nativeTerminalExitCode": 0,
+  "nativeComplete": true,
+  "fixedStationX": 16.25,
+  "timeline": {
+    "observations": 68,
+    "steps": [
+      0,
+      67
+    ],
+    "physicsAdvances": 67,
+    "physicalSeconds": 1.1166666666666174,
+    "openingSteps": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55
+    ],
+    "noAirButJoinedSteps": [
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66
+    ],
+    "firstPhase2": {
+      "step": 48,
+      "movingStep": 48,
+      "seaTime": 362.6067094336809
+    },
+    "firstBothPhase2": 50,
+    "stop": {
+      "reason": "loft-join-absent",
+      "step": 67,
+      "movingStep": 67,
+      "retirementClaim": false,
+      "physicalDeathClaim": false
+    },
+    "lineageEvents": [
+      {
+        "step": 15,
+        "movingStep": 15,
+        "beforeFront": 106,
+        "afterFront": 118,
+        "stationX": 16.25
+      },
+      {
+        "step": 16,
+        "movingStep": 16,
+        "beforeFront": 118,
+        "afterFront": 106,
+        "stationX": 16.25
+      },
+      {
+        "step": 21,
+        "movingStep": 21,
+        "beforeFront": 106,
+        "afterFront": 120,
+        "stationX": 16.25
+      }
+    ],
+    "selectedRayAlwaysZeroOne": true
+  },
+  "rawEndpointMaximumZStepsMeters": {
+    "15": 0.1107940673828125,
+    "17": 0.111602783203125
+  },
+  "largestActualGeometryChange": {
+    "crest": {
+      "beforeStep": 59,
+      "afterStep": 60,
+      "delta": [
+        0.0,
+        -0.21455711126327515,
+        0.11072540283203125
+      ],
+      "magnitude": 0.24144330354341373
+    },
+    "cap": {
+      "beforeStep": 59,
+      "afterStep": 60,
+      "delta": [
+        0.0,
+        0.2595614790916443,
+        0.11072540283203125
+      ],
+      "magnitude": 0.282191913882304
+    },
+    "toe": {
+      "beforeStep": 59,
+      "afterStep": 60,
+      "delta": [
+        0.0,
+        0.25316375494003296,
+        0.11072540283203125
+      ],
+      "magnitude": 0.2763186596081645
+    }
+  },
+  "movingFirstRowSealEvidence": [
+    {
+      "step": 59,
+      "firstRetainedRow": {
+        "row": 83,
+        "sliceSigma": 5.758979797363281,
+        "sliceTau": 1.5526407957077026,
+        "slicePhase": 2,
+        "sliceWeight": 0,
+        "sliceFade": 0.035892315208911896,
+        "sliceJoined": 1,
+        "crest": [
+          14.5,
+          1.760956883430481,
+          -130.771484375
+        ],
+        "cap": [
+          14.5,
+          1.8851654529571533,
+          -128.353271484375
+        ]
+      }
+    },
+    {
+      "step": 60,
+      "firstRetainedRow": {
+        "row": 87,
+        "sliceSigma": 6.317295551300049,
+        "sliceTau": 1.5288376808166504,
+        "slicePhase": 2,
+        "sliceWeight": 0,
+        "sliceFade": 0.11157122254371643,
+        "sliceJoined": 1,
+        "crest": [
+          15,
+          1.7762665748596191,
+          -130.41363525390625
+        ],
+        "cap": [
+          15,
+          1.8715100288391113,
+          -127.99362182617188
+        ]
+      }
+    }
+  ],
+  "continuousRetirementRootProved": false,
+  "mouth": {
+    "observationCount": 56,
+    "totalColumnQueries": 1344,
+    "maximumColumnQueries": 24,
+    "clearInternalSightlines": 56,
+    "externalIndexedOccluded": 56,
+    "shorewardIndexedOccluded": 56,
+    "externalEntranceClaims": 0,
+    "bodyPassageClaims": 0
+  },
+  "directPublicHistoryEvents": [
+    {
+      "step": 63,
+      "triggerPointIDs": [
+        158
+      ],
+      "qualified": true,
+      "gates": {
+        "currentPublicCarrierIdentity": true,
+        "sameOrderedInternalPointIDs": true,
+        "sameInternalColumnsAndExactX": true,
+        "sameImmutableJetFingerprint": true,
+        "exportedOwnedAgesFiniteNonnegativeMonotone": true
+      },
+      "materialTrajectoryClaim": false,
+      "leaseDurationOrDTGate": false,
+      "points": [
+        {
+          "id": 158,
+          "x": 15,
+          "front": 120,
+          "tau": 1.578525572028738,
+          "jetUntil": 1.5649843571611293,
+          "ownPocketAlive": false,
+          "retainedForGeometry": true,
+          "geometricPaceActive": true,
+          "state": "incident-support",
+          "incidentBounds": [
+            1.8499191099132068,
+            1.8499191099132068
+          ]
+        },
+        {
+          "id": 159,
+          "x": 17,
+          "front": 120,
+          "tau": 1.4254783947450989,
+          "jetUntil": 1.5669200797867315,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidentBounds": [
+            1.8499191099132068,
+            1.8499191099132068
+          ]
+        }
+      ]
+    }
+  ],
+  "completeSidecars": [
+    {
+      "pin": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/loft-initial.json",
+        "bytes": 1735996,
+        "sha256": "96f700f8cf573031fa32df39ec18b3cbe0a75147274445d25aeb6dc973712201"
+      },
+      "reportedPinMatches": true,
+      "label": "initial",
+      "epoch": {
+        "step": 0,
+        "movingStep": 0,
+        "seaTime": 361.80670943368096,
+        "surfaceRevision": 2,
+        "drawnWaterTime": 361.80670943368096
+      },
+      "counts": {
+        "slices": 115,
+        "vertices": 15410,
+        "indices": 90174
+      },
+      "rawBytes": 1297141,
+      "decodedRawBytes": 1297141,
+      "rawByteTotalMatches": true,
+      "allArrayLengthsValid": true,
+      "maximumIndex": 15409,
+      "allIndicesInActiveRange": true,
+      "capsSatisfied": true,
+      "nonmutation": {
+        "snapshotClockStatusWordsUnchanged": true,
+        "normalAndDiagnosticCameraUnchanged": true,
+        "normalActorControlsAndMeshUnchanged": true,
+        "allActiveLoftWordsUnchanged": true,
+        "drawnSurfaceWordsAndEpochUnchanged": true,
+        "drawGenerationUnchanged": true
+      },
+      "arrayIdentitiesAndWordsUnchanged": true,
+      "unusedCapacityIncluded": false,
+      "arrays": {
+        "positions": {
+          "dtype": "Float32Array",
+          "count": 46230,
+          "decodedBytes": 184920,
+          "declaredBytes": 184920,
+          "lengthValid": true,
+          "sha256": "4999a457a4e07b46d51e6f5416074e452cf8bdedeba7050d15d84412b97af19d"
+        },
+        "normals": {
+          "dtype": "Float32Array",
+          "count": 46230,
+          "decodedBytes": 184920,
+          "declaredBytes": 184920,
+          "lengthValid": true,
+          "sha256": "2168b08c98b951e15579bf34fa5f6616caa63897a272240dae5c1083d74eec8a"
+        },
+        "mask": {
+          "dtype": "Float32Array",
+          "count": 15410,
+          "decodedBytes": 61640,
+          "declaredBytes": 61640,
+          "lengthValid": true,
+          "sha256": "5665f5e85068b308465675417c4e9ca5167781037ee915cc77a1bcf5240b3188"
+        },
+        "lift": {
+          "dtype": "Float32Array",
+          "count": 15410,
+          "decodedBytes": 61640,
+          "declaredBytes": 61640,
+          "lengthValid": true,
+          "sha256": "2fb47118a2608477e84bb8e6d3c6018ae09c6019a6918c91b6409aff049247cc"
+        },
+        "sheet": {
+          "dtype": "Float32Array",
+          "count": 15410,
+          "decodedBytes": 61640,
+          "declaredBytes": 61640,
+          "lengthValid": true,
+          "sha256": "52be7de44617b7ceccd2c8e4ac14c0cd867ab83febe1847cff478b0a32ab798c"
+        },
+        "sheetWeight": {
+          "dtype": "Float32Array",
+          "count": 15410,
+          "decodedBytes": 61640,
+          "declaredBytes": 61640,
+          "lengthValid": true,
+          "sha256": "b13e9633643d29a88fd894dff68883df457a4927ae9f5b223215c81b71d80bc8"
+        },
+        "sheetBack": {
+          "dtype": "Float32Array",
+          "count": 15410,
+          "decodedBytes": 61640,
+          "declaredBytes": 61640,
+          "lengthValid": true,
+          "sha256": "9805ae18fcb98f07e02d77414db269818a2b5fa12c8276384202b2d7043ef20d"
+        },
+        "throat": {
+          "dtype": "Float32Array",
+          "count": 61640,
+          "decodedBytes": 246560,
+          "declaredBytes": 246560,
+          "lengthValid": true,
+          "sha256": "2d2e512d0d3367e04c2017891e6f612b37f6af13a7006f3dc0c5beba37bb6c2e"
+        },
+        "indices": {
+          "dtype": "Uint32Array",
+          "count": 90174,
+          "decodedBytes": 360696,
+          "declaredBytes": 360696,
+          "lengthValid": true,
+          "sha256": "99977ebc7522c1d7d751561439ba2a90a1fbc719355407f904ef7ed7c5142789"
+        },
+        "sliceFront": {
+          "dtype": "Int32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "4e5de8f4cf9d16dc82564de3d80e7c5705ff367b576abe6430e683e37edc33e3"
+        },
+        "sliceSigma": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "0195850c0f75be0c1c1ec87d3c6917b66ada668f0c948a2f9eea3dc3a1a35982"
+        },
+        "sliceTau": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "690b36393419d2f425498bc46f2b35b8cc419b470658cafc0d37035fea39cc5e"
+        },
+        "slicePhase": {
+          "dtype": "Uint8Array",
+          "count": 115,
+          "decodedBytes": 115,
+          "declaredBytes": 115,
+          "lengthValid": true,
+          "sha256": "410284b4f35651b793de75f1d36ce82b363c610c42ee573779967fdb79b0b492"
+        },
+        "sliceLife": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "7e0264c3b0511b20cbd0aba1077553c0a80e40b7462b9ff2b628690359845793"
+        },
+        "sliceCollapse": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "ad711709414cf19ca018d6cfb3f28d8a55c30ebb5f56df270c255c1b8fab4b6f"
+        },
+        "sliceFade": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "1ea7783dc5532b38144b32b1164810a7d99723b3856bf51b257752275e944a4e"
+        },
+        "sliceTipGap": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "7479649f4176c2a256e12d26259cba094d654d57dc58cf51fbe25c14e67c7fd9"
+        },
+        "sliceRestHold": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "5cb2a60ca8a4c79d51237fe6cf74342bc81e8c36fe4643d2a8835ee6f9c4a0ff"
+        },
+        "sliceRestEnd": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "ef3d95751fa66335ec21e8e99b59e5132fad96064ad48eab89fa1a7378b9ced9"
+        },
+        "sliceRestClimb": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "ed76b6efa6fe539f65a6a1871eedd1158a47615d077b387b94ddee2f1c9b95f0"
+        },
+        "sliceToeClimb": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "d2d02cbf0f369046a0c414635bce3a5519d2254a464a3cac962f1b012b1ae5c5"
+        },
+        "sliceJoined": {
+          "dtype": "Uint8Array",
+          "count": 115,
+          "decodedBytes": 115,
+          "declaredBytes": 115,
+          "lengthValid": true,
+          "sha256": "d94725b25eb6500b6f959806f70381b04a516cfd273762bb7b656ae9180c76a2"
+        },
+        "sliceRayX": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "7479649f4176c2a256e12d26259cba094d654d57dc58cf51fbe25c14e67c7fd9"
+        },
+        "sliceRayZ": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "f379deac0c25db549930320a2a27910b475a3ec901a492ec9bc4349241c45419"
+        },
+        "sliceWeight": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "5654421d8e5b54f587e570fefd94f44ad2d428acdfca3d12fffec553689ed9b0"
+        },
+        "sliceOverturned": {
+          "dtype": "Uint8Array",
+          "count": 115,
+          "decodedBytes": 115,
+          "declaredBytes": 115,
+          "lengthValid": true,
+          "sha256": "8cb47cda8a4ec39991871c7353d01d926aebf3e18afd36a450776da0057343ce"
+        },
+        "sliceTipAlong": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "8f024376bb9f74e06e837cdfeed865893a0b7e260fe7f9d6579e397287677ec7"
+        },
+        "sliceTipUp": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "2af40972acbedc2ed1d82c273a155475c8b33abbcfdbe2a434e6c1003b6042df"
+        },
+        "sliceAnchorVX": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "7479649f4176c2a256e12d26259cba094d654d57dc58cf51fbe25c14e67c7fd9"
+        },
+        "sliceAnchorVZ": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "7479649f4176c2a256e12d26259cba094d654d57dc58cf51fbe25c14e67c7fd9"
+        },
+        "sliceTipTransportAlong": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "7479649f4176c2a256e12d26259cba094d654d57dc58cf51fbe25c14e67c7fd9"
+        },
+        "sliceTipTransportUp": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "7479649f4176c2a256e12d26259cba094d654d57dc58cf51fbe25c14e67c7fd9"
+        },
+        "sliceFormed": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "b043987b1c909f6b417918d427d25b46a48145d131dd2b1eae546c754662d7cf"
+        },
+        "sliceTipX": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "4f876b69a179b0a00ccb5255ba593464c82106eac86090c327377ec5d263357e"
+        },
+        "sliceTipY": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "459b44a80ad2e298163c1f5b540b053a612a61181e4d528b0759aeaa758ad7c9"
+        },
+        "sliceTipZ": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "9e8025000d457746de24b2f7b990551a3036bdb2bb4caae40fae50312ee6e447"
+        },
+        "sliceMouth": {
+          "dtype": "Float32Array",
+          "count": 115,
+          "decodedBytes": 460,
+          "declaredBytes": 460,
+          "lengthValid": true,
+          "sha256": "4de2e10b8d108cdbf1bae89c42446871b06daad6155155ecea92167343fff029"
+        }
+      }
+    },
+    {
+      "pin": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/loft-first-phase2.json",
+        "bytes": 2174208,
+        "sha256": "8f7817e9f29056ebbb314255db1618ba1de060cc7635507d8039977565c08a6d"
+      },
+      "reportedPinMatches": true,
+      "label": "first-phase2",
+      "epoch": {
+        "step": 48,
+        "movingStep": 48,
+        "seaTime": 362.6067094336809,
+        "surfaceRevision": 50,
+        "drawnWaterTime": 362.6067094336809
+      },
+      "counts": {
+        "slices": 144,
+        "vertices": 19296,
+        "indices": 113316
+      },
+      "rawBytes": 1625856,
+      "decodedRawBytes": 1625856,
+      "rawByteTotalMatches": true,
+      "allArrayLengthsValid": true,
+      "maximumIndex": 19295,
+      "allIndicesInActiveRange": true,
+      "capsSatisfied": true,
+      "nonmutation": {
+        "snapshotClockStatusWordsUnchanged": true,
+        "normalAndDiagnosticCameraUnchanged": true,
+        "normalActorControlsAndMeshUnchanged": true,
+        "allActiveLoftWordsUnchanged": true,
+        "drawnSurfaceWordsAndEpochUnchanged": true,
+        "drawGenerationUnchanged": true
+      },
+      "arrayIdentitiesAndWordsUnchanged": true,
+      "unusedCapacityIncluded": false,
+      "arrays": {
+        "positions": {
+          "dtype": "Float32Array",
+          "count": 57888,
+          "decodedBytes": 231552,
+          "declaredBytes": 231552,
+          "lengthValid": true,
+          "sha256": "5cc25a7df8dca98d116a1f94539aad997d0e422734546f412daef47c59dbf212"
+        },
+        "normals": {
+          "dtype": "Float32Array",
+          "count": 57888,
+          "decodedBytes": 231552,
+          "declaredBytes": 231552,
+          "lengthValid": true,
+          "sha256": "363c58f9de31b73a7cce946612045788b341d07a96e78af20e7d9546fe43297c"
+        },
+        "mask": {
+          "dtype": "Float32Array",
+          "count": 19296,
+          "decodedBytes": 77184,
+          "declaredBytes": 77184,
+          "lengthValid": true,
+          "sha256": "d5ec7936fbc92960f07405ad0df223ae3b76fa70abdf56f5b81e00bb96acd092"
+        },
+        "lift": {
+          "dtype": "Float32Array",
+          "count": 19296,
+          "decodedBytes": 77184,
+          "declaredBytes": 77184,
+          "lengthValid": true,
+          "sha256": "1a5547e3349f5a88051d1cc33eeeea8bc7fb707d57d55f2c4745e1877f713a59"
+        },
+        "sheet": {
+          "dtype": "Float32Array",
+          "count": 19296,
+          "decodedBytes": 77184,
+          "declaredBytes": 77184,
+          "lengthValid": true,
+          "sha256": "f8ccb4dd81fc467a369af0a89db0f27fbb3ac5c62c838c9bbcaa37dac3cbbde8"
+        },
+        "sheetWeight": {
+          "dtype": "Float32Array",
+          "count": 19296,
+          "decodedBytes": 77184,
+          "declaredBytes": 77184,
+          "lengthValid": true,
+          "sha256": "02c056243c271c599afdb329eea2d4395a9ee9c880d70b20c7c6bfd32ed913a2"
+        },
+        "sheetBack": {
+          "dtype": "Float32Array",
+          "count": 19296,
+          "decodedBytes": 77184,
+          "declaredBytes": 77184,
+          "lengthValid": true,
+          "sha256": "23e3a5d5164a774767f98cb6b6ccb44165d5d48626b16c5345523f2cbe9abfee"
+        },
+        "throat": {
+          "dtype": "Float32Array",
+          "count": 77184,
+          "decodedBytes": 308736,
+          "declaredBytes": 308736,
+          "lengthValid": true,
+          "sha256": "d1143bf3ca0384991d3ee7371fc1458eeb04b49f802c509259a6e4239ba29a4a"
+        },
+        "indices": {
+          "dtype": "Uint32Array",
+          "count": 113316,
+          "decodedBytes": 453264,
+          "declaredBytes": 453264,
+          "lengthValid": true,
+          "sha256": "9c1763873df54c4ebd5bbc90451be741b708001fcb8aa702d00b0818ffe0b3d5"
+        },
+        "sliceFront": {
+          "dtype": "Int32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "969c5f046e35284f0302a436550d54cee84ecbf7bc6de1925b3e8e70757f8ea8"
+        },
+        "sliceSigma": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "118c5b6fd6e7ec76cb8fd618c027c4e79c54da07a12b58ce9a05bc830d27da9a"
+        },
+        "sliceTau": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "d19dc4cda9ed0d048a9dac707fcdb59158a93ae57b7b635860891b8ea241dc0f"
+        },
+        "slicePhase": {
+          "dtype": "Uint8Array",
+          "count": 144,
+          "decodedBytes": 144,
+          "declaredBytes": 144,
+          "lengthValid": true,
+          "sha256": "6e5955829059315ce9b003e8382f9d4aa6b499462adc426928702ba1a7a2e539"
+        },
+        "sliceLife": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "44543d6a386c459ab8e7dc518167bccbc7260a3e3bb3808fe62bf3ed06b24a1f"
+        },
+        "sliceCollapse": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "98fd629b893a11d95ce1bcfb779eb699c8658621c71bdf8bf695e5cadc2c7454"
+        },
+        "sliceFade": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "aa72f2aef61e9c70a33a5295367231ac515de8a99e2dcb5f7857414b8c2838af"
+        },
+        "sliceTipGap": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "1a0295f4bf5986c5f74eca9153a6a4cb10b073a01a76ba4a457fd862c78966a4"
+        },
+        "sliceRestHold": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "7e3a46906c0ded7d4f39d2c90e85e9068f65d5501e4f2cef6610d011596b064e"
+        },
+        "sliceRestEnd": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "606ba0f2017a878659fedbeded239e0e76559e0f02e87595c0031035302e0cf5"
+        },
+        "sliceRestClimb": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "a4dd6297440f73d33bafda4352f0a9928b36b286dcc04eb835430cbd3d0018ea"
+        },
+        "sliceToeClimb": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "b1559a02716fed7275390cedaad4969e5d90e9901e64f8c7be101b287288ed81"
+        },
+        "sliceJoined": {
+          "dtype": "Uint8Array",
+          "count": 144,
+          "decodedBytes": 144,
+          "declaredBytes": 144,
+          "lengthValid": true,
+          "sha256": "0dee616ee5571221e3a53603b4579c7b976050beed9c4d011dcccdfcf5a233d7"
+        },
+        "sliceRayX": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "1a0295f4bf5986c5f74eca9153a6a4cb10b073a01a76ba4a457fd862c78966a4"
+        },
+        "sliceRayZ": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "20e5ffaa4b145114cc781bef5b6de28aa3fdb5d639b9d387963443307a382c08"
+        },
+        "sliceWeight": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "57bfbbe84fa7931110bcc04537185cc67161e8510fdbf814c3b7cfdbeaec9de2"
+        },
+        "sliceOverturned": {
+          "dtype": "Uint8Array",
+          "count": 144,
+          "decodedBytes": 144,
+          "declaredBytes": 144,
+          "lengthValid": true,
+          "sha256": "f9029a04a2f7e86ccbcc306c440ed93541c1362f474c5f2a76d681fbb75cc267"
+        },
+        "sliceTipAlong": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "53890228b5fc02c07d16130628c75d691afeb10b324471898a93de5a2517d6c3"
+        },
+        "sliceTipUp": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "ec8c44ec9c21d4d5ea51108507a6488355539c344c8f8dadfc5bacc6cb516bdd"
+        },
+        "sliceAnchorVX": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "1a0295f4bf5986c5f74eca9153a6a4cb10b073a01a76ba4a457fd862c78966a4"
+        },
+        "sliceAnchorVZ": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "1a0295f4bf5986c5f74eca9153a6a4cb10b073a01a76ba4a457fd862c78966a4"
+        },
+        "sliceTipTransportAlong": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "1a0295f4bf5986c5f74eca9153a6a4cb10b073a01a76ba4a457fd862c78966a4"
+        },
+        "sliceTipTransportUp": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "1a0295f4bf5986c5f74eca9153a6a4cb10b073a01a76ba4a457fd862c78966a4"
+        },
+        "sliceFormed": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "07c014a617bc6edd2a04e8ee12012816085b2f4b806bbf3f1f01aae4b76da466"
+        },
+        "sliceTipX": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "dc8ea0f574e0663edb1ae38244de6de5e8ed805ecf6ec8d21c2629177232ffc6"
+        },
+        "sliceTipY": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "d95ec9712582d967f48955d6999783398789267b06676b430acad497ab5d2a71"
+        },
+        "sliceTipZ": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "93b4e543c2b6870fd3e6826d9f534c779b9fe766ca6e5a4d4e68e0adf340e391"
+        },
+        "sliceMouth": {
+          "dtype": "Float32Array",
+          "count": 144,
+          "decodedBytes": 576,
+          "declaredBytes": 576,
+          "lengthValid": true,
+          "sha256": "db84616fe8ca838b92436d57c6e6f29e7008b1ebf1d73aab5cfa218db0a5d8db"
+        }
+      }
+    }
+  ],
+  "encodedFramesRecorded": 68,
+  "sourcePhysicalFundingAirAndJetLifetimesChanged": false,
+  "visualEvidence": {
+    "initial": "Near-vertical green inner wall and sharp dark wall/roof crease; sky-coloured curtain on right.",
+    "moving17_34_50": "Thin vertical fins and stepped wall/roof seam remain visible, with directional sky detail on the right sheet.",
+    "exterior": "Distant folded wave amid ordinary water; no accepted visible entrance.",
+    "terminal67": "Camera held after joined-station loss, viewing underside and ordinary water; no physical death claim."
+  },
+  "matchedOldGeometryOrCameraState": false,
+  "riderEntryRunContained": false,
+  "acceptance": {
+    "tubeQuality": false,
+    "mouth": false,
+    "airCorridor": false,
+    "bodyPassage": false,
+    "FPS": false,
+    "productionAdoption": false
+  },
+  "laterAppearanceAttributionRiderOrRetirementWorkIncluded": false,
+  "fullSourceDependenciesOrBuildReconstructionClaim": false
+}

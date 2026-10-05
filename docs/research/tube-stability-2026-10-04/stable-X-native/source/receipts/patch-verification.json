@@ -1,0 +1,115 @@
+{
+  "schema": "stable-X-five-file-patch-verification/v1",
+  "complete": true,
+  "commands": [
+    {
+      "argv": [
+        "patch",
+        "--batch",
+        "--forward",
+        "-p1",
+        "-d",
+        "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/patch-verification-source",
+        "-i",
+        "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/runtime.patch"
+      ],
+      "exitCode": 0,
+      "output": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/runtime.patch.verify-output.txt",
+        "bytes": 90,
+        "sha256": "5a72abe70934775780fae56b0a87e934a66bd33d8c6561faa32ffda7550b1d08"
+      }
+    },
+    {
+      "argv": [
+        "patch",
+        "--batch",
+        "--forward",
+        "-p1",
+        "-d",
+        "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/patch-verification-source",
+        "-i",
+        "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/tests.patch"
+      ],
+      "exitCode": 0,
+      "output": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/tests.patch.verify-output.txt",
+        "bytes": 165,
+        "sha256": "9dbf3692dded1b0a7477d821616c6d93a623b0749e2f2d6c63701efdc6e87274"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "path": "src/wave/barrel/crestRays.ts",
+      "patched": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/patch-verification-source/src/wave/barrel/crestRays.ts",
+        "bytes": 17776,
+        "sha256": "f1ad5f7a46f03efd9d6d59e4e99f46e90c652d9a53f683f2839bfeb67358c9de"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/crestRays.ts",
+        "bytes": 17776,
+        "sha256": "f1ad5f7a46f03efd9d6d59e4e99f46e90c652d9a53f683f2839bfeb67358c9de"
+      },
+      "exact": true
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "patched": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/patch-verification-source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 76036,
+        "sha256": "9955159b0c99303edbcdad84a6e571cb20faf788005e7c830823a873a4a4ed02"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 76036,
+        "sha256": "9955159b0c99303edbcdad84a6e571cb20faf788005e7c830823a873a4a4ed02"
+      },
+      "exact": true
+    },
+    {
+      "path": "src/wave/barrel/carrierSupport.test.ts",
+      "patched": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/patch-verification-source/src/wave/barrel/carrierSupport.test.ts",
+        "bytes": 30224,
+        "sha256": "ea6f351423d41d865e9e9b8cfcc89be18686447e5e8c195085c20318c8967c35"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/carrierSupport.test.ts",
+        "bytes": 30224,
+        "sha256": "ea6f351423d41d865e9e9b8cfcc89be18686447e5e8c195085c20318c8967c35"
+      },
+      "exact": true
+    },
+    {
+      "path": "src/wave/barrel/stableXSampling.test.ts",
+      "patched": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/patch-verification-source/src/wave/barrel/stableXSampling.test.ts",
+        "bytes": 9754,
+        "sha256": "f84c44b0527646382911650556b52c7c2a7c00ccea28b997c326c732ec95972b"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/stableXSampling.test.ts",
+        "bytes": 9754,
+        "sha256": "f84c44b0527646382911650556b52c7c2a7c00ccea28b997c326c732ec95972b"
+      },
+      "exact": true
+    },
+    {
+      "path": "src/wave/barrel/stableXStress.test.ts",
+      "patched": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/patch-verification-source/src/wave/barrel/stableXStress.test.ts",
+        "bytes": 14971,
+        "sha256": "f5dc53d44904c78d0ffd145105a1250719bba00e364afffcdb6bf2444e9052b1"
+      },
+      "candidate": {
+        "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source/src/wave/barrel/stableXStress.test.ts",
+        "bytes": 14971,
+        "sha256": "f5dc53d44904c78d0ffd145105a1250719bba00e364afffcdb6bf2444e9052b1"
+      },
+      "exact": true
+    }
+  ],
+  "scope": "Only two changed runtime files plus one changed/new two test files; not reconstruction of the entire source/build or tube-quality proof."
+}

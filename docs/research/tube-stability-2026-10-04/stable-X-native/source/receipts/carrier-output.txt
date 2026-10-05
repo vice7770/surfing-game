@@ -1,0 +1,14 @@
+
+ RUN  v5.0.1 /private/tmp/tube-bounded-c-stable-x-sampling-20261005/source
+
+ ✓ src/wave/barrel/carrierSupport.test.ts (9 tests) 4801ms
+   ✓ C provider-derived geometric carrier support (9)
+     ✓ prevents actual budgeted C clock lowering from reviving dead support while RAW budget behavior is exact 3764ms
+     ✓ preserves RAW tracker exports, packets and physical crash water/air ledgers against the frozen parent 816ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  00:41:16
+   Duration  5.31s (tests 92%, transform 7%, import 2%)
+
+JSON report written to /private/tmp/tube-bounded-c-stable-x-sampling-20261005/carrier-vitest.json

@@ -1,0 +1,206 @@
+{
+  "schema": "stable-X-native-helper-adaptation/v1",
+  "parent": "/private/tmp/tube-bounded-c-carrier-support-native-20261004",
+  "parentHelperInputs": [
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/run.py",
+      "bytes": 26108,
+      "sha256": "45be1857b9013e34ea361d8478b0cdb509b0e10e4d832a93d70d4656171e4084"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/native.mjs",
+      "bytes": 11882,
+      "sha256": "d3714330141b5de2e04819740400ceb3daaca658c1d7994d6d5fd907a3dcff5c"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/native-owned.mjs",
+      "bytes": 6532,
+      "sha256": "2d400c37220150427f40549106a224a1065bfc39a2460cefc21113d5df1dbbbb"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/moving-shape.mjs",
+      "bytes": 36443,
+      "sha256": "86c8fbf321c5a4e363725d7e7aaea3036f75f5579d4c47c4240a21a798f0e3f9"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/station-tools.mjs",
+      "bytes": 17541,
+      "sha256": "65043d2fb90b01bdf174c0e8455638aba1d8cf1cb92479ca0e55a69cd317c966"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-tools.mjs",
+      "bytes": 5316,
+      "sha256": "00609160a523c5e6f5d40f227e151f7d6e5d1797b8892c17996d40fd440978d5"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.mjs",
+      "bytes": 2957,
+      "sha256": "eddf8c0905336fa839a9abdd1af8cdc637f89d243ad0370b3ddc21cc384a53bd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-tools.test.mjs",
+      "bytes": 7489,
+      "sha256": "2f661a17843fc3caae5fb34f2d3ac0ec2ab51752cf8d8ed0ceb674f36d3b860b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/loft-snapshot-tools.test.mjs",
+      "bytes": 3270,
+      "sha256": "436c8f11eddfaf1704c7a45bb857cd5b18548557cae943a3b7428f1b5db519be"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mouth-integration-checks.mjs",
+      "bytes": 14966,
+      "sha256": "4ba82d3b5add32b19800651e6e2e40b396ea7b13ca504cd0ac1c030c431387cd"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/mock-checks.mjs",
+      "bytes": 22365,
+      "sha256": "a2d37a080acd3f3b866dc5509dde758b7e7dacb98907a4a3c264855d2013bee4"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/identity-checks.mjs",
+      "bytes": 14110,
+      "sha256": "37289d7c92ef8e6432fc8f4b95c3ae165959dfc0455b76b3b86f329cc81f198a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-event-checks.py",
+      "bytes": 4024,
+      "sha256": "608522a6c5097b33729bf29e80cc387bc1d064ed9f38cf158e21f9eeb31aac9b"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-mock-checks.py",
+      "bytes": 2035,
+      "sha256": "ee736e849d08943644ec84ccaf28601b8bdb640c9964ce9115287ce7a79ef7c9"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/owner-snapshot-checks.py",
+      "bytes": 5745,
+      "sha256": "78a4bb5c3b0d9e3f831f9c32c92c7cecded016a6ed789bec3556639108945d10"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/helper-types.d.ts",
+      "bytes": 87,
+      "sha256": "99186f5383791353e52d0bed76ee44080f37ee6a0f4412f06694de6456f015aa"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/check-source.py",
+      "bytes": 5427,
+      "sha256": "e3b3e15306f8d22d142ec2afedb82d5b0ca16d7ccce7b4bc74fa502780893e60"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/cpu-validation-runner.py",
+      "bytes": 2947,
+      "sha256": "abf6a22ca36d48347cb2f1a79735e0f8e7688138c7edc4a45ceadfd888b764af"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/freeze.py",
+      "bytes": 7937,
+      "sha256": "fddb148e84a09e1878d198997491ecbd63a64f9b242eb1c272821f6696af208c"
+    }
+  ],
+  "parentHelperManifest": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/helper-pins.json",
+    "bytes": 8612,
+    "sha256": "8251fee136e91d8b2a33966b7a87f0b342d5403d8017941ee5f00bed7a120da9"
+  },
+  "parentReadiness": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/readiness.json",
+    "bytes": 19086,
+    "sha256": "2864cc76604845ce3ca919aa58d92787d135cd16b30e2a6d0f3d1ea8abed0546"
+  },
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/readiness.json",
+    "bytes": 9028,
+    "sha256": "9d9c5058cf5213ee0e910cc92c648587588e46c078fc6ce4cf80470594c178a6"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/source-pins.json",
+    "bytes": 95772,
+    "sha256": "f6dcd3c5d35b67e533c8d041eb36a66d3c17d48534ffd573717dfc6958d9ba8b"
+  },
+  "carrierSourceReadiness": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json",
+    "bytes": 115387,
+    "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+  },
+  "publicHistoryContract": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/public-history-contract.json",
+    "bytes": 4829,
+    "sha256": "9bc50ab4ca8218ad9a8cc746d5593ca7c0f54b706da1e228badb0b6f89be7b25"
+  },
+  "parentSourceContract": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/new-source-contract-checks.json",
+    "bytes": 12270,
+    "sha256": "17dc49f81a2ecaf2ac9412e419553caa32364792adc8273898b95077eebc3e5d"
+  },
+  "priorFailedMouth": {
+    "readiness.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/readiness.json",
+      "bytes": 7880,
+      "sha256": "035803cecc6066d3c5dcb85c4f0980fe033441400d8d6f04b2c5d2c6d7c9efd7"
+    },
+    "helper-pins.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/helper-pins.json",
+      "bytes": 3996,
+      "sha256": "3f76fbc1aff59ce7fc8bde69515ed55b453139cccc39873b22eb7f1d4f65f0f6"
+    },
+    "seal.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/seal.json",
+      "bytes": 159781,
+      "sha256": "6f30f65162c54b981ba107f9d678cc818d4070a110dbba88c085f77390f5663e"
+    },
+    "candidate-first-owner.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.json",
+      "bytes": 3304,
+      "sha256": "eb1ec10a3b5daaabbec752f15c25ed681bb0e08061b9180f9cce6607671b348c"
+    },
+    "candidate-first-owner.log": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first-owner.log",
+      "bytes": 1406,
+      "sha256": "41debde6c013ad8e6a30506542d6d4a37456fc013d0d7b3632b47ab2d17a68b2"
+    },
+    "candidate-first/report.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/report.json",
+      "bytes": 446667,
+      "sha256": "90d3904392032044286a521778c272b4714ab62c1e44ffe9409b8a0b6592c890"
+    },
+    "candidate-first/0-initial.png": {
+      "file": "/private/tmp/tube-bounded-c-parallel-mouth-native-20261004/candidate-first/0-initial.png",
+      "bytes": 1014733,
+      "sha256": "b3a0c32a54494741a2cd5b62ab23d5cc9a0e243d1b2fd127d50ef98ac9725e29"
+    }
+  },
+  "priorFailedParallel": {
+    "readiness.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/readiness.json",
+      "bytes": 9755,
+      "sha256": "a3bcc8a13e9bd26e6d45956caaf21f4cad3f0872c8862d609c37c45a29c8529d"
+    },
+    "seal.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/seal.json",
+      "bytes": 159598,
+      "sha256": "59e70b5fbe5e0cf15ee319c14a7320c4a7c48c29919e19d565960d98d0c03eae"
+    },
+    "candidate-first-owner.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first-owner.json",
+      "bytes": 3266,
+      "sha256": "3974cccfa213d65336b2b135a21f5e45ebc544d8bfc0a555cda835030aa46af1"
+    },
+    "candidate-first/report.json": {
+      "file": "/private/tmp/tube-bounded-c-parallel-native-20261004/candidate-first/report.json",
+      "bytes": 7810380,
+      "sha256": "fc11f94895ccf34dfa1ffcd190a2ddc3afcfd05e92e0b330bfa26049f1b4c3a3"
+    }
+  },
+  "sourceContractFinal": true,
+  "rootBuildAvailable": true,
+  "rootCompleteBuild": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/root-complete-build-result.json",
+    "bytes": 180756,
+    "sha256": "0acc32d4a53ae9541a4df4d899621c0d502e006034fde7ee47f02468b460b6ba"
+  },
+  "resourcesStarted": false,
+  "originalRecordsNeverRewrittenOrRetroaccepted": true,
+  "adaptation": "Paths/source and stable-X source/build/owner schema only, plus descriptive optional C station diagnostics; all camera, stable-ID/history, advancing, sidecar and finite ownership policies preserved.",
+  "frozen": true
+}

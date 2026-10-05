@@ -1,0 +1,79 @@
+{
+  "schema": "stable-X-root-native-pixel-inspection/v1",
+  "complete": true,
+  "rootViewedAllFourOriginalPNGs": true,
+  "originalPNGs": [
+    {
+      "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/0-initial.png",
+      "bytes": 938974,
+      "sha256": "dd0b3b4e6746cf0fe691e3fed8a42e31dd16733b27548dc5e9ea72fcf2491a90"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/1-initial-exterior.png",
+      "bytes": 2426531,
+      "sha256": "c6d02d7c19cc0394b76022d6a9ddb4390387b71869fc4b17e4ecec8742e8e1a1"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/2-first-phase2.png",
+      "bytes": 1112442,
+      "sha256": "9b041fab1ccd17378de684c29d7fa9d746aebcdba57091f8fa5b0341e8431b6a"
+    },
+    {
+      "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/3-terminal.png",
+      "bytes": 1873397,
+      "sha256": "e7dbe0ebe1172d86603dcf0e7d4dd5e7c305af1a48a57e8c39e08dcb211e0598"
+    }
+  ],
+  "rootViewedEncodedIndices": [
+    0,
+    17,
+    34,
+    50,
+    67
+  ],
+  "decodedPNGs": [
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-01.png",
+      "bytes": 299688,
+      "sha256": "ae79e49322d42283c45c9b04c930b06fa0b406b5041e0bed6800cc12c36ee9bb"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-02.png",
+      "bytes": 537351,
+      "sha256": "9010a663e30a1c7e88067050a4661a5bddef31fdfdda95be8229da7dfda21f7a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-03.png",
+      "bytes": 548984,
+      "sha256": "6ef45fd7f6d81a6be5d19bcf29793cf960a215b23f4c0c5dd01b2f29fafe3e6d"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-04.png",
+      "bytes": 551029,
+      "sha256": "6eff3f13d50da296312c095c065075b804998f6b8cb40521cc65172cdc7a7810"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-05.png",
+      "bytes": 1029387,
+      "sha256": "dd15e7dedb9cd7d8e3f2bbb712d3dae756e1a04fe77f7ab71705d347e3dee6a9"
+    }
+  ],
+  "observations": {
+    "initial": "Near-vertical green inner wall and sharp dark wall/roof crease; sky-coloured curtain on right.",
+    "moving17_34_50": "Thin vertical fins and stepped wall/roof seam remain visible, with directional sky detail on the right sheet.",
+    "exterior": "Distant folded wave amid ordinary water; no accepted visible entrance.",
+    "terminal67": "Camera held after joined-station loss, viewing underside and ordinary water; no physical death claim."
+  },
+  "movieReceipt": {
+    "file": "/private/tmp/tube-stable-x-video-review-20261005/receipt.json",
+    "bytes": 2312,
+    "sha256": "4907828801994bdaee8dc654ea008806c9822890bb38a230b8c27103098a3b05"
+  },
+  "selectedStationX": 16.25,
+  "matchedCarrierParentInitializationClaim": false,
+  "rasterCausalityProven": false,
+  "continuousBodyCorridorClaim": false,
+  "FPSClaim": false,
+  "nativeVisualAdoption": false,
+  "goalComplete": false
+}

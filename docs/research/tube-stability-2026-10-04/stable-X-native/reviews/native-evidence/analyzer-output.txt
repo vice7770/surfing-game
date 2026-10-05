@@ -1,0 +1,342 @@
+{
+  "pinChecks": {
+    "buildSources": {
+      "count": 583,
+      "mismatches": []
+    },
+    "distAssets": {
+      "count": 49,
+      "mismatches": []
+    },
+    "helpers": {
+      "count": 46,
+      "mismatches": []
+    },
+    "buildManifest": {
+      "count": 1,
+      "mismatches": []
+    },
+    "reportArmEqualsSealedArm": true,
+    "ownerSealPinMatches": true,
+    "served": {
+      "count": 15,
+      "mismatches": []
+    },
+    "artifacts": {
+      "count": 5,
+      "mismatches": []
+    }
+  },
+  "ownerClosure": {
+    "complete": true,
+    "firstFailure": null,
+    "exitCode": 0,
+    "elapsedSeconds": 46.81205950002186,
+    "sourceBuildHelpersPostUnchanged": true,
+    "remainingOwnedPids": [],
+    "closedPorts": {
+      "4299": true,
+      "9709": true
+    },
+    "protectedStatesInitially": {
+      "4310": true,
+      "4311": true,
+      "4312": false
+    },
+    "protectedStatesFinally": {
+      "4310": true,
+      "4311": true,
+      "4312": false
+    },
+    "independentClosureValid": true,
+    "protectedPortsPreserved": true
+  },
+  "build": {
+    "sourceCount": 583,
+    "sourceReadinessCount": 584,
+    "exitCode": 0,
+    "terminal": true,
+    "excludedPreparationInputs": [
+      "docs/research/water-physics/notes/round6-tube-profiles/data/padang-ray-L11-profiles.json"
+    ],
+    "assets": 49,
+    "helpers": 46
+  },
+  "selected": {
+    "front": 106,
+    "stationX": 16.25,
+    "initialSigma": 68.67304229736328,
+    "along": 0.6398658752441406,
+    "youngerSign": 1,
+    "stationIdentity": "fixed-Eulerian-solver-column-crest-station",
+    "materialTrajectoryClaim": false
+  },
+  "initialPointIDs": [
+    158,
+    159
+  ],
+  "mouth": {
+    "observationCount": 56,
+    "totalColumnQueries": 1344,
+    "maximumColumnQueries": 24,
+    "clearInternalSightlines": 56,
+    "externalIndexedOccluded": 56,
+    "shorewardIndexedOccluded": 56,
+    "externalEntranceClaims": 0,
+    "bodyPassageClaims": 0
+  },
+  "diagnostics": {
+    "mandatoryRawKnots": {
+      "min": 94,
+      "max": 101
+    },
+    "plannedStations": {
+      "min": 428,
+      "max": 478
+    },
+    "omittedPrecisionStations": {
+      "min": 14,
+      "max": 34
+    },
+    "collapsedShoulders": {
+      "min": 0,
+      "max": 0
+    },
+    "omittedFronts": {
+      "min": 0,
+      "max": 0
+    },
+    "minimumStoredDeltaX": {
+      "min": 0.02242279052734375,
+      "max": 0.25
+    },
+    "minimumStoredDeltaSigma": {
+      "min": 0.03289222717285156,
+      "max": 0.25
+    },
+    "allPolicyCorrect": true,
+    "budgetTruncatedSteps": [],
+    "allBlendOne": true,
+    "invalidIntervalSum": 0,
+    "rayMinAdvanceMin": 0.25,
+    "rayMinAdvanceMax": 0.5
+  },
+  "directPublicHistoryEvents": [
+    {
+      "step": 63,
+      "triggerPointIDs": [
+        158
+      ],
+      "qualified": true,
+      "gates": {
+        "currentPublicCarrierIdentity": true,
+        "sameOrderedInternalPointIDs": true,
+        "sameInternalColumnsAndExactX": true,
+        "sameImmutableJetFingerprint": true,
+        "exportedOwnedAgesFiniteNonnegativeMonotone": true
+      },
+      "materialTrajectoryClaim": false,
+      "leaseDurationOrDTGate": false,
+      "points": [
+        {
+          "id": 158,
+          "x": 15,
+          "front": 120,
+          "tau": 1.578525572028738,
+          "jetUntil": 1.5649843571611293,
+          "ownPocketAlive": false,
+          "retainedForGeometry": true,
+          "geometricPaceActive": true,
+          "state": "incident-support",
+          "incidentBounds": [
+            1.8499191099132068,
+            1.8499191099132068
+          ]
+        },
+        {
+          "id": 159,
+          "x": 17,
+          "front": 120,
+          "tau": 1.4254783947450989,
+          "jetUntil": 1.5669200797867315,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidentBounds": [
+            1.8499191099132068,
+            1.8499191099132068
+          ]
+        }
+      ]
+    }
+  ]
+}
+JUMPS {
+  "crest": [
+    {
+      "beforeStep": 59,
+      "afterStep": 60,
+      "delta": [
+        0.0,
+        -0.21455711126327515,
+        0.11072540283203125
+      ],
+      "magnitude": 0.24144330354341373
+    }
+  ],
+  "cap": [
+    {
+      "beforeStep": 59,
+      "afterStep": 60,
+      "delta": [
+        0.0,
+        0.2595614790916443,
+        0.11072540283203125
+      ],
+      "magnitude": 0.282191913882304
+    }
+  ],
+  "toe": [
+    {
+      "beforeStep": 59,
+      "afterStep": 60,
+      "delta": [
+        0.0,
+        0.25316375494003296,
+        0.11072540283203125
+      ],
+      "magnitude": 0.2763186596081645
+    }
+  ],
+  "floorDatum": [
+    {
+      "beforeStep": 59,
+      "afterStep": 60,
+      "delta": [
+        0.0,
+        0.2595614790916443,
+        0.11072540283203125
+      ],
+      "magnitude": 0.282191913882304
+    }
+  ],
+  "eye": [
+    {
+      "beforeStep": 55,
+      "afterStep": 56,
+      "delta": [
+        0.0,
+        0.17853616664415095,
+        0.11071014404296875
+      ],
+      "magnitude": 0.2100759357803814
+    }
+  ],
+  "center": [
+    {
+      "beforeStep": 55,
+      "afterStep": 56,
+      "delta": [
+        0.0,
+        0.17853616664415095,
+        0.11071014404296875
+      ],
+      "magnitude": 0.2100759357803814
+    }
+  ],
+  "tau": [
+    {
+      "beforeStep": 6,
+      "afterStep": 7,
+      "delta": 0.01675310730934143,
+      "magnitude": 0.01675310730934143
+    }
+  ],
+  "weight": [
+    {
+      "beforeStep": 59,
+      "afterStep": 60,
+      "delta": -0.15839508920907974,
+      "magnitude": 0.15839508920907974
+    }
+  ]
+}
+SIDE [
+  {
+    "pin": {
+      "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/loft-initial.json",
+      "bytes": 1735996,
+      "sha256": "96f700f8cf573031fa32df39ec18b3cbe0a75147274445d25aeb6dc973712201"
+    },
+    "reportedPinMatches": true,
+    "label": "initial",
+    "epoch": {
+      "step": 0,
+      "movingStep": 0,
+      "seaTime": 361.80670943368096,
+      "surfaceRevision": 2,
+      "drawnWaterTime": 361.80670943368096
+    },
+    "counts": {
+      "slices": 115,
+      "vertices": 15410,
+      "indices": 90174
+    },
+    "rawBytes": 1297141,
+    "decodedRawBytes": 1297141,
+    "rawByteTotalMatches": true,
+    "allArrayLengthsValid": true,
+    "maximumIndex": 15409,
+    "allIndicesInActiveRange": true,
+    "capsSatisfied": true,
+    "nonmutation": {
+      "snapshotClockStatusWordsUnchanged": true,
+      "normalAndDiagnosticCameraUnchanged": true,
+      "normalActorControlsAndMeshUnchanged": true,
+      "allActiveLoftWordsUnchanged": true,
+      "drawnSurfaceWordsAndEpochUnchanged": true,
+      "drawGenerationUnchanged": true
+    },
+    "arrayIdentitiesAndWordsUnchanged": true,
+    "unusedCapacityIncluded": false
+  },
+  {
+    "pin": {
+      "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/loft-first-phase2.json",
+      "bytes": 2174208,
+      "sha256": "8f7817e9f29056ebbb314255db1618ba1de060cc7635507d8039977565c08a6d"
+    },
+    "reportedPinMatches": true,
+    "label": "first-phase2",
+    "epoch": {
+      "step": 48,
+      "movingStep": 48,
+      "seaTime": 362.6067094336809,
+      "surfaceRevision": 50,
+      "drawnWaterTime": 362.6067094336809
+    },
+    "counts": {
+      "slices": 144,
+      "vertices": 19296,
+      "indices": 113316
+    },
+    "rawBytes": 1625856,
+    "decodedRawBytes": 1625856,
+    "rawByteTotalMatches": true,
+    "allArrayLengthsValid": true,
+    "maximumIndex": 19295,
+    "allIndicesInActiveRange": true,
+    "capsSatisfied": true,
+    "nonmutation": {
+      "snapshotClockStatusWordsUnchanged": true,
+      "normalAndDiagnosticCameraUnchanged": true,
+      "normalActorControlsAndMeshUnchanged": true,
+      "allActiveLoftWordsUnchanged": true,
+      "drawnSurfaceWordsAndEpochUnchanged": true,
+      "drawGenerationUnchanged": true
+    },
+    "arrayIdentitiesAndWordsUnchanged": true,
+    "unusedCapacityIncluded": false
+  }
+]

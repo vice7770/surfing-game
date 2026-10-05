@@ -1,0 +1,1374 @@
+{
+  "schema": "saved-new-C-normal-rider-entry-audit/v1",
+  "pins": {
+    "captureReport": {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/report.json",
+      "bytes": 9452886,
+      "sha256": "a4934771a954d4363d3618719ac0e4ef236aeac1ca2f6d938940dabd7f87a988"
+    },
+    "initialSidecarVerified": {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-native-20261004/candidate-first/loft-initial.json",
+      "bytes": 1796420,
+      "sha256": "1a9722cc198f7cb4c4df56de1ece30e2417fbd462df2249c54d4cb143f17c32f"
+    },
+    "sourceVerifiedAgainstCaptureSeal": [
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/SurfZoneRunner.ts",
+        "bytes": 40621,
+        "sha256": "1e82bd1e1a6d9022489c850ae645dca2a787f752eebff532a77a61b84b3a47a8"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/SurfZoneSimulation.ts",
+        "bytes": 71135,
+        "sha256": "0d5ed513351f9cfa4fb6f743918f70936c042c55299b7ae98520d1a8125c3e79"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/warmStart.ts",
+        "bytes": 6238,
+        "sha256": "0d2de6fb8c6e409eecabecee82a49b5c7b3e5ab96a80db2dc18ed2e7b0935b3d"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/physics/waveFrame.ts",
+        "bytes": 11626,
+        "sha256": "1fc4cca2787e2a9064f779f3905fa762dd37e0664a34e08565c94d28bbaff6a2"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/physics/takeOffCue.ts",
+        "bytes": 2242,
+        "sha256": "2ca345e82f21464c74f7f8889520af25f912752cf8f6f8fb4554c3efe95cf293"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/physics/AttachedRider.ts",
+        "bytes": 135460,
+        "sha256": "3fc5c9c86a7e2c148dabd2c22bbd6c4ebde6416bdc2dad82661a15c43596ac0d"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/physics/RideSession.ts",
+        "bytes": 13831,
+        "sha256": "57818ef317fd0616d53a07d631304dff303a8904f488d7ddd96693859ca1bd2e"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/physics/BoardBody.ts",
+        "bytes": 55109,
+        "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/game/PhysicalMode.ts",
+        "bytes": 41940,
+        "sha256": "97f593ea6af092f891cdce3b6a90aa765794ba844c8d4b9df1b986cc279b4f19"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/game/SurfZoneWorkerCore.ts",
+        "bytes": 9863,
+        "sha256": "b6f31ca372bb8d20a6aa9a6023bd233fdc0a95862f4efd04caf3cb14acfef9b3"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/game/pocketReflex.ts",
+        "bytes": 3295,
+        "sha256": "2e6bd57cac901031b091e71a0edd0742d607609165fd47b666b0b54ef5f28c64"
+      },
+      {
+        "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source/src/wave/barrel/sweptLoft.ts",
+        "bytes": 64331,
+        "sha256": "d86e5705d7ca6c61227c470d18b922be3594699a70435d0be6dae2c2fc06498c"
+      }
+    ]
+  },
+  "epoch": {
+    "step": 0,
+    "movingStep": 0,
+    "seaTime": 361.80670943368096,
+    "surfaceRevision": 2,
+    "drawnWaterTime": 361.80670943368096
+  },
+  "normalInitialBoardPose": [
+    -50,
+    2.8006492347242573,
+    -271.09137870490895,
+    0.10630282482692952,
+    -0.0006174911180008311,
+    0.005775780795395427,
+    0.9943168350655328,
+    1
+  ],
+  "normalInitialRiderLandmarks": {
+    "pelvis": [
+      -50.00178115897721,
+      2.998018609674914,
+      -271.5156078535772
+    ],
+    "torso": [
+      -50.00178115897721,
+      3.073613819372992,
+      -271.0756078535772
+    ],
+    "head": [
+      -50.00178115897721,
+      3.2234504711551932,
+      -270.7456078535772
+    ],
+    "left-hand": [
+      -49.748909728294535,
+      2.8554384283275205,
+      -271.1040439390622
+    ],
+    "right-hand": [
+      -50.252204430317256,
+      2.8497233175081194,
+      -271.10528007765595
+    ],
+    "left-foot": [
+      -49.849781158977216,
+      2.897767784213981,
+      -272.52260785357726
+    ],
+    "right-foot": [
+      -50.1537811589772,
+      2.897767784213981,
+      -272.52260785357726
+    ]
+  },
+  "indexedMeshTriangles": 31122,
+  "components": [
+    {
+      "front": 76,
+      "firstRow": 0,
+      "lastRow": 60
+    },
+    {
+      "front": 106,
+      "firstRow": 61,
+      "lastRow": 118
+    }
+  ],
+  "nearestForBoardAndRiderLandmarks": {
+    "board-position": {
+      "xyz": {
+        "distanceMeters": 67.19829089362662,
+        "inputPoint": [
+          -50,
+          2.8006492347242573,
+          -271.09137870490895
+        ],
+        "nearestPoint": [
+          -50.06749724040893,
+          -0.6477495003809138,
+          -203.98166041231943
+        ],
+        "barycentric": [
+          0.8193563533036947,
+          0.18064364669630525,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "xz": {
+        "distanceMeters": 67.10972789633689,
+        "inputPoint": [
+          -50,
+          2.8006492347242573,
+          -271.09137870490895
+        ],
+        "nearestPoint": [
+          -50.01034072083325,
+          0.0,
+          -203.98165160525616
+        ],
+        "barycentric": [
+          0.7039204135851436,
+          0.2960795864148564,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "pelvis": {
+      "xyz": {
+        "distanceMeters": 67.63231457320289,
+        "inputPoint": [
+          -50.00178115897721,
+          2.998018609674914,
+          -271.5156078535772
+        ],
+        "nearestPoint": [
+          -50.072613719748865,
+          -0.6476646957568089,
+          -203.98166120070118
+        ],
+        "barycentric": [
+          0.8296898306574683,
+          0.17031016934253174,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "xz": {
+        "distanceMeters": 67.53395676551594,
+        "inputPoint": [
+          -50.00178115897721,
+          2.998018609674914,
+          -271.5156078535772
+        ],
+        "nearestPoint": [
+          -50.01218724786428,
+          0.0,
+          -203.98165188978155
+        ],
+        "barycentric": [
+          0.7076497446330459,
+          0.2923502553669541,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "torso": {
+      "xyz": {
+        "distanceMeters": 67.19710266889147,
+        "inputPoint": [
+          -50.00178115897721,
+          3.073613819372992,
+          -271.0756078535772
+        ],
+        "nearestPoint": [
+          -50.07379857155264,
+          -0.6476450570745894,
+          -203.9816613832712
+        ],
+        "barycentric": [
+          0.8320828119378424,
+          0.1679171880621576,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "xz": {
+        "distanceMeters": 67.09395677073934,
+        "inputPoint": [
+          -50.00178115897721,
+          3.073613819372992,
+          -271.0756078535772
+        ],
+        "nearestPoint": [
+          -50.01211944968874,
+          0.0,
+          -203.98165187933475
+        ],
+        "barycentric": [
+          0.7075128163147507,
+          0.2924871836852493,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "head": {
+      "xyz": {
+        "distanceMeters": 66.87611763155854,
+        "inputPoint": [
+          -50.00178115897721,
+          3.2234504711551932,
+          -270.7456078535772
+        ],
+        "nearestPoint": [
+          -50.07623056733893,
+          -0.6476047472297178,
+          -203.98166175800955
+        ],
+        "barycentric": [
+          0.8369945826521167,
+          0.16300541734788335,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "xz": {
+        "distanceMeters": 66.7639567746569,
+        "inputPoint": [
+          -50.00178115897721,
+          3.2234504711551932,
+          -270.7456078535772
+        ],
+        "nearestPoint": [
+          -50.01206860105709,
+          0.0,
+          -203.98165187149965
+        ],
+        "barycentric": [
+          0.7074101200760292,
+          0.29258987992397073,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "left-hand": {
+      "xyz": {
+        "distanceMeters": 67.21402845416327,
+        "inputPoint": [
+          -49.748909728294535,
+          2.8554384283275205,
+          -271.1040439390622
+        ],
+        "nearestPoint": [
+          -49.8173857577675,
+          -0.6518950482978596,
+          -203.98162187344988
+        ],
+        "barycentric": [
+          0.31421968215137386,
+          0.6857803178486261,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "xz": {
+        "distanceMeters": 67.12243182002733,
+        "inputPoint": [
+          -49.748909728294535,
+          2.8554384283275205,
+          -271.1040439390622
+        ],
+        "nearestPoint": [
+          -49.75925240663428,
+          0.0,
+          -203.9816129158698
+        ],
+        "barycentric": [
+          0.19681088842374372,
+          0.8031891115762563,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "right-hand": {
+      "xyz": {
+        "distanceMeters": 67.21441929988842,
+        "inputPoint": [
+          -50.252204430317256,
+          2.8497233175081194,
+          -271.10528007765595
+        ],
+        "nearestPoint": [
+          -50.33390410964481,
+          -0.642756166698078,
+          -203.9817069156437
+        ],
+        "barycentric": [
+          0.3574039378316143,
+          0.6425960621683857,
+          0
+        ],
+        "triangle": 9842,
+        "vertices": [
+          4958,
+          5092,
+          4959
+        ],
+        "rows": [
+          37,
+          38,
+          37
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "xz": {
+        "distanceMeters": 67.12358712115744,
+        "inputPoint": [
+          -50.252204430317256,
+          2.8497233175081194,
+          -271.10528007765595
+        ],
+        "nearestPoint": [
+          -50.26461585788006,
+          0.0,
+          -203.98169410396054
+        ],
+        "barycentric": [
+          0.21746619296370007,
+          0.7825338070362999,
+          0
+        ],
+        "triangle": 9842,
+        "vertices": [
+          4958,
+          5092,
+          4959
+        ],
+        "rows": [
+          37,
+          38,
+          37
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "left-foot": {
+      "xyz": {
+        "distanceMeters": 68.63277319275431,
+        "inputPoint": [
+          -49.849781158977216,
+          2.897767784213981,
+          -272.52260785357726
+        ],
+        "nearestPoint": [
+          -49.91914941166857,
+          -0.6502083360406092,
+          -203.98163755388222
+        ],
+        "barycentric": [
+          0.5197462450784349,
+          0.4802537549215651,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "xz": {
+        "distanceMeters": 68.54098017474973,
+        "inputPoint": [
+          -49.849781158977216,
+          2.897767784213981,
+          -272.52260785357726
+        ],
+        "nearestPoint": [
+          -49.860342416843125,
+          0.0,
+          -203.98162849250255
+        ],
+        "barycentric": [
+          0.4009769295201294,
+          0.5990230704798706,
+          0
+        ],
+        "triangle": 10108,
+        "vertices": [
+          5092,
+          5226,
+          5093
+        ],
+        "rows": [
+          38,
+          39,
+          38
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "right-foot": {
+      "xyz": {
+        "distanceMeters": 68.63245157958544,
+        "inputPoint": [
+          -50.1537811589772,
+          2.897767784213981,
+          -272.52260785357726
+        ],
+        "nearestPoint": [
+          -50.23673432437749,
+          -0.644683944600902,
+          -203.98168894855013
+        ],
+        "barycentric": [
+          0.1611553636032519,
+          0.8388446363967481,
+          0
+        ],
+        "triangle": 9842,
+        "vertices": [
+          4958,
+          5092,
+          4959
+        ],
+        "rows": [
+          37,
+          38,
+          37
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "xz": {
+        "distanceMeters": 68.54093307171786,
+        "inputPoint": [
+          -50.1537811589772,
+          2.897767784213981,
+          -272.52260785357726
+        ],
+        "nearestPoint": [
+          -50.16645465964055,
+          0.0,
+          -203.98167595355062
+        ],
+        "barycentric": [
+          0.019215315429577107,
+          0.9807846845704229,
+          0
+        ],
+        "triangle": 9842,
+        "vertices": [
+          4958,
+          5092,
+          4959
+        ],
+        "rows": [
+          37,
+          38,
+          37
+        ],
+        "contours": [
+          -3,
+          -3,
+          -2
+        ],
+        "component": {
+          "front": 76,
+          "firstRow": 0,
+          "lastRow": 60
+        },
+        "sliceWeight": [
+          1.0,
+          1.0
+        ],
+        "vertexLift": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "boardNearestPerComponent": [
+    {
+      "distanceMeters": 67.19829089362662,
+      "nearestPoint": [
+        -50.06749724040893,
+        -0.6477495003809138,
+        -203.98166041231943
+      ],
+      "triangle": 10108,
+      "vertices": [
+        5092,
+        5226,
+        5093
+      ],
+      "rows": [
+        38,
+        39,
+        38
+      ],
+      "contours": [
+        -3,
+        -3,
+        -2
+      ],
+      "component": {
+        "front": 76,
+        "firstRow": 0,
+        "lastRow": 60
+      },
+      "sliceWeight": [
+        1.0,
+        1.0
+      ],
+      "vertexLift": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "distanceMeters": 126.95058102988563,
+      "nearestPoint": [
+        3.096601724624634,
+        0.24358034133911133,
+        -155.80624389648438
+      ],
+      "triangle": 15960,
+      "vertices": [
+        8174,
+        8308,
+        8175
+      ],
+      "rows": [
+        61,
+        62,
+        61
+      ],
+      "contours": [
+        -3,
+        -3,
+        -2
+      ],
+      "component": {
+        "front": 106,
+        "firstRow": 61,
+        "lastRow": 118
+      },
+      "sliceWeight": [
+        0.0,
+        0.02383802831172943
+      ],
+      "vertexLift": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "boardNearestIndexedTriangleWithAnyLiftedVertex": {
+    "distanceMeters": 81.29219232074675,
+    "nearestPoint": [
+      -50.03784304641812,
+      1.8678050595802094,
+      -189.8045476560729
+    ],
+    "interpolatedLiftAtNearest": 0.0,
+    "triangle": 10172,
+    "vertices": [
+      5124,
+      5258,
+      5125
+    ],
+    "rows": [
+      38,
+      39,
+      38
+    ],
+    "contours": [
+      29,
+      29,
+      30
+    ],
+    "component": {
+      "front": 76,
+      "firstRow": 0,
+      "lastRow": 60
+    },
+    "sliceWeight": [
+      1.0,
+      1.0
+    ],
+    "vertexLift": [
+      0.0,
+      0.0,
+      0.2790021002292633
+    ]
+  },
+  "boardNearestJoinedActualCrestSegmentXZ": {
+    "distanceMeters": 82.59137870490895,
+    "nearestProjectedCrest": [
+      -50.0,
+      0.0,
+      -188.5
+    ],
+    "segmentFraction": 0.3169641825311833,
+    "rows": [
+      38,
+      39
+    ],
+    "component": {
+      "front": 76,
+      "firstRow": 0,
+      "lastRow": 60
+    }
+  },
+  "measuredLandmarkConvexHullFootprintXZ": [
+    [
+      -50.252204430317256,
+      -271.10528007765595
+    ],
+    [
+      -50.1537811589772,
+      -272.52260785357726
+    ],
+    [
+      -49.849781158977216,
+      -272.52260785357726
+    ],
+    [
+      -49.748909728294535,
+      -271.1040439390622
+    ],
+    [
+      -50.00178115897721,
+      -270.7456078535772
+    ]
+  ],
+  "closestProjectedBarrelToMeasuredLandmarkFootprint": {
+    "distanceMeters": 66.7639567746569,
+    "footprintPoint": [
+      -50.00178115897721,
+      0,
+      -270.7456078535772
+    ],
+    "barrelProjectedPoint": [
+      -50.01206860105709,
+      0.0,
+      -203.98165187149965
+    ],
+    "triangle": 10108,
+    "vertices": [
+      5092,
+      5226,
+      5093
+    ],
+    "rows": [
+      38,
+      39,
+      38
+    ],
+    "contours": [
+      -3,
+      -3,
+      -2
+    ],
+    "component": {
+      "front": 76,
+      "firstRow": 0,
+      "lastRow": 60
+    },
+    "sliceWeight": [
+      1.0,
+      1.0
+    ],
+    "vertexLift": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "footprintMeaning": "Exact convex hull of saved board position and seven drawn rider landmarks; full board hull and body radii are not retained and are not claimed.",
+  "retainedNormalRiderProgress": {
+    "ordinarySteps": 68,
+    "physicalSeconds": 1.133333333333269,
+    "initial": {
+      "step": 0,
+      "boardPose": [
+        -50,
+        2.8006492347242573,
+        -271.09137870490895,
+        0.10630282482692952,
+        -0.0006174911180008311,
+        0.005775780795395427,
+        0.9943168350655328,
+        1
+      ],
+      "ride": {
+        "phase": "prone",
+        "speed": 7.036529059922201,
+        "boardSpeed": 7.297968420577065,
+        "cue": false,
+        "popUp": {
+          "outcome": "none",
+          "duration": 0,
+          "landingPeak": 0,
+          "frontShare": 0
+        },
+        "resets": 0,
+        "wave": {
+          "valid": true,
+          "directionX": 0,
+          "directionZ": 1,
+          "aheadOfCrest": 5.337441953984623,
+          "crestSpeed": 0,
+          "faceHeight": 4.067813581376439,
+          "faceFraction": 0.846515153479457,
+          "crestBreaking": 0,
+          "curlDistance": null,
+          "curlSide": 0,
+          "speedOverGround": 7.036529059922201,
+          "speedShoreward": 6.980758562503769,
+          "speedAlongCrest": -0.8841668977969811,
+          "requiredSpeed": null
+        },
+        "balance": 1,
+        "bank": 0,
+        "leash": {
+          "snapped": false,
+          "tension": 0,
+          "distance": 0,
+          "reeling": false
+        },
+        "duck": 0,
+        "boardInReach": false,
+        "knock": 0,
+        "breath": 1,
+        "rescues": 0
+      }
+    },
+    "firstCue": {
+      "step": 21,
+      "elapsedSeconds": 0.3499999999999659,
+      "boardPose": [
+        -50.32127187393082,
+        2.99720517826099,
+        -268.606065233393,
+        0.03345433843940757,
+        -0.012035064930044458,
+        0.01361120501068868,
+        0.9992750870255237,
+        1
+      ],
+      "ride": {
+        "phase": "prone",
+        "speed": 7.215152295392597,
+        "boardSpeed": 7.2184550467658095,
+        "cue": true,
+        "popUp": {
+          "outcome": "none",
+          "duration": 0,
+          "landingPeak": 0,
+          "frontShare": 0
+        },
+        "resets": 0,
+        "wave": {
+          "valid": true,
+          "directionX": -0.0364194869903069,
+          "directionZ": 0.9993365904275511,
+          "aheadOfCrest": 4.209215023447896,
+          "crestSpeed": 9.910557210153739,
+          "faceHeight": 4.005049063540281,
+          "faceFraction": 0.8953075516508286,
+          "crestBreaking": 0,
+          "curlDistance": null,
+          "curlSide": 0,
+          "speedOverGround": 7.215152295392597,
+          "speedShoreward": 7.184992058345279,
+          "speedAlongCrest": -0.6590233434593569,
+          "requiredSpeed": 31.019634594346133
+        },
+        "balance": 0.9994491295846047,
+        "bank": 0,
+        "leash": {
+          "snapped": false,
+          "tension": 0,
+          "distance": 0,
+          "reeling": false
+        },
+        "duck": 0,
+        "boardInReach": false,
+        "knock": 0,
+        "breath": 1,
+        "rescues": 0
+      }
+    },
+    "firstTakeOffWindowByExactSourceThresholds": {
+      "step": 44,
+      "elapsedSeconds": 0.7333333333332916,
+      "ride": {
+        "phase": "prone",
+        "speed": 7.7247260371269695,
+        "boardSpeed": 7.724816554620219,
+        "cue": true,
+        "popUp": {
+          "outcome": "none",
+          "duration": 0,
+          "landingPeak": 0,
+          "frontShare": 0
+        },
+        "resets": 0,
+        "wave": {
+          "valid": true,
+          "directionX": -0.06898014972519889,
+          "directionZ": 0.9976180325875675,
+          "aheadOfCrest": 3.4634344705329667,
+          "crestSpeed": 9.552771341582034,
+          "faceHeight": 3.978648522163542,
+          "faceFraction": 0.9274791681246691,
+          "crestBreaking": 0,
+          "curlDistance": null,
+          "curlSide": 0,
+          "speedOverGround": 7.7247260371269695,
+          "speedShoreward": 7.704753016010957,
+          "speedAlongCrest": -0.5551335973775978,
+          "requiredSpeed": 29.899779608317264
+        },
+        "balance": 0.9977803055597813,
+        "bank": 0,
+        "leash": {
+          "snapped": false,
+          "tension": 0,
+          "distance": 0,
+          "reeling": false
+        },
+        "duck": 0,
+        "boardInReach": false,
+        "knock": 0,
+        "breath": 1,
+        "rescues": 0
+      }
+    },
+    "firstCueTakeOffWindowAlsoPassed": false,
+    "terminal": {
+      "step": 68,
+      "boardPose": [
+        -51.02018024835081,
+        3.101920570736469,
+        -262.569549139037,
+        0.039432074715883246,
+        -0.05735197675058728,
+        0.003404705167199401,
+        0.9975691806732631,
+        1
+      ],
+      "ride": {
+        "phase": "prone",
+        "speed": 8.162770687710566,
+        "boardSpeed": 8.162941935359688,
+        "cue": true,
+        "popUp": {
+          "outcome": "none",
+          "duration": 0,
+          "landingPeak": 0,
+          "frontShare": 0
+        },
+        "resets": 0,
+        "wave": {
+          "valid": true,
+          "directionX": -0.08093465105215583,
+          "directionZ": 0.9967194099941395,
+          "aheadOfCrest": 2.88462261260603,
+          "crestSpeed": 9.518687748193305,
+          "faceHeight": 3.9355999863970133,
+          "faceFraction": 0.9491979601000748,
+          "crestBreaking": 0,
+          "curlDistance": null,
+          "curlSide": 0,
+          "speedOverGround": 8.162770687710566,
+          "speedShoreward": 8.155328090440872,
+          "speedAlongCrest": -0.34849539080576886,
+          "requiredSpeed": 29.793099369238732
+        },
+        "balance": 0.9992571014313412,
+        "bank": 0,
+        "leash": {
+          "snapped": false,
+          "tension": 0,
+          "distance": 0,
+          "reeling": false
+        },
+        "duck": 0,
+        "boardInReach": false,
+        "knock": 0,
+        "breath": 1,
+        "rescues": 0
+      }
+    },
+    "phaseCounts": {
+      "prone": 69
+    },
+    "maxCrestBreaking": 0,
+    "anyFiniteReportedCurlDistance": false
+  },
+  "limitations": [
+    "Saved indexed barrel proximity is geometry evidence, not body contact or per-fragment ownership.",
+    "Only the measured landmark footprint is exact; a full board/body contact envelope is not reconstructed.",
+    "No solver surface/current/crest lineage arrays are retained for forecasting this rider wave to breaking.",
+    "The 68-step normal rider progress was captured alongside the diagnostic camera and is not an ordinary body-entry run.",
+    "Earlier RAW body traces were not consulted or used as evidence for this new C run."
+  ],
+  "staticFocus": {
+    "x": -50,
+    "z": -265.09137870490895
+  },
+  "sourceRideLineupEqualsCapturedInitialBoardXZ": true,
+  "selectedDiagnosticEyeHorizontalDistanceFromBoard": 150.40644551418822,
+  "projectedIndexedMeshBoundsXZ": {
+    "minX": -68.5,
+    "maxX": 30.5,
+    "minZ": -203.98641967773438,
+    "maxZ": -121.54083251953125
+  },
+  "footprintAndMeshSeparatedByZAxis": true,
+  "inputBytesUnchangedAfterAnalysis": true
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "stable-X-root-native-video-decode/v1",
+  "complete": true,
+  "movie": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/moving-C.webm",
+    "bytes": 922580,
+    "sha256": "e2d5ef401e39a1c2a308fd952fa8d86ef354454e810fc64b64f45f3d03f45a40"
+  },
+  "ffprobe": {
+    "file": "/private/tmp/tube-stable-x-video-review-20261005/ffprobe.json",
+    "bytes": 292,
+    "sha256": "2b4ce62ffe973ea4a09bb35c586aa6140d5280ac05d94641c15d1d3939ac392f"
+  },
+  "priorFailedAttempt": {
+    "file": "/private/tmp/tube-stable-x-video-review-20261005/failed-decode.json",
+    "bytes": 205,
+    "sha256": "3ce0b328103209b410fea2822f7ca55acf2decf94017b8198ea733b69df52e49"
+  },
+  "successfulArgv": [
+    "/opt/homebrew/bin/ffmpeg",
+    "-v",
+    "error",
+    "-i",
+    "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/moving-C.webm",
+    "-vf",
+    "select=eq(n\\,0)+eq(n\\,17)+eq(n\\,34)+eq(n\\,50)+eq(n\\,67)",
+    "-vsync",
+    "0",
+    "/private/tmp/tube-stable-x-video-review-20261005/decoded-%02d.png"
+  ],
+  "actualEncodedFrames": 68,
+  "selectedEncodedIndices": [
+    0,
+    17,
+    34,
+    50,
+    67
+  ],
+  "decodedImages": [
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-01.png",
+      "bytes": 299688,
+      "sha256": "ae79e49322d42283c45c9b04c930b06fa0b406b5041e0bed6800cc12c36ee9bb"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-02.png",
+      "bytes": 537351,
+      "sha256": "9010a663e30a1c7e88067050a4661a5bddef31fdfdda95be8229da7dfda21f7a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-03.png",
+      "bytes": 548984,
+      "sha256": "6ef45fd7f6d81a6be5d19bcf29793cf960a215b23f4c0c5dd01b2f29fafe3e6d"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-04.png",
+      "bytes": 551029,
+      "sha256": "6eff3f13d50da296312c095c065075b804998f6b8cb40521cc65172cdc7a7810"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-video-review-20261005/decoded-05.png",
+      "bytes": 1029387,
+      "sha256": "dd15e7dedb9cd7d8e3f2bbb712d3dae756e1a04fe77f7ab71705d347e3dee6a9"
+    }
+  ],
+  "physicalPlaybackRateClaim": false,
+  "FPSClaim": false,
+  "originalUnchanged": true,
+  "rootPixelInspectionPending": true
+}

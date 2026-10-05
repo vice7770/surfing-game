@@ -1,0 +1,52 @@
+{
+  "readinessSHA256": "9d9c5058cf5213ee0e910cc92c648587588e46c078fc6ce4cf80470594c178a6",
+  "sourceManifestSHA256": "f6dcd3c5d35b67e533c8d041eb36a66d3c17d48534ffd573717dfc6958d9ba8b",
+  "candidateSources": {
+    "count": 584,
+    "mismatches": []
+  },
+  "readinessPayload": {
+    "count": 30,
+    "mismatches": []
+  },
+  "runtimeAndTestPins": {
+    "count": 5,
+    "mismatches": []
+  },
+  "parentFrozenSources": {
+    "count": 582,
+    "mismatches": []
+  },
+  "candidateDifferencesFromParent": [
+    "src/wave/barrel/carrierSupport.test.ts",
+    "src/wave/barrel/crestRays.ts",
+    "src/wave/barrel/sweptLoft.ts"
+  ],
+  "candidateAdditions": [
+    "src/wave/barrel/stableXSampling.test.ts",
+    "src/wave/barrel/stableXStress.test.ts"
+  ],
+  "existingPatchVerificationFiles": [
+    {
+      "path": "src/wave/barrel/crestRays.ts",
+      "sameBytes": true
+    },
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "sameBytes": true
+    },
+    {
+      "path": "src/wave/barrel/carrierSupport.test.ts",
+      "sameBytes": true
+    },
+    {
+      "path": "src/wave/barrel/stableXSampling.test.ts",
+      "sameBytes": true
+    },
+    {
+      "path": "src/wave/barrel/stableXStress.test.ts",
+      "sameBytes": true
+    }
+  ],
+  "noTestsBuildNativeOrGitRun": true
+}

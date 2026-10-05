@@ -1,0 +1,25 @@
+{
+  "complete": true,
+  "pins": [
+    {
+      "file": "/private/tmp/tube-stable-x-native-evidence-review-20261005/README.md",
+      "bytes": 7407,
+      "sha256": "6f4abd85d673b88f10a7afee00dde99ec382270a6f583cd983e3b9eade58c77b"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-native-evidence-review-20261005/analyze.py",
+      "bytes": 11505,
+      "sha256": "ec9dd2e66122090f22a1f9cf5c1fcb0754e65729c9865ab53fa745e7b61ad491"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-native-evidence-review-20261005/analysis.json",
+      "bytes": 70759,
+      "sha256": "188fac8ef4da6732fc7f1cf6bb75a857d9255f7e75e6d2fa01a86f49dc1eafd9"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-native-evidence-review-20261005/analyzer-output.txt",
+      "bytes": 7910,
+      "sha256": "09cca7d4cc314314870c411001271865368fa2a87440ddcdbe28bb49f01e1963"
+    }
+  ]
+}

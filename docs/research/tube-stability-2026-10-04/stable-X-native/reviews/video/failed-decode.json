@@ -1,0 +1,8 @@
+{
+  "complete": false,
+  "exitCode": 1,
+  "failure": "ffmpeg filter commas were not escaped; No such filter: 0)+eq(n",
+  "framesWritten": 0,
+  "nativeCaptureChanged": false,
+  "firstToolChunk": "a0e756"
+}

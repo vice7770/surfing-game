@@ -1,0 +1,945 @@
+{
+  "bounds": [
+    {
+      "a": {
+        "footHeight": 0.12,
+        "footDepth": 1
+      },
+      "b": {
+        "footHeight": 5.5,
+        "footDepth": 9
+      },
+      "bound": {
+        "seconds": 2.4444367626466064,
+        "maxScale": 12.222222222222221,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 5
+      },
+      "actualMax": 2.21397160463909,
+      "scaleMax": 12.222222222222221
+    },
+    {
+      "a": {
+        "footHeight": 4.7,
+        "footDepth": 2
+      },
+      "b": {
+        "footHeight": 0.42,
+        "footDepth": 7
+      },
+      "bound": {
+        "seconds": 2.2596770874387073,
+        "maxScale": 10.444444020589193,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 5
+      },
+      "actualMax": 2.0466313482481873,
+      "scaleMax": 10.444444020589193
+    },
+    {
+      "a": {
+        "footHeight": 0.4,
+        "footDepth": 1
+      },
+      "b": {
+        "footHeight": 3.6,
+        "footDepth": 9
+      },
+      "bound": {
+        "seconds": 2.097611104464132,
+        "maxScale": 9,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 1
+      },
+      "actualMax": 1.8143146226959361,
+      "scaleMax": 9
+    },
+    {
+      "a": {
+        "footHeight": 2.63,
+        "footDepth": 7
+      },
+      "b": {
+        "footHeight": 2.65,
+        "footDepth": 7
+      },
+      "bound": {
+        "seconds": 1.8499191099132068,
+        "maxScale": 7,
+        "maxAuthoredTD": 1.368731429193744,
+        "partitions": 1
+      },
+      "actualMax": 1.5677374427434958,
+      "scaleMax": 7
+    }
+  ],
+  "interior": {
+    "endpointOwnUntil": [
+      0.5477172622900233,
+      1.6431517868700696
+    ],
+    "endpointTau": [
+      0.5577172622900233,
+      1.6531517868700696
+    ],
+    "interiorTau": 1.1054345245800463,
+    "interiorRetirement": 1.224733030930574,
+    "history": {
+      "policy": "bounded-C-incident-support/v1",
+      "atTau": 0.5577172622900233,
+      "solverTime": 1,
+      "ownPocketAlive": false,
+      "retainedForGeometry": true,
+      "geometricPaceActive": true,
+      "state": "incident-support",
+      "incidents": [
+        {
+          "otherId": 101,
+          "front": 1,
+          "boundSeconds": 2.097611104464132,
+          "minimumPacketAge": 0.5577172622900233,
+          "potentiallyLive": true,
+          "maxScale": 9,
+          "maxAuthoredTD": 1.368731429193744,
+          "partitions": 1
+        }
+      ]
+    }
+  },
+  "handoffBoundaryClassification": {
+    "originalCapturedFixedX": 16.192875862121582,
+    "raw15Before": {
+      "x": 15,
+      "tau": 1.5730825662612915,
+      "retirement": 1.5649843688974254,
+      "fade": 0
+    },
+    "raw15After": {
+      "x": 15,
+      "tau": 1.6120177507400513,
+      "retirement": 1.5649843688974254,
+      "fade": 0
+    },
+    "before": {
+      "rows": [
+        1,
+        2
+      ],
+      "x": [
+        16,
+        16.5
+      ],
+      "fraction": 0.38575172424316406,
+      "phases": [
+        2,
+        2
+      ],
+      "overturned": [
+        1,
+        1
+      ],
+      "weights": [
+        0.024022968485951424,
+        0.125065878033638
+      ],
+      "z": [
+        -129.68922204419505,
+        -127.26634035495226,
+        -126.76465795075637
+      ],
+      "y": [
+        0.19864002916980894,
+        0.01243225829125194,
+        0.01243225829125194
+      ]
+    },
+    "after": {
+      "rows": [
+        0,
+        1
+      ],
+      "x": [
+        16,
+        16.5
+      ],
+      "fraction": 0.38575172424316406,
+      "phases": [
+        2,
+        2
+      ],
+      "overturned": [
+        1,
+        1
+      ],
+      "weights": [
+        0,
+        0.030619120225310326
+      ],
+      "z": [
+        -129.56121799672837,
+        -127.13832693480072,
+        -126.63664453060483
+      ],
+      "y": [
+        0.037247646696698666,
+        0.0023310591058356422,
+        0.0023310591058356422
+      ]
+    },
+    "fixedWeightBefore": 0.06300044506651759,
+    "fixedWeightAfter": 0.011811378421722196,
+    "sealedFirstRowZeroRetained": true,
+    "relocatedStation": false,
+    "originalEndpointWeightFailurePreserved": true
+  },
+  "handoff": {
+    "report": {
+      "path": "/private/tmp/tube-bounded-c-parallel-physics-mouth-native-20261004/candidate-first/report.json",
+      "sha256": "a17654bd706fbd3c6518b94ad9deb31f096bc7a98e114795a0a3b6a6801bfd4d",
+      "bytes": 8769787
+    },
+    "before": {
+      "rows": [
+        1,
+        2
+      ],
+      "x": [
+        16,
+        16.5
+      ],
+      "fraction": 0.38575172424316406,
+      "phases": [
+        2,
+        2
+      ],
+      "overturned": [
+        1,
+        1
+      ],
+      "weights": [
+        0.024022968485951424,
+        0.125065878033638
+      ],
+      "z": [
+        -129.68922204419505,
+        -127.26634035495226,
+        -126.76465795075637
+      ],
+      "y": [
+        0.19864002916980894,
+        0.01243225829125194,
+        0.01243225829125194
+      ]
+    },
+    "after": {
+      "rows": [
+        0,
+        1
+      ],
+      "x": [
+        16,
+        16.5
+      ],
+      "fraction": 0.38575172424316406,
+      "phases": [
+        2,
+        2
+      ],
+      "overturned": [
+        1,
+        1
+      ],
+      "weights": [
+        0,
+        0.030619120225310326
+      ],
+      "z": [
+        -129.56121799672837,
+        -127.13832693480072,
+        -126.63664453060483
+      ],
+      "y": [
+        0.037247646696698666,
+        0.0023310591058356422,
+        0.0023310591058356422
+      ]
+    },
+    "landmarkDeltaZ": [
+      0.12800404746667482,
+      0.1280134201515466,
+      0.1280134201515466
+    ],
+    "rawOldDelta": 2.6349639892578125,
+    "newEndpointDelta": 0.26518004868671596,
+    "immutable": [
+      [
+        158,
+        6.624247192383583,
+        -140.54818799998338,
+        1.5649843571611293,
+        35.5057857034707
+      ],
+      [
+        159,
+        6.648556790294768,
+        -138.86865730509928,
+        1.5669200797867315,
+        35.63005199734316
+      ]
+    ],
+    "history": {
+      "policy": "bounded-C-incident-support/v1",
+      "atTau": 1.6120177507400513,
+      "solverTime": 37.06666666666666,
+      "ownPocketAlive": false,
+      "retainedForGeometry": true,
+      "geometricPaceActive": true,
+      "state": "incident-support",
+      "incidents": [
+        {
+          "otherId": 159,
+          "front": 72,
+          "boundSeconds": 1.8499191099132068,
+          "minimumPacketAge": 1.431322455406189,
+          "potentiallyLive": true,
+          "maxScale": 7,
+          "maxAuthoredTD": 1.368731429193744,
+          "partitions": 1
+        }
+      ]
+    },
+    "nativeRerunClaim": false
+  },
+  "release": {
+    "bound": 1.6000291448564612,
+    "liveBefore": [
+      {
+        "id": 108,
+        "tau": 1.279120932466244,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 34.883516270135026
+      },
+      {
+        "id": 109,
+        "tau": 1.279120932466244,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 34.883516270135026
+      },
+      {
+        "id": 110,
+        "tau": 1.279120932466244,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 34.883516270135026
+      },
+      {
+        "id": 111,
+        "tau": 1.279120932466244,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 34.883516270135026
+      },
+      {
+        "id": 112,
+        "tau": 1.279120932466244,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 34.883516270135026
+      },
+      {
+        "id": 113,
+        "tau": 1.279120932466244,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 34.883516270135026
+      },
+      {
+        "id": 114,
+        "tau": 1.279120932466244,
+        "until": 1.4491236647965373,
+        "pace": 4,
+        "base": 34.883516270135026
+      }
+    ],
+    "releaseResiduals": [
+      {
+        "id": 105,
+        "tauResidual": 3.215405597334353e-7,
+        "zResidual": 0.0000012861622380455628
+      },
+      {
+        "id": 106,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 107,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 108,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 109,
+        "tauResidual": -2.220446049250313e-16,
+        "zResidual": 0
+      },
+      {
+        "id": 110,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 111,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 112,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 113,
+        "tauResidual": 0,
+        "zResidual": 0
+      },
+      {
+        "id": 114,
+        "tauResidual": 0,
+        "zResidual": 0
+      }
+    ],
+    "roofResiduals": [
+      {
+        "x": 13,
+        "a": {
+          "rows": [
+            7,
+            8
+          ],
+          "x": [
+            13,
+            13.5
+          ],
+          "fraction": 0,
+          "phases": [
+            2,
+            2
+          ],
+          "overturned": [
+            1,
+            1
+          ],
+          "weights": [
+            0.4844445288181305,
+            0.4819445312023163
+          ],
+          "z": [
+            40.09866714477539,
+            42.227684020996094,
+            42.64176940917969
+          ],
+          "y": [
+            1.2422659397125244,
+            0.06911085546016693,
+            0.06911085546016693
+          ]
+        },
+        "b": {
+          "rows": [
+            7,
+            8
+          ],
+          "x": [
+            13,
+            13.5
+          ],
+          "fraction": 0,
+          "phases": [
+            2,
+            2
+          ],
+          "overturned": [
+            1,
+            1
+          ],
+          "weights": [
+            0.4844445288181305,
+            0.4819445312023163
+          ],
+          "z": [
+            40.09866714477539,
+            42.227684020996094,
+            42.64176940917969
+          ],
+          "y": [
+            1.2422659397125244,
+            0.06911085546016693,
+            0.06911085546016693
+          ]
+        },
+        "zResiduals": [
+          0,
+          0,
+          0
+        ],
+        "yResiduals": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "x": 17,
+        "a": {
+          "rows": [
+            15,
+            16
+          ],
+          "x": [
+            17,
+            17.5
+          ],
+          "fraction": 0,
+          "phases": [
+            2,
+            2
+          ],
+          "overturned": [
+            1,
+            1
+          ],
+          "weights": [
+            0.46444472670555115,
+            0.4619447588920593
+          ],
+          "z": [
+            40.12266540527344,
+            42.251686096191406,
+            42.665767669677734
+          ],
+          "y": [
+            1.190980315208435,
+            0.06625769287347794,
+            0.06625769287347794
+          ]
+        },
+        "b": {
+          "rows": [
+            15,
+            16
+          ],
+          "x": [
+            17,
+            17.5
+          ],
+          "fraction": 0,
+          "phases": [
+            2,
+            2
+          ],
+          "overturned": [
+            1,
+            1
+          ],
+          "weights": [
+            0.46444472670555115,
+            0.4619447588920593
+          ],
+          "z": [
+            40.12266540527344,
+            42.251686096191406,
+            42.665767669677734
+          ],
+          "y": [
+            1.190980315208435,
+            0.06625769287347794,
+            0.06625769287347794
+          ]
+        },
+        "zResiduals": [
+          0,
+          0,
+          0
+        ],
+        "yResiduals": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "x": 21,
+        "a": {
+          "rows": [
+            23,
+            24
+          ],
+          "x": [
+            21,
+            21.5
+          ],
+          "fraction": 0,
+          "phases": [
+            2,
+            2
+          ],
+          "overturned": [
+            1,
+            1
+          ],
+          "weights": [
+            0.4444453716278076,
+            0.4419454038143158
+          ],
+          "z": [
+            40.14666748046875,
+            42.27568817138672,
+            42.68976974487305
+          ],
+          "y": [
+            1.1396957635879517,
+            0.06340457499027252,
+            0.06340457499027252
+          ]
+        },
+        "b": {
+          "rows": [
+            23,
+            24
+          ],
+          "x": [
+            21,
+            21.5
+          ],
+          "fraction": 0,
+          "phases": [
+            2,
+            2
+          ],
+          "overturned": [
+            1,
+            1
+          ],
+          "weights": [
+            0.4444453716278076,
+            0.4419454038143158
+          ],
+          "z": [
+            40.14666748046875,
+            42.27568817138672,
+            42.68976974487305
+          ],
+          "y": [
+            1.1396957635879517,
+            0.06340457499027252,
+            0.06340457499027252
+          ]
+        },
+        "zResiduals": [
+          0,
+          0,
+          0
+        ],
+        "yResiduals": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "liveAfter": [
+      {
+        "id": 108,
+        "tau": 1.3097875991329107,
+        "z": 40.12266666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 1.3097875991329107,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 107,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3067875991329108,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 109,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3097875991329107,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 109,
+        "tau": 1.3127875991329105,
+        "z": 40.13466666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 1.3127875991329105,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 108,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3097875991329107,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 110,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3127875991329105,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 110,
+        "tau": 1.3157875991329107,
+        "z": 40.14666666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 1.3157875991329107,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 109,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3127875991329105,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 111,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3157875537872314,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 111,
+        "tau": 1.3187875991329108,
+        "z": 40.15866666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 1.3187875991329108,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 110,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3157875537872314,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 112,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3187875747680664,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 112,
+        "tau": 1.3217875991329107,
+        "z": 40.17066666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 1.3217875991329107,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 111,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3187875747680664,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 113,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3217875957489014,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 113,
+        "tau": 1.3247875991329106,
+        "z": 40.18266666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 1.3247875991329106,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 112,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3217875957489014,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            },
+            {
+              "otherId": 114,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3247875991329106,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": 114,
+        "tau": 1.3277875991329107,
+        "z": 40.19466666666667,
+        "history": {
+          "policy": "bounded-C-incident-support/v1",
+          "atTau": 1.3277875991329107,
+          "solverTime": 1.0166666666666666,
+          "ownPocketAlive": true,
+          "retainedForGeometry": false,
+          "geometricPaceActive": true,
+          "state": "own-pocket",
+          "incidents": [
+            {
+              "otherId": 113,
+              "front": 1,
+              "boundSeconds": 1.6000291448564612,
+              "minimumPacketAge": 1.3247875991329106,
+              "potentiallyLive": true,
+              "maxScale": 7,
+              "maxAuthoredTD": 1.1838410482141448,
+              "partitions": 1
+            }
+          ]
+        }
+      }
+    ],
+    "globalContinuityProof": false
+  },
+  "budget": {
+    "actualBudgetTriggered": true,
+    "priorClamps": 4,
+    "priorRevivedDeadRows": 3,
+    "nextRevivedDeadRows": 0,
+    "rawDrawAndContactByteParity": true
+  },
+  "stall": {
+    "component": [
+      {
+        "front": 1,
+        "pointIds": [
+          100,
+          101
+        ],
+        "boundSeconds": 2.097611104464132,
+        "latestSourceTime": 0
+      }
+    ],
+    "bound": 2.097611104464132,
+    "noAdditionalWaterOrAir": true,
+    "originalOwnPocketStallRetained": true
+  },
+  "lifecycle": {
+    "ownUntil": 1.4491236647965373,
+    "bound": 1.6000291448564612,
+    "supportOnlyFrames": 19,
+    "throws": 7,
+    "fundedWater": 3.3042741666605453,
+    "trappedOnce": 19.617311960677746,
+    "emitted": 19.617311960677725,
+    "heldAir": 0,
+    "airborneWater": 0,
+    "onceOnlyFundingAndAir": true
+  },
+  "raw": {
+    "trackerExportEquality": true,
+    "solverBytesEquality": true,
+    "packetWordsEquality": true,
+    "physicalLipLedgerEquality": true,
+    "epochs": 7
+  }
+}

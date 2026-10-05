@@ -1,0 +1,15 @@
+{
+  "sourceRoot": "/private/tmp/tube-bounded-c-carrier-support-20261004/source",
+  "filesCopied": 582,
+  "dependencyLink": "/private/tmp/tube-bounded-c-parallel-rays-20261004/source/node_modules",
+  "parentReadiness": {
+    "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json",
+    "bytes": 115387,
+    "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+  },
+  "design": {
+    "file": "/private/tmp/tube-carrier-stable-sampling-design-20261004/design.md",
+    "sha256": "fd70e41187301d14d80c49d10ada570543c3ff5976e4af6ec0ee7a95fe22234f"
+  },
+  "resourcesStarted": false
+}

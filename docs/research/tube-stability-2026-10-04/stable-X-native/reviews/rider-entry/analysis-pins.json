@@ -1,0 +1,17 @@
+[
+  {
+    "file": "/private/tmp/tube-carrier-rider-entry-audit-20261005/measure.py",
+    "bytes": 11139,
+    "sha256": "2de746de06a544fee2df35345cbbd3edf5563beda1083ddf0e05c16100b178d2"
+  },
+  {
+    "file": "/private/tmp/tube-carrier-rider-entry-audit-20261005/geometry.json",
+    "bytes": 30148,
+    "sha256": "4d74955aa520bf6ac281ce6a328fcf4416c412993c7bcf4f829b31bf8dc843d0"
+  },
+  {
+    "file": "/private/tmp/tube-carrier-rider-entry-audit-20261005/README.md",
+    "bytes": 8400,
+    "sha256": "7858c823d7d7af422e6f5459485cefa9e1c51ff4cf6a055d63aad7d370371d41"
+  }
+]

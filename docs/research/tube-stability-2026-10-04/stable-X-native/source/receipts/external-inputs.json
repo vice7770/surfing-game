@@ -1,0 +1,63 @@
+{
+  "schema": "stable-X-readonly-external-inputs/v1",
+  "inputs": [
+    {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/handoff-fixture.json",
+      "bytes": 17499,
+      "sha256": "95d61a80dee918bf411c28816a876705699dbdc9d05962f77610d330b55dfa09"
+    },
+    {
+      "file": "/private/tmp/tube-parallel-carrier-handoff-audit-20261004/analysis.json",
+      "bytes": 26136,
+      "sha256": "74f682ed494bd6347c6f4e4aae1779625381cfa04c0212374d966b7690a5a7e7"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/stress.test.ts",
+      "bytes": 13319,
+      "sha256": "e3596c3b839db3ed07d7be3296bd2a9d67a238d7524d634db49a83b74f0344d4"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-release-stress-20261004/readiness.json",
+      "bytes": 1350,
+      "sha256": "e70248b97415e50638ca8825c693a7c3cc2d902d15dc59d6a08224bce5ecf59b"
+    },
+    {
+      "file": "/private/tmp/tube-carrier-stable-sampling-design-20261004/design.md",
+      "bytes": 11847,
+      "sha256": "fd70e41187301d14d80c49d10ada570543c3ff5976e4af6ec0ee7a95fe22234f"
+    }
+  ],
+  "unchangedOldRawComparatorSource": {
+    "readiness": {
+      "file": "/private/tmp/tube-bounded-c-parallel-physics-20261004/readiness.json",
+      "bytes": 103658,
+      "sha256": "f973340740f7173b8e7a6624d953b503b6b7320fcc5d7c84e873512367307d67"
+    },
+    "sourceRoot": "/private/tmp/tube-bounded-c-parallel-physics-20261004/source",
+    "pinsVerified": 580
+  },
+  "unchangedCarrierParent": {
+    "readiness": {
+      "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/parent-readiness.json",
+      "bytes": 115387,
+      "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+    },
+    "originalReadiness": {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/readiness.json",
+      "bytes": 115387,
+      "sha256": "be2073b25d70ca69db3b2362a18bcb618163a2ca4af42493f32b0090751d2cb0"
+    },
+    "sourcePins": {
+      "file": "/private/tmp/tube-bounded-c-stable-x-sampling-20261005/parent-source-pins.json",
+      "bytes": 95422,
+      "sha256": "0c32f04c0bb80bab34ddb88611d49a3f9202bc73bc5c70b1d9a851e09c87cba1"
+    },
+    "originalSourcePins": {
+      "file": "/private/tmp/tube-bounded-c-carrier-support-20261004/source-pins.json",
+      "bytes": 95422,
+      "sha256": "0c32f04c0bb80bab34ddb88611d49a3f9202bc73bc5c70b1d9a851e09c87cba1"
+    },
+    "originalPinsVerified": 582
+  },
+  "measuredStressScope": "Only the two return distances are measured inputs. Controlled clocks, coordinates/bases and CPU substrate are synthetic, not native state replay."
+}
