@@ -1,0 +1,54 @@
+{
+  "schema": "c-formation-root-helper-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "checks": {
+    "nativeSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-c-formation-native-20261005/native.mjs"
+      ],
+      "elapsedSeconds": 0.04113441600929946,
+      "log": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/root-helper-logs/nativeSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "diagnosticWrapperSyntax": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "/opt/homebrew/bin/node",
+        "--check",
+        "/private/tmp/tube-c-formation-native-20261005/build-diagnostic.mjs"
+      ],
+      "elapsedSeconds": 0.03835037496173754,
+      "log": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/root-helper-logs/diagnosticWrapperSyntax.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "sourceOnlyOwner": {
+      "run": true,
+      "exitCode": 0,
+      "argv": [
+        "python3",
+        "/private/tmp/tube-c-formation-native-20261005/run.py",
+        "--arm",
+        "candidate"
+      ],
+      "elapsedSeconds": 0.18813770898850635,
+      "log": {
+        "file": "/private/tmp/tube-c-formation-native-20261005/root-helper-logs/sourceOnlyOwner.log",
+        "bytes": 486,
+        "sha256": "217a5874b6f9e7e1a71af688aedec772851b0ed6501e9fb211ce7f608466fb2f"
+      }
+    }
+  }
+}

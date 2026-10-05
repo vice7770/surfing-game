@@ -1,0 +1,78 @@
+Prepared source only: evidence-projection.mjs and check-payload.mjs.
+Executable checks run: false. Executable checks passed: false. Root execution pending.
+No simulations, tests, builds, numeric probes, native captures, ports or Git actions ran.
+No generated check-result JSON was written. Other owners' files remain untouched.
+
+Browser interface
+  createProductionEvidenceProjection() ->
+    {projectView, projectRide, projectRow, projectEventRide, limits}.
+  The factory is self-contained and can be stringified into the browser.
+  projectRow accepts raw {step,physicalSeconds,seaTime,input,inputView,ride,board,
+    rider,pilot,clocks,camera,loft,witness,nearFormed,detector}.
+  Initial null input/inputView/witness/nearFormed are accepted.
+  board/rider must be the existing active Float64Array subarray views (8/33 words).
+  They are detached exact active bytes, dtype/count/littleEndian/base64 descriptors;
+  no Float32 conversion, decimal rounding or inactive backing words are retained.
+  Driver measurements may use Array.from separately, before projection.
+  input retains the exact own paddle/popUp/steer primitives returned by line pilot.
+  Extra input fields fail; this projection is evidence only, never a control input.
+  inputView retains board x/z/heading, peelDirection/focusZ/crestBehind, phase/cue.
+  It contains no duplicated ride, wave or contact graph.
+  ride retains phase/speed/boardSpeed/cue/separation/resets/balance, all existing14
+  WaveFrame primitives, and popUp outcome/refusal. Unrecognized own wave primitives
+  fail instead of being silently dropped. Ordinary rows contain no contact graph.
+  Event ride additionally retains bank/popUp duration/landingPeak/frontShare and
+  the complete existing bounded public contactDiagnostics graph.
+  Store event ride once as checkpoints[*].fullEventRide, never also in row/inputView.
+
+Compact witness summary
+  classification = original classification.
+  pointCount = pointCountInUnambiguousCavity.
+  commonComponents = commonComponentCount.
+  contained = sevenPublishedWitnessesAndReferenceTrunkSpheresContained.
+  component {front,rows:[firstRow,lastRow],sigma:[sigmaMin,sigmaMax]}.
+  headGaps [floorGap,roofGap], or null plus availability when not measured.
+  Original localId/radius/full point/crossing/sphere payload stays in checkpoint
+  witness metadata only. Summary is not a full body/capsule entry proof.
+  nearFormed retains available/qualifies/front/horizontalDistance/reason only.
+  detector retains cumulativeMilliseconds/disabledReason/measured.
+  Per-row strings cap128 code units; full detector failures belong in checkpoint
+  or startup metadata. Camera rows retain only seven position/quaternion words.
+
+Availability
+  Numeric Infinity/-Infinity/NaN serialize null with sibling $availability[key].
+  Missing own field and present-undefined field serialize null with distinct
+  absent/undefined descriptors. Real null has no unavailable descriptor.
+  Non-array numeric signed zero has a -0 descriptor; typed words preserve exact bits.
+  Source getters are rejected where read through data-property projection.
+
+Finite budgets (all remain pending executable verification)
+  7201 rows including optional step0, each<=3440 JSON bytes; newline budget included.
+  NDJSON remains24MiB and report remains32MiB. No cap silently expands.
+  Checkpoint count<=6; complete metadata<=512KiB each, fullEventRide<=256KiB included.
+  Header excluding steps/checkpoints reserves512KiB. Six checkpoint reserves plus
+  header are included once in conservative report budget; no duplicated event graph.
+  PNG<=6, each<=12MiB, aggregate<=48MiB. Loft sidecars<=4, each<=6MiB,
+  aggregate<=24MiB. Movie<=1,16MiB. Media validation uses external manifest metadata.
+  Legitimate structural counters are checked as integers: pilot attempts<=1,
+  point count<=7, loft/components/rows<=300, vertices<=40200, indices<=240000.
+  Any unexpected shape, missing required count or byte excess fails recording.
+
+Root execution interface
+  node /private/tmp/tube-c-formation-autopilot-native-20261005/check-payload.mjs
+  Optional --reference=/private/tmp/tube-board-raw-normal-native-20261005/candidate-first/report.json
+    requires that exact reference report.complete is true before processing it.
+  Optional --manifest=<completed-new-report.json>
+    validates report.steps, checkpoints[*].fullEventRide, artifacts metadata,
+    loftSnapshots metadata and steps.ndjson metadata; no media file is loaded.
+  Checker prints one result JSON to stdout; it does not write results itself.
+  Synthetic source-schema fixtures exercise finite long decimals, exact active
+  words/signed zero/view offsets, null/absent/undefined/Infinity, detached output,
+  nonmutation, original3input fields, and browser-stringified factory isolation.
+  Existing143 field names are read from pinned source metadata during root execution;
+  checker emits counts/hash only, no new large observer inventory.
+
+Freeze status
+  These three source files are handed off for parent/root review. No execution pass
+  is inferred from source construction. Parent must review compact schema, run
+  checker, and pin exact files before authorizing native capture.

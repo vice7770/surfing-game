@@ -1,0 +1,5 @@
+{
+  "extends": "./source/tsconfig.json",
+  "compilerOptions": { "noEmit": true },
+  "include": ["tests/formationWeight.test.ts", "vitest.config.ts", "source/src/wave/barrel/sweptLoft.ts"]
+}

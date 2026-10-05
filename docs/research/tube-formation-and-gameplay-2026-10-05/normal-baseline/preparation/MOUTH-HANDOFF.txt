@@ -1,0 +1,26 @@
+Source-only mouth-camera handoff, 2026-10-05
+
+Owned files: mouth-camera.mjs and this handoff only. No application, frozen artifact, driver, owner, port or runtime was changed. No script, test, build, numerical probe or native execution was run. Root owns source freeze, execution and all acceptance.
+
+Interface: exported createMouthCameraInspection(d), with every runtime binding inside its body and no imports. It can be installed by serializing the factory's toString(). It returns { inspect }, and inspect() is synchronous. Success: {available:true, pngDataUrl, selector, cameraDerivation, nonmutation, ...scope labels}. Unavailable/geometry/render/guard failure: {available:false, reason, stage, nonmutation, ...scope labels}. Guard/restoration failure discards the PNG. The caller must treat an unavailable result as unavailable, not select another candidate or alter gameplay.
+
+Call only at an already drained, already normally rendered checkpoint in the held production session. Capture and attach the caller's normal full37 active-loft/raw-front sidecar at that same epoch. This helper keeps byte copies temporarily for comparison and returns no duplicate raw sidecar. It never calls start, step, retry, place, mode.update, camera.setView, heightAt, water/contact queries, or any geometry builder.
+
+Selection: ascending stored formed-row order, lower boundary before upper. Eligible formed rows have positive sliceWeight, positive sliceFormed and phase1. A boundary is either an adjacent same-front joined unformed row, or the end of a same-front joined run with an eligible inward neighbour. The selected strip must actually contain all266 active indexed triangles. First candidate is retained even if its camera derivation fails; there is no visible-quality/camera search. This is a geometry inspection, not a rider approach, mouth clearance, hollow-volume or passage witness.
+
+Camera: public world positions only, stride134, E3, complete profile32..112 (81 points), landmarks32/64/88/112. Adjacent stored crest coordinates give the horizontal tangent into the formed run. Full contour bounds give target and perspective-fit distance, using one fixed margin1.2 and the inherited effective FOV/aspect/near/far/zoom. The clone uses world-up. Unsupported off-axis normal projections return unavailable rather than changing projection. d.renderView(clone) supplies the PNG; finally d.renderView(the untouched normal camera) restores renderer-owned patch/underwater/caustic state. Neither actor nor authored follower camera is updated.
+
+Nonmutation: snapshot/host/status/loft identities, seaTime/outstandingSteps, active counts, normal camera owner/view/homeView/parent and exact pose/projection numeric values; exact active bytes for all37 public loft arrays, raw frontCount*9 words, board8 Float64 words and rider33 Float64 words. All checks occur after normal render restoration. The caller still independently checks nonmutation and normal render ownership. Renderer-internal byte equality is not claimed.
+
+Source references checked in /Users/regina/Desktop/Projects/surfing-game:
+  src/wave/barrel/ProfileLibrary.ts:25-26 profile count and landmarks.
+  src/wave/barrel/sweptLoft.ts:24-28 stride,57-171 complete37-array schema,95-99 phases,1171-1187 mouth/run semantics,1276-1299 triangulation.
+  src/wave/barrel/frontRecords.ts:11-12 raw front stride.
+  src/wave/SurfZoneRunner.ts:148 rider33 words,684-685 board8/rider arrays.
+  src/game/SurfZoneHost.ts:29-38 public snapshot/outstanding contract.
+  src/game/PhysicalMode.ts:762-774 existing draw/current public loft.
+  src/main.ts:306-307 renderView,953-974 draw path.
+  src/scene/barrel/SweptBarrel.ts:111-130 same-revision cached draw.
+  src/scene/SpectatorCamera.ts:87 existing PerspectiveCamera.
+
+Pending root checks: JS source/serialization, selector/index coverage, inherited camera bounds, guard failure paths, exact nonmutation, renderer restoration, PNG/sidecar epoch pairing, actual image interpretation and resource/owner closure. No availability, tube quality or playable passage outcome has been established.

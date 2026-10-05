@@ -1,0 +1,59 @@
+{
+  "schema": "production-autopilot-root-helper-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "checks": {
+    "syntax": {
+      "run": true,
+      "exitCode": 0,
+      "log": {
+        "file": "/private/tmp/tube-production-autopilot-root-20261005/syntax.log",
+        "bytes": 647,
+        "sha256": "bb17c404ea4ac76ab456b7e60f14cbb2bfee2659f7ce337cea8d4900b40c1e8d"
+      }
+    },
+    "payload": {
+      "run": true,
+      "exitCode": 0,
+      "elapsedSeconds": 0.18639020895352587,
+      "command": [
+        "/opt/homebrew/bin/node",
+        "/private/tmp/tube-production-autopilot-native-20261005/check-payload.mjs",
+        "--reference=/private/tmp/tube-board-raw-normal-native-20261005/candidate-first/report.json"
+      ],
+      "log": {
+        "file": "/private/tmp/tube-production-autopilot-root-20261005/payload.log",
+        "bytes": 1489,
+        "sha256": "26552fcf32e437a35c3a2e7cdb9a0e4e961f5c794a3ec3d687382d18d61b2e7d"
+      }
+    },
+    "sourceOnlyOwner": {
+      "run": true,
+      "exitCode": 0,
+      "elapsedSeconds": 0.15797908400418237,
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/private/tmp/tube-production-autopilot-native-20261005/run.py",
+        "--arm",
+        "candidate"
+      ],
+      "log": {
+        "file": "/private/tmp/tube-production-autopilot-root-20261005/sourceOnlyOwner.log",
+        "bytes": 693,
+        "sha256": "55abdc79a38eae5a7118fa0af7d1b41b3682255d0ec85bfaba7f9f0344e5c187"
+      }
+    }
+  },
+  "payload": {
+    "nonmutationPassed": true,
+    "budgetPassed": true
+  },
+  "sourcePostUnchanged": true,
+  "preparationFreeze": {
+    "file": "/private/tmp/tube-production-autopilot-native-20261005/preparation-freeze.json",
+    "bytes": 2773,
+    "sha256": "87d00720c4c576c36b01fb558adfde5a83c31dac888aeba1cdd0f3cff9d9d571"
+  },
+  "separateOwnerArtifactBindingCheckPending": true
+}

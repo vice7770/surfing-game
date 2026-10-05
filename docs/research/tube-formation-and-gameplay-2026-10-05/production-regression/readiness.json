@@ -1,0 +1,31 @@
+{
+  "schema": "bounded-C-formation-production-test-preparation/v1",
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "testsExecuted": false,
+  "portsStarted": false,
+  "primaryFilesEdited": false,
+  "intendedDestination": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/BoundedCFormationWater.test.ts",
+  "permanentTestImports": "repository-relative only",
+  "expectedTestCount": 4,
+  "fixture": "One actual Padang case,9front records,prethrow/exactthrow,480physicalcells,actual deferred owner and complete ordinary-water samples",
+  "rootRunner": "/private/tmp/tube-c-formation-production-tests-20261005/root-check.py",
+  "preparationPins": [
+    {
+      "file": "/private/tmp/tube-c-formation-production-tests-20261005/BoundedCFormationWater.test.ts",
+      "bytes": 5020,
+      "sha256": "c3e89357687b52a915bf1277b83c1a6077553b164a290e5857f5a6c24302541c"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-production-tests-20261005/root-check.py",
+      "bytes": 4184,
+      "sha256": "a15c49e6ee7c5e1113bec0402620670535494b8a164fa5c2787f3f20abf47ad6"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-production-tests-20261005/README.md",
+      "bytes": 3189,
+      "sha256": "d94d03515340ea1432647042aff1176dd5ee8c550145517da8dc0ab1fb30b786"
+    }
+  ],
+  "nativeOrTubePassageClaim": false
+}

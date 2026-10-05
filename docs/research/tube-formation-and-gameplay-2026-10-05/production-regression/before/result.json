@@ -1,0 +1,113 @@
+{
+  "schema": "bounded-C-formation-root-production-regression/v1",
+  "phase": "before",
+  "acceptedExpectedResult": true,
+  "source": "/Users/regina/Desktop/Projects/surfing-game",
+  "sourcePostUnchanged": true,
+  "template": {
+    "file": "/private/tmp/tube-c-formation-production-tests-20261005/BoundedCFormationWater.test.ts",
+    "bytes": 5020,
+    "sha256": "c3e89357687b52a915bf1277b83c1a6077553b164a290e5857f5a6c24302541c"
+  },
+  "relocatedFixture": {
+    "file": "/private/tmp/tube-c-formation-production-tests-20261005/before/regression.test.ts",
+    "bytes": 5502,
+    "sha256": "803dcd5ee5f6e523916bda6d34358f4dcbc106c5713ff2520440b92b2328dcfc"
+  },
+  "sourcePins": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 80645,
+      "sha256": "194ee78b57ef68b4449dc44bf8bd4bbd5b1c249efab382c0736dca6dbd650af2"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptContact.ts",
+      "bytes": 30393,
+      "sha256": "ba216e86040a5b82b79f898373ed78073f1905fb0078e9ead0093b9a3b3c7d4e"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/ProfileLibrary.ts",
+      "bytes": 28989,
+      "sha256": "c34da3c85dea009ed847f239d6f1256a387999e5fd0733046f55b3476942183e"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.ts",
+      "bytes": 18088,
+      "sha256": "0dba650afc9844df79c1beb61319bddbc257562c0f93ff083fe3838e0cebbd98"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/ShallowWaterSolver.ts",
+      "bytes": 33545,
+      "sha256": "3541f98e09924f2519e4c7803372a37dea2a5f605d881e0eb30348a1d41ea980"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/PhysicalSurfWater.ts",
+      "bytes": 26311,
+      "sha256": "5f0857dbca9c0e7b2e6af215b60bc72101f89d8081687602983f441af054d0cb"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/physics/SurfWater.ts",
+      "bytes": 4064,
+      "sha256": "2f83ec78a7e2cc0e1cd301733aee51948e618851dc81fe71fed40c6cdf9ec840"
+    }
+  ],
+  "assetPins": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a20-l12.bin",
+      "bytes": 149848,
+      "sha256": "a89e1a6fed766fa881aa6a057df39e619e2f6fa3801d3715892f0f88e3769b37"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a30-l12.bin",
+      "bytes": 163264,
+      "sha256": "7a6acf5a5ca0186ec39587c83b52a25cec684078c9f848d63249ad333ef2f041"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/pad19-a45-l12.bin",
+      "bytes": 168424,
+      "sha256": "4e4a15298f2f2424d49a357a05f4e12f271f62b170d7887b825ac988cbe403af"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/public/barrels/periodic-padang19s-l12.bin",
+      "bytes": 181852,
+      "sha256": "8492f8fe051902e4053f0d4f98194b736fc3f0be0a32c60b070d53fa6ad2d3ab"
+    }
+  ],
+  "command": [
+    "/opt/homebrew/bin/node",
+    "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "/private/tmp/tube-c-formation-production-tests-20261005/before/vitest.config.ts",
+    "--reporter=json",
+    "--outputFile=/private/tmp/tube-c-formation-production-tests-20261005/before/tests.json"
+  ],
+  "exitCode": 1,
+  "timedOut": false,
+  "elapsedSeconds": 0.6608317079953849,
+  "actual": {
+    "total": 4,
+    "passed": 0,
+    "failed": 4,
+    "success": false
+  },
+  "expected": {
+    "total": 4,
+    "passed": 0,
+    "failed": 4,
+    "success": false
+  },
+  "log": {
+    "file": "/private/tmp/tube-c-formation-production-tests-20261005/before/run.log",
+    "bytes": 472,
+    "sha256": "8a5a99e250324c9ab62f0d553f7f0755feb929e8e881bf921ae50e16fd1fa4b2"
+  },
+  "testReport": {
+    "file": "/private/tmp/tube-c-formation-production-tests-20261005/before/tests.json",
+    "bytes": 6322,
+    "sha256": "91c0d71a93f53a926d56480928ffd69fdce28b32b0acc329a83576bedfac6c04"
+  },
+  "portsStarted": false,
+  "primaryFilesEdited": false,
+  "tubePassageClaim": false
+}

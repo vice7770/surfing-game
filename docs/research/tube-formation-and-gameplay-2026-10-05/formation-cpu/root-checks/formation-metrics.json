@@ -1,0 +1,732 @@
+{
+  "sourceOnlyFixture": true,
+  "zeroFormationFixtures": 48,
+  "zeroFormationQueries": 2592,
+  "ordinaryWaterSamples": 90,
+  "exactParentLofts": 162,
+  "exactParentArrays": 5994,
+  "rawProviderLofts": 18,
+  "partialFormation": [
+    {
+      "case": "pad19-a20-l12",
+      "fraction": 0.2,
+      "waterIndex": 0,
+      "minFormation": 0.053312003456527965,
+      "maxFormation": 0.16764799464056876,
+      "airColumns": 428,
+      "minClearance": 0.0005797297954556191,
+      "minThickness": 0.00010663722455517277
+    },
+    {
+      "case": "pad19-a20-l12",
+      "fraction": 0.2,
+      "waterIndex": 1,
+      "minFormation": 0.053312003456527965,
+      "maxFormation": 0.16764799464056876,
+      "airColumns": 428,
+      "minClearance": 0.0005796425938603411,
+      "minThickness": 0.00010665978863833026
+    },
+    {
+      "case": "pad19-a20-l12",
+      "fraction": 0.2,
+      "waterIndex": 2,
+      "minFormation": 0.053312003456527965,
+      "maxFormation": 0.16764799464056876,
+      "airColumns": 428,
+      "minClearance": 0.0005797491669652377,
+      "minThickness": 0.0001066747158764425
+    },
+    {
+      "case": "pad19-a20-l12",
+      "fraction": 0.5,
+      "waterIndex": 0,
+      "minFormation": 0.4104319955643665,
+      "maxFormation": 0.5895680282952982,
+      "airColumns": 515,
+      "minClearance": 0.006644089621764437,
+      "minThickness": 0.0024607347575430483
+    },
+    {
+      "case": "pad19-a20-l12",
+      "fraction": 0.5,
+      "waterIndex": 1,
+      "minFormation": 0.4104319955643665,
+      "maxFormation": 0.5895680282952982,
+      "airColumns": 515,
+      "minClearance": 0.006621414497614775,
+      "minThickness": 0.0024607347575428262
+    },
+    {
+      "case": "pad19-a20-l12",
+      "fraction": 0.5,
+      "waterIndex": 2,
+      "minFormation": 0.4104319955643665,
+      "maxFormation": 0.5895680282952982,
+      "airColumns": 515,
+      "minClearance": 0.006652820538647464,
+      "minThickness": 0.0024607347575430483
+    },
+    {
+      "case": "pad19-a20-l12",
+      "fraction": 0.8,
+      "waterIndex": 0,
+      "minFormation": 0.8323519875493681,
+      "maxFormation": 0.9466880082021717,
+      "airColumns": 504,
+      "minClearance": 0.023653973421991048,
+      "minThickness": 0.014326682483559061
+    },
+    {
+      "case": "pad19-a20-l12",
+      "fraction": 0.8,
+      "waterIndex": 1,
+      "minFormation": 0.8323519875493681,
+      "maxFormation": 0.9466880082021717,
+      "airColumns": 504,
+      "minClearance": 0.023622113705049408,
+      "minThickness": 0.014326638256912605
+    },
+    {
+      "case": "pad19-a20-l12",
+      "fraction": 0.8,
+      "waterIndex": 2,
+      "minFormation": 0.8323519875493681,
+      "maxFormation": 0.9466880082021717,
+      "airColumns": 504,
+      "minClearance": 0.02364769642279574,
+      "minThickness": 0.014326664085015373
+    },
+    {
+      "case": "pad19-a30-l12",
+      "fraction": 0.2,
+      "waterIndex": 0,
+      "minFormation": 0.053312003233605125,
+      "maxFormation": 0.1676479957737512,
+      "airColumns": 430,
+      "minClearance": 0.0002906914313636211,
+      "minThickness": 0.00011064462661747321
+    },
+    {
+      "case": "pad19-a30-l12",
+      "fraction": 0.2,
+      "waterIndex": 1,
+      "minFormation": 0.053312003233605125,
+      "maxFormation": 0.1676479957737512,
+      "airColumns": 430,
+      "minClearance": 0.00029078099727664064,
+      "minThickness": 0.00011064462661747321
+    },
+    {
+      "case": "pad19-a30-l12",
+      "fraction": 0.2,
+      "waterIndex": 2,
+      "minFormation": 0.053312003233605125,
+      "maxFormation": 0.1676479957737512,
+      "airColumns": 430,
+      "minClearance": 0.00029068667491305433,
+      "minThickness": 0.00011062251329430062
+    },
+    {
+      "case": "pad19-a30-l12",
+      "fraction": 0.5,
+      "waterIndex": 0,
+      "minFormation": 0.41043202473203927,
+      "maxFormation": 0.5895680264704415,
+      "airColumns": 507,
+      "minClearance": 0.009559633176955074,
+      "minThickness": 0.004247372926101001
+    },
+    {
+      "case": "pad19-a30-l12",
+      "fraction": 0.5,
+      "waterIndex": 1,
+      "minFormation": 0.41043202473203927,
+      "maxFormation": 0.5895680264704415,
+      "airColumns": 507,
+      "minClearance": 0.009526325772174271,
+      "minThickness": 0.00424741930944128
+    },
+    {
+      "case": "pad19-a30-l12",
+      "fraction": 0.5,
+      "waterIndex": 2,
+      "minFormation": 0.41043202473203927,
+      "maxFormation": 0.5895680264704415,
+      "airColumns": 507,
+      "minClearance": 0.009575991425756714,
+      "minThickness": 0.004247397196118108
+    },
+    {
+      "case": "pad19-a30-l12",
+      "fraction": 0.8,
+      "waterIndex": 0,
+      "minFormation": 0.832351979701451,
+      "maxFormation": 0.9466879881470279,
+      "airColumns": 503,
+      "minClearance": 0.03429750260199205,
+      "minThickness": 0.022359141513519365
+    },
+    {
+      "case": "pad19-a30-l12",
+      "fraction": 0.8,
+      "waterIndex": 1,
+      "minFormation": 0.832351979701451,
+      "maxFormation": 0.9466879881470279,
+      "airColumns": 503,
+      "minClearance": 0.034264500736610914,
+      "minThickness": 0.022359074264571732
+    },
+    {
+      "case": "pad19-a30-l12",
+      "fraction": 0.8,
+      "waterIndex": 2,
+      "minFormation": 0.832351979701451,
+      "maxFormation": 0.9466879881470279,
+      "airColumns": 503,
+      "minClearance": 0.03433561006383257,
+      "minThickness": 0.02235913296023817
+    },
+    {
+      "case": "pad19-a45-l12",
+      "fraction": 0.2,
+      "waterIndex": 0,
+      "minFormation": 0.05331199966690609,
+      "maxFormation": 0.1676479936979078,
+      "airColumns": 488,
+      "minClearance": 0.0013692125532398514,
+      "minThickness": 0.00010106283812216788
+    },
+    {
+      "case": "pad19-a45-l12",
+      "fraction": 0.2,
+      "waterIndex": 1,
+      "minFormation": 0.05331199966690609,
+      "maxFormation": 0.1676479936979078,
+      "airColumns": 488,
+      "minClearance": 0.0013681106416302269,
+      "minThickness": 0.00010106283812216788
+    },
+    {
+      "case": "pad19-a45-l12",
+      "fraction": 0.2,
+      "waterIndex": 2,
+      "minFormation": 0.05331199966690609,
+      "maxFormation": 0.1676479936979078,
+      "airColumns": 488,
+      "minClearance": 0.0013714075559000394,
+      "minThickness": 0.00010106283812216788
+    },
+    {
+      "case": "pad19-a45-l12",
+      "fraction": 0.5,
+      "waterIndex": 0,
+      "minFormation": 0.41043200466246793,
+      "maxFormation": 0.5895679972732777,
+      "airColumns": 504,
+      "minClearance": 0.013498614270330611,
+      "minThickness": 0.005918626320195575
+    },
+    {
+      "case": "pad19-a45-l12",
+      "fraction": 0.5,
+      "waterIndex": 1,
+      "minFormation": 0.41043200466246793,
+      "maxFormation": 0.5895679972732777,
+      "airColumns": 504,
+      "minClearance": 0.013447422143707644,
+      "minThickness": 0.00591863391035119
+    },
+    {
+      "case": "pad19-a45-l12",
+      "fraction": 0.5,
+      "waterIndex": 2,
+      "minFormation": 0.41043200466246793,
+      "maxFormation": 0.5895679972732777,
+      "airColumns": 504,
+      "minClearance": 0.013574159360926874,
+      "minThickness": 0.005918626320195575
+    },
+    {
+      "case": "pad19-a45-l12",
+      "fraction": 0.8,
+      "waterIndex": 0,
+      "minFormation": 0.8323519706186829,
+      "maxFormation": 0.9466880012789697,
+      "airColumns": 505,
+      "minClearance": 0.04784057718127366,
+      "minThickness": 0.031701623866219775
+    },
+    {
+      "case": "pad19-a45-l12",
+      "fraction": 0.8,
+      "waterIndex": 1,
+      "minFormation": 0.8323519706186829,
+      "maxFormation": 0.9466880012789697,
+      "airColumns": 505,
+      "minClearance": 0.04767216527881313,
+      "minThickness": 0.031701635001899264
+    },
+    {
+      "case": "pad19-a45-l12",
+      "fraction": 0.8,
+      "waterIndex": 2,
+      "minFormation": 0.8323519706186829,
+      "maxFormation": 0.9466880012789697,
+      "airColumns": 505,
+      "minClearance": 0.04795374963147003,
+      "minThickness": 0.03170163500189904
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "fraction": 0.2,
+      "waterIndex": 0,
+      "minFormation": 0.05331199810584757,
+      "maxFormation": 0.16764800556765427,
+      "airColumns": 415,
+      "minClearance": 0.0006762103824390353,
+      "minThickness": 0.00011293995639560794
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "fraction": 0.2,
+      "waterIndex": 1,
+      "minFormation": 0.05331199810584757,
+      "maxFormation": 0.16764800556765427,
+      "airColumns": 415,
+      "minClearance": 0.0006761852139521851,
+      "minThickness": 0.00011288035175072153
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "fraction": 0.2,
+      "waterIndex": 2,
+      "minFormation": 0.05331199810584757,
+      "maxFormation": 0.16764800556765427,
+      "airColumns": 415,
+      "minClearance": 0.0006762799047291823,
+      "minThickness": 0.00011290246507411617
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "fraction": 0.5,
+      "waterIndex": 0,
+      "minFormation": 0.4104320069227987,
+      "maxFormation": 0.58956798449438,
+      "airColumns": 506,
+      "minClearance": 0.007313925642358554,
+      "minThickness": 0.002681932346192517
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "fraction": 0.5,
+      "waterIndex": 1,
+      "minFormation": 0.4104320069227987,
+      "maxFormation": 0.58956798449438,
+      "airColumns": 506,
+      "minClearance": 0.007284103132619291,
+      "minThickness": 0.0026819522341611224
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "fraction": 0.5,
+      "waterIndex": 2,
+      "minFormation": 0.4104320069227987,
+      "maxFormation": 0.58956798449438,
+      "airColumns": 506,
+      "minClearance": 0.007334019845621764,
+      "minThickness": 0.0026819522341611224
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "fraction": 0.8,
+      "waterIndex": 0,
+      "minFormation": 0.8323520138381217,
+      "maxFormation": 0.9466879977002738,
+      "airColumns": 504,
+      "minClearance": 0.026178648761808143,
+      "minThickness": 0.015983519619350073
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "fraction": 0.8,
+      "waterIndex": 1,
+      "minFormation": 0.8323520138381217,
+      "maxFormation": 0.9466879977002738,
+      "airColumns": 504,
+      "minClearance": 0.026063203933624934,
+      "minThickness": 0.015983482128028692
+    },
+    {
+      "case": "periodic-padang19s-l12",
+      "fraction": 0.8,
+      "waterIndex": 2,
+      "minFormation": 0.8323520138381217,
+      "maxFormation": 0.9466879977002738,
+      "airColumns": 504,
+      "minClearance": 0.026243588453100763,
+      "minThickness": 0.015983508778632083
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "fraction": 0.2,
+      "waterIndex": 0,
+      "minFormation": 0.053311995456802805,
+      "maxFormation": 0.16764800218160583,
+      "airColumns": 334,
+      "minClearance": 0.0008765627934701481,
+      "minThickness": 0.0001016378963694109
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "fraction": 0.2,
+      "waterIndex": 1,
+      "minFormation": 0.053311995456802805,
+      "maxFormation": 0.16764800218160583,
+      "airColumns": 334,
+      "minClearance": 0.0008764319873010296,
+      "minThickness": 0.00010162455895357247
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "fraction": 0.2,
+      "waterIndex": 2,
+      "minFormation": 0.053311995456802805,
+      "maxFormation": 0.16764800218160583,
+      "airColumns": 334,
+      "minClearance": 0.0008764824024886098,
+      "minThickness": 0.00010162455895357247
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "fraction": 0.5,
+      "waterIndex": 0,
+      "minFormation": 0.4104320109007885,
+      "maxFormation": 0.5895679628091756,
+      "airColumns": 503,
+      "minClearance": 0.009515999491671367,
+      "minThickness": 0.0019873309933275962
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "fraction": 0.5,
+      "waterIndex": 1,
+      "minFormation": 0.4104320109007885,
+      "maxFormation": 0.5895679628091756,
+      "airColumns": 503,
+      "minClearance": 0.009509299889777556,
+      "minThickness": 0.0019873584186783644
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "fraction": 0.5,
+      "waterIndex": 2,
+      "minFormation": 0.4104320109007885,
+      "maxFormation": 0.5895679628091756,
+      "airColumns": 503,
+      "minClearance": 0.009512694946755662,
+      "minThickness": 0.0019873584186783644
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "fraction": 0.8,
+      "waterIndex": 0,
+      "minFormation": 0.8323519772899729,
+      "maxFormation": 0.9466880014995006,
+      "airColumns": 490,
+      "minClearance": 0.040250705311525026,
+      "minThickness": 0.005833678609789561
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "fraction": 0.8,
+      "waterIndex": 1,
+      "minFormation": 0.8323519772899729,
+      "maxFormation": 0.9466880014995006,
+      "airColumns": 490,
+      "minClearance": 0.04021132547085432,
+      "minThickness": 0.00583367860978945
+    },
+    {
+      "case": "periodic-reef42-l12",
+      "fraction": 0.8,
+      "waterIndex": 2,
+      "minFormation": 0.8323519772899729,
+      "maxFormation": 0.9466880014995006,
+      "airColumns": 490,
+      "minClearance": 0.04023303569341907,
+      "minThickness": 0.005833679848728401
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "fraction": 0.2,
+      "waterIndex": 0,
+      "minFormation": 0.053312001455461194,
+      "maxFormation": 0.16764799977388745,
+      "airColumns": 435,
+      "minClearance": 0.0008528363037363373,
+      "minThickness": 0.0001006285229981918
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "fraction": 0.2,
+      "waterIndex": 1,
+      "minFormation": 0.053312001455461194,
+      "maxFormation": 0.16764799977388745,
+      "airColumns": 435,
+      "minClearance": 0.0008524005823503655,
+      "minThickness": 0.00010066601431968358
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "fraction": 0.2,
+      "waterIndex": 2,
+      "minFormation": 0.053312001455461194,
+      "maxFormation": 0.16764799977388745,
+      "airColumns": 435,
+      "minClearance": 0.0008531158063723732,
+      "minThickness": 0.00010066946785325381
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "fraction": 0.5,
+      "waterIndex": 0,
+      "minFormation": 0.410432015182666,
+      "maxFormation": 0.589568011914473,
+      "airColumns": 507,
+      "minClearance": 0.008334208532390974,
+      "minThickness": 0.002948336138112073
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "fraction": 0.5,
+      "waterIndex": 1,
+      "minFormation": 0.410432015182666,
+      "maxFormation": 0.589568011914473,
+      "airColumns": 507,
+      "minClearance": 0.008298258719510065,
+      "minThickness": 0.002948302562544969
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "fraction": 0.5,
+      "waterIndex": 2,
+      "minFormation": 0.410432015182666,
+      "maxFormation": 0.589568011914473,
+      "airColumns": 507,
+      "minClearance": 0.008373381513416489,
+      "minThickness": 0.00294830256254508
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "fraction": 0.8,
+      "waterIndex": 0,
+      "minFormation": 0.8323519895660904,
+      "maxFormation": 0.9466880117851857,
+      "airColumns": 504,
+      "minClearance": 0.029895313764650655,
+      "minThickness": 0.017993597191972244
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "fraction": 0.8,
+      "waterIndex": 1,
+      "minFormation": 0.8323519895660904,
+      "maxFormation": 0.9466880117851857,
+      "airColumns": 504,
+      "minClearance": 0.0296643337347956,
+      "minThickness": 0.017993575600928513
+    },
+    {
+      "case": "periodic-point21-a15-l12",
+      "fraction": 0.8,
+      "waterIndex": 2,
+      "minFormation": 0.8323519895660904,
+      "maxFormation": 0.9466880117851857,
+      "airColumns": 504,
+      "minClearance": 0.030099577849471204,
+      "minThickness": 0.017993597191972133
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "fraction": 0.2,
+      "waterIndex": 0,
+      "minFormation": 0.053312003283039526,
+      "maxFormation": 0.16764800974316374,
+      "airColumns": 435,
+      "minClearance": 0.0010027241002424914,
+      "minThickness": 0.00010320186614998228
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "fraction": 0.2,
+      "waterIndex": 1,
+      "minFormation": 0.053312003283039526,
+      "maxFormation": 0.16764800974316374,
+      "airColumns": 435,
+      "minClearance": 0.001003004786642392,
+      "minThickness": 0.00010316437482837948
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "fraction": 0.2,
+      "waterIndex": 2,
+      "minFormation": 0.053312003283039526,
+      "maxFormation": 0.16764800974316374,
+      "airColumns": 435,
+      "minClearance": 0.0010022588981819514,
+      "minThickness": 0.00010320186614998228
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "fraction": 0.5,
+      "waterIndex": 0,
+      "minFormation": 0.4104320211161611,
+      "maxFormation": 0.5895680268751138,
+      "airColumns": 515,
+      "minClearance": 0.010939816665966884,
+      "minThickness": 0.003365125081979503
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "fraction": 0.5,
+      "waterIndex": 1,
+      "minFormation": 0.4104320211161611,
+      "maxFormation": 0.5895680268751138,
+      "airColumns": 515,
+      "minClearance": 0.01089905386591139,
+      "minThickness": 0.0033651394040804528
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "fraction": 0.5,
+      "waterIndex": 2,
+      "minFormation": 0.4104320211161611,
+      "maxFormation": 0.5895680268751138,
+      "airColumns": 515,
+      "minClearance": 0.01101960023343862,
+      "minThickness": 0.003365125081979392
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "fraction": 0.8,
+      "waterIndex": 0,
+      "minFormation": 0.8323520277305421,
+      "maxFormation": 0.9466879837576934,
+      "airColumns": 505,
+      "minClearance": 0.03913178208626694,
+      "minThickness": 0.022049779307422468
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "fraction": 0.8,
+      "waterIndex": 1,
+      "minFormation": 0.8323520277305421,
+      "maxFormation": 0.9466879837576934,
+      "airColumns": 505,
+      "minClearance": 0.03892815867961563,
+      "minThickness": 0.022049735080776123
+    },
+    {
+      "case": "periodic-point21-a23-l12",
+      "fraction": 0.8,
+      "waterIndex": 2,
+      "minFormation": 0.8323520277305421,
+      "maxFormation": 0.9466879837576934,
+      "airColumns": 505,
+      "minClearance": 0.039221532966549455,
+      "minThickness": 0.022049779307422468
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "fraction": 0.2,
+      "waterIndex": 0,
+      "minFormation": 0.05331199884269536,
+      "maxFormation": 0.16764800430249777,
+      "airColumns": 488,
+      "minClearance": 0.00041237379913017236,
+      "minThickness": 0.00010615176965134143
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "fraction": 0.2,
+      "waterIndex": 1,
+      "minFormation": 0.05331199884269536,
+      "maxFormation": 0.16764800430249777,
+      "airColumns": 488,
+      "minClearance": 0.00041249777593221904,
+      "minThickness": 0.00010619671378186979
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "fraction": 0.2,
+      "waterIndex": 2,
+      "minFormation": 0.05331199884269536,
+      "maxFormation": 0.16764800430249777,
+      "airColumns": 488,
+      "minClearance": 0.0004123143537670959,
+      "minThickness": 0.00010619671378175877
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "fraction": 0.5,
+      "waterIndex": 0,
+      "minFormation": 0.41043199651977413,
+      "maxFormation": 0.5895679905262503,
+      "airColumns": 508,
+      "minClearance": 0.012676808846299403,
+      "minThickness": 0.005518776200789888
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "fraction": 0.5,
+      "waterIndex": 1,
+      "minFormation": 0.41043199651977413,
+      "maxFormation": 0.5895679905262503,
+      "airColumns": 508,
+      "minClearance": 0.012628553473157278,
+      "minThickness": 0.005518776200790221
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "fraction": 0.5,
+      "waterIndex": 2,
+      "minFormation": 0.41043199651977413,
+      "maxFormation": 0.5895679905262503,
+      "airColumns": 508,
+      "minClearance": 0.012736642959603195,
+      "minThickness": 0.0055187701979875214
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "fraction": 0.8,
+      "waterIndex": 0,
+      "minFormation": 0.8323520072462383,
+      "maxFormation": 0.9466879744923975,
+      "airColumns": 506,
+      "minClearance": 0.044393258567093696,
+      "minThickness": 0.029219692748089887
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "fraction": 0.8,
+      "waterIndex": 1,
+      "minFormation": 0.8323520072462383,
+      "maxFormation": 0.9466879744923975,
+      "airColumns": 506,
+      "minClearance": 0.044227092043329974,
+      "minThickness": 0.029219721026758183
+    },
+    {
+      "case": "periodic-point21-a30-l12",
+      "fraction": 0.8,
+      "waterIndex": 2,
+      "minFormation": 0.8323520072462383,
+      "maxFormation": 0.9466879744923975,
+      "airColumns": 506,
+      "minClearance": 0.04451030328196581,
+      "minThickness": 0.029219692748089776
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "production-autopilot-source-preparation-freeze/v1",
+  "sourceOnly": true,
+  "checksRun": false,
+  "rootExecutionPending": true,
+  "sourceCopiedOrBuilt": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "nativeRun": false,
+  "gameplayAcceptance": false,
+  "tubePassageAcceptance": false,
+  "pins": [
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/MOUTH-HANDOFF.txt","bytes":4084,"sha256":"0b67abf8d146b29949fe157f88a65499103b2f657e34d83eace9e2a3b1ca52ac"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/PAYLOAD-HANDOFF.txt","bytes":5180,"sha256":"f6abdf4afaf2b3239f6ebe7d7693e8f9d451ccf2cb6c7992d5ccf1a567795215"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/README.md","bytes":5046,"sha256":"30a1e08ec7e5f93b3a2edccdcb6d0aff0fe60e8d29e838d39696bc053cb3c3d3"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/authority.py","bytes":5402,"sha256":"adcf5caddf6f8272d9ffb14c9d7f2e06aef73dceb0600e4070a44f5cb97c753e"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/check-payload.mjs","bytes":17275,"sha256":"d16db01ec8f054dc5840eb7d080c5dc58c3284d0db3fbbc00f8bce1ded30ee1e"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/evidence-projection.mjs","bytes":10197,"sha256":"95f1076b7fa10bd9fce42eea003e69af405d3aa9a0fb9e788d0d890249a94550"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/inputs.json","bytes":2530,"sha256":"f158b758704cbc8f742b1dca56c34ef181d2a7b369843e0e76dc641abe66cdce"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/mouth-camera.mjs","bytes":17485,"sha256":"2e62e1758f99f9315caab6772eff726354c396543f07545e6a411059f5ee8b13"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/native.mjs","bytes":17553,"sha256":"d858e9cb258ff9cd85c1876ea2c80e3e49019e7adb924b4e7000e3c36d50d792"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/readiness.json","bytes":1684,"sha256":"77eff03220577ab9f65a8e4d2bba291fb2462b2bb0d3f95be1a7dd403c02805b"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/rider-driver.mjs","bytes":14680,"sha256":"44b27c8d99fb0b8df14cad0c47c70c09cf473d3306afe6e0757153f2517c6a18"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/run.py","bytes":16328,"sha256":"c64e641e98a6c2d21bd2062eefe4a7336b5a7be2b332999f7617209ffcb195ba"},
+    {"file":"/private/tmp/tube-production-autopilot-native-20261005/snapshot-tools.mjs","bytes":825,"sha256":"a68dd4264e33e278acd6cabf0b83b46d5a4aa5d766e2a4fa7d3ae01cc004551f"}
+  ],
+  "scope": "Preparation byte pins only. Root owns executable checks, source/served authority, seal, first native execution and pixel/gameplay judgement."
+}

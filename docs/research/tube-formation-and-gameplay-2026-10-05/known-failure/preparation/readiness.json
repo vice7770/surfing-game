@@ -1,0 +1,25 @@
+{
+  "schema": "c-formation-root-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "resourcesStarted": false,
+  "actualAppBuildAccepted": true,
+  "actualDiagnosticBuildAccepted": true,
+  "controlledCPUAccepted": true,
+  "helperAcceptance": true,
+  "sourceReadiness": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/source-readiness.json",
+    "bytes": 3220,
+    "sha256": "26551768d7fd93d480c6d140027e585ddcf872caccf0502e8ee92778b639861b"
+  },
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/root-helper-checks.json",
+    "bytes": 1641,
+    "sha256": "83d7364c1b8c86a54eccd3ebf1bc39679b06a2b2cf50b7e5d246eb8a3262856e"
+  },
+  "physicalDifferenceIntentional": true,
+  "exactNativeParityClaim": false,
+  "nativeCauseOrFixAccepted": false,
+  "productionAdoption": false,
+  "authorityDelta": "Direct immediate raw-normal inputs/build/graph and frozen helper closure; exact immediate-parent replay-reference copy; actual completed trial build reused without source copy or second build."
+}

@@ -1,0 +1,673 @@
+{
+  "schema": "board-rhs-components-observer-fields/v1",
+  "oldFields": [
+    "projectLocalX",
+    "projectLocalY",
+    "projectLocalZ",
+    "projectDeckY",
+    "projectHeight",
+    "demandLocalX",
+    "demandLocalY",
+    "demandLocalZ",
+    "legHeight",
+    "legLoad",
+    "legStiffness",
+    "legDamping",
+    "legForce",
+    "legRateAfter",
+    "specificForceX",
+    "specificForceY",
+    "specificForceZ",
+    "postureRateX",
+    "postureRateY",
+    "postureRateZ",
+    "driveX",
+    "driveY",
+    "driveZ",
+    "carriedRelativeX",
+    "carriedRelativeY",
+    "carriedRelativeZ",
+    "demandPositionX",
+    "demandPositionY",
+    "demandPositionZ",
+    "demandVelocityX",
+    "demandVelocityY",
+    "demandVelocityZ",
+    "demandTargetX",
+    "demandTargetY",
+    "demandTargetZ",
+    "demandUpX",
+    "demandUpY",
+    "demandUpZ",
+    "boardPreMatrix00",
+    "boardPreMatrix01",
+    "boardPreMatrix02",
+    "boardPreMatrix03",
+    "boardPreMatrix04",
+    "boardPreMatrix05",
+    "boardPreMatrix10",
+    "boardPreMatrix11",
+    "boardPreMatrix12",
+    "boardPreMatrix13",
+    "boardPreMatrix14",
+    "boardPreMatrix15",
+    "boardPreMatrix20",
+    "boardPreMatrix21",
+    "boardPreMatrix22",
+    "boardPreMatrix23",
+    "boardPreMatrix24",
+    "boardPreMatrix25",
+    "boardPreMatrix30",
+    "boardPreMatrix31",
+    "boardPreMatrix32",
+    "boardPreMatrix33",
+    "boardPreMatrix34",
+    "boardPreMatrix35",
+    "boardPreMatrix40",
+    "boardPreMatrix41",
+    "boardPreMatrix42",
+    "boardPreMatrix43",
+    "boardPreMatrix44",
+    "boardPreMatrix45",
+    "boardPreMatrix50",
+    "boardPreMatrix51",
+    "boardPreMatrix52",
+    "boardPreMatrix53",
+    "boardPreMatrix54",
+    "boardPreMatrix55",
+    "boardPreRhs0",
+    "boardPreRhs1",
+    "boardPreRhs2",
+    "boardPreRhs3",
+    "boardPreRhs4",
+    "boardPreRhs5",
+    "preparedBoardVelocityX",
+    "preparedBoardVelocityY",
+    "preparedBoardVelocityZ",
+    "preparedBoardSpinX",
+    "preparedBoardSpinY",
+    "preparedBoardSpinZ",
+    "riderExternalX",
+    "riderExternalY",
+    "riderExternalZ",
+    "forceArmX",
+    "forceArmY",
+    "forceArmZ",
+    "carriedArmX",
+    "carriedArmY",
+    "carriedArmZ",
+    "trialBoardDeltaVelocityX",
+    "trialBoardDeltaVelocityY",
+    "trialBoardDeltaVelocityZ",
+    "trialBoardDeltaSpinX",
+    "trialBoardDeltaSpinY",
+    "trialBoardDeltaSpinZ",
+    "standingTrialAvailable"
+  ],
+  "newFields": [
+    "boardPreBuoyancyForceX",
+    "boardPreBuoyancyForceY",
+    "boardPreBuoyancyForceZ",
+    "boardPreBuoyancyTorqueX",
+    "boardPreBuoyancyTorqueY",
+    "boardPreBuoyancyTorqueZ",
+    "boardPrePressureForceX",
+    "boardPrePressureForceY",
+    "boardPrePressureForceZ",
+    "boardPrePressureTorqueX",
+    "boardPrePressureTorqueY",
+    "boardPrePressureTorqueZ",
+    "boardPreFrictionForceX",
+    "boardPreFrictionForceY",
+    "boardPreFrictionForceZ",
+    "boardPreFrictionTorqueX",
+    "boardPreFrictionTorqueY",
+    "boardPreFrictionTorqueZ",
+    "boardPreFinForceX",
+    "boardPreFinForceY",
+    "boardPreFinForceZ",
+    "boardPreFinTorqueX",
+    "boardPreFinTorqueY",
+    "boardPreFinTorqueZ",
+    "boardPreRailForceX",
+    "boardPreRailForceY",
+    "boardPreRailForceZ",
+    "boardPreRailTorqueX",
+    "boardPreRailTorqueY",
+    "boardPreRailTorqueZ",
+    "boardPreGyroX",
+    "boardPreGyroY",
+    "boardPreGyroZ",
+    "boardPreWeight",
+    "boardPreStepSeconds",
+    "boardPreWaterImpulseX",
+    "boardPreWaterImpulseY",
+    "boardPreWaterImpulseZ",
+    "boardPreWaterTorqueImpulseX",
+    "boardPreWaterTorqueImpulseY",
+    "boardPreWaterTorqueImpulseZ"
+  ],
+  "allFields": [
+    "projectLocalX",
+    "projectLocalY",
+    "projectLocalZ",
+    "projectDeckY",
+    "projectHeight",
+    "demandLocalX",
+    "demandLocalY",
+    "demandLocalZ",
+    "legHeight",
+    "legLoad",
+    "legStiffness",
+    "legDamping",
+    "legForce",
+    "legRateAfter",
+    "specificForceX",
+    "specificForceY",
+    "specificForceZ",
+    "postureRateX",
+    "postureRateY",
+    "postureRateZ",
+    "driveX",
+    "driveY",
+    "driveZ",
+    "carriedRelativeX",
+    "carriedRelativeY",
+    "carriedRelativeZ",
+    "demandPositionX",
+    "demandPositionY",
+    "demandPositionZ",
+    "demandVelocityX",
+    "demandVelocityY",
+    "demandVelocityZ",
+    "demandTargetX",
+    "demandTargetY",
+    "demandTargetZ",
+    "demandUpX",
+    "demandUpY",
+    "demandUpZ",
+    "boardPreMatrix00",
+    "boardPreMatrix01",
+    "boardPreMatrix02",
+    "boardPreMatrix03",
+    "boardPreMatrix04",
+    "boardPreMatrix05",
+    "boardPreMatrix10",
+    "boardPreMatrix11",
+    "boardPreMatrix12",
+    "boardPreMatrix13",
+    "boardPreMatrix14",
+    "boardPreMatrix15",
+    "boardPreMatrix20",
+    "boardPreMatrix21",
+    "boardPreMatrix22",
+    "boardPreMatrix23",
+    "boardPreMatrix24",
+    "boardPreMatrix25",
+    "boardPreMatrix30",
+    "boardPreMatrix31",
+    "boardPreMatrix32",
+    "boardPreMatrix33",
+    "boardPreMatrix34",
+    "boardPreMatrix35",
+    "boardPreMatrix40",
+    "boardPreMatrix41",
+    "boardPreMatrix42",
+    "boardPreMatrix43",
+    "boardPreMatrix44",
+    "boardPreMatrix45",
+    "boardPreMatrix50",
+    "boardPreMatrix51",
+    "boardPreMatrix52",
+    "boardPreMatrix53",
+    "boardPreMatrix54",
+    "boardPreMatrix55",
+    "boardPreRhs0",
+    "boardPreRhs1",
+    "boardPreRhs2",
+    "boardPreRhs3",
+    "boardPreRhs4",
+    "boardPreRhs5",
+    "preparedBoardVelocityX",
+    "preparedBoardVelocityY",
+    "preparedBoardVelocityZ",
+    "preparedBoardSpinX",
+    "preparedBoardSpinY",
+    "preparedBoardSpinZ",
+    "riderExternalX",
+    "riderExternalY",
+    "riderExternalZ",
+    "forceArmX",
+    "forceArmY",
+    "forceArmZ",
+    "carriedArmX",
+    "carriedArmY",
+    "carriedArmZ",
+    "trialBoardDeltaVelocityX",
+    "trialBoardDeltaVelocityY",
+    "trialBoardDeltaVelocityZ",
+    "trialBoardDeltaSpinX",
+    "trialBoardDeltaSpinY",
+    "trialBoardDeltaSpinZ",
+    "standingTrialAvailable",
+    "boardPreBuoyancyForceX",
+    "boardPreBuoyancyForceY",
+    "boardPreBuoyancyForceZ",
+    "boardPreBuoyancyTorqueX",
+    "boardPreBuoyancyTorqueY",
+    "boardPreBuoyancyTorqueZ",
+    "boardPrePressureForceX",
+    "boardPrePressureForceY",
+    "boardPrePressureForceZ",
+    "boardPrePressureTorqueX",
+    "boardPrePressureTorqueY",
+    "boardPrePressureTorqueZ",
+    "boardPreFrictionForceX",
+    "boardPreFrictionForceY",
+    "boardPreFrictionForceZ",
+    "boardPreFrictionTorqueX",
+    "boardPreFrictionTorqueY",
+    "boardPreFrictionTorqueZ",
+    "boardPreFinForceX",
+    "boardPreFinForceY",
+    "boardPreFinForceZ",
+    "boardPreFinTorqueX",
+    "boardPreFinTorqueY",
+    "boardPreFinTorqueZ",
+    "boardPreRailForceX",
+    "boardPreRailForceY",
+    "boardPreRailForceZ",
+    "boardPreRailTorqueX",
+    "boardPreRailTorqueY",
+    "boardPreRailTorqueZ",
+    "boardPreGyroX",
+    "boardPreGyroY",
+    "boardPreGyroZ",
+    "boardPreWeight",
+    "boardPreStepSeconds",
+    "boardPreWaterImpulseX",
+    "boardPreWaterImpulseY",
+    "boardPreWaterImpulseZ",
+    "boardPreWaterTorqueImpulseX",
+    "boardPreWaterTorqueImpulseY",
+    "boardPreWaterTorqueImpulseZ"
+  ],
+  "oldFieldCount": 102,
+  "newFieldCount": 41,
+  "totalFieldCount": 143,
+  "availabilityMarker": "standingTrialAvailable",
+  "oldFieldMetadata": {
+    "file": "/private/tmp/tube-native-trial-balance-observer-20261005/observer-fields.json",
+    "bytes": 8731,
+    "sha256": "19917b765b18c8b1e37e608878e9041115e1b96fdd21d46451a36d375554d72a"
+  },
+  "groups": {
+    "buoyancy": [
+      "boardPreBuoyancyForceX",
+      "boardPreBuoyancyForceY",
+      "boardPreBuoyancyForceZ",
+      "boardPreBuoyancyTorqueX",
+      "boardPreBuoyancyTorqueY",
+      "boardPreBuoyancyTorqueZ"
+    ],
+    "pressure": [
+      "boardPrePressureForceX",
+      "boardPrePressureForceY",
+      "boardPrePressureForceZ",
+      "boardPrePressureTorqueX",
+      "boardPrePressureTorqueY",
+      "boardPrePressureTorqueZ"
+    ],
+    "friction": [
+      "boardPreFrictionForceX",
+      "boardPreFrictionForceY",
+      "boardPreFrictionForceZ",
+      "boardPreFrictionTorqueX",
+      "boardPreFrictionTorqueY",
+      "boardPreFrictionTorqueZ"
+    ],
+    "fin": [
+      "boardPreFinForceX",
+      "boardPreFinForceY",
+      "boardPreFinForceZ",
+      "boardPreFinTorqueX",
+      "boardPreFinTorqueY",
+      "boardPreFinTorqueZ"
+    ],
+    "rail": [
+      "boardPreRailForceX",
+      "boardPreRailForceY",
+      "boardPreRailForceZ",
+      "boardPreRailTorqueX",
+      "boardPreRailTorqueY",
+      "boardPreRailTorqueZ"
+    ],
+    "gyro": [
+      "boardPreGyroX",
+      "boardPreGyroY",
+      "boardPreGyroZ"
+    ],
+    "waterCombined": [
+      "boardPreWaterImpulseX",
+      "boardPreWaterImpulseY",
+      "boardPreWaterImpulseZ",
+      "boardPreWaterTorqueImpulseX",
+      "boardPreWaterTorqueImpulseY",
+      "boardPreWaterTorqueImpulseZ"
+    ]
+  },
+  "scalarArguments": [
+    {
+      "position": 1,
+      "field": "boardPreBuoyancyForceX",
+      "sourceExpression": "totals.bx",
+      "unit": "N"
+    },
+    {
+      "position": 2,
+      "field": "boardPreBuoyancyForceY",
+      "sourceExpression": "totals.by",
+      "unit": "N"
+    },
+    {
+      "position": 3,
+      "field": "boardPreBuoyancyForceZ",
+      "sourceExpression": "totals.bz",
+      "unit": "N"
+    },
+    {
+      "position": 4,
+      "field": "boardPreBuoyancyTorqueX",
+      "sourceExpression": "totals.btx",
+      "unit": "N m"
+    },
+    {
+      "position": 5,
+      "field": "boardPreBuoyancyTorqueY",
+      "sourceExpression": "totals.bty",
+      "unit": "N m"
+    },
+    {
+      "position": 6,
+      "field": "boardPreBuoyancyTorqueZ",
+      "sourceExpression": "totals.btz",
+      "unit": "N m"
+    },
+    {
+      "position": 7,
+      "field": "boardPrePressureForceX",
+      "sourceExpression": "totals.px",
+      "unit": "N"
+    },
+    {
+      "position": 8,
+      "field": "boardPrePressureForceY",
+      "sourceExpression": "totals.py",
+      "unit": "N"
+    },
+    {
+      "position": 9,
+      "field": "boardPrePressureForceZ",
+      "sourceExpression": "totals.pz",
+      "unit": "N"
+    },
+    {
+      "position": 10,
+      "field": "boardPrePressureTorqueX",
+      "sourceExpression": "totals.ptx",
+      "unit": "N m"
+    },
+    {
+      "position": 11,
+      "field": "boardPrePressureTorqueY",
+      "sourceExpression": "totals.pty",
+      "unit": "N m"
+    },
+    {
+      "position": 12,
+      "field": "boardPrePressureTorqueZ",
+      "sourceExpression": "totals.ptz",
+      "unit": "N m"
+    },
+    {
+      "position": 13,
+      "field": "boardPreFrictionForceX",
+      "sourceExpression": "totals.fx",
+      "unit": "N"
+    },
+    {
+      "position": 14,
+      "field": "boardPreFrictionForceY",
+      "sourceExpression": "totals.fy",
+      "unit": "N"
+    },
+    {
+      "position": 15,
+      "field": "boardPreFrictionForceZ",
+      "sourceExpression": "totals.fz",
+      "unit": "N"
+    },
+    {
+      "position": 16,
+      "field": "boardPreFrictionTorqueX",
+      "sourceExpression": "totals.ftx",
+      "unit": "N m"
+    },
+    {
+      "position": 17,
+      "field": "boardPreFrictionTorqueY",
+      "sourceExpression": "totals.fty",
+      "unit": "N m"
+    },
+    {
+      "position": 18,
+      "field": "boardPreFrictionTorqueZ",
+      "sourceExpression": "totals.ftz",
+      "unit": "N m"
+    },
+    {
+      "position": 19,
+      "field": "boardPreFinForceX",
+      "sourceExpression": "ft[0]",
+      "unit": "N"
+    },
+    {
+      "position": 20,
+      "field": "boardPreFinForceY",
+      "sourceExpression": "ft[1]",
+      "unit": "N"
+    },
+    {
+      "position": 21,
+      "field": "boardPreFinForceZ",
+      "sourceExpression": "ft[2]",
+      "unit": "N"
+    },
+    {
+      "position": 22,
+      "field": "boardPreFinTorqueX",
+      "sourceExpression": "ft[3]",
+      "unit": "N m"
+    },
+    {
+      "position": 23,
+      "field": "boardPreFinTorqueY",
+      "sourceExpression": "ft[4]",
+      "unit": "N m"
+    },
+    {
+      "position": 24,
+      "field": "boardPreFinTorqueZ",
+      "sourceExpression": "ft[5]",
+      "unit": "N m"
+    },
+    {
+      "position": 25,
+      "field": "boardPreRailForceX",
+      "sourceExpression": "ft[6]",
+      "unit": "N"
+    },
+    {
+      "position": 26,
+      "field": "boardPreRailForceY",
+      "sourceExpression": "ft[7]",
+      "unit": "N"
+    },
+    {
+      "position": 27,
+      "field": "boardPreRailForceZ",
+      "sourceExpression": "ft[8]",
+      "unit": "N"
+    },
+    {
+      "position": 28,
+      "field": "boardPreRailTorqueX",
+      "sourceExpression": "ft[9]",
+      "unit": "N m"
+    },
+    {
+      "position": 29,
+      "field": "boardPreRailTorqueY",
+      "sourceExpression": "ft[10]",
+      "unit": "N m"
+    },
+    {
+      "position": 30,
+      "field": "boardPreRailTorqueZ",
+      "sourceExpression": "ft[11]",
+      "unit": "N m"
+    },
+    {
+      "position": 31,
+      "field": "boardPreGyroX",
+      "sourceExpression": "gyro[0]",
+      "unit": "N m"
+    },
+    {
+      "position": 32,
+      "field": "boardPreGyroY",
+      "sourceExpression": "gyro[1]",
+      "unit": "N m"
+    },
+    {
+      "position": 33,
+      "field": "boardPreGyroZ",
+      "sourceExpression": "gyro[2]",
+      "unit": "N m"
+    },
+    {
+      "position": 34,
+      "field": "boardPreWeight",
+      "sourceExpression": "weight",
+      "unit": "N"
+    },
+    {
+      "position": 35,
+      "field": "boardPreStepSeconds",
+      "sourceExpression": "h",
+      "unit": "s"
+    },
+    {
+      "position": 36,
+      "field": "boardPreWaterImpulseX",
+      "sourceExpression": "waterX",
+      "unit": "N s"
+    },
+    {
+      "position": 37,
+      "field": "boardPreWaterImpulseY",
+      "sourceExpression": "waterY",
+      "unit": "N s"
+    },
+    {
+      "position": 38,
+      "field": "boardPreWaterImpulseZ",
+      "sourceExpression": "waterZ",
+      "unit": "N s"
+    },
+    {
+      "position": 39,
+      "field": "boardPreWaterTorqueImpulseX",
+      "sourceExpression": "waterTx",
+      "unit": "N m s"
+    },
+    {
+      "position": 40,
+      "field": "boardPreWaterTorqueImpulseY",
+      "sourceExpression": "waterTy",
+      "unit": "N m s"
+    },
+    {
+      "position": 41,
+      "field": "boardPreWaterTorqueImpulseZ",
+      "sourceExpression": "waterTz",
+      "unit": "N m s"
+    }
+  ],
+  "method": {
+    "name": "observeBoardRhsComponents",
+    "owner": "AttachedRider",
+    "parameterCount": 41,
+    "allParameterTypes": "number",
+    "body": "Existing landingDemand target plus direct same-name scalar assignments only.",
+    "returnType": "void",
+    "referencesRetained": false,
+    "arraysVectorsOrScratchAdded": false
+  },
+  "stage": "BoardBody.substep attached-upright branch: after rider.prepare, after unaugmented6x6/6 board system copies into8x8/8, immediately before coupleStanding. Old boardPreMatrix/boardPreRhs observer capture remains at coupleStanding entry.",
+  "coordinates": "World frame: X along shore, Y up, Z toward beach. Forces/torques are raw existing totals before multiplication by h; water words are already impulses.",
+  "signs": {
+    "weight": "Existing negative scalar -mass*gravity; contributes only to translationY after multiplication by h.",
+    "gyro": "Existing w cross (worldInertia*w); angular RHS subtracts h*gyro. Raw gyro is copied without negation.",
+    "forceTorque": "Buoyancy/pressure/friction/fin/rail world force and torque totals enter RHS with +h.",
+    "water": "Existing water impulse and torque add directly without h multiplication; per-patch source push combines radiation and entrainment and opposes signed surface-normal relative motion."
+  },
+  "mixedWaterSemantics": "Combined pre-rider surface-normal radiation+newly entrained-mass impulse over all patches. No separate radiation/entrainment aggregate, no newly computed split, no hydrodynamic-cause attribution.",
+  "otherAggregateMixing": "Each hull/fin/rail total combines its patches/faces and their wetting/flow/geometry. Gyro combines spin and rotated inertia. Matrix and old preRhs remain combined.",
+  "availabilitySemantics": {
+    "0": "All new41 words invalid, including stale values. Existing102 marker reset at prepare entry is unchanged.",
+    "1": "Actual coupled upright trial captured before projection/fallback, including landing or rejected trials; no feasibility/applied/realized-motion inference. Existing marker set after trial delta copies is unchanged."
+  },
+  "parentRuntimePins": [
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55109,
+      "sha256": "7ce22c47a4ea3025dedaa5ec494d861bfb66d5dc7363481b77f3a8e02e2150c4"
+    },
+    {
+      "file": "/private/tmp/tube-native-trial-balance-native-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 153209,
+      "sha256": "1a92e1b5ebe216c4a29f32a12e274a0d7f713d4bed0202ff54f4c1742cb2a2f4"
+    }
+  ],
+  "candidateRuntimePins": [
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/src/physics/BoardBody.ts",
+      "bytes": 55693,
+      "sha256": "eb49becb36b6f8b1a9f34f956a001eeda100c7abfe84b75b5ff7ef3278c45917"
+    },
+    {
+      "file": "/private/tmp/tube-board-rhs-components-observer-20261005/source/src/physics/AttachedRider.ts",
+      "bytes": 159692,
+      "sha256": "85e4ca8149292bf85b95c7c709531b15e220b14b2489e18f02c5a9e41b979cf1"
+    }
+  ],
+  "constructionInventory": {
+    "sourceOnlyInsertionGroups": 4,
+    "removingExactInsertionsRestoresBothParentFiles": true,
+    "existing102FactoryInterfaceAssignmentsAndMarkerPreserved": true,
+    "existingPreRhs6OraclePreserved": true,
+    "newWaterQueries": false,
+    "newArithmeticOrSolveChanges": false,
+    "importsOrControlChanged": false,
+    "scope": "Text construction and byte comparison only; no parser/TS/test/build/numerical execution."
+  },
+  "sourceOnly": true,
+  "executableChecks": {
+    "run": false,
+    "passed": false,
+    "status": "pending root"
+  },
+  "runtimeAccepted": false,
+  "nativeAccepted": false
+}

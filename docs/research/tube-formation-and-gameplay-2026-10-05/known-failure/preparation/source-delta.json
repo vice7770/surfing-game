@@ -1,0 +1,28 @@
+{
+  "schema": "c-formation-source-delta/v1",
+  "source": "/private/tmp/tube-c-formation-trial-20261005/source",
+  "sourceCount": 588,
+  "unchangedParentInputs": 587,
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/source-pins.json",
+    "bytes": 96405,
+    "sha256": "cb463a8b007c2ee92cea01abbc4e2c46690eb0f91483c7855f5e752b490bca74"
+  },
+  "overrides": [
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "before": {
+        "path": "src/wave/barrel/sweptLoft.ts",
+        "bytes": 80645,
+        "sha256": "194ee78b57ef68b4449dc44bf8bd4bbd5b1c249efab382c0736dca6dbd650af2"
+      },
+      "after": {
+        "path": "src/wave/barrel/sweptLoft.ts",
+        "bytes": 80824,
+        "sha256": "3f20cfda2a9c3d467da7dc54993caeae842dfe520b78766c306db9ebfdb28b60"
+      }
+    }
+  ],
+  "physicalDifferenceIntentional": true,
+  "onlyPhysicsDifference": "The true existing analytic C formation scales the shared loft deformation and C mask once; all143 observer words, raw-normal BoardBody, clocks and all other inputs remain unchanged."
+}

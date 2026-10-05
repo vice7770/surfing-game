@@ -1,0 +1,44 @@
+{
+  "complete": true,
+  "sourcePostUnchanged": true,
+  "sourceFiles": 588,
+  "checks": [
+    {
+      "name": "consumers",
+      "command": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/vitest.mjs",
+        "run",
+        "src/wave/barrel/boundedCConsumers.test.ts",
+        "--reporter=json",
+        "--outputFile=/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/tests.json"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 6.788343458028976,
+      "log": {
+        "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/consumers.log",
+        "bytes": 100,
+        "sha256": "bc69d6d79497dd9f4c6cb34b529b66eaa5752c7720ab7b91bbb0f66b546771d8"
+      }
+    },
+    {
+      "name": "build",
+      "command": [
+        "/opt/homebrew/bin/npm",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 8.541488249960821,
+      "log": {
+        "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/build.log",
+        "bytes": 1328,
+        "sha256": "2be83451b7c01e7608f9659e025cab467f36e8b3ca179f3c90c64c5ad55ab350"
+      }
+    }
+  ],
+  "buildId": "tube-c-formation-20261005",
+  "builtDist": "/private/tmp/tube-c-formation-trial-20261005/source/dist"
+}

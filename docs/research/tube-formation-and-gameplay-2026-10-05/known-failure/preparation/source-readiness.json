@@ -1,0 +1,83 @@
+{
+  "schema": "c-formation-source-readiness/v1",
+  "complete": true,
+  "frozen": true,
+  "sourceDirectory": "/private/tmp/tube-c-formation-trial-20261005/source",
+  "sourceCount": 588,
+  "applicationSourceCount": 587,
+  "unchangedParentInputs": 587,
+  "runtimeChangedPaths": [
+    "src/wave/barrel/sweptLoft.ts"
+  ],
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/source-pins.json",
+    "bytes": 96405,
+    "sha256": "cb463a8b007c2ee92cea01abbc4e2c46690eb0f91483c7855f5e752b490bca74"
+  },
+  "sourcePinsManifest": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/source-pins.json",
+    "bytes": 96400,
+    "sha256": "0f36942e22ac2de0dfa017eaabfe812bb1796bd41008b2b8f974930f990b3deb"
+  },
+  "sourceDelta": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/source-delta.json",
+    "bytes": 1077,
+    "sha256": "6656708748adf88547749d6a70b1dccaf8dacd6dd5d4426cda27b9ee1939fb2e"
+  },
+  "candidateRuntimePins": [
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/source/src/wave/barrel/sweptLoft.ts",
+      "bytes": 80824,
+      "sha256": "3f20cfda2a9c3d467da7dc54993caeae842dfe520b78766c306db9ebfdb28b60"
+    }
+  ],
+  "candidateOverride": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/source/src/wave/barrel/sweptLoft.ts",
+    "bytes": 80824,
+    "sha256": "3f20cfda2a9c3d467da7dc54993caeae842dfe520b78766c306db9ebfdb28b60"
+  },
+  "observerFields": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+  },
+  "rootCPUResult": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/root-checks/result.json",
+    "bytes": 1890,
+    "sha256": "ead6bfb018f77f725a267bb26d6e29d12d8b871d474094f9615ed0f9e51fd21d"
+  },
+  "rootSourceBinding": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/root-source-binding.json",
+    "bytes": 927,
+    "sha256": "5098534b4a2c5915b4177a97dd823756e74bc0d3d92158dcad251a8fbbf09847"
+  },
+  "preparationInputs": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/prep/inputs.json",
+    "bytes": 9095,
+    "sha256": "8db02246d87037dde5f3a32b4cbe96d39b030cf4d46c86692ad2815c5aa418d5"
+  },
+  "preparationFreeze": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/prep/freeze.json",
+    "bytes": 2763,
+    "sha256": "e5c9ddfad3f4d4f71cb1f058ca0c97f95dc60691ebdbab5674f4c509ad9ff2a3"
+  },
+  "replayReference": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/replay-reference.json",
+    "bytes": 13142,
+    "sha256": "6fed8d003e3acf33bd02c64b514114d3c9178a40099cb8e9f6bc8c1032075c31"
+  },
+  "buildId": "tube-c-formation-20261005",
+  "resourcesStarted": false,
+  "applicationBuildPerformed": true,
+  "applicationBuildReused": true,
+  "actualRootConsumersBuild": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/result.json",
+    "bytes": 1355,
+    "sha256": "049d76539550898188ddee9ee67164deb6b972e88b0b86350b7d74807dd3516b"
+  },
+  "diagnosticBuildPerformed": false,
+  "nativeRun": false,
+  "physicalDifferenceIntentional": true,
+  "nativeCauseOrFixAccepted": false,
+  "productionAdoption": false
+}

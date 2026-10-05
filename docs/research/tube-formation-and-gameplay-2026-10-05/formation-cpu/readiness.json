@@ -1,0 +1,68 @@
+{
+  "schema": "c-formation-source-preparation/v1",
+  "prepared": true,
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "sourceDirectory": "/private/tmp/tube-c-formation-trial-20261005/source",
+  "immediateParent": "/private/tmp/tube-board-raw-normal-native-20261005",
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/source-pins.json",
+    "bytes": 96405,
+    "sha256": "cb463a8b007c2ee92cea01abbc4e2c46690eb0f91483c7855f5e752b490bca74"
+  },
+  "sourceCount": 588,
+  "unchangedParentInputs": 587,
+  "runtimeChangedPaths": [
+    "src/wave/barrel/sweptLoft.ts"
+  ],
+  "delta": [
+    {
+      "path": "src/wave/barrel/sweptLoft.ts",
+      "before": {
+        "path": "src/wave/barrel/sweptLoft.ts",
+        "bytes": 80645,
+        "sha256": "194ee78b57ef68b4449dc44bf8bd4bbd5b1c249efab382c0736dca6dbd650af2"
+      },
+      "after": {
+        "path": "src/wave/barrel/sweptLoft.ts",
+        "bytes": 80824,
+        "sha256": "3f20cfda2a9c3d467da7dc54993caeae842dfe520b78766c306db9ebfdb28b60"
+      }
+    }
+  ],
+  "retainedRawNormalBoardBody": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/source/src/physics/BoardBody.ts",
+    "bytes": 55644,
+    "sha256": "afd0d5b8074365c228c641139486716f1ca7710ede458203bb47652130439f4a"
+  },
+  "preparationFiles": [
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/runtime.patch",
+      "bytes": 1693,
+      "sha256": "81bb4a6e5cafb5bbc9ec6b5b86efdb1a295e889c962364c654111262a50b8dd2"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/tests/formationWeight.test.ts",
+      "bytes": 17887,
+      "sha256": "36db119e01f3b85766f885d20d1e0662f3e288de24243ff670d75ae4a285d511"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/vitest.config.ts",
+      "bytes": 283,
+      "sha256": "7006fa1a48eecdb78dc594218569811ae0173986482d38faba1facaf829abdaf"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/tsconfig.fixture.json",
+      "bytes": 190,
+      "sha256": "9d4c155d9197425dd70030b894749e87a1491850a2e9d00eca5a5d701d00e515"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/README.md",
+      "bytes": 4530,
+      "sha256": "c382411107139aff7cab3106c9aa485f23ead5dd8c314a646ce37aae2d4e8675"
+    }
+  ],
+  "checksPerformed": [],
+  "portsStarted": [],
+  "productionAdoption": false
+}

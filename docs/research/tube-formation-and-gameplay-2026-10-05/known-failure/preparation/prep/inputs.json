@@ -1,0 +1,223 @@
+{
+  "schema": "c-formation-preparation-inputs/v1",
+  "immediateParent": "/private/tmp/tube-board-raw-normal-native-20261005",
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/source-pins.json",
+    "bytes": 96405,
+    "sha256": "cb463a8b007c2ee92cea01abbc4e2c46690eb0f91483c7855f5e752b490bca74"
+  },
+  "parentCompleteBuild": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-complete-build-result.json",
+    "bytes": 185663,
+    "sha256": "6eb7b63e4b20c7afb78aaf3724a95118675e030cc713fc6449d27d4d7b18c488"
+  },
+  "parentDiagnosticBuild": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 36289,
+    "sha256": "2c81bfa0144406f12f832ca7cc7d577fa123ce516350d40e2a356b1a2647d6cc"
+  },
+  "parentNative": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/native.mjs",
+    "bytes": 29276,
+    "sha256": "1725a14f28b50856ced0e98e26a6e2f5455c8803d0a68d97711fc35da0fd9fb5"
+  },
+  "parentOwner": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/run.py",
+    "bytes": 18754,
+    "sha256": "ffc3d3fd0d4b24098bef3da626f7f1d0a0cd041cb9b2a0243160bfa455bcd7b4"
+  },
+  "observerFields": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/observer-fields.json",
+    "bytes": 17859,
+    "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+  },
+  "candidateOverride": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/source/src/wave/barrel/sweptLoft.ts",
+    "bytes": 80824,
+    "sha256": "3f20cfda2a9c3d467da7dc54993caeae842dfe520b78766c306db9ebfdb28b60"
+  },
+  "controlledCPUPath": "/private/tmp/tube-c-formation-trial-20261005/root-checks/result.json",
+  "controlledTestReport": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/root-checks/tests.json",
+    "bytes": 2717,
+    "sha256": "ebc9c2c3ecb10ae8704835039ad6fc63570cdc425082961725bf9d7a43def9bb"
+  },
+  "controlledMetrics": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/root-checks/formation-metrics.json",
+    "bytes": 21389,
+    "sha256": "d953f6e1ae7896d900eec1539860c804dbe7e59b9d805cf9a0da58991e37c09a"
+  },
+  "controlledCheckPins": [
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/readiness.json",
+      "bytes": 2376,
+      "sha256": "53c21f2aa15633069257aec43ae845d78fe04a2b52acc18dcf5322510d0f929f"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/tests/formationWeight.test.ts",
+      "bytes": 17887,
+      "sha256": "36db119e01f3b85766f885d20d1e0662f3e288de24243ff670d75ae4a285d511"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/vitest.config.ts",
+      "bytes": 283,
+      "sha256": "7006fa1a48eecdb78dc594218569811ae0173986482d38faba1facaf829abdaf"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/tsconfig.fixture.json",
+      "bytes": 190,
+      "sha256": "9d4c155d9197425dd70030b894749e87a1491850a2e9d00eca5a5d701d00e515"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/root-checks/result.json",
+      "bytes": 1890,
+      "sha256": "ead6bfb018f77f725a267bb26d6e29d12d8b871d474094f9615ed0f9e51fd21d"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/root-checks/tests.json",
+      "bytes": 2717,
+      "sha256": "ebc9c2c3ecb10ae8704835039ad6fc63570cdc425082961725bf9d7a43def9bb"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/root-checks/formation-metrics.json",
+      "bytes": 21389,
+      "sha256": "d953f6e1ae7896d900eec1539860c804dbe7e59b9d805cf9a0da58991e37c09a"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/root-checks/strict.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/root-checks/formation.log",
+      "bytes": 466,
+      "sha256": "ccfe97220e513f93fff41fefbf0b3cb146ae66f50e1fe29c2c44ec54f1118279"
+    }
+  ],
+  "helpers": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "bytes": 3726,
+      "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/rider-driver.mjs",
+      "bytes": 16704,
+      "sha256": "bc6b453dca9dd3779bc0d248aca32138d399115987f6a5ce3a3120ac43988837"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/contact-retention.mjs",
+      "bytes": 1053,
+      "sha256": "28a2a0cf61eb2c81424f70ca41b811118a0f9f3059e4c10de86a64d87bd46139"
+    }
+  ],
+  "parentAliasWrapper": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/build-diagnostic.mjs",
+    "bytes": 8653,
+    "sha256": "0fea8b33ca9c9ac7ca33c939b87080f9840b3a25d353fe4ae2d4d25ede06f8fb"
+  },
+  "parentBuildScripts": [
+    {
+      "file": "/private/tmp/tube-board-raw-normal-build-20261005/root-build-run.py",
+      "bytes": 2774,
+      "sha256": "a14632b258dfc1248f14438e0ee072e3d013a2d75485f84232ccb07b36926c29"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-build-20261005/root-complete-build.py",
+      "bytes": 7094,
+      "sha256": "8fc74f01fc44e0dd9d821ed071d9b5329b46546c1c4633c21f1a5264cde38d9d"
+    }
+  ],
+  "compilerToolInputs": [
+    {
+      "file": "/opt/homebrew/bin/node",
+      "bytes": 61838736,
+      "sha256": "dad9bfeb954abae3c4af3767909df6ca1b83dc29a61539d2a023605f35afc48e"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/typescript/bin/tsc",
+      "bytes": 45,
+      "sha256": "8d5fa5bd883fec0979fc2004f1fe1d99aef40570155d550eadc0b03b55513bf0"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/vite/bin/vite.js",
+      "bytes": 2995,
+      "sha256": "de5833362e640673962f16e255bf8738d4380a68601b9af26217eee4e1bac36d"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/node_modules/rolldown/dist/index.mjs",
+      "bytes": 1642,
+      "sha256": "57122bb7de7bf7116dc1d1866ad367753dee6820d55b81a3656d0c2e6c6f79d8"
+    }
+  ],
+  "parentReplayReference": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/replay-reference.json",
+    "bytes": 13142,
+    "sha256": "6fed8d003e3acf33bd02c64b514114d3c9178a40099cb8e9f6bc8c1032075c31"
+  },
+  "rootExecutionPending": true,
+  "actualRootConsumersBuild": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/result.json",
+    "bytes": 1355,
+    "sha256": "049d76539550898188ddee9ee67164deb6b972e88b0b86350b7d74807dd3516b"
+  },
+  "actualConsumersReport": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/tests.json",
+    "bytes": 2711,
+    "sha256": "8818bfd7f1feddbcc4c683b75b89d4ba0b5382530e6f8a98d996b05a6352b0ee"
+  },
+  "actualBuildCheckPins": [
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/result.json",
+      "bytes": 1355,
+      "sha256": "049d76539550898188ddee9ee67164deb6b972e88b0b86350b7d74807dd3516b"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/tests.json",
+      "bytes": 2711,
+      "sha256": "8818bfd7f1feddbcc4c683b75b89d4ba0b5382530e6f8a98d996b05a6352b0ee"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/consumers.log",
+      "bytes": 100,
+      "sha256": "bc69d6d79497dd9f4c6cb34b529b66eaa5752c7720ab7b91bbb0f66b546771d8"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/build.log",
+      "bytes": 1328,
+      "sha256": "2be83451b7c01e7608f9659e025cab467f36e8b3ca179f3c90c64c5ad55ab350"
+    }
+  ],
+  "compiledSource": "/private/tmp/tube-c-formation-trial-20261005/source",
+  "applicationBuildAlreadyPerformed": true
+}

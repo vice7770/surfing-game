@@ -1,0 +1,31 @@
+{
+  "schema": "c-formation-autopilot-source-preparation-freeze/v1",
+  "sourceOnly": true,
+  "checksRun": false,
+  "rootExecutionPending": true,
+  "buildBindingRun": false,
+  "inputsJsonCreated": false,
+  "sourceCopiedOrBuilt": false,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "nativeRun": false,
+  "gameplayAcceptance": false,
+  "tubePassageAcceptance": false,
+  "pins": [
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/MOUTH-HANDOFF.txt","bytes":4084,"sha256":"0b67abf8d146b29949fe157f88a65499103b2f657e34d83eace9e2a3b1ca52ac"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/PAYLOAD-HANDOFF.txt","bytes":5181,"sha256":"2836376ad1e1a381150604577bf0eccd73468dfc6278ebe5652815c42317e536"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/README.md","bytes":3923,"sha256":"4a9b104a1b52977212cdede1f544ae33fccf94d763bbf26194a586cbe205476e"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/authority.py","bytes":5598,"sha256":"8d0f97b36af10f074a87fa42f4b0248343290c8d7733ba625dcf0ae48eca0797"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/bind-inputs.py","bytes":3213,"sha256":"67d1f263e79c7309b96efa9d962466c9589c2b3b31526210a8267c1525787a77"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/check-payload.mjs","bytes":17338,"sha256":"a6f8154a4e89d26cde947cee8ddf8dde2005c15d1ff6b859bfe5ac472a6919c6"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/evidence-projection.mjs","bytes":10197,"sha256":"95f1076b7fa10bd9fce42eea003e69af405d3aa9a0fb9e788d0d890249a94550"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/inputs.template.json","bytes":1885,"sha256":"4715f65d8fd310794f66a10b4faddca9a5107c5659d90aeaa8d1c7fc5f19978e"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/mouth-camera.mjs","bytes":17485,"sha256":"2e62e1758f99f9315caab6772eff726354c396543f07545e6a411059f5ee8b13"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/native.mjs","bytes":18534,"sha256":"9249b42c7168b622ba369e674f8986fc5f1c3756982e486d80e3ada46f8f16b3"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/readiness.json","bytes":2006,"sha256":"8d9d80bc0936f3db2ae8c4a9a5e85394efc726105b8a6588be07346ba4f92fae"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/rider-driver.mjs","bytes":14680,"sha256":"44b27c8d99fb0b8df14cad0c47c70c09cf473d3306afe6e0757153f2517c6a18"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/run.py","bytes":17402,"sha256":"fd8d6235cdaec9db6812ab85cbb4f953278db18e2812c679515a2e085ecf375e"},
+    {"file":"/private/tmp/tube-c-formation-autopilot-native-20261005/snapshot-tools.mjs","bytes":825,"sha256":"a68dd4264e33e278acd6cabf0b83b46d5a4aa5d766e2a4fa7d3ae01cc004551f"}
+  ],
+  "scope": "Preparation byte pins only. Root-run binder creates previously absent inputs.json with direct fresh trial receipts; root then checks, seals and executes. Fresh unmatched gameplay seed/spawn; original baseline preserved."
+}

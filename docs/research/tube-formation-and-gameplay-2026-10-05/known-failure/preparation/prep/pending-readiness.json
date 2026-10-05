@@ -1,0 +1,19 @@
+{
+  "schema": "c-formation-source-pending-readiness/v1",
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "preparationScriptsExecuted": false,
+  "compiledSource": "/private/tmp/tube-c-formation-trial-20261005/source",
+  "compiledSourceReused": true,
+  "secondApplicationBuildNeeded": false,
+  "buildId": "tube-c-formation-20261005",
+  "freshDiagnosticPending": true,
+  "sourceBindingPending": true,
+  "distCompositionPending": true,
+  "helperChecksPending": true,
+  "rootSealPending": true,
+  "nativeRun": false,
+  "productionAdoption": false
+}

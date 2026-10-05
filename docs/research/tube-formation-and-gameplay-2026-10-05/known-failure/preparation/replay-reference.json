@@ -1,0 +1,464 @@
+{
+  "schema": "board-raw-normal-replay-reference/v1",
+  "references": {
+    "v4": {
+      "priorReport": {
+        "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/candidate-first/report.json",
+        "bytes": 10218530,
+        "sha256": "c411763b4b4c1fb6ff3c592085926f2ddba84e0bd0c2cddb0e4d471255048ead"
+      },
+      "initial": {
+        "config": {
+          "spot": "padang",
+          "seed": 6238,
+          "significantHeight": 3.8,
+          "peakPeriod": 18,
+          "directionDegrees": 0,
+          "spreading": 150,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "dx": 2,
+          "fineSpacing": 1,
+          "componentCount": 64
+        }
+      },
+      "initialBody": {
+        "seaTime": 276.3293560552737,
+        "seaCounters": {
+          "rawFrontCount": 39,
+          "lipLaunches": 78,
+          "lipVolume": 66.11249300385042,
+          "lipJets": 78,
+          "lipRollers": 0,
+          "lipAirborne": 2.647015690478289
+        },
+        "riderPoints": [
+          -49.99489528435735,
+          1.5781974536152057,
+          -271.5681945374704,
+          -49.99489528435735,
+          1.6537926633132838,
+          -271.1281945374704,
+          -49.99489528435735,
+          1.803629315095485,
+          -270.7981945374704,
+          -49.7468786289037,
+          1.513883092612999,
+          -271.11891663019566,
+          -50.24992824630129,
+          1.5305683578093623,
+          -271.1204761095677,
+          -49.842895284357354,
+          1.4779466281542726,
+          -272.57519453747045,
+          -50.14689528435734,
+          1.4779466281542726,
+          -272.57519453747045
+        ],
+        "riderWords": [
+          0,
+          0,
+          1,
+          -2.1778549138189453e-19,
+          0,
+          -49.99898165050711,
+          1.4343122646474153,
+          -271.87378753935945,
+          1,
+          0,
+          1,
+          0
+        ],
+        "boardPose": [
+          -50,
+          1.4767371291417086,
+          -271.09137870490895,
+          -0.046573545709796924,
+          -0.0007755322001797331,
+          -0.016631394826300293,
+          0.9987761010836992,
+          1
+        ],
+        "ride": {
+          "phase": "prone",
+          "speed": 2.0527660454685446,
+          "boardSpeed": 2.12251050083949,
+          "cue": false,
+          "popUp": {
+            "outcome": "none",
+            "duration": 0,
+            "landingPeak": 0,
+            "frontShare": 0
+          },
+          "resets": 0,
+          "wave": {
+            "valid": true,
+            "directionX": 0,
+            "directionZ": 1,
+            "aheadOfCrest": -1.5678717062865601,
+            "crestSpeed": 0,
+            "faceHeight": 2.5359249249534286,
+            "faceFraction": 0.9654658081566475,
+            "crestBreaking": 0,
+            "curlDistance": null,
+            "curlSide": 0,
+            "speedOverGround": 2.0527660454685446,
+            "speedShoreward": 2.036940631521277,
+            "speedAlongCrest": 0.2544038149994393,
+            "requiredSpeed": null
+          },
+          "balance": 1,
+          "bank": 0,
+          "leash": {
+            "snapped": false,
+            "tension": 0,
+            "distance": 0,
+            "reeling": false
+          },
+          "duck": 0,
+          "boardInReach": false,
+          "knock": 0,
+          "breath": 1,
+          "rescues": 0
+        },
+        "compute": "gpu",
+        "workerStepMs": 10.100000023841858,
+        "cue": false,
+        "balance": 1,
+        "separation": null,
+        "displayedBoard": {
+          "position": [
+            -50,
+            1.4767371291417086,
+            -271.09137870490895
+          ],
+          "quaternion": [
+            -0.046573545709796924,
+            -0.0007755322001797331,
+            -0.016631394826300293,
+            0.9987761010836992
+          ]
+        },
+        "displayedRiderPoints": [
+          -49.99489528435735,
+          1.5781974536152057,
+          -271.5681945374704,
+          -49.99489528435735,
+          1.6537926633132838,
+          -271.1281945374704,
+          -49.99489528435735,
+          1.803629315095485,
+          -270.7981945374704,
+          -49.7468786289037,
+          1.513883092612999,
+          -271.11891663019566,
+          -50.24992824630129,
+          1.5305683578093623,
+          -271.1204761095677,
+          -49.842895284357354,
+          1.4779466281542726,
+          -272.57519453747045,
+          -50.14689528435734,
+          1.4779466281542726,
+          -272.57519453747045
+        ],
+        "clocks": {
+          "workerSeaTime": 276.3293560552737,
+          "visualClock": 276.3293560552737,
+          "waterTime": 276.3293560552737,
+          "surfaceRevision": 4
+        },
+        "loft": {
+          "slices": 72,
+          "vertices": 9648,
+          "indices": 55062
+        },
+        "cameraFollower": {
+          "policy": "public-authored-follower-mirror/v1",
+          "view": "front",
+          "activeLab": false,
+          "normalHudPause": true,
+          "calls": 1,
+          "positiveDtCalls": 0,
+          "zeroDtCalls": 1,
+          "exactPositionQuaternionMatch": true,
+          "actualDrawnFollowTargetMatch": true,
+          "publishedClockBodyWordsUnchangedByCamera": true,
+          "mirrorUsesOrdinaryHostHeightReads": true,
+          "last": {
+            "dt": 0,
+            "seaTime": 276.3293560552737,
+            "followPosition": [
+              -50,
+              1.4767371291417086,
+              -271.09137870490895
+            ],
+            "follows": "drawn-board"
+          },
+          "position": [
+            -55,
+            4.976737129141709,
+            -262.09137870490895
+          ],
+          "quaternion": [
+            -0.10612751979483177,
+            -0.17536498319733856,
+            -0.019018390079970107,
+            0.9785818172483899
+          ],
+          "scope": "Public authored camera execution/pose and recorded physics words; no full renderer-internal nonmutation claim"
+        },
+        "pilot": {
+          "state": "position",
+          "outcome": null,
+          "attempts": 0,
+          "rideTime": 0,
+          "phase": ""
+        }
+      }
+    },
+    "v6": {
+      "priorReport": {
+        "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/candidate-first/report.json",
+        "bytes": 12502746,
+        "sha256": "33fd872c52564b5d061e43ea0d31233f830e1e675ac07876bb068cf68d44c683"
+      },
+      "initial": {
+        "config": {
+          "spot": "padang",
+          "seed": 6238,
+          "significantHeight": 3.8,
+          "peakPeriod": 18,
+          "directionDegrees": 0,
+          "spreading": 150,
+          "tide": 0,
+          "windSpeed": 0,
+          "stage": 2,
+          "compute": "auto",
+          "componentCount": 64,
+          "dx": 2,
+          "fineSpacing": 1
+        }
+      },
+      "initialBody": {
+        "seaTime": 276.3293560552737,
+        "seaCounters": {
+          "rawFrontCount": 39,
+          "lipLaunches": 78,
+          "lipVolume": 66.11249300385042,
+          "lipJets": 78,
+          "lipRollers": 0,
+          "lipAirborne": 2.647015690478289
+        },
+        "riderPoints": [
+          -49.99489528435735,
+          1.5781974536152057,
+          -271.5681945374704,
+          -49.99489528435735,
+          1.6537926633132838,
+          -271.1281945374704,
+          -49.99489528435735,
+          1.803629315095485,
+          -270.7981945374704,
+          -49.7468786289037,
+          1.513883092612999,
+          -271.11891663019566,
+          -50.24992824630129,
+          1.5305683578093623,
+          -271.1204761095677,
+          -49.842895284357354,
+          1.4779466281542726,
+          -272.57519453747045,
+          -50.14689528435734,
+          1.4779466281542726,
+          -272.57519453747045
+        ],
+        "riderWords": [
+          0,
+          0,
+          1,
+          -2.1778549138189453e-19,
+          0,
+          -49.99898165050711,
+          1.4343122646474153,
+          -271.87378753935945,
+          1,
+          0,
+          1,
+          0
+        ],
+        "boardPose": [
+          -50,
+          1.4767371291417086,
+          -271.09137870490895,
+          -0.046573545709796924,
+          -0.0007755322001797331,
+          -0.016631394826300293,
+          0.9987761010836992,
+          1
+        ],
+        "ride": {
+          "phase": "prone",
+          "speed": 2.0527660454685446,
+          "boardSpeed": 2.12251050083949,
+          "cue": false,
+          "popUp": {
+            "outcome": "none",
+            "duration": 0,
+            "landingPeak": 0,
+            "frontShare": 0
+          },
+          "contactDiagnostics": {
+            "mount": 1,
+            "step": 0,
+            "substeps": 0,
+            "elapsedStepSeconds": 0,
+            "limitedSubsteps": 0,
+            "nonContactSubsteps": 0,
+            "maxFlightTime": 0.4,
+            "recoverableError": 0.25,
+            "meanForceX": 0,
+            "meanForceY": 0,
+            "meanForceZ": 0,
+            "peakNormalLoad": 0,
+            "landingPeak": 0,
+            "landingFrontShare": 0,
+            "last": null,
+            "firstLimited": null,
+            "firstNonContact": null,
+            "loss": null
+          },
+          "resets": 0,
+          "wave": {
+            "valid": true,
+            "directionX": 0,
+            "directionZ": 1,
+            "aheadOfCrest": -1.5678717062865601,
+            "crestSpeed": 0,
+            "faceHeight": 2.5359249249534286,
+            "faceFraction": 0.9654658081566475,
+            "crestBreaking": 0,
+            "curlDistance": null,
+            "curlSide": 0,
+            "speedOverGround": 2.0527660454685446,
+            "speedShoreward": 2.036940631521277,
+            "speedAlongCrest": 0.2544038149994393,
+            "requiredSpeed": null
+          },
+          "balance": 1,
+          "bank": 0,
+          "leash": {
+            "snapped": false,
+            "tension": 0,
+            "distance": 0,
+            "reeling": false
+          },
+          "duck": 0,
+          "boardInReach": false,
+          "knock": 0,
+          "breath": 1,
+          "rescues": 0,
+          "contactDiagnosticRetention": "compact-prone-flight-support"
+        },
+        "compute": "gpu",
+        "workerStepMs": 9.100000023841858,
+        "cue": false,
+        "balance": 1,
+        "separation": null,
+        "displayedBoard": {
+          "position": [
+            -50,
+            1.4767371291417086,
+            -271.09137870490895
+          ],
+          "quaternion": [
+            -0.046573545709796924,
+            -0.0007755322001797331,
+            -0.016631394826300293,
+            0.9987761010836992
+          ]
+        },
+        "displayedRiderPoints": [
+          -49.99489528435735,
+          1.5781974536152057,
+          -271.5681945374704,
+          -49.99489528435735,
+          1.6537926633132838,
+          -271.1281945374704,
+          -49.99489528435735,
+          1.803629315095485,
+          -270.7981945374704,
+          -49.7468786289037,
+          1.513883092612999,
+          -271.11891663019566,
+          -50.24992824630129,
+          1.5305683578093623,
+          -271.1204761095677,
+          -49.842895284357354,
+          1.4779466281542726,
+          -272.57519453747045,
+          -50.14689528435734,
+          1.4779466281542726,
+          -272.57519453747045
+        ],
+        "clocks": {
+          "workerSeaTime": 276.3293560552737,
+          "visualClock": 276.3293560552737,
+          "waterTime": 276.3293560552737,
+          "surfaceRevision": 4
+        },
+        "loft": {
+          "slices": 73,
+          "vertices": 9782,
+          "indices": 55860
+        },
+        "cameraFollower": {
+          "policy": "public-authored-follower-mirror/v1",
+          "view": "front",
+          "activeLab": false,
+          "normalHudPause": true,
+          "calls": 1,
+          "positiveDtCalls": 0,
+          "zeroDtCalls": 1,
+          "exactPositionQuaternionMatch": true,
+          "actualDrawnFollowTargetMatch": true,
+          "publishedClockBodyWordsUnchangedByCamera": true,
+          "mirrorUsesOrdinaryHostHeightReads": true,
+          "last": {
+            "dt": 0,
+            "seaTime": 276.3293560552737,
+            "followPosition": [
+              -50,
+              1.4767371291417086,
+              -271.09137870490895
+            ],
+            "follows": "drawn-board"
+          },
+          "position": [
+            -55,
+            4.976737129141709,
+            -262.09137870490895
+          ],
+          "quaternion": [
+            -0.10612751979483177,
+            -0.17536498319733856,
+            -0.019018390079970107,
+            0.9785818172483899
+          ],
+          "scope": "Public authored camera execution/pose and recorded physics words; no full renderer-internal nonmutation claim"
+        },
+        "pilot": {
+          "state": "position",
+          "outcome": null,
+          "attempts": 0,
+          "rideTime": 0,
+          "phase": ""
+        }
+      }
+    }
+  },
+  "rootExtractedFromDirectReports": true,
+  "noHistoricalHelperInventories": true
+}

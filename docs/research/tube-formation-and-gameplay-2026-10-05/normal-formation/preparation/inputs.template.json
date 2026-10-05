@@ -1,0 +1,20 @@
+{
+  "schema": "c-formation-autopilot-preparation-inputs/v1",
+  "rootBound": false,
+  "approvedCandidateSeal": null,
+  "approvedApplicationBuild": null,
+  "approvedDiagnosticBuild": null,
+  "diagnosticModule": null,
+  "borrowedHelperPins": [
+    {"file":"/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs","bytes":6474,"sha256":"35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"},
+    {"file":"/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs","bytes":7064,"sha256":"e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"},
+    {"file":"/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs","bytes":4774,"sha256":"ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"},
+    {"file":"/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs","bytes":11089,"sha256":"36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"},
+    {"file":"/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs","bytes":3726,"sha256":"67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"},
+    {"file":"/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs","bytes":4020,"sha256":"54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"},
+    {"file":"/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs","bytes":2994,"sha256":"eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"},
+    {"file":"/private/tmp/tube-board-raw-normal-native-20261005/observer-fields.json","bytes":17859,"sha256":"e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"}
+  ],
+  "acceptancePending": true,
+  "scope": "Pending root-run binding to direct c-formation trial application, candidate seal and fresh diagnostic module. Borrowed helpers only; no historical recursion or runtime copy/rebuild."
+}

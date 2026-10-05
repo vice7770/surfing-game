@@ -1,0 +1,122 @@
+{
+  "schema": "c-formation-root-known-failure-comparison/v1",
+  "complete": true,
+  "baselineReport": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/candidate-first/report.json",
+    "bytes": 13386379,
+    "sha256": "bbf7fbc34391c4d53f14ee7f140a847f6525fe75d1a59dd16ee471a98e16c9cc"
+  },
+  "candidateReport": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first/report.json",
+    "bytes": 18331566,
+    "sha256": "850e86557f7e3be891b9ff11036bafb5bdaa3364fee78ee99cd814271cda58c2"
+  },
+  "candidateOwner": {
+    "file": "/private/tmp/tube-c-formation-native-20261005/candidate-first-owner.json",
+    "bytes": 3457,
+    "sha256": "1e24c8c0b4135f1eef96adb17bef8c03fd1e9ce56df1597761c20ea6ee84c522"
+  },
+  "baselineStepCount": 1366,
+  "candidateStepCount": 1516,
+  "sameInitialConfig": true,
+  "sameInitialPhysicalClock": true,
+  "sameInitialBoardPose": true,
+  "sameCommonInputCount": 1366,
+  "allCommonInputsExact": true,
+  "allCommonPhysicalClocksExact": true,
+  "firstChangedBoardPoseStep": 1341,
+  "firstChangedRiderPointsStep": 1341,
+  "firstChangedPublishedPhaseStep": 1366,
+  "baselinePhases": {
+    "prone": 1299,
+    "push": 43,
+    "landing": 23,
+    "fallen": 1
+  },
+  "candidatePhases": {
+    "prone": 1299,
+    "push": 43,
+    "landing": 29,
+    "standing": 144,
+    "fallen": 1
+  },
+  "baselineStop": {
+    "kind": "first-published-fall-or-separation",
+    "step": 1366,
+    "phase": "fallen",
+    "separation": "lost board",
+    "resets": 0
+  },
+  "candidateStop": {
+    "kind": "first-published-fall-or-separation",
+    "step": 1516,
+    "phase": "fallen",
+    "separation": "lost board",
+    "resets": 0
+  },
+  "candidateStanding": {
+    "firstStep": 1372,
+    "lastStep": 1515,
+    "steps": 144,
+    "physicalSeconds": 2.4
+  },
+  "baselinePopUp": {
+    "step": 1300,
+    "seaTime": 297.99602272193914,
+    "physicalSeconds": 21.666666666666668
+  },
+  "candidatePopUp": {
+    "step": 1300,
+    "seaTime": 297.99602272193914,
+    "physicalSeconds": 21.666666666666668
+  },
+  "baselineLanding": {
+    "step": 1343,
+    "seaTime": 298.7126893886058,
+    "physicalSeconds": 22.383333333333333
+  },
+  "candidateLanding": {
+    "step": 1343,
+    "seaTime": 298.7126893886058,
+    "physicalSeconds": 22.383333333333333
+  },
+  "candidateEntry": {
+    "observedStandingOutside": true,
+    "firstPartial": null,
+    "firstConnectedWitnessEntry": null,
+    "containmentWithoutObservedOutside": null,
+    "firstConnectedWitnessExit": null,
+    "maximumConsecutiveContainedSteps": 0,
+    "residenceIntervals": [],
+    "fullBodyClearancePass": false
+  },
+  "movie": {
+    "complete": true,
+    "bytes": 3453188,
+    "mimeType": "video/webm;codecs=vp9",
+    "requestCount": 217,
+    "requestFrameCount": 217,
+    "startStep": 1300,
+    "endStep": 1516,
+    "physicsAdvances": 216,
+    "physicalSeconds": 3.5999999999997954,
+    "startSeaTime": 297.99602272193914,
+    "endSeaTime": 301.59602272193894,
+    "wallMilliseconds": 14010,
+    "tracksStopped": true,
+    "physicalPlaybackRateClaim": false,
+    "encodedFrameCountClaim": false,
+    "file": "pop-up-motion.webm",
+    "sha256": "695e670525c96151b14e11105b165b31eb1351b51f47abc92c3d6a44527972da"
+  },
+  "landingAndBriefStandingImproved": true,
+  "sustainedRidingProven": false,
+  "tubePassageAcceptance": false,
+  "mouthQualityAcceptance": false,
+  "limits": [
+    "One seeded known-failure control-policy intervention, with forced paddling/straight take-off/crouch overlay; not normal UI control acceptance.",
+    "All1366 common input/clock rows match; source intervention changes trajectory from1341 and later control outputs after baseline ends cannot be paired.",
+    "Candidate stands2.4s outside a tube then falls. No connected witness entry or passage occurred.",
+    "Fully formed byte parity and partial-air fixture checks are separate geometry evidence; early partial mouth cameras do not show usable tube quality."
+  ]
+}

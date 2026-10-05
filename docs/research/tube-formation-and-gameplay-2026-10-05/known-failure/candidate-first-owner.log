@@ -1,0 +1,53 @@
+"GET /?diagnostics HTTP/1.1" 200 -
+"GET /assets/index-DA8NEfOT.css HTTP/1.1" 200 -
+"GET /assets/index-DO0JE-CS.js HTTP/1.1" 200 -
+"GET /assets/WorkerSurfZone-JUe_KG8I.js HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/surfers/surfer1.glb HTTP/1.1" 200 -
+"GET /barrels/pad19-a20-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a30-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a45-l12.bin HTTP/1.1" 200 -
+"GET /barrels/periodic-padang19s-l12.bin HTTP/1.1" 200 -
+code 404, message Not Found
+"GET /favicon.ico HTTP/1.1" 404 -
+"GET /assets/skies/qwantani_sunset_puresky.jpg HTTP/1.1" 200 -
+"GET /assets/skies/qwantani_sunset_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-BTtrtSmG.js HTTP/1.1" 200 -
+"GET /?diagnostics HTTP/1.1" 200 -
+"GET /assets/index-DA8NEfOT.css HTTP/1.1" 200 -
+"GET /assets/index-DO0JE-CS.js HTTP/1.1" 200 -
+"GET /assets/WorkerSurfZone-JUe_KG8I.js HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/surfers/surfer1.glb HTTP/1.1" 200 -
+"GET /assets/skies/qwantani_sunset_puresky.jpg HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-BTtrtSmG.js HTTP/1.1" 200 -
+"GET /assets/skies/qwantani_sunset_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/surfers/surfer1.glb HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /assets/skies/skies.json HTTP/1.1" 200 -
+"GET /barrels/pad19-a20-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a30-l12.bin HTTP/1.1" 200 -
+"GET /barrels/pad19-a45-l12.bin HTTP/1.1" 200 -
+"GET /barrels/periodic-padang19s-l12.bin HTTP/1.1" 200 -
+"GET /assets/skies/kloofendal_48d_partly_cloudy_puresky.jpg HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-BTtrtSmG.js HTTP/1.1" 200 -
+"GET /assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/skies/kloofendal_48d_partly_cloudy_puresky_1k.hdr HTTP/1.1" 200 -
+"GET /assets/surfZoneWorker-BTtrtSmG.js HTTP/1.1" 200 -
+"GET /diagnostic-autopilot.mjs HTTP/1.1" 200 -
+{"progressSteps":120,"phase":"prone","entry":false,"detectorMs":30.900000512599945}
+{"progressSteps":240,"phase":"prone","entry":false,"detectorMs":61.80000066757202}
+{"progressSteps":360,"phase":"prone","entry":false,"detectorMs":113.00000089406967}
+{"progressSteps":480,"phase":"prone","entry":false,"detectorMs":195.80000108480453}
+{"progressSteps":600,"phase":"prone","entry":false,"detectorMs":293.2000014781952}
+{"progressSteps":720,"phase":"prone","entry":false,"detectorMs":343.4000018835068}
+{"progressSteps":840,"phase":"prone","entry":false,"detectorMs":374.6000016927719}
+{"progressSteps":960,"phase":"prone","entry":false,"detectorMs":400.90000158548355}
+{"progressSteps":1080,"phase":"prone","entry":false,"detectorMs":442.600001513958}
+{"progressSteps":1200,"phase":"prone","entry":false,"detectorMs":483.20000153779984}
+{"progressSteps":1320,"phase":"push","entry":false,"detectorMs":514.6000012159348}
+{"progressSteps":1440,"phase":"standing","entry":false,"detectorMs":906.700001001358}

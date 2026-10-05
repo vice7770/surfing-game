@@ -1,0 +1,24 @@
+{
+  "schema": "c-formation-root-source-binding/v1",
+  "complete": true,
+  "source": "/private/tmp/tube-c-formation-trial-20261005/source",
+  "sourceCount": 588,
+  "parentManifest": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/source-pins.json",
+    "bytes": 96405,
+    "sha256": "cb463a8b007c2ee92cea01abbc4e2c46690eb0f91483c7855f5e752b490bca74"
+  },
+  "candidateOverride": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/source/src/wave/barrel/sweptLoft.ts",
+    "bytes": 80824,
+    "sha256": "3f20cfda2a9c3d467da7dc54993caeae842dfe520b78766c306db9ebfdb28b60"
+  },
+  "generatedOutputsCopied": false,
+  "sourceCopied": false,
+  "compiledTrialSourceReused": true,
+  "actualRootConsumersBuild": {
+    "file": "/private/tmp/tube-c-formation-trial-20261005/root-consumers-build/result.json",
+    "bytes": 1355,
+    "sha256": "049d76539550898188ddee9ee67164deb6b972e88b0b86350b7d74807dd3516b"
+  }
+}

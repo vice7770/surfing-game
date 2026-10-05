@@ -1,0 +1,202 @@
+{
+  "schema": "production-autopilot-root-seal/v1",
+  "complete": true,
+  "rootAuthorized": true,
+  "limits": {
+    "wholeSeconds": 1800,
+    "commandSeconds": 1788,
+    "nativeSeconds": 1775,
+    "cleanupSeconds": 7,
+    "startupMilliseconds": 180000,
+    "steps": 7200,
+    "physicalSeconds": 120,
+    "reportBytes": 33554432,
+    "traceBytes": 25165824,
+    "pngCount": 6,
+    "pngBytesEach": 12582912,
+    "pngBytesTotal": 50331648,
+    "sidecarCount": 4,
+    "sidecarBytesEach": 6291456,
+    "sidecarBytesTotal": 25165824,
+    "movieBytes": 16777216,
+    "moviePhysicalSeconds": 20,
+    "movieRequestStride": 3,
+    "movieRequests": 401,
+    "ownedPorts": [
+      4301,
+      9711
+    ],
+    "protectedPorts": [
+      4310,
+      4311,
+      4312,
+      4313
+    ]
+  },
+  "approvedRawSeal": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/seal.json",
+    "bytes": 180561,
+    "sha256": "55934c7c3d28d3e2924343a3f439b83286f7fd29bf2c7eeab87aa4b44428693d"
+  },
+  "approvedApplicationBuild": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-complete-build-result.json",
+    "bytes": 185663,
+    "sha256": "6eb7b63e4b20c7afb78aaf3724a95118675e030cc713fc6449d27d4d7b18c488"
+  },
+  "approvedDiagnosticBuild": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/root-diagnostic-build-result.json",
+    "bytes": 36289,
+    "sha256": "2c81bfa0144406f12f832ca7cc7d577fa123ce516350d40e2a356b1a2647d6cc"
+  },
+  "diagnosticModule": {
+    "file": "/private/tmp/tube-board-raw-normal-native-20261005/diagnostic-autopilot.mjs",
+    "bytes": 348594,
+    "sha256": "e5dafa8c4ef3d5d9facf14af9336c525914d80aab901b12718086fa2cd445e51"
+  },
+  "borrowedHelperPins": [
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/native-owned.mjs",
+      "bytes": 6474,
+      "sha256": "35c3a0e3e66ed1c26f261d91355c8fb0c1d8b7e5befcd108c25a205ca69830b2"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/cdp.mjs",
+      "bytes": 7064,
+      "sha256": "e8fa0a2e4967e11b93a1b3187363414af8d0e5b1a39aaefc351f19ae585f8091"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/menu-startup.mjs",
+      "bytes": 4774,
+      "sha256": "ddfece49381de9da635b3fb300e2237d65ad10a84526c122f6e49b5753c0fe6a"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/body-witnesses.mjs",
+      "bytes": 11089,
+      "sha256": "36087d453020a96d99e9d909be31b85a11707995b1518a0eee69e91c5be3a1b0"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/control-policy.mjs",
+      "bytes": 3726,
+      "sha256": "67e263c5a5a39c09b18c1bd4174e559b0462baa8d1357361c73e6ffd4312e219"
+    },
+    {
+      "file": "/private/tmp/tube-stable-x-ordinary-rider-v4-20261005/follower-camera.mjs",
+      "bytes": 4020,
+      "sha256": "54073aa1341bf27bcd0badb92c7fec628a1fb1b0855c090e4e60a7831ffd342c"
+    },
+    {
+      "file": "/private/tmp/tube-pop-up-contact-native-v6-20261005/loft-snapshot-tools.mjs",
+      "bytes": 2994,
+      "sha256": "eadbd07245e8ce6c2503269ace460e10cc06793013acdd42f7e420be09db25e5"
+    },
+    {
+      "file": "/private/tmp/tube-board-raw-normal-native-20261005/observer-fields.json",
+      "bytes": 17859,
+      "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+    }
+  ],
+  "acceptancePending": true,
+  "scope": "Direct already-approved raw-normal application and fresh diagnostic module. Borrowed helpers only; no historical recursive inventories and no runtime copy/rebuild.",
+  "preparationInputs": {
+    "file": "/private/tmp/tube-production-autopilot-native-20261005/inputs.json",
+    "bytes": 2530,
+    "sha256": "f158b758704cbc8f742b1dca56c34ef181d2a7b369843e0e76dc641abe66cdce"
+  },
+  "helperReadiness": {
+    "file": "/private/tmp/tube-production-autopilot-native-20261005/readiness.json",
+    "bytes": 1684,
+    "sha256": "77eff03220577ab9f65a8e4d2bba291fb2462b2bb0d3f95be1a7dd403c02805b"
+  },
+  "rootHelperChecks": {
+    "file": "/private/tmp/tube-production-autopilot-root-20261005/helper-checks.json",
+    "bytes": 1915,
+    "sha256": "6761116074a73d121fef861386a262d34fd3d6b6029334debf381a929e0a533a"
+  },
+  "helperPins": [
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/MOUTH-HANDOFF.txt",
+      "bytes": 4084,
+      "sha256": "0b67abf8d146b29949fe157f88a65499103b2f657e34d83eace9e2a3b1ca52ac"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/PAYLOAD-HANDOFF.txt",
+      "bytes": 5180,
+      "sha256": "f6abdf4afaf2b3239f6ebe7d7693e8f9d451ccf2cb6c7992d5ccf1a567795215"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/README.md",
+      "bytes": 5046,
+      "sha256": "30a1e08ec7e5f93b3a2edccdcb6d0aff0fe60e8d29e838d39696bc053cb3c3d3"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/authority.py",
+      "bytes": 5402,
+      "sha256": "adcf5caddf6f8272d9ffb14c9d7f2e06aef73dceb0600e4070a44f5cb97c753e"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/check-payload.mjs",
+      "bytes": 17275,
+      "sha256": "d16db01ec8f054dc5840eb7d080c5dc58c3284d0db3fbbc00f8bce1ded30ee1e"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/evidence-projection.mjs",
+      "bytes": 10197,
+      "sha256": "95f1076b7fa10bd9fce42eea003e69af405d3aa9a0fb9e788d0d890249a94550"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/inputs.json",
+      "bytes": 2530,
+      "sha256": "f158b758704cbc8f742b1dca56c34ef181d2a7b369843e0e76dc641abe66cdce"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/mouth-camera.mjs",
+      "bytes": 17485,
+      "sha256": "2e62e1758f99f9315caab6772eff726354c396543f07545e6a411059f5ee8b13"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/native.mjs",
+      "bytes": 17553,
+      "sha256": "d858e9cb258ff9cd85c1876ea2c80e3e49019e7adb924b4e7000e3c36d50d792"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/readiness.json",
+      "bytes": 1684,
+      "sha256": "77eff03220577ab9f65a8e4d2bba291fb2462b2bb0d3f95be1a7dd403c02805b"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/rider-driver.mjs",
+      "bytes": 14680,
+      "sha256": "44b27c8d99fb0b8df14cad0c47c70c09cf473d3306afe6e0757153f2517c6a18"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/run.py",
+      "bytes": 16328,
+      "sha256": "c64e641e98a6c2d21bd2062eefe4a7336b5a7be2b332999f7617209ffcb195ba"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/snapshot-tools.mjs",
+      "bytes": 825,
+      "sha256": "a68dd4264e33e278acd6cabf0b83b46d5a4aa5d766e2a4fa7d3ae01cc004551f"
+    },
+    {
+      "file": "/private/tmp/tube-production-autopilot-native-20261005/preparation-freeze.json",
+      "bytes": 2773,
+      "sha256": "87d00720c4c576c36b01fb558adfde5a83c31dac888aeba1cdd0f3cff9d9d571"
+    }
+  ],
+  "environment": {
+    "node": {
+      "file": "/opt/homebrew/bin/node",
+      "bytes": 61838736,
+      "sha256": "dad9bfeb954abae3c4af3767909df6ca1b83dc29a61539d2a023605f35afc48e"
+    },
+    "chrome": {
+      "file": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "bytes": 367696,
+      "sha256": "b4a14b08946ab78756169696fd272d6c3040a22df52da4f83f665225685f4c10"
+    }
+  },
+  "gameplayAcceptance": false,
+  "tubePassageAcceptance": false,
+  "productionAdoption": false
+}

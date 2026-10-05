@@ -1,0 +1,69 @@
+{
+  "complete": true,
+  "sourcePostUnchanged": true,
+  "inputs": [
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sweptLoft.ts",
+      "bytes": 80824,
+      "sha256": "3f20cfda2a9c3d467da7dc54993caeae842dfe520b78766c306db9ebfdb28b60"
+    },
+    {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/BoundedCFormationWater.test.ts",
+      "bytes": 5020,
+      "sha256": "c3e89357687b52a915bf1277b83c1a6077553b164a290e5857f5a6c24302541c"
+    }
+  ],
+  "checks": [
+    {
+      "name": "tests",
+      "command": [
+        "/opt/homebrew/bin/node",
+        "/Users/regina/Desktop/Projects/surfing-game/node_modules/vitest/vitest.mjs",
+        "run",
+        "src/wave/barrel/BoundedCFormationWater.test.ts",
+        "src/wave/barrel/boundedCConsumers.test.ts",
+        "src/wave/barrel/sweptLoft.test.ts",
+        "src/wave/barrel/sweptContact.test.ts",
+        "src/physics/PhysicalSurfWater.test.ts",
+        "src/physics/BoardWaterNormal.test.ts",
+        "--reporter=json",
+        "--outputFile=/private/tmp/tube-production-formation-checks-20261005/tests.json"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 7.596594583010301,
+      "log": {
+        "file": "/private/tmp/tube-production-formation-checks-20261005/tests.log",
+        "bytes": 89,
+        "sha256": "ae4e1bca3b3a8b38b1a20e5386eca0a51bc26900cd1fad1c169605e77175e6b2"
+      }
+    },
+    {
+      "name": "build",
+      "command": [
+        "/opt/homebrew/bin/npm",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 6.731006874993909,
+      "log": {
+        "file": "/private/tmp/tube-production-formation-checks-20261005/build.log",
+        "bytes": 1328,
+        "sha256": "1174fd2cba1f17ee6529cc6b5b415e6cbb46c7954a092e098909f201131d43ec"
+      }
+    }
+  ],
+  "tests": {
+    "success": true,
+    "numTotalTests": 116,
+    "numPassedTests": 116,
+    "numFailedTests": 0
+  },
+  "testReport": {
+    "file": "/private/tmp/tube-production-formation-checks-20261005/tests.json",
+    "bytes": 50932,
+    "sha256": "fb661a49c6454cbc826056af98fcdc3a91a78ba6689c3da0c78dc8138477b259"
+  }
+}

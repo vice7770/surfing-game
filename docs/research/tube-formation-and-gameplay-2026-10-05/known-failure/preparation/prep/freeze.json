@@ -1,0 +1,75 @@
+{
+  "schema": "c-formation-source-preparation-freeze/v1",
+  "sourceOnly": true,
+  "rootExecutionPending": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "files": 13,
+  "pins": [
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/prep/inputs.json",
+      "bytes": 9095,
+      "sha256": "8db02246d87037dde5f3a32b4cbe96d39b030cf4d46c86692ad2815c5aa418d5"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/prep/README.md",
+      "bytes": 4527,
+      "sha256": "47adb9af9660ed33d643a2a2b1fae69eb0a75dce3a1fe212a2c2fb785ebcf985"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/prep/pending-readiness.json",
+      "bytes": 605,
+      "sha256": "73c4ab6ea17528db26f0020ae2463f8e28e83e43b73fa5866405d9c1e6fad336"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/authority.py",
+      "bytes": 15121,
+      "sha256": "400489d9e507e02a4ea4ae5ebac4289b0c9214983e3393c191e987b82303ca08"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/autopilot-entry.ts",
+      "bytes": 293,
+      "sha256": "d05dbf9fcd41ef88526d803a941e9634c2d1ff9b301d5f117be95db9a3db2c50"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/build-diagnostic.mjs",
+      "bytes": 8690,
+      "sha256": "5e6fabef10b6e538ef65805efff325d339e6454bcf1a7d58b4a832d66a1e9ecb"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/native.mjs",
+      "bytes": 29282,
+      "sha256": "38c1cbfab410deb95c21da2660dee772889522bb2104f533ef67f3366bd1e248"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/observer-fields.json",
+      "bytes": 17859,
+      "sha256": "e015b21641a592888aea8c160687edb0e4005d6c3e0ab8c0e011b2b739799fc8"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/root-helper-checks.py",
+      "bytes": 1350,
+      "sha256": "49e436f03e8c83f5ac7185315197e6bb13e726a7a0052c1d62e3b32af7de8418"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/root-seal.py",
+      "bytes": 3909,
+      "sha256": "c7141c39dfc2994274e0c97e033495494e5b45729ef21df2de0dae1bc8496e5b"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/root-source.py",
+      "bytes": 8495,
+      "sha256": "02990e7a112cfcbcaa07b540f6b0a8906d8e84074e23a59adeb093f7eed7be88"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-native-20261005/run.py",
+      "bytes": 18739,
+      "sha256": "d263933fcd54a22b9acafc7f51ea4fb4f8ba9c0c78068adbffa69a8be0869d9e"
+    },
+    {
+      "file": "/private/tmp/tube-c-formation-build-20261005/root-complete-build.py",
+      "bytes": 7641,
+      "sha256": "8e17e6c3e0fe7fd38e6ec05b9e70cab2d596446c0bc8f3c0d0c31b9099b9a480"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "schema": "production-autopilot-root-observation/v1",
+  "complete": true,
+  "originalFiniteOwnerAccepted": false,
+  "originalOwnerFailure": "Required served build.json metadata was never requested by native; native and physical-row validation passed. Original owner output is preserved unchanged.",
+  "nativeComplete": true,
+  "nativeFailure": null,
+  "independentClosureValid": true,
+  "protectedPreviewsPreserved": true,
+  "currentRawSourceBuildHelpersUnchanged": true,
+  "servedRuntimeAssetsBoundToApprovedBuild": true,
+  "servedBuildJson": false,
+  "pngArtifactTotalsBound": true,
+  "movieArtifactBound": false,
+  "report": {
+    "file": "/private/tmp/tube-production-autopilot-native-20261005/candidate-first/report.json",
+    "bytes": 1194250,
+    "sha256": "8f9a48a6fdcc8554a200cf937e8fb9eb64d4f736fc2d18d70bdcc1f4a08cb1fe"
+  },
+  "trace": {
+    "file": "/private/tmp/tube-production-autopilot-native-20261005/candidate-first/steps.ndjson",
+    "bytes": 1109754,
+    "sha256": "cae1b94a3f394d0dd7df5b1e6b75cb2bb56a48105417727a3752ca28e277066f"
+  },
+  "owner": {
+    "file": "/private/tmp/tube-production-autopilot-native-20261005/candidate-first-owner.json",
+    "bytes": 3609,
+    "sha256": "14538455f84b8a5f62247bf0871b2e1366409961edc10b7c471e0898151eac2d"
+  },
+  "nativeLauncher": {
+    "file": "/private/tmp/tube-production-autopilot-native-20261005/candidate-first-launcher.json",
+    "bytes": 11464,
+    "sha256": "54a8e1f7354d2c23e6ddf16409ec05685f0de781b703bbb29fe7f05da481014a"
+  },
+  "stepCount": 485,
+  "physicalSeconds": 8.083333333333334,
+  "initialConfig": {
+    "spot": "padang",
+    "seed": 7035,
+    "significantHeight": 3.8,
+    "peakPeriod": 18,
+    "directionDegrees": 0,
+    "spreading": 150,
+    "tide": 0,
+    "windSpeed": 0,
+    "stage": 2,
+    "compute": "auto",
+    "dx": 2,
+    "fineSpacing": 1
+  },
+  "phaseCounts": {
+    "prone": 484,
+    "fallen": 1
+  },
+  "firstPopUp": null,
+  "firstStanding": null,
+  "stop": {
+    "kind": "first-fall-or-separation",
+    "step": 485,
+    "phase": "fallen",
+    "separation": "lost board",
+    "pilot": {
+      "state": "go",
+      "attempts": 1,
+      "outcome": null,
+      "rideTime": 0,
+      "phase": ""
+    }
+  },
+  "initialBoardWords": [
+    -50.0,
+    0.05283255458370005,
+    -271.09137870490895,
+    0.06576693054321599,
+    0.001606478111175131,
+    -0.02436665353772329,
+    0.9975361628885314,
+    1.0
+  ],
+  "terminalBoardWords": [
+    -46.547554386842506,
+    2.2219384222695298,
+    -258.1643362300949,
+    -0.5574852434060951,
+    0.024647236431594756,
+    0.8230069729116533,
+    -0.10612369980136063,
+    1.0
+  ],
+  "mouth": {
+    "attempts": 1,
+    "captured": true,
+    "lastUnavailable": null,
+    "cadence": "Initial and every30 completed ordinary steps; first eligible at this cadence, not earliest physical epoch",
+    "geometryOnly": true,
+    "riderPassageClaim": false,
+    "checkpoint": {
+      "step": 0,
+      "seaTime": 405.7741837758475,
+      "file": "01-formed-mouth.png",
+      "geometryOnly": true
+    }
+  },
+  "geometryOnly": true,
+  "tubePassageAcceptance": false,
+  "standingAcceptance": false,
+  "limitations": [
+    "Deterministic one-step control evaluation differs from UI RAF batching; not an uncontrolled real-time replay or FPS benchmark.",
+    "Production line aims toward the gauge open face, not a C cavity target.",
+    "Geometry-only cloned-camera mouth image is not actor approach/passage evidence.",
+    "Witness sampling is10Hz with finite detector budget; absent/ambiguous/exhausted samples are unknown.",
+    "First-only finite attempt, with no success filtering or relaunch."
+  ]
+}

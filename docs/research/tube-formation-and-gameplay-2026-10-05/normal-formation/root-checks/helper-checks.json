@@ -1,0 +1,58 @@
+{
+  "schema": "c-formation-autopilot-root-helper-checks/v1",
+  "complete": true,
+  "resourcesStarted": false,
+  "portsProbed": false,
+  "checks": {
+    "syntax": {
+      "run": true,
+      "exitCode": 0,
+      "log": {
+        "file": "/private/tmp/tube-c-formation-autopilot-root-20261005/syntax.log",
+        "bytes": 743,
+        "sha256": "dad4958a160b6ed28c4fc60041ff125eef42c78611566ed003932ac80aa9f2b0"
+      }
+    },
+    "payload": {
+      "run": true,
+      "exitCode": 0,
+      "elapsedSeconds": 0.11262979102320969,
+      "command": [
+        "/opt/homebrew/bin/node",
+        "/private/tmp/tube-c-formation-autopilot-native-20261005/check-payload.mjs",
+        "--reference=/private/tmp/tube-board-raw-normal-native-20261005/candidate-first/report.json"
+      ],
+      "log": {
+        "file": "/private/tmp/tube-c-formation-autopilot-root-20261005/payload.log",
+        "bytes": 1490,
+        "sha256": "fa3bb06990df48c133eea8a5f286b3985acd5f4dec75841c25530301a222295e"
+      }
+    },
+    "sourceOnlyOwner": {
+      "run": true,
+      "exitCode": 0,
+      "elapsedSeconds": 0.0907760409754701,
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/private/tmp/tube-c-formation-autopilot-native-20261005/run.py",
+        "--arm",
+        "candidate"
+      ],
+      "log": {
+        "file": "/private/tmp/tube-c-formation-autopilot-root-20261005/sourceOnlyOwner.log",
+        "bytes": 694,
+        "sha256": "f046a214e257318a1fe49d720df8fb3c493e1bc7dbd0ea58cdc4a94cb8620b0c"
+      }
+    }
+  },
+  "payload": {
+    "nonmutationPassed": true,
+    "budgetPassed": true
+  },
+  "sourcePostUnchanged": true,
+  "preparationFreeze": {
+    "file": "/private/tmp/tube-c-formation-autopilot-native-20261005/preparation-freeze.json",
+    "bytes": 3109,
+    "sha256": "df1fa0510688ec6e6cfa812fcb426864e657b793fc72163074e93710a9092cf8"
+  }
+}
