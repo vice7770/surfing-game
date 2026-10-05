@@ -28,6 +28,7 @@
     "report:duckdive": "rolldown scripts/duck-dive-report.ts -o dist/scripts/duck-dive-report.mjs --format esm --platform node && node dist/scripts/duck-dive-report.mjs",
     "report:holddown": "rolldown scripts/holddown-report.ts -o dist/scripts/holddown-report.mjs --format esm --platform node && node dist/scripts/holddown-report.mjs",
     "report:sizes": "rolldown scripts/size-report.ts -o dist/scripts/size-report.mjs --format esm --platform node && node dist/scripts/size-report.mjs",
+    "report:crest-angle": "rolldown scripts/crest-angle-report.ts -o dist/scripts/crest-angle-report.mjs --format esm --platform node && node dist/scripts/crest-angle-report.mjs",
     "report:drift": "rolldown scripts/drift-report.ts -o dist/scripts/drift-report.mjs --format esm --platform node && node dist/scripts/drift-report.mjs",
     "server": "npm run build && npm run build:server && node dist-server/server.mjs",
     "server:dev": "npm run build:server && STATIC_DIR=dist node dist-server/server.mjs",
