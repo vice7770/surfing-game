@@ -362,11 +362,17 @@ interface FlyingTube {
   span?: number;
   axisX?: number;
   axisY?: number;
+  /** Published analytic swept void volume now, m³. Open growth is atmospheric; closure fixes the trapped ledger. */
+  sweptVoidVolume?: number;
 }
 
 /** The share of a tube's collapse done by `time`: 0 while it flies, 1 once its void is gone. */
 function collapsed(tube: FlyingTube, time: number): number {
   if (Number.isNaN(tube.closedAt)) return 0;
+  if (tube.sweptVoidVolume !== undefined) {
+    const remaining = tube.air > 0 ? Math.min(1, Math.max(0, tube.sweptVoidVolume / tube.air)) : 0;
+    return 1 - Math.sqrt(remaining);
+  }
   const collapseTime = Math.sqrt((2 * tube.geometry.width) / GRAVITY);
   return collapseTime > 0 ? Math.min(1, (time - tube.closedAt) / collapseTime) : 1;
 }
@@ -770,6 +776,32 @@ export class PlungingLip implements LipParcelSource {
     if (inColumn) inColumn.push(stripId);
     else this.byColumn.set(column, [stripId]);
     return { strip: stripId, thrown };
+  }
+
+  /**
+   * Actual swept void before/after closure. Open growth updates its prospective closing geometry without trapping
+   * atmospheric air. Once sealed, the trapped amount stays fixed; only lost remaining volume is released. A final
+   * zero or vanished strip flushes the retained dose through the ordinary air ledger exactly once.
+   */
+  setSweptVoid(stripId: number, current: { area: number; span: number; length: number; height: number; axisX: number; axisY: number }): boolean {
+    const strip = this.strips.get(stripId);
+    if (!strip?.swept || !strip.tube) return false;
+    if (!(Number.isFinite(current.area) && current.area >= 0 && Number.isFinite(current.span) && current.span >= 0
+      && Number.isFinite(current.length) && current.length >= 0 && Number.isFinite(current.height) && current.height >= 0
+      && Number.isFinite(current.axisX) && Number.isFinite(current.axisY))) throw new RangeError('Invalid current swept void');
+    const tube = strip.tube;
+    const volume = current.area * current.span;
+    if (!Number.isFinite(volume)) throw new RangeError('Invalid current swept void volume');
+    tube.sweptVoidVolume = volume;
+    if (Number.isNaN(tube.closedAt)) {
+      tube.area = current.area;
+      tube.span = current.span;
+      tube.geometry.length = current.length;
+      tube.geometry.width = current.height;
+      tube.axisX = current.axisX;
+      tube.axisY = current.axisY;
+    }
+    return true;
   }
 
   /**
@@ -1253,7 +1285,7 @@ export class PlungingLip implements LipParcelSource {
         if (Number.isNaN(tube.closedAt) || tube.released >= 1) continue;
         const done = collapsed(tube, this.time);
         // The air leaves as the void loses volume (scale², the scale falling linearly): fastest as it starts to close.
-        const gone = 1 - (1 - done) * (1 - done);
+        const gone = Math.max(tube.released, 1 - (1 - done) * (1 - done));
         const volume = tube.air * (gone - tube.released);
         tube.released = gone;
         if (!(volume > 0)) continue;

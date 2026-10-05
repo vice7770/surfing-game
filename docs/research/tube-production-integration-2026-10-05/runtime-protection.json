@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-05T02:26:06.627790+00:00",
+  "all31OwnedPathsStillMatchFinalDiff": true,
+  "all15RuntimeExactlyFrozenCandidate": true,
+  "all26ProtectedInputsUnchanged": true,
+  "fixtureExactlyFrozenCandidate": true,
+  "inputs": {
+    "ownedDiff": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/owned-diff-stat.json",
+      "bytes": 12301,
+      "sha256": "8b26b1c3a21ea944034e263d189baa1773212f818d1155cf9793c4119761447b"
+    },
+    "priorRuntimePins": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/runtime-final-pins.json",
+      "bytes": 14270,
+      "sha256": "759e8d48ae6faf2eb3e56ee5ecc2f7d1a0041962704d7282565c69f5b07f2197"
+    }
+  },
+  "noResourceOrSourceMutation": true
+}

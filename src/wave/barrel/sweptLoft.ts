@@ -55,6 +55,14 @@ export const BARREL_SLOPE: Partial<Record<SpotName, number>> = Object.fromEntrie
 );
 
 export interface LoftResult {
+  /** Present only on the C stored-column path; RAW result keys/arithmetic are unchanged. */
+  cSampling?: {
+    policy: 'fixed-origin-stored-F32-X-and-raw-knots/v1'; mandatoryRawKnots: number; plannedStations: number;
+    omittedPrecisionStations: number; collapsedShoulders: number; budgetTruncated: boolean;
+    firstOmittedPlannedX: number | null; omittedFronts: number; minimumStoredDeltaX: number; minimumStoredDeltaSigma: number;
+    retirement: { policy: 'one-adjacent-intrinsic-dead-water-row/v1'; plannedSupports: number; retainedSupports: number;
+      omittedDeadStations: number; budgetOmittedSupports: number; budgetClampedDeadStations: number; detachedSupports: number };
+  };
   /** xyz per vertex, and its normal. */
   positions: Float32Array;
   normals: Float32Array;
@@ -173,6 +181,8 @@ export interface LoftOptions {
 }
 
 const MAX_SLICES = Math.floor(LOFT.budget / LOFT_SAMPLES);
+// Explicit supported C survey domain; unsupported imported spans fail before scratch allocation.
+const MAX_C_SURVEY_STATIONS = 65_536;
 const E = LOFT.extensionSamples;
 const EXTENSION_STEP = LOFT.extension / E;
 const LAST = PROFILE_POINTS - 1;
@@ -188,6 +198,9 @@ export function collapseFade(tau: number, touchdown: number, collapse: number): 
 }
 
 interface Front {
+  /** C-only stored shoulder endpoints; raw sigma remains a separate parameter. */
+  fromX?: number;
+  toX?: number;
   id: number;
   /** Its records [start, end). */
   start: number;
@@ -238,6 +251,10 @@ export class SweptLoft {
   private initialZ = new Float64Array(0);
   private targetY = new Float64Array(0);
   private initialBlend = new Float64Array(0);
+  private sharedSheetRows = new Uint8Array(MAX_SLICES);
+  private sharedSheetX = new Float64Array(21);
+  private sharedSheetZ = new Float64Array(21);
+  private sharedSheetWater = new Float64Array(21);
   private sealBlend = new Float64Array(0);
   private sealApplies = new Uint8Array(0);
   private heightReady = new Uint8Array(0);
@@ -249,6 +266,10 @@ export class SweptLoft {
   /** Per front, its slices' σ, before and after refinement. */
   private base = new Float64Array(2 * MAX_SLICES + 8);
   private sigmas = new Float64Array(2 * MAX_SLICES + 8);
+  private cBaseX = new Float64Array(2 * MAX_SLICES + 8);
+  private cBaseKind = new Uint8Array(2 * MAX_SLICES + 8);
+  private cX = new Float64Array(2 * MAX_SLICES + 8);
+  private cKind = new Uint8Array(2 * MAX_SLICES + 8);
   private readonly sample: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, pace: 0 };
   private readonly probe: Sample = { x: 0, z: 0, tau: 0, footHeight: 0, footDepth: 0, pace: 0 };
   private readonly query: ProfileQuery;
@@ -263,7 +284,9 @@ export class SweptLoft {
   private readonly reachFront = new Float64Array(MAX_SLICES + 1);
   /** Reusable planned sigma samples: x, z, tau, foot height, foot depth, pace (double precision). */
   private planned = new Float64Array(0);
+  /** Planned C states: 0 omitted, 1 live, 2 intrinsically retired ordinary-water support. RAW uses 0/1. */
   private plannedLive = new Uint8Array(0);
+  private readonly retirementRow = new Uint8Array(MAX_SLICES + 1);
   private plannedRayX = new Float64Array(0);
   private plannedRayZ = new Float64Array(0);
   private readonly rayPlan: CrestRayPlan;
@@ -363,16 +386,26 @@ export class SweptLoft {
     r.rayMaxBlend = 0;
     r.rayMinAdvance = 0;
     r.rayInvalidIntervals = 0;
+    const boundedC = this.library.options.geometry === 'bounded-C';
+    if (boundedC) this.retirementRow.fill(0);
+    if (boundedC) r.cSampling = { policy: 'fixed-origin-stored-F32-X-and-raw-knots/v1', mandatoryRawKnots: 0, plannedStations: 0,
+      omittedPrecisionStations: 0, collapsedShoulders: 0, budgetTruncated: false, firstOmittedPlannedX: null,
+      omittedFronts: 0, minimumStoredDeltaX: Infinity, minimumStoredDeltaSigma: Infinity,
+      retirement: { policy: 'one-adjacent-intrinsic-dead-water-row/v1', plannedSupports: 0, retainedSupports: 0,
+        omittedDeadStations: 0, budgetOmittedSupports: 0, budgetClampedDeadStations: 0, detachedSupports: 0 } };
     const fronts = this.fronts(records, count);
-    // The output budget limits live slices, not the length surveyed before faded slices are removed. A 320 m front
+    if (r.cSampling) r.cSampling.mandatoryRawKnots = fronts.reduce((n, f) => n + f.end - f.start, 0);
+    // The output budget limits retained slices, not the length surveyed before dead stations are removed. A 320 m front
     // already needs more survey samples than the original fixed scratch buffer; grow these reusable arrays before
     // writing them, including space for refinement, so its live end is not silently truncated or read as NaN.
     let samples = 0;
-    for (const f of fronts) samples = Math.max(samples, Math.ceil((f.last - f.first + 2 * LOFT.extension) / LOFT.spacing) + 1);
+    for (const f of fronts) samples = Math.max(samples, boundedC ? this.cStationBound(f, LOFT.spacing)
+      : Math.ceil((f.last - f.first + 2 * LOFT.extension) / LOFT.spacing) + 1);
+    if (boundedC) this.cScratch(samples);
     if (this.base.length < samples) this.base = new Float64Array(Math.max(samples, 2 * this.base.length));
     if (this.sigmas.length < 2 * samples) this.sigmas = new Float64Array(Math.max(2 * samples, 2 * this.sigmas.length));
     // The spacing that fits the budget, and whether refining would overrun it: faded slices are dropped, so only the
-    // live ones count.
+    // live ones count in this legacy spacing decision; C closures also count against the final hard prefix cap.
     let live = 0;
     let extra = 0;
     for (const f of fronts) {
@@ -383,21 +416,40 @@ export class SweptLoft {
     let spacing: number = LOFT.spacing;
     let budgeted = live + extra > MAX_SLICES;
     if (live > MAX_SLICES) spacing = (LOFT.spacing * live) / Math.max(1, MAX_SLICES - 2 * fronts.length);
-    for (const f of fronts) {
-      if (r.sliceCount >= MAX_SLICES) break;
-      const n = budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing);
+    for (let frontIndex = 0; frontIndex < fronts.length; frontIndex += 1) {
+      const f = fronts[frontIndex];
+      if (r.sliceCount >= MAX_SLICES) {
+        if (r.cSampling) { r.cSampling.budgetTruncated = true; r.cSampling.omittedFronts = fronts.length - frontIndex; }
+        break;
+      }
+      const n = boundedC ? this.cRefinements(records, f, spacing, !budgeted)
+        : budgeted ? this.baseSlices(f, spacing, this.sigmas) : this.refinements(records, f, spacing);
+      if (r.cSampling) r.cSampling.plannedStations += n;
       this.loftFront(records, f, n, budgeted, stillLevel, heightAt);
+      // C truncation owns the ordered prefix even when a dangling support rollback leaves capacity.
+      if (boundedC && r.cSampling!.budgetTruncated) {
+        r.cSampling!.omittedFronts = fronts.length - frontIndex - 1;
+        break;
+      }
     }
     this.measureRayAdvance();
     this.dropOverlaps();
     this.sealRuns(heightAt);
     this.triangulate();
+    if (r.cSampling) {
+      for (let s = 0; s < r.sliceCount; s += 1) if (this.retirementRow[s] === 1
+        && r.sliceJoined[s] !== 1 && !(s > 0 && r.sliceJoined[s - 1] === 1)) r.cSampling.retirement.detachedSupports += 1;
+      if (r.cSampling.minimumStoredDeltaX === Infinity) r.cSampling.minimumStoredDeltaX = 0;
+      if (r.cSampling.minimumStoredDeltaSigma === Infinity) r.cSampling.minimumStoredDeltaSigma = 0;
+    }
     return r;
   }
 
   /** The records' fronts, in order; one of fewer than two points, or all at one σ, has no tangent and is left out. */
   private fronts(records: Float32Array, count: number): Front[] {
     const fronts: Front[] = [];
+    const boundedC = this.library.options.geometry === 'bounded-C';
+    if (boundedC && (!Number.isSafeInteger(count) || count < 0 || count > MAX_C_SURVEY_STATIONS || count * FRONT_STRIDE > records.length)) throw new RangeError('Unsupported C packet count');
     let start = 0;
     while (start < count) {
       const id = records[start * FRONT_STRIDE + FRONT_FIELD.front];
@@ -405,10 +457,128 @@ export class SweptLoft {
       while (end < count && records[end * FRONT_STRIDE + FRONT_FIELD.front] === id) end += 1;
       const first = records[start * FRONT_STRIDE + FRONT_FIELD.sigma];
       const last = records[(end - 1) * FRONT_STRIDE + FRONT_FIELD.sigma];
-      if (end - start >= 2 && last - first > 1e-6) fronts.push({ id, start, end, first, last });
+      if (boundedC) {
+        if (!Number.isFinite(id)) throw new RangeError('Non-finite C front identity');
+        for (let k = start; k < end; k += 1) {
+          const o = k * FRONT_STRIDE;
+          for (const key of ['x', 'z', 'sigma', 'tau', 'footHeight', 'footDepth'] as const) if (!Number.isFinite(records[o + FRONT_FIELD[key]])) throw new RangeError('Non-finite C packet control: ' + key);
+          if (!(records[o + FRONT_FIELD.footHeight] > 0 && records[o + FRONT_FIELD.footDepth] > 0)) throw new RangeError('Non-positive C packet scale');
+          const pace = records[o + FRONT_FIELD.pace];
+          if (!Number.isFinite(pace) && !Number.isNaN(pace)) throw new RangeError('Unsupported C packet pace');
+          if (k > start && (!(records[o + FRONT_FIELD.x] > records[o - FRONT_STRIDE + FRONT_FIELD.x]) || !(records[o + FRONT_FIELD.sigma] > records[o - FRONT_STRIDE + FRONT_FIELD.sigma]))) throw new RangeError('C packet X/sigma must be strictly increasing stored words');
+        }
+        if (end - start >= 2) {
+          const a = start * FRONT_STRIDE, b = (end - 1) * FRONT_STRIDE;
+          const dx0 = records[a + FRONT_STRIDE + FRONT_FIELD.x] - records[a + FRONT_FIELD.x], dz0 = records[a + FRONT_STRIDE + FRONT_FIELD.z] - records[a + FRONT_FIELD.z];
+          const dx1 = records[b + FRONT_FIELD.x] - records[b - FRONT_STRIDE + FRONT_FIELD.x], dz1 = records[b + FRONT_FIELD.z] - records[b - FRONT_STRIDE + FRONT_FIELD.z];
+          const x0 = records[a + FRONT_FIELD.x], x1 = records[b + FRONT_FIELD.x];
+          const fromX = Math.fround(x0 - LOFT.extension * dx0 / Math.hypot(dx0, dz0)), toX = Math.fround(x1 + LOFT.extension * dx1 / Math.hypot(dx1, dz1));
+          if (![fromX, toX].every(Number.isFinite)) throw new RangeError('Unsupported C shoulder coordinates');
+          if (this.result.cSampling) this.result.cSampling.collapsedShoulders += Number(fromX === x0) + Number(toX === x1);
+          fronts.push({ id, start, end, first, last, fromX, toX });
+        }
+      } else if (end - start >= 2 && last - first > 1e-6) fronts.push({ id, start, end, first, last });
       start = end;
     }
     return fronts;
+  }
+
+  /** Upper bound before allocation: zero-origin integer lattice plus EVERY raw knot and both shoulders. */
+  private cStationBound(f: Front, spacing: number): number {
+    const low = Math.ceil(f.fromX! / spacing), high = Math.floor(f.toX! / spacing);
+    const lattice = Math.max(0, high - low + 1), count = lattice + f.end - f.start + 2;
+    if (!(spacing > 0) || !Number.isFinite(spacing) || !Number.isSafeInteger(low) || !Number.isSafeInteger(high)
+      || !Number.isSafeInteger(count) || count > MAX_C_SURVEY_STATIONS) throw new RangeError('Unsupported C stored-X lattice/survey domain');
+    return count;
+  }
+
+  private cScratch(count: number): void {
+    if (this.cBaseX.length < count) {
+      const n = Math.max(count, 2 * this.cBaseX.length);
+      this.cBaseX = new Float64Array(n); this.cBaseKind = new Uint8Array(n);
+    }
+    if (this.cX.length < 2 * count) {
+      const n = Math.max(2 * count, 2 * this.cX.length);
+      this.cX = new Float64Array(n); this.cKind = new Uint8Array(n);
+      if (this.sigmas.length < n) this.sigmas = new Float64Array(n);
+    }
+  }
+
+  /** Direct X parameter sampling. Raw knots copy exact packet words; sigma never locates the sample. */
+  private atX(records: Float32Array, f: Front, x: number, into: Sample): number {
+    const field = (k: number, key: keyof typeof FRONT_FIELD) => records[k * FRONT_STRIDE + FRONT_FIELD[key]];
+    const copy = (k: number) => { into.x = x; into.z = field(k, 'z'); into.tau = field(k, 'tau');
+      into.footHeight = field(k, 'footHeight'); into.footDepth = field(k, 'footDepth'); into.pace = field(k, 'pace'); };
+    const firstX = field(f.start, 'x'), lastX = field(f.end - 1, 'x');
+    if (x <= firstX || x >= lastX) {
+      const k = x <= firstX ? f.start : f.end - 1, other = k === f.start ? k + 1 : k - 1;
+      copy(k); if (x === field(k, 'x')) return field(k, 'sigma');
+      const dx = field(k, 'x') - field(other, 'x'), dz = field(k, 'z') - field(other, 'z'), length = Math.hypot(dx, dz);
+      if (x === f.fromX || x === f.toX) {
+        const beyond = k === f.start ? -LOFT.extension : LOFT.extension;
+        into.z += Math.abs(beyond) * dz / length;
+        return field(k, 'sigma') + beyond;
+      }
+      const share = (x - field(k, 'x')) / dx;
+      into.z += share * dz;
+      return field(k, 'sigma') + (k === f.start ? -1 : 1) * share * length;
+    }
+    let low = f.start + 1, high = f.end - 1;
+    while (low < high) { const mid = (low + high) >>> 1; if (field(mid, 'x') < x) low = mid + 1; else high = mid; }
+    if (x === field(low, 'x')) { copy(low); return field(low, 'sigma'); }
+    const k = low - 1, t = (x - field(k, 'x')) / (field(low, 'x') - field(k, 'x'));
+    const lerp = (key: keyof typeof FRONT_FIELD) => field(k, key) + t * (field(low, key) - field(k, key));
+    into.x = x; into.z = lerp('z'); into.tau = lerp('tau'); into.footHeight = lerp('footHeight'); into.footDepth = lerp('footDepth');
+    const a = field(k, 'pace'), b = field(low, 'pace'); into.pace = a === a ? b === b ? a + t * (b - a) : a : b;
+    return lerp('sigma');
+  }
+
+  /** Merge priority raw=2, shoulder=1, regular/refinement=0; no epsilon merges a distinct raw knot. */
+  private cAppend(records: Float32Array, f: Front, x: number, kind: number, xs: Float64Array, sigmas: Float64Array, kinds: Uint8Array, count: number): number {
+    const sigma = this.atX(records, f, x, this.probe), stored = Math.fround(sigma);
+    if (!Number.isFinite(x) || x !== Math.fround(x) || !Number.isFinite(stored)) throw new RangeError('Unsupported C stored station precision');
+    while (count > 0) {
+      const previousX = xs[count - 1], previousSigma = Math.fround(sigmas[count - 1]);
+      if (x > previousX && stored > previousSigma) break;
+      if (x < previousX || stored < previousSigma) throw new RangeError('C stored station order reversed');
+      if (kind === 2 && kinds[count - 1] === 2) throw new RangeError('Distinct C raw knot collapsed in stored X/sigma');
+      if (this.result.cSampling) this.result.cSampling.omittedPrecisionStations += 1;
+      if (kind <= kinds[count - 1]) return count;
+      count -= 1;
+    }
+    xs[count] = x; sigmas[count] = sigma; kinds[count] = kind; return count + 1;
+  }
+
+  private cBaseSlices(records: Float32Array, f: Front, spacing: number): number {
+    this.cScratch(this.cStationBound(f, spacing));
+    // base stores independently interpolated sigma alongside baseX; neither span nor a dead upstream arc rephases X.
+    let out = this.cAppend(records, f, f.fromX!, 1, this.cBaseX, this.base, this.cBaseKind, 0);
+    let raw = f.start, j = Math.ceil(f.fromX! / spacing); const high = Math.floor(f.toX! / spacing);
+    while (raw < f.end || j <= high) {
+      const rawX = raw < f.end ? records[raw * FRONT_STRIDE + FRONT_FIELD.x] : Infinity;
+      const regularX = j <= high ? Math.fround(j * spacing) : Infinity;
+      const x = Math.min(rawX, regularX), kind = rawX <= regularX ? 2 : 0;
+      if (rawX === x) raw += 1;
+      if (regularX === x) j += 1;
+      if (x >= f.fromX! && x <= f.toX!) out = this.cAppend(records, f, x, kind, this.cBaseX, this.base, this.cBaseKind, out);
+    }
+    return this.cAppend(records, f, f.toX!, 1, this.cBaseX, this.base, this.cBaseKind, out);
+  }
+
+  private cRefinements(records: Float32Array, f: Front, spacing: number, refine: boolean): number {
+    const n = this.cBaseSlices(records, f, spacing); let out = 0, previousTau = 0, previousFrame = 0;
+    for (let k = 0; k < n; k += 1) {
+      this.atX(records, f, this.cBaseX[k], this.sample);
+      const tau = this.sample.tau, frame = this.library.profileTimes({ slope: this.slope, footHeight: this.sample.footHeight, footDepth: this.sample.footDepth }).frameSeconds;
+      if (refine && k > 0 && Math.abs(tau - previousTau) > LOFT.frames * Math.min(frame, previousFrame)) {
+        const x = Math.fround((this.cBaseX[k - 1] + this.cBaseX[k]) / 2);
+        if (x > this.cBaseX[k - 1] && x < this.cBaseX[k]) out = this.cAppend(records, f, x, 0, this.cX, this.sigmas, this.cKind, out);
+        else if (this.result.cSampling) this.result.cSampling.omittedPrecisionStations += 1;
+      }
+      out = this.cAppend(records, f, this.cBaseX[k], this.cBaseKind[k], this.cX, this.sigmas, this.cKind, out);
+      previousTau = tau; previousFrame = frame;
+    }
+    return out;
   }
 
   /** A front's slices every `spacing` or less, evenly from one extension's end to the other's, into `out`; how many. */
@@ -426,13 +596,14 @@ export class SweptLoft {
    * the live ones need (neighbouring clocks more than `frames` frames apart).
    */
   private survey(records: Float32Array, f: Front): { live: number; extra: number } {
-    const n = this.baseSlices(f, LOFT.spacing, this.base);
+    const boundedC = this.library.options.geometry === 'bounded-C';
+    const n = boundedC ? this.cBaseSlices(records, f, LOFT.spacing) : this.baseSlices(f, LOFT.spacing, this.base);
     let live = 0;
     let extra = 0;
     let previous = Number.NaN;
     let previousFrame = 0;
     for (let k = 0; k < n; k += 1) {
-      const s = this.at(records, f, this.base[k], this.probe);
+      const s = boundedC ? (this.atX(records, f, this.cBaseX[k], this.probe), this.probe) : this.at(records, f, this.base[k], this.probe);
       const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
       if (collapseFade(s.tau, times.touchdownSeconds, times.collapseSeconds) === 0) {
         previous = Number.NaN;
@@ -520,6 +691,63 @@ export class SweptLoft {
   }
 
   /** Sample the planned crest/ray/scale once, preserving the original live-run and budget-clock decisions. */
+  /** C-only closure rows: keep intrinsic clocks; a dead sample never participates in budget clock lowering. */
+  private planCColumns(records: Float32Array, f: Front, n: number, budgeted: boolean): number {
+    const r = this.result, diagnostics = r.cSampling!.retirement;
+    let inRun = false, previousTau = 0;
+    for (let k = 0; k < n; k += 1) {
+      const s = this.sample, sigma = this.sigmas[k];
+      this.atX(records, f, this.cX[k], s);
+      const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
+      let tau = s.tau;
+      const intrinsicDead = collapseFade(tau, times.touchdownSeconds, times.collapseSeconds) === 0;
+      if (intrinsicDead) inRun = false;
+      else if (budgeted && inRun) {
+        const bound = times.touchdownSeconds / 4;
+        const clamped = Math.min(previousTau + bound, Math.max(previousTau - bound, tau));
+        if (clamped !== tau) r.clamps += 1;
+        tau = clamped;
+      }
+      const live = !intrinsicDead && collapseFade(tau, times.touchdownSeconds, times.collapseSeconds) > 0;
+      this.plannedLive[k] = intrinsicDead ? 2 : live ? 1 : 0;
+      if (!intrinsicDead && !live) diagnostics.budgetClampedDeadStations += 1;
+      inRun = live;
+      if (live) previousTau = tau;
+      const plan = 6 * k;
+      this.planned[plan] = s.x; this.planned[plan + 1] = s.z; this.planned[plan + 2] = tau;
+      this.planned[plan + 3] = s.footHeight; this.planned[plan + 4] = s.footDepth; this.planned[plan + 5] = s.pace;
+      this.rayPlan.rayAt(sigma, this.plannedRay);
+      this.plannedRayX[k] = this.plannedRay[0]; this.plannedRayZ[k] = this.plannedRay[1];
+    }
+    // An immediate planned neighbor cannot cross or omit an intervening mandatory raw parameter knot.
+    for (let k = 0; k < n; k += 1) if (this.plannedLive[k] === 2) {
+      if ((k > 0 && this.plannedLive[k - 1] === 1) || (k + 1 < n && this.plannedLive[k + 1] === 1)) diagnostics.plannedSupports += 1;
+      else { this.plannedLive[k] = 0; diagnostics.omittedDeadStations += 1; }
+    }
+    let retained = 0, limit = n, lastSelected = -1;
+    for (let k = 0; k < n; k += 1) {
+      if (this.plannedLive[k] === 0) continue;
+      if (r.sliceCount + retained >= MAX_SLICES) {
+        r.cSampling!.budgetTruncated = true;
+        limit = k;
+        // A left support without room for its first live row owns no run or footprint.
+        if (lastSelected >= 0 && this.plannedLive[lastSelected] === 2
+          && !(lastSelected > 0 && this.plannedLive[lastSelected - 1] === 1)) {
+          limit = lastSelected;
+        }
+        r.cSampling!.firstOmittedPlannedX ??= this.cX[limit];
+        break;
+      }
+      retained += 1; lastSelected = k;
+    }
+    for (let k = 0; k < n; k += 1) if (this.plannedLive[k] === 2) {
+      if (k < limit) diagnostics.retainedSupports += 1;
+      else diagnostics.budgetOmittedSupports += 1;
+    }
+    if (this.rayPlan.diagnostics.blend > 0) for (let k = 0; k < limit; k += 1) if (this.plannedLive[k] !== 0) r.rayCorrections += 1;
+    return limit;
+  }
+
   private planRays(records: Float32Array, f: Front, n: number, budgeted: boolean): number {
     if (this.plannedLive.length < n) {
       const capacity = Math.max(n, 2 * this.plannedLive.length);
@@ -529,17 +757,25 @@ export class SweptLoft {
       this.plannedRayZ = new Float64Array(capacity);
     }
     this.plannedLive.fill(0, 0, n);
-    this.rayPlan.prepareRecords(records, f.start, f.end);
+    const boundedC = this.library.options.geometry === 'bounded-C';
+    if (boundedC) this.rayPlan.prepareStoredColumns(records, f.start, f.end, this.cX, this.sigmas, n);
+    else this.rayPlan.prepareRecords(records, f.start, f.end);
+    if (boundedC && this.rayPlan.diagnostics.invalidIntervals) throw new RangeError('Unsupported C actual stored column proof');
+    if (this.result.cSampling) {
+      this.result.cSampling.minimumStoredDeltaX = Math.min(this.result.cSampling.minimumStoredDeltaX, this.rayPlan.diagnostics.minimumStoredDeltaX!);
+      this.result.cSampling.minimumStoredDeltaSigma = Math.min(this.result.cSampling.minimumStoredDeltaSigma, this.rayPlan.diagnostics.minimumStoredDeltaSigma!);
+    }
     const r = this.result;
     r.rayMaxBlend = Math.max(r.rayMaxBlend, this.rayPlan.diagnostics.blend);
     r.rayInvalidIntervals += this.rayPlan.diagnostics.invalidIntervals;
+    if (boundedC) return this.planCColumns(records, f, n, budgeted);
     let live = 0;
     let inRun = false;
     let previousTau = 0;
     let limit = n;
     for (let k = 0; k < n; k += 1) {
       const sigma = this.sigmas[k];
-      const s = this.at(records, f, sigma, this.sample);
+      const s = boundedC ? (this.atX(records, f, this.cX[k], this.sample), this.sample) : this.at(records, f, sigma, this.sample);
       const times = this.library.profileTimes({ slope: this.slope, footHeight: s.footHeight, footDepth: s.footDepth });
       let tau = s.tau;
       if (budgeted && inRun) {
@@ -549,7 +785,10 @@ export class SweptLoft {
         tau = clamped;
       }
       if (collapseFade(tau, times.touchdownSeconds, times.collapseSeconds) === 0) { inRun = false; continue; }
-      if (r.sliceCount + live >= MAX_SLICES) { limit = k; break; }
+      if (r.sliceCount + live >= MAX_SLICES) {
+        if (r.cSampling) { r.cSampling.budgetTruncated = true; r.cSampling.firstOmittedPlannedX ??= this.cX[k]; }
+        limit = k; break;
+      }
       this.plannedLive[k] = 1;
       inRun = true;
       previousTau = tau;
@@ -574,7 +813,7 @@ export class SweptLoft {
   ): void {
     const r = this.result;
     const { profile } = this;
-    // Runs of live slices: a faded slice is dropped, and the slices either side of it are never joined.
+    // Runs of selected slices: omitted dead stations break the run; C can close it with one flat dead neighbor.
     let runStart = -1;
     const closeRun = () => {
       if (runStart >= 0) this.joinRun(runStart, r.sliceCount - 1);
@@ -582,7 +821,10 @@ export class SweptLoft {
     };
     const plannedCount = this.planRays(records, f, n, budgeted);
     for (let k = 0; k < plannedCount; k += 1) {
-      if (this.plannedLive[k] !== 1) { closeRun(); continue; }
+      if (this.plannedLive[k] === 0) { closeRun(); continue; }
+      const retirementSupport = this.library.options.geometry === 'bounded-C' && this.plannedLive[k] === 2;
+      // Two neighboring flat supports close separate live islands; no dead-to-dead triangle or air run.
+      if (retirementSupport && k > 0 && this.plannedLive[k - 1] === 2) closeRun();
       const sigma = this.sigmas[k];
       const s = this.sample;
       const plan = 6 * k;
@@ -606,7 +848,8 @@ export class SweptLoft {
       const lookup = this.library.profileAt(query, profile);
       const touchdown = lookup.touchdownSeconds;
       const wFade = collapseFade(tau, touchdown, lookup.collapseSeconds);
-      if (wFade === 0) {
+      if (retirementSupport && wFade !== 0) throw new Error('C retirement closure clocks disagree with its profile lookup');
+      if (wFade === 0 && !retirementSupport) {
         closeRun();
         continue;
       }
@@ -669,7 +912,8 @@ export class SweptLoft {
           anchorVZ = follow[1];
         }
       }
-      const maskSlice = wFade > 0 ? Math.min(1, Math.max(0, 1 + d / LOFT.band)) : 0;
+      const maskBand = Math.min(1, Math.max(0, 1 + d / LOFT.band));
+      const maskSlice = this.library.options.geometry === 'bounded-C' ? wFade * maskBand : wFade > 0 ? maskBand : 0;
       // The forward rest, from the drawn slice in both modes, so the contact and the overlaps follow the drawing.
       const forward = this.rest;
       if (w > 0) {
@@ -697,6 +941,7 @@ export class SweptLoft {
         }
       }
       const slice = r.sliceCount;
+      if (this.library.options.geometry === 'bounded-C') this.retirementRow[slice] = retirementSupport ? 1 : 0;
       r.sliceFormed[slice] = formed;
       r.sliceFront[slice] = f.id;
       r.sliceSigma[slice] = sigma;
@@ -720,12 +965,19 @@ export class SweptLoft {
       r.sliceRayZ[slice] = nz;
       r.sliceWeight[slice] = w;
       r.sliceOverturned[slice] = overturned;
-      r.sliceTipAlong[slice] = lookup.tipAlong;
-      r.sliceTipUp[slice] = lookup.tipUp;
+      // Boundary transport and water flow differ once the analytic cap rests on its floor.
+      const fluidScale = lookup.analytic ? lookup.analytic.lengthScale / lookup.analytic.timeScale : 1;
+      r.sliceTipAlong[slice] = lookup.analytic ? lookup.analytic.fluidAlong * fluidScale : lookup.tipAlong;
+      r.sliceTipUp[slice] = lookup.analytic ? lookup.analytic.fluidUp * fluidScale : lookup.tipUp;
       if (this.contact) {
-        const transport = this.landmarkVelocity(s, tau, lookup.frameSeconds, LANDMARK.lip);
-        r.sliceTipTransportAlong[slice] = transport[0];
-        r.sliceTipTransportUp[slice] = transport[1];
+        if (lookup.analytic) {
+          r.sliceTipTransportAlong[slice] = lookup.tipAlong;
+          r.sliceTipTransportUp[slice] = lookup.tipUp;
+        } else {
+          const transport = this.landmarkVelocity(s, tau, lookup.frameSeconds, LANDMARK.lip);
+          r.sliceTipTransportAlong[slice] = transport[0];
+          r.sliceTipTransportUp[slice] = transport[1];
+        }
       } else {
         r.sliceTipTransportAlong[slice] = 0;
         r.sliceTipTransportUp[slice] = 0;
@@ -739,6 +991,8 @@ export class SweptLoft {
       const height = restHeight(profile[2 * LANDMARK.crest + 1], profile[2 * LANDMARK.toe + 1], profile[2 * LAST + 1]);
       const rampLength = REST.ramp * height;
       const restSpan = restEnd - restHold;
+      const sharedSheet = lookup.analytic?.sharedSheet !== undefined;
+      this.sharedSheetRows[slice] = sharedSheet ? 1 : 0;
       for (let j = 0; j < LOFT_SAMPLES; j += 1) {
         let along: number;
         let above = 0;
@@ -791,9 +1045,24 @@ export class SweptLoft {
           pin = u * u * (3 - 2 * u);
           maskAlong = Math.min(1, Math.max(0, 1 - (past - restEnd) / LOFT.band));
         }
+        // Once the provider cap and plateau share a datum, give their final mesh the same edge too. Merely putting
+        // both on the same local Y is insufficient when separately triangulated water/end projections are bilinear.
+        // Point104 is resampled on its existing straight103..105 plateau; no contour or lifecycle coefficient changes.
+        if (lookup.analytic?.sheetExists && j === E + 104 && profile[2 * LANDMARK.lip + 1] === profile[2 * 104 + 1]
+          && profile[2 * LANDMARK.lip] >= profile[2 * 103] && profile[2 * LANDMARK.lip] <= profile[2 * 105]) {
+          along = profile[2 * LANDMARK.lip];
+          above = profile[2 * LANDMARK.lip + 1];
+        }
         const v = slice * LOFT_SAMPLES + j;
-        const px = ax + along * nx;
-        const pz = az + along * nz;
+        const profileIndex = j - E;
+        const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
+        const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
+        const px = sharedUnder >= 0 ? this.sharedSheetX[sharedUnder] : ax + along * nx;
+        const pz = sharedUnder >= 0 ? this.sharedSheetZ[sharedUnder] : az + along * nz;
+        if (sharedTop >= 0) {
+          this.sharedSheetX[sharedTop] = px;
+          this.sharedSheetZ[sharedTop] = pz;
+        }
         const e = w * (1 - pin);
         r.positions[3 * v] = px;
         if (this.normalDemand) {
@@ -804,7 +1073,8 @@ export class SweptLoft {
         } else if (e === 1) {
           r.positions[3 * v + 1] = stillLevel + above;
         } else {
-          const h = heightAt(px, pz);
+          const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(px, pz);
+          if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
           r.positions[3 * v + 1] = e === 0 ? h : h + e * (stillLevel + above - h);
         }
         r.positions[3 * v + 2] = pz;
@@ -1008,16 +1278,23 @@ export class SweptLoft {
     const r = this.result;
     for (let s = 0; s + 1 < r.sliceCount; s += 1) {
       if (r.sliceJoined[s] !== 1) continue;
+      const analytic = this.library.options.geometry === 'bounded-C';
       for (let j = 0; j < LOFT_SAMPLES - 1; j += 1) {
         const v00 = s * LOFT_SAMPLES + j;
         const v10 = v00 + LOFT_SAMPLES;
         const i = r.indexCount;
+        // Use one physical diagonal direction for the analytic sheet, independent of contour winding. Its inner
+        // return runs backward along the ray while roof/floor run forward; the same index diagonal would therefore
+        // join opposite corners and can invert a thin sheet between differently weighted/aged rows. No vertex moves.
+        const a = 3 * v00, b = 3 * v10, p = r.positions;
+        const reverse = analytic && ((p[a + 3] - p[a]) * r.sliceRayX[s] + (p[a + 5] - p[a + 2]) * r.sliceRayZ[s]
+          + (p[b + 3] - p[b]) * r.sliceRayX[s + 1] + (p[b + 5] - p[b + 2]) * r.sliceRayZ[s + 1]) < 0;
         r.indices[i] = v00;
         r.indices[i + 1] = v10;
-        r.indices[i + 2] = v00 + 1;
-        r.indices[i + 3] = v00 + 1;
-        r.indices[i + 4] = v10;
-        r.indices[i + 5] = v10 + 1;
+        r.indices[i + 2] = reverse ? v10 + 1 : v00 + 1;
+        r.indices[i + 3] = reverse ? v00 : v00 + 1;
+        r.indices[i + 4] = reverse ? v10 + 1 : v10;
+        r.indices[i + 5] = reverse ? v00 + 1 : v10 + 1;
         r.indexCount += 6;
       }
     }
@@ -1146,13 +1423,18 @@ export class SweptLoft {
     const heightAt = this.rowHeightAt;
     if (!(row >= 0 && row < r.sliceCount) || !heightAt) throw new Error('Contact height row is outside its captured generation');
     const weight = this.sealBlend[row];
+    const sharedSheet = this.sharedSheetRows[row] === 1;
     for (let j = 0; j < LOFT_SAMPLES; j += 1) {
       const v = row * LOFT_SAMPLES + j;
       const o = 3 * v;
       const e = this.initialBlend[v];
       if (e === 1) r.positions[o + 1] = this.targetY[v];
       else {
-        const h = heightAt(this.initialX[v], this.initialZ[v]);
+        const profileIndex = j - E;
+        const sharedTop = sharedSheet && profileIndex >= 38 && profileIndex <= 58 ? profileIndex - 38 : -1;
+        const sharedUnder = sharedSheet && profileIndex >= 68 && profileIndex <= 88 ? 88 - profileIndex : -1;
+        const h = sharedUnder >= 0 ? this.sharedSheetWater[sharedUnder] : heightAt(this.initialX[v], this.initialZ[v]);
+        if (sharedTop >= 0) this.sharedSheetWater[sharedTop] = h;
         r.positions[o + 1] = e === 0 ? h : h + e * (this.targetY[v] - h);
       }
       if (this.sealApplies[v] === 1) {

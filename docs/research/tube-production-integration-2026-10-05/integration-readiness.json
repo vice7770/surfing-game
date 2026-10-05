@@ -1,0 +1,147 @@
+{
+  "status": "implementation-frozen-with-bounded-validation",
+  "roughPrototypeAdoptionAuthorized": true,
+  "ownership": {
+    "runtimePaths": 15,
+    "candidateTestPaths": 14,
+    "fixturePaths": 1,
+    "vitestConfigPaths": 1,
+    "ownedTotal": 31
+  },
+  "source": {
+    "all15RuntimeExactlyFrozenRetirementV2Candidate": true,
+    "fixtureExactCandidate": true,
+    "all26ProtectedInputsUnchanged": true,
+    "testOnlyPortabilityChanges": true,
+    "rootFrameFixPreserved": true,
+    "contactObserverCopied": false,
+    "diffuseAppearanceCopied": false,
+    "freeze": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/owned-final-source-freeze.json",
+      "bytes": 6744,
+      "sha256": "3ede1a5155658a163bd0c02493f85691211fbfcf1b3c28db3c30ef7654742b4f"
+    },
+    "finalProtection": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/final-runtime-protection-check.json",
+      "bytes": 736,
+      "sha256": "f2bb6fa76d6ecd9e504973c6e47b87cf1e903996ed7c89f30e7c0369d9641809"
+    },
+    "integrationPatch": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/integration.patch",
+      "bytes": 347920,
+      "sha256": "d996904cd98c966ef0f2aa0d1076be5c800fe2ae4675e59b9f4786d43ce0c6e5"
+    },
+    "candidateToPortableTestsPatch": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/portable-tests.patch",
+      "bytes": 151958,
+      "sha256": "4d90b2a9002bfe06f0dfb1d6e43c3f419c7e0aca4c1821860280467ad99a607e"
+    },
+    "diffStats": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/owned-diff-stat.json",
+      "bytes": 12301,
+      "sha256": "8b26b1c3a21ea944034e263d189baa1773212f818d1155cf9793c4119761447b"
+    },
+    "patchRefresh": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/final-patch-refresh.json",
+      "bytes": 1444,
+      "sha256": "51d959bab795c8cd15f8c9c9b5cbe5cc1dc2523eb58af74775b7cdb96e05a7b7"
+    }
+  },
+  "validation": {
+    "strictTypeScriptAfterAllTestRepairs": {
+      "exitCode": 0,
+      "receipt": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/fixture-repair-receipt.json",
+        "bytes": 2664,
+        "sha256": "0421e13a75e33485f662f1f5c4ddfdc2359c06fd0f009094ae620d606bb1a5b4"
+      }
+    },
+    "candidateCurrentEvidence": {
+      "unmodifiedFiles": 13,
+      "unmodifiedCasesPassed": 80,
+      "repairedFileCasesPassed": 9,
+      "uniqueCurrentCasesSupported": 89,
+      "singleFinal14FilePassingRunClaim": false
+    },
+    "preservedFirstCandidateFailures": {
+      "files": 14,
+      "casesPassed": 87,
+      "casesFailed": 2,
+      "receipt": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/fixture-repair-receipt.json",
+        "bytes": 2664,
+        "sha256": "0421e13a75e33485f662f1f5c4ddfdc2359c06fd0f009094ae620d606bb1a5b4"
+      }
+    },
+    "rootBuild": {
+      "file": "/private/tmp/tube-C-production-app-build-20261005/result.json",
+      "bytes": 17977,
+      "sha256": "715291fd92bd29497599a4012a88c049aef6e24e2656f50376cce1cd4d2521fe",
+      "exitCode": 0,
+      "wallSeconds": 17.13359441596549,
+      "buildId": "tube-C-production-integration-20261005",
+      "runtimeSourceUnchanged": true,
+      "providedByRoot": true,
+      "independentlyRunByThisSubagent": false
+    },
+    "boundedExistingConsumerCheck": {
+      "completed": false,
+      "exitCode": 143,
+      "seconds": 540.3018974169972,
+      "reportedCasesPassed": 56,
+      "reportedCasesFailed": 0,
+      "actualPlannedSkipsReached": 15,
+      "report": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/bounded-affected-result.json",
+        "bytes": 2329,
+        "sha256": "8d3aca934255e6ce004a08e706ad6ccc940b92c782ad38c2675546686274d6ab"
+      }
+    },
+    "original44FileRun": {
+      "completed": false,
+      "deliberatelyInterruptedExitCode": 130,
+      "reason": "Documented unrelated hours-long no-library full-width stress scope",
+      "receipt": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/deliberately-interrupted-hours-scope-tests.json",
+        "bytes": 816,
+        "sha256": "37161c88eb778fb9fdc7f79f87ee789b5fc33da9179be8a065320bbeaf02f0be"
+      }
+    },
+    "trackedDiffWhitespaceCheck": {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "doesNotCoverUntrackedNewFiles": true
+    },
+    "completeConsumerSuitePassClaim": false,
+    "fullRepositoryPassClaim": false
+  },
+  "portability": {
+    "all14CandidateFilesRetained": true,
+    "temporaryPredecessorImportsOrHistoricalReportWritesInCandidateTests": false,
+    "docsArchivedSourcesExcludedFromNormalVitestCollection": true,
+    "defaultVitestExclusionsPreserved": true,
+    "productionTestNameExclusionsAdded": false,
+    "receipt": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/portability-receipt.json",
+      "bytes": 9756,
+      "sha256": "91396332e1ccd56ec04fb69b0b40bfc659a8ab14be05dd0ca13d4460e777d1b9"
+    }
+  },
+  "knownLimits": [
+    "Ordinary playable entry remains unresolved; root V7 replay still falls at landing step1366.",
+    "No visual/FPS/native acceptance or successful tube ride claim.",
+    "The 44-file bounded consumer run is incomplete; it reported early SurfZoneSimulation case outcomes only.",
+    "No new build/native/browser/server/port/Git mutation performed by this subagent; root independent build is separately attributed."
+  ],
+  "nextStep": "Root can review/commit the frozen rough-prototype bundle with these exact limits. Prioritize any remaining direct library/worker/mesh/contact consumer checks separately if further validation is required; do not rerun the hours-long full-width stress blocks to claim integration acceptance. Existing 4312/4313 previews must remain untouched.",
+  "residualConsumerProposal": {
+    "file": "/private/tmp/tube-C-production-integration-20261005/recommended-small-consumer-checks.json",
+    "bytes": 5643,
+    "sha256": "7260cce23fec61bd4a6362d93f0bd40c64d43a76bfb852f691eb03b9c23c1ff4"
+  },
+  "remainingNonSimulationConsumerInventory": {
+    "file": "/private/tmp/tube-C-production-integration-20261005/unrun-consumer-static-scope.json",
+    "bytes": 16061,
+    "sha256": "4c938b779c92c9f8a4aabf2cde5dc5aa9eb97782046c1bb3d05aba00f477d681"
+  }
+}

@@ -1,0 +1,222 @@
+{
+  "candidateFilesRetained": 14,
+  "candidateTestFiles": [
+    {
+      "path": "src/wave/PlungingLipSweptVoid.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/PlungingLipSweptVoid.test.ts",
+        "bytes": 4068,
+        "sha256": "c85478ca2fd5bcde663380abb237e73a6c22ebbcedf097f7a2bdb536946541e8"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/PlungingLipSweptVoid.test.ts",
+        "bytes": 4068,
+        "sha256": "c85478ca2fd5bcde663380abb237e73a6c22ebbcedf097f7a2bdb536946541e8"
+      },
+      "changedForPortability": false
+    },
+    {
+      "path": "src/wave/barrel/boundedCConsumers.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 15005,
+        "sha256": "d1123ae052d97860826a7f6eeb69a99d26f8a3249d264817486c75d4ba354dc8"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCConsumers.test.ts",
+        "bytes": 14468,
+        "sha256": "b802d2fa547defcfff7120c862e652e525015f2e2de16722a3a50e2fc0d2b18c"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/boundedCDemand.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/boundedCDemand.test.ts",
+        "bytes": 12492,
+        "sha256": "aab93fe4aea1b8facf736adbe8348b0bc1e7d3e48d736bbdfbda0e13c384aa7a"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCDemand.test.ts",
+        "bytes": 5142,
+        "sha256": "d12b1709492dffb6b939e051ee0926a301ce47d7d93c13b9d254484618143af2"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/boundedCProfile.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/boundedCProfile.test.ts",
+        "bytes": 10917,
+        "sha256": "82448f329efa0fef4817c38dc8e5a6dbd201dd065f6a0c10a202499df53b3ae1"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCProfile.test.ts",
+        "bytes": 10215,
+        "sha256": "53c8ff1a3075ea1b0eeb5d975fb71453f81e4ce2f1f77364e2f9e6df4d3210cf"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/boundedCSweptCrash.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/boundedCSweptCrash.test.ts",
+        "bytes": 4478,
+        "sha256": "560e2575240dda8aba52e8a9910cb7ab1f051d062365c1ebfff85c9058773fe8"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/boundedCSweptCrash.test.ts",
+        "bytes": 4478,
+        "sha256": "560e2575240dda8aba52e8a9910cb7ab1f051d062365c1ebfff85c9058773fe8"
+      },
+      "changedForPortability": false
+    },
+    {
+      "path": "src/wave/barrel/carrierSupport.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/carrierSupport.test.ts",
+        "bytes": 31297,
+        "sha256": "5a295441577d5f0eac28b8ce86a15e04fe70d2b1aa579ecef8f6428d536cb3cf"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/carrierSupport.test.ts",
+        "bytes": 28269,
+        "sha256": "04ee3609df913688da18698d749f62be1f43747accb87259341ad69f42c541ca"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/parallelCrestRays.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/parallelCrestRays.test.ts",
+        "bytes": 11010,
+        "sha256": "7e688a29274bc5494db3822cd0032804cf48fc3ffedb8dd79e6570b659c0a0d5"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/parallelCrestRays.test.ts",
+        "bytes": 5953,
+        "sha256": "fdf4bf99f6cd6badfc91c3ddc3a2f655b1a73ba6afee984ef8c884730d0033e9"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/parallelPhysicalCoupling.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/parallelPhysicalCoupling.test.ts",
+        "bytes": 21085,
+        "sha256": "31747285b71e31102910187462baa24dcbb65381d121953e4c742b8f3a2ee193"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/parallelPhysicalCoupling.test.ts",
+        "bytes": 21447,
+        "sha256": "6f60245fd82b587df74e3c8df446d214518cc8da33705436802725bf135f51ad"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/retirementBoundary.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/retirementBoundary.test.ts",
+        "bytes": 15508,
+        "sha256": "0e51ced05016122443d4b611ee8907bad29c98c214a503919dceabdb1802bf61"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/retirementBoundary.test.ts",
+        "bytes": 14217,
+        "sha256": "e3654e02d62a37fd76d482e644c652470a85b70b9b36b16b0e096c492728addc"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/retirementCapPrefix.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/retirementCapPrefix.test.ts",
+        "bytes": 5975,
+        "sha256": "dcd3e054c68548b1b0a62d27ba555d920a9969c6991af71c48d0aa47efcc77b1"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/retirementCapPrefix.test.ts",
+        "bytes": 4625,
+        "sha256": "89d7fa1359bb073e2131c61abcefbd2225aa53261dbe8e6005a9b353eec4d3ee"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/retirementContact.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/retirementContact.test.ts",
+        "bytes": 18518,
+        "sha256": "f2ed1cfccb5d1eb7ff09e6fd4c9362b055599bca2e2ebc90a59450d8a0c0f761"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/retirementContact.test.ts",
+        "bytes": 15981,
+        "sha256": "e7c23abd383f9154f9344c53c6980c099d6b79e7e896cb371e02d864cbd08198"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/sharedUpperRoot.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/sharedUpperRoot.test.ts",
+        "bytes": 18370,
+        "sha256": "cd5f7a77c91d39b28d577a94253b3ce109577502bd40f9aee5ef0477d4654757"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/sharedUpperRoot.test.ts",
+        "bytes": 7346,
+        "sha256": "62562d5017429e72db53f6e780cb5ab60ffc73e6a24065c34700721ff5dfebf2"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/stableXSampling.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/stableXSampling.test.ts",
+        "bytes": 9736,
+        "sha256": "621dd57a9fd600478a165aa70706490bbd4b87b380a87c81f94cb208af23d5fb"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/stableXSampling.test.ts",
+        "bytes": 8522,
+        "sha256": "0ad9d19509b415ecf62e06bf9c4f53558e4cdd21245339490baddc80d1bd92cb"
+      },
+      "changedForPortability": true
+    },
+    {
+      "path": "src/wave/barrel/stableXStress.test.ts",
+      "frozen": {
+        "file": "/private/tmp/tube-bounded-c-retirement-boundary-20261005/cap-prefix-v2/source/src/wave/barrel/stableXStress.test.ts",
+        "bytes": 14036,
+        "sha256": "3ae350249c8483b9ba50feafa32e4781a11b7564396c9ba62d4426a88521f33e"
+      },
+      "production": {
+        "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/stableXStress.test.ts",
+        "bytes": 7632,
+        "sha256": "e264c6ebc837d417f400f96f976290ebbc85b7a1af5606047323b216e926bd53"
+      },
+      "changedForPortability": true
+    }
+  ],
+  "noCandidateTemporaryDependenciesOrReportWrites": true,
+  "fixtureExactCandidate": true,
+  "deletedCandidateTestFiles": [],
+  "historicalComparisonExclusionsDocumentedIn": [
+    {
+      "file": "/private/tmp/tube-C-portable-geometry-tests-20261005/README.md",
+      "bytes": 3580,
+      "sha256": "ba2b0a03cebbb92cc30218a268312f286dae3a04c9192b4d112cc717e584e859"
+    },
+    {
+      "file": "/private/tmp/tube-C-portable-coupling-tests-20261005/README.md",
+      "bytes": 3684,
+      "sha256": "b61a5e3da850f04b7c7e4de58e66d8d8b8b3f63b8af639765e924d8e709854f0"
+    }
+  ],
+  "strictTypeScriptTestOnlyRepair": "Removed unused LoftResult type import from sharedUpperRoot.test.ts; failed log retained.",
+  "parentFixtureRepairReceipt": {
+    "file": "/private/tmp/tube-C-production-integration-20261005/fixture-repair-receipt.json",
+    "bytes": 2664,
+    "sha256": "0421e13a75e33485f662f1f5c4ddfdc2359c06fd0f009094ae620d606bb1a5b4"
+  }
+}

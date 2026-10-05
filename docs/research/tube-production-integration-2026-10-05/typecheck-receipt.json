@@ -1,0 +1,32 @@
+{
+  "firstPrePortability": {
+    "session": 99084,
+    "exitCode": 0,
+    "log": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/first-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "firstAfterPortability": {
+    "session": 3993,
+    "exitCode": 2,
+    "log": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/final-typecheck.log",
+      "bytes": 115,
+      "sha256": "867083a94e94897a9341319b6348a48fb3502db0971648cf31ff34453cba482b"
+    },
+    "error": "Unused test-only LoftResult type import"
+  },
+  "afterTestOnlyRepair": {
+    "session": 40088,
+    "exitCode": 0,
+    "log": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/final-typecheck-repair.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "change": "Removed unused type import only"
+  },
+  "runtimeModifiedForCompiler": false
+}

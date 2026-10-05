@@ -1,0 +1,62 @@
+{
+  "firstFocused": {
+    "exitCode": 1,
+    "files": 14,
+    "passed": 87,
+    "failed": 2,
+    "report": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/focused-candidate-tests.json",
+      "bytes": 43669,
+      "sha256": "3a2bd953df5de269b83aa74b779c341bee828a311c3d4fb49e4beb222c969238"
+    },
+    "log": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/focused-candidate-tests.log",
+      "bytes": 19340,
+      "sha256": "a43610b1231483c1ff8b30b9d887724726aa78293c4ebf9438c595927fb4ccf8"
+    }
+  },
+  "repair": {
+    "exitCode": 0,
+    "files": 1,
+    "passed": 9,
+    "failed": 0,
+    "report": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/carrier-support-repair-tests.json",
+      "bytes": 4562,
+      "sha256": "afac0d7383b9f4b5066227bd90af37259314c24711fb19c1be2c55db490c9a74"
+    },
+    "beforeSource": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/carrierSupport-first-failing.test.ts",
+      "bytes": 26705,
+      "sha256": "978dd4c2a40bb1d1fb1aa7f2333adf8e78bdd86eebdce19ba23357f7fb5b6270"
+    },
+    "finalSource": {
+      "file": "/Users/regina/Desktop/Projects/surfing-game/src/wave/barrel/carrierSupport.test.ts",
+      "bytes": 28269,
+      "sha256": "04ee3609df913688da18698d749f62be1f43747accb87259341ad69f42c541ca"
+    }
+  },
+  "currentCandidateEvidence": {
+    "unmodifiedFiles": 13,
+    "unmodifiedCasesPassed": 80,
+    "repairedFileCasesPassed": 9,
+    "uniqueCurrentCasesSupported": 89,
+    "singleFinal14FilePassingRunClaim": false
+  },
+  "sourceBackedRepairs": [
+    "Checked-in retirement packet X15 is intrinsically live (first failure measured fade0.16301674446802594). Preserve its unmodified joined phase2 X16.25 bracket, then independently advance only a controlled two-endpoint copy to own-expiry+1/120 and require zero intrinsic fade, incident lease, positive joined phase2, immutable owned fields and zero fluid funding.",
+    "C planCColumns excludes intrinsically dead rows from budget clamping. Put a finite live-to-live age jump at mandatory X0.02 before the age100 endpoint. Retain clamps>0, budget truncation, exact intrinsic dead age/flat zero-lift/mask/sheet/throat, and add zero budget-clamped dead rows; retain RAW recipe/parity checks."
+  ],
+  "runtimeChanged": false,
+  "thresholdsRelaxed": false,
+  "fixtureFileChanged": false,
+  "afterRepairTypeScript": {
+    "session": 6871,
+    "exitCode": 0,
+    "log": {
+      "file": "/private/tmp/tube-C-production-integration-20261005/typecheck-after-fixture-repair.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
+}

@@ -7,6 +7,8 @@ import { LOFT, collapseFade } from './sweptLoft';
 
 /** One front point's barrel as the loft draws it at its clock (the Padang Padang spec, Part B, PR 5: the crash). */
 export interface CrashSlice {
+  /** True when current void and prospective water budget come from the shared analytic provider. */
+  analytic: boolean;
   /** The front's shoreward normal (x, z), the point's share of its front's length, m, and the loft's end weight there. */
   rayX: number;
   rayZ: number;
@@ -43,6 +45,8 @@ export interface CrashSlice {
   footFront: number;
   /** The held frame's overturn, blended and scaled: the jet's and void's cross-sections (m²), the void's length (m) and axis (forward, down); W = g·collapse²/2, m. */
   jetArea: number;
+  /** Water reserved once at throw from an explicit prospective impact query; never current trapped air. */
+  prospectiveJetArea: number;
   voidArea: number;
   voidLength: number;
   axisX: number;
@@ -52,9 +56,10 @@ export interface CrashSlice {
 
 export function createCrashSlice(): CrashSlice {
   return {
+    analytic: false,
     rayX: 0, rayZ: 1, width: 0, endWeight: 0, scale: 0, touchdown: 0, clear: 0, collapse: 0, anchorX: 0, anchorZ: 0, fade: 1, weight: 0,
     tipX: 0, tipY: 0, tipZ: 0, crestX: 0, crestY: 0, crestZ: 0, landX: 0, landY: 0, landZ: 0, reachBack: 0, reachFront: 0, footBack: 0, footFront: 0,
-    jetArea: 0, voidArea: 0, voidLength: 0, axisX: 1, axisY: 0, voidHeight: 0,
+    jetArea: 0, prospectiveJetArea: 0, voidArea: 0, voidLength: 0, axisX: 1, axisY: 0, voidHeight: 0,
   };
 }
 
@@ -82,6 +87,23 @@ const FACE_REACH = 2;
 /** The drawn crest's speed is read over this many library frames before the clear one. */
 const CREST_FRAMES = 10;
 
+/** Current metric underside above its actual analytic floor, without a free-fall-duration surrogate. */
+function currentVoidHeight(profile: Float32Array): number {
+  let highest = 0;
+  for (let i = LANDMARK.lip; i <= LANDMARK.throat; i += 1) {
+    const x = profile[2 * i], y = profile[2 * i + 1];
+    let floor = -Infinity;
+    for (let j = LANDMARK.throat; j < LANDMARK.toe; j += 1) {
+      const x0 = profile[2 * j], x1 = profile[2 * j + 2];
+      if (x0 === x1 || (x0 - x) * (x1 - x) > 0) continue;
+      const under = profile[2 * j + 1] + (x - x0) / (x1 - x0) * (profile[2 * j + 3] - profile[2 * j + 1]);
+      if (under < y) floor = Math.max(floor, under);
+    }
+    if (Number.isFinite(floor)) highest = Math.max(highest, y - floor);
+  }
+  return highest;
+}
+
 /** How much a profile sample is pinned onto the water (the loft's seam, `LOFT.pinned`). */
 function pinOf(i: number): number {
   if (i < LOFT.pinned) return (LOFT.pinned - i) / LOFT.pinned;
@@ -106,6 +128,7 @@ function pinOf(i: number): number {
 export class CrashCurve {
   private readonly profile = new Float32Array(2 * PROFILE_POINTS);
   private readonly earlier = new Float32Array(2 * PROFILE_POINTS);
+  private readonly impact = new Float32Array(2 * PROFILE_POINTS);
   private readonly overturns = new Map<BarrelCase, Overturn>();
   private readonly normal = { x: 0, z: 0 };
   private readonly raySample = new Float64Array(2);
@@ -113,7 +136,7 @@ export class CrashCurve {
 
   constructor(private readonly library: ProfileLibrary, private readonly slope: number) {
     this.directRays = new CrestRayPlan(library, slope, LOFT.extension, minimumCrestRaySpacing(LOFT.extension, LOFT.spacing));
-    for (const c of library.cases) {
+    for (const c of library.options.geometry === 'bounded-C' ? [] : library.cases) {
       const held = library.heldFrameOf(c);
       this.overturns.set(c, overturnAt(c.frames, Math.floor((held.tau - c.tauStart) / c.tauStep + 0.5)));
     }
@@ -134,7 +157,13 @@ export class CrashCurve {
     const { x: nx, z: nz } = this.ray(points, start, end, k, this.normal, rays);
     into.rayX = nx;
     into.rayZ = nz;
-    into.width = ((k > start ? p.sigma - points[k - 1].sigma : 0) + (k + 1 < end ? points[k + 1].sigma - p.sigma : 0)) / 2;
+    if (this.library.options.geometry === 'bounded-C') {
+      // Constant-X cross-sections extrude over projected X width, not arc length. This is the existing local
+      // slice quadrature; varying cross-sections/end fades are not an exact whole-mesh volume integral.
+      into.width = ((k > start ? p.x - points[k - 1].x : 0) + (k + 1 < end ? points[k + 1].x - p.x : 0)) / 2;
+    } else {
+      into.width = ((k > start ? p.sigma - points[k - 1].sigma : 0) + (k + 1 < end ? points[k + 1].sigma - p.sigma : 0)) / 2;
+    }
     const d = Math.min(p.sigma - first, last - p.sigma);
     const r = Math.min(1, d / LOFT.endBlend);
     into.endWeight = d <= 0 ? 0 : r * r * (3 - 2 * r);
@@ -142,6 +171,7 @@ export class CrashCurve {
     const query = { slope: this.slope, footHeight: p.footHeight, footDepth: p.footDepth };
     const profile = this.profile;
     const lookup = this.library.profileAt({ ...query, seconds: tau, hold: 'drawing' }, profile);
+    into.analytic = lookup.analytic !== undefined;
     const touchdown = lookup.touchdownSeconds;
     into.scale = lookup.scale;
     into.touchdown = touchdown;
@@ -202,7 +232,7 @@ export class CrashCurve {
       }
     }
     into.landX = place(landAlong, landAbove, landPin, 'x');
-    into.landY = place(landAlong, landAbove, landPin, 'y', into.endWeight);
+    into.landY = place(landAlong, landAbove, landPin, 'y', into.analytic ? into.weight : into.endWeight);
     into.landZ = place(landAlong, landAbove, landPin, 'z');
     // The lifted band's reach (the whitewater gate), and the drawn slice's own with its extensions (overlapping fronts).
     let back = Infinity;
@@ -216,11 +246,34 @@ export class CrashCurve {
     into.reachFront = front;
     into.footBack = profile[0] - LOFT.extension;
     into.footFront = profile[2 * LAST] + LOFT.extension;
-    // The held overturn, blended as the frames are, scaled by h0.
+    if (lookup.analytic) {
+      // The launch reserves water from the provider's prospective impact contour. Atmospheric air at launch is not
+      // this forecast: current void uses the same end/fade/live-water projection as the actual drawn core.
+      this.library.profileAt({ ...query, seconds: touchdown, hold: 'drawing' }, this.impact);
+      into.prospectiveJetArea = overturnAt(this.impact, 0).jetArea;
+      for (let i = 0; i < PROFILE_POINTS; i += 1) {
+        const paired = i === 104 && profile[2 * LANDMARK.lip + 1] === profile[2 * i + 1]
+          && profile[2 * LANDMARK.lip] >= profile[2 * 103] && profile[2 * LANDMARK.lip] <= profile[2 * 105];
+        const along = paired ? profile[2 * LANDMARK.lip] : profile[2 * i];
+        this.earlier[2 * i] = along;
+        this.earlier[2 * i + 1] = place(along, profile[2 * i + 1], pinOf(i), 'y');
+      }
+      const current = lookup.analytic.sheetExists && into.weight > 0 ? overturnAt(this.earlier, 0) :
+        { jetArea: 0, voidArea: 0, voidLength: 0, axisX: 1, axisY: 0 };
+      into.jetArea = current.jetArea;
+      into.voidArea = current.voidArea;
+      into.voidLength = current.voidLength;
+      into.axisX = current.axisX;
+      into.axisY = current.axisY;
+      into.voidHeight = current.voidArea > 0 ? currentVoidHeight(this.earlier) : 0;
+      return into;
+    }
+    // Legacy raw mode retains its held overturn, blended as the frames are, scaled by h0.
     const blend = this.library.caseBlend(query);
     const o = blendOverturn(this.overturnOf(blend.lower), this.overturnOf(blend.upper), blend.weight);
     const s = blend.scale;
     into.jetArea = o.jetArea * s * s;
+    into.prospectiveJetArea = into.jetArea;
     into.voidArea = o.voidArea * s * s;
     into.voidLength = o.voidLength * s;
     into.axisX = o.axisX;
@@ -270,8 +323,9 @@ export class CrashCurve {
     const query = { slope: this.slope, footHeight: point.footHeight, footDepth: point.footDepth };
     const times = this.library.profileTimes(query);
     const held = this.library.profileAt({ ...query, seconds: times.touchdownSeconds + times.frameSeconds, hold: 'contact' }, this.earlier);
-    into.tipAlong = held.tipAlong;
-    into.tipUp = held.tipUp;
+    const fluidScale = held.analytic ? held.analytic.lengthScale / held.analytic.timeScale : 1;
+    into.tipAlong = held.analytic ? held.analytic.fluidAlong * fluidScale : held.tipAlong;
+    into.tipUp = held.analytic ? held.analytic.fluidUp * fluidScale : held.tipUp;
     const span = CREST_FRAMES * times.frameSeconds;
     this.library.profileAt({ ...query, seconds: times.touchdownSeconds - times.frameSeconds }, this.profile);
     const late = this.profile[2 * LANDMARK.crest];

@@ -1,4 +1,4 @@
-import { waveHeightAt } from '../CrestKinematics';
+import { crestMotion, waveHeightAt } from '../CrestKinematics';
 import { GRAVITY } from '../dispersion';
 import { SOURCE_REACH, STRIP_PARCELS, type PlungingLip } from '../PlungingLip';
 import type { ShallowWaterSolver } from '../ShallowWaterSolver';
@@ -6,6 +6,7 @@ import type { FrontPoint } from './BreakingFront';
 import type { CrestRayPlan } from './crestRays';
 import { CrashCurve, createCrashSlice, type CrashSlice, type JetMotion } from './crashCurve';
 import type { ProfileLibrary } from './ProfileLibrary';
+import { CarrierSupport, geometricPaceActive } from './carrierSupport';
 
 /**
  * A thrown point, jet or not, runs on its crest's pace from the throw until its slice has faded (the advisor, 2026-10-01
@@ -86,6 +87,10 @@ export interface PacedThrow {
   point: FrontPoint;
   crestZ: number;
   rayZ: number;
+  /** C-only once-at-throw physical projection diagnostic; no retained transport/smoothing state. */
+  physicalDirectionSource?: 'solver-face' | 'local-front-tangent';
+  sourceCell?: number;
+  drawRayZ?: number;
 }
 
 /**
@@ -133,6 +138,11 @@ export class SweptCrash {
   /** The crash's own time, ms, summed over its updates (a diagnostic). */
   updateMs = 0;
   private readonly geometry: CrashCurve;
+  private readonly columnSections: boolean;
+  private readonly carrier: CarrierSupport | undefined;
+  /** C geometric watchdog only; all individual pockets have already expired before these components leave. */
+  readonly carrierExited: FrontPoint[] = [];
+  readonly carrierRetirements: { front: number; pointIds: number[]; boundSeconds: number; latestSourceTime: number }[] = [];
   private readonly foreseen = createCrashSlice();
   private readonly motion: JetMotion = { tipAlong: 0, tipUp: 0, crestSpeed: 0 };
   private readonly pool: CrashPoint[] = [];
@@ -156,9 +166,15 @@ export class SweptCrash {
   private boxes = new Float64Array(0);
   /** This step's points' held jets, by strip. */
   private readonly holders = new Set<number>();
+  /** Analytic strips whose air ledger follows current drawn voids, including already sealed strips. */
+  private readonly analyticVoids = new Set<number>();
+  private readonly observedVoids = new Set<number>();
+  private readonly presentVoids = new Set<number>();
 
   constructor(library: ProfileLibrary, slope: number) {
     this.geometry = new CrashCurve(library, slope);
+    this.columnSections = library.options.geometry === 'bounded-C';
+    this.carrier = this.columnSections ? new CarrierSupport(library, slope) : undefined;
   }
 
   /**
@@ -182,6 +198,28 @@ export class SweptCrash {
       kept += 1;
     }
     points.length = kept;
+    this.carrierExited.length = 0;
+    this.carrierRetirements.length = 0;
+    if (this.carrier) {
+      this.carrier.refresh(points, solver.time);
+      const expired = this.carrier.stalledExpiredComponents(points, solver.time);
+      this.carrierRetirements.push(...expired);
+      if (expired.length) {
+        const fronts = new Set(expired.map(c => c.front));
+        kept = 0;
+        for (const p of points) {
+          if (fronts.has(p.front)) { this.carrierExited.push(p); continue; }
+          points[kept++] = p;
+        }
+        points.length = kept;
+        this.carrier.refresh(points, solver.time);
+      }
+    }
+    if (this.analyticVoids.size > 0) {
+      this.presentVoids.clear();
+      for (const p of points) if (p.jetStrip !== undefined && p.jetStrip >= 0) this.presentVoids.add(p.jetStrip);
+      for (const strip of this.analyticVoids) if (!this.presentVoids.has(strip)) this.retireVoid(strip, lip);
+    }
     // A held jet whose point has left the front any other way crashes where it was foreseen, as it leaves.
     const holders = this.holders;
     holders.clear();
@@ -194,8 +232,10 @@ export class SweptCrash {
     // A point past its throw, jet or not, runs on its pace (BreakingFront), still claiming its crest, until its slice has
     // faded: z = jetBase + jetPace τ, with no blend (the advisor, 2026-10-03). Then it goes back to the ordinary match.
     for (const p of points) {
-      if (p.jetPace === undefined || p.jetBase === undefined || p.jetUntil === undefined || !(p.tau < p.jetUntil)) continue;
-      p.z = p.jetBase + p.jetPace * p.tau;
+      if (this.carrier) {
+        if (p.jetBase === undefined || !geometricPaceActive(p)) continue;
+      } else if (p.jetPace === undefined || p.jetBase === undefined || p.jetUntil === undefined || !(p.tau < p.jetUntil)) continue;
+      p.z = p.jetBase + p.jetPace! * p.tau;
     }
     this.measureArc(points);
     const heightAt = (x: number, z: number) => solver.sampleCentered(solver.h, x, z) + solver.sampleCentered(solver.bed, x, z);
@@ -225,6 +265,7 @@ export class SweptCrash {
       }
     }
     for (const thrown of this.paced) thrown.point.z = thrown.point.jetBase! + thrown.point.jetPace! * thrown.point.tau;
+    this.carrier?.refresh(points, solver.time);
     if (this.paced.length > 0) {
       // All throws first read the same existing-paced geometry. Only after all their positions are finalized do
       // we replace its arc and ray plans; slices, widths and subsequently serialized records see this final stage.
@@ -249,6 +290,7 @@ export class SweptCrash {
     this.dropOverlaps(runs);
     let throws = 0;
     let volume = 0;
+    this.observedVoids.clear();
     for (let r = 0; r < runs.length; r += 2) {
       for (let k = runs[r]; k < runs[r + 1]; k += 1) {
         if (!this.live[k]) continue;
@@ -259,6 +301,9 @@ export class SweptCrash {
         }
       }
     }
+    // Past retirement, isolated or missing strips have no actual drawn air left. This flush is independent of the
+    // water parcels' final landing, and repeated empty updates cannot release the same trapped amount twice.
+    for (const strip of this.analyticVoids) if (!this.observedVoids.has(strip)) this.retireVoid(strip, lip);
     // A point holding a jet the runs didn't crash at its touchdown: alone on its front, with no ray to draw it by, or past
     // its collapse. Its jet crashes where it was foreseen, its pour starting now; the point runs on its pace (BreakingFront).
     for (const p of points) {
@@ -295,6 +340,14 @@ export class SweptCrash {
       }
     }
     const strip = p.jetStrip ?? -1;
+    if (strip >= 0 && s.analytic) {
+      this.analyticVoids.add(strip);
+      this.observedVoids.add(strip);
+      sea.lip.setSweptVoid(strip, {
+        area: drawn ? s.voidArea : 0, span: s.width, length: s.voidLength, height: s.voidHeight,
+        axisX: s.axisX, axisY: s.axisY,
+      });
+    }
     if (strip >= 0 && p.crashedAt === undefined && p.tau >= s.touchdown) {
       const motion = this.geometry.jetMotion(p, this.motion);
       sea.lip.crashJet(strip, { x: s.landX, y: s.landY, z: s.landZ, spacing: s.collapse / (STRIP_PARCELS - 1), vy: motion.tipUp }, { x: s.crestX, y: s.crestY, z: s.crestZ });
@@ -322,6 +375,7 @@ export class SweptCrash {
       this.exited.push(p);
       this.counts.exits += 1;
       if (p.jetStrip !== undefined && p.jetStrip >= 0 && p.crashedAt === undefined) {
+        if (this.analyticVoids.has(p.jetStrip)) this.retireVoid(p.jetStrip, lip);
         lip.closeJet(p.jetStrip);
         p.crashedAt = time;
         this.counts.exitJets += 1;
@@ -331,6 +385,7 @@ export class SweptCrash {
     if (p.jetUntil !== undefined && p.tau < p.jetUntil && age >= 2 * (touchdown + collapse)) {
       this.fadeExited.push(p);
       this.counts.fadeExits += 1;
+      if (p.jetStrip !== undefined && this.analyticVoids.has(p.jetStrip)) this.retireVoid(p.jetStrip, lip);
       if (p.jetStrip !== undefined && p.jetStrip >= 0) this.counts.fadeExitJets += 1;
       return true;
     }
@@ -350,6 +405,31 @@ export class SweptCrash {
     const motion = this.geometry.jetMotion(p, this.motion);
     const cell = sea.solver.cellIndex(p.x, p.z);
     const waveHeight = waveHeightAt(sea.solver, cell, 0.5 * Math.max(0, motion.crestSpeed) * sea.period);
+    if (this.columnSections) {
+      // A constant-X drawing section does not rotate the solver crest. c_n remains the historically smoothed
+      // normal speed; its intersection with a fixed column travels at c_n / physical n_z.
+      const measured = crestMotion(sea.solver, cell);
+      const fresh = measured !== undefined && Number.isFinite(measured.direction.z) && measured.direction.z > 0;
+      let physicalZ: number;
+      if (fresh) physicalZ = measured.direction.z;
+      else {
+        // With no current rising/sloping face, approximate the physical normal from the immediate local tangent
+        // before ANY new throws finalize. This is geometry, not a retained motion measurement or drawing ray.
+        const left = points[Math.max(start, k - 1)];
+        const right = points[Math.min(end - 1, k + 1)];
+        const dx = right.x - left.x;
+        const dz = right.z - left.z;
+        const length = Math.sqrt(dx * dx + dz * dz);
+        physicalZ = length > 0 ? dx / length : 0;
+      }
+      this.pace(p, times, physicalZ, sea, cell, waveHeight);
+      this.throwing[k] = 1;
+      this.throwCell[k] = cell;
+      this.throwHeight[k] = waveHeight;
+      this.paced.push({ point: p, crestZ: p.z, rayZ: physicalZ,
+        physicalDirectionSource: fresh ? 'solver-face' : 'local-front-tangent', sourceCell: cell, drawRayZ: 1 });
+      return;
+    }
     const rayZ = this.geometry.ray(points, start, end, k, this.ray, rays).z;
     this.pace(p, times, rayZ, sea, cell, waveHeight);
     this.throwing[k] = 1;
@@ -361,7 +441,7 @@ export class SweptCrash {
   /**
    * A point's pace from its throw, jet or not (the advisor, 2026-10-01 and 2026-10-03): its crest's over the last few
    * frames (crestMotion's, along the crest's own normal), held to PACE × the long-wave speed there, then along its column:
-   * c_n / n_z, n_z its ray's at the throw (`rayZ`, the loft's). It runs on it from where its crest crossed its throw depth
+   * c_n / n_z: RAW uses its draw ray; C uses the solver's physical normal (local tangent approximation if unmeasured). It runs on it from where its crest crossed its throw depth
    * (`throwZ`; with none, from its z now less its pace since τ = 0) until its slice has faded, at touchdown + collapse,
    * and claims its column's crest over the throw's own window meanwhile (BreakingFront).
    */
@@ -398,7 +478,7 @@ export class SweptCrash {
     motion: JetMotion, cell: number, waveHeight: number, rays: CrestRayPlan,
   ): number {
     const p = points[k];
-    const volume = s.jetArea * s.width * s.endWeight;
+    const volume = s.prospectiveJetArea * s.width * s.endWeight;
     if (!(volume > 0)) {
       p.jetStrip = -1;
       return 0;
@@ -410,7 +490,8 @@ export class SweptCrash {
       cell, velocityX: motion.tipAlong * s.rayX, velocityZ: motion.tipAlong * s.rayZ, volume, waveHeight,
       launchX: s.crestX, launchY: s.crestY, launchZ: s.crestZ,
       pourX: f.landX, pourY: f.landY, pourZ: f.landZ, pourSpacing: s.collapse / (STRIP_PARCELS - 1), pourVY: motion.tipUp,
-      voidLength: s.voidLength, axisX: s.axisX, axisY: s.axisY, voidHeight: s.voidHeight, voidArea: s.voidArea, span: s.width * s.endWeight,
+      voidLength: s.voidLength, axisX: s.axisX, axisY: s.axisY, voidHeight: s.voidHeight, voidArea: s.voidArea,
+      span: s.width * (s.analytic ? 1 : s.endWeight),
       dirX: s.rayX, dirZ: s.rayZ, crestSpeed: motion.crestSpeed, relativeSpeed: motion.tipAlong - motion.crestSpeed,
     });
     p.jetStrip = strip;
@@ -439,8 +520,13 @@ export class SweptCrash {
     point.vz = motion.tipAlong * s.rayZ;
     // The air left as its void collapses (G9: the void's volume falls as the square of its shrinking scale).
     const left = s.collapse > 0 ? Math.max(0, 1 - (p.tau - s.touchdown) / s.collapse) : 0;
-    point.air = s.voidArea * s.width * s.endWeight * left * left;
+    point.air = s.analytic ? s.voidArea * s.width : s.voidArea * s.width * s.endWeight * left * left;
     this.curve.push(point);
+  }
+
+  private retireVoid(strip: number, lip: PlungingLip): void {
+    lip.setSweptVoid(strip, { area: 0, span: 0, length: 0, height: 0, axisX: 1, axisY: 0 });
+    this.analyticVoids.delete(strip);
   }
 
   /** Room for `count` points' slices, throws and footprints. */

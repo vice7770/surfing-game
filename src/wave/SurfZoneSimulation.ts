@@ -27,6 +27,7 @@ import { columnCrests, type CrestSample } from './barrel/crestOnset';
 import type { ProfileLibrary } from './barrel/ProfileLibrary';
 import { advanceClocks, onsetTiming, type OnsetTiming } from './barrel/sliceClock';
 import { SweptCrash } from './barrel/SweptCrash';
+import { CarrierSupport } from './barrel/carrierSupport';
 import { BARREL_SLOPE } from './barrel/sweptLoft';
 
 /** Sea water, kg/m³ (the lip's impact energy for the aeration, G9). */
@@ -630,9 +631,10 @@ export class SurfZoneSimulation {
       // The spot's barrel record (`BARREL_SPOTS`); `barrel` is the constructor's profile library, for the crash.
       const record = BARREL_SPOTS[config.spot]!;
       this.onsetTiming = onsetTiming(record.footDepth + config.tide, config.peakPeriod, config.barrelLag !== 'none', record.onset);
-      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? record.front);
-      this.frontFrom = barrelFrontFrom(config, tank);
       const slope = BARREL_SLOPE[config.spot];
+      const carrier = barrel?.options.geometry === 'bounded-C' && slope !== undefined && config.sweptCrash !== false ? new CarrierSupport(barrel, slope) : undefined;
+      this.front = new BreakingFront(config.fineSpacing ?? 1, this.onsetTiming, config.barrelFront ?? record.front, carrier);
+      this.frontFrom = barrelFrontFrom(config, tank);
       if (barrel && slope !== undefined && config.sweptCrash !== false) {
         this.crash = new SweptCrash(barrel, slope);
         this.whitewater = new Float64Array(this.solver.h.length);

@@ -1,0 +1,49 @@
+{
+  "status": "deadline-interrupted-partial",
+  "session": 28172,
+  "exitCode": 143,
+  "elapsedSeconds": 540.3018974169972,
+  "ownedDeadline": {
+    "triggered": true,
+    "termAt": "2026-10-05T02:24:32.460439+00:00",
+    "killAt": null
+  },
+  "ownedProcessGroupGone": true,
+  "reportGenerated": false,
+  "allPinnedInputsUnchanged": true,
+  "selectedFileCount": 44,
+  "observedPassingCaseLines": 56,
+  "observedFailingCaseLines": 0,
+  "observedSkippedCaseLines": 15,
+  "plannedExcludedCaseCount": 16,
+  "plannedExclusionsNotReached": [
+    "the lip jet per spot (the Reef's periodic Basilisk runs) > asks the Reef's ledge breaks beyond Pick & Feddersen's fits for its sourced jet, not the slab"
+  ],
+  "allObservedSkipsWereExactlyPlanned": true,
+  "onlyFileWithObservedCaseResults": "src/wave/SurfZoneSimulation.test.ts",
+  "lastReportedPasses": [
+    " ✓ src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > leaves the water, its breaking and its lips exactly as with the front off 135643ms",
+    " ✓ src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > links the breaking crests into fronts whose clocks run on, and hands them over exactly 86951ms"
+  ],
+  "passClaim": false,
+  "scopeLimits": [
+    "No final JSON or completed consumer-suite result. Unreached files and later cases remain unvalidated by this run.",
+    "This was an external adoption-check deadline under current shared resource load, not a gameplay/FPS result or hang claim.",
+    "The 16 exclusions exist only in this command; normal production test config still includes those source cases."
+  ],
+  "log": {
+    "file": "/private/tmp/tube-C-production-integration-20261005/bounded-affected-tests.log",
+    "bytes": 11318,
+    "sha256": "59613a17b38a3688dd919b9f0328b6b2946a5ec5e4a93676ff9eeababd1482ea"
+  },
+  "command": {
+    "file": "/private/tmp/tube-C-production-integration-20261005/bounded-affected-command.json",
+    "bytes": 14759,
+    "sha256": "6a6bcbaee5928577fb08dbbe69b773b2a717e4b911e83c22f825ab5d9527a5e6"
+  },
+  "owner": {
+    "file": "/private/tmp/tube-C-production-integration-20261005/bounded-affected-owner.json",
+    "bytes": 14438,
+    "sha256": "8a8fe195daec99cb45fba5b7bfa01465171d30b7adccbce0e318ce32293c8934"
+  }
+}

@@ -36,7 +36,10 @@ export async function loadBarrelCaseBytes(
 
 /** Case files decoded into one library. */
 export function libraryFromBytes(bytes: readonly Uint8Array[]): ProfileLibrary {
-  return new ProfileLibrary(bytes.map(decodeCase));
+  const cases = bytes.map(decodeCase);
+  // The bounded provider's explicitly evaluated domain is the eight shipped cases. General fixtures stay raw.
+  const eligible = cases.every((c) => BARREL_CASES.some((entry) => entry.id === c.id));
+  return new ProfileLibrary(cases, eligible ? { geometry: 'bounded-C' } : {});
 }
 
 /** Every case in the list, fetched and decoded into one library. */

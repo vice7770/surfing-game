@@ -1,4 +1,17 @@
+import { boundedCParameters, blendBoundedCParameters, boundedCLifecycle, boundedCCap, sampleBoundedC, ulp32, type BoundedCMetadata, type BoundedCEvent } from './boundedCProfile';
+import { pairInnerSheet } from './sharedUpperRoot';
 import { GRAVITY } from '../dispersion';
+
+let carrierRounding: DataView | undefined;
+function carrierNextUp(value: number): number {
+  if (!Number.isFinite(value) || value < 0) throw new Error('Invalid positive carrier bound');
+  carrierRounding ??= new DataView(new ArrayBuffer(8));
+  carrierRounding.setFloat64(0, value);
+  const low = carrierRounding.getUint32(4);
+  carrierRounding.setUint32(4, low === 0xffffffff ? 0 : low + 1);
+  if (low === 0xffffffff) carrierRounding.setUint32(0, carrierRounding.getUint32(0) + 1);
+  return carrierRounding.getFloat64(0);
+}
 
 /**
  * The swept barrel's profile library (the Padang Padang spec, Part B): simulated 2D breakers (Basilisk, the advisor's
@@ -39,6 +52,9 @@ export interface BarrelCase {
  * and the next's share.
  */
 export interface FrameBlend {
+  /** Final metric query geometry: analytic tables MUST derive from this contour, never raw case tables. */
+  analyticProfile?: Float32Array;
+  analytic?: BoundedCMetadata;
   lower: BarrelCase;
   upper: BarrelCase;
   weight: number;
@@ -69,13 +85,15 @@ export interface ProfileQuery {
 }
 
 export interface ProfileLookup {
+  /** Experimental provider channels: geometric impact/retirement clocks, with distinct advective fluid motion. */
+  analytic?: BoundedCMetadata;
   caseId: string;
   /** The query fell outside the library's cases, so the nearest was used. */
   clamped: boolean;
   /** h0, m: the length the case's units scale to. */
   scale: number;
   phase: 'pre' | 'open' | 'post';
-  /** τ at touchdown, and between two frames, s. */
+  /** Actual cap impact for analytic queries, authored touchdown otherwise; between-frame time, s. */
   touchdownSeconds: number;
   frameSeconds: number;
   /** The lip tip's velocity, m/s: along the profile's x (the slice's shoreward ray) and up (the advisor's ruling 1). */
@@ -85,12 +103,14 @@ export interface ProfileLookup {
    * When the contact's profile stops moving, s: each blended case holds from its own held frame (`heldFrame`: the jet
    * off the face, the void open), so the later of the two, or touchdown if sooner.
    */
+  /** Analytic provider: fully formed at .4 authoredTD; its geometry continues to evolve after this age. */
   clearSeconds: number;
   /**
    * How long the slice's tube takes to collapse after touchdown, s: the roof's free fall through the held frame's void,
    * √(2W/g) (`PlungingLip`'s collapse, G9's mechanism, provisional), W blended by the cases' weights and scaled by h0.
    * The drawing and the contact fade over it together (the advisor, 2026-09-30).
    */
+  /** Analytic provider: retirement minus actual impact, without a separate geometry-hold clock. */
   collapseSeconds: number;
 }
 
@@ -178,8 +198,14 @@ export class ProfileLibrary {
   private readonly tipLower = new Float64Array(2);
   private readonly tipUpper = new Float64Array(2);
   private readonly times = new Float64Array(4);
+  private readonly analyticPoint = new Float32Array(FLOATS);
+  private readonly analyticOther = new Float32Array(FLOATS);
+  private readonly analyticEarlier = new Float32Array(FLOATS);
+  private readonly analyticLater = new Float32Array(FLOATS);
+  private readonly analyticQueries = new Map<string, { profile: Float32Array; lookup: ProfileLookup }>();
+  private readonly analyticClocks = new Map<string, { impact: number; retired: number; clear: number; event: BoundedCEvent }>();
 
-  constructor(readonly cases: readonly BarrelCase[]) {
+  constructor(readonly cases: readonly BarrelCase[], readonly options: { geometry?: 'bounded-C' } = {}) {
     const groups = new Map<number, BarrelCase[]>();
     for (const c of cases) groups.set(c.slope, [...(groups.get(c.slope) ?? []), c]);
     this.bySlope = [...groups.values()].map((group) => [...group].sort((a, b) => a.nonlinearity - b.nonlinearity));
@@ -189,6 +215,7 @@ export class ProfileLibrary {
   /** The profile for a slice, in metres, into `out` (PROFILE_POINTS (x, y) pairs). */
   profileAt(query: ProfileQuery, out: Float32Array): ProfileLookup {
     const b = this.bracket(query);
+    if (this.options.geometry === 'bounded-C') return this.analyticAt(query, b, out);
     const tau = query.seconds / b.unit;
     const times = this.caseTimes(b, tau, query.hold);
     this.frameAt(b.lower, times[0], out);
@@ -217,6 +244,24 @@ export class ProfileLibrary {
   /** One profile point's place in a slice's profile, m (along, up), into `out`: as `profileAt` would place it. */
   pointAt(query: ProfileQuery, point: number, out: Float64Array): void {
     const b = this.bracket(query);
+    if (this.options.geometry === 'bounded-C') {
+      if (point <= LANDMARK.crest || point >= LANDMARK.toe) {
+        // Exact preserved contour: avoid constructing an unrelated vanishing loop for carrier-velocity stencils.
+        const carrier = Math.min(query.seconds / b.unit, b.touchdown);
+        this.landmarkAt(b.lower, carrier, point, out);
+        const x = Math.fround(out[0]), y = Math.fround(out[1]);
+        if (b.upper !== b.lower) {
+          this.landmarkAt(b.upper, carrier, point, out);
+          out[0] = Math.fround(x + b.weight * (Math.fround(out[0]) - x));
+          out[1] = Math.fround(y + b.weight * (Math.fround(out[1]) - y));
+        } else { out[0] = x; out[1] = y; }
+        out[0] = Math.fround(out[0] * b.scale); out[1] = Math.fround(out[1] * b.scale);
+        return;
+      }
+      this.analyticAt(query, b, this.analyticPoint);
+      out[0] = this.analyticPoint[2 * point]; out[1] = this.analyticPoint[2 * point + 1];
+      return;
+    }
     const times = this.caseTimes(b, query.seconds / b.unit, query.hold);
     this.landmarkAt(b.lower, times[0], point, out);
     const x = out[0];
@@ -246,6 +291,10 @@ export class ProfileLibrary {
     into.upperFrame = Math.floor(position);
     into.upperNext = Math.min(b.upper.frames.length / FLOATS - 1, into.upperFrame + 1);
     into.upperShare = position - into.upperFrame;
+    if (this.options.geometry === 'bounded-C') {
+      into.analyticProfile ??= new Float32Array(FLOATS);
+      into.analytic = this.analyticAt(query, b, into.analyticProfile).analytic;
+    } else { into.analyticProfile = undefined; into.analytic = undefined; }
     return into;
   }
 
@@ -259,13 +308,17 @@ export class ProfileLibrary {
     scale: number; clamped: boolean; touchdownSeconds: number; frameSeconds: number; clearSeconds: number; collapseSeconds: number;
   } {
     const b = this.bracket(query);
+    if (this.options.geometry === 'bounded-C') {
+      const clock = this.analyticClock(query, b);
+      return { scale: b.scale, clamped: b.clamped, touchdownSeconds: clock.impact * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: clock.clear * b.unit, collapseSeconds: (clock.retired - clock.impact) * b.unit };
+    }
     return {
       scale: b.scale, clamped: b.clamped, touchdownSeconds: b.touchdown * b.unit, frameSeconds: b.frameStep * b.unit, clearSeconds: b.clear * b.unit,
       collapseSeconds: b.collapse,
     };
   }
 
-  /** A case's held frame, as the library measured it when it loaded. */
+  /** Raw authored case evidence only. Analytic query lifecycle/void comes from profileAt, not this per-case helper. */
   heldFrameOf(c: BarrelCase): HeldFrame {
     return this.held.get(c) ?? heldFrame(c);
   }
@@ -274,6 +327,42 @@ export class ProfileLibrary {
   caseBlend(query: Omit<ProfileQuery, 'seconds'>): CaseBlend {
     const b = this.bracket(query);
     return { lower: b.lower, upper: b.upper, weight: b.weight, scale: b.scale, clamped: b.clamped };
+  }
+
+  /** C incident-interpolation support only; it never changes an individual pocket's physical lifetime. */
+  carrierRetirementBound(slope: number, a: { footHeight: number; footDepth: number }, b: { footHeight: number; footDepth: number }): {
+    seconds: number; maxScale: number; maxAuthoredTD: number; partitions: number;
+  } {
+    if (this.options.geometry !== 'bounded-C') throw new Error('Carrier support requires the bounded C provider');
+    // The loft interpolates these actual F32 packet endpoints. H/D is monotone for positive affine H and D.
+    const h0 = Math.fround(a.footHeight), h1 = Math.fround(b.footHeight);
+    const d0 = Math.fround(a.footDepth), d1 = Math.fround(b.footDepth);
+    if (![h0, h1, d0, d1].every(v => Number.isFinite(v) && v > 0)) throw new Error('Invalid carrier support foot domain');
+    let group = this.bySlope[0];
+    for (const candidate of this.bySlope) if (Math.abs(candidate[0].slope - slope) < Math.abs(group[0].slope - slope)) group = candidate;
+    const stops = [0, 1];
+    for (const c of group) {
+      const denominator = h1 - h0 - c.nonlinearity * (d1 - d0);
+      if (denominator === 0) continue;
+      const t = (c.nonlinearity * d0 - h0) / denominator;
+      if (t > 0 && t < 1) stops.push(t);
+    }
+    stops.sort((x, y) => x - y);
+    const probes = [...stops];
+    for (let k = 0; k + 1 < stops.length; k += 1) probes.push((stops[k] + stops[k + 1]) / 2);
+    let maxScale = 0, maxAuthoredTD = 0;
+    for (const t of probes) {
+      const q = this.bracket({ slope, footHeight: h0 + t * (h1 - h0), footDepth: d0 + t * (d1 - d0) });
+      // Within each partition, scale is affine D, or affine H/caseA when clamped to a single case.
+      maxScale = Math.max(maxScale, q.scale);
+      maxAuthoredTD = Math.max(maxAuthoredTD, q.lower.touchdown, q.upper.touchdown);
+    }
+    // C impact = TD + .3 TD * eventFraction, and collapse = .3 TD; eventFraction is in [0,1].
+    // Round each positive bound operation upward, including scale/TD and the Froude unit.
+    const unit = carrierNextUp(Math.sqrt(carrierNextUp(carrierNextUp(maxScale) / GRAVITY)));
+    const seconds = carrierNextUp(carrierNextUp(1.6 * carrierNextUp(maxAuthoredTD)) * unit);
+    if (!Number.isFinite(seconds) || !(seconds > 0)) throw new Error('Nonfinite carrier support bound');
+    return { seconds, maxScale, maxAuthoredTD, partitions: stops.length - 1 };
   }
 
   /** The cases a slice blends (the nearest slope's two bracketing its A0), its scale (h0, m) and τ's unit, s. */
@@ -317,6 +406,97 @@ export class ProfileLibrary {
       clear: Math.min(touchdown, Math.max(heldLower.tau, heldUpper.tau)),
       collapse: Math.sqrt((2 * voidHeight) / GRAVITY),
     };
+  }
+
+  /** Phase-independent crest-relative reach, including analytic turns/cap and F32 parameter-blend rounding. */
+  crestReachBounds(slope: number): Float64Array {
+    let group = this.bySlope[0];
+    for (const candidate of this.bySlope) if (Math.abs(candidate[0].slope - slope) < Math.abs(group[0].slope - slope)) group = candidate;
+    let low = 0, high = 0;
+    for (const c of group) for (let offset = 0; offset < c.frames.length; offset += FLOATS) {
+      const crest = c.frames[offset + 2 * LANDMARK.crest];
+      for (let i = 0; i < PROFILE_POINTS; i++) { const x = c.frames[offset + 2 * i] - crest; low = Math.min(low, x); high = Math.max(high, x); }
+      if (this.options.geometry === 'bounded-C') {
+        const W = c.frames[offset + 2 * LANDMARK.toe] - crest;
+        const magnitude = Math.max(Math.abs(crest), Math.abs(c.frames[offset + 2 * LANDMARK.toe]), Math.abs(c.frames[offset + 2 * LANDMARK.crest + 1]), Math.abs(c.frames[offset + 2 * LANDMARK.toe + 1]));
+        // Unit normals give Q0.x >= crest-T; R<=4T and J>=Q0 give root.x >= crest-9T.
+        // T<=W/16+8ULP; one extra W/16 plus blend-coordinate margin makes a conservative envelope.
+        const ulp = ulp32(magnitude);
+        low = Math.min(low, -W - 76 * ulp); high = Math.max(high, 1.125 * W + 20 * ulp);
+      }
+    }
+    return new Float64Array([low, high]);
+  }
+
+  /** Parameters blend before construction; all analytic hold modes share the same evolving geometry. */
+  private analyticParameters(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array) {
+    const tau = query.seconds / b.unit;
+    // The raw carrier/outside geometry settles at the authored event. The analytic roof keeps evolving to actual impact.
+    const carrier = Math.min(tau, b.touchdown);
+    this.frameAt(b.lower, carrier, out);
+    const lower = boundedCParameters(out, b.lower.touchdown, tau);
+    let parameters = lower;
+    if (b.upper !== b.lower) {
+      this.frameAt(b.upper, carrier, this.analyticOther);
+      const upper = boundedCParameters(this.analyticOther, b.upper.touchdown, tau);
+      parameters = blendBoundedCParameters(lower, upper, b.weight);
+      for (let i = 0; i < FLOATS; i++) out[i] += b.weight * (this.analyticOther[i] - out[i]);
+    }
+    return parameters;
+  }
+
+  private analyticShape(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): BoundedCMetadata {
+    const parameters = this.analyticParameters(query, b, out);
+    const clockKey = [query.slope, query.footHeight, query.footDepth].join(',');
+    const meta = sampleBoundedC(parameters, out, false, this.analyticClocks.get(clockKey)?.event, true);
+    meta.sharedSheet = pairInnerSheet(out, meta);
+    meta.lengthScale = b.scale; meta.timeScale = b.unit;
+    for (let i = 0; i < FLOATS; i++) out[i] *= b.scale;
+    return meta;
+  }
+
+  /** Lifecycle uses the identical final carrier/parameter blend; it does not construct a full contour. */
+  private analyticClock(query: Omit<ProfileQuery, 'seconds'>, b: ReturnType<ProfileLibrary['bracket']>) {
+    const key = [query.slope, query.footHeight, query.footDepth].join(',');
+    let clock = this.analyticClocks.get(key);
+    if (!clock) {
+      const parameters = this.analyticParameters({ ...query, seconds: b.touchdown * b.unit }, b, this.scratch);
+      const final = boundedCLifecycle(parameters);
+      clock = { impact: final.impactTau, retired: final.retiredTau, clear: final.fullyFormedTau, event: final.impactEvent };
+      if (this.analyticClocks.size >= 64) this.analyticClocks.delete(this.analyticClocks.keys().next().value!);
+      this.analyticClocks.set(key, clock);
+    }
+    return clock;
+  }
+
+  /** F32 stage order matches analyticShape: raw carrier, parameters, ND cap, then metric cap. */
+  private analyticCap(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, raw: Float32Array, event: BoundedCEvent) {
+    const cap = boundedCCap(this.analyticParameters(query, b, raw), event);
+    return [Math.fround(cap[0] * b.scale), Math.fround(cap[1] * b.scale)];
+  }
+
+  private analyticAt(query: ProfileQuery, b: ReturnType<ProfileLibrary['bracket']>, out: Float32Array): ProfileLookup {
+    const key = [query.slope, query.footHeight, query.footDepth, query.seconds].join(',');
+    const cached = this.analyticQueries.get(key);
+    if (cached) { out.set(cached.profile); return cached.lookup; }
+    const clock = this.analyticClock(query, b);
+    const meta = this.analyticShape(query, b, out);
+    meta.impactTau = clock.impact; meta.retiredTau = clock.retired;
+    // Full query finite derivative includes moving anchors and parameter carrier, unlike the provider's fixed-parameter derivative.
+    const dt = Math.max(1e-8, 1e-5 * b.touchdown * b.unit);
+    const earlier = this.analyticCap({ ...query, seconds: query.seconds - dt }, b, this.analyticEarlier, clock.event);
+    const later = this.analyticCap({ ...query, seconds: query.seconds + dt }, b, this.analyticLater, clock.event);
+    const tipAlong = (later[0] - earlier[0]) / (2 * dt);
+    const tipUp = (later[1] - earlier[1]) / (2 * dt);
+    meta.capBoundaryVelocity = [tipAlong * b.unit / b.scale, tipUp * b.unit / b.scale];
+    const phase = query.seconds < 0 ? 'pre' : query.seconds <= meta.impactTau * b.unit ? 'open' : 'post';
+    const lookup: ProfileLookup = { caseId: b.weight < .5 ? b.lower.id : b.upper.id, clamped: b.clamped, scale: b.scale, phase,
+      touchdownSeconds: meta.impactTau * b.unit, frameSeconds: b.frameStep * b.unit,
+      tipAlong, tipUp, clearSeconds: meta.fullyFormedTau * b.unit,
+      collapseSeconds: (meta.retiredTau - meta.impactTau) * b.unit, analytic: meta };
+    if (this.analyticQueries.size >= 64) this.analyticQueries.delete(this.analyticQueries.keys().next().value!);
+    this.analyticQueries.set(key, { profile: out.slice(), lookup });
+    return lookup;
   }
 
   /**

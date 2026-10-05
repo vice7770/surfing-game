@@ -325,6 +325,14 @@ function blended(lower: Float32Array, upper: Float32Array, blend: FrameBlend, i:
  * exactly (`throatViews`).
  */
 export function sheetTablesLookup(blend: FrameBlend, out: SheetLookup): number {
+  // Parameter-first geometry has no per-case sheet table: distances and views belong to this exact query contour.
+  if (blend.analyticProfile) {
+    out.across.fill(0);
+    out.back.fill(0);
+    return blend.analytic?.sheetExists
+      ? sheetAcross(blend.analyticProfile, blend.scale, out.across, out.back)
+      : 0;
+  }
   const lower = caseTables(blend.lower);
   const upper = caseTables(blend.upper);
   for (let i = 0; i < PROFILE_POINTS; i += 1) {

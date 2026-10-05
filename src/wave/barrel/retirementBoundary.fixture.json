@@ -1,0 +1,2611 @@
+{
+  "schema": "actual-stable-X-retirement-packets-59-60/v1",
+  "source": {
+    "file": "/private/tmp/tube-bounded-c-stable-x-native-20261005/candidate-first/report.json",
+    "bytes": 8731120,
+    "sha256": "87a91ebe2f48455053c857004c5345bda4abdb39be5cb655637d0a76cfbfe4d7"
+  },
+  "sourceWordsRetained": true,
+  "ordinaryFlatCPUSubstrateNotNativeHeightfieldReplay": true,
+  "epochs": [
+    {
+      "movingStep": 59,
+      "step": 59,
+      "seaTime": 362.79004276701426,
+      "front": 120,
+      "locked": {
+        "front": 106,
+        "stationX": 16.25,
+        "initialSigma": 68.67304229736328,
+        "along": 0.6398658752441406,
+        "youngerSign": 1,
+        "stationIdentity": "fixed-Eulerian-solver-column-crest-station",
+        "materialTrajectoryClaim": false
+      },
+      "packetRows": [
+        {
+          "x": 9,
+          "z": -132.32350158691406,
+          "front": 120,
+          "sigma": 0,
+          "tau": 2.035399913787842,
+          "footHeight": 2.602573871612549,
+          "footDepth": 7,
+          "throwZ": -145.58485412597656,
+          "pace": 6.515351295471191
+        },
+        {
+          "x": 11,
+          "z": -131.82318115234375,
+          "front": 120,
+          "sigma": 2.0616295337677,
+          "tau": 1.8374007940292358,
+          "footHeight": 2.6136748790740967,
+          "footDepth": 7,
+          "throwZ": -143.90618896484375,
+          "pace": 6.576138973236084
+        },
+        {
+          "x": 13,
+          "z": -131.51356506347656,
+          "front": 120,
+          "sigma": 4.08545446395874,
+          "tau": 1.6740518808364868,
+          "footHeight": 2.623868703842163,
+          "footDepth": 7,
+          "throwZ": -142.22732543945312,
+          "pace": 6.610039710998535
+        },
+        {
+          "x": 15,
+          "z": -130.5241241455078,
+          "front": 120,
+          "sigma": 6.316821575164795,
+          "tau": 1.512170433998108,
+          "footHeight": 2.6372344493865967,
+          "footDepth": 7,
+          "throwZ": -140.54818725585938,
+          "pace": 6.6289286613464355
+        },
+        {
+          "x": 17,
+          "z": -129.83070373535156,
+          "front": 120,
+          "sigma": 8.433618545532227,
+          "tau": 1.358811378479004,
+          "footHeight": 2.6462104320526123,
+          "footDepth": 7,
+          "throwZ": -138.86865234375,
+          "pace": 6.651371479034424
+        },
+        {
+          "x": 19,
+          "z": -129.43954467773438,
+          "front": 120,
+          "sigma": 10.471510887145996,
+          "tau": 1.210524559020996,
+          "footHeight": 2.658447027206421,
+          "footDepth": 7,
+          "throwZ": -137.1885986328125,
+          "pace": 6.692707538604736
+        },
+        {
+          "x": 21,
+          "z": -128.5137481689453,
+          "front": 120,
+          "sigma": 12.675390243530273,
+          "tau": 1.049038290977478,
+          "footHeight": 2.669858694076538,
+          "footDepth": 7,
+          "throwZ": -135.50782775878906,
+          "pace": 6.6671295166015625
+        },
+        {
+          "x": 23,
+          "z": -127.9958724975586,
+          "front": 120,
+          "sigma": 14.741353034973145,
+          "tau": 0.8767495155334473,
+          "footHeight": 2.676807165145874,
+          "footDepth": 7,
+          "throwZ": -133.82611083984375,
+          "pace": 6.649835109710693
+        },
+        {
+          "x": 25,
+          "z": -128.01144409179688,
+          "front": 120,
+          "sigma": 16.741413116455078,
+          "tau": 0.6861512660980225,
+          "footHeight": 2.686760663986206,
+          "footDepth": 7,
+          "throwZ": -132.1431427001953,
+          "pace": 6.678170680999756
+        },
+        {
+          "x": 27,
+          "z": -127.16117095947266,
+          "front": 120,
+          "sigma": 18.914653778076172,
+          "tau": 0.48784273862838745,
+          "footHeight": 2.6959311962127686,
+          "footDepth": 7,
+          "throwZ": -130.4585723876953,
+          "pace": 6.759154319763184
+        },
+        {
+          "x": 29,
+          "z": -126.72386169433594,
+          "front": 120,
+          "sigma": 20.961904525756836,
+          "tau": 0.3007885217666626,
+          "footHeight": 2.704578161239624,
+          "footDepth": 7,
+          "throwZ": -128.7719268798828,
+          "pace": 6.808996677398682
+        },
+        {
+          "x": 31,
+          "z": -126.8653335571289,
+          "front": 120,
+          "sigma": 22.966899871826172,
+          "tau": 0.10220394283533096,
+          "footHeight": 2.713033437728882,
+          "footDepth": 7,
+          "throwZ": -127.08267974853516,
+          "pace": 6.8366899490356445
+        },
+        {
+          "x": 33,
+          "z": -126.5,
+          "front": 120,
+          "sigma": 24.9999942779541,
+          "tau": -0.08574845641851425,
+          "footHeight": 2.7217957973480225,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 35,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 27.236061096191406,
+          "tau": -0.2051289677619934,
+          "footHeight": 2.7313497066497803,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 37,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 29.236061096191406,
+          "tau": -0.22542476654052734,
+          "footHeight": 2.7421071529388428,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 39,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 31.236061096191406,
+          "tau": -0.2759307026863098,
+          "footHeight": 2.7542970180511475,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 41,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 33.236061096191406,
+          "tau": -0.35793450474739075,
+          "footHeight": 2.7684619426727295,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 43,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 35.236061096191406,
+          "tau": -0.38656488060951233,
+          "footHeight": 2.784355878829956,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 45,
+          "z": -124.5,
+          "front": 120,
+          "sigma": 37.472129821777344,
+          "tau": -0.32345473766326904,
+          "footHeight": 2.8025062084198,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        }
+      ],
+      "oldLoftRows": [
+        {
+          "row": 83,
+          "sliceSigma": 5.758979797363281,
+          "sliceTau": 1.5526407957077026,
+          "sliceFade": 0.035892315208911896,
+          "sliceWeight": 0,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 0,
+          "crest": [
+            14.5,
+            1.760956883430481,
+            -130.771484375
+          ]
+        },
+        {
+          "row": 84,
+          "sliceSigma": 6.316821575164795,
+          "sliceTau": 1.512170433998108,
+          "sliceFade": 0.16301675140857697,
+          "sliceWeight": 0.02072758413851261,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            15,
+            1.8061633110046387,
+            -130.5241241455078
+          ]
+        },
+        {
+          "row": 85,
+          "sliceSigma": 6.846020698547363,
+          "sliceTau": 1.4738306999206543,
+          "sliceFade": 0.28276345133781433,
+          "sliceWeight": 0.11389102786779404,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            15.5,
+            1.9414881467819214,
+            -130.35076904296875
+          ]
+        },
+        {
+          "row": 86,
+          "sliceSigma": 7.37522029876709,
+          "sliceTau": 1.4354908466339111,
+          "sliceFade": 0.40243619680404663,
+          "sliceWeight": 0.28712067008018494,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            16,
+            2.183778762817383,
+            -130.1774139404297
+          ]
+        },
+        {
+          "row": 87,
+          "sliceSigma": 7.904419422149658,
+          "sliceTau": 1.3971511125564575,
+          "sliceFade": 0.5220350623130798,
+          "sliceWeight": 0.49351266026496887,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            16.5,
+            2.4665637016296387,
+            -130.00405883789062
+          ]
+        },
+        {
+          "row": 88,
+          "sliceSigma": 8.433618545532227,
+          "sliceTau": 1.358811378479004,
+          "sliceFade": 0.6415601372718811,
+          "sliceWeight": 0.6415601372718811,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            17,
+            2.6674532890319824,
+            -129.83070373535156
+          ]
+        },
+        {
+          "row": 89,
+          "sliceSigma": 8.94309139251709,
+          "sliceTau": 1.321739673614502,
+          "sliceFade": 0.7575605511665344,
+          "sliceWeight": 0.7575605511665344,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            17.5,
+            2.8243985176086426,
+            -129.73291015625
+          ]
+        },
+        {
+          "row": 90,
+          "sliceSigma": 9.452564239501953,
+          "sliceTau": 1.28466796875,
+          "sliceFade": 0.873462975025177,
+          "sliceWeight": 0.873462975025177,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            18,
+            2.985689401626587,
+            -129.6351318359375
+          ]
+        },
+        {
+          "row": 91,
+          "sliceSigma": 9.962038040161133,
+          "sliceTau": 1.247596263885498,
+          "sliceFade": 0.9892680048942566,
+          "sliceWeight": 0.9892680048942566,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            18.5,
+            3.150294542312622,
+            -129.53733825683594
+          ]
+        },
+        {
+          "row": 92,
+          "sliceSigma": 10.471510887145996,
+          "sliceTau": 1.210524559020996,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            19,
+            3.168537139892578,
+            -129.43954467773438
+          ]
+        },
+        {
+          "row": 93,
+          "sliceSigma": 11.022480964660645,
+          "sliceTau": 1.170153021812439,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            19.5,
+            3.171487808227539,
+            -129.20809936523438
+          ]
+        },
+        {
+          "row": 94,
+          "sliceSigma": 11.573450088500977,
+          "sliceTau": 1.1297814846038818,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            20,
+            3.1744372844696045,
+            -128.97665405273438
+          ]
+        },
+        {
+          "row": 95,
+          "sliceSigma": 12.124420166015625,
+          "sliceTau": 1.0894098281860352,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            20.5,
+            3.177385091781616,
+            -128.7451934814453
+          ]
+        },
+        {
+          "row": 96,
+          "sliceSigma": 12.675390243530273,
+          "sliceTau": 1.049038290977478,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            21,
+            3.192016363143921,
+            -128.5137481689453
+          ]
+        },
+        {
+          "row": 97,
+          "sliceSigma": 13.19188117980957,
+          "sliceTau": 1.005966067314148,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            21.5,
+            3.2081117630004883,
+            -128.38427734375
+          ]
+        },
+        {
+          "row": 98,
+          "sliceSigma": 13.708372116088867,
+          "sliceTau": 0.9628939032554626,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            22,
+            3.228562116622925,
+            -128.2548065185547
+          ]
+        },
+        {
+          "row": 99,
+          "sliceSigma": 14.224862098693848,
+          "sliceTau": 0.9198217391967773,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            22.5,
+            3.2557029724121094,
+            -128.12533569335938
+          ]
+        },
+        {
+          "row": 100,
+          "sliceSigma": 14.741353034973145,
+          "sliceTau": 0.8767495155334473,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            23,
+            3.282811403274536,
+            -127.9958724975586
+          ]
+        },
+        {
+          "row": 101,
+          "sliceSigma": 15.241368293762207,
+          "sliceTau": 0.8290999531745911,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            23.5,
+            3.3138086795806885,
+            -127.99976348876953
+          ]
+        },
+        {
+          "row": 102,
+          "sliceSigma": 15.741382598876953,
+          "sliceTau": 0.7814503908157349,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            24,
+            3.345160961151123,
+            -128.003662109375
+          ]
+        },
+        {
+          "row": 103,
+          "sliceSigma": 16.241397857666016,
+          "sliceTau": 0.7338008284568787,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            24.5,
+            3.3765382766723633,
+            -128.00755310058594
+          ]
+        },
+        {
+          "row": 104,
+          "sliceSigma": 16.741413116455078,
+          "sliceTau": 0.6861512660980225,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            25,
+            3.407649040222168,
+            -128.01144409179688
+          ]
+        },
+        {
+          "row": 105,
+          "sliceSigma": 17.28472328186035,
+          "sliceTau": 0.6365741491317749,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            25.5,
+            3.439758777618408,
+            -127.79887390136719
+          ]
+        },
+        {
+          "row": 106,
+          "sliceSigma": 17.828033447265625,
+          "sliceTau": 0.5869970321655273,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            26,
+            3.471182107925415,
+            -127.5863037109375
+          ]
+        },
+        {
+          "row": 107,
+          "sliceSigma": 18.3713436126709,
+          "sliceTau": 0.537419855594635,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            26.5,
+            3.501885414123535,
+            -127.37374114990234
+          ]
+        },
+        {
+          "row": 108,
+          "sliceSigma": 18.914653778076172,
+          "sliceTau": 0.48784273862838745,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            27,
+            3.531557321548462,
+            -127.16117095947266
+          ]
+        },
+        {
+          "row": 109,
+          "sliceSigma": 19.42646598815918,
+          "sliceTau": 0.44107919931411743,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            27.5,
+            3.5580363273620605,
+            -127.05184173583984
+          ]
+        },
+        {
+          "row": 110,
+          "sliceSigma": 19.938278198242188,
+          "sliceTau": 0.394315630197525,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            28,
+            3.58358097076416,
+            -126.94252014160156
+          ]
+        },
+        {
+          "row": 111,
+          "sliceSigma": 20.450092315673828,
+          "sliceTau": 0.3475520610809326,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            28.5,
+            3.6085267066955566,
+            -126.83319091796875
+          ]
+        },
+        {
+          "row": 112,
+          "sliceSigma": 20.961904525756836,
+          "sliceTau": 0.3007885217666626,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            29,
+            3.632563591003418,
+            -126.72386169433594
+          ]
+        },
+        {
+          "row": 113,
+          "sliceSigma": 21.463153839111328,
+          "sliceTau": 0.25114238262176514,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            29.5,
+            3.6554207801818848,
+            -126.75923156738281
+          ]
+        },
+        {
+          "row": 114,
+          "sliceSigma": 21.964401245117188,
+          "sliceTau": 0.20149622857570648,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            30,
+            3.6748204231262207,
+            -126.79460144042969
+          ]
+        },
+        {
+          "row": 115,
+          "sliceSigma": 22.46565055847168,
+          "sliceTau": 0.15185008943080902,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            30.5,
+            3.6901707649230957,
+            -126.82996368408203
+          ]
+        },
+        {
+          "row": 116,
+          "sliceSigma": 22.966899871826172,
+          "sliceTau": 0.10220394283533096,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            31,
+            3.7024495601654053,
+            -126.8653335571289
+          ]
+        },
+        {
+          "row": 117,
+          "sliceSigma": 23.475173950195312,
+          "sliceTau": 0.05521584302186966,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            31.5,
+            3.7112936973571777,
+            -126.77400207519531
+          ]
+        },
+        {
+          "row": 118,
+          "sliceSigma": 23.983448028564453,
+          "sliceTau": 0.008227743208408356,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 0,
+          "crest": [
+            32,
+            3.718034029006958,
+            -126.68266296386719
+          ]
+        },
+        {
+          "row": 119,
+          "sliceSigma": 24.49172019958496,
+          "sliceTau": -0.03876035660505295,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            32.5,
+            3.7222092151641846,
+            -126.5913314819336
+          ]
+        },
+        {
+          "row": 120,
+          "sliceSigma": 24.9999942779541,
+          "sliceTau": -0.08574845641851425,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            33,
+            3.723845958709717,
+            -126.5
+          ]
+        },
+        {
+          "row": 121,
+          "sliceSigma": 25.559011459350586,
+          "sliceTau": -0.11559358239173889,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            33.5,
+            3.7246129512786865,
+            -126.25
+          ]
+        },
+        {
+          "row": 122,
+          "sliceSigma": 26.118026733398438,
+          "sliceTau": -0.14543871581554413,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            34,
+            3.724950075149536,
+            -126
+          ]
+        },
+        {
+          "row": 123,
+          "sliceSigma": 26.677043914794922,
+          "sliceTau": -0.17528383433818817,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            34.5,
+            3.724461078643799,
+            -125.75
+          ]
+        },
+        {
+          "row": 124,
+          "sliceSigma": 27.236061096191406,
+          "sliceTau": -0.2051289677619934,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            35,
+            3.7231171131134033,
+            -125.5
+          ]
+        },
+        {
+          "row": 125,
+          "sliceSigma": 27.736061096191406,
+          "sliceTau": -0.2102029174566269,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            35.5,
+            3.7255654335021973,
+            -125.5
+          ]
+        },
+        {
+          "row": 126,
+          "sliceSigma": 28.236061096191406,
+          "sliceTau": -0.21527686715126038,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            36,
+            3.728013515472412,
+            -125.5
+          ]
+        },
+        {
+          "row": 127,
+          "sliceSigma": 28.736061096191406,
+          "sliceTau": -0.22035081684589386,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            36.5,
+            3.730421543121338,
+            -125.5
+          ]
+        },
+        {
+          "row": 128,
+          "sliceSigma": 29.236061096191406,
+          "sliceTau": -0.22542476654052734,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            37,
+            3.732821464538574,
+            -125.5
+          ]
+        },
+        {
+          "row": 129,
+          "sliceSigma": 29.736061096191406,
+          "sliceTau": -0.23805125057697296,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            37.5,
+            3.734543800354004,
+            -125.5
+          ]
+        },
+        {
+          "row": 130,
+          "sliceSigma": 30.236061096191406,
+          "sliceTau": -0.2506777346134186,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            38,
+            3.7362146377563477,
+            -125.5
+          ]
+        },
+        {
+          "row": 131,
+          "sliceSigma": 30.736061096191406,
+          "sliceTau": -0.2633042335510254,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            38.5,
+            3.7377068996429443,
+            -125.5
+          ]
+        },
+        {
+          "row": 132,
+          "sliceSigma": 31.236061096191406,
+          "sliceTau": -0.2759307026863098,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            39,
+            3.7389984130859375,
+            -125.5
+          ]
+        },
+        {
+          "row": 133,
+          "sliceSigma": 31.736061096191406,
+          "sliceTau": -0.29643166065216064,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            39.5,
+            3.739426374435425,
+            -125.5
+          ]
+        },
+        {
+          "row": 134,
+          "sliceSigma": 32.236061096191406,
+          "sliceTau": -0.3169326186180115,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            40,
+            3.7397806644439697,
+            -125.5
+          ]
+        },
+        {
+          "row": 135,
+          "sliceSigma": 32.736061096191406,
+          "sliceTau": -0.3374335467815399,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            40.5,
+            3.73952054977417,
+            -125.5
+          ]
+        },
+        {
+          "row": 136,
+          "sliceSigma": 33.236061096191406,
+          "sliceTau": -0.35793450474739075,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            41,
+            3.7390551567077637,
+            -125.5
+          ]
+        },
+        {
+          "row": 137,
+          "sliceSigma": 33.736061096191406,
+          "sliceTau": -0.36509209871292114,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            41.5,
+            3.742128849029541,
+            -125.5
+          ]
+        },
+        {
+          "row": 138,
+          "sliceSigma": 34.236061096191406,
+          "sliceTau": -0.37224969267845154,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            42,
+            3.745148181915283,
+            -125.5
+          ]
+        },
+        {
+          "row": 139,
+          "sliceSigma": 34.736061096191406,
+          "sliceTau": -0.37940728664398193,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            42.5,
+            3.748159885406494,
+            -125.5
+          ]
+        },
+        {
+          "row": 140,
+          "sliceSigma": 35.236061096191406,
+          "sliceTau": -0.38656488060951233,
+          "sliceFade": 1,
+          "sliceWeight": 0.968916654586792,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            43,
+            3.692502021789551,
+            -125.5
+          ]
+        },
+        {
+          "row": 141,
+          "sliceSigma": 35.79507827758789,
+          "sliceTau": -0.3707873523235321,
+          "sliceFade": 1,
+          "sliceWeight": 0.7462619543075562,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            43.5,
+            3.2799935340881348,
+            -125.25
+          ]
+        },
+        {
+          "row": 142,
+          "sliceSigma": 36.354095458984375,
+          "sliceTau": -0.3550097942352295,
+          "sliceFade": 1,
+          "sliceWeight": 0.4211147725582123,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            44,
+            2.6683218479156494,
+            -125
+          ]
+        },
+        {
+          "row": 143,
+          "sliceSigma": 36.91311264038086,
+          "sliceTau": -0.33923226594924927,
+          "sliceFade": 1,
+          "sliceWeight": 0.12763939797878265,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            44.5,
+            2.10906982421875,
+            -124.75
+          ]
+        },
+        {
+          "row": 144,
+          "sliceSigma": 37.472129821777344,
+          "sliceTau": -0.32345473766326904,
+          "sliceFade": 1,
+          "sliceWeight": 0,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            45,
+            1.860193133354187,
+            -124.5
+          ]
+        },
+        {
+          "row": 145,
+          "sliceSigma": 38.03114700317383,
+          "sliceTau": -0.32345473766326904,
+          "sliceFade": 1,
+          "sliceWeight": 0,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            45.5,
+            1.8534878492355347,
+            -124.25
+          ]
+        },
+        {
+          "row": 146,
+          "sliceSigma": 38.59016418457031,
+          "sliceTau": -0.32345473766326904,
+          "sliceFade": 1,
+          "sliceWeight": 0,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            46,
+            1.8447058200836182,
+            -124
+          ]
+        },
+        {
+          "row": 147,
+          "sliceSigma": 38.972129821777344,
+          "sliceTau": -0.32345473766326904,
+          "sliceFade": 1,
+          "sliceWeight": 0,
+          "sliceJoined": 0,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            46.34164047241211,
+            1.837476372718811,
+            -123.82917785644531
+          ]
+        }
+      ],
+      "selectedNativeRows": [
+        {
+          "row": 86,
+          "sliceFront": 120,
+          "sliceSigma": 7.37522029876709,
+          "sliceTau": 1.4354908466339111,
+          "slicePhase": 2,
+          "sliceLife": 1.1560007333755493,
+          "sliceCollapse": 0.3241788446903229,
+          "sliceFade": 0.40243619680404663,
+          "sliceTipGap": 0,
+          "sliceRestHold": 4.9856367111206055,
+          "sliceRestEnd": 6.558940410614014,
+          "sliceRestClimb": 0.31466078758239746,
+          "sliceToeClimb": 1.8237316608428955,
+          "sliceJoined": 1,
+          "sliceRayX": 0,
+          "sliceRayZ": 1,
+          "sliceWeight": 0.28712067008018494,
+          "sliceOverturned": 1,
+          "sliceTipAlong": 0,
+          "sliceTipUp": -7.612909317016602,
+          "sliceAnchorVX": 0,
+          "sliceAnchorVZ": 0,
+          "sliceTipTransportAlong": 0,
+          "sliceTipTransportUp": 0,
+          "sliceFormed": 1,
+          "sliceTipX": 16,
+          "sliceTipY": 1.3903658390045166,
+          "sliceTipZ": -127.75498962402344,
+          "sliceMouth": 1.6162405014038086,
+          "crest": [
+            16,
+            2.183778762817383,
+            -130.1774139404297
+          ],
+          "cap": [
+            16,
+            1.3903658390045166,
+            -127.75498962402344
+          ],
+          "toe": [
+            16,
+            1.3600221872329712,
+            -127.25344848632812
+          ],
+          "floorDatum": [
+            16,
+            1.3903658390045166,
+            -127.75498962402344
+          ]
+        },
+        {
+          "row": 87,
+          "sliceFront": 120,
+          "sliceSigma": 7.904419422149658,
+          "sliceTau": 1.3971511125564575,
+          "slicePhase": 2,
+          "sliceLife": 1.1247780323028564,
+          "sliceCollapse": 0.32427898049354553,
+          "sliceFade": 0.5220350623130798,
+          "sliceTipGap": 0,
+          "sliceRestHold": 4.893858909606934,
+          "sliceRestEnd": 6.46832799911499,
+          "sliceRestClimb": 0.31489378213882446,
+          "sliceToeClimb": 1.8118536472320557,
+          "sliceJoined": 1,
+          "sliceRayX": 0,
+          "sliceRayZ": 1,
+          "sliceWeight": 0.49351266026496887,
+          "sliceOverturned": 1,
+          "sliceTipAlong": 0,
+          "sliceTipUp": -7.615792274475098,
+          "sliceAnchorVX": 0,
+          "sliceAnchorVZ": 0,
+          "sliceTipTransportAlong": 0,
+          "sliceTipTransportUp": 0,
+          "sliceFormed": 1,
+          "sliceTipX": 16.5,
+          "sliceTipY": 1.0394407510757446,
+          "sliceTipZ": -127.58042907714844,
+          "sliceMouth": 2.145439624786377,
+          "crest": [
+            16.5,
+            2.4665637016296387,
+            -130.00405883789062
+          ],
+          "cap": [
+            16.5,
+            1.0394407510757446,
+            -127.58042907714844
+          ],
+          "toe": [
+            16.5,
+            1.0174096822738647,
+            -127.07852172851562
+          ],
+          "floorDatum": [
+            16.5,
+            1.0394407510757446,
+            -127.58042907714844
+          ]
+        }
+      ]
+    },
+    {
+      "movingStep": 60,
+      "step": 60,
+      "seaTime": 362.8067094336809,
+      "front": 120,
+      "locked": {
+        "front": 106,
+        "stationX": 16.25,
+        "initialSigma": 68.67304229736328,
+        "along": 0.6398658752441406,
+        "youngerSign": 1,
+        "stationIdentity": "fixed-Eulerian-solver-column-crest-station",
+        "materialTrajectoryClaim": false
+      },
+      "packetRows": [
+        {
+          "x": 9,
+          "z": -132.2149200439453,
+          "front": 120,
+          "sigma": 0,
+          "tau": 2.052067995071411,
+          "footHeight": 2.602573871612549,
+          "footDepth": 7,
+          "throwZ": -145.58485412597656,
+          "pace": null
+        },
+        {
+          "x": 11,
+          "z": -131.713623046875,
+          "front": 120,
+          "sigma": 2.0618667602539062,
+          "tau": 1.8540620803833008,
+          "footHeight": 2.6136748790740967,
+          "footDepth": 7,
+          "throwZ": -143.90618896484375,
+          "pace": 6.576138973236084
+        },
+        {
+          "x": 13,
+          "z": -131.40341186523438,
+          "front": 120,
+          "sigma": 4.085782051086426,
+          "tau": 1.6907168626785278,
+          "footHeight": 2.623868703842163,
+          "footDepth": 7,
+          "throwZ": -142.22732543945312,
+          "pace": 6.610039710998535
+        },
+        {
+          "x": 15,
+          "z": -130.41363525390625,
+          "front": 120,
+          "sigma": 6.317295551300049,
+          "tau": 1.5288376808166504,
+          "footHeight": 2.6372344493865967,
+          "footDepth": 7,
+          "throwZ": -140.54818725585938,
+          "pace": 6.6289286613464355
+        },
+        {
+          "x": 17,
+          "z": -129.71983337402344,
+          "front": 120,
+          "sigma": 8.43421459197998,
+          "tau": 1.3754782676696777,
+          "footHeight": 2.6462104320526123,
+          "footDepth": 7,
+          "throwZ": -138.86865234375,
+          "pace": 6.651371479034424
+        },
+        {
+          "x": 19,
+          "z": -129.3280487060547,
+          "front": 120,
+          "sigma": 10.47222900390625,
+          "tau": 1.2271836996078491,
+          "footHeight": 2.658447027206421,
+          "footDepth": 7,
+          "throwZ": -137.1885986328125,
+          "pace": 6.692707538604736
+        },
+        {
+          "x": 21,
+          "z": -128.4026336669922,
+          "front": 120,
+          "sigma": 12.675952911376953,
+          "tau": 1.0657055377960205,
+          "footHeight": 2.669858694076538,
+          "footDepth": 7,
+          "throwZ": -135.50782775878906,
+          "pace": 6.6671295166015625
+        },
+        {
+          "x": 23,
+          "z": -127.88501739501953,
+          "front": 120,
+          "sigma": 14.74184799194336,
+          "tau": 0.8934198021888733,
+          "footHeight": 2.676807165145874,
+          "footDepth": 7,
+          "throwZ": -133.82611083984375,
+          "pace": 6.649835109710693
+        },
+        {
+          "x": 25,
+          "z": -127.90006256103516,
+          "front": 120,
+          "sigma": 16.741905212402344,
+          "tau": 0.7028294801712036,
+          "footHeight": 2.686760663986206,
+          "footDepth": 7,
+          "throwZ": -132.1431427001953,
+          "pace": 6.678170680999756
+        },
+        {
+          "x": 27,
+          "z": -127.04901885986328,
+          "front": 120,
+          "sigma": 18.91544532775879,
+          "tau": 0.5044351816177368,
+          "footHeight": 2.6959311962127686,
+          "footDepth": 7,
+          "throwZ": -130.4585723876953,
+          "pace": 6.759154319763184
+        },
+        {
+          "x": 29,
+          "z": -126.55496215820312,
+          "front": 120,
+          "sigma": 20.97556495666504,
+          "tau": 0.3255944848060608,
+          "footHeight": 2.704578161239624,
+          "footDepth": 7,
+          "throwZ": -128.7719268798828,
+          "pace": 6.808996677398682
+        },
+        {
+          "x": 31,
+          "z": -126.47856903076172,
+          "front": 120,
+          "sigma": 22.97702407836914,
+          "tau": 0.15877531468868256,
+          "footHeight": 2.713033437728882,
+          "footDepth": 7,
+          "throwZ": -127.08267974853516,
+          "pace": 6.8366899490356445
+        },
+        {
+          "x": 33,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 25.203590393066406,
+          "tau": -0.0463053323328495,
+          "footHeight": 2.7217957973480225,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 35,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 27.203590393066406,
+          "tau": -0.2051289677619934,
+          "footHeight": 2.7313497066497803,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 37,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 29.203590393066406,
+          "tau": -0.22542476654052734,
+          "footHeight": 2.7421071529388428,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 39,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 31.203590393066406,
+          "tau": -0.2759307026863098,
+          "footHeight": 2.7542970180511475,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 41,
+          "z": -125.5,
+          "front": 120,
+          "sigma": 33.203590393066406,
+          "tau": -0.35793450474739075,
+          "footHeight": 2.7684619426727295,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 43,
+          "z": -124.5,
+          "front": 120,
+          "sigma": 35.439659118652344,
+          "tau": -0.38656488060951233,
+          "footHeight": 2.784355878829956,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        },
+        {
+          "x": 45,
+          "z": -124.5,
+          "front": 120,
+          "sigma": 37.439659118652344,
+          "tau": -0.32345473766326904,
+          "footHeight": 2.8025062084198,
+          "footDepth": 7,
+          "throwZ": null,
+          "pace": null
+        }
+      ],
+      "oldLoftRows": [
+        {
+          "row": 87,
+          "sliceSigma": 6.317295551300049,
+          "sliceTau": 1.5288376808166504,
+          "sliceFade": 0.11157122254371643,
+          "sliceWeight": 0,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            15,
+            1.7762665748596191,
+            -130.41363525390625
+          ]
+        },
+        {
+          "row": 88,
+          "sliceSigma": 6.846525192260742,
+          "sliceTau": 1.4904978275299072,
+          "sliceFade": 0.23133410513401031,
+          "sliceWeight": 0.026711465790867805,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            15.5,
+            1.822533130645752,
+            -130.2401885986328
+          ]
+        },
+        {
+          "row": 89,
+          "sliceSigma": 7.375755310058594,
+          "sliceTau": 1.452157974243164,
+          "sliceFade": 0.35102301836013794,
+          "sliceWeight": 0.13548623025417328,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            16,
+            1.9783998727798462,
+            -130.06674194335938
+          ]
+        },
+        {
+          "row": 90,
+          "sliceSigma": 7.904984951019287,
+          "sliceTau": 1.413818120956421,
+          "sliceFade": 0.4706380367279053,
+          "sliceWeight": 0.32835692167282104,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            16.5,
+            2.242828369140625,
+            -129.89328002929688
+          ]
+        },
+        {
+          "row": 91,
+          "sliceSigma": 8.43421459197998,
+          "sliceTau": 1.3754782676696777,
+          "sliceFade": 0.5901792049407959,
+          "sliceWeight": 0.552853524684906,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            17,
+            2.5467007160186768,
+            -129.71983337402344
+          ]
+        },
+        {
+          "row": 92,
+          "sliceSigma": 8.943717956542969,
+          "sliceTau": 1.338404655456543,
+          "sliceFade": 0.706207275390625,
+          "sliceWeight": 0.706207275390625,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            17.5,
+            2.753647565841675,
+            -129.62188720703125
+          ]
+        },
+        {
+          "row": 93,
+          "sliceSigma": 9.453222274780273,
+          "sliceTau": 1.3013310432434082,
+          "sliceFade": 0.8221372365951538,
+          "sliceWeight": 0.8221372365951538,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            18,
+            2.9141783714294434,
+            -129.52394104003906
+          ]
+        },
+        {
+          "row": 94,
+          "sliceSigma": 9.962725639343262,
+          "sliceTau": 1.2642573118209839,
+          "sliceFade": 0.9379697442054749,
+          "sliceWeight": 0.9379697442054749,
+          "sliceJoined": 1,
+          "slicePhase": 2,
+          "sliceOverturned": 1,
+          "crest": [
+            18.5,
+            3.078226327896118,
+            -129.42599487304688
+          ]
+        },
+        {
+          "row": 95,
+          "sliceSigma": 10.47222900390625,
+          "sliceTau": 1.2271836996078491,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            19,
+            3.168537139892578,
+            -129.3280487060547
+          ]
+        },
+        {
+          "row": 96,
+          "sliceSigma": 11.023159980773926,
+          "sliceTau": 1.1868141889572144,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            19.5,
+            3.171487808227539,
+            -129.09669494628906
+          ]
+        },
+        {
+          "row": 97,
+          "sliceSigma": 11.574090957641602,
+          "sliceTau": 1.14644455909729,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            20,
+            3.1744372844696045,
+            -128.86534118652344
+          ]
+        },
+        {
+          "row": 98,
+          "sliceSigma": 12.125021934509277,
+          "sliceTau": 1.1060750484466553,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            20.5,
+            3.177385091781616,
+            -128.6339874267578
+          ]
+        },
+        {
+          "row": 99,
+          "sliceSigma": 12.675952911376953,
+          "sliceTau": 1.0657055377960205,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            21,
+            3.186553716659546,
+            -128.4026336669922
+          ]
+        },
+        {
+          "row": 100,
+          "sliceSigma": 13.192426681518555,
+          "sliceTau": 1.0226341485977173,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            21.5,
+            3.2026593685150146,
+            -128.27322387695312
+          ]
+        },
+        {
+          "row": 101,
+          "sliceSigma": 13.708900451660156,
+          "sliceTau": 0.9795626401901245,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            22,
+            3.21881365776062,
+            -128.14382934570312
+          ]
+        },
+        {
+          "row": 102,
+          "sliceSigma": 14.225374221801758,
+          "sliceTau": 0.9364912509918213,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            22.5,
+            3.246122121810913,
+            -128.01441955566406
+          ]
+        },
+        {
+          "row": 103,
+          "sliceSigma": 14.74184799194336,
+          "sliceTau": 0.8934198021888733,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            23,
+            3.273080348968506,
+            -127.88501739501953
+          ]
+        },
+        {
+          "row": 104,
+          "sliceSigma": 15.241862297058105,
+          "sliceTau": 0.8457722067832947,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            23.5,
+            3.3038864135742188,
+            -127.88877868652344
+          ]
+        },
+        {
+          "row": 105,
+          "sliceSigma": 15.741876602172852,
+          "sliceTau": 0.7981246709823608,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            24,
+            3.3352341651916504,
+            -127.89253997802734
+          ]
+        },
+        {
+          "row": 106,
+          "sliceSigma": 16.24188995361328,
+          "sliceTau": 0.7504770755767822,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            24.5,
+            3.366575002670288,
+            -127.89630126953125
+          ]
+        },
+        {
+          "row": 107,
+          "sliceSigma": 16.741905212402344,
+          "sliceTau": 0.7028294801712036,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            25,
+            3.39774227142334,
+            -127.90006256103516
+          ]
+        },
+        {
+          "row": 108,
+          "sliceSigma": 17.285289764404297,
+          "sliceTau": 0.6532309055328369,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            25.5,
+            3.429962635040283,
+            -127.68730163574219
+          ]
+        },
+        {
+          "row": 109,
+          "sliceSigma": 17.82867431640625,
+          "sliceTau": 0.6036323308944702,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            26,
+            3.461604595184326,
+            -127.47454071044922
+          ]
+        },
+        {
+          "row": 110,
+          "sliceSigma": 18.372060775756836,
+          "sliceTau": 0.5540337562561035,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            26.5,
+            3.4925472736358643,
+            -127.26177978515625
+          ]
+        },
+        {
+          "row": 111,
+          "sliceSigma": 18.91544532775879,
+          "sliceTau": 0.5044351816177368,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            27,
+            3.5226335525512695,
+            -127.04901885986328
+          ]
+        },
+        {
+          "row": 112,
+          "sliceSigma": 19.43047523498535,
+          "sliceTau": 0.459725022315979,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            27.5,
+            3.548645496368408,
+            -126.92550659179688
+          ]
+        },
+        {
+          "row": 113,
+          "sliceSigma": 19.945505142211914,
+          "sliceTau": 0.4150148332118988,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            28,
+            3.573476791381836,
+            -126.80198669433594
+          ]
+        },
+        {
+          "row": 114,
+          "sliceSigma": 20.460535049438477,
+          "sliceTau": 0.3703046441078186,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            28.5,
+            3.5976333618164062,
+            -126.67847442626953
+          ]
+        },
+        {
+          "row": 115,
+          "sliceSigma": 20.97556495666504,
+          "sliceTau": 0.3255944848060608,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            29,
+            3.6213150024414062,
+            -126.55496215820312
+          ]
+        },
+        {
+          "row": 116,
+          "sliceSigma": 21.475929260253906,
+          "sliceTau": 0.28388968110084534,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            29.5,
+            3.6422691345214844,
+            -126.5358657836914
+          ]
+        },
+        {
+          "row": 117,
+          "sliceSigma": 21.976295471191406,
+          "sliceTau": 0.24218490719795227,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            30,
+            3.6612770557403564,
+            -126.51676940917969
+          ]
+        },
+        {
+          "row": 118,
+          "sliceSigma": 22.476659774780273,
+          "sliceTau": 0.20048010349273682,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            30.5,
+            3.6776225566864014,
+            -126.49766540527344
+          ]
+        },
+        {
+          "row": 119,
+          "sliceSigma": 22.97702407836914,
+          "sliceTau": 0.15877531468868256,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            31,
+            3.6911308765411377,
+            -126.47856903076172
+          ]
+        },
+        {
+          "row": 120,
+          "sliceSigma": 23.53366470336914,
+          "sliceTau": 0.10750515013933182,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            31.5,
+            3.704158067703247,
+            -126.23392486572266
+          ]
+        },
+        {
+          "row": 121,
+          "sliceSigma": 24.090307235717773,
+          "sliceTau": 0.056234993040561676,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 1,
+          "crest": [
+            32,
+            3.7137627601623535,
+            -125.98928833007812
+          ]
+        },
+        {
+          "row": 122,
+          "sliceSigma": 24.646949768066406,
+          "sliceTau": 0.004964829422533512,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 1,
+          "sliceOverturned": 0,
+          "crest": [
+            32.5,
+            3.7208333015441895,
+            -125.74464416503906
+          ]
+        },
+        {
+          "row": 123,
+          "sliceSigma": 25.203590393066406,
+          "sliceTau": -0.0463053323328495,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            33,
+            3.724839925765991,
+            -125.5
+          ]
+        },
+        {
+          "row": 124,
+          "sliceSigma": 25.703590393066406,
+          "sliceTau": -0.08601123839616776,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            33.5,
+            3.726675033569336,
+            -125.5
+          ]
+        },
+        {
+          "row": 125,
+          "sliceSigma": 26.203590393066406,
+          "sliceTau": -0.1257171481847763,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            34,
+            3.726654529571533,
+            -125.5
+          ]
+        },
+        {
+          "row": 126,
+          "sliceSigma": 26.703590393066406,
+          "sliceTau": -0.16542306542396545,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            34.5,
+            3.725630521774292,
+            -125.5
+          ]
+        },
+        {
+          "row": 127,
+          "sliceSigma": 27.203590393066406,
+          "sliceTau": -0.2051289677619934,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            35,
+            3.7231171131134033,
+            -125.5
+          ]
+        },
+        {
+          "row": 128,
+          "sliceSigma": 27.703590393066406,
+          "sliceTau": -0.2102029174566269,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            35.5,
+            3.7255654335021973,
+            -125.5
+          ]
+        },
+        {
+          "row": 129,
+          "sliceSigma": 28.203590393066406,
+          "sliceTau": -0.21527686715126038,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            36,
+            3.728013515472412,
+            -125.5
+          ]
+        },
+        {
+          "row": 130,
+          "sliceSigma": 28.703590393066406,
+          "sliceTau": -0.22035081684589386,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            36.5,
+            3.730421543121338,
+            -125.5
+          ]
+        },
+        {
+          "row": 131,
+          "sliceSigma": 29.203590393066406,
+          "sliceTau": -0.22542476654052734,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            37,
+            3.732821464538574,
+            -125.5
+          ]
+        },
+        {
+          "row": 132,
+          "sliceSigma": 29.703590393066406,
+          "sliceTau": -0.23805125057697296,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            37.5,
+            3.734543800354004,
+            -125.5
+          ]
+        },
+        {
+          "row": 133,
+          "sliceSigma": 30.203590393066406,
+          "sliceTau": -0.2506777346134186,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            38,
+            3.7362146377563477,
+            -125.5
+          ]
+        },
+        {
+          "row": 134,
+          "sliceSigma": 30.703590393066406,
+          "sliceTau": -0.2633042335510254,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            38.5,
+            3.7377068996429443,
+            -125.5
+          ]
+        },
+        {
+          "row": 135,
+          "sliceSigma": 31.203590393066406,
+          "sliceTau": -0.2759307026863098,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            39,
+            3.7389984130859375,
+            -125.5
+          ]
+        },
+        {
+          "row": 136,
+          "sliceSigma": 31.703590393066406,
+          "sliceTau": -0.29643166065216064,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            39.5,
+            3.739426374435425,
+            -125.5
+          ]
+        },
+        {
+          "row": 137,
+          "sliceSigma": 32.203590393066406,
+          "sliceTau": -0.3169326186180115,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            40,
+            3.7397806644439697,
+            -125.5
+          ]
+        },
+        {
+          "row": 138,
+          "sliceSigma": 32.703590393066406,
+          "sliceTau": -0.3374335467815399,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            40.5,
+            3.73952054977417,
+            -125.5
+          ]
+        },
+        {
+          "row": 139,
+          "sliceSigma": 33.203590393066406,
+          "sliceTau": -0.35793450474739075,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            41,
+            3.7390551567077637,
+            -125.5
+          ]
+        },
+        {
+          "row": 140,
+          "sliceSigma": 33.76260757446289,
+          "sliceTau": -0.36509209871292114,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            41.5,
+            3.742128849029541,
+            -125.25
+          ]
+        },
+        {
+          "row": 141,
+          "sliceSigma": 34.321624755859375,
+          "sliceTau": -0.37224969267845154,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            42,
+            3.745148181915283,
+            -125
+          ]
+        },
+        {
+          "row": 142,
+          "sliceSigma": 34.88064193725586,
+          "sliceTau": -0.37940728664398193,
+          "sliceFade": 1,
+          "sliceWeight": 1,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            42.5,
+            3.748159885406494,
+            -124.75
+          ]
+        },
+        {
+          "row": 143,
+          "sliceSigma": 35.439659118652344,
+          "sliceTau": -0.38656488060951233,
+          "sliceFade": 1,
+          "sliceWeight": 0.8960000276565552,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            43,
+            3.5543439388275146,
+            -124.5
+          ]
+        },
+        {
+          "row": 144,
+          "sliceSigma": 35.939659118652344,
+          "sliceTau": -0.3707873523235321,
+          "sliceFade": 1,
+          "sliceWeight": 0.6480000019073486,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            43.5,
+            3.091249942779541,
+            -124.5
+          ]
+        },
+        {
+          "row": 145,
+          "sliceSigma": 36.439659118652344,
+          "sliceTau": -0.3550097942352295,
+          "sliceFade": 1,
+          "sliceWeight": 0.35199999809265137,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            44,
+            2.532170295715332,
+            -124.5
+          ]
+        },
+        {
+          "row": 146,
+          "sliceSigma": 36.939659118652344,
+          "sliceTau": -0.33923226594924927,
+          "sliceFade": 1,
+          "sliceWeight": 0.10400000214576721,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            44.5,
+            2.0599052906036377,
+            -124.5
+          ]
+        },
+        {
+          "row": 147,
+          "sliceSigma": 37.439659118652344,
+          "sliceTau": -0.32345473766326904,
+          "sliceFade": 1,
+          "sliceWeight": 0,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            45,
+            1.860538363456726,
+            -124.5
+          ]
+        },
+        {
+          "row": 148,
+          "sliceSigma": 37.939659118652344,
+          "sliceTau": -0.32345473766326904,
+          "sliceFade": 1,
+          "sliceWeight": 0,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            45.5,
+            1.8603936433792114,
+            -124.5
+          ]
+        },
+        {
+          "row": 149,
+          "sliceSigma": 38.439659118652344,
+          "sliceTau": -0.32345473766326904,
+          "sliceFade": 1,
+          "sliceWeight": 0,
+          "sliceJoined": 1,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            46,
+            1.8600053787231445,
+            -124.5
+          ]
+        },
+        {
+          "row": 150,
+          "sliceSigma": 38.939659118652344,
+          "sliceTau": -0.32345473766326904,
+          "sliceFade": 1,
+          "sliceWeight": 0,
+          "sliceJoined": 0,
+          "slicePhase": 0,
+          "sliceOverturned": 0,
+          "crest": [
+            46.5,
+            1.8593722581863403,
+            -124.5
+          ]
+        }
+      ],
+      "selectedNativeRows": [
+        {
+          "row": 89,
+          "sliceFront": 120,
+          "sliceSigma": 7.375755310058594,
+          "sliceTau": 1.452157974243164,
+          "slicePhase": 2,
+          "sliceLife": 1.1694227457046509,
+          "sliceCollapse": 0.3241788446903229,
+          "sliceFade": 0.35102301836013794,
+          "sliceTipGap": 0,
+          "sliceRestHold": 4.980809688568115,
+          "sliceRestEnd": 6.554113388061523,
+          "sliceRestClimb": 0.31466078758239746,
+          "sliceToeClimb": 1.8182170391082764,
+          "sliceJoined": 1,
+          "sliceRayX": 0,
+          "sliceRayZ": 1,
+          "sliceWeight": 0.13548623025417328,
+          "sliceOverturned": 1,
+          "sliceTipAlong": 0,
+          "sliceTipUp": -7.612909317016602,
+          "sliceAnchorVX": 0,
+          "sliceAnchorVZ": 0,
+          "sliceTipTransportAlong": 0,
+          "sliceTipTransportUp": 0,
+          "sliceFormed": 1,
+          "sliceTipX": 16,
+          "sliceTipY": 1.6385241746902466,
+          "sliceTipZ": -127.6443099975586,
+          "sliceMouth": 1.058459758758545,
+          "crest": [
+            16,
+            1.9783998727798462,
+            -130.06674194335938
+          ],
+          "cap": [
+            16,
+            1.6385241746902466,
+            -127.6443099975586
+          ],
+          "toe": [
+            16,
+            1.6025807857513428,
+            -127.14276885986328
+          ],
+          "floorDatum": [
+            16,
+            1.6385241746902466,
+            -127.6443099975586
+          ]
+        },
+        {
+          "row": 90,
+          "sliceFront": 120,
+          "sliceSigma": 7.904984951019287,
+          "sliceTau": 1.413818120956421,
+          "slicePhase": 2,
+          "sliceLife": 1.1381958723068237,
+          "sliceCollapse": 0.32427898049354553,
+          "sliceFade": 0.4706380367279053,
+          "sliceTipGap": 0,
+          "sliceRestHold": 4.887831211090088,
+          "sliceRestEnd": 6.4623003005981445,
+          "sliceRestClimb": 0.31489378213882446,
+          "sliceToeClimb": 1.8064424991607666,
+          "sliceJoined": 1,
+          "sliceRayX": 0,
+          "sliceRayZ": 1,
+          "sliceWeight": 0.32835692167282104,
+          "sliceOverturned": 1,
+          "sliceTipAlong": 0,
+          "sliceTipUp": -7.615792274475098,
+          "sliceAnchorVX": 0,
+          "sliceAnchorVZ": 0,
+          "sliceTipTransportAlong": 0,
+          "sliceTipTransportUp": 0,
+          "sliceFormed": 1,
+          "sliceTipX": 16.5,
+          "sliceTipY": 1.3104053735733032,
+          "sliceTipZ": -127.46965789794922,
+          "sliceMouth": 1.5876893997192383,
+          "crest": [
+            16.5,
+            2.242828369140625,
+            -129.89328002929688
+          ],
+          "cap": [
+            16.5,
+            1.3104053735733032,
+            -127.46965789794922
+          ],
+          "toe": [
+            16.5,
+            1.281178593635559,
+            -126.9677505493164
+          ],
+          "floorDatum": [
+            16.5,
+            1.3104053735733032,
+            -127.46965789794922
+          ]
+        }
+      ]
+    }
+  ]
+}

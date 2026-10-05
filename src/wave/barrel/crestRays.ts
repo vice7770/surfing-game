@@ -1,5 +1,5 @@
 import { FRONT_FIELD, FRONT_STRIDE } from './frontRecords';
-import { LANDMARK, PROFILE_POINTS, type ProfileLibrary } from './ProfileLibrary';
+import type { ProfileLibrary } from './ProfileLibrary';
 
 /**
  * Base slices divide a span of at least 2*extension into ceil(span/spacing) intervals; refinement halves them.
@@ -35,7 +35,7 @@ export function authoredCrestReach(
 
 export interface FrontRayControl { sigma: number; x: number; z: number; footHeight: number; footDepth: number }
 
-/** Immutable authored library data is shared by the drawing, contact and crash plans. */
+/** Immutable provider bounds are shared by the drawing, contact and crash plans. */
 const envelopes = new WeakMap<ProfileLibrary, Map<number, Float64Array>>();
 
 /**
@@ -48,7 +48,7 @@ const envelopes = new WeakMap<ProfileLibrary, Map<number, Float64Array>>();
  * D=max|n-nref|, Omega=max|nRaw'| and L=min|blend|. Own-profile offsets cancel at their own endpoints.
  */
 export class CrestRayPlan {
-  readonly diagnostics = { blend: 0, minimumAdvancePerSigma: 0, invalidIntervals: 0 };
+  readonly diagnostics: { blend: number; minimumAdvancePerSigma: number; invalidIntervals: number; minimumStoredDeltaX?: number; minimumStoredDeltaSigma?: number } = { blend: 0, minimumAdvancePerSigma: 0, invalidIntervals: 0 };
   private readonly envelope: Float64Array;
   private readonly lowCase: number;
   private readonly highCase: number;
@@ -72,7 +72,7 @@ export class CrestRayPlan {
     let bySlope = envelopes.get(library);
     if (!bySlope) { bySlope = new Map(); envelopes.set(library, bySlope); }
     let envelope = bySlope.get(slope);
-    if (!envelope) { envelope = authoredCrestReach(library.cases, slope, PROFILE_POINTS, LANDMARK.crest); bySlope.set(slope, envelope); }
+    if (!envelope) { envelope = library.crestReachBounds(slope); bySlope.set(slope, envelope); }
     this.envelope = envelope;
     let closest = library.cases[0]?.slope ?? slope;
     for (const c of library.cases) if (Math.abs(c.slope - slope) < Math.abs(closest - slope)) closest = c.slope;
@@ -91,7 +91,29 @@ export class CrestRayPlan {
     this.load(end - start, (i, key) => records[(start + i) * FRONT_STRIDE + FRONT_FIELD[key]]);
   }
 
-  private load(count: number, read: (i: number, key: keyof FrontRayControl) => number): void {
+  /** C loft only: chosen X is already F32, and the actual stored sigma words are checked pair by pair. */
+  prepareStoredColumns(records: Float32Array, start: number, end: number, xs: Float64Array, sigmas: Float64Array, count: number): void {
+    if (this.library.options.geometry !== 'bounded-C') throw new RangeError('Stored column proof is C-only');
+    this.load(end - start, (i, key) => records[(start + i) * FRONT_STRIDE + FRONT_FIELD[key]], true);
+    this.diagnostics.blend = 1;
+    let dxMin = Infinity, dsMin = Infinity, progress = Infinity;
+    if (!Number.isSafeInteger(count) || count < 2 || count > xs.length || count > sigmas.length) { this.diagnostics.invalidIntervals += 1; return; }
+    for (let k = 0; k < count; k += 1) {
+      const x = xs[k], sigma = Math.fround(sigmas[k]);
+      if (!Number.isFinite(x) || x !== Math.fround(x) || !Number.isFinite(sigma)) { this.diagnostics.invalidIntervals += 1; continue; }
+      if (k === 0) continue;
+      const dx = x - xs[k - 1], ds = sigma - Math.fround(sigmas[k - 1]);
+      if (!(dx > 0 && ds > 0)) { this.diagnostics.invalidIntervals += 1; continue; }
+      dxMin = Math.min(dxMin, dx); dsMin = Math.min(dsMin, ds); progress = Math.min(progress, dx / ds);
+    }
+    this.diagnostics.minimumStoredDeltaX = dxMin === Infinity ? 0 : dxMin;
+    this.diagnostics.minimumStoredDeltaSigma = dsMin === Infinity ? 0 : dsMin;
+    if (this.diagnostics.invalidIntervals === 0) this.diagnostics.minimumAdvancePerSigma = progress;
+    // [0,1] rays add no X offset: BOTH final F32 endpoint half-plane advances equal this positive stored delta-X.
+    // No nominal sigma-spacing or two-ULP subtraction is used on this explicit sampled-column path.
+  }
+
+  private load(count: number, read: (i: number, key: keyof FrontRayControl) => number, storedColumns = false): void {
     if (this.x.length < count) {
       const capacity = Math.max(count, 2 * this.x.length);
       this.x = new Float64Array(capacity); this.z = new Float64Array(capacity); this.sigma = new Float64Array(capacity);
@@ -102,6 +124,7 @@ export class CrestRayPlan {
     this.diagnostics.blend = 0;
     this.diagnostics.minimumAdvancePerSigma = 0;
     this.diagnostics.invalidIntervals = 0;
+    delete this.diagnostics.minimumStoredDeltaX; delete this.diagnostics.minimumStoredDeltaSigma;
     for (let k = 0; k < count; k += 1) {
       this.x[k] = Math.fround(read(k, 'x')); this.z[k] = Math.fround(read(k, 'z')); this.sigma[k] = Math.fround(read(k, 'sigma'));
       this.height[k] = Math.fround(read(k, 'footHeight')); this.depth[k] = Math.fround(read(k, 'footDepth'));
@@ -110,10 +133,34 @@ export class CrestRayPlan {
       if (k > 0 && (!(this.x[k] > this.x[k - 1]) || !(this.sigma[k] > this.sigma[k - 1]))) this.diagnostics.invalidIntervals += 1;
     }
     if (count < 2 || this.diagnostics.invalidIntervals > 0) return;
-    this.prepareBound();
+    if (!storedColumns) this.prepareBound();
   }
 
   private prepareBound(): void {
+    if (this.library.options.geometry === 'bounded-C') {
+      // The tracker advances X-column crests shoreward in +Z. Parallel rays leave
+      // every profile offset out of X, so BOTH endpoint half-plane advances are
+      // exactly the crest's positive delta-X, even after a remote component split.
+      const last = this.count - 1;
+      let progress = Infinity;
+      let maximumX = 0;
+      for (let k = 0; k <= last; k += 1) {
+        maximumX = Math.max(maximumX, Math.abs(this.x[k]));
+        if (k === last) continue;
+        const dx = this.x[k + 1] - this.x[k];
+        const dz = this.z[k + 1] - this.z[k];
+        progress = Math.min(progress, dx / (this.sigma[k + 1] - this.sigma[k]));
+        if (k === 0 || k + 1 === last) progress = Math.min(progress, dx / Math.hypot(dx, dz));
+      }
+      // Two float32 ULPs conservatively cover both final X upload errors. The
+      // shoulders extend X by at most extension; reach in Z cannot affect this.
+      const ulp = 2 ** (Math.floor(Math.log2(Math.max(1, maximumX + this.extension))) - 23);
+      const stored = progress - 2 * ulp / this.minSpacing;
+      this.diagnostics.blend = 1;
+      if (!(stored > 0)) { this.diagnostics.invalidIntervals += 1; return; }
+      this.diagnostics.minimumAdvancePerSigma = stored;
+      return;
+    }
     const last = this.count - 1;
     let lowSlope = -Infinity;
     let highSlope = Infinity;
@@ -266,6 +313,7 @@ export class CrestRayPlan {
   }
 
   rayAt(sigma: number, into: Float64Array): Float64Array {
+    if (this.library.options.geometry === 'bounded-C') { into[0] = 0; into[1] = 1; return into; }
     if (this.count < 2) { into[0] = 0; into[1] = 1; return into; }
     this.rawVector(sigma, into);
     const length = Math.sqrt(into[0] * into[0] + into[1] * into[1]);

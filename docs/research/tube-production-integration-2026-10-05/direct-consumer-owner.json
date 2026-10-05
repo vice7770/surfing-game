@@ -1,0 +1,39 @@
+{
+  "status": "terminal",
+  "startedAt": "2026-10-05T02:36:44.621184+00:00",
+  "wrapperPid": 98912,
+  "vitestPid": 98913,
+  "ownedProcessGroup": 98913,
+  "deadlineSeconds": 300,
+  "cleanupGraceSeconds": 10,
+  "inputPins": {
+    "file": "/private/tmp/tube-C-direct-consumers-20261005/input-pins.json",
+    "bytes": 16237,
+    "sha256": "63ca88c796229cd79c9ad2f0a23923d4bbc588fed8f599f8f9721f41180ba57c"
+  },
+  "allPinnedInputsMatchedBeforeLaunch": true,
+  "resourceScope": "Own Vitest process group only; no ports/browser/server/native/player/Git/source changes",
+  "endedAt": "2026-10-05T02:37:03.501457+00:00",
+  "vitestExitCode": 0,
+  "elapsedSeconds": 18.885005375021137,
+  "cleanup": {
+    "reason": null,
+    "termAt": null,
+    "killAt": null
+  },
+  "ownedProcessGroupGone": true,
+  "allPinnedInputsUnchanged": true,
+  "changedInputs": [],
+  "manualInterruption": false,
+  "wrapperError": null,
+  "reportGenerated": true,
+  "reportParseError": null,
+  "reportFileScopeExactlySix": true,
+  "completedPassingCheck": true,
+  "actualReportCounts": {
+    "numTotalTests": 73,
+    "numPassedTests": 73,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  }
+}

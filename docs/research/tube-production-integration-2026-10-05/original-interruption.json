@@ -1,0 +1,23 @@
+{
+  "session": 33494,
+  "exitCode": 130,
+  "reportGenerated": false,
+  "allPassedClaim": false,
+  "reason": "Root deliberately authorized interruption after source evidence showed existing no-library full-width stress tests document 80 minutes per Big run and 2-4 hour limits. This is out-of-scope test cost, not a hang or app deadline failure.",
+  "owner": {
+    "wrapperPID": 77666,
+    "vitestPID": 77668,
+    "workerPID": 77699,
+    "terminalToolReceipt": true,
+    "noFormerOwnerPIDsFoundByPS": true
+  },
+  "partialOutput": [
+    "Initial RUN line",
+    "Sandbox inspector bind rejection",
+    "Python KeyboardInterrupt during deliberate interruption"
+  ],
+  "originalCommand": "final-test-command.json",
+  "replacementMustHavePreciseStressExclusions": true,
+  "runtimeChanged": false,
+  "portChanges": false
+}

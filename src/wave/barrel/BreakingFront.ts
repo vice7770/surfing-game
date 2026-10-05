@@ -1,5 +1,6 @@
 import type { CrestSample } from './crestOnset';
 import type { OnsetTiming } from './sliceClock';
+import { CarrierSupport, copyCarrierPoint, geometricPaceActive, type CarrierSupportHistory } from './carrierSupport';
 
 /** Crests in neighbouring columns this many rows apart in z are one front (provisional). */
 const LINK_ROWS = 3;
@@ -178,6 +179,8 @@ export interface FrontPoint {
   jetBase?: number;
   jetUntil?: number;
   jetAt?: number;
+  /** C-only dynamic incident support evidence; individual physical jetUntil remains unchanged. */
+  carrierSupport?: CarrierSupportHistory;
   /** The solver's crest it claimed this step while on its pace, m; absent with none in reach (PR 5). */
   crestZ?: number;
   /** Its crest's speed along its column over the last few frames, m/s (`crestMotion`, PACE_SECONDS); absent unmeasured. */
@@ -274,13 +277,15 @@ export class BreakingFront {
    * `cell`: the rows' spacing where fronts form, m; `timing`: the wedge’s foot, the join and throw depths (sliceClock);
    * `options`: the spot's rules beyond Padang Padang's (none there).
    */
-  constructor(cell: number, private readonly timing: OnsetTiming, private readonly options: FrontOptions = {}) {
+  constructor(cell: number, private readonly timing: OnsetTiming, private readonly options: FrontOptions = {}, private readonly carrier?: CarrierSupport) {
     this.linkReach = LINK_ROWS * cell;
     this.matchReach = MATCH_REACH + cell;
   }
 
   update(samples: readonly CrestSample[], count: number, time: number): void {
     this.retainActiveOrder();
+    this.carrier?.refresh(this.points, time);
+    this.carrier?.refreshHeld(this.held, time);
     const previous = [...(this.order ?? this.points), ...this.held];
     const pointsOf = byColumn(previous);
     const tracksOf = byColumn(this.tracks);
@@ -414,6 +419,7 @@ export class BreakingFront {
     if (coasting) points.sort((a, b) => a.column - b.column || a.z - b.z);
     const linked = this.link(points);
     this.points = linked.fronts;
+    this.carrier?.refresh(this.points, time);
     this.order = linked.order;
     this.held = previous.filter((old) => !matched.has(old) && time - old.seen <= HOLD);
     const kept = this.tracks.filter((old) => !followed.has(old) && time - old.seen <= HOLD);
@@ -637,14 +643,14 @@ export class BreakingFront {
   exportState(): FrontState {
     this.retainActiveOrder();
     return {
-      nextId: this.nextId, nextFront: this.nextFront, points: this.points.map((p) => ({ ...p })), held: this.held.map((p) => ({ ...p })),
+      nextId: this.nextId, nextFront: this.nextFront, points: this.points.map(copyCarrierPoint), held: this.held.map(copyCarrierPoint),
       tracks: this.tracks.map((t) => ({ ...t })),
       ...(this.order ? { order: this.order.map((p) => p.id) } : {}),
     };
   }
 
   importState(state: FrontState): void {
-    const points = state.points.map((p) => ({ ...p }));
+    const points = state.points.map(copyCarrierPoint);
     // The order lists these same points (`FrontState.order`). One that names a point the state lacks, or misses or
     // repeats one, is not this front's: it is refused before anything is taken over.
     const byId = new Map(points.map((p) => [p.id, p]));
@@ -660,7 +666,7 @@ export class BreakingFront {
     this.nextFront = state.nextFront;
     this.points = points;
     this.order = order;
-    this.held = state.held.map((p) => ({ ...p }));
+    this.held = state.held.map(copyCarrierPoint);
     this.tracks = (state.tracks ?? []).map((t) => ({ ...t }));
   }
 }
@@ -721,6 +727,7 @@ function crossingFraction(fromDepth: number, depth: number, at: number): number 
  * hasn't faded (its clock short of `jetUntil`), crashed or not (the advisor, 2026-10-03).
  */
 function runsOnPace(point: FrontPoint): boolean {
+  if (point.carrierSupport) return geometricPaceActive(point);
   return point.jetPace !== undefined && point.jetUntil !== undefined && point.tau < point.jetUntil;
 }
 

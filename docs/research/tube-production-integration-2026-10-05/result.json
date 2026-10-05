@@ -1,0 +1,272 @@
+{
+  "schema": "tube-production-integration-record/v1",
+  "date": "2026-10-05",
+  "gitBaselineAtPreparation": "df6d3e1beac4a2b971704d18f2ebdc5a939f60a8",
+  "authorizedBranchTarget": "claude/wave-pool",
+  "sourceState": "Rough prototype integrated in the ordinary application; current frozen source pins are part of this record commit.",
+  "behavior": [
+    "Recognized shipped case libraries select bounded-C geometry; direct/manual ProfileLibrary construction remains RAW.",
+    "The provider, loft, contact, crash, air, carrier support and retirement prefix are adopted together.",
+    "The independent rider phase-frame correction is preserved.",
+    "Candidate tests use repository-local fixtures/contracts; archived docs source is excluded from Vitest collection."
+  ],
+  "scope": {
+    "runtimeModules": 15,
+    "candidateTestFiles": 14,
+    "fixtureFiles": 1,
+    "vitestConfigFiles": 1,
+    "frozenTotal": 31
+  },
+  "validation": {
+    "strictTypeScript": "passed after test fixture repair",
+    "applicationBuild": "passed; 49 assets, runtime unchanged",
+    "focusedCurrentCases": {
+      "uniqueSupportedPasses": 89,
+      "unmodified13Files": 80,
+      "repairedCarrierFile": 9,
+      "firstRunPasses": 87,
+      "firstRunFailures": 2,
+      "singleFinal14FilePassClaim": false
+    },
+    "directConsumers": {
+      "completed": true,
+      "files": 6,
+      "passed": 73,
+      "failed": 0,
+      "skipped": 0,
+      "unchangedInputs": true
+    },
+    "widerConsumers": {
+      "completed": false,
+      "reportedPasses": 56,
+      "reportedFails": 0,
+      "actualPlannedSkipsReached": 15,
+      "exitCode": 143,
+      "deadlineSeconds": 540
+    },
+    "fullRepositoryPassClaim": false
+  },
+  "qualityLimits": [
+    "Normal playable entry remains unresolved: the existing paired V7 ride falls during landing at step1366.",
+    "No successful tube ride, full-body clearance, convincing mouth/roof or FPS result is established.",
+    "Later appearance/observer experiments remain isolated; this record does not promote them."
+  ],
+  "priorEvidence": [
+    "docs/research/tube-stability-2026-10-05",
+    "docs/research/tube-contact-lighting-2026-10-05",
+    "docs/research/tube-landing-frame-replay-2026-10-05"
+  ],
+  "payloadPins": [
+    {
+      "path": "integration-readiness.json",
+      "bytes": 6263,
+      "sha256": "d233eced0a98a206449cea07c33161c4d64a0b319d13f05d532f059f7658f94a",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/readiness.json",
+        "bytes": 6263,
+        "sha256": "d233eced0a98a206449cea07c33161c4d64a0b319d13f05d532f059f7658f94a"
+      }
+    },
+    {
+      "path": "source-freeze.json",
+      "bytes": 6744,
+      "sha256": "3ede1a5155658a163bd0c02493f85691211fbfcf1b3c28db3c30ef7654742b4f",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/owned-final-source-freeze.json",
+        "bytes": 6744,
+        "sha256": "3ede1a5155658a163bd0c02493f85691211fbfcf1b3c28db3c30ef7654742b4f"
+      }
+    },
+    {
+      "path": "runtime-protection.json",
+      "bytes": 736,
+      "sha256": "f2bb6fa76d6ecd9e504973c6e47b87cf1e903996ed7c89f30e7c0369d9641809",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/final-runtime-protection-check.json",
+        "bytes": 736,
+        "sha256": "f2bb6fa76d6ecd9e504973c6e47b87cf1e903996ed7c89f30e7c0369d9641809"
+      }
+    },
+    {
+      "path": "portable-tests.json",
+      "bytes": 9756,
+      "sha256": "91396332e1ccd56ec04fb69b0b40bfc659a8ab14be05dd0ca13d4460e777d1b9",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/portability-receipt.json",
+        "bytes": 9756,
+        "sha256": "91396332e1ccd56ec04fb69b0b40bfc659a8ab14be05dd0ca13d4460e777d1b9"
+      }
+    },
+    {
+      "path": "focused-tests-first.json",
+      "bytes": 43669,
+      "sha256": "3a2bd953df5de269b83aa74b779c341bee828a311c3d4fb49e4beb222c969238",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/focused-candidate-tests.json",
+        "bytes": 43669,
+        "sha256": "3a2bd953df5de269b83aa74b779c341bee828a311c3d4fb49e4beb222c969238"
+      }
+    },
+    {
+      "path": "focused-tests-first-owner.json",
+      "bytes": 80,
+      "sha256": "4d23700f04f21250101c8a5408a8c98c3038693f2eb199084f6efe440a820469",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/focused-candidate-owner.json",
+        "bytes": 80,
+        "sha256": "4d23700f04f21250101c8a5408a8c98c3038693f2eb199084f6efe440a820469"
+      }
+    },
+    {
+      "path": "carrier-repair-tests.json",
+      "bytes": 4562,
+      "sha256": "afac0d7383b9f4b5066227bd90af37259314c24711fb19c1be2c55db490c9a74",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/carrier-support-repair-tests.json",
+        "bytes": 4562,
+        "sha256": "afac0d7383b9f4b5066227bd90af37259314c24711fb19c1be2c55db490c9a74"
+      }
+    },
+    {
+      "path": "carrier-repair-receipt.json",
+      "bytes": 2664,
+      "sha256": "0421e13a75e33485f662f1f5c4ddfdc2359c06fd0f009094ae620d606bb1a5b4",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/fixture-repair-receipt.json",
+        "bytes": 2664,
+        "sha256": "0421e13a75e33485f662f1f5c4ddfdc2359c06fd0f009094ae620d606bb1a5b4"
+      }
+    },
+    {
+      "path": "typecheck-receipt.json",
+      "bytes": 1003,
+      "sha256": "fb7ad16051bbd78b9b7b62313006ad6e3f82666f81812c6043070acafdb72621",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/typecheck-receipt.json",
+        "bytes": 1003,
+        "sha256": "fb7ad16051bbd78b9b7b62313006ad6e3f82666f81812c6043070acafdb72621"
+      }
+    },
+    {
+      "path": "typecheck-after-carrier-repair.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/typecheck-after-fixture-repair.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "path": "build-result.json",
+      "bytes": 17977,
+      "sha256": "715291fd92bd29497599a4012a88c049aef6e24e2656f50376cce1cd4d2521fe",
+      "original": {
+        "file": "/private/tmp/tube-C-production-app-build-20261005/result.json",
+        "bytes": 17977,
+        "sha256": "715291fd92bd29497599a4012a88c049aef6e24e2656f50376cce1cd4d2521fe"
+      }
+    },
+    {
+      "path": "wider-consumer-result.json",
+      "bytes": 2329,
+      "sha256": "8d3aca934255e6ce004a08e706ad6ccc940b92c782ad38c2675546686274d6ab",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/bounded-affected-result.json",
+        "bytes": 2329,
+        "sha256": "8d3aca934255e6ce004a08e706ad6ccc940b92c782ad38c2675546686274d6ab"
+      }
+    },
+    {
+      "path": "wider-consumer-command.json",
+      "bytes": 14759,
+      "sha256": "6a6bcbaee5928577fb08dbbe69b773b2a717e4b911e83c22f825ab5d9527a5e6",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/bounded-affected-command.json",
+        "bytes": 14759,
+        "sha256": "6a6bcbaee5928577fb08dbbe69b773b2a717e4b911e83c22f825ab5d9527a5e6"
+      }
+    },
+    {
+      "path": "wider-consumer-owner.json",
+      "bytes": 14438,
+      "sha256": "8a8fe195daec99cb45fba5b7bfa01465171d30b7adccbce0e318ce32293c8934",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/bounded-affected-owner.json",
+        "bytes": 14438,
+        "sha256": "8a8fe195daec99cb45fba5b7bfa01465171d30b7adccbce0e318ce32293c8934"
+      }
+    },
+    {
+      "path": "wider-consumer-tests.log",
+      "bytes": 11318,
+      "sha256": "59613a17b38a3688dd919b9f0328b6b2946a5ec5e4a93676ff9eeababd1482ea",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/bounded-affected-tests.log",
+        "bytes": 11318,
+        "sha256": "59613a17b38a3688dd919b9f0328b6b2946a5ec5e4a93676ff9eeababd1482ea"
+      }
+    },
+    {
+      "path": "original-interruption.json",
+      "bytes": 816,
+      "sha256": "37161c88eb778fb9fdc7f79f87ee789b5fc33da9179be8a065320bbeaf02f0be",
+      "original": {
+        "file": "/private/tmp/tube-C-production-integration-20261005/deliberately-interrupted-hours-scope-tests.json",
+        "bytes": 816,
+        "sha256": "37161c88eb778fb9fdc7f79f87ee789b5fc33da9179be8a065320bbeaf02f0be"
+      }
+    },
+    {
+      "path": "direct-consumer-owner.json",
+      "bytes": 1159,
+      "sha256": "611c5feb77467e1a4ea7ca4b9a51b995a1d93deca37de88a76d4776517b9c0b2",
+      "original": {
+        "file": "/private/tmp/tube-C-direct-consumers-20261005/owner.json",
+        "bytes": 1159,
+        "sha256": "611c5feb77467e1a4ea7ca4b9a51b995a1d93deca37de88a76d4776517b9c0b2"
+      }
+    },
+    {
+      "path": "direct-consumer-tests.json",
+      "bytes": 29498,
+      "sha256": "43600510e8a67051b6f917035db098029ee77e80d593a3caa30da5f427762c11",
+      "original": {
+        "file": "/private/tmp/tube-C-direct-consumers-20261005/tests.json",
+        "bytes": 29498,
+        "sha256": "43600510e8a67051b6f917035db098029ee77e80d593a3caa30da5f427762c11"
+      }
+    },
+    {
+      "path": "direct-consumer-command.json",
+      "bytes": 1360,
+      "sha256": "a7eb21029c62d29f21e41f60ae46bd0369ce3a695ab748e8c68f37e9ae7dc86f",
+      "original": {
+        "file": "/private/tmp/tube-C-direct-consumers-20261005/command.json",
+        "bytes": 1360,
+        "sha256": "a7eb21029c62d29f21e41f60ae46bd0369ce3a695ab748e8c68f37e9ae7dc86f"
+      }
+    },
+    {
+      "path": "direct-consumer-input-pins.json",
+      "bytes": 16237,
+      "sha256": "63ca88c796229cd79c9ad2f0a23923d4bbc588fed8f599f8f9721f41180ba57c",
+      "original": {
+        "file": "/private/tmp/tube-C-direct-consumers-20261005/input-pins.json",
+        "bytes": 16237,
+        "sha256": "63ca88c796229cd79c9ad2f0a23923d4bbc588fed8f599f8f9721f41180ba57c"
+      }
+    },
+    {
+      "path": "direct-consumer-result.json",
+      "bytes": 386,
+      "sha256": "1e63d5ab4d73b211b9ee7a3431a6407f50c783a2ca730502d949285bf0480391",
+      "original": {
+        "file": "/private/tmp/tube-C-direct-consumers-20261005/result.json",
+        "bytes": 386,
+        "sha256": "1e63d5ab4d73b211b9ee7a3431a6407f50c783a2ca730502d949285bf0480391"
+      }
+    }
+  ],
+  "archivePurpose": "Preserve actual integration checks and limitations; absolute source paths in payloads are provenance, not instructions or a runnable replay package."
+}

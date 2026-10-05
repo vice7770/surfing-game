@@ -119,6 +119,8 @@ export class SweptContact {
   private readonly prepareRow?: (row: number) => void;
   private readonly prepareNormal?: (vertex: number) => void;
   private readonly bucket: number;
+  /** Provider mode, not descriptive loft diagnostics, controls C water-closure contact ownership. */
+  private readonly boundedC: boolean;
   /** Per vertex, its along-ray coordinate on its own slice's ray, and (a joined slice's next) on the previous slice's. */
   private own = new Float32Array(0);
   private prior = new Float32Array(0);
@@ -141,6 +143,8 @@ export class SweptContact {
   private stripFirst = new Int32Array(0);
   /** Which strips have been bucketed this update, and the end of their shared storage. */
   private stripReady = new Uint8Array(0);
+  /** Per joined strip, its first actual loft triangle index; contact consumes the drawing's construction. */
+  private stripIndex = new Int32Array(0);
   private nextBucket = 0;
   private nextEntry = 0;
   /** Per bucket, where its quads start in `bucketQuads` (the next bucket's start ends it); the quads' columns, in order. */
@@ -168,6 +172,7 @@ export class SweptContact {
       this.prepareNormal = queryLoft.prepareNormal;
     } else this.loft = new SweptLoft(library, slope, { contact: true });
     this.bucket = options.bucket ?? CONTACT.bucket;
+    this.boundedC = library.options.geometry === 'bounded-C';
   }
 
   /** Internal worker construction, never a posted option or public lazy-output mode. */
@@ -209,13 +214,17 @@ export class SweptContact {
       this.stripBuckets = new Int32Array(slices);
       this.stripFirst = new Int32Array(slices);
       this.stripReady = new Uint8Array(slices);
+      this.stripIndex = new Int32Array(slices);
       this.boxes = new Int32Array(4 * slices);
     }
     let minX = Infinity;
     let minZ = Infinity;
     let maxX = -Infinity;
     let maxZ = -Infinity;
+    let index = 0;
     for (let s = 0; s < sliceCount; s += 1) {
+      this.stripIndex[s] = index;
+      if (loft.sliceJoined[s] === 1) index += 6 * Q;
       const o = s * S;
       const rx = loft.sliceRayX[s];
       const rz = loft.sliceRayZ[s];
@@ -329,6 +338,10 @@ export class SweptContact {
       if (sideA < 0) continue;
       const sideB = (x - p[3 * b]) * loft.sliceRayZ[s + 1] - (z - p[3 * b + 2]) * loft.sliceRayX[s + 1];
       if (sideB >= 0) continue;
+      // A C closure's exact zero-weight ray is ordinary water. Test before the triangle tie nudge;
+      // positive interiors of a ghost-to-live strip still use their actual indexed crossings.
+      const fraction = sideA - sideB > 0 ? sideA / (sideA - sideB) : 0;
+      if (this.boundedC && !(loft.sliceWeight[s] + fraction * (loft.sliceWeight[s + 1] - loft.sliceWeight[s]) > 0)) continue;
       // On ray s itself, the strip owns the point, but its edges along the ray are shared with the strip before, whose
       // triangles' ties may take them: step a nanometre into the strip, along its tangent, so its own triangles do.
       const nudge = sideA === 0 ? NUDGE : 0;
@@ -351,8 +364,12 @@ export class SweptContact {
       if (loft.sliceFront[s] === loft.sliceFront[strip]) continue;
       const a = s * S;
       const b = a + S;
-      if ((x - p[3 * a]) * loft.sliceRayZ[s] - (z - p[3 * a + 2]) * loft.sliceRayX[s] < 0) continue;
-      if ((x - p[3 * b]) * loft.sliceRayZ[s + 1] - (z - p[3 * b + 2]) * loft.sliceRayX[s + 1] >= 0) continue;
+      const sideA = (x - p[3 * a]) * loft.sliceRayZ[s] - (z - p[3 * a + 2]) * loft.sliceRayX[s];
+      if (sideA < 0) continue;
+      const sideB = (x - p[3 * b]) * loft.sliceRayZ[s + 1] - (z - p[3 * b + 2]) * loft.sliceRayX[s + 1];
+      if (sideB >= 0) continue;
+      const fraction = sideA - sideB > 0 ? sideA / (sideA - sideB) : 0;
+      if (this.boundedC && !(loft.sliceWeight[s] + fraction * (loft.sliceWeight[s + 1] - loft.sliceWeight[s]) > 0)) continue;
       const q = (x - p[3 * a]) * loft.sliceRayX[s] + (z - p[3 * a + 2]) * loft.sliceRayZ[s];
       this.ensureBucket(s);
       const bucket = Math.floor((q - this.stripLow[s]) / this.bucket);
@@ -361,9 +378,9 @@ export class SweptContact {
       for (let e = this.bucketStart[first]; e < this.bucketStart[first + 1]; e += 1) {
         const j = this.bucketQuads[e];
         if (q < this.quadLow[s * Q + j] || q > this.quadHigh[s * Q + j]) continue;
-        const v00 = a + j;
-        const v10 = v00 + S;
-        if (this.meets(p, v00, v10, v00 + 1, x, z) || this.meets(p, v00 + 1, v10, v10 + 1, x, z)) return true;
+        const t = this.stripIndex[s] + 6 * j, indices = loft.indices;
+        if (this.meets(p, indices[t], indices[t + 1], indices[t + 2], x, z)
+          || this.meets(p, indices[t + 3], indices[t + 4], indices[t + 5], x, z)) return true;
       }
     }
     return false;
@@ -401,11 +418,9 @@ export class SweptContact {
       // Along slice s's ray, the quad's projection spans its vertices' (a linear map keeps a point inside them), widened
       // past their rounding (SLACK).
       if (q < this.quadLow[base + j] || q > this.quadHigh[base + j]) continue;
-      const v00 = o + j;
-      const v10 = v00 + S;
-      // The drawn quad's two triangles, as the loft winds them.
-      this.triangle(p, v00, v10, v00 + 1, x, z);
-      this.triangle(p, v00 + 1, v10, v10 + 1, x, z);
+      const t = this.stripIndex[s] + 6 * j, indices = loft.indices;
+      this.triangle(p, indices[t], indices[t + 1], indices[t + 2], x, z);
+      this.triangle(p, indices[t + 3], indices[t + 4], indices[t + 5], x, z);
     }
     // Insertion sort, keeping each crossing's triangle and weights with its y.
     const { ys, at, weights } = this;

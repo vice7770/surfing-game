@@ -1,4 +1,5 @@
 import type { FrontPoint } from './BreakingFront';
+import { geometricPaceActive } from './carrierSupport';
 
 /**
  * A front point as the snapshot carries it to the page (the Padang Padang spec, Part B, PR 3): where its crest is, which
@@ -26,7 +27,8 @@ export function writeFrontRecords(points: readonly FrontPoint[], out: Float32Arr
     out[o + FRONT_FIELD.footHeight] = p.footHeight;
     out[o + FRONT_FIELD.footDepth] = p.footDepth;
     out[o + FRONT_FIELD.throwZ] = p.throwZ ?? Number.NaN;
-    out[o + FRONT_FIELD.pace] = p.jetPace !== undefined && p.jetUntil !== undefined && p.tau < p.jetUntil ? p.jetPace : Number.NaN;
+    if (p.carrierSupport) out[o + FRONT_FIELD.pace] = geometricPaceActive(p) ? p.jetPace! : Number.NaN;
+    else out[o + FRONT_FIELD.pace] = p.jetPace !== undefined && p.jetUntil !== undefined && p.tau < p.jetUntil ? p.jetPace : Number.NaN;
   }
   return count;
 }

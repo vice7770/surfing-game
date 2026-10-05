@@ -1,0 +1,14 @@
+{
+  "status": "complete-pass",
+  "owner": "/private/tmp/tube-C-direct-consumers-20261005/owner.json",
+  "completedPassingCheck": true,
+  "noFullRepositoryPassClaim": true,
+  "scopeFileCount": 6,
+  "actualReportCounts": {
+    "numTotalTests": 73,
+    "numPassedTests": 73,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  },
+  "noReportedResultCountsFromStaticExpectedValues": true
+}

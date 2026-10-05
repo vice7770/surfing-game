@@ -1,0 +1,74 @@
+
+ RUN  v5.0.1 /Users/regina/Desktop/Projects/surfing-game
+
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > writes the worker snapshot fields together with the same data as separate surface, air and current writers 1022ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > preserves dynamic void fraction receivers, replacement and preprocessing before snapshot output 142ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > preserves snapshot bits and store order with overlapping outputs and output input aliases 269ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > allocates snapshot scratch for every source cell and reuses it across repeated render layouts 83ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > feeds Padang Padang's sides with the incoming sea, on the clock of a handed-over sea (wave sizes) 559ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > feeds no other spot's sides 74ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > takes the Reef's buoy swell in deep water, shoaled to its 30 m edge, and the Canyon's at its edge 1ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > keeps the water finite on the biggest swells the Reef and today's Point tank can be given (wave sizes review) 61047ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > takes a buoy height in deep water and shoals it to the tank's edge (wave sizes) 2ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > warm-starts so the spun-up sea sits at a chosen sea time (a room's clock) 343ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > builds a finite, wave-filled surf zone for every spot and hands over before the set 2511ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > runs Padang Padang on stage 2 whatever the config asks, forcing the solver’s own waves at its boundary 1181ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > follows Padang Padang’s crests from the relaxation zone’s edge, deeper than its foot all along the window, at every swell and tide 21ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > builds Padang Padang’s front to follow its crests’ jumps within 10 m, with no join past the throw depth 618ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > gives Padang Padang a tank beyond its forereef whose fine zone reaches past its sets’ first break at every tide 41ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > injects Padang Padang’s sea where first-order generation holds: Schäffer’s S at the edge is at most 1.2 for every swell 4ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > finds Padang Padang’s break on its wedge inside the fine surf zone, and it plunges 15962ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > seats Padang Padang’s take-off within 15 m of where each swell’s sets broke in the size report 8ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > takes off at Padang Padang’s peak, where every swell breaks at every tide, never on the dry flat or in the channel 29ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > measures Padang Padang’s peel on its reef only 8846ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > runs the Reef on stage 2 whatever the config asks, forcing the solver’s own waves at its boundary 614ms
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > spins up the menu's first Reef on the GPU tier's sea without blowing up
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > warms the complete swept sea to the same state as ordinary requested steps, including device feedback and fallback 31156ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > does not step a zero-duration startup or consume a staged future-water interval 235ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > builds warm, then spins up to the same sea as a build that spins up at once 818ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > spins up on its device, one stable substep a call 582ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > spinning up after the build (the worker spins up on its GPU) > finishes the spin-up on the CPU when its device fails partway 511ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > drops a failing device and steps that frame on the CPU 628ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > replays a seed exactly and changes with another 1267ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > renders the surface it samples, with dry land tucked under the bed 221ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > finds the break line at the shoaled breaker depth 184ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > breaks waves in the surf zone, measures the peel and paints whitewater 1368ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > keeps measuring peel while earlier bores are still crossing the surf zone 6264ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > throws a lip from plunging point waves, once per wave, but not from a spilling beach 11730ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > throws each jet ahead of its crest, 1.15-1.8 times its speed, as measured jets leave (P7) 6231ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > carves the void under a flying lip into the water the rider feels and the renderer draws (P7) 5868ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > builds the Reef on a 30 m tank that stays deep up to its forereef, with every break in the fine surf zone 25ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > seats the Canyon take-off where its bed gathers the swell, from either side 1443ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > takes off straight out from the window centre at the other spots 1ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > measures the Reef’s peel on its ledge only, and every other spot everywhere 834ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > takes off at the Reef’s peak, where every Reef swell breaks, never on dry reef or in the pass 1ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > finds the Reef’s break on its ledge inside the fine surf zone, and it plunges 3593ms
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > the steep Reef holds > stays finite and bounded under the Big swell, and plunges
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > the steep Reef holds > stays finite over the drying reef flat at low tide
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > the steep Reef holds > stays finite with oblique swells across the open −x edge
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > the steep Reef holds > stays finite over the lagoon at low tide
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > the steep Reef holds > stays finite where the window's open edge cuts the ledge
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > the Reef's Big swell at high tide holds by its open edges > stays finite through its sets
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > the Reef's Big swell at high tide holds by its open edges > stays finite through a trough drawn down at the −x edge
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > Padang Padang holds > stays finite and bounded under the Big swell, plunges, and peels left toward the channel
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > Padang Padang holds > stays finite over the nearly dry reef flat at the lowest spring tide
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > Padang Padang holds > stays finite at high tide
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > Padang Padang holds > stays finite with the most oblique swells across the open side edges
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > spins up the menu’s Padang Padang on the GPU tier’s sea without blowing up
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > throws the Reef's ledge breaks as reef breaks and every other spot's by Pick & Feddersen
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > holds the water where its lip lands in shallow water 4076ms
+ ↓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > throws lips from plunging waves on the reef edge
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > counts a column breaking once per wave for the peel, and never shore swash 16884ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > measures each wave breaking at the take-off: its face and where it broke (wave sizes) 13061ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > does not read the spin-up bores as one simultaneous close-out 1179ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > holds waves up longer under offshore wind 455ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > scales the wind effect on breaking by the breaker celerity, stronger onshore than offshore 1ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > leaves foam behind the breaking bores, fading into lace, and none offshore of the break 5192ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > keeps lace longest in the beach’s sandy surf and lets a spot override its decay 875ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > splashes landing lip water into foam 175ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > SurfZoneSimulation > renders the foam field and the current it rides on 268ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > remeasures each front after the crash finalizes paced crest positions, including its serialized geometry 63ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > starts a surviving crest at zero when the crash removes a front head, without carrying arc length across fronts 60ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > runs on Padang Padang only 514ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > leaves the water, its breaking and its lips exactly as with the front off 135643ms
+ ✓ src/wave/SurfZoneSimulation.test.ts > the swept barrel’s breaking front (the Padang Padang spec, Part B) > links the breaking crests into fronts whose clocks run on, and hands them over exactly 86951ms
